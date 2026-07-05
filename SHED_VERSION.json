@@ -1,6 +1,6 @@
 {
   "shed_version": "0.1.0",
-  "artifact_model_version": "2026-07-05.4",
+  "artifact_model_version": "2026-07-05.5",
   "updated_at": "2026-07-05",
-  "notes": "Sets Level 2 as the default existing-project backfill and records public PC-Redemption repo governance."
+  "notes": "Adds the Level 2 existing-project onboarding runbook and specialized inventory template."
 }

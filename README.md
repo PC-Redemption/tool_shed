@@ -95,6 +95,7 @@ Before choosing an artifact, read:
 
 - [selection.md](./selection.md)
 - [conventions.md](./conventions.md)
+- [existing-projects.md](./existing-projects.md) when loading `tool_shed` into an existing project
 
 ## Existing Projects
 
@@ -111,6 +112,13 @@ Recommended flow:
 3. Use the map and inventory before deciding whether to backfill workpackages, tickets, ADRs, runbooks, or checklists.
 4. Backfill only useful current-state artifacts.
 5. Keep observed current truth in `docs/` or README files; keep work coordination in `work/`.
+
+Level 2 artifact commands:
+
+```bash
+python3 tool_shed/scripts/new_artifact.py project-map "Project name" --workspace .
+python3 tool_shed/scripts/new_artifact.py existing-project-inventory "Project name surfaces" --workspace .
+```
 
 ## Repository Governance
 

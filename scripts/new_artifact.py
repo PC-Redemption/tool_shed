@@ -19,6 +19,9 @@ ARTIFACTS = {
     "incident": ("templates/incident.md", "work/incidents", "incident"),
     "spike": ("templates/spike.md", "work/spikes", "spike"),
     "inventory": ("templates/inventory.md", "work/inventories", "inventory"),
+    "project-inventory": ("templates/existing-project-inventory.md", "work/inventories", "inventory"),
+    "existing-project-inventory": ("templates/existing-project-inventory.md", "work/inventories", "inventory"),
+    "level-2-inventory": ("templates/existing-project-inventory.md", "work/inventories", "inventory"),
     "decision": ("templates/decision-matrix.md", "work/decisions", "decision"),
     "decision-matrix": ("templates/decision-matrix.md", "work/decisions", "decision"),
 }

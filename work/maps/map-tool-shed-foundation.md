@@ -3,7 +3,7 @@
 Status: active
 Type: project-map
 Updated: 2026-07-05
-Next Action: design Level 2 existing-project onboarding workflow
+Next Action: decide whether Level 2 onboarding needs helper automation
 
 ## Purpose
 
@@ -29,7 +29,7 @@ flowchart TD
   F --> N[wp: existing project onboarding and backfill]
   G --> O[ticket: add skill after foundation stabilizes]
 
-  N --> P[Ground: design Level 2 onboarding workflow]
+  N --> P[Ground: decide helper automation]
 ```
 
 ## Zoom Levels
@@ -52,7 +52,7 @@ flowchart TD
 
 Ground:
 
-- Current next action: design the Level 2 existing-project onboarding workflow.
+- Current next action: decide whether Level 2 onboarding needs helper automation or should stay runbook-driven for now.
 - Owner/context: Codex and human working in `/home/jon/docker/tool_shed`.
 - Verification: script syntax checks pass and generated map artifacts land under `work/maps/`.
 
@@ -64,7 +64,7 @@ Ground:
 | Artifact composition | active | `conventions.md` | stable artifact headers | Validate parent links in templates |
 | Visual coordination | active | `templates/project-map.md` | Mermaid/plain Markdown viability | Use threshold trigger rule |
 | Workspace installation | active | `scripts/install_into_workspace.py` | directory convention stability | Keep generated `work/README.md` aligned |
-| Existing project onboarding | active | `work/wp/active/wp-existing-project-onboarding-and-backfill.md` | map trigger rule | Design Level 2 onboarding workflow |
+| Existing project onboarding | active | `work/wp/active/wp-existing-project-onboarding-and-backfill.md` | map trigger rule | Decide helper automation |
 | Future Codex skill | deferred | `work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md` | foundation stability | Design only after conventions settle |
 
 ## Dependency Notes
@@ -86,7 +86,9 @@ Do next:
 - [x] Confirm installer creates `work/maps/`.
 - [x] Draft `work/decisions/decision-project-map-creation-trigger.md`.
 - [x] Define backfill levels in `work/wp/active/wp-existing-project-onboarding-and-backfill.md`.
-- [ ] Design the Level 2 existing-project onboarding workflow.
+- [x] Design the Level 2 existing-project onboarding workflow.
+- [x] Test Level 2 onboarding on an existing project clone.
+- [ ] Decide whether Level 2 onboarding needs helper automation.
 
 Avoid for now:
 

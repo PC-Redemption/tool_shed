@@ -92,6 +92,8 @@ Do not create a project map for a single linear task, a small isolated ticket, o
 
 When loading `tool_shed` into an existing project, default to Level 2 backfill: create a project map, then create an inventory of existing docs/code/work surfaces before deciding whether to backfill detailed work artifacts.
 
+Use `existing-projects.md` for the Level 2 onboarding runbook. Use `existing-project-inventory` when creating the inventory artifact.
+
 ## Composition Rule
 
 Use the smallest artifact that fits the immediate work, then connect it to nearby artifacts with plain Markdown links.

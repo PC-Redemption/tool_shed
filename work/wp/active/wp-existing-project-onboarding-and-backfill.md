@@ -3,7 +3,7 @@
 Status: active
 Type: workpackage
 Updated: 2026-07-05
-Next Action: design Level 2 discovery, map, and inventory workflow
+Next Action: decide whether Level 2 onboarding needs helper automation
 
 Project Map: work/maps/map-tool-shed-foundation.md
 
@@ -44,11 +44,13 @@ Completed:
 - Project maps exist as a first-class artifact type.
 - Artifact composition links exist in templates.
 - A decision matrix exists for when to create a project map.
+- Level 2 is the default existing-project backfill level.
+- Existing-project inventory template exists.
+- Level 2 onboarding runbook exists.
+- Level 2 onboarding was tested against a temporary clone of `/home/jon/docker/getshows`.
 
 Incomplete:
 
-- Define the existing-project discovery checklist.
-- Define safe backfill levels.
 - Add helper script or runbook support if the manual workflow becomes repetitive.
 - Decide which discovered facts become `work/` artifacts versus settled `docs/` updates.
 
@@ -135,9 +137,9 @@ Completion criteria:
 
 Completion criteria:
 
-- [ ] A checklist or runbook exists for loading `tool_shed` onto an existing project.
-- [ ] The workflow starts with discovery before artifact creation.
-- [ ] The workflow includes verification and stale-artifact avoidance.
+- [x] A checklist or runbook exists for loading `tool_shed` onto an existing project.
+- [x] The workflow starts with discovery before artifact creation.
+- [x] The workflow includes verification and stale-artifact avoidance.
 
 ### Milestone 3: Foundation Integration
 
@@ -145,7 +147,20 @@ Completion criteria:
 
 - [x] `selection.md` includes map trigger guidance.
 - [x] `conventions.md` explains safe backfill boundaries.
-- [ ] Examples demonstrate a backfilled project map and supporting artifacts.
+- [x] Examples demonstrate a backfilled project map and supporting artifacts.
+
+## Test Notes
+
+2026-07-05: Tested Level 2 onboarding against a temporary clone of `/home/jon/docker/getshows`.
+
+Result:
+
+- `install_into_workspace.py` created the standard `work/` tree.
+- `new_artifact.py project-map "getshows"` created `work/maps/map-getshows.md`.
+- `new_artifact.py existing-project-inventory "getshows surfaces"` created `work/inventories/inventory-getshows-surfaces.md`.
+- Discovery identified a Docker/Traefik/Nginx configuration repo with README, Compose, Traefik, portal, env, host-shim, and NPM/AdGuard planning surfaces.
+- The map and inventory were enough to identify the next ground action without creating premature workpackages or tickets.
+- `docker compose config` passed in the clone, with expected warnings for missing environment variables because no `.env` was copied.
 
 ## Open Questions
 
