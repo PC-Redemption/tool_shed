@@ -46,7 +46,13 @@ python3 tool_shed/scripts/new_artifact.py project-map "Project name" --workspace
 python3 tool_shed/scripts/new_artifact.py existing-project-inventory "Project name surfaces" --workspace .
 ```
 
-5. Fill the project map with:
+5. Refresh the work index:
+
+```bash
+python3 tool_shed/scripts/update_work_index.py --workspace .
+```
+
+6. Fill the project map with:
 
 - the 30,000 ft outcome
 - major workstreams or code areas
@@ -54,7 +60,7 @@ python3 tool_shed/scripts/new_artifact.py existing-project-inventory "Project na
 - active unknowns
 - the current ground-level next action
 
-6. Fill the inventory with observed surfaces:
+7. Fill the inventory with observed surfaces:
 
 - docs and README files
 - code entry points and major modules
@@ -63,7 +69,7 @@ python3 tool_shed/scripts/new_artifact.py existing-project-inventory "Project na
 - existing work/planning artifacts
 - risks, unknowns, and stale-looking areas
 
-7. Decide whether to backfill more:
+8. Decide whether to backfill more:
 
 - Route stable current facts to `docs/` or README files.
 - Route unresolved work, uncertainty, risks, and coordination needs to `work/`.
@@ -74,7 +80,8 @@ python3 tool_shed/scripts/new_artifact.py existing-project-inventory "Project na
 - Use ADRs only for decisions supported by evidence.
 - Use runbooks for repeatable operations.
 
-8. Promote settled current truth to `docs/` or README files. Keep coordination under `work/`.
+9. Promote settled current truth to `docs/` or README files. Keep coordination under `work/`.
+10. Refresh `work/index.md` after filling, moving, completing, or superseding artifacts.
 
 ## Routing Table
 
@@ -95,6 +102,7 @@ python3 tool_shed/scripts/new_artifact.py existing-project-inventory "Project na
 
 - `work/maps/` contains one project map.
 - `work/inventories/` contains one existing-project inventory.
+- `work/index.md` lists the generated artifacts.
 - The map points to the inventory.
 - The inventory separates observed facts from inferred follow-up.
 - No historical decisions, incidents, or completed work were invented.

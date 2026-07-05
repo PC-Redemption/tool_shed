@@ -68,6 +68,7 @@ Avoid for now:
 
 ## Related Artifacts
 
+- Work index:
 - Workpackages:
 - Tickets:
 - Checklists:

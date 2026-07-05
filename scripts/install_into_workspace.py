@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import subprocess
+import sys
 from pathlib import Path
 
 
@@ -24,6 +26,7 @@ WORK_README = """# Work
 Project-specific work artifacts live here.
 
 Use `tool_shed/selection.md` before choosing an artifact type.
+Use `work/index.md` as the first orientation surface after README/docs.
 
 ## Active
 
@@ -44,6 +47,8 @@ Use `tool_shed/selection.md` before choosing an artifact type.
 ## Rule
 
 Completed work artifacts are history. Settled truth belongs in `docs/` or `README.md`.
+
+Run `python3 tool_shed/scripts/update_work_index.py --workspace .` after creating, moving, or completing artifacts.
 """
 
 
@@ -67,6 +72,14 @@ def main() -> int:
     readme = root / "work" / "README.md"
     if not readme.exists():
         readme.write_text(WORK_README, encoding="utf-8")
+
+    index_script = Path(__file__).resolve().with_name("update_work_index.py")
+    if index_script.exists():
+        subprocess.run(
+            [sys.executable, str(index_script), "--workspace", str(root)],
+            check=True,
+            stdout=subprocess.DEVNULL,
+        )
 
     print(f"Initialized work tree under {root / 'work'}")
     return 0

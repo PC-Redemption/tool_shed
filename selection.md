@@ -36,12 +36,14 @@ Use an ADR when:
 - a decision may be relitigated
 - there were real alternatives
 - consequences matter later
+- an older decision is being superseded and the current policy needs a durable record
 
 Use a runbook when:
 
 - an operation must be repeated safely
 - commands and order matter
 - recovery guidance matters
+- runtime health, local config, scheduler cadence, or rollback steps need to be kept together
 
 Use an incident note when:
 

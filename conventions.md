@@ -44,6 +44,15 @@ Canonical Truth: docs/...
 
 This saves context and lets Codex decide whether to read deeper.
 
+## Work Index
+
+`work/index.md` is a generated orientation surface.
+
+- Regenerate it with `python3 tool_shed/scripts/update_work_index.py --workspace .` after creating, moving, completing, or superseding artifacts.
+- Read project README/docs first for current truth, then `work/index.md`, then the active artifacts it points to.
+- Do not treat the index as canonical truth. It is a navigation aid built from artifact headers.
+- Completed artifacts remain useful history, but docs and README files hold current operating truth.
+
 ## Naming
 
 Use lowercase kebab-case filenames.
@@ -106,6 +115,38 @@ Work artifacts are not canonical truth by default.
 When an artifact settles a durable fact, copy or summarize that fact into `README.md` or `docs/`.
 
 Completed artifacts are history. Docs are current truth.
+
+## Runtime And Local Config Rule
+
+For operations, Docker, scheduler, or host-local work:
+
+- Track examples and policy docs.
+- Keep host-specific config, generated state, logs, and status payloads ignored unless the project explicitly decides otherwise.
+- Record ignored local config paths in runbooks or closeout checklists when they materially affect behavior.
+- Prove both sides of a migration closeout: the new runtime surface is healthy and the old runtime surface is disabled, inactive, or intentionally retained.
+
+## Scheduler Rule
+
+When a project introduces a scheduler or background worker, capture:
+
+- cadence
+- timeout
+- action modes
+- stale thresholds
+- conflict or overlap rules
+- cooldowns, retry limits, and restart guardrails
+- runtime evidence showing whether jobs block or run concurrently
+
+Use a runbook for repeatable operations, a checklist for bounded validation, and an ADR for durable policy changes.
+
+## ADR Supersession Rule
+
+Do not delete or rewrite old decisions to make history look tidy.
+
+- Add `Supersedes:` to the new ADR when it replaces an older decision.
+- Add `Superseded By:` to the old ADR.
+- Promote the current operating policy to docs or README files.
+- Keep the old ADR as historical context.
 
 ## Lessons Rule
 

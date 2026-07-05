@@ -23,12 +23,15 @@ Read these files from the shed before acting:
 
 Read `README.md` when installing, explaining, or verifying repository boundaries.
 
+When orienting in a workspace that already has work artifacts, read `work/index.md` if it exists after reading README/docs. Treat it as a generated navigation aid, not canonical truth.
+
 ## Core Rules
 
 - Choose the smallest artifact that fits the immediate work.
 - Keep project-specific artifacts under `work/`, not inside `tool_shed/`.
 - Keep settled current truth in `docs/` or README files.
 - Treat completed work artifacts as history, not canonical truth.
+- Use `work/index.md` to find active artifacts quickly when it exists.
 - Link related artifacts with plain Markdown paths.
 - Do not create a server, database, or tracker unless plain files and scripts have failed.
 - Do not duplicate bulky templates or shed docs inside the skill.
@@ -68,6 +71,12 @@ Create an artifact:
 python3 <shed>/scripts/new_artifact.py <kind> "Title" --workspace <workspace>
 ```
 
+Refresh the work index:
+
+```bash
+python3 <shed>/scripts/update_work_index.py --workspace <workspace>
+```
+
 Run Level 2 existing-project onboarding:
 
 ```bash
@@ -84,7 +93,8 @@ Default to Level 2 onboarding:
 2. Create an existing-project inventory.
 3. Discover by reading front-door files, docs, code surfaces, tests, build/runtime files, existing planning files, and CI/workflow files.
 4. Fill the map and inventory from observed evidence.
-5. Create deeper work artifacts only after review justifies them.
+5. Refresh `work/index.md`.
+6. Create deeper work artifacts only after review justifies them.
 
 Do not invent history. Mark inferred or uncertain items clearly.
 
@@ -98,6 +108,7 @@ Routing rule:
 After creating or moving artifacts:
 
 - Confirm files landed under `work/`.
+- Refresh `work/index.md` when the script exists.
 - Check parent/map links when relevant.
 - Scan for stale paths after moving completed workpackages.
 - Run relevant script syntax checks, such as `python3 -m py_compile`, when scripts changed.

@@ -56,6 +56,7 @@ project/
   tool_shed/
   work/
     README.md
+    index.md
     maps/
     wp/
       active/
@@ -91,6 +92,14 @@ python3 tool_shed/scripts/new_artifact.py wp "Plugin migration" --workspace .
 python3 tool_shed/scripts/new_artifact.py adr "Hosted installer uses plugin bootstrapper" --workspace .
 ```
 
+Refresh the work index:
+
+```bash
+python3 tool_shed/scripts/update_work_index.py --workspace .
+```
+
+Read `work/index.md` after README/docs to find active artifacts quickly. The index is generated from artifact headers; current truth still belongs in docs or README files.
+
 Before choosing an artifact, read:
 
 - [selection.md](./selection.md)
@@ -112,6 +121,7 @@ Recommended flow:
 3. Use the map and inventory before deciding whether to backfill workpackages, tickets, ADRs, runbooks, or checklists.
 4. Backfill only useful current-state artifacts.
 5. Keep observed current truth in `docs/` or README files; keep work coordination in `work/`.
+6. Regenerate `work/index.md` after artifacts are created, moved, completed, or superseded.
 
 Level 2 artifact commands:
 

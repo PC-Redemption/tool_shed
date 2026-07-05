@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
+import sys
 from datetime import date
 from pathlib import Path
 
@@ -40,6 +42,16 @@ def render_template(template: str, *, title: str) -> str:
     )
 
 
+def refresh_work_index(workspace: Path, shed: Path) -> None:
+    index_script = shed / "scripts" / "update_work_index.py"
+    if index_script.exists():
+        subprocess.run(
+            [sys.executable, str(index_script), "--workspace", str(workspace)],
+            check=True,
+            stdout=subprocess.DEVNULL,
+        )
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Create a project work artifact from tool_shed templates.")
     parser.add_argument("kind", choices=sorted(ARTIFACTS))
@@ -64,6 +76,7 @@ def main() -> int:
         raise SystemExit(f"refusing to overwrite existing artifact: {destination}")
 
     destination.write_text(render_template(template, title=args.title), encoding="utf-8")
+    refresh_work_index(workspace, shed)
     print(destination)
     return 0
 

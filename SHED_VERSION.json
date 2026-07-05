@@ -1,6 +1,6 @@
 {
   "shed_version": "0.1.0",
-  "artifact_model_version": "2026-07-05.10",
+  "artifact_model_version": "2026-07-05.11",
   "updated_at": "2026-07-05",
-  "notes": "Field-tests the tool-shed skill on real project clones and defers plugin packaging until distribution friction appears."
+  "notes": "Adds generated work indexes plus proving-ground patterns for closeout, ignored local config, scheduler jobs, and ADR supersession."
 }

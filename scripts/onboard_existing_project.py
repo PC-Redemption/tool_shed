@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
+import sys
 from datetime import date
 from pathlib import Path
 
@@ -30,6 +32,16 @@ def write_artifact(path: Path, content: str, *, force: bool) -> None:
     path.write_text(content, encoding="utf-8")
 
 
+def refresh_work_index(workspace: Path, shed: Path) -> None:
+    index_script = shed / "scripts" / "update_work_index.py"
+    if index_script.exists():
+        subprocess.run(
+            [sys.executable, str(index_script), "--workspace", str(workspace)],
+            check=True,
+            stdout=subprocess.DEVNULL,
+        )
+
+
 def ensure_work_tree(workspace: Path) -> None:
     work_dirs = [
         "work/maps",
@@ -55,6 +67,7 @@ def ensure_work_tree(workspace: Path) -> None:
 Project-specific work artifacts live here.
 
 Use `tool_shed/selection.md` before choosing an artifact type.
+Use `work/index.md` as the first orientation surface after README/docs.
 
 ## Active
 
@@ -75,6 +88,8 @@ Use `tool_shed/selection.md` before choosing an artifact type.
 ## Rule
 
 Completed work artifacts are history. Settled truth belongs in `docs/` or `README.md`.
+
+Run `python3 tool_shed/scripts/update_work_index.py --workspace .` after creating, moving, or completing artifacts.
 """,
             encoding="utf-8",
         )
@@ -113,6 +128,7 @@ def main() -> int:
 
     write_artifact(map_path, map_content, force=args.force)
     write_artifact(inventory_path, inventory_content, force=args.force)
+    refresh_work_index(workspace, shed)
 
     print(f"Initialized work tree under {workspace / 'work'}")
     print(map_path)

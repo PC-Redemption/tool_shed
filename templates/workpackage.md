@@ -37,6 +37,14 @@ Explain the operational, product, reliability, or maintenance reason this work d
 
 - ...
 
+## Delivery Stages
+
+Use stages when sequencing, parity gates, or handoff cost matter.
+
+| Stage | Outcome | Entry Evidence | Exit Evidence |
+| --- | --- | --- | --- |
+| 1 | ... | ... | ... |
+
 ## Related Artifacts
 
 - Tickets:
@@ -68,3 +76,10 @@ Completion criteria:
 ## Completion Standard
 
 This workpackage is complete when ...
+
+## Closeout Routing
+
+- Current truth promoted to:
+- Historical context remains in:
+- Runtime/status evidence:
+- Cleanup deferred to:
