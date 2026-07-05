@@ -95,6 +95,12 @@ python3 tool_shed/scripts/new_artifact.py wp "Plugin migration" --workspace .
 python3 tool_shed/scripts/new_artifact.py adr "Hosted installer uses plugin bootstrapper" --workspace .
 ```
 
+Complete an active workpackage:
+
+```bash
+python3 tool_shed/scripts/complete_workpackage.py work/wp/active/wp-plugin-migration.md --workspace .
+```
+
 Refresh the work index:
 
 ```bash
@@ -123,6 +129,24 @@ Before choosing an artifact, read:
 - [conventions.md](./conventions.md)
 - [existing-projects.md](./existing-projects.md) when loading `tool_shed` into an existing project
 
+## Codex Start Prompts
+
+Use short prompts and let Codex operate the scripts:
+
+```text
+use tool_shed and orient me
+```
+
+```text
+use tool_shed and create the smallest artifact for this
+```
+
+```text
+use tool_shed and complete work/wp/active/wp-example.md
+```
+
+Codex should read README/docs first, then `work/index.md`, then active artifacts. It should use `work/index.json` only when automation needs machine-readable navigation.
+
 ## Existing Projects
 
 For an existing project, install the work tree first, then learn before backfilling:
@@ -139,7 +163,7 @@ Recommended flow:
 4. Backfill only useful current-state artifacts.
 5. Keep observed current truth in `docs/` or README files; keep work coordination in `work/`.
 6. Regenerate `work/index.md` and `work/index.json` after artifacts are created, moved, completed, or superseded.
-7. Run the stale-path check after moving workpackages, especially from `work/wp/active/` to `work/wp/completed/`.
+7. Use `complete_workpackage.py` for active workpackage closeout, then fix stale links if the command reports warnings.
 
 Level 2 artifact commands:
 

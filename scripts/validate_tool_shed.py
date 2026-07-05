@@ -62,6 +62,29 @@ def smoke_temp_workspace() -> None:
             [
                 sys.executable,
                 str(ROOT / "scripts" / "new_artifact.py"),
+                "wp",
+                "Finish Me",
+                "--workspace",
+                str(workspace),
+                "--shed",
+                str(ROOT),
+            ]
+        )
+        run(
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "complete_workpackage.py"),
+                "work/wp/active/wp-finish-me.md",
+                "--workspace",
+                str(workspace),
+                "--shed",
+                str(ROOT),
+            ]
+        )
+        run(
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "new_artifact.py"),
                 "checklist",
                 "Runtime Closeout",
                 "--workspace",
@@ -76,6 +99,7 @@ def smoke_temp_workspace() -> None:
         required = {
             "work/maps/map-validate-project.md",
             "work/inventories/inventory-validate-project-surfaces.md",
+            "work/wp/completed/wp-finish-me.md",
             "work/checklists/checklist-runtime-closeout.md",
         }
         missing = sorted(required - paths)

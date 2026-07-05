@@ -60,6 +60,18 @@ Run `python3 tool_shed/scripts/check_stale_paths.py --workspace .` after moving,
 
 The check is especially important after moving a workpackage from `work/wp/active/` to `work/wp/completed/`. It flags stale active-path references and missing `work/*.md` links.
 
+## Workpackage Completion
+
+Prefer the completion helper over a manual move:
+
+```bash
+python3 tool_shed/scripts/complete_workpackage.py work/wp/active/wp-example.md --workspace .
+```
+
+The helper moves the file to `work/wp/completed/`, marks `Status: complete`, updates `Updated:`, sets `Next Action: none` by default, regenerates `work/index.md` and `work/index.json`, and reports stale-link findings.
+
+Use `--strict-stale-check` when automation should fail if old `work/wp/active/` links remain.
+
 ## Naming
 
 Use lowercase kebab-case filenames.

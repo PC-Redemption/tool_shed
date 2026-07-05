@@ -23,6 +23,82 @@ def run_script(*args: str, cwd: Path | None = None, check: bool = True) -> subpr
 
 
 class ScriptTests(unittest.TestCase):
+    def test_complete_workpackage_moves_and_refreshes_indexes(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            source = workspace / "work" / "wp" / "active" / "wp-demo.md"
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                """# Workpackage: Demo
+
+Status: active
+Type: workpackage
+Updated: 2026-07-01
+Next Action: finish the thing
+Project Map: work/maps/map-demo.md
+""",
+                encoding="utf-8",
+            )
+            (workspace / "work" / "maps").mkdir(parents=True)
+            (workspace / "work" / "maps" / "map-demo.md").write_text(
+                "Package: [demo](work/wp/active/wp-demo.md)\n",
+                encoding="utf-8",
+            )
+
+            result = run_script(
+                "scripts/complete_workpackage.py",
+                "work/wp/active/wp-demo.md",
+                "--workspace",
+                str(workspace),
+                "--next-action",
+                "none",
+            )
+
+            destination = workspace / "work" / "wp" / "completed" / "wp-demo.md"
+            self.assertFalse(source.exists())
+            self.assertTrue(destination.exists())
+            text = destination.read_text(encoding="utf-8")
+            self.assertIn("Status: complete", text)
+            self.assertIn("Next Action: none", text)
+            self.assertIn("work/wp/completed/wp-demo.md", result.stdout)
+            self.assertIn("Stale-path findings are warnings.", result.stdout)
+            payload = json.loads((workspace / "work" / "index.json").read_text(encoding="utf-8"))
+            self.assertEqual(payload["artifacts"][0]["path"], "work/maps/map-demo.md")
+            self.assertEqual(payload["artifacts"][1]["path"], "work/wp/completed/wp-demo.md")
+
+    def test_complete_workpackage_strict_stale_check_fails_on_stale_links(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            source = workspace / "work" / "wp" / "active" / "wp-demo.md"
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                """# Workpackage: Demo
+
+Status: active
+Type: workpackage
+Updated: 2026-07-01
+Next Action: finish the thing
+""",
+                encoding="utf-8",
+            )
+            (workspace / "work" / "maps").mkdir(parents=True)
+            (workspace / "work" / "maps" / "map-demo.md").write_text(
+                "Package: [demo](work/wp/active/wp-demo.md)\n",
+                encoding="utf-8",
+            )
+
+            result = run_script(
+                "scripts/complete_workpackage.py",
+                "work/wp/active/wp-demo.md",
+                "--workspace",
+                str(workspace),
+                "--strict-stale-check",
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("active workpackage path is stale", result.stdout)
+
     def test_update_work_index_writes_markdown_and_json(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)

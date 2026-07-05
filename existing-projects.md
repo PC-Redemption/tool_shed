@@ -82,7 +82,8 @@ python3 tool_shed/scripts/update_work_index.py --workspace .
 
 9. Promote settled current truth to `docs/` or README files. Keep coordination under `work/`.
 10. Refresh `work/index.md` and `work/index.json` after filling, moving, completing, or superseding artifacts.
-11. Run `python3 tool_shed/scripts/check_stale_paths.py --workspace .` after moving or completing artifacts.
+11. Complete active workpackages with `python3 tool_shed/scripts/complete_workpackage.py work/wp/active/wp-example.md --workspace .`.
+12. Fix stale-link warnings from the completion helper, or run `python3 tool_shed/scripts/check_stale_paths.py --workspace .` after manual moves.
 
 ## Routing Table
 

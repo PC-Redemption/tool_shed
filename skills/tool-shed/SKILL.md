@@ -72,6 +72,12 @@ Create an artifact:
 python3 <shed>/scripts/new_artifact.py <kind> "Title" --workspace <workspace>
 ```
 
+Complete an active workpackage:
+
+```bash
+python3 <shed>/scripts/complete_workpackage.py work/wp/active/wp-example.md --workspace <workspace>
+```
+
 Refresh the work index:
 
 ```bash
@@ -116,6 +122,7 @@ After creating or moving artifacts:
 
 - Confirm files landed under `work/`.
 - Refresh `work/index.md` and `work/index.json` when the script exists.
+- Prefer `complete_workpackage.py` when moving active workpackages to completed.
 - Check parent/map links when relevant.
 - Scan for stale paths after moving completed workpackages.
 - Run relevant script syntax checks, such as `python3 -m py_compile`, when scripts changed.

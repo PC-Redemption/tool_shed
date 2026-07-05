@@ -1,6 +1,6 @@
 {
   "shed_version": "0.1.0",
-  "artifact_model_version": "2026-07-05.13",
+  "artifact_model_version": "2026-07-05.14",
   "updated_at": "2026-07-05",
-  "notes": "Adds script tests and a one-command validation runner for tool_shed."
+  "notes": "Adds a workpackage completion helper with index refresh and stale-link reporting."
 }
