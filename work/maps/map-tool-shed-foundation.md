@@ -45,8 +45,8 @@ flowchart TD
 
 10,000 ft:
 
-- Major workstreams: artifact selection, artifact composition, visual coordination, workspace installation, existing project onboarding, future Codex skill.
-- Key dependencies: stabilize local Markdown/scripts before packaging behavior into a Codex skill.
+- Major workstreams: artifact selection, artifact composition, visual coordination, workspace installation, existing project onboarding, Codex skill, validation automation.
+- Key dependencies: keep the Codex skill thin over local Markdown/scripts; defer plugin packaging until distribution friction appears.
 
 1,000 ft:
 
@@ -100,7 +100,7 @@ Do next:
 - [x] Decide whether Level 2 onboarding needs helper automation.
 - [x] Test `scripts/onboard_existing_project.py` on an existing project clone.
 - [x] Decide which discovered facts become `work/` artifacts versus settled `docs` or README updates.
-- [x] Review future Codex skill readiness.
+- [x] Review Codex skill readiness.
 - [x] Choose Codex skill creation target.
 - [x] Create repo-local skill package at `skills/tool-shed`.
 - [x] Create installed local skill at `/home/jon/.codex/skills/tool-shed`.

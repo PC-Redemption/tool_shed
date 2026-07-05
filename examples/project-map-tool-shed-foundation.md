@@ -32,8 +32,8 @@ flowchart TD
 
 10,000 ft:
 
-- Major workstreams: selection, composition, visual coordination, installation, skill adoption.
-- Key dependencies: stabilize local conventions before creating a Codex skill.
+- Major workstreams: selection, composition, visual coordination, installation, skill adoption, validation automation.
+- Key dependencies: keep generated indexes, validation, and skill guidance aligned with local conventions.
 
 1,000 ft:
 
@@ -52,7 +52,8 @@ Ground:
 | --- | --- | --- | --- | --- |
 | Selection | active | `selection.md` | none | Keep decision rules clear |
 | Composition | active | `conventions.md` | stable headers | Link artifacts without duplication |
-| Skill adoption | deferred | `work/tickets/...` | stable foundation | Design after the foundation settles |
+| Skill adoption | complete | `skills/tool-shed/SKILL.md` | stable foundation | Use on real projects |
+| Validation automation | active | `scripts/validate_tool_shed.py` | script coverage | Keep CI green |
 
 ## Current Navigation
 
