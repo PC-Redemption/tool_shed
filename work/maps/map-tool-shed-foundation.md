@@ -1,9 +1,9 @@
 # Project Map: tool_shed foundation
 
-Status: active
+Status: complete
 Type: project-map
 Updated: 2026-07-05
-Next Action: continue using tool_shed on real projects; revisit plugin packaging only if distribution friction appears
+Next Action: none
 
 ## Purpose
 
@@ -58,7 +58,7 @@ flowchart TD
 
 Ground:
 
-- Current next action: keep using `tool_shed` on real projects; revisit plugin packaging only if distribution friction appears.
+- Current next action: none for the foundation batch; create a new artifact for future enhancements.
 - Owner/context: Codex and human working in `/home/jon/docker/tool_shed`.
 - Verification: `python3 scripts/validate_tool_shed.py` passes locally and in GitHub Actions.
 
@@ -66,10 +66,10 @@ Ground:
 
 | Workstream | Status | Lead Artifact | Depends On | Next Action |
 | --- | --- | --- | --- | --- |
-| Artifact selection | active | `selection.md` | none | Keep examples aligned with real use |
-| Artifact composition | active | `conventions.md` | stable artifact headers | Keep completion and supersession guidance aligned |
+| Artifact selection | complete | `selection.md` | none | None |
+| Artifact composition | complete | `conventions.md` | stable artifact headers | None |
 | Visual coordination | complete | `templates/project-map.md` | Mermaid/plain Markdown viability | None |
-| Workspace installation | active | `scripts/install_into_workspace.py` | directory convention stability | Keep generated `work/README.md` aligned |
+| Workspace installation | complete | `scripts/install_into_workspace.py` | directory convention stability | None |
 | Existing project onboarding | complete | `work/wp/completed/wp-existing-project-onboarding-and-backfill.md` | map trigger rule | None |
 | Codex skill | complete | `work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md` | foundation stability | Use on real projects |
 | Validation automation | complete | `scripts/validate_tool_shed.py` | script test coverage | Monitor CI |
@@ -110,11 +110,20 @@ Do next:
 - [x] Add stale work path checks.
 - [x] Add validation runner and GitHub Actions.
 - [x] Add active workpackage completion helper.
+- [x] Centralize generated work tree scaffolding.
+- [x] Make artifact creation bootstrap the shared work tree.
+- [x] Refresh project map examples to match shipped guidance.
 
 Avoid for now:
 
 - Do not build a server, database, renderer, or heavyweight tracker before plain Markdown and scripts fail.
 - Do not package a plugin until distribution friction appears.
+
+## Closeout
+
+The foundation batch is complete. Current operating truth lives in `README.md`, `selection.md`, `conventions.md`, `existing-projects.md`, `scripts/`, and `skills/tool-shed/SKILL.md`.
+
+Future changes should start from a new ticket, checklist, decision, spike, or workpackage based on `selection.md`; keep this map as historical orientation.
 
 ## Related Artifacts
 

@@ -13,7 +13,7 @@ Updated: 2026-07-05
 | [work/decisions/decision-level-2-onboarding-helper-automation.md](work/decisions/decision-level-2-onboarding-helper-automation.md) | decision-matrix | decided | 2026-07-05 | none | work/wp/completed/wp-existing-project-onboarding-and-backfill.md |
 | [work/decisions/decision-plugin-packaging-readiness.md](work/decisions/decision-plugin-packaging-readiness.md) | decision-matrix | decided | 2026-07-05 | defer plugin packaging until distribution friction appears | work/maps/map-tool-shed-foundation.md |
 | [work/decisions/decision-project-map-creation-trigger.md](work/decisions/decision-project-map-creation-trigger.md) | decision-matrix | decided | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
-| [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | active | 2026-07-05 | continue using tool_shed on real projects; revisit plugin packaging only if distribution friction appears | - |
+| [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
 | [work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md](work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md) | ticket | complete | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/wp/completed/wp-existing-project-onboarding-and-backfill.md](work/wp/completed/wp-existing-project-onboarding-and-backfill.md) | workpackage | complete | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 
@@ -26,5 +26,5 @@ Updated: 2026-07-05
 ## Summary
 
 - Total artifacts: 8
-- Active artifacts: 1
-- Completed/decided artifacts: 7
+- Active artifacts: 0
+- Completed/decided artifacts: 8

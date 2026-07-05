@@ -67,11 +67,11 @@
     },
     {
       "canonical_truth": null,
-      "next_action": "continue using tool_shed on real projects; revisit plugin packaging only if distribution friction appears",
+      "next_action": "none",
       "parent": null,
       "path": "work/maps/map-tool-shed-foundation.md",
       "project_map": null,
-      "status": "active",
+      "status": "complete",
       "superseded_by": null,
       "supersedes": null,
       "title": "Project Map: tool_shed foundation",
@@ -114,8 +114,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 1,
-    "completed_or_decided_artifacts": 7,
+    "active_artifacts": 0,
+    "completed_or_decided_artifacts": 8,
     "total_artifacts": 8
   }
 }
