@@ -107,6 +107,12 @@ Check for stale work artifact links after moving or completing artifacts:
 python3 tool_shed/scripts/check_stale_paths.py --workspace .
 ```
 
+Run the full repository validation:
+
+```bash
+python3 scripts/validate_tool_shed.py
+```
+
 Before choosing an artifact, read:
 
 - [selection.md](./selection.md)

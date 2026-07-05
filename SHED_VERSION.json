@@ -1,6 +1,6 @@
 {
   "shed_version": "0.1.0",
-  "artifact_model_version": "2026-07-05.12",
+  "artifact_model_version": "2026-07-05.13",
   "updated_at": "2026-07-05",
-  "notes": "Adds machine-readable work indexes, stale-path checks, and examples for ADR supersession and runtime closeout."
+  "notes": "Adds script tests and a one-command validation runner for tool_shed."
 }
