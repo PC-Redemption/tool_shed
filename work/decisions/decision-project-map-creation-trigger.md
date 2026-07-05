@@ -1,9 +1,9 @@
 # Decision Matrix: Project map creation trigger
 
-Status: active
+Status: decided
 Type: decision-matrix
 Updated: 2026-07-05
-Next Action: review recommendation and accept, revise, or reject
+Next Action: none
 Parent: work/maps/map-tool-shed-foundation.md
 
 ## Decision
@@ -32,3 +32,7 @@ Create or recommend a project map when any of these are true:
 - Codex is loading `tool_shed` into an existing project and needs to learn/backfill the work
 
 Do not create a project map for a single linear task, a small isolated ticket, or a checklist-sized cleanup unless the human asks for a visual map.
+
+## Outcome
+
+Accepted. The threshold trigger is now part of `selection.md`, `existing-projects.md`, and the `tool-shed` Codex skill guidance.

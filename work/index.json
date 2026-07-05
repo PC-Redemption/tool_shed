@@ -54,11 +54,11 @@
     },
     {
       "canonical_truth": null,
-      "next_action": "review recommendation and accept, revise, or reject",
+      "next_action": "none",
       "parent": "work/maps/map-tool-shed-foundation.md",
       "path": "work/decisions/decision-project-map-creation-trigger.md",
       "project_map": null,
-      "status": "active",
+      "status": "decided",
       "superseded_by": null,
       "supersedes": null,
       "title": "Decision Matrix: Project map creation trigger",
@@ -114,8 +114,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 2,
-    "completed_or_decided_artifacts": 6,
+    "active_artifacts": 1,
+    "completed_or_decided_artifacts": 7,
     "total_artifacts": 8
   }
 }

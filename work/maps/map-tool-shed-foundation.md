@@ -18,7 +18,8 @@ flowchart TD
   A --> D[Visual coordination]
   A --> E[Workspace installation]
   A --> F[Existing project onboarding]
-  A --> G[Future Codex skill]
+  A --> G[Codex skill]
+  A --> Q[Validation automation]
 
   B --> H[selection.md]
   C --> I[templates with parent links]
@@ -28,6 +29,9 @@ flowchart TD
   E --> M[scripts/new_artifact.py]
   F --> N[wp: existing project onboarding and backfill]
   G --> O[ticket: add skill after foundation stabilizes]
+  Q --> R[scripts/validate_tool_shed.py]
+  Q --> S[GitHub Actions]
+  Q --> T[scripts/complete_workpackage.py]
 
   G --> P[Ground: use on real projects]
 ```
@@ -50,37 +54,40 @@ flowchart TD
 - Completed workpackages: `work/wp/completed/wp-existing-project-onboarding-and-backfill.md`.
 - Active tickets: none.
 - Completed tickets: `work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md`.
-- Open decisions: whether project maps need generated indexes, rendered diagrams, or stay plain Markdown/Mermaid for now.
+- Open decisions: none.
 
 Ground:
 
-- Current next action: use `tool_shed` on real projects; revisit plugin packaging only if distribution friction appears.
+- Current next action: keep using `tool_shed` on real projects; revisit plugin packaging only if distribution friction appears.
 - Owner/context: Codex and human working in `/home/jon/docker/tool_shed`.
-- Verification: script syntax checks pass and generated map artifacts land under `work/maps/`.
+- Verification: `python3 scripts/validate_tool_shed.py` passes locally and in GitHub Actions.
 
 ## Workstreams
 
 | Workstream | Status | Lead Artifact | Depends On | Next Action |
 | --- | --- | --- | --- | --- |
 | Artifact selection | active | `selection.md` | none | Keep examples aligned with real use |
-| Artifact composition | active | `conventions.md` | stable artifact headers | Validate parent links in templates |
-| Visual coordination | active | `templates/project-map.md` | Mermaid/plain Markdown viability | Use threshold trigger rule |
+| Artifact composition | active | `conventions.md` | stable artifact headers | Keep completion and supersession guidance aligned |
+| Visual coordination | complete | `templates/project-map.md` | Mermaid/plain Markdown viability | None |
 | Workspace installation | active | `scripts/install_into_workspace.py` | directory convention stability | Keep generated `work/README.md` aligned |
 | Existing project onboarding | complete | `work/wp/completed/wp-existing-project-onboarding-and-backfill.md` | map trigger rule | None |
-| Future Codex skill | complete | `work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md` | foundation stability | Use on real projects |
+| Codex skill | complete | `work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md` | foundation stability | Use on real projects |
+| Validation automation | complete | `scripts/validate_tool_shed.py` | script test coverage | Monitor CI |
 
 ## Dependency Notes
 
 - Existing project onboarding is complete enough for the foundation workflow.
-- The Codex skill should wait until artifact selection, composition, visual coordination, and onboarding/backfill are stable enough to encode without churn.
+- The Codex skill is installed locally and should remain a thin routing layer over workspace-local shed files.
 - Project maps should stay light enough to remain useful as a navigation surface, not become a second project management system.
 - Templates should support links between artifacts, but detailed work should remain in the artifact that fits it best.
+- Validation now covers script compilation, unit tests, generated indexes, stale path scans, temp workspace smoke tests, template/example sanity, and GitHub Actions.
 
 ## Current Navigation
 
 You are here:
 
 - Existing project onboarding/backfill is complete for the Level 2 foundation workflow.
+- The project map trigger decision is accepted and encoded in selection guidance.
 
 Do next:
 
@@ -99,11 +106,15 @@ Do next:
 - [x] Create installed local skill at `/home/jon/.codex/skills/tool-shed`.
 - [x] Use the skill workflow on real project clones.
 - [x] Evaluate plugin packaging after real use.
+- [x] Add generated `work/index.md` and `work/index.json`.
+- [x] Add stale work path checks.
+- [x] Add validation runner and GitHub Actions.
+- [x] Add active workpackage completion helper.
 
 Avoid for now:
 
 - Do not build a server, database, renderer, or heavyweight tracker before plain Markdown and scripts fail.
-- Do not add the Codex skill until the foundation is stable.
+- Do not package a plugin until distribution friction appears.
 
 ## Related Artifacts
 
