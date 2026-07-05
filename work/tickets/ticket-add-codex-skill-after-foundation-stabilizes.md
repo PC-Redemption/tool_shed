@@ -1,9 +1,9 @@
 # Ticket: Add Codex skill after foundation stabilizes
 
-Status: active
+Status: complete
 Type: ticket
 Updated: 2026-07-05
-Next Action: choose skill creation target, then draft `tool-shed` skill
+Next Action: none
 Parent: work/maps/map-tool-shed-foundation.md
 
 ## Problem
@@ -28,10 +28,10 @@ The skill should reference the local `tool_shed/` files instead of duplicating t
 ## Acceptance Criteria
 
 - [x] Foundation artifact types, templates, scripts, and conventions are stable enough that near-term churn is low.
-- [ ] A concise skill design exists with trigger conditions, core workflow, and boundaries.
-- [ ] The skill is implemented as a thin routing/adoption layer, not a second copy of `tool_shed`.
-- [ ] The skill validates against at least one workspace that already has `tool_shed/`.
-- [ ] The skill behavior preserves the boundary: `tool_shed/` creates, `work/` contains, `docs/` canonize, `code/` implements.
+- [x] A concise skill design exists with trigger conditions, core workflow, and boundaries.
+- [x] The skill is implemented as a thin routing/adoption layer, not a second copy of `tool_shed`.
+- [x] The skill validates against at least one workspace that already has `tool_shed/`.
+- [x] The skill behavior preserves the boundary: `tool_shed` creates, `work/` contains, `docs/` canonize, `code/` implements.
 
 ## Readiness Review
 
@@ -48,9 +48,24 @@ Result:
 Recommended initial skill:
 
 - Name: `tool-shed`
-- Location: choose `$CODEX_HOME/skills`, repo-local packaging, or plugin packaging before creation.
+- Location: repo-local package at `skills/tool-shed`; installed local copy at `${CODEX_HOME:-~/.codex}/skills/tool-shed`.
 - Body: concise workflow and boundary rules.
 - Bundled resources: none at first unless portability without a local `tool_shed/` becomes a requirement.
+- Plugin packaging: deferred until real use shows it is needed.
+
+## Implementation
+
+Created:
+
+- `skills/tool-shed`
+- `/home/jon/.codex/skills/tool-shed`
+
+Validation:
+
+- `quick_validate.py skills/tool-shed`
+- `quick_validate.py /home/jon/.codex/skills/tool-shed`
+- Compared repo and installed skill copies with `diff -qr`.
+- Ran Level 2 onboarding smoke test in a workspace containing `tool_shed/`.
 
 ## Verification
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tool Shed"
+  short_description: "Structured Codex work artifacts"
+  default_prompt: "Use $tool-shed to choose and create the right work artifact for this project."

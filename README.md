@@ -132,6 +132,14 @@ Canonical repository: `PC-Redemption/tool_shed`.
 
 The repository should be public for visibility, but direct changes should be limited to owners/admins of the `PC-Redemption` organization. Public readers may fork or propose changes through normal GitHub flows, but maintainers should avoid granting broad write access.
 
+## Codex Skill
+
+`tool_shed` includes a thin Codex skill package at `skills/tool-shed`.
+
+The skill is also installed locally at `${CODEX_HOME:-~/.codex}/skills/tool-shed` for auto-discovery in this environment. It is an adoption/routing layer only: it teaches Codex to find and use workspace-local `tool_shed` files and scripts instead of duplicating templates.
+
+Initial skill packaging is local plus repo-packaged. Plugin packaging is intentionally deferred until real use shows it is needed.
+
 ## Lessons Integration
 
 Recommended durable lesson:

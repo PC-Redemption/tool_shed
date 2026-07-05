@@ -1,6 +1,6 @@
 {
   "shed_version": "0.1.0",
-  "artifact_model_version": "2026-07-05.8",
+  "artifact_model_version": "2026-07-05.9",
   "updated_at": "2026-07-05",
-  "notes": "Records Codex skill readiness: ready to design a thin tool-shed skill after choosing a creation target."
+  "notes": "Adds repo-local and installed local tool-shed Codex skill packaging; plugin packaging deferred."
 }
