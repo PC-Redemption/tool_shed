@@ -1,6 +1,6 @@
 {
   "shed_version": "0.1.0",
-  "artifact_model_version": "2026-07-05.14",
+  "artifact_model_version": "2026-07-05.15",
   "updated_at": "2026-07-05",
-  "notes": "Adds a workpackage completion helper with index refresh and stale-link reporting."
+  "notes": "Centralizes generated work tree scaffolding so install and onboarding stay aligned."
 }

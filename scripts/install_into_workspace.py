@@ -5,52 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-
-WORK_DIRS = [
-    "work/maps",
-    "work/wp/active",
-    "work/wp/completed",
-    "work/tickets",
-    "work/adr",
-    "work/incidents",
-    "work/runbooks",
-    "work/spikes",
-    "work/checklists",
-    "work/inventories",
-    "work/decisions",
-]
-
-
-WORK_README = """# Work
-
-Project-specific work artifacts live here.
-
-Use `tool_shed/selection.md` before choosing an artifact type.
-Use `work/index.md` as the first orientation surface after README/docs. Use `work/index.json` for automation.
-
-## Active
-
-- Project maps: `work/maps/`
-- Workpackages: `work/wp/active/`
-- Tickets: `work/tickets/`
-- Spikes: `work/spikes/`
-- Checklists: `work/checklists/`
-
-## Durable Records
-
-- ADRs: `work/adr/`
-- Incidents: `work/incidents/`
-- Runbooks: `work/runbooks/`
-- Inventories: `work/inventories/`
-- Decisions: `work/decisions/`
-
-## Rule
-
-Completed work artifacts are history. Settled truth belongs in `docs/` or `README.md`.
-
-Run `python3 tool_shed/scripts/update_work_index.py --workspace .` after creating, moving, or completing artifacts.
-Run `python3 tool_shed/scripts/check_stale_paths.py --workspace .` after moving or completing artifacts.
-"""
+from work_tree import ensure_work_tree
 
 
 def parse_args() -> argparse.Namespace:
@@ -67,12 +22,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     root = Path(args.workspace).expanduser().resolve()
-    for relative in WORK_DIRS:
-        (root / relative).mkdir(parents=True, exist_ok=True)
-
-    readme = root / "work" / "README.md"
-    if not readme.exists():
-        readme.write_text(WORK_README, encoding="utf-8")
+    ensure_work_tree(root)
 
     index_script = Path(__file__).resolve().with_name("update_work_index.py")
     if index_script.exists():

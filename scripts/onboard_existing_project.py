@@ -7,6 +7,8 @@ import sys
 from datetime import date
 from pathlib import Path
 
+from work_tree import ensure_work_tree
+
 
 def slugify(value: str) -> str:
     lowered = value.strip().lower()
@@ -39,60 +41,6 @@ def refresh_work_index(workspace: Path, shed: Path) -> None:
             [sys.executable, str(index_script), "--workspace", str(workspace)],
             check=True,
             stdout=subprocess.DEVNULL,
-        )
-
-
-def ensure_work_tree(workspace: Path) -> None:
-    work_dirs = [
-        "work/maps",
-        "work/wp/active",
-        "work/wp/completed",
-        "work/tickets",
-        "work/adr",
-        "work/incidents",
-        "work/runbooks",
-        "work/spikes",
-        "work/checklists",
-        "work/inventories",
-        "work/decisions",
-    ]
-    for relative in work_dirs:
-        (workspace / relative).mkdir(parents=True, exist_ok=True)
-
-    readme = workspace / "work" / "README.md"
-    if not readme.exists():
-        readme.write_text(
-            """# Work
-
-Project-specific work artifacts live here.
-
-Use `tool_shed/selection.md` before choosing an artifact type.
-Use `work/index.md` as the first orientation surface after README/docs. Use `work/index.json` for automation.
-
-## Active
-
-- Project maps: `work/maps/`
-- Workpackages: `work/wp/active/`
-- Tickets: `work/tickets/`
-- Spikes: `work/spikes/`
-- Checklists: `work/checklists/`
-
-## Durable Records
-
-- ADRs: `work/adr/`
-- Incidents: `work/incidents/`
-- Runbooks: `work/runbooks/`
-- Inventories: `work/inventories/`
-- Decisions: `work/decisions/`
-
-## Rule
-
-Completed work artifacts are history. Settled truth belongs in `docs/` or `README.md`.
-
-Run `python3 tool_shed/scripts/update_work_index.py --workspace .` after creating, moving, or completing artifacts.
-Run `python3 tool_shed/scripts/check_stale_paths.py --workspace .` after moving or completing artifacts.
-""",
-            encoding="utf-8",
         )
 
 

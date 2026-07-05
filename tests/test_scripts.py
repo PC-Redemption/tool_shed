@@ -165,6 +165,15 @@ Next Action: keep going
             payload = json.loads((workspace / "work" / "index.json").read_text(encoding="utf-8"))
             self.assertEqual(payload["artifacts"][0]["path"], "work/checklists/checklist-runtime-closeout.md")
 
+    def test_install_work_readme_mentions_completion_helper(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+
+            run_script("scripts/install_into_workspace.py", str(workspace))
+
+            readme = (workspace / "work" / "README.md").read_text(encoding="utf-8")
+            self.assertIn("complete_workpackage.py", readme)
+
     def test_onboard_existing_project_refreshes_indexes(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)
@@ -184,6 +193,8 @@ Next Action: keep going
             paths = {item["path"] for item in payload["artifacts"]}
             self.assertIn("work/maps/map-index-test.md", paths)
             self.assertIn("work/inventories/inventory-index-test-surfaces.md", paths)
+            readme = (workspace / "work" / "README.md").read_text(encoding="utf-8")
+            self.assertIn("complete_workpackage.py", readme)
 
 
 if __name__ == "__main__":
