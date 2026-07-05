@@ -46,12 +46,19 @@ This saves context and lets Codex decide whether to read deeper.
 
 ## Work Index
 
-`work/index.md` is a generated orientation surface.
+`work/index.md` and `work/index.json` are generated orientation surfaces.
 
-- Regenerate it with `python3 tool_shed/scripts/update_work_index.py --workspace .` after creating, moving, completing, or superseding artifacts.
+- Regenerate them with `python3 tool_shed/scripts/update_work_index.py --workspace .` after creating, moving, completing, or superseding artifacts.
 - Read project README/docs first for current truth, then `work/index.md`, then the active artifacts it points to.
-- Do not treat the index as canonical truth. It is a navigation aid built from artifact headers.
+- Use `work/index.json` for automation that needs the same artifact list.
+- Do not treat the indexes as canonical truth. They are navigation aids built from artifact headers.
 - Completed artifacts remain useful history, but docs and README files hold current operating truth.
+
+## Stale Path Check
+
+Run `python3 tool_shed/scripts/check_stale_paths.py --workspace .` after moving, completing, or renaming artifacts.
+
+The check is especially important after moving a workpackage from `work/wp/active/` to `work/wp/completed/`. It flags stale active-path references and missing `work/*.md` links.
 
 ## Naming
 

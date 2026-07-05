@@ -57,6 +57,7 @@ project/
   work/
     README.md
     index.md
+    index.json
     maps/
     wp/
       active/
@@ -98,7 +99,13 @@ Refresh the work index:
 python3 tool_shed/scripts/update_work_index.py --workspace .
 ```
 
-Read `work/index.md` after README/docs to find active artifacts quickly. The index is generated from artifact headers; current truth still belongs in docs or README files.
+Read `work/index.md` after README/docs to find active artifacts quickly. Use `work/index.json` when automation needs the same navigation data. Both files are generated from artifact headers; current truth still belongs in docs or README files.
+
+Check for stale work artifact links after moving or completing artifacts:
+
+```bash
+python3 tool_shed/scripts/check_stale_paths.py --workspace .
+```
 
 Before choosing an artifact, read:
 
@@ -121,7 +128,8 @@ Recommended flow:
 3. Use the map and inventory before deciding whether to backfill workpackages, tickets, ADRs, runbooks, or checklists.
 4. Backfill only useful current-state artifacts.
 5. Keep observed current truth in `docs/` or README files; keep work coordination in `work/`.
-6. Regenerate `work/index.md` after artifacts are created, moved, completed, or superseded.
+6. Regenerate `work/index.md` and `work/index.json` after artifacts are created, moved, completed, or superseded.
+7. Run the stale-path check after moving workpackages, especially from `work/wp/active/` to `work/wp/completed/`.
 
 Level 2 artifact commands:
 

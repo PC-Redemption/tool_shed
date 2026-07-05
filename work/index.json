@@ -1,0 +1,121 @@
+{
+  "artifacts": [
+    {
+      "canonical_truth": null,
+      "next_action": "none",
+      "parent": "work/maps/map-tool-shed-foundation.md",
+      "path": "work/checklists/checklist-tool-shed-skill-field-test.md",
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Checklist: tool-shed skill field test",
+      "type": "checklist",
+      "updated": "2026-07-05"
+    },
+    {
+      "canonical_truth": null,
+      "next_action": "continue using skill on real projects; plugin packaging deferred",
+      "parent": "work/maps/map-tool-shed-foundation.md",
+      "path": "work/decisions/decision-codex-skill-readiness.md",
+      "project_map": null,
+      "status": "decided",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Decision Matrix: Codex skill readiness",
+      "type": "decision-matrix",
+      "updated": "2026-07-05"
+    },
+    {
+      "canonical_truth": null,
+      "next_action": "none",
+      "parent": "work/wp/completed/wp-existing-project-onboarding-and-backfill.md",
+      "path": "work/decisions/decision-level-2-onboarding-helper-automation.md",
+      "project_map": null,
+      "status": "decided",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Decision Matrix: Level 2 onboarding helper automation",
+      "type": "decision-matrix",
+      "updated": "2026-07-05"
+    },
+    {
+      "canonical_truth": null,
+      "next_action": "defer plugin packaging until distribution friction appears",
+      "parent": "work/maps/map-tool-shed-foundation.md",
+      "path": "work/decisions/decision-plugin-packaging-readiness.md",
+      "project_map": null,
+      "status": "decided",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Decision Matrix: Plugin packaging readiness",
+      "type": "decision-matrix",
+      "updated": "2026-07-05"
+    },
+    {
+      "canonical_truth": null,
+      "next_action": "review recommendation and accept, revise, or reject",
+      "parent": "work/maps/map-tool-shed-foundation.md",
+      "path": "work/decisions/decision-project-map-creation-trigger.md",
+      "project_map": null,
+      "status": "active",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Decision Matrix: Project map creation trigger",
+      "type": "decision-matrix",
+      "updated": "2026-07-05"
+    },
+    {
+      "canonical_truth": null,
+      "next_action": "continue using tool_shed on real projects; revisit plugin packaging only if distribution friction appears",
+      "parent": null,
+      "path": "work/maps/map-tool-shed-foundation.md",
+      "project_map": null,
+      "status": "active",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Project Map: tool_shed foundation",
+      "type": "project-map",
+      "updated": "2026-07-05"
+    },
+    {
+      "canonical_truth": null,
+      "next_action": "none",
+      "parent": "work/maps/map-tool-shed-foundation.md",
+      "path": "work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md",
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Ticket: Add Codex skill after foundation stabilizes",
+      "type": "ticket",
+      "updated": "2026-07-05"
+    },
+    {
+      "canonical_truth": null,
+      "next_action": "none",
+      "parent": null,
+      "path": "work/wp/completed/wp-existing-project-onboarding-and-backfill.md",
+      "project_map": "work/maps/map-tool-shed-foundation.md",
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Existing project onboarding and backfill Workpackage",
+      "type": "workpackage",
+      "updated": "2026-07-05"
+    }
+  ],
+  "description": "Generated from tool_shed artifact headers. Use as navigation, not canonical truth.",
+  "generated_at": "2026-07-05",
+  "reading_order": [
+    "Read project README/docs for current truth.",
+    "Read active maps and active work artifacts from this index.",
+    "Read completed artifacts only for history, evidence, or handoff context."
+  ],
+  "schema_version": 1,
+  "summary": {
+    "active_artifacts": 2,
+    "completed_or_decided_artifacts": 6,
+    "total_artifacts": 8
+  }
+}

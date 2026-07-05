@@ -1,6 +1,6 @@
 {
   "shed_version": "0.1.0",
-  "artifact_model_version": "2026-07-05.11",
+  "artifact_model_version": "2026-07-05.12",
   "updated_at": "2026-07-05",
-  "notes": "Adds generated work indexes plus proving-ground patterns for closeout, ignored local config, scheduler jobs, and ADR supersession."
+  "notes": "Adds machine-readable work indexes, stale-path checks, and examples for ADR supersession and runtime closeout."
 }

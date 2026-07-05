@@ -46,7 +46,7 @@ python3 tool_shed/scripts/new_artifact.py project-map "Project name" --workspace
 python3 tool_shed/scripts/new_artifact.py existing-project-inventory "Project name surfaces" --workspace .
 ```
 
-5. Refresh the work index:
+5. Refresh the work indexes:
 
 ```bash
 python3 tool_shed/scripts/update_work_index.py --workspace .
@@ -81,7 +81,8 @@ python3 tool_shed/scripts/update_work_index.py --workspace .
 - Use runbooks for repeatable operations.
 
 9. Promote settled current truth to `docs/` or README files. Keep coordination under `work/`.
-10. Refresh `work/index.md` after filling, moving, completing, or superseding artifacts.
+10. Refresh `work/index.md` and `work/index.json` after filling, moving, completing, or superseding artifacts.
+11. Run `python3 tool_shed/scripts/check_stale_paths.py --workspace .` after moving or completing artifacts.
 
 ## Routing Table
 
@@ -102,10 +103,11 @@ python3 tool_shed/scripts/update_work_index.py --workspace .
 
 - `work/maps/` contains one project map.
 - `work/inventories/` contains one existing-project inventory.
-- `work/index.md` lists the generated artifacts.
+- `work/index.md` and `work/index.json` list the generated artifacts.
 - The map points to the inventory.
 - The inventory separates observed facts from inferred follow-up.
 - No historical decisions, incidents, or completed work were invented.
+- The stale-path check passes after any artifact moves.
 
 ## Recovery
 

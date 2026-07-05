@@ -23,7 +23,7 @@ Read these files from the shed before acting:
 
 Read `README.md` when installing, explaining, or verifying repository boundaries.
 
-When orienting in a workspace that already has work artifacts, read `work/index.md` if it exists after reading README/docs. Treat it as a generated navigation aid, not canonical truth.
+When orienting in a workspace that already has work artifacts, read `work/index.md` if it exists after reading README/docs. Use `work/index.json` for automation if needed. Treat both as generated navigation aids, not canonical truth.
 
 ## Core Rules
 
@@ -32,6 +32,7 @@ When orienting in a workspace that already has work artifacts, read `work/index.
 - Keep settled current truth in `docs/` or README files.
 - Treat completed work artifacts as history, not canonical truth.
 - Use `work/index.md` to find active artifacts quickly when it exists.
+- Use `work/index.json` only as machine-readable navigation data.
 - Link related artifacts with plain Markdown paths.
 - Do not create a server, database, or tracker unless plain files and scripts have failed.
 - Do not duplicate bulky templates or shed docs inside the skill.
@@ -77,6 +78,12 @@ Refresh the work index:
 python3 <shed>/scripts/update_work_index.py --workspace <workspace>
 ```
 
+Check stale work paths:
+
+```bash
+python3 <shed>/scripts/check_stale_paths.py --workspace <workspace>
+```
+
 Run Level 2 existing-project onboarding:
 
 ```bash
@@ -93,7 +100,7 @@ Default to Level 2 onboarding:
 2. Create an existing-project inventory.
 3. Discover by reading front-door files, docs, code surfaces, tests, build/runtime files, existing planning files, and CI/workflow files.
 4. Fill the map and inventory from observed evidence.
-5. Refresh `work/index.md`.
+5. Refresh `work/index.md` and `work/index.json`.
 6. Create deeper work artifacts only after review justifies them.
 
 Do not invent history. Mark inferred or uncertain items clearly.
@@ -108,7 +115,7 @@ Routing rule:
 After creating or moving artifacts:
 
 - Confirm files landed under `work/`.
-- Refresh `work/index.md` when the script exists.
+- Refresh `work/index.md` and `work/index.json` when the script exists.
 - Check parent/map links when relevant.
 - Scan for stale paths after moving completed workpackages.
 - Run relevant script syntax checks, such as `python3 -m py_compile`, when scripts changed.

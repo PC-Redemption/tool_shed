@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import json
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
+from typing import Any
 
 
 SKIP_NAMES = {"README.md", "index.md"}
@@ -25,6 +27,36 @@ class Artifact:
     path: Path
     title: str
     fields: dict[str, str]
+
+    def status(self) -> str:
+        return self.fields.get("Status", "")
+
+    def kind(self) -> str:
+        return self.fields.get("Type", "")
+
+    def parent_or_truth(self) -> str:
+        return (
+            self.fields.get("Canonical Truth")
+            or self.fields.get("Parent")
+            or self.fields.get("Project Map")
+            or self.fields.get("Superseded By")
+            or ""
+        )
+
+    def to_json(self) -> dict[str, Any]:
+        return {
+            "path": self.path.as_posix(),
+            "title": self.title,
+            "type": self.kind() or None,
+            "status": self.status() or None,
+            "updated": self.fields.get("Updated") or None,
+            "next_action": self.fields.get("Next Action") or None,
+            "parent": self.fields.get("Parent") or None,
+            "project_map": self.fields.get("Project Map") or None,
+            "canonical_truth": self.fields.get("Canonical Truth") or None,
+            "supersedes": self.fields.get("Supersedes") or None,
+            "superseded_by": self.fields.get("Superseded By") or None,
+        }
 
 
 def parse_artifact(path: Path, work_dir: Path) -> Artifact:
@@ -70,7 +102,7 @@ def render(artifacts: list[Artifact]) -> str:
     lines = [
         "# Work Index",
         "",
-        "Generated from artifact headers. Do not put durable project truth only here; keep current truth in docs or README files.",
+        "Generated from artifact headers. `work/index.json` contains the same navigation data for automation. Do not put durable project truth only here; keep current truth in docs or README files.",
         "",
         f"Updated: {date.today().isoformat()}",
         "",
@@ -82,14 +114,7 @@ def render(artifacts: list[Artifact]) -> str:
     if artifacts:
         for artifact in artifacts:
             fields = artifact.fields
-            parent = (
-                fields.get("Canonical Truth")
-                or fields.get("Parent")
-                or fields.get("Project Map")
-                or fields.get("Superseded By")
-                or "-"
-            )
-            parent = table_text(parent)
+            parent = table_text(artifact.parent_or_truth() or "-")
             lines.append(
                 "| "
                 + " | ".join(
@@ -107,11 +132,11 @@ def render(artifacts: list[Artifact]) -> str:
     else:
         lines.append("| - | - | - | - | No artifacts found yet | - |")
 
-    active = [item for item in artifacts if item.fields.get("Status", "").lower() == "active"]
+    active = [item for item in artifacts if item.status().lower() == "active"]
     completed = [
         item
         for item in artifacts
-        if item.fields.get("Status", "").lower() in {"complete", "completed", "done", "decided", "accepted"}
+        if item.status().lower() in {"complete", "completed", "done", "decided", "accepted"}
     ]
 
     lines.extend(
@@ -134,8 +159,34 @@ def render(artifacts: list[Artifact]) -> str:
     return "\n".join(lines)
 
 
+def render_json(artifacts: list[Artifact]) -> str:
+    active = [item for item in artifacts if item.status().lower() == "active"]
+    completed = [
+        item
+        for item in artifacts
+        if item.status().lower() in {"complete", "completed", "done", "decided", "accepted"}
+    ]
+    payload = {
+        "schema_version": 1,
+        "generated_at": date.today().isoformat(),
+        "description": "Generated from tool_shed artifact headers. Use as navigation, not canonical truth.",
+        "reading_order": [
+            "Read project README/docs for current truth.",
+            "Read active maps and active work artifacts from this index.",
+            "Read completed artifacts only for history, evidence, or handoff context.",
+        ],
+        "summary": {
+            "total_artifacts": len(artifacts),
+            "active_artifacts": len(active),
+            "completed_or_decided_artifacts": len(completed),
+        },
+        "artifacts": [artifact.to_json() for artifact in artifacts],
+    }
+    return json.dumps(payload, indent=2, sort_keys=True) + "\n"
+
+
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Generate work/index.md from tool_shed artifact headers.")
+    parser = argparse.ArgumentParser(description="Generate work/index.md and work/index.json from tool_shed artifact headers.")
     parser.add_argument("--workspace", default=".", help="Project workspace root. Defaults to current directory.")
     return parser.parse_args()
 
@@ -147,8 +198,11 @@ def main() -> int:
     work_dir.mkdir(parents=True, exist_ok=True)
     artifacts = discover_artifacts(work_dir)
     index_path = work_dir / "index.md"
+    json_path = work_dir / "index.json"
     index_path.write_text(render(artifacts), encoding="utf-8")
+    json_path.write_text(render_json(artifacts), encoding="utf-8")
     print(index_path)
+    print(json_path)
     return 0
 
 
