@@ -1,6 +1,6 @@
 {
   "shed_version": "0.1.0",
-  "artifact_model_version": "2026-07-05.7",
+  "artifact_model_version": "2026-07-05.8",
   "updated_at": "2026-07-05",
-  "notes": "Adds discovery routing rules and completes the Level 2 existing-project onboarding foundation."
+  "notes": "Records Codex skill readiness: ready to design a thin tool-shed skill after choosing a creation target."
 }

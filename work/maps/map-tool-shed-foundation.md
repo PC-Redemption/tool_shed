@@ -3,7 +3,7 @@
 Status: active
 Type: project-map
 Updated: 2026-07-05
-Next Action: review future Codex skill readiness
+Next Action: choose Codex skill creation target
 
 ## Purpose
 
@@ -29,7 +29,7 @@ flowchart TD
   F --> N[wp: existing project onboarding and backfill]
   G --> O[ticket: add skill after foundation stabilizes]
 
-  G --> P[Ground: review skill readiness]
+  G --> P[Ground: choose skill target]
 ```
 
 ## Zoom Levels
@@ -49,11 +49,11 @@ flowchart TD
 - Active workpackages: none.
 - Completed workpackages: `work/wp/completed/wp-existing-project-onboarding-and-backfill.md`.
 - Active tickets: `work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md`.
-- Open decisions: whether project maps need generated indexes, rendered diagrams, or stay plain Markdown/Mermaid for now.
+- Open decisions: `work/decisions/decision-codex-skill-readiness.md`; whether project maps need generated indexes, rendered diagrams, or stay plain Markdown/Mermaid for now.
 
 Ground:
 
-- Current next action: review whether the foundation is stable enough to design the future Codex skill.
+- Current next action: choose where to create the future `tool-shed` Codex skill.
 - Owner/context: Codex and human working in `/home/jon/docker/tool_shed`.
 - Verification: script syntax checks pass and generated map artifacts land under `work/maps/`.
 
@@ -66,7 +66,7 @@ Ground:
 | Visual coordination | active | `templates/project-map.md` | Mermaid/plain Markdown viability | Use threshold trigger rule |
 | Workspace installation | active | `scripts/install_into_workspace.py` | directory convention stability | Keep generated `work/README.md` aligned |
 | Existing project onboarding | complete | `work/wp/completed/wp-existing-project-onboarding-and-backfill.md` | map trigger rule | None |
-| Future Codex skill | deferred | `work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md` | foundation stability | Review readiness |
+| Future Codex skill | active | `work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md` | foundation stability | Choose skill target |
 
 ## Dependency Notes
 
@@ -92,7 +92,8 @@ Do next:
 - [x] Decide whether Level 2 onboarding needs helper automation.
 - [x] Test `scripts/onboard_existing_project.py` on an existing project clone.
 - [x] Decide which discovered facts become `work/` artifacts versus settled `docs` or README updates.
-- [ ] Review future Codex skill readiness.
+- [x] Review future Codex skill readiness.
+- [ ] Choose Codex skill creation target.
 
 Avoid for now:
 
@@ -108,4 +109,4 @@ Avoid for now:
 - ADRs:
 - Runbooks:
 - Inventories:
-- Decision matrices: `work/decisions/decision-project-map-creation-trigger.md`, `work/decisions/decision-level-2-onboarding-helper-automation.md`
+- Decision matrices: `work/decisions/decision-project-map-creation-trigger.md`, `work/decisions/decision-level-2-onboarding-helper-automation.md`, `work/decisions/decision-codex-skill-readiness.md`
