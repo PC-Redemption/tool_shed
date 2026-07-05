@@ -3,7 +3,7 @@
 Status: decided
 Type: decision-matrix
 Updated: 2026-07-05
-Next Action: use skill on real projects and evaluate plugin packaging later
+Next Action: continue using skill on real projects; plugin packaging deferred
 Parent: work/maps/map-tool-shed-foundation.md
 
 ## Decision
@@ -46,5 +46,5 @@ Readiness result:
 
 - Foundation behavior is stable enough to design the skill.
 - Created both selected targets: repo-local package at `skills/tool-shed` and installed local copy at `/home/jon/.codex/skills/tool-shed`.
-- Plugin packaging is deferred until real use shows it is needed.
+- Plugin packaging was evaluated after field tests and remains deferred until distribution friction appears.
 - Validation should include at least one workspace with `tool_shed/` and one existing-project Level 2 onboarding scenario.

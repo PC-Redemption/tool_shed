@@ -1,6 +1,6 @@
 {
   "shed_version": "0.1.0",
-  "artifact_model_version": "2026-07-05.9",
+  "artifact_model_version": "2026-07-05.10",
   "updated_at": "2026-07-05",
-  "notes": "Adds repo-local and installed local tool-shed Codex skill packaging; plugin packaging deferred."
+  "notes": "Field-tests the tool-shed skill on real project clones and defers plugin packaging until distribution friction appears."
 }

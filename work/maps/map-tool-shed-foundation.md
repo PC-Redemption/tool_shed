@@ -3,7 +3,7 @@
 Status: active
 Type: project-map
 Updated: 2026-07-05
-Next Action: use the skill on real projects and evaluate plugin packaging later
+Next Action: continue using tool_shed on real projects; revisit plugin packaging only if distribution friction appears
 
 ## Purpose
 
@@ -29,7 +29,7 @@ flowchart TD
   F --> N[wp: existing project onboarding and backfill]
   G --> O[ticket: add skill after foundation stabilizes]
 
-  G --> P[Ground: use and iterate skill]
+  G --> P[Ground: use on real projects]
 ```
 
 ## Zoom Levels
@@ -50,11 +50,11 @@ flowchart TD
 - Completed workpackages: `work/wp/completed/wp-existing-project-onboarding-and-backfill.md`.
 - Active tickets: none.
 - Completed tickets: `work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md`.
-- Open decisions: `work/decisions/decision-codex-skill-readiness.md`; whether project maps need generated indexes, rendered diagrams, or stay plain Markdown/Mermaid for now.
+- Open decisions: whether project maps need generated indexes, rendered diagrams, or stay plain Markdown/Mermaid for now.
 
 Ground:
 
-- Current next action: use the `tool-shed` skill on real projects and evaluate plugin packaging after real use.
+- Current next action: use `tool_shed` on real projects; revisit plugin packaging only if distribution friction appears.
 - Owner/context: Codex and human working in `/home/jon/docker/tool_shed`.
 - Verification: script syntax checks pass and generated map artifacts land under `work/maps/`.
 
@@ -67,7 +67,7 @@ Ground:
 | Visual coordination | active | `templates/project-map.md` | Mermaid/plain Markdown viability | Use threshold trigger rule |
 | Workspace installation | active | `scripts/install_into_workspace.py` | directory convention stability | Keep generated `work/README.md` aligned |
 | Existing project onboarding | complete | `work/wp/completed/wp-existing-project-onboarding-and-backfill.md` | map trigger rule | None |
-| Future Codex skill | complete | `work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md` | foundation stability | Use and iterate |
+| Future Codex skill | complete | `work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md` | foundation stability | Use on real projects |
 
 ## Dependency Notes
 
@@ -97,7 +97,8 @@ Do next:
 - [x] Choose Codex skill creation target.
 - [x] Create repo-local skill package at `skills/tool-shed`.
 - [x] Create installed local skill at `/home/jon/.codex/skills/tool-shed`.
-- [ ] Evaluate plugin packaging after real use.
+- [x] Use the skill workflow on real project clones.
+- [x] Evaluate plugin packaging after real use.
 
 Avoid for now:
 
@@ -108,9 +109,9 @@ Avoid for now:
 
 - Workpackages: `work/wp/completed/wp-existing-project-onboarding-and-backfill.md`
 - Tickets: `work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md`
-- Checklists:
+- Checklists: `work/checklists/checklist-tool-shed-skill-field-test.md`
 - Spikes:
 - ADRs:
 - Runbooks:
 - Inventories:
-- Decision matrices: `work/decisions/decision-project-map-creation-trigger.md`, `work/decisions/decision-level-2-onboarding-helper-automation.md`, `work/decisions/decision-codex-skill-readiness.md`
+- Decision matrices: `work/decisions/decision-project-map-creation-trigger.md`, `work/decisions/decision-level-2-onboarding-helper-automation.md`, `work/decisions/decision-codex-skill-readiness.md`, `work/decisions/decision-plugin-packaging-readiness.md`
