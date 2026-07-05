@@ -1,6 +1,6 @@
 {
   "shed_version": "0.1.0",
-  "artifact_model_version": "2026-07-05.15",
+  "artifact_model_version": "2026-07-05.16",
   "updated_at": "2026-07-05",
-  "notes": "Centralizes generated work tree scaffolding so install and onboarding stay aligned."
+  "notes": "Makes artifact creation bootstrap the shared work tree scaffold."
 }

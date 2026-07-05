@@ -7,6 +7,8 @@ import sys
 from datetime import date
 from pathlib import Path
 
+from work_tree import ensure_work_tree
+
 
 ARTIFACTS = {
     "checklist": ("templates/checklist.md", "work/checklists", "checklist"),
@@ -68,6 +70,7 @@ def main() -> int:
     shed = Path(args.shed).expanduser().resolve() if args.shed else Path(__file__).resolve().parents[1]
     template_path, destination_dir, prefix = ARTIFACTS[args.kind]
 
+    ensure_work_tree(workspace)
     template = (shed / template_path).read_text(encoding="utf-8")
     destination = workspace / destination_dir / f"{prefix}-{slugify(args.title)}.md"
     destination.parent.mkdir(parents=True, exist_ok=True)

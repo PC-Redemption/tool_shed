@@ -162,6 +162,11 @@ Next Action: keep going
 
             artifact = workspace / "work" / "checklists" / "checklist-runtime-closeout.md"
             self.assertTrue(artifact.exists())
+            self.assertTrue((workspace / "work" / "wp" / "active").is_dir())
+            self.assertIn(
+                "complete_workpackage.py",
+                (workspace / "work" / "README.md").read_text(encoding="utf-8"),
+            )
             payload = json.loads((workspace / "work" / "index.json").read_text(encoding="utf-8"))
             self.assertEqual(payload["artifacts"][0]["path"], "work/checklists/checklist-runtime-closeout.md")
 
