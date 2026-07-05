@@ -3,7 +3,7 @@
 Status: active
 Type: project-map
 Updated: 2026-07-05
-Next Action: decide whether Level 2 onboarding needs helper automation
+Next Action: decide routing for observed facts versus settled docs
 
 ## Purpose
 
@@ -29,7 +29,7 @@ flowchart TD
   F --> N[wp: existing project onboarding and backfill]
   G --> O[ticket: add skill after foundation stabilizes]
 
-  N --> P[Ground: decide helper automation]
+  N --> P[Ground: decide facts vs docs routing]
 ```
 
 ## Zoom Levels
@@ -48,11 +48,11 @@ flowchart TD
 
 - Active workpackages: `work/wp/active/wp-existing-project-onboarding-and-backfill.md`.
 - Active tickets: `work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md`.
-- Open decisions: `work/decisions/decision-project-map-creation-trigger.md`; whether project maps need generated indexes, rendered diagrams, or stay plain Markdown/Mermaid for now.
+- Open decisions: whether project maps need generated indexes, rendered diagrams, or stay plain Markdown/Mermaid for now.
 
 Ground:
 
-- Current next action: decide whether Level 2 onboarding needs helper automation or should stay runbook-driven for now.
+- Current next action: decide which discovered facts become `work/` artifacts versus settled `docs/` or README updates.
 - Owner/context: Codex and human working in `/home/jon/docker/tool_shed`.
 - Verification: script syntax checks pass and generated map artifacts land under `work/maps/`.
 
@@ -64,7 +64,7 @@ Ground:
 | Artifact composition | active | `conventions.md` | stable artifact headers | Validate parent links in templates |
 | Visual coordination | active | `templates/project-map.md` | Mermaid/plain Markdown viability | Use threshold trigger rule |
 | Workspace installation | active | `scripts/install_into_workspace.py` | directory convention stability | Keep generated `work/README.md` aligned |
-| Existing project onboarding | active | `work/wp/active/wp-existing-project-onboarding-and-backfill.md` | map trigger rule | Decide helper automation |
+| Existing project onboarding | active | `work/wp/active/wp-existing-project-onboarding-and-backfill.md` | map trigger rule | Decide facts vs docs routing |
 | Future Codex skill | deferred | `work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md` | foundation stability | Design only after conventions settle |
 
 ## Dependency Notes
@@ -88,7 +88,9 @@ Do next:
 - [x] Define backfill levels in `work/wp/active/wp-existing-project-onboarding-and-backfill.md`.
 - [x] Design the Level 2 existing-project onboarding workflow.
 - [x] Test Level 2 onboarding on an existing project clone.
-- [ ] Decide whether Level 2 onboarding needs helper automation.
+- [x] Decide whether Level 2 onboarding needs helper automation.
+- [x] Test `scripts/onboard_existing_project.py` on an existing project clone.
+- [ ] Decide which discovered facts become `work/` artifacts versus settled `docs` or README updates.
 
 Avoid for now:
 
@@ -104,4 +106,4 @@ Avoid for now:
 - ADRs:
 - Runbooks:
 - Inventories:
-- Decision matrices: `work/decisions/decision-project-map-creation-trigger.md`
+- Decision matrices: `work/decisions/decision-project-map-creation-trigger.md`, `work/decisions/decision-level-2-onboarding-helper-automation.md`

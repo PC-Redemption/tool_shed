@@ -3,7 +3,7 @@
 Status: active
 Type: workpackage
 Updated: 2026-07-05
-Next Action: decide whether Level 2 onboarding needs helper automation
+Next Action: decide routing for observed facts versus settled docs
 
 Project Map: work/maps/map-tool-shed-foundation.md
 
@@ -48,10 +48,11 @@ Completed:
 - Existing-project inventory template exists.
 - Level 2 onboarding runbook exists.
 - Level 2 onboarding was tested against a temporary clone of `/home/jon/docker/getshows`.
+- Minimal Level 2 scaffold helper exists at `scripts/onboard_existing_project.py`.
+- Minimal Level 2 scaffold helper was tested against a temporary clone of `/home/jon/docker/checking_predictor`.
 
 Incomplete:
 
-- Add helper script or runbook support if the manual workflow becomes repetitive.
 - Decide which discovered facts become `work/` artifacts versus settled `docs/` updates.
 
 ## Goal
@@ -113,7 +114,7 @@ Default to Level 2 for existing projects: create a project map, then create an i
 - ADRs:
 - Runbooks:
 - Inventories:
-- Decision matrices: `work/decisions/decision-project-map-creation-trigger.md`
+- Decision matrices: `work/decisions/decision-project-map-creation-trigger.md`, `work/decisions/decision-level-2-onboarding-helper-automation.md`
 
 ## Rough Sequence
 
@@ -161,6 +162,28 @@ Result:
 - Discovery identified a Docker/Traefik/Nginx configuration repo with README, Compose, Traefik, portal, env, host-shim, and NPM/AdGuard planning surfaces.
 - The map and inventory were enough to identify the next ground action without creating premature workpackages or tickets.
 - `docker compose config` passed in the clone, with expected warnings for missing environment variables because no `.env` was copied.
+
+2026-07-05: Chose minimal scaffold automation in `work/decisions/decision-level-2-onboarding-helper-automation.md`.
+
+Expected behavior:
+
+- Create the `work/` tree.
+- Create one project map.
+- Create one existing-project inventory.
+- Link the inventory back to the map.
+- Print discovery commands and reading targets.
+- Do not infer architecture or create deeper backfill artifacts.
+
+2026-07-05: Tested `scripts/onboard_existing_project.py` against a temporary clone of `/home/jon/docker/checking_predictor`.
+
+Result:
+
+- Created the standard `work/` tree.
+- Created `work/maps/map-checking-predictor.md`.
+- Created `work/inventories/inventory-checking-predictor-surfaces.md`.
+- Linked the inventory to the generated project map.
+- Created no workpackages, tickets, ADRs, incidents, or runbooks.
+- Printed the discovery commands and reading targets for the next manual/Codex learning step.
 
 ## Open Questions
 

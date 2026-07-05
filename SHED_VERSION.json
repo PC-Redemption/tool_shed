@@ -1,6 +1,6 @@
 {
   "shed_version": "0.1.0",
-  "artifact_model_version": "2026-07-05.5",
+  "artifact_model_version": "2026-07-05.6",
   "updated_at": "2026-07-05",
-  "notes": "Adds the Level 2 existing-project onboarding runbook and specialized inventory template."
+  "notes": "Adds minimal helper automation for Level 2 existing-project onboarding."
 }

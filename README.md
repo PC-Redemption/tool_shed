@@ -116,6 +116,12 @@ Recommended flow:
 Level 2 artifact commands:
 
 ```bash
+python3 tool_shed/scripts/onboard_existing_project.py "Project name" --workspace .
+```
+
+Manual equivalent:
+
+```bash
 python3 tool_shed/scripts/new_artifact.py project-map "Project name" --workspace .
 python3 tool_shed/scripts/new_artifact.py existing-project-inventory "Project name surfaces" --workspace .
 ```

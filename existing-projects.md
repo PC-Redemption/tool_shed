@@ -36,6 +36,12 @@ find . -maxdepth 3 -type d -not -path './.git/*' | sort
 4. Create the Level 2 artifacts:
 
 ```bash
+python3 tool_shed/scripts/onboard_existing_project.py "Project name" --workspace .
+```
+
+Manual equivalent:
+
+```bash
 python3 tool_shed/scripts/new_artifact.py project-map "Project name" --workspace .
 python3 tool_shed/scripts/new_artifact.py existing-project-inventory "Project name surfaces" --workspace .
 ```
