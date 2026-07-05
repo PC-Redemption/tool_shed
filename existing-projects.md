@@ -65,6 +65,8 @@ python3 tool_shed/scripts/new_artifact.py existing-project-inventory "Project na
 
 7. Decide whether to backfill more:
 
+- Route stable current facts to `docs/` or README files.
+- Route unresolved work, uncertainty, risks, and coordination needs to `work/`.
 - Use a workpackage for multi-step transformations.
 - Use tickets for clear behavior changes.
 - Use checklists for known bounded execution.
@@ -73,6 +75,21 @@ python3 tool_shed/scripts/new_artifact.py existing-project-inventory "Project na
 - Use runbooks for repeatable operations.
 
 8. Promote settled current truth to `docs/` or README files. Keep coordination under `work/`.
+
+## Routing Table
+
+| Discovery | Route |
+| --- | --- |
+| Current setup steps | `README.md` or `docs/setup.md` |
+| Current architecture or system shape | `docs/architecture.md` |
+| Current operational procedure | `docs/` first, or `work/runbooks/` if still being tested |
+| Open question | `work/spikes/` |
+| Specific bug or enhancement | `work/tickets/` |
+| Multi-step change | `work/wp/active/` |
+| Known bounded execution steps | `work/checklists/` |
+| Durable decision with alternatives | `work/adr/` |
+| Classification list | `work/inventories/` |
+| Visual coordination across moving parts | `work/maps/` |
 
 ## Verification
 

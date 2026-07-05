@@ -1,6 +1,6 @@
 {
   "shed_version": "0.1.0",
-  "artifact_model_version": "2026-07-05.6",
+  "artifact_model_version": "2026-07-05.7",
   "updated_at": "2026-07-05",
-  "notes": "Adds minimal helper automation for Level 2 existing-project onboarding."
+  "notes": "Adds discovery routing rules and completes the Level 2 existing-project onboarding foundation."
 }

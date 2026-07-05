@@ -80,6 +80,25 @@ When loading `tool_shed` onto an existing project, learn before backfilling.
 - Promote settled current truth into `docs/` or README files.
 - Keep coordination and future work under `work/`.
 
+## Discovery Routing
+
+Route discovered project facts by whether they are settled truth or unresolved work.
+
+| Discovery | Route |
+| --- | --- |
+| Current setup steps | `README.md` or `docs/setup.md` |
+| Current architecture or system shape | `docs/architecture.md` |
+| Current operational procedure | `docs/` first, or `work/runbooks/` if still being tested |
+| Open question | `work/spikes/` |
+| Specific bug or enhancement | `work/tickets/` |
+| Multi-step change | `work/wp/active/` |
+| Known bounded execution steps | `work/checklists/` |
+| Durable decision with alternatives | `work/adr/` |
+| Classification list | `work/inventories/` |
+| Visual coordination across moving parts | `work/maps/` |
+
+Level 2 onboarding produces a project map and inventory only. After review, promote stable observed facts into `docs/` or README files, and create `work/` artifacts only for unresolved work.
+
 ## Promotion Rule
 
 Work artifacts are not canonical truth by default.

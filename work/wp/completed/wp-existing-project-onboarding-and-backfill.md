@@ -1,9 +1,9 @@
 # Existing project onboarding and backfill Workpackage
 
-Status: active
+Status: complete
 Type: workpackage
 Updated: 2026-07-05
-Next Action: decide routing for observed facts versus settled docs
+Next Action: none
 
 Project Map: work/maps/map-tool-shed-foundation.md
 
@@ -21,9 +21,7 @@ Current support:
 
 Missing support:
 
-- A repeatable way to load `tool_shed` onto an existing project.
-- A discovery workflow for learning the project before creating artifacts.
-- A backfill strategy that creates useful maps/workpackages/tickets/docs references without inventing history or flooding the workspace with noise.
+- None for the Level 2 foundation workflow.
 
 ## Recommendation
 
@@ -50,10 +48,11 @@ Completed:
 - Level 2 onboarding was tested against a temporary clone of `/home/jon/docker/getshows`.
 - Minimal Level 2 scaffold helper exists at `scripts/onboard_existing_project.py`.
 - Minimal Level 2 scaffold helper was tested against a temporary clone of `/home/jon/docker/checking_predictor`.
+- Discovery routing is documented in `conventions.md` and `existing-projects.md`.
 
 Incomplete:
 
-- Decide which discovered facts become `work/` artifacts versus settled `docs/` updates.
+- None for the Level 2 foundation workflow.
 
 ## Goal
 
@@ -185,13 +184,18 @@ Result:
 - Created no workpackages, tickets, ADRs, incidents, or runbooks.
 - Printed the discovery commands and reading targets for the next manual/Codex learning step.
 
+2026-07-05: Added the discovery routing rule.
+
+Rule:
+
+- Stable current facts go to `docs/` or README files.
+- Unresolved work, uncertainty, risks, and coordination needs go to `work/`.
+- Level 2 onboarding stops at a map and inventory until review justifies more artifacts.
+
 ## Open Questions
 
-- Should the default onboarding artifact be a checklist, runbook, or both?
-- Should `install_into_workspace.py` optionally create an initial project map?
-- Should there be a script that scans and drafts an inventory, or should discovery remain Codex-guided at first?
-- What is the smallest useful backfill level for a large project that already has docs and code but no `work/` tree?
+- Whether future project-map rendering/index generation is useful after more real projects use the workflow.
 
 ## Completion Standard
 
-This workpackage is complete when a fresh existing project can install `tool_shed`, run a documented discovery/backfill workflow, and end with a navigable project map plus only the supporting artifacts that match observed project needs.
+Complete. A fresh existing project can install `tool_shed`, run a documented Level 2 discovery/backfill workflow, and end with a navigable project map plus only the supporting inventory needed to review observed project needs.

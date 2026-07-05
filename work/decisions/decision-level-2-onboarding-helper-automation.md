@@ -4,7 +4,7 @@ Status: decided
 Type: decision-matrix
 Updated: 2026-07-05
 Next Action: none
-Parent: work/wp/active/wp-existing-project-onboarding-and-backfill.md
+Parent: work/wp/completed/wp-existing-project-onboarding-and-backfill.md
 
 ## Decision
 
