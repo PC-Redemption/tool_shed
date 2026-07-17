@@ -2,6 +2,10 @@
 
 ## Boundaries
 
+The workspace-local `tool_shed/` is a disconnected snapshot. It must not contain `.git/`, be registered as a submodule, or be tracked by the parent codebase repository. The parent repository should ignore `/tool_shed/`. Workspace use must not push changes back to the canonical Tool Shed repository.
+
+This exclusion applies to the tooling snapshot, not automatically to `work/`; each project may track its project-specific work artifacts according to its own repository policy.
+
 `tool_shed/` contains:
 
 - selection rules

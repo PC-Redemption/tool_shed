@@ -9,6 +9,7 @@ Default to Level 2: create a project map, then create an inventory of existing d
 - Read `selection.md` and `conventions.md`.
 - Work from the project root.
 - Treat the existing project as evidence. Do not invent history.
+- Confirm the local `tool_shed/` is a disconnected snapshot: it has no `.git/`, is not a submodule, and the parent codebase repository ignores `/tool_shed/`.
 
 ## Procedure
 
