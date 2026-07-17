@@ -27,6 +27,9 @@ When orienting in a workspace that already has work artifacts, read `work/index.
 
 ## Core Rules
 
+- Treat workspace-local `tool_shed/` as a one-way, disconnected snapshot of templates, instructions, and scripts.
+- Do not leave Git metadata in `tool_shed/`, configure it as a submodule, track it in the parent codebase repository, or push workspace changes back to the canonical Tool Shed repository.
+- When installing from a temporary clone, verify the clone, remove only `tool_shed/.git/`, and add `/tool_shed/` to the parent repository's root `.gitignore`.
 - Choose the smallest artifact that fits the immediate work.
 - Keep project-specific artifacts under `work/`, not inside `tool_shed/`.
 - Keep settled current truth in `docs/` or README files.

@@ -78,6 +78,26 @@ project/
 
 Project-specific artifacts should go under `work/`, not inside `tool_shed/`.
 
+## Workspace Installation Boundary
+
+Install `tool_shed/` into a project as a local, one-way snapshot of the blank templates, instructions, and helper scripts. The workspace copy is not a checkout for developing the canonical Tool Shed repository.
+
+- Do not leave `tool_shed/.git/` in the project workspace.
+- Do not configure the workspace copy as a Git submodule.
+- Do not run `git pull`, `git push`, or otherwise return workspace changes to `PC-Redemption/tool_shed`.
+- Add `/tool_shed/` to the project repository's root `.gitignore` so Tool Shed stays outside the codebase history.
+- Keep project-specific artifacts in `work/`. A project may track `work/` independently when those coordination artifacts belong with its codebase.
+
+One-time snapshot installation with GitHub CLI:
+
+```bash
+gh repo clone PC-Redemption/tool_shed tool_shed
+rm -rf tool_shed/.git
+printf '\n/tool_shed/\n' >> .gitignore
+```
+
+Run the removal only with the explicit workspace path shown above, after confirming the clone succeeded. Updates are deliberate snapshot replacements, not pulls: obtain a fresh copy elsewhere, review the differences, and replace only the intended tooling files without copying Git metadata.
+
 ## Quick Start
 
 Create the project work tree:
@@ -183,6 +203,8 @@ python3 tool_shed/scripts/new_artifact.py existing-project-inventory "Project na
 Canonical repository: `PC-Redemption/tool_shed`.
 
 The repository should be public for visibility, but direct changes should be limited to owners/admins of the `PC-Redemption` organization. Public readers may fork or propose changes through normal GitHub flows, but maintainers should avoid granting broad write access.
+
+This governance applies to intentional development checkouts of the canonical repository. A `tool_shed/` directory installed inside another project is a disconnected snapshot and must not be used to contribute changes upstream.
 
 ## Codex Skill
 
