@@ -25,6 +25,7 @@ Use `work/index.md` as the first orientation surface after README/docs. Use `wor
 
 Completed work artifacts are history. Settled truth belongs in `docs/` or `README.md`.
 
-Run `python3 tool_shed/scripts/update_work_index.py --workspace .` after creating, moving, or completing artifacts.
-Use `python3 tool_shed/scripts/complete_workpackage.py work/wp/active/wp-example.md --workspace .` to move active workpackages to completed.
-Run `python3 tool_shed/scripts/check_stale_paths.py --workspace .` after moving or completing artifacts.
+Run `python tool_shed/scripts/update_work_index.py --workspace .` after creating, moving, or completing artifacts.
+Use `python tool_shed/scripts/complete_workpackage.py work/wp/active/wp-example.md --workspace .` to move active workpackages to completed.
+Run `python tool_shed/scripts/check_stale_paths.py --workspace .` after moving or completing artifacts.
+Use `python3` on Linux/macOS when that is your configured Python 3 launcher.

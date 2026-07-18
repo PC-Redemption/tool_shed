@@ -16,7 +16,7 @@ Default to Level 2: create a project map, then create an inventory of existing d
 1. Install the work tree:
 
 ```bash
-python3 tool_shed/scripts/install_into_workspace.py .
+python tool_shed/scripts/install_into_workspace.py .
 ```
 
 2. Discover the project shape:
@@ -37,20 +37,20 @@ find . -maxdepth 3 -type d -not -path './.git/*' | sort
 4. Create the Level 2 artifacts:
 
 ```bash
-python3 tool_shed/scripts/onboard_existing_project.py "Project name" --workspace .
+python tool_shed/scripts/onboard_existing_project.py "Project name" --workspace .
 ```
 
 Manual equivalent:
 
 ```bash
-python3 tool_shed/scripts/new_artifact.py project-map "Project name" --workspace .
-python3 tool_shed/scripts/new_artifact.py existing-project-inventory "Project name surfaces" --workspace .
+python tool_shed/scripts/new_artifact.py project-map "Project name" --workspace .
+python tool_shed/scripts/new_artifact.py existing-project-inventory "Project name surfaces" --workspace .
 ```
 
 5. Refresh the work indexes:
 
 ```bash
-python3 tool_shed/scripts/update_work_index.py --workspace .
+python tool_shed/scripts/update_work_index.py --workspace .
 ```
 
 6. Fill the project map with:
@@ -83,8 +83,8 @@ python3 tool_shed/scripts/update_work_index.py --workspace .
 
 9. Promote settled current truth to `docs/` or README files. Keep coordination under `work/`.
 10. Refresh `work/index.md` and `work/index.json` after filling, moving, completing, or superseding artifacts.
-11. Complete active workpackages with `python3 tool_shed/scripts/complete_workpackage.py work/wp/active/wp-example.md --workspace .`.
-12. Fix stale-link warnings from the completion helper, or run `python3 tool_shed/scripts/check_stale_paths.py --workspace .` after manual moves.
+11. Complete active workpackages with `python tool_shed/scripts/complete_workpackage.py work/wp/active/wp-example.md --workspace .`.
+12. Fix stale-link warnings from the completion helper, or run `python tool_shed/scripts/check_stale_paths.py --workspace .` after manual moves.
 
 ## Routing Table
 

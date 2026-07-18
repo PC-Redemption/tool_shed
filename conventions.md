@@ -52,7 +52,7 @@ This saves context and lets Codex decide whether to read deeper.
 
 `work/index.md` and `work/index.json` are generated orientation surfaces.
 
-- Regenerate them with `python3 tool_shed/scripts/update_work_index.py --workspace .` after creating, moving, completing, or superseding artifacts.
+- Regenerate them with `python tool_shed/scripts/update_work_index.py --workspace .` after creating, moving, completing, or superseding artifacts. Use `python3` on Linux/macOS when that is your configured Python 3 launcher.
 - Read project README/docs first for current truth, then `work/index.md`, then the active artifacts it points to.
 - Use `work/index.json` for automation that needs the same artifact list.
 - Do not treat the indexes as canonical truth. They are navigation aids built from artifact headers.
@@ -60,7 +60,7 @@ This saves context and lets Codex decide whether to read deeper.
 
 ## Stale Path Check
 
-Run `python3 tool_shed/scripts/check_stale_paths.py --workspace .` after moving, completing, or renaming artifacts.
+Run `python tool_shed/scripts/check_stale_paths.py --workspace .` after moving, completing, or renaming artifacts.
 
 The check is especially important after moving a workpackage from `work/wp/active/` to `work/wp/completed/`. It flags stale active-path references and missing `work/*.md` links.
 
@@ -69,7 +69,7 @@ The check is especially important after moving a workpackage from `work/wp/activ
 Prefer the completion helper over a manual move:
 
 ```bash
-python3 tool_shed/scripts/complete_workpackage.py work/wp/active/wp-example.md --workspace .
+python tool_shed/scripts/complete_workpackage.py work/wp/active/wp-example.md --workspace .
 ```
 
 The helper moves the file to `work/wp/completed/`, marks `Status: complete`, updates `Updated:`, sets `Next Action: none` by default, regenerates `work/index.md` and `work/index.json`, and reports stale-link findings.
