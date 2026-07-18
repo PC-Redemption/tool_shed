@@ -38,5 +38,5 @@ docker compose ps service-name
 curl -fsS http://127.0.0.1:PORT/health.json
 systemctl is-enabled old-service.timer || true
 systemctl is-active old-service.timer || true
-python3 tool_shed/scripts/check_stale_paths.py --workspace .
+python tool_shed/scripts/check_stale_paths.py --workspace .
 ```

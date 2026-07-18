@@ -29,7 +29,7 @@ When orienting in a workspace that already has work artifacts, read `work/index.
 
 - Treat workspace-local `tool_shed/` as a one-way, disconnected snapshot of templates, instructions, and scripts.
 - Do not leave Git metadata in `tool_shed/`, configure it as a submodule, track it in the parent codebase repository, or push workspace changes back to the canonical Tool Shed repository.
-- When installing from a temporary clone, verify the clone, remove only `tool_shed/.git/`, and add `/tool_shed/` to the parent repository's root `.gitignore`.
+- Prefer the supported installer when installing or updating Tool Shed. It validates the snapshot, excludes Git metadata, normalizes `/tool_shed/` in the parent `.gitignore`, initializes `work/`, and rolls back failed installs.
 - Choose the smallest artifact that fits the immediate work.
 - Keep project-specific artifacts under `work/`, not inside `tool_shed/`.
 - Keep settled current truth in `docs/` or README files.
@@ -66,38 +66,40 @@ Prefer shed scripts when available.
 Install the work tree:
 
 ```bash
-python3 <shed>/scripts/install_into_workspace.py <workspace>
+python <shed>/scripts/install_into_workspace.py <workspace>
 ```
 
 Create an artifact:
 
 ```bash
-python3 <shed>/scripts/new_artifact.py <kind> "Title" --workspace <workspace>
+python <shed>/scripts/new_artifact.py <kind> "Title" --workspace <workspace>
 ```
 
 Complete an active workpackage:
 
 ```bash
-python3 <shed>/scripts/complete_workpackage.py work/wp/active/wp-example.md --workspace <workspace>
+python <shed>/scripts/complete_workpackage.py work/wp/active/wp-example.md --workspace <workspace>
 ```
 
 Refresh the work index:
 
 ```bash
-python3 <shed>/scripts/update_work_index.py --workspace <workspace>
+python <shed>/scripts/update_work_index.py --workspace <workspace>
 ```
 
 Check stale work paths:
 
 ```bash
-python3 <shed>/scripts/check_stale_paths.py --workspace <workspace>
+python <shed>/scripts/check_stale_paths.py --workspace <workspace>
 ```
 
 Run Level 2 existing-project onboarding:
 
 ```bash
-python3 <shed>/scripts/onboard_existing_project.py "Project name" --workspace <workspace>
+python <shed>/scripts/onboard_existing_project.py "Project name" --workspace <workspace>
 ```
+
+Use `python3` on Linux/macOS when that is the configured Python 3 launcher; use `py -3` or `python` on Windows when `python3` is not configured.
 
 If scripts are missing, create files from the shed templates and preserve the naming/location conventions in `conventions.md`.
 
@@ -128,5 +130,5 @@ After creating or moving artifacts:
 - Prefer `complete_workpackage.py` when moving active workpackages to completed.
 - Check parent/map links when relevant.
 - Scan for stale paths after moving completed workpackages.
-- Run relevant script syntax checks, such as `python3 -m py_compile`, when scripts changed.
+- Run relevant script syntax checks, such as `python -m py_compile`, when scripts changed.
 - Keep git changes scoped to the shed/work artifacts involved.

@@ -6,7 +6,11 @@ on:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Check out repository
@@ -18,4 +22,4 @@ jobs:
           python-version: "3.x"
 
       - name: Validate tool_shed
-        run: python3 scripts/validate_tool_shed.py
+        run: python scripts/validate_tool_shed.py

@@ -1,6 +1,6 @@
 {
-  "shed_version": "0.1.0",
+  "shed_version": "0.1.1",
   "artifact_model_version": "2026-07-05.16",
-  "updated_at": "2026-07-05",
-  "notes": "Makes artifact creation bootstrap the shared work tree scaffold."
+  "updated_at": "2026-07-18",
+  "notes": "Adds a cross-platform installer, Windows and POSIX wrappers, installer tests, and launcher-neutral docs."
 }

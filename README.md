@@ -85,46 +85,58 @@ Install `tool_shed/` into a project as a local, one-way snapshot of the blank te
 - Do not leave `tool_shed/.git/` in the project workspace.
 - Do not configure the workspace copy as a Git submodule.
 - Do not run `git pull`, `git push`, or otherwise return workspace changes to `PC-Redemption/tool_shed`.
-- Add `/tool_shed/` to the project repository's root `.gitignore` so Tool Shed stays outside the codebase history.
+- Keep exactly one `/tool_shed/` entry in the project repository's root `.gitignore` so Tool Shed stays outside the codebase history.
 - Keep project-specific artifacts in `work/`. A project may track `work/` independently when those coordination artifacts belong with its codebase.
 
-One-time snapshot installation with GitHub CLI:
+Supported install or update from a Tool Shed checkout:
 
 ```bash
-gh repo clone PC-Redemption/tool_shed tool_shed
-rm -rf tool_shed/.git
-printf '\n/tool_shed/\n' >> .gitignore
+# Linux/macOS
+sh install.sh /path/to/project
 ```
 
-Run the removal only with the explicit workspace path shown above, after confirming the clone succeeded. Updates are deliberate snapshot replacements, not pulls: obtain a fresh copy elsewhere, review the differences, and replace only the intended tooling files without copying Git metadata.
+```powershell
+# Windows PowerShell
+.\install.ps1 C:\path\to\project
+```
+
+The wrappers delegate to `scripts/install_tool_shed_from_github.py`, which clones `PC-Redemption/tool_shed` branch `main` into a temporary directory, validates the snapshot, installs or replaces only `tool_shed/`, excludes `.git/`, normalizes `.gitignore`, removes tracked `tool_shed/` files from the parent Git index when needed, initializes `work/`, and rolls back the previous `tool_shed/` if installation fails.
+
+Direct Python invocation is also supported:
+
+```bash
+python scripts/install_tool_shed_from_github.py /path/to/project
+```
+
+Use `python3` on Linux/macOS when that is your configured Python 3 launcher. Use `py -3` or `python` on Windows when `python3` is not configured.
 
 ## Quick Start
 
 Create the project work tree:
 
 ```bash
-python3 tool_shed/scripts/install_into_workspace.py .
+python tool_shed/scripts/install_into_workspace.py .
 ```
 
 Create a new artifact:
 
 ```bash
-python3 tool_shed/scripts/new_artifact.py checklist "Root docs cleanup" --workspace .
-python3 tool_shed/scripts/new_artifact.py project-map "Plugin migration" --workspace .
-python3 tool_shed/scripts/new_artifact.py wp "Plugin migration" --workspace .
-python3 tool_shed/scripts/new_artifact.py adr "Hosted installer uses plugin bootstrapper" --workspace .
+python tool_shed/scripts/new_artifact.py checklist "Root docs cleanup" --workspace .
+python tool_shed/scripts/new_artifact.py project-map "Plugin migration" --workspace .
+python tool_shed/scripts/new_artifact.py wp "Plugin migration" --workspace .
+python tool_shed/scripts/new_artifact.py adr "Hosted installer uses plugin bootstrapper" --workspace .
 ```
 
 Complete an active workpackage:
 
 ```bash
-python3 tool_shed/scripts/complete_workpackage.py work/wp/active/wp-plugin-migration.md --workspace .
+python tool_shed/scripts/complete_workpackage.py work/wp/active/wp-plugin-migration.md --workspace .
 ```
 
 Refresh the work index:
 
 ```bash
-python3 tool_shed/scripts/update_work_index.py --workspace .
+python tool_shed/scripts/update_work_index.py --workspace .
 ```
 
 Read `work/index.md` after README/docs to find active artifacts quickly. Use `work/index.json` when automation needs the same navigation data. Both files are generated from artifact headers; current truth still belongs in docs or README files.
@@ -132,13 +144,13 @@ Read `work/index.md` after README/docs to find active artifacts quickly. Use `wo
 Check for stale work artifact links after moving or completing artifacts:
 
 ```bash
-python3 tool_shed/scripts/check_stale_paths.py --workspace .
+python tool_shed/scripts/check_stale_paths.py --workspace .
 ```
 
 Run the full repository validation:
 
 ```bash
-python3 scripts/validate_tool_shed.py
+python scripts/validate_tool_shed.py
 ```
 
 GitHub Actions runs the same validation on push and pull requests.
@@ -172,7 +184,7 @@ Codex should read README/docs first, then `work/index.md`, then active artifacts
 For an existing project, install the work tree first, then learn before backfilling:
 
 ```bash
-python3 tool_shed/scripts/install_into_workspace.py .
+python tool_shed/scripts/install_into_workspace.py .
 ```
 
 Recommended flow:
@@ -188,14 +200,14 @@ Recommended flow:
 Level 2 artifact commands:
 
 ```bash
-python3 tool_shed/scripts/onboard_existing_project.py "Project name" --workspace .
+python tool_shed/scripts/onboard_existing_project.py "Project name" --workspace .
 ```
 
 Manual equivalent:
 
 ```bash
-python3 tool_shed/scripts/new_artifact.py project-map "Project name" --workspace .
-python3 tool_shed/scripts/new_artifact.py existing-project-inventory "Project name surfaces" --workspace .
+python tool_shed/scripts/new_artifact.py project-map "Project name" --workspace .
+python tool_shed/scripts/new_artifact.py existing-project-inventory "Project name surfaces" --workspace .
 ```
 
 ## Repository Governance

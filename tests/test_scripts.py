@@ -22,6 +22,48 @@ def run_script(*args: str, cwd: Path | None = None, check: bool = True) -> subpr
     )
 
 
+def make_fake_tool_shed_snapshot(
+    root: Path,
+    *,
+    validation_exit: int = 0,
+    install_exit: int = 0,
+    marker: str = "new snapshot",
+) -> None:
+    root.mkdir(parents=True)
+    for name in ["README.md", "selection.md", "conventions.md", "existing-projects.md"]:
+        (root / name).write_text(f"# {name}\n", encoding="utf-8")
+    (root / "templates").mkdir()
+    (root / "scripts").mkdir()
+    (root / ".git").mkdir()
+    (root / ".git" / "HEAD").write_text("ref: refs/heads/main\n", encoding="utf-8")
+    (root / "MARKER.txt").write_text(marker, encoding="utf-8")
+    (root / "scripts" / "validate_tool_shed.py").write_text(
+        f"""from __future__ import annotations
+
+import sys
+
+print("fake validation")
+raise SystemExit({validation_exit})
+""",
+        encoding="utf-8",
+    )
+    (root / "scripts" / "install_into_workspace.py").write_text(
+        f"""from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+workspace = Path(sys.argv[1]).resolve()
+(workspace / "work").mkdir(exist_ok=True)
+readme = workspace / "work" / "README.md"
+if not readme.exists():
+    readme.write_text("# Work\\n", encoding="utf-8")
+raise SystemExit({install_exit})
+""",
+        encoding="utf-8",
+    )
+
+
 class ScriptTests(unittest.TestCase):
     def test_complete_workpackage_moves_and_refreshes_indexes(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -200,6 +242,96 @@ Next Action: keep going
             self.assertIn("work/inventories/inventory-index-test-surfaces.md", paths)
             readme = (workspace / "work" / "README.md").read_text(encoding="utf-8")
             self.assertIn("complete_workpackage.py", readme)
+
+    def test_install_tool_shed_from_local_snapshot_fresh_install(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            temp_root = Path(temp)
+            source = temp_root / "source"
+            workspace = temp_root / "workspace"
+            make_fake_tool_shed_snapshot(source)
+            workspace.mkdir()
+            (workspace / ".gitignore").write_text("logs/\n/tool_shed/\n/tool_shed/\n", encoding="utf-8")
+
+            run_script(
+                "scripts/install_tool_shed_from_github.py",
+                str(workspace),
+                "--source",
+                str(source),
+            )
+
+            self.assertTrue((workspace / "tool_shed" / "MARKER.txt").exists())
+            self.assertFalse((workspace / "tool_shed" / ".git").exists())
+            self.assertTrue((workspace / "work" / "README.md").exists())
+            gitignore_lines = (workspace / ".gitignore").read_text(encoding="utf-8").splitlines()
+            self.assertEqual(gitignore_lines.count("/tool_shed/"), 1)
+            self.assertIn("logs/", gitignore_lines)
+
+    def test_install_tool_shed_update_preserves_existing_work(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            temp_root = Path(temp)
+            source = temp_root / "source"
+            workspace = temp_root / "workspace"
+            make_fake_tool_shed_snapshot(source, marker="replacement")
+            (workspace / "tool_shed").mkdir(parents=True)
+            (workspace / "tool_shed" / "OLD.txt").write_text("old tooling\n", encoding="utf-8")
+            work_artifact = workspace / "work" / "maps" / "map-existing.md"
+            work_artifact.parent.mkdir(parents=True)
+            work_artifact.write_text("keep me\n", encoding="utf-8")
+
+            run_script(
+                "scripts/install_tool_shed_from_github.py",
+                str(workspace),
+                "--source",
+                str(source),
+            )
+
+            self.assertFalse((workspace / "tool_shed" / "OLD.txt").exists())
+            self.assertEqual((workspace / "tool_shed" / "MARKER.txt").read_text(encoding="utf-8"), "replacement")
+            self.assertEqual(work_artifact.read_text(encoding="utf-8"), "keep me\n")
+
+    def test_install_tool_shed_validation_failure_stops_before_mutation(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            temp_root = Path(temp)
+            source = temp_root / "source"
+            workspace = temp_root / "workspace"
+            make_fake_tool_shed_snapshot(source, validation_exit=7)
+            (workspace / "tool_shed").mkdir(parents=True)
+            (workspace / "tool_shed" / "OLD.txt").write_text("old tooling\n", encoding="utf-8")
+
+            result = run_script(
+                "scripts/install_tool_shed_from_github.py",
+                str(workspace),
+                "--source",
+                str(source),
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 7)
+            self.assertTrue((workspace / "tool_shed" / "OLD.txt").exists())
+            self.assertFalse((workspace / "tool_shed" / "MARKER.txt").exists())
+
+    def test_install_tool_shed_rolls_back_when_workspace_install_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            temp_root = Path(temp)
+            source = temp_root / "source"
+            workspace = temp_root / "workspace"
+            make_fake_tool_shed_snapshot(source, install_exit=9)
+            (workspace / "tool_shed").mkdir(parents=True)
+            (workspace / "tool_shed" / "OLD.txt").write_text("old tooling\n", encoding="utf-8")
+            (workspace / ".gitignore").write_text("build/\n", encoding="utf-8")
+
+            result = run_script(
+                "scripts/install_tool_shed_from_github.py",
+                str(workspace),
+                "--source",
+                str(source),
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 9)
+            self.assertTrue((workspace / "tool_shed" / "OLD.txt").exists())
+            self.assertFalse((workspace / "tool_shed" / "MARKER.txt").exists())
+            self.assertEqual((workspace / ".gitignore").read_text(encoding="utf-8"), "build/\n")
 
 
 if __name__ == "__main__":
