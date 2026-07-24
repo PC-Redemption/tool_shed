@@ -37,9 +37,9 @@
   },
   "manifest_schema_version": 2,
   "notes": "Adds reconciled work state, operator help, verified version status, release provenance, and drift hardening.",
-  "release_commit": null,
+  "release_commit": "aec16393d13378346d57a58ee916059920750f3c",
   "release_tag": "v0.2.0",
-  "released_at": null,
+  "released_at": "2026-07-24T17:38:20Z",
   "shed_version": "0.2.0",
   "updated_at": "2026-07-24"
 }
