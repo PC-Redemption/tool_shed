@@ -3,11 +3,11 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import subprocess
 from dataclasses import asdict, dataclass
 from datetime import date, datetime
 from pathlib import Path
 
+from repository_policy import POLICY_FILE, format_bytes, inspect_snapshot_ignore, inspect_work_ignore
 from update_work_index import Artifact, discover_artifacts
 
 
@@ -129,25 +129,35 @@ def add_header_findings(
 
 
 def gitignore_findings(workspace: Path) -> list[Finding]:
-    if not (workspace / ".git").exists():
-        return []
-    result = subprocess.run(
-        ["git", "check-ignore", "-q", "work", "work/index.md"],
-        cwd=workspace,
-        check=False,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-    if result.returncode == 0:
-        return [
+    state = inspect_work_ignore(workspace)
+    findings: list[Finding] = []
+    if state.repository is not None and state.match is not None and not state.exception_reason:
+        match = state.match
+        exception = f" Invalid exception: {state.exception_error}" if state.exception_error else ""
+        findings.append(
             Finding(
-                "WORK_GITIGNORED",
-                "warning",
+                "UNDOCUMENTED_WORK_IGNORE",
+                "error",
                 "work/",
-                "work artifacts are ignored; track work/ unless repository policy explicitly says otherwise",
+                (
+                    f"root work/ is ignored by {match.source}:{match.line}: {match.rule!r} "
+                    f"(matched {match.path}); {state.file_count} file(s), {format_bytes(state.total_bytes)}, "
+                    f"are currently ignored. Remove only that root rule or document an intentional "
+                    f"exception in {POLICY_FILE}.{exception}"
+                ),
             )
-        ]
-    return []
+        )
+    repository, snapshot_match = inspect_snapshot_ignore(workspace)
+    if repository is not None and (repository / "tool_shed").exists() and snapshot_match is None:
+        findings.append(
+            Finding(
+                "TOOL_SHED_NOT_IGNORED",
+                "error",
+                "tool_shed/",
+                "disconnected snapshot is trackable; add /tool_shed/ to the repository-root .gitignore",
+            )
+        )
+    return findings
 
 
 def review(workspace: Path, *, stale_days: int, today: date) -> list[Finding]:

@@ -139,7 +139,31 @@ ts: help update
 The canonical source is [PC-Redemption/tool_shed](https://github.com/PC-Redemption/tool_shed).
 Installations are disconnected snapshots: ignore `/tool_shed/`, remove its `.git/`, and track
 project-specific `/work/` by default. An update replaces only Tool Shed machinery and must preserve
-`work/`, project docs, code, and repository policy.
+`work/`, project docs, and code.
+
+After installation or update, run:
+
+```bash
+python3 tool_shed/scripts/install_into_workspace.py .
+python3 tool_shed/scripts/review_work_state.py --workspace .
+```
+
+Both commands detect a root `work/` ignore. An existing rule is not automatically repository
+policy. Without a valid repository-root `.tool-shed-policy.json` exception, the output identifies
+the exact ignore source and matching rule and previews the count and size of ignored files. Remove
+only that root `/work/` rule. Do not delete, replace, relocate, or rewrite any `work/` evidence.
+
+An intentional exception uses:
+
+```json
+{
+  "schema_version": 1,
+  "work_git_policy": {
+    "ignore": true,
+    "reason": "Repository-specific reason for excluding project work artifacts."
+  }
+}
+```
 
 ### Check version and update status
 

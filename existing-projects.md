@@ -10,6 +10,9 @@ Default to Level 2: create a project map, then create an inventory of existing d
 - Work from the project root.
 - Treat the existing project as evidence. Do not invent history.
 - Confirm the local `tool_shed/` is a disconnected snapshot: it has no `.git/`, is not a submodule, and the parent codebase repository ignores `/tool_shed/`.
+- Confirm root `work/` is trackable. If installation reports that it is ignored, do not assume the
+  rule is intentional: remove only the reported root `/work/` rule, unless repository-root
+  `.tool-shed-policy.json` explicitly documents the exception.
 
 ## Procedure
 
@@ -18,6 +21,10 @@ Default to Level 2: create a project map, then create an inventory of existing d
 ```bash
 python3 tool_shed/scripts/install_into_workspace.py .
 ```
+
+The installer preserves every existing `work/` file. When a stale legacy ignore is present, it
+reports the exact source and rule, previews the number and size of files that will become
+trackable, and exits nonzero until the rule is removed or a valid exception is documented.
 
 2. Discover the project shape:
 

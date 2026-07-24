@@ -28,7 +28,9 @@ does not change the content commit it identifies.
    Use `--allow-same-version` only when the version was already selected in the current unpublished
    work tree.
 
-4. Run `python3 scripts/validate_tool_shed.py`.
+4. Run `python3 scripts/validate_tool_shed.py`. Confirm its repository-policy coverage includes
+   tracked `work/`, stale root ignores, documented exceptions, unrelated nested rules, and ignored
+   `/tool_shed/` with tracked `work/`.
 5. Commit all shipped content, including the manifest with null `release_commit` and `released_at`.
 6. Capture that content commit:
 

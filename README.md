@@ -88,7 +88,8 @@ Canonical source: [https://github.com/PC-Redemption/tool_shed](https://github.co
 - Do not configure the workspace copy as a Git submodule.
 - Do not run `git pull`, `git push`, or otherwise return workspace changes to `PC-Redemption/tool_shed`.
 - Add `/tool_shed/` to the project repository's root `.gitignore` so Tool Shed stays outside the codebase history.
-- Keep project-specific artifacts in `work/` and track that directory with the project by default. Ignore it only through an explicit repository policy, such as for sensitive owner planning.
+- Keep project-specific artifacts in root `work/` and track that directory with the project by default.
+- Ignore root `work/` only through the explicit, documented repository exception described below. An existing `/work/` ignore is not evidence of an intentional exception.
 
 One-time snapshot installation with GitHub CLI:
 
@@ -99,6 +100,28 @@ printf '\n/tool_shed/\n' >> .gitignore
 ```
 
 Run the removal only with the explicit workspace path shown above, after confirming the clone succeeded. Updates are deliberate snapshot replacements, not pulls: obtain a fresh copy elsewhere, review the differences, and replace only the intended tooling files without copying Git metadata.
+
+After installing or updating the snapshot, run `install_into_workspace.py`. It detects whether the
+parent Git repository ignores root `work/`. If a stale ignore exists, it reports the exact ignore
+file, line, and rule; previews the count and size of ignored evidence; and exits without altering
+any existing `work/` file. Remove only the reported root `/work/` rule and rerun the command.
+
+An intentional exception must be documented in tracked repository-root
+`.tool-shed-policy.json`:
+
+```json
+{
+  "schema_version": 1,
+  "work_git_policy": {
+    "ignore": true,
+    "reason": "Explain why this repository must not track project work artifacts."
+  }
+}
+```
+
+The exception file makes the departure from the default reviewable; the matching Git ignore rule
+remains separate. Missing, malformed, or reason-free policy does not legitimize an ignored
+`work/`.
 
 ## Quick Start
 
@@ -237,10 +260,13 @@ For an existing installation:
 ```text
 Update this workspace's disconnected tool_shed snapshot from
 https://github.com/PC-Redemption/tool_shed.
-Preserve work/, docs/, project code, and local repository policy. Review the snapshot diff before
-replacement, never copy .git metadata, run install_into_workspace.py to add missing work
-directories without overwriting artifacts, then refresh the index, review work state, check stale
-paths, and report validation results.
+Preserve work/, docs/, and project code. Review the snapshot diff before replacement, never copy
+.git metadata, and do not treat an existing root /work/ ignore as repository policy unless
+.tool-shed-policy.json documents the exception. Run install_into_workspace.py to add missing work
+directories without overwriting artifacts and to inspect the parent repository ignore source. If
+it reports an undocumented ignore, show its exact source/rule and trackability preview, remove
+only that root rule, and do not delete, replace, relocate, or rewrite work/ evidence. Then refresh
+the index, review work state, check stale paths, and report validation results.
 ```
 
 An update replaces only the ignored `tool_shed/` machinery. It must never replace or delete the

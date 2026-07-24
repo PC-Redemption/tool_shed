@@ -4,7 +4,11 @@
 
 The workspace-local `tool_shed/` is a disconnected snapshot. It must not contain `.git/`, be registered as a submodule, or be tracked by the parent codebase repository. The parent repository should ignore `/tool_shed/`. Workspace use must not push changes back to the canonical Tool Shed repository.
 
-This exclusion applies to the tooling snapshot, not automatically to `work/`; each project may track its project-specific work artifacts according to its own repository policy.
+This exclusion applies only to the tooling snapshot. Root `work/` is repository-tracked by default.
+An existing ignore rule is not an intentional exception. Ignoring `work/` requires both a matching
+Git ignore rule and a valid repository-root `.tool-shed-policy.json` with
+`schema_version: 1`, `work_git_policy.ignore: true`, and a non-empty
+`work_git_policy.reason`.
 
 `tool_shed/` contains:
 
@@ -61,8 +65,8 @@ This saves context and lets Codex decide whether to read deeper.
 ## Work-State Reconciliation
 
 Git history makes work artifacts visible, but it does not keep them aligned. Track `work/` by
-default and keep only the workspace-local `/tool_shed/` snapshot ignored. A project may ignore
-`work/` only through an explicit repository policy, such as when owner planning is sensitive.
+default and keep the workspace-local `/tool_shed/` snapshot ignored. A project may ignore
+`work/` only through the explicit documented exception above.
 
 Run `python3 tool_shed/scripts/review_work_state.py --workspace .`:
 
@@ -75,6 +79,10 @@ The review is read-only. It reports orphaned active work, stale next actions, br
 links, completed spikes without a disposition, active plans that still point at finished work, and
 repositories that ignore `work/`. Use `--json` for automation and `--strict` when any finding
 should fail CI.
+
+For an undocumented ignore, the review reports the exact ignore source, line, and matching rule,
+plus the count and size of currently ignored files. Remove only the reported root `/work/` rule.
+Never delete, replace, relocate, or rewrite existing evidence as part of this migration.
 
 Every active non-map artifact should name a concrete `Parent:` or `Project Map:`. Every completed
 spike must set `Disposition:` to `planned`, `documented`, `no-action`, or `superseded`. A planned

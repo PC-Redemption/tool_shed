@@ -64,6 +64,10 @@ When orienting in a workspace that already has work artifacts, read `work/index.
 - Treat workspace-local `tool_shed/` as a one-way, disconnected snapshot of templates, instructions, and scripts.
 - Do not leave Git metadata in `tool_shed/`, configure it as a submodule, track it in the parent codebase repository, or push workspace changes back to the canonical Tool Shed repository.
 - When installing from a temporary clone, verify the clone, remove only `tool_shed/.git/`, and add `/tool_shed/` to the parent repository's root `.gitignore`.
+- Track project-specific root `work/` in the parent repository by default. Never treat an existing
+  `/work/` ignore as intentional merely because it predates the snapshot update.
+- Ignore `work/` only when repository-root `.tool-shed-policy.json` explicitly sets
+  `schema_version` to `1`, `work_git_policy.ignore` to `true`, and documents a non-empty reason.
 - Choose the smallest artifact that fits the immediate work.
 - Keep project-specific artifacts under `work/`, not inside `tool_shed/`.
 - Keep settled current truth in `docs/` or README files.
@@ -104,6 +108,11 @@ Install the work tree:
 python3 <shed>/scripts/install_into_workspace.py <workspace>
 ```
 
+Run this after both a new installation and a snapshot upgrade. If it reports an undocumented root
+`work/` ignore, surface the exact ignore source and matching rule plus the file-count/size preview;
+instruct the operator to remove only that root rule. Preserve every existing `work/` file: do not
+delete, replace, relocate, or rewrite evidence while correcting Git policy.
+
 Create an artifact:
 
 ```bash
@@ -133,6 +142,9 @@ Review planning and artifact alignment:
 ```bash
 python3 <shed>/scripts/review_work_state.py --workspace <workspace>
 ```
+
+The review must not report reconciliation when `work/` is ignored without the explicit exception.
+Use `--strict` when that policy violation should fail automation.
 
 Check local version or canonical update status:
 

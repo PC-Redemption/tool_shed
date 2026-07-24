@@ -25,6 +25,10 @@ def run_script(*args: str, cwd: Path | None = None, check: bool = True) -> subpr
 
 
 class ScriptTests(unittest.TestCase):
+    def init_repository(self, root: Path, gitignore: str = "") -> None:
+        subprocess.run(["git", "init", "-q", str(root)], check=True)
+        (root / ".gitignore").write_text(gitignore, encoding="utf-8")
+
     def test_check_shed_version_detects_equal_version_release_mismatch(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -461,6 +465,121 @@ Produces: work/tickets/ticket-demo.md
 
             self.assertEqual(result.returncode, 0)
             self.assertIn("Work state is reconciled.", result.stdout)
+
+    def test_repository_policy_accepts_tracked_work(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace)
+            (workspace / "work").mkdir()
+            (workspace / "work" / "evidence.md").write_text("tracked evidence\n", encoding="utf-8")
+
+            result = run_script(
+                "scripts/review_work_state.py",
+                "--workspace",
+                str(workspace),
+                "--strict",
+            )
+
+            self.assertEqual(result.returncode, 0)
+            self.assertIn("Work state is reconciled.", result.stdout)
+
+    def test_repository_policy_reports_stale_root_work_ignore_and_preserves_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace, "/work/\n")
+            (workspace / "work").mkdir()
+            evidence = workspace / "work" / "evidence.bin"
+            original = b"preserve-me"
+            evidence.write_bytes(original)
+
+            install = run_script(
+                "scripts/install_into_workspace.py",
+                str(workspace),
+                check=False,
+            )
+            review = run_script(
+                "scripts/review_work_state.py",
+                "--workspace",
+                str(workspace),
+                "--json",
+                "--strict",
+                check=False,
+            )
+
+            self.assertEqual(install.returncode, 1)
+            self.assertIn(".gitignore:1: '/work/'", install.stdout)
+            self.assertIn("Trackability preview:", install.stdout)
+            self.assertIn("file(s)", install.stdout)
+            self.assertEqual(evidence.read_bytes(), original)
+            self.assertEqual(review.returncode, 1)
+            finding = json.loads(review.stdout)["findings"][0]
+            self.assertEqual(finding["code"], "UNDOCUMENTED_WORK_IGNORE")
+            self.assertIn(".gitignore:1: '/work/'", finding["message"])
+
+    def test_repository_policy_accepts_explicit_documented_exception(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace, "/work/\n")
+            (workspace / ".tool-shed-policy.json").write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "work_git_policy": {
+                            "ignore": True,
+                            "reason": "Owner-only planning contains sensitive incident details.",
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            install = run_script("scripts/install_into_workspace.py", str(workspace))
+            review = run_script(
+                "scripts/review_work_state.py",
+                "--workspace",
+                str(workspace),
+                "--strict",
+            )
+
+            self.assertIn("Documented exception in .tool-shed-policy.json", install.stdout)
+            self.assertEqual(review.returncode, 0)
+
+    def test_repository_policy_ignores_nested_and_unrelated_rules(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace, "/packages/demo/work/\n/cache/work/\n*.tmp\n")
+            (workspace / "work").mkdir()
+            (workspace / "work" / "evidence.md").write_text("track me\n", encoding="utf-8")
+
+            result = run_script(
+                "scripts/review_work_state.py",
+                "--workspace",
+                str(workspace),
+                "--strict",
+            )
+
+            self.assertEqual(result.returncode, 0)
+            self.assertIn("Work state is reconciled.", result.stdout)
+
+    def test_repository_policy_accepts_ignored_snapshot_with_tracked_work(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace, "/tool_shed/\n")
+            (workspace / "tool_shed").mkdir()
+            (workspace / "tool_shed" / "README.md").write_text("snapshot\n", encoding="utf-8")
+            (workspace / "work").mkdir()
+            (workspace / "work" / "evidence.md").write_text("track me\n", encoding="utf-8")
+
+            install = run_script("scripts/install_into_workspace.py", str(workspace))
+            review = run_script(
+                "scripts/review_work_state.py",
+                "--workspace",
+                str(workspace),
+                "--strict",
+            )
+
+            self.assertIn("root work/ is trackable", install.stdout)
+            self.assertEqual(review.returncode, 0)
 
     def test_fleet_inventory_classifies_current_and_stale_snapshots(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

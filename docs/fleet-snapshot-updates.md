@@ -43,7 +43,14 @@ For every target it must:
 5. Replace only the `tool_shed/` directory; never touch the containing project's `work/`, docs, or
    code.
 6. Re-run inventory and repository-boundary checks. Report success only when hashes match canonical
-   and the parent repository still ignores `/tool_shed/`.
+   and the parent repository ignores `/tool_shed/` while root `work/` remains trackable by default.
+
+The post-update check must run `install_into_workspace.py` and `review_work_state.py`. It must not
+carry a legacy root `/work/` ignore forward as “repository policy.” If `work/` is ignored, report
+the exact source/rule and count/size preview. Accept the state only when repository-root
+`.tool-shed-policy.json` contains a valid, reasoned exception. Removing a stale rule means editing
+only that root rule; fleet tooling must never delete, replace, relocate, or rewrite `work/`
+evidence.
 
 Remote updates should use the same staged payload and validation on the target host. Unreachable,
 modified-after-review, unrecognized, or non-ignored targets must be skipped, not forced. Rollout
