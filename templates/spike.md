@@ -5,6 +5,8 @@ Type: spike
 Updated: {{ date }}
 Next Action: define the question and timebox
 Parent: work/...
+Disposition: pending
+Produces:
 
 ## Question
 
@@ -25,3 +27,6 @@ What should happen next?
 ## Follow-Up
 
 - [ ] ...
+
+When the spike finishes, set `Disposition:` to `planned`, `documented`, `no-action`, or
+`superseded`. A `planned` disposition must name the follow-up `work/*.md` artifact in `Produces:`.

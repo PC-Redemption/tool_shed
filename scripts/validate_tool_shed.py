@@ -26,6 +26,11 @@ def compile_python() -> None:
         py_compile.compile(str(path), doraise=True)
 
 
+def check_shed_manifest() -> None:
+    step("shed version manifest")
+    run([sys.executable, "scripts/update_shed_manifest.py", "--check"])
+
+
 def run_unit_tests() -> None:
     step("unit tests")
     run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"])
@@ -40,6 +45,11 @@ def regenerate_indexes() -> None:
 def check_stale_paths() -> None:
     step("stale paths")
     run([sys.executable, "scripts/check_stale_paths.py", "--workspace", "."])
+
+
+def review_work_state() -> None:
+    step("work state review")
+    run([sys.executable, "scripts/review_work_state.py", "--workspace", "."])
 
 
 def smoke_temp_workspace() -> None:
@@ -93,7 +103,24 @@ def smoke_temp_workspace() -> None:
                 str(ROOT),
             ]
         )
+        checklist = workspace / "work" / "checklists" / "checklist-runtime-closeout.md"
+        checklist.write_text(
+            checklist.read_text(encoding="utf-8").replace(
+                "Parent: work/...",
+                "Parent: work/maps/map-validate-project.md",
+            ),
+            encoding="utf-8",
+        )
         run([sys.executable, str(ROOT / "scripts" / "check_stale_paths.py"), "--workspace", str(workspace)])
+        run(
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "review_work_state.py"),
+                "--workspace",
+                str(workspace),
+                "--strict",
+            ]
+        )
         payload = json.loads((workspace / "work" / "index.json").read_text(encoding="utf-8"))
         paths = {item["path"] for item in payload["artifacts"]}
         required = {
@@ -147,9 +174,11 @@ def cleanup_caches() -> None:
 def main() -> int:
     try:
         compile_python()
+        check_shed_manifest()
         run_unit_tests()
         regenerate_indexes()
         check_stale_paths()
+        review_work_state()
         smoke_temp_workspace()
         sanity_check_markdown()
     finally:

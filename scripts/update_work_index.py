@@ -16,9 +16,12 @@ HEADER_KEYS = {
     "Next Action",
     "Parent",
     "Project Map",
+    "Depends On",
     "Canonical Truth",
     "Supersedes",
     "Superseded By",
+    "Disposition",
+    "Produces",
 }
 
 
@@ -56,6 +59,8 @@ class Artifact:
             "canonical_truth": self.fields.get("Canonical Truth") or None,
             "supersedes": self.fields.get("Supersedes") or None,
             "superseded_by": self.fields.get("Superseded By") or None,
+            "disposition": self.fields.get("Disposition") or None,
+            "produces": self.fields.get("Produces") or None,
         }
 
 

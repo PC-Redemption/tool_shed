@@ -7,6 +7,38 @@ description: Structured work artifacts and workspace coordination with a local t
 
 Use this skill as a thin adoption layer for a workspace-local `tool_shed`. Do not treat the skill as the source of templates or project state.
 
+## Request Prefix
+
+Treat `ts:` as an authoritative route for the current request only. The remainder of the request
+must use the workspace-local Tool Shed rules and tooling. Do not carry the prefix into later
+requests.
+
+The global setup may also define `mp:` for private Marshal owner work and `ws:` for the current
+workspace. A request uses at most one leading route prefix; when an unprefixed write could
+materially target either Marshal or the workspace, ask one concise routing question before writing.
+
+### Help Route
+
+When the request is `ts: help`, read `<shed>/docs/operator-guide.md` and return a concise,
+operator-facing menu of common use cases with example `ts:` prompts. Do not create or modify
+artifacts for a help-only request.
+
+When the request is `ts: help <topic>`, use the same guide and focus the response on that topic.
+If the guide is missing from an older snapshot, fall back to `README.md`, `selection.md`, and
+`existing-projects.md`, and mention that the snapshot does not yet include the operator guide.
+
+### Version Routes
+
+When the request is `ts: version`, run
+`python3 <shed>/scripts/check_shed_version.py --shed <shed> --local-only` and report the local
+version and integrity. This route is read-only.
+
+When the request is `ts: check for updates` or `ts: update status`, run
+`python3 <shed>/scripts/check_shed_version.py --shed <shed>` and report the local version,
+canonical version, version relation, and any locally modified or missing tracked files. A check
+does not authorize an update. If an older snapshot lacks the script, read `SHED_VERSION.json` and
+explain that its version tooling must be updated before it can perform a reliable canonical check.
+
 ## Locate The Shed
 
 Before choosing or creating work artifacts, locate the shed:
@@ -22,6 +54,8 @@ Read these files from the shed before acting:
 - `existing-projects.md` when loading the shed into an existing project
 
 Read `README.md` when installing, explaining, or verifying repository boundaries.
+Read `docs/operator-guide.md` for `ts: help` requests.
+Read `SHED_VERSION.json` when reporting Tool Shed version or update status.
 
 When orienting in a workspace that already has work artifacts, read `work/index.md` if it exists after reading README/docs. Use `work/index.json` for automation if needed. Treat both as generated navigation aids, not canonical truth.
 
@@ -36,6 +70,7 @@ When orienting in a workspace that already has work artifacts, read `work/index.
 - Treat completed work artifacts as history, not canonical truth.
 - Use `work/index.md` to find active artifacts quickly when it exists.
 - Use `work/index.json` only as machine-readable navigation data.
+- Run the read-only work-state review during orientation and after artifact lifecycle changes.
 - Link related artifacts with plain Markdown paths.
 - Do not create a server, database, or tracker unless plain files and scripts have failed.
 - Do not duplicate bulky templates or shed docs inside the skill.
@@ -93,6 +128,19 @@ Check stale work paths:
 python3 <shed>/scripts/check_stale_paths.py --workspace <workspace>
 ```
 
+Review planning and artifact alignment:
+
+```bash
+python3 <shed>/scripts/review_work_state.py --workspace <workspace>
+```
+
+Check local version or canonical update status:
+
+```bash
+python3 <shed>/scripts/check_shed_version.py --shed <shed> --local-only
+python3 <shed>/scripts/check_shed_version.py --shed <shed>
+```
+
 Run Level 2 existing-project onboarding:
 
 ```bash
@@ -128,5 +176,6 @@ After creating or moving artifacts:
 - Prefer `complete_workpackage.py` when moving active workpackages to completed.
 - Check parent/map links when relevant.
 - Scan for stale paths after moving completed workpackages.
+- Run the work-state review and surface orphan, stale, disposition, and plan-drift findings.
 - Run relevant script syntax checks, such as `python3 -m py_compile`, when scripts changed.
 - Keep git changes scoped to the shed/work artifacts involved.

@@ -48,6 +48,7 @@ Completed work artifacts are history. Settled truth belongs in `docs/` or `READM
 Run `python3 tool_shed/scripts/update_work_index.py --workspace .` after creating, moving, or completing artifacts.
 Use `python3 tool_shed/scripts/complete_workpackage.py work/wp/active/wp-example.md --workspace .` to move active workpackages to completed.
 Run `python3 tool_shed/scripts/check_stale_paths.py --workspace .` after moving or completing artifacts.
+Run `python3 tool_shed/scripts/review_work_state.py --workspace .` during orientation and regular planning review.
 """
 
 

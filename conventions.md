@@ -58,6 +58,50 @@ This saves context and lets Codex decide whether to read deeper.
 - Do not treat the indexes as canonical truth. They are navigation aids built from artifact headers.
 - Completed artifacts remain useful history, but docs and README files hold current operating truth.
 
+## Work-State Reconciliation
+
+Git history makes work artifacts visible, but it does not keep them aligned. Track `work/` by
+default and keep only the workspace-local `/tool_shed/` snapshot ignored. A project may ignore
+`work/` only through an explicit repository policy, such as when owner planning is sensitive.
+
+Run `python3 tool_shed/scripts/review_work_state.py --workspace .`:
+
+- when Codex or a human orients in the project
+- after creating, completing, cancelling, or superseding an artifact
+- during the repository validation workflow
+- weekly as a backstop for quiet projects
+
+The review is read-only. It reports orphaned active work, stale next actions, broken parent/output
+links, completed spikes without a disposition, active plans that still point at finished work, and
+repositories that ignore `work/`. Use `--json` for automation and `--strict` when any finding
+should fail CI.
+
+Every active non-map artifact should name a concrete `Parent:` or `Project Map:`. Every completed
+spike must set `Disposition:` to `planned`, `documented`, `no-action`, or `superseded`. A planned
+spike must identify its follow-up artifact in `Produces:`.
+
+## Tool Shed Versioning
+
+`SHED_VERSION.json` is the authoritative snapshot manifest. It records a semantic `shed_version`,
+the artifact model version, canonical manifest URL, and hashes for shipped rules, docs, scripts,
+skill files, and templates.
+
+Use `scripts/check_shed_version.py --local-only` to verify local integrity without a network call.
+Use it without `--local-only` to compare with canonical GitHub state. A version check is read-only
+and must distinguish older, newer, current, locally modified, equal-version release mismatch, and
+failed canonical checks.
+
+Before releasing changed Tool Shed machinery, intentionally bump `MAJOR.MINOR.PATCH` and run
+`scripts/update_shed_manifest.py --write`. A manifest write requires a greater version unless
+`--allow-same-version` explicitly rebuilds an unpublished release. Released manifests record their
+content commit, matching `v<version>` tag, and release timestamp. Repository validation fails when
+manifest hashes or provenance are invalid.
+
+Plan-drift checks inspect planning-bearing locations: `Next Action`, parent/project-map/dependency
+fields, active workstream rows, unchecked tasks, and `Do next:` content. Historical, closeout, and
+related-artifact links are valid references and do not become drift merely because their targets
+are finished.
+
 ## Stale Path Check
 
 Run `python3 tool_shed/scripts/check_stale_paths.py --workspace .` after moving, completing, or renaming artifacts.

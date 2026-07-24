@@ -82,11 +82,13 @@ Project-specific artifacts should go under `work/`, not inside `tool_shed/`.
 
 Install `tool_shed/` into a project as a local, one-way snapshot of the blank templates, instructions, and helper scripts. The workspace copy is not a checkout for developing the canonical Tool Shed repository.
 
+Canonical source: [https://github.com/PC-Redemption/tool_shed](https://github.com/PC-Redemption/tool_shed)
+
 - Do not leave `tool_shed/.git/` in the project workspace.
 - Do not configure the workspace copy as a Git submodule.
 - Do not run `git pull`, `git push`, or otherwise return workspace changes to `PC-Redemption/tool_shed`.
 - Add `/tool_shed/` to the project repository's root `.gitignore` so Tool Shed stays outside the codebase history.
-- Keep project-specific artifacts in `work/`. A project may track `work/` independently when those coordination artifacts belong with its codebase.
+- Keep project-specific artifacts in `work/` and track that directory with the project by default. Ignore it only through an explicit repository policy, such as for sensitive owner planning.
 
 One-time snapshot installation with GitHub CLI:
 
@@ -99,6 +101,26 @@ printf '\n/tool_shed/\n' >> .gitignore
 Run the removal only with the explicit workspace path shown above, after confirming the clone succeeded. Updates are deliberate snapshot replacements, not pulls: obtain a fresh copy elsewhere, review the differences, and replace only the intended tooling files without copying Git metadata.
 
 ## Quick Start
+
+Operator help and use cases:
+
+```text
+ts: help
+ts: help spikes
+ts: help existing projects
+```
+
+See the [Tool Shed operator guide](docs/operator-guide.md) for the full use-case menu.
+
+Check the installed snapshot without using the network, or compare it with the canonical manifest:
+
+```bash
+python3 tool_shed/scripts/check_shed_version.py --shed tool_shed --local-only
+python3 tool_shed/scripts/check_shed_version.py --shed tool_shed
+```
+
+Equivalent Codex requests are `ts: version`, `ts: check for updates`, and `ts: update status`.
+Checks are read-only and do not authorize snapshot replacement.
 
 Create the project work tree:
 
@@ -135,6 +157,16 @@ Check for stale work artifact links after moving or completing artifacts:
 python3 tool_shed/scripts/check_stale_paths.py --workspace .
 ```
 
+Review whether work artifacts and planning are still aligned:
+
+```bash
+python3 tool_shed/scripts/review_work_state.py --workspace .
+python3 tool_shed/scripts/review_work_state.py --workspace . --json
+```
+
+Run this during orientation, after artifact lifecycle changes, in validation, and weekly as a
+backstop. Add `--strict` when findings should fail CI.
+
 Run the full repository validation:
 
 ```bash
@@ -142,6 +174,21 @@ python3 scripts/validate_tool_shed.py
 ```
 
 GitHub Actions runs the same validation on push and pull requests.
+
+Before releasing a changed snapshot, intentionally bump the semantic version and refresh its
+content hashes:
+
+```bash
+python3 scripts/update_shed_manifest.py --write --version MAJOR.MINOR.PATCH --notes "Release summary"
+python3 scripts/update_shed_manifest.py --check
+```
+
+For a published release, also pass `--release-commit`, `--release-tag vMAJOR.MINOR.PATCH`, and
+`--released-at`. Use `--allow-same-version` only to rebuild an unpublished manifest. Equal version
+numbers with different canonical content are reported as `release-mismatch`.
+
+Follow [docs/releasing.md](docs/releasing.md) for the two-commit provenance workflow, annotated tag,
+and post-push verification.
 
 Before choosing an artifact, read:
 
@@ -152,6 +199,14 @@ Before choosing an artifact, read:
 ## Codex Start Prompts
 
 Use short prompts and let Codex operate the scripts:
+
+Request prefixes are authoritative for one request only:
+
+- `ts:` uses the workspace-local Tool Shed rules and tooling for the remainder of the request.
+- `mp:` targets projects, tasks, and owner work in private Marshal.
+- `ws:` targets files, code, tests, Tool Shed plans, and runtime work in the current workspace.
+
+Never carry a prefix into a later request. A request uses at most one leading route prefix.
 
 ```text
 use tool_shed and orient me
@@ -165,7 +220,31 @@ use tool_shed and create the smallest artifact for this
 use tool_shed and complete work/wp/active/wp-example.md
 ```
 
-Codex should read README/docs first, then `work/index.md`, then active artifacts. It should use `work/index.json` only when automation needs machine-readable navigation.
+Codex should read README/docs first, then `work/index.md`, then active artifacts. It should use `work/index.json` only when automation needs machine-readable navigation. Codex should then run the read-only work-state review and surface findings before choosing the next action.
+
+### Codex install and update prompts
+
+For a new installation:
+
+```text
+Install Tool Shed into this workspace as a disconnected snapshot. Read tool_shed/README.md,
+selection.md, conventions.md, and existing-projects.md. Ignore /tool_shed/ but track /work/ by
+default, initialize the work tree, run the work-state review, and report validation results.
+```
+
+For an existing installation:
+
+```text
+Update this workspace's disconnected tool_shed snapshot from
+https://github.com/PC-Redemption/tool_shed.
+Preserve work/, docs/, project code, and local repository policy. Review the snapshot diff before
+replacement, never copy .git metadata, run install_into_workspace.py to add missing work
+directories without overwriting artifacts, then refresh the index, review work state, check stale
+paths, and report validation results.
+```
+
+An update replaces only the ignored `tool_shed/` machinery. It must never replace or delete the
+project's tracked `work/` artifacts.
 
 ## Existing Projects
 
@@ -200,7 +279,7 @@ python3 tool_shed/scripts/new_artifact.py existing-project-inventory "Project na
 
 ## Repository Governance
 
-Canonical repository: `PC-Redemption/tool_shed`.
+Canonical repository: [PC-Redemption/tool_shed](https://github.com/PC-Redemption/tool_shed).
 
 The repository should be public for visibility, but direct changes should be limited to owners/admins of the `PC-Redemption` organization. Public readers may fork or propose changes through normal GitHub flows, but maintainers should avoid granting broad write access.
 
