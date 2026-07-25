@@ -5,6 +5,7 @@ import json
 import shutil
 import subprocess
 import sys
+import tarfile
 import tempfile
 import unittest
 from pathlib import Path
@@ -284,6 +285,21 @@ class ScriptTests(unittest.TestCase):
         self.assertIn("[Tool Shed operator guide](docs/operator-guide.md)", readme)
         self.assertIn("ts: version", skill)
         self.assertIn("ts: check for updates", guide)
+
+    def test_unified_install_or_update_guide_uses_two_commit_release_provenance(self) -> None:
+        guide = ROOT / "docs" / "install-or-update-snapshot.md"
+        text = guide.read_text(encoding="utf-8")
+        self.assertIn("If it does not exist, select NEW INSTALLATION.", text)
+        self.assertIn("select EXISTING UPDATE", text)
+        self.assertIn('content_commit="$(git rev-parse "${tag_commit}^")"', text)
+        self.assertIn(
+            'git diff --name-only "$content_commit" "$tag_commit" reports exactly '
+            "SHED_VERSION.json",
+            text,
+        )
+        self.assertIn("release_commit must not equal tag_commit", text)
+        self.assertFalse((ROOT / "docs" / "installing-new-snapshot.md").exists())
+        self.assertFalse((ROOT / "docs" / "updating-existing-snapshot.md").exists())
 
     def test_review_work_state_reports_drift_as_json_and_strict_failure(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -881,6 +897,266 @@ Next Action: keep going
             self.assertIn("BINARY_IN_VERSIONED_WORK", codes)
             self.assertIn("DIFF_BYTES", codes)
             self.assertIn("VISIBLE_TOOL_SHED_BACKUP", codes)
+
+    def test_preflight_profiles_workspace_and_explains_adaptive_policy(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace)
+            (workspace / "work" / "evidence").mkdir(parents=True)
+            (workspace / "work" / "evidence" / "summary.md").write_text("# durable\n", encoding="utf-8")
+            (workspace / ".tool-shed-policy.json").write_text(
+                json.dumps({
+                    "schema_version": 1,
+                    "evidence_policy": {
+                        "reason": "Data workspace produces many small result shards.",
+                        "generated_path": "artifacts/generated",
+                        "evidence_paths": ["artifacts/results"],
+                        "thresholds": {"untracked_count": 3},
+                    },
+                }),
+                encoding="utf-8",
+            )
+            subprocess.run(["git", "add", "."], cwd=workspace, check=True)
+            subprocess.run(
+                ["git", "-c", "user.name=Test", "-c", "user.email=test@example.com",
+                 "commit", "-qm", "base"],
+                cwd=workspace,
+                check=True,
+            )
+            for number in range(4):
+                (workspace / f"result-{number}.json").write_text("{}\n", encoding="utf-8")
+
+            result = run_script(
+                "scripts/workspace_preflight.py",
+                "--workspace",
+                str(workspace),
+                "--json",
+                "--strict",
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+            count_finding = next(
+                finding for finding in payload["findings"]
+                if finding["code"] == "UNTRACKED_COUNT"
+            )
+
+            self.assertEqual(result.returncode, 1)
+            self.assertEqual(payload["schema_version"], 2)
+            self.assertEqual(payload["profile"]["generated_path"], "artifacts/generated")
+            self.assertIn("artifacts/results", payload["profile"]["evidence_paths"])
+            self.assertEqual(
+                payload["profile"]["risk_budget"]["untracked_count"]["source"],
+                "workspace-policy",
+            )
+            self.assertEqual(count_finding["source"], "workspace-policy")
+            self.assertEqual(count_finding["mitigation"], "prepare")
+
+    def test_preflight_rejects_unreasoned_or_unsafe_evidence_policy(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace)
+            (workspace / ".tool-shed-policy.json").write_text(
+                json.dumps({
+                    "schema_version": 1,
+                    "evidence_policy": {
+                        "generated_path": "../outside",
+                        "thresholds": {"untracked_count": 999999},
+                    },
+                }),
+                encoding="utf-8",
+            )
+
+            result = run_script(
+                "scripts/workspace_preflight.py",
+                "--workspace",
+                str(workspace),
+                "--json",
+                "--strict",
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+            messages = "\n".join(finding["message"] for finding in payload["findings"])
+
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("requires a non-empty reason", messages)
+            self.assertIn("repository-relative path", messages)
+            self.assertLessEqual(
+                payload["profile"]["risk_budget"]["untracked_count"]["value"],
+                payload["profile"]["risk_budget"]["untracked_count"]["hard_limit"],
+            )
+
+    def test_generated_evidence_migration_requires_explicit_approval_and_preserves_dirty_work(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            workspace = root / "workspace with spaces"
+            workspace.mkdir()
+            self.init_repository(workspace, "/work/evidence/generated/\n")
+            evidence = workspace / "work" / "evidence"
+            evidence.mkdir(parents=True)
+            raw = evidence / "Device Capture.SLG"
+            raw.write_bytes(b"\0raw-device-capture")
+            summary = evidence / "summary.md"
+            summary.write_text("# keep\n", encoding="utf-8")
+            source = workspace / "firmware.c"
+            source.write_text("stable\n", encoding="utf-8")
+            subprocess.run(["git", "add", "."], cwd=workspace, check=True)
+            subprocess.run(
+                ["git", "-c", "user.name=Test", "-c", "user.email=test@example.com",
+                 "commit", "-qm", "base"],
+                cwd=workspace,
+                check=True,
+            )
+            source.write_text("dirty owner work\n", encoding="utf-8")
+            output = root / "migration-output"
+
+            prepared = run_script(
+                "scripts/migrate_generated_evidence.py",
+                "prepare",
+                "--workspace",
+                str(workspace),
+                "--output",
+                str(output),
+            )
+            manifest_path = Path(prepared.stdout.strip())
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+            repeat_output = root / "migration-output-repeat"
+            repeated = run_script(
+                "scripts/migrate_generated_evidence.py",
+                "prepare",
+                "--workspace",
+                str(workspace),
+                "--output",
+                str(repeat_output),
+            )
+            repeated_payload = json.loads(Path(repeated.stdout.strip()).read_text(encoding="utf-8"))
+            raw_item = next(item for item in payload["candidates"] if item["path"].endswith(".SLG"))
+            summary_item = next(item for item in payload["candidates"] if item["path"].endswith(".md"))
+
+            self.assertEqual(raw_item["classification"], "migrate")
+            self.assertEqual(summary_item["classification"], "keep")
+            self.assertTrue((output / "evidence-backup.tar").is_file())
+            self.assertEqual(payload["candidates"], repeated_payload["candidates"])
+            self.assertEqual(payload["archive"]["sha256"], repeated_payload["archive"]["sha256"])
+            refused = run_script(
+                "scripts/migrate_generated_evidence.py",
+                "apply",
+                "--workspace",
+                str(workspace),
+                "--manifest",
+                str(manifest_path),
+                check=False,
+            )
+            self.assertNotEqual(refused.returncode, 0)
+            self.assertIn("approved must be true", refused.stderr)
+
+            payload["approved"] = True
+            raw_item["approved"] = True
+            manifest_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+            applied = run_script(
+                "scripts/migrate_generated_evidence.py",
+                "apply",
+                "--workspace",
+                str(workspace),
+                "--manifest",
+                str(manifest_path),
+            )
+
+            self.assertIn("Moved 1 approved file", applied.stdout)
+            self.assertFalse(raw.exists())
+            self.assertTrue((evidence / "generated" / "Device Capture.SLG").exists())
+            self.assertEqual(summary.read_text(encoding="utf-8"), "# keep\n")
+            self.assertEqual(source.read_text(encoding="utf-8"), "dirty owner work\n")
+            with tarfile.open(output / "evidence-backup.tar", "r") as archive:
+                restored = archive.extractfile("work/evidence/Device Capture.SLG")
+                self.assertIsNotNone(restored)
+                self.assertEqual(restored.read(), b"\0raw-device-capture")
+
+    def test_profile_matrix_handles_non_firmware_workspace_shapes(self) -> None:
+        profiles = {
+            "application": ("test-results/session.trace", b"request trace\n"),
+            "data": ("artifacts/results/model.bin", b"\0model"),
+            "media": ("validation/captures/walkthrough.mp4", b"\0video"),
+            "documentation": ("work/evidence/review.md", b"# reviewed\n"),
+        }
+        for name, (relative, content) in profiles.items():
+            with self.subTest(profile=name), tempfile.TemporaryDirectory() as temp:
+                workspace = Path(temp)
+                self.init_repository(workspace)
+                evidence_root = str(Path(relative).parent)
+                policy = {
+                    "schema_version": 1,
+                    "evidence_policy": {
+                        "reason": f"{name} workspace evidence convention",
+                        "evidence_paths": [evidence_root],
+                        "generated_path": f"{evidence_root}/generated",
+                    },
+                }
+                (workspace / ".tool-shed-policy.json").write_text(
+                    json.dumps(policy),
+                    encoding="utf-8",
+                )
+                path = workspace / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(content)
+                subprocess.run(["git", "add", "."], cwd=workspace, check=True)
+                subprocess.run(
+                    ["git", "-c", "user.name=Test", "-c", "user.email=test@example.com",
+                     "commit", "-qm", "base"],
+                    cwd=workspace,
+                    check=True,
+                )
+
+                result = run_script(
+                    "scripts/workspace_preflight.py",
+                    "--workspace",
+                    str(workspace),
+                    "--json",
+                )
+                payload = json.loads(result.stdout)
+
+                self.assertEqual(payload["profile"]["evidence"]["tracked_count"], 1)
+                self.assertIn(evidence_root, payload["profile"]["evidence_paths"])
+                codes = {finding["code"] for finding in payload["findings"]}
+                if name == "documentation":
+                    self.assertNotIn("BINARY_IN_VERSIONED_WORK", codes)
+                elif relative.startswith("work/"):
+                    self.assertIn("BINARY_IN_VERSIONED_WORK", codes)
+
+    def test_firmware_incident_path_counts_remain_a_compact_regression_profile(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace)
+            evidence = workspace / "work" / "evidence"
+            evidence.mkdir(parents=True)
+            for number in range(2065):
+                suffix = ".SLG" if number < 1488 else ".bin"
+                (evidence / f"tracked-{number:04d}{suffix}").write_bytes(b"\0")
+            subprocess.run(["git", "add", "."], cwd=workspace, check=True)
+            subprocess.run(
+                ["git", "-c", "user.name=Test", "-c", "user.email=test@example.com",
+                 "commit", "-qm", "incident fixture"],
+                cwd=workspace,
+                check=True,
+            )
+            for number in range(124):
+                (evidence / f"campaign-{number:03d}.log").write_text("raw\n", encoding="utf-8")
+
+            result = run_script(
+                "scripts/workspace_preflight.py",
+                "--workspace",
+                str(workspace),
+                "--json",
+                "--strict",
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+            codes = {finding["code"] for finding in payload["findings"]}
+
+            self.assertEqual(result.returncode, 1)
+            self.assertEqual(payload["metrics"]["tracked_evidence_count"], 2065)
+            self.assertEqual(payload["metrics"]["untracked_evidence_count"], 124)
+            self.assertIn("UNTRACKED_COUNT", codes)
+            self.assertIn("BINARY_IN_VERSIONED_WORK", codes)
 
     def test_onboard_existing_project_refreshes_indexes(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

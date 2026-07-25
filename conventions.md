@@ -48,8 +48,41 @@ machine-local evidence. Existing workspaces may add an exact local exclusion wit
 deleting existing evidence.
 
 Run `python3 tool_shed/scripts/workspace_preflight.py --workspace .` before long validation
-campaigns. The check warns about excessive untracked count or bytes, binaries in versioned
-`work/` paths, oversized tracked diffs, and visible Tool Shed backup archives. It is read-only.
+campaigns. The check emits a workspace profile, derives explainable risk budgets from repository
+scale and explicit local policy, and warns about excessive untracked count or bytes, binaries in
+versioned `work/` paths, oversized tracked diffs, and visible Tool Shed backup archives. It is
+read-only. General hard safety limits cap local overrides so an already unsafe workspace cannot
+normalize the same risk away.
+
+An optional repository-root `.tool-shed-policy.json` may adapt evidence handling:
+
+```json
+{
+  "schema_version": 1,
+  "evidence_policy": {
+    "reason": "This data workspace emits many small result shards.",
+    "generated_path": "artifacts/generated",
+    "evidence_paths": ["artifacts/results", "reports/evidence"],
+    "thresholds": {
+      "untracked_count": 200,
+      "untracked_bytes": 104857600,
+      "diff_bytes": 2097152
+    }
+  }
+}
+```
+
+The reason is mandatory. Generated and evidence paths must be repository-relative; the generated
+path must be separately ignored by repository policy. Every effective threshold reports whether it
+came from workspace policy or the adaptive baseline. Invalid policy is an actionable preflight
+finding.
+
+For existing tracked raw evidence, use
+`scripts/migrate_generated_evidence.py prepare --workspace . --output <outside-repository-path>`.
+Preparation writes a candidate manifest and SHA-256-verified archive outside the repository without
+changing Git or working files. Apply requires top-level and per-file approval, revalidates source
+hashes and the archive, refuses a destination that is not ignored, and moves only explicitly
+approved candidates. It never rewrites Git history.
 
 `docs/` contains settled project truth:
 

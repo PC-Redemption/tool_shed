@@ -26,6 +26,8 @@ GUIDANCE = f"""{GUIDANCE_START}
 - Summarize evidence through small versioned manifests instead of returning raw output.
 - Avoid passing hundreds of literal paths to `git diff --no-index`.
 - Before long automated campaigns, verify generated-output directories are ignored.
+- Run Tool Shed workspace preflight and use its profile-specific mitigation before bulk output.
+- Never run migration apply without an exact approved manifest and verified archive.
 - Commit or checkpoint meaningful source and planning changes before large test runs.
 - Start or fork a fresh Codex task after exceptionally large qualification campaigns.
 {GUIDANCE_END}
@@ -145,7 +147,7 @@ def main() -> int:
         else:
             print("Repository policy: add /tool_shed/ to the repository-root .gitignore.")
             failed = True
-    _, findings, _ = inspect(root)
+    _, findings, _, _ = inspect(root)
     if findings:
         print("Workspace preflight warnings:")
         for finding in findings:

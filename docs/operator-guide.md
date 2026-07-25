@@ -141,10 +141,11 @@ Installations are disconnected snapshots: ignore `/tool_shed/`, remove its `.git
 project-specific `/work/` by default. An update replaces only Tool Shed machinery and must preserve
 `work/`, project docs, and code.
 
-For an existing installation, copy the guarded request from
-[updating-existing-snapshot.md](updating-existing-snapshot.md). It selects the highest stable
-semantic-version tag, prevents accidental downgrades, verifies release provenance, creates a
-recoverable backup, and restores that backup when post-install validation fails.
+Copy the unified request from
+[install-or-update-snapshot.md](install-or-update-snapshot.md). Codex determines whether the
+workspace needs a new installation or an existing-snapshot update, then applies the same stable-tag
+and two-commit provenance checks. Updates receive a recoverable backup; both paths preserve project
+`work/`.
 
 After installation or update, run:
 
@@ -164,6 +165,31 @@ payloads under ignored `work/evidence/generated/`. Run
 `python3 tool_shed/scripts/workspace_preflight.py --workspace .` before large campaigns.
 Use `.git/info/exclude` for additional machine-local evidence paths.
 
+Preflight adapts to the repository it inspects. Its JSON output includes the discovered workspace
+profile, effective risk budget, policy source for each threshold, finding severity, and suggested
+mitigation. Repository-root `.tool-shed-policy.json` can declare a reasoned generated path and
+threshold adjustments; hard safety limits remain in force and invalid or reason-free policy is
+reported.
+
+For raw evidence that is already tracked, prepare a reversible migration:
+
+```bash
+python3 tool_shed/scripts/migrate_generated_evidence.py prepare \
+  --workspace . \
+  --output /safe/outside/path/evidence-migration
+```
+
+Preparation is read-only with respect to the repository. It classifies candidates as `keep`,
+`migrate`, or `review`, records hashes and reasons, and creates an archive outside the repository.
+Apply is a separate human-gated step: approve the manifest and individual migrate candidates, then
+run `migrate_generated_evidence.py apply`. The helper revalidates the archive and source hashes,
+requires an ignored destination, changes only approved files, and never rewrites history.
+
+Rollback remains deliberate: inspect and extract `evidence-backup.tar` into a separate recovery
+directory, verify restored hashes against `evidence-migration.json`, and copy only selected files
+back to their recorded original paths. Never extract an unreviewed archive directly over the
+repository.
+
 An intentional exception uses:
 
 ```json
@@ -172,6 +198,23 @@ An intentional exception uses:
   "work_git_policy": {
     "ignore": true,
     "reason": "Repository-specific reason for excluding project work artifacts."
+  }
+}
+```
+
+Evidence-specific adaptation can coexist in the same policy file:
+
+```json
+{
+  "schema_version": 1,
+  "evidence_policy": {
+    "reason": "UI validation produces many screenshots and recordings.",
+    "generated_path": "test-results/generated",
+    "evidence_paths": ["test-results", "playwright-report"],
+    "thresholds": {
+      "untracked_count": 150,
+      "untracked_bytes": 209715200
+    }
   }
 }
 ```

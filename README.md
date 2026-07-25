@@ -140,9 +140,36 @@ Before a long campaign, run:
 python3 tool_shed/scripts/workspace_preflight.py --workspace .
 ```
 
-Defaults warn above 50 untracked files, 25 MiB of untracked data, or a 1 MiB tracked diff. The
-preflight also detects binary files beneath versioned `work/` paths and visible root
-`tool_shed.backup-*.tar` archives. It never deletes, moves, ignores, or rewrites evidence.
+Preflight profiles the workspace, including repository scale, tracked and untracked evidence,
+dominant evidence types, large files, dirty state, and explicit evidence policy. It derives
+explainable thresholds from that profile while retaining non-overridable hard safety limits.
+Defaults start at 50 untracked files, 25 MiB of untracked data, or a 1 MiB tracked diff and scale
+for larger repositories. It also detects binary files beneath versioned `work/` paths and visible
+root `tool_shed.backup-*.tar` archives. It never deletes, moves, ignores, or rewrites evidence.
+
+Use repository-root `.tool-shed-policy.json` to declare a reasoned generated path or threshold
+adjustments for the current workspace. Policy is visible in JSON output, cannot silently bypass
+hard limits, and never makes a hazardous existing baseline safe merely because it already exists.
+See [conventions.md](conventions.md) for the schema.
+
+For a repository that already tracks raw evidence, prepare a reversible migration outside the
+repository:
+
+```bash
+python3 tool_shed/scripts/migrate_generated_evidence.py prepare \
+  --workspace . \
+  --output /safe/outside/path/evidence-migration
+```
+
+Review the generated manifest, set top-level `approved` and only intended per-candidate `approved`
+fields to `true`, then run its `apply` subcommand. Apply verifies the archive, source hashes, exact
+workspace, and ignored destination before moving approved files. It does not stage, commit, delete
+the rollback archive, or rewrite Git history.
+
+For rollback, inspect and extract `evidence-backup.tar` into a separate recovery directory, verify
+the restored file hashes against `evidence-migration.json`, then copy only the intended files back
+to their recorded original paths. Do not extract an unreviewed archive directly over the
+repository.
 
 Use repository-root `.gitignore` for the shared generated path. Use `.git/info/exclude` for
 machine-local evidence or to adopt the mitigation around existing evidence without relocating it.
@@ -269,27 +296,16 @@ use tool_shed and complete work/wp/active/wp-example.md
 
 Codex should read README/docs first, then `work/index.md`, then active artifacts. It should use `work/index.json` only when automation needs machine-readable navigation. Codex should then run the read-only work-state review and surface findings before choosing the next action.
 
-### Codex install and update prompts
-
-For a new installation:
+### Codex install or update prompt
 
 ```text
-Install Tool Shed into this workspace as a disconnected snapshot. Read tool_shed/README.md,
-selection.md, conventions.md, and existing-projects.md. Ignore /tool_shed/ but track /work/ by
-default, initialize the work tree, run the work-state review, and report validation results.
+Use the single-workspace request in docs/install-or-update-snapshot.md. First detect whether
+tool_shed/ is an existing disconnected snapshot. Update it when present or install it when absent,
+using the highest stable tag and verified two-commit release provenance.
 ```
 
-For an existing installation:
-
-```text
-Use the guarded single-workspace update request in
-docs/updating-existing-snapshot.md. Select the highest stable semantic-version tag, reject
-downgrades, verify release provenance and the temporary clone before replacement, preserve a
-recoverable backup, and roll back if post-install validation fails.
-```
-
-An update replaces only the ignored `tool_shed/` machinery. It must never replace or delete the
-project's tracked `work/` artifacts.
+Installation or update changes only the ignored `tool_shed/` machinery plus documented installer
+outputs. It must never replace or delete the project's tracked `work/` artifacts.
 
 ## Existing Projects
 

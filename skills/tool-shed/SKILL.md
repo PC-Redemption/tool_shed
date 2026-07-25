@@ -146,6 +146,27 @@ python3 <shed>/scripts/review_work_state.py --workspace <workspace>
 The review must not report reconciliation when `work/` is ignored without the explicit exception.
 Use `--strict` when that policy violation should fail automation.
 
+Profile generated-evidence risk before long campaigns:
+
+```bash
+python3 <shed>/scripts/workspace_preflight.py --workspace <workspace> --json
+```
+
+The preflight adapts to the repository and optional `.tool-shed-policy.json`, while retaining hard
+safety limits. Surface its workspace profile, policy sources, risk budgets, and mitigations. It is
+read-only.
+
+For already tracked raw evidence, prepare outside the repository before proposing cleanup:
+
+```bash
+python3 <shed>/scripts/migrate_generated_evidence.py prepare \
+  --workspace <workspace> \
+  --output <outside-repository-path>
+```
+
+Preparation is non-mutating. Apply requires a verified archive plus explicit top-level and per-file
+approval. Never infer apply approval from a request to inspect, profile, plan, install, or update.
+
 Check local version or canonical update status:
 
 ```bash
@@ -189,5 +210,8 @@ After creating or moving artifacts:
 - Check parent/map links when relevant.
 - Scan for stale paths after moving completed workpackages.
 - Run the work-state review and surface orphan, stale, disposition, and plan-drift findings.
+- Run workspace preflight when validation may produce or expose bulk evidence.
+- Keep migration preparation outside the repository, and never run migration apply without
+  explicit approval of the exact manifest.
 - Run relevant script syntax checks, such as `python3 -m py_compile`, when scripts changed.
 - Keep git changes scoped to the shed/work artifacts involved.

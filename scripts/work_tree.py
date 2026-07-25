@@ -59,7 +59,10 @@ Run `python3 tool_shed/scripts/update_work_index.py --workspace .` after creatin
 Use `python3 tool_shed/scripts/complete_workpackage.py work/wp/active/wp-example.md --workspace .` to move active workpackages to completed.
 Run `python3 tool_shed/scripts/check_stale_paths.py --workspace .` after moving or completing artifacts.
 Run `python3 tool_shed/scripts/review_work_state.py --workspace .` during orientation and regular planning review.
-Run `python3 tool_shed/scripts/workspace_preflight.py --workspace .` before long automated campaigns.
+Run `python3 tool_shed/scripts/workspace_preflight.py --workspace . --json` before long automated
+campaigns. Review its workspace profile, policy sources, risk budgets, and mitigations. For
+already tracked raw evidence, use `migrate_generated_evidence.py prepare` with an output path
+outside the repository; apply requires an exact approved manifest and verified archive.
 """
 
 
