@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
+import sys
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
@@ -193,6 +195,7 @@ def render_json(artifacts: list[Artifact]) -> str:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate work/index.md and work/index.json from tool_shed artifact headers.")
     parser.add_argument("--workspace", default=".", help="Project workspace root. Defaults to current directory.")
+    parser.add_argument("--no-preflight", action="store_true", help="Skip the workspace hydration preflight.")
     return parser.parse_args()
 
 
@@ -208,6 +211,13 @@ def main() -> int:
     json_path.write_text(render_json(artifacts), encoding="utf-8")
     print(index_path)
     print(json_path)
+    if not args.no_preflight:
+        preflight = Path(__file__).resolve().with_name("workspace_preflight.py")
+        if preflight.exists():
+            subprocess.run(
+                [sys.executable, str(preflight), "--workspace", str(workspace)],
+                check=False,
+            )
     return 0
 
 

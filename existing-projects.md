@@ -25,6 +25,8 @@ python3 tool_shed/scripts/install_into_workspace.py .
 The installer preserves every existing `work/` file. When a stale legacy ignore is present, it
 reports the exact source and rule, previews the number and size of files that will become
 trackable, and exits nonzero until the rule is removed or a valid exception is documented.
+It preserves existing `.gitignore` and `AGENTS.md` content while appending missing Tool Shed
+generated-output rules and Codex guidance.
 
 2. Discover the project shape:
 
@@ -59,6 +61,10 @@ python3 tool_shed/scripts/new_artifact.py existing-project-inventory "Project na
 ```bash
 python3 tool_shed/scripts/update_work_index.py --workspace .
 ```
+
+Review workspace-preflight warnings before continuing. Existing raw evidence does not need to
+move: add its exact path to `.git/info/exclude`, direct future raw output to
+`work/evidence/generated/`, and keep small summaries and manifests versioned in `work/evidence/`.
 
 6. Fill the project map with:
 

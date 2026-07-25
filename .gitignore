@@ -11,3 +11,8 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.bak
+
+# Tool Shed workspace-local and generated outputs
+/tool_shed/
+/tool_shed.backup-*.tar
+/work/evidence/generated/

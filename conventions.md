@@ -31,6 +31,26 @@ Git ignore rule and a valid repository-root `.tool-shed-policy.json` with
 - inventories
 - decision records
 
+## Validation Evidence
+
+`work/evidence/` is the standard Tool Shed repository for validation evidence.
+
+- Version human-readable evidence such as `work/evidence/**/*.md`.
+- Version selected small JSON summaries and manifests when they are useful project records.
+- Store raw captures, dumps, images, device captures, large logs, and test payloads under
+  `work/evidence/generated/`.
+- Keep a small versioned manifest outside the ignored generated directory. Record hashes,
+  timestamps, target identity, commands or test IDs, outcomes, and relative artifact locations.
+
+The installer adds `/work/evidence/generated/` to the repository-root `.gitignore`. Use
+`.gitignore` for this shared project convention. Use `.git/info/exclude` for additional
+machine-local evidence. Existing workspaces may add an exact local exclusion without moving or
+deleting existing evidence.
+
+Run `python3 tool_shed/scripts/workspace_preflight.py --workspace .` before long validation
+campaigns. The check warns about excessive untracked count or bytes, binaries in versioned
+`work/` paths, oversized tracked diffs, and visible Tool Shed backup archives. It is read-only.
+
 `docs/` contains settled project truth:
 
 - operator docs
@@ -222,15 +242,3 @@ Do not delete or rewrite old decisions to make history look tidy.
 - Add `Superseded By:` to the old ADR.
 - Promote the current operating policy to docs or README files.
 - Keep the old ADR as historical context.
-
-## Lessons Rule
-
-Lessons should store routing and memory, not bulky templates.
-
-Good lesson:
-
-> Use `tool_shed/selection.md` before choosing a work artifact.
-
-Bad lesson:
-
-> A full copy of every artifact template.

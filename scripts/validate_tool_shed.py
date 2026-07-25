@@ -57,6 +57,8 @@ def smoke_temp_workspace() -> None:
     with tempfile.TemporaryDirectory(prefix="tool-shed-validate-") as temp:
         workspace = Path(temp)
         run([sys.executable, str(ROOT / "scripts" / "install_into_workspace.py"), str(workspace)])
+        if not (workspace / "work" / "evidence" / "generated").is_dir():
+            raise SystemExit("installer did not create the standard generated-evidence directory")
         run(
             [
                 sys.executable,

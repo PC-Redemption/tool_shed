@@ -20,6 +20,7 @@ TRACKED_GLOBS = (
     "skills/tool-shed/SKILL.md",
     "skills/tool-shed/agents/*.yaml",
     "templates/*.md",
+    "templates/*.json",
 )
 VERSION = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
 COMMIT = re.compile(r"^[0-9a-f]{7,40}$")

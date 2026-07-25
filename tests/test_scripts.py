@@ -772,6 +772,115 @@ Next Action: keep going
 
             readme = (workspace / "work" / "README.md").read_text(encoding="utf-8")
             self.assertIn("complete_workpackage.py", readme)
+            self.assertTrue((workspace / "work" / "evidence").is_dir())
+            self.assertTrue((workspace / "work" / "evidence" / "generated").is_dir())
+
+    def test_installer_preserves_gitignore_and_adds_generated_evidence_convention(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp) / "workspace with spaces"
+            workspace.mkdir()
+            original = "# owner rules\n/build output/\n"
+            self.init_repository(workspace, original)
+
+            first = run_script("scripts/install_into_workspace.py", str(workspace))
+            second = run_script("scripts/install_into_workspace.py", str(workspace))
+
+            gitignore = (workspace / ".gitignore").read_text(encoding="utf-8")
+            self.assertTrue(gitignore.startswith(original))
+            self.assertEqual(gitignore.count("/tool_shed/"), 1)
+            self.assertEqual(gitignore.count("/tool_shed.backup-*.tar"), 1)
+            self.assertEqual(gitignore.count("/work/evidence/generated/"), 1)
+            self.assertIn("Workspace preflight", first.stdout)
+            self.assertEqual(second.returncode, 0)
+            guidance = (workspace / "AGENTS.md").read_text(encoding="utf-8")
+            self.assertEqual(guidance.count("BEGIN TOOL SHED GENERATED EVIDENCE GUIDANCE"), 1)
+
+    def test_installer_warns_before_existing_generated_outputs_become_ignored(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace)
+            generated = workspace / "work" / "evidence" / "generated"
+            generated.mkdir(parents=True)
+            evidence = generated / "existing capture.bin"
+            evidence.write_bytes(b"preserve-me")
+
+            result = run_script("scripts/install_into_workspace.py", str(workspace))
+
+            self.assertIn("Adoption warning:", result.stdout)
+            self.assertIn("1 existing file(s)", result.stdout)
+            self.assertEqual(evidence.read_bytes(), b"preserve-me")
+
+    def test_preflight_ignores_raw_evidence_and_keeps_summaries_visible(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp) / "Windows Path With Spaces"
+            workspace.mkdir()
+            self.init_repository(workspace)
+            run_script("scripts/install_into_workspace.py", str(workspace))
+            generated = workspace / "work" / "evidence" / "generated"
+            for number in range(60):
+                (generated / f"device C drive capture {number}.bin").write_bytes(b"\0" * 128)
+            summary = workspace / "work" / "evidence" / "campaign summary.md"
+            summary.write_text("# Passed\n", encoding="utf-8")
+            manifest = workspace / "work" / "evidence" / "campaign manifest.json"
+            manifest.write_text('{"outcome":"passed"}\n', encoding="utf-8")
+
+            result = run_script(
+                "scripts/workspace_preflight.py",
+                "--workspace",
+                str(workspace),
+                "--json",
+                "--strict",
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(payload["findings"], [])
+            self.assertLess(payload["metrics"]["untracked_count"], 50)
+            status = subprocess.run(
+                ["git", "status", "--short", "--untracked-files=all"],
+                cwd=workspace,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            ).stdout
+            self.assertIn("campaign summary.md", status)
+            self.assertIn("campaign manifest.json", status)
+            self.assertNotIn("device C drive capture", status)
+
+    def test_preflight_warns_for_versioned_binary_large_diff_and_visible_backup(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace)
+            (workspace / "work" / "evidence").mkdir(parents=True)
+            binary = workspace / "work" / "evidence" / "legacy capture.bin"
+            binary.write_bytes(b"\0binary")
+            tracked = workspace / "source.txt"
+            tracked.write_text("base\n", encoding="utf-8")
+            subprocess.run(["git", "add", "."], cwd=workspace, check=True)
+            subprocess.run(
+                ["git", "-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "base"],
+                cwd=workspace,
+                check=True,
+            )
+            tracked.write_text("x" * 256, encoding="utf-8")
+            (workspace / "tool_shed.backup-2026-07-25.tar").write_bytes(b"backup")
+
+            result = run_script(
+                "scripts/workspace_preflight.py",
+                "--workspace",
+                str(workspace),
+                "--diff-bytes",
+                "64",
+                "--json",
+                "--strict",
+                check=False,
+            )
+            codes = {finding["code"] for finding in json.loads(result.stdout)["findings"]}
+
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("BINARY_IN_VERSIONED_WORK", codes)
+            self.assertIn("DIFF_BYTES", codes)
+            self.assertIn("VISIBLE_TOOL_SHED_BACKUP", codes)
 
     def test_onboard_existing_project_refreshes_indexes(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

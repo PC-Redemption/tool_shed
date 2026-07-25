@@ -15,6 +15,8 @@ WORK_DIRS = [
     "work/checklists",
     "work/inventories",
     "work/decisions",
+    "work/evidence",
+    "work/evidence/generated",
 ]
 
 
@@ -41,6 +43,14 @@ Use `work/index.md` as the first orientation surface after README/docs. Use `wor
 - Inventories: `work/inventories/`
 - Decisions: `work/decisions/`
 
+## Evidence
+
+- Keep human-readable evidence in `work/evidence/**/*.md`.
+- Small JSON summaries and manifests may be versioned.
+- Put raw captures, dumps, images, large logs, and test payloads in `work/evidence/generated/`.
+- Record hashes, timestamps, target identity, command or test IDs, outcomes, and relative artifact paths in a small versioned manifest outside the generated directory.
+- `work/evidence/generated/` is ignored by the shared project convention. Use `.git/info/exclude` instead for additional machine-local evidence paths.
+
 ## Rule
 
 Completed work artifacts are history. Settled truth belongs in `docs/` or `README.md`.
@@ -49,6 +59,7 @@ Run `python3 tool_shed/scripts/update_work_index.py --workspace .` after creatin
 Use `python3 tool_shed/scripts/complete_workpackage.py work/wp/active/wp-example.md --workspace .` to move active workpackages to completed.
 Run `python3 tool_shed/scripts/check_stale_paths.py --workspace .` after moving or completing artifacts.
 Run `python3 tool_shed/scripts/review_work_state.py --workspace .` during orientation and regular planning review.
+Run `python3 tool_shed/scripts/workspace_preflight.py --workspace .` before long automated campaigns.
 """
 
 

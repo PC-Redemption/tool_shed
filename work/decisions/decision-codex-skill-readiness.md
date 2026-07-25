@@ -14,7 +14,7 @@ Is `tool_shed` ready to be encoded as a Codex skill, and if so, what is the next
 
 | Option | Pros | Cons | Risk | Pick |
 | --- | --- | --- | --- | --- |
-| Wait for more foundation work | Avoids encoding churn | Delays useful consistency gains | Codex continues relying on chat memory and lessons only | No |
+| Wait for more foundation work | Avoids encoding churn | Delays useful consistency gains | Codex continues relying on chat memory only | No |
 | Design the skill now, create after choosing target | Captures stable behavior without prematurely installing | Requires one more approval/location choice | Small delay before use | Yes |
 | Create/install the skill immediately | Fastest path to reusable behavior | Needs target location and validation setup; may skip design review | Skill may encode repo-local assumptions incorrectly | No |
 | Bundle all templates/scripts into the skill | Portable without repo checkout | Duplicates `tool_shed` and creates drift | Skill becomes second source of truth | No |

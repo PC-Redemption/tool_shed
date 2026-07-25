@@ -38,9 +38,18 @@ def refresh_work_index(workspace: Path, shed: Path) -> None:
     index_script = shed / "scripts" / "update_work_index.py"
     if index_script.exists():
         subprocess.run(
-            [sys.executable, str(index_script), "--workspace", str(workspace)],
+            [sys.executable, str(index_script), "--workspace", str(workspace), "--no-preflight"],
             check=True,
             stdout=subprocess.DEVNULL,
+        )
+
+
+def run_preflight(workspace: Path, shed: Path) -> None:
+    preflight = shed / "scripts" / "workspace_preflight.py"
+    if preflight.exists():
+        subprocess.run(
+            [sys.executable, str(preflight), "--workspace", str(workspace)],
+            check=False,
         )
 
 
@@ -78,6 +87,7 @@ def main() -> int:
     write_artifact(map_path, map_content, force=args.force)
     write_artifact(inventory_path, inventory_content, force=args.force)
     refresh_work_index(workspace, shed)
+    run_preflight(workspace, shed)
 
     print(f"Initialized work tree under {workspace / 'work'}")
     print(map_path)

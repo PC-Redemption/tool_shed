@@ -153,6 +153,12 @@ policy. Without a valid repository-root `.tool-shed-policy.json` exception, the 
 the exact ignore source and matching rule and previews the count and size of ignored files. Remove
 only that root `/work/` rule. Do not delete, replace, relocate, or rewrite any `work/` evidence.
 
+`work/evidence/` is the standard validation-evidence repository. Keep Markdown summaries and
+small manifests versioned there, and write raw captures, dumps, images, large logs, and test
+payloads under ignored `work/evidence/generated/`. Run
+`python3 tool_shed/scripts/workspace_preflight.py --workspace .` before large campaigns.
+Use `.git/info/exclude` for additional machine-local evidence paths.
+
 An intentional exception uses:
 
 ```json

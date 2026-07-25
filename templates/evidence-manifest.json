@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "campaign_id": "replace-with-test-or-campaign-id",
+  "started_at": "YYYY-MM-DDTHH:MM:SSZ",
+  "completed_at": "YYYY-MM-DDTHH:MM:SSZ",
+  "target": {
+    "identity": "replace-with-target-identity",
+    "hardware": "replace-or-remove",
+    "firmware": "replace-or-remove"
+  },
+  "outcome": "passed|failed|incomplete",
+  "commands_or_test_ids": [
+    "replace-with-command-or-test-id"
+  ],
+  "artifacts": [
+    {
+      "path": "work/evidence/generated/relative-artifact.bin",
+      "sha256": "replace-with-sha256",
+      "bytes": 0,
+      "media_type": "application/octet-stream"
+    }
+  ],
+  "notes": "Keep this manifest small and versioned outside work/evidence/generated/."
+}

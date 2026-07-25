@@ -34,8 +34,6 @@ Use `tool_shed` when a project benefits from consistent structure for:
 - inventories
 - decision matrices
 
-Lessons should remember how to route to `tool_shed`, but `tool_shed` keeps the larger templates and conventions inspectable as local files.
-
 ## What This Is Not
 
 `tool_shed` is not:
@@ -72,6 +70,8 @@ project/
     checklists/
     inventories/
     decisions/
+    evidence/
+      generated/
   docs/
   ...
 ```
@@ -87,7 +87,7 @@ Canonical source: [https://github.com/PC-Redemption/tool_shed](https://github.co
 - Do not leave `tool_shed/.git/` in the project workspace.
 - Do not configure the workspace copy as a Git submodule.
 - Do not run `git pull`, `git push`, or otherwise return workspace changes to `PC-Redemption/tool_shed`.
-- Add `/tool_shed/` to the project repository's root `.gitignore` so Tool Shed stays outside the codebase history.
+- Add `/tool_shed/`, `/tool_shed.backup-*.tar`, and `/work/evidence/generated/` to the project repository's root `.gitignore`.
 - Keep project-specific artifacts in root `work/` and track that directory with the project by default.
 - Ignore root `work/` only through the explicit, documented repository exception described below. An existing `/work/` ignore is not evidence of an intentional exception.
 
@@ -122,6 +122,30 @@ An intentional exception must be documented in tracked repository-root
 The exception file makes the departure from the default reviewable; the matching Git ignore rule
 remains separate. Missing, malformed, or reason-free policy does not legitimize an ignored
 `work/`.
+
+## Validation Evidence
+
+`work/evidence/` is the standard repository for validation evidence. Markdown evidence and
+selected small JSON summaries or manifests remain visible and versionable. Raw `.bin`, `.dmp`,
+images, device captures, large logs, and test payloads belong in the ignored
+`work/evidence/generated/` directory.
+
+Each campaign should leave a small versioned manifest with hashes, timestamps, target identity,
+commands or test IDs, outcomes, and relative raw-artifact locations. The installer preserves
+existing `.gitignore` and `AGENTS.md` content and appends only missing Tool Shed rules.
+
+Before a long campaign, run:
+
+```bash
+python3 tool_shed/scripts/workspace_preflight.py --workspace .
+```
+
+Defaults warn above 50 untracked files, 25 MiB of untracked data, or a 1 MiB tracked diff. The
+preflight also detects binary files beneath versioned `work/` paths and visible root
+`tool_shed.backup-*.tar` archives. It never deletes, moves, ignores, or rewrites evidence.
+
+Use repository-root `.gitignore` for the shared generated path. Use `.git/info/exclude` for
+machine-local evidence or to adopt the mitigation around existing evidence without relocating it.
 
 ## Quick Start
 
@@ -318,9 +342,3 @@ This governance applies to intentional development checkouts of the canonical re
 The skill is also installed locally at `${CODEX_HOME:-~/.codex}/skills/tool-shed` for auto-discovery in this environment. It is an adoption/routing layer only: it teaches Codex to find and use workspace-local `tool_shed` files and scripts instead of duplicating templates.
 
 Initial skill packaging is local plus repo-packaged. Plugin packaging is intentionally deferred until real use shows it is needed.
-
-## Lessons Integration
-
-Recommended durable lesson:
-
-> If a workspace has `tool_shed/`, read `tool_shed/selection.md` before choosing a planning or documentation artifact. Do not default to workpackages. Use the smallest artifact that fits the task. Project-specific artifacts live under `work/`; `tool_shed/` contains only templates, rules, and helper scripts.
