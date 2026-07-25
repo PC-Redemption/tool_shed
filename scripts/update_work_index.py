@@ -207,8 +207,8 @@ def main() -> int:
     artifacts = discover_artifacts(work_dir)
     index_path = work_dir / "index.md"
     json_path = work_dir / "index.json"
-    index_path.write_text(render(artifacts), encoding="utf-8")
-    json_path.write_text(render_json(artifacts), encoding="utf-8")
+    index_path.write_text(render(artifacts), encoding="utf-8", newline="\n")
+    json_path.write_text(render_json(artifacts), encoding="utf-8", newline="\n")
     print(index_path)
     print(json_path)
     if not args.no_preflight:

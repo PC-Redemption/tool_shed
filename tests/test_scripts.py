@@ -729,6 +729,8 @@ Next Action: keep going
 
             index_md = workspace / "work" / "index.md"
             index_json = workspace / "work" / "index.json"
+            self.assertNotIn(b"\r\n", index_md.read_bytes())
+            self.assertNotIn(b"\r\n", index_json.read_bytes())
             self.assertIn("work/maps/map-demo.md", index_md.read_text(encoding="utf-8"))
             payload = json.loads(index_json.read_text(encoding="utf-8"))
             self.assertEqual(payload["schema_version"], 1)
@@ -1115,7 +1117,10 @@ Next Action: keep going
                 payload = json.loads(result.stdout)
 
                 self.assertEqual(payload["profile"]["evidence"]["tracked_count"], 1)
-                self.assertIn(evidence_root, payload["profile"]["evidence_paths"])
+                self.assertIn(
+                    evidence_root.replace("\\", "/"),
+                    payload["profile"]["evidence_paths"],
+                )
                 codes = {finding["code"] for finding in payload["findings"]}
                 if name == "documentation":
                     self.assertNotIn("BINARY_IN_VERSIONED_WORK", codes)

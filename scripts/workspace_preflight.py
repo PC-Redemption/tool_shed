@@ -124,14 +124,20 @@ def load_evidence_policy(repository: Path) -> tuple[dict[str, object], list[str]
 
 
 def evidence_path(policy: dict[str, object]) -> str:
-    value = str(policy.get("generated_path", "work/evidence/generated")).strip("/")
+    value = str(
+        policy.get("generated_path", "work/evidence/generated")
+    ).replace("\\", "/").strip("/")
     return value or "work/evidence/generated"
 
 
 def evidence_roots(policy: dict[str, object]) -> list[str]:
     configured = policy.get("evidence_paths")
     values = configured if isinstance(configured, list) else ["work/evidence"]
-    roots = {str(value).strip("/") for value in values if str(value).strip("/")}
+    roots = {
+        str(value).replace("\\", "/").strip("/")
+        for value in values
+        if str(value).replace("\\", "/").strip("/")
+    }
     roots.add(evidence_path(policy))
     return sorted(roots)
 
