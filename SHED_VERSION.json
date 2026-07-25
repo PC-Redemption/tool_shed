@@ -41,9 +41,9 @@
   },
   "manifest_schema_version": 2,
   "notes": "Adds guarded single-workspace instructions for updating existing Tool Shed snapshots.",
-  "release_commit": null,
+  "release_commit": "fa99f9c955f6fb3c17875ad25f7fcc1abb4dd5f6",
   "release_tag": "v0.3.2",
-  "released_at": null,
+  "released_at": "2026-07-25T15:15:22Z",
   "shed_version": "0.3.2",
   "updated_at": "2026-07-25"
 }
