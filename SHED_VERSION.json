@@ -42,9 +42,9 @@
   },
   "manifest_schema_version": 2,
   "notes": "Normalize workspace evidence paths and generated text across platforms.",
-  "release_commit": null,
+  "release_commit": "47459a261ee58e82f897846c2c0910c2234e1a06",
   "release_tag": "v0.4.1",
-  "released_at": null,
+  "released_at": "2026-07-25T18:33:10Z",
   "shed_version": "0.4.1",
   "updated_at": "2026-07-25"
 }
