@@ -282,15 +282,10 @@ default, initialize the work tree, run the work-state review, and report validat
 For an existing installation:
 
 ```text
-Update this workspace's disconnected tool_shed snapshot from
-https://github.com/PC-Redemption/tool_shed.
-Preserve work/, docs/, and project code. Review the snapshot diff before replacement, never copy
-.git metadata, and do not treat an existing root /work/ ignore as repository policy unless
-.tool-shed-policy.json documents the exception. Run install_into_workspace.py to add missing work
-directories without overwriting artifacts and to inspect the parent repository ignore source. If
-it reports an undocumented ignore, show its exact source/rule and trackability preview, remove
-only that root rule, and do not delete, replace, relocate, or rewrite work/ evidence. Then refresh
-the index, review work state, check stale paths, and report validation results.
+Use the guarded single-workspace update request in
+docs/updating-existing-snapshot.md. Select the highest stable semantic-version tag, reject
+downgrades, verify release provenance and the temporary clone before replacement, preserve a
+recoverable backup, and roll back if post-install validation fails.
 ```
 
 An update replaces only the ignored `tool_shed/` machinery. It must never replace or delete the

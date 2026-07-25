@@ -2,11 +2,12 @@
   "artifact_model_version": "2026-07-24.1",
   "canonical_manifest_url": "https://raw.githubusercontent.com/PC-Redemption/tool_shed/main/SHED_VERSION.json",
   "content_hashes": {
-    "README.md": "3f0a9d8d920d0cf1c9f4e951eeb0985d8b91b44c93f42bdaa191cb29f789be73",
+    "README.md": "6d9219ace2d448aff89a9626e60348455029b3f370d31c93f15efcccf797c043",
     "conventions.md": "77a7b2c4c8a91cf107bc9f9460611bc815e1e8e7c9caf4c8549e5e7d625980e5",
     "docs/fleet-snapshot-updates.md": "f0bcc487bf3d15503458bf92588e8036ddfafe5bb7bbe946cc5bae0f6f5eaafb",
-    "docs/operator-guide.md": "7fbd952a4d82f350f23be8f3b6d55f013c9b9abd78c1607706af53c5bfaec9de",
+    "docs/operator-guide.md": "404710ca45ee665e9cd27742610028ad47d77a82dc5afcd3f30b8898d2eaa211",
     "docs/releasing.md": "dc0576eff06f8931dfe0e1226de2e83b32a97e2261e24f04ed9930eaf3dac799",
+    "docs/updating-existing-snapshot.md": "eb289cdede36f6fa0ada1ad8fa0edf8c71d0fa845d3ef5a7e2eabe073012e663",
     "existing-projects.md": "a480c969cac1d4c7885363875685671aca0e642008341f194bcd026dc3e9588a",
     "scripts/check_shed_version.py": "32ffe5325e4a36d14f119ceb6c5b989417851b1118fc5429a9d92e5b0bdd8bdc",
     "scripts/check_stale_paths.py": "ad6afbe8aaa7780eceeb7f9d16af48ebbd8d45d7bbb6244170307ee1809665a3",
@@ -39,10 +40,10 @@
     "templates/workpackage.md": "d090f861005b8e9d61e5b8f37dcacbc23e281e0394c1c350c9f9cc0a32b5c385"
   },
   "manifest_schema_version": 2,
-  "notes": "Adds generated-evidence hydration safeguards and removes retired shared-memory integration guidance.",
-  "release_commit": "b9ea8c92ec16e49fb16abe4f55c1a2e02546dc58",
-  "release_tag": "v0.3.1",
-  "released_at": "2026-07-25T15:09:29Z",
-  "shed_version": "0.3.1",
+  "notes": "Adds guarded single-workspace instructions for updating existing Tool Shed snapshots.",
+  "release_commit": null,
+  "release_tag": "v0.3.2",
+  "released_at": null,
+  "shed_version": "0.3.2",
   "updated_at": "2026-07-25"
 }

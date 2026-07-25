@@ -141,6 +141,11 @@ Installations are disconnected snapshots: ignore `/tool_shed/`, remove its `.git
 project-specific `/work/` by default. An update replaces only Tool Shed machinery and must preserve
 `work/`, project docs, and code.
 
+For an existing installation, copy the guarded request from
+[updating-existing-snapshot.md](updating-existing-snapshot.md). It selects the highest stable
+semantic-version tag, prevents accidental downgrades, verifies release provenance, creates a
+recoverable backup, and restores that backup when post-install validation fails.
+
 After installation or update, run:
 
 ```bash
