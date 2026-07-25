@@ -156,7 +156,11 @@ def main() -> int:
         raise SystemExit("--release-tag must equal v<version>")
     manifest["release_commit"] = args.release_commit
     manifest["released_at"] = args.released_at
-    MANIFEST.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    MANIFEST.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
     print(f"Updated {MANIFEST} with {len(hashes)} tracked files.")
     return 0
 
