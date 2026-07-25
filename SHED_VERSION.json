@@ -42,9 +42,9 @@
   },
   "manifest_schema_version": 2,
   "notes": "Adds workspace-adaptive evidence profiling, explainable risk budgets, and guarded reversible evidence migration.",
-  "release_commit": null,
+  "release_commit": "38c41d91119b3f8d72be0814bb571da06156b413",
   "release_tag": "v0.4.0",
-  "released_at": null,
+  "released_at": "2026-07-25T17:48:00Z",
   "shed_version": "0.4.0",
   "updated_at": "2026-07-25"
 }
