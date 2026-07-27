@@ -13,6 +13,7 @@ from workspace_preflight import inspect
 IGNORE_ENTRIES = (
     "/tool_shed/",
     "/tool_shed.backup-*.tar",
+    "/q&a/ask.txt",
     "/work/evidence/generated/",
 )
 
@@ -33,6 +34,19 @@ GUIDANCE = f"""{GUIDANCE_START}
 {GUIDANCE_END}
 """
 
+ASK_GUIDANCE_START = "<!-- BEGIN TOOL SHED Q&A GUIDANCE -->"
+ASK_GUIDANCE_END = "<!-- END TOOL SHED Q&A GUIDANCE -->"
+ASK_GUIDANCE = f"""{ASK_GUIDANCE_START}
+## Tool Shed Q&A inbox
+
+- Treat `ts:ask` and `ts: ask` as requests to read the workspace-root `q&a/ask.txt` and act on its current contents.
+- The file may contain a question, directions, or both. Apply the same scope, authorization, safety, and routing rules as if its contents were typed directly in chat.
+- If the file is empty or contains only comments and whitespace, report that there is nothing to act on.
+- Do not clear, rewrite, or delete `ask.txt` unless the user explicitly asks.
+- Summarize what was read and what was done in the final response.
+{ASK_GUIDANCE_END}
+"""
+
 
 def ensure_root_gitignore(repository: Path) -> list[str]:
     path = repository / ".gitignore"
@@ -51,11 +65,28 @@ def ensure_root_gitignore(repository: Path) -> list[str]:
 def ensure_codex_guidance(repository: Path) -> bool:
     path = repository / "AGENTS.md"
     existing = path.read_text(encoding="utf-8") if path.exists() else ""
-    if GUIDANCE_START in existing:
+    blocks = []
+    if GUIDANCE_START not in existing:
+        blocks.append(GUIDANCE)
+    if ASK_GUIDANCE_START not in existing:
+        blocks.append(ASK_GUIDANCE)
+    if not blocks:
         return False
     prefix = "" if not existing or existing.endswith("\n") else "\n"
     with path.open("a", encoding="utf-8", newline="\n") as handle:
-        handle.write(prefix + ("\n" if existing else "") + GUIDANCE)
+        handle.write(prefix + ("\n" if existing else "") + "\n".join(blocks))
+    return True
+
+
+def ensure_ask_inbox(workspace: Path) -> bool:
+    path = workspace / "q&a" / "ask.txt"
+    if path.exists():
+        return False
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "# Put a question or direction below, then type ts:ask in Codex.\n",
+        encoding="utf-8",
+    )
     return True
 
 
@@ -84,6 +115,7 @@ def main() -> int:
     args = parse_args()
     root = Path(args.workspace).expanduser().resolve()
     ensure_work_tree(root)
+    ask_created = ensure_ask_inbox(root)
 
     repository = inspect_work_ignore(root).repository
     if repository is not None:
@@ -99,7 +131,7 @@ def main() -> int:
                     "small versioned summaries or manifests outside generated/."
                 )
         if ensure_codex_guidance(repository):
-            print(f"Codex guidance: added generated-evidence rules to {repository / 'AGENTS.md'}.")
+            print(f"Codex guidance: updated Tool Shed rules in {repository / 'AGENTS.md'}.")
 
     index_script = Path(__file__).resolve().with_name("update_work_index.py")
     if index_script.exists():
@@ -110,6 +142,10 @@ def main() -> int:
         )
 
     print(f"Initialized work tree under {root / 'work'}")
+    if ask_created:
+        print(f"Initialized Tool Shed Q&A inbox at {root / 'q&a' / 'ask.txt'}")
+    else:
+        print(f"Preserved existing Tool Shed Q&A inbox at {root / 'q&a' / 'ask.txt'}")
     state = inspect_work_ignore(root)
     failed = False
     if state.match is None:

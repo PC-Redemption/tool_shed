@@ -91,6 +91,15 @@ approved candidates. It never rewrites Git history.
 - project/product docs
 - current-state docs
 
+`q&a/ask.txt` is a transient, workspace-local operator inbox:
+
+- the installer creates it without replacing existing contents
+- `ts:ask` reads its current question or directions and acts on them
+- blank lines and `#` comment lines are ignored
+- Codex preserves the file unless the operator explicitly asks to clear or rewrite it
+- the repository ignores it because durable project truth belongs in docs and durable work belongs
+  under `work/`
+
 ## Artifact Headers
 
 Every project artifact should start with a compact status block:
