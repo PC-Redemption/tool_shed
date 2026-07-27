@@ -15,4 +15,5 @@ Thumbs.db
 # Tool Shed workspace-local and generated outputs
 /tool_shed/
 /tool_shed.backup-*.tar
+/q&a/ask.txt
 /work/evidence/generated/

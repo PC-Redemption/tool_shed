@@ -27,6 +27,20 @@ ts: help update
 ts: help version
 ```
 
+## Q&A Inbox
+
+The installer creates a workspace-local scratch inbox at `q&a/ask.txt`. Put a question or
+direction there while Codex is busy, then type:
+
+```text
+ts:ask
+```
+
+Codex reads the file and handles its current contents as though you sent them in chat. Blank lines
+and lines beginning with `#` are ignored. The file is preserved after processing so you can review
+or replace it; Tool Shed never clears it without an explicit request. The inbox is ignored by Git
+because it is transient operator input, not project documentation or durable work state.
+
 ## Common Use Cases
 
 ### Orient in a project

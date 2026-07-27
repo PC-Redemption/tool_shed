@@ -182,9 +182,14 @@ Operator help and use cases:
 ts: help
 ts: help spikes
 ts: help existing projects
+ts:ask
 ```
 
 See the [Tool Shed operator guide](docs/operator-guide.md) for the full use-case menu.
+
+The workspace installer also creates `q&a/ask.txt`, a Git-ignored operator inbox. Add a question
+or direction to that file and send `ts:ask`; Codex reads it and acts under the same safety and
+authorization rules as a normal chat request. It preserves the file after processing.
 
 Check the installed snapshot without using the network, or compare it with the canonical manifest:
 

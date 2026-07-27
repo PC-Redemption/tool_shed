@@ -27,6 +27,15 @@ When the request is `ts: help <topic>`, use the same guide and focus the respons
 If the guide is missing from an older snapshot, fall back to `README.md`, `selection.md`, and
 `existing-projects.md`, and mention that the snapshot does not yet include the operator guide.
 
+### Q&A Inbox Route
+
+When the request is `ts:ask` or `ts: ask`, read `<workspace>/q&a/ask.txt` and treat its current
+contents as the user's question or directions for this request. Apply the same scope,
+authorization, safety, and routing rules as if the contents were typed directly in chat. Ignore
+blank lines and lines beginning with `#`. If nothing remains, report that the inbox is empty. Do
+not clear, rewrite, or delete the file unless the user explicitly asks. In the final response,
+briefly summarize what the inbox requested and what was done.
+
 ### Version Routes
 
 When the request is `ts: version`, run

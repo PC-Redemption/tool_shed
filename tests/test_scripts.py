@@ -279,8 +279,10 @@ class ScriptTests(unittest.TestCase):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
 
         self.assertIn("ts: help", guide)
+        self.assertIn("ts:ask", guide)
         self.assertIn("## Common Use Cases", guide)
         self.assertIn("docs/operator-guide.md", skill)
+        self.assertIn("q&a/ask.txt", skill)
         self.assertIn("artifacts for a help-only request.", skill)
         self.assertIn("[Tool Shed operator guide](docs/operator-guide.md)", readme)
         self.assertIn("ts: version", skill)
@@ -792,6 +794,7 @@ Next Action: keep going
             self.assertIn("complete_workpackage.py", readme)
             self.assertTrue((workspace / "work" / "evidence").is_dir())
             self.assertTrue((workspace / "work" / "evidence" / "generated").is_dir())
+            self.assertTrue((workspace / "q&a" / "ask.txt").is_file())
 
     def test_installer_preserves_gitignore_and_adds_generated_evidence_convention(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -807,11 +810,25 @@ Next Action: keep going
             self.assertTrue(gitignore.startswith(original))
             self.assertEqual(gitignore.count("/tool_shed/"), 1)
             self.assertEqual(gitignore.count("/tool_shed.backup-*.tar"), 1)
+            self.assertEqual(gitignore.count("/q&a/ask.txt"), 1)
             self.assertEqual(gitignore.count("/work/evidence/generated/"), 1)
             self.assertIn("Workspace preflight", first.stdout)
             self.assertEqual(second.returncode, 0)
             guidance = (workspace / "AGENTS.md").read_text(encoding="utf-8")
             self.assertEqual(guidance.count("BEGIN TOOL SHED GENERATED EVIDENCE GUIDANCE"), 1)
+            self.assertEqual(guidance.count("BEGIN TOOL SHED Q&A GUIDANCE"), 1)
+
+    def test_installer_preserves_existing_ask_inbox(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            ask_path = workspace / "q&a" / "ask.txt"
+            ask_path.parent.mkdir(parents=True)
+            ask_path.write_text("Keep this question intact.\n", encoding="utf-8")
+
+            result = run_script("scripts/install_into_workspace.py", str(workspace))
+
+            self.assertEqual(ask_path.read_text(encoding="utf-8"), "Keep this question intact.\n")
+            self.assertIn("Preserved existing Tool Shed Q&A inbox", result.stdout)
 
     def test_installer_warns_before_existing_generated_outputs_become_ignored(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
