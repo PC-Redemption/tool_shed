@@ -42,9 +42,9 @@
   },
   "manifest_schema_version": 2,
   "notes": "Adds a workspace-local Q&A inbox and ts:ask routing.",
-  "release_commit": null,
+  "release_commit": "7d02ae7951e4bc7d19ffbc2aae12055817eb143e",
   "release_tag": "v0.5.0",
-  "released_at": null,
+  "released_at": "2026-07-27T21:49:03Z",
   "shed_version": "0.5.0",
   "updated_at": "2026-07-27"
 }
