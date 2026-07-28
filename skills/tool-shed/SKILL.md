@@ -29,12 +29,23 @@ If the guide is missing from an older snapshot, fall back to `README.md`, `selec
 
 ### Q&A Inbox Route
 
-When the request is `ts:ask` or `ts: ask`, read `<workspace>/q&a/ask.txt` and treat its current
-contents as the user's question or directions for this request. Apply the same scope,
-authorization, safety, and routing rules as if the contents were typed directly in chat. Ignore
-blank lines and lines beginning with `#`. If nothing remains, report that the inbox is empty. Do
-not clear, rewrite, or delete the file unless the user explicitly asks. In the final response,
-briefly summarize what the inbox requested and what was done.
+When the request is `ts:ask` or `ts: ask`, run
+`python3 <shed>/scripts/read_ask_inbox.py --workspace <workspace> --json`. The canonical inbox is
+`<workspace>/q&a/ask.txt`; the resolver also inspects `<workspace>/work/q&a/ask.txt` as a legacy or
+misplaced fallback. It ignores blank lines and lines beginning with `#` in both files.
+
+- `canonical`: act on the canonical content.
+- `fallback`: act on the fallback content and clearly report that it came from the noncanonical
+  path.
+- `conflict`: do not merge or act on either request; report that both are populated and ask the
+  operator which request to use.
+- `empty`: report that neither inbox contains actionable content.
+
+Apply the same scope, authorization, safety, and routing rules as if the selected contents were
+typed directly in chat. Never move, clear, rewrite, or delete either inbox without explicit
+operator authorization. In the final response, briefly summarize what was selected and what was
+done. If the resolver is absent from an older snapshot, inspect both paths manually using the same
+rules.
 
 ### Version Routes
 

@@ -94,9 +94,13 @@ approved candidates. It never rewrites Git history.
 `q&a/ask.txt` is a transient, workspace-local operator inbox:
 
 - the installer creates it without replacing existing contents
-- `ts:ask` reads its current question or directions and acts on them
-- blank lines and `#` comment lines are ignored
-- Codex preserves the file unless the operator explicitly asks to clear or rewrite it
+- `ts:ask` inspects it first and also inspects `work/q&a/ask.txt` as a legacy or misplaced fallback
+- blank lines and `#` comment lines are ignored in both locations
+- canonical content wins only when the fallback is not also actionable
+- fallback-only content may be processed with a clear noncanonical-path warning
+- when both files are actionable, Codex reports a conflict and asks which request to use
+- Codex preserves both files unless the operator explicitly asks to move, clear, rewrite, or delete
+  one
 - the repository ignores it because durable project truth belongs in docs and durable work belongs
   under `work/`
 

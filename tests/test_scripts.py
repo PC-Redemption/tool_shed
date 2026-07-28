@@ -283,10 +283,119 @@ class ScriptTests(unittest.TestCase):
         self.assertIn("## Common Use Cases", guide)
         self.assertIn("docs/operator-guide.md", skill)
         self.assertIn("q&a/ask.txt", skill)
+        self.assertIn("scripts/read_ask_inbox.py", skill)
+        self.assertTrue((ROOT / "scripts" / "read_ask_inbox.py").is_file())
         self.assertIn("artifacts for a help-only request.", skill)
         self.assertIn("[Tool Shed operator guide](docs/operator-guide.md)", readme)
         self.assertIn("ts: version", skill)
         self.assertIn("ts: check for updates", guide)
+
+    def test_ask_resolver_uses_canonical_content_only(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            canonical = workspace / "q&a" / "ask.txt"
+            fallback = workspace / "work" / "q&a" / "ask.txt"
+            canonical.parent.mkdir(parents=True)
+            fallback.parent.mkdir(parents=True)
+            canonical.write_text("# note\nRun the canonical request.\n", encoding="utf-8")
+            fallback.write_text("# placeholder only\n", encoding="utf-8")
+
+            result = run_script(
+                "scripts/read_ask_inbox.py",
+                "--workspace",
+                str(workspace),
+                "--json",
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertEqual(payload["status"], "canonical")
+            self.assertEqual(payload["selected_path"], "q&a/ask.txt")
+            self.assertEqual(payload["content"], "Run the canonical request.")
+
+    def test_ask_resolver_uses_fallback_content_only_and_reports_path(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            canonical = workspace / "q&a" / "ask.txt"
+            fallback = workspace / "work" / "q&a" / "ask.txt"
+            canonical.parent.mkdir(parents=True)
+            fallback.parent.mkdir(parents=True)
+            canonical.write_text("# placeholder only\n", encoding="utf-8")
+            fallback.write_text("Run the fallback request.\n", encoding="utf-8")
+
+            json_result = run_script(
+                "scripts/read_ask_inbox.py",
+                "--workspace",
+                str(workspace),
+                "--json",
+            )
+            text_result = run_script(
+                "scripts/read_ask_inbox.py",
+                "--workspace",
+                str(workspace),
+            )
+            payload = json.loads(json_result.stdout)
+
+            self.assertEqual(payload["status"], "fallback")
+            self.assertEqual(payload["selected_path"], "work/q&a/ask.txt")
+            self.assertEqual(payload["content"], "Run the fallback request.")
+            self.assertIn("noncanonical work/q&a/ask.txt", text_result.stdout)
+
+    def test_ask_resolver_reports_both_files_empty(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            result = run_script(
+                "scripts/read_ask_inbox.py",
+                "--workspace",
+                temp,
+                "--json",
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertEqual(payload["status"], "empty")
+            self.assertIsNone(payload["selected_path"])
+            self.assertIsNone(payload["content"])
+
+    def test_ask_resolver_treats_comment_only_files_as_empty(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            canonical = workspace / "q&a" / "ask.txt"
+            fallback = workspace / "work" / "q&a" / "ask.txt"
+            canonical.parent.mkdir(parents=True)
+            fallback.parent.mkdir(parents=True)
+            canonical.write_text("\n# canonical comment\n   # indented comment\n", encoding="utf-8")
+            fallback.write_text("# fallback comment\n\n", encoding="utf-8")
+
+            result = run_script(
+                "scripts/read_ask_inbox.py",
+                "--workspace",
+                str(workspace),
+                "--json",
+            )
+
+            self.assertEqual(json.loads(result.stdout)["status"], "empty")
+
+    def test_ask_resolver_reports_conflict_without_merging(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            canonical = workspace / "q&a" / "ask.txt"
+            fallback = workspace / "work" / "q&a" / "ask.txt"
+            canonical.parent.mkdir(parents=True)
+            fallback.parent.mkdir(parents=True)
+            canonical.write_text("Canonical request.\n", encoding="utf-8")
+            fallback.write_text("Fallback request.\n", encoding="utf-8")
+
+            result = run_script(
+                "scripts/read_ask_inbox.py",
+                "--workspace",
+                str(workspace),
+                "--json",
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertEqual(payload["status"], "conflict")
+            self.assertIsNone(payload["selected_path"])
+            self.assertIsNone(payload["content"])
+            self.assertTrue(payload["canonical"]["actionable"])
+            self.assertTrue(payload["fallback"]["actionable"])
 
     def test_unified_install_or_update_guide_uses_two_commit_release_provenance(self) -> None:
         guide = ROOT / "docs" / "install-or-update-snapshot.md"
@@ -829,6 +938,58 @@ Next Action: keep going
 
             self.assertEqual(ask_path.read_text(encoding="utf-8"), "Keep this question intact.\n")
             self.assertIn("Preserved existing Tool Shed Q&A inbox", result.stdout)
+
+    def test_installer_warns_for_fallback_inbox_and_preserves_both_files(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            canonical = workspace / "q&a" / "ask.txt"
+            fallback = workspace / "work" / "q&a" / "ask.txt"
+            canonical.parent.mkdir(parents=True)
+            fallback.parent.mkdir(parents=True)
+            canonical_text = "Keep canonical content.\n"
+            fallback_text = "Keep fallback content.\n"
+            canonical.write_text(canonical_text, encoding="utf-8")
+            fallback.write_text(fallback_text, encoding="utf-8")
+
+            result = run_script("scripts/install_into_workspace.py", str(workspace))
+
+            self.assertIn("Q&A inbox warning:", result.stdout)
+            self.assertIn("work/q&a/ask.txt", result.stdout)
+            self.assertIn("canonical inbox", result.stdout)
+            self.assertEqual(canonical.read_text(encoding="utf-8"), canonical_text)
+            self.assertEqual(fallback.read_text(encoding="utf-8"), fallback_text)
+
+    def test_installer_replaces_stale_q_and_a_guidance_idempotently(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace)
+            agents = workspace / "AGENTS.md"
+            agents.write_text(
+                """# Owner guidance
+
+<!-- BEGIN TOOL SHED Q&A GUIDANCE -->
+stale canonical-only guidance
+<!-- END TOOL SHED Q&A GUIDANCE -->
+
+# Owner footer
+""",
+                encoding="utf-8",
+            )
+
+            first = run_script("scripts/install_into_workspace.py", str(workspace))
+            after_first = agents.read_text(encoding="utf-8")
+            second = run_script("scripts/install_into_workspace.py", str(workspace))
+            after_second = agents.read_text(encoding="utf-8")
+
+            self.assertIn("Codex guidance: updated", first.stdout)
+            self.assertNotIn("stale canonical-only guidance", after_first)
+            self.assertIn("work/q&a/ask.txt", after_first)
+            self.assertIn("# Owner guidance", after_first)
+            self.assertIn("# Owner footer", after_first)
+            self.assertEqual(after_first.count("BEGIN TOOL SHED Q&A GUIDANCE"), 1)
+            self.assertEqual(after_first.count("END TOOL SHED Q&A GUIDANCE"), 1)
+            self.assertEqual(after_second, after_first)
+            self.assertNotIn("Codex guidance: updated", second.stdout)
 
     def test_installer_warns_before_existing_generated_outputs_become_ignored(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

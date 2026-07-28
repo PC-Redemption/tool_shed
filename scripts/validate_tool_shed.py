@@ -62,6 +62,20 @@ def smoke_temp_workspace() -> None:
         ask_path = workspace / "q&a" / "ask.txt"
         if not ask_path.is_file():
             raise SystemExit("installer did not create the Tool Shed Q&A inbox")
+        inbox_result = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "read_ask_inbox.py"),
+                "--workspace",
+                str(workspace),
+                "--json",
+            ],
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+        )
+        if json.loads(inbox_result.stdout)["status"] != "empty":
+            raise SystemExit("new Tool Shed Q&A inbox did not resolve as empty")
         run(
             [
                 sys.executable,

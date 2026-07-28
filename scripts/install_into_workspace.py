@@ -39,10 +39,13 @@ ASK_GUIDANCE_END = "<!-- END TOOL SHED Q&A GUIDANCE -->"
 ASK_GUIDANCE = f"""{ASK_GUIDANCE_START}
 ## Tool Shed Q&A inbox
 
-- Treat `ts:ask` and `ts: ask` as requests to read the workspace-root `q&a/ask.txt` and act on its current contents.
-- The file may contain a question, directions, or both. Apply the same scope, authorization, safety, and routing rules as if its contents were typed directly in chat.
-- If the file is empty or contains only comments and whitespace, report that there is nothing to act on.
-- Do not clear, rewrite, or delete `ask.txt` unless the user explicitly asks.
+- Treat `ts:ask` and `ts: ask` as requests to run `python3 <shed>/scripts/read_ask_inbox.py --workspace <workspace> --json`.
+- The canonical inbox is `q&a/ask.txt`; also inspect `work/q&a/ask.txt` as a legacy or misplaced fallback.
+- Ignore blank lines and lines beginning with `#` in both files.
+- Use canonical content when only it is actionable. If only fallback content is actionable, process it and clearly report its noncanonical location.
+- If both files are actionable, do not merge or act on either; report the conflict and ask which request to use.
+- Apply normal scope, authorization, safety, and routing rules to the selected request.
+- Never move, clear, rewrite, or delete either inbox without explicit operator authorization.
 - Summarize what was read and what was done in the final response.
 {ASK_GUIDANCE_END}
 """
@@ -62,19 +65,37 @@ def ensure_root_gitignore(repository: Path) -> list[str]:
     return missing
 
 
+def replace_managed_block(existing: str, start: str, end: str, replacement: str) -> tuple[str, bool]:
+    start_index = existing.find(start)
+    end_index = existing.find(end, start_index + len(start)) if start_index >= 0 else -1
+    if start_index >= 0 and end_index >= 0:
+        end_index += len(end)
+        updated = existing[:start_index] + replacement.rstrip("\n") + existing[end_index:]
+        return updated, updated != existing
+    if start_index >= 0:
+        updated = existing[:start_index] + replacement
+        return updated, updated != existing
+    prefix = "" if not existing or existing.endswith("\n") else "\n"
+    updated = existing + prefix + ("\n" if existing else "") + replacement
+    return updated, True
+
+
 def ensure_codex_guidance(repository: Path) -> bool:
     path = repository / "AGENTS.md"
     existing = path.read_text(encoding="utf-8") if path.exists() else ""
-    blocks = []
+    updated = existing
     if GUIDANCE_START not in existing:
-        blocks.append(GUIDANCE)
-    if ASK_GUIDANCE_START not in existing:
-        blocks.append(ASK_GUIDANCE)
-    if not blocks:
+        prefix = "" if not updated or updated.endswith("\n") else "\n"
+        updated += prefix + ("\n" if updated else "") + GUIDANCE
+    updated, _ = replace_managed_block(
+        updated,
+        ASK_GUIDANCE_START,
+        ASK_GUIDANCE_END,
+        ASK_GUIDANCE,
+    )
+    if updated == existing:
         return False
-    prefix = "" if not existing or existing.endswith("\n") else "\n"
-    with path.open("a", encoding="utf-8", newline="\n") as handle:
-        handle.write(prefix + ("\n" if existing else "") + "\n".join(blocks))
+    path.write_text(updated, encoding="utf-8", newline="\n")
     return True
 
 
@@ -146,6 +167,13 @@ def main() -> int:
         print(f"Initialized Tool Shed Q&A inbox at {root / 'q&a' / 'ask.txt'}")
     else:
         print(f"Preserved existing Tool Shed Q&A inbox at {root / 'q&a' / 'ask.txt'}")
+    fallback_ask = root / "work" / "q&a" / "ask.txt"
+    if fallback_ask.is_file():
+        print(
+            f"Q&A inbox warning: found noncanonical inbox at {fallback_ask}. "
+            f"The canonical inbox is {root / 'q&a' / 'ask.txt'}. "
+            "Neither file was moved, cleared, rewritten, or deleted."
+        )
     state = inspect_work_ignore(root)
     failed = False
     if state.match is None:
