@@ -108,7 +108,7 @@
     {
       "canonical_truth": null,
       "disposition": null,
-      "next_action": "obtain explicit approval before the first guarded fleet update",
+      "next_action": "resolve the lottery canary's undisposed spike before retrying the fleet update",
       "parent": null,
       "path": "work/maps/map-tool-shed-evolution.md",
       "produces": null,
@@ -118,7 +118,7 @@
       "supersedes": null,
       "title": "Project Map: Tool Shed evolution",
       "type": "project-map",
-      "updated": "2026-07-25"
+      "updated": "2026-07-29"
     },
     {
       "canonical_truth": null,
@@ -243,7 +243,7 @@
     {
       "canonical_truth": "README.md; docs/fleet-snapshot-updates.md; skills/tool-shed/SKILL.md",
       "disposition": null,
-      "next_action": "obtain explicit approval before the first guarded mass update",
+      "next_action": "resolve the lottery workspace's undisposed spike, then rerun the guarded canary",
       "parent": null,
       "path": "work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md",
       "produces": null,
@@ -253,7 +253,7 @@
       "supersedes": null,
       "title": "Tool Shed routing and fleet snapshot updates Workpackage",
       "type": "workpackage",
-      "updated": "2026-07-21"
+      "updated": "2026-07-29"
     },
     {
       "canonical_truth": null,
@@ -302,7 +302,7 @@
     }
   ],
   "description": "Generated from tool_shed artifact headers. Use as navigation, not canonical truth.",
-  "generated_at": "2026-07-28",
+  "generated_at": "2026-07-29",
   "reading_order": [
     "Read project README/docs for current truth.",
     "Read active maps and active work artifacts from this index.",

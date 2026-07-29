@@ -2,8 +2,8 @@
 
 Status: active
 Type: workpackage
-Updated: 2026-07-21
-Next Action: obtain explicit approval before the first guarded mass update
+Updated: 2026-07-29
+Next Action: resolve the lottery workspace's undisposed spike, then rerun the guarded canary
 
 Project Map: work/maps/map-tool-shed-evolution.md
 Canonical Truth: README.md; docs/fleet-snapshot-updates.md; skills/tool-shed/SKILL.md
@@ -36,8 +36,14 @@ Completed:
 
 Incomplete:
 
-- None within plan steps 1 through 6.
-- Obtain explicit approval before any fleet update.
+- The approved first rollout stopped and rolled back at the `lottery` canary because
+  `review_work_state.py` found `work/spikes/spike-win-for-life-official-source-discovery.md`
+  finished without a required `Disposition:` value.
+- `marshal` remains eligible but was not updated because rollout stops on the first validation
+  failure.
+- `media-ops` remains ineligible because its parent repository tracks and locally modifies the
+  `tool_shed/` directory.
+- Unreachable SSH targets remain unchanged.
 
 ## Goal
 
@@ -100,11 +106,16 @@ Completion criteria:
 - [x] Inventory designed and implemented.
 - [x] Guarded updater designed and safety constraints documented.
 - [x] Read-only fleet inventory run and reviewed.
+- [x] First guarded rollout explicitly approved.
+- [x] Canary replacement attempted and safely rolled back after validation failure.
+- [ ] Resolve the canary's planning-state finding with an operator-selected disposition.
+- [ ] Rerun and verify the canary, then update the remaining eligible snapshot.
 
 ## Open Questions
 
+- What disposition should be recorded for
+  `lottery/work/spikes/spike-win-for-life-official-source-discovery.md`?
 - Which unreachable or duplicate SSH aliases should be removed from the approved fleet?
-- Should the first apply update every stale snapshot or a canary subset?
 
 ## Completion Standard
 

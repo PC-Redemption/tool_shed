@@ -2,8 +2,8 @@
 
 Status: active
 Type: project-map
-Updated: 2026-07-25
-Next Action: obtain explicit approval before the first guarded fleet update
+Updated: 2026-07-29
+Next Action: resolve the lottery canary's undisposed spike before retrying the fleet update
 
 ## Purpose
 
@@ -58,7 +58,7 @@ Ground:
 | Workstream | Status | Lead Artifact | Depends On | Next Action |
 | --- | --- | --- | --- | --- |
 | Artifact reconciliation | complete | `work/wp/completed/wp-work-artifact-reconciliation.md` | existing index and stale-path checks | none |
-| Snapshot routing and updates | active | `work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md` | explicit approval; stable reconciliation guidance | hold before first fleet update |
+| Snapshot routing and updates | blocked on canary validation | `work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md` | lottery spike disposition; stable reconciliation guidance | resolve the undisposed spike, then rerun the canary |
 | Generated evidence safety and migration | complete | `work/wp/completed/wp-generated-evidence-safety-and-migration.md` | imported incident and field-verification ticket | none |
 | Portable verified installer | planned | `work/tickets/ticket-portable-verified-tool-shed-installer.md` | stable-tag and provenance model | redesign superseded PR #3 around verified releases |
 
@@ -92,7 +92,8 @@ Do next:
   and hard safety limits.
 - [x] Treat the imported incident as one regression profile in a broader matrix.
 - [x] Define and validate prepare-only and human-gated apply contracts.
-- [ ] Review current-workspace findings with the human before any fleet update.
+- [x] Review current-workspace findings with the human before any fleet update.
+- [ ] Resolve the lottery canary's undisposed finished spike before retrying the rollout.
 
 Avoid for now:
 
