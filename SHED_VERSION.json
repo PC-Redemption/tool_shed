@@ -43,9 +43,9 @@
   },
   "manifest_schema_version": 2,
   "notes": "Makes work/q&a/ask.txt canonical and preserves root-level q&a/ask.txt as the legacy fallback.",
-  "release_commit": null,
+  "release_commit": "702604f4b91dc076dcd61a5302609281b945be47",
   "release_tag": "v0.5.2",
-  "released_at": null,
+  "released_at": "2026-07-29T13:52:38Z",
   "shed_version": "0.5.2",
   "updated_at": "2026-07-29"
 }
