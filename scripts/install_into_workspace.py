@@ -13,6 +13,7 @@ from workspace_preflight import inspect
 IGNORE_ENTRIES = (
     "/tool_shed/",
     "/tool_shed.backup-*.tar",
+    "/work/q&a/ask.txt",
     "/q&a/ask.txt",
     "/work/evidence/generated/",
 )
@@ -40,7 +41,7 @@ ASK_GUIDANCE = f"""{ASK_GUIDANCE_START}
 ## Tool Shed Q&A inbox
 
 - Treat `ts:ask` and `ts: ask` as requests to run `python3 <shed>/scripts/read_ask_inbox.py --workspace <workspace> --json`.
-- The canonical inbox is `q&a/ask.txt`; also inspect `work/q&a/ask.txt` as a legacy or misplaced fallback.
+- The canonical inbox is `work/q&a/ask.txt`; also inspect `q&a/ask.txt` as a legacy or misplaced fallback.
 - Ignore blank lines and lines beginning with `#` in both files.
 - Use canonical content when only it is actionable. If only fallback content is actionable, process it and clearly report its noncanonical location.
 - If both files are actionable, do not merge or act on either; report the conflict and ask which request to use.
@@ -100,7 +101,7 @@ def ensure_codex_guidance(repository: Path) -> bool:
 
 
 def ensure_ask_inbox(workspace: Path) -> bool:
-    path = workspace / "q&a" / "ask.txt"
+    path = workspace / "work" / "q&a" / "ask.txt"
     if path.exists():
         return False
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -109,6 +110,15 @@ def ensure_ask_inbox(workspace: Path) -> bool:
         encoding="utf-8",
     )
     return True
+
+
+def has_actionable_content(path: Path) -> bool:
+    if not path.is_file():
+        return False
+    return any(
+        line.strip() and not line.lstrip().startswith("#")
+        for line in path.read_text(encoding="utf-8").splitlines()
+    )
 
 
 def existing_generated_outputs(repository: Path) -> tuple[int, int]:
@@ -163,15 +173,16 @@ def main() -> int:
         )
 
     print(f"Initialized work tree under {root / 'work'}")
+    canonical_ask = root / "work" / "q&a" / "ask.txt"
     if ask_created:
-        print(f"Initialized Tool Shed Q&A inbox at {root / 'q&a' / 'ask.txt'}")
+        print(f"Initialized Tool Shed Q&A inbox at {canonical_ask}")
     else:
-        print(f"Preserved existing Tool Shed Q&A inbox at {root / 'q&a' / 'ask.txt'}")
-    fallback_ask = root / "work" / "q&a" / "ask.txt"
-    if fallback_ask.is_file():
+        print(f"Preserved existing Tool Shed Q&A inbox at {canonical_ask}")
+    fallback_ask = root / "q&a" / "ask.txt"
+    if has_actionable_content(fallback_ask) and not has_actionable_content(canonical_ask):
         print(
-            f"Q&A inbox warning: found noncanonical inbox at {fallback_ask}. "
-            f"The canonical inbox is {root / 'q&a' / 'ask.txt'}. "
+            f"Q&A inbox warning: actionable content exists only in the noncanonical legacy "
+            f"inbox at {fallback_ask}. The canonical inbox is {canonical_ask}. "
             "Neither file was moved, cleared, rewritten, or deleted."
         )
     state = inspect_work_ignore(root)

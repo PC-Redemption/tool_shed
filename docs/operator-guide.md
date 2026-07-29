@@ -29,14 +29,14 @@ ts: help version
 
 ## Q&A Inbox
 
-The installer creates a workspace-local scratch inbox at `q&a/ask.txt`. Put a question or
+The installer creates a workspace-local scratch inbox at `work/q&a/ask.txt`. Put a question or
 direction there while Codex is busy, then type:
 
 ```text
 ts:ask
 ```
 
-Codex inspects the canonical file and `work/q&a/ask.txt`, which is supported only as a legacy or
+Codex inspects the canonical file and `q&a/ask.txt`, which is supported only as a legacy or
 misplaced fallback. Blank lines and lines beginning with `#` are ignored in both files. If only the
 canonical file is actionable, Codex uses it. If only the fallback is actionable, Codex may process
 it but clearly identifies the noncanonical path. If both are actionable, Codex does not merge or
@@ -46,8 +46,8 @@ Codex reports that the inbox is empty.
 Both files are preserved after inspection. Tool Shed never moves, clears, rewrites, or deletes
 either one without explicit operator authorization. The canonical inbox is ignored by Git because
 it is transient operator input, not project documentation or durable work state. Do not adopt
-`work/q&a/ask.txt` as the canonical location: `work/` remains the home of durable project
-artifacts.
+The root-level `q&a/ask.txt` path remains supported only for legacy safety; do not use it for new
+requests.
 
 ## Common Use Cases
 

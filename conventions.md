@@ -91,10 +91,10 @@ approved candidates. It never rewrites Git history.
 - project/product docs
 - current-state docs
 
-`q&a/ask.txt` is a transient, workspace-local operator inbox:
+`work/q&a/ask.txt` is a transient, workspace-local operator inbox:
 
 - the installer creates it without replacing existing contents
-- `ts:ask` inspects it first and also inspects `work/q&a/ask.txt` as a legacy or misplaced fallback
+- `ts:ask` inspects it first and also inspects `q&a/ask.txt` as a legacy or misplaced fallback
 - blank lines and `#` comment lines are ignored in both locations
 - canonical content wins only when the fallback is not also actionable
 - fallback-only content may be processed with a clear noncanonical-path warning

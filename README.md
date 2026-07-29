@@ -187,12 +187,12 @@ ts:ask
 
 See the [Tool Shed operator guide](docs/operator-guide.md) for the full use-case menu.
 
-The workspace installer also creates `q&a/ask.txt`, a Git-ignored operator inbox. Add a question
+The workspace installer also creates `work/q&a/ask.txt`, a Git-ignored operator inbox. Add a question
 or direction to that file and send `ts:ask`; Codex reads it and acts under the same safety and
-authorization rules as a normal chat request. It also checks `work/q&a/ask.txt` as a
-legacy/misplaced fallback and warns when content is found there. If both files contain actionable
+authorization rules as a normal chat request. It also checks `q&a/ask.txt` as a
+legacy/misplaced fallback and warns when actionable content exists only there. If both files contain actionable
 content, Codex reports a conflict instead of merging them. It preserves both files after
-inspection; `q&a/ask.txt` remains the canonical inbox.
+inspection; `work/q&a/ask.txt` is the canonical inbox.
 
 Check the installed snapshot without using the network, or compare it with the canonical manifest:
 

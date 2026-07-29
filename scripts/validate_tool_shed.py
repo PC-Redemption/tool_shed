@@ -59,7 +59,7 @@ def smoke_temp_workspace() -> None:
         run([sys.executable, str(ROOT / "scripts" / "install_into_workspace.py"), str(workspace)])
         if not (workspace / "work" / "evidence" / "generated").is_dir():
             raise SystemExit("installer did not create the standard generated-evidence directory")
-        ask_path = workspace / "q&a" / "ask.txt"
+        ask_path = workspace / "work" / "q&a" / "ask.txt"
         if not ask_path.is_file():
             raise SystemExit("installer did not create the Tool Shed Q&A inbox")
         inbox_result = subprocess.run(

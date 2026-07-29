@@ -31,7 +31,7 @@ If the guide is missing from an older snapshot, fall back to `README.md`, `selec
 
 When the request is `ts:ask` or `ts: ask`, run
 `python3 <shed>/scripts/read_ask_inbox.py --workspace <workspace> --json`. The canonical inbox is
-`<workspace>/q&a/ask.txt`; the resolver also inspects `<workspace>/work/q&a/ask.txt` as a legacy or
+`<workspace>/work/q&a/ask.txt`; the resolver also inspects `<workspace>/q&a/ask.txt` as a legacy or
 misplaced fallback. It ignores blank lines and lines beginning with `#` in both files.
 
 - `canonical`: act on the canonical content.
