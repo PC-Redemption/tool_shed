@@ -35,6 +35,21 @@ GUIDANCE = f"""{GUIDANCE_START}
 {GUIDANCE_END}
 """
 
+SHIP_GUIDANCE_START = "<!-- BEGIN TOOL SHED SHIP GUIDANCE -->"
+SHIP_GUIDANCE_END = "<!-- END TOOL SHED SHIP GUIDANCE -->"
+SHIP_GUIDANCE = f"""{SHIP_GUIDANCE_START}
+## Tool Shed ship route
+
+- Treat `ts:ship <goal>` and `ts: ship <goal>` as authorization to plan, implement, validate, build, deploy, and verify the workspace goal end-to-end.
+- Continue through every applicable lifecycle stage; do not stop merely because planning, coding, tests, or a build succeeded.
+- Use the workspace's own tooling, environments, runbooks, and protected-environment controls.
+- Keep changes scoped to the goal and preserve unrelated user work.
+- Verify the delivered result in its target environment before claiming completion.
+- The route does not waive safety rules, required approvals, credential boundaries, or authorization limits.
+- If a stage is inapplicable, explain why. If deployment is blocked, complete every safe preceding stage and report the exact blocker.
+{SHIP_GUIDANCE_END}
+"""
+
 ASK_GUIDANCE_START = "<!-- BEGIN TOOL SHED Q&A GUIDANCE -->"
 ASK_GUIDANCE_END = "<!-- END TOOL SHED Q&A GUIDANCE -->"
 ASK_GUIDANCE = f"""{ASK_GUIDANCE_START}
@@ -88,6 +103,12 @@ def ensure_codex_guidance(repository: Path) -> bool:
     if GUIDANCE_START not in existing:
         prefix = "" if not updated or updated.endswith("\n") else "\n"
         updated += prefix + ("\n" if updated else "") + GUIDANCE
+    updated, _ = replace_managed_block(
+        updated,
+        SHIP_GUIDANCE_START,
+        SHIP_GUIDANCE_END,
+        SHIP_GUIDANCE,
+    )
     updated, _ = replace_managed_block(
         updated,
         ASK_GUIDANCE_START,

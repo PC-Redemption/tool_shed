@@ -12,6 +12,18 @@
 - Start or fork a fresh Codex task after exceptionally large qualification campaigns.
 <!-- END TOOL SHED GENERATED EVIDENCE GUIDANCE -->
 
+<!-- BEGIN TOOL SHED SHIP GUIDANCE -->
+## Tool Shed ship route
+
+- Treat `ts:ship <goal>` and `ts: ship <goal>` as authorization to plan, implement, validate, build, deploy, and verify the workspace goal end-to-end.
+- Continue through every applicable lifecycle stage; do not stop merely because planning, coding, tests, or a build succeeded.
+- Use the workspace's own tooling, environments, runbooks, and protected-environment controls.
+- Keep changes scoped to the goal and preserve unrelated user work.
+- Verify the delivered result in its target environment before claiming completion.
+- The route does not waive safety rules, required approvals, credential boundaries, or authorization limits.
+- If a stage is inapplicable, explain why. If deployment is blocked, complete every safe preceding stage and report the exact blocker.
+<!-- END TOOL SHED SHIP GUIDANCE -->
+
 <!-- BEGIN TOOL SHED Q&A GUIDANCE -->
 ## Tool Shed Q&A inbox
 

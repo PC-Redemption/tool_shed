@@ -182,10 +182,15 @@ Operator help and use cases:
 ts: help
 ts: help spikes
 ts: help existing projects
+ts:ship <goal>
 ts:ask
 ```
 
 See the [Tool Shed operator guide](docs/operator-guide.md) for the full use-case menu.
+
+`ts:ship <goal>` is the end-to-end delivery route: plan, implement, validate, build, deploy, and
+verify the requested workspace goal. It continues through all applicable stages while preserving
+normal safety, approval, credential, and protected-environment boundaries.
 
 The workspace installer also creates `work/q&a/ask.txt`, a Git-ignored operator inbox. Add a question
 or direction to that file and send `ts:ask`; Codex reads it and acts under the same safety and
@@ -285,6 +290,8 @@ Use short prompts and let Codex operate the scripts:
 Request prefixes are authoritative for one request only:
 
 - `ts:` uses the workspace-local Tool Shed rules and tooling for the remainder of the request.
+- `ts:ship <goal>` plans, implements, validates, builds, deploys, and verifies the workspace goal
+  end-to-end.
 - `mp:` targets projects, tasks, and owner work in private Marshal.
 - `ws:` targets files, code, tests, Tool Shed plans, and runtime work in the current workspace.
 

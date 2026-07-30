@@ -56,12 +56,16 @@ def smoke_temp_workspace() -> None:
     step("temp workspace smoke")
     with tempfile.TemporaryDirectory(prefix="tool-shed-validate-") as temp:
         workspace = Path(temp)
+        run(["git", "init", "--quiet"], cwd=workspace)
         run([sys.executable, str(ROOT / "scripts" / "install_into_workspace.py"), str(workspace)])
         if not (workspace / "work" / "evidence" / "generated").is_dir():
             raise SystemExit("installer did not create the standard generated-evidence directory")
         ask_path = workspace / "work" / "q&a" / "ask.txt"
         if not ask_path.is_file():
             raise SystemExit("installer did not create the Tool Shed Q&A inbox")
+        agents_text = (workspace / "AGENTS.md").read_text(encoding="utf-8")
+        if "ts:ship <goal>" not in agents_text or "plan, implement, validate, build, deploy, and verify" not in agents_text:
+            raise SystemExit("installer did not create the Tool Shed ship guidance")
         inbox_result = subprocess.run(
             [
                 sys.executable,

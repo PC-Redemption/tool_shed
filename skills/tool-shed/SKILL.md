@@ -17,6 +17,27 @@ The global setup may also define `mp:` for private Marshal owner work and `ws:` 
 workspace. A request uses at most one leading route prefix; when an unprefixed write could
 materially target either Marshal or the workspace, ask one concise routing question before writing.
 
+### Ship Route
+
+Treat `ts:ship <goal>` and `ts: ship <goal>` as authorization to carry the workspace goal through
+the complete delivery lifecycle: plan, implement, validate, build, deploy, and verify.
+
+- Inspect the workspace and its local Tool Shed guidance before choosing the smallest sufficient
+  plan or work artifact.
+- Continue through every applicable lifecycle stage instead of stopping after planning, code, or a
+  successful build.
+- Use the project's own tests, build system, deployment tooling, environments, and runbooks.
+- Keep changes scoped to the stated goal, preserve unrelated user work, and report meaningful
+  progress during long-running work.
+- Treat a stage as inapplicable only when the workspace provides evidence that it is unnecessary;
+  state the reason in the final response.
+- Do not claim completion until the deployed or otherwise delivered result has been verified in
+  its target environment.
+- `ts:ship` does not waive safety rules, required approvals, protected-environment controls, or
+  authorization boundaries. If deployment requires an unknown target, unavailable credential,
+  new authority, or an irreversible action that was not clearly authorized, finish every safe
+  preceding stage and report the exact blocker.
+
 ### Help Route
 
 When the request is `ts: help`, read `<shed>/docs/operator-guide.md` and return a concise,

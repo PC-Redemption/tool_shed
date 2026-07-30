@@ -27,6 +27,24 @@ ts: help update
 ts: help version
 ```
 
+## Ship End to End
+
+Use the ship route when the intended outcome is a delivered, verified change rather than a plan or
+an intermediate implementation:
+
+```text
+ts:ship <goal>
+```
+
+`ts:ship` means: plan, implement, validate, build, deploy, and verify the requested workspace goal
+end-to-end. Codex continues through every applicable stage, uses the project's own delivery
+tooling, and verifies the result in the target environment before declaring completion.
+
+The route authorizes the normal workspace changes and deployment actions needed for the stated
+goal, but it does not override safety rules, protected-environment controls, required approvals,
+or credential and authorization boundaries. Codex explains any inapplicable stage. If it cannot
+safely deploy, it completes every safe preceding stage and reports the exact blocker.
+
 ## Q&A Inbox
 
 The installer creates a workspace-local scratch inbox at `work/q&a/ask.txt`. Put a question or
