@@ -43,9 +43,9 @@
   },
   "manifest_schema_version": 2,
   "notes": "Adds ts:ship as the end-to-end plan, implement, validate, build, deploy, and verify route.",
-  "release_commit": null,
+  "release_commit": "000e56d81e0e4dca8c301cf859a41fbb1f05ff72",
   "release_tag": "v0.6.0",
-  "released_at": null,
+  "released_at": "2026-07-30T12:56:04Z",
   "shed_version": "0.6.0",
   "updated_at": "2026-07-30"
 }
