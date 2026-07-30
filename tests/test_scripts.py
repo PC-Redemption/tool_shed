@@ -1089,8 +1089,8 @@ Next Action: keep going
             result = run_script("scripts/install_into_workspace.py", str(workspace))
 
             self.assertIn("Q&A inbox warning:", result.stdout)
-            self.assertIn(str(fallback), result.stdout)
-            self.assertIn(str(canonical), result.stdout)
+            self.assertIn(str(fallback.resolve()), result.stdout)
+            self.assertIn(str(canonical.resolve()), result.stdout)
             self.assertIn("canonical inbox", result.stdout)
             self.assertTrue(canonical.is_file())
             self.assertFalse(any(
