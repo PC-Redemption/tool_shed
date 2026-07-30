@@ -80,6 +80,22 @@ canonical version, version relation, and any locally modified or missing tracked
 does not authorize an update. If an older snapshot lacks the script, read `SHED_VERSION.json` and
 explain that its version tooling must be updated before it can perform a reliable canonical check.
 
+### Snapshot Install And Update Route
+
+For a normal workspace installation or snapshot update, prefer the supported updater from a
+current released Tool Shed checkout:
+
+```bash
+python <current-shed>/scripts/update_snapshot.py --workspace <workspace>
+```
+
+The updater is authoritative on Windows and Linux. It selects the highest stable tag with
+`core.autocrlf=false`, verifies two-commit provenance and byte-level manifest integrity, stages a
+disconnected snapshot, preserves root `work/`, retains a verified backup for updates, and restores
+the previous snapshot after failed post-install verification. If the installed snapshot predates
+the updater, obtain a current released checkout outside the project and run the updater from there;
+never pull inside or develop from the disconnected workspace snapshot.
+
 ## Locate The Shed
 
 Before choosing or creating work artifacts, locate the shed:

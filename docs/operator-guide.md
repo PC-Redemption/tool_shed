@@ -181,11 +181,19 @@ Installations are disconnected snapshots: ignore `/tool_shed/`, remove its `.git
 project-specific `/work/` by default. An update replaces only Tool Shed machinery and must preserve
 `work/`, project docs, and code.
 
-Copy the unified request from
-[install-or-update-snapshot.md](install-or-update-snapshot.md). Codex determines whether the
-workspace needs a new installation or an existing-snapshot update, then applies the same stable-tag
-and two-commit provenance checks. Updates receive a recoverable backup; both paths preserve project
-`work/`.
+Use the supported updater from a current released Tool Shed checkout:
+
+```bash
+python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace .
+```
+
+If the installed snapshot predates the updater, obtain the current released checkout outside the
+project and run it from there. The Python updater is authoritative on Windows and Linux; thin
+PowerShell and POSIX launchers are also included. It selects and verifies the highest stable tag
+with Git line-ending conversion disabled, creates a recoverable backup for updates, preserves
+project `work/`, and automatically restores the previous snapshot after failed post-install
+verification. See [install-or-update-snapshot.md](install-or-update-snapshot.md) for the complete
+guarded contract.
 
 After installation or update, run:
 

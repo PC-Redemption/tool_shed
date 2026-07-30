@@ -108,7 +108,7 @@
     {
       "canonical_truth": null,
       "disposition": null,
-      "next_action": "obtain explicit approval before the first guarded fleet update",
+      "next_action": "verify the portable updater matrix in native Windows and Linux CI",
       "parent": null,
       "path": "work/maps/map-tool-shed-evolution.md",
       "produces": null,
@@ -118,7 +118,7 @@
       "supersedes": null,
       "title": "Project Map: Tool Shed evolution",
       "type": "project-map",
-      "updated": "2026-07-25"
+      "updated": "2026-07-30"
     },
     {
       "canonical_truth": null,
@@ -213,7 +213,7 @@
     {
       "canonical_truth": null,
       "disposition": null,
-      "next_action": "redesign the useful parts of superseded PR #3 around stable-tag verification",
+      "next_action": "verify the complete updater matrix in native Windows and Linux CI",
       "parent": "work/maps/map-tool-shed-evolution.md",
       "path": "work/tickets/ticket-portable-verified-tool-shed-installer.md",
       "produces": null,
@@ -223,7 +223,7 @@
       "supersedes": null,
       "title": "Ticket: Portable Verified Tool Shed Installer",
       "type": "ticket",
-      "updated": "2026-07-25"
+      "updated": "2026-07-30"
     },
     {
       "canonical_truth": "docs/releasing.md; scripts/check_shed_version.py; scripts/update_shed_manifest.py",

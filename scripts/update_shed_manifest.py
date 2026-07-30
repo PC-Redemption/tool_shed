@@ -13,10 +13,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "SHED_VERSION.json"
-TRACKED_ROOT_FILES = ("README.md", "selection.md", "conventions.md", "existing-projects.md")
+TRACKED_ROOT_FILES = (
+    ".gitattributes",
+    "README.md",
+    "selection.md",
+    "conventions.md",
+    "existing-projects.md",
+)
 TRACKED_GLOBS = (
     "docs/*.md",
     "scripts/*.py",
+    "scripts/*.ps1",
+    "scripts/*.sh",
     "skills/tool-shed/SKILL.md",
     "skills/tool-shed/agents/*.yaml",
     "templates/*.md",

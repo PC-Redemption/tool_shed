@@ -4,6 +4,17 @@ Use this single Codex request from a project root. Codex first determines whethe
 a disconnected `tool_shed/` snapshot, then performs either a guarded update or a guarded new
 installation.
 
+The supported cross-platform command is:
+
+```text
+python tool_shed/scripts/update_snapshot.py --workspace .
+```
+
+From a downloaded Tool Shed checkout, the equivalent launchers are
+`scripts/update-tool-shed.sh --workspace .` and
+`scripts/update-tool-shed.ps1 --workspace .`. The Python updater is authoritative; the launchers
+only select a native Python 3 runtime.
+
 ```text
 ts: Ensure this workspace has the newest stable Tool Shed snapshot from:
 
@@ -14,9 +25,7 @@ snapshot, update it. If tool_shed/ does not exist, perform a new installation. D
 path applies.
 
 Use the highest remote tag matching exactly ^v[0-9]+\.[0-9]+\.[0-9]+$. Do not use main,
-prerelease tags, or an untagged commit. The expected newest published stable tag is currently
-v0.4.0, but
-verify remote tags before proceeding.
+prerelease tags, or an untagged commit. Verified remote stable-tag selection is the sole authority.
 
 This request authorizes changes only in the current workspace. Do not update another project,
 host, or Tool Shed installation. Never overwrite, move, delete, archive, or rewrite the project's
@@ -41,7 +50,10 @@ Resolve state and choose the path:
 
 Select and verify the release:
 
-6. Create a temporary directory with mktemp -d and clone the canonical repository there.
+6. Create a temporary directory using the host's native secure temporary-directory API. Clone the
+   canonical repository with `core.autocrlf=false`, persist that setting in the temporary clone,
+   and keep it disabled for tag checkout. Manifest hashes are byte-sensitive; host Git line-ending
+   conversion must not rewrite the release snapshot.
 7. Fetch tags and select the highest stable tag matching exactly:
    ^v[0-9]+\.[0-9]+\.[0-9]+$
 8. For EXISTING UPDATE, detect the installed version and integrity state when possible. If its
@@ -148,5 +160,4 @@ downgrade a newer snapshot, or create project planning artifacts without separat
 authorization.
 ```
 
-The expected tag is only a sanity check. Remote stable tags and the selected tag's two-commit
-release provenance remain authoritative.
+Remote stable tags and the selected tag's two-commit release provenance are authoritative.

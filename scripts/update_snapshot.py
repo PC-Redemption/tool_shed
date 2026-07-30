@@ -1,0 +1,411 @@
+#!/usr/bin/env python3
+"""Install or update one disconnected Tool Shed snapshot safely."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import re
+import shutil
+import subprocess
+import sys
+import tarfile
+import tempfile
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+
+DEFAULT_REPOSITORY = "https://github.com/PC-Redemption/tool_shed.git"
+STABLE_TAG = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
+REQUIRED_PATHS = (
+    "SHED_VERSION.json",
+    "selection.md",
+    "conventions.md",
+    "existing-projects.md",
+    "templates",
+    "scripts",
+)
+IGNORED_NAMES = {".git", "work", "__pycache__", ".pytest_cache"}
+
+
+class UpdateError(RuntimeError):
+    pass
+
+
+def run(
+    args: list[str],
+    *,
+    cwd: Path | None = None,
+    check: bool = True,
+) -> subprocess.CompletedProcess[str]:
+    result = subprocess.run(
+        args,
+        cwd=str(cwd) if cwd else None,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if check and result.returncode:
+        detail = result.stderr.strip() or result.stdout.strip()
+        raise UpdateError(f"command failed ({result.returncode}): {' '.join(args)}\n{detail}")
+    return result
+
+
+def git(cwd: Path, *args: str, check: bool = True) -> str:
+    return run(["git", *args], cwd=cwd, check=check).stdout.strip()
+
+
+def fingerprint_tree(root: Path) -> dict[str, str]:
+    if not root.exists():
+        return {}
+    result: dict[str, str] = {}
+    for path in sorted(item for item in root.rglob("*") if item.is_file()):
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        result[path.relative_to(root).as_posix()] = digest
+    return result
+
+
+def ensure_workspace_repository(workspace: Path) -> None:
+    result = run(
+        ["git", "rev-parse", "--show-toplevel"],
+        cwd=workspace,
+        check=False,
+    )
+    if result.returncode:
+        raise UpdateError("workspace must be inside a Git repository")
+    repository = Path(result.stdout.strip()).resolve()
+    if repository != workspace:
+        raise UpdateError(f"workspace must be the repository root: {repository}")
+
+
+def snapshot_boundary(workspace: Path, target: Path) -> str:
+    if not target.exists():
+        return "new-installation"
+    if target.is_symlink() or not target.is_dir():
+        raise UpdateError(f"existing snapshot must be a real directory: {target}")
+    if any(path.name == ".git" for path in target.rglob(".git")):
+        raise UpdateError(f"existing snapshot contains embedded Git metadata: {target}")
+    if (target / "work").exists():
+        raise UpdateError(f"existing snapshot contains embedded project work: {target / 'work'}")
+    relative = target.relative_to(workspace).as_posix()
+    submodule = git(workspace, "ls-files", "--stage", "--", relative, check=False)
+    if any(line.startswith("160000 ") for line in submodule.splitlines()):
+        raise UpdateError(f"existing snapshot is registered as a Git submodule: {target}")
+    return "existing-update"
+
+
+def require_ignored(workspace: Path) -> None:
+    for relative in ("tool_shed/", "tool_shed/README.md"):
+        result = run(
+            ["git", "check-ignore", "--no-index", "--", relative],
+            cwd=workspace,
+            check=False,
+        )
+        if result.returncode:
+            raise UpdateError("parent repository must ignore the exact root /tool_shed/ path")
+
+
+def clone_release(repository: str, destination: Path) -> tuple[str, dict[str, Any], str, str]:
+    run(
+        [
+            "git",
+            "-c",
+            "core.autocrlf=false",
+            "clone",
+            "--quiet",
+            "--no-checkout",
+            repository,
+            str(destination),
+        ]
+    )
+    git(destination, "config", "core.autocrlf", "false")
+    git(destination, "fetch", "--quiet", "--tags", "--force", "origin")
+    candidates: list[tuple[tuple[int, int, int], str]] = []
+    for tag in git(destination, "tag", "--list").splitlines():
+        match = STABLE_TAG.fullmatch(tag.strip())
+        if match:
+            candidates.append((tuple(int(part) for part in match.groups()), tag.strip()))
+    if not candidates:
+        raise UpdateError("canonical repository has no stable vMAJOR.MINOR.PATCH tag")
+    _, selected = max(candidates)
+    git(destination, "-c", "core.autocrlf=false", "checkout", "--quiet", "--detach", selected)
+    manifest = json.loads((destination / "SHED_VERSION.json").read_text(encoding="utf-8"))
+    version = selected.removeprefix("v")
+    if manifest.get("shed_version") != version:
+        raise UpdateError("manifest shed_version does not match selected release tag")
+    if manifest.get("release_tag") != selected:
+        raise UpdateError("manifest release_tag does not match selected release tag")
+    if not manifest.get("released_at"):
+        raise UpdateError("release manifest has no release timestamp")
+    tag_commit = git(destination, "rev-parse", f"{selected}^{{commit}}")
+    content_commit = git(destination, "rev-parse", f"{tag_commit}^")
+    if manifest.get("release_commit") != content_commit:
+        raise UpdateError("manifest release_commit does not match the provenance commit parent")
+    changed = git(destination, "diff", "--name-only", content_commit, tag_commit).splitlines()
+    if changed != ["SHED_VERSION.json"]:
+        raise UpdateError("provenance commit must change exactly SHED_VERSION.json")
+    run(
+        [
+            sys.executable,
+            "scripts/check_shed_version.py",
+            "--shed",
+            ".",
+            "--local-only",
+            "--strict",
+        ],
+        cwd=destination,
+    )
+    run([sys.executable, "scripts/validate_tool_shed.py"], cwd=destination)
+    return selected, manifest, tag_commit, content_commit
+
+
+def ignore_snapshot_copy(directory: str, names: list[str]) -> set[str]:
+    ignored = {name for name in names if name in IGNORED_NAMES}
+    ignored.update(name for name in names if name.endswith((".pyc", ".pyo")))
+    return ignored
+
+
+def prepare_snapshot(source: Path, staged: Path) -> None:
+    shutil.copytree(source, staged, ignore=ignore_snapshot_copy)
+    for relative in REQUIRED_PATHS:
+        if not (staged / relative).exists():
+            raise UpdateError(f"staged snapshot is missing required path: {relative}")
+    if (staged / ".git").exists() or (staged / "work").exists():
+        raise UpdateError("staged snapshot contains forbidden .git or work content")
+    run(
+        [
+            sys.executable,
+            str(staged / "scripts" / "check_shed_version.py"),
+            "--shed",
+            str(staged),
+            "--local-only",
+            "--strict",
+        ]
+    )
+
+
+def installed_version(target: Path) -> str | None:
+    manifest = target / "SHED_VERSION.json"
+    if not manifest.is_file():
+        return None
+    try:
+        value = json.loads(manifest.read_text(encoding="utf-8")).get("shed_version")
+    except (OSError, json.JSONDecodeError):
+        return None
+    return str(value) if STABLE_TAG.fullmatch(f"v{value}") else None
+
+
+def version_tuple(value: str) -> tuple[int, int, int]:
+    match = STABLE_TAG.fullmatch(f"v{value}")
+    if not match:
+        raise UpdateError(f"invalid installed version: {value}")
+    return tuple(int(part) for part in match.groups())
+
+
+def difference_summary(old: Path, new: Path) -> dict[str, dict[str, object]]:
+    old_files = fingerprint_tree(old)
+    new_files = fingerprint_tree(new)
+    groups = {
+        "added": sorted(set(new_files) - set(old_files)),
+        "removed": sorted(set(old_files) - set(new_files)),
+        "changed": sorted(path for path in set(old_files) & set(new_files) if old_files[path] != new_files[path]),
+    }
+    return {
+        name: {"count": len(paths), "paths": paths[:20]}
+        for name, paths in groups.items()
+    }
+
+
+def create_backup(target: Path, backup: Path) -> None:
+    if backup.exists():
+        raise UpdateError(f"backup path already exists: {backup}")
+    expected = fingerprint_tree(target)
+    with tarfile.open(backup, "w") as archive:
+        archive.add(target, arcname="tool_shed", recursive=True)
+    observed: dict[str, str] = {}
+    with tarfile.open(backup, "r") as archive:
+        for member in archive.getmembers():
+            normalized = member.name.replace("\\", "/")
+            if normalized == "tool_shed/work" or normalized.startswith("tool_shed/work/"):
+                raise UpdateError("backup unexpectedly contains project work/")
+            if normalized != "tool_shed" and not normalized.startswith("tool_shed/"):
+                raise UpdateError(f"backup contains out-of-scope member: {normalized}")
+            if member.isfile():
+                handle = archive.extractfile(member)
+                if handle is None:
+                    raise UpdateError(f"cannot verify backup member: {normalized}")
+                relative = normalized.removeprefix("tool_shed/")
+                observed[relative] = hashlib.sha256(handle.read()).hexdigest()
+    if observed != expected:
+        raise UpdateError("backup content verification failed")
+
+
+def safe_extract_backup(backup: Path, workspace: Path) -> None:
+    with tarfile.open(backup, "r") as archive:
+        members = archive.getmembers()
+        for member in members:
+            normalized = member.name.replace("\\", "/")
+            if normalized != "tool_shed" and not normalized.startswith("tool_shed/"):
+                raise UpdateError(f"unsafe backup member: {normalized}")
+            if member.issym() or member.islnk() or ".." in Path(normalized).parts:
+                raise UpdateError(f"unsafe backup member: {normalized}")
+            destination = (workspace / normalized).resolve()
+            destination.relative_to(workspace)
+        archive.extractall(workspace)
+
+
+def post_install_checks(workspace: Path, target: Path, inject_failure: bool) -> dict[str, str]:
+    if inject_failure:
+        raise UpdateError("injected post-install verification failure")
+    if target.is_symlink() or not target.is_dir():
+        raise UpdateError("installed snapshot is not a real directory")
+    if (target / ".git").exists() or (target / "work").exists():
+        raise UpdateError("installed snapshot contains forbidden .git or work content")
+    require_ignored(workspace)
+    version_result = run(
+        [
+            sys.executable,
+            str(target / "scripts" / "check_shed_version.py"),
+            "--shed",
+            str(target),
+            "--local-only",
+            "--strict",
+        ]
+    )
+    results = {"version": version_result.stdout.strip()}
+    optional_checks = (
+        ("workspace_preflight.py", "--workspace", str(workspace), "--json"),
+        ("check_stale_paths.py", "--workspace", str(workspace)),
+        ("review_work_state.py", "--workspace", str(workspace)),
+    )
+    for script, *arguments in optional_checks:
+        path = target / "scripts" / script
+        if path.is_file():
+            result = run([sys.executable, str(path), *arguments], cwd=workspace)
+            results[script] = result.stdout.strip()
+    return results
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--workspace", default=".", help="Exact project repository root.")
+    parser.add_argument("--repository", default=DEFAULT_REPOSITORY, help="Canonical Git repository URL or path.")
+    parser.add_argument("--json", action="store_true", help="Write a structured result.")
+    parser.add_argument(
+        "--inject-post-install-failure",
+        action="store_true",
+        help=argparse.SUPPRESS,
+    )
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    workspace = Path(args.workspace).expanduser().resolve()
+    target = workspace / "tool_shed"
+    work_before = fingerprint_tree(workspace / "work")
+    initial_status = ""
+    backup: Path | None = None
+    retired: Path | None = None
+    installed = False
+    payload: dict[str, Any] = {
+        "workspace": str(workspace),
+        "snapshot_path": str(target),
+        "snapshot_relative_path": "tool_shed",
+        "state": "failed",
+    }
+    try:
+        if not workspace.is_dir():
+            raise UpdateError(f"workspace does not exist: {workspace}")
+        ensure_workspace_repository(workspace)
+        initial_status = git(workspace, "status", "--short")
+        mode = snapshot_boundary(workspace, target)
+        require_ignored(workspace)
+        payload["mode"] = mode
+        previous_version = installed_version(target) if target.exists() else None
+        payload["previous_version"] = previous_version
+        with tempfile.TemporaryDirectory(prefix="tool-shed-update-") as temporary:
+            temp = Path(temporary)
+            clone = temp / "release"
+            staged = temp / "staged"
+            selected, manifest, tag_commit, content_commit = clone_release(args.repository, clone)
+            selected_version = str(manifest["shed_version"])
+            if previous_version and version_tuple(previous_version) > version_tuple(selected_version):
+                raise UpdateError(
+                    f"refusing downgrade from {previous_version} to {selected_version}"
+                )
+            prepare_snapshot(clone, staged)
+            payload.update(
+                {
+                    "selected_tag": selected,
+                    "selected_version": selected_version,
+                    "tag_commit": tag_commit,
+                    "content_commit": content_commit,
+                    "difference": difference_summary(target, staged) if target.exists() else None,
+                }
+            )
+            timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+            if mode == "existing-update":
+                backup = workspace / f"tool_shed.backup-{timestamp}.tar"
+                create_backup(target, backup)
+                payload["backup_path"] = str(backup)
+                retired = workspace / f".tool_shed.retired-{timestamp}"
+                if retired.exists():
+                    raise UpdateError(f"retirement path already exists: {retired}")
+                target.rename(retired)
+            try:
+                shutil.move(str(staged), str(target))
+                installed = True
+                payload["post_install"] = post_install_checks(
+                    workspace,
+                    target,
+                    args.inject_post_install_failure,
+                )
+                if fingerprint_tree(workspace / "work") != work_before:
+                    raise UpdateError("root work/ changed during snapshot update")
+            except Exception:
+                if target.exists():
+                    shutil.rmtree(target)
+                installed = False
+                if mode == "existing-update" and backup is not None:
+                    safe_extract_backup(backup, workspace)
+                if retired is not None and retired.exists():
+                    shutil.rmtree(retired)
+                raise
+            if retired is not None and retired.exists():
+                shutil.rmtree(retired)
+        payload["installed_version"] = selected_version
+        payload["canonical_manifest_match"] = True
+        payload["work_preserved"] = fingerprint_tree(workspace / "work") == work_before
+        payload["git_status_changed"] = git(workspace, "status", "--short") != initial_status
+        payload["state"] = "installed"
+        if args.json:
+            print(json.dumps(payload, indent=2, sort_keys=True))
+        else:
+            print(f"Tool Shed {selected_version} installed from {selected}.")
+            print(f"Mode: {mode}")
+            if backup:
+                print(f"Verified backup retained at {backup}")
+            print("Root work/ preserved.")
+        return 0
+    except (OSError, ValueError, json.JSONDecodeError, UpdateError) as error:
+        payload["error"] = str(error)
+        payload["rollback"] = bool(backup and target.exists() and not installed)
+        if fingerprint_tree(workspace / "work") != work_before:
+            payload["work_preserved"] = False
+        else:
+            payload["work_preserved"] = True
+        if args.json:
+            print(json.dumps(payload, indent=2, sort_keys=True))
+        else:
+            print(f"Tool Shed update failed: {error}", file=sys.stderr)
+            if payload["rollback"]:
+                print("Previous snapshot restored from the verified backup.", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

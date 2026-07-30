@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -14,7 +15,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def run_script(*args: str, cwd: Path | None = None, check: bool = True) -> subprocess.CompletedProcess[str]:
+def run_script(
+    *args: str,
+    cwd: Path | None = None,
+    check: bool = True,
+    env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [sys.executable, *args],
         cwd=str(cwd or ROOT),
@@ -22,6 +28,7 @@ def run_script(*args: str, cwd: Path | None = None, check: bool = True) -> subpr
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         check=check,
+        env=env,
     )
 
 
@@ -29,6 +36,112 @@ class ScriptTests(unittest.TestCase):
     def init_repository(self, root: Path, gitignore: str = "") -> None:
         subprocess.run(["git", "init", "-q", str(root)], check=True)
         (root / ".gitignore").write_text(gitignore, encoding="utf-8")
+
+    def create_test_release(
+        self,
+        root: Path,
+        version: str = "9.8.7",
+        *,
+        validation_exit: int = 0,
+    ) -> Path:
+        repository = root / "release source"
+        repository.mkdir()
+        self.init_repository(repository)
+        subprocess.run(["git", "config", "user.name", "Tool Shed Tests"], cwd=repository, check=True)
+        subprocess.run(["git", "config", "user.email", "tests@example.invalid"], cwd=repository, check=True)
+        for name in ("selection.md", "conventions.md", "existing-projects.md"):
+            (repository / name).write_text(f"{name}\n", encoding="utf-8", newline="\n")
+        (repository / "README.md").write_text("released snapshot\n", encoding="utf-8", newline="\n")
+        (repository / "templates").mkdir()
+        (repository / "templates" / "checklist.md").write_text("template\n", encoding="utf-8", newline="\n")
+        (repository / "scripts").mkdir()
+        shutil.copyfile(
+            ROOT / "scripts" / "check_shed_version.py",
+            repository / "scripts" / "check_shed_version.py",
+        )
+        (repository / "scripts" / "validate_tool_shed.py").write_text(
+            f"raise SystemExit({validation_exit})\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        hashed_paths = (
+            "README.md",
+            "selection.md",
+            "conventions.md",
+            "existing-projects.md",
+            "templates/checklist.md",
+            "scripts/check_shed_version.py",
+            "scripts/validate_tool_shed.py",
+        )
+        content_hashes = {
+            relative: hashlib.sha256((repository / relative).read_bytes()).hexdigest()
+            for relative in hashed_paths
+        }
+        (repository / "SHED_VERSION.json").write_text(
+            json.dumps(
+                {
+                    "shed_version": version,
+                    "manifest_schema_version": 2,
+                    "artifact_model_version": "test",
+                    "content_hashes": content_hashes,
+                    "release_tag": f"v{version}",
+                    "release_commit": None,
+                    "released_at": None,
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        subprocess.run(["git", "add", "."], cwd=repository, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "Release content"], cwd=repository, check=True)
+        content_commit = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=repository,
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+        ).stdout.strip()
+        manifest = json.loads((repository / "SHED_VERSION.json").read_text(encoding="utf-8"))
+        manifest["release_commit"] = content_commit
+        manifest["released_at"] = "2026-07-30T00:00:00Z"
+        (repository / "SHED_VERSION.json").write_text(
+            json.dumps(manifest, indent=2) + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        subprocess.run(["git", "add", "SHED_VERSION.json"], cwd=repository, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "Release provenance"], cwd=repository, check=True)
+        subprocess.run(
+            ["git", "tag", "-a", f"v{version}", "-m", f"Tool Shed v{version}"],
+            cwd=repository,
+            check=True,
+        )
+        return repository
+
+    def create_update_workspace(self, root: Path, version: str = "1.0.0") -> Path:
+        workspace = root / "workspace with spaces"
+        workspace.mkdir()
+        self.init_repository(
+            workspace,
+            "/tool_shed/\n/tool_shed.backup-*.tar\n",
+        )
+        snapshot = workspace / "tool_shed"
+        snapshot.mkdir()
+        (snapshot / "SHED_VERSION.json").write_text(
+            json.dumps({"shed_version": version}),
+            encoding="utf-8",
+        )
+        (snapshot / "old-marker.txt").write_text("old snapshot\n", encoding="utf-8")
+        work = workspace / "work"
+        work.mkdir()
+        (work / "operator-data.txt").write_text("preserve exactly\n", encoding="utf-8")
+        subprocess.run(["git", "config", "user.name", "Tool Shed Tests"], cwd=workspace, check=True)
+        subprocess.run(["git", "config", "user.email", "tests@example.invalid"], cwd=workspace, check=True)
+        subprocess.run(["git", "add", ".gitignore", "work/operator-data.txt"], cwd=workspace, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "Workspace"], cwd=workspace, check=True)
+        return workspace
 
     def test_check_shed_version_detects_equal_version_release_mismatch(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -426,6 +539,11 @@ class ScriptTests(unittest.TestCase):
             text,
         )
         self.assertIn("release_commit must not equal tag_commit", text)
+        self.assertIn("scripts/update_snapshot.py --workspace .", text)
+        self.assertIn("core.autocrlf=false", text)
+        self.assertNotIn("expected newest published stable tag", text.lower())
+        self.assertTrue((ROOT / "scripts" / "update-tool-shed.sh").is_file())
+        self.assertTrue((ROOT / "scripts" / "update-tool-shed.ps1").is_file())
         self.assertFalse((ROOT / "docs" / "installing-new-snapshot.md").exists())
         self.assertFalse((ROOT / "docs" / "updating-existing-snapshot.md").exists())
 
@@ -971,7 +1089,8 @@ Next Action: keep going
             result = run_script("scripts/install_into_workspace.py", str(workspace))
 
             self.assertIn("Q&A inbox warning:", result.stdout)
-            self.assertIn("q&a/ask.txt", result.stdout)
+            self.assertIn(str(fallback), result.stdout)
+            self.assertIn(str(canonical), result.stdout)
             self.assertIn("canonical inbox", result.stdout)
             self.assertTrue(canonical.is_file())
             self.assertFalse(any(
@@ -979,6 +1098,155 @@ Next Action: keep going
                 for line in canonical.read_text(encoding="utf-8").splitlines()
             ))
             self.assertEqual(fallback.read_text(encoding="utf-8"), fallback_text)
+
+    def test_snapshot_updater_is_cross_platform_and_preserves_work(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(root)
+            workspace = self.create_update_workspace(root)
+            git_config = root / "global.gitconfig"
+            git_config.write_text("[core]\n\tautocrlf = true\n", encoding="utf-8")
+            environment = dict(os.environ)
+            environment["GIT_CONFIG_GLOBAL"] = str(git_config)
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--json",
+                cwd=workspace,
+                env=environment,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertEqual(payload["state"], "installed")
+            self.assertEqual(payload["selected_tag"], "v9.8.7")
+            self.assertEqual(payload["installed_version"], "9.8.7")
+            self.assertTrue(payload["work_preserved"])
+            self.assertEqual(
+                (workspace / "work" / "operator-data.txt").read_text(encoding="utf-8"),
+                "preserve exactly\n",
+            )
+            self.assertFalse((workspace / "tool_shed" / ".git").exists())
+            self.assertFalse((workspace / "tool_shed" / "work").exists())
+            backups = list(workspace.glob("tool_shed.backup-*.tar"))
+            self.assertEqual(len(backups), 1)
+            with tarfile.open(backups[0], "r") as archive:
+                names = {member.name.replace("\\", "/") for member in archive.getmembers()}
+            self.assertIn("tool_shed/old-marker.txt", names)
+            self.assertNotIn("work/operator-data.txt", names)
+
+    def test_snapshot_updater_rolls_back_from_verified_archive(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(root)
+            workspace = self.create_update_workspace(root)
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--inject-post-install-failure",
+                "--json",
+                cwd=workspace,
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertTrue(payload["rollback"])
+            self.assertTrue(payload["work_preserved"])
+            self.assertEqual(
+                (workspace / "tool_shed" / "old-marker.txt").read_text(encoding="utf-8"),
+                "old snapshot\n",
+            )
+            self.assertEqual(len(list(workspace.glob("tool_shed.backup-*.tar"))), 1)
+
+    def test_snapshot_updater_installs_into_new_workspace(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(root)
+            workspace = root / "new workspace with spaces"
+            workspace.mkdir()
+            self.init_repository(workspace, "/tool_shed/\n/tool_shed.backup-*.tar\n")
+            (workspace / "README.md").write_text("project\n", encoding="utf-8")
+            subprocess.run(["git", "config", "user.name", "Tool Shed Tests"], cwd=workspace, check=True)
+            subprocess.run(["git", "config", "user.email", "tests@example.invalid"], cwd=workspace, check=True)
+            subprocess.run(["git", "add", "."], cwd=workspace, check=True)
+            subprocess.run(["git", "commit", "-q", "-m", "Workspace"], cwd=workspace, check=True)
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--json",
+                cwd=workspace,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertEqual(payload["mode"], "new-installation")
+            self.assertEqual(payload["installed_version"], "9.8.7")
+            self.assertFalse(list(workspace.glob("tool_shed.backup-*.tar")))
+            self.assertFalse((workspace / "tool_shed" / ".git").exists())
+            self.assertFalse((workspace / "tool_shed" / "work").exists())
+
+    def test_snapshot_updater_rejects_invalid_release_before_mutation(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(root)
+            workspace = self.create_update_workspace(root)
+            original = (workspace / "tool_shed" / "old-marker.txt").read_bytes()
+            subprocess.run(
+                ["git", "tag", "-a", "v9.8.8", "-m", "Invalid higher release"],
+                cwd=release,
+                check=True,
+            )
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--json",
+                cwd=workspace,
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("shed_version does not match", payload["error"])
+            self.assertEqual((workspace / "tool_shed" / "old-marker.txt").read_bytes(), original)
+            self.assertFalse(list(workspace.glob("tool_shed.backup-*.tar")))
+
+    def test_snapshot_updater_rejects_release_validation_failure_before_mutation(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(root, validation_exit=1)
+            workspace = self.create_update_workspace(root)
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--json",
+                cwd=workspace,
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("validate_tool_shed.py", payload["error"])
+            self.assertTrue((workspace / "tool_shed" / "old-marker.txt").is_file())
+            self.assertFalse(list(workspace.glob("tool_shed.backup-*.tar")))
 
     def test_installer_preserves_actionable_content_in_both_inboxes_without_fallback_only_warning(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

@@ -6,7 +6,12 @@ on:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.11", "3.x"]
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Check out repository
@@ -15,7 +20,16 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.x"
+          python-version: ${{ matrix.python-version }}
 
       - name: Validate tool_shed
-        run: python3 scripts/validate_tool_shed.py
+        run: python scripts/validate_tool_shed.py
+
+      - name: Smoke POSIX launcher
+        if: runner.os == 'Linux'
+        run: scripts/update-tool-shed.sh --help
+
+      - name: Smoke PowerShell launcher
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: scripts/update-tool-shed.ps1 --help

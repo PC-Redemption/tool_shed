@@ -2,8 +2,8 @@
 
 Status: active
 Type: ticket
-Updated: 2026-07-25
-Next Action: redesign the useful parts of superseded PR #3 around stable-tag verification
+Updated: 2026-07-30
+Next Action: verify the complete updater matrix in native Windows and Linux CI
 Parent: work/maps/map-tool-shed-evolution.md
 
 ## Problem
@@ -23,20 +23,20 @@ boundary, project `work/`, repository policy, and recoverable update behavior.
 
 ## Acceptance Criteria
 
-- [ ] Add Linux and Windows validation jobs without weakening existing checks.
-- [ ] Provide POSIX and PowerShell launchers that select an available Python 3
+- [x] Add Linux and Windows validation jobs without weakening existing checks.
+- [x] Provide POSIX and PowerShell launchers that select an available Python 3
   runtime without changing Tool Shed's Python-version requirements.
-- [ ] Select the highest stable `vMAJOR.MINOR.PATCH` tag rather than cloning
+- [x] Select the highest stable `vMAJOR.MINOR.PATCH` tag rather than cloning
   `main`.
-- [ ] Verify the tag's two-commit provenance and snapshot content before any
+- [x] Verify the tag's two-commit provenance and snapshot content before any
   workspace mutation.
-- [ ] Preserve project `work/`, source, docs, `.gitignore`, `AGENTS.md`, and
+- [x] Preserve project `work/`, source, docs, `.gitignore`, `AGENTS.md`, and
   unrelated dirty changes.
-- [ ] Keep update backups until the operator explicitly removes them.
-- [ ] Roll back a failed replacement and report any installer-created residue.
+- [x] Keep update backups until the operator explicitly removes them.
+- [x] Roll back a failed replacement and report any installer-created residue.
 - [ ] Test fresh install, existing update, invalid release, validation failure,
   rollback, Windows paths, spaces, and launcher fallback.
-- [ ] Reconcile implementation and documentation with
+- [x] Reconcile implementation and documentation with
   `docs/install-or-update-snapshot.md`.
 
 ## Verification

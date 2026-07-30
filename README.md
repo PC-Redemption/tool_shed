@@ -91,15 +91,21 @@ Canonical source: [https://github.com/PC-Redemption/tool_shed](https://github.co
 - Keep project-specific artifacts in root `work/` and track that directory with the project by default.
 - Ignore root `work/` only through the explicit, documented repository exception described below. An existing `/work/` ignore is not evidence of an intentional exception.
 
-One-time snapshot installation with GitHub CLI:
+Use the supported cross-platform updater from a current Tool Shed release checkout:
 
 ```bash
-gh repo clone PC-Redemption/tool_shed tool_shed
-rm -rf tool_shed/.git
-printf '\n/tool_shed/\n' >> .gitignore
+python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace .
 ```
 
-Run the removal only with the explicit workspace path shown above, after confirming the clone succeeded. Updates are deliberate snapshot replacements, not pulls: obtain a fresh copy elsewhere, review the differences, and replace only the intended tooling files without copying Git metadata.
+It detects a new installation versus an existing update, selects the highest stable tag, disables
+Git line-ending conversion, verifies two-commit release provenance and byte-level manifest
+integrity, stages a disconnected snapshot, retains a verified update backup, preserves root
+`work/`, and restores the previous snapshot after a failed post-install check. POSIX and PowerShell
+launchers are available as `scripts/update-tool-shed.sh` and `scripts/update-tool-shed.ps1`.
+
+If the installed snapshot predates `update_snapshot.py`, obtain a current released Tool Shed
+checkout outside the project and run the updater from that checkout. Never replace or pull inside
+the stale workspace snapshot to bootstrap the updater.
 
 After installing or updating the snapshot, run `install_into_workspace.py`. It detects whether the
 parent Git repository ignores root `work/`. If a stale ignore exists, it reports the exact ignore
