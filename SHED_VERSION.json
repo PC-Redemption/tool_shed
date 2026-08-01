@@ -48,9 +48,9 @@
   },
   "manifest_schema_version": 2,
   "notes": "Adds domain-neutral deep-research spikes with standards-level evidence structure, routing guidance, creation aliases, and compatibility tests.",
-  "release_commit": null,
+  "release_commit": "fe395b845a94df5cb3282f6d6e6c64f37532562d",
   "release_tag": "v0.8.0",
-  "released_at": null,
+  "released_at": "2026-08-01T14:40:23Z",
   "shed_version": "0.8.0",
   "updated_at": "2026-08-01"
 }
