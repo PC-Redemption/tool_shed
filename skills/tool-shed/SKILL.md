@@ -17,6 +17,59 @@ The global setup may also define `mp:` for private Marshal owner work and `ws:` 
 workspace. A request uses at most one leading route prefix; when an unprefixed write could
 materially target either Marshal or the workspace, ask one concise routing question before writing.
 
+### Reasoning Preflight
+
+Before substantial Tool Shed implementation, debugging, research, planning, or validation work,
+perform one lightweight reasoning preflight inside the initial response. Do not run a command,
+read a cache, access the network, invoke another model, or add a separate analysis turn for this
+preflight. Use only task shape and model/reasoning metadata already exposed in the current session.
+
+Recommend the lowest available effort likely to produce a reliable result. Treat these as abstract
+tiers and map them to the labels currently advertised by the session rather than assuming a fixed
+product vocabulary:
+
+- quick: mechanical, narrow, well-specified work
+- balanced: ordinary implementation, debugging, or documentation with some planning
+- deep: difficult multi-step work, ambiguity, multiple sources, meaningful tradeoffs, cross-layer
+  investigation, or standards-level research
+- maximum single-thread: exceptional problems where depth matters more than latency or usage
+- parallel: complex work that can be divided into genuinely independent subproblems
+
+Run the preflight once for a materially new user request, not after tool results, automatic
+continuations, steering additions, or context compaction. Skip it for conversation, Tool Shed help,
+version/status checks, and explicit instructions to continue without preflight.
+
+- If the current effort is visible and materially suitable, continue silently.
+- If it is visible and differs materially from the lowest adequate tier, send one concise
+  commentary message naming the current and recommended settings and stop before expensive work.
+  Treat a difference as material only when it spans at least two advertised effort steps or the
+  current effort is clearly unsafe for the task. The operator may change the setting or explicitly
+  tell Codex to continue.
+- If the current effort is not visible, send one concise commentary message with the recommended
+  abstract/currently advertised tier, state that the current setting is not visible, and continue
+  immediately without asking for confirmation.
+- If the available catalog is not exposed, do not invent a model or effort name. Recommend an
+  abstract tier and continue. Never block from stale, cached, or documentation-only availability.
+
+Model names and effort labels change. Runtime session/account capability metadata is authoritative.
+The optional local reasoning catalog is maintenance and diagnostic evidence only; never read or
+refresh it on the ordinary request path. Refresh it explicitly with:
+
+```bash
+python3 <shed>/scripts/reasoning_catalog.py refresh
+```
+
+Inspect it without network or subprocess discovery with:
+
+```bash
+python3 <shed>/scripts/reasoning_catalog.py status
+```
+
+The refresh uses Codex app-server `model/list`, preserves unfamiliar future effort labels, writes
+atomically, and retains the last verified cache if refresh fails. Refresh after Codex login/account
+changes, a Codex client update, a visible model-picker change, or when the cache expires. It is not
+proof of the active thread setting; only current-session metadata can establish that.
+
 ### Ship Route
 
 Treat `ts:ship <goal>` and `ts: ship <goal>` as authorization to carry the workspace goal through
@@ -69,6 +122,15 @@ done. If the resolver is absent from an older snapshot, inspect both paths manua
 rules.
 
 ### Version Routes
+
+When the request is `ts: refresh reasoning catalog`, run
+`python3 <shed>/scripts/reasoning_catalog.py refresh` and report the source, retrieval/expiry times,
+available models, and their advertised reasoning efforts. This is an explicit maintenance action,
+never an automatic request-time step.
+
+When the request is `ts: reasoning status`, run
+`python3 <shed>/scripts/reasoning_catalog.py status`. This is local-only and must clearly report
+fresh, stale, missing, or invalid cache state. It does not establish the active thread setting.
 
 When the request is `ts: version`, run
 `python3 <shed>/scripts/check_shed_version.py --shed <shed> --local-only` and report the local

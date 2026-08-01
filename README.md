@@ -215,6 +215,19 @@ python3 tool_shed/scripts/check_shed_version.py --shed tool_shed
 Equivalent Codex requests are `ts: version`, `ts: check for updates`, and `ts: update status`.
 Checks are read-only and do not authorize snapshot replacement.
 
+Tool Shed performs a zero-I/O reasoning preflight before substantial routed work. It uses only
+current-session metadata on the request path. Maintain the optional account-aware model/effort
+catalog outside requests:
+
+```bash
+python3 tool_shed/scripts/reasoning_catalog.py refresh
+python3 tool_shed/scripts/reasoning_catalog.py status
+```
+
+Refresh queries Codex app-server `model/list` and writes the user-local cache atomically. Run it
+after login/account changes, Codex updates, visible model-picker changes, or cache expiry. Missing
+or stale cache data never blocks ordinary work.
+
 Create the project work tree:
 
 ```bash

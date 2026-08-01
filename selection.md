@@ -2,6 +2,12 @@
 
 Choose the artifact by the kind of thinking the work needs, not by how important the work feels.
 
+Before substantial Tool Shed work, apply the skill's one-time reasoning preflight. Classification
+must use the task request and already-exposed session metadata only; it must not add request-time
+network, subprocess, cache-read, or extra-model work. Use the lowest adequate currently available
+reasoning tier. Pause only for a visible material mismatch. When the current setting or catalog is
+not visible, state the abstract recommendation and continue without blocking.
+
 ## Decision Tree
 
 Use a checklist when:

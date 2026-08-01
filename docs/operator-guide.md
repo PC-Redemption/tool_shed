@@ -69,6 +69,28 @@ requests.
 
 ## Common Use Cases
 
+### Check reasoning before substantial work
+
+Tool Shed performs a one-time, zero-I/O reasoning preflight before substantial routed work. It uses
+only the request and current-session metadata. A suitable visible setting continues silently. A
+material visible mismatch pauses before expensive work. If the current setting is not visible,
+Tool Shed comments with the recommended tier and continues immediately so the operator can
+interrupt if desired.
+
+The request path never refreshes catalogs. Refresh the optional account-aware diagnostic cache
+after a Codex login/account change, client update, visible model-picker change, or cache expiry:
+
+```bash
+python3 tool_shed/scripts/reasoning_catalog.py refresh
+python3 tool_shed/scripts/reasoning_catalog.py status
+```
+
+Equivalent requests are `ts: refresh reasoning catalog` and `ts: reasoning status`.
+
+Refresh uses Codex app-server `model/list`; status is local-only. The cache preserves future model
+and effort labels without treating release-time names as permanent policy. It cannot establish the
+active thread setting, and stale data never causes a blocking recommendation.
+
 ### Orient in a project
 
 Use this when returning to a project or deciding what deserves attention next.

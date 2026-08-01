@@ -27,6 +27,7 @@ Updated: 2026-08-01
 | [work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md](work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md) | workpackage | active | 2026-07-21 | obtain explicit approval before the first guarded mass update | README.md; docs/fleet-snapshot-updates.md; skills/tool-shed/SKILL.md |
 | [work/wp/completed/wp-existing-project-onboarding-and-backfill.md](work/wp/completed/wp-existing-project-onboarding-and-backfill.md) | workpackage | complete | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/wp/completed/wp-generated-evidence-safety-and-migration.md](work/wp/completed/wp-generated-evidence-safety-and-migration.md) | workpackage | complete | 2026-07-25 | none | work/maps/map-tool-shed-evolution.md |
+| [work/wp/completed/wp-reasoning-level-preflight-and-recommendation.md](work/wp/completed/wp-reasoning-level-preflight-and-recommendation.md) | workpackage | complete | 2026-08-01 | none | work/maps/map-tool-shed-evolution.md |
 | [work/wp/completed/wp-work-artifact-reconciliation.md](work/wp/completed/wp-work-artifact-reconciliation.md) | workpackage | complete | 2026-07-24 | none | README.md; conventions.md; skills/tool-shed/SKILL.md |
 
 ## Current Reading Order
@@ -37,6 +38,6 @@ Updated: 2026-08-01
 
 ## Summary
 
-- Total artifacts: 20
+- Total artifacts: 21
 - Active artifacts: 3
-- Completed/decided artifacts: 16
+- Completed/decided artifacts: 17

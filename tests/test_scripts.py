@@ -120,6 +120,40 @@ class ScriptTests(unittest.TestCase):
         )
         return repository
 
+    def create_fake_codex_catalog(self, root: Path) -> Path:
+        executable = root / "fake-codex"
+        executable.write_text(
+            """#!/usr/bin/env python3
+import json
+import sys
+
+for raw in sys.stdin:
+    message = json.loads(raw)
+    if message.get("method") == "initialize":
+        print(json.dumps({"id": message["id"], "result": {"userAgent": "fake-codex/1.0"}}), flush=True)
+    elif message.get("method") == "model/list":
+        print(json.dumps({"id": message["id"], "result": {"data": [
+            {
+                "id": "model-current",
+                "model": "model-current",
+                "displayName": "Current Model",
+                "defaultReasoningEffort": "medium",
+                "supportedReasoningEfforts": [
+                    {"reasoningEffort": "low", "description": "fast"},
+                    {"reasoningEffort": "medium", "description": "balanced"},
+                    {"reasoningEffort": "future-depth", "description": "new label"}
+                ],
+                "isDefault": True,
+                "inputModalities": ["text"]
+            }
+        ], "nextCursor": None}}), flush=True)
+""",
+            encoding="utf-8",
+            newline="\n",
+        )
+        executable.chmod(0o755)
+        return executable
+
     def create_update_workspace(self, root: Path, version: str = "1.0.0") -> Path:
         workspace = root / "workspace with spaces"
         workspace.mkdir()
@@ -402,6 +436,11 @@ class ScriptTests(unittest.TestCase):
         self.assertIn("[Tool Shed operator guide](docs/operator-guide.md)", readme)
         self.assertIn("ts: version", skill)
         self.assertIn("ts: check for updates", guide)
+        self.assertIn("### Reasoning Preflight", skill)
+        self.assertIn("Do not run a command", skill)
+        self.assertIn("ts: refresh reasoning catalog", skill)
+        self.assertIn("ts: reasoning status", guide)
+        self.assertTrue((ROOT / "scripts" / "reasoning_catalog.py").is_file())
 
     def test_ask_resolver_uses_canonical_content_only(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -1739,6 +1778,70 @@ stale canonical-only guidance
             self.assertIn("work/inventories/inventory-index-test-surfaces.md", paths)
             readme = (workspace / "work" / "README.md").read_text(encoding="utf-8")
             self.assertIn("complete_workpackage.py", readme)
+
+    def test_reasoning_catalog_refresh_uses_codex_model_list_and_preserves_new_labels(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            fake_codex = self.create_fake_codex_catalog(root)
+            cache = root / "catalog.json"
+
+            result = run_script(
+                "scripts/reasoning_catalog.py",
+                "refresh",
+                "--codex",
+                str(fake_codex),
+                "--cache",
+                str(cache),
+            )
+
+            status = json.loads(result.stdout)
+            payload = json.loads(cache.read_text(encoding="utf-8"))
+            self.assertTrue(status["fresh"])
+            self.assertEqual(status["source"], "codex-app-server:model/list")
+            self.assertEqual(status["model_count"], 1)
+            efforts = payload["models"][0]["supported_reasoning_efforts"]
+            self.assertEqual([item["id"] for item in efforts], ["low", "medium", "future-depth"])
+
+    def test_reasoning_catalog_status_is_local_and_reports_stale(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            cache = Path(temp) / "catalog.json"
+            cache.write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "source": "fixture",
+                        "source_user_agent": "fixture/1",
+                        "retrieved_at": "2026-01-01T00:00:00Z",
+                        "expires_at": "2026-01-02T00:00:00Z",
+                        "models": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            result = run_script("scripts/reasoning_catalog.py", "status", "--cache", str(cache))
+            status = json.loads(result.stdout)
+            self.assertFalse(status["fresh"])
+            self.assertEqual(status["source"], "fixture")
+
+    def test_reasoning_catalog_failed_refresh_preserves_verified_cache(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            cache = Path(temp) / "catalog.json"
+            original = b'{"schema_version":1,"models":[],"expires_at":"2099-01-01T00:00:00Z"}\n'
+            cache.write_bytes(original)
+
+            result = run_script(
+                "scripts/reasoning_catalog.py",
+                "refresh",
+                "--codex",
+                str(Path(temp) / "missing-codex"),
+                "--cache",
+                str(cache),
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 1)
+            self.assertEqual(cache.read_bytes(), original)
 
 
 if __name__ == "__main__":

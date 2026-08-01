@@ -185,6 +185,22 @@ fields, active workstream rows, unchecked tasks, and `Do next:` content. Histori
 related-artifact links are valid references and do not become drift merely because their targets
 are finished.
 
+## Reasoning Preflight and Catalog
+
+Reasoning preflight is an instruction-time routing check, not an additional program invocation.
+It runs once before substantial Tool Shed work using only the request and model/reasoning metadata
+already exposed to the session. It adds no network call, subprocess, cache read, extra model call,
+or confirmation round-trip to ordinary requests. Suitable visible settings continue silently;
+visible material mismatches pause early; unknown current settings produce a short recommendation
+and continue immediately.
+
+OpenAI model names and effort labels are changing capability data, not durable Tool Shed policy.
+Use `scripts/reasoning_catalog.py refresh` outside request execution to query the account-aware
+Codex app-server `model/list` endpoint and atomically update the user-local cache. Use `status` for
+a local-only diagnostic. Refresh after login/account changes, Codex updates, model-picker changes,
+or cache expiry. A cached or documentation-derived catalog may guide maintenance but cannot prove
+the active thread setting or justify a blocking named recommendation.
+
 ## Stale Path Check
 
 Run `python3 tool_shed/scripts/check_stale_paths.py --workspace .` after moving, completing, or renaming artifacts.
