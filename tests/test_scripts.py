@@ -121,8 +121,8 @@ class ScriptTests(unittest.TestCase):
         return repository
 
     def create_fake_codex_catalog(self, root: Path) -> Path:
-        executable = root / "fake-codex"
-        executable.write_text(
+        script = root / "fake-codex.py"
+        script.write_text(
             """#!/usr/bin/env python3
 import json
 import sys
@@ -151,8 +151,17 @@ for raw in sys.stdin:
             encoding="utf-8",
             newline="\n",
         )
-        executable.chmod(0o755)
-        return executable
+        if os.name == "nt":
+            launcher = root / "fake-codex.cmd"
+            launcher.write_text(
+                f'@echo off\r\n"{sys.executable}" "{script}" %*\r\n',
+                encoding="utf-8",
+                newline="",
+            )
+            return launcher
+
+        script.chmod(0o755)
+        return script
 
     def create_update_workspace(self, root: Path, version: str = "1.0.0") -> Path:
         workspace = root / "workspace with spaces"
@@ -1784,6 +1793,8 @@ stale canonical-only guidance
             root = Path(temp)
             fake_codex = self.create_fake_codex_catalog(root)
             cache = root / "catalog.json"
+
+            self.assertEqual(fake_codex.suffix, ".cmd" if os.name == "nt" else ".py")
 
             result = run_script(
                 "scripts/reasoning_catalog.py",
