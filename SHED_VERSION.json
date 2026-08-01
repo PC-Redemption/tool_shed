@@ -49,9 +49,9 @@
   },
   "manifest_schema_version": 2,
   "notes": "Replaces abstract reasoning preflight labels with concrete picker-level recommendations and adds an explicit catalog-backed recommendation route.",
-  "release_commit": null,
+  "release_commit": "d3930cdd7ccabd82d6c4601dfb62c006652ca42e",
   "release_tag": "v0.9.2",
-  "released_at": null,
+  "released_at": "2026-08-01T16:03:20Z",
   "shed_version": "0.9.2",
   "updated_at": "2026-08-01"
 }
