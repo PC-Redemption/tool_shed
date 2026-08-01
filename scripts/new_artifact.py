@@ -22,6 +22,8 @@ ARTIFACTS = {
     "runbook": ("templates/runbook.md", "work/runbooks", "runbook"),
     "incident": ("templates/incident.md", "work/incidents", "incident"),
     "spike": ("templates/spike.md", "work/spikes", "spike"),
+    "deep-research": ("templates/deep-research-spike.md", "work/spikes", "spike"),
+    "deep-research-spike": ("templates/deep-research-spike.md", "work/spikes", "spike"),
     "inventory": ("templates/inventory.md", "work/inventories", "inventory"),
     "project-inventory": ("templates/existing-project-inventory.md", "work/inventories", "inventory"),
     "existing-project-inventory": ("templates/existing-project-inventory.md", "work/inventories", "inventory"),

@@ -56,6 +56,28 @@ Use a spike when:
 - exploration should be time-boxed
 - the deliverable is learning, not production change
 
+Use a deep-research spike (`Type: spike`, `Research Depth: deep`) when unresolved uncertainty is
+causing implementation churn or risky assumptions across technical layers. Select it when one or
+more of these signals is material:
+
+- a problem crosses standards, hardware, driver, middleware, and application boundaries
+- two or more compliant implementations or specimens behave differently
+- a second mitigation failed or a third mitigation is being considered
+- proposed fixes introduce product-, vendor-, model-, or specimen-specific heuristics
+- mandatory versus optional behavior is unclear
+- timing, retry, recovery, caching, persistence, or power behavior lacks an authoritative basis
+- vendor documentation may be narrower than the general technical domain
+- a last-known-good implementation behaves materially differently from current code
+- the change affects broad compatibility, reliability, safety, or data integrity
+
+Do not select deep research merely because work is important or has consumed time. Select it when
+unresolved cross-layer uncertainty is driving churn or unsafe assumptions.
+
+Start a deep-research spike before a third mitigation attempt when the failure crosses multiple
+technical layers, affects broad compatibility, or behaves differently across two compliant
+specimens. Pause new narrow heuristics until mandatory, optional, and implementation-specific
+behavior has been separated.
+
 Use an inventory when:
 
 - the work is classify, keep, move, delete, own, or route
@@ -77,6 +99,7 @@ Use a decision matrix when:
 - Runbook for repeatable operations.
 - Incident for break/fix learning.
 - Spike for uncertainty.
+- Deep-research spike for cross-layer uncertainty that is driving churn or risky assumptions.
 - Inventory for classification.
 - Decision matrix for tradeoffs.
 

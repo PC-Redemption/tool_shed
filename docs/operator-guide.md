@@ -114,7 +114,22 @@ Use a spike when the deliverable is learning rather than production code.
 
 ```text
 ts: create a time-boxed spike to compare deployment options
+ts: create a deep-research spike for the cross-layer compatibility contract
 ```
+
+Choose deep research when unresolved uncertainty spans technical layers, compliant specimens
+diverge, a second mitigation failed, or a proposed fix depends on narrow vendor/model heuristics.
+Start it before a third mitigation when compatibility, reliability, safety, or data integrity is
+broadly affected. Importance or elapsed time alone is not a trigger. Create it with:
+
+```bash
+python3 tool_shed/scripts/new_artifact.py deep-research "Compatibility contract" --workspace .
+```
+
+Tool Shed structures the evidence; it does not search for it. Use the resulting research to focus
+target tests, then promote settled conclusions to project docs. Bound the effort, allow urgent
+reversible containment when necessary, and pause speculative production heuristics until
+mandatory, optional, and implementation-specific behavior are separated.
 
 When a spike finishes, record `Disposition:` as `planned`, `documented`, `no-action`, or
 `superseded`. A planned spike names its follow-up artifact in `Produces:`.

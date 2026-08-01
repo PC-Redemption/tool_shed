@@ -150,10 +150,24 @@ Fast defaults:
 - Runbook: repeatable operation where commands, order, and recovery matter.
 - Incident: break/fix learning.
 - Spike: uncertainty where the deliverable is learning.
+- Deep-research spike: cross-layer uncertainty driving repeated mitigations or risky assumptions;
+  keep `Type: spike` and use `Research Depth: deep`.
 - Inventory: classify, keep, move, delete, own, or route.
 - Decision matrix: compare two to five plausible options.
 
 Use a project map when the user needs to see the whole project, when work spans multiple workstreams/artifact types, when sequencing matters, or when loading `tool_shed` into an existing project.
+
+Select a deep-research spike when standards, hardware, drivers, middleware, and application
+behavior interact; compliant specimens diverge; a second mitigation failed or a third is being
+considered; narrow vendor/model heuristics are proposed; mandatory versus optional behavior is
+unclear; timing or recovery lacks authority; vendor guidance may be narrower than the domain; a
+last-known-good implementation differs materially; or broad compatibility, reliability, safety,
+or data integrity is at stake. Do not select it for importance or elapsed time alone. Before a
+third mitigation, pause new narrow heuristics until mandatory, optional, and
+implementation-specific behavior are separated. Deep research structures evidence and focused
+target experiments; it is not a search engine or a substitute for testing. Bound it, promote
+settled conclusions to docs, and allow urgent reversible containment without letting speculative
+production heuristics outrun the research.
 
 ## Create Artifacts
 

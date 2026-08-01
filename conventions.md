@@ -154,6 +154,15 @@ Every active non-map artifact should name a concrete `Parent:` or `Project Map:`
 spike must set `Disposition:` to `planned`, `documented`, `no-action`, or `superseded`. A planned
 spike must identify its follow-up artifact in `Produces:`.
 
+Deep research is a spike mode, not a separate artifact model. It uses `Type: spike` and
+`Research Depth: deep`, so normal indexing, disposition, and `Produces:` rules apply. Tool Shed
+structures and preserves research; it is not a search engine. Findings remain work artifacts until
+settled conclusions are promoted to `docs/` or README. Research does not replace target testing:
+it should turn broad uncertainty into focused experiments. Timebox or bound the effort so deep
+research prevents repeated symptom-level mitigation rather than enabling indefinite analysis.
+Urgent reversible containment may proceed, but speculative production heuristics must not outrun
+the research.
+
 ## Tool Shed Versioning
 
 `SHED_VERSION.json` is the authoritative snapshot manifest. It records a semantic `shed_version`,

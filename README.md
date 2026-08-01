@@ -228,6 +228,7 @@ python3 tool_shed/scripts/new_artifact.py checklist "Root docs cleanup" --worksp
 python3 tool_shed/scripts/new_artifact.py project-map "Plugin migration" --workspace .
 python3 tool_shed/scripts/new_artifact.py wp "Plugin migration" --workspace .
 python3 tool_shed/scripts/new_artifact.py adr "Hosted installer uses plugin bootstrapper" --workspace .
+python3 tool_shed/scripts/new_artifact.py deep-research "Cross-layer compatibility contract" --workspace .
 ```
 
 Complete an active workpackage:

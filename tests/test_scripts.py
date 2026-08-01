@@ -1028,6 +1028,75 @@ Next Action: keep going
             payload = json.loads((workspace / "work" / "index.json").read_text(encoding="utf-8"))
             self.assertEqual(payload["artifacts"][0]["path"], "work/checklists/checklist-runtime-closeout.md")
 
+    def test_new_artifact_creates_deep_research_spike_and_indexes_it(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+
+            run_script(
+                "scripts/new_artifact.py",
+                "deep-research",
+                "Host Contract",
+                "--workspace",
+                str(workspace),
+                "--shed",
+                str(ROOT),
+            )
+
+            artifact = workspace / "work" / "spikes" / "spike-host-contract.md"
+            text = artifact.read_text(encoding="utf-8")
+            self.assertIn("# Deep-Research Spike: Host Contract", text)
+            self.assertIn("Type: spike", text)
+            self.assertIn("Research Depth: deep", text)
+            self.assertNotIn("{{ title }}", text)
+            self.assertNotIn("{{ date }}", text)
+            payload = json.loads((workspace / "work" / "index.json").read_text(encoding="utf-8"))
+            self.assertEqual(payload["artifacts"][0]["path"], "work/spikes/spike-host-contract.md")
+            self.assertEqual(payload["artifacts"][0]["type"], "spike")
+
+    def test_new_artifact_ordinary_spike_remains_unchanged(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+
+            run_script(
+                "scripts/new_artifact.py",
+                "spike",
+                "Quick Check",
+                "--workspace",
+                str(workspace),
+                "--shed",
+                str(ROOT),
+            )
+
+            text = (workspace / "work" / "spikes" / "spike-quick-check.md").read_text(encoding="utf-8")
+            self.assertIn("# Spike: Quick Check", text)
+            self.assertNotIn("Research Depth:", text)
+
+    def test_completed_deep_research_uses_normal_spike_disposition_rules(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            spike = workspace / "work" / "spikes" / "spike-contract.md"
+            spike.parent.mkdir(parents=True)
+            spike.write_text(
+                """# Deep-Research Spike: Contract
+
+Status: complete
+Type: spike
+Research Depth: deep
+Updated: 2026-08-01
+Next Action: create implementation ticket
+Parent: work/maps/map-demo.md
+Disposition: planned
+Produces:
+""",
+                encoding="utf-8",
+            )
+
+            result = run_script(
+                "scripts/review_work_state.py", "--workspace", str(workspace), "--strict", check=False
+            )
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("MISSING_SPIKE_OUTPUT", result.stdout)
+
     def test_install_work_readme_mentions_completion_helper(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)
