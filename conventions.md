@@ -190,16 +190,16 @@ are finished.
 Reasoning preflight is an instruction-time routing check, not an additional program invocation.
 It runs once before substantial Tool Shed work using only the request and model/reasoning metadata
 already exposed to the session. It adds no network call, subprocess, cache read, extra model call,
-or confirmation round-trip to ordinary requests. Suitable visible settings continue silently;
-visible material mismatches pause early; unknown current settings produce a short recommendation
-and continue immediately.
+or confirmation round-trip to ordinary requests. When a current picker pair is known, it uses the
+standalone `Reasoning: <model> / <effort>` recommendation format. It does not claim to observe the
+active picker, use abstract tiers, or pause ordinary work for a reasoning change.
 
 OpenAI model names and effort labels are changing capability data, not durable Tool Shed policy.
 Use `scripts/reasoning_catalog.py refresh` outside request execution to query the account-aware
 Codex app-server `model/list` endpoint and atomically update the user-local cache. Use `status` for
 a local-only diagnostic. Refresh after login/account changes, Codex updates, model-picker changes,
-or cache expiry. A cached or documentation-derived catalog may guide maintenance but cannot prove
-the active thread setting or justify a blocking named recommendation.
+or cache expiry. A cached or documentation-derived catalog may guide an explicit `ts: recommend
+reasoning <task>` request but cannot prove the active thread setting.
 
 ## Stale Path Check
 

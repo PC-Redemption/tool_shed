@@ -72,10 +72,13 @@ requests.
 ### Check reasoning before substantial work
 
 Tool Shed performs a one-time, zero-I/O reasoning preflight before substantial routed work. It uses
-only the request and current-session metadata. A suitable visible setting continues silently. A
-material visible mismatch pauses before expensive work. If the current setting is not visible,
-Tool Shed comments with the recommended tier and continues immediately so the operator can
-interrupt if desired.
+only the request and current-session metadata. When a usable picker pair is known, it recommends
+the lowest adequate choice on its own line, for example:
+
+> **Reasoning: GPT-5.6 Terra / High**
+
+It does not use abstract labels, claim to observe the active picker, or pause work for a reasoning
+choice. If the available picker options are unknown, it continues silently instead of guessing.
 
 The request path never refreshes catalogs. Refresh the optional account-aware diagnostic cache
 after a Codex login/account change, client update, visible model-picker change, or cache expiry:
@@ -86,10 +89,12 @@ python3 tool_shed/scripts/reasoning_catalog.py status
 ```
 
 Equivalent requests are `ts: refresh reasoning catalog` and `ts: reasoning status`.
+Use `ts: recommend reasoning <task>` when you want an explicit catalog refresh followed by a
+concrete picker recommendation.
 
 Refresh uses Codex app-server `model/list`; status is local-only. The cache preserves future model
 and effort labels without treating release-time names as permanent policy. It cannot establish the
-active thread setting, and stale data never causes a blocking recommendation.
+active thread setting, and stale data never blocks ordinary work.
 
 ### Orient in a project
 

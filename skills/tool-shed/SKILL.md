@@ -24,32 +24,30 @@ perform one lightweight reasoning preflight inside the initial response. Do not 
 read a cache, access the network, invoke another model, or add a separate analysis turn for this
 preflight. Use only task shape and model/reasoning metadata already exposed in the current session.
 
-Recommend the lowest available effort likely to produce a reliable result. Treat these as abstract
-tiers and map them to the labels currently advertised by the session rather than assuming a fixed
-product vocabulary:
+When the current session or user-provided context establishes an available model and effort pair,
+give the lowest adequate picker-level recommendation on its own line:
 
-- quick: mechanical, narrow, well-specified work
-- balanced: ordinary implementation, debugging, or documentation with some planning
-- deep: difficult multi-step work, ambiguity, multiple sources, meaningful tradeoffs, cross-layer
-  investigation, or standards-level research
-- maximum single-thread: exceptional problems where depth matters more than latency or usage
-- parallel: complex work that can be divided into genuinely independent subproblems
+> **Reasoning: <model> / <effort>**
+
+This is advice for the operator to compare with the picker, not a statement of the active setting.
+Do not mention picker visibility, use abstract labels such as `deep`, or pause merely for a model or
+effort change. If the available picker options are not established, continue silently rather than
+guessing a model name. The operator can explicitly ask for `ts: recommend reasoning <task>` to
+refresh the account-aware catalog and receive a concrete recommendation.
+
+Choose the model before the effort. When those options are advertised, use Luna for clear,
+repeatable work; Terra as the everyday engineering default; and Sol for ambiguous, difficult, or
+high-judgment work. Use Light for quick, well-scoped tasks; Medium for ordinary planning; High for
+difficult multi-step debugging, implementation, and releases; Extra High for long, agentic,
+reasoning-heavy work; and Ultra only when the task separates into useful independent subproblems.
 
 Run the preflight once for a materially new user request, not after tool results, automatic
 continuations, steering additions, or context compaction. Skip it for conversation, Tool Shed help,
 version/status checks, and explicit instructions to continue without preflight.
 
-- If the current effort is visible and materially suitable, continue silently.
-- If it is visible and differs materially from the lowest adequate tier, send one concise
-  commentary message naming the current and recommended settings and stop before expensive work.
-  Treat a difference as material only when it spans at least two advertised effort steps or the
-  current effort is clearly unsafe for the task. The operator may change the setting or explicitly
-  tell Codex to continue.
-- If the current effort is not visible, send one concise commentary message with the recommended
-  abstract/currently advertised tier, state that the current setting is not visible, and continue
-  immediately without asking for confirmation.
-- If the available catalog is not exposed, do not invent a model or effort name. Recommend an
-  abstract tier and continue. Never block from stale, cached, or documentation-only availability.
+- Give the concrete recommendation whenever a usable picker pair is established.
+- Continue immediately after the recommendation. Reasoning choice alone does not justify a stop.
+- If no usable picker pair is established, do not emit a generic or abstract recommendation.
 
 Model names and effort labels change. Runtime session/account capability metadata is authoritative.
 The optional local reasoning catalog is maintenance and diagnostic evidence only; never read or
@@ -131,6 +129,11 @@ never an automatic request-time step.
 When the request is `ts: reasoning status`, run
 `python3 <shed>/scripts/reasoning_catalog.py status`. This is local-only and must clearly report
 fresh, stale, missing, or invalid cache state. It does not establish the active thread setting.
+
+When the request is `ts: recommend reasoning <task>`, run
+`python3 <shed>/scripts/reasoning_catalog.py refresh`, use its advertised models and efforts with
+the preflight selection rules, and return the concrete standalone recommendation format. This is an
+explicit maintenance request, never ordinary request-path work.
 
 When the request is `ts: version`, run
 `python3 <shed>/scripts/check_shed_version.py --shed <shed> --local-only` and report the local
