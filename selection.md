@@ -5,8 +5,9 @@ Choose the artifact by the kind of thinking the work needs, not by how important
 Before substantial Tool Shed work, apply the skill's one-time reasoning preflight. Classification
 must use the task request and already-exposed session metadata only; it must not add request-time
 network, subprocess, cache-read, or extra-model work. When a usable picker pair is established,
-recommend the lowest adequate model and effort in the standalone `Reasoning: <model> / <effort>`
-format. Do not use abstract tiers, mention picker visibility, or pause for a reasoning choice. If
+recommend the lowest adequate model and effort in the standalone, bold level-three header format
+`### **Reasoning: <model> / <effort>**`. Do not use abstract tiers, mention picker visibility, or
+pause for a reasoning choice. If
 the picker inventory is unknown, continue silently; use `ts: recommend reasoning <task>` when an
 explicit catalog refresh and concrete recommendation are wanted.
 

@@ -216,8 +216,9 @@ Equivalent Codex requests are `ts: version`, `ts: check for updates`, and `ts: u
 Checks are read-only and do not authorize snapshot replacement.
 
 Tool Shed performs a zero-I/O reasoning preflight before substantial routed work. When current
-context establishes a usable picker pair, it recommends it prominently as
-`Reasoning: <model> / <effort>`; it does not use abstract labels or claim to see the active picker.
+context establishes a usable picker pair, it recommends it as a bold level-three header using
+`### **Reasoning: <model> / <effort>**`; it does not use abstract labels or claim to see the active
+picker.
 Maintain the optional account-aware model/effort catalog outside ordinary requests:
 
 ```bash
@@ -275,6 +276,18 @@ python3 tool_shed/scripts/review_work_state.py --workspace . --json
 
 Run this during orientation, after artifact lifecycle changes, in validation, and weekly as a
 backstop. Add `--strict` when findings should fail CI.
+
+Measure privacy-safe workspace scale and representative read-only operation latency:
+
+```bash
+python3 tool_shed/scripts/profile_workspace_performance.py --workspace .
+python3 tool_shed/scripts/profile_workspace_performance.py --workspace . --json
+```
+
+The saved JSON report contains aggregates and timings, not paths, filenames, repository identity,
+command output, or per-file hashes. Profiling cannot prove undocumented Codex hashing or indexing.
+See `docs/workspace-performance-profiling.md` for the comparison protocol and the separate approval
+boundaries for profiling, report collection, snapshot updates, and cleanup.
 
 Run the full repository validation:
 

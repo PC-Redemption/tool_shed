@@ -54,6 +54,13 @@ versioned `work/` paths, oversized tracked diffs, and visible Tool Shed backup a
 read-only. General hard safety limits cap local overrides so an already unsafe workspace cannot
 normalize the same risk away.
 
+Use `python3 tool_shed/scripts/profile_workspace_performance.py --workspace .` when workspace or
+`work/` growth may be slowing Codex-facing operations. The profiler is read-only and saved JSON is
+restricted to aggregate scale, lifecycle, platform, warning-code, and timing fields. Do not infer
+permission to collect reports, update snapshots, clean files, or archive evidence from permission
+to profile. Use controlled, one-variable-at-a-time comparisons; the profiler cannot establish
+undocumented Codex internal behavior.
+
 An optional repository-root `.tool-shed-policy.json` may adapt evidence handling:
 
 ```json
@@ -191,8 +198,9 @@ Reasoning preflight is an instruction-time routing check, not an additional prog
 It runs once before substantial Tool Shed work using only the request and model/reasoning metadata
 already exposed to the session. It adds no network call, subprocess, cache read, extra model call,
 or confirmation round-trip to ordinary requests. When a current picker pair is known, it uses the
-standalone `Reasoning: <model> / <effort>` recommendation format. It does not claim to observe the
-active picker, use abstract tiers, or pause ordinary work for a reasoning change.
+standalone, bold level-three header format `### **Reasoning: <model> / <effort>**`. It does not
+claim to observe the active picker, use abstract tiers, or pause ordinary work for a reasoning
+change.
 
 OpenAI model names and effort labels are changing capability data, not durable Tool Shed policy.
 Use `scripts/reasoning_catalog.py refresh` outside request execution to query the account-aware

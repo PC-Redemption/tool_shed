@@ -118,7 +118,7 @@
       "supersedes": null,
       "title": "Project Map: Tool Shed evolution",
       "type": "project-map",
-      "updated": "2026-07-30"
+      "updated": "2026-08-03"
     },
     {
       "canonical_truth": null,
@@ -134,6 +134,21 @@
       "title": "Project Map: tool_shed foundation",
       "type": "project-map",
       "updated": "2026-07-05"
+    },
+    {
+      "canonical_truth": null,
+      "disposition": "planned",
+      "next_action": "implement the local profiler defined in work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md",
+      "parent": "work/maps/map-tool-shed-evolution.md",
+      "path": "work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md",
+      "produces": "work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md",
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Spike: Workspace Performance Profiling and Fleet Measurement",
+      "type": "spike",
+      "updated": "2026-08-03"
     },
     {
       "canonical_truth": null,
@@ -209,6 +224,21 @@
       "title": "Ticket: Harden Tool Shed release and drift semantics",
       "type": "ticket",
       "updated": "2026-07-24"
+    },
+    {
+      "canonical_truth": "docs/workspace-performance-profiling.md",
+      "disposition": null,
+      "next_action": "none",
+      "parent": "work/maps/map-tool-shed-evolution.md",
+      "path": "work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Ticket: Implement Privacy-Safe Workspace Performance Profiler",
+      "type": "ticket",
+      "updated": "2026-08-03"
     },
     {
       "canonical_truth": null,
@@ -317,7 +347,7 @@
     }
   ],
   "description": "Generated from tool_shed artifact headers. Use as navigation, not canonical truth.",
-  "generated_at": "2026-08-01",
+  "generated_at": "2026-08-03",
   "reading_order": [
     "Read project README/docs for current truth.",
     "Read active maps and active work artifacts from this index.",
@@ -326,7 +356,7 @@
   "schema_version": 1,
   "summary": {
     "active_artifacts": 3,
-    "completed_or_decided_artifacts": 17,
-    "total_artifacts": 21
+    "completed_or_decided_artifacts": 19,
+    "total_artifacts": 23
   }
 }

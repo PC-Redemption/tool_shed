@@ -2,7 +2,7 @@
 
 Status: active
 Type: project-map
-Updated: 2026-07-30
+Updated: 2026-08-03
 Next Action: verify the portable updater matrix in native Windows and Linux CI
 
 ## Purpose
@@ -17,6 +17,7 @@ flowchart TD
   A[Trustworthy workspace coordination] --> B[Artifact reconciliation]
   A --> C[Snapshot routing and updates]
   A --> F[Generated evidence safety]
+  A --> H[Workspace performance measurement]
   B --> D[Ground: validate review_work_state.py]
   C --> E[Gate: explicit approval before fleet update]
   F --> G[Complete: adaptive safeguards validated]
@@ -32,7 +33,8 @@ flowchart TD
 10,000 ft:
 
 - Major workstreams: artifact reconciliation; request routing and guarded fleet
-  snapshot updates; generated-evidence prevention and reversible migration.
+  snapshot updates; generated-evidence prevention and reversible migration; privacy-safe workspace
+  performance measurement.
 - Key dependencies: reconciliation must stabilize before its instructions are distributed to existing snapshots.
 
 1,000 ft:
@@ -44,6 +46,8 @@ flowchart TD
 - Completed workpackages: `work/wp/completed/wp-work-artifact-reconciliation.md`.
 - Active ticket:
   `work/tickets/ticket-portable-verified-tool-shed-installer.md`.
+- Completed performance ticket:
+  `work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md`.
 - Open decisions: whether reconciliation should become a strict CI gate after field use.
 
 Ground:
@@ -61,6 +65,7 @@ Ground:
 | Snapshot routing and updates | active | `work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md` | explicit approval; stable reconciliation guidance | hold before first fleet update |
 | Generated evidence safety and migration | complete | `work/wp/completed/wp-generated-evidence-safety-and-migration.md` | imported incident and field-verification ticket | none |
 | Portable verified installer | active | `work/tickets/ticket-portable-verified-tool-shed-installer.md` | stable-tag and provenance model | verify native Windows/Linux CI |
+| Workspace performance measurement | complete | `work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md` | completed profiling and fleet-measurement spike | gather approved longitudinal or multi-workspace measurements before proposing optimization |
 
 ## Dependency Notes
 
@@ -95,6 +100,8 @@ Do next:
 - [x] Implement the stable-tag, cross-platform snapshot updater and rollback tests.
 - [ ] Verify the complete updater matrix in native Windows and Linux CI.
 - [ ] Review current-workspace findings with the human before any fleet update.
+- [x] Define the workspace-performance report schema, privacy boundary, benchmark protocol, and fleet rollout plan.
+- [x] Implement and canary the privacy-safe local workspace profiler.
 
 Avoid for now:
 
@@ -111,9 +118,11 @@ Avoid for now:
   `work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md`,
   `work/wp/completed/wp-generated-evidence-safety-and-migration.md`
 - Tickets: `work/tickets/ticket-field-verify-generated-evidence-safeguards.md`,
-  `work/tickets/ticket-portable-verified-tool-shed-installer.md`
+  `work/tickets/ticket-portable-verified-tool-shed-installer.md`,
+  `work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md`
 - Checklists:
 - Spikes:
+- `work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md`
 - ADRs:
 - Runbooks:
 - Inventories:

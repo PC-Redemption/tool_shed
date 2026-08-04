@@ -27,9 +27,11 @@ preflight. Use only task shape and model/reasoning metadata already exposed in t
 When the current session or user-provided context establishes an available model and effort pair,
 give the lowest adequate picker-level recommendation on its own line:
 
-> **Reasoning: <model> / <effort>**
+### **Reasoning: <model> / <effort>**
 
 This is advice for the operator to compare with the picker, not a statement of the active setting.
+Render the recommendation exactly as a level-three Markdown header with the full line bolded; do
+not substitute a blockquote, plain paragraph, code formatting, or another heading level.
 Do not mention picker visibility, use abstract labels such as `deep`, or pause merely for a model or
 effort change. If the available picker options are not established, continue silently rather than
 guessing a model name. The operator can explicitly ask for `ts: recommend reasoning <task>` to
@@ -291,6 +293,18 @@ python3 <shed>/scripts/workspace_preflight.py --workspace <workspace> --json
 The preflight adapts to the repository and optional `.tool-shed-policy.json`, while retaining hard
 safety limits. Surface its workspace profile, policy sources, risk budgets, and mitigations. It is
 read-only.
+
+Measure privacy-safe workspace scale and representative read-only operation latency:
+
+```bash
+python3 <shed>/scripts/profile_workspace_performance.py --workspace <workspace>
+python3 <shed>/scripts/profile_workspace_performance.py --workspace <workspace> --json
+```
+
+Use the profiler when repository or `work/` growth may be slowing Codex-facing operations. Saved
+JSON is allowlisted and excludes paths, filenames, repository identity, command output, and
+per-file hashes. Treat profile, collect, snapshot update, and cleanup as separately authorized
+operations. Profiling cannot prove undocumented Codex hashing or indexing.
 
 For already tracked raw evidence, prepare outside the repository before proposing cleanup:
 

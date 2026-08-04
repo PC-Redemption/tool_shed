@@ -75,7 +75,7 @@ Tool Shed performs a one-time, zero-I/O reasoning preflight before substantial r
 only the request and current-session metadata. When a usable picker pair is known, it recommends
 the lowest adequate choice on its own line, for example:
 
-> **Reasoning: GPT-5.6 Terra / High**
+### **Reasoning: GPT-5.6 Terra / High**
 
 It does not use abstract labels, claim to observe the active picker, or pause work for a reasoning
 choice. If the available picker options are unknown, it continues silently instead of guessing.
@@ -260,6 +260,18 @@ profile, effective risk budget, policy source for each threshold, finding severi
 mitigation. Repository-root `.tool-shed-policy.json` can declare a reasoned generated path and
 threshold adjustments; hard safety limits remain in force and invalid or reason-free policy is
 reported.
+
+To measure whether repository and `work/` growth correlate with slower operations, run:
+
+```bash
+python3 tool_shed/scripts/profile_workspace_performance.py --workspace .
+python3 tool_shed/scripts/profile_workspace_performance.py --workspace . --json
+```
+
+The profiler is read-only, local, and privacy-allowlisted. It times representative Git,
+filesystem, and Tool Shed operations but cannot prove undocumented Codex hashing or indexing.
+Profiling does not authorize report collection, snapshot updates, cleanup, or archival. See
+`docs/workspace-performance-profiling.md` for the report and comparison protocol.
 
 For raw evidence that is already tracked, prepare a reversible migration:
 
