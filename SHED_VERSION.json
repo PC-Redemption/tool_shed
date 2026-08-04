@@ -51,9 +51,9 @@
   },
   "manifest_schema_version": 2,
   "notes": "Adds privacy-safe workspace performance profiling and exact reasoning recommendation formatting.",
-  "release_commit": null,
+  "release_commit": "07aee0e9a6370a33d65ac128680d92397a56c966",
   "release_tag": "v0.10.0",
-  "released_at": null,
+  "released_at": "2026-08-04T00:50:01Z",
   "shed_version": "0.10.0",
   "updated_at": "2026-08-03"
 }
