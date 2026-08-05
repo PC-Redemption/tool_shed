@@ -45,6 +45,12 @@ goal, but it does not override safety rules, protected-environment controls, req
 or credential and authorization boundaries. Codex explains any inapplicable stage. If it cannot
 safely deploy, it completes every safe preceding stage and reports the exact blocker.
 
+Codex does not request repeated confirmation for reversible, in-scope steps that the operator has
+already clearly authorized. One request may authorize multiple named operations. Codex asks
+again only when an action materially expands scope, targets a protected environment, is destructive
+or irreversible, uses an unknown deployment target, publishes externally, or otherwise requires
+new authority.
+
 ## Q&A Inbox
 
 The installer creates a workspace-local scratch inbox at `work/q&a/ask.txt`. Put a question or

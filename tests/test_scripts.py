@@ -451,6 +451,8 @@ for raw in sys.stdin:
         self.assertIn("ts: reasoning status", guide)
         self.assertIn("### **Reasoning: <model> / <effort>**", skill)
         self.assertIn("ts: recommend reasoning <task>", skill)
+        self.assertIn("Do not ask for repeated confirmation for reversible, in-scope steps", skill)
+        self.assertIn("One request may authorize multiple named operations", guide)
         self.assertNotIn("abstract/currently advertised tier", skill)
         self.assertIn("### **Reasoning: GPT-5.6 Terra / High**", guide)
         self.assertTrue((ROOT / "scripts" / "reasoning_catalog.py").is_file())

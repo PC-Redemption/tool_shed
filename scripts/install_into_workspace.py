@@ -44,6 +44,7 @@ SHIP_GUIDANCE = f"""{SHIP_GUIDANCE_START}
 - Continue through every applicable lifecycle stage; do not stop merely because planning, coding, tests, or a build succeeded.
 - Use the workspace's own tooling, environments, runbooks, and protected-environment controls.
 - Keep changes scoped to the goal and preserve unrelated user work.
+- Do not ask for repeated confirmation for reversible, in-scope steps already clearly authorized by the operator. One request may authorize multiple named operations. Ask again only when an action materially expands scope, targets a protected environment, is destructive or irreversible, uses an unknown deployment target, publishes externally, or otherwise requires new authority.
 - Verify the delivered result in its target environment before claiming completion.
 - The route does not waive safety rules, required approvals, credential boundaries, or authorization limits.
 - If a stage is inapplicable, explain why. If deployment is blocked, complete every safe preceding stage and report the exact blocker.

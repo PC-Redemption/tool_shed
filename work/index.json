@@ -347,7 +347,7 @@
     }
   ],
   "description": "Generated from tool_shed artifact headers. Use as navigation, not canonical truth.",
-  "generated_at": "2026-08-03",
+  "generated_at": "2026-08-05",
   "reading_order": [
     "Read project README/docs for current truth.",
     "Read active maps and active work artifacts from this index.",

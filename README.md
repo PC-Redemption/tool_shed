@@ -198,6 +198,11 @@ See the [Tool Shed operator guide](docs/operator-guide.md) for the full use-case
 verify the requested workspace goal. It continues through all applicable stages while preserving
 normal safety, approval, credential, and protected-environment boundaries.
 
+Tool Shed does not require repeated confirmation for reversible, in-scope steps already clearly
+authorized by the operator. One request may authorize multiple named operations; new confirmation
+is reserved for material scope expansion, protected environments, destructive or irreversible
+actions, unknown deployment targets, external publication, or other genuinely new authority.
+
 The workspace installer also creates `work/q&a/ask.txt`, a Git-ignored operator inbox. Add a question
 or direction to that file and send `ts:ask`; Codex reads it and acts under the same safety and
 authorization rules as a normal chat request. It also checks `q&a/ask.txt` as a

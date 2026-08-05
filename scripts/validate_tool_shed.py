@@ -66,6 +66,8 @@ def smoke_temp_workspace() -> None:
         agents_text = (workspace / "AGENTS.md").read_text(encoding="utf-8")
         if "ts:ship <goal>" not in agents_text or "plan, implement, validate, build, deploy, and verify" not in agents_text:
             raise SystemExit("installer did not create the Tool Shed ship guidance")
+        if "Do not ask for repeated confirmation for reversible, in-scope steps" not in agents_text:
+            raise SystemExit("installer did not create the Tool Shed authorization-discipline guidance")
         inbox_result = subprocess.run(
             [
                 sys.executable,

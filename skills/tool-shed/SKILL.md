@@ -82,6 +82,10 @@ the complete delivery lifecycle: plan, implement, validate, build, deploy, and v
 - Use the project's own tests, build system, deployment tooling, environments, and runbooks.
 - Keep changes scoped to the stated goal, preserve unrelated user work, and report meaningful
   progress during long-running work.
+- Do not ask for repeated confirmation for reversible, in-scope steps already clearly authorized
+  by the operator. One request may authorize multiple named operations. Ask again only when an
+  action materially expands scope, targets a protected environment, is destructive or irreversible,
+  uses an unknown deployment target, publishes externally, or otherwise requires new authority.
 - Treat a stage as inapplicable only when the workspace provides evidence that it is unnecessary;
   state the reason in the final response.
 - Do not claim completion until the deployed or otherwise delivered result has been verified in
