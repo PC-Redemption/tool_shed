@@ -51,9 +51,9 @@
   },
   "manifest_schema_version": 2,
   "notes": "Avoid repeated authorization requests for clearly authorized in-scope work.",
-  "release_commit": null,
+  "release_commit": "bbfc86590f521a074426b56c95b45f8548a4a645",
   "release_tag": "v0.10.1",
-  "released_at": null,
+  "released_at": "2026-08-05T13:45:22Z",
   "shed_version": "0.10.1",
   "updated_at": "2026-08-05"
 }
