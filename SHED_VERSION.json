@@ -51,9 +51,9 @@
   },
   "manifest_schema_version": 2,
   "notes": "Make campaign continuity and closeout status explicit.",
-  "release_commit": null,
+  "release_commit": "e87e59df375cea73b4e994c9d7b7b0248a6c847b",
   "release_tag": "v0.10.2",
-  "released_at": null,
+  "released_at": "2026-08-06T22:54:24Z",
   "shed_version": "0.10.2",
   "updated_at": "2026-08-06"
 }
