@@ -12,7 +12,7 @@
     "docs/workspace-performance-profiling.md": "a725f6b417ebda239204eabe8bab9c7681be871f0150cec40aaaece39b8c8ad5",
     "existing-projects.md": "a480c969cac1d4c7885363875685671aca0e642008341f194bcd026dc3e9588a",
     "scripts/check_shed_version.py": "32ffe5325e4a36d14f119ceb6c5b989417851b1118fc5429a9d92e5b0bdd8bdc",
-    "scripts/check_stale_paths.py": "ad6afbe8aaa7780eceeb7f9d16af48ebbd8d45d7bbb6244170307ee1809665a3",
+    "scripts/check_stale_paths.py": "3da99560b61ab75a8eae7015ef998def8bc5a096cdb5202e79bbc95728a032f3",
     "scripts/complete_workpackage.py": "5de264d68998db84c898da83dbfa09682003c3119913b7941f1414dbac7f4d6c",
     "scripts/install_into_workspace.py": "1ceb87068e469e2fd081d1c68ebf8bd6ccdf67ac8f7d17487a523bbb31bfbdeb",
     "scripts/inventory_tool_shed_fleet.py": "314239c034feb232e8211592d505d22b9a08fc6b855c53383fe1a54c75113b5d",
@@ -50,10 +50,10 @@
     "templates/workpackage.md": "d090f861005b8e9d61e5b8f37dcacbc23e281e0394c1c350c9f9cc0a32b5c385"
   },
   "manifest_schema_version": 2,
-  "notes": "Make campaign continuity and closeout status explicit.",
-  "release_commit": "e87e59df375cea73b4e994c9d7b7b0248a6c847b",
-  "release_tag": "v0.10.2",
-  "released_at": "2026-08-06T22:54:24Z",
-  "shed_version": "0.10.2",
+  "notes": "Exclude Git-ignored Markdown and nested scratch repositories from stale-path scans.",
+  "release_commit": null,
+  "release_tag": "v0.10.3",
+  "released_at": null,
+  "shed_version": "0.10.3",
   "updated_at": "2026-08-06"
 }

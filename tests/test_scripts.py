@@ -43,6 +43,7 @@ class ScriptTests(unittest.TestCase):
         version: str = "9.8.7",
         *,
         validation_exit: int = 0,
+        include_stale_checker: bool = False,
     ) -> Path:
         repository = root / "release source"
         repository.mkdir()
@@ -59,12 +60,17 @@ class ScriptTests(unittest.TestCase):
             ROOT / "scripts" / "check_shed_version.py",
             repository / "scripts" / "check_shed_version.py",
         )
+        if include_stale_checker:
+            shutil.copyfile(
+                ROOT / "scripts" / "check_stale_paths.py",
+                repository / "scripts" / "check_stale_paths.py",
+            )
         (repository / "scripts" / "validate_tool_shed.py").write_text(
             f"raise SystemExit({validation_exit})\n",
             encoding="utf-8",
             newline="\n",
         )
-        hashed_paths = (
+        hashed_paths = [
             "README.md",
             "selection.md",
             "conventions.md",
@@ -72,7 +78,9 @@ class ScriptTests(unittest.TestCase):
             "templates/checklist.md",
             "scripts/check_shed_version.py",
             "scripts/validate_tool_shed.py",
-        )
+        ]
+        if include_stale_checker:
+            hashed_paths.append("scripts/check_stale_paths.py")
         content_hashes = {
             relative: hashlib.sha256((repository / relative).read_bytes()).hexdigest()
             for relative in hashed_paths
@@ -1053,6 +1061,40 @@ Next Action: keep going
             self.assertEqual(result.returncode, 1)
             self.assertIn("work/wp/completed/wp-demo.md", result.stdout)
 
+    def test_check_stale_paths_uses_git_visible_markdown_set(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace, ".codex-tmp/\n.codex-work/\ntmp/\n")
+            (workspace / "work" / "maps").mkdir(parents=True)
+            (workspace / "work" / "tickets").mkdir(parents=True)
+            canonical_target = workspace / "work" / "tickets" / "ticket-real.md"
+            canonical_target.write_text("# Real\n", encoding="utf-8")
+            tracked = workspace / "work" / "maps" / "tracked.md"
+            tracked.write_text("See [real](work/tickets/ticket-real.md)\n", encoding="utf-8")
+            subprocess.run(["git", "add", ".gitignore", "work"], cwd=workspace, check=True)
+
+            untracked = workspace / "notes.md"
+            untracked.write_text("See [real](work/tickets/ticket-real.md)\n", encoding="utf-8")
+            for ignored_name in (".codex-tmp", ".codex-work", "tmp"):
+                nested = workspace / ignored_name / "copy"
+                subprocess.run(["git", "init", "-q", str(nested)], check=True)
+                (nested / "work" / "maps").mkdir(parents=True)
+                (nested / "work" / "tickets").mkdir(parents=True)
+                (nested / "work" / "maps" / "nested.md").write_text(
+                    "See [nested](work/tickets/nested.md)\n",
+                    encoding="utf-8",
+                )
+                (nested / "work" / "tickets" / "nested.md").write_text("# Nested\n", encoding="utf-8")
+
+            result = run_script("scripts/check_stale_paths.py", "--workspace", str(workspace))
+            self.assertIn("No stale work paths found.", result.stdout)
+
+            untracked.write_text("See [missing](work/tickets/missing.md)\n", encoding="utf-8")
+            result = run_script("scripts/check_stale_paths.py", "--workspace", str(workspace), check=False)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("notes.md:1", result.stdout)
+            self.assertNotIn("nested.md", result.stdout)
+
     def test_check_stale_paths_passes_current_repo(self) -> None:
         result = run_script("scripts/check_stale_paths.py", "--workspace", str(ROOT))
         self.assertEqual(result.returncode, 0)
@@ -1263,6 +1305,36 @@ Produces:
                 names = {member.name.replace("\\", "/") for member in archive.getmembers()}
             self.assertIn("tool_shed/old-marker.txt", names)
             self.assertNotIn("work/operator-data.txt", names)
+
+    def test_snapshot_updater_ignores_stale_links_in_ignored_scratch_copy(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(root, include_stale_checker=True)
+            workspace = self.create_update_workspace(root)
+            with (workspace / ".gitignore").open("a", encoding="utf-8") as handle:
+                handle.write("/.codex-tmp/\n")
+            nested = workspace / ".codex-tmp" / "copy"
+            subprocess.run(["git", "init", "-q", str(nested)], check=True)
+            (nested / "work" / "maps").mkdir(parents=True)
+            (nested / "work" / "maps" / "ignored.md").write_text(
+                "See [nested](work/tickets/nested.md)\n",
+                encoding="utf-8",
+            )
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--json",
+                cwd=workspace,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertEqual(payload["state"], "installed")
+            self.assertNotIn("rollback", payload)
+            self.assertIn("No stale work paths found.", payload["post_install"]["check_stale_paths.py"])
 
     def test_snapshot_updater_rolls_back_from_verified_archive(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

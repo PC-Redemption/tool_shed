@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import argparse
+import os
 import re
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -27,10 +29,39 @@ def should_skip_tool_shed(root: Path) -> bool:
     return copied_script == script_path
 
 
+def git_visible_markdown_files(root: Path) -> list[Path] | None:
+    try:
+        result = subprocess.run(
+            [
+                "git",
+                "-C",
+                str(root),
+                "ls-files",
+                "-z",
+                "--cached",
+                "--others",
+                "--exclude-standard",
+                "--",
+                "*.md",
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+    except OSError:
+        return None
+    if result.returncode != 0:
+        return None
+    return [root / os.fsdecode(raw_path) for raw_path in result.stdout.split(b"\0") if raw_path]
+
+
 def iter_markdown_files(root: Path) -> list[Path]:
     paths = []
     skip_tool_shed = should_skip_tool_shed(root)
-    for path in sorted(root.rglob("*.md")):
+    candidates = git_visible_markdown_files(root)
+    if candidates is None:
+        candidates = list(root.rglob("*.md"))
+    for path in sorted(candidates):
         relative_parts = path.relative_to(root).parts
         if skip_tool_shed and relative_parts[:1] == ("tool_shed",):
             continue
