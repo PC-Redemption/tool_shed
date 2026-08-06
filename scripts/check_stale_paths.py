@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -27,10 +28,52 @@ def should_skip_tool_shed(root: Path) -> bool:
     return copied_script == script_path
 
 
+def git_visible_markdown_files(root: Path) -> list[Path] | None:
+    repository = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"],
+        cwd=root,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    )
+    if repository.returncode or Path(repository.stdout.strip()).resolve() != root:
+        return None
+    visible = subprocess.run(
+        [
+            "git",
+            "ls-files",
+            "-z",
+            "--cached",
+            "--others",
+            "--exclude-standard",
+            "--",
+            "*.md",
+        ],
+        cwd=root,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if visible.returncode:
+        detail = visible.stderr.decode(errors="replace").strip()
+        raise RuntimeError(detail or "git ls-files failed")
+    paths = []
+    for raw_path in visible.stdout.split(b"\0"):
+        if not raw_path:
+            continue
+        path = root / Path(raw_path.decode("utf-8", errors="surrogateescape"))
+        if path.is_file():
+            paths.append(path)
+    return sorted(set(paths))
+
+
 def iter_markdown_files(root: Path) -> list[Path]:
+    git_visible = git_visible_markdown_files(root)
+    candidates = git_visible if git_visible is not None else sorted(root.rglob("*.md"))
     paths = []
     skip_tool_shed = should_skip_tool_shed(root)
-    for path in sorted(root.rglob("*.md")):
+    for path in candidates:
         relative_parts = path.relative_to(root).parts
         if skip_tool_shed and relative_parts[:1] == ("tool_shed",):
             continue

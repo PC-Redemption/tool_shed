@@ -1058,6 +1058,57 @@ Next Action: keep going
         self.assertEqual(result.returncode, 0)
         self.assertIn("No stale work paths found.", result.stdout)
 
+    def test_check_stale_paths_excludes_git_ignored_scratch_copy(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace, "/.scratch/\n")
+            (workspace / "work" / "maps").mkdir(parents=True)
+            (workspace / "work" / "maps" / "map-current.md").write_text(
+                "# Current\n",
+                encoding="utf-8",
+            )
+            (workspace / "README.md").write_text(
+                "[current](work/maps/map-current.md)\n",
+                encoding="utf-8",
+            )
+            scratch = workspace / ".scratch" / "copied-worktree"
+            scratch.mkdir(parents=True)
+            (scratch / "stale.md").write_text(
+                "[copy-only](work/maps/map-copy-only.md)\n",
+                encoding="utf-8",
+            )
+            subprocess.run(
+                ["git", "add", ".gitignore", "README.md", "work/maps/map-current.md"],
+                cwd=workspace,
+                check=True,
+            )
+
+            result = run_script("scripts/check_stale_paths.py", "--workspace", str(workspace))
+
+            self.assertEqual(result.returncode, 0)
+            self.assertIn("No stale work paths found.", result.stdout)
+
+    def test_check_stale_paths_checks_nonignored_untracked_markdown(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace)
+            (workspace / "work").mkdir()
+            (workspace / "work" / "untracked.md").write_text(
+                "[missing](work/missing.md)\n",
+                encoding="utf-8",
+            )
+
+            result = run_script(
+                "scripts/check_stale_paths.py",
+                "--workspace",
+                str(workspace),
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 1)
+            self.assertIn(f"{Path('work') / 'untracked.md'}:1", result.stdout)
+            self.assertIn("referenced work artifact does not exist", result.stdout)
+
     def test_new_artifact_refreshes_indexes(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)

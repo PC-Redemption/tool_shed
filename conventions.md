@@ -213,6 +213,10 @@ reasoning <task>` request but cannot prove the active thread setting.
 
 Run `python3 tool_shed/scripts/check_stale_paths.py --workspace .` after moving, completing, or renaming artifacts.
 
+At an exact Git repository root, the checker scans tracked and non-ignored untracked Markdown.
+Git-ignored scratch repositories and copied worktrees are excluded. Outside a Git repository, it
+falls back to scanning the requested directory tree while retaining the standard skip rules.
+
 The check is especially important after moving a workpackage from `work/wp/active/` to `work/wp/completed/`. It flags stale active-path references and missing `work/*.md` links.
 
 ## Workpackage Completion
