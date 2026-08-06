@@ -51,9 +51,9 @@
   },
   "manifest_schema_version": 2,
   "notes": "Exclude Git-ignored Markdown and nested scratch repositories from stale-path scans.",
-  "release_commit": null,
+  "release_commit": "20da7fdb28a06ae3ea0dff02d1a23b960fd6e076",
   "release_tag": "v0.10.3",
-  "released_at": null,
+  "released_at": "2026-08-06T23:35:15Z",
   "shed_version": "0.10.3",
   "updated_at": "2026-08-06"
 }
