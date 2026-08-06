@@ -1184,7 +1184,10 @@ Produces:
             self.assertEqual(second.returncode, 0)
             guidance = (workspace / "AGENTS.md").read_text(encoding="utf-8")
             self.assertEqual(guidance.count("BEGIN TOOL SHED GENERATED EVIDENCE GUIDANCE"), 1)
+            self.assertEqual(guidance.count("BEGIN TOOL SHED CAMPAIGN GUIDANCE"), 1)
             self.assertEqual(guidance.count("BEGIN TOOL SHED Q&A GUIDANCE"), 1)
+            self.assertIn("Campaign status: COMPLETE", guidance)
+            self.assertIn("A progress summary, artifact update, phase boundary", guidance)
 
     def test_installer_preserves_existing_ask_inbox(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

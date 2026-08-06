@@ -51,6 +51,32 @@ again only when an action materially expands scope, targets a protected environm
 or irreversible, uses an unknown deployment target, publishes externally, or otherwise requires
 new authority.
 
+## Campaign Status And Continuity
+
+Tool Shed treats the requested outcome in the current chat as the campaign. A plan, checklist,
+workpackage, test, build, or deployment may be part of that campaign, but finishing one does not
+necessarily finish the requested outcome.
+
+Codex keeps going when the next action is reversible, in scope, and already authorized. Progress
+updates and useful inspection points do not become approval gates merely because the operator
+might want to review them. Review pauses are reserved for explicitly requested review, material
+unresolved decisions, evidence that contradicts the plan, new authority, or protected,
+destructive, irreversible, or not-yet-authorized external actions.
+
+Every final response for a Tool Shed campaign ends with one explicit verdict:
+
+- `Campaign status: COMPLETE` means the whole requested outcome and applicable verification are
+  finished.
+- `Campaign status: CONTINUE` means work remains, no operator decision is needed, and the response
+  names the next concrete action. Codex does not use this verdict to stop when it can safely perform
+  that action in the current turn.
+- `Campaign status: BLOCKED` identifies the exact decision, dependency, permission, credential,
+  external-state change, or required review preventing progress and the precise operator action.
+
+When review is genuinely required, Codex points to the exact file or result and relevant section,
+states the exact question or approval, and explains what resumes afterward. A vague request to
+"review this" or "let me know" is not a valid handoff.
+
 ## Q&A Inbox
 
 The installer creates a workspace-local scratch inbox at `work/q&a/ask.txt`. Put a question or

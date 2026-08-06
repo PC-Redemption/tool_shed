@@ -95,6 +95,35 @@ the complete delivery lifecycle: plan, implement, validate, build, deploy, and v
   new authority, or an irreversible action that was not clearly authorized, finish every safe
   preceding stage and report the exact blocker.
 
+### Campaign Continuity And Closeout
+
+Treat the operator's requested outcome in the current chat as the campaign. A campaign may use no
+work artifact, one artifact, or several artifacts; completing a plan, checklist, workpackage, test,
+build, or other intermediate stage does not by itself complete the campaign.
+
+- Keep working while the next action is reversible, in scope, and already authorized. A progress
+  summary, artifact update, phase boundary, or useful review point is not an approval gate and must
+  not silently transfer control back to the operator.
+- Do not stop merely because the operator might want to inspect completed work. Pause for review
+  only when the operator requested review, a material unresolved decision changes the direction,
+  evidence contradicts the plan, new authority is required, or the next action is protected,
+  destructive, irreversible, or externally publishing without prior authorization.
+- When review is required, identify the exact file or result and relevant section, state the exact
+  decision or approval needed, and say what will happen after the operator responds. Do not use a
+  vague invitation such as "review this" or "let me know."
+- End every final response for a Tool Shed campaign with exactly one explicit campaign verdict:
+  `Campaign status: COMPLETE`, `Campaign status: CONTINUE`, or `Campaign status: BLOCKED`.
+- Use `COMPLETE` only when the requested campaign outcome and its applicable verification are
+  finished. Artifact completion alone is insufficient.
+- Use `CONTINUE` when campaign work remains but the current chat turn must end without requiring a
+  decision or new authority; name the next concrete action. Do not use `CONTINUE` as a reason to
+  stop when work can safely proceed in the current turn.
+- Use `BLOCKED` only when progress requires a named decision, dependency, permission, credential,
+  external-state change, or required review. State the blocker and the precise operator action.
+- Put the verdict near the end of the final response and include the next action or blocker on the
+  same line or immediately after it. The verdict describes the whole campaign, not merely the most
+  recent artifact or lifecycle stage.
+
 ### Help Route
 
 When the request is `ts: help`, read `<shed>/docs/operator-guide.md` and return a concise,

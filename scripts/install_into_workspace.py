@@ -51,6 +51,22 @@ SHIP_GUIDANCE = f"""{SHIP_GUIDANCE_START}
 {SHIP_GUIDANCE_END}
 """
 
+CAMPAIGN_GUIDANCE_START = "<!-- BEGIN TOOL SHED CAMPAIGN GUIDANCE -->"
+CAMPAIGN_GUIDANCE_END = "<!-- END TOOL SHED CAMPAIGN GUIDANCE -->"
+CAMPAIGN_GUIDANCE = f"""{CAMPAIGN_GUIDANCE_START}
+## Tool Shed campaign continuity
+
+- Treat the requested outcome in the current chat as the campaign. Plans, checklists, workpackages, tests, builds, and deployments are possible stages or artifacts, not the campaign itself.
+- Keep working while the next action is reversible, in scope, and already authorized. A progress summary, artifact update, phase boundary, or useful review point is not an approval gate.
+- Do not stop because the operator might want to inspect completed work. Pause only for requested review, a material unresolved decision, contradictory evidence, new authority, or a protected, destructive, irreversible, or not-yet-authorized external action.
+- If review is required, identify the exact file or result and relevant section, state the exact decision or approval needed, and say what happens after the response. Never use a vague "review this" or "let me know."
+- End every final response for a Tool Shed campaign with exactly one verdict: `Campaign status: COMPLETE`, `Campaign status: CONTINUE`, or `Campaign status: BLOCKED`.
+- `COMPLETE` means the whole requested outcome and applicable verification are finished, not merely an artifact or intermediate stage.
+- `CONTINUE` means work remains but the current turn must end without needing operator input; name the next concrete action. Do not stop if that action can safely be performed now.
+- `BLOCKED` means progress requires a named decision, dependency, permission, credential, external-state change, or required review; state the blocker and precise operator action.
+{CAMPAIGN_GUIDANCE_END}
+"""
+
 ASK_GUIDANCE_START = "<!-- BEGIN TOOL SHED Q&A GUIDANCE -->"
 ASK_GUIDANCE_END = "<!-- END TOOL SHED Q&A GUIDANCE -->"
 ASK_GUIDANCE = f"""{ASK_GUIDANCE_START}
@@ -109,6 +125,12 @@ def ensure_codex_guidance(repository: Path) -> bool:
         SHIP_GUIDANCE_START,
         SHIP_GUIDANCE_END,
         SHIP_GUIDANCE,
+    )
+    updated, _ = replace_managed_block(
+        updated,
+        CAMPAIGN_GUIDANCE_START,
+        CAMPAIGN_GUIDANCE_END,
+        CAMPAIGN_GUIDANCE,
     )
     updated, _ = replace_managed_block(
         updated,
