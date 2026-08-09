@@ -61,9 +61,9 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 2,
   "notes": "Clean staged metadata after partial staging failures",
-  "release_commit": null,
+  "release_commit": "6f25724f6a315f59efd680eb132bb276bdabb5ff",
   "release_tag": "v0.12.5",
-  "released_at": null,
+  "released_at": "2026-08-09T17:07:12Z",
   "shed_version": "0.12.5",
   "updated_at": "2026-08-09"
 }
