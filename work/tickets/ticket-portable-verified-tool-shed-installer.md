@@ -2,8 +2,8 @@
 
 Status: active
 Type: ticket
-Updated: 2026-07-30
-Next Action: verify the complete updater matrix in native Windows and Linux CI
+Updated: 2026-08-09
+Next Action: exercise launcher runtime fallback against disposable Windows and Linux workspaces
 Parent: work/maps/map-tool-shed-evolution.md
 
 ## Problem
@@ -34,8 +34,10 @@ boundary, project `work/`, repository policy, and recoverable update behavior.
   unrelated dirty changes.
 - [x] Keep update backups until the operator explicitly removes them.
 - [x] Roll back a failed replacement and report any installer-created residue.
-- [ ] Test fresh install, existing update, invalid release, validation failure,
-  rollback, Windows paths, spaces, and launcher fallback.
+- [x] Test fresh install, existing update, invalid release, validation failure, and rollback.
+- [x] Test Windows and Linux validation, Windows paths, spaces, and both native launcher smokes.
+- [ ] Exercise launcher runtime fallback—not only `--help`—against disposable Windows and Linux
+  workspaces.
 - [x] Reconcile implementation and documentation with
   `docs/install-or-update-snapshot.md`.
 
@@ -43,6 +45,10 @@ boundary, project `work/`, repository policy, and recoverable update behavior.
 
 Run the complete validator on Linux and Windows, then exercise both launchers
 against disposable new-install and existing-update workspaces.
+
+The v0.12.1 qualification passed GitHub Actions on Windows and Ubuntu with Python 3.11 and current
+Python 3.x, and a real v0.10.3 embedded updater upgraded a disposable workspace to live v0.12.1.
+See `work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md`.
 
 Source context: GitHub PR #3, `agent/improve-tool-shed-install`. Do not copy its
 obsolete `0.1.1` version metadata or main-branch installation behavior.

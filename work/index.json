@@ -153,6 +153,21 @@
     {
       "canonical_truth": null,
       "disposition": null,
+      "next_action": "none",
+      "parent": "work/tickets/ticket-portable-verified-tool-shed-installer.md",
+      "path": "work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Windows non-privileged snapshot upgrade qualification",
+      "type": "evidence",
+      "updated": "2026-08-09"
+    },
+    {
+      "canonical_truth": null,
+      "disposition": null,
       "next_action": "file the external Codex Desktop robustness evidence separately if still needed",
       "parent": "work/maps/map-tool-shed-evolution.md",
       "path": "work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md",
@@ -183,7 +198,7 @@
     {
       "canonical_truth": null,
       "disposition": null,
-      "next_action": "verify the portable updater matrix in native Windows and Linux CI",
+      "next_action": "exercise launcher runtime fallback in disposable Windows and Linux workspaces",
       "parent": null,
       "path": "work/maps/map-tool-shed-evolution.md",
       "produces": null,
@@ -333,7 +348,7 @@
     {
       "canonical_truth": null,
       "disposition": null,
-      "next_action": "verify the complete updater matrix in native Windows and Linux CI",
+      "next_action": "exercise launcher runtime fallback against disposable Windows and Linux workspaces",
       "parent": "work/maps/map-tool-shed-evolution.md",
       "path": "work/tickets/ticket-portable-verified-tool-shed-installer.md",
       "produces": null,
@@ -343,7 +358,7 @@
       "supersedes": null,
       "title": "Ticket: Portable Verified Tool Shed Installer",
       "type": "ticket",
-      "updated": "2026-07-30"
+      "updated": "2026-08-09"
     },
     {
       "canonical_truth": "docs/releasing.md; scripts/check_shed_version.py; scripts/update_shed_manifest.py",
@@ -476,7 +491,7 @@
   "schema_version": 1,
   "summary": {
     "active_artifacts": 3,
-    "completed_or_decided_artifacts": 26,
-    "total_artifacts": 31
+    "completed_or_decided_artifacts": 27,
+    "total_artifacts": 32
   }
 }
