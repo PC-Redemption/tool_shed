@@ -57,10 +57,10 @@
     "templates/workpackage.md": "d090f861005b8e9d61e5b8f37dcacbc23e281e0394c1c350c9f9cc0a32b5c385"
   },
   "manifest_schema_version": 2,
-  "notes": "Add portable Tool Shed adapters, progressive loading, and transactional snapshot upgrades",
-  "release_commit": "6df01bf5e4ebecd90c484d4a349410337c4fc9bf",
-  "release_tag": "v0.12.0",
-  "released_at": "2026-08-09T14:12:41Z",
-  "shed_version": "0.12.0",
+  "notes": "Allow snapshot validation on Windows without symlink privilege",
+  "release_commit": null,
+  "release_tag": "v0.12.1",
+  "released_at": null,
+  "shed_version": "0.12.1",
   "updated_at": "2026-08-09"
 }
