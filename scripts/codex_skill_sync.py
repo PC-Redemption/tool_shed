@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import os
+import re
 import shutil
 from pathlib import Path
 from typing import Iterable
@@ -12,6 +14,10 @@ from typing import Iterable
 
 class CodexSkillError(RuntimeError):
     """Raised when the installed Codex skill cannot be inspected or replaced safely."""
+
+
+RELEASE_TAG = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
+TREE_DIGEST = re.compile(r"^[0-9a-f]{64}$")
 
 
 def codex_skill_path() -> Path:
@@ -48,9 +54,34 @@ def fingerprint_digest(fingerprint: dict[str, str]) -> str:
     return digest.hexdigest()
 
 
+def load_release_skill_digests(catalog: Path) -> list[tuple[str, str]]:
+    """Load compact, offline fingerprints for previously released Codex skills."""
+    if not catalog.is_file():
+        return []
+    try:
+        payload = json.loads(catalog.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise CodexSkillError(f"invalid Codex skill release catalog: {error}") from error
+    releases = payload.get("releases")
+    if payload.get("schema_version") != 1 or not isinstance(releases, dict):
+        raise CodexSkillError("invalid Codex skill release catalog schema")
+    result: list[tuple[str, str]] = []
+    for version, digest in releases.items():
+        if not isinstance(version, str) or not RELEASE_TAG.fullmatch(version):
+            raise CodexSkillError(f"invalid Codex skill release catalog version: {version!r}")
+        if not isinstance(digest, str) or not TREE_DIGEST.fullmatch(digest):
+            raise CodexSkillError(f"invalid Codex skill release catalog digest: {version}")
+        result.append((version, digest))
+    result.sort(
+        key=lambda item: tuple(int(part) for part in item[0].removeprefix("v").split(".")),
+        reverse=True,
+    )
+    return result
+
+
 def inspect_codex_skill(
     source: Path,
-    known_releases: Iterable[tuple[str, dict[str, str]]] = (),
+    known_releases: Iterable[tuple[str, dict[str, str] | str]] = (),
 ) -> dict[str, object]:
     target = codex_skill_path()
     result: dict[str, object] = {
@@ -88,14 +119,18 @@ def inspect_codex_skill(
             }
         )
         return result
+    installed_digest = fingerprint_digest(installed)
     for version, fingerprint in known_releases:
-        if installed == fingerprint:
+        expected_digest = (
+            fingerprint_digest(fingerprint) if isinstance(fingerprint, dict) else fingerprint
+        )
+        if installed_digest == expected_digest:
             result.update(
                 {
                     "state": "stale-released",
                     "matched_release": version,
                     "sync_safe": True,
-                    "tree_sha256": fingerprint_digest(installed),
+                    "tree_sha256": installed_digest,
                 }
             )
             return result
@@ -104,7 +139,7 @@ def inspect_codex_skill(
             "state": "modified-or-unmanaged",
             "sync_safe": False,
             "detail": "installed files do not exactly match the selected or a known released skill",
-            "tree_sha256": fingerprint_digest(installed),
+            "tree_sha256": installed_digest,
         }
     )
     return result

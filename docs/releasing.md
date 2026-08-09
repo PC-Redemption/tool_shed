@@ -32,7 +32,8 @@ cannot satisfy the release lifecycle.
    ```
 
    Use `--allow-same-version` only when the version was already selected in the current unpublished
-   work tree.
+   work tree. The write also refreshes `adapters/codex-skill-releases.json` from valid stable tags
+   before hashing release content; review and commit that catalog as shipped content.
 
 4. Run `python3 scripts/validate_tool_shed.py`. Confirm its repository-policy coverage includes
    tracked `work/`, stale root ignores, documented exceptions, unrelated nested rules, and ignored

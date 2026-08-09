@@ -133,6 +133,12 @@ refused. Start a fresh Codex session
 after synchronization so discovery does not retain the old instructions. POSIX and PowerShell
 launchers are available as `scripts/update-tool-shed.sh` and `scripts/update-tool-shed.ps1`.
 
+The updater emits concise clone/fetch, manifest, release-validation, staging, post-install, and
+completion progress to stderr, leaving `--json` stdout machine-readable. Clone and fetch commands
+default to a 120-second timeout; release and post-install validators default to 300 seconds. Use
+`--network-timeout SECONDS` or `--validation-timeout SECONDS` when a known-slow environment needs
+a different explicit bound.
+
 If the installed snapshot predates `update_snapshot.py`, obtain a current released Tool Shed
 checkout outside the project and run the updater from that checkout. Never replace or pull inside
 the stale workspace snapshot to bootstrap the updater.

@@ -16,6 +16,20 @@ from unittest import mock
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def skill_tree_digest(files: dict[str, bytes]) -> str:
+    fingerprint = {
+        relative: hashlib.sha256(content).hexdigest()
+        for relative, content in files.items()
+    }
+    digest = hashlib.sha256()
+    for relative, file_digest in sorted(fingerprint.items()):
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(file_digest.encode("ascii"))
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
 def run_script(
     *args: str,
     cwd: Path | None = None,
@@ -60,9 +74,11 @@ class ScriptTests(unittest.TestCase):
         version: str = "9.8.7",
         *,
         validation_exit: int = 0,
+        validation_delay: float = 0,
         include_stale_checker: bool = False,
         include_provider_adapter: bool = False,
         minimum_updater_protocol: int = 2,
+        known_skill_releases: dict[str, dict[str, bytes]] | None = None,
     ) -> Path:
         repository = root / "release source"
         repository.mkdir()
@@ -96,8 +112,24 @@ class ScriptTests(unittest.TestCase):
                 shutil.copyfile(ROOT / "scripts" / name, repository / "scripts" / name)
             shutil.copytree(ROOT / "adapters", repository / "adapters")
             shutil.copytree(ROOT / "skills", repository / "skills")
+            (repository / "adapters" / "codex-skill-releases.json").write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "releases": {
+                            version: skill_tree_digest(files)
+                            for version, files in (known_skill_releases or {}).items()
+                        },
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+                + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
         (repository / "scripts" / "validate_tool_shed.py").write_text(
-            f"raise SystemExit({validation_exit})\n",
+            f"import time\ntime.sleep({validation_delay!r})\nraise SystemExit({validation_exit})\n",
             encoding="utf-8",
             newline="\n",
         )
@@ -435,12 +467,18 @@ for raw in sys.stdin:
 
     def test_manifest_records_release_provenance_fields(self) -> None:
         manifest = json.loads((ROOT / "SHED_VERSION.json").read_text(encoding="utf-8"))
+        skill_catalog = json.loads(
+            (ROOT / "adapters" / "codex-skill-releases.json").read_text(encoding="utf-8")
+        )
 
         self.assertEqual(manifest["manifest_schema_version"], 2)
         self.assertEqual(manifest["minimum_updater_protocol"], 2)
         self.assertEqual(manifest["release_tag"], f"v{manifest['shed_version']}")
         self.assertIn("release_commit", manifest)
         self.assertIn("released_at", manifest)
+        self.assertEqual(skill_catalog["schema_version"], 1)
+        self.assertIn("v0.10.3", skill_catalog["releases"])
+        self.assertNotIn(manifest["release_tag"], skill_catalog["releases"])
 
     def test_check_shed_version_reports_older_verified_snapshot(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -1725,6 +1763,29 @@ stale loop guidance
             self.assertIn("fresh Codex session", result.stdout)
             self.assertFalse((codex_home / "skills" / "tool-shed").exists())
 
+    def test_installer_refuses_modified_or_unmanaged_codex_skill(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            workspace = root / "workspace"
+            workspace.mkdir()
+            self.init_repository(workspace)
+            codex_home = root / "codex home"
+            installed = codex_home / "skills" / "tool-shed"
+            installed.mkdir(parents=True)
+            (installed / "SKILL.md").write_text("locally managed content\n", encoding="utf-8")
+            environment = {**os.environ, "CODEX_HOME": str(codex_home)}
+
+            result = run_script(
+                "scripts/install_into_workspace.py",
+                str(workspace),
+                "--guidance-only",
+                env=environment,
+            )
+
+            self.assertIn("Codex skill: modified-or-unmanaged", result.stdout)
+            self.assertIn("synchronization refused", result.stdout)
+            self.assertNotIn("Safe Codex skill synchronization:", result.stdout)
+
     def test_codex_skill_sync_refuses_change_after_safe_inspection(self) -> None:
         from scripts.codex_skill_sync import (
             CodexSkillError,
@@ -1910,12 +1971,13 @@ old Tool Shed guidance
     def test_snapshot_upgrade_reports_stale_released_user_codex_skill(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
+            old_files = {"SKILL.md": b"old released Codex skill\n"}
             release = self.create_test_release(
                 root,
                 version="9.9.0",
                 include_provider_adapter=True,
+                known_skill_releases={"v9.8.0": old_files},
             )
-            old_files = {"SKILL.md": b"old released Codex skill\n"}
             self.add_historical_skill_release(release, "9.8.0", old_files)
             workspace = self.create_update_workspace(root, version="9.8.0")
             codex_home = root / "codex home"
@@ -1943,6 +2005,20 @@ old Tool Shed guidance
             self.assertTrue(payload["codex_skill"]["sync_safe"])
             self.assertIn("--sync-codex-skill", payload["codex_skill"]["sync_command"])
             self.assertEqual((installed / "SKILL.md").read_bytes(), old_files["SKILL.md"])
+            guidance = payload["post_install"]["provider_guidance"]
+            self.assertIn("Codex skill: stale-released", guidance)
+            self.assertIn("Safe Codex skill synchronization:", guidance)
+            self.assertNotIn("modified-or-unmanaged", guidance)
+
+            direct = run_script(
+                str(workspace / "tool_shed" / "scripts" / "install_into_workspace.py"),
+                str(workspace),
+                "--guidance-only",
+                cwd=workspace,
+                env=environment,
+            )
+            self.assertIn("Codex skill: stale-released", direct.stdout)
+            self.assertNotIn("modified-or-unmanaged", direct.stdout)
 
     def test_snapshot_upgrade_synchronizes_known_user_codex_skill_with_backup(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -2219,6 +2295,67 @@ old Tool Shed guidance
             self.assertFalse(list(workspace.glob("tool_shed.backup-*.tar")))
             self.assertFalse((workspace / "tool_shed" / ".git").exists())
             self.assertFalse((workspace / "tool_shed" / "work").exists())
+            phases = (
+                "clone/fetch",
+                "manifest verification",
+                "release validation",
+                "staging",
+                "post-install validation",
+                "completion",
+            )
+            positions = [result.stderr.index(f"Tool Shed update: {phase}") for phase in phases]
+            self.assertEqual(positions, sorted(positions))
+
+    def test_snapshot_updater_times_out_release_validation_before_mutation(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(root, validation_delay=1)
+            workspace = self.create_update_workspace(root)
+            original = (workspace / "tool_shed" / "old-marker.txt").read_bytes()
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--validation-timeout",
+                "0.05",
+                "--json",
+                cwd=workspace,
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("timed out after 0.05 seconds", payload["error"])
+            self.assertIn("increase --validation-timeout", payload["error"])
+            self.assertIn("Tool Shed update: release validation", result.stderr)
+            self.assertEqual((workspace / "tool_shed" / "old-marker.txt").read_bytes(), original)
+            self.assertFalse(list(workspace.glob("tool_shed.backup-*.tar")))
+
+    def test_snapshot_subprocess_timeout_names_recovery_option(self) -> None:
+        scripts_path = str(ROOT / "scripts")
+        sys.path.insert(0, scripts_path)
+        try:
+            import update_snapshot
+        finally:
+            sys.path.remove(scripts_path)
+
+        with mock.patch.object(
+            update_snapshot.subprocess,
+            "run",
+            side_effect=subprocess.TimeoutExpired(["git", "clone"], 0.01),
+        ):
+            with self.assertRaisesRegex(
+                update_snapshot.UpdateError,
+                r"increase --network-timeout.*git clone",
+            ):
+                update_snapshot.run(
+                    ["git", "clone"],
+                    timeout=0.01,
+                    timeout_option="--network-timeout",
+                )
 
     def test_snapshot_updater_rejects_invalid_release_before_mutation(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
