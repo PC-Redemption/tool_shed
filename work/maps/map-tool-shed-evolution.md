@@ -75,7 +75,7 @@ Ground:
 | Workspace performance measurement | complete | `work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md` | completed profiling and fleet-measurement spike | gather approved longitudinal or multi-workspace measurements before proposing optimization |
 | Agent planning mechanism evaluation | complete | `work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md` | source-backed inventory and frozen instruction-level scenarios | none |
 | Evidence-responsive execution | complete | `work/wp/completed/wp-evidence-responsive-tool-shed-execution.md` | published v0.11.0, exact installed-client parity, and fresh-task smoke | none |
-| Campaign entry, token efficiency, and provider portability | release qualification | `work/wp/active/wp-tool-shed-campaign-entry-improvements.md` | implemented portable core, progressive skill, adapters, conformance suite, and transactional old-to-new upgrade qualification | publish the approved release, synchronize the installed Codex client, and fresh-task verify |
+| Campaign entry, token efficiency, and provider portability | complete | `work/wp/completed/wp-tool-shed-campaign-entry-improvements.md` | published v0.12.0, exact installed-client parity, and fresh-task smoke | run non-Codex runtime scenarios before increasing capability claims |
 
 ## Dependency Notes
 
@@ -116,7 +116,7 @@ Do next:
 - [x] Qualify, release, deploy, and fresh-task verify evidence-responsive execution guidance.
 - [x] Finalize and implement the discussion route, adaptive token-efficiency, and cross-provider portability design.
 - [x] Qualify existing-snapshot replacement and rollback for the compact Markdown skill layout.
-- [ ] Publish the qualified portability release, synchronize the installed Codex client, and fresh-task verify.
+- [x] Publish the qualified portability release, synchronize the installed Codex client, and fresh-task verify.
 
 Avoid for now:
 

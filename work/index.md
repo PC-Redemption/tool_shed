@@ -32,12 +32,12 @@ Updated: 2026-08-09
 | [work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md](work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md) | ticket | complete | 2026-08-03 | none | docs/workspace-performance-profiling.md |
 | [work/tickets/ticket-portable-verified-tool-shed-installer.md](work/tickets/ticket-portable-verified-tool-shed-installer.md) | ticket | active | 2026-07-30 | verify the complete updater matrix in native Windows and Linux CI | work/maps/map-tool-shed-evolution.md |
 | [work/tickets/ticket-prepare-tool-shed-0-2-0-release.md](work/tickets/ticket-prepare-tool-shed-0-2-0-release.md) | ticket | complete | 2026-07-24 | none | docs/releasing.md; scripts/check_shed_version.py; scripts/update_shed_manifest.py |
-| [work/wp/active/wp-tool-shed-campaign-entry-improvements.md](work/wp/active/wp-tool-shed-campaign-entry-improvements.md) | workpackage | active | 2026-08-09 | finish release qualification, publish the approved release, synchronize the installed Codex client, and verify from a fresh task | work/maps/map-tool-shed-evolution.md |
 | [work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md](work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md) | workpackage | active | 2026-07-21 | obtain explicit approval before the first guarded mass update | README.md; docs/fleet-snapshot-updates.md; skills/tool-shed/SKILL.md |
 | [work/wp/completed/wp-evidence-responsive-tool-shed-execution.md](work/wp/completed/wp-evidence-responsive-tool-shed-execution.md) | workpackage | complete | 2026-08-09 | none | work/maps/map-tool-shed-evolution.md |
 | [work/wp/completed/wp-existing-project-onboarding-and-backfill.md](work/wp/completed/wp-existing-project-onboarding-and-backfill.md) | workpackage | complete | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/wp/completed/wp-generated-evidence-safety-and-migration.md](work/wp/completed/wp-generated-evidence-safety-and-migration.md) | workpackage | complete | 2026-07-25 | none | work/maps/map-tool-shed-evolution.md |
 | [work/wp/completed/wp-reasoning-level-preflight-and-recommendation.md](work/wp/completed/wp-reasoning-level-preflight-and-recommendation.md) | workpackage | complete | 2026-08-01 | none | work/maps/map-tool-shed-evolution.md |
+| [work/wp/completed/wp-tool-shed-campaign-entry-improvements.md](work/wp/completed/wp-tool-shed-campaign-entry-improvements.md) | workpackage | complete | 2026-08-09 | run non-Codex runtime scenarios before increasing provider capability claims | work/maps/map-tool-shed-evolution.md |
 | [work/wp/completed/wp-work-artifact-reconciliation.md](work/wp/completed/wp-work-artifact-reconciliation.md) | workpackage | complete | 2026-07-24 | none | README.md; conventions.md; skills/tool-shed/SKILL.md |
 
 ## Current Reading Order
@@ -49,5 +49,5 @@ Updated: 2026-08-09
 ## Summary
 
 - Total artifacts: 31
-- Active artifacts: 4
-- Completed/decided artifacts: 25
+- Active artifacts: 3
+- Completed/decided artifacts: 26

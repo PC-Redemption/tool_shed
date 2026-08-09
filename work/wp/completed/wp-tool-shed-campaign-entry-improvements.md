@@ -1,9 +1,9 @@
 # Tool Shed campaign entry, efficiency, and portability Workpackage
 
-Status: active
+Status: complete
 Type: workpackage
 Updated: 2026-08-09
-Next Action: finish release qualification, publish the approved release, synchronize the installed Codex client, and verify from a fresh task
+Next Action: run non-Codex runtime scenarios before increasing provider capability claims
 
 Project Map: work/maps/map-tool-shed-evolution.md
 
@@ -88,11 +88,12 @@ Completed:
   `work/`, and verify exact rollback of both snapshot and instruction files.
 - Added upgrade regressions for old-to-new compact skill replacement, stale Markdown removal,
   work-state preservation, exact rollback, and symlink rejection before mutation.
+- Published `v0.12.0` as GitHub's latest release, verified the live canonical manifest and
+  two-commit provenance, synchronized the installed Codex skill with an exact recursive diff, and
+  passed a fresh-session `ts: version` smoke test.
 
-Incomplete:
+Deferred follow-up:
 
-- Complete the `0.12.0` release, live canonical-manifest verification, installed Codex client sync,
-  and fresh-task smoke.
 - Run later runtime scenarios on non-Codex providers before increasing their capability claims.
 
 ## Goal

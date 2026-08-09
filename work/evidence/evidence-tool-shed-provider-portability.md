@@ -78,10 +78,22 @@ python3 -m unittest discover -s tests -v
 - Five provider adapter fixtures passed static conformance.
 - 71 unit tests passed, including five upgrade-specific success, preservation, rollback, and path-safety scenarios.
 - Only `codex-cli 0.144.6` was found among the provider CLIs checked on this host.
-- Full `scripts/validate_tool_shed.py` passed with the `0.12.0` unpublished manifest and 53
+- Full `scripts/validate_tool_shed.py` passed with the `0.12.0` release manifest and 53
   manifest-tracked product files.
 
-## Remaining Release Evidence
+## Release And Client Deployment Evidence
 
-- Release provenance and live canonical-manifest verification after external publication approval.
-- Installed Codex skill exact-diff and fresh-task verification after the live release is verified.
+- GitHub `main` and the annotated `v0.12.0` tag resolve to provenance commit
+  `9c546229101499fb46040bcd89476a677e3bf152`; its parent content commit is
+  `6df01bf5e4ebecd90c484d4a349410337c4fc9bf` and the intervening diff is exactly
+  `SHED_VERSION.json`.
+- GitHub publishes `Tool Shed v0.12.0` as the latest release at
+  `https://github.com/PC-Redemption/tool_shed/releases/tag/v0.12.0`.
+- The live canonical manifest reports `0.12.0`, matches the local manifest, and passes local
+  integrity verification with no missing or modified tracked product files.
+- The installed Codex skill was backed up to
+  `/home/jon/.codex/skills/tool-shed.backup-20260809T141716Z`, replaced from a validated staged
+  copy, revalidated, and matched the canonical skill with an empty recursive diff.
+- A fresh ephemeral Codex session routed `ts: version` through the compact installed skill, loaded
+  the maintenance reference, reported `0.12.0` verified, confirmed all three on-demand references,
+  changed no files, and returned `Campaign status: COMPLETE`.
