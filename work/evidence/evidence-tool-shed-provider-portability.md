@@ -55,6 +55,12 @@ was built with real provider metadata, installer code, compact skill, and on-dem
 The updater now verifies exact pre-update snapshot fingerprints after rollback and verifies every
 captured provider instruction file after restoration. It attempts snapshot and instruction
 rollback independently so one reported rollback error does not prevent the other recovery step.
+An end-to-end disposable workspace then upgraded the actual tagged `v0.11.0` snapshot to the local
+tagged `v0.12.0` candidate and repeated the run with injected post-install failure. Success and
+rollback both passed; the installed skill directory matched the candidate exactly, the old snapshot
+and instruction file matched their pre-update fingerprints after rollback, and `work/` plus
+`.gitignore` remained byte-identical. Backup restoration explicitly accepts only regular files and
+directories and supplies an extraction policy on Python runtimes that support it.
 
 ## Commands
 

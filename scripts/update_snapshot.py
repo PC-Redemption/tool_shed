@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import inspect
 import json
 import re
 import shutil
@@ -233,6 +234,8 @@ def create_backup(target: Path, backup: Path) -> None:
                 raise UpdateError("backup unexpectedly contains project work/")
             if normalized != "tool_shed" and not normalized.startswith("tool_shed/"):
                 raise UpdateError(f"backup contains out-of-scope member: {normalized}")
+            if not member.isfile() and not member.isdir():
+                raise UpdateError(f"backup contains unsupported member type: {normalized}")
             if member.isfile():
                 handle = archive.extractfile(member)
                 if handle is None:
@@ -250,11 +253,18 @@ def safe_extract_backup(backup: Path, workspace: Path) -> None:
             normalized = member.name.replace("\\", "/")
             if normalized != "tool_shed" and not normalized.startswith("tool_shed/"):
                 raise UpdateError(f"unsafe backup member: {normalized}")
-            if member.issym() or member.islnk() or ".." in Path(normalized).parts:
+            if not member.isfile() and not member.isdir():
+                raise UpdateError(f"unsafe backup member type: {normalized}")
+            if ".." in Path(normalized).parts:
                 raise UpdateError(f"unsafe backup member: {normalized}")
             destination = (workspace / normalized).resolve()
             destination.relative_to(workspace)
-        archive.extractall(workspace)
+        options = (
+            {"filter": "fully_trusted"}
+            if "filter" in inspect.signature(archive.extractall).parameters
+            else {}
+        )
+        archive.extractall(workspace, **options)
 
 
 def post_install_checks(

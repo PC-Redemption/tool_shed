@@ -31,7 +31,7 @@
     "scripts/update-tool-shed.ps1": "271d8970201341f66595b902de0c1e03ace41203ef113b81eed5464b2a75591d",
     "scripts/update-tool-shed.sh": "51740376eca2cbe2eba8590333f55bfa7cf7bd6b720b27176a127a0e44223fdb",
     "scripts/update_shed_manifest.py": "5217a3d51e18742ce3af7a4e75642c8fbd80f13eaf4ccf93088deed4958a86fa",
-    "scripts/update_snapshot.py": "e85ad249550459d9d01ac8b585909bd9da8cca3989e6a1d77c57feb33856337f",
+    "scripts/update_snapshot.py": "bbad3bbb32b54b434d6843992ecd3fc1ae37342622796714ef7fb0202cd8dc05",
     "scripts/update_work_index.py": "ea3cb9fb5e35551954848cd80bd80e72c5afa6df983ef99a4d30b753543c30a7",
     "scripts/validate_tool_shed.py": "2422af85d8332071e950915440d22b3b9fb8dd8e112c26f94fb0ff11db80edf2",
     "scripts/work_tree.py": "d3dd1f03d7080d4f81c3297a3dff0b3e51f041cdad69781d50220d84595002a9",
@@ -58,9 +58,9 @@
   },
   "manifest_schema_version": 2,
   "notes": "Add portable Tool Shed adapters, progressive loading, and transactional snapshot upgrades",
-  "release_commit": "c80f42eaf484b21975409738999d18262e92de7b",
+  "release_commit": null,
   "release_tag": "v0.12.0",
-  "released_at": "2026-08-09T14:07:30Z",
+  "released_at": null,
   "shed_version": "0.12.0",
   "updated_at": "2026-08-09"
 }
