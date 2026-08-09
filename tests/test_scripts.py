@@ -1980,16 +1980,22 @@ old Tool Shed guidance
             self.assertEqual(payload["codex_skill"]["previous_state"], "stale-released")
             self.assertTrue(payload["codex_skill"]["changed"])
             self.assertTrue(payload["codex_skill"]["restart_required"])
+            release_manifest = json.loads(
+                (release / "SHED_VERSION.json").read_text(encoding="utf-8")
+            )
+            skill_prefix = "skills/tool-shed/"
             self.assertEqual(
                 {
-                    path.relative_to(installed).as_posix(): path.read_bytes()
+                    path.relative_to(installed).as_posix(): hashlib.sha256(
+                        path.read_bytes()
+                    ).hexdigest()
                     for path in installed.rglob("*")
                     if path.is_file()
                 },
                 {
-                    path.relative_to(release / "skills" / "tool-shed").as_posix(): path.read_bytes()
-                    for path in (release / "skills" / "tool-shed").rglob("*")
-                    if path.is_file()
+                    path.removeprefix(skill_prefix): digest
+                    for path, digest in release_manifest["content_hashes"].items()
+                    if path.startswith(skill_prefix)
                 },
             )
             backup = Path(payload["codex_skill"]["backup_path"])
