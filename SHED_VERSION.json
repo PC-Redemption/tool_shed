@@ -58,9 +58,9 @@
   },
   "manifest_schema_version": 2,
   "notes": "Add portable Tool Shed adapters, progressive loading, and transactional snapshot upgrades",
-  "release_commit": null,
+  "release_commit": "6df01bf5e4ebecd90c484d4a349410337c4fc9bf",
   "release_tag": "v0.12.0",
-  "released_at": null,
+  "released_at": "2026-08-09T14:12:41Z",
   "shed_version": "0.12.0",
   "updated_at": "2026-08-09"
 }
