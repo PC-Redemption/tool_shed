@@ -8,6 +8,7 @@ import hashlib
 import inspect
 import json
 import math
+import os
 import re
 import shutil
 import subprocess
@@ -35,6 +36,7 @@ REQUIRED_PATHS = (
     "scripts",
 )
 IGNORED_NAMES = {".git", "work", "__pycache__", ".pytest_cache"}
+BYTECODE_SUFFIXES = (".pyc", ".pyo")
 
 
 class UpdateError(RuntimeError):
@@ -49,7 +51,7 @@ def minimum_updater_protocol(manifest: dict[str, Any]) -> int:
 
 
 def version_check_command(script: str, shed: str, protocol: int, *, snapshot: bool) -> list[str]:
-    command = [sys.executable, script, "--shed", shed, "--local-only", "--strict"]
+    command = [sys.executable, "-B", script, "--shed", shed, "--local-only", "--strict"]
     if protocol >= 2:
         command.extend(("--updater-protocol", str(UPDATER_PROTOCOL)))
         if snapshot:
@@ -65,6 +67,8 @@ def run(
     timeout: float | None = None,
     timeout_option: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
+    environment = dict(os.environ)
+    environment["PYTHONDONTWRITEBYTECODE"] = "1"
     try:
         result = subprocess.run(
             args,
@@ -74,6 +78,7 @@ def run(
             stderr=subprocess.PIPE,
             check=False,
             timeout=timeout,
+            env=environment,
         )
     except subprocess.TimeoutExpired as error:
         option = f"; retry or increase {timeout_option}" if timeout_option else ""
@@ -112,6 +117,35 @@ def fingerprint_tree(root: Path) -> dict[str, str]:
         digest = hashlib.sha256(path.read_bytes()).hexdigest()
         result[path.relative_to(root).as_posix()] = digest
     return result
+
+
+def is_snapshot_runtime_artifact(relative: Path) -> bool:
+    return "__pycache__" in relative.parts or relative.name.endswith(BYTECODE_SUFFIXES)
+
+
+def snapshot_runtime_artifacts(root: Path) -> list[str]:
+    if not root.exists():
+        return []
+    artifacts: set[str] = set()
+    for directory, names, files in os.walk(root, followlinks=False):
+        current = Path(directory)
+        for name in names:
+            relative = (current / name).relative_to(root)
+            if name == "__pycache__":
+                artifacts.add(relative.as_posix())
+        for name in files:
+            relative = (current / name).relative_to(root)
+            if is_snapshot_runtime_artifact(relative):
+                artifacts.add(relative.as_posix())
+    return sorted(artifacts)
+
+
+def snapshot_fingerprint(root: Path) -> dict[str, str]:
+    return {
+        relative: digest
+        for relative, digest in fingerprint_tree(root).items()
+        if not is_snapshot_runtime_artifact(Path(relative))
+    }
 
 
 def ensure_workspace_repository(workspace: Path) -> None:
@@ -224,7 +258,7 @@ def clone_release(
     )
     emit_progress("release validation")
     run(
-        [sys.executable, "scripts/validate_tool_shed.py"],
+        [sys.executable, "-B", "scripts/validate_tool_shed.py"],
         cwd=destination,
         timeout=validation_timeout,
         timeout_option="--validation-timeout",
@@ -274,7 +308,7 @@ def released_skill_fingerprints(repository: Path) -> list[tuple[str, dict[str, s
 
 def ignore_snapshot_copy(directory: str, names: list[str]) -> set[str]:
     ignored = {name for name in names if name in IGNORED_NAMES}
-    ignored.update(name for name in names if name.endswith((".pyc", ".pyo")))
+    ignored.update(name for name in names if name.endswith(BYTECODE_SUFFIXES))
     return ignored
 
 
@@ -321,8 +355,8 @@ def version_tuple(value: str) -> tuple[int, int, int]:
 
 
 def difference_summary(old: Path, new: Path) -> dict[str, dict[str, object]]:
-    old_files = fingerprint_tree(old)
-    new_files = fingerprint_tree(new)
+    old_files = snapshot_fingerprint(old)
+    new_files = snapshot_fingerprint(new)
     groups = {
         "added": sorted(set(new_files) - set(old_files)),
         "removed": sorted(set(old_files) - set(new_files)),
@@ -337,9 +371,19 @@ def difference_summary(old: Path, new: Path) -> dict[str, dict[str, object]]:
 def create_backup(target: Path, backup: Path) -> None:
     if backup.exists():
         raise UpdateError(f"backup path already exists: {backup}")
-    expected = fingerprint_tree(target)
+    expected = snapshot_fingerprint(target)
+
+    def exclude_runtime_artifacts(member: tarfile.TarInfo) -> tarfile.TarInfo | None:
+        relative = Path(member.name.replace("\\", "/"))
+        return None if is_snapshot_runtime_artifact(relative) else member
+
     with tarfile.open(backup, "w") as archive:
-        archive.add(target, arcname="tool_shed", recursive=True)
+        archive.add(
+            target,
+            arcname="tool_shed",
+            recursive=True,
+            filter=exclude_runtime_artifacts,
+        )
     observed: dict[str, str] = {}
     with tarfile.open(backup, "r") as archive:
         for member in archive.getmembers():
@@ -412,6 +456,7 @@ def post_install_checks(
             raise UpdateError("selected release has provider metadata but no workspace installer")
         arguments = [
             sys.executable,
+            "-B",
             str(installer),
             str(workspace),
             "--guidance-only",
@@ -443,12 +488,18 @@ def post_install_checks(
         path = target / "scripts" / script
         if path.is_file():
             result = run(
-                [sys.executable, str(path), *arguments],
+                [sys.executable, "-B", str(path), *arguments],
                 cwd=workspace,
                 timeout=validation_timeout,
                 timeout_option="--validation-timeout",
             )
             results[script] = result.stdout.strip()
+    runtime_artifacts = snapshot_runtime_artifacts(target)
+    if runtime_artifacts:
+        raise UpdateError(
+            "post-install validation generated Python runtime artifacts: "
+            + ", ".join(runtime_artifacts[:20])
+        )
     return results
 
 
@@ -636,7 +687,7 @@ def main() -> int:
         ensure_workspace_repository(workspace)
         initial_status = git(workspace, "status", "--short")
         mode = snapshot_boundary(workspace, target)
-        snapshot_before = fingerprint_tree(target)
+        snapshot_before = snapshot_fingerprint(target)
         require_ignored(workspace)
         payload["mode"] = mode
         previous_version = installed_version(target) if target.exists() else None
@@ -739,7 +790,7 @@ def main() -> int:
                     installed = False
                     if mode == "existing-update" and backup is not None:
                         safe_extract_backup(backup, workspace)
-                        if fingerprint_tree(target) != snapshot_before:
+                        if snapshot_fingerprint(target) != snapshot_before:
                             raise UpdateError("restored snapshot does not match the pre-update snapshot")
                     if retired is not None and retired.exists():
                         shutil.rmtree(retired)

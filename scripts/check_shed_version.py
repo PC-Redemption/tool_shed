@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import subprocess
 import urllib.error
@@ -17,6 +18,7 @@ from typing import Any
 
 DEFAULT_CANONICAL = "https://raw.githubusercontent.com/PC-Redemption/tool_shed/main/SHED_VERSION.json"
 VERSION = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
+BYTECODE_SUFFIXES = (".pyc", ".pyo")
 BOOTSTRAP_GUIDANCE = (
     "obtain a current released Tool Shed checkout outside the workspace, then run "
     "`python /path/to/current-release/scripts/update_snapshot.py --workspace .`"
@@ -136,6 +138,17 @@ def forbidden_snapshot_paths(root: Path, enforce_snapshot: bool) -> list[str]:
         forbidden.append(".git")
     if (root / "work").exists() and (enforce_snapshot or not exact_git_root(root)):
         forbidden.append("work")
+    if enforce_snapshot:
+        runtime_artifacts: set[str] = set()
+        for directory, names, files in os.walk(root, followlinks=False):
+            current = Path(directory)
+            for name in names:
+                if name == "__pycache__":
+                    runtime_artifacts.add((current / name).relative_to(root).as_posix())
+            for name in files:
+                if name.endswith(BYTECODE_SUFFIXES):
+                    runtime_artifacts.add((current / name).relative_to(root).as_posix())
+        forbidden.extend(sorted(runtime_artifacts))
     return forbidden
 
 

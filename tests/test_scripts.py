@@ -687,6 +687,51 @@ for raw in sys.stdin:
             self.assertEqual(payload["state"], "modified")
             self.assertEqual(payload["forbidden"], [".git", "work"])
 
+    def test_strict_snapshot_check_rejects_python_bytecode(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            shed = Path(temp) / "tool_shed"
+            cache = shed / "scripts" / "__pycache__"
+            cache.mkdir(parents=True)
+            bytecode = cache / "helper.cpython-311.pyc"
+            optimized = shed / "scripts" / "legacy.pyo"
+            bytecode.write_bytes(b"bytecode")
+            optimized.write_bytes(b"optimized")
+            manifest = {
+                "shed_version": "1.0.0",
+                "manifest_schema_version": 2,
+                "minimum_updater_protocol": 2,
+                "artifact_model_version": "test",
+                "content_hashes": {},
+                "release_tag": "v1.0.0",
+                "release_commit": None,
+                "released_at": None,
+            }
+            (shed / "SHED_VERSION.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+            result = run_script(
+                "scripts/check_shed_version.py",
+                "--shed",
+                str(shed),
+                "--local-only",
+                "--strict",
+                "--verification-only",
+                "--snapshot",
+                "--json",
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(payload["state"], "modified")
+            self.assertEqual(
+                payload["forbidden"],
+                [
+                    "scripts/__pycache__",
+                    "scripts/__pycache__/helper.cpython-311.pyc",
+                    "scripts/legacy.pyo",
+                ],
+            )
+
     def test_disconnected_snapshot_validator_is_nonmutating(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -1921,6 +1966,91 @@ stale loop guidance
                 names = {member.name.replace("\\", "/") for member in archive.getmembers()}
             self.assertIn("tool_shed/old-marker.txt", names)
             self.assertNotIn("work/operator-data.txt", names)
+
+    def test_snapshot_updater_keeps_consecutive_updates_bytecode_free(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            first_root = root / "first"
+            second_root = root / "second"
+            first_root.mkdir()
+            second_root.mkdir()
+            first_release = self.create_test_release(
+                first_root,
+                version="9.8.7",
+                include_provider_adapter=True,
+            )
+            second_release = self.create_test_release(
+                second_root,
+                version="9.8.8",
+                include_provider_adapter=True,
+            )
+            workspace = self.create_update_workspace(root)
+            old_cache = workspace / "tool_shed" / "scripts" / "__pycache__"
+            old_cache.mkdir(parents=True)
+            (old_cache / "old.cpython-311.pyc").write_bytes(b"old bytecode")
+            (workspace / "tool_shed" / "scripts" / "legacy.pyo").write_bytes(b"old optimized")
+            environment = dict(os.environ)
+            environment["CODEX_HOME"] = str(root / "codex")
+
+            def runtime_artifacts(snapshot: Path) -> list[str]:
+                return sorted(
+                    path.relative_to(snapshot).as_posix()
+                    for path in snapshot.rglob("*")
+                    if "__pycache__" in path.relative_to(snapshot).parts
+                    or path.name.endswith((".pyc", ".pyo"))
+                )
+
+            def assert_cache_free_update(
+                repository: Path,
+            ) -> dict[str, object]:
+                result = run_script(
+                    str(ROOT / "scripts" / "update_snapshot.py"),
+                    "--workspace",
+                    str(workspace),
+                    "--repository",
+                    str(repository),
+                    "--provider",
+                    "codex",
+                    "--json",
+                    cwd=workspace,
+                    env=environment,
+                )
+                payload = json.loads(result.stdout)
+                self.assertEqual(payload["state"], "installed")
+                self.assertEqual(runtime_artifacts(workspace / "tool_shed"), [])
+                difference_paths = [
+                    path
+                    for group in payload["difference"].values()
+                    for path in group["paths"]
+                ]
+                self.assertFalse(
+                    any(
+                        "__pycache__" in Path(path).parts
+                        or path.endswith((".pyc", ".pyo"))
+                        for path in difference_paths
+                    )
+                )
+                backup = Path(payload["backup_path"])
+                with tarfile.open(backup, "r") as archive:
+                    backup_names = [
+                        member.name.replace("\\", "/")
+                        for member in archive.getmembers()
+                    ]
+                self.assertFalse(
+                    any(
+                        "__pycache__" in Path(name).parts
+                        or name.endswith((".pyc", ".pyo"))
+                        for name in backup_names
+                    )
+                )
+                return payload
+
+            first_payload = assert_cache_free_update(first_release)
+            Path(first_payload["backup_path"]).unlink()
+            second_payload = assert_cache_free_update(second_release)
+
+            self.assertEqual(first_payload["installed_version"], "9.8.7")
+            self.assertEqual(second_payload["installed_version"], "9.8.8")
 
     def test_snapshot_updater_ignores_stale_links_in_ignored_scratch_copy(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
