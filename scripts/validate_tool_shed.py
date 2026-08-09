@@ -68,6 +68,10 @@ def smoke_temp_workspace() -> None:
             raise SystemExit("installer did not create the Tool Shed ship guidance")
         if "Do not ask for repeated confirmation for reversible, in-scope steps" not in agents_text:
             raise SystemExit("installer did not create the Tool Shed authorization-discipline guidance")
+        if "command success alone is not outcome success" not in agents_text:
+            raise SystemExit("installer did not create the Tool Shed evidence-response guidance")
+        if "at most three credible ways the plan could fail" not in agents_text:
+            raise SystemExit("installer did not create the Tool Shed prospective-failure guidance")
         inbox_result = subprocess.run(
             [
                 sys.executable,

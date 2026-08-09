@@ -1226,10 +1226,13 @@ Produces:
             self.assertEqual(second.returncode, 0)
             guidance = (workspace / "AGENTS.md").read_text(encoding="utf-8")
             self.assertEqual(guidance.count("BEGIN TOOL SHED GENERATED EVIDENCE GUIDANCE"), 1)
+            self.assertEqual(guidance.count("BEGIN TOOL SHED EVIDENCE RESPONSE GUIDANCE"), 1)
             self.assertEqual(guidance.count("BEGIN TOOL SHED CAMPAIGN GUIDANCE"), 1)
             self.assertEqual(guidance.count("BEGIN TOOL SHED Q&A GUIDANCE"), 1)
             self.assertIn("Campaign status: COMPLETE", guidance)
             self.assertIn("A progress summary, artifact update, phase boundary", guidance)
+            self.assertIn("command success alone is not outcome success", guidance)
+            self.assertIn("at most three credible ways the plan could fail", guidance)
 
     def test_installer_preserves_existing_ask_inbox(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -1244,6 +1247,38 @@ Produces:
             self.assertEqual(ask_path.read_text(encoding="utf-8"), "Keep this question intact.\n")
             self.assertIn("Preserved existing Tool Shed Q&A inbox", result.stdout)
             self.assertIn("Preserved existing Tool Shed Q&A inbox", second.stdout)
+
+    def test_installer_replaces_stale_evidence_response_guidance_idempotently(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace)
+            agents = workspace / "AGENTS.md"
+            agents.write_text(
+                """# Owner guidance
+
+<!-- BEGIN TOOL SHED EVIDENCE RESPONSE GUIDANCE -->
+stale loop guidance
+<!-- END TOOL SHED EVIDENCE RESPONSE GUIDANCE -->
+
+# Owner footer
+""",
+                encoding="utf-8",
+            )
+
+            first = run_script("scripts/install_into_workspace.py", str(workspace))
+            after_first = agents.read_text(encoding="utf-8")
+            second = run_script("scripts/install_into_workspace.py", str(workspace))
+            after_second = agents.read_text(encoding="utf-8")
+
+            self.assertIn("Codex guidance: updated", first.stdout)
+            self.assertNotIn("stale loop guidance", after_first)
+            self.assertIn("command success alone is not outcome success", after_first)
+            self.assertIn("# Owner guidance", after_first)
+            self.assertIn("# Owner footer", after_first)
+            self.assertEqual(after_first.count("BEGIN TOOL SHED EVIDENCE RESPONSE GUIDANCE"), 1)
+            self.assertEqual(after_first.count("END TOOL SHED EVIDENCE RESPONSE GUIDANCE"), 1)
+            self.assertEqual(after_second, after_first)
+            self.assertNotIn("Codex guidance: updated", second.stdout)
 
     def test_installer_warns_for_fallback_inbox_and_preserves_both_files(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

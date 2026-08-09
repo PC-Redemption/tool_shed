@@ -33,6 +33,21 @@
     {
       "canonical_truth": null,
       "disposition": null,
+      "next_action": "implement the evidence-response loop and conditional prospective failure check",
+      "parent": "work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md",
+      "path": "work/decisions/decision-human-planning-mechanisms-for-tool-shed.md",
+      "produces": null,
+      "project_map": null,
+      "status": "decided",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Decision Matrix: Human planning mechanisms for Tool Shed",
+      "type": "decision-matrix",
+      "updated": "2026-08-09"
+    },
+    {
+      "canonical_truth": null,
+      "disposition": null,
       "next_action": "none",
       "parent": "work/wp/completed/wp-existing-project-onboarding-and-backfill.md",
       "path": "work/decisions/decision-level-2-onboarding-helper-automation.md",
@@ -93,6 +108,21 @@
     {
       "canonical_truth": null,
       "disposition": null,
+      "next_action": "none",
+      "parent": "work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md",
+      "path": "work/evidence/evidence-human-planning-mechanism-evaluation.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Evidence: Human planning mechanism evaluation",
+      "type": "evidence",
+      "updated": "2026-08-09"
+    },
+    {
+      "canonical_truth": null,
+      "disposition": null,
       "next_action": "file the external Codex Desktop robustness evidence separately if still needed",
       "parent": "work/maps/map-tool-shed-evolution.md",
       "path": "work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md",
@@ -108,6 +138,21 @@
     {
       "canonical_truth": null,
       "disposition": null,
+      "next_action": "none",
+      "parent": "work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md",
+      "path": "work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Inventory: Human planning mechanisms for Tool Shed",
+      "type": "inventory",
+      "updated": "2026-08-09"
+    },
+    {
+      "canonical_truth": null,
+      "disposition": null,
       "next_action": "verify the portable updater matrix in native Windows and Linux CI",
       "parent": null,
       "path": "work/maps/map-tool-shed-evolution.md",
@@ -118,7 +163,7 @@
       "supersedes": null,
       "title": "Project Map: Tool Shed evolution",
       "type": "project-map",
-      "updated": "2026-08-03"
+      "updated": "2026-08-09"
     },
     {
       "canonical_truth": null,
@@ -134,6 +179,21 @@
       "title": "Project Map: tool_shed foundation",
       "type": "project-map",
       "updated": "2026-07-05"
+    },
+    {
+      "canonical_truth": null,
+      "disposition": "planned",
+      "next_action": "none",
+      "parent": "work/maps/map-tool-shed-evolution.md",
+      "path": "work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md",
+      "produces": "work/wp/active/wp-evidence-responsive-tool-shed-execution.md",
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Spike: Evaluate human planning models for Tool Shed",
+      "type": "spike",
+      "updated": "2026-08-09"
     },
     {
       "canonical_truth": null,
@@ -271,6 +331,21 @@
       "updated": "2026-07-24"
     },
     {
+      "canonical_truth": null,
+      "disposition": null,
+      "next_action": "run focused regression tests and inspect generated workspace guidance",
+      "parent": null,
+      "path": "work/wp/active/wp-evidence-responsive-tool-shed-execution.md",
+      "produces": null,
+      "project_map": "work/maps/map-tool-shed-evolution.md",
+      "status": "active",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Evidence-responsive Tool Shed execution Workpackage",
+      "type": "workpackage",
+      "updated": "2026-08-09"
+    },
+    {
       "canonical_truth": "README.md; docs/fleet-snapshot-updates.md; skills/tool-shed/SKILL.md",
       "disposition": null,
       "next_action": "obtain explicit approval before the first guarded mass update",
@@ -347,7 +422,7 @@
     }
   ],
   "description": "Generated from tool_shed artifact headers. Use as navigation, not canonical truth.",
-  "generated_at": "2026-08-06",
+  "generated_at": "2026-08-09",
   "reading_order": [
     "Read project README/docs for current truth.",
     "Read active maps and active work artifacts from this index.",
@@ -355,8 +430,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 3,
-    "completed_or_decided_artifacts": 19,
-    "total_artifacts": 23
+    "active_artifacts": 4,
+    "completed_or_decided_artifacts": 23,
+    "total_artifacts": 28
   }
 }

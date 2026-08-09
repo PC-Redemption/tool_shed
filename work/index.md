@@ -2,7 +2,7 @@
 
 Generated from artifact headers. `work/index.json` contains the same navigation data for automation. Do not put durable project truth only here; keep current truth in docs or README files.
 
-Updated: 2026-08-06
+Updated: 2026-08-09
 
 ## Orientation
 
@@ -10,13 +10,17 @@ Updated: 2026-08-06
 | --- | --- | --- | --- | --- | --- |
 | [work/checklists/checklist-tool-shed-skill-field-test.md](work/checklists/checklist-tool-shed-skill-field-test.md) | checklist | complete | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/decisions/decision-codex-skill-readiness.md](work/decisions/decision-codex-skill-readiness.md) | decision-matrix | decided | 2026-07-05 | continue using skill on real projects; plugin packaging deferred | work/maps/map-tool-shed-foundation.md |
+| [work/decisions/decision-human-planning-mechanisms-for-tool-shed.md](work/decisions/decision-human-planning-mechanisms-for-tool-shed.md) | decision-matrix | decided | 2026-08-09 | implement the evidence-response loop and conditional prospective failure check | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/decisions/decision-level-2-onboarding-helper-automation.md](work/decisions/decision-level-2-onboarding-helper-automation.md) | decision-matrix | decided | 2026-07-05 | none | work/wp/completed/wp-existing-project-onboarding-and-backfill.md |
 | [work/decisions/decision-plugin-packaging-readiness.md](work/decisions/decision-plugin-packaging-readiness.md) | decision-matrix | decided | 2026-07-05 | defer plugin packaging until distribution friction appears | work/maps/map-tool-shed-foundation.md |
 | [work/decisions/decision-project-map-creation-trigger.md](work/decisions/decision-project-map-creation-trigger.md) | decision-matrix | decided | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/evidence/evidence-adaptive-generated-evidence-safeguards.md](work/evidence/evidence-adaptive-generated-evidence-safeguards.md) | evidence | complete | 2026-07-25 | none | work/wp/completed/wp-generated-evidence-safety-and-migration.md |
+| [work/evidence/evidence-human-planning-mechanism-evaluation.md](work/evidence/evidence-human-planning-mechanism-evaluation.md) | evidence | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | contained; repository trigger mitigated, desktop defect remains external | 2026-07-25 | file the external Codex Desktop robustness evidence separately if still needed | work/maps/map-tool-shed-evolution.md |
-| [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | active | 2026-08-03 | verify the portable updater matrix in native Windows and Linux CI | - |
+| [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
+| [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | active | 2026-08-09 | verify the portable updater matrix in native Windows and Linux CI | - |
 | [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
+| [work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md](work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md) | spike | complete | 2026-08-09 | none | work/maps/map-tool-shed-evolution.md |
 | [work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md](work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md) | spike | complete | 2026-08-03 | implement the local profiler defined in work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md | work/maps/map-tool-shed-evolution.md |
 | [work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md](work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md) | ticket | complete | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/tickets/ticket-add-tool-shed-operator-help.md](work/tickets/ticket-add-tool-shed-operator-help.md) | ticket | complete | 2026-07-24 | none | docs/operator-guide.md; skills/tool-shed/SKILL.md; README.md |
@@ -26,6 +30,7 @@ Updated: 2026-08-06
 | [work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md](work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md) | ticket | complete | 2026-08-03 | none | docs/workspace-performance-profiling.md |
 | [work/tickets/ticket-portable-verified-tool-shed-installer.md](work/tickets/ticket-portable-verified-tool-shed-installer.md) | ticket | active | 2026-07-30 | verify the complete updater matrix in native Windows and Linux CI | work/maps/map-tool-shed-evolution.md |
 | [work/tickets/ticket-prepare-tool-shed-0-2-0-release.md](work/tickets/ticket-prepare-tool-shed-0-2-0-release.md) | ticket | complete | 2026-07-24 | none | docs/releasing.md; scripts/check_shed_version.py; scripts/update_shed_manifest.py |
+| [work/wp/active/wp-evidence-responsive-tool-shed-execution.md](work/wp/active/wp-evidence-responsive-tool-shed-execution.md) | workpackage | active | 2026-08-09 | run focused regression tests and inspect generated workspace guidance | work/maps/map-tool-shed-evolution.md |
 | [work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md](work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md) | workpackage | active | 2026-07-21 | obtain explicit approval before the first guarded mass update | README.md; docs/fleet-snapshot-updates.md; skills/tool-shed/SKILL.md |
 | [work/wp/completed/wp-existing-project-onboarding-and-backfill.md](work/wp/completed/wp-existing-project-onboarding-and-backfill.md) | workpackage | complete | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/wp/completed/wp-generated-evidence-safety-and-migration.md](work/wp/completed/wp-generated-evidence-safety-and-migration.md) | workpackage | complete | 2026-07-25 | none | work/maps/map-tool-shed-evolution.md |
@@ -40,6 +45,6 @@ Updated: 2026-08-06
 
 ## Summary
 
-- Total artifacts: 23
-- Active artifacts: 3
-- Completed/decided artifacts: 19
+- Total artifacts: 28
+- Active artifacts: 4
+- Completed/decided artifacts: 23

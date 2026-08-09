@@ -45,10 +45,24 @@ SHIP_GUIDANCE = f"""{SHIP_GUIDANCE_START}
 - Use the workspace's own tooling, environments, runbooks, and protected-environment controls.
 - Keep changes scoped to the goal and preserve unrelated user work.
 - Do not ask for repeated confirmation for reversible, in-scope steps already clearly authorized by the operator. One request may authorize multiple named operations. Ask again only when an action materially expands scope, targets a protected environment, is destructive or irreversible, uses an unknown deployment target, publishes externally, or otherwise requires new authority.
+- Before an already-authorized consequential stage, identify at most three credible ways the plan could fail and add proportionate prevention, detection, verification, or rollback. Skip this check for routine reversible work.
 - Verify the delivered result in its target environment before claiming completion.
 - The route does not waive safety rules, required approvals, credential boundaries, or authorization limits.
 - If a stage is inapplicable, explain why. If deployment is blocked, complete every safe preceding stage and report the exact blocker.
 {SHIP_GUIDANCE_END}
+"""
+
+EXECUTION_GUIDANCE_START = "<!-- BEGIN TOOL SHED EVIDENCE RESPONSE GUIDANCE -->"
+EXECUTION_GUIDANCE_END = "<!-- END TOOL SHED EVIDENCE RESPONSE GUIDANCE -->"
+EXECUTION_GUIDANCE = f"""{EXECUTION_GUIDANCE_START}
+## Tool Shed evidence-response loop
+
+- Use the loop for nontrivial planning, implementation, debugging, research, validation, and deployment.
+- Keep the desired outcome and the current condition limiting progress visible.
+- After each material action or new observation, compare the actual state with the expected state. If they differ, update assumptions, the plan, and the next action before continuing; command success alone is not outcome success.
+- Preserve the operator's scope, authority, and safety boundaries while adapting. A newly discovered action does not authorize itself.
+- Skip explicit loop ceremony for simple answers and known single-step reversible work; execute and verify them directly.
+{EXECUTION_GUIDANCE_END}
 """
 
 CAMPAIGN_GUIDANCE_START = "<!-- BEGIN TOOL SHED CAMPAIGN GUIDANCE -->"
@@ -125,6 +139,12 @@ def ensure_codex_guidance(repository: Path) -> bool:
         SHIP_GUIDANCE_START,
         SHIP_GUIDANCE_END,
         SHIP_GUIDANCE,
+    )
+    updated, _ = replace_managed_block(
+        updated,
+        EXECUTION_GUIDANCE_START,
+        EXECUTION_GUIDANCE_END,
+        EXECUTION_GUIDANCE,
     )
     updated, _ = replace_managed_block(
         updated,

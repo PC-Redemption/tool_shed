@@ -192,6 +192,22 @@ fields, active workstream rows, unchecked tasks, and `Do next:` content. Histori
 related-artifact links are valid references and do not become drift merely because their targets
 are finished.
 
+## Evidence-Responsive Execution
+
+For nontrivial planning, implementation, debugging, research, validation, and deployment, keep the
+desired outcome and the current condition limiting progress visible. After each material action or
+new observation, compare actual with expected state. When they differ, revise assumptions, the
+plan, and the next action before continuing. A successful command is evidence about execution, not
+proof that the desired outcome exists.
+
+Adaptation preserves the operator's original scope, authority, and safety boundaries. A newly
+discovered action does not authorize itself. Simple answers and known single-step reversible work
+should execute and verify directly without a formal loop.
+
+Before an already-authorized consequential ship stage, identify at most three credible ways the
+plan could fail and add proportionate prevention, detection, verification, or rollback. Do not turn
+this into a generic premortem ritual for routine reversible work.
+
 ## Reasoning Preflight and Catalog
 
 Reasoning preflight is an instruction-time routing check, not an additional program invocation.

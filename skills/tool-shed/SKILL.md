@@ -86,6 +86,9 @@ the complete delivery lifecycle: plan, implement, validate, build, deploy, and v
   by the operator. One request may authorize multiple named operations. Ask again only when an
   action materially expands scope, targets a protected environment, is destructive or irreversible,
   uses an unknown deployment target, publishes externally, or otherwise requires new authority.
+- Before an already-authorized consequential stage, identify at most three credible ways the plan
+  could fail. Add proportionate prevention, detection, verification, or rollback for those failure
+  modes. Skip this check for routine reversible work.
 - Treat a stage as inapplicable only when the workspace provides evidence that it is unnecessary;
   state the reason in the final response.
 - Do not claim completion until the deployed or otherwise delivered result has been verified in
@@ -94,6 +97,21 @@ the complete delivery lifecycle: plan, implement, validate, build, deploy, and v
   authorization boundaries. If deployment requires an unknown target, unavailable credential,
   new authority, or an irreversible action that was not clearly authorized, finish every safe
   preceding stage and report the exact blocker.
+
+### Evidence-Response Loop
+
+Use this lightweight loop for nontrivial planning, implementation, debugging, research,
+validation, and deployment:
+
+1. Keep the desired outcome and the current condition limiting progress visible.
+2. Take the smallest material action that advances or tests the outcome.
+3. Inspect the resulting evidence and compare actual with expected state.
+4. When they differ, update assumptions, the plan, and the next action before continuing. Command
+   success alone is not outcome success.
+
+The loop preserves the operator's scope, authority, and safety boundaries. A newly discovered
+action does not authorize itself. Skip explicit loop ceremony for simple answers and known
+single-step reversible work; execute and verify them directly.
 
 ### Campaign Continuity And Closeout
 

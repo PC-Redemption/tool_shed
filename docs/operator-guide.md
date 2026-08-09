@@ -51,6 +51,16 @@ again only when an action materially expands scope, targets a protected environm
 or irreversible, uses an unknown deployment target, publishes externally, or otherwise requires
 new authority.
 
+For nontrivial work, Codex keeps the requested outcome and current limiting condition visible. It
+compares the actual result with the expected state after material actions and updates the next
+action when evidence changes the situation. A command completing successfully is not enough if the
+target state is still wrong. This loop preserves the original authority boundary and is skipped as
+explicit ceremony for simple answers and known single-step reversible work.
+
+Before an already-authorized consequential stage, Codex checks at most three credible failure
+modes and adds proportionate prevention, detection, verification, or rollback. Routine reversible
+work does not receive a generic failure-analysis ritual.
+
 ## Campaign Status And Continuity
 
 Tool Shed treats the requested outcome in the current chat as the campaign. A plan, checklist,

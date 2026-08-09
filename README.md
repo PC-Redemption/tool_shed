@@ -198,10 +198,20 @@ See the [Tool Shed operator guide](docs/operator-guide.md) for the full use-case
 verify the requested workspace goal. It continues through all applicable stages while preserving
 normal safety, approval, credential, and protected-environment boundaries.
 
+Before an already-authorized consequential stage, Codex identifies at most three credible ways the
+plan could fail and adds proportionate prevention, detection, verification, or rollback. Routine
+reversible work skips this check.
+
 Tool Shed does not require repeated confirmation for reversible, in-scope steps already clearly
 authorized by the operator. One request may authorize multiple named operations; new confirmation
 is reserved for material scope expansion, protected environments, destructive or irreversible
 actions, unknown deployment targets, external publication, or other genuinely new authority.
+
+For nontrivial work, Tool Shed uses an evidence-response loop: keep the desired outcome and current
+limiting condition visible, take a material action, compare actual with expected state, and update
+the next action when evidence differs. Command success is not outcome success. The loop never
+broadens authority, and simple answers or known single-step reversible work execute and verify
+without extra ceremony.
 
 The workspace installer also creates `work/q&a/ask.txt`, a Git-ignored operator inbox. Add a question
 or direction to that file and send `ts:ask`; Codex reads it and acts under the same safety and
