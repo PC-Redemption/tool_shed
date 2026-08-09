@@ -21,12 +21,15 @@ TRACKED_ROOT_FILES = (
     "existing-projects.md",
 )
 TRACKED_GLOBS = (
+    "adapters/**/*.json",
+    "adapters/**/*.md",
     "docs/*.md",
     "scripts/*.py",
     "scripts/*.ps1",
     "scripts/*.sh",
     "skills/tool-shed/SKILL.md",
     "skills/tool-shed/agents/*.yaml",
+    "skills/tool-shed/references/**/*.md",
     "templates/*.md",
     "templates/*.json",
 )

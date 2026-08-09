@@ -9,7 +9,7 @@
 - Run Tool Shed workspace preflight and use its profile-specific mitigation before bulk output.
 - Never run migration apply without an exact approved manifest and verified archive.
 - Commit or checkpoint meaningful source and planning changes before large test runs.
-- Start or fork a fresh Codex task after exceptionally large qualification campaigns.
+- Start or fork a fresh agent session after exceptionally large qualification campaigns.
 <!-- END TOOL SHED GENERATED EVIDENCE GUIDANCE -->
 
 <!-- BEGIN TOOL SHED SHIP GUIDANCE -->
@@ -61,3 +61,30 @@
 - Preserve the operator's scope, authority, and safety boundaries while adapting. A newly discovered action does not authorize itself.
 - Skip explicit loop ceremony for simple answers and known single-step reversible work; execute and verify them directly.
 <!-- END TOOL SHED EVIDENCE RESPONSE GUIDANCE -->
+
+<!-- BEGIN TOOL SHED ROUTING GUIDANCE -->
+## Tool Shed request routing
+
+- Treat a leading `ts:` as authoritative Tool Shed routing for the current request only.
+- Locate the workspace-local shed, then read its `skills/tool-shed/SKILL.md` before acting.
+- Keep project state in root `work/`; the workspace-local shed contains reusable machinery.
+- Use only the provider capabilities actually available in the current product surface.
+<!-- END TOOL SHED ROUTING GUIDANCE -->
+
+<!-- BEGIN TOOL SHED DISCUSSION GUIDANCE -->
+## Tool Shed discussion route
+
+- Treat `ts: discuss <topic>` as the authoritative Tool Shed discovery route.
+- Treat a leading `discussion:` as an informal, read-only campaign-entry signal.
+- Explore the outcome, motivation, constraints, assumptions, unknowns, and smallest useful next route.
+- Do not create or modify workspace artifacts unless the operator explicitly asks to capture or plan.
+<!-- END TOOL SHED DISCUSSION GUIDANCE -->
+
+<!-- BEGIN TOOL SHED COORDINATION GUIDANCE -->
+## Tool Shed minimum sufficient coordination
+
+- Start at the lowest adequate level: Direct, Guided, Coordinated, or Deep.
+- Escalate only when evidence shows ambiguity, consequence, irreversibility, repeated failure, coordination, or handoff cost.
+- Load route-specific instructions and references only when the route needs them.
+- Preserve a compact campaign state: outcome, current constraint, decisions, evidence, and next action.
+<!-- END TOOL SHED COORDINATION GUIDANCE -->

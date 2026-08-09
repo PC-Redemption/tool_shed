@@ -36,6 +36,11 @@ def run_unit_tests() -> None:
     run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"])
 
 
+def check_provider_adapters() -> None:
+    step("provider adapter conformance")
+    run([sys.executable, "scripts/check_provider_adapters.py"])
+
+
 def regenerate_indexes() -> None:
     step("regenerate indexes")
     run([sys.executable, "scripts/update_work_index.py", "--workspace", "."])
@@ -57,7 +62,15 @@ def smoke_temp_workspace() -> None:
     with tempfile.TemporaryDirectory(prefix="tool-shed-validate-") as temp:
         workspace = Path(temp)
         run(["git", "init", "--quiet"], cwd=workspace)
-        run([sys.executable, str(ROOT / "scripts" / "install_into_workspace.py"), str(workspace)])
+        run(
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "install_into_workspace.py"),
+                str(workspace),
+                "--provider",
+                "all",
+            ]
+        )
         if not (workspace / "work" / "evidence" / "generated").is_dir():
             raise SystemExit("installer did not create the standard generated-evidence directory")
         ask_path = workspace / "work" / "q&a" / "ask.txt"
@@ -72,6 +85,20 @@ def smoke_temp_workspace() -> None:
             raise SystemExit("installer did not create the Tool Shed evidence-response guidance")
         if "at most three credible ways the plan could fail" not in agents_text:
             raise SystemExit("installer did not create the Tool Shed prospective-failure guidance")
+        if "ts: discuss <topic>" not in agents_text or "Direct, Guided, Coordinated, or Deep" not in agents_text:
+            raise SystemExit("installer did not create the Tool Shed discussion and coordination guidance")
+        provider_paths = {
+            "claude-code": "CLAUDE.md",
+            "gemini-cli": "GEMINI.md",
+            "github-copilot": ".github/copilot-instructions.md",
+            "cursor": ".cursor/rules/tool-shed.mdc",
+        }
+        for provider_id, relative in provider_paths.items():
+            guidance = workspace / relative
+            if not guidance.is_file() or "BEGIN TOOL SHED ROUTING GUIDANCE" not in guidance.read_text(
+                encoding="utf-8"
+            ):
+                raise SystemExit(f"installer did not create {provider_id} adapter guidance")
         inbox_result = subprocess.run(
             [
                 sys.executable,
@@ -205,6 +232,7 @@ def main() -> int:
         compile_python()
         check_shed_manifest()
         run_unit_tests()
+        check_provider_adapters()
         regenerate_indexes()
         check_stale_paths()
         review_work_state()

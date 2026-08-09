@@ -1,6 +1,6 @@
 # Install or Update Tool Shed in One Workspace
 
-Use this single Codex request from a project root. Codex first determines whether the workspace has
+Use this single workspace-agent request from a project root. The agent first determines whether the workspace has
 a disconnected `tool_shed/` snapshot, then performs either a guarded update or a guarded new
 installation.
 
@@ -117,7 +117,7 @@ Post-install verification for either path:
     - python3 tool_shed/scripts/review_work_state.py --workspace .
     - python3 tool_shed/scripts/check_shed_version.py --shed tool_shed --local-only --strict
 18. The installer may append its marked guidance block and missing Tool Shed root-ignore entries.
-    It must preserve existing .gitignore, AGENTS.md, and work/ content.
+    It must preserve existing .gitignore, provider instruction files, and work/ content.
 19. Surface the workspace profile, effective risk budgets, policy sources, preflight findings, and
     reconciliation findings for review. Do not automatically rewrite project planning, relocate
     evidence, or create Level 2 onboarding artifacts unless separately requested.

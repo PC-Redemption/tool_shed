@@ -19,6 +19,7 @@ flowchart TD
   A --> F[Generated evidence safety]
   A --> H[Workspace performance measurement]
   A --> I[Agent planning mechanism evaluation]
+  A --> K[Campaign entry, token efficiency, and provider portability]
   I --> J[Complete: evidence-responsive execution guidance]
   B --> D[Ground: validate review_work_state.py]
   C --> E[Gate: explicit approval before fleet update]
@@ -36,13 +37,15 @@ flowchart TD
 
 - Major workstreams: artifact reconciliation; request routing and guarded fleet
   snapshot updates; generated-evidence prevention and reversible migration; privacy-safe workspace
-  performance measurement; evaluation and implementation of transferable planning mechanisms.
+  performance measurement; evaluation and implementation of transferable planning mechanisms;
+  campaign-entry discussion, adaptive coordination, token efficiency, and cross-provider product portability.
 - Key dependencies: reconciliation must stabilize before its instructions are distributed to existing snapshots.
 
 1,000 ft:
 
-- Active workpackage:
-  `work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md`.
+- Active workpackages:
+  `work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md` and
+  `work/wp/active/wp-tool-shed-campaign-entry-improvements.md`.
 - Completed workpackages include
   `work/wp/completed/wp-generated-evidence-safety-and-migration.md`.
 - Completed workpackages: `work/wp/completed/wp-work-artifact-reconciliation.md`.
@@ -72,6 +75,7 @@ Ground:
 | Workspace performance measurement | complete | `work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md` | completed profiling and fleet-measurement spike | gather approved longitudinal or multi-workspace measurements before proposing optimization |
 | Agent planning mechanism evaluation | complete | `work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md` | source-backed inventory and frozen instruction-level scenarios | none |
 | Evidence-responsive execution | complete | `work/wp/completed/wp-evidence-responsive-tool-shed-execution.md` | published v0.11.0, exact installed-client parity, and fresh-task smoke | none |
+| Campaign entry, token efficiency, and provider portability | release qualification | `work/wp/active/wp-tool-shed-campaign-entry-improvements.md` | implemented portable core, progressive skill, adapters, and conformance suite | publish the approved release, synchronize the installed Codex client, and fresh-task verify |
 
 ## Dependency Notes
 
@@ -110,6 +114,8 @@ Do next:
 - [x] Implement and canary the privacy-safe local workspace profiler.
 - [x] Evaluate transferable human planning mechanisms and recommend proportionate Tool Shed updates.
 - [x] Qualify, release, deploy, and fresh-task verify evidence-responsive execution guidance.
+- [x] Finalize and implement the discussion route, adaptive token-efficiency, and cross-provider portability design.
+- [ ] Publish the qualified portability release, synchronize the installed Codex client, and fresh-task verify.
 
 Avoid for now:
 
@@ -124,6 +130,7 @@ Avoid for now:
 - Work index: `work/index.md`
 - Workpackages: `work/wp/completed/wp-work-artifact-reconciliation.md`,
   `work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md`,
+  `work/wp/active/wp-tool-shed-campaign-entry-improvements.md`,
   `work/wp/completed/wp-generated-evidence-safety-and-migration.md`,
   `work/wp/completed/wp-evidence-responsive-tool-shed-execution.md`
 - Tickets: `work/tickets/ticket-field-verify-generated-evidence-safeguards.md`,
@@ -133,6 +140,8 @@ Avoid for now:
 - Spikes:
 - `work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md`
 - `work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md`
+- Evidence:
+- `work/evidence/evidence-tool-shed-provider-portability.md`
 - ADRs:
 - Runbooks:
 - Inventories:

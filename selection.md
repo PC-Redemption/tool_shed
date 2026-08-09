@@ -120,7 +120,7 @@ Create or recommend a project map when any of these are true:
 - the work spans three or more artifact types
 - dependencies or sequencing affect what should happen next
 - the user needs to see the whole project or move from big picture to ground tasks
-- `tool_shed` is being loaded into an existing project and Codex needs to learn/backfill the work
+- `tool_shed` is being loaded into an existing project and the agent needs to learn/backfill the work
 
 Do not create a project map for a single linear task, a small isolated ticket, or a checklist-sized cleanup unless the human asks for a visual map.
 

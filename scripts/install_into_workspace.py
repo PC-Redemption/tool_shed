@@ -5,6 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from provider_adapters import provider_config, provider_ids
 from repository_policy import POLICY_FILE, format_bytes, inspect_snapshot_ignore, inspect_work_ignore
 from work_tree import ensure_work_tree
 from workspace_preflight import inspect
@@ -31,8 +32,44 @@ GUIDANCE = f"""{GUIDANCE_START}
 - Run Tool Shed workspace preflight and use its profile-specific mitigation before bulk output.
 - Never run migration apply without an exact approved manifest and verified archive.
 - Commit or checkpoint meaningful source and planning changes before large test runs.
-- Start or fork a fresh Codex task after exceptionally large qualification campaigns.
+- Start or fork a fresh agent session after exceptionally large qualification campaigns.
 {GUIDANCE_END}
+"""
+
+ROUTING_GUIDANCE_START = "<!-- BEGIN TOOL SHED ROUTING GUIDANCE -->"
+ROUTING_GUIDANCE_END = "<!-- END TOOL SHED ROUTING GUIDANCE -->"
+ROUTING_GUIDANCE = f"""{ROUTING_GUIDANCE_START}
+## Tool Shed request routing
+
+- Treat a leading `ts:` as authoritative Tool Shed routing for the current request only.
+- Locate the workspace-local shed, then read its `skills/tool-shed/SKILL.md` before acting.
+- Keep project state in root `work/`; the workspace-local shed contains reusable machinery.
+- Use only the provider capabilities actually available in the current product surface.
+{ROUTING_GUIDANCE_END}
+"""
+
+DISCUSSION_GUIDANCE_START = "<!-- BEGIN TOOL SHED DISCUSSION GUIDANCE -->"
+DISCUSSION_GUIDANCE_END = "<!-- END TOOL SHED DISCUSSION GUIDANCE -->"
+DISCUSSION_GUIDANCE = f"""{DISCUSSION_GUIDANCE_START}
+## Tool Shed discussion route
+
+- Treat `ts: discuss <topic>` as the authoritative Tool Shed discovery route.
+- Treat a leading `discussion:` as an informal, read-only campaign-entry signal.
+- Explore the outcome, motivation, constraints, assumptions, unknowns, and smallest useful next route.
+- Do not create or modify workspace artifacts unless the operator explicitly asks to capture or plan.
+{DISCUSSION_GUIDANCE_END}
+"""
+
+COORDINATION_GUIDANCE_START = "<!-- BEGIN TOOL SHED COORDINATION GUIDANCE -->"
+COORDINATION_GUIDANCE_END = "<!-- END TOOL SHED COORDINATION GUIDANCE -->"
+COORDINATION_GUIDANCE = f"""{COORDINATION_GUIDANCE_START}
+## Tool Shed minimum sufficient coordination
+
+- Start at the lowest adequate level: Direct, Guided, Coordinated, or Deep.
+- Escalate only when evidence shows ambiguity, consequence, irreversibility, repeated failure, coordination, or handoff cost.
+- Load route-specific instructions and references only when the route needs them.
+- Preserve a compact campaign state: outcome, current constraint, decisions, evidence, and next action.
+{COORDINATION_GUIDANCE_END}
 """
 
 SHIP_GUIDANCE_START = "<!-- BEGIN TOOL SHED SHIP GUIDANCE -->"
@@ -127,13 +164,21 @@ def replace_managed_block(existing: str, start: str, end: str, replacement: str)
     return updated, True
 
 
-def ensure_codex_guidance(repository: Path) -> bool:
-    path = repository / "AGENTS.md"
+def ensure_provider_guidance(repository: Path, provider_id: str) -> tuple[Path, bool]:
+    config = provider_config(provider_id)
+    path = repository / str(config["instruction_path"])
+    path.parent.mkdir(parents=True, exist_ok=True)
     existing = path.read_text(encoding="utf-8") if path.exists() else ""
+    if config["instruction_format"] == "mdc" and not existing:
+        existing = "---\ndescription: Tool Shed workspace coordination\nalwaysApply: true\n---\n"
     updated = existing
-    if GUIDANCE_START not in existing:
-        prefix = "" if not updated or updated.endswith("\n") else "\n"
-        updated += prefix + ("\n" if updated else "") + GUIDANCE
+    for start, end, guidance in (
+        (ROUTING_GUIDANCE_START, ROUTING_GUIDANCE_END, ROUTING_GUIDANCE),
+        (DISCUSSION_GUIDANCE_START, DISCUSSION_GUIDANCE_END, DISCUSSION_GUIDANCE),
+        (COORDINATION_GUIDANCE_START, COORDINATION_GUIDANCE_END, COORDINATION_GUIDANCE),
+        (GUIDANCE_START, GUIDANCE_END, GUIDANCE),
+    ):
+        updated, _ = replace_managed_block(updated, start, end, guidance)
     updated, _ = replace_managed_block(
         updated,
         SHIP_GUIDANCE_START,
@@ -159,9 +204,9 @@ def ensure_codex_guidance(repository: Path) -> bool:
         ASK_GUIDANCE,
     )
     if updated == existing:
-        return False
+        return path, False
     path.write_text(updated, encoding="utf-8", newline="\n")
-    return True
+    return path, True
 
 
 def ensure_ask_inbox(workspace: Path) -> bool:
@@ -170,7 +215,7 @@ def ensure_ask_inbox(workspace: Path) -> bool:
         return False
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
-        "# Put a question or direction below, then type ts:ask in Codex.\n",
+        "# Put a question or direction below, then send ts:ask to your AI agent.\n",
         encoding="utf-8",
     )
     return True
@@ -203,7 +248,26 @@ def parse_args() -> argparse.Namespace:
         default=".",
         help="Project workspace root. Defaults to current directory.",
     )
+    choices = (*provider_ids(), "all")
+    parser.add_argument(
+        "--provider",
+        action="append",
+        choices=choices,
+        help=(
+            "Install native guidance for a provider. Repeat for multiple providers or use 'all'. "
+            "Defaults to codex for backward compatibility."
+        ),
+    )
     return parser.parse_args()
+
+
+def selected_providers(values: list[str] | None) -> tuple[str, ...]:
+    available = provider_ids()
+    if not values:
+        return ("codex",)
+    if "all" in values:
+        return available
+    return tuple(dict.fromkeys(values))
 
 
 def main() -> int:
@@ -225,8 +289,12 @@ def main() -> int:
                     "Files were not moved, deleted, or rewritten; review the rules and retain "
                     "small versioned summaries or manifests outside generated/."
                 )
-        if ensure_codex_guidance(repository):
-            print(f"Codex guidance: updated Tool Shed rules in {repository / 'AGENTS.md'}.")
+        for provider_id in selected_providers(args.provider):
+            guidance_path, changed = ensure_provider_guidance(repository, provider_id)
+            if changed:
+                print(
+                    f"Provider guidance ({provider_id}): updated Tool Shed rules in {guidance_path}."
+                )
 
     index_script = Path(__file__).resolve().with_name("update_work_index.py")
     if index_script.exists():

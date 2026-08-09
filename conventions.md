@@ -18,6 +18,18 @@ Git ignore rule and a valid repository-root `.tool-shed-policy.json` with
 - helper scripts
 - examples
 
+## Provider Portability
+
+Tool Shed's artifact model, campaign behavior, and deterministic scripts are provider-neutral.
+`adapters/providers.json` records native instruction paths and honestly qualified capability levels.
+Run `scripts/install_into_workspace.py --provider <provider-id>` to add or refresh only marked Tool
+Shed blocks while preserving owner-authored instruction content.
+
+The portable `skills/tool-shed/SKILL.md` progressively loads route references. Provider-specific
+instruction discovery, tool names, permissions, hooks, model catalogs, and packaging stay behind
+adapters. Files and Git remain authoritative; MCP is optional. A compatibility claim must name the
+provider surface and observed capability level described in `docs/provider-adapters.md`.
+
 `work/` contains project-specific generated artifacts:
 
 - project maps
@@ -105,8 +117,8 @@ approved candidates. It never rewrites Git history.
 - blank lines and `#` comment lines are ignored in both locations
 - canonical content wins only when the fallback is not also actionable
 - fallback-only content may be processed with a clear noncanonical-path warning
-- when both files are actionable, Codex reports a conflict and asks which request to use
-- Codex preserves both files unless the operator explicitly asks to move, clear, rewrite, or delete
+- when both files are actionable, the agent reports a conflict and asks which request to use
+- the agent preserves both files unless the operator explicitly asks to move, clear, rewrite, or delete
   one
 - the repository ignores it because durable project truth belongs in docs and durable work belongs
   under `work/`
@@ -123,7 +135,7 @@ Next Action: ...
 Canonical Truth: docs/...
 ```
 
-This saves context and lets Codex decide whether to read deeper.
+This saves context and lets the agent decide whether to read deeper.
 
 ## Work Index
 
@@ -143,7 +155,7 @@ default and keep the workspace-local `/tool_shed/` snapshot ignored. A project m
 
 Run `python3 tool_shed/scripts/review_work_state.py --workspace .`:
 
-- when Codex or a human orients in the project
+- when an agent or human orients in the project
 - after creating, completing, cancelling, or superseding an artifact
 - during the repository validation workflow
 - weekly as a backstop for quiet projects

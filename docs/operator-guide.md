@@ -1,6 +1,6 @@
 # Tool Shed Operator Guide
 
-Tool Shed helps a human and Codex preserve project coordination in plain Markdown. The
+Tool Shed helps a human and AI agent preserve project coordination in plain Markdown. The
 workspace-local `tool_shed/` directory supplies reusable rules, templates, and scripts; the
 project's tracked `work/` directory holds its planning artifacts.
 
@@ -12,7 +12,7 @@ Type:
 ts: help
 ```
 
-Codex should read this guide and return a concise menu of relevant use cases with example prompts.
+The active agent should read this guide and return a concise menu of relevant use cases with example prompts.
 Help is read-only: it must not create or change artifacts unless the same request explicitly asks
 for a change.
 
@@ -25,7 +25,46 @@ ts: help completing work
 ts: help install
 ts: help update
 ts: help version
+ts: help providers
 ```
+
+## Discuss A Campaign Before Planning
+
+Use discussion when an idea is still forming:
+
+```text
+discussion: should Tool Shed support another AI provider?
+ts: discuss how to reduce campaign token cost
+```
+
+`ts: discuss` is the authoritative Tool Shed discovery route. `discussion:` is an informal
+read-only entry signal. The agent explores the outcome, motivation, constraints, assumptions,
+unknowns, and credible options, then recommends the smallest useful next route. It does not create
+or modify an artifact unless the same request explicitly asks to capture or plan.
+
+## Choose The Minimum Coordination Level
+
+- Direct: clear, reversible, single-step work; no artifact.
+- Guided: bounded known steps; checklist or ticket.
+- Coordinated: dependencies, branching, multi-session work, or handoff; workpackage or map.
+- Deep: consequential cross-layer uncertainty or repeated failure; bounded research and controlled
+  evidence.
+
+Start at the lowest adequate level, load only the route-specific instructions needed, and escalate
+only when evidence shows additional risk or coordination cost.
+
+## Use Another AI Provider
+
+Tool Shed supports native instruction adapters for Codex, Claude Code, Gemini CLI, GitHub Copilot,
+and Cursor:
+
+```bash
+python3 tool_shed/scripts/install_into_workspace.py . --provider <provider-id>
+```
+
+Repeat the option or use `--provider all`. Compatibility is expressed as a provider surface plus
+capability level; a static planning adapter does not imply that every surface can deploy or verify.
+See [provider adapters](provider-adapters.md).
 
 ## Ship End to End
 

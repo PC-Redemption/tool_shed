@@ -440,26 +440,30 @@ for raw in sys.stdin:
     def test_operator_help_is_packaged_and_routed(self) -> None:
         guide = (ROOT / "docs" / "operator-guide.md").read_text(encoding="utf-8")
         skill = (ROOT / "skills" / "tool-shed" / "SKILL.md").read_text(encoding="utf-8")
+        skill_bundle = skill + "\n" + "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in sorted((ROOT / "skills" / "tool-shed" / "references").glob("*.md"))
+        )
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
 
         self.assertIn("ts: help", guide)
         self.assertIn("ts:ask", guide)
         self.assertIn("## Common Use Cases", guide)
-        self.assertIn("docs/operator-guide.md", skill)
-        self.assertIn("q&a/ask.txt", skill)
-        self.assertIn("scripts/read_ask_inbox.py", skill)
+        self.assertIn("docs/operator-guide.md", skill_bundle)
+        self.assertIn("q&a/ask.txt", skill_bundle)
+        self.assertIn("scripts/read_ask_inbox.py", skill_bundle)
         self.assertTrue((ROOT / "scripts" / "read_ask_inbox.py").is_file())
-        self.assertIn("artifacts for a help-only request.", skill)
+        self.assertIn("artifacts for a help-only request.", skill_bundle)
         self.assertIn("[Tool Shed operator guide](docs/operator-guide.md)", readme)
-        self.assertIn("ts: version", skill)
+        self.assertIn("ts: version", skill_bundle)
         self.assertIn("ts: check for updates", guide)
-        self.assertIn("### Reasoning Preflight", skill)
+        self.assertIn("## Reasoning Preflight", skill)
         self.assertIn("Do not run a command", skill)
-        self.assertIn("ts: refresh reasoning catalog", skill)
+        self.assertIn("ts: refresh reasoning catalog", skill_bundle)
         self.assertIn("ts: reasoning status", guide)
         self.assertIn("### **Reasoning: <model> / <effort>**", skill)
-        self.assertIn("ts: recommend reasoning <task>", skill)
-        self.assertIn("Do not ask for repeated confirmation for reversible, in-scope steps", skill)
+        self.assertIn("ts: recommend reasoning <task>", skill_bundle)
+        self.assertIn("Do not ask for repeated confirmation for reversible, in-scope steps", skill_bundle)
         self.assertIn("One request may authorize multiple named operations", guide)
         self.assertNotIn("abstract/currently advertised tier", skill)
         self.assertIn("### **Reasoning: GPT-5.6 Terra / High**", guide)
@@ -1226,6 +1230,9 @@ Produces:
             self.assertEqual(second.returncode, 0)
             guidance = (workspace / "AGENTS.md").read_text(encoding="utf-8")
             self.assertEqual(guidance.count("BEGIN TOOL SHED GENERATED EVIDENCE GUIDANCE"), 1)
+            self.assertEqual(guidance.count("BEGIN TOOL SHED ROUTING GUIDANCE"), 1)
+            self.assertEqual(guidance.count("BEGIN TOOL SHED DISCUSSION GUIDANCE"), 1)
+            self.assertEqual(guidance.count("BEGIN TOOL SHED COORDINATION GUIDANCE"), 1)
             self.assertEqual(guidance.count("BEGIN TOOL SHED EVIDENCE RESPONSE GUIDANCE"), 1)
             self.assertEqual(guidance.count("BEGIN TOOL SHED CAMPAIGN GUIDANCE"), 1)
             self.assertEqual(guidance.count("BEGIN TOOL SHED Q&A GUIDANCE"), 1)
@@ -1233,6 +1240,66 @@ Produces:
             self.assertIn("A progress summary, artifact update, phase boundary", guidance)
             self.assertIn("command success alone is not outcome success", guidance)
             self.assertIn("at most three credible ways the plan could fail", guidance)
+            self.assertIn("ts: discuss <topic>", guidance)
+            self.assertIn("Direct, Guided, Coordinated, or Deep", guidance)
+
+    def test_installer_supports_all_provider_adapters_idempotently(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace)
+            owner_files = {
+                "AGENTS.md": "# Codex owner guidance\n",
+                "CLAUDE.md": "# Claude owner guidance\n",
+                "GEMINI.md": "# Gemini owner guidance\n",
+                ".github/copilot-instructions.md": "# Copilot owner guidance\n",
+            }
+            for relative, content in owner_files.items():
+                path = workspace / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(content, encoding="utf-8")
+
+            first = run_script(
+                "scripts/install_into_workspace.py", str(workspace), "--provider", "all"
+            )
+            second = run_script(
+                "scripts/install_into_workspace.py", str(workspace), "--provider", "all"
+            )
+
+            expected = {
+                "codex": "AGENTS.md",
+                "claude-code": "CLAUDE.md",
+                "gemini-cli": "GEMINI.md",
+                "github-copilot": ".github/copilot-instructions.md",
+                "cursor": ".cursor/rules/tool-shed.mdc",
+            }
+            for provider_id, relative in expected.items():
+                path = workspace / relative
+                self.assertTrue(path.is_file(), provider_id)
+                text = path.read_text(encoding="utf-8")
+                self.assertEqual(text.count("BEGIN TOOL SHED ROUTING GUIDANCE"), 1)
+                self.assertEqual(text.count("BEGIN TOOL SHED DISCUSSION GUIDANCE"), 1)
+                self.assertEqual(text.count("BEGIN TOOL SHED COORDINATION GUIDANCE"), 1)
+                self.assertIn("skills/tool-shed/SKILL.md", text)
+                self.assertIn(f"Provider guidance ({provider_id}): updated", first.stdout)
+                self.assertNotIn(f"Provider guidance ({provider_id}): updated", second.stdout)
+            for relative, content in owner_files.items():
+                self.assertTrue((workspace / relative).read_text(encoding="utf-8").startswith(content))
+            cursor = (workspace / ".cursor/rules/tool-shed.mdc").read_text(encoding="utf-8")
+            self.assertTrue(cursor.startswith("---\n"))
+            self.assertIn("alwaysApply: true", cursor)
+
+    def test_provider_adapter_conformance_script(self) -> None:
+        result = run_script("scripts/check_provider_adapters.py", "--json")
+        payload = json.loads(result.stdout)
+        providers = {item["provider"]: item for item in payload["providers"]}
+        self.assertEqual(
+            set(providers),
+            {"codex", "claude-code", "gemini-cli", "github-copilot", "cursor"},
+        )
+        self.assertEqual(providers["codex"]["qualified_level"], 5)
+        for provider_id in {"claude-code", "gemini-cli", "github-copilot", "cursor"}:
+            self.assertEqual(providers[provider_id]["qualified_level"], 2)
+            self.assertTrue(providers[provider_id]["owner_content_preserved"])
 
     def test_installer_preserves_existing_ask_inbox(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -1270,7 +1337,7 @@ stale loop guidance
             second = run_script("scripts/install_into_workspace.py", str(workspace))
             after_second = agents.read_text(encoding="utf-8")
 
-            self.assertIn("Codex guidance: updated", first.stdout)
+            self.assertIn("Provider guidance (codex): updated", first.stdout)
             self.assertNotIn("stale loop guidance", after_first)
             self.assertIn("command success alone is not outcome success", after_first)
             self.assertIn("# Owner guidance", after_first)
@@ -1278,7 +1345,7 @@ stale loop guidance
             self.assertEqual(after_first.count("BEGIN TOOL SHED EVIDENCE RESPONSE GUIDANCE"), 1)
             self.assertEqual(after_first.count("END TOOL SHED EVIDENCE RESPONSE GUIDANCE"), 1)
             self.assertEqual(after_second, after_first)
-            self.assertNotIn("Codex guidance: updated", second.stdout)
+            self.assertNotIn("Provider guidance (codex): updated", second.stdout)
 
     def test_installer_warns_for_fallback_inbox_and_preserves_both_files(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -1521,7 +1588,7 @@ stale canonical-only guidance
             second = run_script("scripts/install_into_workspace.py", str(workspace))
             after_second = agents.read_text(encoding="utf-8")
 
-            self.assertIn("Codex guidance: updated", first.stdout)
+            self.assertIn("Provider guidance (codex): updated", first.stdout)
             self.assertNotIn("stale canonical-only guidance", after_first)
             self.assertIn("work/q&a/ask.txt", after_first)
             self.assertIn("`q&a/ask.txt` as a legacy or misplaced fallback", after_first)
@@ -1530,7 +1597,7 @@ stale canonical-only guidance
             self.assertEqual(after_first.count("BEGIN TOOL SHED Q&A GUIDANCE"), 1)
             self.assertEqual(after_first.count("END TOOL SHED Q&A GUIDANCE"), 1)
             self.assertEqual(after_second, after_first)
-            self.assertNotIn("Codex guidance: updated", second.stdout)
+            self.assertNotIn("Provider guidance (codex): updated", second.stdout)
 
     def test_installer_warns_before_existing_generated_outputs_become_ignored(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "skill_source": "skills/tool-shed",
+  "providers": {
+    "claude-code": {
+      "display_name": "Anthropic Claude Code",
+      "instruction_path": "CLAUDE.md",
+      "instruction_format": "markdown",
+      "qualification_basis": "static",
+      "qualified_level": 2
+    },
+    "codex": {
+      "display_name": "OpenAI Codex",
+      "instruction_path": "AGENTS.md",
+      "instruction_format": "markdown",
+      "qualification_basis": "local-runtime-and-static",
+      "qualified_level": 5
+    },
+    "cursor": {
+      "display_name": "Cursor",
+      "instruction_path": ".cursor/rules/tool-shed.mdc",
+      "instruction_format": "mdc",
+      "qualification_basis": "static",
+      "qualified_level": 2
+    },
+    "gemini-cli": {
+      "display_name": "Google Gemini CLI",
+      "instruction_path": "GEMINI.md",
+      "instruction_format": "markdown",
+      "qualification_basis": "static",
+      "qualified_level": 2
+    },
+    "github-copilot": {
+      "display_name": "GitHub Copilot",
+      "instruction_path": ".github/copilot-instructions.md",
+      "instruction_format": "markdown",
+      "qualification_basis": "static",
+      "qualified_level": 2
+    }
+  }
+}

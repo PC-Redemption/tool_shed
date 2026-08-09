@@ -2,7 +2,7 @@
 
 [![Validate](https://github.com/PC-Redemption/tool_shed/actions/workflows/validate.yml/badge.svg)](https://github.com/PC-Redemption/tool_shed/actions/workflows/validate.yml)
 
-`tool_shed` is a reusable collaboration toolkit for structured work with Codex.
+`tool_shed` is a provider-neutral collaboration toolkit for structured work with AI agents.
 
 It is not the project. It is the workbench copied into or referenced from a project workspace so human and assistant can choose the right artifact, use the same shapes consistently, and keep project code/documentation uncluttered.
 
@@ -45,7 +45,24 @@ Use `tool_shed` when a project benefits from consistent structure for:
 - a place for app code
 - a replacement for project docs
 
-No server should be required. Start with plain files, Python scripts, and Git.
+No server should be required. Start with plain files, Python scripts, and Git. Provider adapters
+add native instruction discovery without changing the portable artifact model.
+
+## AI Provider Support
+
+Tool Shed ships one portable Agent Skills workflow plus native instruction adapters for OpenAI
+Codex, Anthropic Claude Code, Google Gemini CLI, GitHub Copilot, and Cursor. Compatibility is
+declared by product surface and capability level rather than as a binary claim.
+
+```bash
+python3 tool_shed/scripts/install_into_workspace.py . --provider codex
+python3 tool_shed/scripts/install_into_workspace.py . --provider claude-code
+python3 tool_shed/scripts/install_into_workspace.py . --provider all
+```
+
+Omitting `--provider` preserves the historical Codex default. See
+[provider adapters](docs/provider-adapters.md) for native paths, capability levels, and conformance
+gates.
 
 ## Recommended Project Layout
 
@@ -138,7 +155,8 @@ images, device captures, large logs, and test payloads belong in the ignored
 
 Each campaign should leave a small versioned manifest with hashes, timestamps, target identity,
 commands or test IDs, outcomes, and relative raw-artifact locations. The installer preserves
-existing `.gitignore` and `AGENTS.md` content and appends only missing Tool Shed rules.
+existing `.gitignore` and provider-native instruction content and appends or refreshes only marked
+Tool Shed rules.
 
 Before a long campaign, run:
 
@@ -188,17 +206,22 @@ Operator help and use cases:
 ts: help
 ts: help spikes
 ts: help existing projects
+ts: discuss <topic>
 ts:ship <goal>
 ts:ask
 ```
 
 See the [Tool Shed operator guide](docs/operator-guide.md) for the full use-case menu.
 
+`ts: discuss <topic>` is a non-mutating discovery route. A leading `discussion:` is an informal
+read-only campaign entry. Discussion surfaces a compact campaign seed and the smallest useful next
+route; it creates no artifact until the operator explicitly asks to capture or plan.
+
 `ts:ship <goal>` is the end-to-end delivery route: plan, implement, validate, build, deploy, and
 verify the requested workspace goal. It continues through all applicable stages while preserving
 normal safety, approval, credential, and protected-environment boundaries.
 
-Before an already-authorized consequential stage, Codex identifies at most three credible ways the
+Before an already-authorized consequential stage, the agent identifies at most three credible ways the
 plan could fail and adds proportionate prevention, detection, verification, or rollback. Routine
 reversible work skips this check.
 
@@ -214,10 +237,10 @@ broadens authority, and simple answers or known single-step reversible work exec
 without extra ceremony.
 
 The workspace installer also creates `work/q&a/ask.txt`, a Git-ignored operator inbox. Add a question
-or direction to that file and send `ts:ask`; Codex reads it and acts under the same safety and
+or direction to that file and send `ts:ask`; the agent reads it and acts under the same safety and
 authorization rules as a normal chat request. It also checks `q&a/ask.txt` as a
 legacy/misplaced fallback and warns when actionable content exists only there. If both files contain actionable
-content, Codex reports a conflict instead of merging them. It preserves both files after
+content, the agent reports a conflict instead of merging them. It preserves both files after
 inspection; `work/q&a/ask.txt` is the canonical inbox.
 
 Check the installed snapshot without using the network, or compare it with the canonical manifest:
@@ -333,9 +356,9 @@ Before choosing an artifact, read:
 - [conventions.md](./conventions.md)
 - [existing-projects.md](./existing-projects.md) when loading `tool_shed` into an existing project
 
-## Codex Start Prompts
+## AI Agent Start Prompts
 
-Use short prompts and let Codex operate the scripts:
+Use short prompts and let the current workspace-capable agent operate the scripts:
 
 Request prefixes are authoritative for one request only:
 
@@ -359,9 +382,11 @@ use tool_shed and create the smallest artifact for this
 use tool_shed and complete work/wp/active/wp-example.md
 ```
 
-Codex should read README/docs first, then `work/index.md`, then active artifacts. It should use `work/index.json` only when automation needs machine-readable navigation. Codex should then run the read-only work-state review and surface findings before choosing the next action.
+The agent should read README/docs first, then `work/index.md`, then active artifacts. It should use
+`work/index.json` only when automation needs machine-readable navigation. It should then run the
+read-only work-state review and surface findings before choosing the next action.
 
-### Codex install or update prompt
+### Install or update prompt
 
 ```text
 Use the single-workspace request in docs/install-or-update-snapshot.md. First detect whether
@@ -411,10 +436,13 @@ The repository should be public for visibility, but direct changes should be lim
 
 This governance applies to intentional development checkouts of the canonical repository. A `tool_shed/` directory installed inside another project is a disconnected snapshot and must not be used to contribute changes upstream.
 
-## Codex Skill
+## Portable Skill And Codex Installation
 
-`tool_shed` includes a thin Codex skill package at `skills/tool-shed`.
+`tool_shed` includes a thin provider-neutral Agent Skills package at `skills/tool-shed`.
 
-The skill is also installed locally at `${CODEX_HOME:-~/.codex}/skills/tool-shed` for auto-discovery in this environment. It is an adoption/routing layer only: it teaches Codex to find and use workspace-local `tool_shed` files and scripts instead of duplicating templates.
+The skill is also installed locally at `${CODEX_HOME:-~/.codex}/skills/tool-shed` for Codex
+auto-discovery in this development environment. Other providers use their native instruction
+adapter to route into the same workspace-local skill. It progressively loads route-specific
+references instead of duplicating templates or loading every procedure for every request.
 
 Initial skill packaging is local plus repo-packaged. Plugin packaging is intentionally deferred until real use shows it is needed.
