@@ -10,6 +10,7 @@ import tarfile
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,6 +34,22 @@ def run_script(
 
 
 class ScriptTests(unittest.TestCase):
+    def create_symlink_or_skip(
+        self,
+        link: Path,
+        target: Path,
+        *,
+        target_is_directory: bool = False,
+    ) -> None:
+        if not hasattr(os, "symlink"):
+            self.skipTest("symlinks are unavailable")
+        try:
+            link.symlink_to(target, target_is_directory=target_is_directory)
+        except OSError as error:
+            if getattr(error, "winerror", None) == 1314:
+                self.skipTest(f"Windows symlink privilege is unavailable: {error}")
+            raise
+
     def init_repository(self, root: Path, gitignore: str = "") -> None:
         subprocess.run(["git", "init", "-q", str(root)], check=True)
         (root / ".gitignore").write_text(gitignore, encoding="utf-8")
@@ -1361,7 +1378,7 @@ Produces:
             external = root / "outside.md"
             original = b"outside owner content\n"
             external.write_bytes(original)
-            (workspace / "AGENTS.md").symlink_to(external)
+            self.create_symlink_or_skip(workspace / "AGENTS.md", external)
 
             result = run_script(
                 "scripts/install_into_workspace.py",
@@ -1375,6 +1392,19 @@ Produces:
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("must not traverse a symlink", result.stderr)
             self.assertEqual(external.read_bytes(), original)
+
+    def test_symlink_fixture_skips_windows_privilege_error_only(self) -> None:
+        privilege_error = OSError("A required privilege is not held by the client")
+        privilege_error.winerror = 1314
+        with mock.patch.object(Path, "symlink_to", side_effect=privilege_error):
+            with self.assertRaisesRegex(unittest.SkipTest, "Windows symlink privilege"):
+                self.create_symlink_or_skip(Path("link"), Path("target"))
+
+        unrelated_error = OSError("unexpected symlink failure")
+        unrelated_error.winerror = 5
+        with mock.patch.object(Path, "symlink_to", side_effect=unrelated_error):
+            with self.assertRaisesRegex(OSError, "unexpected symlink failure"):
+                self.create_symlink_or_skip(Path("link"), Path("target"))
 
     def test_provider_adapter_conformance_script(self) -> None:
         result = run_script("scripts/check_provider_adapters.py", "--json")
@@ -1662,7 +1692,7 @@ old Tool Shed guidance
             external = root / "outside-agents.md"
             original = b"<!-- BEGIN TOOL SHED GENERATED EVIDENCE GUIDANCE -->\noutside\n"
             external.write_bytes(original)
-            (workspace / "AGENTS.md").symlink_to(external)
+            self.create_symlink_or_skip(workspace / "AGENTS.md", external)
 
             result = run_script(
                 str(ROOT / "scripts" / "update_snapshot.py"),
