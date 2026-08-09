@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import inspect
 import json
+import math
 import re
 import shutil
 import subprocess
@@ -22,6 +23,8 @@ from codex_skill_sync import CodexSkillError, inspect_codex_skill, synchronize_c
 
 DEFAULT_REPOSITORY = "https://github.com/PC-Redemption/tool_shed.git"
 UPDATER_PROTOCOL = 2
+DEFAULT_NETWORK_TIMEOUT_SECONDS = 120.0
+DEFAULT_VALIDATION_TIMEOUT_SECONDS = 300.0
 STABLE_TAG = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
 REQUIRED_PATHS = (
     "SHED_VERSION.json",
@@ -59,19 +62,42 @@ def run(
     *,
     cwd: Path | None = None,
     check: bool = True,
+    timeout: float | None = None,
+    timeout_option: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
-    result = subprocess.run(
-        args,
-        cwd=str(cwd) if cwd else None,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
-    )
+    try:
+        result = subprocess.run(
+            args,
+            cwd=str(cwd) if cwd else None,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as error:
+        option = f"; retry or increase {timeout_option}" if timeout_option else ""
+        raise UpdateError(
+            f"command timed out after {timeout:g} seconds{option}: {' '.join(args)}"
+        ) from error
     if check and result.returncode:
         detail = result.stderr.strip() or result.stdout.strip()
         raise UpdateError(f"command failed ({result.returncode}): {' '.join(args)}\n{detail}")
     return result
+
+
+def emit_progress(phase: str) -> None:
+    print(f"Tool Shed update: {phase}", file=sys.stderr, flush=True)
+
+
+def positive_timeout(value: str) -> float:
+    try:
+        timeout = float(value)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError("timeout must be a number of seconds") from error
+    if not math.isfinite(timeout) or timeout <= 0:
+        raise argparse.ArgumentTypeError("timeout must be a positive finite number of seconds")
+    return timeout
 
 
 def git(cwd: Path, *args: str, check: bool = True) -> str:
@@ -128,7 +154,13 @@ def require_ignored(workspace: Path) -> None:
             raise UpdateError("parent repository must ignore the exact root /tool_shed/ path")
 
 
-def clone_release(repository: str, destination: Path) -> tuple[str, dict[str, Any], str, str]:
+def clone_release(
+    repository: str,
+    destination: Path,
+    network_timeout: float,
+    validation_timeout: float,
+) -> tuple[str, dict[str, Any], str, str]:
+    emit_progress("clone/fetch")
     run(
         [
             "git",
@@ -139,10 +171,17 @@ def clone_release(repository: str, destination: Path) -> tuple[str, dict[str, An
             "--no-checkout",
             repository,
             str(destination),
-        ]
+        ],
+        timeout=network_timeout,
+        timeout_option="--network-timeout",
     )
     git(destination, "config", "core.autocrlf", "false")
-    git(destination, "fetch", "--quiet", "--tags", "--force", "origin")
+    run(
+        ["git", "fetch", "--quiet", "--tags", "--force", "origin"],
+        cwd=destination,
+        timeout=network_timeout,
+        timeout_option="--network-timeout",
+    )
     candidates: list[tuple[tuple[int, int, int], str]] = []
     for tag in git(destination, "tag", "--list").splitlines():
         match = STABLE_TAG.fullmatch(tag.strip())
@@ -152,6 +191,7 @@ def clone_release(repository: str, destination: Path) -> tuple[str, dict[str, An
         raise UpdateError("canonical repository has no stable vMAJOR.MINOR.PATCH tag")
     _, selected = max(candidates)
     git(destination, "-c", "core.autocrlf=false", "checkout", "--quiet", "--detach", selected)
+    emit_progress("manifest verification")
     manifest = json.loads((destination / "SHED_VERSION.json").read_text(encoding="utf-8"))
     version = selected.removeprefix("v")
     if manifest.get("shed_version") != version:
@@ -182,7 +222,13 @@ def clone_release(repository: str, destination: Path) -> tuple[str, dict[str, An
         ),
         cwd=destination,
     )
-    run([sys.executable, "scripts/validate_tool_shed.py"], cwd=destination)
+    emit_progress("release validation")
+    run(
+        [sys.executable, "scripts/validate_tool_shed.py"],
+        cwd=destination,
+        timeout=validation_timeout,
+        timeout_option="--validation-timeout",
+    )
     return selected, manifest, tag_commit, content_commit
 
 
@@ -232,7 +278,12 @@ def ignore_snapshot_copy(directory: str, names: list[str]) -> set[str]:
     return ignored
 
 
-def prepare_snapshot(source: Path, staged: Path, protocol: int) -> None:
+def prepare_snapshot(
+    source: Path,
+    staged: Path,
+    protocol: int,
+    validation_timeout: float,
+) -> None:
     shutil.copytree(source, staged, ignore=ignore_snapshot_copy)
     for relative in REQUIRED_PATHS:
         if not (staged / relative).exists():
@@ -245,7 +296,9 @@ def prepare_snapshot(source: Path, staged: Path, protocol: int) -> None:
             str(staged),
             protocol,
             snapshot=True,
-        )
+        ),
+        timeout=validation_timeout,
+        timeout_option="--validation-timeout",
     )
 
 
@@ -335,6 +388,7 @@ def post_install_checks(
     providers: tuple[str, ...],
     provider_paths: dict[str, str],
     protocol: int,
+    validation_timeout: float,
 ) -> dict[str, str]:
     if target.is_symlink() or not target.is_dir():
         raise UpdateError("installed snapshot is not a real directory")
@@ -347,7 +401,9 @@ def post_install_checks(
             str(target),
             protocol,
             snapshot=True,
-        )
+        ),
+        timeout=validation_timeout,
+        timeout_option="--validation-timeout",
     )
     results = {"version": version_result.stdout.strip()}
     if providers:
@@ -362,7 +418,12 @@ def post_install_checks(
         ]
         for provider_id in providers:
             arguments.extend(("--provider", provider_id))
-        guidance_result = run(arguments, cwd=workspace)
+        guidance_result = run(
+            arguments,
+            cwd=workspace,
+            timeout=validation_timeout,
+            timeout_option="--validation-timeout",
+        )
         results["provider_guidance"] = guidance_result.stdout.strip()
         for provider_id in providers:
             guidance_path = workspace / provider_paths[provider_id]
@@ -381,7 +442,12 @@ def post_install_checks(
     for script, *arguments in optional_checks:
         path = target / "scripts" / script
         if path.is_file():
-            result = run([sys.executable, str(path), *arguments], cwd=workspace)
+            result = run(
+                [sys.executable, str(path), *arguments],
+                cwd=workspace,
+                timeout=validation_timeout,
+                timeout_option="--validation-timeout",
+            )
             results[script] = result.stdout.strip()
     return results
 
@@ -505,6 +571,20 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repository", default=DEFAULT_REPOSITORY, help="Canonical Git repository URL or path.")
     parser.add_argument("--json", action="store_true", help="Write a structured result.")
     parser.add_argument(
+        "--network-timeout",
+        type=positive_timeout,
+        default=DEFAULT_NETWORK_TIMEOUT_SECONDS,
+        metavar="SECONDS",
+        help="Timeout for each clone or fetch command (default: 120 seconds).",
+    )
+    parser.add_argument(
+        "--validation-timeout",
+        type=positive_timeout,
+        default=DEFAULT_VALIDATION_TIMEOUT_SECONDS,
+        metavar="SECONDS",
+        help="Timeout for each release or post-install validation command (default: 300 seconds).",
+    )
+    parser.add_argument(
         "--provider",
         action="append",
         help=(
@@ -565,14 +645,20 @@ def main() -> int:
             temp = Path(temporary)
             clone = temp / "release"
             staged = temp / "staged"
-            selected, manifest, tag_commit, content_commit = clone_release(args.repository, clone)
+            selected, manifest, tag_commit, content_commit = clone_release(
+                args.repository,
+                clone,
+                args.network_timeout,
+                args.validation_timeout,
+            )
             selected_version = str(manifest["shed_version"])
             if previous_version and version_tuple(previous_version) > version_tuple(selected_version):
                 raise UpdateError(
                     f"refusing downgrade from {previous_version} to {selected_version}"
                 )
             selected_protocol = minimum_updater_protocol(manifest)
-            prepare_snapshot(clone, staged, selected_protocol)
+            emit_progress("staging")
+            prepare_snapshot(clone, staged, selected_protocol, args.validation_timeout)
             staged_providers = load_staged_providers(staged)
             providers = select_providers(workspace, staged_providers, args.provider)
             known_skill_releases = released_skill_fingerprints(clone)
@@ -616,6 +702,7 @@ def main() -> int:
             try:
                 shutil.move(str(staged), str(target))
                 installed = True
+                emit_progress("post-install validation")
                 payload["post_install"] = post_install_checks(
                     workspace,
                     target,
@@ -623,6 +710,7 @@ def main() -> int:
                     providers,
                     provider_paths,
                     selected_protocol,
+                    args.validation_timeout,
                 )
                 if fingerprint_tree(workspace / "work") != work_before:
                     raise UpdateError("root work/ changed during snapshot update")
@@ -669,6 +757,7 @@ def main() -> int:
         payload["work_preserved"] = fingerprint_tree(workspace / "work") == work_before
         payload["git_status_changed"] = git(workspace, "status", "--short") != initial_status
         payload["state"] = "installed"
+        emit_progress("completion")
         if args.json:
             print(json.dumps(payload, indent=2, sort_keys=True))
         else:

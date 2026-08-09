@@ -18,11 +18,19 @@ that user-level path and reports whether it is current, missing, stale, modified
 python /path/to/current-release/scripts/update_snapshot.py --workspace . --sync-codex-skill --json
 ```
 
+Progress is written to stderr, including clone/fetch, manifest verification, release validation,
+staging, post-install validation, and completion, so JSON stdout remains valid. Each clone or fetch
+command has a 120-second default timeout and each release or post-install validator has a
+300-second default timeout. Override these explicit bounds with `--network-timeout SECONDS` and
+`--validation-timeout SECONDS`; a timeout stops with an actionable error instead of waiting
+indefinitely.
+
 Synchronization accepts only a missing target or a target that exactly matches a skill recorded
 by a stable Tool Shed release. It keeps a timestamped backup under
 `${CODEX_HOME:-~/.codex}/tool-shed-backups/`, outside the active skill-discovery directory, when
 replacing an older release and refuses modified, unmanaged, non-directory, or symlinked targets.
-Start a fresh Codex session after a change.
+The release packages compact historical skill digests so updater and direct guidance-only status
+checks use the same offline identity set. Start a fresh Codex session after a change.
 
 Use the updater from a current released checkout outside the target project. This matters when an
 older installed snapshot predates newer upgrade safeguards. The updater selects the remote release;

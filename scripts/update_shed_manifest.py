@@ -7,12 +7,14 @@ import argparse
 import hashlib
 import json
 import re
+import subprocess
 from datetime import date, datetime
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "SHED_VERSION.json"
+CODEX_SKILL_CATALOG = ROOT / "adapters" / "codex-skill-releases.json"
 TRACKED_ROOT_FILES = (
     ".gitattributes",
     "README.md",
@@ -36,6 +38,8 @@ TRACKED_GLOBS = (
 VERSION = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
 COMMIT = re.compile(r"^[0-9a-f]{7,40}$")
 CURRENT_UPDATER_PROTOCOL = 2
+RELEASE_TAG = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
+TREE_DIGEST = re.compile(r"^[0-9a-f]{64}$")
 
 
 def hash_file(path: Path) -> str:
@@ -55,6 +59,91 @@ def tracked_paths() -> list[Path]:
 
 def current_hashes() -> dict[str, str]:
     return {path.relative_to(ROOT).as_posix(): hash_file(path) for path in tracked_paths()}
+
+
+def fingerprint_digest(fingerprint: dict[str, str]) -> str:
+    digest = hashlib.sha256()
+    for relative, file_digest in sorted(fingerprint.items()):
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(file_digest.encode("ascii"))
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def git_output(*args: str) -> str:
+    result = subprocess.run(
+        ["git", *args],
+        cwd=str(ROOT),
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if result.returncode:
+        raise RuntimeError(result.stderr.strip() or "Git command failed")
+    return result.stdout.strip()
+
+
+def release_skill_catalog(*, exclude_tag: str | None = None) -> dict[str, object]:
+    releases: dict[str, str] = {}
+    for tag in git_output("tag", "--list").splitlines():
+        tag = tag.strip()
+        if tag == exclude_tag or not RELEASE_TAG.fullmatch(tag):
+            continue
+        try:
+            manifest = json.loads(git_output("show", f"{tag}:SHED_VERSION.json"))
+        except (RuntimeError, json.JSONDecodeError):
+            continue
+        if manifest.get("shed_version") != tag.removeprefix("v"):
+            continue
+        if manifest.get("release_tag") != tag:
+            continue
+        hashes = manifest.get("content_hashes")
+        if not isinstance(hashes, dict):
+            continue
+        prefix = "skills/tool-shed/"
+        fingerprint = {
+            str(path).removeprefix(prefix): str(digest)
+            for path, digest in hashes.items()
+            if str(path).startswith(prefix)
+        }
+        if "SKILL.md" in fingerprint and all(
+            TREE_DIGEST.fullmatch(digest) for digest in fingerprint.values()
+        ):
+            releases[tag] = fingerprint_digest(fingerprint)
+    return {"schema_version": 1, "releases": dict(sorted(releases.items()))}
+
+
+def load_skill_catalog() -> dict[str, object]:
+    try:
+        payload = json.loads(CODEX_SKILL_CATALOG.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise ValueError(f"invalid Codex skill release catalog: {error}") from error
+    releases = payload.get("releases")
+    if payload.get("schema_version") != 1 or not isinstance(releases, dict):
+        raise ValueError("invalid Codex skill release catalog schema")
+    for tag, digest in releases.items():
+        if not isinstance(tag, str) or not RELEASE_TAG.fullmatch(tag):
+            raise ValueError(f"invalid Codex skill release catalog version: {tag!r}")
+        if not isinstance(digest, str) or not TREE_DIGEST.fullmatch(digest):
+            raise ValueError(f"invalid Codex skill release catalog digest: {tag}")
+    return payload
+
+
+def exact_git_root() -> bool:
+    try:
+        return Path(git_output("rev-parse", "--show-toplevel")).resolve() == ROOT
+    except (RuntimeError, OSError):
+        return False
+
+
+def write_skill_catalog(*, exclude_tag: str) -> None:
+    CODEX_SKILL_CATALOG.write_text(
+        json.dumps(release_skill_catalog(exclude_tag=exclude_tag), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
 
 
 def load_manifest() -> dict[str, object]:
@@ -116,12 +205,20 @@ def main() -> int:
     if args.check == args.write:
         raise SystemExit("choose exactly one of --check or --write")
     manifest = load_manifest()
-    hashes = current_hashes()
     if args.check:
         errors = validate_manifest(manifest)
+        try:
+            catalog = load_skill_catalog()
+            if exact_git_root() and catalog != release_skill_catalog(
+                exclude_tag=str(manifest.get("release_tag"))
+            ):
+                errors.append("Codex skill release catalog does not match stable Git tags")
+        except ValueError as error:
+            errors.append(str(error))
         if errors:
             print(json.dumps({"manifest_errors": errors}, indent=2))
             return 1
+        hashes = current_hashes()
         recorded = manifest.get("content_hashes")
         if recorded != hashes:
             recorded_dict = recorded if isinstance(recorded, dict) else {}
@@ -157,6 +254,8 @@ def main() -> int:
         except ValueError as error:
             raise SystemExit("--released-at must be an ISO 8601 timestamp or date") from error
 
+    write_skill_catalog(exclude_tag=args.release_tag or f"v{args.version}")
+    hashes = current_hashes()
     manifest["shed_version"] = args.version
     if args.notes:
         manifest["notes"] = args.notes

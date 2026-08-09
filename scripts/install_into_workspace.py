@@ -5,7 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from codex_skill_sync import inspect_codex_skill
+from codex_skill_sync import inspect_codex_skill, load_release_skill_digests
 from provider_adapters import provider_config, provider_ids
 from repository_policy import POLICY_FILE, format_bytes, inspect_snapshot_ignore, inspect_work_ignore
 from work_tree import ensure_work_tree
@@ -288,14 +288,20 @@ def selected_providers(values: list[str] | None) -> tuple[str, ...]:
 
 
 def report_codex_skill_state() -> None:
-    source = Path(__file__).resolve().parents[1] / "skills" / "tool-shed"
-    state = inspect_codex_skill(source)
+    shed = Path(__file__).resolve().parents[1]
+    source = shed / "skills" / "tool-shed"
+    known_releases = load_release_skill_digests(
+        shed / "adapters" / "codex-skill-releases.json"
+    )
+    state = inspect_codex_skill(source, known_releases)
     print(f"Codex skill: {state['state']} at {state['path']}.")
-    if state["state"] != "current":
+    if state["state"] in {"missing", "stale-released"}:
         print(
-            "Codex skill synchronization: "
-            f"{state['sync_command']}. Modified or unmanaged skills will be refused."
+            "Safe Codex skill synchronization: "
+            f"{state['sync_command']}."
         )
+    elif state["state"] not in {"current"}:
+        print("Codex skill synchronization refused: modified, unmanaged, or unsafe installation.")
     print("Codex skill changes require a fresh Codex session before they take effect.")
 
 

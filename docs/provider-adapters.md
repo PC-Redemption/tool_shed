@@ -85,6 +85,11 @@ released copy. Backups remain outside the active `skills/` discovery directory; 
 unmanaged, or symlinked targets are refused. A fresh Codex session is
 required after synchronization.
 
+`adapters/codex-skill-releases.json` carries compact tree digests for prior stable skills. It lets
+the disconnected installer and updater classify a byte-exact older release consistently without
+network access or embedded Git history. Manifest refresh regenerates this catalog from valid
+stable tags, and connected validation rejects catalog drift.
+
 ## Portable Versus Provider-Owned Behavior
 
 Portable core:
