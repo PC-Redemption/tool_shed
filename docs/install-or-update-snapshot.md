@@ -10,6 +10,20 @@ The supported cross-platform command is:
 python /path/to/current-release/scripts/update_snapshot.py --workspace .
 ```
 
+For Codex, add `--sync-codex-skill` to install or update the separately discovered user-level skill
+at `${CODEX_HOME:-~/.codex}/skills/tool-shed`. Without the flag, the updater remains read-only for
+that user-level path and reports whether it is current, missing, stale, modified, or unsafe:
+
+```text
+python /path/to/current-release/scripts/update_snapshot.py --workspace . --sync-codex-skill --json
+```
+
+Synchronization accepts only a missing target or a target that exactly matches a skill recorded
+by a stable Tool Shed release. It keeps a timestamped backup under
+`${CODEX_HOME:-~/.codex}/tool-shed-backups/`, outside the active skill-discovery directory, when
+replacing an older release and refuses modified, unmanaged, non-directory, or symlinked targets.
+Start a fresh Codex session after a change.
+
 Use the updater from a current released checkout outside the target project. This matters when an
 older installed snapshot predates newer upgrade safeguards. The updater selects the remote release;
 the target's stale in-snapshot updater is not a bootstrap authority.
@@ -86,6 +100,10 @@ Select and verify the release:
       manifest commit; release_commit must not equal tag_commit.
     - python3 scripts/check_shed_version.py --shed . --local-only --strict passes.
     - python3 scripts/validate_tool_shed.py passes.
+    - When Codex is selected, compare the user-level skill against the selected skill and the exact
+      skill hashes recorded by stable release manifests. Report drift even when synchronization was
+      not requested. If synchronization was requested and the target is modified, unmanaged, or
+      unsafe, stop before mutating the workspace snapshot.
     Stop without installing or replacing anything if any verification fails.
 
 Prepare the disconnected snapshot:
@@ -140,17 +158,23 @@ Post-install verification for either path:
     - Do not run migration apply during installation or update.
     - Treat invalid `.tool-shed-policy.json` evidence policy as manual follow-up, not permission to
       replace or repair repository policy.
+20. When `--sync-codex-skill` was requested, stage and verify the selected released skill beside
+    the user-level target. For an exact older released skill, rename it to a timestamped backup
+    outside the active `skills/` directory;
+    for a missing target, install without a backup. Verify byte-for-byte equality after replacement
+    and restore the backup if synchronization fails. Never merge skill directories. Report that a
+    fresh Codex session is required.
 
 Failure handling:
 
-20. For EXISTING UPDATE, if replacement or post-install verification fails:
+21. For EXISTING UPDATE, if replacement or post-install verification fails:
     - remove only the failed replacement
     - restore tool_shed/ from the backup archive
     - restore every selected provider instruction file byte-for-byte, removing only files created
       by the failed guidance refresh
     - verify the restored snapshot
     - report the failure and restoration result
-21. For NEW INSTALLATION, if post-install verification fails:
+22. For NEW INSTALLATION, if post-install verification fails:
     - remove only the newly installed tool_shed/ directory
     - restore or remove selected provider instruction files using the pre-install capture
     - never remove or roll back work/
@@ -158,7 +182,7 @@ Failure handling:
 
 Success report:
 
-22. Report:
+23. Report:
     - whether NEW INSTALLATION or EXISTING UPDATE was performed
     - previous local version and integrity state, when applicable
     - installed version and selected release tag
@@ -170,6 +194,8 @@ Success report:
     - auto-detected or explicitly selected provider adapters and guidance-refresh result
     - workspace profile, adaptive risk budgets, and their policy sources
     - preflight or reconciliation warnings and recommended mitigation level
+    - user-level Codex skill state, exact path, synchronization result, backup path, and restart
+      requirement when Codex is selected
     - remaining manual follow-up
 
 Do not commit, push, delete an update backup, update another workspace, perform a fleet rollout,

@@ -77,6 +77,14 @@ through the release manifest. The update transaction captures selected instructi
 restores them together with the old snapshot if any post-install check fails. Root `work/`, indexes,
 the Q&A inbox, and `.gitignore` remain untouched by the guidance refresh.
 
+Codex has one additional provider-owned lifecycle boundary: auto-discovery may load a user-level
+copy from `${CODEX_HOME:-~/.codex}/skills/tool-shed` before workspace routing takes effect. The
+installer reports when that copy differs from the released workspace skill. The snapshot updater's
+explicit `--sync-codex-skill` option installs a missing copy or backs up and replaces an exact prior
+released copy. Backups remain outside the active `skills/` discovery directory; modified,
+unmanaged, or symlinked targets are refused. A fresh Codex session is
+required after synchronization.
+
 ## Portable Versus Provider-Owned Behavior
 
 Portable core:

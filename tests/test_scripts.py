@@ -85,6 +85,7 @@ class ScriptTests(unittest.TestCase):
             )
         if include_provider_adapter:
             for name in (
+                "codex_skill_sync.py",
                 "install_into_workspace.py",
                 "provider_adapters.py",
                 "repository_policy.py",
@@ -120,6 +121,7 @@ class ScriptTests(unittest.TestCase):
             hashed_paths.extend(
                 f"scripts/{name}"
                 for name in (
+                    "codex_skill_sync.py",
                     "install_into_workspace.py",
                     "provider_adapters.py",
                     "repository_policy.py",
@@ -239,6 +241,65 @@ for raw in sys.stdin:
         subprocess.run(["git", "add", ".gitignore", "work/operator-data.txt"], cwd=workspace, check=True)
         subprocess.run(["git", "commit", "-q", "-m", "Workspace"], cwd=workspace, check=True)
         return workspace
+
+    def add_historical_skill_release(
+        self,
+        repository: Path,
+        version: str,
+        files: dict[str, bytes],
+    ) -> None:
+        current_branch = subprocess.run(
+            ["git", "branch", "--show-current"],
+            cwd=repository,
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+        ).stdout.strip()
+        subprocess.run(
+            ["git", "switch", "-q", "-c", f"historical-{version}"],
+            cwd=repository,
+            check=True,
+        )
+        skill = repository / "skills" / "tool-shed"
+        shutil.rmtree(skill)
+        skill.mkdir(parents=True)
+        for relative, content in files.items():
+            path = skill / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(content)
+        manifest_path = repository / "SHED_VERSION.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        hashes = {
+            path: digest
+            for path, digest in manifest["content_hashes"].items()
+            if not path.startswith("skills/tool-shed/")
+        }
+        hashes.update(
+            {
+                f"skills/tool-shed/{relative}": hashlib.sha256(content).hexdigest()
+                for relative, content in files.items()
+            }
+        )
+        manifest.update(
+            {
+                "shed_version": version,
+                "release_tag": f"v{version}",
+                "content_hashes": hashes,
+            }
+        )
+        manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=repository, check=True)
+        subprocess.run(
+            ["git", "commit", "-q", "-m", f"Historical skill {version}"],
+            cwd=repository,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "tag", "-a", f"v{version}", "-m", f"Historical {version}"],
+            cwd=repository,
+            check=True,
+        )
+        subprocess.run(["git", "switch", "-q", current_branch], cwd=repository, check=True)
 
     def test_check_shed_version_detects_equal_version_release_mismatch(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -1487,6 +1548,58 @@ stale loop guidance
             ))
             self.assertEqual(fallback.read_text(encoding="utf-8"), fallback_text)
 
+    def test_installer_reports_missing_user_codex_skill_and_sync_command(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            workspace = root / "workspace"
+            workspace.mkdir()
+            self.init_repository(workspace)
+            codex_home = root / "empty codex home"
+            environment = {**os.environ, "CODEX_HOME": str(codex_home)}
+
+            result = run_script(
+                "scripts/install_into_workspace.py",
+                str(workspace),
+                "--guidance-only",
+                env=environment,
+            )
+
+            self.assertIn("Codex skill: missing", result.stdout)
+            self.assertIn("--sync-codex-skill", result.stdout)
+            self.assertIn("fresh Codex session", result.stdout)
+            self.assertFalse((codex_home / "skills" / "tool-shed").exists())
+
+    def test_codex_skill_sync_refuses_change_after_safe_inspection(self) -> None:
+        from scripts.codex_skill_sync import (
+            CodexSkillError,
+            fingerprint_skill,
+            inspect_codex_skill,
+            synchronize_codex_skill,
+        )
+
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = root / "source"
+            source.mkdir()
+            (source / "SKILL.md").write_text("new\n", encoding="utf-8")
+            codex_home = root / "codex"
+            installed = codex_home / "skills" / "tool-shed"
+            installed.mkdir(parents=True)
+            (installed / "SKILL.md").write_text("old\n", encoding="utf-8")
+            known = [("v1.0.0", fingerprint_skill(installed))]
+
+            with mock.patch.dict(os.environ, {"CODEX_HOME": str(codex_home)}):
+                inspection = inspect_codex_skill(source, known)
+                (installed / "SKILL.md").write_text("locally changed\n", encoding="utf-8")
+                with self.assertRaisesRegex(CodexSkillError, "changed after inspection"):
+                    synchronize_codex_skill(source, inspection, "20260809T000000Z")
+
+            self.assertEqual(
+                (installed / "SKILL.md").read_text(encoding="utf-8"),
+                "locally changed\n",
+            )
+            self.assertFalse((codex_home / "tool-shed-backups").exists())
+
     def test_snapshot_updater_is_cross_platform_and_preserves_work(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -1637,6 +1750,208 @@ old Tool Shed guidance
             with tarfile.open(backup, "r") as archive:
                 names = {member.name.replace("\\", "/") for member in archive.getmembers()}
             self.assertIn("tool_shed/skills/tool-shed/stale-reference.md", names)
+
+    def test_snapshot_upgrade_reports_stale_released_user_codex_skill(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(
+                root,
+                version="9.9.0",
+                include_provider_adapter=True,
+            )
+            old_files = {"SKILL.md": b"old released Codex skill\n"}
+            self.add_historical_skill_release(release, "9.8.0", old_files)
+            workspace = self.create_update_workspace(root, version="9.8.0")
+            codex_home = root / "codex home"
+            installed = codex_home / "skills" / "tool-shed"
+            installed.mkdir(parents=True)
+            for relative, content in old_files.items():
+                (installed / relative).write_bytes(content)
+            environment = {**os.environ, "CODEX_HOME": str(codex_home)}
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--json",
+                cwd=workspace,
+                env=environment,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertEqual(payload["state"], "installed")
+            self.assertEqual(payload["codex_skill"]["state"], "stale-released")
+            self.assertEqual(payload["codex_skill"]["matched_release"], "v9.8.0")
+            self.assertTrue(payload["codex_skill"]["sync_safe"])
+            self.assertIn("--sync-codex-skill", payload["codex_skill"]["sync_command"])
+            self.assertEqual((installed / "SKILL.md").read_bytes(), old_files["SKILL.md"])
+
+    def test_snapshot_upgrade_synchronizes_known_user_codex_skill_with_backup(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(
+                root,
+                version="9.9.0",
+                include_provider_adapter=True,
+            )
+            old_files = {"SKILL.md": b"old released Codex skill\n"}
+            self.add_historical_skill_release(release, "9.8.0", old_files)
+            workspace = self.create_update_workspace(root, version="9.8.0")
+            codex_home = root / "codex home"
+            installed = codex_home / "skills" / "tool-shed"
+            installed.mkdir(parents=True)
+            for relative, content in old_files.items():
+                (installed / relative).write_bytes(content)
+            environment = {**os.environ, "CODEX_HOME": str(codex_home)}
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--sync-codex-skill",
+                "--json",
+                cwd=workspace,
+                env=environment,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertEqual(payload["state"], "installed")
+            self.assertEqual(payload["codex_skill"]["state"], "current")
+            self.assertEqual(payload["codex_skill"]["previous_state"], "stale-released")
+            self.assertTrue(payload["codex_skill"]["changed"])
+            self.assertTrue(payload["codex_skill"]["restart_required"])
+            self.assertEqual(
+                {
+                    path.relative_to(installed).as_posix(): path.read_bytes()
+                    for path in installed.rglob("*")
+                    if path.is_file()
+                },
+                {
+                    path.relative_to(release / "skills" / "tool-shed").as_posix(): path.read_bytes()
+                    for path in (release / "skills" / "tool-shed").rglob("*")
+                    if path.is_file()
+                },
+            )
+            backup = Path(payload["codex_skill"]["backup_path"])
+            self.assertEqual((backup / "SKILL.md").read_bytes(), old_files["SKILL.md"])
+            self.assertEqual(backup.parent, codex_home / "tool-shed-backups")
+            self.assertFalse(list((codex_home / "skills").glob("tool-shed.backup-*")))
+
+    def test_snapshot_upgrade_installs_missing_user_codex_skill_without_backup(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(
+                root,
+                version="9.9.0",
+                include_provider_adapter=True,
+            )
+            workspace = self.create_update_workspace(root, version="9.8.0")
+            codex_home = root / "codex home"
+            environment = {**os.environ, "CODEX_HOME": str(codex_home)}
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--sync-codex-skill",
+                "--json",
+                cwd=workspace,
+                env=environment,
+            )
+            payload = json.loads(result.stdout)
+
+            installed = codex_home / "skills" / "tool-shed"
+            self.assertEqual(payload["codex_skill"]["previous_state"], "missing")
+            self.assertEqual(payload["codex_skill"]["state"], "current")
+            self.assertIsNone(payload["codex_skill"]["backup_path"])
+            self.assertTrue((installed / "SKILL.md").is_file())
+            self.assertFalse((codex_home / "tool-shed-backups").exists())
+
+    def test_snapshot_upgrade_refuses_to_overwrite_modified_user_codex_skill(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(
+                root,
+                version="9.9.0",
+                include_provider_adapter=True,
+            )
+            old_files = {"SKILL.md": b"old released Codex skill\n"}
+            self.add_historical_skill_release(release, "9.8.0", old_files)
+            workspace = self.create_update_workspace(root, version="9.8.0")
+            codex_home = root / "codex home"
+            installed = codex_home / "skills" / "tool-shed"
+            installed.mkdir(parents=True)
+            modified = b"locally modified Codex skill\n"
+            (installed / "SKILL.md").write_bytes(modified)
+            environment = {**os.environ, "CODEX_HOME": str(codex_home)}
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--sync-codex-skill",
+                "--json",
+                cwd=workspace,
+                env=environment,
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(payload["state"], "failed")
+            self.assertEqual(payload["codex_skill"]["state"], "modified-or-unmanaged")
+            self.assertIn("unsafe", payload["error"])
+            self.assertEqual((installed / "SKILL.md").read_bytes(), modified)
+            self.assertTrue((workspace / "tool_shed" / "old-marker.txt").is_file())
+            self.assertFalse(list(workspace.glob("tool_shed.backup-*.tar")))
+
+    def test_snapshot_upgrade_rolls_back_codex_skill_and_snapshot_on_sync_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(
+                root,
+                version="9.9.0",
+                include_provider_adapter=True,
+            )
+            old_files = {"SKILL.md": b"old released Codex skill\n"}
+            self.add_historical_skill_release(release, "9.8.0", old_files)
+            workspace = self.create_update_workspace(root, version="9.8.0")
+            codex_home = root / "codex home"
+            installed = codex_home / "skills" / "tool-shed"
+            installed.mkdir(parents=True)
+            for relative, content in old_files.items():
+                (installed / relative).write_bytes(content)
+            environment = {**os.environ, "CODEX_HOME": str(codex_home)}
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--sync-codex-skill",
+                "--inject-codex-sync-failure",
+                "--json",
+                cwd=workspace,
+                env=environment,
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertTrue(payload["rollback"])
+            self.assertIn("injected Codex skill verification failure", payload["error"])
+            self.assertEqual((installed / "SKILL.md").read_bytes(), old_files["SKILL.md"])
+            self.assertTrue((workspace / "tool_shed" / "old-marker.txt").is_file())
+            self.assertFalse((codex_home / "tool-shed-backups").exists())
 
     def test_snapshot_upgrade_rolls_back_provider_guidance_with_old_snapshot(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
