@@ -60,9 +60,9 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 2,
   "notes": "Harden updater and disconnected snapshot lifecycles",
-  "release_commit": null,
+  "release_commit": "5f52b41a81f4a684e89c6222945e28bda62981df",
   "release_tag": "v0.12.2",
-  "released_at": null,
+  "released_at": "2026-08-09T15:32:50Z",
   "shed_version": "0.12.2",
   "updated_at": "2026-08-09"
 }
