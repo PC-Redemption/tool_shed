@@ -61,9 +61,9 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 2,
   "notes": "Align upgrade status and bound validation phases",
-  "release_commit": null,
+  "release_commit": "c4fcdf363649d32d2271f21d2c1050dfa11d14db",
   "release_tag": "v0.12.3",
-  "released_at": null,
+  "released_at": "2026-08-09T16:06:23Z",
   "shed_version": "0.12.3",
   "updated_at": "2026-08-09"
 }
