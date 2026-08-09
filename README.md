@@ -117,14 +117,18 @@ python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace .
 It detects a new installation versus an existing update, selects the highest stable tag, disables
 Git line-ending conversion, verifies two-commit release provenance and byte-level manifest
 integrity, stages a disconnected snapshot, retains a verified update backup, preserves root
-`work/`, and restores the previous snapshot after a failed post-install check. POSIX and PowerShell
+`work/`, refreshes auto-detected provider guidance without touching work artifacts or indexes, and
+restores both the previous snapshot and provider instruction files after a failed post-install
+check. POSIX and PowerShell
 launchers are available as `scripts/update-tool-shed.sh` and `scripts/update-tool-shed.ps1`.
 
 If the installed snapshot predates `update_snapshot.py`, obtain a current released Tool Shed
 checkout outside the project and run the updater from that checkout. Never replace or pull inside
 the stale workspace snapshot to bootstrap the updater.
 
-After installing or updating the snapshot, run `install_into_workspace.py`. It detects whether the
+After a new installation, or when a workspace needs its work tree initialized, run
+`install_into_workspace.py`. Snapshot updates already use its `--guidance-only` mode. The full
+installer detects whether the
 parent Git repository ignores root `work/`. If a stale ignore exists, it reports the exact ignore
 file, line, and rule; previews the count and size of ignored evidence; and exits without altering
 any existing `work/` file. Remove only the reported root `/work/` rule and rerun the command.

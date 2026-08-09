@@ -257,9 +257,13 @@ def safe_extract_backup(backup: Path, workspace: Path) -> None:
         archive.extractall(workspace)
 
 
-def post_install_checks(workspace: Path, target: Path, inject_failure: bool) -> dict[str, str]:
-    if inject_failure:
-        raise UpdateError("injected post-install verification failure")
+def post_install_checks(
+    workspace: Path,
+    target: Path,
+    inject_failure: bool,
+    providers: tuple[str, ...],
+    provider_paths: dict[str, str],
+) -> dict[str, str]:
     if target.is_symlink() or not target.is_dir():
         raise UpdateError("installed snapshot is not a real directory")
     if (target / ".git").exists() or (target / "work").exists():
@@ -276,6 +280,29 @@ def post_install_checks(workspace: Path, target: Path, inject_failure: bool) -> 
         ]
     )
     results = {"version": version_result.stdout.strip()}
+    if providers:
+        installer = target / "scripts" / "install_into_workspace.py"
+        if not installer.is_file():
+            raise UpdateError("selected release has provider metadata but no workspace installer")
+        arguments = [
+            sys.executable,
+            str(installer),
+            str(workspace),
+            "--guidance-only",
+        ]
+        for provider_id in providers:
+            arguments.extend(("--provider", provider_id))
+        guidance_result = run(arguments, cwd=workspace)
+        results["provider_guidance"] = guidance_result.stdout.strip()
+        for provider_id in providers:
+            guidance_path = workspace / provider_paths[provider_id]
+            if not guidance_path.is_file():
+                raise UpdateError(f"provider guidance was not created: {guidance_path}")
+            guidance = guidance_path.read_text(encoding="utf-8")
+            if "BEGIN TOOL SHED ROUTING GUIDANCE" not in guidance:
+                raise UpdateError(f"provider guidance is missing portable routing: {guidance_path}")
+    if inject_failure:
+        raise UpdateError("injected post-install verification failure")
     optional_checks = (
         ("workspace_preflight.py", "--workspace", str(workspace), "--json"),
         ("check_stale_paths.py", "--workspace", str(workspace)),
@@ -289,11 +316,132 @@ def post_install_checks(workspace: Path, target: Path, inject_failure: bool) -> 
     return results
 
 
+def load_staged_providers(staged: Path) -> dict[str, dict[str, Any]]:
+    path = staged / "adapters" / "providers.json"
+    if not path.is_file():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise UpdateError(f"invalid staged provider manifest: {error}") from error
+    if payload.get("schema_version") != 1 or not isinstance(payload.get("providers"), dict):
+        raise UpdateError("invalid staged provider manifest schema")
+    providers: dict[str, dict[str, Any]] = {}
+    seen_paths: set[str] = set()
+    for provider_id, raw_config in payload["providers"].items():
+        if not isinstance(provider_id, str) or not provider_id or not isinstance(raw_config, dict):
+            raise UpdateError("invalid staged provider entry")
+        relative = str(raw_config.get("instruction_path") or "")
+        relative_path = Path(relative)
+        if not relative or relative_path.is_absolute() or ".." in relative_path.parts:
+            raise UpdateError(f"unsafe staged provider instruction path: {provider_id}")
+        normalized = relative_path.as_posix()
+        if normalized in seen_paths:
+            raise UpdateError(f"duplicate staged provider instruction path: {normalized}")
+        seen_paths.add(normalized)
+        providers[provider_id] = dict(raw_config)
+    return providers
+
+
+def safe_instruction_path(workspace: Path, relative: str) -> Path:
+    path = workspace / relative
+    current = path
+    while current != workspace:
+        if current.is_symlink():
+            raise UpdateError(f"provider instruction path must not traverse a symlink: {current}")
+        current = current.parent
+    try:
+        path.resolve(strict=False).relative_to(workspace.resolve())
+    except ValueError as error:
+        raise UpdateError(f"provider instruction path escapes the workspace: {path}") from error
+    if path.exists() and not path.is_file():
+        raise UpdateError(f"provider instruction target is not a regular file: {path}")
+    return path
+
+
+def select_providers(
+    workspace: Path,
+    available: dict[str, dict[str, Any]],
+    requested: list[str] | None,
+) -> tuple[str, ...]:
+    if not available:
+        if requested and requested != ["auto"]:
+            raise UpdateError("selected release does not support provider adapters")
+        return ()
+    values = requested or ["auto"]
+    if "all" in values:
+        if len(values) != 1:
+            raise UpdateError("--provider all cannot be combined with another provider")
+        return tuple(sorted(available))
+    if "auto" in values:
+        if len(values) != 1:
+            raise UpdateError("--provider auto cannot be combined with another provider")
+        detected: list[str] = []
+        for provider_id, config in available.items():
+            path = safe_instruction_path(workspace, str(config["instruction_path"]))
+            if path.is_file() and "BEGIN TOOL SHED" in path.read_text(encoding="utf-8"):
+                detected.append(provider_id)
+        if detected:
+            return tuple(sorted(detected))
+        if "codex" not in available:
+            raise UpdateError("provider auto-detection found no existing guidance and no codex default")
+        return ("codex",)
+    unknown = sorted(set(values) - set(available))
+    if unknown:
+        raise UpdateError("unknown provider adapter(s): " + ", ".join(unknown))
+    return tuple(dict.fromkeys(values))
+
+
+def capture_instruction_files(
+    workspace: Path,
+    providers: tuple[str, ...],
+    provider_paths: dict[str, str],
+) -> dict[str, bytes | None]:
+    captured: dict[str, bytes | None] = {}
+    for provider_id in providers:
+        relative = provider_paths[provider_id]
+        path = safe_instruction_path(workspace, relative)
+        captured[relative] = path.read_bytes() if path.is_file() else None
+    return captured
+
+
+def restore_instruction_files(workspace: Path, captured: dict[str, bytes | None]) -> None:
+    for relative, content in captured.items():
+        path = workspace / relative
+        if content is None:
+            path.unlink(missing_ok=True)
+            parent = path.parent
+            while parent != workspace and parent.exists() and not any(parent.iterdir()):
+                parent.rmdir()
+                parent = parent.parent
+        else:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(content)
+
+
+def verify_instruction_files(workspace: Path, captured: dict[str, bytes | None]) -> None:
+    for relative, content in captured.items():
+        path = workspace / relative
+        if content is None:
+            if path.exists() or path.is_symlink():
+                raise UpdateError(f"provider instruction rollback left a created path: {path}")
+        elif path.is_symlink() or not path.is_file() or path.read_bytes() != content:
+            raise UpdateError(f"provider instruction rollback mismatch: {path}")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workspace", default=".", help="Exact project repository root.")
     parser.add_argument("--repository", default=DEFAULT_REPOSITORY, help="Canonical Git repository URL or path.")
     parser.add_argument("--json", action="store_true", help="Write a structured result.")
+    parser.add_argument(
+        "--provider",
+        action="append",
+        help=(
+            "Refresh this provider's native Tool Shed guidance. Repeat, use 'all', or use the "
+            "default 'auto' to detect existing Tool Shed guidance and otherwise select codex."
+        ),
+    )
     parser.add_argument(
         "--inject-post-install-failure",
         action="store_true",
@@ -310,6 +458,8 @@ def main() -> int:
     initial_status = ""
     backup: Path | None = None
     retired: Path | None = None
+    instruction_files_before: dict[str, bytes | None] = {}
+    snapshot_before: dict[str, str] = {}
     installed = False
     payload: dict[str, Any] = {
         "workspace": str(workspace),
@@ -323,6 +473,7 @@ def main() -> int:
         ensure_workspace_repository(workspace)
         initial_status = git(workspace, "status", "--short")
         mode = snapshot_boundary(workspace, target)
+        snapshot_before = fingerprint_tree(target)
         require_ignored(workspace)
         payload["mode"] = mode
         previous_version = installed_version(target) if target.exists() else None
@@ -338,6 +489,15 @@ def main() -> int:
                     f"refusing downgrade from {previous_version} to {selected_version}"
                 )
             prepare_snapshot(clone, staged)
+            staged_providers = load_staged_providers(staged)
+            providers = select_providers(workspace, staged_providers, args.provider)
+            provider_paths = {
+                provider_id: str(config["instruction_path"])
+                for provider_id, config in staged_providers.items()
+            }
+            instruction_files_before = capture_instruction_files(
+                workspace, providers, provider_paths
+            )
             payload.update(
                 {
                     "selected_tag": selected,
@@ -345,6 +505,7 @@ def main() -> int:
                     "tag_commit": tag_commit,
                     "content_commit": content_commit,
                     "difference": difference_summary(target, staged) if target.exists() else None,
+                    "providers": list(providers),
                 }
             )
             timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
@@ -363,17 +524,34 @@ def main() -> int:
                     workspace,
                     target,
                     args.inject_post_install_failure,
+                    providers,
+                    provider_paths,
                 )
                 if fingerprint_tree(workspace / "work") != work_before:
                     raise UpdateError("root work/ changed during snapshot update")
-            except Exception:
-                if target.exists():
-                    shutil.rmtree(target)
-                installed = False
-                if mode == "existing-update" and backup is not None:
-                    safe_extract_backup(backup, workspace)
-                if retired is not None and retired.exists():
-                    shutil.rmtree(retired)
+            except Exception as install_error:
+                rollback_errors: list[str] = []
+                try:
+                    restore_instruction_files(workspace, instruction_files_before)
+                    verify_instruction_files(workspace, instruction_files_before)
+                except Exception as error:
+                    rollback_errors.append(f"provider guidance: {error}")
+                try:
+                    if target.exists():
+                        shutil.rmtree(target)
+                    installed = False
+                    if mode == "existing-update" and backup is not None:
+                        safe_extract_backup(backup, workspace)
+                        if fingerprint_tree(target) != snapshot_before:
+                            raise UpdateError("restored snapshot does not match the pre-update snapshot")
+                    if retired is not None and retired.exists():
+                        shutil.rmtree(retired)
+                except Exception as error:
+                    rollback_errors.append(f"snapshot: {error}")
+                if rollback_errors:
+                    raise UpdateError(
+                        f"{install_error}; rollback verification failed: " + "; ".join(rollback_errors)
+                    ) from install_error
                 raise
             if retired is not None and retired.exists():
                 shutil.rmtree(retired)

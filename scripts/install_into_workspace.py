@@ -167,6 +167,17 @@ def replace_managed_block(existing: str, start: str, end: str, replacement: str)
 def ensure_provider_guidance(repository: Path, provider_id: str) -> tuple[Path, bool]:
     config = provider_config(provider_id)
     path = repository / str(config["instruction_path"])
+    current = path
+    while current != repository:
+        if current.is_symlink():
+            raise ValueError(f"provider instruction path must not traverse a symlink: {current}")
+        current = current.parent
+    try:
+        path.resolve(strict=False).relative_to(repository.resolve())
+    except ValueError as error:
+        raise ValueError(f"provider instruction path escapes the repository: {path}") from error
+    if path.exists() and not path.is_file():
+        raise ValueError(f"provider instruction target must be a regular file: {path}")
     path.parent.mkdir(parents=True, exist_ok=True)
     existing = path.read_text(encoding="utf-8") if path.exists() else ""
     if config["instruction_format"] == "mdc" and not existing:
@@ -258,6 +269,11 @@ def parse_args() -> argparse.Namespace:
             "Defaults to codex for backward compatibility."
         ),
     )
+    parser.add_argument(
+        "--guidance-only",
+        action="store_true",
+        help="Refresh provider instruction blocks without changing work/, indexes, inboxes, or .gitignore.",
+    )
     return parser.parse_args()
 
 
@@ -273,6 +289,20 @@ def selected_providers(values: list[str] | None) -> tuple[str, ...]:
 def main() -> int:
     args = parse_args()
     root = Path(args.workspace).expanduser().resolve()
+    if args.guidance_only:
+        repository = inspect_work_ignore(root).repository
+        if repository is None or repository != root:
+            print("Guidance-only installation requires the exact Git repository root.", file=sys.stderr)
+            return 1
+        try:
+            for provider_id in selected_providers(args.provider):
+                guidance_path, changed = ensure_provider_guidance(repository, provider_id)
+                state = "updated" if changed else "current"
+                print(f"Provider guidance ({provider_id}): {state} at {guidance_path}.")
+        except ValueError as error:
+            print(f"Provider guidance failed: {error}", file=sys.stderr)
+            return 1
+        return 0
     ensure_work_tree(root)
     ask_created = ensure_ask_inbox(root)
 
@@ -289,12 +319,16 @@ def main() -> int:
                     "Files were not moved, deleted, or rewritten; review the rules and retain "
                     "small versioned summaries or manifests outside generated/."
                 )
-        for provider_id in selected_providers(args.provider):
-            guidance_path, changed = ensure_provider_guidance(repository, provider_id)
-            if changed:
-                print(
-                    f"Provider guidance ({provider_id}): updated Tool Shed rules in {guidance_path}."
-                )
+        try:
+            for provider_id in selected_providers(args.provider):
+                guidance_path, changed = ensure_provider_guidance(repository, provider_id)
+                if changed:
+                    print(
+                        f"Provider guidance ({provider_id}): updated Tool Shed rules in {guidance_path}."
+                    )
+        except ValueError as error:
+            print(f"Provider guidance failed: {error}", file=sys.stderr)
+            return 1
 
     index_script = Path(__file__).resolve().with_name("update_work_index.py")
     if index_script.exists():

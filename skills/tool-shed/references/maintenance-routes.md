@@ -21,16 +21,22 @@ python <current-shed>/scripts/update_snapshot.py --workspace <workspace>
 
 Never pull inside or develop from the disconnected workspace snapshot. The updater selects the
 highest stable release, verifies provenance and content hashes, stages a disconnected snapshot,
-preserves root `work/`, retains a verified backup, and restores after failed post-install checks.
+preserves root `work/`, replaces the snapshot so removed files cannot linger, retains a verified
+backup, refreshes auto-detected provider guidance in guidance-only mode, and restores both snapshot
+and instruction files after failed post-install checks. Do not bootstrap an upgrade with an older
+in-snapshot updater when a current released updater is available outside the target project.
 
-After installation or update, run:
+For a new project that still needs its `work/` tree initialized, or to add an explicit provider
+adapter outside the snapshot updater, run:
 
 ```bash
 python3 <shed>/scripts/install_into_workspace.py <workspace> --provider <provider-id>
 ```
 
 Supported provider IDs come from `<shed>/adapters/providers.json`. Repeat `--provider` or use
-`--provider all` to install multiple native instruction adapters.
+`--provider all` to install multiple native instruction adapters. A snapshot update already runs
+the installer's guidance-only route for auto-detected or explicitly selected providers; do not run
+the full installer merely to finish an update.
 
 ## Codex Reasoning Extension
 

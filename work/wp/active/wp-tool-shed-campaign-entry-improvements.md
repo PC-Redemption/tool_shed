@@ -30,6 +30,11 @@ Tool Shed should become a generic AI product by defining a vendor-neutral behavi
 shipping thin native adapters for major agent-capable services, without reducing every provider to
 a lowest-common-denominator prompt.
 
+The release also changes the Markdown layout substantially to reduce always-loaded context. Existing
+installations therefore need an upgrade path that replaces the compact skill bundle exactly,
+removes obsolete Markdown, refreshes provider-native guidance without rewriting project state, and
+restores both the old snapshot and instruction files exactly after a failed verification.
+
 ## Recommendation
 
 Plan a lightweight `ts: discuss <topic>` route as an interaction mode rather than a new artifact
@@ -78,6 +83,11 @@ Completed:
   static conformance runner, documentation, and tests.
 - Qualified Codex at Level 5 locally and the four additional provider packages at honest static
   Level 2 pending runtime availability.
+- Hardened snapshot upgrades to use the current release's guidance-only installer, auto-detect
+  existing provider adapters, replace the full Markdown bundle, preserve owner content and root
+  `work/`, and verify exact rollback of both snapshot and instruction files.
+- Added upgrade regressions for old-to-new compact skill replacement, stale Markdown removal,
+  work-state preservation, exact rollback, and symlink rejection before mutation.
 
 Incomplete:
 
@@ -140,6 +150,8 @@ permissions, hooks, tools, session lifecycle, and distribution.
 - An optional MCP facade over deterministic Tool Shed operations, with files and Git remaining
   authoritative.
 - A cross-provider conformance suite that evaluates equivalent outcomes rather than prompt text.
+- A transactional old-to-new snapshot upgrade that prevents stale Markdown and proves exact
+  recovery of project instruction files and the previous snapshot.
 
 ## Adaptive Coordination Model
 
@@ -276,6 +288,8 @@ Completion criteria:
 - [x] Compatibility, rollout, release, installed-client sync, and rollback are planned.
 - [x] Measurement sources and honest proxy behavior are defined for environments without token telemetry.
 - [x] Implementation began only after the explicit `ts:ship` request.
+- [x] Existing-snapshot upgrade tests cover compact Markdown replacement, stale-file removal,
+  guidance-only refresh, project-state preservation, exact rollback, and unsafe path rejection.
 
 ## Open Questions
 

@@ -70,6 +70,13 @@ The installed routing tells the provider to read the workspace-local
 `tool_shed/skills/tool-shed/SKILL.md` when a request begins with `ts:`. This avoids copying and
 eventually drifting five separate workflow implementations.
 
+Snapshot upgrades use `--guidance-only` automatically. They detect every provider instruction file
+that already contains marked Tool Shed guidance, default to Codex when none exists, replace the
+entire disconnected snapshot so removed Markdown cannot linger, and verify all skill references
+through the release manifest. The update transaction captures selected instruction files and
+restores them together with the old snapshot if any post-install check fails. Root `work/`, indexes,
+the Q&A inbox, and `.gitignore` remain untouched by the guidance refresh.
+
 ## Portable Versus Provider-Owned Behavior
 
 Portable core:

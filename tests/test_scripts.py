@@ -44,6 +44,7 @@ class ScriptTests(unittest.TestCase):
         *,
         validation_exit: int = 0,
         include_stale_checker: bool = False,
+        include_provider_adapter: bool = False,
     ) -> Path:
         repository = root / "release source"
         repository.mkdir()
@@ -65,6 +66,17 @@ class ScriptTests(unittest.TestCase):
                 ROOT / "scripts" / "check_stale_paths.py",
                 repository / "scripts" / "check_stale_paths.py",
             )
+        if include_provider_adapter:
+            for name in (
+                "install_into_workspace.py",
+                "provider_adapters.py",
+                "repository_policy.py",
+                "work_tree.py",
+                "workspace_preflight.py",
+            ):
+                shutil.copyfile(ROOT / "scripts" / name, repository / "scripts" / name)
+            shutil.copytree(ROOT / "adapters", repository / "adapters")
+            shutil.copytree(ROOT / "skills", repository / "skills")
         (repository / "scripts" / "validate_tool_shed.py").write_text(
             f"raise SystemExit({validation_exit})\n",
             encoding="utf-8",
@@ -81,6 +93,23 @@ class ScriptTests(unittest.TestCase):
         ]
         if include_stale_checker:
             hashed_paths.append("scripts/check_stale_paths.py")
+        if include_provider_adapter:
+            hashed_paths.extend(
+                path.relative_to(repository).as_posix()
+                for directory in (repository / "adapters", repository / "skills")
+                for path in directory.rglob("*")
+                if path.is_file()
+            )
+            hashed_paths.extend(
+                f"scripts/{name}"
+                for name in (
+                    "install_into_workspace.py",
+                    "provider_adapters.py",
+                    "repository_policy.py",
+                    "work_tree.py",
+                    "workspace_preflight.py",
+                )
+            )
         content_hashes = {
             relative: hashlib.sha256((repository / relative).read_bytes()).hexdigest()
             for relative in hashed_paths
@@ -1288,6 +1317,65 @@ Produces:
             self.assertTrue(cursor.startswith("---\n"))
             self.assertIn("alwaysApply: true", cursor)
 
+    def test_installer_guidance_only_does_not_touch_work_inbox_index_or_gitignore(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace, "# owner ignore\n")
+            work = workspace / "work"
+            work.mkdir()
+            evidence = work / "owner-plan.md"
+            evidence.write_text("preserve exactly\n", encoding="utf-8")
+            before_work = {
+                path.relative_to(work).as_posix(): path.read_bytes()
+                for path in work.rglob("*")
+                if path.is_file()
+            }
+            before_ignore = (workspace / ".gitignore").read_bytes()
+
+            result = run_script(
+                "scripts/install_into_workspace.py",
+                str(workspace),
+                "--guidance-only",
+                "--provider",
+                "codex",
+            )
+
+            after_work = {
+                path.relative_to(work).as_posix(): path.read_bytes()
+                for path in work.rglob("*")
+                if path.is_file()
+            }
+            self.assertEqual(after_work, before_work)
+            self.assertEqual((workspace / ".gitignore").read_bytes(), before_ignore)
+            self.assertFalse((work / "q&a" / "ask.txt").exists())
+            self.assertFalse((work / "index.md").exists())
+            self.assertIn("Provider guidance (codex): updated", result.stdout)
+            self.assertIn("BEGIN TOOL SHED ROUTING GUIDANCE", (workspace / "AGENTS.md").read_text())
+
+    def test_installer_guidance_only_rejects_symlinked_instruction_target(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            workspace = root / "workspace"
+            workspace.mkdir()
+            self.init_repository(workspace)
+            external = root / "outside.md"
+            original = b"outside owner content\n"
+            external.write_bytes(original)
+            (workspace / "AGENTS.md").symlink_to(external)
+
+            result = run_script(
+                "scripts/install_into_workspace.py",
+                str(workspace),
+                "--guidance-only",
+                "--provider",
+                "codex",
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("must not traverse a symlink", result.stderr)
+            self.assertEqual(external.read_bytes(), original)
+
     def test_provider_adapter_conformance_script(self) -> None:
         result = run_script("scripts/check_provider_adapters.py", "--json")
         payload = json.loads(result.stdout)
@@ -1465,6 +1553,135 @@ stale loop guidance
                 "old snapshot\n",
             )
             self.assertEqual(len(list(workspace.glob("tool_shed.backup-*.tar"))), 1)
+
+    def test_snapshot_upgrade_replaces_old_skill_and_refreshes_guidance_transactionally(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(
+                root,
+                version="9.9.0",
+                include_provider_adapter=True,
+            )
+            workspace = self.create_update_workspace(root, version="9.8.0")
+            old_skill = workspace / "tool_shed" / "skills" / "tool-shed"
+            old_skill.mkdir(parents=True)
+            (old_skill / "SKILL.md").write_text("old always-loaded skill\n" * 400, encoding="utf-8")
+            (old_skill / "stale-reference.md").write_text("must not linger\n", encoding="utf-8")
+            owner_guidance = "# Owner guidance\n\n"
+            old_guidance = """<!-- BEGIN TOOL SHED GENERATED EVIDENCE GUIDANCE -->
+old Tool Shed guidance
+<!-- END TOOL SHED GENERATED EVIDENCE GUIDANCE -->
+"""
+            (workspace / "AGENTS.md").write_text(owner_guidance + old_guidance, encoding="utf-8")
+            work_before = (workspace / "work" / "operator-data.txt").read_bytes()
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--json",
+                cwd=workspace,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertEqual(payload["state"], "installed")
+            self.assertEqual(payload["providers"], ["codex"])
+            self.assertEqual((workspace / "work" / "operator-data.txt").read_bytes(), work_before)
+            installed_skill = workspace / "tool_shed" / "skills" / "tool-shed"
+            self.assertEqual(
+                (installed_skill / "SKILL.md").read_bytes(),
+                (release / "skills" / "tool-shed" / "SKILL.md").read_bytes(),
+            )
+            self.assertTrue((installed_skill / "references" / "campaign-routes.md").is_file())
+            self.assertTrue((installed_skill / "references" / "maintenance-routes.md").is_file())
+            self.assertFalse((installed_skill / "stale-reference.md").exists())
+            agents = (workspace / "AGENTS.md").read_text(encoding="utf-8")
+            self.assertTrue(agents.startswith(owner_guidance))
+            self.assertNotIn("old Tool Shed guidance", agents)
+            self.assertEqual(agents.count("BEGIN TOOL SHED ROUTING GUIDANCE"), 1)
+            self.assertIn("ts: discuss <topic>", agents)
+            self.assertIn("Direct, Guided, Coordinated, or Deep", agents)
+            backup = Path(payload["backup_path"])
+            with tarfile.open(backup, "r") as archive:
+                names = {member.name.replace("\\", "/") for member in archive.getmembers()}
+            self.assertIn("tool_shed/skills/tool-shed/stale-reference.md", names)
+
+    def test_snapshot_upgrade_rolls_back_provider_guidance_with_old_snapshot(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(
+                root,
+                version="9.9.0",
+                include_provider_adapter=True,
+            )
+            workspace = self.create_update_workspace(root, version="9.8.0")
+            snapshot_before = {
+                path.relative_to(workspace / "tool_shed").as_posix(): path.read_bytes()
+                for path in (workspace / "tool_shed").rglob("*")
+                if path.is_file()
+            }
+            original_agents = b"# Owner\n\n<!-- BEGIN TOOL SHED GENERATED EVIDENCE GUIDANCE -->\nold\n<!-- END TOOL SHED GENERATED EVIDENCE GUIDANCE -->\n"
+            (workspace / "AGENTS.md").write_bytes(original_agents)
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--inject-post-install-failure",
+                "--json",
+                cwd=workspace,
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertTrue(payload["rollback"])
+            self.assertEqual((workspace / "AGENTS.md").read_bytes(), original_agents)
+            snapshot_after = {
+                path.relative_to(workspace / "tool_shed").as_posix(): path.read_bytes()
+                for path in (workspace / "tool_shed").rglob("*")
+                if path.is_file()
+            }
+            self.assertEqual(snapshot_after, snapshot_before)
+            self.assertTrue((workspace / "tool_shed" / "old-marker.txt").is_file())
+            self.assertFalse((workspace / "tool_shed" / "skills").exists())
+
+    def test_snapshot_upgrade_rejects_symlinked_provider_guidance_before_mutation(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(
+                root,
+                version="9.9.0",
+                include_provider_adapter=True,
+            )
+            workspace = self.create_update_workspace(root, version="9.8.0")
+            external = root / "outside-agents.md"
+            original = b"<!-- BEGIN TOOL SHED GENERATED EVIDENCE GUIDANCE -->\noutside\n"
+            external.write_bytes(original)
+            (workspace / "AGENTS.md").symlink_to(external)
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--json",
+                cwd=workspace,
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("must not traverse a symlink", payload["error"])
+            self.assertFalse(payload["rollback"])
+            self.assertEqual(external.read_bytes(), original)
+            self.assertTrue((workspace / "tool_shed" / "old-marker.txt").is_file())
+            self.assertFalse(list(workspace.glob("tool_shed.backup-*.tar")))
 
     def test_snapshot_updater_installs_into_new_workspace(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

@@ -2,7 +2,7 @@
 
 Date: 2026-08-09
 Target: canonical Tool Shed development workspace
-Scope: discussion route, minimum sufficient coordination, progressive skill loading, and native provider adapters
+Scope: discussion route, minimum sufficient coordination, progressive skill loading, native provider adapters, and existing-snapshot upgrades
 
 ## Outcome
 
@@ -30,11 +30,31 @@ reinstallation, portable routing, discussion behavior, and minimum-coordination 
 | --- | ---: | ---: |
 | Previous always-loaded `SKILL.md` | 418 | 22,373 |
 | New portable always-loaded `SKILL.md` | 132 | 7,129 |
-| All three on-demand references combined | 182 | 8,595 |
-| New complete skill bundle | 314 | 15,724 |
+| All three on-demand references combined | 188 | 9,166 |
+| New complete skill bundle | 320 | 16,295 |
 
 The default skill body is 15,244 bytes smaller, about a 68% reduction. The complete bundle is also
 smaller, and a request loads only its applicable route reference.
+
+## Existing Installation Upgrade Qualification
+
+The release updater was evaluated against a synthetic older installation whose always-loaded skill
+was 400 lines and whose skill directory contained a stale Markdown reference. The candidate release
+was built with real provider metadata, installer code, compact skill, and on-demand references.
+
+| Upgrade property | Qualification result |
+| --- | --- |
+| Compact Markdown replacement | entire `tool_shed/` snapshot replaced; candidate skill directory matched the release byte-for-byte |
+| Removed Markdown | stale old reference absent after success and present in the verified backup |
+| Provider guidance | existing marked adapter auto-detected; owner prefix preserved; every managed block installed exactly once |
+| Project state | root `work/`, indexes, Q&A inbox, and `.gitignore` unchanged by guidance-only refresh |
+| Failed update | old snapshot and selected provider instruction files restored byte-for-byte |
+| Unsafe targets | symlinked provider instruction targets rejected before snapshot mutation |
+| Bootstrap | documentation requires a current released updater outside the project, so older snapshots receive current safeguards |
+
+The updater now verifies exact pre-update snapshot fingerprints after rollback and verifies every
+captured provider instruction file after restoration. It attempts snapshot and instruction
+rollback independently so one reported rollback error does not prevent the other recovery step.
 
 ## Commands
 
@@ -50,7 +70,7 @@ python3 -m unittest discover -s tests -v
 - Python compilation passed.
 - Portable skill validation passed.
 - Five provider adapter fixtures passed static conformance.
-- 66 unit tests passed.
+- 71 unit tests passed, including five upgrade-specific success, preservation, rollback, and path-safety scenarios.
 - Only `codex-cli 0.144.6` was found among the provider CLIs checked on this host.
 - Full `scripts/validate_tool_shed.py` passed with the `0.12.0` unpublished manifest and 53
   manifest-tracked product files.

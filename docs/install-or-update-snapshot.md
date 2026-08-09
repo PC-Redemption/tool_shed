@@ -7,7 +7,19 @@ installation.
 The supported cross-platform command is:
 
 ```text
-python tool_shed/scripts/update_snapshot.py --workspace .
+python /path/to/current-release/scripts/update_snapshot.py --workspace .
+```
+
+Use the updater from a current released checkout outside the target project. This matters when an
+older installed snapshot predates newer upgrade safeguards. The updater selects the remote release;
+the target's stale in-snapshot updater is not a bootstrap authority.
+
+Provider guidance is auto-detected from existing marked instruction files. If none exists, Codex is
+the backward-compatible default. Override or install multiple adapters with:
+
+```text
+python /path/to/current-release/scripts/update_snapshot.py --workspace . --provider claude-code
+python /path/to/current-release/scripts/update_snapshot.py --workspace . --provider all
 ```
 
 From a downloaded Tool Shed checkout, the equivalent launchers are
@@ -88,6 +100,8 @@ Prepare the disconnected snapshot:
     - other generated state
 12. Verify the staged snapshot contains SHED_VERSION.json, selection.md, conventions.md,
     existing-projects.md, templates/, and scripts/, but contains no .git and no work/.
+    Strict manifest validation must also prove that every versioned portable skill reference,
+    provider registry, adapter script, and documentation file is present byte-for-byte.
 
 If EXISTING UPDATE:
 
@@ -110,14 +124,14 @@ Post-install verification for either path:
 16. Confirm the installed tool_shed/ is a real directory, contains no .git and no work/, is not a
     submodule, and is ignored by the parent repository.
 17. Run, when present in the installed release:
-    - python3 tool_shed/scripts/install_into_workspace.py .
+    - python3 tool_shed/scripts/install_into_workspace.py . --guidance-only --provider <detected>
     - python3 tool_shed/scripts/workspace_preflight.py --workspace . --json
-    - python3 tool_shed/scripts/update_work_index.py --workspace .
     - python3 tool_shed/scripts/check_stale_paths.py --workspace .
     - python3 tool_shed/scripts/review_work_state.py --workspace .
     - python3 tool_shed/scripts/check_shed_version.py --shed tool_shed --local-only --strict
-18. The installer may append its marked guidance block and missing Tool Shed root-ignore entries.
-    It must preserve existing .gitignore, provider instruction files, and work/ content.
+18. Guidance-only installation may append or replace marked Tool Shed blocks in the selected
+    provider instruction files. It must preserve owner-authored instruction content and leave
+    `.gitignore`, `work/`, indexes, and the Q&A inbox byte-for-byte unchanged.
 19. Surface the workspace profile, effective risk budgets, policy sources, preflight findings, and
     reconciliation findings for review. Do not automatically rewrite project planning, relocate
     evidence, or create Level 2 onboarding artifacts unless separately requested.
@@ -132,13 +146,15 @@ Failure handling:
 20. For EXISTING UPDATE, if replacement or post-install verification fails:
     - remove only the failed replacement
     - restore tool_shed/ from the backup archive
+    - restore every selected provider instruction file byte-for-byte, removing only files created
+      by the failed guidance refresh
     - verify the restored snapshot
     - report the failure and restoration result
 21. For NEW INSTALLATION, if post-install verification fails:
     - remove only the newly installed tool_shed/ directory
+    - restore or remove selected provider instruction files using the pre-install capture
     - never remove or roll back work/
-    - report any installer-created guidance, ignore entries, indexes, or empty directories that
-      remain for manual review
+    - report any remaining empty directories for manual review
 
 Success report:
 
@@ -150,7 +166,8 @@ Success report:
     - exact backup path, when applicable
     - temporary-clone and installed-snapshot validation results
     - Git status changes relative to the initial status
-    - created or changed work/index files
+    - confirmation that root work/ and work/index files were unchanged
+    - auto-detected or explicitly selected provider adapters and guidance-refresh result
     - workspace profile, adaptive risk budgets, and their policy sources
     - preflight or reconciliation warnings and recommended mitigation level
     - remaining manual follow-up
