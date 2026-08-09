@@ -4,7 +4,7 @@
   "content_hashes": {
     ".gitattributes": "d60f352d0db1404c70afb4bb8b2ca3fd1c610572aa40720e8a0b7baa7885418c",
     "README.md": "a8d84e2124b15e8965461f8530f6ac1e7fc22d01bc36f49fe8e3a01598b0d070",
-    "adapters/codex-skill-releases.json": "5e5d8f0b121d5db09c62c79b6be41b38bdb80a2ccb20d525208e0b815c52bf67",
+    "adapters/codex-skill-releases.json": "69acdaee6f75b9c4a56d9f5d6befb2282c7b4cc4fa42a7c650ca0419438754b5",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "7b695ff5bf68e61ede04565a9da094a4a81b4e7ee19b20ca1c2a6134f29a7370",
     "docs/fleet-snapshot-updates.md": "f0bcc487bf3d15503458bf92588e8036ddfafe5bb7bbe946cc5bae0f6f5eaafb",
@@ -32,7 +32,7 @@
     "scripts/review_work_state.py": "c344c0ccd3103e22150b4570c6f02a178949e7f6eef9852bdccc95cd5bc8e166",
     "scripts/update-tool-shed.ps1": "271d8970201341f66595b902de0c1e03ace41203ef113b81eed5464b2a75591d",
     "scripts/update-tool-shed.sh": "51740376eca2cbe2eba8590333f55bfa7cf7bd6b720b27176a127a0e44223fdb",
-    "scripts/update_shed_manifest.py": "50eb86609c055a59b6131d85b60ed838e53bc00ec8f7999979833e9f8b1fe08c",
+    "scripts/update_shed_manifest.py": "8523f302285ff2efbb6ed66223ac9274e2064c068d2303dd64786e02f57a37db",
     "scripts/update_snapshot.py": "392184f2254f8de72b989cb77afaa55cb831992a89e38dee10cd31337b4fa7fa",
     "scripts/update_work_index.py": "ea3cb9fb5e35551954848cd80bd80e72c5afa6df983ef99a4d30b753543c30a7",
     "scripts/validate_tool_shed.py": "913f801952ca415b8d96acc7e220c51cd8ece835a67b2ca2e577a680c456d35a",
@@ -60,10 +60,10 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 2,
-  "notes": "Align upgrade status and bound validation phases",
-  "release_commit": "c4fcdf363649d32d2271f21d2c1050dfa11d14db",
-  "release_tag": "v0.12.3",
-  "released_at": "2026-08-09T16:06:23Z",
-  "shed_version": "0.12.3",
+  "notes": "Make release metadata writes non-mutating on invalid input",
+  "release_commit": null,
+  "release_tag": "v0.12.4",
+  "released_at": null,
+  "shed_version": "0.12.4",
   "updated_at": "2026-08-09"
 }

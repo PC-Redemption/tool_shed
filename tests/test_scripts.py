@@ -413,6 +413,29 @@ for raw in sys.stdin:
         self.assertNotEqual(invalid.returncode, 0)
         self.assertIn("expected MAJOR.MINOR.PATCH", invalid.stderr)
 
+    def test_manifest_writer_rejects_mismatched_tag_without_mutation(self) -> None:
+        manifest_path = ROOT / "SHED_VERSION.json"
+        catalog_path = ROOT / "adapters" / "codex-skill-releases.json"
+        manifest_before = manifest_path.read_bytes()
+        catalog_before = catalog_path.read_bytes()
+        current_version = json.loads(manifest_before)["shed_version"]
+        major, minor, patch = (int(part) for part in current_version.split("."))
+
+        result = run_script(
+            "scripts/update_shed_manifest.py",
+            "--write",
+            "--version",
+            f"{major}.{minor}.{patch + 1}",
+            "--release-tag",
+            "v9.9.9",
+            check=False,
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("--release-tag must equal v<version>", result.stderr)
+        self.assertEqual(manifest_path.read_bytes(), manifest_before)
+        self.assertEqual(catalog_path.read_bytes(), catalog_before)
+
     def test_version_checks_fail_cleanly_for_bad_local_manifest_and_insecure_url(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
