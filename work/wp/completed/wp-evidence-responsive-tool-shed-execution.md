@@ -1,9 +1,9 @@
 # Evidence-responsive Tool Shed execution Workpackage
 
-Status: active
+Status: complete
 Type: workpackage
 Updated: 2026-08-09
-Next Action: start a fresh Codex task in this workspace, run `ts: version`, and close this workpackage after the 0.11.0 smoke passes
+Next Action: none
 
 Project Map: work/maps/map-tool-shed-evolution.md
 
@@ -40,8 +40,7 @@ Completed:
 
 Incomplete:
 
-- Fresh-task smoke using the newly loaded installed skill.
-- Final artifact closeout after that smoke passes.
+- none
 
 ## Goal
 
@@ -119,12 +118,12 @@ Completion criteria:
 - [x] Local manifest provenance and annotated tag validate.
 - [x] Canonical remote manifest matches the release.
 - [x] Installed client exactly matches canonical `skills/tool-shed/`.
-- [ ] A fresh task loads the deployed skill and reports Tool Shed 0.11.0 through `ts: version`.
+- [x] A fresh task loads the deployed skill and reports Tool Shed 0.11.0 through `ts: version`.
 
 ## Open Questions
 
-- Can the active client reload a replaced skill without a new task? No; report the required fresh
-  task smoke after exact deployment verification.
+- Did a fresh task load and smoke the replaced skill? Yes; it loaded the new
+  `Evidence-Response Loop` and reported verified Tool Shed 0.11.0.
 - Is external publication authorized? Yes; publication and live verification are complete.
 
 ## Completion Standard

@@ -19,7 +19,7 @@ flowchart TD
   A --> F[Generated evidence safety]
   A --> H[Workspace performance measurement]
   A --> I[Agent planning mechanism evaluation]
-  I --> J[Evidence-responsive execution guidance]
+  I --> J[Complete: evidence-responsive execution guidance]
   B --> D[Ground: validate review_work_state.py]
   C --> E[Gate: explicit approval before fleet update]
   F --> G[Complete: adaptive safeguards validated]
@@ -41,9 +41,8 @@ flowchart TD
 
 1,000 ft:
 
-- Active workpackages:
-  `work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md` and
-  `work/wp/active/wp-evidence-responsive-tool-shed-execution.md`.
+- Active workpackage:
+  `work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md`.
 - Completed workpackages include
   `work/wp/completed/wp-generated-evidence-safety-and-migration.md`.
 - Completed workpackages: `work/wp/completed/wp-work-artifact-reconciliation.md`.
@@ -72,7 +71,7 @@ Ground:
 | Portable verified installer | active | `work/tickets/ticket-portable-verified-tool-shed-installer.md` | stable-tag and provenance model | verify native Windows/Linux CI |
 | Workspace performance measurement | complete | `work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md` | completed profiling and fleet-measurement spike | gather approved longitudinal or multi-workspace measurements before proposing optimization |
 | Agent planning mechanism evaluation | complete | `work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md` | source-backed inventory and frozen instruction-level scenarios | none |
-| Evidence-responsive execution | active | `work/wp/active/wp-evidence-responsive-tool-shed-execution.md` | published v0.11.0 and exact installed-client parity | run a fresh-task 0.11.0 smoke and close the workpackage |
+| Evidence-responsive execution | complete | `work/wp/completed/wp-evidence-responsive-tool-shed-execution.md` | published v0.11.0, exact installed-client parity, and fresh-task smoke | none |
 
 ## Dependency Notes
 
@@ -110,7 +109,7 @@ Do next:
 - [x] Define the workspace-performance report schema, privacy boundary, benchmark protocol, and fleet rollout plan.
 - [x] Implement and canary the privacy-safe local workspace profiler.
 - [x] Evaluate transferable human planning mechanisms and recommend proportionate Tool Shed updates.
-- [ ] Qualify, release, and deploy evidence-responsive execution guidance.
+- [x] Qualify, release, deploy, and fresh-task verify evidence-responsive execution guidance.
 
 Avoid for now:
 
@@ -126,7 +125,7 @@ Avoid for now:
 - Workpackages: `work/wp/completed/wp-work-artifact-reconciliation.md`,
   `work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md`,
   `work/wp/completed/wp-generated-evidence-safety-and-migration.md`,
-  `work/wp/active/wp-evidence-responsive-tool-shed-execution.md`
+  `work/wp/completed/wp-evidence-responsive-tool-shed-execution.md`
 - Tickets: `work/tickets/ticket-field-verify-generated-evidence-safeguards.md`,
   `work/tickets/ticket-portable-verified-tool-shed-installer.md`,
   `work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md`

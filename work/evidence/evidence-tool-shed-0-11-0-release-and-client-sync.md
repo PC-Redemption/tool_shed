@@ -1,10 +1,10 @@
 # Evidence: Tool Shed 0.11.0 release and client synchronization
 
-Status: active
+Status: complete
 Type: evidence
 Updated: 2026-08-09
-Next Action: run `ts: version` in a fresh Codex task
-Parent: work/wp/active/wp-evidence-responsive-tool-shed-execution.md
+Next Action: none
+Parent: work/wp/completed/wp-evidence-responsive-tool-shed-execution.md
 
 ## Release Identity
 
@@ -38,8 +38,9 @@ Parent: work/wp/active/wp-evidence-responsive-tool-shed-execution.md
   installed validation passed, and exact parity was confirmed. Recovery remains available from the
   backup above.
 
-## Remaining Verification
+## Fresh-Task Verification
 
-The current task loaded skill instructions before deployment. Start a fresh Codex task in
-`/home/jon/docker/tool_shed` and run `ts: version`. Close the parent workpackage after it reports
-Tool Shed 0.11.0 and the new client loads without error.
+- The fresh task loaded `/home/jon/.codex/skills/tool-shed/SKILL.md` successfully.
+- The loaded skill contains the new `Evidence-Response Loop` section.
+- `ts: version` reported Tool Shed 0.11.0 with verified integrity and the expected release identity.
+- Canonical-to-installed `diff -qr` remained empty.

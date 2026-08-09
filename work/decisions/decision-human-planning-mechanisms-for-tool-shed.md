@@ -38,4 +38,4 @@ Implement the two adopted rules as native Tool Shed behavior:
 Document both rules in `README.md`, `conventions.md`, and the operator guide. Add installer and
 validation regression coverage. Do not add a template or artifact field in this release.
 
-Implementation: `work/wp/active/wp-evidence-responsive-tool-shed-execution.md`.
+Implementation: `work/wp/completed/wp-evidence-responsive-tool-shed-execution.md`.
