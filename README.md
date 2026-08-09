@@ -114,12 +114,23 @@ Use the supported cross-platform updater from a current Tool Shed release checko
 python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace .
 ```
 
+Codex users can explicitly synchronize the separately installed user-level skill during the same
+verified update:
+
+```bash
+python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace . --sync-codex-skill
+```
+
 It detects a new installation versus an existing update, selects the highest stable tag, disables
 Git line-ending conversion, verifies two-commit release provenance and byte-level manifest
 integrity, stages a disconnected snapshot, retains a verified update backup, preserves root
 `work/`, refreshes auto-detected provider guidance without touching work artifacts or indexes, and
 restores both the previous snapshot and provider instruction files after a failed post-install
-check. POSIX and PowerShell
+check. Codex skill state is always reported when the Codex adapter is selected. Synchronization is
+opt-in: a missing skill can be installed and an exact prior released skill is backed up outside the
+active `skills/` discovery directory and replaced, while a modified, unmanaged, or unsafe skill is
+refused. Start a fresh Codex session
+after synchronization so discovery does not retain the old instructions. POSIX and PowerShell
 launchers are available as `scripts/update-tool-shed.sh` and `scripts/update-tool-shed.ps1`.
 
 If the installed snapshot predates `update_snapshot.py`, obtain a current released Tool Shed
@@ -444,9 +455,11 @@ This governance applies to intentional development checkouts of the canonical re
 
 `tool_shed` includes a thin provider-neutral Agent Skills package at `skills/tool-shed`.
 
-The skill is also installed locally at `${CODEX_HOME:-~/.codex}/skills/tool-shed` for Codex
-auto-discovery in this development environment. Other providers use their native instruction
-adapter to route into the same workspace-local skill. It progressively loads route-specific
-references instead of duplicating templates or loading every procedure for every request.
+The skill may also be installed at `${CODEX_HOME:-~/.codex}/skills/tool-shed` for Codex
+auto-discovery. This user-level copy is a separate lifecycle target from a workspace snapshot;
+the updater reports drift and can synchronize it safely with `--sync-codex-skill`. Other providers
+use their native instruction adapter to route into the same workspace-local skill. It progressively
+loads route-specific references instead of duplicating templates or loading every procedure for
+every request.
 
 Initial skill packaging is local plus repo-packaged. Plugin packaging is intentionally deferred until real use shows it is needed.

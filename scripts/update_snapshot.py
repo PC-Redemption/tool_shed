@@ -17,6 +17,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from codex_skill_sync import CodexSkillError, inspect_codex_skill, synchronize_codex_skill
+
 
 DEFAULT_REPOSITORY = "https://github.com/PC-Redemption/tool_shed.git"
 STABLE_TAG = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
@@ -161,6 +163,46 @@ def clone_release(repository: str, destination: Path) -> tuple[str, dict[str, An
     )
     run([sys.executable, "scripts/validate_tool_shed.py"], cwd=destination)
     return selected, manifest, tag_commit, content_commit
+
+
+def released_skill_fingerprints(repository: Path) -> list[tuple[str, dict[str, str]]]:
+    """Return exact skill fingerprints recorded by stable release manifests."""
+    releases: list[tuple[str, dict[str, str]]] = []
+    for tag in git(repository, "tag", "--list").splitlines():
+        tag = tag.strip()
+        if not STABLE_TAG.fullmatch(tag):
+            continue
+        manifest_result = run(
+            ["git", "show", f"{tag}:SHED_VERSION.json"],
+            cwd=repository,
+            check=False,
+        )
+        if manifest_result.returncode:
+            continue
+        try:
+            manifest = json.loads(manifest_result.stdout)
+        except json.JSONDecodeError:
+            continue
+        if manifest.get("shed_version") != tag.removeprefix("v"):
+            continue
+        if manifest.get("release_tag") != tag:
+            continue
+        hashes = manifest.get("content_hashes")
+        if not isinstance(hashes, dict):
+            continue
+        prefix = "skills/tool-shed/"
+        fingerprint = {
+            str(path).removeprefix(prefix): str(digest)
+            for path, digest in hashes.items()
+            if str(path).startswith(prefix)
+        }
+        if "SKILL.md" in fingerprint:
+            releases.append((tag, fingerprint))
+    releases.sort(
+        key=lambda item: tuple(int(part) for part in item[0].removeprefix("v").split(".")),
+        reverse=True,
+    )
+    return releases
 
 
 def ignore_snapshot_copy(directory: str, names: list[str]) -> set[str]:
@@ -457,6 +499,19 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help=argparse.SUPPRESS,
     )
+    parser.add_argument(
+        "--inject-codex-sync-failure",
+        action="store_true",
+        help=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--sync-codex-skill",
+        action="store_true",
+        help=(
+            "Synchronize the user-level Codex skill when it is missing or exactly matches a "
+            "known Tool Shed release. Modified or unmanaged skills are never overwritten."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -501,6 +556,7 @@ def main() -> int:
             prepare_snapshot(clone, staged)
             staged_providers = load_staged_providers(staged)
             providers = select_providers(workspace, staged_providers, args.provider)
+            known_skill_releases = released_skill_fingerprints(clone)
             provider_paths = {
                 provider_id: str(config["instruction_path"])
                 for provider_id, config in staged_providers.items()
@@ -518,6 +574,17 @@ def main() -> int:
                     "providers": list(providers),
                 }
             )
+            inspect_codex = args.sync_codex_skill or "codex" in providers
+            if inspect_codex:
+                staged_skill = staged / "skills" / "tool-shed"
+                codex_skill = inspect_codex_skill(staged_skill, known_skill_releases)
+                codex_skill["source"] = str(target / "skills" / "tool-shed")
+                payload["codex_skill"] = codex_skill
+                if args.sync_codex_skill and not codex_skill.get("sync_safe"):
+                    raise UpdateError(
+                        "Codex skill synchronization was requested but is unsafe: "
+                        + str(codex_skill.get("detail") or codex_skill.get("state"))
+                    )
             timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
             if mode == "existing-update":
                 backup = workspace / f"tool_shed.backup-{timestamp}.tar"
@@ -539,6 +606,18 @@ def main() -> int:
                 )
                 if fingerprint_tree(workspace / "work") != work_before:
                     raise UpdateError("root work/ changed during snapshot update")
+                if inspect_codex:
+                    installed_skill = target / "skills" / "tool-shed"
+                    codex_skill = inspect_codex_skill(installed_skill, known_skill_releases)
+                    if args.sync_codex_skill:
+                        codex_skill = synchronize_codex_skill(
+                            installed_skill,
+                            codex_skill,
+                            timestamp,
+                            args.inject_codex_sync_failure,
+                        )
+                    codex_skill["source"] = str(installed_skill)
+                    payload["codex_skill"] = codex_skill
             except Exception as install_error:
                 rollback_errors: list[str] = []
                 try:
@@ -577,9 +656,16 @@ def main() -> int:
             print(f"Mode: {mode}")
             if backup:
                 print(f"Verified backup retained at {backup}")
+            codex_skill = payload.get("codex_skill")
+            if isinstance(codex_skill, dict):
+                print(f"Codex skill: {codex_skill.get('state')} at {codex_skill.get('path')}")
+                if codex_skill.get("state") not in {"current", None}:
+                    print(f"Safe synchronization command: {codex_skill.get('sync_command')}")
+                if codex_skill.get("restart_required"):
+                    print("Start a fresh Codex session to load the synchronized skill.")
             print("Root work/ preserved.")
         return 0
-    except (OSError, ValueError, json.JSONDecodeError, UpdateError) as error:
+    except (OSError, ValueError, json.JSONDecodeError, UpdateError, CodexSkillError) as error:
         payload["error"] = str(error)
         payload["rollback"] = bool(backup and target.exists() and not installed)
         if fingerprint_tree(workspace / "work") != work_before:

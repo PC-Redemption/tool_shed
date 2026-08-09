@@ -5,6 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from codex_skill_sync import inspect_codex_skill
 from provider_adapters import provider_config, provider_ids
 from repository_policy import POLICY_FILE, format_bytes, inspect_snapshot_ignore, inspect_work_ignore
 from work_tree import ensure_work_tree
@@ -286,22 +287,37 @@ def selected_providers(values: list[str] | None) -> tuple[str, ...]:
     return tuple(dict.fromkeys(values))
 
 
+def report_codex_skill_state() -> None:
+    source = Path(__file__).resolve().parents[1] / "skills" / "tool-shed"
+    state = inspect_codex_skill(source)
+    print(f"Codex skill: {state['state']} at {state['path']}.")
+    if state["state"] != "current":
+        print(
+            "Codex skill synchronization: "
+            f"{state['sync_command']}. Modified or unmanaged skills will be refused."
+        )
+    print("Codex skill changes require a fresh Codex session before they take effect.")
+
+
 def main() -> int:
     args = parse_args()
     root = Path(args.workspace).expanduser().resolve()
+    providers = selected_providers(args.provider)
     if args.guidance_only:
         repository = inspect_work_ignore(root).repository
         if repository is None or repository != root:
             print("Guidance-only installation requires the exact Git repository root.", file=sys.stderr)
             return 1
         try:
-            for provider_id in selected_providers(args.provider):
+            for provider_id in providers:
                 guidance_path, changed = ensure_provider_guidance(repository, provider_id)
                 state = "updated" if changed else "current"
                 print(f"Provider guidance ({provider_id}): {state} at {guidance_path}.")
         except ValueError as error:
             print(f"Provider guidance failed: {error}", file=sys.stderr)
             return 1
+        if "codex" in providers:
+            report_codex_skill_state()
         return 0
     ensure_work_tree(root)
     ask_created = ensure_ask_inbox(root)
@@ -320,7 +336,7 @@ def main() -> int:
                     "small versioned summaries or manifests outside generated/."
                 )
         try:
-            for provider_id in selected_providers(args.provider):
+            for provider_id in providers:
                 guidance_path, changed = ensure_provider_guidance(repository, provider_id)
                 if changed:
                     print(
@@ -329,6 +345,8 @@ def main() -> int:
         except ValueError as error:
             print(f"Provider guidance failed: {error}", file=sys.stderr)
             return 1
+        if "codex" in providers:
+            report_codex_skill_state()
 
     index_script = Path(__file__).resolve().with_name("update_work_index.py")
     if index_script.exists():
