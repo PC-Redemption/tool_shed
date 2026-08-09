@@ -180,7 +180,8 @@ def write_release_metadata(*, catalog: bytes, manifest: bytes) -> None:
     staged: dict[Path, Path] = {}
     replaced: list[Path] = []
     try:
-        staged = {path: stage_bytes(path, payload) for path, payload in payloads.items()}
+        for path, payload in payloads.items():
+            staged[path] = stage_bytes(path, payload)
         for path in payloads:
             staged[path].replace(path)
             replaced.append(path)
