@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import os
 import shutil
@@ -435,6 +436,48 @@ for raw in sys.stdin:
         self.assertIn("--release-tag must equal v<version>", result.stderr)
         self.assertEqual(manifest_path.read_bytes(), manifest_before)
         self.assertEqual(catalog_path.read_bytes(), catalog_before)
+
+    def test_manifest_writer_cleans_first_temp_when_second_stage_fails(self) -> None:
+        spec = importlib.util.spec_from_file_location(
+            "update_shed_manifest_failure_test",
+            ROOT / "scripts" / "update_shed_manifest.py",
+        )
+        self.assertIsNotNone(spec)
+        self.assertIsNotNone(spec.loader)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            catalog_path = root / "adapters" / "codex-skill-releases.json"
+            catalog_path.parent.mkdir()
+            manifest_path = root / "SHED_VERSION.json"
+            catalog_before = b"original catalog\n"
+            manifest_before = b"original manifest\n"
+            catalog_path.write_bytes(catalog_before)
+            manifest_path.write_bytes(manifest_before)
+            module.CODEX_SKILL_CATALOG = catalog_path
+            module.MANIFEST = manifest_path
+            real_stage_bytes = module.stage_bytes
+            stage_calls = 0
+
+            def fail_second_stage(path: Path, payload: bytes) -> Path:
+                nonlocal stage_calls
+                stage_calls += 1
+                if stage_calls == 2:
+                    raise OSError("injected second-stage failure")
+                return real_stage_bytes(path, payload)
+
+            module.stage_bytes = fail_second_stage
+
+            with self.assertRaisesRegex(OSError, "injected second-stage failure"):
+                module.write_release_metadata(
+                    catalog=b"replacement catalog\n",
+                    manifest=b"replacement manifest\n",
+                )
+
+            self.assertEqual(catalog_path.read_bytes(), catalog_before)
+            self.assertEqual(manifest_path.read_bytes(), manifest_before)
+            self.assertEqual(list(root.rglob("*.tmp")), [])
 
     def test_version_checks_fail_cleanly_for_bad_local_manifest_and_insecure_url(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
