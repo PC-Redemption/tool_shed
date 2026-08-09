@@ -3,7 +3,7 @@
 Status: active
 Type: workpackage
 Updated: 2026-08-09
-Next Action: obtain approval to push main and v0.11.0, then verify the live manifest and synchronize the installed client
+Next Action: start a fresh Codex task in this workspace, run `ts: version`, and close this workpackage after the 0.11.0 smoke passes
 
 Project Map: work/maps/map-tool-shed-evolution.md
 
@@ -35,12 +35,13 @@ Completed:
 - Canonical skill, installer guidance, operator documentation, and regression coverage.
 - Focused test, 64-test suite, full validator, work-state, and skill validation.
 - Local 0.11.0 content commit, provenance commit, and annotated tag.
+- Published `main` and annotated `v0.11.0`; live canonical version reports current.
+- Backed up, staged, validated, replaced, and exact-compared the installed Codex skill.
 
 Incomplete:
 
-- External publication of `main` and `v0.11.0`.
-- Live canonical manifest verification.
-- Installed-client backup, staged replacement, exact comparison, and fresh-task smoke.
+- Fresh-task smoke using the newly loaded installed skill.
+- Final artifact closeout after that smoke passes.
 
 ## Goal
 
@@ -116,14 +117,15 @@ Completion criteria:
 Completion criteria:
 
 - [x] Local manifest provenance and annotated tag validate.
-- [ ] Canonical remote manifest matches the release.
-- [ ] Installed client exactly matches canonical `skills/tool-shed/`.
+- [x] Canonical remote manifest matches the release.
+- [x] Installed client exactly matches canonical `skills/tool-shed/`.
+- [ ] A fresh task loads the deployed skill and reports Tool Shed 0.11.0 through `ts: version`.
 
 ## Open Questions
 
 - Can the active client reload a replaced skill without a new task? No; report the required fresh
   task smoke after exact deployment verification.
-- Is external publication authorized? Awaiting explicit approval to push `main` and `v0.11.0`.
+- Is external publication authorized? Yes; publication and live verification are complete.
 
 ## Completion Standard
 
@@ -134,5 +136,5 @@ released when publication is authorized, deployed to the installed client, and v
 
 - Current truth promoted to: README.md; conventions.md; docs/operator-guide.md; skills/tool-shed/SKILL.md
 - Historical context remains in: the evaluation spike, inventory, evidence, and decision matrix
-- Runtime/status evidence: validation output and installed-client exact comparison
+- Runtime/status evidence: `work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md`
 - Cleanup deferred to: independent cross-model behavioral pilot

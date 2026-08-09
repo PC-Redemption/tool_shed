@@ -123,6 +123,21 @@
     {
       "canonical_truth": null,
       "disposition": null,
+      "next_action": "run `ts: version` in a fresh Codex task",
+      "parent": "work/wp/active/wp-evidence-responsive-tool-shed-execution.md",
+      "path": "work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md",
+      "produces": null,
+      "project_map": null,
+      "status": "active",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Evidence: Tool Shed 0.11.0 release and client synchronization",
+      "type": "evidence",
+      "updated": "2026-08-09"
+    },
+    {
+      "canonical_truth": null,
+      "disposition": null,
       "next_action": "file the external Codex Desktop robustness evidence separately if still needed",
       "parent": "work/maps/map-tool-shed-evolution.md",
       "path": "work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md",
@@ -333,7 +348,7 @@
     {
       "canonical_truth": null,
       "disposition": null,
-      "next_action": "obtain approval to push main and v0.11.0, then verify the live manifest and synchronize the installed client",
+      "next_action": "start a fresh Codex task in this workspace, run `ts: version`, and close this workpackage after the 0.11.0 smoke passes",
       "parent": null,
       "path": "work/wp/active/wp-evidence-responsive-tool-shed-execution.md",
       "produces": null,
@@ -430,8 +445,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 4,
+    "active_artifacts": 5,
     "completed_or_decided_artifacts": 23,
-    "total_artifacts": 28
+    "total_artifacts": 29
   }
 }
