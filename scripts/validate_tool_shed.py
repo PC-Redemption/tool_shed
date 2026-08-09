@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import py_compile
 import shutil
@@ -18,6 +19,30 @@ def step(name: str) -> None:
 
 def run(args: list[str], *, cwd: Path = ROOT, quiet: bool = False) -> None:
     subprocess.run(args, cwd=str(cwd), check=True, stdout=subprocess.DEVNULL if quiet else None)
+
+
+def is_canonical_checkout() -> bool:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            cwd=str(ROOT),
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+    except OSError:
+        return False
+    return result.returncode == 0 and Path(result.stdout.strip()).resolve() == ROOT
+
+
+def source_fingerprint() -> dict[str, str]:
+    result: dict[str, str] = {}
+    for path in sorted(ROOT.rglob("*")):
+        if not path.is_file() or "__pycache__" in path.parts or path.suffix in {".pyc", ".pyo"}:
+            continue
+        result[path.relative_to(ROOT).as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
+    return result
 
 
 def compile_python() -> None:
@@ -228,18 +253,28 @@ def cleanup_caches() -> None:
 
 
 def main() -> int:
+    canonical = is_canonical_checkout()
+    before = source_fingerprint() if not canonical else None
+    if not canonical and ((ROOT / ".git").exists() or (ROOT / "work").exists()):
+        raise SystemExit("disconnected snapshot contains forbidden .git or work content")
     try:
         compile_python()
         check_shed_manifest()
         run_unit_tests()
         check_provider_adapters()
-        regenerate_indexes()
-        check_stale_paths()
-        review_work_state()
+        if canonical:
+            regenerate_indexes()
+            check_stale_paths()
+            review_work_state()
+        else:
+            step("canonical workspace state")
+            print("Skipped for disconnected snapshot; no snapshot-local work/ was created.")
         smoke_temp_workspace()
         sanity_check_markdown()
     finally:
         cleanup_caches()
+    if before is not None and source_fingerprint() != before:
+        raise SystemExit("disconnected snapshot changed during validation")
     print("tool_shed validation passed")
     return 0
 

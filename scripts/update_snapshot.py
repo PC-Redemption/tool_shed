@@ -21,6 +21,7 @@ from codex_skill_sync import CodexSkillError, inspect_codex_skill, synchronize_c
 
 
 DEFAULT_REPOSITORY = "https://github.com/PC-Redemption/tool_shed.git"
+UPDATER_PROTOCOL = 2
 STABLE_TAG = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
 REQUIRED_PATHS = (
     "SHED_VERSION.json",
@@ -35,6 +36,22 @@ IGNORED_NAMES = {".git", "work", "__pycache__", ".pytest_cache"}
 
 class UpdateError(RuntimeError):
     pass
+
+
+def minimum_updater_protocol(manifest: dict[str, Any]) -> int:
+    value = manifest.get("minimum_updater_protocol", 1)
+    if not isinstance(value, int) or isinstance(value, bool) or value < 1:
+        raise UpdateError("manifest minimum_updater_protocol must be a positive integer")
+    return value
+
+
+def version_check_command(script: str, shed: str, protocol: int, *, snapshot: bool) -> list[str]:
+    command = [sys.executable, script, "--shed", shed, "--local-only", "--strict"]
+    if protocol >= 2:
+        command.extend(("--updater-protocol", str(UPDATER_PROTOCOL)))
+        if snapshot:
+            command.append("--snapshot")
+    return command
 
 
 def run(
@@ -143,6 +160,12 @@ def clone_release(repository: str, destination: Path) -> tuple[str, dict[str, An
         raise UpdateError("manifest release_tag does not match selected release tag")
     if not manifest.get("released_at"):
         raise UpdateError("release manifest has no release timestamp")
+    required_protocol = minimum_updater_protocol(manifest)
+    if required_protocol > UPDATER_PROTOCOL:
+        raise UpdateError(
+            f"release requires updater protocol {required_protocol}, but this updater supports "
+            f"protocol {UPDATER_PROTOCOL}; obtain a newer released Tool Shed updater"
+        )
     tag_commit = git(destination, "rev-parse", f"{selected}^{{commit}}")
     content_commit = git(destination, "rev-parse", f"{tag_commit}^")
     if manifest.get("release_commit") != content_commit:
@@ -151,14 +174,12 @@ def clone_release(repository: str, destination: Path) -> tuple[str, dict[str, An
     if changed != ["SHED_VERSION.json"]:
         raise UpdateError("provenance commit must change exactly SHED_VERSION.json")
     run(
-        [
-            sys.executable,
+        version_check_command(
             "scripts/check_shed_version.py",
-            "--shed",
             ".",
-            "--local-only",
-            "--strict",
-        ],
+            required_protocol,
+            snapshot=False,
+        ),
         cwd=destination,
     )
     run([sys.executable, "scripts/validate_tool_shed.py"], cwd=destination)
@@ -211,7 +232,7 @@ def ignore_snapshot_copy(directory: str, names: list[str]) -> set[str]:
     return ignored
 
 
-def prepare_snapshot(source: Path, staged: Path) -> None:
+def prepare_snapshot(source: Path, staged: Path, protocol: int) -> None:
     shutil.copytree(source, staged, ignore=ignore_snapshot_copy)
     for relative in REQUIRED_PATHS:
         if not (staged / relative).exists():
@@ -219,14 +240,12 @@ def prepare_snapshot(source: Path, staged: Path) -> None:
     if (staged / ".git").exists() or (staged / "work").exists():
         raise UpdateError("staged snapshot contains forbidden .git or work content")
     run(
-        [
-            sys.executable,
+        version_check_command(
             str(staged / "scripts" / "check_shed_version.py"),
-            "--shed",
             str(staged),
-            "--local-only",
-            "--strict",
-        ]
+            protocol,
+            snapshot=True,
+        )
     )
 
 
@@ -315,6 +334,7 @@ def post_install_checks(
     inject_failure: bool,
     providers: tuple[str, ...],
     provider_paths: dict[str, str],
+    protocol: int,
 ) -> dict[str, str]:
     if target.is_symlink() or not target.is_dir():
         raise UpdateError("installed snapshot is not a real directory")
@@ -322,14 +342,12 @@ def post_install_checks(
         raise UpdateError("installed snapshot contains forbidden .git or work content")
     require_ignored(workspace)
     version_result = run(
-        [
-            sys.executable,
+        version_check_command(
             str(target / "scripts" / "check_shed_version.py"),
-            "--shed",
             str(target),
-            "--local-only",
-            "--strict",
-        ]
+            protocol,
+            snapshot=True,
+        )
     )
     results = {"version": version_result.stdout.strip()}
     if providers:
@@ -553,7 +571,8 @@ def main() -> int:
                 raise UpdateError(
                     f"refusing downgrade from {previous_version} to {selected_version}"
                 )
-            prepare_snapshot(clone, staged)
+            selected_protocol = minimum_updater_protocol(manifest)
+            prepare_snapshot(clone, staged, selected_protocol)
             staged_providers = load_staged_providers(staged)
             providers = select_providers(workspace, staged_providers, args.provider)
             known_skill_releases = released_skill_fingerprints(clone)
@@ -603,6 +622,7 @@ def main() -> int:
                     args.inject_post_install_failure,
                     providers,
                     provider_paths,
+                    selected_protocol,
                 )
                 if fingerprint_tree(workspace / "work") != work_before:
                     raise UpdateError("root work/ changed during snapshot update")

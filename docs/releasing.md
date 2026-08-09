@@ -11,6 +11,12 @@ the provenance-only manifest commit. `release_tag` identifies the final provenan
 `SHED_VERSION.json` is intentionally excluded from its own `content_hashes`, so adding provenance
 does not change the content commit it identifies.
 
+`minimum_updater_protocol` declares the oldest updater lifecycle that may install the release.
+Protocol 2 adds transactional provider guidance, strict disconnected-snapshot boundaries, and the
+explicit updater context required to prevent older in-snapshot updaters from silently bypassing new
+post-install behavior. Do not lower this field to preserve compatibility with an updater that
+cannot satisfy the release lifecycle.
+
 ## Release Procedure
 
 1. Confirm the work tree contains only the intended release scope.

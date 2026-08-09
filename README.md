@@ -267,6 +267,15 @@ python3 tool_shed/scripts/check_shed_version.py --shed tool_shed
 
 Equivalent Codex requests are `ts: version`, `ts: check for updates`, and `ts: update status`.
 Checks are read-only and do not authorize snapshot replacement.
+For a strict standalone integrity and boundary check, use:
+
+```bash
+python3 tool_shed/scripts/check_shed_version.py --shed tool_shed --local-only --strict --verification-only --snapshot
+```
+
+Released manifests declare `minimum_updater_protocol`. A release whose lifecycle exceeds an old
+updater's protocol refuses that updater before workspace mutation and directs the operator to run a
+current released updater from outside the workspace.
 
 Tool Shed performs a zero-I/O reasoning preflight before substantial routed work. When current
 context establishes a usable picker pair, it recommends it as a bold level-three header using
@@ -349,6 +358,9 @@ python3 scripts/validate_tool_shed.py
 ```
 
 GitHub Actions runs the same validation on push and pull requests.
+The same command is safe in a disconnected snapshot: canonical `work/` indexing and reconciliation
+steps are skipped, the snapshot source fingerprint must remain unchanged, and embedded `.git/` or
+`work/` content is refused.
 
 Before releasing a changed snapshot, intentionally bump the semantic version and refresh its
 content hashes:

@@ -62,6 +62,7 @@ class ScriptTests(unittest.TestCase):
         validation_exit: int = 0,
         include_stale_checker: bool = False,
         include_provider_adapter: bool = False,
+        minimum_updater_protocol: int = 2,
     ) -> Path:
         repository = root / "release source"
         repository.mkdir()
@@ -138,6 +139,7 @@ class ScriptTests(unittest.TestCase):
                 {
                     "shed_version": version,
                     "manifest_schema_version": 2,
+                    "minimum_updater_protocol": minimum_updater_protocol,
                     "artifact_model_version": "test",
                     "content_hashes": content_hashes,
                     "release_tag": f"v{version}",
@@ -435,6 +437,7 @@ for raw in sys.stdin:
         manifest = json.loads((ROOT / "SHED_VERSION.json").read_text(encoding="utf-8"))
 
         self.assertEqual(manifest["manifest_schema_version"], 2)
+        self.assertEqual(manifest["minimum_updater_protocol"], 2)
         self.assertEqual(manifest["release_tag"], f"v{manifest['shed_version']}")
         self.assertIn("release_commit", manifest)
         self.assertIn("released_at", manifest)
@@ -543,6 +546,159 @@ for raw in sys.stdin:
             self.assertEqual(payload["version_relation"], "current")
             self.assertEqual(payload["state"], "modified")
             self.assertEqual(payload["modified"], ["README.md"])
+
+    def test_strict_snapshot_check_rejects_forbidden_work_and_git(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            shed = root / "tool_shed"
+            shed.mkdir()
+            manifest = {
+                "shed_version": "1.0.0",
+                "manifest_schema_version": 2,
+                "minimum_updater_protocol": 2,
+                "artifact_model_version": "test",
+                "content_hashes": {},
+                "release_tag": "v1.0.0",
+                "release_commit": None,
+                "released_at": None,
+            }
+            (shed / "SHED_VERSION.json").write_text(json.dumps(manifest), encoding="utf-8")
+            (shed / "work").mkdir()
+            (shed / ".git").write_text("embedded metadata\n", encoding="utf-8")
+
+            result = run_script(
+                "scripts/check_shed_version.py",
+                "--shed",
+                str(shed),
+                "--local-only",
+                "--strict",
+                "--verification-only",
+                "--snapshot",
+                "--json",
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(payload["state"], "modified")
+            self.assertEqual(payload["forbidden"], [".git", "work"])
+
+    def test_disconnected_snapshot_validator_is_nonmutating(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            snapshot = root / "tool_shed"
+
+            def ignore(directory: str, names: list[str]) -> set[str]:
+                ignored = {name for name in names if name in {".git", "work", "tests", "__pycache__"}}
+                ignored.update(name for name in names if name.endswith((".pyc", ".pyo")))
+                return ignored
+
+            shutil.copytree(ROOT, snapshot, ignore=ignore)
+            (snapshot / "tests").mkdir()
+            (snapshot / "tests" / "test_snapshot_smoke.py").write_text(
+                "import unittest\n\nclass SnapshotSmoke(unittest.TestCase):\n"
+                "    def test_snapshot_loads(self):\n        self.assertTrue(True)\n",
+                encoding="utf-8",
+            )
+            before = {
+                path.relative_to(snapshot).as_posix(): path.read_bytes()
+                for path in snapshot.rglob("*")
+                if path.is_file()
+            }
+
+            result = run_script(
+                str(snapshot / "scripts" / "validate_tool_shed.py"),
+                cwd=snapshot,
+                check=False,
+            )
+            after = {
+                path.relative_to(snapshot).as_posix(): path.read_bytes()
+                for path in snapshot.rglob("*")
+                if path.is_file()
+            }
+
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("Skipped for disconnected snapshot", result.stdout)
+            self.assertEqual(after, before)
+            self.assertFalse((snapshot / "work").exists())
+
+    def test_real_v0_10_3_updater_refuses_protocol_two_release_before_mutation(self) -> None:
+        legacy = subprocess.run(
+            ["git", "show", "v0.10.3:scripts/update_snapshot.py"],
+            cwd=ROOT,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        legacy_manifest = subprocess.run(
+            ["git", "show", "v0.10.3:SHED_VERSION.json"],
+            cwd=ROOT,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        if legacy.returncode or legacy_manifest.returncode:
+            self.skipTest("canonical v0.10.3 Git fixture is unavailable")
+        expected_hash = json.loads(legacy_manifest.stdout)["content_hashes"][
+            "scripts/update_snapshot.py"
+        ]
+        self.assertEqual(hashlib.sha256(legacy.stdout.encode("utf-8")).hexdigest(), expected_hash)
+
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            updater = root / "update_snapshot_v0_10_3.py"
+            updater.write_text(legacy.stdout, encoding="utf-8", newline="\n")
+            release = self.create_test_release(root, version="9.9.0")
+            workspace = self.create_update_workspace(root, version="9.8.0")
+
+            result = run_script(
+                str(updater),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--json",
+                cwd=workspace,
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(payload["state"], "failed")
+            self.assertIn("requires updater protocol 2", payload["error"])
+            self.assertIn("current released Tool Shed checkout", payload["error"])
+            self.assertTrue((workspace / "tool_shed" / "old-marker.txt").is_file())
+            self.assertFalse(list(workspace.glob("tool_shed.backup-*.tar")))
+
+    def test_current_updater_refuses_future_protocol_before_mutation(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(
+                root,
+                version="9.9.0",
+                minimum_updater_protocol=3,
+            )
+            workspace = self.create_update_workspace(root, version="9.8.0")
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--json",
+                cwd=workspace,
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("requires updater protocol 3", payload["error"])
+            self.assertIn("supports protocol 2", payload["error"])
+            self.assertTrue((workspace / "tool_shed" / "old-marker.txt").is_file())
+            self.assertFalse(list(workspace.glob("tool_shed.backup-*.tar")))
 
     def test_operator_help_is_packaged_and_routed(self) -> None:
         guide = (ROOT / "docs" / "operator-guide.md").read_text(encoding="utf-8")
