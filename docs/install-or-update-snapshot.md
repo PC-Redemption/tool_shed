@@ -26,7 +26,10 @@ Start a fresh Codex session after a change.
 
 Use the updater from a current released checkout outside the target project. This matters when an
 older installed snapshot predates newer upgrade safeguards. The updater selects the remote release;
-the target's stale in-snapshot updater is not a bootstrap authority.
+the target's stale in-snapshot updater is not a bootstrap authority. Releases declare a
+`minimum_updater_protocol`; releases requiring protocol 2 or newer cause legacy updater validation
+to stop before snapshot mutation with the supported external-updater command. The current updater
+supplies its protocol explicitly during release, staged-snapshot, and post-install verification.
 
 Provider guidance is auto-detected from existing marked instruction files. If none exists, Codex is
 the backward-compatible default. Override or install multiple adapters with:
@@ -98,7 +101,8 @@ Select and verify the release:
     - git diff --name-only "$content_commit" "$tag_commit" reports exactly SHED_VERSION.json and
       no other path. Tool Shed intentionally uses a content commit followed by a provenance-only
       manifest commit; release_commit must not equal tag_commit.
-    - python3 scripts/check_shed_version.py --shed . --local-only --strict passes.
+    - python3 scripts/check_shed_version.py --shed . --local-only --strict
+      --updater-protocol <current-protocol> passes.
     - python3 scripts/validate_tool_shed.py passes.
     - When Codex is selected, compare the user-level skill against the selected skill and the exact
       skill hashes recorded by stable release manifests. Report drift even when synchronization was
@@ -147,6 +151,7 @@ Post-install verification for either path:
     - python3 tool_shed/scripts/check_stale_paths.py --workspace .
     - python3 tool_shed/scripts/review_work_state.py --workspace .
     - python3 tool_shed/scripts/check_shed_version.py --shed tool_shed --local-only --strict
+      --updater-protocol <current-protocol> --snapshot
 18. Guidance-only installation may append or replace marked Tool Shed blocks in the selected
     provider instruction files. It must preserve owner-authored instruction content and leave
     `.gitignore`, `work/`, indexes, and the Q&A inbox byte-for-byte unchanged.
@@ -204,3 +209,8 @@ authorization.
 ```
 
 Remote stable tags and the selected tag's two-commit release provenance are authoritative.
+
+For standalone verification rather than an updater invocation, replace `--updater-protocol ...`
+with `--verification-only --snapshot`. Validation inside a disconnected snapshot skips
+canonical-repository work indexing and reconciliation and verifies that snapshot files remain
+unchanged.

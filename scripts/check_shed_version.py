@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import re
+import subprocess
 import urllib.error
 import urllib.request
 from datetime import datetime
@@ -16,6 +17,10 @@ from typing import Any
 
 DEFAULT_CANONICAL = "https://raw.githubusercontent.com/PC-Redemption/tool_shed/main/SHED_VERSION.json"
 VERSION = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
+BOOTSTRAP_GUIDANCE = (
+    "obtain a current released Tool Shed checkout outside the workspace, then run "
+    "`python /path/to/current-release/scripts/update_snapshot.py --workspace .`"
+)
 
 
 def hash_file(path: Path) -> str:
@@ -70,6 +75,29 @@ def validate_manifest(manifest: dict[str, Any], *, canonical: bool) -> None:
             datetime.fromisoformat(str(released_at).replace("Z", "+00:00"))
         except ValueError as error:
             raise ValueError(f"{label} released_at must be ISO 8601") from error
+    minimum_updater = manifest.get("minimum_updater_protocol", 1)
+    if not isinstance(minimum_updater, int) or isinstance(minimum_updater, bool) or minimum_updater < 1:
+        raise ValueError(f"{label} minimum_updater_protocol must be a positive integer")
+
+
+def validate_updater_context(
+    manifest: dict[str, Any],
+    *,
+    strict: bool,
+    updater_protocol: int | None,
+    verification_only: bool,
+) -> None:
+    minimum = int(manifest.get("minimum_updater_protocol", 1))
+    if updater_protocol is not None and updater_protocol < minimum:
+        raise ValueError(
+            f"release requires updater protocol {minimum}, but updater protocol "
+            f"{updater_protocol} was supplied; {BOOTSTRAP_GUIDANCE}"
+        )
+    if strict and minimum > 1 and updater_protocol is None and not verification_only:
+        raise ValueError(
+            f"release requires updater protocol {minimum}; legacy updater context is unsafe; "
+            f"{BOOTSTRAP_GUIDANCE}; for standalone integrity verification, add --verification-only"
+        )
 
 
 def verify_local(root: Path, manifest: dict[str, Any]) -> tuple[list[str], list[str]]:
@@ -85,6 +113,30 @@ def verify_local(root: Path, manifest: dict[str, Any]) -> tuple[list[str], list[
         elif hash_file(path) != expected:
             modified.append(relative)
     return missing, modified
+
+
+def exact_git_root(root: Path) -> bool:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            cwd=str(root),
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+    except OSError:
+        return False
+    return result.returncode == 0 and Path(result.stdout.strip()).resolve() == root
+
+
+def forbidden_snapshot_paths(root: Path, enforce_snapshot: bool) -> list[str]:
+    forbidden: list[str] = []
+    if enforce_snapshot and ((root / ".git").exists() or (root / ".git").is_symlink()):
+        forbidden.append(".git")
+    if (root / "work").exists() and (enforce_snapshot or not exact_git_root(root)):
+        forbidden.append("work")
+    return forbidden
 
 
 def relation(local: object, canonical: object) -> str:
@@ -112,6 +164,22 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--timeout", type=int, default=10, help="Canonical fetch timeout in seconds.")
     parser.add_argument("--json", action="store_true", help="Write machine-readable output.")
     parser.add_argument("--strict", action="store_true", help="Fail when local is not current and unmodified.")
+    parser.add_argument(
+        "--snapshot",
+        action="store_true",
+        help="Enforce disconnected-snapshot boundaries, including no embedded .git or work.",
+    )
+    context = parser.add_mutually_exclusive_group()
+    context.add_argument(
+        "--updater-protocol",
+        type=int,
+        help="Updater protocol supplied by the calling snapshot updater.",
+    )
+    context.add_argument(
+        "--verification-only",
+        action="store_true",
+        help="Declare standalone integrity verification rather than an updater invocation.",
+    )
     return parser.parse_args()
 
 
@@ -122,12 +190,21 @@ def main() -> int:
         local_manifest = read_json_path(root / "SHED_VERSION.json")
         validate_manifest(local_manifest, canonical=False)
         missing, modified = verify_local(root, local_manifest)
+        forbidden = forbidden_snapshot_paths(root, args.snapshot)
+        if not missing and not modified and not forbidden:
+            validate_updater_context(
+                local_manifest,
+                strict=args.strict,
+                updater_protocol=args.updater_protocol,
+                verification_only=args.verification_only,
+            )
     except (OSError, ValueError, json.JSONDecodeError) as error:
         payload = {
             "local_version": None,
             "local_integrity": "unknown",
             "missing": [],
             "modified": [],
+            "forbidden": [],
             "canonical_version": None,
             "canonical_release": None,
             "canonical_manifest_match": None,
@@ -142,19 +219,21 @@ def main() -> int:
         return 2
     payload: dict[str, Any] = {
         "local_version": local_manifest.get("shed_version"),
-        "local_integrity": "modified" if missing or modified else "verified",
+        "local_integrity": "modified" if missing or modified or forbidden else "verified",
         "missing": missing,
         "modified": modified,
+        "forbidden": forbidden,
         "canonical_version": None,
         "local_release": {
             "tag": local_manifest.get("release_tag"),
             "commit": local_manifest.get("release_commit"),
             "released_at": local_manifest.get("released_at"),
+            "minimum_updater_protocol": local_manifest.get("minimum_updater_protocol", 1),
         },
         "canonical_release": None,
         "canonical_manifest_match": None,
         "version_relation": "not-checked",
-        "state": "modified" if missing or modified else "local-only",
+        "state": "modified" if missing or modified or forbidden else "local-only",
     }
 
     if not args.local_only:
@@ -166,6 +245,7 @@ def main() -> int:
                 "tag": canonical_manifest.get("release_tag"),
                 "commit": canonical_manifest.get("release_commit"),
                 "released_at": canonical_manifest.get("released_at"),
+                "minimum_updater_protocol": canonical_manifest.get("minimum_updater_protocol", 1),
             }
             payload["version_relation"] = relation(
                 local_manifest.get("shed_version"), canonical_manifest.get("shed_version")
@@ -200,6 +280,8 @@ def main() -> int:
             print("Missing tracked files: " + ", ".join(missing))
         if modified:
             print("Modified tracked files: " + ", ".join(modified))
+        if forbidden:
+            print("Forbidden snapshot paths: " + ", ".join(forbidden))
         if payload.get("error"):
             print("Canonical check failed: " + str(payload["error"]))
 

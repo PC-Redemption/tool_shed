@@ -35,6 +35,7 @@ TRACKED_GLOBS = (
 )
 VERSION = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
 COMMIT = re.compile(r"^[0-9a-f]{7,40}$")
+CURRENT_UPDATER_PROTOCOL = 2
 
 
 def hash_file(path: Path) -> str:
@@ -104,6 +105,9 @@ def validate_manifest(manifest: dict[str, object]) -> list[str]:
             datetime.fromisoformat(str(released_at).replace("Z", "+00:00"))
         except ValueError:
             errors.append("released_at must be an ISO 8601 timestamp or date")
+    minimum_updater = manifest.get("minimum_updater_protocol", 1)
+    if not isinstance(minimum_updater, int) or isinstance(minimum_updater, bool) or minimum_updater < 1:
+        errors.append("minimum_updater_protocol must be a positive integer")
     return errors
 
 
@@ -158,6 +162,7 @@ def main() -> int:
         manifest["notes"] = args.notes
     manifest["updated_at"] = date.today().isoformat()
     manifest["manifest_schema_version"] = 2
+    manifest["minimum_updater_protocol"] = CURRENT_UPDATER_PROTOCOL
     manifest["canonical_manifest_url"] = (
         "https://raw.githubusercontent.com/PC-Redemption/tool_shed/main/SHED_VERSION.json"
     )
