@@ -6,8 +6,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import subprocess
+import tempfile
 from datetime import date, datetime
 from pathlib import Path
 
@@ -57,8 +59,16 @@ def tracked_paths() -> list[Path]:
     return sorted(path for path in paths if path.is_file())
 
 
-def current_hashes() -> dict[str, str]:
-    return {path.relative_to(ROOT).as_posix(): hash_file(path) for path in tracked_paths()}
+def current_hashes(*, overrides: dict[Path, bytes] | None = None) -> dict[str, str]:
+    replacements = overrides or {}
+    return {
+        path.relative_to(ROOT).as_posix(): (
+            hashlib.sha256(replacements[path]).hexdigest()
+            if path in replacements
+            else hash_file(path)
+        )
+        for path in tracked_paths()
+    }
 
 
 def fingerprint_digest(fingerprint: dict[str, str]) -> str:
@@ -138,12 +148,63 @@ def exact_git_root() -> bool:
         return False
 
 
-def write_skill_catalog(*, exclude_tag: str) -> None:
-    CODEX_SKILL_CATALOG.write_text(
-        json.dumps(release_skill_catalog(exclude_tag=exclude_tag), indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-        newline="\n",
+def json_bytes(payload: dict[str, object]) -> bytes:
+    return (json.dumps(payload, indent=2, sort_keys=True) + "\n").encode("utf-8")
+
+
+def stage_bytes(path: Path, payload: bytes) -> Path:
+    descriptor, staged_name = tempfile.mkstemp(
+        dir=path.parent,
+        prefix=f".{path.name}.",
+        suffix=".tmp",
     )
+    staged = Path(staged_name)
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.chmod(staged, path.stat().st_mode & 0o777)
+    except BaseException:
+        staged.unlink(missing_ok=True)
+        raise
+    return staged
+
+
+def write_release_metadata(*, catalog: bytes, manifest: bytes) -> None:
+    payloads = {
+        CODEX_SKILL_CATALOG: catalog,
+        MANIFEST: manifest,
+    }
+    originals = {path: path.read_bytes() for path in payloads}
+    staged: dict[Path, Path] = {}
+    replaced: list[Path] = []
+    try:
+        staged = {path: stage_bytes(path, payload) for path, payload in payloads.items()}
+        for path in payloads:
+            staged[path].replace(path)
+            replaced.append(path)
+    except BaseException as error:
+        rollback_errors: list[str] = []
+        for path in reversed(replaced):
+            restore: Path | None = None
+            try:
+                restore = stage_bytes(path, originals[path])
+                restore.replace(path)
+            except BaseException as rollback_error:
+                rollback_errors.append(f"{path}: {rollback_error}")
+            finally:
+                if restore is not None:
+                    restore.unlink(missing_ok=True)
+        if rollback_errors:
+            raise RuntimeError(
+                "release metadata write failed and rollback was incomplete: "
+                + "; ".join(rollback_errors)
+            ) from error
+        raise
+    finally:
+        for staged_path in staged.values():
+            staged_path.unlink(missing_ok=True)
 
 
 def load_manifest() -> dict[str, object]:
@@ -254,8 +315,12 @@ def main() -> int:
         except ValueError as error:
             raise SystemExit("--released-at must be an ISO 8601 timestamp or date") from error
 
-    write_skill_catalog(exclude_tag=args.release_tag or f"v{args.version}")
-    hashes = current_hashes()
+    release_tag = args.release_tag or f"v{args.version}"
+    if release_tag != f"v{args.version}":
+        raise SystemExit("--release-tag must equal v<version>")
+
+    catalog = json_bytes(release_skill_catalog(exclude_tag=release_tag))
+    hashes = current_hashes(overrides={CODEX_SKILL_CATALOG: catalog})
     manifest["shed_version"] = args.version
     if args.notes:
         manifest["notes"] = args.notes
@@ -266,16 +331,10 @@ def main() -> int:
         "https://raw.githubusercontent.com/PC-Redemption/tool_shed/main/SHED_VERSION.json"
     )
     manifest["content_hashes"] = hashes
-    manifest["release_tag"] = args.release_tag or f"v{args.version}"
-    if manifest["release_tag"] != f"v{args.version}":
-        raise SystemExit("--release-tag must equal v<version>")
+    manifest["release_tag"] = release_tag
     manifest["release_commit"] = args.release_commit
     manifest["released_at"] = args.released_at
-    MANIFEST.write_text(
-        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-        newline="\n",
-    )
+    write_release_metadata(catalog=catalog, manifest=json_bytes(manifest))
     print(f"Updated {MANIFEST} with {len(hashes)} tracked files.")
     return 0
 
