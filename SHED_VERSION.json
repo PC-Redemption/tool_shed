@@ -58,9 +58,9 @@
   },
   "manifest_schema_version": 2,
   "notes": "Add provider-neutral Tool Shed core, discussion routing, progressive loading, and five native AI adapters",
-  "release_commit": null,
+  "release_commit": "241330da52ad98cf212d52bd352f72eb76533ef6",
   "release_tag": "v0.12.0",
-  "released_at": null,
+  "released_at": "2026-08-09T13:51:03Z",
   "shed_version": "0.12.0",
   "updated_at": "2026-08-09"
 }
