@@ -2000,7 +2000,7 @@ old Tool Shed guidance
             )
             backup = Path(payload["codex_skill"]["backup_path"])
             self.assertEqual((backup / "SKILL.md").read_bytes(), old_files["SKILL.md"])
-            self.assertEqual(backup.parent, codex_home / "tool-shed-backups")
+            self.assertTrue(backup.parent.samefile(codex_home / "tool-shed-backups"))
             self.assertFalse(list((codex_home / "skills").glob("tool-shed.backup-*")))
 
     def test_snapshot_upgrade_installs_missing_user_codex_skill_without_backup(self) -> None:
