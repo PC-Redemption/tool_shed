@@ -51,9 +51,9 @@
   },
   "manifest_schema_version": 2,
   "notes": "Add evidence-responsive execution and conditional prospective failure checks",
-  "release_commit": null,
+  "release_commit": "3bd4d003c4df07a2ff6a683e8b7e3c71848453c8",
   "release_tag": "v0.11.0",
-  "released_at": null,
+  "released_at": "2026-08-09T13:01:40Z",
   "shed_version": "0.11.0",
   "updated_at": "2026-08-09"
 }
