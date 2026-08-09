@@ -3,7 +3,7 @@
 Status: active
 Type: workpackage
 Updated: 2026-08-09
-Next Action: run focused regression tests and inspect generated workspace guidance
+Next Action: obtain approval to push main and v0.11.0, then verify the live manifest and synchronize the installed client
 
 Project Map: work/maps/map-tool-shed-evolution.md
 
@@ -32,10 +32,15 @@ Completed:
 - Source-backed mechanism inventory.
 - Frozen instruction-level scenario evaluation.
 - Decision matrix selecting two native mechanisms.
+- Canonical skill, installer guidance, operator documentation, and regression coverage.
+- Focused test, 64-test suite, full validator, work-state, and skill validation.
+- Local 0.11.0 content commit, provenance commit, and annotated tag.
 
 Incomplete:
 
-- Canonical skill, installer guidance, documentation, tests, release, and client deployment.
+- External publication of `main` and `v0.11.0`.
+- Live canonical manifest verification.
+- Installed-client backup, staged replacement, exact comparison, and fresh-task smoke.
 
 ## Goal
 
@@ -96,21 +101,21 @@ Use stages when sequencing, parity gates, or handoff cost matter.
 
 Completion criteria:
 
-- [ ] Canonical skill and managed workspace instructions contain both mechanisms.
-- [ ] README, conventions, and operator guide explain triggers and non-triggers.
+- [x] Canonical skill and managed workspace instructions contain both mechanisms.
+- [x] README, conventions, and operator guide explain triggers and non-triggers.
 
 ### Milestone 2: Qualification
 
 Completion criteria:
 
-- [ ] Installer regression tests and full validator pass.
-- [ ] Canonical and staged skill validation pass.
+- [x] Installer regression tests and full validator pass.
+- [x] Canonical skill validation passes; staged validation remains part of deployment.
 
 ### Milestone 3: Release and client deployment
 
 Completion criteria:
 
-- [ ] Manifest provenance and tag validate.
+- [x] Local manifest provenance and annotated tag validate.
 - [ ] Canonical remote manifest matches the release.
 - [ ] Installed client exactly matches canonical `skills/tool-shed/`.
 
@@ -118,6 +123,7 @@ Completion criteria:
 
 - Can the active client reload a replaced skill without a new task? No; report the required fresh
   task smoke after exact deployment verification.
+- Is external publication authorized? Awaiting explicit approval to push `main` and `v0.11.0`.
 
 ## Completion Standard
 

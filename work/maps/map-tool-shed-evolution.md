@@ -72,7 +72,7 @@ Ground:
 | Portable verified installer | active | `work/tickets/ticket-portable-verified-tool-shed-installer.md` | stable-tag and provenance model | verify native Windows/Linux CI |
 | Workspace performance measurement | complete | `work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md` | completed profiling and fleet-measurement spike | gather approved longitudinal or multi-workspace measurements before proposing optimization |
 | Agent planning mechanism evaluation | complete | `work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md` | source-backed inventory and frozen instruction-level scenarios | none |
-| Evidence-responsive execution | active | `work/wp/active/wp-evidence-responsive-tool-shed-execution.md` | completed evaluation and decision matrix | qualify, release, and deploy the adopted guidance |
+| Evidence-responsive execution | active | `work/wp/active/wp-evidence-responsive-tool-shed-execution.md` | completed local qualification and release preparation | obtain approval to publish v0.11.0, then deploy and verify the installed client |
 
 ## Dependency Notes
 

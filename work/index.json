@@ -333,7 +333,7 @@
     {
       "canonical_truth": null,
       "disposition": null,
-      "next_action": "run focused regression tests and inspect generated workspace guidance",
+      "next_action": "obtain approval to push main and v0.11.0, then verify the live manifest and synchronize the installed client",
       "parent": null,
       "path": "work/wp/active/wp-evidence-responsive-tool-shed-execution.md",
       "produces": null,
