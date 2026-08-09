@@ -61,9 +61,9 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 2,
   "notes": "Make release metadata writes non-mutating on invalid input",
-  "release_commit": null,
+  "release_commit": "fd7242f4c27d88309e756106a42a22ed0fe94eef",
   "release_tag": "v0.12.4",
-  "released_at": null,
+  "released_at": "2026-08-09T16:34:13Z",
   "shed_version": "0.12.4",
   "updated_at": "2026-08-09"
 }
