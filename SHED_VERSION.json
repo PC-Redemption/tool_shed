@@ -61,9 +61,9 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 2,
   "notes": "Keep disconnected snapshots free of Python bytecode",
-  "release_commit": null,
+  "release_commit": "c63a30cac596962def1511ca187eebd57fa9a934",
   "release_tag": "v0.12.6",
-  "released_at": null,
+  "released_at": "2026-08-09T18:18:31Z",
   "shed_version": "0.12.6",
   "updated_at": "2026-08-09"
 }
