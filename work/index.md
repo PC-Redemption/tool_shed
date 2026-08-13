@@ -21,11 +21,12 @@ Updated: 2026-08-13
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | contained; repository trigger mitigated, desktop defect remains external | 2026-07-25 | file the external Codex Desktop robustness evidence separately if still needed | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
-| [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | active | 2026-08-13 | obtain authorization to publish v0.12.7, then synchronize and fresh-task verify the installed Codex client | - |
+| [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | active | 2026-08-13 | publish v0.13.0, synchronize the installed Codex client, and fresh-task verify numbered work routing | - |
 | [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
 | [work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md](work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md) | spike | complete | 2026-08-09 | none | work/maps/map-tool-shed-evolution.md |
 | [work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md](work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md) | spike | complete | 2026-08-03 | implement the local profiler defined in work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md | work/maps/map-tool-shed-evolution.md |
 | [work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md](work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md) | ticket | complete | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
+| [work/tickets/ticket-add-numbered-work-levels-and-environment-models.md](work/tickets/ticket-add-numbered-work-levels-and-environment-models.md) | ticket | complete | 2026-08-13 | none | work/maps/map-tool-shed-evolution.md |
 | [work/tickets/ticket-add-tool-shed-operator-help.md](work/tickets/ticket-add-tool-shed-operator-help.md) | ticket | complete | 2026-07-24 | none | docs/operator-guide.md; skills/tool-shed/SKILL.md; README.md |
 | [work/tickets/ticket-add-tool-shed-version-status.md](work/tickets/ticket-add-tool-shed-version-status.md) | ticket | complete | 2026-07-24 | none | SHED_VERSION.json; scripts/check_shed_version.py; conventions.md |
 | [work/tickets/ticket-field-verify-generated-evidence-safeguards.md](work/tickets/ticket-field-verify-generated-evidence-safeguards.md) | ticket | complete | 2026-07-25 | none | work/maps/map-tool-shed-evolution.md |
@@ -50,6 +51,6 @@ Updated: 2026-08-13
 
 ## Summary
 
-- Total artifacts: 33
+- Total artifacts: 34
 - Active artifacts: 3
-- Completed/decided artifacts: 28
+- Completed/decided artifacts: 29

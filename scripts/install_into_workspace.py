@@ -76,6 +76,24 @@ COORDINATION_GUIDANCE = f"""{COORDINATION_GUIDANCE_START}
 {COORDINATION_GUIDANCE_END}
 """
 
+WORK_LEVEL_GUIDANCE_START = "<!-- BEGIN TOOL SHED WORK LEVEL GUIDANCE -->"
+WORK_LEVEL_GUIDANCE_END = "<!-- END TOOL SHED WORK LEVEL GUIDANCE -->"
+WORK_LEVEL_GUIDANCE = f"""{WORK_LEVEL_GUIDANCE_START}
+## Tool Shed numbered work levels
+
+- Treat `ts:work1` through `ts:work5` as cumulative execution endpoints, independent of Direct, Guided, Coordinated, or Deep coordination.
+- `work1`: implement, run the quickest meaningful check, checkpoint only requested changes in a local commit, leave the worktree clean when unrelated prior changes permit, and stop without deployment.
+- `work2`: perform `work1`, deploy to the configured work environment, run focused browser and changed-behavior checks, checkpoint, and stop.
+- `work3`: fully validate and build the accumulated candidate, update and verify the work environment when relevant, freeze it locally, and stop.
+- `work4`: perform `work3`, then push without intentionally releasing or promoting production.
+- `work5`: qualify, push, release or promote production, and verify the production target; this is equivalent to explicit `ts:ship`.
+- Aliases are `ts:work` = `work2`, `ts:freeze` = `work3`, `ts:push` = `work4`, and `ts:ship` = `work5`. `ts:check <spot|focused|full|release>` validates only and does not mutate source, Git, or environments.
+- Read optional tracked project state from `work/tool-shed.yaml`. `work_model: combined` means work and production share a target, so state that `work2` or `work3` may change the live site. `work_model: split` keeps `work2` and `work3` on development and reserves production promotion for `work5`.
+- Reuse existing workspace tooling. The config is not a credential store, deployment framework, or authority grant. If absent, preserve existing behavior and ask one concise target question only when safe routing cannot be derived. Reject invalid schemas or modes rather than guessing.
+- Preserve unrelated pre-existing changes. If they prevent a clean checkpoint, report it. If a `work4` push automatically deploys production, stop before pushing unless production release is explicitly authorized.
+{WORK_LEVEL_GUIDANCE_END}
+"""
+
 SHIP_GUIDANCE_START = "<!-- BEGIN TOOL SHED SHIP GUIDANCE -->"
 SHIP_GUIDANCE_END = "<!-- END TOOL SHED SHIP GUIDANCE -->"
 SHIP_GUIDANCE = f"""{SHIP_GUIDANCE_START}
@@ -198,6 +216,12 @@ def ensure_provider_guidance(repository: Path, provider_id: str) -> tuple[Path, 
         (GUIDANCE_START, GUIDANCE_END, GUIDANCE),
     ):
         updated, _ = replace_managed_block(updated, start, end, guidance)
+    updated, _ = replace_managed_block(
+        updated,
+        WORK_LEVEL_GUIDANCE_START,
+        WORK_LEVEL_GUIDANCE_END,
+        WORK_LEVEL_GUIDANCE,
+    )
     updated, _ = replace_managed_block(
         updated,
         SHIP_GUIDANCE_START,

@@ -16,6 +16,8 @@
 ## Tool Shed ship route
 
 - Treat `ts:ship <goal>` and `ts: ship <goal>` as authorization to plan, implement, validate, build, deploy, and verify the workspace goal end-to-end.
+- Treat lifecycle stages as applicable only when the requested outcome includes them, repository policy mandates them, or concrete risk or observed failure justifies them. Wording that merely mentions or discusses `ts:ship` is not an end-to-end delivery request.
+- State the concrete reason before expanding focused verification into broad qualification, deployment, or external publication.
 - Continue through every applicable lifecycle stage; do not stop merely because planning, coding, tests, or a build succeeded.
 - Use the workspace's own tooling, environments, runbooks, and protected-environment controls.
 - Keep changes scoped to the goal and preserve unrelated user work.
@@ -31,6 +33,7 @@
 
 - Treat the requested outcome in the current chat as the campaign. Plans, checklists, workpackages, tests, builds, and deployments are possible stages or artifacts, not the campaign itself.
 - Keep working while the next action is reversible, in scope, and already authorized. A progress summary, artifact update, phase boundary, or useful review point is not an approval gate.
+- Preserve the selected coordination level while continuing; campaign continuity does not upgrade Direct work or make inapplicable lifecycle stages apply.
 - Do not stop because the operator might want to inspect completed work. Pause only for requested review, a material unresolved decision, contradictory evidence, new authority, or a protected, destructive, irreversible, or not-yet-authorized external action.
 - If review is required, identify the exact file or result and relevant section, state the exact decision or approval needed, and say what happens after the response. Never use a vague "review this" or "let me know."
 - End every final response for a Tool Shed campaign with exactly one verdict: `Campaign status: COMPLETE`, `Campaign status: CONTINUE`, or `Campaign status: BLOCKED`.
@@ -48,6 +51,7 @@
 - Use canonical content when only it is actionable. If only fallback content is actionable, process it and clearly report its noncanonical location.
 - If both files are actionable, do not merge or act on either; report the conflict and ask which request to use.
 - Apply normal scope, authorization, safety, and routing rules to the selected request.
+- Dispatch the selected request under its natural coordination level; `ts:ask` does not turn a bounded Direct request into a heavyweight campaign.
 - Never move, clear, rewrite, or delete either inbox without explicit operator authorization.
 - Summarize what was read and what was done in the final response.
 <!-- END TOOL SHED Q&A GUIDANCE -->
@@ -84,7 +88,25 @@
 ## Tool Shed minimum sufficient coordination
 
 - Start at the lowest adequate level: Direct, Guided, Coordinated, or Deep.
+- Default a clear, reversible, single-repository bug fix or enhancement to Direct, including when it arrives through `ts:ask`.
+- For Direct work, orient to the named target once, implement the focused change, and run focused, proportionate verification.
+- Do not create artifacts, branches, PRs, releases, deployments, broad qualification, or new worktrees for Direct work unless explicitly requested, mandated by repository policy, or justified by concrete risk, conflicting evidence, or observed failure.
 - Escalate only when evidence shows ambiguity, consequence, irreversibility, repeated failure, coordination, or handoff cost.
 - Load route-specific instructions and references only when the route needs them.
 - Preserve a compact campaign state: outcome, current constraint, decisions, evidence, and next action.
 <!-- END TOOL SHED COORDINATION GUIDANCE -->
+
+<!-- BEGIN TOOL SHED WORK LEVEL GUIDANCE -->
+## Tool Shed numbered work levels
+
+- Treat `ts:work1` through `ts:work5` as cumulative execution endpoints, independent of Direct, Guided, Coordinated, or Deep coordination.
+- `work1`: implement, run the quickest meaningful check, checkpoint only requested changes in a local commit, leave the worktree clean when unrelated prior changes permit, and stop without deployment.
+- `work2`: perform `work1`, deploy to the configured work environment, run focused browser and changed-behavior checks, checkpoint, and stop.
+- `work3`: fully validate and build the accumulated candidate, update and verify the work environment when relevant, freeze it locally, and stop.
+- `work4`: perform `work3`, then push without intentionally releasing or promoting production.
+- `work5`: qualify, push, release or promote production, and verify the production target; this is equivalent to explicit `ts:ship`.
+- Aliases are `ts:work` = `work2`, `ts:freeze` = `work3`, `ts:push` = `work4`, and `ts:ship` = `work5`. `ts:check <spot|focused|full|release>` validates only and does not mutate source, Git, or environments.
+- Read optional tracked project state from `work/tool-shed.yaml`. `work_model: combined` means work and production share a target, so state that `work2` or `work3` may change the live site. `work_model: split` keeps `work2` and `work3` on development and reserves production promotion for `work5`.
+- Reuse existing workspace tooling. The config is not a credential store, deployment framework, or authority grant. If absent, preserve existing behavior and ask one concise target question only when safe routing cannot be derived. Reject invalid schemas or modes rather than guessing.
+- Preserve unrelated pre-existing changes. If they prevent a clean checkpoint, report it. If a `work4` push automatically deploys production, stop before pushing unless production release is explicitly authorized.
+<!-- END TOOL SHED WORK LEVEL GUIDANCE -->

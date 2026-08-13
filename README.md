@@ -228,6 +228,8 @@ ts: help
 ts: help spikes
 ts: help existing projects
 ts: discuss <topic>
+ts:work2 <goal>
+ts:freeze [scope]
 ts:ship <goal>
 ts:ask
 ```
@@ -244,6 +246,22 @@ Shed does not add artifacts, branches, PRs, releases, deployments, evidence, or 
 requested, required by repository policy, or justified by concrete risk or failure. Campaign
 continuity preserves Direct rather than upgrading it. Use `Coordination: direct` or `Route: direct`
 when you want to make that intent explicit.
+
+Use `ts:work1` through `ts:work5` to state the stopping point for one execution without changing
+its coordination level. `work1` makes a locally committed, minimally checked change; `work2`
+adds deployment to the configured work environment and focused browser checks; `work3` fully
+validates and freezes accumulated work locally; `work4` pushes without intentional production
+promotion; and `work5` releases or promotes production and verifies it. Readable aliases are
+`ts:work` = `work2`, `ts:freeze` = `work3`, `ts:push` = `work4`, and `ts:ship` = `work5`.
+`ts:check <spot|focused|full|release>` validates without implementation or Git/environment
+mutation.
+
+Projects may optionally track `work/tool-shed.yaml` with `schema_version: 1` and either
+`work_model: combined` or `work_model: split`. Combined mode lets `work2` and `work3` use the same
+target as production and therefore may change the live site. Split mode keeps those levels on
+development and reserves production promotion for `work5`. The declaration is optional; Tool
+Shed reuses existing workspace scripts and hosting configuration rather than requiring new
+infrastructure or credentials in this file.
 
 `ts:ship <goal>` is the end-to-end delivery route: plan, implement, validate, build, deploy, and
 verify the requested workspace goal. It continues through all applicable stages while preserving

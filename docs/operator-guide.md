@@ -91,6 +91,42 @@ Repeat the option or use `--provider all`. Compatibility is expressed as a provi
 capability level; a static planning adapter does not imply that every surface can deploy or verify.
 See [provider adapters](provider-adapters.md).
 
+## Choose An Execution Endpoint
+
+Use the same five levels in every workspace:
+
+| Route | Stop after |
+| --- | --- |
+| `ts:work1 <goal>` | A minimally checked local checkpoint commit; no deployment. |
+| `ts:work2 <goal>` | Deployment to the configured work environment plus focused browser and changed-behavior checks. |
+| `ts:work3 [scope]` | Full applicable validation/build and a locally frozen candidate. |
+| `ts:work4 [scope]` | The frozen source is pushed without intentional production promotion. |
+| `ts:work5 [scope]` | Production is released or promoted and verified. |
+
+The levels are cumulative and do not change Direct, Guided, Coordinated, or Deep coordination.
+Use `ts:work` as an alias for `work2`, `ts:freeze` for `work3`, `ts:push` for `work4`, and
+`ts:ship` for `work5`. Use `ts:check <spot|focused|full|release>` when validation is wanted without
+implementation, commits, pushes, deployment, or release.
+
+The optional tracked file `work/tool-shed.yaml` declares how remote work maps to environments:
+
+```yaml
+schema_version: 1
+work_model: combined
+```
+
+In `combined` mode, development and production share the configured target, so `work2` and
+`work3` may change the live site. In `split` mode, those levels deploy only to development and
+`work5` promotes the frozen candidate to production. Optional `development_target` and
+`production_target` names are needed only when existing project docs and tooling do not already
+resolve them.
+
+The file does not hold credentials, create infrastructure, or grant deployment authority. If it
+is absent, Tool Shed uses existing workspace evidence and asks one concise target question only
+when safe routing is genuinely ambiguous. It rejects invalid schemas or modes. When a normal push
+automatically deploys production, `work4` stops before that push unless production release is
+explicitly authorized.
+
 ## Ship End to End
 
 Use the ship route when the intended outcome is a delivered, verified change rather than a plan or

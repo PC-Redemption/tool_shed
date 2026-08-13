@@ -112,6 +112,16 @@ def smoke_temp_workspace() -> None:
             raise SystemExit("installer did not create the Tool Shed prospective-failure guidance")
         if "ts: discuss <topic>" not in agents_text or "Direct, Guided, Coordinated, or Deep" not in agents_text:
             raise SystemExit("installer did not create the Tool Shed discussion and coordination guidance")
+        work_level_contract = (
+            "ts:work1` through `ts:work5",
+            "`ts:work` = `work2`",
+            "work/tool-shed.yaml",
+            "work_model: combined",
+            "work_model: split",
+            "automatically deploys production",
+        )
+        if any(fragment not in agents_text for fragment in work_level_contract):
+            raise SystemExit("installer did not create the complete Tool Shed work-level contract")
         direct_contract = (
             "single-repository bug fix or enhancement to Direct",
             "orient to the named target once",
@@ -133,6 +143,7 @@ def smoke_temp_workspace() -> None:
             if (
                 "BEGIN TOOL SHED ROUTING GUIDANCE" not in guidance_text
                 or any(fragment not in guidance_text for fragment in direct_contract)
+                or any(fragment not in guidance_text for fragment in work_level_contract)
             ):
                 raise SystemExit(f"installer did not create {provider_id} adapter guidance")
         inbox_result = subprocess.run(

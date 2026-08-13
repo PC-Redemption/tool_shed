@@ -198,7 +198,7 @@
     {
       "canonical_truth": null,
       "disposition": null,
-      "next_action": "obtain authorization to publish v0.12.7, then synchronize and fresh-task verify the installed Codex client",
+      "next_action": "publish v0.13.0, synchronize the installed Codex client, and fresh-task verify numbered work routing",
       "parent": null,
       "path": "work/maps/map-tool-shed-evolution.md",
       "produces": null,
@@ -269,6 +269,21 @@
       "title": "Ticket: Add Codex skill after foundation stabilizes",
       "type": "ticket",
       "updated": "2026-07-05"
+    },
+    {
+      "canonical_truth": null,
+      "disposition": null,
+      "next_action": "none",
+      "parent": "work/maps/map-tool-shed-evolution.md",
+      "path": "work/tickets/ticket-add-numbered-work-levels-and-environment-models.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Ticket: Add numbered work levels and environment models",
+      "type": "ticket",
+      "updated": "2026-08-13"
     },
     {
       "canonical_truth": "docs/operator-guide.md; skills/tool-shed/SKILL.md; README.md",
@@ -506,7 +521,7 @@
   "schema_version": 1,
   "summary": {
     "active_artifacts": 3,
-    "completed_or_decided_artifacts": 28,
-    "total_artifacts": 33
+    "completed_or_decided_artifacts": 29,
+    "total_artifacts": 34
   }
 }

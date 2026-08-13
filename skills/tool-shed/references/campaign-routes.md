@@ -1,6 +1,50 @@
 # Tool Shed campaign routes
 
-Read this reference for `ts:ship`, campaign execution, `ts: help`, and `ts:ask`.
+Read this reference for numbered work levels, `ts:ship`, campaign execution, `ts: help`, and
+`ts:ask`.
+
+## Numbered Work Levels
+
+Treat a leading numbered route as the operator's explicit stopping point for the current execution:
+
+| Route | Required endpoint |
+| --- | --- |
+| `ts:work1 <goal>` | Implement, run the quickest meaningful check, checkpoint only the requested changes in a local commit, leave the worktree clean when unrelated pre-existing changes do not prevent it, and stop without deployment. |
+| `ts:work2 <goal>` | Perform `work1`, deploy to the configured work environment, run focused browser and changed-behavior checks, checkpoint, and stop. |
+| `ts:work3 [scope]` | Run the repository's full applicable validation and build for the accumulated candidate, update and verify the work environment when relevant, freeze it in a local commit, and stop. |
+| `ts:work4 [scope]` | Perform `work3`, then push the frozen source without intentionally releasing or promoting production. |
+| `ts:work5 [scope]` | Perform release qualification, push, release or promote production, and verify the production target. This is equivalent to an explicit `ts:ship`. |
+
+The levels are cumulative execution boundaries, not coordination levels. Keep Direct, Guided,
+Coordinated, and Deep selection independent. Aliases are `ts:work` for `work2`, `ts:freeze` for
+`work3`, `ts:push` for `work4`, and `ts:ship` for `work5`. `ts:check
+<spot|focused|full|release>` runs only the corresponding validation and does not implement, commit,
+push, deploy, or release.
+
+Read optional project state from root `work/tool-shed.yaml` when present. The minimal supported
+declaration is:
+
+```yaml
+schema_version: 1
+work_model: combined
+```
+
+- `combined`: the work environment and production are the same target. State plainly before
+  remote mutation that `work2` or `work3` may change the live site; `work5` formalizes and verifies
+  the release but may not be its first production exposure.
+- `split`: `work2` and `work3` affect development only; only `work5` promotes production.
+
+Target names may be declared as `development_target` and `production_target` when existing
+workspace docs and tooling do not resolve them. The file is tracked agent-readable project state,
+not a credential store, deployment framework, or grant of authority. Reuse existing scripts,
+hosting configuration, and runbooks. When the declaration is absent, preserve existing workspace
+behavior and ask one concise target question only when repository evidence cannot route a requested
+remote stage safely. Reject unsupported schema versions or work models rather than guessing.
+
+Do not force unrelated pre-existing changes into a checkpoint. If they prevent a clean worktree,
+preserve them and report the exception. If the only available `work4` push automatically deploys
+production, stop before pushing unless production release is explicitly authorized; never report
+that coupled endpoint as non-production.
 
 ## Ship Route
 

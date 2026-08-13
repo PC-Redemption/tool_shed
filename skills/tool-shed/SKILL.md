@@ -37,7 +37,7 @@ Load only the route reference needed for the request:
 | --- | --- |
 | discussion or campaign discovery | this file only |
 | artifact selection, creation, completion, onboarding, or reconciliation | `references/artifact-workflows.md` |
-| `ts:ship`, campaign execution, `ts: help`, or `ts:ask` | `references/campaign-routes.md` |
+| `ts:work1` through `ts:work5`, aliases, `ts:check`, `ts:ship`, campaign execution, `ts: help`, or `ts:ask` | `references/campaign-routes.md` |
 | version, update, snapshot, or provider-specific reasoning maintenance | `references/maintenance-routes.md` |
 
 Read a referenced file completely when its route applies. Do not load unrelated route references.

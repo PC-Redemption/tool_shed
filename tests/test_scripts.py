@@ -877,6 +877,13 @@ for raw in sys.stdin:
         self.assertIn("ts: recommend reasoning <task>", skill_bundle)
         self.assertIn("Do not ask for repeated confirmation for reversible, in-scope steps", skill_bundle)
         self.assertIn("One request may authorize multiple named operations", guide)
+        self.assertIn("ts:work1", skill_bundle)
+        self.assertIn("ts:work5", skill_bundle)
+        self.assertIn("work/tool-shed.yaml", guide)
+        self.assertIn("work_model: combined", readme)
+        self.assertIn("In `split` mode", guide)
+        self.assertIn("`ts:check", skill_bundle)
+        self.assertIn("<spot|focused|full|release>", skill_bundle)
         self.assertNotIn("abstract/currently advertised tier", skill)
         self.assertIn("### **Reasoning: GPT-5.6 Terra / High**", guide)
         self.assertTrue((ROOT / "scripts" / "reasoning_catalog.py").is_file())
@@ -947,6 +954,59 @@ for raw in sys.stdin:
             self.assertEqual(payload["status"], "canonical")
             self.assertEqual(payload["content"], direct_ask["prompt"])
             self.assertEqual(work_after, work_before)
+
+    def test_numbered_work_levels_match_models_and_installed_contract(self) -> None:
+        scenarios = json.loads(
+            (ROOT / "tests" / "fixtures" / "work-level-routing-scenarios.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        aliases = {"ts:work ": 2, "ts:freeze ": 3, "ts:push ": 4, "ts:ship ": 5}
+
+        for scenario in scenarios:
+            level = scenario["level"]
+            is_check = scenario["route"].startswith("ts:check ")
+            with self.subTest(route=scenario["route"], model=scenario["model"]):
+                self.assertEqual(scenario["implement"], not is_check)
+                self.assertEqual(scenario["focused_remote_check"], not is_check and level >= 2)
+                self.assertEqual(scenario["full_validation"], level >= 3)
+                self.assertEqual(scenario["push"], not is_check and level >= 4)
+                expected_promotion = not is_check and (
+                    level >= 5 or (scenario["model"] == "combined" and level in {2, 3})
+                )
+                self.assertEqual(scenario["production_promotion"], expected_promotion)
+
+        self.assertEqual(aliases, {"ts:work ": 2, "ts:freeze ": 3, "ts:push ": 4, "ts:ship ": 5})
+
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace)
+            owner_guidance = "# Owner guidance\n"
+            (workspace / "AGENTS.md").write_text(owner_guidance, encoding="utf-8")
+            run_script("scripts/install_into_workspace.py", str(workspace), "--provider", "all")
+            first = {
+                relative: (workspace / relative).read_bytes()
+                for relative in (
+                    "AGENTS.md",
+                    "CLAUDE.md",
+                    "GEMINI.md",
+                    ".github/copilot-instructions.md",
+                    ".cursor/rules/tool-shed.mdc",
+                )
+            }
+            run_script("scripts/install_into_workspace.py", str(workspace), "--provider", "all")
+
+            for relative, initial in first.items():
+                guidance = (workspace / relative).read_text(encoding="utf-8")
+                with self.subTest(provider_guidance=relative):
+                    self.assertEqual((workspace / relative).read_bytes(), initial)
+                    self.assertIn("ts:work1` through `ts:work5", guidance)
+                    self.assertIn("`ts:work` = `work2`", guidance)
+                    self.assertIn("work/tool-shed.yaml", guidance)
+                    self.assertIn("work_model: combined", guidance)
+                    self.assertIn("work_model: split", guidance)
+                    self.assertIn("automatically deploys production", guidance)
+            self.assertTrue((workspace / "AGENTS.md").read_text(encoding="utf-8").startswith(owner_guidance))
 
     def test_ask_resolver_uses_canonical_content_only(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

@@ -1,0 +1,62 @@
+[
+  {
+    "route": "ts:work1 Fix the navigation spacing",
+    "level": 1,
+    "model": "combined",
+    "implement": true,
+    "focused_remote_check": false,
+    "full_validation": false,
+    "push": false,
+    "production_promotion": false
+  },
+  {
+    "route": "ts:work2 Fix the navigation spacing",
+    "level": 2,
+    "model": "combined",
+    "implement": true,
+    "focused_remote_check": true,
+    "full_validation": false,
+    "push": false,
+    "production_promotion": true
+  },
+  {
+    "route": "ts:work3 freeze the dashboard candidate",
+    "level": 3,
+    "model": "split",
+    "implement": true,
+    "focused_remote_check": true,
+    "full_validation": true,
+    "push": false,
+    "production_promotion": false
+  },
+  {
+    "route": "ts:work4 push the frozen dashboard candidate",
+    "level": 4,
+    "model": "split",
+    "implement": true,
+    "focused_remote_check": true,
+    "full_validation": true,
+    "push": true,
+    "production_promotion": false
+  },
+  {
+    "route": "ts:work5 release the frozen dashboard candidate",
+    "level": 5,
+    "model": "split",
+    "implement": true,
+    "focused_remote_check": true,
+    "full_validation": true,
+    "push": true,
+    "production_promotion": true
+  },
+  {
+    "route": "ts:check full",
+    "level": 3,
+    "model": "combined",
+    "implement": false,
+    "focused_remote_check": false,
+    "full_validation": true,
+    "push": false,
+    "production_promotion": false
+  }
+]

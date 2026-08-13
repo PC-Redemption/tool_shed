@@ -3,7 +3,7 @@
 Status: active
 Type: project-map
 Updated: 2026-08-13
-Next Action: obtain authorization to publish v0.12.7, then synchronize and fresh-task verify the installed Codex client
+Next Action: publish v0.13.0, synchronize the installed Codex client, and fresh-task verify numbered work routing
 
 ## Purpose
 
@@ -21,6 +21,7 @@ flowchart TD
   A --> I[Agent planning mechanism evaluation]
   A --> K[Campaign entry, token efficiency, and provider portability]
   A --> L[Direct coding request mitigation]
+  A --> M[Numbered execution levels and environment models]
   I --> J[Complete: evidence-responsive execution guidance]
   B --> D[Ground: validate review_work_state.py]
   C --> E[Gate: explicit approval before fleet update]
@@ -52,6 +53,8 @@ flowchart TD
 - Completed workpackages: `work/wp/completed/wp-work-artifact-reconciliation.md`.
 - Active ticket:
   `work/tickets/ticket-portable-verified-tool-shed-installer.md`.
+- Active execution-level ticket:
+  `work/tickets/ticket-add-numbered-work-levels-and-environment-models.md`.
 - Completed Direct-route mitigation:
   `work/tickets/ticket-mitigate-tool-shed-churn-for-direct-coding-requests.md`.
 - Completed performance ticket:
@@ -79,7 +82,8 @@ Ground:
 | Agent planning mechanism evaluation | complete | `work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md` | source-backed inventory and frozen instruction-level scenarios | none |
 | Evidence-responsive execution | complete | `work/wp/completed/wp-evidence-responsive-tool-shed-execution.md` | published v0.11.0, exact installed-client parity, and fresh-task smoke | none |
 | Campaign entry, token efficiency, and provider portability | complete | `work/wp/completed/wp-tool-shed-campaign-entry-improvements.md` | published v0.12.0, exact installed-client parity, and fresh-task smoke | run non-Codex runtime scenarios before increasing capability claims |
-| Direct coding request mitigation | complete | `work/tickets/ticket-mitigate-tool-shed-churn-for-direct-coding-requests.md` | issue #21; existing minimum-sufficient coordination and campaign routes | publish v0.12.7, synchronize installed client, and run a fresh-task smoke check |
+| Direct coding request mitigation | complete | `work/tickets/ticket-mitigate-tool-shed-churn-for-direct-coding-requests.md` | issue #21; existing minimum-sufficient coordination and campaign routes | none |
+| Numbered execution levels and environment models | complete | `work/tickets/ticket-add-numbered-work-levels-and-environment-models.md` | existing Direct-route contract and campaign routing | publish v0.13.0, synchronize installed client, and run a fresh-task routing smoke check |
 
 ## Dependency Notes
 
@@ -123,6 +127,7 @@ Do next:
 - [x] Qualify existing-snapshot replacement and rollback for the compact Markdown skill layout.
 - [x] Publish the qualified portability release, synchronize the installed Codex client, and fresh-task verify.
 - [x] Mitigate Direct-route churn and verify ordinary, `ts:ask`, and ship-adjacent fixtures.
+- [x] Implement and validate numbered work levels with combined and split environment models.
 
 Avoid for now:
 
@@ -143,7 +148,8 @@ Avoid for now:
 - Tickets: `work/tickets/ticket-field-verify-generated-evidence-safeguards.md`,
   `work/tickets/ticket-portable-verified-tool-shed-installer.md`,
   `work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md`,
-  `work/tickets/ticket-mitigate-tool-shed-churn-for-direct-coding-requests.md`
+  `work/tickets/ticket-mitigate-tool-shed-churn-for-direct-coding-requests.md`,
+  `work/tickets/ticket-add-numbered-work-levels-and-environment-models.md`
 - Checklists:
 - Spikes:
 - `work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md`
