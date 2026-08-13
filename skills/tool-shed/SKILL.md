@@ -69,6 +69,25 @@ Start at the lowest adequate level and escalate only from evidence:
 | Coordinated | multi-session, branching, dependency, or handoff cost | workpackage or project map; staged verification |
 | Deep | consequential, difficult to reverse, highly uncertain, cross-layer, or repeatedly failing | research spike, controlled evidence, prospective failure checks, broader qualification |
 
+Direct is the default for a clear, reversible bug fix or enhancement contained in one repository,
+including when the request arrives through `ts:ask`. An explicit `Coordination: direct` or
+`Route: direct` marker confirms that choice unless it conflicts with a higher-priority safety or
+repository rule.
+
+For Direct work:
+
+1. Resolve the named repository and target once.
+2. Implement the focused change.
+3. Run focused, proportionate verification.
+4. Expand orientation, artifacts, validation, or delivery only when the operator requested it,
+   repository policy mandates it, or concrete risk, conflicting evidence, or an observed failure
+   justifies it.
+
+Do not create a ticket, checklist, workpackage, map, ADR, evidence artifact, branch, PR, release, or
+new worktree merely because Tool Shed routed the request. Do not infer full-suite validation,
+deployment, publication, or historical-worktree review from a bounded implementation request.
+Campaign continuity keeps Direct work moving; it does not upgrade its coordination level.
+
 Escalate for material ambiguity, consequence, irreversibility, repeated failure, coordination, or
 handoff cost. De-escalate when the limiting uncertainty or coordination burden is resolved. Do not
 select ceremony merely because a task sounds important.

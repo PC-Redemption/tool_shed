@@ -9,6 +9,12 @@ deploy, and verify the workspace goal end to end.
 
 - Inspect workspace guidance and active work before choosing the smallest sufficient plan.
 - Continue through every applicable lifecycle stage. Tests or a build are intermediate evidence.
+- Treat a lifecycle stage as applicable only when the requested outcome includes it, repository
+  policy mandates it, or concrete risk or observed failure justifies it. `ts:ship` explicitly
+  requests end-to-end delivery; wording that merely appears near or discusses `ts:ship` does not.
+- Do not create planning artifacts, branches, PRs, releases, deployments, or broad qualification
+  solely because a request uses Tool Shed. State the concrete reason when expanding beyond focused
+  verification.
 - Use the project's own tooling, environments, runbooks, and protected-environment controls.
 - Keep changes scoped and preserve unrelated work.
 - Do not ask for repeated confirmation for reversible, in-scope steps already authorized. One
@@ -38,6 +44,8 @@ The requested outcome is the campaign. Plans, artifacts, tests, builds, and depl
 not the campaign itself.
 
 - Keep working while the next action is reversible, in scope, and already authorized.
+- Preserve the selected coordination level while continuing. Campaign continuity does not upgrade
+  Direct work to Guided, Coordinated, or Deep and does not make inapplicable lifecycle stages apply.
 - A progress summary, artifact update, phase boundary, or useful review point is not an approval gate.
 - Pause only for requested review, a material unresolved decision, contradictory evidence, new
   authority, or a protected, destructive, irreversible, or not-yet-authorized external action.
@@ -68,4 +76,6 @@ python3 <shed>/scripts/read_ask_inbox.py --workspace <workspace> --json
 The canonical inbox is `work/q&a/ask.txt`; `q&a/ask.txt` is a legacy fallback. Ignore blank and
 comment lines. Use the only actionable inbox. If both are actionable, do not merge or act; report
 the conflict and ask which to use. Never move, clear, rewrite, or delete either file without
-explicit authorization. Summarize what was selected and done.
+explicit authorization. Dispatch the selected content under its natural coordination level;
+`ts:ask` does not turn a bounded Direct request into a heavyweight campaign. Summarize what was
+selected and done.

@@ -1,0 +1,42 @@
+[
+  {
+    "name": "ordinary bounded web bug",
+    "prompt": "In the current Django repository, replace the dashboard's 30-second reload with read-only SSE and run the focused dashboard tests.",
+    "transport": "ordinary",
+    "bounded_single_repository": true,
+    "expected_coordination": "direct",
+    "explicit_ship": false,
+    "create_artifact": false,
+    "broad_validation": false
+  },
+  {
+    "name": "bounded web bug through ask inbox",
+    "prompt": "Coordination: direct\nFix the dashboard reload bug in the current repository and run its focused tests.",
+    "transport": "ts:ask",
+    "bounded_single_repository": true,
+    "expected_coordination": "direct",
+    "explicit_ship": false,
+    "create_artifact": false,
+    "broad_validation": false
+  },
+  {
+    "name": "ship-adjacent documentation edit",
+    "prompt": "Clarify the paragraph that discusses `ts:ship` in the operator guide and run the focused documentation test.",
+    "transport": "ordinary",
+    "bounded_single_repository": true,
+    "expected_coordination": "direct",
+    "explicit_ship": false,
+    "create_artifact": false,
+    "broad_validation": false
+  },
+  {
+    "name": "explicit end-to-end ship request",
+    "prompt": "ts:ship release the qualified Tool Shed update, deploy the installed client, and verify it in a fresh task",
+    "transport": "ordinary",
+    "bounded_single_repository": false,
+    "expected_coordination": "coordinated",
+    "explicit_ship": true,
+    "create_artifact": true,
+    "broad_validation": true
+  }
+]

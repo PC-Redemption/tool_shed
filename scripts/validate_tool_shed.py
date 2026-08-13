@@ -112,6 +112,15 @@ def smoke_temp_workspace() -> None:
             raise SystemExit("installer did not create the Tool Shed prospective-failure guidance")
         if "ts: discuss <topic>" not in agents_text or "Direct, Guided, Coordinated, or Deep" not in agents_text:
             raise SystemExit("installer did not create the Tool Shed discussion and coordination guidance")
+        direct_contract = (
+            "single-repository bug fix or enhancement to Direct",
+            "orient to the named target once",
+            "campaign continuity does not upgrade Direct",
+            "ts:ask` does not turn a bounded Direct request",
+            "merely mentions or discusses `ts:ship`",
+        )
+        if any(fragment not in agents_text for fragment in direct_contract):
+            raise SystemExit("installer did not create the complete Tool Shed Direct-route contract")
         provider_paths = {
             "claude-code": "CLAUDE.md",
             "gemini-cli": "GEMINI.md",
@@ -120,8 +129,10 @@ def smoke_temp_workspace() -> None:
         }
         for provider_id, relative in provider_paths.items():
             guidance = workspace / relative
-            if not guidance.is_file() or "BEGIN TOOL SHED ROUTING GUIDANCE" not in guidance.read_text(
-                encoding="utf-8"
+            guidance_text = guidance.read_text(encoding="utf-8") if guidance.is_file() else ""
+            if (
+                "BEGIN TOOL SHED ROUTING GUIDANCE" not in guidance_text
+                or any(fragment not in guidance_text for fragment in direct_contract)
             ):
                 raise SystemExit(f"installer did not create {provider_id} adapter guidance")
         inbox_result = subprocess.run(

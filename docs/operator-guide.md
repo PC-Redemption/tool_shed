@@ -53,6 +53,31 @@ or modify an artifact unless the same request explicitly asks to capture or plan
 Start at the lowest adequate level, load only the route-specific instructions needed, and escalate
 only when evidence shows additional risk or coordination cost.
 
+Direct is the default for a clear, reversible bug fix or enhancement in one repository, including
+requests dispatched through `ts:ask`. The agent resolves the named target once, makes the focused
+change, and runs focused tests. It does not create planning artifacts, branches, PRs, releases,
+deployments, evidence artifacts, or new worktrees unless you requested them, repository policy
+requires them, or concrete risk, conflicting evidence, or an observed failure justifies expansion.
+Campaign continuity keeps the request moving without upgrading its coordination level.
+
+An optional `Coordination: direct` or `Route: direct` line makes the intended level explicit:
+
+```text
+Coordination: direct
+In the current Django repository, replace the dashboard's 30-second reload with read-only SSE.
+Run the focused dashboard tests.
+```
+
+Contrast that with a coordinated qualification campaign:
+
+```text
+Qualify and release the firmware update across the supported hardware matrix, preserve evidence,
+document rollback, and hand the result to operations.
+```
+
+The second request has cross-target sequencing, evidence, release, rollback, and handoff cost, so a
+workpackage and staged verification are appropriate.
+
 ## Use Another AI Provider
 
 Tool Shed supports native instruction adapters for Codex, Claude Code, Gemini CLI, GitHub Copilot,
@@ -78,6 +103,11 @@ ts:ship <goal>
 `ts:ship` means: plan, implement, validate, build, deploy, and verify the requested workspace goal
 end-to-end. Codex continues through every applicable stage, uses the project's own delivery
 tooling, and verifies the result in the target environment before declaring completion.
+
+A lifecycle stage is applicable only when the requested outcome includes it, repository policy
+mandates it, or concrete risk or an observed failure justifies it. Merely mentioning, documenting,
+or discussing `ts:ship` is not an end-to-end delivery request. When verification expands beyond
+focused tests, the agent states the concrete reason.
 
 The route authorizes the normal workspace changes and deployment actions needed for the stated
 goal, but it does not override safety rules, protected-environment controls, required approvals,
@@ -112,6 +142,9 @@ might want to review them. Review pauses are reserved for explicitly requested r
 unresolved decisions, evidence that contradicts the plan, new authority, or protected,
 destructive, irreversible, or not-yet-authorized external actions.
 
+Continuity preserves the selected coordination level. It does not upgrade Direct work to Guided,
+Coordinated, or Deep or make an otherwise inapplicable lifecycle stage apply.
+
 Every final response for a Tool Shed campaign ends with one explicit verdict:
 
 - `Campaign status: COMPLETE` means the whole requested outcome and applicable verification are
@@ -141,6 +174,9 @@ canonical file is actionable, Codex uses it. If only the fallback is actionable,
 it but clearly identifies the noncanonical path. If both are actionable, Codex does not merge or
 run either request; it reports the conflict and asks which one to use. If neither is actionable,
 Codex reports that the inbox is empty.
+
+The selected content keeps its natural coordination level. A small bug fix remains Direct; the
+inbox transport does not create planning or delivery ceremony by itself.
 
 Both files are preserved after inspection. Tool Shed never moves, clears, rewrites, or deletes
 either one without explicit operator authorization. The canonical inbox is ignored by Git because

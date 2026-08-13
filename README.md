@@ -238,9 +238,20 @@ See the [Tool Shed operator guide](docs/operator-guide.md) for the full use-case
 read-only campaign entry. Discussion surfaces a compact campaign seed and the smallest useful next
 route; it creates no artifact until the operator explicitly asks to capture or plan.
 
+A clear, reversible bug fix or enhancement in one repository defaults to Direct coordination,
+including through `ts:ask`: orient once, implement the focused change, and run focused tests. Tool
+Shed does not add artifacts, branches, PRs, releases, deployments, evidence, or new worktrees unless
+requested, required by repository policy, or justified by concrete risk or failure. Campaign
+continuity preserves Direct rather than upgrading it. Use `Coordination: direct` or `Route: direct`
+when you want to make that intent explicit.
+
 `ts:ship <goal>` is the end-to-end delivery route: plan, implement, validate, build, deploy, and
 verify the requested workspace goal. It continues through all applicable stages while preserving
 normal safety, approval, credential, and protected-environment boundaries.
+
+Stages are applicable only when the outcome includes them, repository policy mandates them, or
+concrete risk or observed failure justifies them. Merely mentioning or discussing `ts:ship` does not
+request delivery, and broader qualification requires a concrete reason.
 
 Before an already-authorized consequential stage, the agent identifies at most three credible ways the
 plan could fail and adds proportionate prevention, detection, verification, or rollback. Routine
@@ -262,7 +273,8 @@ or direction to that file and send `ts:ask`; the agent reads it and acts under t
 authorization rules as a normal chat request. It also checks `q&a/ask.txt` as a
 legacy/misplaced fallback and warns when actionable content exists only there. If both files contain actionable
 content, the agent reports a conflict instead of merging them. It preserves both files after
-inspection; `work/q&a/ask.txt` is the canonical inbox.
+inspection; `work/q&a/ask.txt` is the canonical inbox. The selected request retains its natural
+coordination level, so a bounded Direct request does not become a heavyweight campaign.
 
 Check the installed snapshot without using the network, or compare it with the canonical manifest:
 

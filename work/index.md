@@ -2,7 +2,7 @@
 
 Generated from artifact headers. `work/index.json` contains the same navigation data for automation. Do not put durable project truth only here; keep current truth in docs or README files.
 
-Updated: 2026-08-09
+Updated: 2026-08-13
 
 ## Orientation
 
@@ -21,7 +21,7 @@ Updated: 2026-08-09
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | contained; repository trigger mitigated, desktop defect remains external | 2026-07-25 | file the external Codex Desktop robustness evidence separately if still needed | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
-| [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | active | 2026-08-09 | exercise launcher runtime fallback in disposable Windows and Linux workspaces | - |
+| [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | active | 2026-08-13 | obtain authorization to publish v0.12.7, then synchronize and fresh-task verify the installed Codex client | - |
 | [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
 | [work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md](work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md) | spike | complete | 2026-08-09 | none | work/maps/map-tool-shed-evolution.md |
 | [work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md](work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md) | spike | complete | 2026-08-03 | implement the local profiler defined in work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md | work/maps/map-tool-shed-evolution.md |
@@ -31,6 +31,7 @@ Updated: 2026-08-09
 | [work/tickets/ticket-field-verify-generated-evidence-safeguards.md](work/tickets/ticket-field-verify-generated-evidence-safeguards.md) | ticket | complete | 2026-07-25 | none | work/maps/map-tool-shed-evolution.md |
 | [work/tickets/ticket-harden-tool-shed-release-and-drift-semantics.md](work/tickets/ticket-harden-tool-shed-release-and-drift-semantics.md) | ticket | complete | 2026-07-24 | none | scripts/check_shed_version.py; scripts/update_shed_manifest.py; scripts/review_work_state.py |
 | [work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md](work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md) | ticket | complete | 2026-08-03 | none | docs/workspace-performance-profiling.md |
+| [work/tickets/ticket-mitigate-tool-shed-churn-for-direct-coding-requests.md](work/tickets/ticket-mitigate-tool-shed-churn-for-direct-coding-requests.md) | ticket | complete | 2026-08-13 | none | work/maps/map-tool-shed-evolution.md |
 | [work/tickets/ticket-portable-verified-tool-shed-installer.md](work/tickets/ticket-portable-verified-tool-shed-installer.md) | ticket | active | 2026-08-09 | exercise launcher runtime fallback against disposable Windows and Linux workspaces | work/maps/map-tool-shed-evolution.md |
 | [work/tickets/ticket-prepare-tool-shed-0-2-0-release.md](work/tickets/ticket-prepare-tool-shed-0-2-0-release.md) | ticket | complete | 2026-07-24 | none | docs/releasing.md; scripts/check_shed_version.py; scripts/update_shed_manifest.py |
 | [work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md](work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md) | workpackage | active | 2026-07-21 | obtain explicit approval before the first guarded mass update | README.md; docs/fleet-snapshot-updates.md; skills/tool-shed/SKILL.md |
@@ -49,6 +50,6 @@ Updated: 2026-08-09
 
 ## Summary
 
-- Total artifacts: 32
+- Total artifacts: 33
 - Active artifacts: 3
-- Completed/decided artifacts: 27
+- Completed/decided artifacts: 28

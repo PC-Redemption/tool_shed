@@ -881,6 +881,73 @@ for raw in sys.stdin:
         self.assertIn("### **Reasoning: GPT-5.6 Terra / High**", guide)
         self.assertTrue((ROOT / "scripts" / "reasoning_catalog.py").is_file())
 
+    def test_direct_routing_scenarios_match_portable_and_installed_contract(self) -> None:
+        scenarios = json.loads(
+            (ROOT / "tests" / "fixtures" / "direct-routing-scenarios.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(
+            {scenario["name"] for scenario in scenarios},
+            {
+                "ordinary bounded web bug",
+                "bounded web bug through ask inbox",
+                "ship-adjacent documentation edit",
+                "explicit end-to-end ship request",
+            },
+        )
+
+        for scenario in scenarios:
+            prompt = scenario["prompt"].lstrip().lower()
+            explicit_ship = prompt.startswith("ts:ship ") or prompt.startswith("ts: ship ")
+            expected_coordination = (
+                "direct" if scenario["bounded_single_repository"] and not explicit_ship else "coordinated"
+            )
+            with self.subTest(scenario=scenario["name"]):
+                self.assertEqual(explicit_ship, scenario["explicit_ship"])
+                self.assertEqual(expected_coordination, scenario["expected_coordination"])
+                self.assertEqual(scenario["create_artifact"], expected_coordination != "direct")
+                self.assertEqual(scenario["broad_validation"], explicit_ship)
+
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace)
+            owner_guidance = "# Owner guidance\n"
+            (workspace / "AGENTS.md").write_text(owner_guidance, encoding="utf-8")
+            run_script("scripts/install_into_workspace.py", str(workspace), "--provider", "all")
+
+            guidance_paths = (
+                "AGENTS.md",
+                "CLAUDE.md",
+                "GEMINI.md",
+                ".github/copilot-instructions.md",
+                ".cursor/rules/tool-shed.mdc",
+            )
+            for relative in guidance_paths:
+                guidance = (workspace / relative).read_text(encoding="utf-8")
+                with self.subTest(provider_guidance=relative):
+                    self.assertIn("single-repository bug fix or enhancement to Direct", guidance)
+                    self.assertIn("orient to the named target once", guidance)
+                    self.assertIn("campaign continuity does not upgrade Direct", guidance)
+                    self.assertIn("ts:ask` does not turn a bounded Direct request", guidance)
+                    self.assertIn("merely mentions or discusses `ts:ship`", guidance)
+            self.assertTrue((workspace / "AGENTS.md").read_text(encoding="utf-8").startswith(owner_guidance))
+
+            direct_ask = next(
+                scenario for scenario in scenarios if scenario["transport"] == "ts:ask"
+            )
+            ask_path = workspace / "work" / "q&a" / "ask.txt"
+            ask_path.write_text(direct_ask["prompt"] + "\n", encoding="utf-8")
+            work_before = sorted(path.relative_to(workspace).as_posix() for path in (workspace / "work").rglob("*"))
+            result = run_script(
+                "scripts/read_ask_inbox.py", "--workspace", str(workspace), "--json"
+            )
+            payload = json.loads(result.stdout)
+            work_after = sorted(path.relative_to(workspace).as_posix() for path in (workspace / "work").rglob("*"))
+            self.assertEqual(payload["status"], "canonical")
+            self.assertEqual(payload["content"], direct_ask["prompt"])
+            self.assertEqual(work_after, work_before)
+
     def test_ask_resolver_uses_canonical_content_only(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)
@@ -1654,6 +1721,10 @@ Produces:
             self.assertIn("at most three credible ways the plan could fail", guidance)
             self.assertIn("ts: discuss <topic>", guidance)
             self.assertIn("Direct, Guided, Coordinated, or Deep", guidance)
+            self.assertIn("orient to the named target once", guidance)
+            self.assertIn("campaign continuity does not upgrade Direct", guidance)
+            self.assertIn("ts:ask` does not turn a bounded Direct request", guidance)
+            self.assertIn("merely mentions or discusses `ts:ship`", guidance)
 
     def test_installer_supports_all_provider_adapters_idempotently(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

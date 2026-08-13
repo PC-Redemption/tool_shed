@@ -198,7 +198,7 @@
     {
       "canonical_truth": null,
       "disposition": null,
-      "next_action": "exercise launcher runtime fallback in disposable Windows and Linux workspaces",
+      "next_action": "obtain authorization to publish v0.12.7, then synchronize and fresh-task verify the installed Codex client",
       "parent": null,
       "path": "work/maps/map-tool-shed-evolution.md",
       "produces": null,
@@ -208,7 +208,7 @@
       "supersedes": null,
       "title": "Project Map: Tool Shed evolution",
       "type": "project-map",
-      "updated": "2026-08-09"
+      "updated": "2026-08-13"
     },
     {
       "canonical_truth": null,
@@ -348,6 +348,21 @@
     {
       "canonical_truth": null,
       "disposition": null,
+      "next_action": "none",
+      "parent": "work/maps/map-tool-shed-evolution.md",
+      "path": "work/tickets/ticket-mitigate-tool-shed-churn-for-direct-coding-requests.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Ticket: Mitigate Tool Shed churn for Direct coding requests",
+      "type": "ticket",
+      "updated": "2026-08-13"
+    },
+    {
+      "canonical_truth": null,
+      "disposition": null,
       "next_action": "exercise launcher runtime fallback against disposable Windows and Linux workspaces",
       "parent": "work/maps/map-tool-shed-evolution.md",
       "path": "work/tickets/ticket-portable-verified-tool-shed-installer.md",
@@ -482,7 +497,7 @@
     }
   ],
   "description": "Generated from tool_shed artifact headers. Use as navigation, not canonical truth.",
-  "generated_at": "2026-08-09",
+  "generated_at": "2026-08-13",
   "reading_order": [
     "Read project README/docs for current truth.",
     "Read active maps and active work artifacts from this index.",
@@ -491,7 +506,7 @@
   "schema_version": 1,
   "summary": {
     "active_artifacts": 3,
-    "completed_or_decided_artifacts": 27,
-    "total_artifacts": 32
+    "completed_or_decided_artifacts": 28,
+    "total_artifacts": 33
   }
 }
