@@ -61,9 +61,9 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 2,
   "notes": "Add numbered work levels and combined or split environment models",
-  "release_commit": null,
+  "release_commit": "91c1601c7ae8dcc627f5ffa0ad891dbeab0c5bad",
   "release_tag": "v0.13.0",
-  "released_at": null,
+  "released_at": "2026-08-13T18:20:50Z",
   "shed_version": "0.13.0",
   "updated_at": "2026-08-13"
 }
