@@ -61,9 +61,9 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 2,
   "notes": "Keep bounded coding requests on the Direct route",
-  "release_commit": null,
+  "release_commit": "9e5f70aafe6c5948f8d310cb80f289ac9d97448a",
   "release_tag": "v0.12.7",
-  "released_at": null,
+  "released_at": "2026-08-13T13:55:32Z",
   "shed_version": "0.12.7",
   "updated_at": "2026-08-13"
 }
