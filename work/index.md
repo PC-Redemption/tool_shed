@@ -8,10 +8,10 @@ Updated: 2026-08-14
 
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
-| [work/00-campaigns/active/converge-upgrades-to-current-work-structure.md](work/00-campaigns/active/converge-upgrades-to-current-work-structure.md) | campaign | queued | 2026-08-14 | execute when selected from the active campaign queue | - |
-| [work/00-campaigns/active/reconcile-campaign-queue-state-and-order.md](work/00-campaigns/active/reconcile-campaign-queue-state-and-order.md) | campaign | queued | 2026-08-14 | execute when selected from the active campaign queue | - |
-| [work/00-campaigns/active/restore-blocked-campaign-lifecycle.md](work/00-campaigns/active/restore-blocked-campaign-lifecycle.md) | campaign | working | 2026-08-14 | execute the campaign completion gate | - |
+| [work/00-campaigns/completed/converge-upgrades-to-current-work-structure.md](work/00-campaigns/completed/converge-upgrades-to-current-work-structure.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/owner-facing-campaign-queues.md](work/00-campaigns/completed/owner-facing-campaign-queues.md) | campaign | complete | 2026-08-14 | none | - |
+| [work/00-campaigns/completed/reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-14 | none | - |
+| [work/00-campaigns/completed/restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/checklists/checklist-refresh-readme-and-ai-command-reference.md](work/checklists/checklist-refresh-readme-and-ai-command-reference.md) | checklist | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/checklists/checklist-tool-shed-skill-field-test.md](work/checklists/checklist-tool-shed-skill-field-test.md) | checklist | complete | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/decisions/decision-codex-skill-readiness.md](work/decisions/decision-codex-skill-readiness.md) | decision-matrix | decided | 2026-07-05 | continue using skill on real projects; plugin packaging deferred | work/maps/map-tool-shed-foundation.md |
@@ -58,5 +58,5 @@ Updated: 2026-08-14
 ## Summary
 
 - Total artifacts: 40
-- Active artifacts: 6
-- Completed/decided artifacts: 32
+- Active artifacts: 3
+- Completed/decided artifacts: 35

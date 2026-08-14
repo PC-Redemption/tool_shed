@@ -32,6 +32,7 @@ HEADER_KEYS = (
     "Completion Gate",
     "Completion Evidence",
     "Completion Date",
+    "Completion Order",
     "Disposition",
     "Reactivate When",
 )
@@ -188,11 +189,26 @@ def _short(campaign: Campaign | None) -> str:
     return "none" if campaign is None else f"{campaign.campaign_id} — {campaign.title}"
 
 
+def _completion_order(campaign: Campaign) -> int:
+    try:
+        return int(campaign.fields.get("Completion Order", "0"))
+    except ValueError:
+        return 0
+
+
+def _completion_sort_key(campaign: Campaign) -> tuple[int, str, str]:
+    return (
+        _completion_order(campaign),
+        campaign.fields.get("Completion Date", ""),
+        campaign.campaign_id,
+    )
+
+
 def render_active_queue(order: list[str], campaigns: dict[str, Campaign]) -> str:
     active = [campaigns[item] for item in order if item in campaigns]
     completed = sorted(
         (item for item in campaigns.values() if item.status == "complete"),
-        key=lambda item: item.fields.get("Completion Date", ""),
+        key=_completion_sort_key,
         reverse=True,
     )
     working = next((item for item in active if item.status == "working"), None)
@@ -232,7 +248,7 @@ def render_active_queue(order: list[str], campaigns: dict[str, Campaign]) -> str
 def render_completed_queue(campaigns: dict[str, Campaign]) -> str:
     completed = sorted(
         (item for item in campaigns.values() if item.status == "complete"),
-        key=lambda item: (item.fields.get("Completion Date", ""), item.campaign_id),
+        key=_completion_sort_key,
         reverse=True,
     )
     lines = [
@@ -365,6 +381,7 @@ def validate(workspace: Path) -> list[str]:
         "deferred": {"deferred"},
         "abandoned": {"abandoned"},
     }
+    completion_orders: dict[int, str] = {}
     for item in campaigns.values():
         if not ID_RE.fullmatch(item.campaign_id):
             findings.append(f"invalid campaign ID: {item.campaign_id}")
@@ -377,6 +394,22 @@ def validate(workspace: Path) -> list[str]:
             working += 1
         if item.status == "complete" and not item.fields.get("Completion Date"):
             findings.append(f"{item.campaign_id} is complete without Completion Date")
+        raw_completion_order = item.fields.get("Completion Order")
+        if raw_completion_order is not None:
+            try:
+                completion_order = int(raw_completion_order)
+            except ValueError:
+                findings.append(f"{item.campaign_id} has invalid Completion Order")
+            else:
+                if completion_order < 1:
+                    findings.append(f"{item.campaign_id} has invalid Completion Order")
+                elif completion_order in completion_orders:
+                    findings.append(
+                        f"duplicate Completion Order {completion_order}: "
+                        f"{completion_orders[completion_order]}, {item.campaign_id}"
+                    )
+                else:
+                    completion_orders[completion_order] = item.campaign_id
     if working > 1:
         findings.append("more than one campaign is working")
     findings.extend(_validate_graph(campaigns))
@@ -564,6 +597,9 @@ def mutate_campaign(args: argparse.Namespace, workspace: Path) -> None:
         item.fields["Status"] = "complete"
         item.fields["Completion Evidence"] = args.evidence
         item.fields["Completion Date"] = date.today().isoformat()
+        item.fields["Completion Order"] = str(
+            max((_completion_order(other) for other in campaigns.values()), default=0) + 1
+        )
         item.fields["Disposition"] = "completed"
         item.fields["Next Action"] = "none"
         order.remove(item.campaign_id)
@@ -625,7 +661,7 @@ def status_payload(workspace: Path) -> dict[str, object]:
     ordered = [campaigns[item] for item in order]
     completed = sorted(
         (item for item in campaigns.values() if item.status == "complete"),
-        key=lambda item: (item.fields.get("Completion Date", ""), item.campaign_id),
+        key=_completion_sort_key,
         reverse=True,
     )
     working = [item for item in ordered if item.status == "working"]
@@ -735,7 +771,7 @@ def main() -> int:
             campaigns = load_all(workspace)
             completed = sorted(
                 (item for item in campaigns.values() if item.status == "complete"),
-                key=lambda item: (item.fields.get("Completion Date", ""), item.campaign_id),
+                key=_completion_sort_key,
                 reverse=True,
             )
             payload = [{"campaign_id": item.campaign_id, "title": item.title, "completed": item.fields.get("Completion Date"), "evidence": item.fields.get("Completion Evidence")} for item in completed]

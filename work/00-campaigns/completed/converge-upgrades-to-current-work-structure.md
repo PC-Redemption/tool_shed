@@ -1,9 +1,9 @@
 # Converge upgrades to current work structure
 
-Status: queued
+Status: complete
 Type: campaign
 Updated: 2026-08-14
-Next Action: execute when selected from the active campaign queue
+Next Action: none
 Campaign ID: converge-upgrades-to-current-work-structure
 Outcome: Make Tool Shed upgrades from older releases migrate preserved owner work into the complete latest canonical work tree instead of leaving a hybrid installation
 Depends On: none
@@ -11,8 +11,10 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: Upgrade fixtures from 0.13.0 and other supported older structures converge to the latest canonical work topology; owner content and indexes are preserved; legacy paths are migrated without collisions or silent loss; provider guidance and snapshot integrity remain valid; rollback is verified; focused cross-platform tests and full validation pass
-Completion Evidence: none
-Disposition: none
+Completion Evidence: GitHub #25; commit 2450401; protocol-3 Windows-path convergence and rollback tests; full validator 102/102
+Completion Date: 2026-08-14
+Completion Order: 3
+Disposition: completed
 
 ## Request
 

@@ -15,7 +15,7 @@
     "docs/releasing.md": "27d9ae48b56c45470259b0ec0951e7e2c2ae34f74f0c8a4dc76607828dcd608d",
     "docs/workspace-performance-profiling.md": "a725f6b417ebda239204eabe8bab9c7681be871f0150cec40aaaece39b8c8ad5",
     "existing-projects.md": "1829bd1952a6d847b6f0dfe85c04179fc3e87f7c1d00eaeb2c06105a03a1b92d",
-    "scripts/campaign_queue.py": "6c430377236d8f07382dba0750e09f76b1ed0528c0fa6dee00eca22c35435e76",
+    "scripts/campaign_queue.py": "cdd90cf8eb51c557e9b9e5d5eae4a1f79ed41440abc6e40ace345f5157c46d7b",
     "scripts/check_provider_adapters.py": "7bc1eb17ab585faaf0fab9404e2dc520f3f39b88e79b058778008bbc6eace488",
     "scripts/check_shed_version.py": "5703011ccd200c962632cba94b4aaba03516c074bd1a209b291860e98d112fc4",
     "scripts/check_stale_paths.py": "3da99560b61ab75a8eae7015ef998def8bc5a096cdb5202e79bbc95728a032f3",

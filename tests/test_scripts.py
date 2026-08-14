@@ -1720,6 +1720,45 @@ Next Action: keep going
             active_queue = (workspace / "work" / "00-campaigns" / "active-queue.md").read_text(encoding="utf-8")
             self.assertIn("Detour and return point: second", active_queue)
 
+    def test_campaign_same_day_completions_preserve_completion_order(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+
+            def token() -> str:
+                return json.loads(
+                    run_script(
+                        "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+                    ).stdout
+                )["state_token"]
+
+            for campaign_id in ("alpha", "zulu"):
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "add", campaign_id,
+                    campaign_id.title(), "--outcome", f"finish {campaign_id}",
+                    "--completion-gate", f"{campaign_id} verified", "--expect", token(),
+                )
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "start", campaign_id,
+                    "--expect", token(),
+                )
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "complete", campaign_id,
+                    "--evidence", f"tests:{campaign_id}", "--gate-passed", "--expect", token(),
+                )
+
+            status = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+                ).stdout
+            )
+            self.assertEqual(status["completed"], ["zulu", "alpha"])
+            self.assertEqual(status["last_completed"], "zulu")
+            self.assertEqual(status["findings"], [])
+            completed_root = workspace / "work" / "00-campaigns" / "completed"
+            self.assertIn("Completion Order: 1", (completed_root / "alpha.md").read_text(encoding="utf-8"))
+            self.assertIn("Completion Order: 2", (completed_root / "zulu.md").read_text(encoding="utf-8"))
+
     def test_campaign_terminal_transitions_and_migration_are_preserving(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)

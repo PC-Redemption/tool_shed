@@ -1,9 +1,9 @@
 # Restore blocked campaign lifecycle
 
-Status: working
+Status: complete
 Type: campaign
 Updated: 2026-08-14
-Next Action: execute the campaign completion gate
+Next Action: none
 Campaign ID: restore-blocked-campaign-lifecycle
 Outcome: Provide a deterministic supported transition that returns blocked campaigns to schedulable execution without weakening start invariants
 Depends On: none
@@ -11,8 +11,10 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: A GitHub repository issue documents the defect, reproduction, expected behavior, and acceptance criteria; blocked campaigns can be unblocked through a token-protected command; blocker metadata and queue projections clear; next and start behave correctly; focused lifecycle tests and operator documentation pass; completion evidence references the GitHub issue
-Completion Evidence: none
-Disposition: none
+Completion Evidence: GitHub #24; commit 2450401; unblock and same-day lifecycle tests; full validator 102/102; installed skill exact with backup tool-shed.backup-20260814T151412Z
+Completion Date: 2026-08-14
+Completion Order: 1
+Disposition: completed
 
 ## Request
 

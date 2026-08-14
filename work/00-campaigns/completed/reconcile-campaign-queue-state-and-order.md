@@ -1,9 +1,9 @@
 # Reconcile campaign queue state and execution order
 
-Status: queued
+Status: complete
 Type: campaign
 Updated: 2026-08-14
-Next Action: execute when selected from the active campaign queue
+Next Action: none
 Campaign ID: reconcile-campaign-queue-state-and-order
 Outcome: Provide a deterministic utility that finds orphaned or stalled campaigns, safely repairs mechanically resolvable queue drift, and evaluates the active queue execution order without overriding owner decisions
 Depends On: none
@@ -11,8 +11,10 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: GitHub feature request 23 remains linked; dry-run and JSON reports identify orphaned, inconsistent, stalled, blocked, and ready campaigns; token-protected apply safely repairs eligible drift with rollback; active execution-order recommendations are stable and explainable; ambiguous lifecycle or priority decisions remain owner-controlled; focused cross-platform tests, documentation, and full validation pass
-Completion Evidence: none
-Disposition: none
+Completion Evidence: GitHub #23; commit 2450401; dry-run, stale-token, projection-repair, rollback, and order tests; full validator 102/102
+Completion Date: 2026-08-14
+Completion Order: 2
+Disposition: completed
 
 ## Request
 
