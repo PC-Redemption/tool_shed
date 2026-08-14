@@ -68,9 +68,9 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
   "notes": "Close reconciled owner campaigns and document the workspace collector decision",
-  "release_commit": null,
+  "release_commit": "e0abe0282b9fa1053245e9a2a978c8e986ea65cd",
   "release_tag": "v0.15.1",
-  "released_at": null,
+  "released_at": "2026-08-14T18:53:30Z",
   "shed_version": "0.15.1",
   "updated_at": "2026-08-14"
 }
