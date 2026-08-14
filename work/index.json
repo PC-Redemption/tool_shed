@@ -2,13 +2,13 @@
   "artifacts": [
     {
       "canonical_truth": null,
-      "disposition": "none",
-      "next_action": "execute the campaign completion gate",
+      "disposition": "completed",
+      "next_action": "none",
       "parent": null,
-      "path": "work/00-campaigns/active/owner-facing-campaign-queues.md",
+      "path": "work/00-campaigns/completed/owner-facing-campaign-queues.md",
       "produces": null,
       "project_map": null,
-      "status": "working",
+      "status": "complete",
       "superseded_by": null,
       "supersedes": null,
       "title": "Owner-facing campaign queues",
@@ -213,7 +213,7 @@
     {
       "canonical_truth": null,
       "disposition": null,
-      "next_action": "implement and work2-verify the owner-facing campaign lifecycle under work/00-campaigns",
+      "next_action": "review the unreleased 0.14.0 candidate before any work3 or release request",
       "parent": null,
       "path": "work/maps/map-tool-shed-evolution.md",
       "produces": null,
@@ -421,21 +421,6 @@
       "updated": "2026-07-24"
     },
     {
-      "canonical_truth": null,
-      "disposition": null,
-      "next_action": "checkpoint the validated 0.14.0 candidate and synchronize the installed Codex skill",
-      "parent": null,
-      "path": "work/wp/active/wp-owner-facing-campaign-queues-and-lifecycle-management.md",
-      "produces": null,
-      "project_map": "work/maps/map-tool-shed-evolution.md",
-      "status": "active",
-      "superseded_by": null,
-      "supersedes": null,
-      "title": "Owner-facing campaign queues and lifecycle management Workpackage",
-      "type": "workpackage",
-      "updated": "2026-08-14"
-    },
-    {
       "canonical_truth": "README.md; docs/fleet-snapshot-updates.md; skills/tool-shed/SKILL.md",
       "disposition": null,
       "next_action": "obtain explicit approval before the first guarded mass update",
@@ -500,6 +485,21 @@
       "disposition": null,
       "next_action": "none",
       "parent": null,
+      "path": "work/wp/completed/wp-owner-facing-campaign-queues-and-lifecycle-management.md",
+      "produces": null,
+      "project_map": "work/maps/map-tool-shed-evolution.md",
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Owner-facing campaign queues and lifecycle management Workpackage",
+      "type": "workpackage",
+      "updated": "2026-08-14"
+    },
+    {
+      "canonical_truth": null,
+      "disposition": null,
+      "next_action": "none",
+      "parent": null,
       "path": "work/wp/completed/wp-reasoning-level-preflight-and-recommendation.md",
       "produces": null,
       "project_map": "work/maps/map-tool-shed-evolution.md",
@@ -550,8 +550,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 5,
-    "completed_or_decided_artifacts": 29,
+    "active_artifacts": 3,
+    "completed_or_decided_artifacts": 31,
     "total_artifacts": 36
   }
 }

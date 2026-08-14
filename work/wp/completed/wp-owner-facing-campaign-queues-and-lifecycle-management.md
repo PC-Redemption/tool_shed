@@ -1,9 +1,9 @@
 # Owner-facing campaign queues and lifecycle management Workpackage
 
-Status: active
+Status: complete
 Type: workpackage
 Updated: 2026-08-14
-Next Action: checkpoint the validated 0.14.0 candidate and synchronize the installed Codex skill
+Next Action: none
 Project Map: work/maps/map-tool-shed-evolution.md
 Issue: https://github.com/PC-Redemption/tool_shed/issues/22
 
@@ -45,8 +45,7 @@ Completed:
 
 Incomplete:
 
-- Host-local installed-client synchronization and changed-behavior verification.
-- Final campaign and workpackage closeout after installed-client parity is proven.
+- None.
 
 ## Goal
 
@@ -129,8 +128,8 @@ Completion criteria:
 
 - [x] Focused lifecycle and integration tests pass.
 - [x] Repository validation passes in proportion to the changed shared machinery.
-- [ ] Requested changes are committed locally without unrelated work.
-- [ ] Canonical `skills/tool-shed/` is validated, backed up, synchronized to the installed client,
+- [x] Requested changes are committed locally without unrelated work.
+- [x] Canonical `skills/tool-shed/` is validated, backed up, synchronized to the installed client,
       revalidated, and exactly matches the source.
 
 ## Open Questions
