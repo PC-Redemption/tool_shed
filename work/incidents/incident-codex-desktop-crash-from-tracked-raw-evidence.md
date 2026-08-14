@@ -1,9 +1,9 @@
 # Incident: Codex Desktop crash from tracked raw evidence
 
-Status: contained; repository trigger mitigated, desktop defect remains external
+Status: complete
 Type: incident
-Updated: 2026-07-25
-Next Action: file the external Codex Desktop robustness evidence separately if still needed
+Updated: 2026-08-14
+Next Action: none
 Parent: work/maps/map-tool-shed-evolution.md
 Campaign: file-codex-desktop-robustness-issue
 
@@ -101,4 +101,6 @@ Crash bundle:
 - [x] Add this measured fixture to preflight and installer tests.
 - [x] Verify existing-workspace migration reports tracked raw evidence, not only
   new untracked output.
-- [ ] File the Crashpad bundle separately against Codex Desktop robustness.
+- [x] File sanitized aggregate evidence against Codex Desktop robustness as
+  [openai/codex#38622](https://github.com/openai/codex/issues/38622). The raw
+  Crashpad bundle remains private and was not uploaded.

@@ -2,10 +2,10 @@
 
 Status: complete
 Type: spike
-Updated: 2026-08-03
-Next Action: gather approved longitudinal or multi-workspace measurements before deciding whether a separate collector is justified
+Updated: 2026-08-14
+Next Action: none
 Parent: work/maps/map-tool-shed-evolution.md
-Disposition: planned
+Disposition: documented
 Produces: work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md
 Campaign: evaluate-workspace-performance-collector
 
@@ -213,9 +213,22 @@ reviewed, add a separate collector only if multi-workspace comparison is still n
 use the verified snapshot updater for distribution rather than teaching the profiler to install or
 update itself.
 
+## Collector Decision
+
+Do not implement a separate sanitized performance-report collector. The original local canary and
+an approved fresh canonical-workspace profile on 2026-08-14 both completed without warning codes.
+All seven probes reported `ok`; the fresh profile's highest p95 was 114.670 ms. This evidence does
+not show a collection bottleneck or a concrete multi-workspace comparison need that would justify
+the additional privacy, consent, storage, and transfer surface.
+
+Local reports remain sufficient. Reconsider collection only through a new explicitly scoped
+campaign that names the target workspaces, exact reports, aggregation destination, and consent
+boundary.
+
 ## Follow-Up
 
 - [x] Create `work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md`.
 - [x] Implement and validate the local profiler against disposable scaling fixtures.
 - [x] Review a local canary report before authorizing any snapshot update or fleet profiling.
-- [ ] Decide whether a separate sanitized collector is justified by the canary results.
+- [x] Decide whether a separate sanitized collector is justified by the canary results: no
+  collector is currently justified.

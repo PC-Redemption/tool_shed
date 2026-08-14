@@ -94,3 +94,8 @@ released profiler through the existing verified snapshot updater, first to expli
 canaries. Profile exact approved targets, review reports locally, and authorize report collection
 separately. Stop rollout on schema, sanitizer, repository-boundary, mutation, or snapshot-validation
 failure.
+
+A separate sanitized report collector is not currently implemented or justified. Reviewed local
+canaries completed without profiler warnings or a material measurement bottleneck, and no concrete
+multi-workspace comparison requires the added privacy and transfer surface. Reconsider a collector
+only when a new campaign names exact workspaces, reports, destination, and consent boundaries.
