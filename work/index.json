@@ -1,6 +1,8 @@
 {
   "artifacts": [
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": "completed",
       "next_action": "none",
@@ -16,6 +18,8 @@
       "updated": "2026-08-14"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": "completed",
       "next_action": "none",
@@ -31,6 +35,8 @@
       "updated": "2026-08-14"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": "completed",
       "next_action": "none",
@@ -46,6 +52,8 @@
       "updated": "2026-08-14"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": "completed",
       "next_action": "none",
@@ -61,6 +69,25 @@
       "updated": "2026-08-14"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": "completed",
+      "next_action": "none",
+      "parent": null,
+      "path": "work/00-campaigns/completed/reconcile-whole-work-campaign-coverage.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Reconcile whole-work campaign coverage",
+      "type": "campaign",
+      "updated": "2026-08-14"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": "completed",
       "next_action": "none",
@@ -76,6 +103,8 @@
       "updated": "2026-08-14"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "none",
@@ -91,6 +120,8 @@
       "updated": "2026-08-14"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "none",
@@ -106,6 +137,8 @@
       "updated": "2026-07-05"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "continue using skill on real projects; plugin packaging deferred",
@@ -121,6 +154,8 @@
       "updated": "2026-07-05"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "implement the evidence-response loop and conditional prospective failure check",
@@ -136,6 +171,8 @@
       "updated": "2026-08-09"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "none",
@@ -151,6 +188,8 @@
       "updated": "2026-07-05"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "defer plugin packaging until distribution friction appears",
@@ -166,6 +205,8 @@
       "updated": "2026-07-05"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "none",
@@ -181,6 +222,8 @@
       "updated": "2026-07-05"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "none",
@@ -196,6 +239,8 @@
       "updated": "2026-07-25"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "none",
@@ -211,6 +256,8 @@
       "updated": "2026-08-09"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "none",
@@ -226,6 +273,8 @@
       "updated": "2026-08-09"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": null,
@@ -241,6 +290,8 @@
       "updated": null
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "none",
@@ -256,6 +307,8 @@
       "updated": "2026-08-09"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "file the external Codex Desktop robustness evidence separately if still needed",
@@ -271,6 +324,8 @@
       "updated": "2026-07-25"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "none",
@@ -286,6 +341,8 @@
       "updated": "2026-08-09"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "exercise launcher runtime fallback in disposable Windows and Linux workspaces",
@@ -301,6 +358,8 @@
       "updated": "2026-08-14"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "none",
@@ -316,6 +375,8 @@
       "updated": "2026-07-05"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": "planned",
       "next_action": "none",
@@ -331,6 +392,8 @@
       "updated": "2026-08-09"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": "planned",
       "next_action": "implement the local profiler defined in work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md",
@@ -346,6 +409,8 @@
       "updated": "2026-08-03"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "none",
@@ -361,6 +426,8 @@
       "updated": "2026-07-05"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "none",
@@ -376,6 +443,8 @@
       "updated": "2026-08-13"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": "docs/operator-guide.md; skills/tool-shed/SKILL.md; README.md",
       "disposition": null,
       "next_action": "none",
@@ -391,6 +460,8 @@
       "updated": "2026-07-24"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": "SHED_VERSION.json; scripts/check_shed_version.py; conventions.md",
       "disposition": null,
       "next_action": "none",
@@ -406,6 +477,8 @@
       "updated": "2026-07-24"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "none",
@@ -421,6 +494,8 @@
       "updated": "2026-07-25"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": "scripts/check_shed_version.py; scripts/update_shed_manifest.py; scripts/review_work_state.py",
       "disposition": null,
       "next_action": "none",
@@ -436,6 +511,8 @@
       "updated": "2026-07-24"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": "docs/workspace-performance-profiling.md",
       "disposition": null,
       "next_action": "none",
@@ -451,6 +528,8 @@
       "updated": "2026-08-03"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "none",
@@ -466,6 +545,8 @@
       "updated": "2026-08-13"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "exercise launcher runtime fallback against disposable Windows and Linux workspaces",
@@ -481,6 +562,8 @@
       "updated": "2026-08-09"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": "docs/releasing.md; scripts/check_shed_version.py; scripts/update_shed_manifest.py",
       "disposition": null,
       "next_action": "none",
@@ -496,6 +579,8 @@
       "updated": "2026-07-24"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": "README.md; docs/fleet-snapshot-updates.md; skills/tool-shed/SKILL.md",
       "disposition": null,
       "next_action": "obtain explicit approval before the first guarded mass update",
@@ -511,6 +596,8 @@
       "updated": "2026-07-21"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "none",
@@ -526,6 +613,8 @@
       "updated": "2026-08-09"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "none",
@@ -541,6 +630,8 @@
       "updated": "2026-07-05"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "none",
@@ -556,6 +647,8 @@
       "updated": "2026-07-25"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "none",
@@ -571,6 +664,8 @@
       "updated": "2026-08-14"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "none",
@@ -586,6 +681,8 @@
       "updated": "2026-08-01"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
       "next_action": "run non-Codex runtime scenarios before increasing provider capability claims",
@@ -601,6 +698,8 @@
       "updated": "2026-08-09"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
       "canonical_truth": "README.md; conventions.md; skills/tool-shed/SKILL.md",
       "disposition": null,
       "next_action": "none",
@@ -626,7 +725,7 @@
   "schema_version": 1,
   "summary": {
     "active_artifacts": 3,
-    "completed_or_decided_artifacts": 36,
-    "total_artifacts": 41
+    "completed_or_decided_artifacts": 37,
+    "total_artifacts": 42
   }
 }

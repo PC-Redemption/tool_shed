@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import re
 import subprocess
 import sys
 from datetime import date, timedelta
@@ -12,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import campaign_queue
+from update_work_index import Artifact, discover_artifacts
 
 
 REPAIRABLE_FINDINGS = (
@@ -21,6 +24,18 @@ REPAIRABLE_FINDINGS = (
     "active-queue.md is stale or manually inconsistent",
     "completed-queue.md is stale or manually inconsistent",
 )
+
+ACTIVE_ARTIFACT_STATUSES = {"active", "blocked", "proposed", "queued", "working"}
+TERMINAL_ARTIFACT_STATUSES = {"accepted", "abandoned", "complete", "completed", "decided", "done", "superseded"}
+SUPPORTED_ARTIFACT_TYPES = {
+    "adr", "campaign", "checklist", "decision-matrix", "evidence", "incident",
+    "inventory", "project-map", "runbook", "spike", "ticket", "workpackage",
+}
+PLACEHOLDER_VALUES = {"", "-", "...", "none", "work/...", "work/maps/..."}
+RELATIONSHIP_FIELDS = ("Parent", "Project Map", "Depends On", "Produces", "Supersedes", "Superseded By")
+WORK_PATH_RE = re.compile(r"(?<![\w/])(work/[A-Za-z0-9_./-]+\.md)")
+UNCHECKED_TASK_RE = re.compile(r"^\s*[-*]\s+\[ \]\s+", re.MULTILINE)
+MANIFEST_KIND = "tool-shed-campaign-reconciliation"
 
 
 def without_updated(text: str) -> str:
@@ -37,6 +52,341 @@ def unique(values: list[str]) -> list[str]:
             seen.add(value)
             result.append(value)
     return result
+
+
+def normalized(value: str | None) -> str:
+    return (value or "").strip().lower()
+
+
+def is_campaign_request(path: str) -> bool:
+    parts = Path(path).parts
+    return (
+        len(parts) >= 4
+        and parts[:2] == ("work", campaign_queue.ROOT_NAME)
+        and parts[2] in campaign_queue.LIFECYCLE_DIRS
+    )
+
+
+def whole_work_state_token(workspace: Path) -> str:
+    """Hash every Markdown file that the whole-work discovery can inspect."""
+    digest = hashlib.sha256()
+    work = workspace / "work"
+    if not work.exists():
+        return digest.hexdigest()[:16]
+    for path in sorted(work.rglob("*.md")):
+        relative = path.relative_to(workspace).as_posix()
+        if relative.startswith("work/evidence/generated/"):
+            continue
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()[:16]
+
+
+def artifact_relationships(artifact: Artifact) -> list[str]:
+    targets: list[str] = []
+    for field in RELATIONSHIP_FIELDS:
+        targets.extend(WORK_PATH_RE.findall(artifact.fields.get(field, "")))
+    return unique(targets)
+
+
+def artifact_signals(artifact: Artifact, text: str) -> list[str]:
+    status = normalized(artifact.status())
+    signals: list[str] = []
+    if status in ACTIVE_ARTIFACT_STATUSES:
+        signals.append(f"status:{status}")
+    if status == "deferred":
+        signals.append("status:deferred")
+    next_action = normalized(artifact.fields.get("Next Action"))
+    if next_action not in PLACEHOLDER_VALUES and status not in TERMINAL_ARTIFACT_STATUSES:
+        signals.append("concrete-next-action")
+    if UNCHECKED_TASK_RE.search(text):
+        signals.append("unchecked-tasks")
+    return signals
+
+
+def finding(
+    code: str,
+    classification: str,
+    paths: list[str],
+    message: str,
+    **extra: Any,
+) -> dict[str, Any]:
+    return {
+        "code": code,
+        "classification": classification,
+        "paths": paths,
+        "message": message,
+        **extra,
+    }
+
+
+def discover_whole_work(
+    workspace: Path,
+    campaigns: dict[str, campaign_queue.Campaign],
+) -> dict[str, Any]:
+    work = workspace / "work"
+    artifacts = discover_artifacts(work) if work.exists() else []
+    records: dict[str, dict[str, Any]] = {}
+    exclusions: list[dict[str, str]] = []
+    findings: list[dict[str, Any]] = []
+    discovered_paths = {artifact.path.as_posix() for artifact in artifacts}
+    all_markdown = sorted(work.rglob("*.md")) if work.exists() else []
+    for path in all_markdown:
+        relative = path.relative_to(workspace).as_posix()
+        if relative in discovered_paths:
+            continue
+        if relative.startswith("work/evidence/generated/"):
+            reason = "generated-evidence"
+        elif path.name in {"index.md", "active-queue.md", "completed-queue.md"}:
+            reason = "generated-projection"
+        elif path.name == "README.md":
+            reason = "work-guidance"
+        else:
+            reason = "unsupported-markdown"
+        exclusions.append({"path": relative, "reason": reason})
+
+    for artifact in artifacts:
+        path = artifact.path.as_posix()
+        if is_campaign_request(path):
+            exclusions.append({"path": path, "reason": "campaign-lifecycle-source"})
+            continue
+        if path.startswith("work/evidence/generated/"):
+            exclusions.append({"path": path, "reason": "generated-evidence"})
+            continue
+        text = (workspace / artifact.path).read_text(encoding="utf-8")
+        signals = artifact_signals(artifact, text)
+        status = normalized(artifact.status())
+        kind = normalized(artifact.kind())
+        raw_campaign = artifact.fields.get("Campaign", "").strip()
+        association = normalized(raw_campaign)
+        reason = artifact.fields.get("Campaign Reason", "").strip()
+        campaign_ids = [] if association in {"", "standalone", "excluded"} else [
+            item.strip() for item in raw_campaign.split(",") if item.strip()
+        ]
+        unresolved = bool(signals)
+        relationships = artifact_relationships(artifact)
+        records[path] = {
+            "path": path,
+            "type": kind or None,
+            "status": status or None,
+            "unresolved": unresolved,
+            "signals": signals,
+            "relationships": relationships,
+            "campaign": raw_campaign or None,
+            "campaign_reason": reason or None,
+        }
+        if unresolved and (not status or not kind or kind not in SUPPORTED_ARTIFACT_TYPES):
+            findings.append(
+                finding(
+                    "unstructured_candidate",
+                    "owner-decision-required",
+                    [path],
+                    "unresolved signals exist without a complete supported artifact header",
+                )
+            )
+        if association in {"standalone", "excluded"} and not reason:
+            findings.append(
+                finding(
+                    "scope_conflict",
+                    "owner-decision-required",
+                    [path],
+                    f"Campaign: {association} requires Campaign Reason",
+                )
+            )
+        if len(campaign_ids) > 1:
+            findings.append(
+                finding(
+                    "scope_conflict",
+                    "owner-decision-required",
+                    [path],
+                    "an artifact must declare one campaign, standalone, or excluded",
+                    campaigns=campaign_ids,
+                )
+            )
+        for campaign_id in campaign_ids:
+            campaign = campaigns.get(campaign_id)
+            if campaign is None:
+                findings.append(
+                    finding(
+                        "unlinked_artifact",
+                        "high-confidence",
+                        [path],
+                        f"declared campaign does not exist: {campaign_id}",
+                        campaign=campaign_id,
+                    )
+                )
+                continue
+            campaign_status = campaign.status
+            if unresolved and campaign_status in {"complete", "abandoned"}:
+                findings.append(
+                    finding(
+                        "lifecycle_mismatch",
+                        "high-confidence",
+                        [path],
+                        f"unresolved artifact is linked to {campaign_status} campaign {campaign_id}",
+                        campaign=campaign_id,
+                    )
+                )
+            if unresolved and campaign_status == "complete":
+                findings.append(
+                    finding(
+                        "stale_completion",
+                        "high-confidence",
+                        [path],
+                        f"completed campaign {campaign_id} still covers unresolved work",
+                        campaign=campaign_id,
+                    )
+                )
+            if not unresolved and status in TERMINAL_ARTIFACT_STATUSES and campaign_status in campaign_queue.ACTIVE_STATES:
+                findings.append(
+                    finding(
+                        "stale_completion",
+                        "high-confidence",
+                        [path],
+                        f"terminal artifact is linked to active campaign {campaign_id}",
+                        campaign=campaign_id,
+                    )
+                )
+
+    for path, record in records.items():
+        if record["status"] not in ACTIVE_ARTIFACT_STATUSES:
+            continue
+        for target in record["relationships"]:
+            related = records.get(target)
+            if related and related["status"] in TERMINAL_ARTIFACT_STATUSES:
+                findings.append(
+                    finding(
+                        "lifecycle_mismatch",
+                        "high-confidence",
+                        [path, target],
+                        "active artifact depends on or descends from a terminal artifact",
+                    )
+                )
+
+    adjacency = {path: set() for path in records}
+    for path, record in records.items():
+        for target in record["relationships"]:
+            if target in records:
+                adjacency[path].add(target)
+                adjacency[target].add(path)
+
+    clusters: list[dict[str, Any]] = []
+    visited: set[str] = set()
+    unresolved_paths = {path for path, record in records.items() if record["unresolved"]}
+    for seed in sorted(unresolved_paths):
+        if seed in visited:
+            continue
+        pending = [seed]
+        component: set[str] = set()
+        while pending:
+            current = pending.pop()
+            if current in component:
+                continue
+            component.add(current)
+            pending.extend(adjacency[current] - component)
+        unresolved_component = sorted(component & unresolved_paths)
+        visited.update(unresolved_component)
+        associations = sorted(
+            {
+                item.strip()
+                for path in unresolved_component
+                for item in (records[path]["campaign"] or "").split(",")
+                if item.strip() and normalized(item) not in {"standalone", "excluded"}
+            }
+        )
+        modes = sorted(
+            {
+                normalized(records[path]["campaign"])
+                for path in unresolved_component
+                if normalized(records[path]["campaign"]) in {"standalone", "excluded"}
+            }
+        )
+        cluster = {
+            "cluster_id": f"cluster-{len(clusters) + 1}",
+            "paths": unresolved_component,
+            "campaigns": associations,
+            "modes": modes,
+        }
+        clusters.append(cluster)
+        if len(associations) > 1:
+            findings.append(
+                finding(
+                    "duplicate_coverage",
+                    "owner-decision-required",
+                    unresolved_component,
+                    "related unresolved artifacts declare multiple campaigns",
+                    campaigns=associations,
+                )
+            )
+        if associations and modes:
+            findings.append(
+                finding(
+                    "scope_conflict",
+                    "owner-decision-required",
+                    unresolved_component,
+                    "related unresolved artifacts mix campaign coverage with standalone or excluded scope",
+                    campaigns=associations,
+                    modes=modes,
+                )
+            )
+        if not associations and not modes:
+            findings.append(
+                finding(
+                    "missing_campaign",
+                    "owner-decision-required",
+                    unresolved_component,
+                    "unresolved artifact cluster has no Campaign declaration",
+                )
+            )
+
+    findings.sort(key=lambda item: (item["code"], item["paths"], item["message"]))
+    by_code = {
+        code: [item for item in findings if item["code"] == code]
+        for code in (
+            "missing_campaign", "unlinked_artifact", "duplicate_coverage",
+            "lifecycle_mismatch", "scope_conflict", "stale_completion",
+            "unstructured_candidate",
+        )
+    }
+    unresolved_records = [record for record in records.values() if record["unresolved"]]
+    covered = [
+        record for record in unresolved_records
+        if record["campaign"] and normalized(record["campaign"]) not in {"standalone", "excluded"}
+    ]
+    standalone = [record for record in unresolved_records if normalized(record["campaign"]) == "standalone"]
+    excluded = [record for record in unresolved_records if normalized(record["campaign"]) == "excluded"]
+    unclassified = [record for record in unresolved_records if not record["campaign"]]
+    return {
+        "coverage": {
+            "markdown_discovered": len(all_markdown),
+            "artifacts_scanned": len(records),
+            "artifacts_excluded": len(exclusions),
+            "unresolved_artifacts": len(unresolved_records),
+            "campaign_associated": len(covered),
+            "standalone": len(standalone),
+            "explicitly_excluded": len(excluded),
+            "unclassified": len(unclassified),
+        },
+        "exclusions": exclusions,
+        "artifacts": sorted(records.values(), key=lambda item: item["path"]),
+        "clusters": clusters,
+        "findings": findings,
+        **by_code,
+    }
+
+
+def manifest_for_report(state_token: str, repair_order: list[str], changes_required: bool) -> dict[str, Any]:
+    operations: list[dict[str, Any]] = []
+    if changes_required:
+        operations.append({"op": "repair_projections", "active_order": repair_order})
+    return {
+        "schema_version": 1,
+        "kind": MANIFEST_KIND,
+        "state_token": state_token,
+        "operations": operations,
+    }
 
 
 def order_reason(
@@ -149,10 +499,16 @@ def inspect_queue(workspace: Path, stalled_days: int) -> dict[str, Any]:
         or completed_projection_stale
     )
     order_change_proposed = proposed_order != repair_order
+    whole_work = discover_whole_work(workspace, campaigns)
+    state_token = whole_work_state_token(workspace)
+    reconciliation_manifest = manifest_for_report(
+        state_token, repair_order, changes_required
+    )
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "workspace": str(workspace),
-        "state_token": campaign_queue.state_token(workspace),
+        "state_token": state_token,
+        "campaign_state_token": campaign_queue.state_token(workspace),
         "stalled_days": stalled_days,
         "active_order": raw_order,
         "repair_order": repair_order,
@@ -172,9 +528,24 @@ def inspect_queue(workspace: Path, stalled_days: int) -> dict[str, Any]:
         "invalid_updated": invalid_updated,
         "validation_findings": validation_findings,
         "unsupported_findings": unsupported_findings,
+        "whole_work": whole_work,
+        "coverage": whole_work["coverage"],
+        "missing_campaign": whole_work["missing_campaign"],
+        "unlinked_artifact": whole_work["unlinked_artifact"],
+        "duplicate_coverage": whole_work["duplicate_coverage"],
+        "lifecycle_mismatch": whole_work["lifecycle_mismatch"],
+        "scope_conflict": whole_work["scope_conflict"],
+        "stale_completion": whole_work["stale_completion"],
+        "unstructured_candidate": whole_work["unstructured_candidate"],
+        "reconciliation_manifest": reconciliation_manifest,
         "changes_required": changes_required,
         "owner_action_required": bool(
-            order_change_proposed or stalled or blocked or invalid_updated or unsupported_findings
+            order_change_proposed
+            or stalled
+            or blocked
+            or invalid_updated
+            or unsupported_findings
+            or whole_work["findings"]
         ),
         "writes_performed": False,
     }
@@ -209,26 +580,214 @@ def run_post_apply_checks(workspace: Path) -> dict[str, str]:
     return results
 
 
+def require_whole_work_token(workspace: Path, expected: str | None) -> None:
+    if not expected:
+        raise campaign_queue.CampaignError(
+            "mutation requires --expect TOKEN from the latest dry run"
+        )
+    actual = whole_work_state_token(workspace)
+    if expected != actual:
+        raise campaign_queue.CampaignError(
+            f"stale whole-work state: expected {expected}, current {actual}"
+        )
+
+
+def load_manifest(path: Path) -> dict[str, Any]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise campaign_queue.CampaignError("reconciliation manifest must be a JSON object")
+    if payload.get("schema_version") != 1 or payload.get("kind") != MANIFEST_KIND:
+        raise campaign_queue.CampaignError("unsupported reconciliation manifest")
+    if not isinstance(payload.get("operations"), list):
+        raise campaign_queue.CampaignError("manifest operations must be a list")
+    return payload
+
+
+def safe_artifact_path(workspace: Path, value: Any) -> Path:
+    if not isinstance(value, str) or not value.startswith("work/"):
+        raise campaign_queue.CampaignError("manifest artifact path must start with work/")
+    path = (workspace / value).resolve()
+    work = (workspace / "work").resolve()
+    try:
+        path.relative_to(work)
+    except ValueError as error:
+        raise campaign_queue.CampaignError("manifest artifact path escapes work/") from error
+    if not path.is_file() or path.is_symlink():
+        raise campaign_queue.CampaignError(f"manifest artifact is not a regular file: {value}")
+    if is_campaign_request(path.relative_to(workspace).as_posix()):
+        raise campaign_queue.CampaignError("set_association cannot edit campaign requests")
+    return path
+
+
+def set_header(text: str, key: str, value: str) -> str:
+    lines = text.splitlines()
+    replacement = f"{key}: {value}"
+    for index, line in enumerate(lines[:40]):
+        if line.startswith(f"{key}:"):
+            lines[index] = replacement
+            return "\n".join(lines).rstrip() + "\n"
+    insert_at = next(
+        (index + 1 for index, line in enumerate(lines[:40]) if line.startswith("Next Action:")),
+        next((index for index, line in enumerate(lines) if line.startswith("## ")), len(lines)),
+    )
+    lines.insert(insert_at, replacement)
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def prepare_manifest_changes(
+    workspace: Path,
+    manifest: dict[str, Any],
+    report: dict[str, Any],
+) -> dict[Path, str | None]:
+    campaigns = campaign_queue.load_all(workspace)
+    order = campaign_queue.queue_order(workspace)
+    root = campaign_queue.campaign_root(workspace)
+    changes: dict[Path, str | None] = {}
+    campaign_changed = False
+
+    for operation in manifest["operations"]:
+        if not isinstance(operation, dict):
+            raise campaign_queue.CampaignError("manifest operation must be an object")
+        kind = operation.get("op")
+        if kind == "repair_projections":
+            requested = operation.get("active_order")
+            if requested != report["repair_order"]:
+                raise campaign_queue.CampaignError(
+                    "repair_projections must exactly match the current deterministic repair order"
+                )
+            order = list(requested)
+            campaign_changed = True
+        elif kind == "set_association":
+            path = safe_artifact_path(workspace, operation.get("path"))
+            association = operation.get("campaign")
+            reason = operation.get("reason", "")
+            if not isinstance(association, str) or not association.strip():
+                raise campaign_queue.CampaignError("set_association requires campaign")
+            association = association.strip()
+            if association not in {"standalone", "excluded"} and association not in campaigns:
+                raise campaign_queue.CampaignError(
+                    f"set_association references unknown campaign: {association}"
+                )
+            if association in {"standalone", "excluded"} and not str(reason).strip():
+                raise campaign_queue.CampaignError(
+                    f"Campaign: {association} requires a reason"
+                )
+            text = path.read_text(encoding="utf-8")
+            text = set_header(text, "Campaign", association)
+            if str(reason).strip():
+                text = set_header(text, "Campaign Reason", str(reason).strip())
+            changes[path] = text
+        elif kind == "create_campaign":
+            campaign_id = operation.get("campaign_id")
+            title = operation.get("title")
+            outcome = operation.get("outcome")
+            gate = operation.get("completion_gate")
+            request = operation.get("request", "Add detailed execution context here.")
+            dependencies = operation.get("depends_on", [])
+            if not isinstance(campaign_id, str) or not campaign_queue.ID_RE.fullmatch(campaign_id):
+                raise campaign_queue.CampaignError("create_campaign requires a lowercase kebab-case campaign_id")
+            if campaign_id in campaigns:
+                raise campaign_queue.CampaignError(f"campaign already exists: {campaign_id}")
+            if not all(isinstance(value, str) and value.strip() for value in (title, outcome, gate, request)):
+                raise campaign_queue.CampaignError("create_campaign requires title, outcome, completion_gate, and request")
+            if not isinstance(dependencies, list) or not all(isinstance(item, str) for item in dependencies):
+                raise campaign_queue.CampaignError("create_campaign depends_on must be a list of campaign IDs")
+            missing = sorted(set(dependencies) - set(campaigns))
+            if missing:
+                raise campaign_queue.CampaignError("missing dependencies: " + ", ".join(missing))
+            path = root / "active" / f"{campaign_id}.md"
+            text = campaign_queue._campaign_text(
+                campaign_id, title.strip(), outcome.strip(), gate.strip(), dependencies,
+                str(operation.get("decision", "none")),
+                str(operation.get("detour_for", "none")),
+                str(operation.get("return_to", "none")),
+            ).replace("Add detailed execution context here.", request.strip())
+            item = campaign_queue.parse_campaign_text(path, text)
+            campaigns[campaign_id] = item
+            position = operation.get("position", len(order) + 1)
+            if not isinstance(position, int) or position < 1 or position > len(order) + 1:
+                raise campaign_queue.CampaignError("create_campaign position is outside the active queue")
+            order.insert(position - 1, campaign_id)
+            changes[path] = text
+            campaign_changed = True
+        elif kind == "transition_campaign":
+            campaign_id = operation.get("campaign_id")
+            action = operation.get("action")
+            if campaign_id not in campaigns:
+                raise campaign_queue.CampaignError(f"unknown campaign: {campaign_id}")
+            item = campaigns[campaign_id]
+            source = item.path
+            if action == "complete":
+                if source.parent.name != "active" or operation.get("gate_passed") is not True:
+                    raise campaign_queue.CampaignError("completion requires an active campaign and gate_passed: true")
+                evidence = operation.get("evidence")
+                if not isinstance(evidence, str) or not evidence.strip():
+                    raise campaign_queue.CampaignError("completion requires evidence")
+                item.fields.update({
+                    "Status": "complete", "Completion Evidence": evidence.strip(),
+                    "Completion Date": date.today().isoformat(),
+                    "Completion Order": str(max((campaign_queue._completion_order(other) for other in campaigns.values()), default=0) + 1),
+                    "Disposition": "completed", "Next Action": "none",
+                })
+                order.remove(campaign_id)
+                item.path = root / "completed" / source.name
+            elif action == "defer":
+                reason = operation.get("reason")
+                reactivate = operation.get("reactivate_when")
+                if source.parent.name != "active" or not isinstance(reason, str) or not isinstance(reactivate, str) or not reason.strip() or not reactivate.strip():
+                    raise campaign_queue.CampaignError("deferral requires active campaign, reason, and reactivate_when")
+                item.fields.update({
+                    "Status": "deferred", "Disposition": reason.strip(),
+                    "Reactivate When": reactivate.strip(),
+                    "Next Action": "reactivate when " + reactivate.strip(),
+                })
+                order.remove(campaign_id)
+                item.path = root / "deferred" / source.name
+            elif action == "abandon":
+                reason = operation.get("reason")
+                if source.parent.name not in {"active", "deferred"} or not isinstance(reason, str) or not reason.strip():
+                    raise campaign_queue.CampaignError("abandonment requires active/deferred campaign and reason")
+                replacement = operation.get("replacement")
+                disposition = reason.strip() + (f"; replacement: {replacement}" if replacement else "")
+                item.fields.update({"Status": "abandoned", "Disposition": disposition, "Next Action": "none"})
+                if campaign_id in order:
+                    order.remove(campaign_id)
+                item.path = root / "abandoned" / source.name
+            else:
+                raise campaign_queue.CampaignError(
+                    "transition_campaign action must be complete, defer, or abandon"
+                )
+            item.fields["Updated"] = date.today().isoformat()
+            changes[source] = None
+            changes[item.path] = campaign_queue.render_campaign(item)
+            campaign_changed = True
+        else:
+            raise campaign_queue.CampaignError(f"unsupported manifest operation: {kind}")
+
+    if campaign_changed:
+        changes.update(campaign_queue._refresh_changes(workspace, order, campaigns))
+    return changes
+
+
 def apply_repairs(
     workspace: Path,
     expected: str | None,
     report: dict[str, Any],
+    manifest: dict[str, Any],
 ) -> dict[str, Any]:
-    campaign_queue.require_token(workspace, expected)
+    require_whole_work_token(workspace, expected)
+    if manifest.get("state_token") != expected:
+        raise campaign_queue.CampaignError(
+            "manifest state_token must exactly match --expect"
+        )
     if report["unsupported_findings"]:
         raise campaign_queue.CampaignError(
             "reconciliation refuses unsupported findings: "
             + "; ".join(report["unsupported_findings"])
         )
-    campaigns = campaign_queue.load_all(workspace)
-    root = campaign_queue.campaign_root(workspace)
-    changes = {
-        root / "active-queue.md": campaign_queue.render_active_queue(
-            list(report["repair_order"]), campaigns
-        ),
-        root / "completed-queue.md": campaign_queue.render_completed_queue(campaigns),
-    }
-    campaign_queue.apply_transaction(workspace, changes)
+    changes = prepare_manifest_changes(workspace, manifest, report)
+    if changes:
+        campaign_queue.apply_transaction(workspace, changes)
     checks = run_post_apply_checks(workspace)
     refreshed = inspect_queue(workspace, int(report["stalled_days"]))
     refreshed["writes_performed"] = True
@@ -251,11 +810,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--apply",
         action="store_true",
-        help="Repair deterministic projection drift; never apply proposed reprioritization.",
+        help="Apply only operations from an exact approved reconciliation manifest.",
     )
     parser.add_argument(
         "--expect",
         help="Current state token from dry-run output; required with --apply.",
+    )
+    parser.add_argument(
+        "--manifest",
+        help="Exact approved JSON manifest; required with --apply.",
     )
     return parser
 
@@ -276,7 +839,12 @@ def main() -> int:
                 raise campaign_queue.CampaignError(
                     "--apply requires --expect TOKEN from the latest dry run"
                 )
-            report = apply_repairs(workspace, args.expect, report)
+            if not args.manifest:
+                raise campaign_queue.CampaignError(
+                    "--apply requires --manifest PATH"
+                )
+            manifest = load_manifest(Path(args.manifest).expanduser().resolve())
+            report = apply_repairs(workspace, args.expect, report, manifest)
     except (campaign_queue.CampaignError, OSError, json.JSONDecodeError) as error:
         print(f"Campaign reconciliation failed: {error}", file=sys.stderr)
         return 2
@@ -286,6 +854,17 @@ def main() -> int:
         print(f"Campaign state token: {report['state_token']}")
         print(f"Repairable changes required: {report['changes_required']}")
         print(f"Owner action required: {report['owner_action_required']}")
+        coverage = report["coverage"]
+        print(
+            "Whole-work coverage: "
+            f"{coverage['artifacts_scanned']} scanned, "
+            f"{coverage['artifacts_excluded']} excluded, "
+            f"{coverage['unresolved_artifacts']} unresolved, "
+            f"{coverage['unclassified']} unclassified"
+        )
+        codes = [item["code"] for item in report["whole_work"]["findings"]]
+        if codes:
+            print("Whole-work findings: " + ", ".join(sorted(set(codes))))
         print("Proposed execution order: " + ", ".join(report["proposed_execution_order"]))
         if report["stalled"]:
             print(

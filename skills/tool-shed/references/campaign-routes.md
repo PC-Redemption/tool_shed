@@ -120,9 +120,12 @@ mutations:
 - `ts: unblock <campaign>`: run `unblock` with the current state token; return blocked work to
   queued state, clear its decision, and leave `start` as a separate invariant-checked transition.
 - `ts: reconcile campaigns`: run `reconcile_campaign_queue.py` in its default read-only mode.
-  Report orphaned, inconsistent, stalled, blocked, ready, and dependency-constrained work plus its
-  proposed execution order. Apply only explicitly approved deterministic projection repairs with
-  `--apply --expect TOKEN`; never apply the proposed order or lifecycle decisions implicitly.
+  Report queue consistency plus whole-`work/` coverage, exclusions, explicit campaign,
+  `standalone`, and `excluded` associations, unresolved clusters, and the proposed execution
+  order. Apply only an exact approved JSON manifest with `--apply --expect TOKEN --manifest PATH`;
+  the token covers the complete scanned work surface. Never apply proposed order or ambiguous
+  lifecycle decisions implicitly. Manifest delete semantics transition campaigns to completed,
+  deferred, or abandoned history instead of removing them.
 - `ts: defer <campaign>`: require a reason and reactivation condition, then run `defer` with the
   current state token.
 - `ts: abandon <campaign>`: require a disposition and replacement when applicable, then run

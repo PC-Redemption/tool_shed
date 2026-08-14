@@ -243,8 +243,13 @@ the request and updates both queue views through a recoverable operation. Blocke
 active. Deferral and abandonment require explicit lifecycle reasons.
 
 `reconcile_campaign_queue.py` is dry-run-first. Its report separates mechanically repairable
-projection drift from stalled lifecycle decisions and a proposed execution order. An explicit
-`--apply --expect TOKEN` repairs projections only; reprioritization remains owner-controlled.
+projection drift from whole-`work/` coverage findings, stalled lifecycle decisions, and a proposed
+execution order. Unresolved artifacts declare `Campaign: <id>`, `Campaign: standalone`, or
+`Campaign: excluded`; the latter two require `Campaign Reason`. Coverage totals show exactly what
+was scanned and excluded. Applying changes requires an exact approved JSON manifest plus
+`--apply --expect TOKEN --manifest PATH`, where the stale-write token covers the scanned work
+surface. Reprioritization and ambiguous semantic decisions remain owner-controlled, and terminal
+manifest operations preserve completed, deferred, or abandoned history.
 
 Use `python3 tool_shed/scripts/campaign_queue.py --workspace . migrate-preview --json` to inspect
 Markdown requests under `work/01-q&a/` or legacy `work/q&a/` and actionable inbox lines. Preview never writes, and

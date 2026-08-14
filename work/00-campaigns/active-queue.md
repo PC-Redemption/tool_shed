@@ -4,7 +4,7 @@ Updated: 2026-08-14
 
 ## Owner State
 
-- Last completed: audit-and-refresh-tool-shed-documentation — Audit and refresh all Tool Shed documentation
+- Last completed: reconcile-whole-work-campaign-coverage — Reconcile whole-work campaign coverage
 - Working now: none
 - Next: none
 - Blocker or decision needed: none

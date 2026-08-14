@@ -2006,7 +2006,18 @@ Next Action: keep going
             self.assertTrue(report["owner_action_required"])
             self.assertFalse(report["writes_performed"])
 
+            missing_manifest = run_script(
+                "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                "--apply", "--expect", report["state_token"], "--json", check=False,
+            )
+            self.assertEqual(missing_manifest.returncode, 2)
+            self.assertIn("--apply requires --manifest PATH", missing_manifest.stderr)
+
             gamma = workspace / "work" / "00-campaigns" / "active" / "gamma.md"
+            manifest = workspace / "reconcile-manifest.json"
+            manifest.write_text(
+                json.dumps(report["reconciliation_manifest"]), encoding="utf-8"
+            )
             gamma.write_text(
                 gamma.read_text(encoding="utf-8").replace(
                     "## Request", "## Request\n\nPreserve owner context."
@@ -2015,20 +2026,25 @@ Next Action: keep going
             )
             stale = run_script(
                 "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
-                "--apply", "--expect", report["state_token"], "--json", check=False,
+                "--apply", "--expect", report["state_token"], "--manifest", str(manifest),
+                "--json", check=False,
             )
             self.assertEqual(stale.returncode, 2)
-            self.assertIn("stale campaign state", stale.stderr)
+            self.assertIn("stale whole-work state", stale.stderr)
 
             refreshed = json.loads(
                 run_script(
                     "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
                 ).stdout
             )
+            manifest.write_text(
+                json.dumps(refreshed["reconciliation_manifest"]), encoding="utf-8"
+            )
             applied = json.loads(
                 run_script(
                     "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
-                    "--apply", "--expect", refreshed["state_token"], "--json",
+                    "--apply", "--expect", refreshed["state_token"],
+                    "--manifest", str(manifest), "--json",
                 ).stdout
             )
             self.assertTrue(applied["writes_performed"])
@@ -2039,6 +2055,190 @@ Next Action: keep going
             self.assertEqual(applied["proposed_execution_order"], ["beta", "alpha", "gamma"])
             self.assertEqual(applied["validation_findings"], [])
             self.assertIn("update_work_index.py", applied["post_apply_checks"])
+
+    def test_campaign_reconciliation_reports_whole_work_coverage(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+
+            def status() -> dict[str, object]:
+                return json.loads(
+                    run_script(
+                        "scripts/campaign_queue.py", "--workspace", str(workspace),
+                        "status", "--json",
+                    ).stdout
+                )
+
+            for campaign_id in ("alpha", "beta", "finished", "later"):
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "add",
+                    campaign_id, campaign_id.title(), "--outcome", f"deliver {campaign_id}",
+                    "--completion-gate", f"{campaign_id} verified",
+                    "--expect", str(status()["state_token"]),
+                )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "complete", "finished",
+                "--gate-passed", "--evidence", "verified", "--expect", str(status()["state_token"]),
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "defer", "later",
+                "--reason", "later scope", "--reactivate-when", "owner selects it",
+                "--expect", str(status()["state_token"]),
+            )
+
+            tickets = workspace / "work" / "tickets"
+            tickets.mkdir(parents=True)
+
+            def artifact(name: str, headers: str, body: str = "") -> None:
+                (tickets / f"{name}.md").write_text(
+                    f"# {name.title()}\n\n{headers}\n\n{body}\n", encoding="utf-8"
+                )
+
+            common = f"Status: active\nType: ticket\nUpdated: {date.today().isoformat()}\nNext Action: implement"
+            artifact("uncovered", common)
+            artifact("linked", common + "\nCampaign: alpha")
+            artifact("standalone", common + "\nCampaign: standalone\nCampaign Reason: intentionally local")
+            artifact("excluded", common + "\nCampaign: excluded\nCampaign Reason: external ownership")
+            artifact("deferred", common.replace("Status: active", "Status: deferred") + "\nCampaign: later")
+            artifact("ghost", common + "\nCampaign: missing-id")
+            artifact("done-but-active", common + "\nCampaign: finished")
+            artifact("parent", common + "\nCampaign: alpha")
+            artifact(
+                "child",
+                common + "\nParent: work/tickets/parent.md\nCampaign: beta",
+            )
+            artifact(
+                "terminal-parent",
+                common.replace("Status: active", "Status: complete").replace(
+                    "Next Action: implement", "Next Action: none"
+                ),
+            )
+            artifact(
+                "active-descendant",
+                common + "\nParent: work/tickets/terminal-parent.md\nCampaign: alpha",
+            )
+            artifact("bad-standalone", common + "\nCampaign: standalone")
+            (tickets / "rough-notes.md").write_text(
+                "# Rough notes\n\n- [ ] unresolved item\n", encoding="utf-8"
+            )
+
+            before = {
+                path.relative_to(workspace).as_posix(): path.read_bytes()
+                for path in workspace.rglob("*.md")
+            }
+            report = json.loads(
+                run_script(
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+                ).stdout
+            )
+            after = {
+                path.relative_to(workspace).as_posix(): path.read_bytes()
+                for path in workspace.rglob("*.md")
+            }
+            self.assertEqual(before, after)
+            whole = report["whole_work"]
+            self.assertGreaterEqual(whole["coverage"]["artifacts_scanned"], 11)
+            self.assertEqual(whole["coverage"]["standalone"], 2)
+            self.assertEqual(whole["coverage"]["explicitly_excluded"], 1)
+            self.assertTrue(any(
+                any(path.endswith("uncovered.md") for path in item["paths"])
+                for item in whole["missing_campaign"]
+            ))
+            self.assertTrue(any(item.get("campaign") == "missing-id" for item in whole["unlinked_artifact"]))
+            self.assertTrue(whole["duplicate_coverage"])
+            self.assertTrue(whole["lifecycle_mismatch"])
+            self.assertTrue(any(
+                "terminal artifact" in item["message"] for item in whole["lifecycle_mismatch"]
+            ))
+            self.assertTrue(whole["stale_completion"])
+            self.assertTrue(whole["scope_conflict"])
+            self.assertTrue(any(
+                any(path.endswith("rough-notes.md") for path in item["paths"])
+                for item in whole["unstructured_candidate"]
+            ))
+            linked = next(item for item in whole["artifacts"] if item["path"].endswith("linked.md"))
+            deferred = next(item for item in whole["artifacts"] if item["path"].endswith("deferred.md"))
+            self.assertEqual(linked["campaign"], "alpha")
+            self.assertEqual(deferred["campaign"], "later")
+            self.assertTrue(report["owner_action_required"])
+
+    def test_campaign_reconciliation_manifest_applies_create_update_and_history_preserving_delete(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+            tickets = workspace / "work" / "tickets"
+            tickets.mkdir(parents=True)
+            ticket = tickets / "candidate.md"
+            ticket.write_text(
+                "# Candidate\n\nStatus: active\nType: ticket\nUpdated: 2026-08-14\n"
+                "Next Action: implement\n\n- [ ] deliver\n",
+                encoding="utf-8",
+            )
+            report = json.loads(
+                run_script(
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+                ).stdout
+            )
+            manifest = {
+                "schema_version": 1,
+                "kind": "tool-shed-campaign-reconciliation",
+                "state_token": report["state_token"],
+                "operations": [
+                    {
+                        "op": "create_campaign",
+                        "campaign_id": "candidate-campaign",
+                        "title": "Candidate campaign",
+                        "outcome": "deliver candidate",
+                        "completion_gate": "candidate verified",
+                        "request": "Implement work/tickets/candidate.md.",
+                        "position": 1,
+                    },
+                    {
+                        "op": "set_association",
+                        "path": "work/tickets/candidate.md",
+                        "campaign": "candidate-campaign",
+                    },
+                ],
+            }
+            path = workspace / "manifest.json"
+            path.write_text(json.dumps(manifest), encoding="utf-8")
+            applied = json.loads(
+                run_script(
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                    "--apply", "--expect", report["state_token"], "--manifest", str(path), "--json",
+                ).stdout
+            )
+            self.assertTrue(applied["writes_performed"])
+            self.assertIn("Campaign: candidate-campaign", ticket.read_text(encoding="utf-8"))
+            self.assertTrue((workspace / "work" / "00-campaigns" / "active" / "candidate-campaign.md").is_file())
+
+            refreshed = json.loads(
+                run_script(
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+                ).stdout
+            )
+            transition = {
+                "schema_version": 1,
+                "kind": "tool-shed-campaign-reconciliation",
+                "state_token": refreshed["state_token"],
+                "operations": [
+                    {
+                        "op": "transition_campaign",
+                        "campaign_id": "candidate-campaign",
+                        "action": "abandon",
+                        "reason": "superseded by owner decision",
+                    }
+                ],
+            }
+            path.write_text(json.dumps(transition), encoding="utf-8")
+            run_script(
+                "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                "--apply", "--expect", refreshed["state_token"], "--manifest", str(path), "--json",
+            )
+            preserved = workspace / "work" / "00-campaigns" / "abandoned" / "candidate-campaign.md"
+            self.assertTrue(preserved.is_file())
+            self.assertIn("Status: abandoned", preserved.read_text(encoding="utf-8"))
+            self.assertFalse((workspace / "work" / "00-campaigns" / "active" / "candidate-campaign.md").exists())
 
     def test_campaign_validation_detects_dependency_cycle(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

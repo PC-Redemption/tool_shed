@@ -83,7 +83,7 @@ Durable owner-facing state lives under `work/00-campaigns/`.
 | `ts: next` | Select and execute only the first ready campaign under its recorded work level and natural coordination. |
 | `ts: add <idea>` | Check active, deferred, and completed work for overlap or direction conflicts, then add the approved campaign using the current state token. |
 | `ts: unblock <campaign>` | Return blocked work to queued state and clear its recorded decision; starting remains a separate transition. |
-| `ts: reconcile campaigns` | Inspect orphaned, inconsistent, stalled, blocked, ready, and dependency-constrained work and propose execution order without writing. |
+| `ts: reconcile campaigns` | Inspect queue consistency and whole-`work/` campaign coverage, then propose execution order without writing. |
 | `ts: defer <campaign>` | Move active work to deferred with a reason and reactivation condition. |
 | `ts: abandon <campaign>` | Preserve cancelled or superseded work with a disposition and replacement when applicable. |
 
@@ -101,15 +101,32 @@ Blocked work remains active. Queue mutations reject stale state and do not silen
 ambiguous priorities. Campaign completion requires its explicit completion gate and applicable
 verification.
 
-The deterministic reconciliation utility is read-only by default:
+The deterministic reconciliation utility is read-only by default. It reports complete scan and
+exclusion totals; explicit `Campaign: <id>`, `Campaign: standalone`, and `Campaign: excluded`
+associations; unresolved artifact clusters; lifecycle mismatches; and queue projection drift:
 
 ```bash
 python3 tool_shed/scripts/reconcile_campaign_queue.py --workspace . --json
 ```
 
-After reviewing its report, `--apply --expect TOKEN` repairs only duplicate, missing, dangling, or
-stale queue projections. It preserves the current valid relative order, appends orphaned active
-campaigns, and never applies the separately reported execution-order proposal or lifecycle choices.
+Save the exact proposed manifest for review without changing the workspace:
+
+```bash
+python3 tool_shed/scripts/reconcile_campaign_queue.py --workspace . --json \
+  | jq '.reconciliation_manifest' > /tmp/campaign-reconciliation.json
+```
+
+After reviewing its `reconciliation_manifest`, save the exact approved manifest and pass
+`--apply --expect TOKEN --manifest PATH`. The token covers the complete scanned work surface.
+Generated projection repairs preserve the current valid relative order and never apply the
+separately reported execution-order proposal. Approved manifest operations can create campaigns,
+set explicit associations, or transition campaigns; terminal transitions preserve lifecycle
+history instead of deleting files. Ambiguous semantic or priority choices remain owner-owned.
+
+```bash
+python3 tool_shed/scripts/reconcile_campaign_queue.py --workspace . \
+  --apply --expect <whole-work-token> --manifest /tmp/campaign-reconciliation.json --json
+```
 
 ## Q&A Inbox
 

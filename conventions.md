@@ -199,6 +199,25 @@ Every active non-map artifact should name a concrete `Parent:` or `Project Map:`
 spike must set `Disposition:` to `planned`, `documented`, `no-action`, or `superseded`. A planned
 spike must identify its follow-up artifact in `Produces:`.
 
+Campaign reconciliation scans the complete supported `work/**/*.md` artifact surface, excluding
+generated evidence, generated indexes, queue projections, and campaign lifecycle requests that
+are themselves the coverage source. Unresolved artifacts may declare exactly one of:
+
+```text
+Campaign: <campaign-id>
+Campaign: standalone
+Campaign Reason: <why owner-queue insertion is intentionally unnecessary>
+Campaign: excluded
+Campaign Reason: <scope or policy boundary>
+```
+
+`standalone` and `excluded` remain visible in coverage totals. Missing or ambiguous declarations
+are reported for owner review; they are never silently inserted into the active queue. The
+reconciliation stale-write token hashes the complete scanned Markdown surface. Any write requires
+an exact approved JSON manifest. Manifest create and association updates are explicit, while
+delete semantics transition campaigns into completed, deferred, or abandoned history rather than
+physically deleting requests.
+
 Deep research is a spike mode, not a separate artifact model. It uses `Type: spike` and
 `Research Depth: deep`, so normal indexing, disposition, and `Produces:` rules apply. Tool Shed
 structures and preserves research; it is not a search engine. Findings remain work artifacts until
