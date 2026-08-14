@@ -66,9 +66,9 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 2,
   "notes": "Add canonical AI command reference and refresh operator documentation",
-  "release_commit": null,
+  "release_commit": "a0a8bd458fadf528799a98c6191d3ef234a79781",
   "release_tag": "v0.14.1",
-  "released_at": null,
+  "released_at": "2026-08-14T13:19:37Z",
   "shed_version": "0.14.1",
   "updated_at": "2026-08-14"
 }
