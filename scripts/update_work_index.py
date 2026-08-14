@@ -24,6 +24,8 @@ HEADER_KEYS = {
     "Superseded By",
     "Disposition",
     "Produces",
+    "Campaign",
+    "Campaign Reason",
 }
 
 
@@ -66,6 +68,8 @@ class Artifact:
             "superseded_by": self.fields.get("Superseded By") or None,
             "disposition": self.fields.get("Disposition") or None,
             "produces": self.fields.get("Produces") or None,
+            "campaign": self.fields.get("Campaign") or None,
+            "campaign_reason": self.fields.get("Campaign Reason") or None,
         }
 
 

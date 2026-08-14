@@ -3,10 +3,11 @@
 Status: complete
 Type: spike
 Updated: 2026-08-03
-Next Action: implement the local profiler defined in work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md
+Next Action: gather approved longitudinal or multi-workspace measurements before deciding whether a separate collector is justified
 Parent: work/maps/map-tool-shed-evolution.md
 Disposition: planned
 Produces: work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md
+Campaign: evaluate-workspace-performance-collector
 
 ## Question
 

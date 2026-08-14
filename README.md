@@ -325,8 +325,13 @@ token and reject stale writes. In owner-queue requests, `camp` aliases `campaign
 identifies the campaign at 1-based ordered queue number N and is resolved from a fresh status read.
 `campaign_queue.py migrate-preview` reports legacy candidates but
 never moves or rewrites them; applying a migration requires a separate exact approved manifest.
-`reconcile_campaign_queue.py` reports orphaned or stalled work and a reasoned execution order;
-its explicit token-protected apply mode repairs projections without silently reprioritizing work.
+`reconcile_campaign_queue.py` reports queue drift, whole-`work/` campaign coverage and exclusions,
+unresolved clusters, lifecycle mismatches, and a reasoned execution order. Its default route
+automatically creates or refreshes one Dangler Resolution campaign as the first queued work while
+preserving any working campaign; `--dry-run` is read-only. Unresolved artifacts can declare
+`Campaign: <id>`, `Campaign: standalone`, or `Campaign: excluded` with a reason. Other writes
+require an exact approved manifest and a stale-write token covering the scanned work surface; it
+never silently resolves semantic decisions, and terminal operations preserve lifecycle history.
 
 Check the installed snapshot without using the network, or compare it with the canonical manifest:
 

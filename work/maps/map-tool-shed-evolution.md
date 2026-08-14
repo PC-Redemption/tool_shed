@@ -3,7 +3,9 @@
 Status: active
 Type: project-map
 Updated: 2026-08-14
-Next Action: exercise launcher runtime fallback in disposable Windows and Linux workspaces
+Next Action: review the exact target manifest before authorizing the first guarded fleet snapshot update
+Campaign: standalone
+Campaign Reason: coordination surface only; executable follow-ups are tracked by their own owner campaigns
 
 ## Purpose
 
@@ -79,7 +81,7 @@ Ground:
 | Artifact reconciliation | complete | `work/wp/completed/wp-work-artifact-reconciliation.md` | existing index and stale-path checks | none |
 | Snapshot routing and updates | active | `work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md` | explicit approval; stable reconciliation guidance | hold before first fleet update |
 | Generated evidence safety and migration | complete | `work/wp/completed/wp-generated-evidence-safety-and-migration.md` | imported incident and field-verification ticket | none |
-| Portable verified installer | active | `work/tickets/ticket-portable-verified-tool-shed-installer.md` | stable-tag and provenance model; Windows/Linux matrix passed | exercise launcher runtime fallback in disposable Windows/Linux workspaces |
+| Portable verified installer | complete | `work/tickets/ticket-portable-verified-tool-shed-installer.md` | native Linux and Windows fallback tests passed for new installation and existing update | none |
 | Workspace performance measurement | complete | `work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md` | completed profiling and fleet-measurement spike | gather approved longitudinal or multi-workspace measurements before proposing optimization |
 | Agent planning mechanism evaluation | complete | `work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md` | source-backed inventory and frozen instruction-level scenarios | none |
 | Evidence-responsive execution | complete | `work/wp/completed/wp-evidence-responsive-tool-shed-execution.md` | published v0.11.0, exact installed-client parity, and fresh-task smoke | none |
@@ -121,7 +123,7 @@ Do next:
 - [x] Define and validate prepare-only and human-gated apply contracts.
 - [x] Implement the stable-tag, cross-platform snapshot updater and rollback tests.
 - [x] Verify the complete validator matrix in native Windows and Linux CI.
-- [ ] Exercise launcher runtime fallback against disposable Windows and Linux workspaces.
+- [x] Pass launcher runtime fallback against disposable Windows and Linux workspaces.
 - [ ] Review current-workspace findings with the human before any fleet update.
 - [x] Define the workspace-performance report schema, privacy boundary, benchmark protocol, and fleet rollout plan.
 - [x] Implement and canary the privacy-safe local workspace profiler.

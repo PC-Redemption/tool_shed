@@ -111,18 +111,26 @@ campaign, but never moves, clears, or rewrites the inbox without explicit operat
 Use `python3 <shed>/scripts/campaign_queue.py --workspace <workspace>` for deterministic reads and
 mutations:
 
-- `ts: queue` and `ts: status`: run `status`, report the compact owner capsule and findings.
+- `ts: queue` and `ts: status`: run `status`, report the compact owner capsule, findings, and any
+  pending or active Dangler Resolution campaign for unclassified unresolved work.
 - `ts: completed`: run `completed` and summarize recent verified outcomes.
-- `ts: next`: run `next`, then execute only the selected ready campaign under its natural
-  coordination and requested work level.
+- `ts: next`: run `next`, surface pending Dangler Resolution work, then execute only a selected
+  active ready campaign under its natural coordination and requested work level. Run reconciliation
+  to add pending Dangler Resolution work to the active queue.
 - `ts: add <idea>`: compare with active, deferred, and completed IDs and content; report material
   overlap or direction conflicts; after resolving placement, run `add` with the current state token.
 - `ts: unblock <campaign>`: run `unblock` with the current state token; return blocked work to
   queued state, clear its decision, and leave `start` as a separate invariant-checked transition.
-- `ts: reconcile campaigns`: run `reconcile_campaign_queue.py` in its default read-only mode.
-  Report orphaned, inconsistent, stalled, blocked, ready, and dependency-constrained work plus its
-  proposed execution order. Apply only explicitly approved deterministic projection repairs with
-  `--apply --expect TOKEN`; never apply the proposed order or lifecycle decisions implicitly.
+- `ts: reconcile campaigns`: run `reconcile_campaign_queue.py` in its default mode.
+  Report queue consistency plus whole-`work/` coverage, exclusions, explicit campaign,
+  `standalone`, and `excluded` associations, unresolved clusters, and the proposed execution
+  order. When unclassified unresolved artifacts exist, automatically create or refresh exactly one
+  Dangler Resolution campaign as the first queued work while preserving any working campaign.
+  `--dry-run` never writes. Apply any other operation only from an exact approved JSON manifest
+  with `--apply --expect TOKEN --manifest PATH`; the token covers the complete scanned work
+  surface. Never apply proposed order or ambiguous lifecycle decisions implicitly. Manifest delete
+  semantics transition campaigns to completed, deferred, or abandoned history instead of removing
+  them.
 - `ts: defer <campaign>`: require a reason and reactivation condition, then run `defer` with the
   current state token.
 - `ts: abandon <campaign>`: require a disposition and replacement when applicable, then run

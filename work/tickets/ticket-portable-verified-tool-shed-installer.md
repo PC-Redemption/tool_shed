@@ -1,10 +1,11 @@
 # Ticket: Portable Verified Tool Shed Installer
 
-Status: active
+Status: complete
 Type: ticket
-Updated: 2026-08-09
-Next Action: exercise launcher runtime fallback against disposable Windows and Linux workspaces
+Updated: 2026-08-14
+Next Action: none
 Parent: work/maps/map-tool-shed-evolution.md
+Campaign: complete-portable-verified-installer
 
 ## Problem
 
@@ -36,7 +37,7 @@ boundary, project `work/`, repository policy, and recoverable update behavior.
 - [x] Roll back a failed replacement and report any installer-created residue.
 - [x] Test fresh install, existing update, invalid release, validation failure, and rollback.
 - [x] Test Windows and Linux validation, Windows paths, spaces, and both native launcher smokes.
-- [ ] Exercise launcher runtime fallback—not only `--help`—against disposable Windows and Linux
+- [x] Exercise launcher runtime fallback—not only `--help`—against disposable Windows and Linux
   workspaces.
 - [x] Reconcile implementation and documentation with
   `docs/install-or-update-snapshot.md`.
@@ -49,6 +50,13 @@ against disposable new-install and existing-update workspaces.
 The v0.12.1 qualification passed GitHub Actions on Windows and Ubuntu with Python 3.11 and current
 Python 3.x, and a real v0.10.3 embedded updater upgraded a disposable workspace to live v0.12.1.
 See `work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md`.
+
+On 2026-08-14, the new native-launcher fallback test passed locally on Linux for both a disposable
+new installation and an existing update with `python3` removed from `PATH`. The complete Linux
+validator passed all 107 tests. The same test selects the PowerShell launcher and removes `py` from
+`PATH` on Windows; its native Windows result remains pending an authorized push and GitHub Actions
+run. Draft PR #27 then passed all eight push and pull-request matrix jobs at commit `8c6d373`,
+including native Windows 3.11 and current Python fallback execution in both installation modes.
 
 Source context: GitHub PR #3, `agent/improve-tool-shed-install`. Do not copy its
 obsolete `0.1.1` version metadata or main-branch installation behavior.

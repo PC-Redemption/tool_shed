@@ -1989,7 +1989,8 @@ Next Action: keep going
             before = queue.read_bytes()
 
             dry = run_script(
-                "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+                "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                "--dry-run", "--json",
             )
             report = json.loads(dry.stdout)
             self.assertEqual(queue.read_bytes(), before)
@@ -2006,7 +2007,18 @@ Next Action: keep going
             self.assertTrue(report["owner_action_required"])
             self.assertFalse(report["writes_performed"])
 
+            missing_manifest = run_script(
+                "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                "--apply", "--expect", report["state_token"], "--json", check=False,
+            )
+            self.assertEqual(missing_manifest.returncode, 2)
+            self.assertIn("--apply requires --manifest PATH", missing_manifest.stderr)
+
             gamma = workspace / "work" / "00-campaigns" / "active" / "gamma.md"
+            manifest = workspace / "reconcile-manifest.json"
+            manifest.write_text(
+                json.dumps(report["reconciliation_manifest"]), encoding="utf-8"
+            )
             gamma.write_text(
                 gamma.read_text(encoding="utf-8").replace(
                     "## Request", "## Request\n\nPreserve owner context."
@@ -2015,20 +2027,26 @@ Next Action: keep going
             )
             stale = run_script(
                 "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
-                "--apply", "--expect", report["state_token"], "--json", check=False,
+                "--apply", "--expect", report["state_token"], "--manifest", str(manifest),
+                "--json", check=False,
             )
             self.assertEqual(stale.returncode, 2)
-            self.assertIn("stale campaign state", stale.stderr)
+            self.assertIn("stale whole-work state", stale.stderr)
 
             refreshed = json.loads(
                 run_script(
-                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                    "--dry-run", "--json",
                 ).stdout
+            )
+            manifest.write_text(
+                json.dumps(refreshed["reconciliation_manifest"]), encoding="utf-8"
             )
             applied = json.loads(
                 run_script(
                     "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
-                    "--apply", "--expect", refreshed["state_token"], "--json",
+                    "--apply", "--expect", refreshed["state_token"],
+                    "--manifest", str(manifest), "--json",
                 ).stdout
             )
             self.assertTrue(applied["writes_performed"])
@@ -2039,6 +2057,350 @@ Next Action: keep going
             self.assertEqual(applied["proposed_execution_order"], ["beta", "alpha", "gamma"])
             self.assertEqual(applied["validation_findings"], [])
             self.assertIn("update_work_index.py", applied["post_apply_checks"])
+
+    def test_campaign_reconciliation_reports_whole_work_coverage(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+
+            def status() -> dict[str, object]:
+                return json.loads(
+                    run_script(
+                        "scripts/campaign_queue.py", "--workspace", str(workspace),
+                        "status", "--json",
+                    ).stdout
+                )
+
+            for campaign_id in ("alpha", "beta", "finished", "later"):
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "add",
+                    campaign_id, campaign_id.title(), "--outcome", f"deliver {campaign_id}",
+                    "--completion-gate", f"{campaign_id} verified",
+                    "--expect", str(status()["state_token"]),
+                )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "complete", "finished",
+                "--gate-passed", "--evidence", "verified", "--expect", str(status()["state_token"]),
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "defer", "later",
+                "--reason", "later scope", "--reactivate-when", "owner selects it",
+                "--expect", str(status()["state_token"]),
+            )
+
+            tickets = workspace / "work" / "tickets"
+            tickets.mkdir(parents=True)
+
+            def artifact(name: str, headers: str, body: str = "") -> None:
+                (tickets / f"{name}.md").write_text(
+                    f"# {name.title()}\n\n{headers}\n\n{body}\n", encoding="utf-8"
+                )
+
+            common = f"Status: active\nType: ticket\nUpdated: {date.today().isoformat()}\nNext Action: implement"
+            artifact("uncovered", common)
+            artifact("linked", common + "\nCampaign: alpha")
+            artifact("standalone", common + "\nCampaign: standalone\nCampaign Reason: intentionally local")
+            artifact("excluded", common + "\nCampaign: excluded\nCampaign Reason: external ownership")
+            artifact("deferred", common.replace("Status: active", "Status: deferred") + "\nCampaign: later")
+            artifact("ghost", common + "\nCampaign: missing-id")
+            artifact("done-but-active", common + "\nCampaign: finished")
+            artifact("parent", common + "\nCampaign: alpha")
+            artifact(
+                "child",
+                common + "\nParent: work/tickets/parent.md\nCampaign: beta",
+            )
+            artifact(
+                "terminal-parent",
+                common.replace("Status: active", "Status: complete").replace(
+                    "Next Action: implement", "Next Action: none"
+                ),
+            )
+            artifact(
+                "active-descendant",
+                common + "\nParent: work/tickets/terminal-parent.md\nCampaign: alpha",
+            )
+            artifact("bad-standalone", common + "\nCampaign: standalone")
+            (tickets / "rough-notes.md").write_text(
+                "# Rough notes\n\n- [ ] unresolved item\n", encoding="utf-8"
+            )
+
+            before = {
+                path.relative_to(workspace).as_posix(): path.read_bytes()
+                for path in workspace.rglob("*.md")
+            }
+            report = json.loads(
+                run_script(
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                    "--dry-run", "--json",
+                ).stdout
+            )
+            after = {
+                path.relative_to(workspace).as_posix(): path.read_bytes()
+                for path in workspace.rglob("*.md")
+            }
+            self.assertEqual(before, after)
+            whole = report["whole_work"]
+            self.assertGreaterEqual(whole["coverage"]["artifacts_scanned"], 11)
+            self.assertEqual(whole["coverage"]["standalone"], 2)
+            self.assertEqual(whole["coverage"]["explicitly_excluded"], 1)
+            self.assertTrue(any(
+                any(path.endswith("uncovered.md") for path in item["paths"])
+                for item in whole["missing_campaign"]
+            ))
+            self.assertTrue(any(item.get("campaign") == "missing-id" for item in whole["unlinked_artifact"]))
+            self.assertTrue(whole["duplicate_coverage"])
+            self.assertTrue(whole["lifecycle_mismatch"])
+            self.assertTrue(any(
+                "terminal artifact" in item["message"] for item in whole["lifecycle_mismatch"]
+            ))
+            self.assertTrue(whole["stale_completion"])
+            self.assertTrue(whole["scope_conflict"])
+            self.assertTrue(any(
+                any(path.endswith("rough-notes.md") for path in item["paths"])
+                for item in whole["unstructured_candidate"]
+            ))
+            linked = next(item for item in whole["artifacts"] if item["path"].endswith("linked.md"))
+            deferred = next(item for item in whole["artifacts"] if item["path"].endswith("deferred.md"))
+            self.assertEqual(linked["campaign"], "alpha")
+            self.assertEqual(deferred["campaign"], "later")
+            self.assertTrue(report["owner_action_required"])
+
+    def test_dangler_resolution_is_automatically_created_refreshed_and_visible(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+            ticket = workspace / "work" / "tickets" / "dangling.md"
+            ticket.parent.mkdir(parents=True)
+            ticket.write_text(
+                "# Dangling\n\nStatus: active\nType: ticket\nUpdated: 2026-08-14\n"
+                "Next Action: classify this work\n\n- [ ] resolve\n",
+                encoding="utf-8",
+            )
+
+            report = json.loads(
+                run_script(
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                    "--dry-run", "--json",
+                ).stdout
+            )
+            proposal = report["dangler_resolution"]
+            self.assertEqual(proposal["campaign_id"], "resolve-unclassified-work")
+            self.assertEqual(proposal["status"], "proposed")
+            self.assertFalse(proposal["requires_manifest_approval"])
+            self.assertTrue(proposal["automatic_update_required"])
+            self.assertEqual(proposal["unresolved_paths"], ["work/tickets/dangling.md"])
+            self.assertEqual(
+                report["reconciliation_manifest"]["operations"][-1]["op"],
+                "create_campaign",
+            )
+            self.assertFalse(
+                (
+                    workspace
+                    / "work"
+                    / "00-campaigns"
+                    / "active"
+                    / "resolve-unclassified-work.md"
+                ).exists()
+            )
+
+            status = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+                ).stdout
+            )
+            self.assertEqual(status["next"], "resolve-unclassified-work")
+            self.assertEqual(status["next_source"], "campaign-reconciliation")
+            self.assertEqual(status["dangler_resolution"]["status"], "proposed")
+
+            next_item = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "next", "--json"
+                ).stdout
+            )
+            self.assertEqual(next_item["campaign_id"], "resolve-unclassified-work")
+            self.assertEqual(next_item["status"], "proposed")
+            self.assertFalse(next_item["requires_manifest_approval"])
+
+            applied = json.loads(
+                run_script(
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+                ).stdout
+            )
+            self.assertEqual(
+                applied["automatic_dangler_resolution"]["operation"], "create_campaign"
+            )
+            self.assertTrue(applied["writes_performed"])
+            applied_status = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+                ).stdout
+            )
+            self.assertEqual(applied_status["active_order"], ["resolve-unclassified-work"])
+            self.assertEqual(applied_status["next"], "resolve-unclassified-work")
+            self.assertEqual(applied_status["next_source"], "campaign-queue")
+            self.assertEqual(applied_status["dangler_resolution"]["status"], "queued")
+
+            second = workspace / "work" / "tickets" / "second-dangling.md"
+            second.write_text(
+                "# Second Dangling\n\nStatus: active\nType: ticket\nUpdated: 2026-08-14\n"
+                "Next Action: classify this work\n\n- [ ] resolve\n",
+                encoding="utf-8",
+            )
+            refreshed = json.loads(
+                run_script(
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+                ).stdout
+            )
+            self.assertEqual(
+                refreshed["automatic_dangler_resolution"]["operation"],
+                "refresh_dangler_campaign",
+            )
+            refreshed_status = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+                ).stdout
+            )
+            self.assertEqual(refreshed_status["active_order"], ["resolve-unclassified-work"])
+            campaign = (
+                workspace
+                / "work"
+                / "00-campaigns"
+                / "active"
+                / "resolve-unclassified-work.md"
+            )
+            campaign_text = campaign.read_text(encoding="utf-8")
+            self.assertIn("work/tickets/dangling.md", campaign_text)
+            self.assertIn("work/tickets/second-dangling.md", campaign_text)
+
+            unchanged = json.loads(
+                run_script(
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+                ).stdout
+            )
+            self.assertNotIn("automatic_dangler_resolution", unchanged)
+            self.assertFalse(unchanged["writes_performed"])
+
+    def test_auto_dangler_is_first_queued_after_working_campaign(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+
+            def status() -> dict[str, object]:
+                return json.loads(
+                    run_script(
+                        "scripts/campaign_queue.py", "--workspace", str(workspace),
+                        "status", "--json",
+                    ).stdout
+                )
+
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "add",
+                "already-working", "Already working", "--outcome", "finish current work",
+                "--completion-gate", "current work verified",
+                "--expect", str(status()["state_token"]),
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "start",
+                "already-working", "--expect", str(status()["state_token"]),
+            )
+            ticket = workspace / "work" / "tickets" / "dangling.md"
+            ticket.parent.mkdir(parents=True)
+            ticket.write_text(
+                "# Dangling\n\nStatus: active\nType: ticket\nUpdated: 2026-08-14\n"
+                "Next Action: classify\n",
+                encoding="utf-8",
+            )
+
+            run_script(
+                "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+            )
+            final = status()
+            self.assertEqual(
+                final["active_order"],
+                ["already-working", "resolve-unclassified-work"],
+            )
+            self.assertEqual(final["working"], ["already-working"])
+            self.assertEqual(final["next"], "resolve-unclassified-work")
+
+    def test_campaign_reconciliation_manifest_applies_create_update_and_history_preserving_delete(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+            tickets = workspace / "work" / "tickets"
+            tickets.mkdir(parents=True)
+            ticket = tickets / "candidate.md"
+            ticket.write_text(
+                "# Candidate\n\nStatus: active\nType: ticket\nUpdated: 2026-08-14\n"
+                "Next Action: implement\n\n- [ ] deliver\n",
+                encoding="utf-8",
+            )
+            report = json.loads(
+                run_script(
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                    "--dry-run", "--json",
+                ).stdout
+            )
+            manifest = {
+                "schema_version": 1,
+                "kind": "tool-shed-campaign-reconciliation",
+                "state_token": report["state_token"],
+                "operations": [
+                    {
+                        "op": "create_campaign",
+                        "campaign_id": "candidate-campaign",
+                        "title": "Candidate campaign",
+                        "outcome": "deliver candidate",
+                        "completion_gate": "candidate verified",
+                        "request": "Implement work/tickets/candidate.md.",
+                        "position": 1,
+                    },
+                    {
+                        "op": "set_association",
+                        "path": "work/tickets/candidate.md",
+                        "campaign": "candidate-campaign",
+                    },
+                ],
+            }
+            path = workspace / "manifest.json"
+            path.write_text(json.dumps(manifest), encoding="utf-8")
+            applied = json.loads(
+                run_script(
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                    "--apply", "--expect", report["state_token"], "--manifest", str(path), "--json",
+                ).stdout
+            )
+            self.assertTrue(applied["writes_performed"])
+            self.assertIn("Campaign: candidate-campaign", ticket.read_text(encoding="utf-8"))
+            self.assertTrue((workspace / "work" / "00-campaigns" / "active" / "candidate-campaign.md").is_file())
+
+            refreshed = json.loads(
+                run_script(
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                    "--dry-run", "--json",
+                ).stdout
+            )
+            transition = {
+                "schema_version": 1,
+                "kind": "tool-shed-campaign-reconciliation",
+                "state_token": refreshed["state_token"],
+                "operations": [
+                    {
+                        "op": "transition_campaign",
+                        "campaign_id": "candidate-campaign",
+                        "action": "abandon",
+                        "reason": "superseded by owner decision",
+                    }
+                ],
+            }
+            path.write_text(json.dumps(transition), encoding="utf-8")
+            run_script(
+                "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                "--apply", "--expect", refreshed["state_token"], "--manifest", str(path), "--json",
+            )
+            preserved = workspace / "work" / "00-campaigns" / "abandoned" / "candidate-campaign.md"
+            self.assertTrue(preserved.is_file())
+            self.assertIn("Status: abandoned", preserved.read_text(encoding="utf-8"))
+            self.assertFalse((workspace / "work" / "00-campaigns" / "active" / "candidate-campaign.md").exists())
 
     def test_campaign_validation_detects_dependency_cycle(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -2281,7 +2643,10 @@ Produces:
             self.assertIn("interpret `camp` as `campaign`", guidance)
             self.assertIn("Interpret `que N`", guidance)
             self.assertIn("`ts: unblock` returns blocked work to queued state", guidance)
-            self.assertIn("`ts: reconcile campaigns` as a dry-run request", guidance)
+            self.assertIn(
+                "`ts: reconcile campaigns` as authorization", guidance
+            )
+            self.assertIn("Dangler Resolution campaign as the first queued work", guidance)
 
     def test_installer_supports_all_provider_adapters_idempotently(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -3229,6 +3594,121 @@ old Tool Shed guidance
             )
             positions = [result.stderr.index(f"Tool Shed update: {phase}") for phase in phases]
             self.assertEqual(positions, sorted(positions))
+
+    def test_native_launcher_runtime_fallback_installs_and_updates_workspaces(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            fallback_bin = root / "fallback runtime"
+            fallback_bin.mkdir()
+            git_executable = shutil.which("git")
+            self.assertIsNotNone(git_executable)
+            fallback_path_entries = [str(fallback_bin)]
+
+            if os.name == "nt":
+                shell_executable = shutil.which("pwsh") or shutil.which("powershell")
+                if shell_executable is None:
+                    self.skipTest("PowerShell is unavailable")
+                (fallback_bin / "python.cmd").write_text(
+                    f'@echo off\r\n"{sys.executable}" %*\r\n',
+                    encoding="utf-8",
+                    newline="",
+                )
+                fallback_path_entries.append(str(Path(git_executable).parent))
+                launcher = [
+                    shell_executable,
+                    "-NoProfile",
+                    "-ExecutionPolicy",
+                    "Bypass",
+                    "-File",
+                    str(ROOT / "scripts" / "update-tool-shed.ps1"),
+                ]
+                self.assertIsNone(shutil.which("py", path=str(fallback_bin)))
+            else:
+                dirname_executable = shutil.which("dirname")
+                self.assertIsNotNone(dirname_executable)
+                for name, executable in (
+                    ("python", sys.executable),
+                    ("git", git_executable),
+                    ("dirname", dirname_executable),
+                ):
+                    (fallback_bin / name).symlink_to(executable)
+                launcher = ["/bin/sh", str(ROOT / "scripts" / "update-tool-shed.sh")]
+                self.assertIsNone(shutil.which("python3", path=str(fallback_bin)))
+
+            self.assertIsNotNone(shutil.which("python", path=str(fallback_bin)))
+            environment = dict(os.environ)
+            environment["PATH"] = os.pathsep.join(fallback_path_entries)
+            environment["CODEX_HOME"] = str(root / "codex home")
+
+            for expected_mode in ("new-installation", "existing-update"):
+                with self.subTest(mode=expected_mode):
+                    case_root = root / expected_mode
+                    case_root.mkdir()
+                    release = self.create_test_release(case_root)
+                    if expected_mode == "existing-update":
+                        workspace = self.create_update_workspace(case_root)
+                    else:
+                        workspace = case_root / "new workspace with spaces"
+                        workspace.mkdir()
+                        self.init_repository(
+                            workspace,
+                            "/tool_shed/\n/tool_shed.backup-*.tar\n",
+                        )
+                        (workspace / "README.md").write_text(
+                            "project\n", encoding="utf-8"
+                        )
+                        subprocess.run(
+                            ["git", "config", "user.name", "Tool Shed Tests"],
+                            cwd=workspace,
+                            check=True,
+                        )
+                        subprocess.run(
+                            ["git", "config", "user.email", "tests@example.invalid"],
+                            cwd=workspace,
+                            check=True,
+                        )
+                        subprocess.run(["git", "add", "."], cwd=workspace, check=True)
+                        subprocess.run(
+                            ["git", "commit", "-q", "-m", "Workspace"],
+                            cwd=workspace,
+                            check=True,
+                        )
+
+                    result = subprocess.run(
+                        [
+                            *launcher,
+                            "--workspace",
+                            str(workspace),
+                            "--repository",
+                            str(release),
+                            "--json",
+                        ],
+                        cwd=workspace,
+                        text=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        check=False,
+                        env=environment,
+                    )
+                    self.assertEqual(
+                        result.returncode,
+                        0,
+                        f"launcher stdout:\n{result.stdout}\nlauncher stderr:\n{result.stderr}",
+                    )
+                    payload = json.loads(result.stdout)
+
+                    self.assertEqual(payload["mode"], expected_mode)
+                    self.assertEqual(payload["state"], "installed")
+                    self.assertEqual(payload["installed_version"], "9.8.7")
+                    self.assertTrue((workspace / "tool_shed" / "SHED_VERSION.json").is_file())
+                    if expected_mode == "existing-update":
+                        self.assertTrue(payload["work_preserved"])
+                        self.assertEqual(
+                            (workspace / "work" / "operator-data.txt").read_text(
+                                encoding="utf-8"
+                            ),
+                            "preserve exactly\n",
+                        )
 
     def test_snapshot_updater_times_out_release_validation_before_mutation(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
