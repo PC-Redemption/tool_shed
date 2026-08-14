@@ -3602,6 +3602,7 @@ old Tool Shed guidance
             fallback_bin.mkdir()
             git_executable = shutil.which("git")
             self.assertIsNotNone(git_executable)
+            fallback_path_entries = [str(fallback_bin)]
 
             if os.name == "nt":
                 shell_executable = shutil.which("pwsh") or shutil.which("powershell")
@@ -3612,11 +3613,7 @@ old Tool Shed guidance
                     encoding="utf-8",
                     newline="",
                 )
-                (fallback_bin / "git.cmd").write_text(
-                    f'@echo off\r\n"{git_executable}" %*\r\n',
-                    encoding="utf-8",
-                    newline="",
-                )
+                fallback_path_entries.append(str(Path(git_executable).parent))
                 launcher = [
                     shell_executable,
                     "-NoProfile",
@@ -3640,7 +3637,7 @@ old Tool Shed guidance
 
             self.assertIsNotNone(shutil.which("python", path=str(fallback_bin)))
             environment = dict(os.environ)
-            environment["PATH"] = str(fallback_bin)
+            environment["PATH"] = os.pathsep.join(fallback_path_entries)
             environment["CODEX_HOME"] = str(root / "codex home")
 
             for expected_mode in ("new-installation", "existing-update"):
@@ -3690,8 +3687,13 @@ old Tool Shed guidance
                         text=True,
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
-                        check=True,
+                        check=False,
                         env=environment,
+                    )
+                    self.assertEqual(
+                        result.returncode,
+                        0,
+                        f"launcher stdout:\n{result.stdout}\nlauncher stderr:\n{result.stderr}",
                     )
                     payload = json.loads(result.stdout)
 
