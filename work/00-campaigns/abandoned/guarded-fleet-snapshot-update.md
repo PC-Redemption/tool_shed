@@ -1,18 +1,18 @@
 # Guarded Fleet Snapshot Update
 
-Status: blocked
+Status: abandoned
 Type: campaign
 Updated: 2026-08-14
-Next Action: resolve blocker or decision: Awaiting explicit approval of the exact fleet target manifest before any snapshot apply.
+Next Action: none
 Campaign ID: guarded-fleet-snapshot-update
 Outcome: The first explicitly approved Tool Shed fleet snapshot update is applied to the exact target set with boundary, rollback, and post-update verification.
 Depends On: none
-Decision: Awaiting explicit approval of the exact fleet target manifest before any snapshot apply.
+Decision: Fresh inventory identified four unique stale project snapshots; approve the exact first-rollout target set (canary or all), excluding Trash copies and Git checkouts, and choose one alias for the duplicate Bactron target before apply.
 Detour For: none
 Return To: none
 Completion Gate: An exact target manifest is approved, the guarded update completes, and every target is verified or safely rolled back with failures reported.
 Completion Evidence: none
-Disposition: none
+Disposition: Removed from owner work as a non-actionable fleet-rollout entry: no exact target manifest was approved, no snapshot update is intended, and no replacement campaign is needed.
 
 ## Request
 

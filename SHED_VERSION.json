@@ -4,7 +4,7 @@
   "content_hashes": {
     ".gitattributes": "d60f352d0db1404c70afb4bb8b2ca3fd1c610572aa40720e8a0b7baa7885418c",
     "README.md": "d3f85018654515e6e6a9031a180b7ff326fdf57fa2cf219afc7d0f27aaf6f0ae",
-    "adapters/codex-skill-releases.json": "209d99fb7f013d099cc588b687f7425aa0e1b052c78c6dfefaa41997492f1651",
+    "adapters/codex-skill-releases.json": "8f8567d2bbf0ea19bece1429cd4826687d1abd51e96b9f9f27396bba4d6c24ba",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "f53304e02e8d3d94e2d24b0d6577669a65359be5c3c5c7f234a4830a2f747828",
     "docs/commands.md": "38118cd0b1c100665867a7d5819b7c8a485be901fd87942f76380bb262c22093",
@@ -13,7 +13,7 @@
     "docs/operator-guide.md": "d36d0f46d320e492f4e135bc1ada5a609685cad88c0ecfbc513a1bcfed31b2dd",
     "docs/provider-adapters.md": "cc4c3566d9c9fd381c9fbb25f6b68024b8193add584b9bdf37b31f30af2571dc",
     "docs/releasing.md": "27d9ae48b56c45470259b0ec0951e7e2c2ae34f74f0c8a4dc76607828dcd608d",
-    "docs/workspace-performance-profiling.md": "a725f6b417ebda239204eabe8bab9c7681be871f0150cec40aaaece39b8c8ad5",
+    "docs/workspace-performance-profiling.md": "1fff8131a934e4bc6f07bcc9fac0295c37d150d6093f391159322e8b546f9a05",
     "existing-projects.md": "54b82dee26b8d90c79080240dbad5385436b70ae52ec960143ec3043349b3a9a",
     "scripts/campaign_queue.py": "56ef3cef68bd2ab2148f69f3b7a890d483864f78389ff348e87e95e87ed7e1eb",
     "scripts/check_provider_adapters.py": "7bc1eb17ab585faaf0fab9404e2dc520f3f39b88e79b058778008bbc6eace488",
@@ -67,10 +67,10 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
-  "notes": "Automate whole-work dangling campaign resolution and qualify portable installer runtime fallback",
-  "release_commit": "75af6ced4370ce3578f946e9aca9d09cef3bdd03",
-  "release_tag": "v0.15.0",
-  "released_at": "2026-08-14T18:00:54Z",
-  "shed_version": "0.15.0",
+  "notes": "Close reconciled owner campaigns and document the workspace collector decision",
+  "release_commit": null,
+  "release_tag": "v0.15.1",
+  "released_at": null,
+  "shed_version": "0.15.1",
   "updated_at": "2026-08-14"
 }
