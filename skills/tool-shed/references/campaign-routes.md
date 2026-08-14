@@ -105,7 +105,7 @@ Durable owner-facing campaign state lives under first-sorted `work/00-campaigns/
 - `completed-queue.md`: newest-first verified completion history;
 - `active/`, `completed/`, `deferred/`, and `abandoned/`: detailed campaign requests by lifecycle.
 
-Keep `work/q&a/ask.txt` as transient intake. Accepting an inbox request may create a durable
+Keep `work/01-q&a/ask.txt` as transient intake. Accepting an inbox request may create a durable
 campaign, but never moves, clears, or rewrites the inbox without explicit operator authorization.
 
 Use `python3 <shed>/scripts/campaign_queue.py --workspace <workspace>` for deterministic reads and
@@ -130,8 +130,8 @@ validate queue/folder invariants before committing. Do not silently reorder a ca
 priority or direction is ambiguous. Blocked campaigns stay active; deferral is an intentional
 priority decision; abandonment preserves disposition history.
 
-Use `migrate-preview` to inspect legacy Markdown requests directly under `work/q&a/` and actionable
-inbox lines. It never writes. Migration apply requires a separate exact approved manifest and is
+Use `migrate-preview` to inspect Markdown requests and actionable inbox lines in canonical
+`work/01-q&a/` or pre-installer legacy `work/q&a/`. It never writes. Campaign conversion requires a separate exact approved manifest and is
 not implied by preview, installation, update, or `ts:ask`.
 
 End every Tool Shed campaign response with exactly one verdict:
@@ -155,9 +155,14 @@ For `ts:ask` or `ts: ask`, run:
 python3 <shed>/scripts/read_ask_inbox.py --workspace <workspace> --json
 ```
 
-The canonical inbox is `work/q&a/ask.txt`; `q&a/ask.txt` is a legacy fallback. Ignore blank and
+The canonical inbox is `work/01-q&a/ask.txt`; `work/q&a/ask.txt` is a pre-migration legacy fallback. Ignore blank and
 comment lines. Use the only actionable inbox. If both are actionable, do not merge or act; report
 the conflict and ask which to use. Never move, clear, rewrite, or delete either file without
 explicit authorization. Dispatch the selected content under its natural coordination level;
 `ts:ask` does not turn a bounded Direct request into a heavyweight campaign. Summarize what was
 selected and done.
+
+During workspace installation or upgrade, copy and byte-verify all contents from legacy
+`work/q&a/` and root `q&a/` into `work/01-q&a/`, preserve collisions under source-specific names,
+then remove the old folders. This filesystem migration does not convert inbox content into durable
+campaigns and does not clear the canonical inbox.

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -15,8 +16,9 @@ from workspace_preflight import inspect
 IGNORE_ENTRIES = (
     "/tool_shed/",
     "/tool_shed.backup-*.tar",
+    "/work/01-q&a/ask.txt",
+    "/work/01-q&a/*.legacy-*",
     "/work/q&a/ask.txt",
-    "/q&a/ask.txt",
     "/work/evidence/generated/",
 )
 
@@ -149,7 +151,7 @@ ASK_GUIDANCE = f"""{ASK_GUIDANCE_START}
 ## Tool Shed Q&A inbox
 
 - Treat `ts:ask` and `ts: ask` as requests to run `python3 <shed>/scripts/read_ask_inbox.py --workspace <workspace> --json`.
-- The canonical inbox is `work/q&a/ask.txt`; also inspect `q&a/ask.txt` as a legacy or misplaced fallback.
+- The canonical inbox is `work/01-q&a/ask.txt`; inspect `work/q&a/ask.txt` only as a pre-migration legacy fallback.
 - Ignore blank lines and lines beginning with `#` in both files.
 - Use canonical content when only it is actionable. If only fallback content is actionable, process it and clearly report its noncanonical location.
 - If both files are actionable, do not merge or act on either; report the conflict and ask which request to use.
@@ -165,13 +167,13 @@ CAMPAIGN_QUEUE_GUIDANCE_END = "<!-- END TOOL SHED OWNER CAMPAIGN GUIDANCE -->"
 CAMPAIGN_QUEUE_GUIDANCE = f"""{CAMPAIGN_QUEUE_GUIDANCE_START}
 ## Tool Shed owner campaign queue
 
-- Keep durable owner-facing campaign state under first-sorted `work/00-campaigns/`; keep `work/q&a/ask.txt` as transient intake.
+- Keep durable owner-facing campaign state under first-sorted `work/00-campaigns/`; keep `work/01-q&a/ask.txt` as transient intake.
 - Treat `ts: queue` and `ts: status` as requests to read the active owner capsule and validate lifecycle state.
 - Treat `ts: next` as a request to select the first ready campaign, then execute only that campaign under its natural coordination and requested work level.
 - Treat `ts: add`, `ts: defer`, `ts: abandon`, and campaign completion as exact lifecycle mutations. Read the current state token immediately before writing and reject stale state.
 - Never silently reorder a campaign when priority or direction is ambiguous. Preserve blocked work as active; require a reason and reactivation condition for deferral and a disposition for abandonment.
 - Complete a campaign only after its explicit completion gate and applicable verification pass. Then update active and completed queues as one recoverable operation and promote the next ready campaign.
-- Treat migration from legacy `work/q&a/` requests or queued `ask.txt` content as preview-only until an exact manifest is explicitly approved. Never clear or rewrite `ask.txt` as a side effect.
+- The workspace installer migrates legacy `work/q&a/` and root `q&a/` contents into `work/01-q&a/` without overwriting collisions, then removes the old folders. Campaign conversion remains preview-only until an exact manifest is explicitly approved.
 {CAMPAIGN_QUEUE_GUIDANCE_END}
 """
 
@@ -274,7 +276,7 @@ def ensure_provider_guidance(repository: Path, provider_id: str) -> tuple[Path, 
 
 
 def ensure_ask_inbox(workspace: Path) -> bool:
-    path = workspace / "work" / "q&a" / "ask.txt"
+    path = workspace / "work" / "01-q&a" / "ask.txt"
     if path.exists():
         return False
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -285,13 +287,79 @@ def ensure_ask_inbox(workspace: Path) -> bool:
     return True
 
 
-def has_actionable_content(path: Path) -> bool:
-    if not path.is_file():
-        return False
-    return any(
-        line.strip() and not line.lstrip().startswith("#")
-        for line in path.read_text(encoding="utf-8").splitlines()
+def _collision_path(target: Path, label: str, content: bytes, claimed: dict[Path, bytes]) -> Path:
+    if target not in claimed and not target.exists():
+        return target
+    existing = claimed.get(target)
+    if existing is None and target.is_file():
+        existing = target.read_bytes()
+    if existing == content:
+        return target
+    candidate = target.with_name(f"{target.stem}.{label}{target.suffix}")
+    counter = 2
+    while candidate in claimed or candidate.exists():
+        existing = claimed.get(candidate)
+        if existing is None and candidate.is_file():
+            existing = candidate.read_bytes()
+        if existing == content:
+            return candidate
+        candidate = target.with_name(f"{target.stem}.{label}-{counter}{target.suffix}")
+        counter += 1
+    return candidate
+
+
+def migrate_legacy_q_and_a(workspace: Path) -> list[tuple[Path, Path]]:
+    target_root = workspace / "work" / "01-q&a"
+    sources = (
+        (workspace / "work" / "q&a", "legacy-work-q-and-a"),
+        (workspace / "q&a", "legacy-root-q-and-a"),
     )
+    mappings: list[tuple[Path, Path]] = []
+    claimed: dict[Path, bytes] = {}
+    for source_root, label in sources:
+        if not source_root.exists():
+            continue
+        if source_root.is_symlink() or not source_root.is_dir():
+            raise ValueError(f"legacy Q&A source must be a real directory: {source_root}")
+        for path in sorted(source_root.rglob("*")):
+            if path.is_symlink():
+                raise ValueError(f"legacy Q&A migration refuses symlink: {path}")
+            if path.is_dir():
+                continue
+            if not path.is_file():
+                raise ValueError(f"legacy Q&A migration found unsupported entry: {path}")
+            content = path.read_bytes()
+            destination = _collision_path(target_root / path.relative_to(source_root), label, content, claimed)
+            claimed[destination] = content
+            mappings.append((path, destination))
+
+    created: list[Path] = []
+    try:
+        for source, destination in mappings:
+            content = source.read_bytes()
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            if not destination.exists():
+                shutil.copy2(source, destination)
+                created.append(destination)
+            if not destination.is_file() or destination.read_bytes() != content:
+                raise ValueError(f"legacy Q&A copy verification failed: {source} -> {destination}")
+    except Exception:
+        for path in reversed(created):
+            path.unlink(missing_ok=True)
+        raise
+
+    for source, _ in mappings:
+        source.unlink()
+    for source_root, _ in sources:
+        if source_root.is_dir():
+            for directory in sorted(
+                (path for path in source_root.rglob("*") if path.is_dir()),
+                key=lambda path: len(path.parts),
+                reverse=True,
+            ):
+                directory.rmdir()
+            source_root.rmdir()
+    return mappings
 
 
 def existing_generated_outputs(repository: Path) -> tuple[int, int]:
@@ -378,6 +446,11 @@ def main() -> int:
             report_codex_skill_state()
         return 0
     ensure_work_tree(root)
+    try:
+        migrated_inboxes = migrate_legacy_q_and_a(root)
+    except ValueError as error:
+        print(f"Q&A inbox migration failed: {error}", file=sys.stderr)
+        return 1
     ask_created = ensure_ask_inbox(root)
 
     repository = inspect_work_ignore(root).repository
@@ -415,17 +488,15 @@ def main() -> int:
         )
 
     print(f"Initialized work tree under {root / 'work'}")
-    canonical_ask = root / "work" / "q&a" / "ask.txt"
+    canonical_ask = root / "work" / "01-q&a" / "ask.txt"
     if ask_created:
         print(f"Initialized Tool Shed Q&A inbox at {canonical_ask}")
     else:
         print(f"Preserved existing Tool Shed Q&A inbox at {canonical_ask}")
-    fallback_ask = root / "q&a" / "ask.txt"
-    if has_actionable_content(fallback_ask) and not has_actionable_content(canonical_ask):
+    if migrated_inboxes:
         print(
-            f"Q&A inbox warning: actionable content exists only in the noncanonical legacy "
-            f"inbox at {fallback_ask}. The canonical inbox is {canonical_ask}. "
-            "Neither file was moved, cleared, rewritten, or deleted."
+            f"Migrated {len(migrated_inboxes)} legacy Q&A file(s) into {canonical_ask.parent} "
+            "and removed the old Q&A folders after byte verification."
         )
     state = inspect_work_ignore(root)
     failed = False

@@ -227,20 +227,20 @@ the request and updates both queue views through a recoverable operation. Blocke
 active. Deferral and abandonment require explicit lifecycle reasons.
 
 Use `python3 tool_shed/scripts/campaign_queue.py --workspace . migrate-preview --json` to inspect
-legacy Markdown requests under `work/q&a/` and actionable inbox lines. Preview never writes, and
+Markdown requests under `work/01-q&a/` or legacy `work/q&a/` and actionable inbox lines. Preview never writes, and
 installation never migrates or clears the inbox. Applying a migration requires a separately
 approved exact manifest.
 
 ## Q&A Inbox
 
-The installer creates a workspace-local scratch inbox at `work/q&a/ask.txt`. Put a question or
+The installer creates a workspace-local scratch inbox at `work/01-q&a/ask.txt`. Put a question or
 direction there while Codex is busy, then type:
 
 ```text
 ts:ask
 ```
 
-Codex inspects the canonical file and `q&a/ask.txt`, which is supported only as a legacy or
+Codex inspects the canonical file and `work/q&a/ask.txt`, which is supported only as a pre-migration
 misplaced fallback. Blank lines and lines beginning with `#` are ignored in both files. If only the
 canonical file is actionable, Codex uses it. If only the fallback is actionable, Codex may process
 it but clearly identifies the noncanonical path. If both are actionable, Codex does not merge or
@@ -250,11 +250,11 @@ Codex reports that the inbox is empty.
 The selected content keeps its natural coordination level. A small bug fix remains Direct; the
 inbox transport does not create planning or delivery ceremony by itself.
 
-Both files are preserved after inspection. Tool Shed never moves, clears, rewrites, or deletes
-either one without explicit operator authorization. The canonical inbox is ignored by Git because
-it is transient operator input, not project documentation or durable work state. Do not adopt
-The root-level `q&a/ask.txt` path remains supported only for legacy safety; do not use it for new
-requests.
+Both files are preserved during read-only inspection. The installer separately migrates all files
+from legacy `work/q&a/` and root `q&a/` into `work/01-q&a/`, verifies copied bytes, preserves
+collisions under source-specific filenames, and removes the old folders. The canonical inbox is
+ignored by Git because it is transient operator input, not project documentation or durable work
+state.
 
 ## Common Use Cases
 

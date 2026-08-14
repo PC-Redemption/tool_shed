@@ -111,10 +111,10 @@ approved candidates. It never rewrites Git history.
 - project/product docs
 - current-state docs
 
-`work/q&a/ask.txt` is a transient, workspace-local operator inbox:
+`work/01-q&a/ask.txt` is a transient, workspace-local operator inbox:
 
 - the installer creates it without replacing existing contents
-- `ts:ask` inspects it first and also inspects `q&a/ask.txt` as a legacy or misplaced fallback
+- `ts:ask` inspects it first and supports `work/q&a/ask.txt` only as a pre-migration fallback
 - blank lines and `#` comment lines are ignored in both locations
 - canonical content wins only when the fallback is not also actionable
 - fallback-only content may be processed with a clear noncanonical-path warning
@@ -140,9 +140,14 @@ updates requests and both queue projections through a recoverable transaction. M
 queue edits fail validation. Blocked work remains active. Deferral and abandonment are explicit
 priority decisions, not substitutes for temporary blocking.
 
-`work/q&a/ask.txt` remains transient intake. Accepting an inbox entry may create a durable campaign
+`work/01-q&a/ask.txt` remains transient intake. Accepting an inbox entry may create a durable campaign
 under `work/00-campaigns/active/`, but no campaign operation clears or rewrites the inbox. Legacy
 request migration is preview-only until an exact manifest is separately approved.
+
+The workspace installer migrates all files from legacy `work/q&a/` and root `q&a/` into
+`work/01-q&a/`, verifies copied bytes, preserves collisions with source-specific filenames, and
+removes the old folders only after verification. This filesystem move is separate from converting
+inbox requests into durable campaigns.
 
 ## Artifact Headers
 

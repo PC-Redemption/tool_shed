@@ -581,16 +581,32 @@ def mutate_campaign(args: argparse.Namespace, workspace: Path) -> None:
 
 
 def migration_preview(workspace: Path) -> dict[str, object]:
-    qa = workspace / "work" / "q&a"
-    linked_requests = sorted(path.relative_to(workspace).as_posix() for path in qa.glob("*.md")) if qa.exists() else []
-    inbox = qa / "ask.txt"
-    actionable = []
-    if inbox.is_file():
-        actionable = [line.strip() for line in inbox.read_text(encoding="utf-8").splitlines() if line.strip() and not line.lstrip().startswith("#")]
+    inbox_roots = (workspace / "work" / "01-q&a", workspace / "work" / "q&a")
+    linked_requests = sorted(
+        path.relative_to(workspace).as_posix()
+        for qa in inbox_roots
+        if qa.exists()
+        for path in qa.glob("*.md")
+    )
+    inbox_sources = []
+    for qa in inbox_roots:
+        inbox = qa / "ask.txt"
+        if not inbox.is_file():
+            continue
+        actionable = [
+            line.strip()
+            for line in inbox.read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        ]
+        if actionable:
+            inbox_sources.append(
+                {"path": inbox.relative_to(workspace).as_posix(), "entries": actionable}
+            )
     return {
         "mode": "preview-only",
         "source_requests": linked_requests,
-        "inbox_entries": actionable,
+        "inbox_sources": inbox_sources,
+        "inbox_entries": [entry for source in inbox_sources for entry in source["entries"]],
         "target_root": "work/00-campaigns/active",
         "writes_performed": False,
         "requires_exact_approved_manifest_to_apply": True,

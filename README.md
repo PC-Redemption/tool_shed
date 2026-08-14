@@ -288,12 +288,12 @@ the next action when evidence differs. Command success is not outcome success. T
 broadens authority, and simple answers or known single-step reversible work execute and verify
 without extra ceremony.
 
-The workspace installer also creates `work/q&a/ask.txt`, a Git-ignored operator inbox. Add a question
+The workspace installer also creates `work/01-q&a/ask.txt`, a Git-ignored operator inbox. Add a question
 or direction to that file and send `ts:ask`; the agent reads it and acts under the same safety and
-authorization rules as a normal chat request. It also checks `q&a/ask.txt` as a
-legacy/misplaced fallback and warns when actionable content exists only there. If both files contain actionable
+authorization rules as a normal chat request. It also checks `work/q&a/ask.txt` as a
+pre-migration fallback and warns when actionable content exists only there. If both files contain actionable
 content, the agent reports a conflict instead of merging them. It preserves both files after
-inspection; `work/q&a/ask.txt` is the canonical inbox. The selected request retains its natural
+inspection; `work/01-q&a/ask.txt` is the canonical inbox. The selected request retains its natural
 coordination level, so a bounded Direct request does not become a heavyweight campaign.
 
 The installer also creates a first-sorted `work/00-campaigns/` owner control surface. Its
@@ -301,6 +301,10 @@ The installer also creates a first-sorted `work/00-campaigns/` owner control sur
 `completed-queue.md` preserves verified outcomes newest-first. Detailed requests move through
 `active/`, `completed/`, `deferred/`, and `abandoned/`. The campaign lifecycle is separate from
 `ask.txt`: intake stays transient while accepted work becomes durable and ordered.
+
+During installation or upgrade, Tool Shed copies and byte-verifies every file from legacy
+`work/q&a/` and root `q&a/` into `work/01-q&a/`. Name collisions are preserved with
+source-specific filenames; the old folders are removed only after verification.
 
 Use `ts: status`, `ts: next`, `ts: add <idea>`, `ts: defer <campaign>`,
 `ts: abandon <campaign>`, and `ts: completed`. Deterministic mutations require the current state

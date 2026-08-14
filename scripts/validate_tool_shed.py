@@ -98,7 +98,7 @@ def smoke_temp_workspace() -> None:
         )
         if not (workspace / "work" / "evidence" / "generated").is_dir():
             raise SystemExit("installer did not create the standard generated-evidence directory")
-        ask_path = workspace / "work" / "q&a" / "ask.txt"
+        ask_path = workspace / "work" / "01-q&a" / "ask.txt"
         if not ask_path.is_file():
             raise SystemExit("installer did not create the Tool Shed Q&A inbox")
         campaign_root = workspace / "work" / "00-campaigns"
@@ -136,7 +136,7 @@ def smoke_temp_workspace() -> None:
             raise SystemExit("installer did not create the complete Tool Shed Direct-route contract")
         campaign_contract = (
             "work/00-campaigns/",
-            "work/q&a/ask.txt` as transient intake",
+            "work/01-q&a/ask.txt` as transient intake",
             "current state token",
             "preview-only",
         )

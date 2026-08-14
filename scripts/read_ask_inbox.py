@@ -8,8 +8,8 @@ import json
 from pathlib import Path
 
 
-CANONICAL_PATH = Path("work") / "q&a" / "ask.txt"
-FALLBACK_PATH = Path("q&a") / "ask.txt"
+CANONICAL_PATH = Path("work") / "01-q&a" / "ask.txt"
+FALLBACK_PATH = Path("work") / "q&a" / "ask.txt"
 
 
 def actionable_content(path: Path) -> str:
@@ -67,20 +67,20 @@ def inspect_inboxes(workspace: Path) -> dict[str, object]:
 def render(payload: dict[str, object]) -> str:
     status = payload["status"]
     if status == "canonical":
-        return f"Using canonical inbox work/q&a/ask.txt:\n\n{payload['content']}"
+        return f"Using canonical inbox work/01-q&a/ask.txt:\n\n{payload['content']}"
     if status == "fallback":
         return (
             "Warning: actionable inbox content was found at noncanonical "
-            "legacy location q&a/ask.txt; the canonical inbox is work/q&a/ask.txt.\n\n"
+            "legacy location work/q&a/ask.txt; the canonical inbox is work/01-q&a/ask.txt.\n\n"
             f"{payload['content']}"
         )
     if status == "conflict":
         return (
-            "Conflict: both work/q&a/ask.txt and q&a/ask.txt contain actionable content. "
+            "Conflict: both work/01-q&a/ask.txt and work/q&a/ask.txt contain actionable content. "
             "Choose which request to use; the inboxes were not merged or modified."
         )
     return (
-        "The Tool Shed Q&A inbox is empty: neither work/q&a/ask.txt nor q&a/ask.txt "
+        "The Tool Shed Q&A inbox is empty: neither work/01-q&a/ask.txt nor work/q&a/ask.txt "
         "contains actionable content."
     )
 
@@ -90,7 +90,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--workspace",
         default=".",
-        help="Workspace root containing work/q&a/ and optional legacy q&a/. Defaults to the current directory.",
+        help="Workspace root containing work/01-q&a/ and optional legacy work/q&a/. Defaults to the current directory.",
     )
     parser.add_argument("--json", action="store_true", help="Emit the deterministic routing result as JSON.")
     return parser.parse_args()

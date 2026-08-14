@@ -129,7 +129,7 @@ repository-boundary, or product questions; `existing-projects.md` for onboarding
 
 - Choose the smallest artifact that fits the immediate work.
 - Keep project artifacts under root `work/`, never inside the workspace-local shed.
-- Keep owner-facing campaign lifecycle state under first-sorted `work/00-campaigns/`; keep `work/q&a/ask.txt` as transient intake.
+- Keep owner-facing campaign lifecycle state under first-sorted `work/00-campaigns/`; keep `work/01-q&a/ask.txt` as transient intake.
 - Keep settled current truth in project docs or README files.
 - Treat completed work artifacts as history, not canonical truth.
 - Keep the workspace-local shed a disconnected, one-way snapshot; never develop inside it or push
