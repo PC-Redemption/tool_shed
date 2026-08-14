@@ -1989,7 +1989,8 @@ Next Action: keep going
             before = queue.read_bytes()
 
             dry = run_script(
-                "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+                "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                "--dry-run", "--json",
             )
             report = json.loads(dry.stdout)
             self.assertEqual(queue.read_bytes(), before)
@@ -2034,7 +2035,8 @@ Next Action: keep going
 
             refreshed = json.loads(
                 run_script(
-                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                    "--dry-run", "--json",
                 ).stdout
             )
             manifest.write_text(
@@ -2128,7 +2130,8 @@ Next Action: keep going
             }
             report = json.loads(
                 run_script(
-                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                    "--dry-run", "--json",
                 ).stdout
             )
             after = {
@@ -2162,7 +2165,7 @@ Next Action: keep going
             self.assertEqual(deferred["campaign"], "later")
             self.assertTrue(report["owner_action_required"])
 
-    def test_dangler_resolution_is_proposed_and_visible_through_status_and_next(self) -> None:
+    def test_dangler_resolution_is_automatically_created_refreshed_and_visible(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)
             run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
@@ -2176,13 +2179,15 @@ Next Action: keep going
 
             report = json.loads(
                 run_script(
-                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                    "--dry-run", "--json",
                 ).stdout
             )
             proposal = report["dangler_resolution"]
             self.assertEqual(proposal["campaign_id"], "resolve-unclassified-work")
             self.assertEqual(proposal["status"], "proposed")
-            self.assertTrue(proposal["requires_manifest_approval"])
+            self.assertFalse(proposal["requires_manifest_approval"])
+            self.assertTrue(proposal["automatic_update_required"])
             self.assertEqual(proposal["unresolved_paths"], ["work/tickets/dangling.md"])
             self.assertEqual(
                 report["reconciliation_manifest"]["operations"][-1]["op"],
@@ -2214,17 +2219,17 @@ Next Action: keep going
             )
             self.assertEqual(next_item["campaign_id"], "resolve-unclassified-work")
             self.assertEqual(next_item["status"], "proposed")
-            self.assertTrue(next_item["requires_manifest_approval"])
+            self.assertFalse(next_item["requires_manifest_approval"])
 
-            manifest = workspace / "reconcile-manifest.json"
-            manifest.write_text(
-                json.dumps(report["reconciliation_manifest"]), encoding="utf-8"
+            applied = json.loads(
+                run_script(
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+                ).stdout
             )
-            run_script(
-                "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
-                "--apply", "--expect", report["state_token"],
-                "--manifest", str(manifest), "--json",
+            self.assertEqual(
+                applied["automatic_dangler_resolution"]["operation"], "create_campaign"
             )
+            self.assertTrue(applied["writes_performed"])
             applied_status = json.loads(
                 run_script(
                     "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
@@ -2234,6 +2239,88 @@ Next Action: keep going
             self.assertEqual(applied_status["next"], "resolve-unclassified-work")
             self.assertEqual(applied_status["next_source"], "campaign-queue")
             self.assertEqual(applied_status["dangler_resolution"]["status"], "queued")
+
+            second = workspace / "work" / "tickets" / "second-dangling.md"
+            second.write_text(
+                "# Second Dangling\n\nStatus: active\nType: ticket\nUpdated: 2026-08-14\n"
+                "Next Action: classify this work\n\n- [ ] resolve\n",
+                encoding="utf-8",
+            )
+            refreshed = json.loads(
+                run_script(
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+                ).stdout
+            )
+            self.assertEqual(
+                refreshed["automatic_dangler_resolution"]["operation"],
+                "refresh_dangler_campaign",
+            )
+            refreshed_status = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+                ).stdout
+            )
+            self.assertEqual(refreshed_status["active_order"], ["resolve-unclassified-work"])
+            campaign = (
+                workspace
+                / "work"
+                / "00-campaigns"
+                / "active"
+                / "resolve-unclassified-work.md"
+            )
+            campaign_text = campaign.read_text(encoding="utf-8")
+            self.assertIn("work/tickets/dangling.md", campaign_text)
+            self.assertIn("work/tickets/second-dangling.md", campaign_text)
+
+            unchanged = json.loads(
+                run_script(
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+                ).stdout
+            )
+            self.assertNotIn("automatic_dangler_resolution", unchanged)
+            self.assertFalse(unchanged["writes_performed"])
+
+    def test_auto_dangler_is_first_queued_after_working_campaign(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+
+            def status() -> dict[str, object]:
+                return json.loads(
+                    run_script(
+                        "scripts/campaign_queue.py", "--workspace", str(workspace),
+                        "status", "--json",
+                    ).stdout
+                )
+
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "add",
+                "already-working", "Already working", "--outcome", "finish current work",
+                "--completion-gate", "current work verified",
+                "--expect", str(status()["state_token"]),
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "start",
+                "already-working", "--expect", str(status()["state_token"]),
+            )
+            ticket = workspace / "work" / "tickets" / "dangling.md"
+            ticket.parent.mkdir(parents=True)
+            ticket.write_text(
+                "# Dangling\n\nStatus: active\nType: ticket\nUpdated: 2026-08-14\n"
+                "Next Action: classify\n",
+                encoding="utf-8",
+            )
+
+            run_script(
+                "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+            )
+            final = status()
+            self.assertEqual(
+                final["active_order"],
+                ["already-working", "resolve-unclassified-work"],
+            )
+            self.assertEqual(final["working"], ["already-working"])
+            self.assertEqual(final["next"], "resolve-unclassified-work")
 
     def test_campaign_reconciliation_manifest_applies_create_update_and_history_preserving_delete(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -2249,7 +2336,8 @@ Next Action: keep going
             )
             report = json.loads(
                 run_script(
-                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                    "--dry-run", "--json",
                 ).stdout
             )
             manifest = {
@@ -2287,7 +2375,8 @@ Next Action: keep going
 
             refreshed = json.loads(
                 run_script(
-                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                    "--dry-run", "--json",
                 ).stdout
             )
             transition = {
@@ -2554,7 +2643,10 @@ Produces:
             self.assertIn("interpret `camp` as `campaign`", guidance)
             self.assertIn("Interpret `que N`", guidance)
             self.assertIn("`ts: unblock` returns blocked work to queued state", guidance)
-            self.assertIn("`ts: reconcile campaigns` as a dry-run request", guidance)
+            self.assertIn(
+                "`ts: reconcile campaigns` as authorization", guidance
+            )
+            self.assertIn("Dangler Resolution campaign as the first queued work", guidance)
 
     def test_installer_supports_all_provider_adapters_idempotently(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

@@ -35,7 +35,7 @@ Use `work/index.md` as the first orientation surface after README/docs. Use `wor
 - Durable campaign requests move through `active/`, `completed/`, `deferred/`, and `abandoned/`.
 - Keep `work/01-q&a/ask.txt` as transient intake; it is not the durable queue.
 - Use `python3 tool_shed/scripts/campaign_queue.py --workspace . status` to get the current stale-write token before a lifecycle mutation.
-- Use `python3 tool_shed/scripts/reconcile_campaign_queue.py --workspace . --json` to inspect queue drift, whole-work campaign coverage, stalled campaigns, and proposed execution order without writing; applying changes requires an exact approved manifest and the reported whole-work token.
+- Use `python3 tool_shed/scripts/reconcile_campaign_queue.py --workspace . --json` to inspect queue drift and whole-work coverage while automatically creating or refreshing one Dangler Resolution campaign as the first queued work; add `--dry-run` for read-only inspection, and require an exact approved manifest plus the reported whole-work token for every other write.
 
 ## Active
 

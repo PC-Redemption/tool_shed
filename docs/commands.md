@@ -77,13 +77,13 @@ Durable owner-facing state lives under `work/00-campaigns/`.
 
 | Prompt | Usage |
 | --- | --- |
-| `ts: status` | Show and validate the active owner capsule, including any proposed Dangler Resolution campaign for unclassified work. |
+| `ts: status` | Show and validate the active owner capsule, including any pending or active Dangler Resolution campaign for unclassified work. |
 | `ts: queue` | Alias for `ts: status`. |
 | `ts: completed` | Summarize recent verified campaign completions. |
-| `ts: next` | Select the first ready campaign and also surface a Dangler Resolution proposal when reconciliation has unclassified work. |
+| `ts: next` | Select the first ready campaign and surface pending Dangler Resolution work before reconciliation adds it. |
 | `ts: add <idea>` | Check active, deferred, and completed work for overlap or direction conflicts, then add the approved campaign using the current state token. |
 | `ts: unblock <campaign>` | Return blocked work to queued state and clear its recorded decision; starting remains a separate transition. |
-| `ts: reconcile campaigns` | Inspect queue consistency and whole-`work/` coverage, proposing an exact-manifest Dangler Resolution campaign when unresolved artifacts are unclassified. |
+| `ts: reconcile campaigns` | Inspect queue and whole-`work/` coverage, automatically creating or refreshing one Dangler Resolution campaign as the first queued work. |
 | `ts: defer <campaign>` | Move active work to deferred with a reason and reactivation condition. |
 | `ts: abandon <campaign>` | Preserve cancelled or superseded work with a disposition and replacement when applicable. |
 
@@ -101,23 +101,26 @@ Blocked work remains active. Queue mutations reject stale state and do not silen
 ambiguous priorities. Campaign completion requires its explicit completion gate and applicable
 verification.
 
-The deterministic reconciliation utility is read-only by default. It reports complete scan and
-exclusion totals; explicit `Campaign: <id>`, `Campaign: standalone`, and `Campaign: excluded`
+The deterministic reconciliation utility automatically creates or refreshes one Dangler
+Resolution campaign when unclassified unresolved artifacts exist. It places that campaign first
+among queued work while preserving any currently working campaign. It also reports complete scan
+and exclusion totals; explicit `Campaign: <id>`, `Campaign: standalone`, and `Campaign: excluded`
 associations; unresolved artifact clusters; lifecycle mismatches; and queue projection drift:
 
 ```bash
 python3 tool_shed/scripts/reconcile_campaign_queue.py --workspace . --json
 ```
 
-Save the exact proposed manifest for review without changing the workspace:
+Use `--dry-run` to inspect and save the exact proposed manifest without changing the workspace:
 
 ```bash
-python3 tool_shed/scripts/reconcile_campaign_queue.py --workspace . --json \
+python3 tool_shed/scripts/reconcile_campaign_queue.py --workspace . --dry-run --json \
   | jq '.reconciliation_manifest' > /tmp/campaign-reconciliation.json
 ```
 
-After reviewing its `reconciliation_manifest`, save the exact approved manifest and pass
-`--apply --expect TOKEN --manifest PATH`. The token covers the complete scanned work surface.
+Automatic mutation is limited to creating or refreshing Dangler Resolution. After reviewing any
+other `reconciliation_manifest` operations, save the exact approved manifest and pass `--apply
+--expect TOKEN --manifest PATH`. The token covers the complete scanned work surface.
 Generated projection repairs preserve the current valid relative order and never apply the
 separately reported execution-order proposal. Approved manifest operations can create campaigns,
 set explicit associations, or transition campaigns; terminal transitions preserve lifecycle

@@ -394,50 +394,7 @@ def _next_dangler_campaign_id(campaigns: dict[str, campaign_queue.Campaign]) -> 
     return f"{DANGLER_CAMPAIGN_BASE_ID}-{suffix}"
 
 
-def dangler_resolution_proposal(
-    workspace: Path,
-    campaigns: dict[str, campaign_queue.Campaign],
-    active_order: list[str],
-    whole_work: dict[str, Any],
-) -> dict[str, Any] | None:
-    paths = sorted(
-        record["path"]
-        for record in whole_work["artifacts"]
-        if record["unresolved"] and not record["campaign"]
-    )
-    if not paths:
-        return None
-
-    active = sorted(
-        (
-            item
-            for item in campaigns.values()
-            if item.path.parent.name == "active"
-            and _is_dangler_campaign_id(item.campaign_id)
-        ),
-        key=lambda item: item.campaign_id,
-    )
-    if active:
-        item = active[0]
-        return {
-            "campaign_id": item.campaign_id,
-            "title": item.title,
-            "status": item.status,
-            "path": item.path.relative_to(workspace).as_posix(),
-            "unresolved_count": len(paths),
-            "unresolved_paths": paths,
-            "requires_manifest_approval": False,
-            "source": "campaign-reconciliation",
-            "next_action": item.fields.get("Next Action", "triage unresolved artifacts"),
-        }
-
-    campaign_id = _next_dangler_campaign_id(campaigns)
-    working_positions = [
-        index
-        for index, item_id in enumerate(active_order)
-        if item_id in campaigns and campaigns[item_id].status == "working"
-    ]
-    position = working_positions[0] + 2 if working_positions else 1
+def _dangler_campaign_content(paths: list[str]) -> tuple[str, str, str]:
     outcome = (
         "Every unresolved work artifact is associated with a campaign, explicitly standalone "
         "or excluded with a reason, or repaired so it no longer signals unresolved work."
@@ -452,6 +409,98 @@ def dangler_resolution_proposal(
         "Unresolved artifacts:\n\n"
         + "\n".join(f"- `{path}`" for path in paths)
     )
+    return outcome, gate, request
+
+
+def _campaign_section(body: str, heading: str) -> str:
+    match = re.search(
+        rf"(?ms)^## {re.escape(heading)}\s*\n(.*?)(?=^## |\Z)", body
+    )
+    return match.group(1).strip() if match else ""
+
+
+def _first_queued_position(
+    active_order: list[str],
+    campaigns: dict[str, campaign_queue.Campaign],
+    campaign_id: str | None = None,
+) -> int:
+    remaining = [item_id for item_id in active_order if item_id != campaign_id]
+    working_positions = [
+        index
+        for index, item_id in enumerate(remaining)
+        if item_id in campaigns and campaigns[item_id].status == "working"
+    ]
+    return working_positions[0] + 2 if working_positions else 1
+
+
+def dangler_resolution_proposal(
+    workspace: Path,
+    campaigns: dict[str, campaign_queue.Campaign],
+    active_order: list[str],
+    whole_work: dict[str, Any],
+) -> dict[str, Any] | None:
+    paths = sorted(
+        record["path"]
+        for record in whole_work["artifacts"]
+        if record["unresolved"] and not record["campaign"]
+    )
+    if not paths:
+        return None
+
+    outcome, gate, request = _dangler_campaign_content(paths)
+
+    active = sorted(
+        (
+            item
+            for item in campaigns.values()
+            if item.path.parent.name == "active"
+            and _is_dangler_campaign_id(item.campaign_id)
+        ),
+        key=lambda item: item.campaign_id,
+    )
+    if active:
+        item = active[0]
+        position = _first_queued_position(
+            active_order, campaigns, campaign_id=item.campaign_id
+        )
+        current_position = (
+            active_order.index(item.campaign_id) + 1
+            if item.campaign_id in active_order
+            else None
+        )
+        refresh_required = bool(
+            item.title != DANGLER_CAMPAIGN_TITLE
+            or item.outcome != outcome
+            or item.fields.get("Completion Gate") != gate
+            or _campaign_section(item.body, "Request") != request
+            or current_position != position
+        )
+        result = {
+            "campaign_id": item.campaign_id,
+            "title": item.title,
+            "status": item.status,
+            "path": item.path.relative_to(workspace).as_posix(),
+            "unresolved_count": len(paths),
+            "unresolved_paths": paths,
+            "requires_manifest_approval": False,
+            "source": "campaign-reconciliation",
+            "next_action": item.fields.get("Next Action", "triage unresolved artifacts"),
+            "automatic_update_required": refresh_required,
+        }
+        if refresh_required:
+            result["manifest_operation"] = {
+                "op": "refresh_dangler_campaign",
+                "campaign_id": item.campaign_id,
+                "title": DANGLER_CAMPAIGN_TITLE,
+                "outcome": outcome,
+                "completion_gate": gate,
+                "request": request,
+                "position": position,
+            }
+        return result
+
+    campaign_id = _next_dangler_campaign_id(campaigns)
+    position = _first_queued_position(active_order, campaigns)
     operation = {
         "op": "create_campaign",
         "campaign_id": campaign_id,
@@ -468,10 +517,11 @@ def dangler_resolution_proposal(
         "path": None,
         "unresolved_count": len(paths),
         "unresolved_paths": paths,
-        "requires_manifest_approval": True,
+        "requires_manifest_approval": False,
         "source": "campaign-reconciliation",
         "reconciliation_state_token": whole_work_state_token(workspace),
-        "next_action": "run ts: reconcile campaigns and approve the exact manifest",
+        "next_action": "run ts: reconcile campaigns to add it to the active queue",
+        "automatic_update_required": True,
         "manifest_operation": operation,
     }
 
@@ -485,7 +535,7 @@ def manifest_for_report(
     operations: list[dict[str, Any]] = []
     if changes_required:
         operations.append({"op": "repair_projections", "active_order": repair_order})
-    if dangler_resolution and dangler_resolution["requires_manifest_approval"]:
+    if dangler_resolution and dangler_resolution.get("manifest_operation"):
         operations.append(dangler_resolution["manifest_operation"])
     return {
         "schema_version": 1,
@@ -820,6 +870,42 @@ def prepare_manifest_changes(
             order.insert(position - 1, campaign_id)
             changes[path] = text
             campaign_changed = True
+        elif kind == "refresh_dangler_campaign":
+            expected = (report.get("dangler_resolution") or {}).get("manifest_operation")
+            if operation != expected:
+                raise campaign_queue.CampaignError(
+                    "refresh_dangler_campaign must exactly match the deterministic current proposal"
+                )
+            campaign_id = operation.get("campaign_id")
+            if campaign_id not in campaigns or not _is_dangler_campaign_id(str(campaign_id)):
+                raise campaign_queue.CampaignError(
+                    "refresh_dangler_campaign requires an active Dangler Resolution campaign"
+                )
+            item = campaigns[str(campaign_id)]
+            if item.path.parent.name != "active":
+                raise campaign_queue.CampaignError(
+                    "refresh_dangler_campaign requires an active Dangler Resolution campaign"
+                )
+            position = operation.get("position")
+            if not isinstance(position, int) or position < 1 or position > len(order):
+                raise campaign_queue.CampaignError(
+                    "refresh_dangler_campaign position is outside the active queue"
+                )
+            item.title = str(operation["title"])
+            item.fields["Outcome"] = str(operation["outcome"])
+            item.fields["Completion Gate"] = str(operation["completion_gate"])
+            item.fields["Updated"] = date.today().isoformat()
+            item.body = (
+                "## Request\n\n"
+                + str(operation["request"]).strip()
+                + "\n\n## Completion Check\n\n"
+                + str(operation["completion_gate"]).strip()
+                + "\n"
+            )
+            order.remove(item.campaign_id)
+            order.insert(position - 1, item.campaign_id)
+            changes[item.path] = campaign_queue.render_campaign(item)
+            campaign_changed = True
         elif kind == "transition_campaign":
             campaign_id = operation.get("campaign_id")
             action = operation.get("action")
@@ -905,12 +991,34 @@ def apply_repairs(
     return refreshed
 
 
+def automatic_dangler_manifest(report: dict[str, Any]) -> dict[str, Any] | None:
+    dangler = report.get("dangler_resolution") or {}
+    operation = dangler.get("manifest_operation")
+    if not isinstance(operation, dict):
+        return None
+    if operation.get("op") not in {"create_campaign", "refresh_dangler_campaign"}:
+        return None
+    if not _is_dangler_campaign_id(str(operation.get("campaign_id", ""))):
+        return None
+    return {
+        "schema_version": 1,
+        "kind": MANIFEST_KIND,
+        "state_token": report["state_token"],
+        "operations": [operation],
+    }
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Inspect and reconcile Tool Shed campaign queue projections."
     )
     parser.add_argument("--workspace", default=".", help="Project workspace root.")
     parser.add_argument("--json", action="store_true", help="Emit structured JSON.")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Inspect without automatically creating or refreshing Dangler Resolution.",
+    )
     parser.add_argument(
         "--stalled-days",
         type=int,
@@ -944,6 +1052,10 @@ def main() -> int:
             raise campaign_queue.CampaignError("campaign tree is not initialized")
         campaign_queue.recover_if_needed(workspace)
         report = inspect_queue(workspace, args.stalled_days)
+        if args.dry_run and (args.apply or args.expect or args.manifest):
+            raise campaign_queue.CampaignError(
+                "--dry-run cannot be combined with --apply, --expect, or --manifest"
+            )
         if args.apply:
             if not args.expect:
                 raise campaign_queue.CampaignError(
@@ -955,12 +1067,29 @@ def main() -> int:
                 )
             manifest = load_manifest(Path(args.manifest).expanduser().resolve())
             report = apply_repairs(workspace, args.expect, report, manifest)
+        elif not args.dry_run:
+            manifest = automatic_dangler_manifest(report)
+            if manifest is not None:
+                operation = manifest["operations"][0]
+                report = apply_repairs(
+                    workspace, report["state_token"], report, manifest
+                )
+                report["automatic_dangler_resolution"] = {
+                    "campaign_id": operation["campaign_id"],
+                    "operation": operation["op"],
+                }
     except (campaign_queue.CampaignError, OSError, json.JSONDecodeError) as error:
         print(f"Campaign reconciliation failed: {error}", file=sys.stderr)
         return 2
     if args.json:
         print(json.dumps(report, indent=2, sort_keys=True))
     else:
+        automatic = report.get("automatic_dangler_resolution")
+        if automatic:
+            print(
+                "Dangler Resolution: "
+                f"{automatic['operation']} {automatic['campaign_id']}"
+            )
         print(f"Campaign state token: {report['state_token']}")
         print(f"Repairable changes required: {report['changes_required']}")
         print(f"Owner action required: {report['owner_action_required']}")

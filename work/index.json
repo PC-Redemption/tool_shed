@@ -4,6 +4,23 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
+      "disposition": "none",
+      "next_action": "execute the campaign completion gate",
+      "parent": null,
+      "path": "work/00-campaigns/active/resolve-unclassified-work.md",
+      "produces": null,
+      "project_map": null,
+      "status": "working",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Resolve Unclassified Work",
+      "type": "campaign",
+      "updated": "2026-08-14"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
       "disposition": "completed",
       "next_action": "none",
       "parent": null,
@@ -14,6 +31,23 @@
       "superseded_by": null,
       "supersedes": null,
       "title": "Audit and refresh all Tool Shed documentation",
+      "type": "campaign",
+      "updated": "2026-08-14"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": "completed",
+      "next_action": "none",
+      "parent": null,
+      "path": "work/00-campaigns/completed/automate-dangler-resolution-reconciliation.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Automate Dangler Resolution Reconciliation",
       "type": "campaign",
       "updated": "2026-08-14"
     },
@@ -724,8 +758,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 3,
-    "completed_or_decided_artifacts": 37,
-    "total_artifacts": 42
+    "active_artifacts": 4,
+    "completed_or_decided_artifacts": 38,
+    "total_artifacts": 44
   }
 }

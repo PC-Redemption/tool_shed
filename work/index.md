@@ -8,7 +8,9 @@ Updated: 2026-08-14
 
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
+| [work/00-campaigns/active/resolve-unclassified-work.md](work/00-campaigns/active/resolve-unclassified-work.md) | campaign | working | 2026-08-14 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/audit-and-refresh-tool-shed-documentation.md](work/00-campaigns/completed/audit-and-refresh-tool-shed-documentation.md) | campaign | complete | 2026-08-14 | none | - |
+| [work/00-campaigns/completed/automate-dangler-resolution-reconciliation.md](work/00-campaigns/completed/automate-dangler-resolution-reconciliation.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/converge-upgrades-to-current-work-structure.md](work/00-campaigns/completed/converge-upgrades-to-current-work-structure.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/owner-facing-campaign-queues.md](work/00-campaigns/completed/owner-facing-campaign-queues.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-14 | none | - |
@@ -59,6 +61,6 @@ Updated: 2026-08-14
 
 ## Summary
 
-- Total artifacts: 42
-- Active artifacts: 3
-- Completed/decided artifacts: 37
+- Total artifacts: 44
+- Active artifacts: 4
+- Completed/decided artifacts: 38

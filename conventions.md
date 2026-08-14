@@ -213,10 +213,12 @@ Campaign Reason: <scope or policy boundary>
 
 `standalone` and `excluded` remain visible in coverage totals. Missing or ambiguous declarations
 are reported for owner review; they are never silently inserted into the active queue. The
-reconciliation stale-write token hashes the complete scanned Markdown surface. Any write requires
-an exact approved JSON manifest. Manifest create and association updates are explicit, while
-delete semantics transition campaigns into completed, deferred, or abandoned history rather than
-physically deleting requests.
+reconciliation stale-write token hashes the complete scanned Markdown surface. The explicit
+`ts: reconcile campaigns` route authorizes only deterministic creation or refresh of one Dangler
+Resolution campaign as the first queued work while preserving a working campaign. `--dry-run`
+never writes. Associations, semantic dispositions, projection repairs, execution-order changes,
+and lifecycle transitions require an exact approved JSON manifest. Delete semantics transition
+campaigns into completed, deferred, or abandoned history rather than physically deleting requests.
 
 Deep research is a spike mode, not a separate artifact model. It uses `Type: spike` and
 `Research Depth: deep`, so normal indexing, disposition, and `Produces:` rules apply. Tool Shed

@@ -212,11 +212,11 @@ Tool Shed places durable owner-facing execution state in the first-sorted
 
 | Route | Result |
 | --- | --- |
-| `ts: status` or `ts: queue` | Show last completed, working now, next, blockers, detours, and lifecycle findings. |
-| `ts: next` | Select and execute only the first ready campaign. |
+| `ts: status` or `ts: queue` | Show last completed, working now, next, blockers, detours, lifecycle findings, and pending Dangler Resolution work. |
+| `ts: next` | Select the first ready campaign and surface pending Dangler Resolution work. |
 | `ts: add <idea>` | Check overlap, dependencies, and direction conflicts before inserting an approved campaign. |
 | `ts: unblock <campaign>` | Return blocked work to queued state and clear the blocker decision without starting it. |
-| `ts: reconcile campaigns` | Inspect and propose deterministic queue repairs and execution order without writing. |
+| `ts: reconcile campaigns` | Inspect queue and whole-`work/` coverage, automatically creating or refreshing Dangler Resolution as the first queued work. |
 | `ts: defer <campaign>` | Move an active campaign with a reason and reactivation condition. |
 | `ts: abandon <campaign>` | Preserve a cancelled or superseded campaign with its disposition. |
 | `ts: completed` | Show recent verified outcomes newest-first. |
@@ -242,14 +242,15 @@ Completion requires the request's explicit completion gate and applicable verifi
 the request and updates both queue views through a recoverable operation. Blocked work stays
 active. Deferral and abandonment require explicit lifecycle reasons.
 
-`reconcile_campaign_queue.py` is dry-run-first. Its report separates mechanically repairable
-projection drift from whole-`work/` coverage findings, stalled lifecycle decisions, and a proposed
-execution order. Unresolved artifacts declare `Campaign: <id>`, `Campaign: standalone`, or
-`Campaign: excluded`; the latter two require `Campaign Reason`. Coverage totals show exactly what
-was scanned and excluded. Applying changes requires an exact approved JSON manifest plus
-`--apply --expect TOKEN --manifest PATH`, where the stale-write token covers the scanned work
-surface. Reprioritization and ambiguous semantic decisions remain owner-controlled, and terminal
-manifest operations preserve completed, deferred, or abandoned history.
+`reconcile_campaign_queue.py` automatically creates or refreshes one Dangler Resolution campaign
+for unclassified unresolved artifacts and places it first among queued work without interrupting a
+working campaign. `--dry-run` preserves read-only inspection. The report separates mechanically
+repairable projection drift from whole-`work/` coverage findings, stalled lifecycle decisions, and
+a proposed execution order. Unresolved artifacts declare `Campaign: <id>`, `Campaign: standalone`,
+or `Campaign: excluded`; the latter two require `Campaign Reason`. All other writes require an
+exact approved JSON manifest plus `--apply --expect TOKEN --manifest PATH`. Reprioritization and
+ambiguous semantic decisions remain owner-controlled, and terminal manifest operations preserve
+completed, deferred, or abandoned history.
 
 Use `python3 tool_shed/scripts/campaign_queue.py --workspace . migrate-preview --json` to inspect
 Markdown requests under `work/01-q&a/` or legacy `work/q&a/` and actionable inbox lines. Preview never writes, and
