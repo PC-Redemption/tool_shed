@@ -919,7 +919,8 @@ for raw in sys.stdin:
         self.assertIn("`ts:check", skill_bundle)
         self.assertIn("<spot|focused|full|release>", skill_bundle)
         self.assertNotIn("abstract/currently advertised tier", skill)
-        self.assertIn("### **Reasoning: GPT-5.6 Terra / High**", guide)
+        self.assertIn("### **Reasoning: <model> / <effort>**", guide)
+        self.assertNotIn("GPT-5.6 Terra", guide)
         self.assertTrue((ROOT / "scripts" / "reasoning_catalog.py").is_file())
 
     def test_direct_routing_scenarios_match_portable_and_installed_contract(self) -> None:

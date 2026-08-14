@@ -22,9 +22,11 @@ Default to Level 2: create a project map, then create an inventory of existing d
 python3 tool_shed/scripts/install_into_workspace.py .
 ```
 
-The installer preserves every existing `work/` file. When a stale legacy ignore is present, it
-reports the exact source and rule, previews the number and size of files that will become
-trackable, and exits nonzero until the rule is removed or a valid exception is documented.
+The installer preserves every existing owner-authored `work/` file's content. It may relocate
+legacy Tool Shed paths into the canonical work tree and regenerate Tool Shed-owned indexes or queue
+projections. When a stale legacy ignore is present, it reports the exact source and rule, previews
+the number and size of files that will become trackable, and exits nonzero until the rule is removed
+or a valid exception is documented.
 It preserves existing `.gitignore` and provider-native instruction content while appending or
 refreshing marked Tool Shed generated-output and routing guidance. Use `--provider <provider-id>`;
 the backward-compatible default is `codex`.

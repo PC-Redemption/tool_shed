@@ -13,7 +13,7 @@ Show how a project map helps a visual thinker move from the big project shape to
 
 ```mermaid
 flowchart TD
-  A[Reusable Codex workbench] --> B[Choose the right artifact]
+  A[Reusable AI workbench] --> B[Choose the right artifact]
   A --> C[Compose artifacts]
   A --> D[Keep the project visible]
   D --> E[Project map]
@@ -27,8 +27,8 @@ flowchart TD
 
 30,000 ft:
 
-- Overall outcome: a reusable collaboration toolkit for structured Codex work.
-- Success shape: Codex can orient, choose, execute, and preserve decisions without losing the larger picture.
+- Overall outcome: a reusable, provider-neutral collaboration toolkit for structured AI work.
+- Success shape: a workspace-capable agent can orient, choose, execute, and preserve decisions without losing the larger picture.
 
 10,000 ft:
 

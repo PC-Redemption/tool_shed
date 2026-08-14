@@ -2,7 +2,9 @@
 
 Workspace-local `tool_shed/` directories remain disconnected, one-way snapshots. Fleet operations
 must never add Git metadata, pull inside a snapshot, push workspace changes upstream, or modify a
-project's `work/`, documentation, or code.
+project's documentation, code, or owner-authored work content. Protocol-3 updates may converge only
+the documented Tool Shed-owned work topology, queue projections, indexes, inbox paths, provider
+guidance, and `.gitignore` entries, with transactional rollback.
 
 ## Read-only inventory
 
@@ -40,10 +42,13 @@ For every target it must:
 3. Stage a verified canonical snapshot in a sibling temporary directory without `.git/`, `work/`,
    caches, generated state, or host-local configuration.
 4. Preserve a timestamped, recoverable backup of the previous snapshot.
-5. Replace only the `tool_shed/` directory; never touch the containing project's `work/`, docs, or
-   code.
-6. Re-run inventory and repository-boundary checks. Report success only when hashes match canonical
-   and the parent repository ignores `/tool_shed/` while root `work/` remains trackable by default.
+5. Replace the `tool_shed/` directory, then run the selected release's full workspace installer.
+   Preserve owner-authored `work/` content, docs, and code while allowing only documented
+   deterministic Tool Shed workspace convergence.
+6. Re-run inventory, work-topology, and repository-boundary checks. Report success only when hashes
+   match canonical, owner-authored work content is preserved, the work tree is structurally
+   converged, and the parent repository ignores `/tool_shed/` while root `work/` remains trackable
+   by default.
 
 The post-update check must run `install_into_workspace.py` and `review_work_state.py`. It must not
 carry a legacy root `/work/` ignore forward as “repository policy.” If `work/` is ignored, report

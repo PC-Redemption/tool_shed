@@ -5,6 +5,21 @@
       "disposition": "completed",
       "next_action": "none",
       "parent": null,
+      "path": "work/00-campaigns/completed/audit-and-refresh-tool-shed-documentation.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Audit and refresh all Tool Shed documentation",
+      "type": "campaign",
+      "updated": "2026-08-14"
+    },
+    {
+      "canonical_truth": null,
+      "disposition": "completed",
+      "next_action": "none",
+      "parent": null,
       "path": "work/00-campaigns/completed/converge-upgrades-to-current-work-structure.md",
       "produces": null,
       "project_map": null,
@@ -611,7 +626,7 @@
   "schema_version": 1,
   "summary": {
     "active_artifacts": 3,
-    "completed_or_decided_artifacts": 35,
-    "total_artifacts": 40
+    "completed_or_decided_artifacts": 36,
+    "total_artifacts": 41
   }
 }

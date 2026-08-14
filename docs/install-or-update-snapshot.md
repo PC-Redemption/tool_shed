@@ -65,8 +65,10 @@ Use the highest remote tag matching exactly ^v[0-9]+\.[0-9]+\.[0-9]+$. Do not us
 prerelease tags, or an untagged commit. Verified remote stable-tag selection is the sole authority.
 
 This request authorizes changes only in the current workspace. Do not update another project,
-host, or Tool Shed installation. Never overwrite, move, delete, archive, or rewrite the project's
-work/, docs/, source code, configuration, planning artifacts, or repository policy.
+host, or Tool Shed installation. Preserve owner-authored work, docs, source code, configuration,
+planning content, and repository policy. The selected release's installer may make only its
+documented deterministic work-topology, queue-projection, index, inbox-migration, provider-guidance,
+and `.gitignore` convergence changes.
 
 Resolve state and choose the path:
 
@@ -142,7 +144,8 @@ If EXISTING UPDATE:
     tool_shed.backup-YYYYMMDDTHHMMSSZ.tar
     Confirm it contains the existing tool_shed/ snapshot plus the pre-migration root work/,
     legacy q&a/ when present, and .gitignore. Reject unsupported members and verify every file.
-15. Replace only the workspace's tool_shed/ directory with the staged snapshot. Keep the backup.
+15. Replace only the workspace's tool_shed/ directory with the staged snapshot at this stage. Keep
+    the backup; the post-install transaction may then converge the documented workspace surfaces.
 
 If NEW INSTALLATION:
 
@@ -207,7 +210,8 @@ Success report:
     - exact backup path, when applicable
     - temporary-clone and installed-snapshot validation results
     - Git status changes relative to the initial status
-    - confirmation that root work/ and work/index files were unchanged
+    - confirmation that owner-authored work content was preserved, whether Tool Shed-owned work
+      topology or projections changed, and whether the final work tree passed structural checks
     - auto-detected or explicitly selected provider adapters and guidance-refresh result
     - workspace profile, adaptive risk budgets, and their policy sources
     - preflight or reconciliation warnings and recommended mitigation level

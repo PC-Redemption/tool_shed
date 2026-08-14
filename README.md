@@ -133,10 +133,11 @@ python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace . --syn
 
 It detects a new installation versus an existing update, selects the highest stable tag, disables
 Git line-ending conversion, verifies two-commit release provenance and byte-level manifest
-integrity, stages a disconnected snapshot, retains a verified update backup, preserves root
-`work/`, refreshes auto-detected provider guidance without touching work artifacts or indexes, and
-restores both the previous snapshot and provider instruction files after a failed post-install
-check. Codex skill state is always reported when the Codex adapter is selected. Synchronization is
+integrity, stages a disconnected snapshot, retains a verified update backup, preserves
+owner-authored `work/` content while transactionally converging Tool Shed-owned work topology and
+indexes, refreshes auto-detected provider guidance, and restores the snapshot, affected workspace
+state, and provider instruction files after a failed post-install check. Codex skill state is always
+reported when the Codex adapter is selected. Synchronization is
 opt-in: a missing skill can be installed and an exact prior released skill is backed up outside the
 active `skills/` discovery directory and replaced, while a modified, unmanaged, or unsafe skill is
 refused. Start a fresh Codex session
@@ -334,7 +335,7 @@ python3 tool_shed/scripts/check_shed_version.py --shed tool_shed --local-only
 python3 tool_shed/scripts/check_shed_version.py --shed tool_shed
 ```
 
-Equivalent Codex requests are `ts: version`, `ts: check for updates`, and `ts: update status`.
+Equivalent Tool Shed requests are `ts: version`, `ts: check for updates`, and `ts: update status`.
 Checks are read-only and do not authorize snapshot replacement.
 For a strict standalone integrity and boundary check, use:
 
@@ -457,29 +458,27 @@ Before choosing an artifact, read:
 
 Use short prompts and let the current workspace-capable agent operate the scripts:
 
-Request prefixes are authoritative for one request only:
+The Tool Shed request prefix is authoritative for one request only:
 
 - `ts:` uses the workspace-local Tool Shed rules and tooling for the remainder of the request.
 - `ts:ship <goal>` plans, implements, validates, builds, deploys, and verifies the workspace goal
   end-to-end.
-- `mp:` targets projects, tasks, and owner work in private Marshal.
-- `ws:` targets files, code, tests, Tool Shed plans, and runtime work in the current workspace.
-
-Never carry a prefix into a later request. A request uses at most one leading route prefix.
+Never carry the prefix into a later request. Workspace owners may define unrelated routing prefixes
+in their own provider instructions; those are not part of Tool Shed's portable command surface.
 
 For a complete operator-facing inventory, use `ts: commands` or read
 [docs/commands.md](docs/commands.md).
 
 ```text
-use tool_shed and orient me
+ts: orient me
 ```
 
 ```text
-use tool_shed and create the smallest artifact for this
+ts: create the smallest artifact for this
 ```
 
 ```text
-use tool_shed and complete work/wp/active/wp-example.md
+ts: complete work/wp/active/wp-example.md
 ```
 
 The agent should read README/docs first, then `work/index.md`, then active artifacts. It should use
@@ -495,7 +494,8 @@ using the highest stable tag and verified two-commit release provenance.
 ```
 
 Installation or update changes only the ignored `tool_shed/` machinery plus documented installer
-outputs. It must never replace or delete the project's tracked `work/` artifacts.
+outputs. It must preserve owner-authored `work/` content; deterministic convergence may relocate
+legacy Tool Shed paths and regenerate Tool Shed-owned indexes or queue projections.
 
 ## Existing Projects
 

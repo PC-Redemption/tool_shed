@@ -147,7 +147,7 @@ ts:ship <goal>
 ```
 
 `ts:ship` means: plan, implement, validate, build, deploy, and verify the requested workspace goal
-end-to-end. Codex continues through every applicable stage, uses the project's own delivery
+end-to-end. A delivery-capable agent continues through every applicable stage, uses the project's own delivery
 tooling, and verifies the result in the target environment before declaring completion.
 
 A lifecycle stage is applicable only when the requested outcome includes it, repository policy
@@ -157,22 +157,22 @@ focused tests, the agent states the concrete reason.
 
 The route authorizes the normal workspace changes and deployment actions needed for the stated
 goal, but it does not override safety rules, protected-environment controls, required approvals,
-or credential and authorization boundaries. Codex explains any inapplicable stage. If it cannot
+or credential and authorization boundaries. The agent explains any inapplicable stage. If it cannot
 safely deploy, it completes every safe preceding stage and reports the exact blocker.
 
-Codex does not request repeated confirmation for reversible, in-scope steps that the operator has
-already clearly authorized. One request may authorize multiple named operations. Codex asks
+The agent does not request repeated confirmation for reversible, in-scope steps that the operator
+has already clearly authorized. One request may authorize multiple named operations. It asks
 again only when an action materially expands scope, targets a protected environment, is destructive
 or irreversible, uses an unknown deployment target, publishes externally, or otherwise requires
 new authority.
 
-For nontrivial work, Codex keeps the requested outcome and current limiting condition visible. It
+For nontrivial work, the agent keeps the requested outcome and current limiting condition visible. It
 compares the actual result with the expected state after material actions and updates the next
 action when evidence changes the situation. A command completing successfully is not enough if the
 target state is still wrong. This loop preserves the original authority boundary and is skipped as
 explicit ceremony for simple answers and known single-step reversible work.
 
-Before an already-authorized consequential stage, Codex checks at most three credible failure
+Before an already-authorized consequential stage, the agent checks at most three credible failure
 modes and adds proportionate prevention, detection, verification, or rollback. Routine reversible
 work does not receive a generic failure-analysis ritual.
 
@@ -182,7 +182,7 @@ Tool Shed treats the requested outcome in the current chat as the campaign. A pl
 workpackage, test, build, or deployment may be part of that campaign, but finishing one does not
 necessarily finish the requested outcome.
 
-Codex keeps going when the next action is reversible, in scope, and already authorized. Progress
+The agent keeps going when the next action is reversible, in scope, and already authorized. Progress
 updates and useful inspection points do not become approval gates merely because the operator
 might want to review them. Review pauses are reserved for explicitly requested review, material
 unresolved decisions, evidence that contradicts the plan, new authority, or protected,
@@ -196,12 +196,12 @@ Every final response for a Tool Shed campaign ends with one explicit verdict:
 - `Campaign status: COMPLETE` means the whole requested outcome and applicable verification are
   finished.
 - `Campaign status: CONTINUE` means work remains, no operator decision is needed, and the response
-  names the next concrete action. Codex does not use this verdict to stop when it can safely perform
+  names the next concrete action. The agent does not use this verdict to stop when it can safely perform
   that action in the current turn.
 - `Campaign status: BLOCKED` identifies the exact decision, dependency, permission, credential,
   external-state change, or required review preventing progress and the precise operator action.
 
-When review is genuinely required, Codex points to the exact file or result and relevant section,
+When review is genuinely required, the agent points to the exact file or result and relevant section,
 states the exact question or approval, and explains what resumes afterward. A vague request to
 "review this" or "let me know" is not a valid handoff.
 
@@ -255,18 +255,18 @@ legacy Q&A folders is a distinct installer operation described below.
 ## Q&A Inbox
 
 The installer creates a workspace-local scratch inbox at `work/01-q&a/ask.txt`. Put a question or
-direction there while Codex is busy, then type:
+direction there while the agent is busy, then type:
 
 ```text
 ts:ask
 ```
 
-Codex inspects the canonical file and `work/q&a/ask.txt`, which is supported only as a pre-migration
-misplaced fallback. Blank lines and lines beginning with `#` are ignored in both files. If only the
-canonical file is actionable, Codex uses it. If only the fallback is actionable, Codex may process
-it but clearly identifies the noncanonical path. If both are actionable, Codex does not merge or
-run either request; it reports the conflict and asks which one to use. If neither is actionable,
-Codex reports that the inbox is empty.
+The agent inspects the canonical file and `work/q&a/ask.txt`, which is supported only as a
+pre-migration misplaced fallback. Blank lines and lines beginning with `#` are ignored in both
+files. If only the canonical file is actionable, the agent uses it. If only the fallback is
+actionable, the agent may process it but clearly identifies the noncanonical path. If both are
+actionable, the agent does not merge or run either request; it reports the conflict and asks which
+one to use. If neither is actionable, the agent reports that the inbox is empty.
 
 The selected content keeps its natural coordination level. A small bug fix remains Direct; the
 inbox transport does not create planning or delivery ceremony by itself.
@@ -283,9 +283,9 @@ state.
 
 Tool Shed performs a one-time, zero-I/O reasoning preflight before substantial routed work. It uses
 only the request and current-session metadata. When a usable picker pair is known, it recommends
-the lowest adequate choice on its own line, for example:
+the lowest adequate choice on its own line in this form:
 
-### **Reasoning: GPT-5.6 Terra / High**
+### **Reasoning: <model> / <effort>**
 
 It does not use abstract labels, claim to observe the active picker, or pause work for a reasoning
 choice. If the available picker options are unknown, it continues silently instead of guessing.
@@ -315,7 +315,7 @@ ts: orient me
 ts: show active work and the next concrete actions
 ```
 
-Codex reads project docs, `work/index.md`, active maps and artifacts, then runs the read-only
+The agent reads project docs, `work/index.md`, active maps and artifacts, then runs the read-only
 work-state review.
 
 ### Capture a small known task
@@ -390,7 +390,7 @@ Use Level 2 onboarding to create a project map and inventory before backfilling 
 ts: onboard this existing project
 ```
 
-Codex observes the repository before creating inferred history. Stable facts go to project docs;
+The agent observes the repository before creating inferred history. Stable facts go to project docs;
 unresolved work stays under `work/`.
 
 ### Review planning drift
@@ -430,8 +430,9 @@ ts: help update
 
 The canonical source is [PC-Redemption/tool_shed](https://github.com/PC-Redemption/tool_shed).
 Installations are disconnected snapshots: ignore `/tool_shed/`, remove its `.git/`, and track
-project-specific `/work/` by default. An update replaces only Tool Shed machinery and must preserve
-`work/`, project docs, and code.
+project-specific `/work/` by default. An update replaces Tool Shed machinery, may transactionally
+converge documented Tool Shed-owned work topology and projections, and must preserve owner-authored
+work content, project docs, and code.
 
 Use the supported updater from a current released Tool Shed checkout:
 
@@ -443,9 +444,9 @@ If the installed snapshot predates the updater, obtain the current released chec
 project and run it from there. The Python updater is authoritative on Windows and Linux; thin
 PowerShell and POSIX launchers are also included. It selects and verifies the highest stable tag
 with Git line-ending conversion disabled, creates a recoverable backup for updates, preserves
-project `work/`, and automatically restores the previous snapshot after failed post-install
-verification. See [install-or-update-snapshot.md](install-or-update-snapshot.md) for the complete
-guarded contract.
+owner-authored project `work/` while converging released Tool Shed structure, and automatically
+restores the previous snapshot and affected workspace state after failed post-install verification.
+See [install-or-update-snapshot.md](install-or-update-snapshot.md) for the complete guarded contract.
 
 After installation or update, run:
 

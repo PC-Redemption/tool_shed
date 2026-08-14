@@ -4,7 +4,7 @@ Updated: 2026-08-14
 
 ## Owner State
 
-- Last completed: converge-upgrades-to-current-work-structure — Converge upgrades to current work structure
+- Last completed: audit-and-refresh-tool-shed-documentation — Audit and refresh all Tool Shed documentation
 - Working now: none
 - Next: none
 - Blocker or decision needed: none

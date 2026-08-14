@@ -21,10 +21,11 @@ python <current-shed>/scripts/update_snapshot.py --workspace <workspace>
 
 Never pull inside or develop from the disconnected workspace snapshot. The updater selects the
 highest stable release, verifies provenance and content hashes, stages a disconnected snapshot,
-preserves root `work/`, replaces the snapshot so removed files cannot linger, retains a verified
-backup, refreshes auto-detected provider guidance in guidance-only mode, and restores both snapshot
-and instruction files after failed post-install checks. Do not bootstrap an upgrade with an older
-in-snapshot updater when a current released updater is available outside the target project.
+preserves owner-authored root `work/` content, replaces the snapshot so removed files cannot linger,
+retains a verified backup, runs the selected release's full installer to converge documented work
+topology and provider guidance, and restores the snapshot, affected workspace state, and instruction
+files after failed post-install checks. Do not bootstrap an upgrade with an older in-snapshot updater
+when a current released updater is available outside the target project.
 
 For a new project that still needs its `work/` tree initialized, or to add an explicit provider
 adapter outside the snapshot updater, run:
@@ -34,19 +35,18 @@ python3 <shed>/scripts/install_into_workspace.py <workspace> --provider <provide
 ```
 
 Supported provider IDs come from `<shed>/adapters/providers.json`. Repeat `--provider` or use
-`--provider all` to install multiple native instruction adapters. A snapshot update already runs
-the installer's guidance-only route for auto-detected or explicitly selected providers; do not run
-the full installer merely to finish an update.
+`--provider all` to install multiple native instruction adapters. A protocol-3 snapshot update
+already runs the selected release's full installer for auto-detected or explicitly selected
+providers; do not run it again merely to finish an update.
 
 ## Codex Reasoning Extension
 
 This section applies only when the current product is Codex and the request explicitly targets
 reasoning maintenance or current-session metadata exposes Codex picker choices.
 
-When available, choose the model before effort: Luna for clear repeatable work, Terra for everyday
-engineering, and Sol for ambiguous or high-judgment work. Use Light for quick scoped tasks, Medium
-for ordinary planning, High for difficult multi-step implementation or releases, Extra High for
-long reasoning-heavy work, and Ultra only when useful independent subproblems justify it.
+When a current catalog or current-session metadata supplies model descriptions and supported effort
+labels, choose the lowest adequate advertised model first and then the lowest adequate effort.
+Never encode release-time model names or assume a fixed effort ladder in durable Tool Shed policy.
 
 Ordinary requests must not read or refresh a catalog. Explicit routes are:
 
