@@ -101,6 +101,9 @@ def smoke_temp_workspace() -> None:
         ask_path = workspace / "work" / "q&a" / "ask.txt"
         if not ask_path.is_file():
             raise SystemExit("installer did not create the Tool Shed Q&A inbox")
+        campaign_root = workspace / "work" / "00-campaigns"
+        if not (campaign_root / "active-queue.md").is_file() or not (campaign_root / "completed-queue.md").is_file():
+            raise SystemExit("installer did not create the owner campaign queue")
         agents_text = (workspace / "AGENTS.md").read_text(encoding="utf-8")
         if "ts:ship <goal>" not in agents_text or "plan, implement, validate, build, deploy, and verify" not in agents_text:
             raise SystemExit("installer did not create the Tool Shed ship guidance")
@@ -131,6 +134,14 @@ def smoke_temp_workspace() -> None:
         )
         if any(fragment not in agents_text for fragment in direct_contract):
             raise SystemExit("installer did not create the complete Tool Shed Direct-route contract")
+        campaign_contract = (
+            "work/00-campaigns/",
+            "work/q&a/ask.txt` as transient intake",
+            "current state token",
+            "preview-only",
+        )
+        if any(fragment not in agents_text for fragment in campaign_contract):
+            raise SystemExit("installer did not create the complete owner campaign contract")
         provider_paths = {
             "claude-code": "CLAUDE.md",
             "gemini-cli": "GEMINI.md",
@@ -252,6 +263,8 @@ def sanity_check_markdown() -> None:
     required = {"Status", "Type", "Updated", "Next Action"}
     for directory in [ROOT / "templates", ROOT / "examples"]:
         for path in sorted(directory.glob("*.md")):
+            if path.name in {"active-campaign-queue.md", "completed-campaign-queue.md"}:
+                continue
             text = path.read_text(encoding="utf-8")
             if "{{ title }}" in text:
                 text = text.replace("{{ title }}", "Example").replace("{{ date }}", "2026-07-05")

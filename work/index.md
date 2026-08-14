@@ -2,12 +2,13 @@
 
 Generated from artifact headers. `work/index.json` contains the same navigation data for automation. Do not put durable project truth only here; keep current truth in docs or README files.
 
-Updated: 2026-08-13
+Updated: 2026-08-14
 
 ## Orientation
 
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
+| [work/00-campaigns/active/owner-facing-campaign-queues.md](work/00-campaigns/active/owner-facing-campaign-queues.md) | campaign | working | 2026-08-14 | execute the campaign completion gate | - |
 | [work/checklists/checklist-tool-shed-skill-field-test.md](work/checklists/checklist-tool-shed-skill-field-test.md) | checklist | complete | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/decisions/decision-codex-skill-readiness.md](work/decisions/decision-codex-skill-readiness.md) | decision-matrix | decided | 2026-07-05 | continue using skill on real projects; plugin packaging deferred | work/maps/map-tool-shed-foundation.md |
 | [work/decisions/decision-human-planning-mechanisms-for-tool-shed.md](work/decisions/decision-human-planning-mechanisms-for-tool-shed.md) | decision-matrix | decided | 2026-08-09 | implement the evidence-response loop and conditional prospective failure check | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
@@ -21,7 +22,7 @@ Updated: 2026-08-13
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | contained; repository trigger mitigated, desktop defect remains external | 2026-07-25 | file the external Codex Desktop robustness evidence separately if still needed | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
-| [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | active | 2026-08-13 | publish v0.13.0, synchronize the installed Codex client, and fresh-task verify numbered work routing | - |
+| [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | active | 2026-08-14 | implement and work2-verify the owner-facing campaign lifecycle under work/00-campaigns | - |
 | [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
 | [work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md](work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md) | spike | complete | 2026-08-09 | none | work/maps/map-tool-shed-evolution.md |
 | [work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md](work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md) | spike | complete | 2026-08-03 | implement the local profiler defined in work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md | work/maps/map-tool-shed-evolution.md |
@@ -35,6 +36,7 @@ Updated: 2026-08-13
 | [work/tickets/ticket-mitigate-tool-shed-churn-for-direct-coding-requests.md](work/tickets/ticket-mitigate-tool-shed-churn-for-direct-coding-requests.md) | ticket | complete | 2026-08-13 | none | work/maps/map-tool-shed-evolution.md |
 | [work/tickets/ticket-portable-verified-tool-shed-installer.md](work/tickets/ticket-portable-verified-tool-shed-installer.md) | ticket | active | 2026-08-09 | exercise launcher runtime fallback against disposable Windows and Linux workspaces | work/maps/map-tool-shed-evolution.md |
 | [work/tickets/ticket-prepare-tool-shed-0-2-0-release.md](work/tickets/ticket-prepare-tool-shed-0-2-0-release.md) | ticket | complete | 2026-07-24 | none | docs/releasing.md; scripts/check_shed_version.py; scripts/update_shed_manifest.py |
+| [work/wp/active/wp-owner-facing-campaign-queues-and-lifecycle-management.md](work/wp/active/wp-owner-facing-campaign-queues-and-lifecycle-management.md) | workpackage | active | 2026-08-14 | checkpoint the validated 0.14.0 candidate and synchronize the installed Codex skill | work/maps/map-tool-shed-evolution.md |
 | [work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md](work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md) | workpackage | active | 2026-07-21 | obtain explicit approval before the first guarded mass update | README.md; docs/fleet-snapshot-updates.md; skills/tool-shed/SKILL.md |
 | [work/wp/completed/wp-evidence-responsive-tool-shed-execution.md](work/wp/completed/wp-evidence-responsive-tool-shed-execution.md) | workpackage | complete | 2026-08-09 | none | work/maps/map-tool-shed-evolution.md |
 | [work/wp/completed/wp-existing-project-onboarding-and-backfill.md](work/wp/completed/wp-existing-project-onboarding-and-backfill.md) | workpackage | complete | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
@@ -51,6 +53,6 @@ Updated: 2026-08-13
 
 ## Summary
 
-- Total artifacts: 34
-- Active artifacts: 3
+- Total artifacts: 36
+- Active artifacts: 5
 - Completed/decided artifacts: 29

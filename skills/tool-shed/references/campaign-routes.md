@@ -96,6 +96,44 @@ not the campaign itself.
 - When review is required, identify the exact file or result and section, the precise decision or
   approval, and what follows.
 
+## Owner Campaign Queue
+
+Durable owner-facing campaign state lives under first-sorted `work/00-campaigns/`:
+
+- `active-queue.md`: canonical ordered queue plus last completed, working now, next, blockers,
+  decisions, and detour/return state;
+- `completed-queue.md`: newest-first verified completion history;
+- `active/`, `completed/`, `deferred/`, and `abandoned/`: detailed campaign requests by lifecycle.
+
+Keep `work/q&a/ask.txt` as transient intake. Accepting an inbox request may create a durable
+campaign, but never moves, clears, or rewrites the inbox without explicit operator authorization.
+
+Use `python3 <shed>/scripts/campaign_queue.py --workspace <workspace>` for deterministic reads and
+mutations:
+
+- `ts: queue` and `ts: status`: run `status`, report the compact owner capsule and findings.
+- `ts: completed`: run `completed` and summarize recent verified outcomes.
+- `ts: next`: run `next`, then execute only the selected ready campaign under its natural
+  coordination and requested work level.
+- `ts: add <idea>`: compare with active, deferred, and completed IDs and content; report material
+  overlap or direction conflicts; after resolving placement, run `add` with the current state token.
+- `ts: defer <campaign>`: require a reason and reactivation condition, then run `defer` with the
+  current state token.
+- `ts: abandon <campaign>`: require a disposition and replacement when applicable, then run
+  `abandon` with the current state token.
+- Campaign completion: require the request's explicit completion gate and applicable verification,
+  then run `complete --gate-passed --evidence ...` with the current state token.
+
+Every mutation requires `--expect TOKEN` obtained immediately beforehand from `status`. Reject a
+stale token rather than overwriting newer state. Lifecycle operations use a recovery journal and
+validate queue/folder invariants before committing. Do not silently reorder a campaign when
+priority or direction is ambiguous. Blocked campaigns stay active; deferral is an intentional
+priority decision; abandonment preserves disposition history.
+
+Use `migrate-preview` to inspect legacy Markdown requests directly under `work/q&a/` and actionable
+inbox lines. It never writes. Migration apply requires a separate exact approved manifest and is
+not implied by preview, installation, update, or `ts:ask`.
+
 End every Tool Shed campaign response with exactly one verdict:
 
 - `Campaign status: COMPLETE` only when the whole outcome and applicable verification are finished.

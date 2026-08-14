@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from campaign_queue import ensure_tree as ensure_campaign_tree
+
 
 WORK_DIRS = [
     "work/maps",
@@ -26,6 +28,13 @@ Project-specific work artifacts live here.
 
 Use `tool_shed/selection.md` before choosing an artifact type.
 Use `work/index.md` as the first orientation surface after README/docs. Use `work/index.json` for automation.
+
+## Campaigns
+
+- Read `work/00-campaigns/active-queue.md` for the owner-facing execution order.
+- Durable campaign requests move through `active/`, `completed/`, `deferred/`, and `abandoned/`.
+- Keep `work/q&a/ask.txt` as transient intake; it is not the durable queue.
+- Use `python3 tool_shed/scripts/campaign_queue.py --workspace . status` to get the current stale-write token before a lifecycle mutation.
 
 ## Active
 
@@ -69,6 +78,7 @@ outside the repository; apply requires an exact approved manifest and verified a
 def ensure_work_tree(workspace: Path) -> None:
     for relative in WORK_DIRS:
         (workspace / relative).mkdir(parents=True, exist_ok=True)
+    ensure_campaign_tree(workspace)
 
     readme = workspace / "work" / "README.md"
     if not readme.exists():

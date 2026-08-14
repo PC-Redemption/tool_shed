@@ -104,6 +104,7 @@ class ScriptTests(unittest.TestCase):
         if include_provider_adapter:
             for name in (
                 "codex_skill_sync.py",
+                "campaign_queue.py",
                 "install_into_workspace.py",
                 "provider_adapters.py",
                 "repository_policy.py",
@@ -156,6 +157,7 @@ class ScriptTests(unittest.TestCase):
                 f"scripts/{name}"
                 for name in (
                     "codex_skill_sync.py",
+                    "campaign_queue.py",
                     "install_into_workspace.py",
                     "provider_adapters.py",
                     "repository_policy.py",
@@ -1588,6 +1590,256 @@ Next Action: keep going
             self.assertEqual(payload["summary"]["active_artifacts"], 1)
             self.assertEqual(payload["artifacts"][0]["path"], "work/maps/map-demo.md")
 
+    def test_work_index_includes_campaign_requests_but_skips_queue_projections(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+            status = run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+            )
+            token = json.loads(status.stdout)["state_token"]
+            run_script(
+                "scripts/campaign_queue.py",
+                "--workspace",
+                str(workspace),
+                "add",
+                "demo-campaign",
+                "Demo campaign",
+                "--outcome",
+                "prove campaign indexing",
+                "--completion-gate",
+                "focused checks pass",
+                "--expect",
+                token,
+            )
+
+            run_script("scripts/update_work_index.py", "--workspace", str(workspace))
+            payload = json.loads((workspace / "work" / "index.json").read_text(encoding="utf-8"))
+            paths = {item["path"] for item in payload["artifacts"]}
+            self.assertIn("work/00-campaigns/active/demo-campaign.md", paths)
+            self.assertNotIn("work/00-campaigns/active-queue.md", paths)
+            self.assertNotIn("work/00-campaigns/completed-queue.md", paths)
+
+    def test_campaign_lifecycle_rejects_stale_writes_and_promotes_next_ready(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+
+            initial = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+                ).stdout
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "add", "first",
+                "First", "--outcome", "finish first", "--completion-gate", "first is verified",
+                "--expect", initial["state_token"],
+            )
+            stale = run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "add", "stale",
+                "Stale", "--outcome", "must not write", "--completion-gate", "never",
+                "--expect", initial["state_token"], check=False,
+            )
+            self.assertEqual(stale.returncode, 2)
+            self.assertIn("stale campaign state", stale.stderr)
+            self.assertFalse((workspace / "work" / "00-campaigns" / "active" / "stale.md").exists())
+
+            token = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+                ).stdout
+            )["state_token"]
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "add", "second",
+                "Second", "--outcome", "finish second", "--completion-gate", "second is verified",
+                "--depends-on", "first", "--detour-for", "first", "--return-to", "first",
+                "--expect", token,
+            )
+            token = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+                ).stdout
+            )["state_token"]
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "start", "first",
+                "--expect", token,
+            )
+            token = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+                ).stdout
+            )["state_token"]
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "complete", "first",
+                "--evidence", "tests:first", "--gate-passed", "--expect", token,
+            )
+
+            final = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+                ).stdout
+            )
+            self.assertEqual(final["working"], ["second"])
+            self.assertEqual(final["completed"], ["first"])
+            self.assertEqual(final["last_completed"], "first")
+            self.assertEqual(final["detours"], ["second"])
+            self.assertEqual(final["findings"], [])
+            self.assertTrue((workspace / "work" / "00-campaigns" / "completed" / "first.md").is_file())
+            active_queue = (workspace / "work" / "00-campaigns" / "active-queue.md").read_text(encoding="utf-8")
+            self.assertIn("Detour and return point: second", active_queue)
+
+    def test_campaign_terminal_transitions_and_migration_are_preserving(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            inbox = workspace / "work" / "q&a" / "ask.txt"
+            inbox.parent.mkdir(parents=True)
+            inbox.write_text("# inbox\nBuild the requested feature\n", encoding="utf-8")
+            legacy = inbox.parent / "legacy-request.md"
+            legacy.write_text("# Legacy request\n", encoding="utf-8")
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+
+            preview = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "migrate-preview", "--json"
+                ).stdout
+            )
+            self.assertEqual(preview["mode"], "preview-only")
+            self.assertFalse(preview["writes_performed"])
+            self.assertEqual(inbox.read_text(encoding="utf-8"), "# inbox\nBuild the requested feature\n")
+            self.assertTrue(legacy.is_file())
+
+            token = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+                ).stdout
+            )["state_token"]
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "add", "defer-me",
+                "Defer me", "--outcome", "exercise deferral", "--completion-gate", "not now",
+                "--expect", token,
+            )
+            token = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+                ).stdout
+            )["state_token"]
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "defer", "defer-me",
+                "--reason", "lower priority", "--reactivate-when", "capacity opens", "--expect", token,
+            )
+            token = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+                ).stdout
+            )["state_token"]
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "abandon", "defer-me",
+                "--reason", "superseded", "--replacement", "future-campaign", "--expect", token,
+            )
+            result = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "validate", "--json"
+                ).stdout
+            )
+            self.assertTrue(result["valid"])
+            abandoned = workspace / "work" / "00-campaigns" / "abandoned" / "defer-me.md"
+            self.assertIn("replacement: future-campaign", abandoned.read_text(encoding="utf-8"))
+
+    def test_campaign_reorder_overlap_block_and_failed_completion(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+
+            def token() -> str:
+                result = run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+                )
+                return json.loads(result.stdout)["state_token"]
+
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "add", "alpha",
+                "Alpha", "--outcome", "deliver alpha", "--completion-gate", "alpha verified",
+                "--expect", token(),
+            )
+            duplicate = run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "add", "alpha-copy",
+                "Alpha", "--outcome", "deliver alpha", "--completion-gate", "copy verified",
+                "--expect", token(), check=False,
+            )
+            self.assertEqual(duplicate.returncode, 2)
+            self.assertIn("overlaps existing alpha", duplicate.stderr)
+
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "add", "beta",
+                "Beta", "--outcome", "deliver beta", "--completion-gate", "beta verified",
+                "--expect", token(),
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "reorder", "beta",
+                "--position", "1", "--expect", token(),
+            )
+            self.assertEqual(
+                json.loads(
+                    run_script(
+                        "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+                    ).stdout
+                )["active_order"],
+                ["beta", "alpha"],
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "start", "beta",
+                "--expect", token(),
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "block", "beta",
+                "--reason", "owner decision needed", "--expect", token(),
+            )
+            before_failure = token()
+            failed = run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "complete", "beta",
+                "--evidence", "none", "--expect", before_failure, check=False,
+            )
+            self.assertEqual(failed.returncode, 2)
+            self.assertIn("completion requires --gate-passed", failed.stderr)
+            self.assertEqual(token(), before_failure)
+            queue = (workspace / "work" / "00-campaigns" / "active-queue.md").read_text(encoding="utf-8")
+            self.assertIn("Blocker or decision needed: beta", queue)
+
+    def test_campaign_validation_detects_dependency_cycle(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+
+            def add(campaign_id: str, depends_on: str | None = None) -> None:
+                status = json.loads(
+                    run_script(
+                        "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+                    ).stdout
+                )
+                arguments = [
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "add", campaign_id,
+                    campaign_id.title(), "--outcome", f"deliver {campaign_id}",
+                    "--completion-gate", f"{campaign_id} verified", "--expect", status["state_token"],
+                ]
+                if depends_on:
+                    arguments.extend(["--depends-on", depends_on])
+                run_script(*arguments)
+
+            add("alpha")
+            add("beta", "alpha")
+            alpha = workspace / "work" / "00-campaigns" / "active" / "alpha.md"
+            alpha.write_text(
+                alpha.read_text(encoding="utf-8").replace("Depends On: none", "Depends On: beta"),
+                encoding="utf-8",
+            )
+            result = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "validate", "--json"
+                ).stdout
+            )
+            self.assertFalse(result["valid"])
+            self.assertTrue(any("dependency cycle" in finding for finding in result["findings"]))
+
     def test_check_stale_paths_detects_moved_workpackage(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)
@@ -1747,6 +1999,9 @@ Produces:
             self.assertTrue((workspace / "work" / "evidence").is_dir())
             self.assertTrue((workspace / "work" / "evidence" / "generated").is_dir())
             self.assertTrue((workspace / "work" / "q&a" / "ask.txt").is_file())
+            self.assertTrue((workspace / "work" / "00-campaigns" / "active-queue.md").is_file())
+            self.assertTrue((workspace / "work" / "00-campaigns" / "completed-queue.md").is_file())
+            self.assertIn("work/00-campaigns", readme)
 
     def test_installer_preserves_gitignore_and_adds_generated_evidence_convention(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -1775,6 +2030,7 @@ Produces:
             self.assertEqual(guidance.count("BEGIN TOOL SHED EVIDENCE RESPONSE GUIDANCE"), 1)
             self.assertEqual(guidance.count("BEGIN TOOL SHED CAMPAIGN GUIDANCE"), 1)
             self.assertEqual(guidance.count("BEGIN TOOL SHED Q&A GUIDANCE"), 1)
+            self.assertEqual(guidance.count("BEGIN TOOL SHED OWNER CAMPAIGN GUIDANCE"), 1)
             self.assertIn("Campaign status: COMPLETE", guidance)
             self.assertIn("A progress summary, artifact update, phase boundary", guidance)
             self.assertIn("command success alone is not outcome success", guidance)

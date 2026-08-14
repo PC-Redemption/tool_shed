@@ -195,6 +195,42 @@ When review is genuinely required, Codex points to the exact file or result and 
 states the exact question or approval, and explains what resumes afterward. A vague request to
 "review this" or "let me know" is not a valid handoff.
 
+## Owner Campaign Queue
+
+Tool Shed places durable owner-facing execution state in the first-sorted
+`work/00-campaigns/` folder. This is separate from the transient Q&A inbox.
+
+| Route | Result |
+| --- | --- |
+| `ts: status` or `ts: queue` | Show last completed, working now, next, blockers, detours, and lifecycle findings. |
+| `ts: next` | Select and execute only the first ready campaign. |
+| `ts: add <idea>` | Check overlap, dependencies, and direction conflicts before inserting an approved campaign. |
+| `ts: defer <campaign>` | Move an active campaign with a reason and reactivation condition. |
+| `ts: abandon <campaign>` | Preserve a cancelled or superseded campaign with its disposition. |
+| `ts: completed` | Show recent verified outcomes newest-first. |
+
+The active queue is the canonical execution order. Detailed requests live in lifecycle folders:
+
+```text
+work/00-campaigns/
+├── active-queue.md
+├── completed-queue.md
+├── active/
+├── completed/
+├── deferred/
+└── abandoned/
+```
+
+Every mutation uses the current state token returned by `status`; a stale token is rejected.
+Completion requires the request's explicit completion gate and applicable verification, then moves
+the request and updates both queue views through a recoverable operation. Blocked work stays
+active. Deferral and abandonment require explicit lifecycle reasons.
+
+Use `python3 tool_shed/scripts/campaign_queue.py --workspace . migrate-preview --json` to inspect
+legacy Markdown requests under `work/q&a/` and actionable inbox lines. Preview never writes, and
+installation never migrates or clears the inbox. Applying a migration requires a separately
+approved exact manifest.
+
 ## Q&A Inbox
 
 The installer creates a workspace-local scratch inbox at `work/q&a/ask.txt`. Put a question or

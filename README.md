@@ -228,6 +228,8 @@ ts: help
 ts: help spikes
 ts: help existing projects
 ts: discuss <topic>
+ts: status
+ts: next
 ts:work2 <goal>
 ts:freeze [scope]
 ts:ship <goal>
@@ -293,6 +295,17 @@ legacy/misplaced fallback and warns when actionable content exists only there. I
 content, the agent reports a conflict instead of merging them. It preserves both files after
 inspection; `work/q&a/ask.txt` is the canonical inbox. The selected request retains its natural
 coordination level, so a bounded Direct request does not become a heavyweight campaign.
+
+The installer also creates a first-sorted `work/00-campaigns/` owner control surface. Its
+`active-queue.md` shows last completed, working now, next, blockers, and detour/return state;
+`completed-queue.md` preserves verified outcomes newest-first. Detailed requests move through
+`active/`, `completed/`, `deferred/`, and `abandoned/`. The campaign lifecycle is separate from
+`ask.txt`: intake stays transient while accepted work becomes durable and ordered.
+
+Use `ts: status`, `ts: next`, `ts: add <idea>`, `ts: defer <campaign>`,
+`ts: abandon <campaign>`, and `ts: completed`. Deterministic mutations require the current state
+token and reject stale writes. `campaign_queue.py migrate-preview` reports legacy candidates but
+never moves or rewrites them; applying a migration requires a separate exact approved manifest.
 
 Check the installed snapshot without using the network, or compare it with the canonical manifest:
 

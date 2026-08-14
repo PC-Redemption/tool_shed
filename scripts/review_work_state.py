@@ -11,7 +11,7 @@ from repository_policy import POLICY_FILE, format_bytes, inspect_snapshot_ignore
 from update_work_index import Artifact, discover_artifacts
 
 
-ACTIVE_STATUSES = {"active", "blocked", "proposed"}
+ACTIVE_STATUSES = {"active", "blocked", "proposed", "queued", "working"}
 FINISHED_STATUSES = {"accepted", "complete", "completed", "decided", "done", "superseded"}
 PLACEHOLDER_VALUES = {"", "-", "...", "none", "work/...", "work/maps/..."}
 WORK_PATH = re.compile(r"(?<![\w/])(work/[A-Za-z0-9_./-]+\.md)")
@@ -84,7 +84,7 @@ def add_header_findings(
                     Finding("STALE_ACTIVE", "warning", path, f"active artifact has not been updated for {age} days")
                 )
 
-        if kind != "project-map":
+        if kind not in {"project-map", "campaign"}:
             parent = artifact.fields.get("Parent") or artifact.fields.get("Project Map") or ""
             if normalized(parent) in PLACEHOLDER_VALUES:
                 findings.append(

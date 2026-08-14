@@ -160,6 +160,21 @@ ASK_GUIDANCE = f"""{ASK_GUIDANCE_START}
 {ASK_GUIDANCE_END}
 """
 
+CAMPAIGN_QUEUE_GUIDANCE_START = "<!-- BEGIN TOOL SHED OWNER CAMPAIGN GUIDANCE -->"
+CAMPAIGN_QUEUE_GUIDANCE_END = "<!-- END TOOL SHED OWNER CAMPAIGN GUIDANCE -->"
+CAMPAIGN_QUEUE_GUIDANCE = f"""{CAMPAIGN_QUEUE_GUIDANCE_START}
+## Tool Shed owner campaign queue
+
+- Keep durable owner-facing campaign state under first-sorted `work/00-campaigns/`; keep `work/q&a/ask.txt` as transient intake.
+- Treat `ts: queue` and `ts: status` as requests to read the active owner capsule and validate lifecycle state.
+- Treat `ts: next` as a request to select the first ready campaign, then execute only that campaign under its natural coordination and requested work level.
+- Treat `ts: add`, `ts: defer`, `ts: abandon`, and campaign completion as exact lifecycle mutations. Read the current state token immediately before writing and reject stale state.
+- Never silently reorder a campaign when priority or direction is ambiguous. Preserve blocked work as active; require a reason and reactivation condition for deferral and a disposition for abandonment.
+- Complete a campaign only after its explicit completion gate and applicable verification pass. Then update active and completed queues as one recoverable operation and promote the next ready campaign.
+- Treat migration from legacy `work/q&a/` requests or queued `ask.txt` content as preview-only until an exact manifest is explicitly approved. Never clear or rewrite `ask.txt` as a side effect.
+{CAMPAIGN_QUEUE_GUIDANCE_END}
+"""
+
 
 def ensure_root_gitignore(repository: Path) -> list[str]:
     path = repository / ".gitignore"
@@ -245,6 +260,12 @@ def ensure_provider_guidance(repository: Path, provider_id: str) -> tuple[Path, 
         ASK_GUIDANCE_START,
         ASK_GUIDANCE_END,
         ASK_GUIDANCE,
+    )
+    updated, _ = replace_managed_block(
+        updated,
+        CAMPAIGN_QUEUE_GUIDANCE_START,
+        CAMPAIGN_QUEUE_GUIDANCE_END,
+        CAMPAIGN_QUEUE_GUIDANCE,
     )
     if updated == existing:
         return path, False

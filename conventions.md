@@ -32,6 +32,7 @@ provider surface and observed capability level described in `docs/provider-adapt
 
 `work/` contains project-specific generated artifacts:
 
+- owner-facing campaign queues and lifecycle requests under first-sorted `work/00-campaigns/`
 - project maps
 - active and completed workpackages
 - tickets
@@ -122,6 +123,26 @@ approved candidates. It never rewrites Git history.
   one
 - the repository ignores it because durable project truth belongs in docs and durable work belongs
   under `work/`
+
+## Owner Campaign Lifecycle
+
+`work/00-campaigns/` is the first-sorted owner control surface:
+
+- `active-queue.md` is the canonical top-to-bottom execution order and compact owner state capsule
+- `completed-queue.md` is verified completion history, newest first
+- `active/` contains queued, working, and blocked campaign requests
+- `completed/` contains requests whose explicit completion gate and applicable verification passed
+- `deferred/` contains intentionally postponed requests with a reason and reactivation condition
+- `abandoned/` contains cancelled, rejected, or superseded requests with a disposition
+
+Every lifecycle mutation uses `scripts/campaign_queue.py`, requires the current state token, and
+updates requests and both queue projections through a recoverable transaction. Manual or stale
+queue edits fail validation. Blocked work remains active. Deferral and abandonment are explicit
+priority decisions, not substitutes for temporary blocking.
+
+`work/q&a/ask.txt` remains transient intake. Accepting an inbox entry may create a durable campaign
+under `work/00-campaigns/active/`, but no campaign operation clears or rewrites the inbox. Legacy
+request migration is preview-only until an exact manifest is separately approved.
 
 ## Artifact Headers
 

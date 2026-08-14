@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 
-SKIP_NAMES = {"README.md", "index.md"}
+SKIP_NAMES = {"README.md", "index.md", "active-queue.md", "completed-queue.md"}
 HEADER_KEYS = {
     "Status",
     "Type",
@@ -38,6 +38,9 @@ class Artifact:
 
     def kind(self) -> str:
         return self.fields.get("Type", "")
+
+    def is_active(self) -> bool:
+        return self.status().lower() in {"active", "blocked", "proposed", "queued", "working"}
 
     def parent_or_truth(self) -> str:
         return (
@@ -139,7 +142,7 @@ def render(artifacts: list[Artifact]) -> str:
     else:
         lines.append("| - | - | - | - | No artifacts found yet | - |")
 
-    active = [item for item in artifacts if item.status().lower() == "active"]
+    active = [item for item in artifacts if item.is_active()]
     completed = [
         item
         for item in artifacts
@@ -167,7 +170,7 @@ def render(artifacts: list[Artifact]) -> str:
 
 
 def render_json(artifacts: list[Artifact]) -> str:
-    active = [item for item in artifacts if item.status().lower() == "active"]
+    active = [item for item in artifacts if item.is_active()]
     completed = [
         item
         for item in artifacts

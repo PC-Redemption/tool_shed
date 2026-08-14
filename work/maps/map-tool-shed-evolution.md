@@ -2,8 +2,8 @@
 
 Status: active
 Type: project-map
-Updated: 2026-08-13
-Next Action: publish v0.13.0, synchronize the installed Codex client, and fresh-task verify numbered work routing
+Updated: 2026-08-14
+Next Action: implement and work2-verify the owner-facing campaign lifecycle under work/00-campaigns
 
 ## Purpose
 
@@ -22,6 +22,7 @@ flowchart TD
   A --> K[Campaign entry, token efficiency, and provider portability]
   A --> L[Direct coding request mitigation]
   A --> M[Numbered execution levels and environment models]
+  A --> N[Owner-facing campaign queues and lifecycle]
   I --> J[Complete: evidence-responsive execution guidance]
   B --> D[Ground: validate review_work_state.py]
   C --> E[Gate: explicit approval before fleet update]
@@ -84,6 +85,7 @@ Ground:
 | Campaign entry, token efficiency, and provider portability | complete | `work/wp/completed/wp-tool-shed-campaign-entry-improvements.md` | published v0.12.0, exact installed-client parity, and fresh-task smoke | run non-Codex runtime scenarios before increasing capability claims |
 | Direct coding request mitigation | complete | `work/tickets/ticket-mitigate-tool-shed-churn-for-direct-coding-requests.md` | issue #21; existing minimum-sufficient coordination and campaign routes | none |
 | Numbered execution levels and environment models | complete | `work/tickets/ticket-add-numbered-work-levels-and-environment-models.md` | existing Direct-route contract and campaign routing | publish v0.13.0, synchronize installed client, and run a fresh-task routing smoke check |
+| Owner-facing campaign queues and lifecycle | active | `work/wp/active/wp-owner-facing-campaign-queues-and-lifecycle-management.md` | approved `work/00-campaigns/` location and retained transient inbox | implement lifecycle helper, portable integration, tests, and work2 client synchronization |
 
 ## Dependency Notes
 
@@ -128,6 +130,7 @@ Do next:
 - [x] Publish the qualified portability release, synchronize the installed Codex client, and fresh-task verify.
 - [x] Mitigate Direct-route churn and verify ordinary, `ts:ask`, and ship-adjacent fixtures.
 - [x] Implement and validate numbered work levels with combined and split environment models.
+- [ ] Implement and work2-verify owner-facing campaign queues under `work/00-campaigns/`.
 
 Avoid for now:
 
@@ -143,6 +146,7 @@ Avoid for now:
 - Workpackages: `work/wp/completed/wp-work-artifact-reconciliation.md`,
   `work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md`,
   `work/wp/active/wp-tool-shed-campaign-entry-improvements.md`,
+  `work/wp/active/wp-owner-facing-campaign-queues-and-lifecycle-management.md`,
   `work/wp/completed/wp-generated-evidence-safety-and-migration.md`,
   `work/wp/completed/wp-evidence-responsive-tool-shed-execution.md`
 - Tickets: `work/tickets/ticket-field-verify-generated-evidence-safeguards.md`,

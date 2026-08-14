@@ -110,3 +110,15 @@
 - Reuse existing workspace tooling. The config is not a credential store, deployment framework, or authority grant. If absent, preserve existing behavior and ask one concise target question only when safe routing cannot be derived. Reject invalid schemas or modes rather than guessing.
 - Preserve unrelated pre-existing changes. If they prevent a clean checkpoint, report it. If a `work4` push automatically deploys production, stop before pushing unless production release is explicitly authorized.
 <!-- END TOOL SHED WORK LEVEL GUIDANCE -->
+
+<!-- BEGIN TOOL SHED OWNER CAMPAIGN GUIDANCE -->
+## Tool Shed owner campaign queue
+
+- Keep durable owner-facing campaign state under first-sorted `work/00-campaigns/`; keep `work/q&a/ask.txt` as transient intake.
+- Treat `ts: queue` and `ts: status` as requests to read the active owner capsule and validate lifecycle state.
+- Treat `ts: next` as a request to select the first ready campaign, then execute only that campaign under its natural coordination and requested work level.
+- Treat `ts: add`, `ts: defer`, `ts: abandon`, and campaign completion as exact lifecycle mutations. Read the current state token immediately before writing and reject stale state.
+- Never silently reorder a campaign when priority or direction is ambiguous. Preserve blocked work as active; require a reason and reactivation condition for deferral and a disposition for abandonment.
+- Complete a campaign only after its explicit completion gate and applicable verification pass. Then update active and completed queues as one recoverable operation and promote the next ready campaign.
+- Treat migration from legacy `work/q&a/` requests or queued `ask.txt` content as preview-only until an exact manifest is explicitly approved. Never clear or rewrite `ask.txt` as a side effect.
+<!-- END TOOL SHED OWNER CAMPAIGN GUIDANCE -->

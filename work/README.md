@@ -5,6 +5,13 @@ Project-specific work artifacts live here.
 Use `tool_shed/selection.md` before choosing an artifact type.
 Use `work/index.md` as the first orientation surface after README/docs. Use `work/index.json` for automation.
 
+## Campaigns
+
+- Read `work/00-campaigns/active-queue.md` for the owner-facing execution order.
+- Durable campaign requests move through `active/`, `completed/`, `deferred/`, and `abandoned/`.
+- Keep `work/q&a/ask.txt` as transient intake; it is not the durable queue.
+- Use `python3 scripts/campaign_queue.py --workspace . status` to get the current stale-write token before a lifecycle mutation.
+
 ## Active
 
 - Project maps: `work/maps/`
