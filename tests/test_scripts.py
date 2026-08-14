@@ -10,6 +10,7 @@ import sys
 import tarfile
 import tempfile
 import unittest
+from datetime import date
 from pathlib import Path
 from unittest import mock
 
@@ -105,9 +106,14 @@ class ScriptTests(unittest.TestCase):
             for name in (
                 "codex_skill_sync.py",
                 "campaign_queue.py",
+                "check_stale_paths.py",
+                "check_work_tree.py",
                 "install_into_workspace.py",
                 "provider_adapters.py",
+                "reconcile_campaign_queue.py",
                 "repository_policy.py",
+                "review_work_state.py",
+                "update_work_index.py",
                 "work_tree.py",
                 "workspace_preflight.py",
             ):
@@ -158,9 +164,14 @@ class ScriptTests(unittest.TestCase):
                 for name in (
                     "codex_skill_sync.py",
                     "campaign_queue.py",
+                    "check_stale_paths.py",
+                    "check_work_tree.py",
                     "install_into_workspace.py",
                     "provider_adapters.py",
+                    "reconcile_campaign_queue.py",
                     "repository_policy.py",
+                    "review_work_state.py",
+                    "update_work_index.py",
                     "work_tree.py",
                     "workspace_preflight.py",
                 )
@@ -540,7 +551,7 @@ for raw in sys.stdin:
         )
 
         self.assertEqual(manifest["manifest_schema_version"], 2)
-        self.assertEqual(manifest["minimum_updater_protocol"], 2)
+        self.assertEqual(manifest["minimum_updater_protocol"], 3)
         self.assertEqual(manifest["release_tag"], f"v{manifest['shed_version']}")
         self.assertIn("release_commit", manifest)
         self.assertIn("released_at", manifest)
@@ -829,7 +840,7 @@ for raw in sys.stdin:
             release = self.create_test_release(
                 root,
                 version="9.9.0",
-                minimum_updater_protocol=3,
+                minimum_updater_protocol=4,
             )
             workspace = self.create_update_workspace(root, version="9.8.0")
 
@@ -846,8 +857,8 @@ for raw in sys.stdin:
             payload = json.loads(result.stdout)
 
             self.assertNotEqual(result.returncode, 0)
-            self.assertIn("requires updater protocol 3", payload["error"])
-            self.assertIn("supports protocol 2", payload["error"])
+            self.assertIn("requires updater protocol 4", payload["error"])
+            self.assertIn("supports protocol 3", payload["error"])
             self.assertTrue((workspace / "tool_shed" / "old-marker.txt").is_file())
             self.assertFalse(list(workspace.glob("tool_shed.backup-*.tar")))
 
@@ -872,6 +883,16 @@ for raw in sys.stdin:
         self.assertIn("ts:work1", commands)
         self.assertIn("ts:work5", commands)
         self.assertIn("ts: status", commands)
+        self.assertIn("ts: unblock", commands)
+        self.assertIn("ts: unblock", guide)
+        self.assertIn("ts: unblock", skill_bundle)
+        self.assertIn("ts: reconcile campaigns", commands)
+        self.assertIn("ts: reconcile campaigns", guide)
+        self.assertIn("reconcile_campaign_queue.py", skill_bundle)
+        self.assertIn("`camp`", commands)
+        self.assertIn("`que N`", commands)
+        self.assertIn("`que N`", guide)
+        self.assertIn("`que N`", skill_bundle)
         self.assertIn("ts: version", commands)
         self.assertIn("ts:ask", commands)
         self.assertIn("01-q&a/ask.txt", skill_bundle)
@@ -1816,6 +1837,169 @@ Next Action: keep going
             queue = (workspace / "work" / "00-campaigns" / "active-queue.md").read_text(encoding="utf-8")
             self.assertIn("Blocker or decision needed: beta", queue)
 
+    def test_campaign_unblock_returns_work_to_queued_without_starting(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+
+            def status() -> dict[str, object]:
+                result = run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+                )
+                return json.loads(result.stdout)
+
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "add", "resume-me",
+                "Resume me", "--outcome", "resume safely", "--completion-gate", "resume verified",
+                "--expect", str(status()["state_token"]),
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "start", "resume-me",
+                "--expect", str(status()["state_token"]),
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "block", "resume-me",
+                "--reason", "dependency unavailable", "--expect", str(status()["state_token"]),
+            )
+            blocked = status()
+            rejected_start = run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "start", "resume-me",
+                "--expect", str(blocked["state_token"]), check=False,
+            )
+            self.assertEqual(rejected_start.returncode, 2)
+            self.assertIn("only a queued campaign can start", rejected_start.stderr)
+
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "unblock", "resume-me",
+                "--expect", str(blocked["state_token"]),
+            )
+            unblocked = status()
+            self.assertEqual(unblocked["working"], [])
+            self.assertEqual(unblocked["next"], "resume-me")
+            self.assertEqual(unblocked["blocked"], [])
+            self.assertEqual(unblocked["decisions_needed"], [])
+            campaign = workspace / "work" / "00-campaigns" / "active" / "resume-me.md"
+            text = campaign.read_text(encoding="utf-8")
+            self.assertIn("Status: queued", text)
+            self.assertIn("Decision: none", text)
+            self.assertIn("Next Action: execute when selected", text)
+            queue = (workspace / "work" / "00-campaigns" / "active-queue.md").read_text(encoding="utf-8")
+            self.assertIn("Blocker or decision needed: none", queue)
+
+            before_invalid = str(unblocked["state_token"])
+            invalid = run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "unblock", "resume-me",
+                "--expect", before_invalid, check=False,
+            )
+            self.assertEqual(invalid.returncode, 2)
+            self.assertIn("only a blocked campaign can be unblocked", invalid.stderr)
+            self.assertEqual(status()["state_token"], before_invalid)
+
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "start", "resume-me",
+                "--expect", before_invalid,
+            )
+            self.assertEqual(status()["working"], ["resume-me"])
+
+    def test_campaign_reconciliation_reports_and_repairs_only_projection_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+
+            def status() -> dict[str, object]:
+                return json.loads(
+                    run_script(
+                        "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+                    ).stdout
+                )
+
+            for campaign_id in ("alpha", "beta", "gamma"):
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "add", campaign_id,
+                    campaign_id.title(), "--outcome", f"deliver {campaign_id}",
+                    "--completion-gate", f"{campaign_id} verified",
+                    "--expect", str(status()["state_token"]),
+                )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "start", "beta",
+                "--expect", str(status()["state_token"]),
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "block", "gamma",
+                "--reason", "owner decision", "--expect", str(status()["state_token"]),
+            )
+            alpha = workspace / "work" / "00-campaigns" / "active" / "alpha.md"
+            alpha.write_text(
+                alpha.read_text(encoding="utf-8").replace(
+                    f"Updated: {date.today().isoformat()}", "Updated: 2000-01-01"
+                ),
+                encoding="utf-8",
+            )
+            queue = workspace / "work" / "00-campaigns" / "active-queue.md"
+            lines = queue.read_text(encoding="utf-8").splitlines()
+            alpha_line = next(line for line in lines if "active/alpha.md" in line)
+            lines = [line for line in lines if "active/beta.md" not in line]
+            lines.extend(
+                [
+                    alpha_line,
+                    "99. [Ghost](active/ghost.md) — state: queued — outcome: missing",
+                ]
+            )
+            queue.write_text("\n".join(lines) + "\n", encoding="utf-8")
+            before = queue.read_bytes()
+
+            dry = run_script(
+                "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+            )
+            report = json.loads(dry.stdout)
+            self.assertEqual(queue.read_bytes(), before)
+            self.assertEqual(report["orphaned_active"], ["beta"])
+            self.assertEqual(report["missing_active_files"], ["ghost"])
+            self.assertEqual(report["duplicate_queue_ids"], ["alpha"])
+            self.assertEqual(report["working"], ["beta"])
+            self.assertEqual(report["blocked"], ["gamma"])
+            self.assertEqual([item["campaign_id"] for item in report["stalled"]], ["alpha"])
+            self.assertEqual(report["repair_order"], ["alpha", "gamma", "beta"])
+            self.assertEqual(
+                report["proposed_execution_order"], ["beta", "alpha", "gamma"]
+            )
+            self.assertTrue(report["owner_action_required"])
+            self.assertFalse(report["writes_performed"])
+
+            gamma = workspace / "work" / "00-campaigns" / "active" / "gamma.md"
+            gamma.write_text(
+                gamma.read_text(encoding="utf-8").replace(
+                    "## Request", "## Request\n\nPreserve owner context."
+                ),
+                encoding="utf-8",
+            )
+            stale = run_script(
+                "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                "--apply", "--expect", report["state_token"], "--json", check=False,
+            )
+            self.assertEqual(stale.returncode, 2)
+            self.assertIn("stale campaign state", stale.stderr)
+
+            refreshed = json.loads(
+                run_script(
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+                ).stdout
+            )
+            applied = json.loads(
+                run_script(
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                    "--apply", "--expect", refreshed["state_token"], "--json",
+                ).stdout
+            )
+            self.assertTrue(applied["writes_performed"])
+            self.assertFalse(applied["changes_required"])
+            self.assertEqual(
+                status()["active_order"], ["alpha", "gamma", "beta"]
+            )
+            self.assertEqual(applied["proposed_execution_order"], ["beta", "alpha", "gamma"])
+            self.assertEqual(applied["validation_findings"], [])
+            self.assertIn("update_work_index.py", applied["post_apply_checks"])
+
     def test_campaign_validation_detects_dependency_cycle(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)
@@ -2054,6 +2238,10 @@ Produces:
             self.assertIn("campaign continuity does not upgrade Direct", guidance)
             self.assertIn("ts:ask` does not turn a bounded Direct request", guidance)
             self.assertIn("merely mentions or discusses `ts:ship`", guidance)
+            self.assertIn("interpret `camp` as `campaign`", guidance)
+            self.assertIn("Interpret `que N`", guidance)
+            self.assertIn("`ts: unblock` returns blocked work to queued state", guidance)
+            self.assertIn("`ts: reconcile campaigns` as a dry-run request", guidance)
 
     def test_installer_supports_all_provider_adapters_idempotently(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -2361,7 +2549,111 @@ stale loop guidance
             with tarfile.open(backups[0], "r") as archive:
                 names = {member.name.replace("\\", "/") for member in archive.getmembers()}
             self.assertIn("tool_shed/old-marker.txt", names)
-            self.assertNotIn("work/operator-data.txt", names)
+            self.assertIn("work/operator-data.txt", names)
+            self.assertIn(".gitignore", names)
+
+    def test_snapshot_upgrade_converges_legacy_work_tree_transactionally(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(
+                root,
+                version="9.9.0",
+                include_provider_adapter=True,
+                minimum_updater_protocol=3,
+            )
+            workspace = self.create_update_workspace(root, version="0.13.0")
+            legacy = workspace / "work" / "q&a"
+            legacy.mkdir(parents=True)
+            (legacy / "ask.txt").write_text("Preserve and migrate this request.\n", encoding="utf-8")
+            (legacy / "legacy-request.md").write_text("# Owner request\n", encoding="utf-8")
+            before_operator = (workspace / "work" / "operator-data.txt").read_bytes()
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--json",
+                cwd=workspace,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertEqual(payload["state"], "installed")
+            self.assertEqual(payload["previous_version"], "0.13.0")
+            self.assertTrue(payload["work_preserved"])
+            self.assertTrue(payload["work_changed"])
+            self.assertTrue(payload["work_converged"])
+            self.assertIn("workspace_convergence", payload["post_install"])
+            self.assertEqual(
+                (workspace / "work" / "operator-data.txt").read_bytes(), before_operator
+            )
+            self.assertFalse(legacy.exists())
+            self.assertEqual(
+                (workspace / "work" / "01-q&a" / "ask.txt").read_text(encoding="utf-8"),
+                "Preserve and migrate this request.\n",
+            )
+            self.assertTrue(
+                (workspace / "work" / "01-q&a" / "legacy-request.md").is_file()
+            )
+            self.assertTrue((workspace / "work" / "00-campaigns" / "active").is_dir())
+            self.assertTrue((workspace / "work" / "README.md").is_file())
+            self.assertTrue((workspace / "work" / "index.json").is_file())
+            convergence = json.loads(payload["post_install"]["check_work_tree.py"])
+            self.assertTrue(convergence["converged"])
+            backup = Path(payload["backup_path"])
+            with tarfile.open(backup, "r") as archive:
+                names = {member.name.replace("\\", "/") for member in archive.getmembers()}
+            self.assertIn("tool_shed/old-marker.txt", names)
+            self.assertIn("work/operator-data.txt", names)
+            self.assertIn("work/q&a/ask.txt", names)
+            self.assertIn(".gitignore", names)
+
+    def test_snapshot_upgrade_rolls_back_legacy_work_migration(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(
+                root,
+                version="9.9.0",
+                include_provider_adapter=True,
+                minimum_updater_protocol=3,
+            )
+            workspace = self.create_update_workspace(root, version="0.13.0")
+            legacy = workspace / "work" / "q&a"
+            legacy.mkdir(parents=True)
+            (legacy / "ask.txt").write_text("Restore this exact request.\n", encoding="utf-8")
+            before_work = {
+                path.relative_to(workspace / "work").as_posix(): path.read_bytes()
+                for path in (workspace / "work").rglob("*")
+                if path.is_file()
+            }
+            before_gitignore = (workspace / ".gitignore").read_bytes()
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--inject-post-install-failure",
+                "--json",
+                cwd=workspace,
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertTrue(payload["rollback"])
+            after_work = {
+                path.relative_to(workspace / "work").as_posix(): path.read_bytes()
+                for path in (workspace / "work").rglob("*")
+                if path.is_file()
+            }
+            self.assertEqual(after_work, before_work)
+            self.assertEqual((workspace / ".gitignore").read_bytes(), before_gitignore)
+            self.assertTrue((workspace / "work" / "q&a" / "ask.txt").is_file())
+            self.assertFalse((workspace / "work" / "01-q&a").exists())
+            self.assertTrue((workspace / "tool_shed" / "old-marker.txt").is_file())
 
     def test_snapshot_updater_keeps_consecutive_updates_bytecode_free(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

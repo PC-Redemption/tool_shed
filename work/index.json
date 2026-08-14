@@ -2,6 +2,51 @@
   "artifacts": [
     {
       "canonical_truth": null,
+      "disposition": "none",
+      "next_action": "execute when selected from the active campaign queue",
+      "parent": null,
+      "path": "work/00-campaigns/active/converge-upgrades-to-current-work-structure.md",
+      "produces": null,
+      "project_map": null,
+      "status": "queued",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Converge upgrades to current work structure",
+      "type": "campaign",
+      "updated": "2026-08-14"
+    },
+    {
+      "canonical_truth": null,
+      "disposition": "none",
+      "next_action": "execute when selected from the active campaign queue",
+      "parent": null,
+      "path": "work/00-campaigns/active/reconcile-campaign-queue-state-and-order.md",
+      "produces": null,
+      "project_map": null,
+      "status": "queued",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Reconcile campaign queue state and execution order",
+      "type": "campaign",
+      "updated": "2026-08-14"
+    },
+    {
+      "canonical_truth": null,
+      "disposition": "none",
+      "next_action": "execute the campaign completion gate",
+      "parent": null,
+      "path": "work/00-campaigns/active/restore-blocked-campaign-lifecycle.md",
+      "produces": null,
+      "project_map": null,
+      "status": "working",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Restore blocked campaign lifecycle",
+      "type": "campaign",
+      "updated": "2026-08-14"
+    },
+    {
+      "canonical_truth": null,
       "disposition": "completed",
       "next_action": "none",
       "parent": null,
@@ -565,8 +610,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 3,
+    "active_artifacts": 6,
     "completed_or_decided_artifacts": 32,
-    "total_artifacts": 37
+    "total_artifacts": 40
   }
 }

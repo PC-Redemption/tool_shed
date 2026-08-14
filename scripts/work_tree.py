@@ -35,6 +35,7 @@ Use `work/index.md` as the first orientation surface after README/docs. Use `wor
 - Durable campaign requests move through `active/`, `completed/`, `deferred/`, and `abandoned/`.
 - Keep `work/01-q&a/ask.txt` as transient intake; it is not the durable queue.
 - Use `python3 tool_shed/scripts/campaign_queue.py --workspace . status` to get the current stale-write token before a lifecycle mutation.
+- Use `python3 tool_shed/scripts/reconcile_campaign_queue.py --workspace . --json` to inspect queue drift, stalled campaigns, and proposed execution order without writing.
 
 ## Active
 
@@ -68,6 +69,7 @@ Run `python3 tool_shed/scripts/update_work_index.py --workspace .` after creatin
 Use `python3 tool_shed/scripts/complete_workpackage.py work/wp/active/wp-example.md --workspace .` to move active workpackages to completed.
 Run `python3 tool_shed/scripts/check_stale_paths.py --workspace .` after moving or completing artifacts.
 Run `python3 tool_shed/scripts/review_work_state.py --workspace .` during orientation and regular planning review.
+Run `python3 tool_shed/scripts/check_work_tree.py --workspace . --json` after installation or upgrade to verify the canonical work topology.
 Run `python3 tool_shed/scripts/workspace_preflight.py --workspace . --json` before long automated
 campaigns. Review its workspace profile, policy sources, risk budgets, and mitigations. For
 already tracked raw evidence, use `migrate_generated_evidence.py prepare` with an output path

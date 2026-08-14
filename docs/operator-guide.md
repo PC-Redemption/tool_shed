@@ -215,9 +215,15 @@ Tool Shed places durable owner-facing execution state in the first-sorted
 | `ts: status` or `ts: queue` | Show last completed, working now, next, blockers, detours, and lifecycle findings. |
 | `ts: next` | Select and execute only the first ready campaign. |
 | `ts: add <idea>` | Check overlap, dependencies, and direction conflicts before inserting an approved campaign. |
+| `ts: unblock <campaign>` | Return blocked work to queued state and clear the blocker decision without starting it. |
+| `ts: reconcile campaigns` | Inspect and propose deterministic queue repairs and execution order without writing. |
 | `ts: defer <campaign>` | Move an active campaign with a reason and reactivation condition. |
 | `ts: abandon <campaign>` | Preserve a cancelled or superseded campaign with its disposition. |
 | `ts: completed` | Show recent verified outcomes newest-first. |
+
+In owner-queue requests, `camp` is an alias for `campaign`, and `que N` identifies the campaign at
+1-based ordered queue number N. Tool Shed resolves `que N` from a fresh status read immediately
+before acting and rejects missing or out-of-range numbers rather than guessing.
 
 The active queue is the canonical execution order. Detailed requests live in lifecycle folders:
 
@@ -235,6 +241,10 @@ Every mutation uses the current state token returned by `status`; a stale token 
 Completion requires the request's explicit completion gate and applicable verification, then moves
 the request and updates both queue views through a recoverable operation. Blocked work stays
 active. Deferral and abandonment require explicit lifecycle reasons.
+
+`reconcile_campaign_queue.py` is dry-run-first. Its report separates mechanically repairable
+projection drift from stalled lifecycle decisions and a proposed execution order. An explicit
+`--apply --expect TOKEN` repairs projections only; reprioritization remains owner-controlled.
 
 Use `python3 tool_shed/scripts/campaign_queue.py --workspace . migrate-preview --json` to inspect
 Markdown requests under `work/01-q&a/` or legacy `work/q&a/` and actionable inbox lines. Preview never writes, and

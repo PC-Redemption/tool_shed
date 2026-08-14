@@ -70,12 +70,13 @@ The installed routing tells the provider to read the workspace-local
 `tool_shed/skills/tool-shed/SKILL.md` when a request begins with `ts:`. This avoids copying and
 eventually drifting five separate workflow implementations.
 
-Snapshot upgrades use `--guidance-only` automatically. They detect every provider instruction file
-that already contains marked Tool Shed guidance, default to Codex when none exists, replace the
-entire disconnected snapshot so removed Markdown cannot linger, and verify all skill references
-through the release manifest. The update transaction captures selected instruction files and
-restores them together with the old snapshot if any post-install check fails. Root `work/`, indexes,
-the Q&A inbox, and `.gitignore` remain untouched by the guidance refresh.
+Protocol-3 snapshot upgrades run the selected release's full workspace installer automatically.
+They detect every provider instruction file that already contains marked Tool Shed guidance,
+default to Codex when none exists, replace the entire disconnected snapshot so removed Markdown
+cannot linger, and converge legacy root `work/` layouts to the current released structure. The
+update transaction backs up the old snapshot plus affected workspace structure and restores them
+together with selected instruction files if any post-install check fails. Owner-authored work is
+preserved while indexes, queue projections, canonical Q&A paths, and `.gitignore` policy converge.
 
 Codex has one additional provider-owned lifecycle boundary: auto-discovery may load a user-level
 copy from `${CODEX_HOME:-~/.codex}/skills/tool-shed` before workspace routing takes effect. The

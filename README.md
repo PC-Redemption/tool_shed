@@ -154,8 +154,8 @@ checkout outside the project and run the updater from that checkout. Never repla
 the stale workspace snapshot to bootstrap the updater.
 
 After a new installation, or when a workspace needs its work tree initialized, run
-`install_into_workspace.py`. Snapshot updates already use its `--guidance-only` mode. The full
-installer detects whether the
+`install_into_workspace.py`. Protocol-3 snapshot updates run the selected release's full installer
+transactionally so older work trees converge to the current structure. The full installer detects whether the
 parent Git repository ignores root `work/`. If a stale ignore exists, it reports the exact ignore
 file, line, and rule; previews the count and size of ignored evidence; and exits without altering
 any existing `work/` file. Remove only the reported root `/work/` rule and rerun the command.
@@ -318,10 +318,14 @@ During installation or upgrade, Tool Shed copies and byte-verifies every file fr
 `work/q&a/` and root `q&a/` into `work/01-q&a/`. Name collisions are preserved with
 source-specific filenames; the old folders are removed only after verification.
 
-Use `ts: status`, `ts: next`, `ts: add <idea>`, `ts: defer <campaign>`,
-`ts: abandon <campaign>`, and `ts: completed`. Deterministic mutations require the current state
-token and reject stale writes. `campaign_queue.py migrate-preview` reports legacy candidates but
+Use `ts: status`, `ts: next`, `ts: add <idea>`, `ts: unblock <campaign>`, `ts: defer <campaign>`,
+`ts: abandon <campaign>`, `ts: reconcile campaigns`, and `ts: completed`. Deterministic mutations require the current state
+token and reject stale writes. In owner-queue requests, `camp` aliases `campaign`, while `que N`
+identifies the campaign at 1-based ordered queue number N and is resolved from a fresh status read.
+`campaign_queue.py migrate-preview` reports legacy candidates but
 never moves or rewrites them; applying a migration requires a separate exact approved manifest.
+`reconcile_campaign_queue.py` reports orphaned or stalled work and a reasoned execution order;
+its explicit token-protected apply mode repairs projections without silently reprioritizing work.
 
 Check the installed snapshot without using the network, or compare it with the canonical manifest:
 
@@ -340,7 +344,8 @@ python3 tool_shed/scripts/check_shed_version.py --shed tool_shed --local-only --
 
 Released manifests declare `minimum_updater_protocol`. A release whose lifecycle exceeds an old
 updater's protocol refuses that updater before workspace mutation and directs the operator to run a
-current released updater from outside the workspace.
+current released updater from outside the workspace. Protocol 3 adds transactional work-tree
+convergence and verified rollback coverage for the workspace structure changed by migration.
 
 Tool Shed performs a zero-I/O reasoning preflight before substantial routed work. When current
 context establishes a usable picker pair, it recommends it as a bold level-three header using

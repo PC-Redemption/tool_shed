@@ -137,6 +137,10 @@ def smoke_temp_workspace() -> None:
         campaign_contract = (
             "work/00-campaigns/",
             "work/01-q&a/ask.txt` as transient intake",
+            "interpret `camp` as `campaign`",
+            "Interpret `que N`",
+            "`ts: unblock`",
+            "`ts: reconcile campaigns`",
             "current state token",
             "preview-only",
         )

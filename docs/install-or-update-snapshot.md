@@ -35,9 +35,9 @@ checks use the same offline identity set. Start a fresh Codex session after a ch
 Use the updater from a current released checkout outside the target project. This matters when an
 older installed snapshot predates newer upgrade safeguards. The updater selects the remote release;
 the target's stale in-snapshot updater is not a bootstrap authority. Releases declare a
-`minimum_updater_protocol`; releases requiring protocol 2 or newer cause legacy updater validation
-to stop before snapshot mutation with the supported external-updater command. The current updater
-supplies its protocol explicitly during release, staged-snapshot, and post-install verification.
+`minimum_updater_protocol`; releases requiring a newer protocol cause legacy updater validation to
+stop before snapshot mutation with the supported external-updater command. The current protocol 3
+updater supplies its protocol explicitly and adds transactional work-tree convergence.
 
 Provider guidance is auto-detected from existing marked instruction files. If none exists, Codex is
 the backward-compatible default. Override or install multiple adapters with:
@@ -140,7 +140,8 @@ If EXISTING UPDATE:
     the project's root work/ in the comparison.
 14. Create a timestamped repository-root backup archive:
     tool_shed.backup-YYYYMMDDTHHMMSSZ.tar
-    Confirm it contains only the existing tool_shed/ snapshot and no project work/.
+    Confirm it contains the existing tool_shed/ snapshot plus the pre-migration root work/,
+    legacy q&a/ when present, and .gitignore. Reject unsupported members and verify every file.
 15. Replace only the workspace's tool_shed/ directory with the staged snapshot. Keep the backup.
 
 If NEW INSTALLATION:
@@ -154,15 +155,17 @@ Post-install verification for either path:
 16. Confirm the installed tool_shed/ is a real directory, contains no .git and no work/, is not a
     submodule, and is ignored by the parent repository.
 17. Run, when present in the installed release:
-    - python3 tool_shed/scripts/install_into_workspace.py . --guidance-only --provider <detected>
+    - python3 tool_shed/scripts/install_into_workspace.py . --provider <detected>
     - python3 tool_shed/scripts/workspace_preflight.py --workspace . --json
+    - python3 tool_shed/scripts/check_work_tree.py --workspace . --json
     - python3 tool_shed/scripts/check_stale_paths.py --workspace .
     - python3 tool_shed/scripts/review_work_state.py --workspace .
     - python3 tool_shed/scripts/check_shed_version.py --shed tool_shed --local-only --strict
       --updater-protocol <current-protocol> --snapshot
-18. Guidance-only installation may append or replace marked Tool Shed blocks in the selected
-    provider instruction files. It must preserve owner-authored instruction content and leave
-    `.gitignore`, `work/`, indexes, and the Q&A inbox byte-for-byte unchanged.
+18. Full installation may append or replace marked Tool Shed blocks, update `.gitignore`, migrate
+    legacy Q&A paths, create missing canonical work directories, and regenerate indexes. It must
+    preserve owner-authored content byte-for-byte, report structural convergence explicitly, and
+    never silently overwrite a migration collision.
 19. Surface the workspace profile, effective risk budgets, policy sources, preflight findings, and
     reconciliation findings for review. Do not automatically rewrite project planning, relocate
     evidence, or create Level 2 onboarding artifacts unless separately requested.
@@ -181,8 +184,8 @@ Post-install verification for either path:
 Failure handling:
 
 21. For EXISTING UPDATE, if replacement or post-install verification fails:
-    - remove only the failed replacement
-    - restore tool_shed/ from the backup archive
+    - remove only the failed replacement and affected migrated workspace paths
+    - restore tool_shed/, work/, legacy q&a/, and .gitignore from the verified backup archive
     - restore every selected provider instruction file byte-for-byte, removing only files created
       by the failed guidance refresh
     - verify the restored snapshot
@@ -190,7 +193,8 @@ Failure handling:
 22. For NEW INSTALLATION, if post-install verification fails:
     - remove only the newly installed tool_shed/ directory
     - restore or remove selected provider instruction files using the pre-install capture
-    - never remove or roll back work/
+    - restore the exact pre-install work/, legacy q&a/, and .gitignore state from the temporary
+      verified transaction backup
     - report any remaining empty directories for manual review
 
 Success report:

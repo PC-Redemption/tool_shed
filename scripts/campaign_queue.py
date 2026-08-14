@@ -528,6 +528,12 @@ def mutate_campaign(args: argparse.Namespace, workspace: Path) -> None:
         item.fields["Status"] = "blocked"
         item.fields["Decision"] = args.reason
         item.fields["Next Action"] = "resolve blocker or decision: " + args.reason
+    elif args.command == "unblock":
+        if item.status != "blocked":
+            raise CampaignError("only a blocked campaign can be unblocked")
+        item.fields["Status"] = "queued"
+        item.fields["Decision"] = "none"
+        item.fields["Next Action"] = "execute when selected from the active campaign queue"
     elif args.command == "defer":
         if item.path.parent.name != "active":
             raise CampaignError("only active campaigns can be deferred")
@@ -672,7 +678,7 @@ def build_parser() -> argparse.ArgumentParser:
     add.add_argument("--detour-for", default="none")
     add.add_argument("--return-to", default="none")
     add.add_argument("--position", type=int)
-    for command in ("reorder", "start", "block", "defer", "abandon", "complete"):
+    for command in ("reorder", "start", "block", "unblock", "defer", "abandon", "complete"):
         child = subparsers.add_parser(command)
         child.add_argument("campaign_id")
         if command == "reorder":
@@ -688,7 +694,7 @@ def build_parser() -> argparse.ArgumentParser:
             child.add_argument("--gate-passed", action="store_true")
     for child in subparsers.choices.values():
         child.add_argument("--json", action="store_true", default=argparse.SUPPRESS)
-        if child.prog.split()[-1] in {"add", "reorder", "start", "block", "defer", "abandon", "complete"}:
+        if child.prog.split()[-1] in {"add", "reorder", "start", "block", "unblock", "defer", "abandon", "complete"}:
             child.add_argument("--expect", required=True)
     return parser
 

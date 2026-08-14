@@ -82,12 +82,34 @@ Durable owner-facing state lives under `work/00-campaigns/`.
 | `ts: completed` | Summarize recent verified campaign completions. |
 | `ts: next` | Select and execute only the first ready campaign under its recorded work level and natural coordination. |
 | `ts: add <idea>` | Check active, deferred, and completed work for overlap or direction conflicts, then add the approved campaign using the current state token. |
+| `ts: unblock <campaign>` | Return blocked work to queued state and clear its recorded decision; starting remains a separate transition. |
+| `ts: reconcile campaigns` | Inspect orphaned, inconsistent, stalled, blocked, ready, and dependency-constrained work and propose execution order without writing. |
 | `ts: defer <campaign>` | Move active work to deferred with a reason and reactivation condition. |
 | `ts: abandon <campaign>` | Preserve cancelled or superseded work with a disposition and replacement when applicable. |
+
+Owner-queue shorthand:
+
+| Term | Meaning |
+| --- | --- |
+| `camp` | Alias for `campaign`. |
+| `que N` | Alias for the campaign at 1-based ordered queue number N. |
+
+Resolve `que N` from a fresh queue status immediately before acting. Missing or out-of-range
+numbers are errors and are never guessed.
 
 Blocked work remains active. Queue mutations reject stale state and do not silently reorder
 ambiguous priorities. Campaign completion requires its explicit completion gate and applicable
 verification.
+
+The deterministic reconciliation utility is read-only by default:
+
+```bash
+python3 tool_shed/scripts/reconcile_campaign_queue.py --workspace . --json
+```
+
+After reviewing its report, `--apply --expect TOKEN` repairs only duplicate, missing, dangling, or
+stale queue projections. It preserves the current valid relative order, appends orphaned active
+campaigns, and never applies the separately reported execution-order proposal or lifecycle choices.
 
 ## Q&A Inbox
 
@@ -157,12 +179,14 @@ The AI routes normally operate these deterministic scripts from the workspace-lo
 
 ```text
 scripts/campaign_queue.py
+scripts/check_work_tree.py
 scripts/check_shed_version.py
 scripts/check_stale_paths.py
 scripts/complete_workpackage.py
 scripts/install_into_workspace.py
 scripts/new_artifact.py
 scripts/read_ask_inbox.py
+scripts/reconcile_campaign_queue.py
 scripts/review_work_state.py
 scripts/update_snapshot.py
 scripts/update_work_index.py

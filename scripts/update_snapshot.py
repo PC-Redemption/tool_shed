@@ -15,6 +15,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -23,7 +24,7 @@ from codex_skill_sync import CodexSkillError, inspect_codex_skill, synchronize_c
 
 
 DEFAULT_REPOSITORY = "https://github.com/PC-Redemption/tool_shed.git"
-UPDATER_PROTOCOL = 2
+UPDATER_PROTOCOL = 3
 DEFAULT_NETWORK_TIMEOUT_SECONDS = 120.0
 DEFAULT_VALIDATION_TIMEOUT_SECONDS = 300.0
 STABLE_TAG = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
@@ -368,38 +369,66 @@ def difference_summary(old: Path, new: Path) -> dict[str, dict[str, object]]:
     }
 
 
-def create_backup(target: Path, backup: Path) -> None:
+def backup_fingerprint(workspace: Path, target: Path) -> dict[str, str]:
+    expected: dict[str, str] = {}
+    if target.is_dir():
+        expected.update(
+            {f"tool_shed/{relative}": digest for relative, digest in snapshot_fingerprint(target).items()}
+        )
+    for root_name in ("work", "q&a"):
+        root = workspace / root_name
+        expected.update(
+            {f"{root_name}/{relative}": digest for relative, digest in fingerprint_tree(root).items()}
+        )
+    gitignore = workspace / ".gitignore"
+    if gitignore.is_file():
+        expected[".gitignore"] = hashlib.sha256(gitignore.read_bytes()).hexdigest()
+    return expected
+
+
+def create_backup(workspace: Path, target: Path, backup: Path) -> None:
     if backup.exists():
         raise UpdateError(f"backup path already exists: {backup}")
-    expected = snapshot_fingerprint(target)
+    expected = backup_fingerprint(workspace, target)
 
     def exclude_runtime_artifacts(member: tarfile.TarInfo) -> tarfile.TarInfo | None:
         relative = Path(member.name.replace("\\", "/"))
-        return None if is_snapshot_runtime_artifact(relative) else member
+        if relative.parts and relative.parts[0] == "tool_shed":
+            snapshot_relative = Path(*relative.parts[1:])
+            if is_snapshot_runtime_artifact(snapshot_relative):
+                return None
+        return member
 
     with tarfile.open(backup, "w") as archive:
-        archive.add(
-            target,
-            arcname="tool_shed",
-            recursive=True,
-            filter=exclude_runtime_artifacts,
-        )
+        for source, arcname in (
+            (target, "tool_shed"),
+            (workspace / "work", "work"),
+            (workspace / "q&a", "q&a"),
+            (workspace / ".gitignore", ".gitignore"),
+        ):
+            if source.exists() or source.is_symlink():
+                archive.add(
+                    source,
+                    arcname=arcname,
+                    recursive=True,
+                    filter=exclude_runtime_artifacts,
+                )
     observed: dict[str, str] = {}
     with tarfile.open(backup, "r") as archive:
         for member in archive.getmembers():
             normalized = member.name.replace("\\", "/")
-            if normalized == "tool_shed/work" or normalized.startswith("tool_shed/work/"):
-                raise UpdateError("backup unexpectedly contains project work/")
-            if normalized != "tool_shed" and not normalized.startswith("tool_shed/"):
+            root_name = normalized.split("/", 1)[0]
+            if root_name not in {"tool_shed", "work", "q&a", ".gitignore"}:
                 raise UpdateError(f"backup contains out-of-scope member: {normalized}")
+            if root_name == ".gitignore" and normalized != ".gitignore":
+                raise UpdateError(f"backup contains invalid .gitignore member: {normalized}")
             if not member.isfile() and not member.isdir():
                 raise UpdateError(f"backup contains unsupported member type: {normalized}")
             if member.isfile():
                 handle = archive.extractfile(member)
                 if handle is None:
                     raise UpdateError(f"cannot verify backup member: {normalized}")
-                relative = normalized.removeprefix("tool_shed/")
-                observed[relative] = hashlib.sha256(handle.read()).hexdigest()
+                observed[normalized] = hashlib.sha256(handle.read()).hexdigest()
     if observed != expected:
         raise UpdateError("backup content verification failed")
 
@@ -409,7 +438,10 @@ def safe_extract_backup(backup: Path, workspace: Path) -> None:
         members = archive.getmembers()
         for member in members:
             normalized = member.name.replace("\\", "/")
-            if normalized != "tool_shed" and not normalized.startswith("tool_shed/"):
+            root_name = normalized.split("/", 1)[0]
+            if root_name not in {"tool_shed", "work", "q&a", ".gitignore"}:
+                raise UpdateError(f"unsafe backup member: {normalized}")
+            if root_name == ".gitignore" and normalized != ".gitignore":
                 raise UpdateError(f"unsafe backup member: {normalized}")
             if not member.isfile() and not member.isdir():
                 raise UpdateError(f"unsafe backup member type: {normalized}")
@@ -423,6 +455,42 @@ def safe_extract_backup(backup: Path, workspace: Path) -> None:
             else {}
         )
         archive.extractall(workspace, **options)
+
+
+def remove_path(path: Path) -> None:
+    if path.is_symlink() or path.is_file():
+        path.unlink()
+    elif path.is_dir():
+        shutil.rmtree(path)
+
+
+def restore_backup(backup: Path, workspace: Path) -> None:
+    for relative in ("tool_shed", "work", "q&a", ".gitignore"):
+        path = workspace / relative
+        if path.exists() or path.is_symlink():
+            remove_path(path)
+    safe_extract_backup(backup, workspace)
+
+
+def owner_content_fingerprint(workspace: Path) -> Counter[str]:
+    excluded = {
+        "index.md",
+        "index.json",
+        "00-campaigns/active-queue.md",
+        "00-campaigns/completed-queue.md",
+    }
+    values: list[str] = []
+    for root_name in ("work", "q&a"):
+        root = workspace / root_name
+        for relative, digest in fingerprint_tree(root).items():
+            if root_name == "work" and relative in excluded:
+                continue
+            values.append(digest)
+    return Counter(values)
+
+
+def contents_preserved(before: Counter[str], after: Counter[str]) -> bool:
+    return all(after[digest] >= count for digest, count in before.items())
 
 
 def post_install_checks(
@@ -450,26 +518,26 @@ def post_install_checks(
         timeout_option="--validation-timeout",
     )
     results = {"version": version_result.stdout.strip()}
-    if providers:
-        installer = target / "scripts" / "install_into_workspace.py"
-        if not installer.is_file():
-            raise UpdateError("selected release has provider metadata but no workspace installer")
+    installer = target / "scripts" / "install_into_workspace.py"
+    if providers and not installer.is_file():
+        raise UpdateError("selected release has provider metadata but no workspace installer")
+    if installer.is_file():
         arguments = [
             sys.executable,
             "-B",
             str(installer),
             str(workspace),
-            "--guidance-only",
         ]
         for provider_id in providers:
             arguments.extend(("--provider", provider_id))
-        guidance_result = run(
+        install_result = run(
             arguments,
             cwd=workspace,
             timeout=validation_timeout,
             timeout_option="--validation-timeout",
         )
-        results["provider_guidance"] = guidance_result.stdout.strip()
+        results["workspace_convergence"] = install_result.stdout.strip()
+        results["provider_guidance"] = install_result.stdout.strip()
         for provider_id in providers:
             guidance_path = workspace / provider_paths[provider_id]
             if not guidance_path.is_file():
@@ -481,6 +549,7 @@ def post_install_checks(
         raise UpdateError("injected post-install verification failure")
     optional_checks = (
         ("workspace_preflight.py", "--workspace", str(workspace), "--json"),
+        ("check_work_tree.py", "--workspace", str(workspace), "--json"),
         ("check_stale_paths.py", "--workspace", str(workspace)),
         ("review_work_state.py", "--workspace", str(workspace)),
     )
@@ -494,6 +563,13 @@ def post_install_checks(
                 timeout_option="--validation-timeout",
             )
             results[script] = result.stdout.strip()
+    if "check_work_tree.py" in results:
+        convergence = json.loads(results["check_work_tree.py"])
+        if not convergence.get("converged"):
+            raise UpdateError(
+                "workspace work structure did not converge: "
+                + "; ".join(convergence.get("findings") or ["unknown finding"])
+            )
     runtime_artifacts = snapshot_runtime_artifacts(target)
     if runtime_artifacts:
         raise UpdateError(
@@ -669,8 +745,11 @@ def main() -> int:
     workspace = Path(args.workspace).expanduser().resolve()
     target = workspace / "tool_shed"
     work_before = fingerprint_tree(workspace / "work")
+    owner_content_before = owner_content_fingerprint(workspace)
     initial_status = ""
     backup: Path | None = None
+    rollback_backup: Path | None = None
+    backup_before: dict[str, str] = {}
     retired: Path | None = None
     instruction_files_before: dict[str, bytes | None] = {}
     snapshot_before: dict[str, str] = {}
@@ -744,12 +823,18 @@ def main() -> int:
             timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
             if mode == "existing-update":
                 backup = workspace / f"tool_shed.backup-{timestamp}.tar"
-                create_backup(target, backup)
+                backup_before = backup_fingerprint(workspace, target)
+                create_backup(workspace, target, backup)
+                rollback_backup = backup
                 payload["backup_path"] = str(backup)
                 retired = workspace / f".tool_shed.retired-{timestamp}"
                 if retired.exists():
                     raise UpdateError(f"retirement path already exists: {retired}")
                 target.rename(retired)
+            else:
+                rollback_backup = temp / "workspace-before.tar"
+                backup_before = backup_fingerprint(workspace, target)
+                create_backup(workspace, target, rollback_backup)
             try:
                 shutil.move(str(staged), str(target))
                 installed = True
@@ -763,8 +848,12 @@ def main() -> int:
                     selected_protocol,
                     args.validation_timeout,
                 )
-                if fingerprint_tree(workspace / "work") != work_before:
-                    raise UpdateError("root work/ changed during snapshot update")
+                if not contents_preserved(
+                    owner_content_before, owner_content_fingerprint(workspace)
+                ):
+                    raise UpdateError(
+                        "owner-authored work content was not preserved during convergence"
+                    )
                 if inspect_codex:
                     installed_skill = target / "skills" / "tool-shed"
                     codex_skill = inspect_codex_skill(installed_skill, known_skill_releases)
@@ -785,17 +874,15 @@ def main() -> int:
                 except Exception as error:
                     rollback_errors.append(f"provider guidance: {error}")
                 try:
-                    if target.exists():
-                        shutil.rmtree(target)
                     installed = False
-                    if mode == "existing-update" and backup is not None:
-                        safe_extract_backup(backup, workspace)
-                        if snapshot_fingerprint(target) != snapshot_before:
-                            raise UpdateError("restored snapshot does not match the pre-update snapshot")
+                    if rollback_backup is not None:
+                        restore_backup(rollback_backup, workspace)
+                        if backup_fingerprint(workspace, target) != backup_before:
+                            raise UpdateError("restored workspace does not match the pre-update backup")
                     if retired is not None and retired.exists():
                         shutil.rmtree(retired)
                 except Exception as error:
-                    rollback_errors.append(f"snapshot: {error}")
+                    rollback_errors.append(f"workspace: {error}")
                 if rollback_errors:
                     raise UpdateError(
                         f"{install_error}; rollback verification failed: " + "; ".join(rollback_errors)
@@ -805,7 +892,17 @@ def main() -> int:
                 shutil.rmtree(retired)
         payload["installed_version"] = selected_version
         payload["canonical_manifest_match"] = True
-        payload["work_preserved"] = fingerprint_tree(workspace / "work") == work_before
+        work_after = fingerprint_tree(workspace / "work")
+        payload["work_preserved"] = contents_preserved(
+            owner_content_before, owner_content_fingerprint(workspace)
+        )
+        payload["work_changed"] = work_after != work_before
+        check_work_tree = payload.get("post_install", {}).get("check_work_tree.py")
+        payload["work_converged"] = (
+            bool(json.loads(check_work_tree).get("converged"))
+            if isinstance(check_work_tree, str) and check_work_tree
+            else None
+        )
         payload["git_status_changed"] = git(workspace, "status", "--short") != initial_status
         payload["state"] = "installed"
         emit_progress("completion")
@@ -823,11 +920,14 @@ def main() -> int:
                     print(f"Safe synchronization command: {codex_skill.get('sync_command')}")
                 if codex_skill.get("restart_required"):
                     print("Start a fresh Codex session to load the synchronized skill.")
-            print("Root work/ preserved.")
+            if payload.get("work_converged"):
+                print("Root work/ converged to the selected release structure with owner content preserved.")
+            else:
+                print("Root work/ preserved; selected release did not provide a structure check.")
         return 0
     except (OSError, ValueError, json.JSONDecodeError, UpdateError, CodexSkillError) as error:
         payload["error"] = str(error)
-        payload["rollback"] = bool(backup and target.exists() and not installed)
+        payload["rollback"] = bool(rollback_backup and not installed)
         if fingerprint_tree(workspace / "work") != work_before:
             payload["work_preserved"] = False
         else:

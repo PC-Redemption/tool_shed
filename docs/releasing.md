@@ -12,10 +12,10 @@ the provenance-only manifest commit. `release_tag` identifies the final provenan
 does not change the content commit it identifies.
 
 `minimum_updater_protocol` declares the oldest updater lifecycle that may install the release.
-Protocol 2 adds transactional provider guidance, strict disconnected-snapshot boundaries, and the
-explicit updater context required to prevent older in-snapshot updaters from silently bypassing new
-post-install behavior. Do not lower this field to preserve compatibility with an updater that
-cannot satisfy the release lifecycle.
+Protocol 2 adds transactional provider guidance and strict disconnected-snapshot boundaries.
+Protocol 3 adds transactional work-tree convergence, affected-workspace rollback coverage, and an
+explicit structural verification step. Do not lower this field to preserve compatibility with an
+updater that cannot satisfy the release lifecycle.
 
 ## Release Procedure
 

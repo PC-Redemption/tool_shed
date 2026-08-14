@@ -117,12 +117,22 @@ mutations:
   coordination and requested work level.
 - `ts: add <idea>`: compare with active, deferred, and completed IDs and content; report material
   overlap or direction conflicts; after resolving placement, run `add` with the current state token.
+- `ts: unblock <campaign>`: run `unblock` with the current state token; return blocked work to
+  queued state, clear its decision, and leave `start` as a separate invariant-checked transition.
+- `ts: reconcile campaigns`: run `reconcile_campaign_queue.py` in its default read-only mode.
+  Report orphaned, inconsistent, stalled, blocked, ready, and dependency-constrained work plus its
+  proposed execution order. Apply only explicitly approved deterministic projection repairs with
+  `--apply --expect TOKEN`; never apply the proposed order or lifecycle decisions implicitly.
 - `ts: defer <campaign>`: require a reason and reactivation condition, then run `defer` with the
   current state token.
 - `ts: abandon <campaign>`: require a disposition and replacement when applicable, then run
   `abandon` with the current state token.
 - Campaign completion: require the request's explicit completion gate and applicable verification,
   then run `complete --gate-passed --evidence ...` with the current state token.
+
+In owner-queue requests, `camp` is shorthand for `campaign`. `que N` means the campaign at
+1-based position N in the current ordered queue. Resolve `que N` from a fresh `status` read
+immediately before acting, and reject a missing or out-of-range number instead of guessing.
 
 Every mutation requires `--expect TOKEN` obtained immediately beforehand from `status`. Reject a
 stale token rather than overwriting newer state. Lifecycle operations use a recovery journal and
