@@ -8,12 +8,12 @@ Updated: 2026-08-14
 
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
-| [work/00-campaigns/active/complete-portable-verified-installer.md](work/00-campaigns/active/complete-portable-verified-installer.md) | campaign | working | 2026-08-14 | execute the campaign completion gate | - |
 | [work/00-campaigns/active/evaluate-workspace-performance-collector.md](work/00-campaigns/active/evaluate-workspace-performance-collector.md) | campaign | blocked | 2026-08-14 | resolve blocker or decision: Awaiting approved longitudinal or multi-workspace measurement targets and separate profiling authorization. | - |
 | [work/00-campaigns/active/file-codex-desktop-robustness-issue.md](work/00-campaigns/active/file-codex-desktop-robustness-issue.md) | campaign | blocked | 2026-08-14 | resolve blocker or decision: Awaiting operator approval of the external issue destination and exact sanitized evidence to publish. | - |
 | [work/00-campaigns/active/guarded-fleet-snapshot-update.md](work/00-campaigns/active/guarded-fleet-snapshot-update.md) | campaign | blocked | 2026-08-14 | resolve blocker or decision: Awaiting explicit approval of the exact fleet target manifest before any snapshot apply. | - |
 | [work/00-campaigns/completed/audit-and-refresh-tool-shed-documentation.md](work/00-campaigns/completed/audit-and-refresh-tool-shed-documentation.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/automate-dangler-resolution-reconciliation.md](work/00-campaigns/completed/automate-dangler-resolution-reconciliation.md) | campaign | complete | 2026-08-14 | none | - |
+| [work/00-campaigns/completed/complete-portable-verified-installer.md](work/00-campaigns/completed/complete-portable-verified-installer.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/converge-upgrades-to-current-work-structure.md](work/00-campaigns/completed/converge-upgrades-to-current-work-structure.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/owner-facing-campaign-queues.md](work/00-campaigns/completed/owner-facing-campaign-queues.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-14 | none | - |
@@ -34,7 +34,7 @@ Updated: 2026-08-14
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | contained; repository trigger mitigated, desktop defect remains external | 2026-07-25 | file the external Codex Desktop robustness evidence separately if still needed | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
-| [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | active | 2026-08-14 | run the native Windows launcher fallback test through GitHub Actions after an authorized push | - |
+| [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | active | 2026-08-14 | review the exact target manifest before authorizing the first guarded fleet snapshot update | - |
 | [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
 | [work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md](work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md) | spike | complete | 2026-08-09 | none | work/maps/map-tool-shed-evolution.md |
 | [work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md](work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md) | spike | complete | 2026-08-03 | gather approved longitudinal or multi-workspace measurements before deciding whether a separate collector is justified | work/maps/map-tool-shed-evolution.md |
@@ -46,7 +46,7 @@ Updated: 2026-08-14
 | [work/tickets/ticket-harden-tool-shed-release-and-drift-semantics.md](work/tickets/ticket-harden-tool-shed-release-and-drift-semantics.md) | ticket | complete | 2026-07-24 | none | scripts/check_shed_version.py; scripts/update_shed_manifest.py; scripts/review_work_state.py |
 | [work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md](work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md) | ticket | complete | 2026-08-03 | none | docs/workspace-performance-profiling.md |
 | [work/tickets/ticket-mitigate-tool-shed-churn-for-direct-coding-requests.md](work/tickets/ticket-mitigate-tool-shed-churn-for-direct-coding-requests.md) | ticket | complete | 2026-08-13 | none | work/maps/map-tool-shed-evolution.md |
-| [work/tickets/ticket-portable-verified-tool-shed-installer.md](work/tickets/ticket-portable-verified-tool-shed-installer.md) | ticket | active | 2026-08-14 | run the native Windows launcher fallback test through GitHub Actions after an authorized push | work/maps/map-tool-shed-evolution.md |
+| [work/tickets/ticket-portable-verified-tool-shed-installer.md](work/tickets/ticket-portable-verified-tool-shed-installer.md) | ticket | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/tickets/ticket-prepare-tool-shed-0-2-0-release.md](work/tickets/ticket-prepare-tool-shed-0-2-0-release.md) | ticket | complete | 2026-07-24 | none | docs/releasing.md; scripts/check_shed_version.py; scripts/update_shed_manifest.py |
 | [work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md](work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md) | workpackage | active | 2026-07-21 | obtain explicit approval before the first guarded mass update | README.md; docs/fleet-snapshot-updates.md; skills/tool-shed/SKILL.md |
 | [work/wp/completed/wp-evidence-responsive-tool-shed-execution.md](work/wp/completed/wp-evidence-responsive-tool-shed-execution.md) | workpackage | complete | 2026-08-09 | none | work/maps/map-tool-shed-evolution.md |
@@ -66,5 +66,5 @@ Updated: 2026-08-14
 ## Summary
 
 - Total artifacts: 48
-- Active artifacts: 7
-- Completed/decided artifacts: 39
+- Active artifacts: 5
+- Completed/decided artifacts: 41

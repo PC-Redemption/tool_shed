@@ -1,9 +1,9 @@
 # Ticket: Portable Verified Tool Shed Installer
 
-Status: active
+Status: complete
 Type: ticket
 Updated: 2026-08-14
-Next Action: run the native Windows launcher fallback test through GitHub Actions after an authorized push
+Next Action: none
 Parent: work/maps/map-tool-shed-evolution.md
 Campaign: complete-portable-verified-installer
 
@@ -37,7 +37,7 @@ boundary, project `work/`, repository policy, and recoverable update behavior.
 - [x] Roll back a failed replacement and report any installer-created residue.
 - [x] Test fresh install, existing update, invalid release, validation failure, and rollback.
 - [x] Test Windows and Linux validation, Windows paths, spaces, and both native launcher smokes.
-- [ ] Exercise launcher runtime fallback—not only `--help`—against disposable Windows and Linux
+- [x] Exercise launcher runtime fallback—not only `--help`—against disposable Windows and Linux
   workspaces.
 - [x] Reconcile implementation and documentation with
   `docs/install-or-update-snapshot.md`.
@@ -55,7 +55,8 @@ On 2026-08-14, the new native-launcher fallback test passed locally on Linux for
 new installation and an existing update with `python3` removed from `PATH`. The complete Linux
 validator passed all 107 tests. The same test selects the PowerShell launcher and removes `py` from
 `PATH` on Windows; its native Windows result remains pending an authorized push and GitHub Actions
-run.
+run. Draft PR #27 then passed all eight push and pull-request matrix jobs at commit `8c6d373`,
+including native Windows 3.11 and current Python fallback execution in both installation modes.
 
 Source context: GitHub PR #3, `agent/improve-tool-shed-install`. Do not copy its
 obsolete `0.1.1` version metadata or main-branch installation behavior.
