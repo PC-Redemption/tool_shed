@@ -67,7 +67,7 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
-  "notes": "Reconcile whole-work campaign coverage with manifest-gated lifecycle updates",
+  "notes": "Automate whole-work dangling campaign resolution and qualify portable installer runtime fallback",
   "release_commit": null,
   "release_tag": "v0.15.0",
   "released_at": null,
