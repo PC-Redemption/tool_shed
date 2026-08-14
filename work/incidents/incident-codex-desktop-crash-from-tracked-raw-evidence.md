@@ -5,6 +5,7 @@ Type: incident
 Updated: 2026-07-25
 Next Action: file the external Codex Desktop robustness evidence separately if still needed
 Parent: work/maps/map-tool-shed-evolution.md
+Campaign: file-codex-desktop-robustness-issue
 
 ## Impact
 

@@ -1,9 +1,9 @@
 # Resolve Unclassified Work
 
-Status: working
+Status: complete
 Type: campaign
 Updated: 2026-08-14
-Next Action: execute the campaign completion gate
+Next Action: none
 Campaign ID: resolve-unclassified-work
 Outcome: Every unresolved work artifact is associated with a campaign, explicitly standalone or excluded with a reason, or repaired so it no longer signals unresolved work.
 Depends On: none
@@ -11,8 +11,10 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: Campaign reconciliation reports zero unclassified unresolved artifacts and no missing_campaign findings.
-Completion Evidence: none
-Disposition: none
+Completion Evidence: Campaign reconciliation reported 5 unresolved artifacts, 4 explicit campaign associations, 1 standalone project map, 0 unclassified artifacts, and no missing_campaign findings; dependent campaigns were added to the owner queue with permission-bound work blocked.
+Completion Date: 2026-08-14
+Completion Order: 7
+Disposition: completed
 
 ## Request
 

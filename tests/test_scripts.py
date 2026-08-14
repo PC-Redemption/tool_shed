@@ -3595,6 +3595,119 @@ old Tool Shed guidance
             positions = [result.stderr.index(f"Tool Shed update: {phase}") for phase in phases]
             self.assertEqual(positions, sorted(positions))
 
+    def test_native_launcher_runtime_fallback_installs_and_updates_workspaces(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            fallback_bin = root / "fallback runtime"
+            fallback_bin.mkdir()
+            git_executable = shutil.which("git")
+            self.assertIsNotNone(git_executable)
+
+            if os.name == "nt":
+                shell_executable = shutil.which("pwsh") or shutil.which("powershell")
+                if shell_executable is None:
+                    self.skipTest("PowerShell is unavailable")
+                (fallback_bin / "python.cmd").write_text(
+                    f'@echo off\r\n"{sys.executable}" %*\r\n',
+                    encoding="utf-8",
+                    newline="",
+                )
+                (fallback_bin / "git.cmd").write_text(
+                    f'@echo off\r\n"{git_executable}" %*\r\n',
+                    encoding="utf-8",
+                    newline="",
+                )
+                launcher = [
+                    shell_executable,
+                    "-NoProfile",
+                    "-ExecutionPolicy",
+                    "Bypass",
+                    "-File",
+                    str(ROOT / "scripts" / "update-tool-shed.ps1"),
+                ]
+                self.assertIsNone(shutil.which("py", path=str(fallback_bin)))
+            else:
+                dirname_executable = shutil.which("dirname")
+                self.assertIsNotNone(dirname_executable)
+                for name, executable in (
+                    ("python", sys.executable),
+                    ("git", git_executable),
+                    ("dirname", dirname_executable),
+                ):
+                    (fallback_bin / name).symlink_to(executable)
+                launcher = ["/bin/sh", str(ROOT / "scripts" / "update-tool-shed.sh")]
+                self.assertIsNone(shutil.which("python3", path=str(fallback_bin)))
+
+            self.assertIsNotNone(shutil.which("python", path=str(fallback_bin)))
+            environment = dict(os.environ)
+            environment["PATH"] = str(fallback_bin)
+            environment["CODEX_HOME"] = str(root / "codex home")
+
+            for expected_mode in ("new-installation", "existing-update"):
+                with self.subTest(mode=expected_mode):
+                    case_root = root / expected_mode
+                    case_root.mkdir()
+                    release = self.create_test_release(case_root)
+                    if expected_mode == "existing-update":
+                        workspace = self.create_update_workspace(case_root)
+                    else:
+                        workspace = case_root / "new workspace with spaces"
+                        workspace.mkdir()
+                        self.init_repository(
+                            workspace,
+                            "/tool_shed/\n/tool_shed.backup-*.tar\n",
+                        )
+                        (workspace / "README.md").write_text(
+                            "project\n", encoding="utf-8"
+                        )
+                        subprocess.run(
+                            ["git", "config", "user.name", "Tool Shed Tests"],
+                            cwd=workspace,
+                            check=True,
+                        )
+                        subprocess.run(
+                            ["git", "config", "user.email", "tests@example.invalid"],
+                            cwd=workspace,
+                            check=True,
+                        )
+                        subprocess.run(["git", "add", "."], cwd=workspace, check=True)
+                        subprocess.run(
+                            ["git", "commit", "-q", "-m", "Workspace"],
+                            cwd=workspace,
+                            check=True,
+                        )
+
+                    result = subprocess.run(
+                        [
+                            *launcher,
+                            "--workspace",
+                            str(workspace),
+                            "--repository",
+                            str(release),
+                            "--json",
+                        ],
+                        cwd=workspace,
+                        text=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        check=True,
+                        env=environment,
+                    )
+                    payload = json.loads(result.stdout)
+
+                    self.assertEqual(payload["mode"], expected_mode)
+                    self.assertEqual(payload["state"], "installed")
+                    self.assertEqual(payload["installed_version"], "9.8.7")
+                    self.assertTrue((workspace / "tool_shed" / "SHED_VERSION.json").is_file())
+                    if expected_mode == "existing-update":
+                        self.assertTrue(payload["work_preserved"])
+                        self.assertEqual(
+                            (workspace / "work" / "operator-data.txt").read_text(
+                                encoding="utf-8"
+                            ),
+                            "preserve exactly\n",
+                        )
+
     def test_snapshot_updater_times_out_release_validation_before_mutation(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

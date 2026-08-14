@@ -2,9 +2,10 @@
 
 Status: active
 Type: ticket
-Updated: 2026-08-09
-Next Action: exercise launcher runtime fallback against disposable Windows and Linux workspaces
+Updated: 2026-08-14
+Next Action: run the native Windows launcher fallback test through GitHub Actions after an authorized push
 Parent: work/maps/map-tool-shed-evolution.md
+Campaign: complete-portable-verified-installer
 
 ## Problem
 
@@ -49,6 +50,12 @@ against disposable new-install and existing-update workspaces.
 The v0.12.1 qualification passed GitHub Actions on Windows and Ubuntu with Python 3.11 and current
 Python 3.x, and a real v0.10.3 embedded updater upgraded a disposable workspace to live v0.12.1.
 See `work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md`.
+
+On 2026-08-14, the new native-launcher fallback test passed locally on Linux for both a disposable
+new installation and an existing update with `python3` removed from `PATH`. The complete Linux
+validator passed all 107 tests. The same test selects the PowerShell launcher and removes `py` from
+`PATH` on Windows; its native Windows result remains pending an authorized push and GitHub Actions
+run.
 
 Source context: GitHub PR #3, `agent/improve-tool-shed-install`. Do not copy its
 obsolete `0.1.1` version metadata or main-branch installation behavior.

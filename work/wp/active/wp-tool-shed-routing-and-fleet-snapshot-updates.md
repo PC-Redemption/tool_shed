@@ -7,6 +7,7 @@ Next Action: obtain explicit approval before the first guarded mass update
 
 Project Map: work/maps/map-tool-shed-evolution.md
 Canonical Truth: README.md; docs/fleet-snapshot-updates.md; skills/tool-shed/SKILL.md
+Campaign: guarded-fleet-snapshot-update
 
 ## Current Context
 

@@ -7,13 +7,64 @@
       "disposition": "none",
       "next_action": "execute the campaign completion gate",
       "parent": null,
-      "path": "work/00-campaigns/active/resolve-unclassified-work.md",
+      "path": "work/00-campaigns/active/complete-portable-verified-installer.md",
       "produces": null,
       "project_map": null,
       "status": "working",
       "superseded_by": null,
       "supersedes": null,
-      "title": "Resolve Unclassified Work",
+      "title": "Complete Portable Verified Tool Shed Installer",
+      "type": "campaign",
+      "updated": "2026-08-14"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": "none",
+      "next_action": "resolve blocker or decision: Awaiting approved longitudinal or multi-workspace measurement targets and separate profiling authorization.",
+      "parent": null,
+      "path": "work/00-campaigns/active/evaluate-workspace-performance-collector.md",
+      "produces": null,
+      "project_map": null,
+      "status": "blocked",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Evaluate Workspace Performance Collector",
+      "type": "campaign",
+      "updated": "2026-08-14"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": "none",
+      "next_action": "resolve blocker or decision: Awaiting operator approval of the external issue destination and exact sanitized evidence to publish.",
+      "parent": null,
+      "path": "work/00-campaigns/active/file-codex-desktop-robustness-issue.md",
+      "produces": null,
+      "project_map": null,
+      "status": "blocked",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "File Codex Desktop Robustness Issue",
+      "type": "campaign",
+      "updated": "2026-08-14"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": "none",
+      "next_action": "resolve blocker or decision: Awaiting explicit approval of the exact fleet target manifest before any snapshot apply.",
+      "parent": null,
+      "path": "work/00-campaigns/active/guarded-fleet-snapshot-update.md",
+      "produces": null,
+      "project_map": null,
+      "status": "blocked",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Guarded Fleet Snapshot Update",
       "type": "campaign",
       "updated": "2026-08-14"
     },
@@ -116,6 +167,23 @@
       "superseded_by": null,
       "supersedes": null,
       "title": "Reconcile whole-work campaign coverage",
+      "type": "campaign",
+      "updated": "2026-08-14"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": "completed",
+      "next_action": "none",
+      "parent": null,
+      "path": "work/00-campaigns/completed/resolve-unclassified-work.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Resolve Unclassified Work",
       "type": "campaign",
       "updated": "2026-08-14"
     },
@@ -341,7 +409,7 @@
       "updated": "2026-08-09"
     },
     {
-      "campaign": null,
+      "campaign": "file-codex-desktop-robustness-issue",
       "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
@@ -375,11 +443,11 @@
       "updated": "2026-08-09"
     },
     {
-      "campaign": null,
-      "campaign_reason": null,
+      "campaign": "standalone",
+      "campaign_reason": "coordination surface only; executable follow-ups are tracked by their own owner campaigns",
       "canonical_truth": null,
       "disposition": null,
-      "next_action": "exercise launcher runtime fallback in disposable Windows and Linux workspaces",
+      "next_action": "run the native Windows launcher fallback test through GitHub Actions after an authorized push",
       "parent": null,
       "path": "work/maps/map-tool-shed-evolution.md",
       "produces": null,
@@ -426,11 +494,11 @@
       "updated": "2026-08-09"
     },
     {
-      "campaign": null,
+      "campaign": "evaluate-workspace-performance-collector",
       "campaign_reason": null,
       "canonical_truth": null,
       "disposition": "planned",
-      "next_action": "implement the local profiler defined in work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md",
+      "next_action": "gather approved longitudinal or multi-workspace measurements before deciding whether a separate collector is justified",
       "parent": "work/maps/map-tool-shed-evolution.md",
       "path": "work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md",
       "produces": "work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md",
@@ -579,11 +647,11 @@
       "updated": "2026-08-13"
     },
     {
-      "campaign": null,
+      "campaign": "complete-portable-verified-installer",
       "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
-      "next_action": "exercise launcher runtime fallback against disposable Windows and Linux workspaces",
+      "next_action": "run the native Windows launcher fallback test through GitHub Actions after an authorized push",
       "parent": "work/maps/map-tool-shed-evolution.md",
       "path": "work/tickets/ticket-portable-verified-tool-shed-installer.md",
       "produces": null,
@@ -593,7 +661,7 @@
       "supersedes": null,
       "title": "Ticket: Portable Verified Tool Shed Installer",
       "type": "ticket",
-      "updated": "2026-08-09"
+      "updated": "2026-08-14"
     },
     {
       "campaign": null,
@@ -613,7 +681,7 @@
       "updated": "2026-07-24"
     },
     {
-      "campaign": null,
+      "campaign": "guarded-fleet-snapshot-update",
       "campaign_reason": null,
       "canonical_truth": "README.md; docs/fleet-snapshot-updates.md; skills/tool-shed/SKILL.md",
       "disposition": null,
@@ -758,8 +826,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 4,
-    "completed_or_decided_artifacts": 38,
-    "total_artifacts": 44
+    "active_artifacts": 7,
+    "completed_or_decided_artifacts": 39,
+    "total_artifacts": 48
   }
 }
