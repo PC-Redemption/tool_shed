@@ -1,0 +1,173 @@
+# Tool Shed AI Command Reference
+
+Tool Shed commands are prompts for a workspace-capable AI agent. They are not shell commands and
+there is no separate Tool Shed server. Put one route at the start of the request; it applies only
+to that request.
+
+Use this page for the complete prompt inventory. Use the
+[operator guide](operator-guide.md) for workflows and examples, and use `--help` on the underlying
+Python scripts for their CLI arguments.
+
+## Syntax
+
+```text
+ts: <request>
+```
+
+The `ts:` prefix routes the remainder of the request to the workspace-local Tool Shed. It does not
+carry into the next message. A natural-language request may combine planning with an execution
+endpoint, for example:
+
+```text
+ts: plan the documentation refresh, then work3
+```
+
+Routes never bypass repository policy, safety controls, credentials, protected-environment
+approvals, or the authority stated in the request.
+
+## Help And Discovery
+
+| Prompt | Usage |
+| --- | --- |
+| `ts: help` | Return a concise use-case menu. Read-only unless the same request explicitly asks for a change. |
+| `ts: commands` | Return the complete command groups and usage from this reference. Read-only. |
+| `ts: help all` | Alias for the complete command reference. Read-only. |
+| `ts: help <topic-or-command>` | Explain the named workflow or route with relevant examples. Read-only. |
+| `ts: discuss <topic>` | Explore the outcome, constraints, assumptions, unknowns, and smallest useful next route without modifying workspace artifacts. |
+
+`discussion: <topic>` is also accepted as an informal, read-only discussion signal.
+
+## Execution Endpoints
+
+The numbered levels are cumulative stopping points. They do not make a Direct request more
+complex or grant authority outside the stated goal.
+
+| Prompt | Stop after |
+| --- | --- |
+| `ts:work1 <goal>` | Implement, run the quickest meaningful check, and create a scoped local checkpoint commit. Do not deploy. |
+| `ts:work2 <goal>` | Perform work1, deploy to the configured work environment, and run focused browser and changed-behavior checks. |
+| `ts:work3 [scope]` | Fully validate and build the accumulated candidate, update the work environment when relevant, and freeze it locally. |
+| `ts:work4 [scope]` | Perform work3, then push without intentionally promoting production. |
+| `ts:work5 [scope]` | Qualify, push, release or promote production, and verify the production target. |
+
+Readable aliases:
+
+| Alias | Equivalent route |
+| --- | --- |
+| `ts:work <goal>` | `ts:work2 <goal>` |
+| `ts:freeze [scope]` | `ts:work3 [scope]` |
+| `ts:push [scope]` | `ts:work4 [scope]` |
+| `ts:ship <goal>` | `ts:work5 <goal>` |
+
+Validation-only route:
+
+```text
+ts:check <spot|focused|full|release>
+```
+
+This validates only. It does not implement, commit, push, deploy, or release.
+
+Projects may define `work/tool-shed.yaml` with `work_model: combined` or `work_model: split`.
+Combined work and production targets mean work2 or work3 may affect the live site. Split mode
+reserves production promotion for work5.
+
+## Owner Campaign Queue
+
+Durable owner-facing state lives under `work/00-campaigns/`.
+
+| Prompt | Usage |
+| --- | --- |
+| `ts: status` | Show and validate the active owner capsule: last completed, working now, next, blockers, decisions, and detours. |
+| `ts: queue` | Alias for `ts: status`. |
+| `ts: completed` | Summarize recent verified campaign completions. |
+| `ts: next` | Select and execute only the first ready campaign under its recorded work level and natural coordination. |
+| `ts: add <idea>` | Check active, deferred, and completed work for overlap or direction conflicts, then add the approved campaign using the current state token. |
+| `ts: defer <campaign>` | Move active work to deferred with a reason and reactivation condition. |
+| `ts: abandon <campaign>` | Preserve cancelled or superseded work with a disposition and replacement when applicable. |
+
+Blocked work remains active. Queue mutations reject stale state and do not silently reorder
+ambiguous priorities. Campaign completion requires its explicit completion gate and applicable
+verification.
+
+## Q&A Inbox
+
+```text
+ts:ask
+```
+
+Read actionable content from canonical `work/01-q&a/ask.txt`, using legacy
+`work/q&a/ask.txt` only as a pre-migration fallback. The agent does not merge conflicting inboxes
+or move, clear, rewrite, or delete inbox content without explicit authorization. Inbox transport
+does not change the request's natural coordination level.
+
+## Version And Update Status
+
+| Prompt | Usage |
+| --- | --- |
+| `ts: version` | Verify the local Tool Shed snapshot and report its version without network access. |
+| `ts: check for updates` | Verify locally, compare with the canonical manifest, and report the version relation. Read-only. |
+| `ts: update status` | Alias for `ts: check for updates`. Read-only. |
+
+An update-status check does not authorize replacement. Ask explicitly to install or update Tool
+Shed when mutation is intended.
+
+## Codex Reasoning Maintenance
+
+These optional routes apply only to Codex:
+
+| Prompt | Usage |
+| --- | --- |
+| `ts: refresh reasoning catalog` | Refresh the account-aware local model/effort catalog. |
+| `ts: reasoning status` | Inspect the local catalog without network access. |
+| `ts: recommend reasoning <task>` | Refresh the catalog and recommend a concrete advertised model/effort pair for the task. |
+
+Ordinary Tool Shed requests do not refresh or require this catalog.
+
+## Artifact And Workspace Requests
+
+Artifact operations use natural language after `ts:` rather than a rigid subcommand parser. Common
+request forms are:
+
+```text
+ts: orient me
+ts: choose the smallest artifact for this: <need>
+ts: create a checklist for <goal>
+ts: create a ticket for <behavior change>
+ts: plan <multi-step outcome>
+ts: map the active workstreams
+ts: create a time-boxed spike for <unknown>
+ts: record <decision> as an ADR
+ts: create a rollback runbook
+ts: review work state
+ts: complete work/wp/active/<workpackage>.md
+ts: onboard this existing project
+ts: install Tool Shed in this workspace
+ts: update Tool Shed in this workspace
+```
+
+The agent chooses the smallest sufficient artifact: checklist for bounded known steps, ticket for
+a specific behavior change, project map for multiple workstreams, workpackage for a multi-step
+transformation, ADR for a durable decision, runbook for a repeatable operation, incident for
+break/fix learning, spike for bounded uncertainty, inventory for classification, and decision
+matrix for visible tradeoffs.
+
+## Related Shell Utilities
+
+The AI routes normally operate these deterministic scripts from the workspace-local Tool Shed:
+
+```text
+scripts/campaign_queue.py
+scripts/check_shed_version.py
+scripts/check_stale_paths.py
+scripts/complete_workpackage.py
+scripts/install_into_workspace.py
+scripts/new_artifact.py
+scripts/read_ask_inbox.py
+scripts/review_work_state.py
+scripts/update_snapshot.py
+scripts/update_work_index.py
+scripts/workspace_preflight.py
+```
+
+Run `python3 <script> --help` for the exact shell interface. The scripts are the automation layer;
+the `ts:` prompts are the operator-facing AI interface.

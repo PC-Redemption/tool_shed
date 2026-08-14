@@ -9,6 +9,7 @@ Updated: 2026-08-14
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/completed/owner-facing-campaign-queues.md](work/00-campaigns/completed/owner-facing-campaign-queues.md) | campaign | complete | 2026-08-14 | none | - |
+| [work/checklists/checklist-refresh-readme-and-ai-command-reference.md](work/checklists/checklist-refresh-readme-and-ai-command-reference.md) | checklist | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/checklists/checklist-tool-shed-skill-field-test.md](work/checklists/checklist-tool-shed-skill-field-test.md) | checklist | complete | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/decisions/decision-codex-skill-readiness.md](work/decisions/decision-codex-skill-readiness.md) | decision-matrix | decided | 2026-07-05 | continue using skill on real projects; plugin packaging deferred | work/maps/map-tool-shed-foundation.md |
 | [work/decisions/decision-human-planning-mechanisms-for-tool-shed.md](work/decisions/decision-human-planning-mechanisms-for-tool-shed.md) | decision-matrix | decided | 2026-08-09 | implement the evidence-response loop and conditional prospective failure check | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
@@ -22,7 +23,7 @@ Updated: 2026-08-14
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | contained; repository trigger mitigated, desktop defect remains external | 2026-07-25 | file the external Codex Desktop robustness evidence separately if still needed | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
-| [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | active | 2026-08-14 | review the unreleased 0.14.0 candidate before any work3 or release request | - |
+| [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | active | 2026-08-14 | exercise launcher runtime fallback in disposable Windows and Linux workspaces | - |
 | [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
 | [work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md](work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md) | spike | complete | 2026-08-09 | none | work/maps/map-tool-shed-evolution.md |
 | [work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md](work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md) | spike | complete | 2026-08-03 | implement the local profiler defined in work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md | work/maps/map-tool-shed-evolution.md |
@@ -53,6 +54,6 @@ Updated: 2026-08-14
 
 ## Summary
 
-- Total artifacts: 36
+- Total artifacts: 37
 - Active artifacts: 3
-- Completed/decided artifacts: 31
+- Completed/decided artifacts: 32

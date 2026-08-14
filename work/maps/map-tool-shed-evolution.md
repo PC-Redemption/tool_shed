@@ -3,7 +3,7 @@
 Status: active
 Type: project-map
 Updated: 2026-08-14
-Next Action: review the unreleased 0.14.0 candidate before any work3 or release request
+Next Action: exercise launcher runtime fallback in disposable Windows and Linux workspaces
 
 ## Purpose
 
@@ -23,6 +23,7 @@ flowchart TD
   A --> L[Direct coding request mitigation]
   A --> M[Numbered execution levels and environment models]
   A --> N[Owner-facing campaign queues and lifecycle]
+  A --> O[Operator documentation and command reference]
   I --> J[Complete: evidence-responsive execution guidance]
   B --> D[Ground: validate review_work_state.py]
   C --> E[Gate: explicit approval before fleet update]
@@ -46,16 +47,16 @@ flowchart TD
 
 1,000 ft:
 
-- Active workpackages:
-  `work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md` and
-  `work/wp/active/wp-tool-shed-campaign-entry-improvements.md`.
+- Active workpackage:
+  `work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md`.
 - Completed workpackages include
-  `work/wp/completed/wp-generated-evidence-safety-and-migration.md`.
+  `work/wp/completed/wp-generated-evidence-safety-and-migration.md` and
+  `work/wp/completed/wp-tool-shed-campaign-entry-improvements.md`.
 - Completed workpackages: `work/wp/completed/wp-work-artifact-reconciliation.md`.
 - Active ticket:
   `work/tickets/ticket-portable-verified-tool-shed-installer.md`.
 - Active execution-level ticket:
-  `work/tickets/ticket-add-numbered-work-levels-and-environment-models.md`.
+  none; numbered execution levels are complete.
 - Completed Direct-route mitigation:
   `work/tickets/ticket-mitigate-tool-shed-churn-for-direct-coding-requests.md`.
 - Completed performance ticket:
@@ -84,8 +85,9 @@ Ground:
 | Evidence-responsive execution | complete | `work/wp/completed/wp-evidence-responsive-tool-shed-execution.md` | published v0.11.0, exact installed-client parity, and fresh-task smoke | none |
 | Campaign entry, token efficiency, and provider portability | complete | `work/wp/completed/wp-tool-shed-campaign-entry-improvements.md` | published v0.12.0, exact installed-client parity, and fresh-task smoke | run non-Codex runtime scenarios before increasing capability claims |
 | Direct coding request mitigation | complete | `work/tickets/ticket-mitigate-tool-shed-churn-for-direct-coding-requests.md` | issue #21; existing minimum-sufficient coordination and campaign routes | none |
-| Numbered execution levels and environment models | complete | `work/tickets/ticket-add-numbered-work-levels-and-environment-models.md` | existing Direct-route contract and campaign routing | publish v0.13.0, synchronize installed client, and run a fresh-task routing smoke check |
+| Numbered execution levels and environment models | complete | `work/tickets/ticket-add-numbered-work-levels-and-environment-models.md` | existing Direct-route contract and campaign routing | none |
 | Owner-facing campaign queues and lifecycle | complete | `work/wp/completed/wp-owner-facing-campaign-queues-and-lifecycle-management.md` | approved `work/00-campaigns/` location and retained transient inbox | none |
+| Operator documentation and AI command reference | complete | `work/checklists/checklist-refresh-readme-and-ai-command-reference.md` | released owner campaign and ordered Q&A behavior | none |
 
 ## Dependency Notes
 
@@ -102,8 +104,8 @@ Ground:
 
 You are here:
 
-- Generated-evidence safeguards are implemented and validated across representative
-  workspace profiles.
+- The canonical AI command reference and refreshed operator documentation are qualified for
+  release.
 
 Do next:
 
@@ -131,6 +133,7 @@ Do next:
 - [x] Mitigate Direct-route churn and verify ordinary, `ts:ask`, and ship-adjacent fixtures.
 - [x] Implement and validate numbered work levels with combined and split environment models.
 - [x] Implement and work2-verify owner-facing campaign queues under `work/00-campaigns/`.
+- [x] Publish a complete AI command reference and refresh the README/operator guide.
 
 Avoid for now:
 
@@ -155,6 +158,7 @@ Avoid for now:
   `work/tickets/ticket-mitigate-tool-shed-churn-for-direct-coding-requests.md`,
   `work/tickets/ticket-add-numbered-work-levels-and-environment-models.md`
 - Checklists:
+- `work/checklists/checklist-refresh-readme-and-ai-command-reference.md`
 - Spikes:
 - `work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md`
 - `work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md`

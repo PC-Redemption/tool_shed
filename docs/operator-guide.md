@@ -16,6 +16,16 @@ The active agent should read this guide and return a concise menu of relevant us
 Help is read-only: it must not create or change artifacts unless the same request explicitly asks
 for a change.
 
+For the complete prompt inventory rather than a focused menu, type:
+
+```text
+ts: commands
+ts: help all
+```
+
+Both routes read the [AI command reference](commands.md). Use `ts: help <topic-or-command>` for a
+focused explanation and examples.
+
 Ask for focused help with:
 
 ```text
@@ -228,8 +238,9 @@ active. Deferral and abandonment require explicit lifecycle reasons.
 
 Use `python3 tool_shed/scripts/campaign_queue.py --workspace . migrate-preview --json` to inspect
 Markdown requests under `work/01-q&a/` or legacy `work/q&a/` and actionable inbox lines. Preview never writes, and
-installation never migrates or clears the inbox. Applying a migration requires a separately
-approved exact manifest.
+installation never converts those requests into campaigns or clears the canonical inbox. Applying
+a campaign conversion requires a separately approved exact manifest. The filesystem migration of
+legacy Q&A folders is a distinct installer operation described below.
 
 ## Q&A Inbox
 

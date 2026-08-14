@@ -853,6 +853,7 @@ for raw in sys.stdin:
 
     def test_operator_help_is_packaged_and_routed(self) -> None:
         guide = (ROOT / "docs" / "operator-guide.md").read_text(encoding="utf-8")
+        commands = (ROOT / "docs" / "commands.md").read_text(encoding="utf-8")
         skill = (ROOT / "skills" / "tool-shed" / "SKILL.md").read_text(encoding="utf-8")
         skill_bundle = skill + "\n" + "\n".join(
             path.read_text(encoding="utf-8")
@@ -861,14 +862,24 @@ for raw in sys.stdin:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
 
         self.assertIn("ts: help", guide)
+        self.assertIn("ts: commands", guide)
+        self.assertIn("ts: help all", guide)
         self.assertIn("ts:ask", guide)
         self.assertIn("## Common Use Cases", guide)
         self.assertIn("docs/operator-guide.md", skill_bundle)
+        self.assertIn("docs/commands.md", skill_bundle)
+        self.assertIn("ts: commands", commands)
+        self.assertIn("ts:work1", commands)
+        self.assertIn("ts:work5", commands)
+        self.assertIn("ts: status", commands)
+        self.assertIn("ts: version", commands)
+        self.assertIn("ts:ask", commands)
         self.assertIn("01-q&a/ask.txt", skill_bundle)
         self.assertIn("scripts/read_ask_inbox.py", skill_bundle)
         self.assertTrue((ROOT / "scripts" / "read_ask_inbox.py").is_file())
         self.assertIn("artifacts for a help-only request.", skill_bundle)
         self.assertIn("[Tool Shed operator guide](docs/operator-guide.md)", readme)
+        self.assertIn("[AI command reference](docs/commands.md)", readme)
         self.assertIn("ts: version", skill_bundle)
         self.assertIn("ts: check for updates", guide)
         self.assertIn("## Reasoning Preflight", skill)

@@ -36,12 +36,12 @@ Use `tool_shed` when a project benefits from consistent structure for:
 
 ## What This Is Not
 
-`tool_shed` is not:
+The reusable `tool_shed/` machinery directory is not:
 
 - a server
 - a database
 - a task tracker
-- a place for active project state
+- a place for active project state (durable active state belongs under root `work/`)
 - a place for app code
 - a replacement for project docs
 
@@ -72,9 +72,19 @@ When installed into a project workspace:
 project/
   tool_shed/
   work/
+    00-campaigns/
+      active-queue.md
+      completed-queue.md
+      active/
+      completed/
+      deferred/
+      abandoned/
+    01-q&a/
+      ask.txt
     README.md
     index.md
     index.json
+    tool-shed.yaml  # optional environment model
     maps/
     wp/
       active/
@@ -225,18 +235,20 @@ Operator help and use cases:
 
 ```text
 ts: help
+ts: commands
 ts: help spikes
 ts: help existing projects
 ts: discuss <topic>
 ts: status
 ts: next
-ts:work2 <goal>
-ts:freeze [scope]
-ts:ship <goal>
+ts:work1 <goal> ... ts:work5 <goal>
+ts:check <spot|focused|full|release>
 ts:ask
 ```
 
-See the [Tool Shed operator guide](docs/operator-guide.md) for the full use-case menu.
+See the [AI command reference](docs/commands.md) for every defined route, alias, and authority
+boundary. See the [Tool Shed operator guide](docs/operator-guide.md) for workflow explanations and
+examples.
 
 `ts: discuss <topic>` is a non-mutating discovery route. A leading `discussion:` is an informal
 read-only campaign entry. Discussion surfaces a compact campaign seed and the smallest useful next
@@ -449,6 +461,9 @@ Request prefixes are authoritative for one request only:
 - `ws:` targets files, code, tests, Tool Shed plans, and runtime work in the current workspace.
 
 Never carry a prefix into a later request. A request uses at most one leading route prefix.
+
+For a complete operator-facing inventory, use `ts: commands` or read
+[docs/commands.md](docs/commands.md).
 
 ```text
 use tool_shed and orient me

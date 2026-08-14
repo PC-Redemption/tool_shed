@@ -1,7 +1,7 @@
 # Tool Shed campaign routes
 
-Read this reference for numbered work levels, `ts:ship`, campaign execution, `ts: help`, and
-`ts:ask`.
+Read this reference for numbered work levels, `ts:ship`, campaign execution, `ts: help`,
+`ts: commands`, and `ts:ask`.
 
 ## Numbered Work Levels
 
@@ -144,8 +144,11 @@ End every Tool Shed campaign response with exactly one verdict:
 
 ## Help Route
 
-For `ts: help` or `ts: help <topic>`, read `docs/operator-guide.md` and return a concise relevant
-menu with example prompts. Do not create or modify artifacts for a help-only request.
+For `ts: commands` or `ts: help all`, read `docs/commands.md` and return the complete command groups
+and usage. For `ts: help`, read `docs/operator-guide.md` and return a concise use-case menu. For
+`ts: help <topic-or-command>`, read the relevant section of `docs/commands.md` and
+`docs/operator-guide.md`, then return focused usage and examples. Do not create or modify
+artifacts for a help-only request.
 
 ## Q&A Inbox Route
 
