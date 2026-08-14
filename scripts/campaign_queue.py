@@ -655,6 +655,20 @@ def migration_preview(workspace: Path) -> dict[str, object]:
     }
 
 
+def dangler_resolution_visibility(
+    workspace: Path,
+    campaigns: dict[str, Campaign],
+    order: list[str],
+) -> dict[str, object] | None:
+    # Import lazily because reconciliation builds on the queue lifecycle primitives in this module.
+    import reconcile_campaign_queue
+
+    whole_work = reconcile_campaign_queue.discover_whole_work(workspace, campaigns)
+    return reconcile_campaign_queue.dangler_resolution_proposal(
+        workspace, campaigns, order, whole_work
+    )
+
+
 def status_payload(workspace: Path) -> dict[str, object]:
     campaigns = load_all(workspace)
     order = queue_order(workspace)
@@ -679,16 +693,24 @@ def status_payload(workspace: Path) -> dict[str, object]:
         if item.fields.get("Detour For", "none") != "none"
         or item.fields.get("Return To", "none") != "none"
     ]
+    dangler_resolution = dangler_resolution_visibility(workspace, campaigns, order)
+    next_campaign = ready[0].campaign_id if ready else None
     return {
         "state_token": state_token(workspace),
         "active_order": order,
         "last_completed": completed[0].campaign_id if completed else None,
         "working": [item.campaign_id for item in working],
-        "next": ready[0].campaign_id if ready else None,
+        "next": next_campaign or (
+            str(dangler_resolution["campaign_id"]) if dangler_resolution else None
+        ),
+        "next_source": "campaign-queue" if next_campaign else (
+            "campaign-reconciliation" if dangler_resolution else None
+        ),
         "blocked": [item.campaign_id for item in blocked],
         "decisions_needed": [item.campaign_id for item in decisions],
         "detours": [item.campaign_id for item in detours],
         "completed": [item.campaign_id for item in completed],
+        "dangler_resolution": dangler_resolution,
         "findings": validate(workspace),
     }
 
@@ -754,7 +776,8 @@ def main() -> int:
             payload = {"valid": not findings, "findings": findings, "state_token": state_token(workspace)}
         elif args.command == "next":
             campaigns = load_all(workspace)
-            ordered = [campaigns[item] for item in queue_order(workspace)]
+            order = queue_order(workspace)
+            ordered = [campaigns[item] for item in order]
             candidate = next((item for item in ordered if item.status == "working"), None)
             if candidate is None:
                 candidate = next(
@@ -766,7 +789,21 @@ def main() -> int:
                     ),
                     None,
                 )
-            payload = None if candidate is None else {"campaign_id": candidate.campaign_id, "title": candidate.title, "status": candidate.status, "path": candidate.path.relative_to(workspace).as_posix()}
+            dangler_resolution = dangler_resolution_visibility(workspace, campaigns, order)
+            if candidate is None and dangler_resolution:
+                payload = dict(dangler_resolution)
+            elif candidate is None:
+                payload = None
+            else:
+                payload = {
+                    "campaign_id": candidate.campaign_id,
+                    "title": candidate.title,
+                    "status": candidate.status,
+                    "path": candidate.path.relative_to(workspace).as_posix(),
+                    "source": "campaign-queue",
+                }
+                if dangler_resolution:
+                    payload["dangler_resolution"] = dangler_resolution
         elif args.command == "completed":
             campaigns = load_all(workspace)
             completed = sorted(

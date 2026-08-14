@@ -36,6 +36,8 @@ RELATIONSHIP_FIELDS = ("Parent", "Project Map", "Depends On", "Produces", "Super
 WORK_PATH_RE = re.compile(r"(?<![\w/])(work/[A-Za-z0-9_./-]+\.md)")
 UNCHECKED_TASK_RE = re.compile(r"^\s*[-*]\s+\[ \]\s+", re.MULTILINE)
 MANIFEST_KIND = "tool-shed-campaign-reconciliation"
+DANGLER_CAMPAIGN_BASE_ID = "resolve-unclassified-work"
+DANGLER_CAMPAIGN_TITLE = "Resolve Unclassified Work"
 
 
 def without_updated(text: str) -> str:
@@ -377,10 +379,114 @@ def discover_whole_work(
     }
 
 
-def manifest_for_report(state_token: str, repair_order: list[str], changes_required: bool) -> dict[str, Any]:
+def _is_dangler_campaign_id(campaign_id: str) -> bool:
+    return campaign_id == DANGLER_CAMPAIGN_BASE_ID or bool(
+        re.fullmatch(rf"{re.escape(DANGLER_CAMPAIGN_BASE_ID)}-[2-9][0-9]*", campaign_id)
+    )
+
+
+def _next_dangler_campaign_id(campaigns: dict[str, campaign_queue.Campaign]) -> str:
+    if DANGLER_CAMPAIGN_BASE_ID not in campaigns:
+        return DANGLER_CAMPAIGN_BASE_ID
+    suffix = 2
+    while f"{DANGLER_CAMPAIGN_BASE_ID}-{suffix}" in campaigns:
+        suffix += 1
+    return f"{DANGLER_CAMPAIGN_BASE_ID}-{suffix}"
+
+
+def dangler_resolution_proposal(
+    workspace: Path,
+    campaigns: dict[str, campaign_queue.Campaign],
+    active_order: list[str],
+    whole_work: dict[str, Any],
+) -> dict[str, Any] | None:
+    paths = sorted(
+        record["path"]
+        for record in whole_work["artifacts"]
+        if record["unresolved"] and not record["campaign"]
+    )
+    if not paths:
+        return None
+
+    active = sorted(
+        (
+            item
+            for item in campaigns.values()
+            if item.path.parent.name == "active"
+            and _is_dangler_campaign_id(item.campaign_id)
+        ),
+        key=lambda item: item.campaign_id,
+    )
+    if active:
+        item = active[0]
+        return {
+            "campaign_id": item.campaign_id,
+            "title": item.title,
+            "status": item.status,
+            "path": item.path.relative_to(workspace).as_posix(),
+            "unresolved_count": len(paths),
+            "unresolved_paths": paths,
+            "requires_manifest_approval": False,
+            "source": "campaign-reconciliation",
+            "next_action": item.fields.get("Next Action", "triage unresolved artifacts"),
+        }
+
+    campaign_id = _next_dangler_campaign_id(campaigns)
+    working_positions = [
+        index
+        for index, item_id in enumerate(active_order)
+        if item_id in campaigns and campaigns[item_id].status == "working"
+    ]
+    position = working_positions[0] + 2 if working_positions else 1
+    outcome = (
+        "Every unresolved work artifact is associated with a campaign, explicitly standalone "
+        "or excluded with a reason, or repaired so it no longer signals unresolved work."
+    )
+    gate = (
+        "Campaign reconciliation reports zero unclassified unresolved artifacts and no "
+        "missing_campaign findings."
+    )
+    request = (
+        "Triage each unresolved artifact. Associate it with the correct execution campaign, "
+        "mark it standalone or excluded with a reason, or repair stale completion state.\n\n"
+        "Unresolved artifacts:\n\n"
+        + "\n".join(f"- `{path}`" for path in paths)
+    )
+    operation = {
+        "op": "create_campaign",
+        "campaign_id": campaign_id,
+        "title": DANGLER_CAMPAIGN_TITLE,
+        "outcome": outcome,
+        "completion_gate": gate,
+        "request": request,
+        "position": position,
+    }
+    return {
+        "campaign_id": campaign_id,
+        "title": DANGLER_CAMPAIGN_TITLE,
+        "status": "proposed",
+        "path": None,
+        "unresolved_count": len(paths),
+        "unresolved_paths": paths,
+        "requires_manifest_approval": True,
+        "source": "campaign-reconciliation",
+        "reconciliation_state_token": whole_work_state_token(workspace),
+        "next_action": "run ts: reconcile campaigns and approve the exact manifest",
+        "manifest_operation": operation,
+    }
+
+
+def manifest_for_report(
+    state_token: str,
+    repair_order: list[str],
+    changes_required: bool,
+    dangler_resolution: dict[str, Any] | None,
+) -> dict[str, Any]:
     operations: list[dict[str, Any]] = []
     if changes_required:
         operations.append({"op": "repair_projections", "active_order": repair_order})
+    if dangler_resolution and dangler_resolution["requires_manifest_approval"]:
+        operations.append(dangler_resolution["manifest_operation"])
     return {
         "schema_version": 1,
         "kind": MANIFEST_KIND,
@@ -501,8 +607,11 @@ def inspect_queue(workspace: Path, stalled_days: int) -> dict[str, Any]:
     order_change_proposed = proposed_order != repair_order
     whole_work = discover_whole_work(workspace, campaigns)
     state_token = whole_work_state_token(workspace)
+    dangler_resolution = dangler_resolution_proposal(
+        workspace, campaigns, repair_order, whole_work
+    )
     reconciliation_manifest = manifest_for_report(
-        state_token, repair_order, changes_required
+        state_token, repair_order, changes_required, dangler_resolution
     )
     return {
         "schema_version": 2,
@@ -537,6 +646,7 @@ def inspect_queue(workspace: Path, stalled_days: int) -> dict[str, Any]:
         "scope_conflict": whole_work["scope_conflict"],
         "stale_completion": whole_work["stale_completion"],
         "unstructured_candidate": whole_work["unstructured_candidate"],
+        "dangler_resolution": dangler_resolution,
         "reconciliation_manifest": reconciliation_manifest,
         "changes_required": changes_required,
         "owner_action_required": bool(

@@ -77,13 +77,13 @@ Durable owner-facing state lives under `work/00-campaigns/`.
 
 | Prompt | Usage |
 | --- | --- |
-| `ts: status` | Show and validate the active owner capsule: last completed, working now, next, blockers, decisions, and detours. |
+| `ts: status` | Show and validate the active owner capsule, including any proposed Dangler Resolution campaign for unclassified work. |
 | `ts: queue` | Alias for `ts: status`. |
 | `ts: completed` | Summarize recent verified campaign completions. |
-| `ts: next` | Select and execute only the first ready campaign under its recorded work level and natural coordination. |
+| `ts: next` | Select the first ready campaign and also surface a Dangler Resolution proposal when reconciliation has unclassified work. |
 | `ts: add <idea>` | Check active, deferred, and completed work for overlap or direction conflicts, then add the approved campaign using the current state token. |
 | `ts: unblock <campaign>` | Return blocked work to queued state and clear its recorded decision; starting remains a separate transition. |
-| `ts: reconcile campaigns` | Inspect queue consistency and whole-`work/` campaign coverage, then propose execution order without writing. |
+| `ts: reconcile campaigns` | Inspect queue consistency and whole-`work/` coverage, proposing an exact-manifest Dangler Resolution campaign when unresolved artifacts are unclassified. |
 | `ts: defer <campaign>` | Move active work to deferred with a reason and reactivation condition. |
 | `ts: abandon <campaign>` | Preserve cancelled or superseded work with a disposition and replacement when applicable. |
 

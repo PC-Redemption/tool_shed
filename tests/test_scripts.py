@@ -2162,6 +2162,79 @@ Next Action: keep going
             self.assertEqual(deferred["campaign"], "later")
             self.assertTrue(report["owner_action_required"])
 
+    def test_dangler_resolution_is_proposed_and_visible_through_status_and_next(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+            ticket = workspace / "work" / "tickets" / "dangling.md"
+            ticket.parent.mkdir(parents=True)
+            ticket.write_text(
+                "# Dangling\n\nStatus: active\nType: ticket\nUpdated: 2026-08-14\n"
+                "Next Action: classify this work\n\n- [ ] resolve\n",
+                encoding="utf-8",
+            )
+
+            report = json.loads(
+                run_script(
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace), "--json"
+                ).stdout
+            )
+            proposal = report["dangler_resolution"]
+            self.assertEqual(proposal["campaign_id"], "resolve-unclassified-work")
+            self.assertEqual(proposal["status"], "proposed")
+            self.assertTrue(proposal["requires_manifest_approval"])
+            self.assertEqual(proposal["unresolved_paths"], ["work/tickets/dangling.md"])
+            self.assertEqual(
+                report["reconciliation_manifest"]["operations"][-1]["op"],
+                "create_campaign",
+            )
+            self.assertFalse(
+                (
+                    workspace
+                    / "work"
+                    / "00-campaigns"
+                    / "active"
+                    / "resolve-unclassified-work.md"
+                ).exists()
+            )
+
+            status = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+                ).stdout
+            )
+            self.assertEqual(status["next"], "resolve-unclassified-work")
+            self.assertEqual(status["next_source"], "campaign-reconciliation")
+            self.assertEqual(status["dangler_resolution"]["status"], "proposed")
+
+            next_item = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "next", "--json"
+                ).stdout
+            )
+            self.assertEqual(next_item["campaign_id"], "resolve-unclassified-work")
+            self.assertEqual(next_item["status"], "proposed")
+            self.assertTrue(next_item["requires_manifest_approval"])
+
+            manifest = workspace / "reconcile-manifest.json"
+            manifest.write_text(
+                json.dumps(report["reconciliation_manifest"]), encoding="utf-8"
+            )
+            run_script(
+                "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                "--apply", "--expect", report["state_token"],
+                "--manifest", str(manifest), "--json",
+            )
+            applied_status = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json"
+                ).stdout
+            )
+            self.assertEqual(applied_status["active_order"], ["resolve-unclassified-work"])
+            self.assertEqual(applied_status["next"], "resolve-unclassified-work")
+            self.assertEqual(applied_status["next_source"], "campaign-queue")
+            self.assertEqual(applied_status["dangler_resolution"]["status"], "queued")
+
     def test_campaign_reconciliation_manifest_applies_create_update_and_history_preserving_delete(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)

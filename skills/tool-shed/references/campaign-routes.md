@@ -111,10 +111,12 @@ campaign, but never moves, clears, or rewrites the inbox without explicit operat
 Use `python3 <shed>/scripts/campaign_queue.py --workspace <workspace>` for deterministic reads and
 mutations:
 
-- `ts: queue` and `ts: status`: run `status`, report the compact owner capsule and findings.
+- `ts: queue` and `ts: status`: run `status`, report the compact owner capsule, findings, and any
+  proposed Dangler Resolution campaign for unclassified unresolved work.
 - `ts: completed`: run `completed` and summarize recent verified outcomes.
-- `ts: next`: run `next`, then execute only the selected ready campaign under its natural
-  coordination and requested work level.
+- `ts: next`: run `next`, surface any Dangler Resolution proposal, then execute only a selected
+  active ready campaign under its natural coordination and requested work level. A proposed
+  campaign requires reconciliation-manifest approval before execution.
 - `ts: add <idea>`: compare with active, deferred, and completed IDs and content; report material
   overlap or direction conflicts; after resolving placement, run `add` with the current state token.
 - `ts: unblock <campaign>`: run `unblock` with the current state token; return blocked work to
@@ -122,7 +124,10 @@ mutations:
 - `ts: reconcile campaigns`: run `reconcile_campaign_queue.py` in its default read-only mode.
   Report queue consistency plus whole-`work/` coverage, exclusions, explicit campaign,
   `standalone`, and `excluded` associations, unresolved clusters, and the proposed execution
-  order. Apply only an exact approved JSON manifest with `--apply --expect TOKEN --manifest PATH`;
+  order. When unclassified unresolved artifacts exist without an active Dangler Resolution
+  campaign, include a deterministic campaign-creation proposal in the exact manifest so the work
+  remains visible through `status` and `next`. Apply only an exact approved JSON manifest with
+  `--apply --expect TOKEN --manifest PATH`;
   the token covers the complete scanned work surface. Never apply proposed order or ambiguous
   lifecycle decisions implicitly. Manifest delete semantics transition campaigns to completed,
   deferred, or abandoned history instead of removing them.
