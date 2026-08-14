@@ -65,9 +65,9 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 2,
   "notes": "Add owner-facing campaign queues and first-sorted Q&A inbox migration",
-  "release_commit": null,
+  "release_commit": "8977db035c0c93bc0b2f431f9a0462cf0c7fe4d7",
   "release_tag": "v0.14.0",
-  "released_at": null,
+  "released_at": "2026-08-14T13:06:40Z",
   "shed_version": "0.14.0",
   "updated_at": "2026-08-14"
 }
