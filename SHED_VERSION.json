@@ -68,9 +68,9 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
   "notes": "Automate whole-work dangling campaign resolution and qualify portable installer runtime fallback",
-  "release_commit": null,
+  "release_commit": "75af6ced4370ce3578f946e9aca9d09cef3bdd03",
   "release_tag": "v0.15.0",
-  "released_at": null,
+  "released_at": "2026-08-14T18:00:54Z",
   "shed_version": "0.15.0",
   "updated_at": "2026-08-14"
 }
