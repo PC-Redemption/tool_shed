@@ -47,7 +47,7 @@ complex or grant authority outside the stated goal.
 | --- | --- |
 | `ts:work1 <goal>` | Implement, run the quickest meaningful check, and create a scoped local checkpoint commit. Do not deploy. |
 | `ts:work2 <goal>` | Perform work1, deploy to the configured work environment, and run focused browser and changed-behavior checks. |
-| `ts:work3 [scope]` | Fully validate and build the accumulated candidate, update the work environment when relevant, and freeze it locally. |
+| `ts:work3 [scope]` | Review the accumulated coded work and create, read, update, or delete project documentation as needed so it matches the candidate; then fully validate and build, update the work environment when relevant, and freeze it locally. |
 | `ts:work4 [scope]` | Perform work3, then push without intentionally promoting production. |
 | `ts:work5 [scope]` | Qualify, push, release or promote production, and verify the production target. |
 
@@ -67,6 +67,10 @@ ts:check <spot|focused|full|release>
 ```
 
 This validates only. It does not implement, commit, push, deploy, or release.
+
+Work3 document changes stay within the requested candidate scope. Preserve unrelated owner
+documentation and historical records, and delete documentation only when the coded change makes it
+obsolete.
 
 Projects may define `work/tool-shed.yaml` with `work_model: combined` or `work_model: split`.
 Combined work and production targets mean work2 or work3 may affect the live site. Split mode

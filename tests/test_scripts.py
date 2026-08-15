@@ -1007,6 +1007,9 @@ for raw in sys.stdin:
             is_check = scenario["route"].startswith("ts:check ")
             with self.subTest(route=scenario["route"], model=scenario["model"]):
                 self.assertEqual(scenario["implement"], not is_check)
+                self.assertEqual(
+                    scenario["documentation_crud"], not is_check and level >= 3
+                )
                 self.assertEqual(scenario["focused_remote_check"], not is_check and level >= 2)
                 self.assertEqual(scenario["full_validation"], level >= 3)
                 self.assertEqual(scenario["push"], not is_check and level >= 4)
@@ -1046,6 +1049,21 @@ for raw in sys.stdin:
                     self.assertIn("work_model: split", guidance)
                     self.assertIn("automatically deploys production", guidance)
             self.assertTrue((workspace / "AGENTS.md").read_text(encoding="utf-8").startswith(owner_guidance))
+
+        documentation_contract = "create, read, update, or delete project documentation"
+        for relative in (
+            "README.md",
+            "docs/commands.md",
+            "docs/operator-guide.md",
+            "skills/tool-shed/references/campaign-routes.md",
+            "scripts/install_into_workspace.py",
+        ):
+            with self.subTest(work3_contract=relative):
+                content = " ".join((ROOT / relative).read_text(encoding="utf-8").split())
+                self.assertIn(
+                    documentation_contract,
+                    content,
+                )
 
     def test_ask_resolver_uses_canonical_content_only(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

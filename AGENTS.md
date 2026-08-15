@@ -102,7 +102,7 @@
 - Treat `ts:work1` through `ts:work5` as cumulative execution endpoints, independent of Direct, Guided, Coordinated, or Deep coordination.
 - `work1`: implement, run the quickest meaningful check, checkpoint only requested changes in a local commit, leave the worktree clean when unrelated prior changes permit, and stop without deployment.
 - `work2`: perform `work1`, deploy to the configured work environment, run focused browser and changed-behavior checks, checkpoint, and stop.
-- `work3`: fully validate and build the accumulated candidate, update and verify the work environment when relevant, freeze it locally, and stop.
+- `work3`: review the accumulated coded work and create, read, update, or delete project documentation as needed so it matches the candidate; then fully validate and build, update and verify the work environment when relevant, freeze it locally, and stop.
 - `work4`: perform `work3`, then push without intentionally releasing or promoting production.
 - `work5`: qualify, push, release or promote production, and verify the production target; this is equivalent to explicit `ts:ship`.
 - Aliases are `ts:work` = `work2`, `ts:freeze` = `work3`, `ts:push` = `work4`, and `ts:ship` = `work5`. `ts:check <spot|focused|full|release>` validates only and does not mutate source, Git, or environments.

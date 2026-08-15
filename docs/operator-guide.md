@@ -109,7 +109,7 @@ Use the same five levels in every workspace:
 | --- | --- |
 | `ts:work1 <goal>` | A minimally checked local checkpoint commit; no deployment. |
 | `ts:work2 <goal>` | Deployment to the configured work environment plus focused browser and changed-behavior checks. |
-| `ts:work3 [scope]` | Full applicable validation/build and a locally frozen candidate. |
+| `ts:work3 [scope]` | Documentation aligned with the accumulated coded work through scoped create, read, update, or delete operations, followed by full applicable validation/build and a locally frozen candidate. |
 | `ts:work4 [scope]` | The frozen source is pushed without intentional production promotion. |
 | `ts:work5 [scope]` | Production is released or promoted and verified. |
 
@@ -117,6 +117,11 @@ The levels are cumulative and do not change Direct, Guided, Coordinated, or Deep
 Use `ts:work` as an alias for `work2`, `ts:freeze` for `work3`, `ts:push` for `work4`, and
 `ts:ship` for `work5`. Use `ts:check <spot|focused|full|release>` when validation is wanted without
 implementation, commits, pushes, deployment, or release.
+
+At Work3, review the accumulated coded work and create, read, update, or delete project
+documentation as needed so it matches the candidate. Keep those changes within the requested
+scope: preserve unrelated owner documentation and historical records, and delete documentation
+only when the coded change makes it obsolete.
 
 The optional tracked file `work/tool-shed.yaml` declares how remote work maps to environments:
 

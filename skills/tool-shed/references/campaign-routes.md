@@ -11,7 +11,7 @@ Treat a leading numbered route as the operator's explicit stopping point for the
 | --- | --- |
 | `ts:work1 <goal>` | Implement, run the quickest meaningful check, checkpoint only the requested changes in a local commit, leave the worktree clean when unrelated pre-existing changes do not prevent it, and stop without deployment. |
 | `ts:work2 <goal>` | Perform `work1`, deploy to the configured work environment, run focused browser and changed-behavior checks, checkpoint, and stop. |
-| `ts:work3 [scope]` | Run the repository's full applicable validation and build for the accumulated candidate, update and verify the work environment when relevant, freeze it in a local commit, and stop. |
+| `ts:work3 [scope]` | Review the accumulated coded work and create, read, update, or delete project documentation as needed so it matches the candidate; then run the repository's full applicable validation and build, update and verify the work environment when relevant, freeze it in a local commit, and stop. |
 | `ts:work4 [scope]` | Perform `work3`, then push the frozen source without intentionally releasing or promoting production. |
 | `ts:work5 [scope]` | Perform release qualification, push, release or promote production, and verify the production target. This is equivalent to an explicit `ts:ship`. |
 
@@ -20,6 +20,10 @@ Coordinated, and Deep selection independent. Aliases are `ts:work` for `work2`, 
 `work3`, `ts:push` for `work4`, and `ts:ship` for `work5`. `ts:check
 <spot|focused|full|release>` runs only the corresponding validation and does not implement, commit,
 push, deploy, or release.
+
+Work3 documentation alignment is limited to the requested candidate scope. Preserve unrelated
+owner documentation and historical records; delete documentation only when the coded change makes
+it obsolete and the deletion is within the authorized scope.
 
 Read optional project state from root `work/tool-shed.yaml` when present. The minimal supported
 declaration is:

@@ -281,12 +281,18 @@ when you want to make that intent explicit.
 
 Use `ts:work1` through `ts:work5` to state the stopping point for one execution without changing
 its coordination level. `work1` makes a locally committed, minimally checked change; `work2`
-adds deployment to the configured work environment and focused browser checks; `work3` fully
-validates and freezes accumulated work locally; `work4` pushes without intentional production
-promotion; and `work5` releases or promotes production and verifies it. Readable aliases are
+adds deployment to the configured work environment and focused browser checks; `work3` reviews
+the accumulated coded work and can create, read, update, or delete project documentation as needed
+so it matches the candidate, then fully validates and freezes the accumulated work locally; `work4`
+pushes without intentional production promotion; and `work5` releases or promotes production and
+verifies it. Readable aliases are
 `ts:work` = `work2`, `ts:freeze` = `work3`, `ts:push` = `work4`, and `ts:ship` = `work5`.
 `ts:check <spot|focused|full|release>` validates without implementation or Git/environment
 mutation.
+
+Work3 documentation alignment stays within the requested candidate scope. Preserve unrelated
+owner documentation and historical records, and delete documentation only when the coded change
+makes it obsolete.
 
 Projects may optionally track `work/tool-shed.yaml` with `schema_version: 1` and either
 `work_model: combined` or `work_model: split`. Combined mode lets `work2` and `work3` use the same
