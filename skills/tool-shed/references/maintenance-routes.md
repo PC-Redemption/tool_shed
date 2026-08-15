@@ -22,10 +22,17 @@ python <current-shed>/scripts/update_snapshot.py --workspace <workspace>
 Never pull inside or develop from the disconnected workspace snapshot. The updater selects the
 highest stable release, verifies provenance and content hashes, stages a disconnected snapshot,
 preserves owner-authored root `work/` content, replaces the snapshot so removed files cannot linger,
-retains a verified backup, runs the selected release's full installer to converge documented work
+retains a verified mutation-surface backup, runs the selected release's full installer to converge documented work
 topology and provider guidance, and restores the snapshot, affected workspace state, and instruction
 files after failed post-install checks. Do not bootstrap an upgrade with an older in-snapshot updater
 when a current released updater is available outside the target project.
+
+Ordinary backups exclude policy-declared generated outputs that the selected installer cannot
+mutate. After complete success, the updater protects the immediate rollback archive, retains the
+newest two verified updater-owned workspace and optional user-skill backups by default, prunes only
+older verified archives, and preserves unknown or unverifiable material. Use `--prune-preview` for
+a read-only classification, `--backup-retention COUNT` to override the count, or
+`--no-prune-backups` to suppress deletion. Backup deletion is irreversible.
 
 For a new project that still needs its `work/` tree initialized, or to add an explicit provider
 adapter outside the snapshot updater, run:

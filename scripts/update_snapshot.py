@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import inspect
+import io
 import json
 import math
 import os
@@ -20,7 +21,15 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from codex_skill_sync import CodexSkillError, inspect_codex_skill, synchronize_codex_skill
+from codex_skill_sync import (
+    CodexSkillError,
+    SKILL_BACKUP_MANIFEST_SUFFIX,
+    codex_skill_path,
+    fingerprint_digest,
+    fingerprint_skill,
+    inspect_codex_skill,
+    synchronize_codex_skill,
+)
 
 
 DEFAULT_REPOSITORY = "https://github.com/PC-Redemption/tool_shed.git"
@@ -38,6 +47,40 @@ REQUIRED_PATHS = (
 )
 IGNORED_NAMES = {".git", "work", "__pycache__", ".pytest_cache"}
 BYTECODE_SUFFIXES = (".pyc", ".pyo")
+BACKUP_MANIFEST_NAME = ".tool-shed-backup-manifest.json"
+BACKUP_KIND = "tool-shed-workspace-backup"
+DEFAULT_BACKUP_RETENTION = 2
+BACKUP_NAME = re.compile(r"^tool_shed\.backup-(\d{8}T\d{6}Z(?:-[1-9][0-9]*)?)\.tar$")
+WORK_DIRECTORY_MARKERS = (
+    "work",
+    "work/maps",
+    "work/wp",
+    "work/wp/active",
+    "work/wp/completed",
+    "work/tickets",
+    "work/adr",
+    "work/incidents",
+    "work/runbooks",
+    "work/spikes",
+    "work/checklists",
+    "work/inventories",
+    "work/decisions",
+    "work/evidence",
+    "work/evidence/generated",
+    "work/00-campaigns",
+    "work/00-campaigns/active",
+    "work/00-campaigns/completed",
+    "work/00-campaigns/deferred",
+    "work/00-campaigns/abandoned",
+)
+WORK_MUTABLE_FILES = (
+    "work/README.md",
+    "work/index.md",
+    "work/index.json",
+    "work/00-campaigns/active-queue.md",
+    "work/00-campaigns/completed-queue.md",
+)
+WORK_MUTABLE_TREES = ("work/01-q&a", "work/q&a", "q&a")
 
 
 class UpdateError(RuntimeError):
@@ -165,7 +208,7 @@ def ensure_workspace_repository(workspace: Path) -> None:
 def snapshot_boundary(workspace: Path, target: Path) -> str:
     if not target.exists():
         return "new-installation"
-    if target.is_symlink() or not target.is_dir():
+    if is_filesystem_link(target) or not target.is_dir():
         raise UpdateError(f"existing snapshot must be a real directory: {target}")
     if any(path.name == ".git" for path in target.rglob(".git")):
         raise UpdateError(f"existing snapshot contains embedded Git metadata: {target}")
@@ -369,29 +412,369 @@ def difference_summary(old: Path, new: Path) -> dict[str, dict[str, object]]:
     }
 
 
-def backup_fingerprint(workspace: Path, target: Path) -> dict[str, str]:
-    expected: dict[str, str] = {}
-    if target.is_dir():
-        expected.update(
-            {f"tool_shed/{relative}": digest for relative, digest in snapshot_fingerprint(target).items()}
-        )
-    for root_name in ("work", "q&a"):
-        root = workspace / root_name
-        expected.update(
-            {f"{root_name}/{relative}": digest for relative, digest in fingerprint_tree(root).items()}
-        )
-    gitignore = workspace / ".gitignore"
-    if gitignore.is_file():
-        expected[".gitignore"] = hashlib.sha256(gitignore.read_bytes()).hexdigest()
-    return expected
+def safe_relative_path(value: str) -> Path:
+    path = Path(value.replace("\\", "/"))
+    if not value or path.is_absolute() or ".." in path.parts or path.as_posix() in {"", "."}:
+        raise UpdateError(f"unsafe backup scope path: {value!r}")
+    return path
 
 
-def create_backup(workspace: Path, target: Path, backup: Path) -> None:
-    if backup.exists():
+def is_filesystem_link(path: Path) -> bool:
+    is_junction = getattr(os.path, "isjunction", lambda _: False)
+    return path.is_symlink() or bool(is_junction(path))
+
+
+def safe_tree_fingerprint(root: Path, *, skip_runtime: bool = False) -> dict[str, str]:
+    if is_filesystem_link(root):
+        raise UpdateError(f"backup scope must not be a symlink: {root}")
+    if not root.exists():
+        return {}
+    if not root.is_dir():
+        raise UpdateError(f"backup tree scope must be a directory: {root}")
+    result: dict[str, str] = {}
+    for directory, names, files in os.walk(root, followlinks=False):
+        current = Path(directory)
+        for name in names:
+            path = current / name
+            if is_filesystem_link(path):
+                raise UpdateError(f"backup scope must not contain symlinks or junctions: {path}")
+        for name in files:
+            path = current / name
+            if is_filesystem_link(path):
+                raise UpdateError(f"backup scope must not contain symlinks or junctions: {path}")
+            relative = path.relative_to(root)
+            if skip_runtime and is_snapshot_runtime_artifact(relative):
+                continue
+            result[relative.as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
+    return result
+
+
+def fingerprint_summary(root: Path) -> dict[str, object]:
+    files = safe_tree_fingerprint(root) if root.exists() or is_filesystem_link(root) else {}
+    digest = hashlib.sha256()
+    size = 0
+    for relative, file_digest in sorted(files.items()):
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(file_digest.encode("ascii"))
+        digest.update(b"\0")
+        size += (root / relative).stat().st_size
+    return {
+        "file_count": len(files),
+        "size_bytes": size,
+        "tree_sha256": digest.hexdigest(),
+    }
+
+
+def work_complement_fingerprint(
+    workspace: Path,
+    included: list[dict[str, object]],
+    excluded_roots: list[str],
+) -> dict[str, str]:
+    work = workspace / "work"
+    files = safe_tree_fingerprint(work) if work.exists() or is_filesystem_link(work) else {}
+    mutable_files = {
+        str(item["path"])
+        for item in included
+        if item["mode"] == "file" and str(item["path"]).startswith("work/")
+    }
+    mutable_trees = [
+        str(item["path"])
+        for item in included
+        if item["mode"] == "tree" and str(item["path"]).startswith("work/")
+    ]
+    selected: dict[str, str] = {}
+    for child, digest in files.items():
+        relative = f"work/{child}"
+        if relative in mutable_files or any(
+            relative == root or relative.startswith(root + "/")
+            for root in [*mutable_trees, *excluded_roots]
+        ):
+            continue
+        selected[relative] = digest
+    return selected
+
+
+def work_complement_summary(
+    workspace: Path,
+    included: list[dict[str, object]],
+    excluded_roots: list[str],
+) -> dict[str, object]:
+    work = workspace / "work"
+    selected = work_complement_fingerprint(workspace, included, excluded_roots)
+    size = sum((workspace / relative).stat().st_size for relative in selected)
+    aggregate = hashlib.sha256()
+    for relative, digest in sorted(selected.items()):
+        aggregate.update(relative.encode("utf-8"))
+        aggregate.update(b"\0")
+        aggregate.update(digest.encode("ascii"))
+        aggregate.update(b"\0")
+    return {
+        "exists": work.exists(),
+        "file_count": len(selected),
+        "size_bytes": size,
+        "tree_sha256": aggregate.hexdigest(),
+    }
+
+
+def generated_output_paths(workspace: Path) -> list[str]:
+    paths = ["work/evidence/generated"]
+    policy = workspace / ".tool-shed-policy.json"
+    if policy.is_file():
+        try:
+            payload = json.loads(policy.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as error:
+            raise UpdateError(f"invalid .tool-shed-policy.json: {error}") from error
+        raw = (payload.get("evidence_policy") or {}).get("generated_path")
+        if raw is not None:
+            if not isinstance(raw, str):
+                raise UpdateError("evidence_policy.generated_path must be a relative path")
+            paths.append(safe_relative_path(raw).as_posix())
+    return list(dict.fromkeys(paths))
+
+
+def build_backup_scope(
+    workspace: Path,
+    target: Path,
+    providers: tuple[str, ...],
+    provider_paths: dict[str, str],
+    *,
+    source_version: str | None,
+    target_version: str,
+    protocol: int,
+    transaction_id: str,
+    additional_paths: list[dict[str, str]] | None = None,
+) -> dict[str, object]:
+    if additional_paths is not None and not isinstance(additional_paths, list):
+        raise UpdateError("updater_mutation_paths must be a list")
+    requested: list[tuple[str, str, str]] = [
+        ("tool_shed", "tree", "snapshot replacement"),
+        (".gitignore", "file", "installer repository-policy convergence"),
+        *[(path, "file", f"provider guidance: {provider_id}") for provider_id, path in (
+            (provider_id, provider_paths[provider_id]) for provider_id in providers
+        )],
+        *[(path, "file", "generated work projection or guidance") for path in WORK_MUTABLE_FILES],
+        *[(path, "tree", "Q&A inbox creation or legacy migration") for path in WORK_MUTABLE_TREES],
+        *[(path, "directory-marker", "canonical work-tree directory creation") for path in WORK_DIRECTORY_MARKERS],
+    ]
+    for item in additional_paths or []:
+        if not isinstance(item, dict):
+            raise UpdateError("updater_mutation_paths entries must be objects")
+        path = item.get("path")
+        mode = item.get("mode")
+        reason = item.get("reason")
+        if (
+            not isinstance(path, str)
+            or mode not in {"file", "tree", "directory-marker"}
+            or not isinstance(reason, str)
+            or not reason.strip()
+        ):
+            raise UpdateError(
+                "updater_mutation_paths entries require path, supported mode, and reason"
+            )
+        requested.append((path, mode, f"release-declared expansion: {reason.strip()}"))
+    priority = {"directory-marker": 0, "file": 1, "tree": 2}
+    selected: dict[str, tuple[str, str]] = {}
+    for raw_path, mode, reason in requested:
+        relative = safe_relative_path(raw_path).as_posix()
+        existing = selected.get(relative)
+        if existing is None or priority[mode] > priority[existing[0]]:
+            selected[relative] = (mode, reason)
+
+    included: list[dict[str, object]] = []
+    entries: dict[str, str] = {}
+    estimated_size = 0
+    for relative, (mode, reason) in sorted(selected.items()):
+        path = workspace / relative
+        if is_filesystem_link(path):
+            raise UpdateError(f"backup mutation path must not be a symlink: {path}")
+        existed = path.exists()
+        existing_type = "absent"
+        item_entries: dict[str, str] = {}
+        if existed:
+            if mode == "file":
+                if not path.is_file():
+                    raise UpdateError(f"backup file scope is not a regular file: {path}")
+                existing_type = "file"
+                item_entries[relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+                estimated_size += path.stat().st_size
+            elif mode == "tree":
+                if not path.is_dir():
+                    raise UpdateError(f"backup tree scope is not a directory: {path}")
+                existing_type = "directory"
+                tree = safe_tree_fingerprint(path, skip_runtime=relative == "tool_shed")
+                for child, digest in tree.items():
+                    archived = f"{relative}/{child}"
+                    item_entries[archived] = digest
+                    estimated_size += (path / child).stat().st_size
+            else:
+                if not path.is_dir():
+                    raise UpdateError(f"backup directory marker is not a directory: {path}")
+                existing_type = "directory"
+        entries.update(item_entries)
+        included.append(
+            {
+                "path": relative,
+                "mode": mode,
+                "reason": reason,
+                "pre_update_type": existing_type,
+                "file_count": len(item_entries),
+                "size_bytes": sum((workspace / name).stat().st_size for name in item_entries),
+            }
+        )
+
+    excluded: list[dict[str, object]] = []
+    for relative in generated_output_paths(workspace):
+        if any(
+            item["mode"] == "tree"
+            and (relative == item["path"] or relative.startswith(str(item["path"]) + "/"))
+            for item in included
+        ):
+            continue
+        excluded.append(
+            {
+                "path": relative,
+                "reason": "policy-declared generated output outside installer mutation surface",
+                **fingerprint_summary(workspace / relative),
+            }
+        )
+    excluded_roots = [str(item["path"]) for item in excluded]
+    excluded.append(
+        {
+            "path": "work",
+            "selection": "outside-declared-mutation-surface",
+            "reason": "owner-authored work outside installer mutation surface",
+            **work_complement_summary(workspace, included, excluded_roots),
+        }
+    )
+    return {
+        "schema_version": 1,
+        "kind": BACKUP_KIND,
+        "transaction_id": transaction_id,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "source_version": source_version,
+        "target_version": target_version,
+        "updater_protocol": protocol,
+        "workspace_sha256": hashlib.sha256(str(workspace.resolve()).encode("utf-8")).hexdigest(),
+        "included": included,
+        "excluded": excluded,
+        "entries": entries,
+        "estimated_archive_bytes": estimated_size,
+    }
+
+
+def backup_fingerprint(workspace: Path, scope: dict[str, object]) -> dict[str, object]:
+    observed: dict[str, object] = {"included": {}, "excluded": {}}
+    for raw in scope["included"]:
+        item = dict(raw)
+        relative = str(item["path"])
+        mode = str(item["mode"])
+        path = workspace / safe_relative_path(relative)
+        if is_filesystem_link(path):
+            raise UpdateError(f"backup mutation path must not be a symlink: {path}")
+        if not path.exists():
+            value: object = {"type": "absent"}
+        elif mode == "file":
+            value = {"type": "file", "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+        elif mode == "tree":
+            value = {
+                "type": "directory",
+                "files": safe_tree_fingerprint(path, skip_runtime=relative == "tool_shed"),
+            }
+        else:
+            value = {"type": "directory" if path.is_dir() else "other"}
+        observed["included"][relative] = value
+    for raw in scope["excluded"]:
+        item = dict(raw)
+        relative = str(item["path"])
+        key = relative + (
+            f"#{item['selection']}" if item.get("selection") else ""
+        )
+        if item.get("selection") == "outside-declared-mutation-surface":
+            explicit_roots = [
+                str(other["path"])
+                for other in scope["excluded"]
+                if dict(other).get("selection") is None
+            ]
+            observed["excluded"][key] = work_complement_fingerprint(
+                workspace,
+                [dict(included) for included in scope["included"]],
+                explicit_roots,
+            )
+        else:
+            observed["excluded"][key] = fingerprint_summary(workspace / relative)
+    return observed
+
+
+def verify_workspace_backup(backup: Path, workspace: Path | None = None) -> dict[str, object]:
+    if is_filesystem_link(backup) or not backup.is_file():
+        raise UpdateError(f"backup must be a regular file: {backup}")
+    try:
+        with tarfile.open(backup, "r") as archive:
+            manifest_member = archive.getmember(BACKUP_MANIFEST_NAME)
+            handle = archive.extractfile(manifest_member)
+            if handle is None:
+                raise UpdateError("backup manifest cannot be read")
+            manifest = json.loads(handle.read().decode("utf-8"))
+            if manifest.get("schema_version") != 1 or manifest.get("kind") != BACKUP_KIND:
+                raise UpdateError("unsupported workspace backup manifest")
+            if manifest.get("backup_name") != backup.name:
+                raise UpdateError("workspace backup manifest name mismatch")
+            if workspace is not None:
+                expected_workspace = hashlib.sha256(
+                    str(workspace.resolve()).encode("utf-8")
+                ).hexdigest()
+                if manifest.get("workspace_sha256") != expected_workspace:
+                    raise UpdateError("workspace backup belongs to another workspace")
+            expected = manifest.get("entries")
+            if not isinstance(expected, dict) or not all(
+                isinstance(path, str) and isinstance(digest, str)
+                for path, digest in expected.items()
+            ):
+                raise UpdateError("workspace backup has invalid entry hashes")
+            archived_roots = [
+                str(item["path"])
+                for item in manifest.get("included", [])
+                if isinstance(item, dict)
+                and item.get("pre_update_type") != "absent"
+                and item.get("mode") in {"file", "tree"}
+            ]
+            observed: dict[str, str] = {}
+            for member in archive.getmembers():
+                normalized = member.name.replace("\\", "/")
+                safe_relative_path(normalized)
+                if member.issym() or member.islnk() or not (member.isfile() or member.isdir()):
+                    raise UpdateError(f"workspace backup has unsafe member type: {normalized}")
+                if normalized != BACKUP_MANIFEST_NAME and not any(
+                    normalized == root or normalized.startswith(root + "/")
+                    for root in archived_roots
+                ):
+                    raise UpdateError(f"workspace backup has undeclared member: {normalized}")
+                if ".git" in Path(normalized).parts:
+                    raise UpdateError(f"workspace backup contains Git metadata: {normalized}")
+                if member.isfile() and normalized != BACKUP_MANIFEST_NAME:
+                    stream = archive.extractfile(member)
+                    if stream is None:
+                        raise UpdateError(f"workspace backup member cannot be read: {normalized}")
+                    observed[normalized] = hashlib.sha256(stream.read()).hexdigest()
+            if observed != expected:
+                raise UpdateError("workspace backup content verification failed")
+            return manifest
+    except (KeyError, tarfile.TarError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise UpdateError(f"invalid workspace backup: {error}") from error
+
+
+def create_backup(
+    workspace: Path,
+    backup: Path,
+    scope: dict[str, object],
+) -> dict[str, object]:
+    if backup.exists() or is_filesystem_link(backup):
         raise UpdateError(f"backup path already exists: {backup}")
-    expected = backup_fingerprint(workspace, target)
+    manifest = {**scope, "backup_name": backup.name}
+    manifest_bytes = (json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode("utf-8")
 
-    def exclude_runtime_artifacts(member: tarfile.TarInfo) -> tarfile.TarInfo | None:
+    def archive_filter(member: tarfile.TarInfo) -> tarfile.TarInfo | None:
         relative = Path(member.name.replace("\\", "/"))
         if relative.parts and relative.parts[0] == "tool_shed":
             snapshot_relative = Path(*relative.parts[1:])
@@ -399,77 +782,75 @@ def create_backup(workspace: Path, target: Path, backup: Path) -> None:
                 return None
         return member
 
-    with tarfile.open(backup, "w") as archive:
-        for source, arcname in (
-            (target, "tool_shed"),
-            (workspace / "work", "work"),
-            (workspace / "q&a", "q&a"),
-            (workspace / ".gitignore", ".gitignore"),
-        ):
-            if source.exists() or source.is_symlink():
+    try:
+        with tarfile.open(backup, "w", dereference=True) as archive:
+            info = tarfile.TarInfo(BACKUP_MANIFEST_NAME)
+            info.size = len(manifest_bytes)
+            info.mtime = int(datetime.now(timezone.utc).timestamp())
+            archive.addfile(info, io.BytesIO(manifest_bytes))
+            for raw in scope["included"]:
+                item = dict(raw)
+                if item["pre_update_type"] == "absent" or item["mode"] == "directory-marker":
+                    continue
+                relative = str(item["path"])
                 archive.add(
-                    source,
-                    arcname=arcname,
-                    recursive=True,
-                    filter=exclude_runtime_artifacts,
+                    workspace / relative,
+                    arcname=relative,
+                    recursive=item["mode"] == "tree",
+                    filter=archive_filter,
                 )
-    observed: dict[str, str] = {}
-    with tarfile.open(backup, "r") as archive:
-        for member in archive.getmembers():
-            normalized = member.name.replace("\\", "/")
-            root_name = normalized.split("/", 1)[0]
-            if root_name not in {"tool_shed", "work", "q&a", ".gitignore"}:
-                raise UpdateError(f"backup contains out-of-scope member: {normalized}")
-            if root_name == ".gitignore" and normalized != ".gitignore":
-                raise UpdateError(f"backup contains invalid .gitignore member: {normalized}")
-            if not member.isfile() and not member.isdir():
-                raise UpdateError(f"backup contains unsupported member type: {normalized}")
-            if member.isfile():
-                handle = archive.extractfile(member)
-                if handle is None:
-                    raise UpdateError(f"cannot verify backup member: {normalized}")
-                observed[normalized] = hashlib.sha256(handle.read()).hexdigest()
-    if observed != expected:
-        raise UpdateError("backup content verification failed")
+        return verify_workspace_backup(backup, workspace)
+    except Exception:
+        backup.unlink(missing_ok=True)
+        raise
 
 
-def safe_extract_backup(backup: Path, workspace: Path) -> None:
+def safe_extract_backup(backup: Path, workspace: Path) -> dict[str, object]:
+    manifest = verify_workspace_backup(backup, workspace)
     with tarfile.open(backup, "r") as archive:
-        members = archive.getmembers()
+        members = [member for member in archive.getmembers() if member.name != BACKUP_MANIFEST_NAME]
         for member in members:
             normalized = member.name.replace("\\", "/")
-            root_name = normalized.split("/", 1)[0]
-            if root_name not in {"tool_shed", "work", "q&a", ".gitignore"}:
-                raise UpdateError(f"unsafe backup member: {normalized}")
-            if root_name == ".gitignore" and normalized != ".gitignore":
-                raise UpdateError(f"unsafe backup member: {normalized}")
-            if not member.isfile() and not member.isdir():
-                raise UpdateError(f"unsafe backup member type: {normalized}")
-            if ".." in Path(normalized).parts:
-                raise UpdateError(f"unsafe backup member: {normalized}")
-            destination = (workspace / normalized).resolve()
-            destination.relative_to(workspace)
+            destination = (workspace / safe_relative_path(normalized)).resolve()
+            destination.relative_to(workspace.resolve())
         options = (
             {"filter": "fully_trusted"}
             if "filter" in inspect.signature(archive.extractall).parameters
             else {}
         )
-        archive.extractall(workspace, **options)
+        archive.extractall(workspace, members=members, **options)
+    return manifest
 
 
 def remove_path(path: Path) -> None:
+    is_junction = getattr(os.path, "isjunction", lambda _: False)
     if path.is_symlink() or path.is_file():
         path.unlink()
+    elif is_junction(path):
+        path.rmdir()
     elif path.is_dir():
         shutil.rmtree(path)
 
 
-def restore_backup(backup: Path, workspace: Path) -> None:
-    for relative in ("tool_shed", "work", "q&a", ".gitignore"):
-        path = workspace / relative
-        if path.exists() or path.is_symlink():
+def restore_backup(backup: Path, workspace: Path) -> dict[str, object]:
+    manifest = verify_workspace_backup(backup, workspace)
+    included = [dict(item) for item in manifest["included"]]
+    for item in sorted(included, key=lambda value: len(Path(str(value["path"])).parts), reverse=True):
+        path = workspace / safe_relative_path(str(item["path"]))
+        if item["mode"] == "directory-marker" and item["pre_update_type"] == "directory":
+            continue
+        if path.exists() or is_filesystem_link(path):
             remove_path(path)
     safe_extract_backup(backup, workspace)
+    for item in sorted(included, key=lambda value: len(Path(str(value["path"])).parts), reverse=True):
+        if item["mode"] != "directory-marker":
+            continue
+        path = workspace / safe_relative_path(str(item["path"]))
+        if item["pre_update_type"] == "directory":
+            path.mkdir(parents=True, exist_ok=True)
+        elif path.exists() and path.is_dir() and not any(path.iterdir()):
+            path.rmdir()
+    return manifest
 
 
 def owner_content_fingerprint(workspace: Path) -> Counter[str]:
@@ -502,7 +883,7 @@ def post_install_checks(
     protocol: int,
     validation_timeout: float,
 ) -> dict[str, str]:
-    if target.is_symlink() or not target.is_dir():
+    if is_filesystem_link(target) or not target.is_dir():
         raise UpdateError("installed snapshot is not a real directory")
     if (target / ".git").exists() or (target / "work").exists():
         raise UpdateError("installed snapshot contains forbidden .git or work content")
@@ -610,7 +991,7 @@ def safe_instruction_path(workspace: Path, relative: str) -> Path:
     path = workspace / relative
     current = path
     while current != workspace:
-        if current.is_symlink():
+        if is_filesystem_link(current):
             raise UpdateError(f"provider instruction path must not traverse a symlink: {current}")
         current = current.parent
     try:
@@ -686,10 +1067,248 @@ def verify_instruction_files(workspace: Path, captured: dict[str, bytes | None])
     for relative, content in captured.items():
         path = workspace / relative
         if content is None:
-            if path.exists() or path.is_symlink():
+            if path.exists() or is_filesystem_link(path):
                 raise UpdateError(f"provider instruction rollback left a created path: {path}")
-        elif path.is_symlink() or not path.is_file() or path.read_bytes() != content:
+        elif is_filesystem_link(path) or not path.is_file() or path.read_bytes() != content:
             raise UpdateError(f"provider instruction rollback mismatch: {path}")
+
+
+def positive_integer(value: str) -> int:
+    try:
+        result = int(value)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError("value must be a positive integer") from error
+    if result < 1:
+        raise argparse.ArgumentTypeError("value must be at least 1")
+    return result
+
+
+def backup_retention_policy(workspace: Path, requested: int | None) -> tuple[int, str]:
+    if requested is not None:
+        return requested, "command-line"
+    policy_path = workspace / ".tool-shed-policy.json"
+    if policy_path.is_file():
+        try:
+            payload = json.loads(policy_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as error:
+            raise UpdateError(f"invalid .tool-shed-policy.json: {error}") from error
+        backup_policy = payload.get("backup_policy")
+        if backup_policy is not None:
+            if not isinstance(backup_policy, dict):
+                raise UpdateError("backup_policy must be an object")
+            retention = backup_policy.get("retention", DEFAULT_BACKUP_RETENTION)
+            if not isinstance(retention, int) or isinstance(retention, bool) or retention < 1:
+                raise UpdateError("backup_policy.retention must be an integer of at least 1")
+            return retention, "workspace-policy"
+    return DEFAULT_BACKUP_RETENTION, "default"
+
+
+def parse_manifest_timestamp(value: object) -> datetime:
+    if not isinstance(value, str):
+        raise UpdateError("backup manifest has no creation timestamp")
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as error:
+        raise UpdateError("backup manifest has invalid creation timestamp") from error
+    if parsed.tzinfo is None:
+        raise UpdateError("backup manifest creation timestamp must include a timezone")
+    return parsed.astimezone(timezone.utc)
+
+
+def verify_skill_backup(backup: Path) -> dict[str, object]:
+    if is_filesystem_link(backup) or not backup.is_dir():
+        raise UpdateError(f"skill backup must be a real directory: {backup}")
+    manifest_path = backup.with_suffix(SKILL_BACKUP_MANIFEST_SUFFIX)
+    if is_filesystem_link(manifest_path) or not manifest_path.is_file():
+        raise UpdateError("skill backup has no verified sidecar manifest")
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise UpdateError(f"invalid skill backup manifest: {error}") from error
+    if manifest.get("schema_version") != 1 or manifest.get("kind") != "tool-shed-skill-backup":
+        raise UpdateError("unsupported skill backup manifest")
+    if manifest.get("backup_name") != backup.name:
+        raise UpdateError("skill backup manifest name mismatch")
+    parse_manifest_timestamp(manifest.get("created_at"))
+    if manifest.get("tree_sha256") != fingerprint_digest(fingerprint_skill(backup)):
+        raise UpdateError("skill backup content verification failed")
+    return manifest
+
+
+def retention_partition(
+    verified: list[dict[str, object]],
+    retention: int,
+    current: Path | None,
+) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
+    ordered = sorted(
+        verified,
+        key=lambda item: (parse_manifest_timestamp(item["manifest"]["created_at"]), str(item["path"])),
+        reverse=True,
+    )
+    protected: list[dict[str, object]] = []
+    if current is not None:
+        current_resolved = current.resolve()
+        protected = [item for item in ordered if Path(str(item["path"])).resolve() == current_resolved]
+        if len(protected) != 1:
+            raise UpdateError("current transaction backup was not uniquely verified")
+    retained = list(protected)
+    for item in ordered:
+        if item in retained:
+            continue
+        if len(retained) >= retention:
+            break
+        retained.append(item)
+    removable = [item for item in ordered if item not in retained]
+    return retained, removable
+
+
+def inventory_workspace_backups(
+    workspace: Path,
+    *,
+    retention: int,
+    current: Path | None,
+    prune: bool,
+    preview: bool,
+) -> dict[str, object]:
+    verified: list[dict[str, object]] = []
+    unknown: list[dict[str, object]] = []
+    for path in sorted(workspace.glob("tool_shed.backup-*.tar")):
+        item = {"path": str(path), "bytes": path.stat().st_size if path.is_file() else 0}
+        if not BACKUP_NAME.fullmatch(path.name):
+            unknown.append({**item, "reason": "noncanonical filename"})
+            continue
+        try:
+            manifest = verify_workspace_backup(path, workspace)
+            parse_manifest_timestamp(manifest.get("created_at"))
+        except (OSError, UpdateError) as error:
+            unknown.append({**item, "reason": str(error)})
+            continue
+        verified.append({**item, "manifest": manifest})
+    retained, removable = retention_partition(verified, retention, current)
+    pruned: list[dict[str, object]] = []
+    errors: list[dict[str, str]] = []
+    if prune and not preview:
+        for item in removable:
+            path = Path(str(item["path"]))
+            try:
+                if is_filesystem_link(path) or path.resolve().parent != workspace.resolve():
+                    raise UpdateError(f"refusing out-of-root backup deletion: {path}")
+                path.unlink()
+                pruned.append({"path": str(path), "bytes": int(item["bytes"])})
+            except (OSError, UpdateError) as error:
+                errors.append({"path": str(path), "error": str(error)})
+    retained_paths = [
+        {"path": str(item["path"]), "bytes": int(item["bytes"])} for item in retained
+    ]
+    protected = [] if current is None else [str(current)]
+    return {
+        "retention": retention,
+        "preview": preview,
+        "pruning_enabled": prune,
+        "deletion_is_irreversible": True,
+        "protected": protected,
+        "retained": retained_paths,
+        "removable": [
+            {"path": str(item["path"]), "bytes": int(item["bytes"])} for item in removable
+        ],
+        "pruned": pruned,
+        "unknown": unknown,
+        "errors": errors,
+        "reclaimed_bytes": sum(int(item["bytes"]) for item in pruned),
+    }
+
+
+def inventory_skill_backups(
+    *,
+    retention: int,
+    current: Path | None,
+    prune: bool,
+    preview: bool,
+) -> dict[str, object]:
+    root = codex_skill_path().parents[1] / "tool-shed-backups"
+    verified: list[dict[str, object]] = []
+    unknown: list[dict[str, object]] = []
+    if root.exists() and (is_filesystem_link(root) or not root.is_dir()):
+        raise UpdateError(f"skill backup root must be a real directory: {root}")
+    if root.is_dir():
+        for path in sorted(root.iterdir()):
+            if path.suffix == SKILL_BACKUP_MANIFEST_SUFFIX:
+                continue
+            item = {
+                "path": str(path),
+                "bytes": 0,
+            }
+            if not re.fullmatch(r"tool-shed-\d{8}T\d{6}Z(?:-[1-9][0-9]*)?", path.name):
+                unknown.append({**item, "reason": "noncanonical skill backup name"})
+                continue
+            try:
+                manifest = verify_skill_backup(path)
+            except (OSError, CodexSkillError, UpdateError) as error:
+                unknown.append({**item, "reason": str(error)})
+                continue
+            item["bytes"] = sum(
+                    child.stat().st_size
+                    for child in path.rglob("*")
+                    if child.is_file() and not is_filesystem_link(child)
+            ) + path.with_suffix(SKILL_BACKUP_MANIFEST_SUFFIX).stat().st_size
+            verified.append({**item, "manifest": manifest})
+        for manifest_path in sorted(root.glob(f"*{SKILL_BACKUP_MANIFEST_SUFFIX}")):
+            backup_path = manifest_path.with_suffix("")
+            if not backup_path.exists():
+                unknown.append(
+                    {
+                        "path": str(manifest_path),
+                        "bytes": manifest_path.stat().st_size,
+                        "reason": "orphaned skill backup manifest",
+                    }
+                )
+    retained, removable = retention_partition(verified, retention, current)
+    pruned: list[dict[str, object]] = []
+    errors: list[dict[str, str]] = []
+    if prune and not preview:
+        for item in removable:
+            path = Path(str(item["path"]))
+            manifest_path = path.with_suffix(SKILL_BACKUP_MANIFEST_SUFFIX)
+            try:
+                if is_filesystem_link(path) or path.resolve().parent != root.resolve():
+                    raise UpdateError(f"refusing out-of-root skill backup deletion: {path}")
+                shutil.rmtree(path)
+                manifest_path.unlink()
+                pruned.append({"path": str(path), "bytes": int(item["bytes"])})
+            except (OSError, UpdateError) as error:
+                errors.append({"path": str(path), "error": str(error)})
+    return {
+        "backup_root": str(root),
+        "retention": retention,
+        "preview": preview,
+        "pruning_enabled": prune,
+        "deletion_is_irreversible": True,
+        "protected": [] if current is None else [str(current)],
+        "retained": [
+            {"path": str(item["path"]), "bytes": int(item["bytes"])} for item in retained
+        ],
+        "removable": [
+            {"path": str(item["path"]), "bytes": int(item["bytes"])} for item in removable
+        ],
+        "pruned": pruned,
+        "unknown": unknown,
+        "errors": errors,
+        "reclaimed_bytes": sum(int(item["bytes"]) for item in pruned),
+    }
+
+
+def unique_transaction_timestamp(workspace: Path) -> str:
+    base = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    skill_root = codex_skill_path().parents[1] / "tool-shed-backups"
+    for suffix in range(0, 10_000):
+        value = base if suffix == 0 else f"{base}-{suffix}"
+        workspace_backup = workspace / f"tool_shed.backup-{value}.tar"
+        skill_backup = skill_root / f"tool-shed-{value}"
+        if not workspace_backup.exists() and not skill_backup.exists() and not skill_backup.with_suffix(
+            SKILL_BACKUP_MANIFEST_SUFFIX
+        ).exists():
+            return value
+    raise UpdateError("cannot allocate a unique updater transaction timestamp")
 
 
 def parse_args() -> argparse.Namespace:
@@ -725,6 +1344,11 @@ def parse_args() -> argparse.Namespace:
         help=argparse.SUPPRESS,
     )
     parser.add_argument(
+        "--inject-after-replacement-failure",
+        action="store_true",
+        help=argparse.SUPPRESS,
+    )
+    parser.add_argument(
         "--inject-codex-sync-failure",
         action="store_true",
         help=argparse.SUPPRESS,
@@ -736,6 +1360,26 @@ def parse_args() -> argparse.Namespace:
             "Synchronize the user-level Codex skill when it is missing or exactly matches a "
             "known Tool Shed release. Modified or unmanaged skills are never overwritten."
         ),
+    )
+    parser.add_argument(
+        "--backup-retention",
+        type=positive_integer,
+        default=None,
+        metavar="COUNT",
+        help=(
+            "Retain COUNT newest verified updater-owned backups after success, including the "
+            "current rollback archive (default: 2 or workspace policy)."
+        ),
+    )
+    parser.add_argument(
+        "--no-prune-backups",
+        action="store_true",
+        help="Classify backups after success but do not remove obsolete verified archives.",
+    )
+    parser.add_argument(
+        "--prune-preview",
+        action="store_true",
+        help="Read-only backup inventory showing exact retention and removal sets; do not update.",
     )
     return parser.parse_args()
 
@@ -749,10 +1393,12 @@ def main() -> int:
     initial_status = ""
     backup: Path | None = None
     rollback_backup: Path | None = None
-    backup_before: dict[str, str] = {}
+    backup_before: dict[str, object] = {}
+    backup_scope: dict[str, object] | None = None
     retired: Path | None = None
     instruction_files_before: dict[str, bytes | None] = {}
     snapshot_before: dict[str, str] = {}
+    current_skill_backup: Path | None = None
     installed = False
     payload: dict[str, Any] = {
         "workspace": str(workspace),
@@ -764,6 +1410,47 @@ def main() -> int:
         if not workspace.is_dir():
             raise UpdateError(f"workspace does not exist: {workspace}")
         ensure_workspace_repository(workspace)
+        retention, retention_source = backup_retention_policy(
+            workspace, args.backup_retention
+        )
+        payload["backup_retention_policy"] = {
+            "retention": retention,
+            "source": retention_source,
+        }
+        if args.prune_preview:
+            payload["backup_retention"] = {
+                "workspace": inventory_workspace_backups(
+                    workspace,
+                    retention=retention,
+                    current=None,
+                    prune=True,
+                    preview=True,
+                ),
+                "codex_skill": inventory_skill_backups(
+                    retention=retention,
+                    current=None,
+                    prune=True,
+                    preview=True,
+                ),
+            }
+            payload["state"] = "prune-preview"
+            if args.json:
+                print(json.dumps(payload, indent=2, sort_keys=True))
+            else:
+                workspace_report = payload["backup_retention"]["workspace"]
+                skill_report = payload["backup_retention"]["codex_skill"]
+                print("Backup pruning preview; no files were changed.")
+                print(
+                    f"Workspace: {len(workspace_report['retained'])} retained, "
+                    f"{len(workspace_report['removable'])} removable, "
+                    f"{len(workspace_report['unknown'])} preserved unknown."
+                )
+                print(
+                    f"Codex skill: {len(skill_report['retained'])} retained, "
+                    f"{len(skill_report['removable'])} removable, "
+                    f"{len(skill_report['unknown'])} preserved unknown."
+                )
+            return 0
         initial_status = git(workspace, "status", "--short")
         mode = snapshot_boundary(workspace, target)
         snapshot_before = snapshot_fingerprint(target)
@@ -820,11 +1507,67 @@ def main() -> int:
                         "Codex skill synchronization was requested but is unsafe: "
                         + str(codex_skill.get("detail") or codex_skill.get("state"))
                     )
-            timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+            if (
+                previous_version == selected_version
+                and target.is_dir()
+                and snapshot_fingerprint(target) == snapshot_fingerprint(staged)
+                and not args.sync_codex_skill
+            ):
+                payload["installed_version"] = selected_version
+                payload["canonical_manifest_match"] = True
+                payload["work_preserved"] = True
+                payload["excluded_paths_preserved"] = True
+                payload["work_changed"] = False
+                payload["work_converged"] = None
+                payload["git_status_changed"] = False
+                payload["state"] = "current"
+                payload["backup_retention"] = {
+                    "workspace": inventory_workspace_backups(
+                        workspace,
+                        retention=retention,
+                        current=None,
+                        prune=not args.no_prune_backups,
+                        preview=False,
+                    ),
+                    "codex_skill": inventory_skill_backups(
+                        retention=retention,
+                        current=None,
+                        prune=not args.no_prune_backups,
+                        preview=False,
+                    ),
+                }
+                emit_progress("completion")
+                if args.json:
+                    print(json.dumps(payload, indent=2, sort_keys=True))
+                else:
+                    print(f"Tool Shed {selected_version} is already current; no backup was created.")
+                return 0
+            timestamp = unique_transaction_timestamp(workspace)
+            transaction_id = hashlib.sha256(
+                f"{workspace}:{timestamp}:{previous_version}:{selected_version}".encode("utf-8")
+            ).hexdigest()[:24]
+            backup_scope = build_backup_scope(
+                workspace,
+                target,
+                providers,
+                provider_paths,
+                source_version=previous_version,
+                target_version=selected_version,
+                protocol=selected_protocol,
+                transaction_id=transaction_id,
+                additional_paths=manifest.get("updater_mutation_paths"),
+            )
+            payload["backup_scope"] = backup_scope
+            emit_progress(
+                "backup scope: "
+                f"{len(backup_scope['included'])} included path(s), "
+                f"{len(backup_scope['excluded'])} excluded path(s), "
+                f"estimated {backup_scope['estimated_archive_bytes']} bytes"
+            )
             if mode == "existing-update":
                 backup = workspace / f"tool_shed.backup-{timestamp}.tar"
-                backup_before = backup_fingerprint(workspace, target)
-                create_backup(workspace, target, backup)
+                backup_before = backup_fingerprint(workspace, backup_scope)
+                create_backup(workspace, backup, backup_scope)
                 rollback_backup = backup
                 payload["backup_path"] = str(backup)
                 retired = workspace / f".tool_shed.retired-{timestamp}"
@@ -833,11 +1576,16 @@ def main() -> int:
                 target.rename(retired)
             else:
                 rollback_backup = temp / "workspace-before.tar"
-                backup_before = backup_fingerprint(workspace, target)
-                create_backup(workspace, target, rollback_backup)
+                temporary_scope = {**backup_scope, "workspace_sha256": hashlib.sha256(
+                    str(workspace.resolve()).encode("utf-8")
+                ).hexdigest()}
+                backup_before = backup_fingerprint(workspace, temporary_scope)
+                create_backup(workspace, rollback_backup, temporary_scope)
             try:
                 shutil.move(str(staged), str(target))
                 installed = True
+                if args.inject_after_replacement_failure:
+                    raise UpdateError("injected failure after snapshot replacement")
                 emit_progress("post-install validation")
                 payload["post_install"] = post_install_checks(
                     workspace,
@@ -848,6 +1596,35 @@ def main() -> int:
                     selected_protocol,
                     args.validation_timeout,
                 )
+                if backup_scope is None:
+                    raise UpdateError("post-install verification has no declared backup scope")
+                scope_after = backup_fingerprint(workspace, backup_scope)
+                if scope_after["excluded"] != backup_before["excluded"]:
+                    before_excluded = dict(backup_before["excluded"])
+                    after_excluded = dict(scope_after["excluded"])
+                    changed = sorted(
+                        key
+                        for key in set(before_excluded) | set(after_excluded)
+                        if before_excluded.get(key) != after_excluded.get(key)
+                    )
+                    complement_key = "work#outside-declared-mutation-surface"
+                    before_complement = before_excluded.get(complement_key)
+                    after_complement = after_excluded.get(complement_key)
+                    if (
+                        isinstance(before_complement, dict)
+                        and isinstance(after_complement, dict)
+                        and before_complement != after_complement
+                    ):
+                        changed = sorted(
+                            path
+                            for path in set(before_complement) | set(after_complement)
+                            if before_complement.get(path) != after_complement.get(path)
+                        )
+                    raise UpdateError(
+                        "post-install transaction changed paths outside the declared mutation surface: "
+                        + ", ".join(changed[:5])
+                    )
+                payload["excluded_paths_preserved"] = True
                 if not contents_preserved(
                     owner_content_before, owner_content_fingerprint(workspace)
                 ):
@@ -863,7 +1640,12 @@ def main() -> int:
                             codex_skill,
                             timestamp,
                             args.inject_codex_sync_failure,
+                            transaction_id=transaction_id,
+                            target_version=selected_version,
                         )
+                        raw_skill_backup = codex_skill.get("backup_path")
+                        if raw_skill_backup:
+                            current_skill_backup = Path(str(raw_skill_backup))
                     codex_skill["source"] = str(installed_skill)
                     payload["codex_skill"] = codex_skill
             except Exception as install_error:
@@ -877,8 +1659,14 @@ def main() -> int:
                     installed = False
                     if rollback_backup is not None:
                         restore_backup(rollback_backup, workspace)
-                        if backup_fingerprint(workspace, target) != backup_before:
+                        if backup_scope is None:
+                            raise UpdateError("rollback has no declared backup scope")
+                        if backup_fingerprint(workspace, backup_scope) != backup_before:
                             raise UpdateError("restored workspace does not match the pre-update backup")
+                        if fingerprint_tree(workspace / "work") != work_before:
+                            raise UpdateError(
+                                "rollback changed work outside the declared mutation surface"
+                            )
                     if retired is not None and retired.exists():
                         shutil.rmtree(retired)
                 except Exception as error:
@@ -904,6 +1692,21 @@ def main() -> int:
             else None
         )
         payload["git_status_changed"] = git(workspace, "status", "--short") != initial_status
+        payload["backup_retention"] = {
+            "workspace": inventory_workspace_backups(
+                workspace,
+                retention=retention,
+                current=backup,
+                prune=not args.no_prune_backups,
+                preview=False,
+            ),
+            "codex_skill": inventory_skill_backups(
+                retention=retention,
+                current=current_skill_backup,
+                prune=not args.no_prune_backups,
+                preview=False,
+            ),
+        }
         payload["state"] = "installed"
         emit_progress("completion")
         if args.json:
@@ -912,7 +1715,19 @@ def main() -> int:
             print(f"Tool Shed {selected_version} installed from {selected}.")
             print(f"Mode: {mode}")
             if backup:
-                print(f"Verified backup retained at {backup}")
+                print(f"Verified immediate rollback backup retained at {backup}")
+            retention_report = payload["backup_retention"]
+            workspace_retention = retention_report["workspace"]
+            skill_retention = retention_report["codex_skill"]
+            print(
+                "Backup retention: "
+                f"workspace retained {len(workspace_retention['retained'])}, "
+                f"pruned {len(workspace_retention['pruned'])}; "
+                f"Codex skill retained {len(skill_retention['retained'])}, "
+                f"pruned {len(skill_retention['pruned'])}; "
+                f"{workspace_retention['reclaimed_bytes'] + skill_retention['reclaimed_bytes']} "
+                "bytes reclaimed. Backup deletion is irreversible."
+            )
             codex_skill = payload.get("codex_skill")
             if isinstance(codex_skill, dict):
                 print(f"Codex skill: {codex_skill.get('state')} at {codex_skill.get('path')}")

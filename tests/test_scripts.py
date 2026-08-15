@@ -81,6 +81,7 @@ class ScriptTests(unittest.TestCase):
         include_provider_adapter: bool = False,
         minimum_updater_protocol: int = 2,
         known_skill_releases: dict[str, dict[str, bytes]] | None = None,
+        updater_mutation_paths: list[dict[str, str]] | None = None,
     ) -> Path:
         repository = root / "release source"
         repository.mkdir()
@@ -191,6 +192,7 @@ class ScriptTests(unittest.TestCase):
                     "release_tag": f"v{version}",
                     "release_commit": None,
                     "released_at": None,
+                    "updater_mutation_paths": updater_mutation_paths,
                 },
                 indent=2,
             )
@@ -3213,6 +3215,64 @@ stale loop guidance
             )
             self.assertFalse((codex_home / "tool-shed-backups").exists())
 
+    def test_codex_skill_backup_retention_uses_verified_sidecars(self) -> None:
+        from scripts.codex_skill_sync import (
+            fingerprint_skill,
+            inspect_codex_skill,
+            synchronize_codex_skill,
+        )
+        scripts_path = str(ROOT / "scripts")
+        sys.path.insert(0, scripts_path)
+        try:
+            import update_snapshot
+        finally:
+            sys.path.remove(scripts_path)
+
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            codex_home = root / "codex"
+            installed = codex_home / "skills" / "tool-shed"
+            installed.mkdir(parents=True)
+            (installed / "SKILL.md").write_text("version 1\n", encoding="utf-8")
+
+            current_backup = None
+            with mock.patch.dict(os.environ, {"CODEX_HOME": str(codex_home)}):
+                for index in range(2, 5):
+                    source = root / f"source-{index}"
+                    source.mkdir()
+                    (source / "SKILL.md").write_text(
+                        f"version {index}\n", encoding="utf-8"
+                    )
+                    inspection = inspect_codex_skill(
+                        source,
+                        [(f"v1.0.{index - 1}", fingerprint_skill(installed))],
+                    )
+                    result = synchronize_codex_skill(
+                        source,
+                        inspection,
+                        f"20260815T00000{index}Z",
+                        transaction_id=f"transaction-{index}",
+                        target_version=f"1.0.{index}",
+                    )
+                    current_backup = Path(str(result["backup_path"]))
+
+                unknown = codex_home / "tool-shed-backups" / "owner-copy"
+                unknown.mkdir()
+                (unknown / "SKILL.md").write_text("owner\n", encoding="utf-8")
+                report = update_snapshot.inventory_skill_backups(
+                    retention=2,
+                    current=current_backup,
+                    prune=True,
+                    preview=False,
+                )
+
+            self.assertEqual(len(report["retained"]), 2)
+            self.assertEqual(len(report["pruned"]), 1)
+            self.assertEqual(report["protected"], [str(current_backup)])
+            self.assertEqual(len(report["unknown"]), 1)
+            self.assertTrue(unknown.is_dir())
+            self.assertTrue(current_backup.is_dir())
+
     def test_snapshot_updater_is_cross_platform_and_preserves_work(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -3250,8 +3310,315 @@ stale loop guidance
             with tarfile.open(backups[0], "r") as archive:
                 names = {member.name.replace("\\", "/") for member in archive.getmembers()}
             self.assertIn("tool_shed/old-marker.txt", names)
-            self.assertIn("work/operator-data.txt", names)
+            self.assertNotIn("work/operator-data.txt", names)
+            self.assertIn(".tool-shed-backup-manifest.json", names)
             self.assertIn(".gitignore", names)
+            self.assertEqual(
+                payload["backup_scope"]["excluded"][0]["path"],
+                "work/evidence/generated",
+            )
+
+    def test_snapshot_backup_scope_excludes_generated_evidence_and_preserves_hard_links(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(root)
+            workspace = self.create_update_workspace(root)
+            generated = workspace / "work" / "evidence" / "generated"
+            generated.mkdir(parents=True)
+            source = generated / "capture.bin"
+            source.write_bytes(b"large generated evidence" * 4096)
+            linked = generated / "capture-linked.bin"
+            try:
+                os.link(source, linked)
+            except OSError:
+                linked.write_bytes(source.read_bytes())
+            before = {
+                path.relative_to(generated).as_posix(): path.read_bytes()
+                for path in generated.rglob("*")
+                if path.is_file()
+            }
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--json",
+                cwd=workspace,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertEqual(payload["state"], "installed")
+            exclusion = next(
+                item
+                for item in payload["backup_scope"]["excluded"]
+                if item["path"] == "work/evidence/generated"
+            )
+            self.assertEqual(exclusion["file_count"], 2)
+            self.assertGreater(exclusion["size_bytes"], 100_000)
+            with tarfile.open(payload["backup_path"], "r") as archive:
+                names = {member.name.replace("\\", "/") for member in archive.getmembers()}
+            self.assertFalse(any(name.startswith("work/evidence/generated/") for name in names))
+            self.assertEqual(
+                {
+                    path.relative_to(generated).as_posix(): path.read_bytes()
+                    for path in generated.rglob("*")
+                    if path.is_file()
+                },
+                before,
+            )
+
+    def test_release_declared_mutation_expands_generated_backup_scope_with_reason(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(
+                root,
+                updater_mutation_paths=[
+                    {
+                        "path": "work/evidence/generated",
+                        "mode": "tree",
+                        "reason": "fixture migration rewrites generated evidence metadata",
+                    }
+                ],
+            )
+            workspace = self.create_update_workspace(root)
+            generated = workspace / "work" / "evidence" / "generated"
+            generated.mkdir(parents=True)
+            (generated / "capture.bin").write_bytes(b"migration target")
+
+            payload = json.loads(
+                run_script(
+                    str(ROOT / "scripts" / "update_snapshot.py"),
+                    "--workspace",
+                    str(workspace),
+                    "--repository",
+                    str(release),
+                    "--json",
+                    cwd=workspace,
+                ).stdout
+            )
+
+            included = next(
+                item
+                for item in payload["backup_scope"]["included"]
+                if item["path"] == "work/evidence/generated"
+            )
+            self.assertEqual(included["mode"], "tree")
+            self.assertIn("release-declared expansion", included["reason"])
+            self.assertFalse(
+                any(
+                    item["path"] == "work/evidence/generated"
+                    for item in payload["backup_scope"]["excluded"]
+                )
+            )
+            with tarfile.open(payload["backup_path"], "r") as archive:
+                names = {member.name.replace("\\", "/") for member in archive.getmembers()}
+            self.assertIn("work/evidence/generated/capture.bin", names)
+
+    def test_snapshot_backup_retention_preview_pruning_unknowns_and_noop(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            releases = []
+            for index, version in enumerate(("9.8.7", "9.8.8", "9.8.9"), start=1):
+                release_root = root / f"release-{index}"
+                release_root.mkdir()
+                releases.append(self.create_test_release(release_root, version=version))
+            workspace = self.create_update_workspace(root)
+
+            for release in releases[:2]:
+                payload = json.loads(
+                    run_script(
+                        str(ROOT / "scripts" / "update_snapshot.py"),
+                        "--workspace",
+                        str(workspace),
+                        "--repository",
+                        str(release),
+                        "--no-prune-backups",
+                        "--json",
+                        cwd=workspace,
+                    ).stdout
+                )
+                self.assertEqual(payload["state"], "installed")
+            malformed = workspace / "tool_shed.backup-20260815T010101Z.tar"
+            malformed.write_bytes(b"not an updater archive")
+            manual = workspace / "tool_shed.backup-manual.tar"
+            manual.write_bytes(b"owner backup")
+            before_preview = {
+                path.name: path.read_bytes()
+                for path in workspace.glob("tool_shed.backup-*.tar")
+            }
+
+            preview = json.loads(
+                run_script(
+                    str(ROOT / "scripts" / "update_snapshot.py"),
+                    "--workspace",
+                    str(workspace),
+                    "--backup-retention",
+                    "1",
+                    "--prune-preview",
+                    "--json",
+                    cwd=workspace,
+                ).stdout
+            )
+            report = preview["backup_retention"]["workspace"]
+            self.assertEqual(preview["state"], "prune-preview")
+            self.assertEqual(len(report["retained"]), 1)
+            self.assertEqual(len(report["removable"]), 1)
+            self.assertEqual(len(report["unknown"]), 2)
+            self.assertEqual(report["pruned"], [])
+            self.assertEqual(
+                {
+                    path.name: path.read_bytes()
+                    for path in workspace.glob("tool_shed.backup-*.tar")
+                },
+                before_preview,
+            )
+
+            third = json.loads(
+                run_script(
+                    str(ROOT / "scripts" / "update_snapshot.py"),
+                    "--workspace",
+                    str(workspace),
+                    "--repository",
+                    str(releases[2]),
+                    "--json",
+                    cwd=workspace,
+                ).stdout
+            )
+            retention = third["backup_retention"]["workspace"]
+            self.assertEqual(third["state"], "installed")
+            self.assertEqual(len(retention["protected"]), 1)
+            self.assertEqual(len(retention["retained"]), 2)
+            self.assertEqual(len(retention["pruned"]), 1)
+            self.assertGreater(retention["reclaimed_bytes"], 0)
+            self.assertTrue(malformed.is_file())
+            self.assertTrue(manual.is_file())
+
+            verified_before_noop = {
+                item["path"] for item in retention["retained"]
+            }
+            noop = json.loads(
+                run_script(
+                    str(ROOT / "scripts" / "update_snapshot.py"),
+                    "--workspace",
+                    str(workspace),
+                    "--repository",
+                    str(releases[2]),
+                    "--json",
+                    cwd=workspace,
+                ).stdout
+            )
+            self.assertEqual(noop["state"], "current")
+            self.assertEqual(
+                {item["path"] for item in noop["backup_retention"]["workspace"]["retained"]},
+                verified_before_noop,
+            )
+
+    def test_snapshot_failure_after_replacement_restores_scope_and_prunes_nothing(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(root)
+            workspace = self.create_update_workspace(root)
+            generated = workspace / "work" / "evidence" / "generated"
+            generated.mkdir(parents=True)
+            evidence = generated / "capture.bin"
+            evidence.write_bytes(b"preserve excluded bytes")
+            before = evidence.read_bytes()
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--inject-after-replacement-failure",
+                "--json",
+                cwd=workspace,
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertTrue(payload["rollback"])
+            self.assertNotIn("backup_retention", payload)
+            self.assertEqual(evidence.read_bytes(), before)
+            self.assertTrue((workspace / "tool_shed" / "old-marker.txt").is_file())
+            self.assertEqual(len(list(workspace.glob("tool_shed.backup-*.tar"))), 1)
+
+    def test_backup_retention_policy_and_symlinked_preview_candidate_are_safe(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            workspace = self.create_update_workspace(root)
+            (workspace / ".tool-shed-policy.json").write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "backup_policy": {"retention": 4},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            outside = root / "outside.tar"
+            outside.write_bytes(b"owner recovery material")
+            candidate = workspace / "tool_shed.backup-20260815T020202Z.tar"
+            self.create_symlink_or_skip(candidate, outside)
+            unsafe = workspace / "tool_shed.backup-20260815T030303Z.tar"
+            unsafe_manifest = root / "unsafe-manifest.json"
+            unsafe_manifest.write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "kind": "tool-shed-workspace-backup",
+                        "backup_name": unsafe.name,
+                        "created_at": "2026-08-15T03:03:03+00:00",
+                        "workspace_sha256": hashlib.sha256(
+                            str(workspace.resolve()).encode("utf-8")
+                        ).hexdigest(),
+                        "included": [
+                            {
+                                "path": "tool_shed",
+                                "mode": "tree",
+                                "pre_update_type": "directory",
+                            }
+                        ],
+                        "entries": {"../escape.txt": hashlib.sha256(b"escape").hexdigest()},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            escape = root / "escape.txt"
+            escape.write_bytes(b"escape")
+            with tarfile.open(unsafe, "w") as archive:
+                archive.add(
+                    unsafe_manifest,
+                    arcname=".tool-shed-backup-manifest.json",
+                )
+                archive.add(escape, arcname="../escape.txt")
+
+            preview = json.loads(
+                run_script(
+                    str(ROOT / "scripts" / "update_snapshot.py"),
+                    "--workspace",
+                    str(workspace),
+                    "--prune-preview",
+                    "--json",
+                    cwd=workspace,
+                ).stdout
+            )
+
+            self.assertEqual(
+                preview["backup_retention_policy"],
+                {"retention": 4, "source": "workspace-policy"},
+            )
+            unknown = preview["backup_retention"]["workspace"]["unknown"]
+            self.assertEqual(len(unknown), 2)
+            reasons = {item["reason"] for item in unknown}
+            self.assertTrue(any("regular file" in reason for reason in reasons))
+            self.assertTrue(any("unsafe backup scope path" in reason for reason in reasons))
+            self.assertTrue(candidate.is_symlink())
+            self.assertTrue(unsafe.is_file())
+            self.assertEqual(outside.read_bytes(), b"owner recovery material")
 
     def test_snapshot_upgrade_converges_legacy_work_tree_transactionally(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -3306,7 +3673,7 @@ stale loop guidance
             with tarfile.open(backup, "r") as archive:
                 names = {member.name.replace("\\", "/") for member in archive.getmembers()}
             self.assertIn("tool_shed/old-marker.txt", names)
-            self.assertIn("work/operator-data.txt", names)
+            self.assertNotIn("work/operator-data.txt", names)
             self.assertIn("work/q&a/ask.txt", names)
             self.assertIn(".gitignore", names)
 
@@ -3662,6 +4029,11 @@ old Tool Shed guidance
             backup = Path(payload["codex_skill"]["backup_path"])
             self.assertEqual((backup / "SKILL.md").read_bytes(), old_files["SKILL.md"])
             self.assertTrue(backup.parent.samefile(codex_home / "tool-shed-backups"))
+            backup_manifest = Path(payload["codex_skill"]["backup_manifest_path"])
+            self.assertTrue(backup_manifest.is_file())
+            skill_retention = payload["backup_retention"]["codex_skill"]
+            self.assertEqual(skill_retention["protected"], [str(backup)])
+            self.assertEqual(skill_retention["retained"][0]["path"], str(backup))
             self.assertFalse(list((codex_home / "skills").glob("tool-shed.backup-*")))
 
     def test_snapshot_upgrade_installs_missing_user_codex_skill_without_backup(self) -> None:

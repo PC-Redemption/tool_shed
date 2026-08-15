@@ -474,6 +474,25 @@ owner-authored project `work/` while converging released Tool Shed structure, an
 restores the previous snapshot and affected workspace state after failed post-install verification.
 See [install-or-update-snapshot.md](install-or-update-snapshot.md) for the complete guarded contract.
 
+The rollback archive contains the declared mutation surface, not all project work. Its embedded
+manifest lists included/absent paths, explicit generated-output exclusions and hashes, versions,
+protocol, timestamp, and transaction ID. After complete success the updater retains the newest two
+verified updater-owned workspace and optional user-skill backups by default and irreversibly prunes
+older verified archives. It preserves and reports every unknown or unverifiable candidate.
+
+Preview or override retention with:
+
+```bash
+python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace . --prune-preview --json
+python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace . --backup-retention 4
+python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace . --no-prune-backups
+```
+
+`--prune-preview` performs no update or deletion. A tracked `.tool-shed-policy.json` may declare
+`{"schema_version": 1, "backup_policy": {"retention": 4}}`; the command-line value takes
+precedence. Retention is the total verified archive count including the protected immediate
+rollback archive and cannot be below one.
+
 After installation or update, run:
 
 ```bash

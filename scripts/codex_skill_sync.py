@@ -8,6 +8,7 @@ import json
 import os
 import re
 import shutil
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
@@ -18,6 +19,12 @@ class CodexSkillError(RuntimeError):
 
 RELEASE_TAG = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
 TREE_DIGEST = re.compile(r"^[0-9a-f]{64}$")
+SKILL_BACKUP_MANIFEST_SUFFIX = ".json"
+
+
+def is_filesystem_link(path: Path) -> bool:
+    is_junction = getattr(os.path, "isjunction", lambda _: False)
+    return path.is_symlink() or bool(is_junction(path))
 
 
 def codex_skill_path() -> Path:
@@ -27,7 +34,7 @@ def codex_skill_path() -> Path:
 
 
 def fingerprint_skill(root: Path) -> dict[str, str]:
-    if root.is_symlink():
+    if is_filesystem_link(root):
         raise CodexSkillError(f"Codex skill must not be a symlink: {root}")
     if not root.exists():
         return {}
@@ -35,7 +42,7 @@ def fingerprint_skill(root: Path) -> dict[str, str]:
         raise CodexSkillError(f"Codex skill must be a directory: {root}")
     result: dict[str, str] = {}
     for path in sorted(root.rglob("*")):
-        if path.is_symlink():
+        if is_filesystem_link(path):
             raise CodexSkillError(f"Codex skill must not contain symlinks: {path}")
         if path.is_file():
             result[path.relative_to(root).as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
@@ -92,7 +99,7 @@ def inspect_codex_skill(
             "--sync-codex-skill --json"
         ),
     }
-    if not source.exists() or source.is_symlink() or not source.is_dir():
+    if not source.exists() or is_filesystem_link(source) or not source.is_dir():
         result.update(
             {
                 "state": "unsafe",
@@ -150,6 +157,9 @@ def synchronize_codex_skill(
     inspection: dict[str, object],
     timestamp: str,
     inject_failure: bool = False,
+    *,
+    transaction_id: str | None = None,
+    target_version: str | None = None,
 ) -> dict[str, object]:
     state = str(inspection.get("state"))
     if state == "current":
@@ -165,9 +175,15 @@ def synchronize_codex_skill(
     parent.mkdir(parents=True, exist_ok=True)
     staged = parent / f".tool-shed.staged-{timestamp}"
     backup = parent.parent / "tool-shed-backups" / f"tool-shed-{timestamp}"
-    if staged.exists() or staged.is_symlink():
+    backup_manifest = backup.with_suffix(SKILL_BACKUP_MANIFEST_SUFFIX)
+    if staged.exists() or is_filesystem_link(staged):
         raise CodexSkillError(f"Codex skill staging path already exists: {staged}")
-    if backup.exists() or backup.is_symlink():
+    if (
+        backup.exists()
+        or is_filesystem_link(backup)
+        or backup_manifest.exists()
+        or is_filesystem_link(backup_manifest)
+    ):
         raise CodexSkillError(f"Codex skill backup path already exists: {backup}")
 
     source_fingerprint = fingerprint_skill(source)
@@ -188,7 +204,21 @@ def synchronize_codex_skill(
             moved_to_backup = True
             if fingerprint_skill(backup) != original_fingerprint:
                 raise CodexSkillError("Codex skill backup verification failed")
-        elif target.exists() or target.is_symlink():
+            manifest = {
+                "schema_version": 1,
+                "kind": "tool-shed-skill-backup",
+                "backup_name": backup.name,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "transaction_id": transaction_id or timestamp,
+                "source_version": inspection.get("matched_release"),
+                "target_version": target_version,
+                "tree_sha256": fingerprint_digest(original_fingerprint),
+            }
+            backup_manifest.write_text(
+                json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+        elif target.exists() or is_filesystem_link(target):
             raise CodexSkillError(f"Codex skill target appeared during synchronization: {target}")
         staged.rename(target)
         installed = True
@@ -202,6 +232,7 @@ def synchronize_codex_skill(
             if installed and target.exists():
                 shutil.rmtree(target)
             if moved_to_backup and backup.exists():
+                backup_manifest.unlink(missing_ok=True)
                 backup.rename(target)
                 if fingerprint_skill(target) != original_fingerprint:
                     raise CodexSkillError("restored Codex skill does not match its backup")
@@ -222,5 +253,6 @@ def synchronize_codex_skill(
         "state": "current",
         "changed": True,
         "backup_path": str(backup) if moved_to_backup else None,
+        "backup_manifest_path": str(backup_manifest) if moved_to_backup else None,
         "restart_required": True,
     }

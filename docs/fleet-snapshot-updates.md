@@ -41,7 +41,10 @@ For every target it must:
 2. Recompute the pre-update hashes and stop if they differ from the reviewed inventory.
 3. Stage a verified canonical snapshot in a sibling temporary directory without `.git/`, `work/`,
    caches, generated state, or host-local configuration.
-4. Preserve a timestamped, recoverable backup of the previous snapshot.
+4. Declare and report the exact transaction mutation surface, then preserve a timestamped,
+   recoverable backup of that surface. Record hashes and explicit generated-output exclusions in
+   the embedded ownership manifest; never archive unrelated project evidence merely because it is
+   under root `work/`.
 5. Replace the `tool_shed/` directory, then run the selected release's full workspace installer.
    Preserve owner-authored `work/` content, docs, and code while allowing only documented
    deterministic Tool Shed workspace convergence.
@@ -49,6 +52,9 @@ For every target it must:
    match canonical, owner-authored work content is preserved, the work tree is structurally
    converged, and the parent repository ignores `/tool_shed/` while root `work/` remains trackable
    by default.
+7. Only after complete success, verify updater-owned backup manifests, protect the current rollback
+   archive, apply the configured retention count, and report every retained, pruned, unknown, and
+   unverifiable archive plus reclaimed bytes. Unknown recovery material is never deleted.
 
 The post-update check must run `install_into_workspace.py` and `review_work_state.py`. It must not
 carry a legacy root `/work/` ignore forward as “repository policy.” If `work/` is ignored, report

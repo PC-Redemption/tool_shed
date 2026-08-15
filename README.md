@@ -144,6 +144,22 @@ refused. Start a fresh Codex session
 after synchronization so discovery does not retain the old instructions. POSIX and PowerShell
 launchers are available as `scripts/update-tool-shed.sh` and `scripts/update-tool-shed.ps1`.
 
+Before writing a backup, the updater reports the exact transaction mutation surface and estimated
+archive size. The embedded manifest records included and excluded paths, per-file hashes,
+source/target versions, protocol, timestamp, and transaction identity. Ordinary updates exclude
+untouched policy-declared generated output such as `work/evidence/generated/`; a protocol may
+expand scope only when it declares why that path can be mutated. Rollback removes or restores only
+the declared paths and verifies excluded generated trees remain unchanged.
+
+After the update, all validation, and optional Codex skill synchronization succeed, the updater
+verifies updater-owned workspace and skill backups, protects the immediate rollback archive, and
+keeps the newest two by default. It prunes only older archives with valid ownership manifests;
+unknown, malformed, manually named, unsupported, or unverifiable recovery material is preserved
+and reported. Deletion is irreversible. Use `--backup-retention COUNT`, `--no-prune-backups`, or
+the read-only `--prune-preview`. A repository policy can set
+`backup_policy.retention` in `.tool-shed-policy.json`. No-op current-version checks create no new
+archive.
+
 The updater emits concise clone/fetch, manifest, release-validation, staging, post-install, and
 completion progress to stderr, leaving `--json` stdout machine-readable. Clone and fetch commands
 default to a 120-second timeout; release and post-install validators default to 300 seconds. Use

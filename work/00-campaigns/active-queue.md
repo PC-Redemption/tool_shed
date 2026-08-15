@@ -4,7 +4,7 @@ Updated: 2026-08-15
 
 ## Owner State
 
-- Last completed: discover-focus-areas-and-render-readiness-cards — Discover focus areas and render readiness cards
+- Last completed: bound-updater-backup-scope-and-prune-archives — Bound updater backup scope and prune obsolete verified archives
 - Working now: none
 - Next: none
 - Blocker or decision needed: none

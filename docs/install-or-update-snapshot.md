@@ -140,12 +140,23 @@ If EXISTING UPDATE:
 13. Show a concise summary of differences between the existing snapshot and staged release.
     Exclude .git, caches, temporary files, generated state, and any work/ directory. Never include
     the project's root work/ in the comparison.
-14. Create a timestamped repository-root backup archive:
+14. Compute and report the exact mutation surface and estimated archive size, then create a
+    timestamped repository-root backup archive:
     tool_shed.backup-YYYYMMDDTHHMMSSZ.tar
-    Confirm it contains the existing tool_shed/ snapshot plus the pre-migration root work/,
-    legacy q&a/ when present, and .gitignore. Reject unsupported members and verify every file.
+    Include the existing `tool_shed/`, `.gitignore` when mutable, selected provider instruction
+    files, exact Tool Shed-owned work projections/directories, canonical and legacy Q&A migration
+    trees, and absence markers needed to remove newly created paths during rollback. Do not include
+    unrelated root `work/` content. The embedded manifest records included/excluded paths, hashes,
+    source and target versions, updater protocol, timestamp, transaction identity, and estimated
+    size. Reject unsafe members and verify every archived file.
+    Policy-declared generated output such as `work/evidence/generated/` remains excluded when the
+    selected installer cannot mutate it; record and hash that exclusion. If a future migration must
+    mutate a normally excluded tree, expand the declared scope and report why before writing. Such
+    a release declares `updater_mutation_paths` as a list of objects with a workspace-relative
+    `path`, a `mode` of `file`, `tree`, or `directory-marker`, and a non-empty `reason`; reject
+    malformed declarations and paths that escape the workspace.
 15. Replace only the workspace's tool_shed/ directory with the staged snapshot at this stage. Keep
-    the backup; the post-install transaction may then converge the documented workspace surfaces.
+    the backup; the post-install transaction may then converge only the declared workspace surfaces.
 
 If NEW INSTALLATION:
 
@@ -181,14 +192,16 @@ Post-install verification for either path:
     the user-level target. For an exact older released skill, rename it to a timestamped backup
     outside the active `skills/` directory;
     for a missing target, install without a backup. Verify byte-for-byte equality after replacement
-    and restore the backup if synchronization fails. Never merge skill directories. Report that a
-    fresh Codex session is required.
+    and write a verified sidecar ownership manifest with versions, timestamp, transaction identity,
+    and tree hash. Restore the backup and remove its sidecar if synchronization fails. Never merge
+    skill directories. Report that a fresh Codex session is required.
 
 Failure handling:
 
 21. For EXISTING UPDATE, if replacement or post-install verification fails:
     - remove only the failed replacement and affected migrated workspace paths
-    - restore tool_shed/, work/, legacy q&a/, and .gitignore from the verified backup archive
+    - restore or remove exactly the paths and absence markers declared by the verified backup
+      manifest
     - restore every selected provider instruction file byte-for-byte, removing only files created
       by the failed guidance refresh
     - verify the restored snapshot
@@ -196,18 +209,32 @@ Failure handling:
 22. For NEW INSTALLATION, if post-install verification fails:
     - remove only the newly installed tool_shed/ directory
     - restore or remove selected provider instruction files using the pre-install capture
-    - restore the exact pre-install work/, legacy q&a/, and .gitignore state from the temporary
-      verified transaction backup
+    - restore the exact declared pre-install work projections, Q&A migration paths, provider files,
+      directory markers, and `.gitignore` state from the temporary verified transaction backup
     - report any remaining empty directories for manual review
 
 Success report:
 
-23. Report:
+23. After every installation, convergence check, optional skill synchronization, and validation
+    succeeds, inventory canonical updater-owned workspace and user-skill backups. Verify structure,
+    ownership manifest, versions, paths, and content before classification. Protect the current
+    immediate rollback archive and retain the newest two verified archives by default, including
+    the protected archive. Prune only older verified updater-owned archives. Preserve and report
+    unknown, manually named, malformed, unsupported, symlinked, or unverifiable candidates. Never
+    prune on failure or rollback. Backup deletion is irreversible.
+    - `--backup-retention COUNT` overrides the total retained count and cannot be below one.
+    - `--no-prune-backups` performs classification without deletion.
+    - `--prune-preview` performs only read-only workspace and user-skill classification; it does
+      not fetch, install, synchronize, or delete.
+    - `.tool-shed-policy.json` may set `backup_policy.retention`; an explicit CLI value wins.
+    - A byte-identical current-version check creates no redundant archive.
+24. Report:
     - whether NEW INSTALLATION or EXISTING UPDATE was performed
     - previous local version and integrity state, when applicable
     - installed version and selected release tag
     - tag commit and verified content release_commit
     - exact backup path, when applicable
+    - declared mutation scope, exclusions, and embedded manifest metadata
     - temporary-clone and installed-snapshot validation results
     - Git status changes relative to the initial status
     - confirmation that owner-authored work content was preserved, whether Tool Shed-owned work
@@ -217,11 +244,14 @@ Success report:
     - preflight or reconciliation warnings and recommended mitigation level
     - user-level Codex skill state, exact path, synchronization result, backup path, and restart
       requirement when Codex is selected
+    - configured retention source, protected/retained/removable/pruned/unknown backup sets,
+      cleanup errors, and bytes reclaimed for both workspace and user-skill backups
     - remaining manual follow-up
 
-Do not commit, push, delete an update backup, update another workspace, perform a fleet rollout,
-downgrade a newer snapshot, or create project planning artifacts without separate explicit
-authorization.
+Do not commit, push, manually delete unknown or unverifiable recovery material, update another
+workspace, perform a fleet rollout, downgrade a newer snapshot, or create project planning
+artifacts without separate explicit authorization. Normal verified retention is part of an
+explicit updater invocation unless `--no-prune-backups` is used.
 ```
 
 Remote stable tags and the selected tag's two-commit release provenance are authoritative.
