@@ -2,13 +2,15 @@
 
 Generated from artifact headers. `work/index.json` contains the same navigation data for automation. Do not put durable project truth only here; keep current truth in docs or README files.
 
-Updated: 2026-08-14
+Updated: 2026-08-15
 
 ## Orientation
 
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-14 | none | - |
+| [work/00-campaigns/active/discover-focus-areas-and-render-readiness-cards.md](work/00-campaigns/active/discover-focus-areas-and-render-readiness-cards.md) | campaign | queued | 2026-08-15 | execute when selected from the active campaign queue | - |
+| [work/00-campaigns/active/unify-dependency-aware-campaign-readiness.md](work/00-campaigns/active/unify-dependency-aware-campaign-readiness.md) | campaign | queued | 2026-08-15 | execute when selected from the active campaign queue | - |
 | [work/00-campaigns/completed/audit-and-refresh-tool-shed-documentation.md](work/00-campaigns/completed/audit-and-refresh-tool-shed-documentation.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/automate-dangler-resolution-reconciliation.md](work/00-campaigns/completed/automate-dangler-resolution-reconciliation.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/complete-portable-verified-installer.md](work/00-campaigns/completed/complete-portable-verified-installer.md) | campaign | complete | 2026-08-14 | none | - |
@@ -65,6 +67,6 @@ Updated: 2026-08-14
 
 ## Summary
 
-- Total artifacts: 48
-- Active artifacts: 1
+- Total artifacts: 50
+- Active artifacts: 3
 - Completed/decided artifacts: 45
