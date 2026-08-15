@@ -21,6 +21,23 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
+      "disposition": "none",
+      "next_action": "execute the campaign completion gate",
+      "parent": null,
+      "path": "work/00-campaigns/active/align-work3-documents-with-coded-work.md",
+      "produces": null,
+      "project_map": null,
+      "status": "working",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Align Work3 documents with coded work",
+      "type": "campaign",
+      "updated": "2026-08-15"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
       "disposition": "completed",
       "next_action": "none",
       "parent": null,
@@ -477,6 +494,23 @@
       "updated": "2026-08-09"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": null,
+      "next_action": "review when an enduring responsibility boundary changes",
+      "parent": null,
+      "path": "work/focus-areas.md",
+      "produces": null,
+      "project_map": null,
+      "status": "approved",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Tool Shed Focus Areas",
+      "type": "focus-area-catalog",
+      "updated": "2026-08-15"
+    },
+    {
       "campaign": "file-codex-desktop-robustness-issue",
       "campaign_reason": null,
       "canonical_truth": null,
@@ -894,8 +928,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 1,
+    "active_artifacts": 2,
     "completed_or_decided_artifacts": 49,
-    "total_artifacts": 52
+    "total_artifacts": 54
   }
 }

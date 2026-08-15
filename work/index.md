@@ -9,6 +9,7 @@ Updated: 2026-08-15
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-14 | none | - |
+| [work/00-campaigns/active/align-work3-documents-with-coded-work.md](work/00-campaigns/active/align-work3-documents-with-coded-work.md) | campaign | working | 2026-08-15 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/audit-and-refresh-tool-shed-documentation.md](work/00-campaigns/completed/audit-and-refresh-tool-shed-documentation.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/automate-dangler-resolution-reconciliation.md](work/00-campaigns/completed/automate-dangler-resolution-reconciliation.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/bound-updater-backup-scope-and-prune-archives.md](work/00-campaigns/completed/bound-updater-backup-scope-and-prune-archives.md) | campaign | complete | 2026-08-15 | none | - |
@@ -36,6 +37,7 @@ Updated: 2026-08-15
 | [work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md](work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md) | evidence | complete | 2026-08-09 | none | work/wp/completed/wp-evidence-responsive-tool-shed-execution.md |
 | [work/evidence/evidence-tool-shed-provider-portability.md](work/evidence/evidence-tool-shed-provider-portability.md) | - | - | - | - | - |
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |
+| [work/focus-areas.md](work/focus-areas.md) | focus-area-catalog | approved | 2026-08-15 | review when an enduring responsibility boundary changes | - |
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | active | 2026-08-14 | review the exact target manifest before authorizing the first guarded fleet snapshot update | - |
@@ -69,6 +71,6 @@ Updated: 2026-08-15
 
 ## Summary
 
-- Total artifacts: 52
-- Active artifacts: 1
+- Total artifacts: 54
+- Active artifacts: 2
 - Completed/decided artifacts: 49
