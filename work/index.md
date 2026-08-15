@@ -9,7 +9,7 @@ Updated: 2026-08-15
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-14 | none | - |
-| [work/00-campaigns/active/align-work3-documents-with-coded-work.md](work/00-campaigns/active/align-work3-documents-with-coded-work.md) | campaign | working | 2026-08-15 | execute the campaign completion gate | - |
+| [work/00-campaigns/completed/align-work3-documents-with-coded-work.md](work/00-campaigns/completed/align-work3-documents-with-coded-work.md) | campaign | complete | 2026-08-15 | none | - |
 | [work/00-campaigns/completed/audit-and-refresh-tool-shed-documentation.md](work/00-campaigns/completed/audit-and-refresh-tool-shed-documentation.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/automate-dangler-resolution-reconciliation.md](work/00-campaigns/completed/automate-dangler-resolution-reconciliation.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/bound-updater-backup-scope-and-prune-archives.md](work/00-campaigns/completed/bound-updater-backup-scope-and-prune-archives.md) | campaign | complete | 2026-08-15 | none | - |
@@ -72,5 +72,5 @@ Updated: 2026-08-15
 ## Summary
 
 - Total artifacts: 54
-- Active artifacts: 2
-- Completed/decided artifacts: 49
+- Active artifacts: 1
+- Completed/decided artifacts: 50
