@@ -69,9 +69,9 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
   "notes": "Add full Tool Shed upgrade command",
-  "release_commit": null,
+  "release_commit": "8adcb66b553fb74d256636f81e933b6c39fd472b",
   "release_tag": "v0.20.0",
-  "released_at": null,
+  "released_at": "2026-08-15T14:48:42Z",
   "shed_version": "0.20.0",
   "updated_at": "2026-08-15"
 }
