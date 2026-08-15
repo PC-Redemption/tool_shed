@@ -6,6 +6,8 @@ Updated: {{ date }}
 Next Action: execute when selected from the active campaign queue
 Campaign ID: {{ campaign_id }}
 Outcome: {{ outcome }}
+Primary Focus Areas: none
+Supporting Focus Areas: none
 Depends On: none
 Decision: none
 Detour For: none

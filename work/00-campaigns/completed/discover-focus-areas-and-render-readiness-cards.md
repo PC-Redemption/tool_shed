@@ -1,9 +1,9 @@
 # Discover focus areas and render readiness cards
 
-Status: working
+Status: complete
 Type: campaign
 Updated: 2026-08-15
-Next Action: execute the campaign completion gate
+Next Action: none
 Campaign ID: discover-focus-areas-and-render-readiness-cards
 Outcome: Tool Shed supports owner-approved, evidence-derived focus-area catalogs and renders deterministic, human-scannable campaign readiness cards using shared dependency-aware semantics.
 Depends On: unify-dependency-aware-campaign-readiness
@@ -11,8 +11,10 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: Issue #30 focus-area discovery, durable catalog, campaign fields, validation and migration, readiness-card rendering, tests, and operator documentation are complete; shared readiness semantics remain consistent and full validation passes.
-Completion Evidence: none
-Disposition: none
+Completion Evidence: Implemented focus-area catalog/schema, exact legacy migration, shared readiness cards, onboarding and operator guidance; focused checks and full validate_tool_shed.py passed 110 tests plus provider, index, stale-path, work-state, and smoke validation.
+Completion Date: 2026-08-15
+Completion Order: 12
+Disposition: completed
 
 ## Request
 

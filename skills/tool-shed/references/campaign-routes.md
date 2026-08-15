@@ -105,6 +105,12 @@ Durable owner-facing campaign state lives under first-sorted `work/00-campaigns/
 - `completed-queue.md`: newest-first verified completion history;
 - `active/`, `completed/`, `deferred/`, and `abandoned/`: detailed campaign requests by lifecycle.
 
+Queue entries are accessible cards with icon-plus-text `WORKING`, `READY`, `WAITING`, `BLOCKED`, or
+`COMPLETE` states. Use the shared dependency-and-decision readiness calculation for status, `next`,
+rendering, and reconciliation. If `work/focus-areas.md` is owner-approved, display catalog names and
+require every ordinary active campaign to have a known primary ID; supporting IDs are optional.
+Never hard-code or silently approve a focus taxonomy.
+
 Keep `work/01-q&a/ask.txt` as transient intake. Accepting an inbox request may create a durable
 campaign, but never moves, clears, or rewrites the inbox without explicit operator authorization.
 
@@ -149,8 +155,10 @@ priority or direction is ambiguous. Blocked campaigns stay active; deferral is a
 priority decision; abandonment preserves disposition history.
 
 Use `migrate-preview` to inspect Markdown requests and actionable inbox lines in canonical
-`work/01-q&a/` or pre-installer legacy `work/q&a/`. It never writes. Campaign conversion requires a separate exact approved manifest and is
-not implied by preview, installation, update, or `ts:ask`.
+`work/01-q&a/` or pre-installer legacy `work/q&a/`. It also previews legacy outcome focus phrases;
+only fully matched values from an approved catalog produce suggested `set_focus_areas` operations.
+It never writes. Campaign or focus-area conversion requires a separate exact approved manifest and
+is not implied by preview, installation, update, or `ts:ask`.
 
 End every Tool Shed campaign response with exactly one verdict:
 

@@ -9,11 +9,11 @@ Updated: 2026-08-15
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-14 | none | - |
-| [work/00-campaigns/active/discover-focus-areas-and-render-readiness-cards.md](work/00-campaigns/active/discover-focus-areas-and-render-readiness-cards.md) | campaign | working | 2026-08-15 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/audit-and-refresh-tool-shed-documentation.md](work/00-campaigns/completed/audit-and-refresh-tool-shed-documentation.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/automate-dangler-resolution-reconciliation.md](work/00-campaigns/completed/automate-dangler-resolution-reconciliation.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/complete-portable-verified-installer.md](work/00-campaigns/completed/complete-portable-verified-installer.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/converge-upgrades-to-current-work-structure.md](work/00-campaigns/completed/converge-upgrades-to-current-work-structure.md) | campaign | complete | 2026-08-14 | none | - |
+| [work/00-campaigns/completed/discover-focus-areas-and-render-readiness-cards.md](work/00-campaigns/completed/discover-focus-areas-and-render-readiness-cards.md) | campaign | complete | 2026-08-15 | none | - |
 | [work/00-campaigns/completed/evaluate-workspace-performance-collector.md](work/00-campaigns/completed/evaluate-workspace-performance-collector.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/file-codex-desktop-robustness-issue.md](work/00-campaigns/completed/file-codex-desktop-robustness-issue.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/owner-facing-campaign-queues.md](work/00-campaigns/completed/owner-facing-campaign-queues.md) | campaign | complete | 2026-08-14 | none | - |
@@ -68,5 +68,5 @@ Updated: 2026-08-15
 ## Summary
 
 - Total artifacts: 50
-- Active artifacts: 2
-- Completed/decided artifacts: 46
+- Active artifacts: 1
+- Completed/decided artifacts: 47

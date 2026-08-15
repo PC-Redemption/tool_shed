@@ -242,6 +242,23 @@ Completion requires the request's explicit completion gate and applicable verifi
 the request and updates both queue views through a recoverable operation. Blocked work stays
 active. Deferral and abandonment require explicit lifecycle reasons.
 
+Active queue entries render as cards with icon-plus-text readiness states: `WORKING`, `READY`,
+`WAITING`, `BLOCKED`, or `COMPLETE`. `next`, status, queue rendering, and reconciliation all use the
+same dependency-and-decision calculation, so the visual state cannot silently disagree with
+selection. Dependency rows show each prerequisite's current state.
+
+Projects can keep an evidence-backed focus catalog at `work/focus-areas.md`. Existing repositories
+remain valid without one. Onboarding creates a proposed catalog, and owner approval changes it to
+`Status: approved`; Tool Shed never invents or approves a generic taxonomy. Once approved, every
+ordinary active campaign must name at least one known `Primary Focus Areas` ID and may name
+`Supporting Focus Areas`. Queue cards display the catalog names.
+
+Refresh the catalog when an enduring responsibility boundary changes: a new or retired product,
+service, repository, external application, hardware/runtime boundary, qualification regime,
+release/regulatory/supply workflow, or a repeated campaign that does not fit the approved areas.
+Return edits to `Status: proposed`, record new evidence and uncertainty, and require owner approval
+before the revised catalog governs assignments.
+
 `reconcile_campaign_queue.py` automatically creates or refreshes one Dangler Resolution campaign
 for unclassified unresolved artifacts and places it first among queued work without interrupting a
 working campaign. `--dry-run` preserves read-only inspection. The report separates mechanically
@@ -253,9 +270,12 @@ ambiguous semantic decisions remain owner-controlled, and terminal manifest oper
 completed, deferred, or abandoned history.
 
 Use `python3 tool_shed/scripts/campaign_queue.py --workspace . migrate-preview --json` to inspect
-Markdown requests under `work/01-q&a/` or legacy `work/q&a/` and actionable inbox lines. Preview never writes, and
-installation never converts those requests into campaigns or clears the canonical inbox. Applying
-a campaign conversion requires a separately approved exact manifest. The filesystem migration of
+Markdown requests under `work/01-q&a/` or legacy `work/q&a/`, actionable inbox lines, and legacy
+campaign outcome clauses such as `Focus areas: Firmware, Qualification`. Preview never writes.
+When every legacy name matches an approved catalog, it returns a suggested exact manifest using
+`set_focus_areas`; unresolved or ambiguous names remain owner decisions. Installation never
+converts requests, rewrites campaign prose, or clears the canonical inbox. Applying a campaign or
+focus-area migration requires a separately approved exact manifest. The filesystem migration of
 legacy Q&A folders is a distinct installer operation described below.
 
 ## Q&A Inbox

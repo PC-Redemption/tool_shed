@@ -77,7 +77,18 @@ move: add its exact path to `.git/info/exclude`, direct future raw output to
 - active unknowns
 - the current ground-level next action
 
-7. Fill the inventory with observed surfaces:
+7. Discover the project's enduring focus areas in `work/focus-areas.md`:
+
+- inspect docs and architecture, source and build targets, external apps and repositories,
+  runtime/service/hardware boundaries, tests and fixtures, qualification infrastructure,
+  deployment/release/regulatory/supply workflows, and active/deferred/completed work
+- prefer stable owner responsibilities over temporary initiatives or an assumed generic taxonomy
+- record evidence, inclusions, exclusions, overlaps, gaps, and uncertainties for every proposed area
+- keep `Status: proposed` until the owner approves the complete catalog
+- when approving, assign every active campaign a known primary area in the same exact
+  reconciliation manifest
+
+8. Fill the inventory with observed surfaces:
 
 - docs and README files
 - code entry points and major modules
@@ -86,7 +97,7 @@ move: add its exact path to `.git/info/exclude`, direct future raw output to
 - existing work/planning artifacts
 - risks, unknowns, and stale-looking areas
 
-8. Decide whether to backfill more:
+9. Decide whether to backfill more:
 
 - Route stable current facts to `docs/` or README files.
 - Route unresolved work, uncertainty, risks, and coordination needs to `work/`.
@@ -97,10 +108,10 @@ move: add its exact path to `.git/info/exclude`, direct future raw output to
 - Use ADRs only for decisions supported by evidence.
 - Use runbooks for repeatable operations.
 
-9. Promote settled current truth to `docs/` or README files. Keep coordination under `work/`.
-10. Refresh `work/index.md` and `work/index.json` after filling, moving, completing, or superseding artifacts.
-11. Complete active workpackages with `python3 tool_shed/scripts/complete_workpackage.py work/wp/active/wp-example.md --workspace .`.
-12. Fix stale-link warnings from the completion helper, or run `python3 tool_shed/scripts/check_stale_paths.py --workspace .` after manual moves.
+10. Promote settled current truth to `docs/` or README files. Keep coordination under `work/`.
+11. Refresh `work/index.md` and `work/index.json` after filling, moving, completing, or superseding artifacts.
+12. Complete active workpackages with `python3 tool_shed/scripts/complete_workpackage.py work/wp/active/wp-example.md --workspace .`.
+13. Fix stale-link warnings from the completion helper, or run `python3 tool_shed/scripts/check_stale_paths.py --workspace .` after manual moves.
 
 ## Routing Table
 
@@ -124,6 +135,8 @@ move: add its exact path to `.git/info/exclude`, direct future raw output to
 - `work/index.md` and `work/index.json` list the generated artifacts.
 - The map points to the inventory.
 - The inventory separates observed facts from inferred follow-up.
+- `work/focus-areas.md` contains an evidence-backed proposed catalog or a deliberately approved one.
+- An approved catalog maps every active campaign to at least one known primary focus area.
 - No historical decisions, incidents, or completed work were invented.
 - The stale-path check passes after any artifact moves.
 

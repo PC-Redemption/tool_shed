@@ -74,6 +74,7 @@ def main() -> int:
 
     map_path = workspace / "work" / "maps" / f"map-{slug}.md"
     inventory_path = workspace / "work" / "inventories" / f"inventory-{slug}-surfaces.md"
+    focus_area_path = workspace / "work" / "focus-areas.md"
 
     map_content = render_template(
         read_template(shed, "templates/project-map.md"),
@@ -83,15 +84,22 @@ def main() -> int:
         read_template(shed, "templates/existing-project-inventory.md"),
         title=f"{args.title} surfaces",
     ).replace("Parent: work/maps/...", f"Parent: work/maps/map-{slug}.md")
+    focus_area_content = render_template(
+        read_template(shed, "templates/focus-area-catalog.md"),
+        title=args.title,
+    )
 
     write_artifact(map_path, map_content, force=args.force)
     write_artifact(inventory_path, inventory_content, force=args.force)
+    if not focus_area_path.exists():
+        write_artifact(focus_area_path, focus_area_content, force=False)
     refresh_work_index(workspace, shed)
     run_preflight(workspace, shed)
 
     print(f"Initialized work tree under {workspace / 'work'}")
     print(map_path)
     print(inventory_path)
+    print(focus_area_path)
     print()
     print("Next discovery commands:")
     print("find . -maxdepth 2 -type f -not -path './.git/*' | sort")
@@ -103,6 +111,11 @@ def main() -> int:
     print("- package/build/test files")
     print("- existing planning files")
     print("- CI/workflow files")
+    print("- runtime, service, hardware, qualification, release, regulatory, and supply boundaries")
+    print()
+    print("Next focus-area step:")
+    print("- propose evidence-backed entries in work/focus-areas.md and request owner approval")
+    print("- approve the catalog before campaign conversion, reconciliation, or area assignment")
     return 0
 
 

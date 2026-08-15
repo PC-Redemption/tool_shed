@@ -1799,6 +1799,222 @@ Next Action: keep going
                 validation["findings"],
             )
 
+    def test_focus_area_catalog_validation_and_readiness_cards(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+            (workspace / "work" / "focus-areas.md").write_text(
+                """# Demo Focus Areas
+
+Status: approved
+Type: focus-area-catalog
+Updated: 2026-08-15
+Next Action: none
+
+Focus Area ID: firmware
+Name: Firmware
+Purpose: Embedded behavior
+Includes: controller logic
+Excludes: release orchestration
+Evidence: src/firmware and firmware tests
+Uncertainty: none
+
+Focus Area ID: qualification
+Name: Qualification and Release
+Purpose: Product qualification and release
+Includes: qualification gates
+Excludes: embedded implementation
+Evidence: qualification tests and release runbooks
+Uncertainty: none
+""",
+                encoding="utf-8",
+            )
+
+            def status() -> dict[str, object]:
+                return json.loads(
+                    run_script(
+                        "scripts/campaign_queue.py", "--workspace", str(workspace),
+                        "status", "--json",
+                    ).stdout
+                )
+
+            def add(
+                campaign_id: str,
+                *,
+                primary: str = "firmware",
+                supporting: str | None = None,
+                depends_on: str | None = None,
+                decision: str | None = None,
+            ) -> None:
+                arguments = [
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "add",
+                    campaign_id, campaign_id.title(), "--outcome", f"deliver {campaign_id}",
+                    "--completion-gate", f"{campaign_id} verified",
+                    "--primary-focus-area", primary,
+                    "--expect", str(status()["state_token"]),
+                ]
+                if supporting:
+                    arguments.extend(["--supporting-focus-area", supporting])
+                if depends_on:
+                    arguments.extend(["--depends-on", depends_on])
+                if decision:
+                    arguments.extend(["--decision", decision])
+                run_script(*arguments)
+
+            add("foundation")
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "start", "foundation",
+                "--expect", str(status()["state_token"]),
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "complete", "foundation",
+                "--gate-passed", "--evidence", "verified",
+                "--expect", str(status()["state_token"]),
+            )
+            add("working", supporting="qualification")
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "start", "working",
+                "--expect", str(status()["state_token"]),
+            )
+            add("ready", primary="qualification")
+            add("waiting", primary="qualification", depends_on="working")
+            add("blocked", decision="owner approval")
+
+            payload = status()
+            self.assertEqual(
+                payload["readiness"],
+                {
+                    "working": "working",
+                    "ready": "ready",
+                    "waiting": "waiting",
+                    "blocked": "blocked",
+                },
+            )
+            self.assertEqual(payload["next"], "ready")
+            selected = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "next", "--json",
+                ).stdout
+            )
+            self.assertEqual(selected["campaign_id"], "working")
+
+            queue = (
+                workspace / "work" / "00-campaigns" / "active-queue.md"
+            ).read_text(encoding="utf-8")
+            for display in (
+                "🔵 **WORKING**", "🟢 **READY**", "🟡 **WAITING**", "🔴 **BLOCKED**"
+            ):
+                self.assertIn(display, queue)
+            self.assertIn("**PRIMARY FOCUS AREAS:** Firmware", queue)
+            self.assertIn("**SUPPORTING FOCUS AREAS:** Qualification and Release", queue)
+            self.assertIn("**DEPENDS ON:** `working` — 🔵 **WORKING**", queue)
+            self.assertIn("**DECISION NEEDED:** owner approval", queue)
+            self.assertNotIn("<style", queue.lower())
+            self.assertNotIn("<div", queue.lower())
+
+            ready_path = workspace / "work" / "00-campaigns" / "active" / "ready.md"
+            original = ready_path.read_text(encoding="utf-8")
+            ready_path.write_text(
+                original.replace(
+                    "Primary Focus Areas: qualification",
+                    "Primary Focus Areas: unknown-area",
+                ),
+                encoding="utf-8",
+            )
+            unknown = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace),
+                    "validate", "--json",
+                ).stdout
+            )
+            self.assertTrue(any("unknown IDs: unknown-area" in item for item in unknown["findings"]))
+            ready_path.write_text(
+                original.replace("Primary Focus Areas: qualification", "Primary Focus Areas: none"),
+                encoding="utf-8",
+            )
+            unmapped = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace),
+                    "validate", "--json",
+                ).stdout
+            )
+            self.assertTrue(any("has no Primary Focus Areas" in item for item in unmapped["findings"]))
+
+    def test_focus_area_migration_is_previewed_and_manifest_applied(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+            (workspace / "work" / "focus-areas.md").write_text(
+                """# Demo Focus Areas
+
+Status: approved
+Type: focus-area-catalog
+Updated: 2026-08-15
+Next Action: none
+
+Focus Area ID: firmware
+Name: Firmware
+Purpose: Embedded behavior
+Includes: controller logic
+Excludes: release orchestration
+Evidence: src/firmware and firmware tests
+Uncertainty: none
+
+Focus Area ID: qualification
+Name: Qualification
+Purpose: Product qualification
+Includes: qualification gates
+Excludes: embedded implementation
+Evidence: qualification tests
+Uncertainty: none
+""",
+                encoding="utf-8",
+            )
+            status = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace),
+                    "status", "--json",
+                ).stdout
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "add", "legacy",
+                "Legacy", "--outcome", "deliver legacy — Focus areas: Firmware, Qualification",
+                "--completion-gate", "legacy verified", "--primary-focus-area", "firmware",
+                "--expect", str(status["state_token"]),
+            )
+
+            preview = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace),
+                    "migrate-preview", "--json",
+                ).stdout
+            )
+            migration = preview["focus_area_migration"]
+            self.assertFalse(migration["writes_performed"])
+            self.assertTrue(migration["requires_owner_review"])
+            self.assertEqual(migration["candidates"][0]["matched_ids"], ["firmware", "qualification"])
+            self.assertEqual(migration["candidates"][0]["outcome_after"], "deliver legacy")
+
+            manifest = workspace / "focus-area-migration.json"
+            manifest.write_text(
+                json.dumps(migration["suggested_manifest"]), encoding="utf-8"
+            )
+            applied = json.loads(
+                run_script(
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                    "--apply", "--expect", migration["suggested_manifest"]["state_token"],
+                    "--manifest", str(manifest), "--json",
+                ).stdout
+            )
+            self.assertTrue(applied["writes_performed"])
+            campaign = (
+                workspace / "work" / "00-campaigns" / "active" / "legacy.md"
+            ).read_text(encoding="utf-8")
+            self.assertIn("Outcome: deliver legacy", campaign)
+            self.assertIn("Primary Focus Areas: firmware, qualification", campaign)
+            self.assertNotIn("Focus areas:", campaign)
+            self.assertEqual(applied["validation_findings"], [])
+
     def test_campaign_same_day_completions_preserve_completion_order(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)
@@ -2725,6 +2941,8 @@ Produces:
                 "`ts: reconcile campaigns` as authorization", guidance
             )
             self.assertIn("Dangler Resolution campaign as the first queued work", guidance)
+            self.assertIn("optional project-specific catalog", guidance)
+            self.assertIn("shared dependency/decision readiness states", guidance)
 
     def test_installer_supports_all_provider_adapters_idempotently(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -4313,12 +4531,28 @@ stale canonical-only guidance
 
             self.assertTrue((workspace / "work" / "maps" / "map-index-test.md").exists())
             self.assertTrue((workspace / "work" / "inventories" / "inventory-index-test-surfaces.md").exists())
+            self.assertTrue((workspace / "work" / "focus-areas.md").exists())
             payload = json.loads((workspace / "work" / "index.json").read_text(encoding="utf-8"))
             paths = {item["path"] for item in payload["artifacts"]}
             self.assertIn("work/maps/map-index-test.md", paths)
             self.assertIn("work/inventories/inventory-index-test-surfaces.md", paths)
+            self.assertIn("work/focus-areas.md", paths)
             readme = (workspace / "work" / "README.md").read_text(encoding="utf-8")
             self.assertIn("complete_workpackage.py", readme)
+            review = run_script(
+                "scripts/review_work_state.py",
+                "--workspace",
+                str(workspace),
+                "--strict",
+                "--json",
+            )
+            review_payload = json.loads(review.stdout)
+            self.assertFalse(
+                any(
+                    item["path"] == "work/focus-areas.md"
+                    for item in review_payload["findings"]
+                )
+            )
 
     def test_reasoning_catalog_refresh_uses_codex_model_list_and_preserves_new_labels(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

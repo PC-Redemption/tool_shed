@@ -25,6 +25,8 @@ HEADER_KEYS = (
     "Next Action",
     "Campaign ID",
     "Outcome",
+    "Primary Focus Areas",
+    "Supporting Focus Areas",
     "Depends On",
     "Decision",
     "Detour For",
@@ -37,11 +39,43 @@ HEADER_KEYS = (
     "Reactivate When",
 )
 ID_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-QUEUE_LINK_RE = re.compile(r"^\d+\. \[[^]]+\]\(active/([a-z0-9-]+)\.md\)")
+QUEUE_LINK_RE = re.compile(
+    r"^\d+\. (?:\*\*)?\[[^]]+\]\(active/([a-z0-9-]+)\.md\)(?:\*\*)?"
+)
+FOCUS_AREA_CATALOG = Path("work/focus-areas.md")
+FOCUS_AREA_FIELDS = (
+    "Name",
+    "Purpose",
+    "Includes",
+    "Excludes",
+    "Evidence",
+    "Uncertainty",
+)
+OUTCOME_FOCUS_RE = re.compile(
+    r"(?i)(?:\s*[—-]\s*|\s+)focus areas?:\s*([^.;]+)[.;]?"
+)
 
 
 class CampaignError(ValueError):
     pass
+
+
+@dataclass(frozen=True)
+class FocusArea:
+    focus_area_id: str
+    name: str
+    purpose: str
+    includes: str
+    excludes: str
+    evidence: str
+    uncertainty: str
+
+
+@dataclass(frozen=True)
+class FocusAreaCatalog:
+    path: Path
+    status: str
+    areas: dict[str, FocusArea]
 
 
 @dataclass
@@ -65,14 +99,91 @@ class Campaign:
 
     @property
     def dependencies(self) -> list[str]:
-        value = self.fields.get("Depends On", "none")
-        if value.lower() == "none" or not value.strip():
-            return []
-        return [item.strip() for item in value.split(",") if item.strip()]
+        return _field_list(self.fields.get("Depends On", "none"))
+
+    @property
+    def primary_focus_areas(self) -> list[str]:
+        return _field_list(self.fields.get("Primary Focus Areas", "none"))
+
+    @property
+    def supporting_focus_areas(self) -> list[str]:
+        return _field_list(self.fields.get("Supporting Focus Areas", "none"))
+
+
+def _field_list(value: str) -> list[str]:
+    if value.lower() == "none" or not value.strip():
+        return []
+    return [item.strip() for item in value.split(",") if item.strip()]
 
 
 def campaign_root(workspace: Path) -> Path:
     return workspace / "work" / ROOT_NAME
+
+
+def focus_area_catalog_path(workspace: Path) -> Path:
+    return workspace / FOCUS_AREA_CATALOG
+
+
+def load_focus_area_catalog(workspace: Path) -> FocusAreaCatalog | None:
+    path = focus_area_catalog_path(workspace)
+    if not path.is_file():
+        return None
+    lines = path.read_text(encoding="utf-8").splitlines()
+    headers: dict[str, str] = {}
+    for raw in lines[:40]:
+        if ":" not in raw:
+            continue
+        key, value = raw.split(":", 1)
+        if key.strip() in {"Status", "Type"}:
+            headers[key.strip()] = value.strip()
+    status = headers.get("Status", "").lower()
+    if headers.get("Type") != "focus-area-catalog":
+        raise CampaignError("focus-area catalog Type must be focus-area-catalog")
+    if status not in {"proposed", "approved"}:
+        raise CampaignError("focus-area catalog Status must be proposed or approved")
+
+    records: list[dict[str, str]] = []
+    current: dict[str, str] | None = None
+    for raw in lines:
+        if raw.startswith("Focus Area ID:"):
+            if current is not None:
+                records.append(current)
+            current = {"Focus Area ID": raw.split(":", 1)[1].strip()}
+            continue
+        if current is None or ":" not in raw:
+            continue
+        key, value = raw.split(":", 1)
+        if key.strip() in FOCUS_AREA_FIELDS:
+            current[key.strip()] = value.strip()
+    if current is not None:
+        records.append(current)
+
+    areas: dict[str, FocusArea] = {}
+    for record in records:
+        focus_area_id = record.get("Focus Area ID", "")
+        if not ID_RE.fullmatch(focus_area_id):
+            raise CampaignError(
+                f"focus-area catalog has invalid stable ID: {focus_area_id or 'missing'}"
+            )
+        if focus_area_id in areas:
+            raise CampaignError(f"focus-area catalog has duplicate ID: {focus_area_id}")
+        missing = [key for key in FOCUS_AREA_FIELDS if not record.get(key, "").strip()]
+        if missing:
+            raise CampaignError(
+                f"focus area {focus_area_id} is missing: " + ", ".join(missing)
+            )
+        areas[focus_area_id] = FocusArea(
+            focus_area_id=focus_area_id,
+            name=record["Name"],
+            purpose=record["Purpose"],
+            includes=record["Includes"],
+            excludes=record["Excludes"],
+            evidence=record["Evidence"],
+            uncertainty=record["Uncertainty"],
+        )
+    if status == "approved" and not areas:
+        raise CampaignError("approved focus-area catalog must define at least one area")
+    return FocusAreaCatalog(path=path, status=status, areas=areas)
 
 
 def _default_active_queue() -> str:
@@ -177,8 +288,12 @@ def queue_order(workspace: Path) -> list[str]:
 def state_token(workspace: Path) -> str:
     root = campaign_root(workspace)
     digest = hashlib.sha256()
-    for path in sorted(root.rglob("*.md")):
-        digest.update(path.relative_to(root).as_posix().encode("utf-8"))
+    paths = list(root.rglob("*.md"))
+    catalog_path = focus_area_catalog_path(workspace)
+    if catalog_path.is_file():
+        paths.append(catalog_path)
+    for path in sorted(paths):
+        digest.update(path.relative_to(workspace).as_posix().encode("utf-8"))
         digest.update(b"\0")
         digest.update(path.read_bytes())
         digest.update(b"\0")
@@ -210,17 +325,54 @@ def first_ready_campaign(
 ) -> Campaign | None:
     for campaign_id in order:
         item = campaigns.get(campaign_id)
-        if item is None or item.status != "queued":
-            continue
-        if all(
-            dependency in campaigns and campaigns[dependency].status == "complete"
-            for dependency in item.dependencies
-        ):
+        if item is not None and campaign_readiness(item, campaigns) == "ready":
             return item
     return None
 
 
-def render_active_queue(order: list[str], campaigns: dict[str, Campaign]) -> str:
+def campaign_readiness(item: Campaign, campaigns: dict[str, Campaign]) -> str:
+    if item.status == "working":
+        return "working"
+    if item.status == "blocked" or item.fields.get("Decision", "none") != "none":
+        return "blocked"
+    if item.status == "complete":
+        return "complete"
+    if item.status == "queued":
+        incomplete = any(
+            dependency not in campaigns or campaigns[dependency].status != "complete"
+            for dependency in item.dependencies
+        )
+        return "waiting" if incomplete else "ready"
+    return item.status or "unknown"
+
+
+def _readiness_display(readiness: str) -> str:
+    return {
+        "working": "🔵 **WORKING**",
+        "ready": "🟢 **READY**",
+        "waiting": "🟡 **WAITING**",
+        "blocked": "🔴 **BLOCKED**",
+        "complete": "✅ **COMPLETE**",
+    }.get(readiness, f"**{readiness.upper()}**")
+
+
+def _focus_area_names(
+    identifiers: list[str],
+    catalog: FocusAreaCatalog | None,
+) -> list[str]:
+    if catalog is None or catalog.status != "approved":
+        return identifiers
+    return [
+        catalog.areas[identifier].name if identifier in catalog.areas else identifier
+        for identifier in identifiers
+    ]
+
+
+def render_active_queue(
+    order: list[str],
+    campaigns: dict[str, Campaign],
+    catalog: FocusAreaCatalog | None = None,
+) -> str:
     active = [campaigns[item] for item in order if item in campaigns]
     completed = sorted(
         (item for item in campaigns.values() if item.status == "complete"),
@@ -250,14 +402,37 @@ def render_active_queue(order: list[str], campaigns: dict[str, Campaign]) -> str
     if not active:
         lines.append("No active campaigns.")
     for position, item in enumerate(active, start=1):
-        details = [f"state: {item.status}", f"outcome: {item.outcome}"]
+        lines.append(
+            f"{position}. **[{item.title}](active/{item.campaign_id}.md)**"
+        )
+        lines.append(
+            f"   - 🚦 **STATE:** {_readiness_display(campaign_readiness(item, campaigns))}"
+        )
+        primary = _focus_area_names(item.primary_focus_areas, catalog)
+        supporting = _focus_area_names(item.supporting_focus_areas, catalog)
+        if primary:
+            lines.append("   - 🎯 **PRIMARY FOCUS AREAS:** " + "; ".join(primary))
+        if supporting:
+            lines.append("   - 🧩 **SUPPORTING FOCUS AREAS:** " + "; ".join(supporting))
         if item.dependencies:
-            details.append("depends: " + ", ".join(item.dependencies))
+            for dependency in item.dependencies:
+                dependency_item = campaigns.get(dependency)
+                dependency_state = (
+                    campaign_readiness(dependency_item, campaigns)
+                    if dependency_item is not None
+                    else "missing"
+                )
+                lines.append(
+                    f"   - 🔗 **DEPENDS ON:** `{dependency}` — "
+                    + _readiness_display(dependency_state)
+                )
         if item.fields.get("Decision", "none") != "none":
-            details.append("decision: " + item.fields["Decision"])
+            lines.append("   - ⚠️ **DECISION NEEDED:** " + item.fields["Decision"])
+        if item.fields.get("Detour For", "none") != "none":
+            lines.append("   - ↪️ **DETOUR FOR:** " + item.fields["Detour For"])
         if item.fields.get("Return To", "none") != "none":
-            details.append("return: " + item.fields["Return To"])
-        lines.append(f"{position}. [{item.title}](active/{item.campaign_id}.md) — " + " — ".join(details))
+            lines.append("   - ↩️ **RETURN TO:** " + item.fields["Return To"])
+        lines.append("   - 🏁 **OUTCOME:** " + item.outcome)
     return "\n".join(lines).rstrip() + "\n"
 
 
@@ -380,6 +555,11 @@ def _validate_graph(campaigns: dict[str, Campaign]) -> list[str]:
 def validate(workspace: Path) -> list[str]:
     findings: list[str] = []
     campaigns = load_all(workspace)
+    catalog: FocusAreaCatalog | None = None
+    try:
+        catalog = load_focus_area_catalog(workspace)
+    except CampaignError as error:
+        findings.append(f"focus-area catalog is invalid: {error}")
     order = queue_order(workspace)
     active_ids = {item.campaign_id for item in campaigns.values() if item.path.parent.name == "active"}
     if len(order) != len(set(order)):
@@ -410,6 +590,31 @@ def validate(workspace: Path) -> list[str]:
             working += 1
         if item.status == "complete" and not item.fields.get("Completion Date"):
             findings.append(f"{item.campaign_id} is complete without Completion Date")
+        primary = item.primary_focus_areas
+        supporting = item.supporting_focus_areas
+        assigned = [*primary, *supporting]
+        if len(assigned) != len(set(assigned)):
+            findings.append(
+                f"focus-area campaign {item.campaign_id} repeats a primary/supporting assignment"
+            )
+        if assigned and (catalog is None or catalog.status != "approved"):
+            findings.append(
+                f"focus-area campaign {item.campaign_id} assigns areas without an approved catalog"
+            )
+        if catalog is not None and catalog.status == "approved":
+            unknown = sorted(set(assigned) - set(catalog.areas))
+            if unknown:
+                findings.append(
+                    f"focus-area campaign {item.campaign_id} references unknown IDs: "
+                    + ", ".join(unknown)
+                )
+            is_dangler = item.campaign_id == "resolve-unclassified-work" or bool(
+                re.fullmatch(r"resolve-unclassified-work-[2-9][0-9]*", item.campaign_id)
+            )
+            if item.path.parent.name == "active" and not primary and not is_dangler:
+                findings.append(
+                    f"focus-area active campaign {item.campaign_id} has no Primary Focus Areas"
+                )
         raw_completion_order = item.fields.get("Completion Order")
         if raw_completion_order is not None:
             try:
@@ -434,7 +639,9 @@ def validate(workspace: Path) -> list[str]:
     def without_updated(text: str) -> str:
         return "\n".join(line for line in text.splitlines() if not line.startswith("Updated: "))
 
-    if without_updated(active_path.read_text(encoding="utf-8")) != without_updated(render_active_queue(order, campaigns)):
+    if without_updated(active_path.read_text(encoding="utf-8")) != without_updated(
+        render_active_queue(order, campaigns, catalog)
+    ):
         findings.append("active-queue.md is stale or manually inconsistent")
     if without_updated(completed_path.read_text(encoding="utf-8")) != without_updated(render_completed_queue(campaigns)):
         findings.append("completed-queue.md is stale or manually inconsistent")
@@ -456,6 +663,8 @@ def _campaign_text(
     decision: str,
     detour_for: str,
     return_to: str,
+    primary_focus_areas: list[str] | None = None,
+    supporting_focus_areas: list[str] | None = None,
 ) -> str:
     fields = {
         "Status": "queued",
@@ -464,6 +673,8 @@ def _campaign_text(
         "Next Action": "execute when selected from the active campaign queue",
         "Campaign ID": campaign_id,
         "Outcome": outcome,
+        "Primary Focus Areas": ", ".join(primary_focus_areas or []) or "none",
+        "Supporting Focus Areas": ", ".join(supporting_focus_areas or []) or "none",
         "Depends On": ", ".join(dependencies) if dependencies else "none",
         "Decision": decision,
         "Detour For": detour_for,
@@ -479,7 +690,9 @@ def _campaign_text(
 def _refresh_changes(workspace: Path, order: list[str], campaigns: dict[str, Campaign]) -> dict[Path, str | None]:
     root = campaign_root(workspace)
     return {
-        root / "active-queue.md": render_active_queue(order, campaigns),
+        root / "active-queue.md": render_active_queue(
+            order, campaigns, load_focus_area_catalog(workspace)
+        ),
         root / "completed-queue.md": render_completed_queue(campaigns),
     }
 
@@ -519,6 +732,8 @@ def add_campaign(args: argparse.Namespace, workspace: Path) -> None:
         args.decision,
         args.detour_for,
         args.return_to,
+        args.primary_focus_area,
+        args.supporting_focus_area,
     )
     new_item = parse_campaign_text(path, text)
     campaigns[args.campaign_id] = new_item
@@ -566,6 +781,8 @@ def mutate_campaign(args: argparse.Namespace, workspace: Path) -> None:
             raise CampaignError("only a queued campaign can start")
         if any(other.status == "working" for other in campaigns.values()):
             raise CampaignError("another campaign is already working")
+        if item.fields.get("Decision", "none") != "none":
+            raise CampaignError("campaign has an unresolved decision")
         incomplete = [dep for dep in item.dependencies if campaigns[dep].status != "complete"]
         if incomplete:
             raise CampaignError("campaign has incomplete dependencies: " + ", ".join(incomplete))
@@ -658,6 +875,57 @@ def migration_preview(workspace: Path) -> dict[str, object]:
             inbox_sources.append(
                 {"path": inbox.relative_to(workspace).as_posix(), "entries": actionable}
             )
+    campaigns = load_all(workspace)
+    catalog = load_focus_area_catalog(workspace)
+    focus_candidates: list[dict[str, object]] = []
+    focus_operations: list[dict[str, object]] = []
+    name_ids = {
+        re.sub(r"[^a-z0-9]+", "-", area.name.lower()).strip("-"): area_id
+        for area_id, area in (catalog.areas.items() if catalog else [])
+    }
+    for item in sorted(campaigns.values(), key=lambda campaign: campaign.campaign_id):
+        match = OUTCOME_FOCUS_RE.search(item.outcome)
+        if match is None:
+            continue
+        raw_values = [
+            value.strip()
+            for value in re.split(r"[,;]", match.group(1))
+            if value.strip()
+        ]
+        matched: list[str] = []
+        unresolved: list[str] = []
+        for value in raw_values:
+            normalized = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
+            if catalog and normalized in catalog.areas:
+                matched.append(normalized)
+            elif normalized in name_ids:
+                matched.append(name_ids[normalized])
+            else:
+                unresolved.append(value)
+        outcome_after = OUTCOME_FOCUS_RE.sub("", item.outcome).strip(" —-;.")
+        candidate: dict[str, object] = {
+            "campaign_id": item.campaign_id,
+            "raw_focus_areas": raw_values,
+            "matched_ids": matched,
+            "unresolved_values": unresolved,
+            "outcome_before": item.outcome,
+            "outcome_after": outcome_after,
+            "requires_owner_review": True,
+        }
+        if catalog and catalog.status == "approved" and matched and not unresolved:
+            operation = {
+                "op": "set_focus_areas",
+                "campaign_id": item.campaign_id,
+                "primary": matched,
+                "supporting": [],
+                "remove_outcome_focus_clause": True,
+            }
+            candidate["manifest_operation"] = operation
+            focus_operations.append(operation)
+        focus_candidates.append(candidate)
+    import reconcile_campaign_queue
+
+    focus_state_token = reconcile_campaign_queue.whole_work_state_token(workspace)
     return {
         "mode": "preview-only",
         "source_requests": linked_requests,
@@ -666,6 +934,19 @@ def migration_preview(workspace: Path) -> dict[str, object]:
         "target_root": "work/00-campaigns/active",
         "writes_performed": False,
         "requires_exact_approved_manifest_to_apply": True,
+        "focus_area_migration": {
+            "catalog_path": FOCUS_AREA_CATALOG.as_posix(),
+            "catalog_status": catalog.status if catalog else "missing",
+            "candidates": focus_candidates,
+            "suggested_manifest": {
+                "schema_version": 1,
+                "kind": "tool-shed-campaign-reconciliation",
+                "state_token": focus_state_token,
+                "operations": focus_operations,
+            },
+            "writes_performed": False,
+            "requires_owner_review": True,
+        },
     }
 
 
@@ -718,6 +999,9 @@ def status_payload(workspace: Path) -> dict[str, object]:
         "blocked": [item.campaign_id for item in blocked],
         "decisions_needed": [item.campaign_id for item in decisions],
         "detours": [item.campaign_id for item in detours],
+        "readiness": {
+            item.campaign_id: campaign_readiness(item, campaigns) for item in ordered
+        },
         "completed": [item.campaign_id for item in completed],
         "dangler_resolution": dangler_resolution,
         "findings": validate(workspace),
@@ -741,6 +1025,8 @@ def build_parser() -> argparse.ArgumentParser:
     add.add_argument("--outcome", required=True)
     add.add_argument("--completion-gate", required=True)
     add.add_argument("--depends-on", action="append")
+    add.add_argument("--primary-focus-area", action="append")
+    add.add_argument("--supporting-focus-area", action="append")
     add.add_argument("--decision", default="none")
     add.add_argument("--detour-for", default="none")
     add.add_argument("--return-to", default="none")

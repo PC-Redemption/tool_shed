@@ -101,6 +101,13 @@ Blocked work remains active. Queue mutations reject stale state and do not silen
 ambiguous priorities. Campaign completion requires its explicit completion gate and applicable
 verification.
 
+Queue entries are readable cards with icon-plus-text readiness states: `WORKING`, `READY`,
+`WAITING`, `BLOCKED`, or `COMPLETE`. The state comes from the same dependency/decision calculation
+used by `next` and reconciliation. Projects may approve an evidence-backed catalog at
+`work/focus-areas.md`; once approved, active campaigns require known `Primary Focus Areas` and may
+also declare `Supporting Focus Areas`. The CLI accepts repeatable `--primary-focus-area ID` and
+`--supporting-focus-area ID` options on `add`.
+
 The deterministic reconciliation utility automatically creates or refreshes one Dangler
 Resolution campaign when unclassified unresolved artifacts exist. It places that campaign first
 among queued work while preserving any currently working campaign. It also reports complete scan
@@ -123,8 +130,11 @@ other `reconciliation_manifest` operations, save the exact approved manifest and
 --expect TOKEN --manifest PATH`. The token covers the complete scanned work surface.
 Generated projection repairs preserve the current valid relative order and never apply the
 separately reported execution-order proposal. Approved manifest operations can create campaigns,
-set explicit associations, or transition campaigns; terminal transitions preserve lifecycle
-history instead of deleting files. Ambiguous semantic or priority choices remain owner-owned.
+set explicit associations or focus areas, or transition campaigns; terminal transitions preserve
+lifecycle history instead of deleting files. `migrate-preview` can suggest exact
+`set_focus_areas` operations for fully matched legacy `Focus areas: ...` outcome prose, but it
+never rewrites that prose itself. Ambiguous semantic, catalog-approval, or priority choices remain
+owner-owned.
 
 ```bash
 python3 tool_shed/scripts/reconcile_campaign_queue.py --workspace . \

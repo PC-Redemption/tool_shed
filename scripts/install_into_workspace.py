@@ -175,6 +175,9 @@ CAMPAIGN_QUEUE_GUIDANCE = f"""{CAMPAIGN_QUEUE_GUIDANCE_START}
 - Treat `ts: reconcile campaigns` as authorization for `reconcile_campaign_queue.py` to automatically create or refresh exactly one Dangler Resolution campaign as the first queued work while preserving any working campaign. Report whole-work coverage, exclusions, and queue drift. Use `--dry-run` for read-only inspection. Apply all other operations only from an exact approved manifest with the reported whole-work state token; never apply proposed execution order or ambiguous lifecycle decisions implicitly.
 - Never silently reorder a campaign when priority or direction is ambiguous. Preserve blocked work as active; require a reason and reactivation condition for deferral and a disposition for abandonment.
 - Complete a campaign only after its explicit completion gate and applicable verification pass. Then update active and completed queues as one recoverable operation and promote the next ready campaign.
+- Treat `work/focus-areas.md` as an optional project-specific catalog. Onboarding creates it as proposed; owner approval is required before it governs campaign assignments or queue cards. Derive areas from project evidence rather than a built-in taxonomy.
+- When an approved catalog exists, require known primary focus-area IDs for ordinary active campaigns, keep supporting IDs optional, and use the shared dependency/decision readiness states for status, selection, rendering, and reconciliation.
+- Preview legacy outcome focus phrases without writing; apply only fully matched focus assignments through an exact approved reconciliation manifest.
 - The workspace installer migrates legacy `work/q&a/` and root `q&a/` contents into `work/01-q&a/` without overwriting collisions, then removes the old folders. Campaign conversion remains preview-only until an exact manifest is explicitly approved.
 {CAMPAIGN_QUEUE_GUIDANCE_END}
 """

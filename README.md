@@ -310,7 +310,8 @@ inspection; `work/01-q&a/ask.txt` is the canonical inbox. The selected request r
 coordination level, so a bounded Direct request does not become a heavyweight campaign.
 
 The installer also creates a first-sorted `work/00-campaigns/` owner control surface. Its
-`active-queue.md` shows last completed, working now, next, blockers, and detour/return state;
+`active-queue.md` shows last completed plus accessible readiness cards for working, ready, waiting,
+blocked, dependencies, focus areas, and detour/return state;
 `completed-queue.md` preserves verified outcomes newest-first. Detailed requests move through
 `active/`, `completed/`, `deferred/`, and `abandoned/`. The campaign lifecycle is separate from
 `ask.txt`: intake stays transient while accepted work becomes durable and ordered.
@@ -323,8 +324,11 @@ Use `ts: status`, `ts: next`, `ts: add <idea>`, `ts: unblock <campaign>`, `ts: d
 `ts: abandon <campaign>`, `ts: reconcile campaigns`, and `ts: completed`. Deterministic mutations require the current state
 token and reject stale writes. In owner-queue requests, `camp` aliases `campaign`, while `que N`
 identifies the campaign at 1-based ordered queue number N and is resolved from a fresh status read.
-`campaign_queue.py migrate-preview` reports legacy candidates but
-never moves or rewrites them; applying a migration requires a separate exact approved manifest.
+`campaign_queue.py migrate-preview` reports legacy candidates but never moves or rewrites them;
+this includes legacy `Focus areas: ...` outcome prose. Projects may approve their own
+evidence-backed catalog at `work/focus-areas.md`; once approved, active campaigns use known
+primary/supporting IDs and cards display their names. Applying any migration requires a separate
+exact approved manifest.
 `reconcile_campaign_queue.py` reports queue drift, whole-`work/` campaign coverage and exclusions,
 unresolved clusters, lifecycle mismatches, and a reasoned execution order. Its default route
 automatically creates or refreshes one Dangler Resolution campaign as the first queued work while

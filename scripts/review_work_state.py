@@ -84,7 +84,7 @@ def add_header_findings(
                     Finding("STALE_ACTIVE", "warning", path, f"active artifact has not been updated for {age} days")
                 )
 
-        if kind not in {"project-map", "campaign"}:
+        if kind not in {"project-map", "campaign", "focus-area-catalog"}:
             parent = artifact.fields.get("Parent") or artifact.fields.get("Project Map") or ""
             if normalized(parent) in PLACEHOLDER_VALUES:
                 findings.append(

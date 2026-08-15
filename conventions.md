@@ -135,6 +135,25 @@ approved candidates. It never rewrites Git history.
 - `deferred/` contains intentionally postponed requests with a reason and reactivation condition
 - `abandoned/` contains cancelled, rejected, or superseded requests with a disposition
 
+`work/focus-areas.md` is the optional project-specific focus-area catalog. Onboarding creates it
+as `Status: proposed`; ordinary queue rendering and assignment validation consume it only after an
+owner changes it to `Status: approved`. Derive areas from the complete project surface—docs,
+source and build targets, external integrations, runtime or hardware boundaries, tests and
+fixtures, qualification, deployment, release, regulatory, supply, and existing work—rather than
+from a built-in taxonomy. Each area uses a stable kebab-case ID plus `Name`, `Purpose`, `Includes`,
+`Excludes`, `Evidence`, and `Uncertainty`.
+
+Campaign requests may declare `Primary Focus Areas` and `Supporting Focus Areas` as comma-separated
+IDs. An approved catalog requires every ordinary active campaign to have at least one known primary
+area; supporting areas are optional, and an ID cannot appear in both fields. Queue cards render the
+catalog names and one accessible readiness state: `WORKING`, `READY`, `WAITING`, `BLOCKED`, or
+`COMPLETE`. Readiness is computed by the same dependency and decision helper used for selection and
+reconciliation.
+
+Refresh the catalog after durable product, repository, integration, runtime/hardware,
+qualification, release/regulatory/supply, or responsibility-boundary changes, or when repeated work
+does not fit existing areas. Revisions return to proposed status and require renewed owner approval.
+
 Every lifecycle mutation uses `scripts/campaign_queue.py`, requires the current state token, and
 updates requests and both queue projections through a recoverable transaction. Manual or stale
 queue edits fail validation. Blocked work remains active. Deferral and abandonment are explicit
@@ -142,7 +161,9 @@ priority decisions, not substitutes for temporary blocking.
 
 `work/01-q&a/ask.txt` remains transient intake. Accepting an inbox entry may create a durable campaign
 under `work/00-campaigns/active/`, but no campaign operation clears or rewrites the inbox. Legacy
-request migration is preview-only until an exact manifest is separately approved.
+request migration is preview-only until an exact manifest is separately approved. Legacy outcome
+phrases such as `Focus areas: ...` are likewise previewed; only a fully matched, owner-approved
+`set_focus_areas` manifest operation may move them into durable headers and remove the prose clause.
 
 The workspace installer migrates all files from legacy `work/q&a/` and root `q&a/` into
 `work/01-q&a/`, verifies copied bytes, preserves collisions with source-specific filenames, and

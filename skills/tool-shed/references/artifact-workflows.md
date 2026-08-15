@@ -47,6 +47,12 @@ Default to Level 2 onboarding:
 
 Use `python3 <shed>/scripts/onboard_existing_project.py "Project name" --workspace <workspace>` when
 available. Stable facts go to project docs; unresolved work, risks, and uncertainty go to `work/`.
+Onboarding also creates `work/focus-areas.md` as a proposed catalog. Discover project-specific
+areas from docs, code/build targets, integrations, runtime or hardware, tests/fixtures,
+qualification, deployment/release/regulatory/supply workflows, and existing work. Record evidence,
+inclusions, exclusions, overlaps, gaps, and uncertainty; owner approval is required before ordinary
+queue rendering consumes the catalog. Approval and complete active-campaign assignment should be
+one exact reconciliation transaction.
 
 ## Evidence And Verification
 

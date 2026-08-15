@@ -23,13 +23,15 @@ REPAIRABLE_FINDINGS = (
     "queue entries missing active request files:",
     "active-queue.md is stale or manually inconsistent",
     "completed-queue.md is stale or manually inconsistent",
+    "focus-area ",
 )
 
 ACTIVE_ARTIFACT_STATUSES = {"active", "blocked", "proposed", "queued", "working"}
 TERMINAL_ARTIFACT_STATUSES = {"accepted", "abandoned", "complete", "completed", "decided", "done", "superseded"}
 SUPPORTED_ARTIFACT_TYPES = {
     "adr", "campaign", "checklist", "decision-matrix", "evidence", "incident",
-    "inventory", "project-map", "runbook", "spike", "ticket", "workpackage",
+    "focus-area-catalog", "inventory", "project-map", "runbook", "spike", "ticket",
+    "workpackage",
 }
 PLACEHOLDER_VALUES = {"", "-", "...", "none", "work/...", "work/maps/..."}
 RELATIONSHIP_FIELDS = ("Parent", "Project Map", "Depends On", "Produces", "Supersedes", "Superseded By")
@@ -151,6 +153,9 @@ def discover_whole_work(
 
     for artifact in artifacts:
         path = artifact.path.as_posix()
+        if path == campaign_queue.FOCUS_AREA_CATALOG.as_posix():
+            exclusions.append({"path": path, "reason": "focus-area-catalog"})
+            continue
         if is_campaign_request(path):
             exclusions.append({"path": path, "reason": "campaign-lifecycle-source"})
             continue
@@ -549,18 +554,19 @@ def order_reason(
     item: campaign_queue.Campaign,
     campaigns: dict[str, campaign_queue.Campaign],
 ) -> tuple[int, str]:
-    if item.status == "working":
+    readiness = campaign_queue.campaign_readiness(item, campaigns)
+    if readiness == "working":
         return 0, "working campaign remains first"
-    if item.status == "queued":
+    if readiness == "ready":
+        return 1, "queued, decision-clear, and dependency-ready"
+    if readiness == "waiting":
         incomplete = [
             dependency
             for dependency in item.dependencies
             if dependency not in campaigns or campaigns[dependency].status != "complete"
         ]
-        if not incomplete:
-            return 1, "queued and dependency-ready"
         return 2, "queued with incomplete dependencies: " + ", ".join(incomplete)
-    if item.status == "blocked":
+    if readiness == "blocked":
         return 3, "blocked or awaiting an owner decision"
     return 4, f"unexpected active status: {item.status or 'missing'}"
 
@@ -583,7 +589,8 @@ def inspect_queue(workspace: Path, stalled_days: int) -> dict[str, Any]:
     repair_order.extend(item for item in missing_from_queue if item not in repair_order)
 
     root = campaign_queue.campaign_root(workspace)
-    expected_active = campaign_queue.render_active_queue(repair_order, campaigns)
+    catalog = campaign_queue.load_focus_area_catalog(workspace)
+    expected_active = campaign_queue.render_active_queue(repair_order, campaigns, catalog)
     expected_completed = campaign_queue.render_completed_queue(campaigns)
     active_projection_stale = without_updated(
         (root / "active-queue.md").read_text(encoding="utf-8")
@@ -601,22 +608,22 @@ def inspect_queue(workspace: Path, stalled_days: int) -> dict[str, Any]:
     cutoff = date.today() - timedelta(days=stalled_days)
     for campaign_id in repair_order:
         item = active[campaign_id]
-        if item.status == "working":
+        readiness = campaign_queue.campaign_readiness(item, campaigns)
+        if readiness == "working":
             working.append(campaign_id)
-        elif item.status == "blocked":
+        elif readiness == "blocked":
             blocked.append(campaign_id)
-        elif item.status == "queued":
+        elif readiness == "waiting":
             incomplete = [
                 dependency
                 for dependency in item.dependencies
                 if dependency not in campaigns or campaigns[dependency].status != "complete"
             ]
-            if incomplete:
-                dependency_constrained.append(
-                    {"campaign_id": campaign_id, "dependencies": incomplete}
-                )
-            else:
-                ready.append(campaign_id)
+            dependency_constrained.append(
+                {"campaign_id": campaign_id, "dependencies": incomplete}
+            )
+        elif readiness == "ready":
+            ready.append(campaign_id)
         updated_text = item.fields.get("Updated", "")
         try:
             updated = date.fromisoformat(updated_text)
@@ -644,6 +651,9 @@ def inspect_queue(workspace: Path, stalled_days: int) -> dict[str, Any]:
         for campaign_id in proposed_order
     }
     validation_findings = campaign_queue.validate(workspace)
+    focus_area_findings = [
+        finding for finding in validation_findings if finding.startswith("focus-area ")
+    ]
     unsupported_findings = [
         finding
         for finding in validation_findings
@@ -686,6 +696,11 @@ def inspect_queue(workspace: Path, stalled_days: int) -> dict[str, Any]:
         "stalled": stalled,
         "invalid_updated": invalid_updated,
         "validation_findings": validation_findings,
+        "focus_area_findings": focus_area_findings,
+        "readiness": {
+            campaign_id: campaign_queue.campaign_readiness(active[campaign_id], campaigns)
+            for campaign_id in repair_order
+        },
         "unsupported_findings": unsupported_findings,
         "whole_work": whole_work,
         "coverage": whole_work["coverage"],
@@ -837,6 +852,51 @@ def prepare_manifest_changes(
             if str(reason).strip():
                 text = set_header(text, "Campaign Reason", str(reason).strip())
             changes[path] = text
+        elif kind == "set_focus_areas":
+            campaign_id = operation.get("campaign_id")
+            if campaign_id not in campaigns:
+                raise campaign_queue.CampaignError(
+                    f"set_focus_areas references unknown campaign: {campaign_id}"
+                )
+            catalog = campaign_queue.load_focus_area_catalog(workspace)
+            if catalog is None or catalog.status != "approved":
+                raise campaign_queue.CampaignError(
+                    "set_focus_areas requires an approved focus-area catalog"
+                )
+            primary = operation.get("primary")
+            supporting = operation.get("supporting", [])
+            if (
+                not isinstance(primary, list)
+                or not primary
+                or not all(isinstance(value, str) for value in primary)
+                or not isinstance(supporting, list)
+                or not all(isinstance(value, str) for value in supporting)
+            ):
+                raise campaign_queue.CampaignError(
+                    "set_focus_areas requires non-empty primary and list-valued supporting IDs"
+                )
+            assigned = [*primary, *supporting]
+            unknown = sorted(set(assigned) - set(catalog.areas))
+            if unknown:
+                raise campaign_queue.CampaignError(
+                    "set_focus_areas references unknown IDs: " + ", ".join(unknown)
+                )
+            if len(assigned) != len(set(assigned)):
+                raise campaign_queue.CampaignError(
+                    "set_focus_areas cannot repeat primary/supporting IDs"
+                )
+            item = campaigns[str(campaign_id)]
+            item.fields["Primary Focus Areas"] = ", ".join(primary)
+            item.fields["Supporting Focus Areas"] = (
+                ", ".join(supporting) if supporting else "none"
+            )
+            if operation.get("remove_outcome_focus_clause") is True:
+                item.fields["Outcome"] = campaign_queue.OUTCOME_FOCUS_RE.sub(
+                    "", item.outcome
+                ).strip(" —-;.")
+            item.fields["Updated"] = date.today().isoformat()
+            changes[item.path] = campaign_queue.render_campaign(item)
+            campaign_changed = True
         elif kind == "create_campaign":
             campaign_id = operation.get("campaign_id")
             title = operation.get("title")
@@ -844,6 +904,8 @@ def prepare_manifest_changes(
             gate = operation.get("completion_gate")
             request = operation.get("request", "Add detailed execution context here.")
             dependencies = operation.get("depends_on", [])
+            primary_focus_areas = operation.get("primary_focus_areas", [])
+            supporting_focus_areas = operation.get("supporting_focus_areas", [])
             if not isinstance(campaign_id, str) or not campaign_queue.ID_RE.fullmatch(campaign_id):
                 raise campaign_queue.CampaignError("create_campaign requires a lowercase kebab-case campaign_id")
             if campaign_id in campaigns:
@@ -852,6 +914,15 @@ def prepare_manifest_changes(
                 raise campaign_queue.CampaignError("create_campaign requires title, outcome, completion_gate, and request")
             if not isinstance(dependencies, list) or not all(isinstance(item, str) for item in dependencies):
                 raise campaign_queue.CampaignError("create_campaign depends_on must be a list of campaign IDs")
+            if (
+                not isinstance(primary_focus_areas, list)
+                or not all(isinstance(item, str) for item in primary_focus_areas)
+                or not isinstance(supporting_focus_areas, list)
+                or not all(isinstance(item, str) for item in supporting_focus_areas)
+            ):
+                raise campaign_queue.CampaignError(
+                    "create_campaign focus-area fields must be lists of IDs"
+                )
             missing = sorted(set(dependencies) - set(campaigns))
             if missing:
                 raise campaign_queue.CampaignError("missing dependencies: " + ", ".join(missing))
@@ -861,6 +932,8 @@ def prepare_manifest_changes(
                 str(operation.get("decision", "none")),
                 str(operation.get("detour_for", "none")),
                 str(operation.get("return_to", "none")),
+                primary_focus_areas,
+                supporting_focus_areas,
             ).replace("Add detailed execution context here.", request.strip())
             item = campaign_queue.parse_campaign_text(path, text)
             campaigns[campaign_id] = item
