@@ -4,7 +4,7 @@ Updated: 2026-08-15
 
 ## Owner State
 
-- Last completed: bound-updater-backup-scope-and-prune-archives — Bound updater backup scope and prune obsolete verified archives
+- Last completed: build-focus-areas-from-existing-source — Build focus areas from existing source
 - Working now: none
 - Next: none
 - Blocker or decision needed: none

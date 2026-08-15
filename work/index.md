@@ -12,6 +12,7 @@ Updated: 2026-08-15
 | [work/00-campaigns/completed/audit-and-refresh-tool-shed-documentation.md](work/00-campaigns/completed/audit-and-refresh-tool-shed-documentation.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/automate-dangler-resolution-reconciliation.md](work/00-campaigns/completed/automate-dangler-resolution-reconciliation.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/bound-updater-backup-scope-and-prune-archives.md](work/00-campaigns/completed/bound-updater-backup-scope-and-prune-archives.md) | campaign | complete | 2026-08-15 | none | - |
+| [work/00-campaigns/completed/build-focus-areas-from-existing-source.md](work/00-campaigns/completed/build-focus-areas-from-existing-source.md) | campaign | complete | 2026-08-15 | none | - |
 | [work/00-campaigns/completed/complete-portable-verified-installer.md](work/00-campaigns/completed/complete-portable-verified-installer.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/converge-upgrades-to-current-work-structure.md](work/00-campaigns/completed/converge-upgrades-to-current-work-structure.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/discover-focus-areas-and-render-readiness-cards.md](work/00-campaigns/completed/discover-focus-areas-and-render-readiness-cards.md) | campaign | complete | 2026-08-15 | none | - |
@@ -68,6 +69,6 @@ Updated: 2026-08-15
 
 ## Summary
 
-- Total artifacts: 51
+- Total artifacts: 52
 - Active artifacts: 1
-- Completed/decided artifacts: 48
+- Completed/decided artifacts: 49

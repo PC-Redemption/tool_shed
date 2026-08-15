@@ -256,6 +256,7 @@ ts: commands
 ts: help spikes
 ts: help existing projects
 ts: discuss <topic>
+ts: build focus areas
 ts: status
 ts: next
 ts:work1 <goal> ... ts:work5 <goal>
@@ -345,6 +346,12 @@ this includes legacy `Focus areas: ...` outcome prose. Projects may approve thei
 evidence-backed catalog at `work/focus-areas.md`; once approved, active campaigns use known
 primary/supporting IDs and cards display their names. Applying any migration requires a separate
 exact approved manifest.
+
+Use `ts: build focus areas` to inspect existing source, documentation, tests, integrations,
+runtime and delivery boundaries, and durable work history. The agent first presents an exact
+evidence-backed catalog and active-campaign assignment proposal without writing. Only explicit
+owner approval of that proposal authorizes creation or refresh of the approved catalog and its
+assignments.
 `reconcile_campaign_queue.py` reports queue drift, whole-`work/` campaign coverage and exclusions,
 unresolved clusters, lifecycle mismatches, and a reasoned execution order. Its default route
 automatically creates or refreshes one Dangler Resolution campaign as the first queued work while

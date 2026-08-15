@@ -253,6 +253,24 @@ remain valid without one. Onboarding creates a proposed catalog, and owner appro
 ordinary active campaign must name at least one known `Primary Focus Areas` ID and may name
 `Supporting Focus Areas`. Queue cards display the catalog names.
 
+To derive or refresh the catalog from the project that actually exists, run:
+
+```text
+ts: build focus areas
+```
+
+The agent inspects source modules and build targets, architecture and README documentation, tests
+and fixtures, integrations, runtime/service/hardware boundaries, qualification and delivery
+workflows, and durable work history. It avoids raw generated evidence, dependencies, caches, and
+build output unless a concise versioned summary is the only durable evidence.
+
+The first response is an exact, read-only proposal: stable IDs, names, purpose, inclusions,
+exclusions, evidence paths, uncertainty, coverage gaps, and primary/supporting assignments for all
+active campaigns. Review that proposal explicitly. The discovery request alone does not authorize
+a write. After approval, the agent writes the approved catalog and assignments, refreshes indexes,
+and validates campaign state, stale paths, and work state. Existing stable IDs and accepted
+boundaries remain unchanged unless the proposal cites evidence and names the change.
+
 Refresh the catalog when an enduring responsibility boundary changes: a new or retired product,
 service, repository, external application, hardware/runtime boundary, qualification regime,
 release/regulatory/supply workflow, or a repeated campaign that does not fit the approved areas.

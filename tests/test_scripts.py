@@ -882,6 +882,7 @@ for raw in sys.stdin:
         self.assertIn("docs/operator-guide.md", skill_bundle)
         self.assertIn("docs/commands.md", skill_bundle)
         self.assertIn("ts: commands", commands)
+        self.assertIn("ts: build focus areas", commands)
         self.assertIn("ts:work1", commands)
         self.assertIn("ts:work5", commands)
         self.assertIn("ts: status", commands)
@@ -919,6 +920,7 @@ for raw in sys.stdin:
         self.assertIn("work_model: combined", readme)
         self.assertIn("In `split` mode", guide)
         self.assertIn("`ts:check", skill_bundle)
+        self.assertIn("Treat `ts: build focus areas` as a two-stage", skill_bundle)
         self.assertIn("<spot|focused|full|release>", skill_bundle)
         self.assertNotIn("abstract/currently advertised tier", skill)
         self.assertIn("### **Reasoning: <model> / <effort>**", guide)
@@ -2945,6 +2947,43 @@ Produces:
             self.assertIn("Dangler Resolution campaign as the first queued work", guidance)
             self.assertIn("optional project-specific catalog", guidance)
             self.assertIn("shared dependency/decision readiness states", guidance)
+            self.assertIn("`ts: build focus areas` as a two-stage route", guidance)
+            self.assertIn("A build or refresh request is not approval", guidance)
+
+    def test_build_focus_areas_route_is_portable_and_approval_gated(self) -> None:
+        skill = (ROOT / "skills" / "tool-shed" / "SKILL.md").read_text(encoding="utf-8")
+        route = (
+            ROOT / "skills" / "tool-shed" / "references" / "campaign-routes.md"
+        ).read_text(encoding="utf-8")
+        commands = (ROOT / "docs" / "commands.md").read_text(encoding="utf-8")
+        guide = (ROOT / "docs" / "operator-guide.md").read_text(encoding="utf-8")
+
+        for content in (skill, route, commands, guide):
+            self.assertIn("ts: build focus areas", content)
+        self.assertIn("A request to discover, build, or refresh areas is not by", route)
+        self.assertIn("Present an exact proposed catalog", route)
+        self.assertIn("proposed primary", route)
+        self.assertIn("After explicit approval", route)
+        self.assertIn("Preserve stable IDs", route)
+        self.assertIn("leave active campaigns unmapped", route)
+
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace)
+            run_script("scripts/install_into_workspace.py", str(workspace), "--provider", "all")
+            for relative in (
+                "AGENTS.md",
+                "CLAUDE.md",
+                "GEMINI.md",
+                ".github/copilot-instructions.md",
+                ".cursor/rules/tool-shed.mdc",
+            ):
+                guidance = (workspace / relative).read_text(encoding="utf-8")
+                with self.subTest(provider_guidance=relative):
+                    self.assertIn("`ts: build focus areas` as a two-stage route", guidance)
+                    self.assertIn("A build or refresh request is not approval", guidance)
+                    self.assertIn("apply all active-campaign assignments", guidance)
+                    self.assertIn("Preserve stable IDs", guidance)
 
     def test_installer_supports_all_provider_adapters_idempotently(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

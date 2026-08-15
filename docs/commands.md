@@ -34,6 +34,7 @@ approvals, or the authority stated in the request.
 | `ts: help all` | Alias for the complete command reference. Read-only. |
 | `ts: help <topic-or-command>` | Explain the named workflow or route with relevant examples. Read-only. |
 | `ts: discuss <topic>` | Explore the outcome, constraints, assumptions, unknowns, and smallest useful next route without modifying workspace artifacts. |
+| `ts: build focus areas` | Inspect existing workspace sources and propose a project-specific focus-area catalog and active-campaign assignments. Requires explicit approval before writing. |
 
 `discussion: <topic>` is also accepted as an informal, read-only discussion signal.
 
@@ -107,6 +108,23 @@ used by `next` and reconciliation. Projects may approve an evidence-backed catal
 `work/focus-areas.md`; once approved, active campaigns require known `Primary Focus Areas` and may
 also declare `Supporting Focus Areas`. The CLI accepts repeatable `--primary-focus-area ID` and
 `--supporting-focus-area ID` options on `add`.
+
+### Build Focus Areas From Existing Sources
+
+```text
+ts: build focus areas
+```
+
+The agent inspects enduring project evidence across source, documentation, tests, integrations,
+runtime and hardware boundaries, qualification, delivery workflows, and durable work history. It
+then presents an exact proposed catalog with stable IDs, boundaries, evidence paths, uncertainty,
+coverage gaps, and proposed assignments for every active campaign.
+
+This first stage is read-only. The command does not silently create or approve
+`work/focus-areas.md`, and an existing approved catalog keeps its stable IDs and accepted
+boundaries unless the proposal names evidence for a change. After the owner explicitly approves
+the exact catalog and assignment set, the agent writes the approved catalog, applies the active
+campaign assignments, refreshes indexes, and validates campaign state, stale paths, and work state.
 
 The deterministic reconciliation utility automatically creates or refreshes one Dangler
 Resolution campaign when unclassified unresolved artifacts exist. It places that campaign first

@@ -160,6 +160,35 @@ only fully matched values from an approved catalog produce suggested `set_focus_
 It never writes. Campaign or focus-area conversion requires a separate exact approved manifest and
 is not implied by preview, installation, update, or `ts:ask`.
 
+## Focus Area Discovery Route
+
+Treat `ts: build focus areas` as a two-stage, project-specific discovery and approval route:
+
+1. Inspect existing project evidence: README and architecture documentation, source modules and
+   build targets, tests and fixtures, integrations, runtime/service/hardware boundaries,
+   qualification, deployment/release/regulatory/supply workflows, and durable work history. Avoid
+   raw generated evidence, vendored dependencies, caches, and build output unless a concise
+   versioned summary is the only evidence for an enduring responsibility.
+2. Read any existing `work/focus-areas.md`. Preserve stable IDs and accepted boundaries unless
+   project evidence justifies a named addition, retirement, split, merge, or boundary change.
+3. Present an exact proposed catalog with stable lowercase kebab-case IDs, names, purpose,
+   inclusions, exclusions, cited workspace paths, uncertainty, coverage gaps, and proposed primary
+   and supporting assignments for every active campaign. Do not create, refresh, approve, or assign
+   anything yet.
+4. Request explicit owner approval for that exact catalog and assignment set. Identify the precise
+   proposal under review and state that approval will write the catalog, apply assignments, refresh
+   indexes, and validate the work state. A request to discover, build, or refresh areas is not by
+   itself approval of the proposal.
+5. After explicit approval, write `work/focus-areas.md` as `Status: approved`, apply the approved
+   active-campaign assignments, refresh `work/index.md` and `work/index.json`, then run campaign
+   validation, stale-path checks, and the read-only work-state review. Preserve unrelated work and
+   reject stale state or a catalog/assignment mismatch instead of partially accepting it.
+
+If evidence is insufficient or material boundaries remain ambiguous, keep the route read-only and
+name the evidence or owner decision needed. Never invent a universal taxonomy, silently approve a
+catalog, overwrite an accepted boundary without explanation, or leave active campaigns unmapped by
+an approved catalog.
+
 End every Tool Shed campaign response with exactly one verdict:
 
 - `Campaign status: COMPLETE` only when the whole outcome and applicable verification are finished.
