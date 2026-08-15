@@ -897,6 +897,10 @@ for raw in sys.stdin:
         self.assertIn("`que N`", guide)
         self.assertIn("`que N`", skill_bundle)
         self.assertIn("ts: version", commands)
+        self.assertIn("ts: fulltsupgrade", commands)
+        self.assertIn("ts: fulltsupgrade", guide)
+        self.assertIn("ts: fulltsupgrade", skill_bundle)
+        self.assertIn("ts: fulltsupgrade", readme)
         self.assertIn("ts:ask", commands)
         self.assertIn("01-q&a/ask.txt", skill_bundle)
         self.assertIn("scripts/read_ask_inbox.py", skill_bundle)
@@ -926,6 +930,44 @@ for raw in sys.stdin:
         self.assertIn("### **Reasoning: <model> / <effort>**", guide)
         self.assertNotIn("GPT-5.6 Terra", guide)
         self.assertTrue((ROOT / "scripts" / "reasoning_catalog.py").is_file())
+
+    def test_fulltsupgrade_is_end_to_end_scoped_and_installed(self) -> None:
+        skill = (ROOT / "skills" / "tool-shed" / "SKILL.md").read_text(encoding="utf-8")
+        maintenance = (
+            ROOT / "skills" / "tool-shed" / "references" / "maintenance-routes.md"
+        ).read_text(encoding="utf-8")
+        commands = (ROOT / "docs" / "commands.md").read_text(encoding="utf-8")
+        guide = (ROOT / "docs" / "operator-guide.md").read_text(encoding="utf-8")
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+
+        for surface in (skill, maintenance, commands, guide, readme):
+            self.assertIn("ts: fulltsupgrade", surface)
+        normalized_maintenance = " ".join(maintenance.split())
+        self.assertIn("latest verified published stable release", normalized_maintenance)
+        self.assertIn("synchronize the separately installed Codex skill", normalized_maintenance)
+        self.assertIn("even when the workspace snapshot was already current", normalized_maintenance)
+        self.assertIn(
+            "does not authorize publishing a new Tool Shed release", normalized_maintenance
+        )
+        self.assertIn("updating any other workspace or fleet target", normalized_maintenance)
+
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace)
+            run_script("scripts/install_into_workspace.py", str(workspace), "--provider", "all")
+            guidance_paths = (
+                workspace / "AGENTS.md",
+                workspace / "CLAUDE.md",
+                workspace / "GEMINI.md",
+                workspace / ".github" / "copilot-instructions.md",
+                workspace / ".cursor" / "rules" / "tool-shed.mdc",
+            )
+            for path in guidance_paths:
+                with self.subTest(path=path):
+                    guidance = path.read_text(encoding="utf-8")
+                    self.assertIn("`ts: fulltsupgrade`", guidance)
+                    self.assertIn("latest verified published GitHub release", guidance)
+                    self.assertIn("installed Codex skill synchronization", guidance)
 
     def test_direct_routing_scenarios_match_portable_and_installed_contract(self) -> None:
         scenarios = json.loads(

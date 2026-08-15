@@ -101,6 +101,18 @@ Repeat the option or use `--provider all`. Compatibility is expressed as a provi
 capability level; a static planning adapter does not imply that every surface can deploy or verify.
 See [provider adapters](provider-adapters.md).
 
+To fully upgrade an existing Tool Shed installation with one short command, type:
+
+```text
+ts: fulltsupgrade
+```
+
+This authorizes the complete current-installation upgrade from the latest verified published
+GitHub release: guarded backup/update, provider convergence, full validation, installed Codex skill
+synchronization when applicable, exact verification, and rollback. It does not authorize release
+publication, history rewriting, unsafe overwrite, deletion of unknown recovery material, or
+changes to other workspaces or fleet targets.
+
 ## Choose An Execution Endpoint
 
 Use the same five levels in every workspace:

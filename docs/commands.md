@@ -178,12 +178,17 @@ does not change the request's natural coordination level.
 
 | Prompt | Usage |
 | --- | --- |
+| `ts: fulltsupgrade` | Upgrade the current existing Tool Shed installation end-to-end from the latest verified published GitHub release, including guarded backup/update, provider convergence, full validation, installed Codex skill synchronization when applicable, exact verification, and rollback. |
 | `ts: version` | Verify the local Tool Shed snapshot and report its version without network access. |
 | `ts: check for updates` | Verify locally, compare with the canonical manifest, and report the version relation. Read-only. |
 | `ts: update status` | Alias for `ts: check for updates`. Read-only. |
 
 An update-status check does not authorize replacement. Ask explicitly to install or update Tool
 Shed when mutation is intended.
+
+`ts: fulltsupgrade` is the concise full-authorization exception for the current installation. It
+does not authorize publishing a release, rewriting history, forcing over modified or unmanaged
+state, deleting unknown recovery material, or updating other workspaces or fleet targets.
 
 ## Codex Reasoning Maintenance
 

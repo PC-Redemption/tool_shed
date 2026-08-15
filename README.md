@@ -131,6 +131,18 @@ verified update:
 python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace . --sync-codex-skill
 ```
 
+For the concise, fully authorized upgrade route, type:
+
+```text
+ts: fulltsupgrade
+```
+
+This upgrades the current existing Tool Shed installation from the latest verified published
+GitHub release, including backup, provider convergence, full validation, installed Codex skill
+synchronization when applicable, exact verification, and rollback on failure. It does not publish
+a new release, rewrite history, overwrite modified or unmanaged installations, delete unknown
+recovery material, or update other workspaces.
+
 It detects a new installation versus an existing update, selects the highest stable tag, disables
 Git line-ending conversion, verifies two-commit release provenance and byte-level manifest
 integrity, stages a disconnected snapshot, retains a verified update backup, preserves
