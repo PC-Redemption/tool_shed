@@ -4,7 +4,7 @@
   "content_hashes": {
     ".gitattributes": "d60f352d0db1404c70afb4bb8b2ca3fd1c610572aa40720e8a0b7baa7885418c",
     "README.md": "d3f85018654515e6e6a9031a180b7ff326fdf57fa2cf219afc7d0f27aaf6f0ae",
-    "adapters/codex-skill-releases.json": "8f8567d2bbf0ea19bece1429cd4826687d1abd51e96b9f9f27396bba4d6c24ba",
+    "adapters/codex-skill-releases.json": "b736d9a63c6e7ea733d3f0be92799adcafc7722462b92c705086a68769e88235",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "f53304e02e8d3d94e2d24b0d6577669a65359be5c3c5c7f234a4830a2f747828",
     "docs/commands.md": "38118cd0b1c100665867a7d5819b7c8a485be901fd87942f76380bb262c22093",
@@ -15,7 +15,7 @@
     "docs/releasing.md": "27d9ae48b56c45470259b0ec0951e7e2c2ae34f74f0c8a4dc76607828dcd608d",
     "docs/workspace-performance-profiling.md": "1fff8131a934e4bc6f07bcc9fac0295c37d150d6093f391159322e8b546f9a05",
     "existing-projects.md": "54b82dee26b8d90c79080240dbad5385436b70ae52ec960143ec3043349b3a9a",
-    "scripts/campaign_queue.py": "56ef3cef68bd2ab2148f69f3b7a890d483864f78389ff348e87e95e87ed7e1eb",
+    "scripts/campaign_queue.py": "c9a7f95d96e1baabcdca5962ccf77e1b344e143ccd465bb8c13692ea8f5f8cd4",
     "scripts/check_provider_adapters.py": "7bc1eb17ab585faaf0fab9404e2dc520f3f39b88e79b058778008bbc6eace488",
     "scripts/check_shed_version.py": "5703011ccd200c962632cba94b4aaba03516c074bd1a209b291860e98d112fc4",
     "scripts/check_stale_paths.py": "3da99560b61ab75a8eae7015ef998def8bc5a096cdb5202e79bbc95728a032f3",
@@ -67,10 +67,10 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
-  "notes": "Close reconciled owner campaigns and document the workspace collector decision",
-  "release_commit": "e0abe0282b9fa1053245e9a2a978c8e986ea65cd",
-  "release_tag": "v0.15.1",
-  "released_at": "2026-08-14T18:53:30Z",
-  "shed_version": "0.15.1",
-  "updated_at": "2026-08-14"
+  "notes": "Unify dependency-aware campaign readiness",
+  "release_commit": null,
+  "release_tag": "v0.15.2",
+  "released_at": null,
+  "shed_version": "0.15.2",
+  "updated_at": "2026-08-15"
 }

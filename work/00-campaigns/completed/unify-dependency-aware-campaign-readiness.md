@@ -1,9 +1,9 @@
 # Unify dependency-aware campaign readiness
 
-Status: queued
+Status: complete
 Type: campaign
 Updated: 2026-08-15
-Next Action: execute when selected from the active campaign queue
+Next Action: none
 Campaign ID: unify-dependency-aware-campaign-readiness
 Outcome: Owner queue projection, status, and next use one dependency-aware readiness selector while preserving the reconciliation fallback when no queued campaign is ready.
 Depends On: none
@@ -11,8 +11,10 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: Regression tests prove active-queue Markdown, status --json, and next --json agree for dependency-blocked and independently ready queues; stale projections fail validation; focused and full Tool Shed validation pass.
-Completion Evidence: none
-Disposition: none
+Completion Evidence: Focused readiness suite: 4 passed; full Tool Shed validator: 108 tests, provider conformance, smoke, indexes, stale paths, and work-state review passed; work2 deployment/browser stages inapplicable because no target or UI is configured.
+Completion Date: 2026-08-15
+Completion Order: 11
+Disposition: completed
 
 ## Request
 

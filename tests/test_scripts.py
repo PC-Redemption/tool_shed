@@ -1721,6 +1721,84 @@ Next Action: keep going
             active_queue = (workspace / "work" / "00-campaigns" / "active-queue.md").read_text(encoding="utf-8")
             self.assertIn("Detour and return point: second", active_queue)
 
+    def test_campaign_readiness_is_dependency_aware_across_surfaces(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+
+            def status() -> dict[str, object]:
+                return json.loads(
+                    run_script(
+                        "scripts/campaign_queue.py", "--workspace", str(workspace),
+                        "status", "--json",
+                    ).stdout
+                )
+
+            def add(campaign_id: str, depends_on: str | None = None) -> None:
+                arguments = [
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "add",
+                    campaign_id, campaign_id.title(), "--outcome", f"deliver {campaign_id}",
+                    "--completion-gate", f"{campaign_id} verified",
+                    "--expect", str(status()["state_token"]),
+                ]
+                if depends_on:
+                    arguments.extend(["--depends-on", depends_on])
+                run_script(*arguments)
+
+            add("blocked")
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "start", "blocked",
+                "--expect", str(status()["state_token"]),
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "block", "blocked",
+                "--reason", "external dependency", "--expect", str(status()["state_token"]),
+            )
+            add("dependent", "blocked")
+
+            queue_path = workspace / "work" / "00-campaigns" / "active-queue.md"
+            queue = queue_path.read_text(encoding="utf-8")
+            self.assertIn("- Next: none", queue)
+            self.assertIsNone(status()["next"])
+            self.assertIsNone(json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "next", "--json",
+                ).stdout
+            ))
+
+            add("independent")
+            queue = queue_path.read_text(encoding="utf-8")
+            self.assertIn("- Next: independent — Independent", queue)
+            self.assertEqual(status()["next"], "independent")
+            self.assertEqual(
+                json.loads(
+                    run_script(
+                        "scripts/campaign_queue.py", "--workspace", str(workspace),
+                        "next", "--json",
+                    ).stdout
+                )["campaign_id"],
+                "independent",
+            )
+
+            queue_path.write_text(
+                queue.replace(
+                    "- Next: independent — Independent",
+                    "- Next: dependent — Dependent",
+                ),
+                encoding="utf-8",
+            )
+            validation = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace),
+                    "validate", "--json",
+                ).stdout
+            )
+            self.assertFalse(validation["valid"])
+            self.assertIn(
+                "active-queue.md is stale or manually inconsistent",
+                validation["findings"],
+            )
+
     def test_campaign_same_day_completions_preserve_completion_order(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)

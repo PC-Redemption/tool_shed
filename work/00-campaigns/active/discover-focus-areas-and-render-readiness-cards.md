@@ -1,9 +1,9 @@
 # Discover focus areas and render readiness cards
 
-Status: queued
+Status: working
 Type: campaign
 Updated: 2026-08-15
-Next Action: execute when selected from the active campaign queue
+Next Action: execute the campaign completion gate
 Campaign ID: discover-focus-areas-and-render-readiness-cards
 Outcome: Tool Shed supports owner-approved, evidence-derived focus-area catalogs and renders deterministic, human-scannable campaign readiness cards using shared dependency-aware semantics.
 Depends On: unify-dependency-aware-campaign-readiness

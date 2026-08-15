@@ -9,8 +9,7 @@ Updated: 2026-08-15
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-14 | none | - |
-| [work/00-campaigns/active/discover-focus-areas-and-render-readiness-cards.md](work/00-campaigns/active/discover-focus-areas-and-render-readiness-cards.md) | campaign | queued | 2026-08-15 | execute when selected from the active campaign queue | - |
-| [work/00-campaigns/active/unify-dependency-aware-campaign-readiness.md](work/00-campaigns/active/unify-dependency-aware-campaign-readiness.md) | campaign | queued | 2026-08-15 | execute when selected from the active campaign queue | - |
+| [work/00-campaigns/active/discover-focus-areas-and-render-readiness-cards.md](work/00-campaigns/active/discover-focus-areas-and-render-readiness-cards.md) | campaign | working | 2026-08-15 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/audit-and-refresh-tool-shed-documentation.md](work/00-campaigns/completed/audit-and-refresh-tool-shed-documentation.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/automate-dangler-resolution-reconciliation.md](work/00-campaigns/completed/automate-dangler-resolution-reconciliation.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/complete-portable-verified-installer.md](work/00-campaigns/completed/complete-portable-verified-installer.md) | campaign | complete | 2026-08-14 | none | - |
@@ -22,6 +21,7 @@ Updated: 2026-08-15
 | [work/00-campaigns/completed/reconcile-whole-work-campaign-coverage.md](work/00-campaigns/completed/reconcile-whole-work-campaign-coverage.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/resolve-unclassified-work.md](work/00-campaigns/completed/resolve-unclassified-work.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-14 | none | - |
+| [work/00-campaigns/completed/unify-dependency-aware-campaign-readiness.md](work/00-campaigns/completed/unify-dependency-aware-campaign-readiness.md) | campaign | complete | 2026-08-15 | none | - |
 | [work/checklists/checklist-refresh-readme-and-ai-command-reference.md](work/checklists/checklist-refresh-readme-and-ai-command-reference.md) | checklist | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/checklists/checklist-tool-shed-skill-field-test.md](work/checklists/checklist-tool-shed-skill-field-test.md) | checklist | complete | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/decisions/decision-codex-skill-readiness.md](work/decisions/decision-codex-skill-readiness.md) | decision-matrix | decided | 2026-07-05 | continue using skill on real projects; plugin packaging deferred | work/maps/map-tool-shed-foundation.md |
@@ -68,5 +68,5 @@ Updated: 2026-08-15
 ## Summary
 
 - Total artifacts: 50
-- Active artifacts: 3
-- Completed/decided artifacts: 45
+- Active artifacts: 2
+- Completed/decided artifacts: 46

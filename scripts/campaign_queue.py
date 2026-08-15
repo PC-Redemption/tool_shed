@@ -204,6 +204,22 @@ def _completion_sort_key(campaign: Campaign) -> tuple[int, str, str]:
     )
 
 
+def first_ready_campaign(
+    order: list[str],
+    campaigns: dict[str, Campaign],
+) -> Campaign | None:
+    for campaign_id in order:
+        item = campaigns.get(campaign_id)
+        if item is None or item.status != "queued":
+            continue
+        if all(
+            dependency in campaigns and campaigns[dependency].status == "complete"
+            for dependency in item.dependencies
+        ):
+            return item
+    return None
+
+
 def render_active_queue(order: list[str], campaigns: dict[str, Campaign]) -> str:
     active = [campaigns[item] for item in order if item in campaigns]
     completed = sorted(
@@ -212,7 +228,7 @@ def render_active_queue(order: list[str], campaigns: dict[str, Campaign]) -> str
         reverse=True,
     )
     working = next((item for item in active if item.status == "working"), None)
-    next_item = next((item for item in active if item.status == "queued"), None)
+    next_item = first_ready_campaign(order, campaigns)
     blocked = [item for item in active if item.status == "blocked" or item.fields.get("Decision", "none") != "none"]
     detours = [item for item in active if item.fields.get("Detour For", "none") != "none" or item.fields.get("Return To", "none") != "none"]
     lines = [
@@ -607,13 +623,11 @@ def mutate_campaign(args: argparse.Namespace, workspace: Path) -> None:
         changes[item.path] = None
         item.path = destination
         if not any(other.status == "working" and other.campaign_id != item.campaign_id for other in campaigns.values()):
-            for candidate_id in order:
-                candidate = campaigns[candidate_id]
-                if candidate.status == "queued" and all(campaigns[dep].status == "complete" for dep in candidate.dependencies):
-                    candidate.fields["Status"] = "working"
-                    candidate.fields["Next Action"] = "execute the campaign completion gate"
-                    changes[candidate.path] = render_campaign(candidate)
-                    break
+            candidate = first_ready_campaign(order, campaigns)
+            if candidate is not None:
+                candidate.fields["Status"] = "working"
+                candidate.fields["Next Action"] = "execute the campaign completion gate"
+                changes[candidate.path] = render_campaign(candidate)
     else:
         raise CampaignError(f"unsupported mutation: {args.command}")
     item.fields["Updated"] = date.today().isoformat()
@@ -679,12 +693,7 @@ def status_payload(workspace: Path) -> dict[str, object]:
         reverse=True,
     )
     working = [item for item in ordered if item.status == "working"]
-    ready = [
-        item
-        for item in ordered
-        if item.status == "queued"
-        and all(campaigns[dependency].status == "complete" for dependency in item.dependencies)
-    ]
+    ready = first_ready_campaign(order, campaigns)
     blocked = [item for item in ordered if item.status == "blocked"]
     decisions = [item for item in ordered if item.fields.get("Decision", "none") != "none"]
     detours = [
@@ -694,7 +703,7 @@ def status_payload(workspace: Path) -> dict[str, object]:
         or item.fields.get("Return To", "none") != "none"
     ]
     dangler_resolution = dangler_resolution_visibility(workspace, campaigns, order)
-    next_campaign = ready[0].campaign_id if ready else None
+    next_campaign = ready.campaign_id if ready else None
     return {
         "state_token": state_token(workspace),
         "active_order": order,
@@ -780,15 +789,7 @@ def main() -> int:
             ordered = [campaigns[item] for item in order]
             candidate = next((item for item in ordered if item.status == "working"), None)
             if candidate is None:
-                candidate = next(
-                    (
-                        item
-                        for item in ordered
-                        if item.status == "queued"
-                        and all(campaigns[dependency].status == "complete" for dependency in item.dependencies)
-                    ),
-                    None,
-                )
+                candidate = first_ready_campaign(order, campaigns)
             dangler_resolution = dangler_resolution_visibility(workspace, campaigns, order)
             if candidate is None and dangler_resolution:
                 payload = dict(dangler_resolution)
