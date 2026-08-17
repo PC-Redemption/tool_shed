@@ -9,6 +9,7 @@ Updated: 2026-08-17
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
+| [work/00-campaigns/active/024-compact-tool-shed-site-and-publish-guided-workflows.md](work/00-campaigns/active/024-compact-tool-shed-site-and-publish-guided-workflows.md) | campaign | queued | 2026-08-17 | execute when selected from the active campaign queue | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -77,6 +78,6 @@ Updated: 2026-08-17
 
 ## Summary
 
-- Total artifacts: 60
-- Active artifacts: 1
+- Total artifacts: 61
+- Active artifacts: 2
 - Completed/decided artifacts: 56
