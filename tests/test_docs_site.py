@@ -146,6 +146,16 @@ class DocumentationSiteTests(unittest.TestCase):
         self.assertNotIn(".ref-card", css)
         self.assertIn(".table-scroll", css)
         self.assertIn(".guide-layout", css)
+        self.assertIn(".command-table thead th:first-child", css)
+        self.assertIn("text-align: left", css)
+
+    def test_asset_urls_are_content_versioned_for_returning_browsers(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            public, _ = SITE_BUILDER.build(Path(temporary) / "bundle")
+            page = (public / "ref" / "index.html").read_text(encoding="utf-8")
+            revision = SITE_BUILDER.asset_revision()
+            self.assertIn(f'/assets/site.css?v={revision}', page)
+            self.assertIn(f'/assets/site.js?v={revision}', page)
 
     def test_overview_preserves_core_process_and_partnership_messages(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

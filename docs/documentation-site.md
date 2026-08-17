@@ -15,7 +15,8 @@ only a generated deployment copy.
 Page fragments live under `site/pages/`, shared styling and copy-control behavior live under `site/assets/`, and the
 deployment definition lives under `site/deploy/`. The generator wraps each fragment in the common
 semantic shell and validates internal links, anchors, required pages, assets, and public-content
-privacy markers.
+privacy markers. It adds a content-derived version query to CSS and JavaScript URLs so a deployment
+does not leave returning browsers on incompatible cached presentation code.
 
 `docs/commands.md` is the only canonical command catalog. `scripts/build_docs_site.py` parses its
 documented prompt tables and command blocks to generate `/ref/` rows, examples, copy controls, and

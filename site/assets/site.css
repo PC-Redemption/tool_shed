@@ -136,6 +136,7 @@ h3 { margin-bottom: .7rem; font-size: 1.18rem; }
 .table-scroll:focus { outline: 2px solid var(--blue); outline-offset: 2px; }
 .command-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
 .command-table th, .command-table td { padding: .55rem .65rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.command-table thead th:first-child, .command-table tbody th, .command-table .copy-block code { text-align: left; }
 .command-table thead th { color: var(--ink); background: var(--panel); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
 .command-table tbody th { width: 26%; font-weight: 500; scroll-margin-top: 5rem; }
 .command-table td:nth-child(2) { width: 38%; color: var(--muted); }

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import html
 import re
 import shutil
@@ -17,6 +18,13 @@ SITE = ROOT / "site"
 COMMANDS = ROOT / "docs" / "commands.md"
 DEFAULT_OUTPUT = ROOT / "build" / "ts.rookaro.com"
 PUBLIC_SOURCE = "https://github.com/PC-Redemption/tool_shed/blob/main/docs/commands.md"
+
+
+def asset_revision() -> str:
+    digest = hashlib.sha256()
+    for name in ("site.css", "site.js"):
+        digest.update((SITE / "assets" / name).read_bytes())
+    return digest.hexdigest()[:12]
 
 
 @dataclass(frozen=True)
@@ -243,6 +251,7 @@ def navigation(section: str) -> str:
 
 def shell(*, title: str, description: str, body: str, section: str) -> str:
     page_title = "Tool Shed" if title == "Tool Shed" else f"{title} · Tool Shed"
+    revision = asset_revision()
     return f'''<!doctype html>
 <html lang="en">
 <head>
@@ -250,8 +259,8 @@ def shell(*, title: str, description: str, body: str, section: str) -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#07131d">
   <meta name="description" content="{html.escape(description, quote=True)}">
-  <link rel="stylesheet" href="/assets/site.css">
-  <script src="/assets/site.js" defer></script>
+  <link rel="stylesheet" href="/assets/site.css?v={revision}">
+  <script src="/assets/site.js?v={revision}" defer></script>
   <title>{html.escape(page_title)}</title>
 </head>
 <body>
@@ -301,6 +310,7 @@ def validate_site(public: Path, commands: list[Command]) -> list[str]:
             if reference.startswith(("https://", "http://", "mailto:", "#")):
                 continue
             path_part, _, anchor = reference.partition("#")
+            path_part = path_part.partition("?")[0]
             if path_part.startswith("/"):
                 candidate = public / path_part.lstrip("/")
             else:
