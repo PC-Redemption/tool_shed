@@ -1,9 +1,9 @@
 # Publish Tool Shed documentation site at ts.rookaro.com
 
-Status: working
+Status: complete
 Type: campaign
 Updated: 2026-08-17
-Next Action: execute the campaign completion gate
+Next Action: none
 Campaign ID: publish-tool-shed-documentation-site-at-ts-rookaro-com
 Campaign Number: 022
 Outcome: Create and operate a responsive public Tool Shed documentation site whose root teaches the flexible human/AI development process, whose /help hierarchy provides source-grounded guidance, and whose single-page /ref gives a fast bookmarkable command reference without duplicating the canonical command catalog.
@@ -14,8 +14,10 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: Git-tracked canonical site source implements /, direct-loadable /help pages, and single-page /ref from authoritative Tool Shed documentation; maintainer generation, preview, deployment, routing, and verification instructions are current; focused and full repository checks pass; a healthy nginx:alpine deployment serves port 8087 from /home/jon/docker/ts.rookaro.com; the exact HTTPS Rookaro route is active; public paths, anchors, assets, desktop/mobile layouts, privacy review, existing routes, and unrelated-host fallback are verified end to end.
-Completion Evidence: none
-Disposition: none
+Completion Evidence: Generated 12 direct-loadable responsive pages and 55 canonical command cards; focused site checks and the full 128-test validator passed; GitHub Validate run 32057123667 passed on Linux and Windows; dedicated nginx:alpine container ts-rookaro-com is healthy on port 8087; exact HTTPS route is active; public paths, stable anchors, assets, build hashes, privacy markers, desktop/mobile overflow, existing route selection, and unrelated-host fallback were verified.
+Completion Date: 2026-08-17
+Completion Order: 20
+Disposition: completed
 
 ## Request
 

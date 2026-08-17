@@ -21,23 +21,6 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
-      "disposition": "none",
-      "next_action": "execute the campaign completion gate",
-      "parent": null,
-      "path": "work/00-campaigns/active/022-publish-tool-shed-documentation-site-at-ts-rookaro-com.md",
-      "produces": null,
-      "project_map": null,
-      "status": "working",
-      "superseded_by": null,
-      "supersedes": null,
-      "title": "Publish Tool Shed documentation site at ts.rookaro.com",
-      "type": "campaign",
-      "updated": "2026-08-17"
-    },
-    {
-      "campaign": null,
-      "campaign_reason": null,
-      "canonical_truth": null,
       "disposition": "completed",
       "next_action": "none",
       "parent": null,
@@ -371,6 +354,23 @@
       "superseded_by": null,
       "supersedes": null,
       "title": "Standardize campaign numbering during Tool Shed upgrades",
+      "type": "campaign",
+      "updated": "2026-08-17"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": "completed",
+      "next_action": "none",
+      "parent": null,
+      "path": "work/00-campaigns/completed/022-publish-tool-shed-documentation-site-at-ts-rookaro-com.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Publish Tool Shed documentation site at ts.rookaro.com",
       "type": "campaign",
       "updated": "2026-08-17"
     },
@@ -1013,8 +1013,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 2,
-    "completed_or_decided_artifacts": 54,
+    "active_artifacts": 1,
+    "completed_or_decided_artifacts": 55,
     "total_artifacts": 59
   }
 }
