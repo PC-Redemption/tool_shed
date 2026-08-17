@@ -1,0 +1,8 @@
+schema_version: 1
+work_model: combined
+development_target: ts.rookaro.com live documentation site
+production_target: ts.rookaro.com live documentation site
+work_levels:
+  work3:
+    after:
+      - Synchronize the canonical ts.rookaro.com site source with current Tool Shed code behavior and docs/commands.md, run focused site checks, build and checkpoint any resulting documentation changes, deploy through docs/documentation-site.md, and verify the live site and representative routes
