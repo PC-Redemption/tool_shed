@@ -1,9 +1,9 @@
 # Customize work-level actions per workspace
 
-Status: working
+Status: complete
 Type: campaign
 Updated: 2026-08-17
-Next Action: execute the campaign completion gate
+Next Action: none
 Campaign ID: customize-work-level-actions-per-workspace
 Campaign Number: 023
 Outcome: Allow each Tool Shed workspace to declaratively add ordered actions before or after the standard work1-work5 behavior, or explicitly suppress the standard behavior for a selected level, without changing defaults for other Tool Shed installations.
@@ -14,8 +14,10 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: A documented, versioned workspace-local configuration contract supports validated before/default/after behavior for work1-work5 and their aliases; ordering and cumulative-level semantics are deterministic; absent configuration preserves current defaults; explicit suppression is visible and cannot expand authority or bypass safety; installation and upgrade preserve owner configuration; portable instructions, operator documentation, examples, and regression tests are updated; focused and full validation pass.
-Completion Evidence: none
-Disposition: none
+Completion Evidence: Implemented schema-version-1 work/tool-shed.yaml before/default/after resolution with explicit suppression, alias normalization, selected-endpoint cumulative semantics, fail-fast handling, installer validation, byte-preserving upgrade convergence and rollback, portable/provider/operator/site documentation, and regression coverage; focused checks and full validate_tool_shed.py qualification passed with 136 tests.
+Completion Date: 2026-08-17
+Completion Order: 21
+Disposition: completed
 
 ## Request
 
