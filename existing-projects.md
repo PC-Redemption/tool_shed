@@ -127,6 +127,7 @@ move: add its exact path to `.git/info/exclude`, direct future raw output to
 | Durable decision with alternatives | `work/adr/` |
 | Classification list | `work/inventories/` |
 | Visual coordination across moving parts | `work/maps/` |
+| Approved multi-milestone sequencing and evidence gates | `work/roadmaps/` |
 
 ## Verification
 
@@ -138,6 +139,8 @@ move: add its exact path to `.git/info/exclude`, direct future raw output to
 - `work/focus-areas.md` contains an evidence-backed proposed catalog or a deliberately approved one.
 - An approved catalog maps every active campaign to at least one known primary focus area.
 - No historical decisions, incidents, or completed work were invented.
+- Roadmap ingestion, when requested, previews completed, active, remaining, superseded, excluded,
+  and uncertain classifications without changing existing work.
 - The stale-path check passes after any artifact moves.
 
 ## Recovery

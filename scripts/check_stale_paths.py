@@ -9,7 +9,10 @@ from pathlib import Path
 
 
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\((work/[^)\s]+\.md(?:#[^)]+)?)\)")
-HEADER_PATH_KEYS = {"Parent", "Project Map", "Canonical Truth", "Supersedes", "Superseded By"}
+HEADER_PATH_KEYS = {
+    "Parent", "Project Map", "Canonical Truth", "Supersedes", "Superseded By",
+    "Source Project Map",
+}
 SKIP_DIRS = {".git", "__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache", "examples"}
 SKIP_FILES = {("work", "index.md")}
 

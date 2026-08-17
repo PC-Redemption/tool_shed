@@ -31,7 +31,7 @@ TERMINAL_ARTIFACT_STATUSES = {"accepted", "abandoned", "complete", "completed", 
 SUPPORTED_ARTIFACT_TYPES = {
     "adr", "campaign", "checklist", "decision-matrix", "evidence", "incident",
     "focus-area-catalog", "inventory", "project-map", "runbook", "spike", "ticket",
-    "workpackage",
+    "workpackage", "program-roadmap",
 }
 PLACEHOLDER_VALUES = {"", "-", "...", "none", "work/...", "work/maps/..."}
 RELATIONSHIP_FIELDS = ("Parent", "Project Map", "Depends On", "Produces", "Supersedes", "Superseded By")
@@ -155,6 +155,9 @@ def discover_whole_work(
         path = artifact.path.as_posix()
         if path == campaign_queue.FOCUS_AREA_CATALOG.as_posix():
             exclusions.append({"path": path, "reason": "focus-area-catalog"})
+            continue
+        if artifact.kind() == "program-roadmap":
+            exclusions.append({"path": path, "reason": "roadmap-lifecycle-source"})
             continue
         if is_campaign_request(path):
             exclusions.append({"path": path, "reason": "campaign-lifecycle-source"})

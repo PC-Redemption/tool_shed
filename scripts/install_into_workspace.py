@@ -186,6 +186,20 @@ CAMPAIGN_QUEUE_GUIDANCE = f"""{CAMPAIGN_QUEUE_GUIDANCE_START}
 {CAMPAIGN_QUEUE_GUIDANCE_END}
 """
 
+ROADMAP_GUIDANCE_START = "<!-- BEGIN TOOL SHED PROGRAM ROADMAP GUIDANCE -->"
+ROADMAP_GUIDANCE_END = "<!-- END TOOL SHED PROGRAM ROADMAP GUIDANCE -->"
+ROADMAP_GUIDANCE = f"""{ROADMAP_GUIDANCE_START}
+## Tool Shed Program Roadmaps
+
+- Treat `ts: develop roadmap`, `ts: propose roadmap`, `ts: approve roadmap <token>`, `ts: derive campaigns for milestone <id>`, `ts: approve campaign plan <token>`, `ts: roadmap status`, `ts: review roadmap`, and `ts: overview` as the opt-in Program Roadmap lifecycle between project maps and campaigns.
+- Keep development, review, campaign derivation, status, and overview read-only. A roadmap proposal may create only a proposed `work/roadmaps/` revision; it cannot approve intent or create campaigns.
+- Require an approved initial project map for greenfield adoption. Existing or upgraded projects may use an active map and must preserve and classify all owner-authored work as completed, active, remaining, superseded, excluded, or uncertain from evidence.
+- Roadmap approval and campaign-plan approval are separate exact-token mutations. Reject stale source, roadmap, or campaign state; preserve superseded approved revisions.
+- Materialized campaigns must reference their Roadmap, Roadmap Revision, Milestone, and Unlocks Gate. Creating them does not authorize starting, deploying, releasing, or promoting them.
+- Installation and upgrade create only the empty compatible topology. They never ingest work, propose or approve a roadmap, or materialize campaigns implicitly.
+{ROADMAP_GUIDANCE_END}
+"""
+
 
 def ensure_root_gitignore(repository: Path) -> list[str]:
     path = repository / ".gitignore"
@@ -277,6 +291,12 @@ def ensure_provider_guidance(repository: Path, provider_id: str) -> tuple[Path, 
         CAMPAIGN_QUEUE_GUIDANCE_START,
         CAMPAIGN_QUEUE_GUIDANCE_END,
         CAMPAIGN_QUEUE_GUIDANCE,
+    )
+    updated, _ = replace_managed_block(
+        updated,
+        ROADMAP_GUIDANCE_START,
+        ROADMAP_GUIDANCE_END,
+        ROADMAP_GUIDANCE,
     )
     if updated == existing:
         return path, False

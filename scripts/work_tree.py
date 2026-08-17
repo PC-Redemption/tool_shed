@@ -7,6 +7,7 @@ from campaign_queue import ensure_tree as ensure_campaign_tree
 
 WORK_DIRS = [
     "work/maps",
+    "work/roadmaps",
     "work/wp/active",
     "work/wp/completed",
     "work/tickets",
@@ -40,6 +41,13 @@ Use `work/index.md` as the first orientation surface after README/docs. Use `wor
 - Keep `work/01-q&a/ask.txt` as transient intake; it is not the durable queue.
 - Use `python3 tool_shed/scripts/campaign_queue.py --workspace . status` to get the current stale-write token before a lifecycle mutation.
 - Use `python3 tool_shed/scripts/reconcile_campaign_queue.py --workspace . --json` to inspect queue drift and whole-work coverage while automatically creating or refreshing one Dangler Resolution campaign as the first queued work; add `--dry-run` for read-only inspection, and require an exact approved manifest plus the reported whole-work token for every other write.
+
+## Program Roadmaps
+
+- Keep opt-in Program Roadmaps under `work/roadmaps/` between project maps and campaigns.
+- Use `program_roadmap.py develop` and `overview` for read-only discovery.
+- Roadmap approval and campaign-plan approval are separate exact-token mutations.
+- Installation and upgrade preserve existing work and never create or approve a roadmap implicitly.
 
 ## Active
 

@@ -37,7 +37,7 @@ Load only the route reference needed for the request:
 | --- | --- |
 | discussion or campaign discovery | this file only |
 | artifact selection, creation, completion, onboarding, or reconciliation | `references/artifact-workflows.md` |
-| `ts:work1` through `ts:work5`, aliases, `ts:check`, `ts:ship`, campaign execution, owner campaign queues, `ts: build focus areas`, `ts: help`, `ts: commands`, or `ts:ask` | `references/campaign-routes.md` |
+| `ts:work1` through `ts:work5`, aliases, `ts:check`, `ts:ship`, campaign execution, owner campaign queues, Program Roadmaps, `ts: overview`, `ts: build focus areas`, `ts: help`, `ts: commands`, or `ts:ask` | `references/campaign-routes.md` |
 | `ts: fulltsupgrade`, version, update, snapshot, or provider-specific reasoning maintenance | `references/maintenance-routes.md` |
 
 Read a referenced file completely when its route applies. Do not load unrelated route references.
@@ -130,6 +130,7 @@ repository-boundary, or product questions; `existing-projects.md` for onboarding
 - Choose the smallest artifact that fits the immediate work.
 - Keep project artifacts under root `work/`, never inside the workspace-local shed.
 - Keep owner-facing campaign lifecycle state under first-sorted `work/00-campaigns/`; keep `work/01-q&a/ask.txt` as transient intake.
+- Keep opt-in strategic sequencing under `work/roadmaps/`; roadmap approval and campaign-plan approval are separate exact-token boundaries.
 - Keep settled current truth in project docs or README files.
 - Treat completed work artifacts as history, not canonical truth.
 - Keep the workspace-local shed a disconnected, one-way snapshot; never develop inside it or push

@@ -40,6 +40,12 @@ Use a workpackage when:
 - decisions, risks, and sequencing need to survive chat handoff
 - future continuation cost is high
 
+Use a Program Roadmap when:
+
+- an approved project map spans multiple milestones or dependent campaigns
+- strategy, gates, and rolling-wave sequencing must be approved separately from execution
+- the project needs whole-program progress and drift without generating a complete backlog
+
 Use an ADR when:
 
 - a decision may be relitigated
@@ -104,6 +110,7 @@ Use a decision matrix when:
 - Ticket for specific behavior change.
 - Project map for visual coordination across moving parts.
 - Workpackage for ambiguous transformations.
+- Program Roadmap for approved multi-milestone sequencing between a project map and campaigns.
 - ADR for durable decisions.
 - Runbook for repeatable operations.
 - Incident for break/fix learning.
@@ -133,6 +140,8 @@ Use `existing-projects.md` for the Level 2 onboarding runbook. Use `existing-pro
 Use the smallest artifact that fits the immediate work, then connect it to nearby artifacts with plain Markdown links.
 
 - Project maps coordinate multiple workstreams and show the current ground task.
+- Program Roadmaps turn an approved project map into stable phases, milestones, gates, and
+  candidate campaigns while keeping strategic and campaign-plan approvals separate.
 - Workpackages deliver larger slices and may reference tickets, checklists, spikes, ADRs, runbooks, inventories, and decision matrices.
 - Tickets define specific behavior changes inside or near a workpackage.
 - Checklists carry bounded known steps, including task lists extracted from a workpackage.

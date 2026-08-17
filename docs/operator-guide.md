@@ -313,6 +313,28 @@ converts requests, rewrites campaign prose, or clears the canonical inbox. Apply
 focus-area migration requires a separately approved exact manifest. The filesystem migration of
 legacy Q&A folders is a distinct installer operation described below.
 
+## Turn A Project Map Into A Program Roadmap
+
+Use a Program Roadmap only when the project spans multiple dependent milestones or evidence gates.
+It is an opt-in layer; standalone maps and campaign queues remain valid.
+
+1. Run `ts: develop roadmap`. The read-only report classifies populated work as completed, active,
+   remaining, superseded, excluded, or uncertain. For a greenfield project, approve the initial
+   project map with its exact map token first.
+2. Run `ts: propose roadmap` to capture an exact revision under `work/roadmaps/`. Confirm its
+   phases, stable milestone/gate IDs, decisions, dependencies, authority boundaries, and candidate
+   campaigns. This does not create campaigns.
+3. Run `ts: approve roadmap <token>` only for the exact unchanged proposal and source state.
+4. Run `ts: derive campaigns for milestone M1` to preview one rolling-wave campaign manifest.
+5. Run `ts: approve campaign plan <token>` to materialize exactly that manifest. The campaigns are
+   queued with roadmap traceability but are not started.
+6. Use `ts: roadmap status`, `ts: review roadmap`, and `ts: overview` for computed evidence rollup
+   and drift. Contradictory evidence leads to a proposed revision; approved intent is never silently
+   rewritten.
+
+Installation and upgrade preserve every owner-authored artifact and create only the empty roadmap
+topology. They do not perform roadmap ingestion or approval.
+
 ## Q&A Inbox
 
 The installer creates a workspace-local scratch inbox at `work/01-q&a/ask.txt`. Put a question or

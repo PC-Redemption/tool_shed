@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 import campaign_queue
+import program_roadmap
 from work_tree import WORK_DIRS
 
 
@@ -59,6 +60,7 @@ def inspect_work_tree(workspace: Path) -> dict[str, object]:
     campaign_root = campaign_queue.campaign_root(workspace)
     if campaign_root.is_dir() and not missing_files:
         findings.extend(campaign_queue.validate(workspace))
+    findings.extend(program_roadmap.validate_all(workspace))
     return {
         "schema_version": 1,
         "workspace": str(workspace),
@@ -78,7 +80,7 @@ def main() -> int:
     workspace = Path(args.workspace).expanduser().resolve()
     try:
         report = inspect_work_tree(workspace)
-    except (campaign_queue.CampaignError, OSError) as error:
+    except (campaign_queue.CampaignError, program_roadmap.RoadmapError, OSError) as error:
         print(f"Work tree check failed: {error}", file=sys.stderr)
         return 2
     if args.json:

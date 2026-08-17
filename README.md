@@ -26,6 +26,7 @@ Use `tool_shed` when a project benefits from consistent structure for:
 - checklists
 - tickets
 - project maps
+- Program Roadmaps
 - workpackages
 - ADRs
 - runbooks
@@ -86,6 +87,7 @@ project/
     index.json
     tool-shed.yaml  # optional environment model
     maps/
+    roadmaps/
     wp/
       active/
       completed/
@@ -350,6 +352,13 @@ blocked, dependencies, focus areas, and detour/return state;
 `completed-queue.md` preserves verified outcomes newest-first. Detailed requests move through
 `active/`, `completed/`, `deferred/`, and `abandoned/`. The campaign lifecycle is separate from
 `ask.txt`: intake stays transient while accepted work becomes durable and ordered.
+
+For far-reaching projects, opt into `work/roadmaps/` between a project map and the campaign queue.
+`ts: develop roadmap` and `ts: overview` are read-only; roadmap proposal/approval and derived
+campaign-plan approval use separate exact state tokens. Existing work is classified from evidence,
+uncertain history stays uncertain, approved revisions are preserved when superseded, and campaign
+completion evidence rolls up to stable milestones and gates. Installation and upgrade create only
+the compatible empty directory—they never ingest or approve planning implicitly.
 
 During installation or upgrade, Tool Shed copies and byte-verifies every file from legacy
 `work/q&a/` and root `q&a/` into `work/01-q&a/`. Name collisions are preserved with

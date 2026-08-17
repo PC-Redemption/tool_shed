@@ -1,9 +1,9 @@
 # Show campaign IDs on ordered Active Campaign Queue entries
 
-Status: queued
+Status: working
 Type: campaign
 Updated: 2026-08-17
-Next Action: execute when selected from the active campaign queue
+Next Action: execute the campaign completion gate
 Campaign ID: show-campaign-ids-on-ordered-active-campaign-queue-entries
 Outcome: Deliver GitHub issue #32 by rendering every active queue card with its exact stable Campaign ID, clearly distinguished from the mutable 1-based queue position used by que N.
 Primary Focus Areas: campaign-lifecycle

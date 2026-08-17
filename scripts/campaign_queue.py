@@ -37,6 +37,10 @@ HEADER_KEYS = (
     "Completion Order",
     "Disposition",
     "Reactivate When",
+    "Roadmap",
+    "Roadmap Revision",
+    "Milestone",
+    "Unlocks Gate",
 )
 ID_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 QUEUE_LINK_RE = re.compile(
@@ -432,6 +436,15 @@ def render_active_queue(
             lines.append("   - ↪️ **DETOUR FOR:** " + item.fields["Detour For"])
         if item.fields.get("Return To", "none") != "none":
             lines.append("   - ↩️ **RETURN TO:** " + item.fields["Return To"])
+        if item.fields.get("Roadmap", "none") != "none":
+            trace = item.fields["Roadmap"]
+            if item.fields.get("Roadmap Revision", "none") != "none":
+                trace += " r" + item.fields["Roadmap Revision"]
+            if item.fields.get("Milestone", "none") != "none":
+                trace += " / " + item.fields["Milestone"]
+            if item.fields.get("Unlocks Gate", "none") != "none":
+                trace += " / unlocks " + item.fields["Unlocks Gate"]
+            lines.append("   - 🗺️ **ROADMAP:** " + trace)
         lines.append("   - 🏁 **OUTCOME:** " + item.outcome)
     return "\n".join(lines).rstrip() + "\n"
 

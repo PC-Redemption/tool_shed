@@ -158,6 +158,35 @@ validate queue/folder invariants before committing. Do not silently reorder a ca
 priority or direction is ambiguous. Blocked campaigns stay active; deferral is an intentional
 priority decision; abandonment preserves disposition history.
 
+## Program Roadmap Route
+
+Program Roadmaps are an opt-in layer from project-map strategy to bounded campaigns. Use
+`python3 <shed>/scripts/program_roadmap.py --workspace <workspace>` for deterministic operations.
+
+- `ts: develop roadmap`: run `develop`; inspect canonical docs, maps, focus areas, queues, and all
+  supported `work/**/*.md` evidence. Classify existing work as completed, active, remaining,
+  superseded, excluded, or uncertain. This is read-only. Greenfield projects must establish and
+  exactly approve their initial project map first.
+- `ts: propose roadmap`: capture an exact `tool-shed-roadmap-proposal` manifest and run `propose`
+  with its fresh source-state token. This may create only a `proposed` roadmap revision. It does
+  not approve the roadmap or create campaigns.
+- `ts: approve roadmap <token>`: run `approve` only for the exact proposal token and unchanged
+  source-state token. Preserve the preceding approved revision as `superseded`.
+- `ts: derive campaigns for milestone <id>`: run `derive`. Return the exact read-only campaign
+  manifest with roadmap and queue tokens; do not modify the queue.
+- `ts: approve campaign plan <token>`: run `apply-campaign-plan` for the exact current manifest.
+  Preserve a working campaign, reject stale inputs and dependency cycles, and materialize only the
+  approved milestone candidates. Creation does not authorize campaign execution.
+- `ts: roadmap status` and `ts: review roadmap`: report computed milestone and gate progress,
+  completion evidence, source drift, and revision state without changing approved intent.
+- `ts: overview`: run `overview` and combine project maps, current approved roadmaps, milestone and
+  gate state, focus areas, campaign readiness, strategic/execution recommendations, and drift.
+
+Roadmap milestones, gates, and revisions use stable IDs. Campaign requests derived from a roadmap
+must carry `Roadmap`, `Roadmap Revision`, `Milestone`, and `Unlocks Gate`. Installation or upgrade
+may create `work/roadmaps/` but never ingests existing work, proposes or approves a roadmap, or
+materializes campaigns implicitly. Standalone project maps and queues remain valid.
+
 Use `migrate-preview` to inspect Markdown requests and actionable inbox lines in canonical
 `work/01-q&a/` or pre-installer legacy `work/q&a/`. It also previews legacy outcome focus phrases;
 only fully matched values from an approved catalog produce suggested `set_focus_areas` operations.

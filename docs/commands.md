@@ -35,6 +35,8 @@ approvals, or the authority stated in the request.
 | `ts: help <topic-or-command>` | Explain the named workflow or route with relevant examples. Read-only. |
 | `ts: discuss <topic>` | Explore the outcome, constraints, assumptions, unknowns, and smallest useful next route without modifying workspace artifacts. |
 | `ts: build focus areas` | Inspect existing workspace sources and propose a project-specific focus-area catalog and active-campaign assignments. Requires explicit approval before writing. |
+| `ts: develop roadmap` | Read project evidence and clarify an opt-in Program Roadmap without mutation. |
+| `ts: overview` | Combine maps, approved roadmaps, gates, focus areas, campaign state, and drift. Read-only. |
 
 `discussion: <topic>` is also accepted as an informal, read-only discussion signal.
 
@@ -163,6 +165,36 @@ python3 tool_shed/scripts/reconcile_campaign_queue.py --workspace . \
   --apply --expect <whole-work-token> --manifest /tmp/campaign-reconciliation.json --json
 ```
 
+## Program Roadmaps
+
+Use this optional lifecycle when a project map needs approved phases, milestones, gates, and
+rolling-wave campaign planning:
+
+| Prompt | Usage |
+| --- | --- |
+| `ts: develop roadmap` | Read and classify project evidence. Greenfield projects establish and approve the initial map first. No writes. |
+| `ts: propose roadmap` | Capture an exact proposed roadmap revision from a fresh source-state token. Creates no campaigns. |
+| `ts: approve roadmap <token>` | Approve exactly one unchanged proposal; preserve any prior approved revision as superseded. |
+| `ts: derive campaigns for milestone <id>` | Preview an exact dependency-aware campaign manifest for one milestone. No writes. |
+| `ts: approve campaign plan <token>` | Materialize only the exact current manifest. Does not start campaign execution. |
+| `ts: roadmap status` | Compute milestone and gate progress from linked campaign evidence. No writes. |
+| `ts: review roadmap` | Report assumptions, source drift, blockers, and revision needs. No writes. |
+| `ts: overview` | Show whole-project strategic and execution state together. No writes. |
+
+The deterministic CLI is:
+
+```bash
+python3 tool_shed/scripts/program_roadmap.py --workspace . develop --roadmap-id <id> --json
+python3 tool_shed/scripts/program_roadmap.py --workspace . propose --manifest proposal.json --expect <source-token>
+python3 tool_shed/scripts/program_roadmap.py --workspace . approve <id> --revision <n> --expect <source-token> --proposal-token <token>
+python3 tool_shed/scripts/program_roadmap.py --workspace . derive <id> --milestone M1 --json
+python3 tool_shed/scripts/program_roadmap.py --workspace . apply-campaign-plan --manifest campaign-plan.json --expect <manifest-token>
+python3 tool_shed/scripts/program_roadmap.py --workspace . overview --json
+```
+
+Roadmap and campaign-plan approval are separate authority boundaries. Every mutation rejects stale
+source, roadmap, or queue state. Existing standalone maps and queues remain supported.
+
 ## Q&A Inbox
 
 ```text
@@ -242,6 +274,7 @@ scripts/check_stale_paths.py
 scripts/complete_workpackage.py
 scripts/install_into_workspace.py
 scripts/new_artifact.py
+scripts/program_roadmap.py
 scripts/read_ask_inbox.py
 scripts/reconcile_campaign_queue.py
 scripts/review_work_state.py

@@ -131,3 +131,14 @@
 - Preview legacy outcome focus phrases without writing; apply only fully matched focus assignments through an exact approved reconciliation manifest.
 - The workspace installer migrates legacy `work/q&a/` and root `q&a/` contents into `work/01-q&a/` without overwriting collisions, then removes the old folders. Campaign conversion remains preview-only until an exact manifest is explicitly approved.
 <!-- END TOOL SHED OWNER CAMPAIGN GUIDANCE -->
+
+<!-- BEGIN TOOL SHED PROGRAM ROADMAP GUIDANCE -->
+## Tool Shed Program Roadmaps
+
+- Treat `ts: develop roadmap`, `ts: propose roadmap`, `ts: approve roadmap <token>`, `ts: derive campaigns for milestone <id>`, `ts: approve campaign plan <token>`, `ts: roadmap status`, `ts: review roadmap`, and `ts: overview` as the opt-in Program Roadmap lifecycle between project maps and campaigns.
+- Keep development, review, campaign derivation, status, and overview read-only. A roadmap proposal may create only a proposed `work/roadmaps/` revision; it cannot approve intent or create campaigns.
+- Require an approved initial project map for greenfield adoption. Existing or upgraded projects may use an active map and must preserve and classify all owner-authored work as completed, active, remaining, superseded, excluded, or uncertain from evidence.
+- Roadmap approval and campaign-plan approval are separate exact-token mutations. Reject stale source, roadmap, or campaign state; preserve superseded approved revisions.
+- Materialized campaigns must reference their Roadmap, Roadmap Revision, Milestone, and Unlocks Gate. Creating them does not authorize starting, deploying, releasing, or promoting them.
+- Installation and upgrade create only the empty compatible topology. They never ingest work, propose or approve a roadmap, or materialize campaigns implicitly.
+<!-- END TOOL SHED PROGRAM ROADMAP GUIDANCE -->

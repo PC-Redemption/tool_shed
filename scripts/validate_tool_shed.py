@@ -82,6 +82,11 @@ def review_work_state() -> None:
     run([sys.executable, "scripts/review_work_state.py", "--workspace", "."])
 
 
+def validate_program_roadmaps() -> None:
+    step("program roadmaps")
+    run([sys.executable, "scripts/program_roadmap.py", "--workspace", ".", "validate"])
+
+
 def smoke_temp_workspace() -> None:
     step("temp workspace smoke")
     with tempfile.TemporaryDirectory(prefix="tool-shed-validate-") as temp:
@@ -104,6 +109,8 @@ def smoke_temp_workspace() -> None:
         campaign_root = workspace / "work" / "00-campaigns"
         if not (campaign_root / "active-queue.md").is_file() or not (campaign_root / "completed-queue.md").is_file():
             raise SystemExit("installer did not create the owner campaign queue")
+        if not (workspace / "work" / "roadmaps").is_dir():
+            raise SystemExit("installer did not create the opt-in Program Roadmap directory")
         agents_text = (workspace / "AGENTS.md").read_text(encoding="utf-8")
         if "ts:ship <goal>" not in agents_text or "plan, implement, validate, build, deploy, and verify" not in agents_text:
             raise SystemExit("installer did not create the Tool Shed ship guidance")
@@ -146,6 +153,15 @@ def smoke_temp_workspace() -> None:
         )
         if any(fragment not in agents_text for fragment in campaign_contract):
             raise SystemExit("installer did not create the complete owner campaign contract")
+        roadmap_contract = (
+            "ts: develop roadmap",
+            "ts: approve roadmap <token>",
+            "ts: approve campaign plan <token>",
+            "separate exact-token mutations",
+            "never ingest work",
+        )
+        if any(fragment not in agents_text for fragment in roadmap_contract):
+            raise SystemExit("installer did not create the complete Program Roadmap contract")
         provider_paths = {
             "claude-code": "CLAUDE.md",
             "gemini-cli": "GEMINI.md",
@@ -305,6 +321,7 @@ def main() -> int:
             regenerate_indexes()
             check_stale_paths()
             review_work_state()
+            validate_program_roadmaps()
         else:
             step("canonical workspace state")
             print("Skipped for disconnected snapshot; no snapshot-local work/ was created.")

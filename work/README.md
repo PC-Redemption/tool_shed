@@ -13,9 +13,17 @@ Use `work/index.md` as the first orientation surface after README/docs. Use `wor
 - Use `python3 scripts/campaign_queue.py --workspace . status` to get the current stale-write token before a lifecycle mutation.
 - Use `python3 scripts/reconcile_campaign_queue.py --workspace . --json` to inspect queue drift and whole-work coverage while automatically creating or refreshing one Dangler Resolution campaign as the first queued work; add `--dry-run` for read-only inspection, and require an exact approved manifest plus the reported whole-work token for every other write.
 
+## Program Roadmaps
+
+- Keep opt-in Program Roadmaps under `work/roadmaps/` between project maps and campaigns.
+- Use `python3 scripts/program_roadmap.py --workspace . develop --json` and `overview --json` for read-only discovery.
+- Roadmap approval and campaign-plan approval are separate exact-token mutations.
+- Installation and upgrade preserve existing work and never create or approve a roadmap implicitly.
+
 ## Active
 
 - Project maps: `work/maps/`
+- Program Roadmaps: `work/roadmaps/`
 - Workpackages: `work/wp/active/`
 - Tickets: `work/tickets/`
 - Spikes: `work/spikes/`

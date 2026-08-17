@@ -9,8 +9,8 @@ Updated: 2026-08-17
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-14 | none | - |
-| [work/00-campaigns/active/add-program-roadmap-lifecycle-between-project-maps-and-campaign-execution.md](work/00-campaigns/active/add-program-roadmap-lifecycle-between-project-maps-and-campaign-execution.md) | campaign | queued | 2026-08-17 | execute when selected from the active campaign queue | - |
-| [work/00-campaigns/active/show-campaign-ids-on-ordered-active-campaign-queue-entries.md](work/00-campaigns/active/show-campaign-ids-on-ordered-active-campaign-queue-entries.md) | campaign | queued | 2026-08-17 | execute when selected from the active campaign queue | - |
+| [work/00-campaigns/active/show-campaign-ids-on-ordered-active-campaign-queue-entries.md](work/00-campaigns/active/show-campaign-ids-on-ordered-active-campaign-queue-entries.md) | campaign | working | 2026-08-17 | execute the campaign completion gate | - |
+| [work/00-campaigns/completed/add-program-roadmap-lifecycle-between-project-maps-and-campaign-execution.md](work/00-campaigns/completed/add-program-roadmap-lifecycle-between-project-maps-and-campaign-execution.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/align-work3-documents-with-coded-work.md](work/00-campaigns/completed/align-work3-documents-with-coded-work.md) | campaign | complete | 2026-08-15 | none | - |
 | [work/00-campaigns/completed/audit-and-refresh-tool-shed-documentation.md](work/00-campaigns/completed/audit-and-refresh-tool-shed-documentation.md) | campaign | complete | 2026-08-14 | none | - |
 | [work/00-campaigns/completed/automate-dangler-resolution-reconciliation.md](work/00-campaigns/completed/automate-dangler-resolution-reconciliation.md) | campaign | complete | 2026-08-14 | none | - |
@@ -74,5 +74,5 @@ Updated: 2026-08-17
 ## Summary
 
 - Total artifacts: 56
-- Active artifacts: 3
-- Completed/decided artifacts: 50
+- Active artifacts: 2
+- Completed/decided artifacts: 51

@@ -15,6 +15,10 @@ Return To: none
 Completion Gate: {{ completion_gate }}
 Completion Evidence: none
 Disposition: none
+Roadmap: none
+Roadmap Revision: none
+Milestone: none
+Unlocks Gate: none
 
 ## Request
 

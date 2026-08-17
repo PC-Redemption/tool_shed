@@ -1,9 +1,9 @@
 # Add program-roadmap lifecycle between project maps and campaign execution
 
-Status: queued
+Status: complete
 Type: campaign
 Updated: 2026-08-17
-Next Action: execute when selected from the active campaign queue
+Next Action: none
 Campaign ID: add-program-roadmap-lifecycle-between-project-maps-and-campaign-execution
 Outcome: Deliver GitHub issue #33 by adding an opt-in, file-based Program Roadmap layer for both greenfield projects and existing or upgraded projects, including evidence-backed ingestion of existing work into approved roadmap state, milestone campaign manifests, and whole-project overview state without silently approving or starting work.
 Primary Focus Areas: campaign-lifecycle
@@ -13,8 +13,10 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: GitHub issue #33 acceptance criteria pass for both entry modes: an empty greenfield project can establish its initial map and roadmap, while an existing or upgraded project can preserve and ingest its populated work tree, classify completed, active, remaining, and uncertain work from evidence, and preview its roadmap mapping without inventing history; exact proposal approval, stale-input rejection, milestone and gate validation, campaign preview and approved materialization, progress rollup, overview and drift reporting, compatibility, documentation, greenfield and populated-work lifecycle tests, and full Tool Shed validation pass.
-Completion Evidence: none
-Disposition: none
+Completion Evidence: scripts/validate_tool_shed.py: 121 tests plus provider, installer, index, stale-path, work-state, roadmap validation, and temp-workspace smoke passed
+Completion Date: 2026-08-17
+Completion Order: 16
+Disposition: completed
 
 ## Request
 

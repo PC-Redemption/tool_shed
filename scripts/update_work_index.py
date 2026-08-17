@@ -26,6 +26,14 @@ HEADER_KEYS = {
     "Produces",
     "Campaign",
     "Campaign Reason",
+    "Roadmap",
+    "Roadmap Revision",
+    "Milestone",
+    "Unlocks Gate",
+    "Roadmap ID",
+    "Revision",
+    "Source Project Map",
+    "Source State Token",
 }
 
 
@@ -54,7 +62,7 @@ class Artifact:
         )
 
     def to_json(self) -> dict[str, Any]:
-        return {
+        payload = {
             "path": self.path.as_posix(),
             "title": self.title,
             "type": self.kind() or None,
@@ -71,6 +79,18 @@ class Artifact:
             "campaign": self.fields.get("Campaign") or None,
             "campaign_reason": self.fields.get("Campaign Reason") or None,
         }
+        optional = {
+            "roadmap": self.fields.get("Roadmap"),
+            "roadmap_revision": self.fields.get("Roadmap Revision"),
+            "milestone": self.fields.get("Milestone"),
+            "unlocks_gate": self.fields.get("Unlocks Gate"),
+            "roadmap_id": self.fields.get("Roadmap ID"),
+            "revision": self.fields.get("Revision"),
+            "source_project_map": self.fields.get("Source Project Map"),
+            "source_state_token": self.fields.get("Source State Token"),
+        }
+        payload.update({key: value for key, value in optional.items() if value})
+        return payload
 
 
 def parse_artifact(path: Path, work_dir: Path) -> Artifact:

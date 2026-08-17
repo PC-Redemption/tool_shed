@@ -34,6 +34,7 @@ provider surface and observed capability level described in `docs/provider-adapt
 
 - owner-facing campaign queues and lifecycle requests under first-sorted `work/00-campaigns/`
 - project maps
+- opt-in Program Roadmaps under `work/roadmaps/`
 - active and completed workpackages
 - tickets
 - ADRs
@@ -169,6 +170,19 @@ The workspace installer migrates all files from legacy `work/q&a/` and root `q&a
 `work/01-q&a/`, verifies copied bytes, preserves collisions with source-specific filenames, and
 removes the old folders only after verification. This filesystem move is separate from converting
 inbox requests into durable campaigns.
+
+## Program Roadmap Lifecycle
+
+`work/roadmaps/` holds optional Program Roadmap revisions between project maps and campaigns.
+Roadmaps remain file-, script-, and Git-based. A proposal records stable phases, milestones,
+evidence gates, decisions, dependencies, authority boundaries, and candidate campaigns.
+
+Development, review, derivation, status, and overview are read-only. Proposal capture creates only
+a proposed revision. Roadmap approval requires the exact proposal and fresh source token;
+campaign-plan approval is a later exact-token mutation. Approved replanning preserves the prior
+revision as superseded. Derived campaigns carry roadmap, revision, milestone, and gate traceability,
+while completion evidence is rolled up computationally rather than silently rewriting approved
+intent. Existing standalone maps and queues remain valid and adoption is incremental.
 
 ## Artifact Headers
 

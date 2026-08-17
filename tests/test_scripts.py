@@ -111,6 +111,7 @@ class ScriptTests(unittest.TestCase):
                 "check_work_tree.py",
                 "install_into_workspace.py",
                 "provider_adapters.py",
+                "program_roadmap.py",
                 "reconcile_campaign_queue.py",
                 "repository_policy.py",
                 "review_work_state.py",
@@ -169,6 +170,7 @@ class ScriptTests(unittest.TestCase):
                     "check_work_tree.py",
                     "install_into_workspace.py",
                     "provider_adapters.py",
+                    "program_roadmap.py",
                     "reconcile_campaign_queue.py",
                     "repository_policy.py",
                     "review_work_state.py",
@@ -883,6 +885,10 @@ for raw in sys.stdin:
         self.assertIn("docs/commands.md", skill_bundle)
         self.assertIn("ts: commands", commands)
         self.assertIn("ts: build focus areas", commands)
+        self.assertIn("ts: develop roadmap", commands)
+        self.assertIn("ts: approve campaign plan <token>", guide)
+        self.assertIn("program_roadmap.py", skill_bundle)
+        self.assertIn("ts: overview", readme)
         self.assertIn("ts:work1", commands)
         self.assertIn("ts:work5", commands)
         self.assertIn("ts: status", commands)
@@ -5090,6 +5096,333 @@ stale canonical-only guidance
 
             self.assertEqual(result.returncode, 1)
             self.assertEqual(cache.read_bytes(), original)
+
+    def test_program_roadmap_greenfield_exact_approval_and_progress_rollup(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/install_into_workspace.py", str(workspace))
+
+            empty = json.loads(
+                run_script(
+                    "scripts/program_roadmap.py", "--workspace", str(workspace),
+                    "develop", "--roadmap-id", "demo", "--json",
+                ).stdout
+            )
+            self.assertEqual(empty["entry_mode"], "greenfield")
+            self.assertIn("establish a project map", empty["blockers"][0])
+            self.assertFalse(empty["writes_performed"])
+
+            project_map = workspace / "work" / "maps" / "map-demo.md"
+            project_map.write_text(
+                """# Project Map: Demo
+
+Status: active
+Type: project-map
+Updated: 2026-08-17
+Next Action: approve the initial map
+""",
+                encoding="utf-8",
+            )
+            discovery = json.loads(
+                run_script(
+                    "scripts/program_roadmap.py", "--workspace", str(workspace),
+                    "develop", "--roadmap-id", "demo", "--json",
+                ).stdout
+            )
+            self.assertIn("approve the initial greenfield project map", discovery["blockers"][0])
+            run_script(
+                "scripts/program_roadmap.py", "--workspace", str(workspace),
+                "approve-map", "work/maps/map-demo.md",
+                "--expect", discovery["project_maps"][0]["map_token"], "--json",
+            )
+            discovery = json.loads(
+                run_script(
+                    "scripts/program_roadmap.py", "--workspace", str(workspace),
+                    "develop", "--roadmap-id", "demo", "--json",
+                ).stdout
+            )
+            self.assertEqual(discovery["blockers"], [])
+
+            definition = {
+                "desired_outcome": "A proven first capability",
+                "non_goals": "Production release",
+                "constraints": "File-based and deterministic",
+                "authority_boundaries": "Campaign creation does not authorize execution",
+                "assumptions": ["The thin slice can validate the architecture"],
+                "unknowns": ["Final scale"],
+                "decisions": ["Use a single initial phase"],
+                "phases": [{"id": "P1", "title": "Foundation", "depends_on": []}],
+                "milestones": [{
+                    "id": "M1", "title": "Thin slice", "phase": "P1",
+                    "depends_on": [], "outcome": "The slice passes focused checks",
+                }],
+                "gates": [{
+                    "id": "G1", "title": "Slice verified",
+                    "requires_milestones": ["M1"],
+                    "unlocks_milestones": [],
+                    "pass_criteria": "Campaign completion evidence exists",
+                    "evidence_required": True,
+                }],
+                "candidate_campaigns": [{
+                    "campaign_id": "prove-thin-slice",
+                    "title": "Prove thin slice",
+                    "outcome": "Validate the thin vertical slice",
+                    "completion_gate": "Focused checks pass",
+                    "request": "Implement and verify the thin slice.",
+                    "milestone": "M1", "depends_on": [],
+                    "primary_focus_areas": [], "supporting_focus_areas": [],
+                    "decision": "none", "unlocks_gate": "G1",
+                }],
+                "artifact_mappings": [],
+            }
+            proposal_manifest = workspace / "proposal.json"
+            proposal_manifest.write_text(
+                json.dumps({
+                    "schema_version": 1,
+                    "kind": "tool-shed-roadmap-proposal",
+                    "roadmap_id": "demo",
+                    "revision": 1,
+                    "title": "Demo",
+                    "project_map": "work/maps/map-demo.md",
+                    "source_state_token": discovery["source_state_token"],
+                    "definition": definition,
+                }),
+                encoding="utf-8",
+            )
+            proposal = json.loads(
+                run_script(
+                    "scripts/program_roadmap.py", "--workspace", str(workspace),
+                    "propose", "--manifest", str(proposal_manifest),
+                    "--expect", discovery["source_state_token"], "--json",
+                ).stdout
+            )
+            original_readme = (workspace / "work" / "README.md").read_text(encoding="utf-8")
+            (workspace / "work" / "README.md").write_text(original_readme + "\nchanged\n", encoding="utf-8")
+            stale = run_script(
+                "scripts/program_roadmap.py", "--workspace", str(workspace),
+                "approve", "demo", "--revision", "1",
+                "--expect", discovery["source_state_token"],
+                "--proposal-token", proposal["proposal_token"], "--json", check=False,
+            )
+            self.assertEqual(stale.returncode, 2)
+            self.assertIn("stale roadmap source state", stale.stderr)
+            (workspace / "work" / "README.md").write_text(original_readme, encoding="utf-8")
+
+            approved = json.loads(
+                run_script(
+                    "scripts/program_roadmap.py", "--workspace", str(workspace),
+                    "approve", "demo", "--revision", "1",
+                    "--expect", discovery["source_state_token"],
+                    "--proposal-token", proposal["proposal_token"], "--json",
+                ).stdout
+            )
+            self.assertEqual(approved["status"], "approved")
+            campaign_plan = json.loads(
+                run_script(
+                    "scripts/program_roadmap.py", "--workspace", str(workspace),
+                    "derive", "demo", "--milestone", "M1", "--json",
+                ).stdout
+            )
+            plan_path = workspace / "campaign-plan.json"
+            plan_path.write_text(json.dumps(campaign_plan), encoding="utf-8")
+            applied = json.loads(
+                run_script(
+                    "scripts/program_roadmap.py", "--workspace", str(workspace),
+                    "apply-campaign-plan", "--manifest", str(plan_path),
+                    "--expect", campaign_plan["manifest_token"], "--json",
+                ).stdout
+            )
+            self.assertEqual(applied["created_campaigns"], ["prove-thin-slice"])
+            campaign_path = workspace / "work" / "00-campaigns" / "active" / "prove-thin-slice.md"
+            campaign_text = campaign_path.read_text(encoding="utf-8")
+            self.assertIn("Roadmap: demo", campaign_text)
+            self.assertIn("Milestone: M1", campaign_text)
+
+            queue = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json",
+                ).stdout
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace),
+                "start", "prove-thin-slice", "--expect", queue["state_token"],
+            )
+            queue = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "status", "--json",
+                ).stdout
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace),
+                "complete", "prove-thin-slice", "--gate-passed",
+                "--evidence", "tests:greenfield", "--expect", queue["state_token"],
+            )
+            status = json.loads(
+                run_script(
+                    "scripts/program_roadmap.py", "--workspace", str(workspace),
+                    "status", "demo", "--json",
+                ).stdout
+            )
+            self.assertEqual(status["milestones"]["M1"]["status"], "complete")
+            self.assertEqual(status["gates"]["G1"]["status"], "passed")
+
+            revision_discovery = json.loads(
+                run_script(
+                    "scripts/program_roadmap.py", "--workspace", str(workspace),
+                    "develop", "--roadmap-id", "demo", "--json",
+                ).stdout
+            )
+            revision_definition = json.loads(json.dumps(definition))
+            revision_definition["desired_outcome"] = "A proven and documented first capability"
+            revision_definition["artifact_mappings"] = revision_discovery["mapping_preview"]
+            revision_manifest = workspace / "proposal-r2.json"
+            revision_manifest.write_text(json.dumps({
+                "schema_version": 1,
+                "kind": "tool-shed-roadmap-proposal",
+                "roadmap_id": "demo", "revision": 2, "title": "Demo revised",
+                "project_map": "work/maps/map-demo.md",
+                "source_state_token": revision_discovery["source_state_token"],
+                "definition": revision_definition,
+            }), encoding="utf-8")
+            revision = json.loads(
+                run_script(
+                    "scripts/program_roadmap.py", "--workspace", str(workspace),
+                    "propose", "--manifest", str(revision_manifest),
+                    "--expect", revision_discovery["source_state_token"], "--json",
+                ).stdout
+            )
+            run_script(
+                "scripts/program_roadmap.py", "--workspace", str(workspace),
+                "approve", "demo", "--revision", "2",
+                "--expect", revision_discovery["source_state_token"],
+                "--proposal-token", revision["proposal_token"], "--json",
+            )
+            first_revision = (
+                workspace / "work" / "roadmaps" / "roadmap-demo.md"
+            ).read_text(encoding="utf-8")
+            self.assertIn("Status: superseded", first_revision)
+            self.assertIn("Superseded By: work/roadmaps/roadmap-demo-r2.md", first_revision)
+            index_payload = json.loads(
+                (workspace / "work" / "index.json").read_text(encoding="utf-8")
+            )
+            roadmap_entries = [
+                item for item in index_payload["artifacts"]
+                if item["type"] == "program-roadmap"
+            ]
+            self.assertEqual(len(roadmap_entries), 2)
+            self.assertEqual(
+                {item["roadmap_id"] for item in roadmap_entries}, {"demo"}
+            )
+            reconciliation = json.loads(
+                run_script(
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                    "--dry-run", "--json",
+                ).stdout
+            )
+            exclusions = {
+                item["path"]: item["reason"]
+                for item in reconciliation["whole_work"]["exclusions"]
+            }
+            self.assertEqual(
+                exclusions["work/roadmaps/roadmap-demo-r2.md"],
+                "roadmap-lifecycle-source",
+            )
+
+    def test_program_roadmap_existing_project_discovery_is_read_only_and_evidence_based(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/install_into_workspace.py", str(workspace))
+            (workspace / "work" / "maps" / "map-existing.md").write_text(
+                """# Project Map: Existing
+
+Status: active
+Type: project-map
+Updated: 2026-08-17
+Next Action: classify existing work
+""",
+                encoding="utf-8",
+            )
+            (workspace / "work" / "tickets" / "ticket-done.md").write_text(
+                """# Done
+
+Status: complete
+Type: ticket
+Updated: 2026-08-17
+Next Action: none
+""",
+                encoding="utf-8",
+            )
+            (workspace / "work" / "legacy-note.md").write_text(
+                "# Historical note\n\nThe old status is ambiguous.\n", encoding="utf-8"
+            )
+            before = {
+                path.relative_to(workspace).as_posix(): path.read_bytes()
+                for path in (workspace / "work").rglob("*") if path.is_file()
+            }
+            result = json.loads(
+                run_script(
+                    "scripts/program_roadmap.py", "--workspace", str(workspace),
+                    "develop", "--roadmap-id", "existing", "--json",
+                ).stdout
+            )
+            after = {
+                path.relative_to(workspace).as_posix(): path.read_bytes()
+                for path in (workspace / "work").rglob("*") if path.is_file()
+            }
+            self.assertEqual(before, after)
+            self.assertEqual(result["entry_mode"], "existing")
+            self.assertEqual(result["blockers"], [])
+            classifications = {item["path"]: item["classification"] for item in result["artifacts"]}
+            self.assertEqual(classifications["work/tickets/ticket-done.md"], "completed")
+            self.assertEqual(classifications["work/legacy-note.md"], "uncertain")
+
+    def test_program_roadmap_validation_rejects_dependency_cycles(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/install_into_workspace.py", str(workspace))
+            map_path = workspace / "work" / "maps" / "map-cycle.md"
+            map_path.write_text(
+                """# Project Map: Cycle
+
+Status: approved
+Type: project-map
+Updated: 2026-08-17
+Next Action: propose roadmap
+""",
+                encoding="utf-8",
+            )
+            discovery = json.loads(
+                run_script(
+                    "scripts/program_roadmap.py", "--workspace", str(workspace),
+                    "develop", "--roadmap-id", "cycle", "--json",
+                ).stdout
+            )
+            manifest = workspace / "cycle.json"
+            manifest.write_text(json.dumps({
+                "schema_version": 1,
+                "kind": "tool-shed-roadmap-proposal",
+                "roadmap_id": "cycle", "revision": 1, "title": "Cycle",
+                "project_map": "work/maps/map-cycle.md",
+                "source_state_token": discovery["source_state_token"],
+                "definition": {
+                    "desired_outcome": "Reject cycles", "non_goals": "none",
+                    "constraints": "deterministic", "authority_boundaries": "no execution",
+                    "assumptions": [], "unknowns": [], "decisions": [],
+                    "phases": [
+                        {"id": "P1", "title": "One", "depends_on": ["P2"]},
+                        {"id": "P2", "title": "Two", "depends_on": ["P1"]},
+                    ],
+                    "milestones": [], "gates": [], "candidate_campaigns": [],
+                    "artifact_mappings": [],
+                },
+            }), encoding="utf-8")
+            result = run_script(
+                "scripts/program_roadmap.py", "--workspace", str(workspace),
+                "propose", "--manifest", str(manifest),
+                "--expect", discovery["source_state_token"], "--json", check=False,
+            )
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("phase dependency cycle", result.stderr)
 
 
 if __name__ == "__main__":
