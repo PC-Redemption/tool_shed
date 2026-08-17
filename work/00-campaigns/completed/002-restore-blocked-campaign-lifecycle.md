@@ -2,9 +2,10 @@
 
 Status: complete
 Type: campaign
-Updated: 2026-08-14
+Updated: 2026-08-17
 Next Action: none
 Campaign ID: restore-blocked-campaign-lifecycle
+Campaign Number: 002
 Outcome: Provide a deterministic supported transition that returns blocked campaigns to schedulable execution without weakening start invariants
 Depends On: none
 Decision: none

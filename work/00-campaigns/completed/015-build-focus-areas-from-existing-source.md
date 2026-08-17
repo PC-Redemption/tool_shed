@@ -2,9 +2,10 @@
 
 Status: complete
 Type: campaign
-Updated: 2026-08-15
+Updated: 2026-08-17
 Next Action: none
 Campaign ID: build-focus-areas-from-existing-source
+Campaign Number: 015
 Outcome: Operators can invoke `ts: build focus areas` to inspect an existing workspace source tree, documentation, tests, integrations, runtime and delivery boundaries, and work history; receive evidence-backed focus-area proposals; and persist `work/focus-areas.md` only after explicit owner approval.
 Primary Focus Areas: none
 Supporting Focus Areas: none

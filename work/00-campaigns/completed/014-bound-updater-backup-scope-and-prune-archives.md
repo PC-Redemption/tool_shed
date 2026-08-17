@@ -2,9 +2,10 @@
 
 Status: complete
 Type: campaign
-Updated: 2026-08-15
+Updated: 2026-08-17
 Next Action: none
 Campaign ID: bound-updater-backup-scope-and-prune-archives
+Campaign Number: 014
 Outcome: Tool Shed updater backups cover only the declared transaction mutation surface and safely retain or prune verified updater-owned workspace and user-skill archives after complete success.
 Primary Focus Areas: none
 Supporting Focus Areas: none

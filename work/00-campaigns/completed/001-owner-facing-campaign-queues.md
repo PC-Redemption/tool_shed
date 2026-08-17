@@ -2,9 +2,10 @@
 
 Status: complete
 Type: campaign
-Updated: 2026-08-14
+Updated: 2026-08-17
 Next Action: none
 Campaign ID: owner-facing-campaign-queues
+Campaign Number: 001
 Outcome: Deliver the approved first-sorted durable campaign lifecycle and synchronize the installed Codex skill
 Depends On: none
 Decision: none

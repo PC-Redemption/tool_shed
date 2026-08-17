@@ -2,9 +2,10 @@
 
 Status: complete
 Type: campaign
-Updated: 2026-08-14
+Updated: 2026-08-17
 Next Action: none
 Campaign ID: resolve-unclassified-work
+Campaign Number: 008
 Outcome: Every unresolved work artifact is associated with a campaign, explicitly standalone or excluded with a reason, or repaired so it no longer signals unresolved work.
 Depends On: none
 Decision: none

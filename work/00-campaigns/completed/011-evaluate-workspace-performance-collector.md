@@ -2,9 +2,10 @@
 
 Status: complete
 Type: campaign
-Updated: 2026-08-14
+Updated: 2026-08-17
 Next Action: none
 Campaign ID: evaluate-workspace-performance-collector
+Campaign Number: 011
 Outcome: Approved longitudinal or multi-workspace measurements determine whether a separate sanitized performance-report collector is justified.
 Depends On: none
 Decision: none

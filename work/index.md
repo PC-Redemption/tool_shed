@@ -8,25 +8,27 @@ Updated: 2026-08-17
 
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
-| [work/00-campaigns/abandoned/guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-14 | none | - |
-| [work/00-campaigns/active/show-campaign-ids-on-ordered-active-campaign-queue-entries.md](work/00-campaigns/active/show-campaign-ids-on-ordered-active-campaign-queue-entries.md) | campaign | working | 2026-08-17 | execute the campaign completion gate | - |
-| [work/00-campaigns/completed/add-program-roadmap-lifecycle-between-project-maps-and-campaign-execution.md](work/00-campaigns/completed/add-program-roadmap-lifecycle-between-project-maps-and-campaign-execution.md) | campaign | complete | 2026-08-17 | none | - |
-| [work/00-campaigns/completed/align-work3-documents-with-coded-work.md](work/00-campaigns/completed/align-work3-documents-with-coded-work.md) | campaign | complete | 2026-08-15 | none | - |
-| [work/00-campaigns/completed/audit-and-refresh-tool-shed-documentation.md](work/00-campaigns/completed/audit-and-refresh-tool-shed-documentation.md) | campaign | complete | 2026-08-14 | none | - |
-| [work/00-campaigns/completed/automate-dangler-resolution-reconciliation.md](work/00-campaigns/completed/automate-dangler-resolution-reconciliation.md) | campaign | complete | 2026-08-14 | none | - |
-| [work/00-campaigns/completed/bound-updater-backup-scope-and-prune-archives.md](work/00-campaigns/completed/bound-updater-backup-scope-and-prune-archives.md) | campaign | complete | 2026-08-15 | none | - |
-| [work/00-campaigns/completed/build-focus-areas-from-existing-source.md](work/00-campaigns/completed/build-focus-areas-from-existing-source.md) | campaign | complete | 2026-08-15 | none | - |
-| [work/00-campaigns/completed/complete-portable-verified-installer.md](work/00-campaigns/completed/complete-portable-verified-installer.md) | campaign | complete | 2026-08-14 | none | - |
-| [work/00-campaigns/completed/converge-upgrades-to-current-work-structure.md](work/00-campaigns/completed/converge-upgrades-to-current-work-structure.md) | campaign | complete | 2026-08-14 | none | - |
-| [work/00-campaigns/completed/discover-focus-areas-and-render-readiness-cards.md](work/00-campaigns/completed/discover-focus-areas-and-render-readiness-cards.md) | campaign | complete | 2026-08-15 | none | - |
-| [work/00-campaigns/completed/evaluate-workspace-performance-collector.md](work/00-campaigns/completed/evaluate-workspace-performance-collector.md) | campaign | complete | 2026-08-14 | none | - |
-| [work/00-campaigns/completed/file-codex-desktop-robustness-issue.md](work/00-campaigns/completed/file-codex-desktop-robustness-issue.md) | campaign | complete | 2026-08-14 | none | - |
-| [work/00-campaigns/completed/owner-facing-campaign-queues.md](work/00-campaigns/completed/owner-facing-campaign-queues.md) | campaign | complete | 2026-08-14 | none | - |
-| [work/00-campaigns/completed/reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-14 | none | - |
-| [work/00-campaigns/completed/reconcile-whole-work-campaign-coverage.md](work/00-campaigns/completed/reconcile-whole-work-campaign-coverage.md) | campaign | complete | 2026-08-14 | none | - |
-| [work/00-campaigns/completed/resolve-unclassified-work.md](work/00-campaigns/completed/resolve-unclassified-work.md) | campaign | complete | 2026-08-14 | none | - |
-| [work/00-campaigns/completed/restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-14 | none | - |
-| [work/00-campaigns/completed/unify-dependency-aware-campaign-readiness.md](work/00-campaigns/completed/unify-dependency-aware-campaign-readiness.md) | campaign | complete | 2026-08-15 | none | - |
+| [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/004-converge-upgrades-to-current-work-structure.md](work/00-campaigns/completed/004-converge-upgrades-to-current-work-structure.md) | campaign | complete | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/005-audit-and-refresh-tool-shed-documentation.md](work/00-campaigns/completed/005-audit-and-refresh-tool-shed-documentation.md) | campaign | complete | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/006-reconcile-whole-work-campaign-coverage.md](work/00-campaigns/completed/006-reconcile-whole-work-campaign-coverage.md) | campaign | complete | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/007-automate-dangler-resolution-reconciliation.md](work/00-campaigns/completed/007-automate-dangler-resolution-reconciliation.md) | campaign | complete | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/008-resolve-unclassified-work.md](work/00-campaigns/completed/008-resolve-unclassified-work.md) | campaign | complete | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/009-complete-portable-verified-installer.md](work/00-campaigns/completed/009-complete-portable-verified-installer.md) | campaign | complete | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/010-file-codex-desktop-robustness-issue.md](work/00-campaigns/completed/010-file-codex-desktop-robustness-issue.md) | campaign | complete | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/011-evaluate-workspace-performance-collector.md](work/00-campaigns/completed/011-evaluate-workspace-performance-collector.md) | campaign | complete | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/012-unify-dependency-aware-campaign-readiness.md](work/00-campaigns/completed/012-unify-dependency-aware-campaign-readiness.md) | campaign | complete | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/013-discover-focus-areas-and-render-readiness-cards.md](work/00-campaigns/completed/013-discover-focus-areas-and-render-readiness-cards.md) | campaign | complete | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/014-bound-updater-backup-scope-and-prune-archives.md](work/00-campaigns/completed/014-bound-updater-backup-scope-and-prune-archives.md) | campaign | complete | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/015-build-focus-areas-from-existing-source.md](work/00-campaigns/completed/015-build-focus-areas-from-existing-source.md) | campaign | complete | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/016-align-work3-documents-with-coded-work.md](work/00-campaigns/completed/016-align-work3-documents-with-coded-work.md) | campaign | complete | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/017-add-program-roadmap-lifecycle-between-project-maps-and-campaign-execution.md](work/00-campaigns/completed/017-add-program-roadmap-lifecycle-between-project-maps-and-campaign-execution.md) | campaign | complete | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/018-show-campaign-ids-on-ordered-active-campaign-queue-entries.md](work/00-campaigns/completed/018-show-campaign-ids-on-ordered-active-campaign-queue-entries.md) | campaign | complete | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/020-test-campaign-id-heading-review.md](work/00-campaigns/completed/020-test-campaign-id-heading-review.md) | campaign | complete | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/021-standardize-campaign-numbering-during-tool-shed-upgrades.md](work/00-campaigns/completed/021-standardize-campaign-numbering-during-tool-shed-upgrades.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/checklists/checklist-refresh-readme-and-ai-command-reference.md](work/checklists/checklist-refresh-readme-and-ai-command-reference.md) | checklist | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/checklists/checklist-tool-shed-skill-field-test.md](work/checklists/checklist-tool-shed-skill-field-test.md) | checklist | complete | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/decisions/decision-codex-skill-readiness.md](work/decisions/decision-codex-skill-readiness.md) | decision-matrix | decided | 2026-07-05 | continue using skill on real projects; plugin packaging deferred | work/maps/map-tool-shed-foundation.md |
@@ -73,6 +75,6 @@ Updated: 2026-08-17
 
 ## Summary
 
-- Total artifacts: 56
-- Active artifacts: 2
-- Completed/decided artifacts: 51
+- Total artifacts: 58
+- Active artifacts: 1
+- Completed/decided artifacts: 54

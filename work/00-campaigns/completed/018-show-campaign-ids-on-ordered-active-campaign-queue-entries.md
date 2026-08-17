@@ -1,10 +1,11 @@
 # Show campaign IDs on ordered Active Campaign Queue entries
 
-Status: working
+Status: complete
 Type: campaign
 Updated: 2026-08-17
-Next Action: execute the campaign completion gate
+Next Action: none
 Campaign ID: show-campaign-ids-on-ordered-active-campaign-queue-entries
+Campaign Number: 018
 Outcome: Deliver GitHub issue #32 by rendering every active queue card with its exact stable Campaign ID, clearly distinguished from the mutable 1-based queue position used by que N.
 Primary Focus Areas: campaign-lifecycle
 Supporting Focus Areas: snapshot-delivery, provider-portability, qualification-release
@@ -13,8 +14,10 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: GitHub issue #32 acceptance criteria pass: every generated active queue card displays its exact Campaign ID; rendering and validation tests cover the field; initialization, templates, installation and update remain consistent; operator documentation explains stable IDs versus queue positions; deterministic regeneration preserves order and lifecycle state; full Tool Shed validation passes.
-Completion Evidence: none
-Disposition: none
+Completion Evidence: scripts/validate_tool_shed.py: 122 tests plus renderer/validation, provider, installer/update, snapshot, index, stale-path, work-state, roadmap, and temp-workspace checks passed
+Completion Date: 2026-08-17
+Completion Order: 17
+Disposition: completed
 
 ## Request
 

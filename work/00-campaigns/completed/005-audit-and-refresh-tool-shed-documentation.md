@@ -2,9 +2,10 @@
 
 Status: complete
 Type: campaign
-Updated: 2026-08-14
+Updated: 2026-08-17
 Next Action: none
 Campaign ID: audit-and-refresh-tool-shed-documentation
+Campaign Number: 005
 Outcome: Review all Tool Shed documentation and instruction surfaces for stale, outdated, inconsistent, or superseded information; correct the repository sources of truth; then update the linked Google Doc to reflect the verified current documentation.
 Depends On: none
 Decision: none

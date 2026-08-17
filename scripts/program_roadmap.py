@@ -926,6 +926,12 @@ def apply_campaign_plan(workspace: Path, manifest_path: Path, expected: str) -> 
         missing = sorted(set(dependencies) - set(campaigns) - set(canonical))
         if missing:
             raise RoadmapError("campaign plan has missing dependencies: " + ", ".join(missing))
+        prefixed_number = campaign_queue.NUMBERED_ID_RE.match(campaign_id)
+        campaign_number = (
+            prefixed_number.group(1)
+            if prefixed_number
+            else campaign_queue.next_campaign_number(campaigns)
+        )
         text = campaign_queue._campaign_text(
             campaign_id,
             candidate["title"],
@@ -937,8 +943,13 @@ def apply_campaign_plan(workspace: Path, manifest_path: Path, expected: str) -> 
             "none",
             candidate.get("primary_focus_areas", []),
             candidate.get("supporting_focus_areas", []),
+            campaign_number,
         ).replace("Add detailed execution context here.", candidate["request"])
-        path = campaign_queue.campaign_root(workspace) / "active" / f"{campaign_id}.md"
+        path = (
+            campaign_queue.campaign_root(workspace)
+            / "active"
+            / campaign_queue.campaign_filename(campaign_id, campaign_number)
+        )
         item = campaign_queue.parse_campaign_text(path, text)
         item.fields["Roadmap"] = roadmap.roadmap_id
         item.fields["Roadmap Revision"] = str(roadmap.revision)

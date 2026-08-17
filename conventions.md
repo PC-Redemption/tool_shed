@@ -160,6 +160,11 @@ updates requests and both queue projections through a recoverable transaction. M
 queue edits fail validation. Blocked work remains active. Deferral and abandonment are explicit
 priority decisions, not substitutes for temporary blocking.
 
+Each campaign has a stable zero-padded `Campaign Number`, and its lifecycle request filename is
+`<campaign-number>-<campaign-id>.md`. If a legacy Campaign ID already begins with the same numeric
+prefix, do not duplicate it. Guarded `backfill-numbers` assigns missing numbers, renames legacy
+files, and refreshes queue projections as one recoverable transaction.
+
 `work/01-q&a/ask.txt` remains transient intake. Accepting an inbox entry may create a durable campaign
 under `work/00-campaigns/active/`, but no campaign operation clears or rewrites the inbox. Legacy
 request migration is preview-only until an exact manifest is separately approved. Legacy outcome

@@ -929,7 +929,17 @@ def prepare_manifest_changes(
             missing = sorted(set(dependencies) - set(campaigns))
             if missing:
                 raise campaign_queue.CampaignError("missing dependencies: " + ", ".join(missing))
-            path = root / "active" / f"{campaign_id}.md"
+            prefixed_number = campaign_queue.NUMBERED_ID_RE.match(campaign_id)
+            campaign_number = (
+                prefixed_number.group(1)
+                if prefixed_number
+                else campaign_queue.next_campaign_number(campaigns)
+            )
+            path = (
+                root
+                / "active"
+                / campaign_queue.campaign_filename(campaign_id, campaign_number)
+            )
             text = campaign_queue._campaign_text(
                 campaign_id, title.strip(), outcome.strip(), gate.strip(), dependencies,
                 str(operation.get("decision", "none")),
@@ -937,6 +947,7 @@ def prepare_manifest_changes(
                 str(operation.get("return_to", "none")),
                 primary_focus_areas,
                 supporting_focus_areas,
+                campaign_number,
             ).replace("Add detailed execution context here.", request.strip())
             item = campaign_queue.parse_campaign_text(path, text)
             campaigns[campaign_id] = item

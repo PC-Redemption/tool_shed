@@ -2,9 +2,10 @@
 
 Status: complete
 Type: campaign
-Updated: 2026-08-14
+Updated: 2026-08-17
 Next Action: none
 Campaign ID: file-codex-desktop-robustness-issue
+Campaign Number: 010
 Outcome: The contained Codex Desktop crash is reported through an approved external channel with a sanitized, reviewed evidence set.
 Depends On: none
 Decision: none

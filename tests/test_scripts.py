@@ -1719,7 +1719,7 @@ Next Action: keep going
             run_script("scripts/update_work_index.py", "--workspace", str(workspace))
             payload = json.loads((workspace / "work" / "index.json").read_text(encoding="utf-8"))
             paths = {item["path"] for item in payload["artifacts"]}
-            self.assertIn("work/00-campaigns/active/demo-campaign.md", paths)
+            self.assertIn("work/00-campaigns/active/001-demo-campaign.md", paths)
             self.assertNotIn("work/00-campaigns/active-queue.md", paths)
             self.assertNotIn("work/00-campaigns/completed-queue.md", paths)
 
@@ -1745,7 +1745,7 @@ Next Action: keep going
             )
             self.assertEqual(stale.returncode, 2)
             self.assertIn("stale campaign state", stale.stderr)
-            self.assertFalse((workspace / "work" / "00-campaigns" / "active" / "stale.md").exists())
+            self.assertFalse((workspace / "work" / "00-campaigns" / "active" / "002-stale.md").exists())
 
             token = json.loads(
                 run_script(
@@ -1787,7 +1787,7 @@ Next Action: keep going
             self.assertEqual(final["last_completed"], "first")
             self.assertEqual(final["detours"], ["second"])
             self.assertEqual(final["findings"], [])
-            self.assertTrue((workspace / "work" / "00-campaigns" / "completed" / "first.md").is_file())
+            self.assertTrue((workspace / "work" / "00-campaigns" / "completed" / "001-first.md").is_file())
             active_queue = (workspace / "work" / "00-campaigns" / "active-queue.md").read_text(encoding="utf-8")
             self.assertIn("Detour and return point: second", active_queue)
 
@@ -1868,6 +1868,123 @@ Next Action: keep going
                 "active-queue.md is stale or manually inconsistent",
                 validation["findings"],
             )
+
+    def test_active_queue_cards_show_stable_numbers_and_ids_separate_from_mutable_positions(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+
+            def status() -> dict[str, object]:
+                return json.loads(
+                    run_script(
+                        "scripts/campaign_queue.py", "--workspace", str(workspace),
+                        "status", "--json",
+                    ).stdout
+                )
+
+            for campaign_id, title in (("stable-alpha", "Stable Alpha"), ("stable-beta", "Stable Beta")):
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace),
+                    "add", campaign_id, title,
+                    "--outcome", f"deliver {title}",
+                    "--completion-gate", f"verify {title}",
+                    "--expect", str(status()["state_token"]),
+                )
+            queue_path = workspace / "work" / "00-campaigns" / "active-queue.md"
+            initial = queue_path.read_text(encoding="utf-8")
+            self.assertIn("1. (001) **[Stable Alpha](active/001-stable-alpha.md)**", initial)
+            self.assertIn("   - 🆔 **CAMPAIGN ID:** `stable-alpha`", initial)
+            self.assertIn("2. (002) **[Stable Beta](active/002-stable-beta.md)**", initial)
+            self.assertIn("   - 🆔 **CAMPAIGN ID:** `stable-beta`", initial)
+            self.assertIn("Queue positions are mutable", initial)
+
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace),
+                "reorder", "stable-beta", "--position", "1",
+                "--expect", str(status()["state_token"]),
+            )
+            reordered = queue_path.read_text(encoding="utf-8")
+            self.assertIn("1. (002) **[Stable Beta](active/002-stable-beta.md)**", reordered)
+            self.assertIn("   - 🆔 **CAMPAIGN ID:** `stable-beta`", reordered)
+            validation = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace),
+                    "validate", "--json",
+                ).stdout
+            )
+            self.assertTrue(validation["valid"])
+
+    def test_campaign_numbers_preserve_id_prefixes_and_backfill_legacy_campaigns(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+
+            def status() -> dict[str, object]:
+                return json.loads(
+                    run_script(
+                        "scripts/campaign_queue.py", "--workspace", str(workspace),
+                        "status", "--json",
+                    ).stdout
+                )
+
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace),
+                "add", "004-produce-bundle", "Produce bundle",
+                "--outcome", "produce the bundle",
+                "--completion-gate", "bundle verified",
+                "--expect", str(status()["state_token"]),
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace),
+                "add", "review-bundle", "Review bundle",
+                "--outcome", "review the bundle",
+                "--completion-gate", "review recorded",
+                "--expect", str(status()["state_token"]),
+            )
+            queue_path = workspace / "work" / "00-campaigns" / "active-queue.md"
+            queue = queue_path.read_text(encoding="utf-8")
+            self.assertIn("1. (004) **[Produce bundle]", queue)
+            self.assertIn("2. (005) **[Review bundle]", queue)
+            self.assertEqual(
+                status()["campaign_numbers"]["004"], "004-produce-bundle"
+            )
+
+            numbered_review_path = workspace / "work" / "00-campaigns" / "active" / "005-review-bundle.md"
+            review_path = workspace / "work" / "00-campaigns" / "active" / "review-bundle.md"
+            numbered_review_path.rename(review_path)
+            review_path.write_text(
+                review_path.read_text(encoding="utf-8").replace(
+                    "Campaign Number: 005\n", ""
+                ),
+                encoding="utf-8",
+            )
+            queue_path.write_text(
+                queue.replace("2. (005) ", "2. ").replace(
+                    "active/005-review-bundle.md", "active/review-bundle.md"
+                ),
+                encoding="utf-8",
+            )
+            legacy = status()
+            self.assertIn(
+                "review-bundle is missing Campaign Number", legacy["findings"]
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace),
+                "backfill-numbers", "--expect", str(legacy["state_token"]),
+            )
+            repaired_path = workspace / "work" / "00-campaigns" / "active" / "001-review-bundle.md"
+            repaired = repaired_path.read_text(encoding="utf-8")
+            self.assertIn("Campaign Number: 001", repaired)
+            self.assertIn(
+                "2. (001) **[Review bundle](active/001-review-bundle.md)**",
+                queue_path.read_text(encoding="utf-8"),
+            )
+            self.assertEqual(status()["findings"], [])
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace),
+                "start", "004", "--expect", str(status()["state_token"]),
+            )
+            self.assertEqual(status()["working"], ["004-produce-bundle"])
 
     def test_focus_area_catalog_validation_and_readiness_cards(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -1982,7 +2099,7 @@ Uncertainty: none
             self.assertNotIn("<style", queue.lower())
             self.assertNotIn("<div", queue.lower())
 
-            ready_path = workspace / "work" / "00-campaigns" / "active" / "ready.md"
+            ready_path = workspace / "work" / "00-campaigns" / "active" / "003-ready.md"
             original = ready_path.read_text(encoding="utf-8")
             ready_path.write_text(
                 original.replace(
@@ -2078,7 +2195,7 @@ Uncertainty: none
             )
             self.assertTrue(applied["writes_performed"])
             campaign = (
-                workspace / "work" / "00-campaigns" / "active" / "legacy.md"
+                workspace / "work" / "00-campaigns" / "active" / "001-legacy.md"
             ).read_text(encoding="utf-8")
             self.assertIn("Outcome: deliver legacy", campaign)
             self.assertIn("Primary Focus Areas: firmware, qualification", campaign)
@@ -2121,8 +2238,8 @@ Uncertainty: none
             self.assertEqual(status["last_completed"], "zulu")
             self.assertEqual(status["findings"], [])
             completed_root = workspace / "work" / "00-campaigns" / "completed"
-            self.assertIn("Completion Order: 1", (completed_root / "alpha.md").read_text(encoding="utf-8"))
-            self.assertIn("Completion Order: 2", (completed_root / "zulu.md").read_text(encoding="utf-8"))
+            self.assertIn("Completion Order: 1", (completed_root / "001-alpha.md").read_text(encoding="utf-8"))
+            self.assertIn("Completion Order: 2", (completed_root / "002-zulu.md").read_text(encoding="utf-8"))
 
     def test_campaign_terminal_transitions_and_migration_are_preserving(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -2178,7 +2295,7 @@ Uncertainty: none
                 ).stdout
             )
             self.assertTrue(result["valid"])
-            abandoned = workspace / "work" / "00-campaigns" / "abandoned" / "defer-me.md"
+            abandoned = workspace / "work" / "00-campaigns" / "abandoned" / "001-defer-me.md"
             self.assertIn("replacement: future-campaign", abandoned.read_text(encoding="utf-8"))
 
     def test_campaign_reorder_overlap_block_and_failed_completion(self) -> None:
@@ -2282,7 +2399,7 @@ Uncertainty: none
             self.assertEqual(unblocked["next"], "resume-me")
             self.assertEqual(unblocked["blocked"], [])
             self.assertEqual(unblocked["decisions_needed"], [])
-            campaign = workspace / "work" / "00-campaigns" / "active" / "resume-me.md"
+            campaign = workspace / "work" / "00-campaigns" / "active" / "001-resume-me.md"
             text = campaign.read_text(encoding="utf-8")
             self.assertIn("Status: queued", text)
             self.assertIn("Decision: none", text)
@@ -2332,7 +2449,7 @@ Uncertainty: none
                 "scripts/campaign_queue.py", "--workspace", str(workspace), "block", "gamma",
                 "--reason", "owner decision", "--expect", str(status()["state_token"]),
             )
-            alpha = workspace / "work" / "00-campaigns" / "active" / "alpha.md"
+            alpha = workspace / "work" / "00-campaigns" / "active" / "001-alpha.md"
             alpha.write_text(
                 alpha.read_text(encoding="utf-8").replace(
                     f"Updated: {date.today().isoformat()}", "Updated: 2000-01-01"
@@ -2341,8 +2458,8 @@ Uncertainty: none
             )
             queue = workspace / "work" / "00-campaigns" / "active-queue.md"
             lines = queue.read_text(encoding="utf-8").splitlines()
-            alpha_line = next(line for line in lines if "active/alpha.md" in line)
-            lines = [line for line in lines if "active/beta.md" not in line]
+            alpha_line = next(line for line in lines if "active/001-alpha.md" in line)
+            lines = [line for line in lines if "active/002-beta.md" not in line]
             lines.extend(
                 [
                     alpha_line,
@@ -2378,7 +2495,7 @@ Uncertainty: none
             self.assertEqual(missing_manifest.returncode, 2)
             self.assertIn("--apply requires --manifest PATH", missing_manifest.stderr)
 
-            gamma = workspace / "work" / "00-campaigns" / "active" / "gamma.md"
+            gamma = workspace / "work" / "00-campaigns" / "active" / "003-gamma.md"
             manifest = workspace / "reconcile-manifest.json"
             manifest.write_text(
                 json.dumps(report["reconciliation_manifest"]), encoding="utf-8"
@@ -2630,7 +2747,7 @@ Uncertainty: none
                 / "work"
                 / "00-campaigns"
                 / "active"
-                / "resolve-unclassified-work.md"
+                / "001-resolve-unclassified-work.md"
             )
             campaign_text = campaign.read_text(encoding="utf-8")
             self.assertIn("work/tickets/dangling.md", campaign_text)
@@ -2735,7 +2852,7 @@ Uncertainty: none
             )
             self.assertTrue(applied["writes_performed"])
             self.assertIn("Campaign: candidate-campaign", ticket.read_text(encoding="utf-8"))
-            self.assertTrue((workspace / "work" / "00-campaigns" / "active" / "candidate-campaign.md").is_file())
+            self.assertTrue((workspace / "work" / "00-campaigns" / "active" / "001-candidate-campaign.md").is_file())
 
             refreshed = json.loads(
                 run_script(
@@ -2761,10 +2878,10 @@ Uncertainty: none
                 "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
                 "--apply", "--expect", refreshed["state_token"], "--manifest", str(path), "--json",
             )
-            preserved = workspace / "work" / "00-campaigns" / "abandoned" / "candidate-campaign.md"
+            preserved = workspace / "work" / "00-campaigns" / "abandoned" / "001-candidate-campaign.md"
             self.assertTrue(preserved.is_file())
             self.assertIn("Status: abandoned", preserved.read_text(encoding="utf-8"))
-            self.assertFalse((workspace / "work" / "00-campaigns" / "active" / "candidate-campaign.md").exists())
+            self.assertFalse((workspace / "work" / "00-campaigns" / "active" / "001-candidate-campaign.md").exists())
 
     def test_campaign_validation_detects_dependency_cycle(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -2788,7 +2905,7 @@ Uncertainty: none
 
             add("alpha")
             add("beta", "alpha")
-            alpha = workspace / "work" / "00-campaigns" / "active" / "alpha.md"
+            alpha = workspace / "work" / "00-campaigns" / "active" / "001-alpha.md"
             alpha.write_text(
                 alpha.read_text(encoding="utf-8").replace("Depends On: none", "Depends On: beta"),
                 encoding="utf-8",
@@ -3422,6 +3539,144 @@ stale loop guidance
                 payload["backup_scope"]["excluded"][0]["path"],
                 "work/evidence/generated",
             )
+
+    def test_snapshot_upgrade_standardizes_legacy_campaign_files_and_preserves_content(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(
+                root,
+                include_provider_adapter=True,
+                minimum_updater_protocol=3,
+                updater_mutation_paths=[
+                    {
+                        "path": "work/00-campaigns",
+                        "mode": "tree",
+                        "reason": "standardize legacy campaign numbering",
+                    }
+                ],
+            )
+            workspace = self.create_update_workspace(root)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+            token = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace),
+                    "status", "--json",
+                ).stdout
+            )["state_token"]
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace),
+                "add", "legacy-campaign", "Legacy campaign",
+                "--outcome", "preserve owner content",
+                "--completion-gate", "migration verified", "--expect", token,
+            )
+            numbered = workspace / "work" / "00-campaigns" / "active" / "001-legacy-campaign.md"
+            legacy = workspace / "work" / "00-campaigns" / "active" / "legacy-campaign.md"
+            text = numbered.read_text(encoding="utf-8").replace(
+                "Campaign Number: 001\n", "Owner Extension: preserve exactly\n"
+            ).replace(
+                "Add detailed execution context here.", "Owner-authored migration context."
+            )
+            numbered.rename(legacy)
+            legacy.write_text(text, encoding="utf-8")
+            queue = workspace / "work" / "00-campaigns" / "active-queue.md"
+            queue.write_text(
+                queue.read_text(encoding="utf-8")
+                .replace("1. (001) ", "1. ")
+                .replace("active/001-legacy-campaign.md", "active/legacy-campaign.md"),
+                encoding="utf-8",
+            )
+
+            payload = json.loads(
+                run_script(
+                    str(ROOT / "scripts" / "update_snapshot.py"),
+                    "--workspace", str(workspace), "--repository", str(release),
+                    "--json", cwd=workspace,
+                ).stdout
+            )
+
+            migrated = workspace / "work" / "00-campaigns" / "active" / "001-legacy-campaign.md"
+            migrated_text = migrated.read_text(encoding="utf-8")
+            self.assertEqual(payload["state"], "installed")
+            self.assertTrue(payload["work_preserved"])
+            self.assertTrue(payload["work_converged"])
+            self.assertTrue(payload["post_install"]["campaign_convergence"]["applied"])
+            self.assertFalse(legacy.exists())
+            self.assertIn("Campaign Number: 001", migrated_text)
+            self.assertIn("Owner Extension: preserve exactly", migrated_text)
+            self.assertIn("Owner-authored migration context.", migrated_text)
+            self.assertIn(
+                "active/001-legacy-campaign.md",
+                queue.read_text(encoding="utf-8"),
+            )
+            self.assertIn(
+                "work/00-campaigns/active/001-legacy-campaign.md",
+                (workspace / "work" / "index.md").read_text(encoding="utf-8"),
+            )
+
+    def test_snapshot_campaign_convergence_rolls_back_after_injected_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(
+                root,
+                include_provider_adapter=True,
+                minimum_updater_protocol=3,
+                updater_mutation_paths=[
+                    {
+                        "path": "work/00-campaigns",
+                        "mode": "tree",
+                        "reason": "standardize legacy campaign numbering",
+                    }
+                ],
+            )
+            workspace = self.create_update_workspace(root)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+            token = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace),
+                    "status", "--json",
+                ).stdout
+            )["state_token"]
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace),
+                "add", "legacy", "Legacy", "--outcome", "preserve",
+                "--completion-gate", "verified", "--expect", token,
+            )
+            numbered = workspace / "work" / "00-campaigns" / "active" / "001-legacy.md"
+            legacy = workspace / "work" / "00-campaigns" / "active" / "legacy.md"
+            numbered.rename(legacy)
+            legacy.write_text(
+                legacy.read_text(encoding="utf-8").replace("Campaign Number: 001\n", ""),
+                encoding="utf-8",
+            )
+            queue = workspace / "work" / "00-campaigns" / "active-queue.md"
+            queue.write_text(
+                queue.read_text(encoding="utf-8")
+                .replace("1. (001) ", "1. ")
+                .replace("active/001-legacy.md", "active/legacy.md"),
+                encoding="utf-8",
+            )
+            before = {
+                path.relative_to(workspace / "work" / "00-campaigns").as_posix(): path.read_bytes()
+                for path in (workspace / "work" / "00-campaigns").rglob("*")
+                if path.is_file()
+            }
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace", str(workspace), "--repository", str(release),
+                "--inject-post-install-failure", "--json", cwd=workspace, check=False,
+            )
+
+            self.assertEqual(result.returncode, 1)
+            self.assertEqual(
+                {
+                    path.relative_to(workspace / "work" / "00-campaigns").as_posix(): path.read_bytes()
+                    for path in (workspace / "work" / "00-campaigns").rglob("*")
+                    if path.is_file()
+                },
+                before,
+            )
+            self.assertTrue(legacy.is_file())
 
     def test_snapshot_backup_scope_excludes_generated_evidence_and_preserves_hard_links(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -5233,7 +5488,7 @@ Next Action: approve the initial map
                 ).stdout
             )
             self.assertEqual(applied["created_campaigns"], ["prove-thin-slice"])
-            campaign_path = workspace / "work" / "00-campaigns" / "active" / "prove-thin-slice.md"
+            campaign_path = workspace / "work" / "00-campaigns" / "active" / "001-prove-thin-slice.md"
             campaign_text = campaign_path.read_text(encoding="utf-8")
             self.assertIn("Roadmap: demo", campaign_text)
             self.assertIn("Milestone: M1", campaign_text)

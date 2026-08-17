@@ -2,9 +2,10 @@
 
 Status: complete
 Type: campaign
-Updated: 2026-08-14
+Updated: 2026-08-17
 Next Action: none
 Campaign ID: reconcile-whole-work-campaign-coverage
+Campaign Number: 006
 Outcome: Make campaign reconciliation discover and classify unresolved work across the complete work tree so a clean owner queue proves coverage instead of only projection consistency
 Depends On: none
 Decision: none

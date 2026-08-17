@@ -5,6 +5,7 @@ Type: campaign
 Updated: 2026-08-17
 Next Action: none
 Campaign ID: add-program-roadmap-lifecycle-between-project-maps-and-campaign-execution
+Campaign Number: 017
 Outcome: Deliver GitHub issue #33 by adding an opt-in, file-based Program Roadmap layer for both greenfield projects and existing or upgraded projects, including evidence-backed ingestion of existing work into approved roadmap state, milestone campaign manifests, and whole-project overview state without silently approving or starting work.
 Primary Focus Areas: campaign-lifecycle
 Supporting Focus Areas: artifact-workflows, provider-portability, qualification-release

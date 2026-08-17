@@ -2,9 +2,10 @@
 
 Status: complete
 Type: campaign
-Updated: 2026-08-15
+Updated: 2026-08-17
 Next Action: none
 Campaign ID: unify-dependency-aware-campaign-readiness
+Campaign Number: 012
 Outcome: Owner queue projection, status, and next use one dependency-aware readiness selector while preserving the reconciliation fallback when no queued campaign is ready.
 Depends On: none
 Decision: none

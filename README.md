@@ -352,6 +352,17 @@ blocked, dependencies, focus areas, and detour/return state;
 `completed-queue.md` preserves verified outcomes newest-first. Detailed requests move through
 `active/`, `completed/`, `deferred/`, and `abandoned/`. The campaign lifecycle is separate from
 `ask.txt`: intake stays transient while accepted work becomes durable and ordered.
+Every active card heading displays its stable zero-padded campaign number in parentheses after the
+mutable 1-based queue position, and the card displays its full stable `Campaign ID` underneath.
+For example, `1. (004) Produce and freeze corrected firmware bundle` means queue position 1,
+campaign number 004. Its lifecycle request filename is also prefixed, such as
+`004-produce-and-freeze-corrected-firmware-bundle.md`. Existing IDs beginning with a numeric prefix
+retain that number; the guarded `backfill-numbers --expect TOKEN` migration assigns durable numbers
+and renames legacy slug-only campaign files atomically.
+Lifecycle commands accept either the exact zero-padded number or the full Campaign ID.
+Released snapshot upgrades run this convergence automatically when read-only validation reports a
+legacy campaign layout. The release declares `work/00-campaigns` in its backed-up mutation scope;
+migration preserves owner extensions and rolls the complete campaign tree back on failure.
 
 For far-reaching projects, opt into `work/roadmaps/` between a project map and the campaign queue.
 `ts: develop roadmap` and `ts: overview` are read-only; roadmap proposal/approval and derived

@@ -24,6 +24,7 @@ HEADER_KEYS = (
     "Updated",
     "Next Action",
     "Campaign ID",
+    "Campaign Number",
     "Outcome",
     "Primary Focus Areas",
     "Supporting Focus Areas",
@@ -43,8 +44,10 @@ HEADER_KEYS = (
     "Unlocks Gate",
 )
 ID_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+CAMPAIGN_NUMBER_RE = re.compile(r"^[0-9]{3,}$")
+NUMBERED_ID_RE = re.compile(r"^([0-9]{3,})-")
 QUEUE_LINK_RE = re.compile(
-    r"^\d+\. (?:\*\*)?\[[^]]+\]\(active/([a-z0-9-]+)\.md\)(?:\*\*)?"
+    r"^\d+\. (?:\([0-9?]+\) )?(?:\*\*)?\[[^]]+\]\(active/([a-z0-9-]+)\.md\)(?:\*\*)?"
 )
 FOCUS_AREA_CATALOG = Path("work/focus-areas.md")
 FOCUS_AREA_FIELDS = (
@@ -92,6 +95,14 @@ class Campaign:
     @property
     def campaign_id(self) -> str:
         return self.fields.get("Campaign ID", "")
+
+    @property
+    def campaign_number(self) -> str:
+        explicit = self.fields.get("Campaign Number", "")
+        if explicit:
+            return explicit
+        match = NUMBERED_ID_RE.match(self.campaign_id)
+        return match.group(1) if match else ""
 
     @property
     def status(self) -> str:
@@ -201,6 +212,7 @@ def _default_active_queue() -> str:
         "- Blocker or decision needed: none\n"
         "- Detour and return point: none\n\n"
         "## Ordered Queue\n\n"
+        "Queue positions are mutable; parenthesized campaign numbers and full `Campaign ID` values are stable.\n\n"
         "No active campaigns.\n"
     )
 
@@ -262,6 +274,22 @@ def render_campaign(campaign: Campaign) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
+def set_campaign_header(text: str, key: str, value: str) -> str:
+    lines = text.splitlines()
+    prefix = f"{key}:"
+    for index, line in enumerate(lines):
+        if line.startswith(prefix):
+            lines[index] = f"{key}: {value}"
+            return "\n".join(lines).rstrip() + "\n"
+    after = "Campaign ID:" if key == "Campaign Number" else "Status:"
+    insert_at = next(
+        (index + 1 for index, line in enumerate(lines) if line.startswith(after)),
+        1,
+    )
+    lines.insert(insert_at, f"{key}: {value}")
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def load_all(workspace: Path) -> dict[str, Campaign]:
     root = campaign_root(workspace)
     result: dict[str, Campaign] = {}
@@ -285,7 +313,11 @@ def queue_order(workspace: Path) -> list[str]:
     for line in path.read_text(encoding="utf-8").splitlines():
         match = QUEUE_LINK_RE.match(line)
         if match:
-            order.append(match.group(1))
+            linked_path = campaign_root(workspace) / "active" / f"{match.group(1)}.md"
+            if linked_path.is_file():
+                order.append(parse_campaign(linked_path).campaign_id)
+            else:
+                order.append(match.group(1))
     return order
 
 
@@ -321,6 +353,44 @@ def _completion_sort_key(campaign: Campaign) -> tuple[int, str, str]:
         campaign.fields.get("Completion Date", ""),
         campaign.campaign_id,
     )
+
+
+def next_campaign_number(campaigns: dict[str, Campaign]) -> str:
+    used = [
+        int(item.campaign_number)
+        for item in campaigns.values()
+        if CAMPAIGN_NUMBER_RE.fullmatch(item.campaign_number)
+    ]
+    return f"{max(used, default=0) + 1:03d}"
+
+
+def campaign_filename(campaign_id: str, campaign_number: str) -> str:
+    prefixed = NUMBERED_ID_RE.match(campaign_id)
+    if prefixed and prefixed.group(1) == campaign_number:
+        return f"{campaign_id}.md"
+    if campaign_number:
+        return f"{campaign_number}-{campaign_id}.md"
+    return f"{campaign_id}.md"
+
+
+def resolve_campaign_reference(
+    reference: str,
+    campaigns: dict[str, Campaign],
+) -> str:
+    if reference in campaigns:
+        return reference
+    if CAMPAIGN_NUMBER_RE.fullmatch(reference):
+        match = next(
+            (
+                item.campaign_id
+                for item in campaigns.values()
+                if item.campaign_number == reference
+            ),
+            None,
+        )
+        if match is not None:
+            return match
+    raise CampaignError(f"unknown campaign: {reference}")
 
 
 def first_ready_campaign(
@@ -376,6 +446,7 @@ def render_active_queue(
     order: list[str],
     campaigns: dict[str, Campaign],
     catalog: FocusAreaCatalog | None = None,
+    include_campaign_numbers: bool | None = True,
 ) -> str:
     active = [campaigns[item] for item in order if item in campaigns]
     completed = sorted(
@@ -402,13 +473,22 @@ def render_active_queue(
         "",
         "## Ordered Queue",
         "",
+        "Queue positions are mutable; parenthesized campaign numbers and full `Campaign ID` values are stable.",
+        "",
     ]
     if not active:
         lines.append("No active campaigns.")
     for position, item in enumerate(active, start=1):
+        if include_campaign_numbers is True:
+            number = f"({item.campaign_number or '???'}) "
+        elif include_campaign_numbers is None and item.campaign_number:
+            number = f"({item.campaign_number}) "
+        else:
+            number = ""
         lines.append(
-            f"{position}. **[{item.title}](active/{item.campaign_id}.md)**"
+            f"{position}. {number}**[{item.title}](active/{item.path.name})**"
         )
+        lines.append(f"   - 🆔 **CAMPAIGN ID:** `{item.campaign_id}`")
         lines.append(
             f"   - 🚦 **STATE:** {_readiness_display(campaign_readiness(item, campaigns))}"
         )
@@ -469,7 +549,7 @@ def render_completed_queue(campaigns: dict[str, Campaign]) -> str:
         evidence = item.fields.get("Completion Evidence", "none")
         lines.append(
             f"- {item.fields.get('Completion Date', 'unknown')} — [{item.title}]"
-            f"(completed/{item.campaign_id}.md) — {item.outcome} — evidence: {evidence}"
+            f"(completed/{item.path.name}) — {item.outcome} — evidence: {evidence}"
         )
     return "\n".join(lines).rstrip() + "\n"
 
@@ -565,7 +645,13 @@ def _validate_graph(campaigns: dict[str, Campaign]) -> list[str]:
     return findings
 
 
-def validate(workspace: Path) -> list[str]:
+def validate(
+    workspace: Path,
+    *,
+    allow_missing_campaign_numbers: bool = False,
+    allow_legacy_queue: bool = False,
+    allow_legacy_campaign_filenames: bool = False,
+) -> list[str]:
     findings: list[str] = []
     campaigns = load_all(workspace)
     catalog: FocusAreaCatalog | None = None
@@ -591,11 +677,45 @@ def validate(workspace: Path) -> list[str]:
         "abandoned": {"abandoned"},
     }
     completion_orders: dict[int, str] = {}
+    campaign_numbers: dict[int, str] = {}
     for item in campaigns.values():
         if not ID_RE.fullmatch(item.campaign_id):
             findings.append(f"invalid campaign ID: {item.campaign_id}")
-        if item.path.stem != item.campaign_id:
-            findings.append(f"campaign filename does not match ID: {item.path.name}")
+        expected_filename = campaign_filename(item.campaign_id, item.campaign_number)
+        if item.path.name != expected_filename and not (
+            allow_legacy_campaign_filenames
+            and item.path.name == f"{item.campaign_id}.md"
+        ):
+            findings.append(
+                f"campaign filename does not match number and ID: {item.path.name}; "
+                f"expected {expected_filename}"
+            )
+        explicit_number = item.fields.get("Campaign Number", "")
+        prefixed_number = NUMBERED_ID_RE.match(item.campaign_id)
+        if explicit_number and not CAMPAIGN_NUMBER_RE.fullmatch(explicit_number):
+            findings.append(f"{item.campaign_id} has invalid Campaign Number")
+        elif not item.campaign_number:
+            if not allow_missing_campaign_numbers:
+                findings.append(f"{item.campaign_id} is missing Campaign Number")
+        else:
+            number = int(item.campaign_number)
+            if number < 1:
+                findings.append(f"{item.campaign_id} has invalid Campaign Number")
+            elif number in campaign_numbers:
+                findings.append(
+                    f"duplicate Campaign Number {item.campaign_number}: "
+                    f"{campaign_numbers[number]}, {item.campaign_id}"
+                )
+            else:
+                campaign_numbers[number] = item.campaign_id
+        if (
+            explicit_number
+            and prefixed_number
+            and explicit_number != prefixed_number.group(1)
+        ):
+            findings.append(
+                f"{item.campaign_id} Campaign Number conflicts with its ID prefix"
+            )
         folder = item.path.parent.name
         if item.status not in folder_states[folder]:
             findings.append(f"{item.campaign_id} state {item.status!r} conflicts with {folder}/")
@@ -652,8 +772,20 @@ def validate(workspace: Path) -> list[str]:
     def without_updated(text: str) -> str:
         return "\n".join(line for line in text.splitlines() if not line.startswith("Updated: "))
 
-    if without_updated(active_path.read_text(encoding="utf-8")) != without_updated(
-        render_active_queue(order, campaigns, catalog)
+    actual_active = without_updated(active_path.read_text(encoding="utf-8"))
+    expected_active = without_updated(render_active_queue(order, campaigns, catalog))
+    legacy_active = without_updated(
+        render_active_queue(
+            order, campaigns, catalog, include_campaign_numbers=None
+        )
+    )
+    older_legacy_active = legacy_active.replace(
+        "Queue positions are mutable; parenthesized campaign numbers and full `Campaign ID` values are stable.",
+        "Queue positions are mutable; each card's `Campaign ID` is stable.",
+    )
+    if actual_active != expected_active and not (
+        allow_legacy_queue
+        and actual_active in {legacy_active, older_legacy_active}
     ):
         findings.append("active-queue.md is stale or manually inconsistent")
     if without_updated(completed_path.read_text(encoding="utf-8")) != without_updated(render_completed_queue(campaigns)):
@@ -678,6 +810,7 @@ def _campaign_text(
     return_to: str,
     primary_focus_areas: list[str] | None = None,
     supporting_focus_areas: list[str] | None = None,
+    campaign_number: str | None = None,
 ) -> str:
     fields = {
         "Status": "queued",
@@ -685,6 +818,7 @@ def _campaign_text(
         "Updated": date.today().isoformat(),
         "Next Action": "execute when selected from the active campaign queue",
         "Campaign ID": campaign_id,
+        "Campaign Number": campaign_number or "",
         "Outcome": outcome,
         "Primary Focus Areas": ", ".join(primary_focus_areas or []) or "none",
         "Supporting Focus Areas": ", ".join(supporting_focus_areas or []) or "none",
@@ -735,7 +869,15 @@ def add_campaign(args: argparse.Namespace, workspace: Path) -> None:
     missing = sorted(set(dependencies) - set(campaigns))
     if missing:
         raise CampaignError("missing dependencies: " + ", ".join(missing))
-    path = campaign_root(workspace) / "active" / f"{args.campaign_id}.md"
+    prefixed_number = NUMBERED_ID_RE.match(args.campaign_id)
+    campaign_number = (
+        prefixed_number.group(1) if prefixed_number else next_campaign_number(campaigns)
+    )
+    path = (
+        campaign_root(workspace)
+        / "active"
+        / campaign_filename(args.campaign_id, campaign_number)
+    )
     text = _campaign_text(
         args.campaign_id,
         args.title,
@@ -747,6 +889,7 @@ def add_campaign(args: argparse.Namespace, workspace: Path) -> None:
         args.return_to,
         args.primary_focus_area,
         args.supporting_focus_area,
+        campaign_number,
     )
     new_item = parse_campaign_text(path, text)
     campaigns[args.campaign_id] = new_item
@@ -756,6 +899,86 @@ def add_campaign(args: argparse.Namespace, workspace: Path) -> None:
         raise CampaignError("position is outside the active queue")
     order.insert(position, args.campaign_id)
     changes = {path: text, **_refresh_changes(workspace, order, campaigns)}
+    apply_transaction(workspace, changes)
+
+
+def backfill_campaign_numbers(args: argparse.Namespace, workspace: Path) -> None:
+    require_token(workspace, args.expect)
+    findings = validate(
+        workspace,
+        allow_missing_campaign_numbers=True,
+        allow_legacy_queue=True,
+        allow_legacy_campaign_filenames=True,
+    )
+    if findings:
+        raise CampaignError("campaign state is invalid: " + "; ".join(findings))
+    campaigns = load_all(workspace)
+    order = queue_order(workspace)
+    used = {
+        int(item.campaign_number)
+        for item in campaigns.values()
+        if CAMPAIGN_NUMBER_RE.fullmatch(item.campaign_number)
+    }
+    active_positions = {campaign_id: index for index, campaign_id in enumerate(order)}
+
+    def migration_key(item: Campaign) -> tuple[int, int, str, str]:
+        completion_order = _completion_order(item)
+        if item.path.parent.name == "completed":
+            return (
+                0,
+                completion_order,
+                item.fields.get("Completion Date", ""),
+                item.campaign_id,
+            )
+        if item.path.parent.name in {"deferred", "abandoned"}:
+            folder_rank = 1 if item.path.parent.name == "deferred" else 2
+            return (folder_rank, 0, item.fields.get("Updated", ""), item.campaign_id)
+        if item.campaign_id in active_positions:
+            return (3, active_positions[item.campaign_id], "", item.campaign_id)
+        return (4, 0, item.fields.get("Updated", ""), item.campaign_id)
+
+    changes: dict[Path, str | None] = {}
+    changed_ids: set[str] = set()
+    migrated_text: dict[str, str] = {
+        item.campaign_id: item.body for item in campaigns.values()
+    }
+    candidate = 1
+    for item in sorted(
+        (entry for entry in campaigns.values() if not entry.campaign_number),
+        key=migration_key,
+    ):
+        while candidate in used:
+            candidate += 1
+        item.fields["Campaign Number"] = f"{candidate:03d}"
+        migrated_text[item.campaign_id] = set_campaign_header(
+            migrated_text[item.campaign_id],
+            "Campaign Number",
+            item.fields["Campaign Number"],
+        )
+        used.add(candidate)
+        candidate += 1
+        changed_ids.add(item.campaign_id)
+    for item in campaigns.values():
+        old_path = item.path
+        new_path = old_path.parent / campaign_filename(
+            item.campaign_id, item.campaign_number
+        )
+        if old_path != new_path:
+            if new_path.exists():
+                raise CampaignError(
+                    "campaign filename migration target already exists: "
+                    + new_path.relative_to(workspace).as_posix()
+                )
+            changes[old_path] = None
+            item.path = new_path
+            changed_ids.add(item.campaign_id)
+        if item.campaign_id in changed_ids:
+            item.fields["Updated"] = date.today().isoformat()
+            migrated_text[item.campaign_id] = set_campaign_header(
+                migrated_text[item.campaign_id], "Updated", item.fields["Updated"]
+            )
+            changes[item.path] = migrated_text[item.campaign_id]
+    changes.update(_refresh_changes(workspace, order, campaigns))
     apply_transaction(workspace, changes)
 
 
@@ -775,9 +998,8 @@ def mutate_campaign(args: argparse.Namespace, workspace: Path) -> None:
     require_token(workspace, args.expect)
     require_valid(workspace)
     campaigns = load_all(workspace)
-    if args.campaign_id not in campaigns:
-        raise CampaignError(f"unknown campaign: {args.campaign_id}")
-    item = campaigns[args.campaign_id]
+    campaign_id = resolve_campaign_reference(args.campaign_id, campaigns)
+    item = campaigns[campaign_id]
     order = queue_order(workspace)
     root = campaign_root(workspace)
     changes: dict[Path, str | None] = {}
@@ -1015,6 +1237,17 @@ def status_payload(workspace: Path) -> dict[str, object]:
         "readiness": {
             item.campaign_id: campaign_readiness(item, campaigns) for item in ordered
         },
+        "campaign_numbers": {
+            item.campaign_number: item.campaign_id
+            for item in sorted(
+                campaigns.values(),
+                key=lambda entry: (
+                    not bool(entry.campaign_number),
+                    int(entry.campaign_number) if entry.campaign_number else 0,
+                ),
+            )
+            if item.campaign_number
+        },
         "completed": [item.campaign_id for item in completed],
         "dangler_resolution": dangler_resolution,
         "findings": validate(workspace),
@@ -1032,6 +1265,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("completed")
     subparsers.add_parser("validate")
     subparsers.add_parser("migrate-preview")
+    subparsers.add_parser("backfill-numbers")
     add = subparsers.add_parser("add")
     add.add_argument("campaign_id")
     add.add_argument("title")
@@ -1060,7 +1294,7 @@ def build_parser() -> argparse.ArgumentParser:
             child.add_argument("--gate-passed", action="store_true")
     for child in subparsers.choices.values():
         child.add_argument("--json", action="store_true", default=argparse.SUPPRESS)
-        if child.prog.split()[-1] in {"add", "reorder", "start", "block", "unblock", "defer", "abandon", "complete"}:
+        if child.prog.split()[-1] in {"add", "backfill-numbers", "reorder", "start", "block", "unblock", "defer", "abandon", "complete"}:
             child.add_argument("--expect", required=True)
     return parser
 
@@ -1097,6 +1331,7 @@ def main() -> int:
             else:
                 payload = {
                     "campaign_id": candidate.campaign_id,
+                    "campaign_number": candidate.campaign_number,
                     "title": candidate.title,
                     "status": candidate.status,
                     "path": candidate.path.relative_to(workspace).as_posix(),
@@ -1111,11 +1346,14 @@ def main() -> int:
                 key=_completion_sort_key,
                 reverse=True,
             )
-            payload = [{"campaign_id": item.campaign_id, "title": item.title, "completed": item.fields.get("Completion Date"), "evidence": item.fields.get("Completion Evidence")} for item in completed]
+            payload = [{"campaign_id": item.campaign_id, "campaign_number": item.campaign_number, "title": item.title, "completed": item.fields.get("Completion Date"), "evidence": item.fields.get("Completion Evidence")} for item in completed]
         elif args.command == "migrate-preview":
             payload = migration_preview(workspace)
         elif args.command == "add":
             add_campaign(args, workspace)
+            payload = status_payload(workspace)
+        elif args.command == "backfill-numbers":
+            backfill_campaign_numbers(args, workspace)
             payload = status_payload(workspace)
         else:
             mutate_campaign(args, workspace)

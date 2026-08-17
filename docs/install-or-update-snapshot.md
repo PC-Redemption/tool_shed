@@ -170,6 +170,9 @@ Post-install verification for either path:
     submodule, and is ignored by the parent repository.
 17. Run, when present in the installed release:
     - python3 tool_shed/scripts/install_into_workspace.py . --provider <detected>
+    - read-only campaign validation; when it reports legacy numbering or filenames, run the
+      exact-token guarded campaign convergence inside the release-declared and backed-up
+      `work/00-campaigns` mutation scope, then regenerate indexes
     - python3 tool_shed/scripts/workspace_preflight.py --workspace . --json
     - python3 tool_shed/scripts/check_work_tree.py --workspace . --json
     - python3 tool_shed/scripts/check_stale_paths.py --workspace .

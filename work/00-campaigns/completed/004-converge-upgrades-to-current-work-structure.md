@@ -2,9 +2,10 @@
 
 Status: complete
 Type: campaign
-Updated: 2026-08-14
+Updated: 2026-08-17
 Next Action: none
 Campaign ID: converge-upgrades-to-current-work-structure
+Campaign Number: 004
 Outcome: Make Tool Shed upgrades from older releases migrate preserved owner work into the complete latest canonical work tree instead of leaving a hybrid installation
 Depends On: none
 Decision: none

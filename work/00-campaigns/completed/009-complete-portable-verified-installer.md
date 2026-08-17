@@ -2,9 +2,10 @@
 
 Status: complete
 Type: campaign
-Updated: 2026-08-14
+Updated: 2026-08-17
 Next Action: none
 Campaign ID: complete-portable-verified-installer
+Campaign Number: 009
 Outcome: The portable verified installer exercises launcher runtime fallback in disposable Windows and Linux workspaces and records passing verification.
 Depends On: none
 Decision: none

@@ -2,9 +2,10 @@
 
 Status: complete
 Type: campaign
-Updated: 2026-08-15
+Updated: 2026-08-17
 Next Action: none
 Campaign ID: align-work3-documents-with-coded-work
+Campaign Number: 016
 Outcome: Work3 reviews the accumulated candidate and creates, reads, updates, or deletes project documentation as needed so durable documentation matches the current coded behavior before full validation, applicable build and work-environment verification, and local freeze.
 Primary Focus Areas: provider-portability
 Supporting Focus Areas: artifact-workflows, qualification-release

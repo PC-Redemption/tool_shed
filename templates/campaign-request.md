@@ -5,6 +5,7 @@ Type: campaign
 Updated: {{ date }}
 Next Action: execute when selected from the active campaign queue
 Campaign ID: {{ campaign_id }}
+Campaign Number: {{ campaign_number }}
 Outcome: {{ outcome }}
 Primary Focus Areas: none
 Supporting Focus Areas: none

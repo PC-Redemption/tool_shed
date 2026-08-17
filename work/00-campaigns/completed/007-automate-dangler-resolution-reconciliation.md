@@ -2,9 +2,10 @@
 
 Status: complete
 Type: campaign
-Updated: 2026-08-14
+Updated: 2026-08-17
 Next Action: none
 Campaign ID: automate-dangler-resolution-reconciliation
+Campaign Number: 007
 Outcome: ts: reconcile campaigns deterministically creates or refreshes one Dangler Resolution campaign as the first queued campaign while preserving working work and requiring approval for ambiguous classifications
 Depends On: none
 Decision: none

@@ -50,6 +50,12 @@ topology and provider guidance, and restores the snapshot, affected workspace st
 files after failed post-install checks. Do not bootstrap an upgrade with an older in-snapshot updater
 when a current released updater is available outside the target project.
 
+When read-only campaign validation reports legacy Campaign Number headers, unnumbered lifecycle
+filenames, or stale projections, automatically run guarded `backfill-numbers` only when the selected
+release declares `work/00-campaigns` as a backed-up tree mutation surface. Require the exact
+pre-migration state token, preserve owner extensions and semantic campaign content, regenerate
+indexes, validate the converged tree, and restore the exact prior tree if any later check fails.
+
 Ordinary backups exclude policy-declared generated outputs that the selected installer cannot
 mutate. After complete success, the updater protects the immediate rollback archive, retains the
 newest two verified updater-owned workspace and optional user-skill backups by default, prunes only

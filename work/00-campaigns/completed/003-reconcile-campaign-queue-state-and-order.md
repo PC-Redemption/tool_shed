@@ -2,9 +2,10 @@
 
 Status: complete
 Type: campaign
-Updated: 2026-08-14
+Updated: 2026-08-17
 Next Action: none
 Campaign ID: reconcile-campaign-queue-state-and-order
+Campaign Number: 003
 Outcome: Provide a deterministic utility that finds orphaned or stalled campaigns, safely repairs mechanically resolvable queue drift, and evaluates the active queue execution order without overriding owner decisions
 Depends On: none
 Decision: none

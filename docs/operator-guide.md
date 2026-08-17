@@ -239,8 +239,18 @@ Tool Shed places durable owner-facing execution state in the first-sorted
 | `ts: completed` | Show recent verified outcomes newest-first. |
 
 In owner-queue requests, `camp` is an alias for `campaign`, and `que N` identifies the campaign at
-1-based ordered queue number N. Tool Shed resolves `que N` from a fresh status read immediately
-before acting and rejects missing or out-of-range numbers rather than guessing.
+the current mutable 1-based queue position. A card heading such as `1. (004) Title` distinguishes
+queue position 1 from stable campaign number 004; the card also displays its full stable
+`Campaign ID`. Use the campaign number or full ID for durable references across insertions,
+reordering, or completion. Tool Shed resolves `que N` from a fresh status read immediately before
+acting and rejects missing or out-of-range positions rather than guessing. Numeric prefixes in
+existing IDs remain authoritative; every request filename uses `<number>-<campaign-id>.md`, and
+guarded `backfill-numbers` atomically renames legacy slug-only histories and refreshes projections.
+Lifecycle commands accept the full Campaign ID or exact zero-padded campaign number.
+Snapshot upgrades perform the same guarded convergence automatically after reporting the detected
+mismatch. The selected release backs up the complete campaign tree as a declared mutation surface;
+owner extensions are preserved, indexes are regenerated, and any later failure restores the
+pre-upgrade tree.
 
 The active queue is the canonical execution order. Detailed requests live in lifecycle folders:
 

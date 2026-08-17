@@ -12,4 +12,6 @@ Updated: {{ date }}
 
 ## Ordered Queue
 
+Queue positions are mutable; parenthesized campaign numbers and full `Campaign ID` values are stable.
+
 No active campaigns.

@@ -866,12 +866,55 @@ def owner_content_fingerprint(workspace: Path) -> Counter[str]:
         for relative, digest in fingerprint_tree(root).items():
             if root_name == "work" and relative in excluded:
                 continue
+            if (
+                root_name == "work"
+                and re.fullmatch(
+                    r"00-campaigns/(?:active|completed|deferred|abandoned)/[^/]+\.md",
+                    relative,
+                )
+            ):
+                text = (root / relative).read_text(encoding="utf-8")
+                normalized = "\n".join(
+                    line
+                    for line in text.splitlines()
+                    if not line.startswith("Campaign Number:")
+                    and not line.startswith("Updated:")
+                ).rstrip() + "\n"
+                digest = hashlib.sha256(normalized.encode("utf-8")).hexdigest()
             values.append(digest)
     return Counter(values)
 
 
 def contents_preserved(before: Counter[str], after: Counter[str]) -> bool:
     return all(after[digest] >= count for digest, count in before.items())
+
+
+def campaign_convergence_report(workspace: Path, target: Path) -> dict[str, object]:
+    campaign_root = workspace / "work" / "00-campaigns"
+    command = target / "scripts" / "campaign_queue.py"
+    if not campaign_root.is_dir() or not command.is_file():
+        return {"supported": False, "needed": False, "findings": []}
+    result = run(
+        [
+            sys.executable,
+            "-B",
+            str(command),
+            "--workspace",
+            str(workspace),
+            "validate",
+            "--json",
+        ]
+    )
+    payload = json.loads(result.stdout)
+    findings = payload.get("findings")
+    if not isinstance(findings, list):
+        raise UpdateError("campaign convergence validation returned invalid findings")
+    return {
+        "supported": True,
+        "needed": bool(findings),
+        "findings": findings,
+        "state_token": payload.get("state_token"),
+    }
 
 
 def post_install_checks(
@@ -882,7 +925,7 @@ def post_install_checks(
     provider_paths: dict[str, str],
     protocol: int,
     validation_timeout: float,
-) -> dict[str, str]:
+) -> dict[str, object]:
     if is_filesystem_link(target) or not target.is_dir():
         raise UpdateError("installed snapshot is not a real directory")
     if (target / ".git").exists() or (target / "work").exists():
@@ -898,7 +941,7 @@ def post_install_checks(
         timeout=validation_timeout,
         timeout_option="--validation-timeout",
     )
-    results = {"version": version_result.stdout.strip()}
+    results: dict[str, object] = {"version": version_result.stdout.strip()}
     installer = target / "scripts" / "install_into_workspace.py"
     if providers and not installer.is_file():
         raise UpdateError("selected release has provider metadata but no workspace installer")
@@ -926,6 +969,44 @@ def post_install_checks(
             guidance = guidance_path.read_text(encoding="utf-8")
             if "BEGIN TOOL SHED ROUTING GUIDANCE" not in guidance:
                 raise UpdateError(f"provider guidance is missing portable routing: {guidance_path}")
+    campaign_before = campaign_convergence_report(workspace, target)
+    campaign_result: dict[str, object] = {"before": campaign_before, "applied": False}
+    if campaign_before["needed"]:
+        state_token = campaign_before.get("state_token")
+        if not isinstance(state_token, str) or not state_token:
+            raise UpdateError("campaign convergence requires a valid pre-migration state token")
+        migration = run(
+            [
+                sys.executable,
+                "-B",
+                str(target / "scripts" / "campaign_queue.py"),
+                "--workspace",
+                str(workspace),
+                "backfill-numbers",
+                "--expect",
+                state_token,
+                "--json",
+            ],
+            timeout=validation_timeout,
+            timeout_option="--validation-timeout",
+        )
+        campaign_result["applied"] = True
+        campaign_result["migration"] = json.loads(migration.stdout)
+        indexer = target / "scripts" / "update_work_index.py"
+        if indexer.is_file():
+            run(
+                [sys.executable, "-B", str(indexer), "--workspace", str(workspace), "--no-preflight"],
+                timeout=validation_timeout,
+                timeout_option="--validation-timeout",
+            )
+    campaign_after = campaign_convergence_report(workspace, target)
+    campaign_result["after"] = campaign_after
+    if campaign_after["needed"]:
+        raise UpdateError(
+            "campaign convergence remains incomplete: "
+            + "; ".join(str(item) for item in campaign_after["findings"])
+        )
+    results["campaign_convergence"] = campaign_result
     if inject_failure:
         raise UpdateError("injected post-install verification failure")
     optional_checks = (
@@ -1507,11 +1588,13 @@ def main() -> int:
                         "Codex skill synchronization was requested but is unsafe: "
                         + str(codex_skill.get("detail") or codex_skill.get("state"))
                     )
+            current_campaigns = campaign_convergence_report(workspace, target)
             if (
                 previous_version == selected_version
                 and target.is_dir()
                 and snapshot_fingerprint(target) == snapshot_fingerprint(staged)
                 and not args.sync_codex_skill
+                and not current_campaigns["needed"]
             ):
                 payload["installed_version"] = selected_version
                 payload["canonical_manifest_match"] = True

@@ -99,10 +99,16 @@ Owner-queue shorthand:
 | Term | Meaning |
 | --- | --- |
 | `camp` | Alias for `campaign`. |
-| `que N` | Alias for the campaign at 1-based ordered queue number N. |
+| `que N` | Alias for the campaign currently at mutable 1-based queue position N, not its parenthesized campaign number. |
 
 Resolve `que N` from a fresh queue status immediately before acting. Missing or out-of-range
-numbers are errors and are never guessed.
+positions are errors and are never guessed. A heading such as `1. (004) Title` shows mutable queue
+position 1 and stable campaign number 004. Each rendered card also shows its full stable
+`Campaign ID`; use the number or full ID when a reference must survive reordering or completion.
+`campaign_queue.py backfill-numbers --expect TOKEN` preserves numeric ID prefixes and assigns
+zero-padded numbers to legacy slug-only campaigns in deterministic lifecycle order, atomically
+renaming each request to `<number>-<campaign-id>.md` and refreshing queue links. Lifecycle commands
+accept either the full Campaign ID or its exact zero-padded campaign number.
 
 Blocked work remains active. Queue mutations reject stale state and do not silently reorder
 ambiguous priorities. Campaign completion requires its explicit completion gate and applicable

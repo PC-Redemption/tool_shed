@@ -148,9 +148,15 @@ mutations:
 - Campaign completion: require the request's explicit completion gate and applicable verification,
   then run `complete --gate-passed --evidence ...` with the current state token.
 
-In owner-queue requests, `camp` is shorthand for `campaign`. `que N` means the campaign at
-1-based position N in the current ordered queue. Resolve `que N` from a fresh `status` read
-immediately before acting, and reject a missing or out-of-range number instead of guessing.
+In owner-queue requests, `camp` is shorthand for `campaign`. `que N` means the campaign at the
+mutable 1-based position N in the current ordered queue. A heading such as `1. (004) Title`
+distinguishes queue position 1 from stable campaign number 004; every card separately shows its
+full stable `Campaign ID`. Resolve `que N` from a fresh `status` read immediately before acting,
+and reject a missing or out-of-range position instead of guessing. Preserve a campaign number
+from an existing numeric ID prefix; guarded `backfill-numbers --expect TOKEN` assigns durable
+zero-padded numbers to legacy slug-only histories, atomically renames request files to
+`<number>-<campaign-id>.md`, and refreshes queue links before ordinary lifecycle mutations continue.
+Lifecycle commands accept either the exact zero-padded number or the full Campaign ID.
 
 Every mutation requires `--expect TOKEN` obtained immediately beforehand from `status`. Reject a
 stale token rather than overwriting newer state. Lifecycle operations use a recovery journal and
