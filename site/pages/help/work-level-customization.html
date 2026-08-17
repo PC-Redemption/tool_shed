@@ -1,0 +1,25 @@
+<div class="topic-layout">
+  <aside class="topic-nav"><p>On this page</p><a href="#configuration">Configuration</a><a href="#ordering">Ordering</a><a href="#replace">Replace defaults</a><a href="#validate">Validate</a><a href="#safety">Safety and upgrades</a></aside>
+  <article class="topic-content">
+    <header class="topic-hero"><p class="eyebrow">Customize</p><h1>Workspace work-level actions</h1><p class="lede">Use the optional tracked <code>work/tool-shed.yaml</code> file to add ordered project-specific actions around one selected endpoint—or explicitly replace that endpoint's default behavior.</p></header>
+    <section id="configuration"><h2>Configure one canonical endpoint</h2><p>Schema version <code>1</code> supports <code>work_model: combined</code> or <code>split</code>, optional target names, and <code>work1</code> through <code>work5</code> entries under <code>work_levels</code>. Each level accepts block lists named <code>before</code> and <code>after</code>, plus the boolean <code>run_default</code>.</p><pre class="config-example"><code>schema_version: 1
+work_model: split
+development_target: staging
+production_target: production
+work_levels:
+  work3:
+    before:
+      - Run the workspace-specific data refresh
+    run_default: true
+    after:
+      - Publish the workspace-specific handoff report
+  work4:
+    run_default: false
+    after:
+      - Run the workspace's controlled publication flow</code></pre><p>No configuration is the default. If the file or selected level is absent, standard Tool Shed behavior remains unchanged.</p></section>
+    <section id="ordering"><h2>Add actions before and after</h2><ol><li>Run <code>before</code> actions in declaration order.</li><li>Run the standard cumulative endpoint unless <code>run_default: false</code>.</li><li>Run <code>after</code> actions in declaration order.</li></ol><p>Aliases resolve first: <code>ts:work</code>, <code>ts:freeze</code>, <code>ts:push</code>, and <code>ts:ship</code> select <code>work2</code>, <code>work3</code>, <code>work4</code>, and <code>work5</code>. Only the selected endpoint's envelope runs. Lower-level envelopes do not repeat because the default endpoint is already cumulative.</p></section>
+    <section id="replace"><h2>Replace default behavior deliberately</h2><p>Set <code>run_default: false</code> only when the declared actions replace the selected endpoint's normal behavior. A replacement must contain at least one before or after action. Removing the level entry restores its standard behavior.</p><div class="callout"><strong>Add versus replace:</strong> omit <code>run_default</code> or set it to <code>true</code> to wrap the default. Set it to <code>false</code> to suppress that endpoint's standard cumulative actions.</div></section>
+    <section id="validate"><h2>Resolve and validate before execution</h2><p>Installed snapshots use the workspace-local helper:</p><code class="command">python3 tool_shed/scripts/work_level_config.py --workspace . resolve work3 --json</code><code class="command">python3 tool_shed/scripts/work_level_config.py --workspace . validate --json</code><p>In the canonical Tool Shed development checkout, omit the <code>tool_shed/</code> prefix:</p><code class="command">python3 scripts/work_level_config.py --workspace . resolve work3 --json</code><code class="command">python3 scripts/work_level_config.py --workspace . validate --json</code><p>Validation rejects unknown keys, aliases under <code>work_levels</code>, invalid booleans or indentation, empty actions, symlinked configuration, and empty default replacements.</p></section>
+    <section id="safety"><h2>Authority, credentials, and upgrades</h2><p>Configuration is not an authority grant, credential store, shell-hook runtime, or deployment framework. It cannot broaden the current goal, bypass protected-environment approvals, waive destructive-action safeguards, hide production coupling, or make an unverified outcome complete. Keep credentials out of the file and use existing project tooling and runbooks.</p><p>Installation validates an existing declaration before mutation and never creates or overwrites it. Snapshot upgrades preserve its bytes as owner-authored work; invalid configuration causes convergence to fail and roll back instead of partially updating the workspace.</p><div class="related"><a href="/guide/execute/">Execution workflow</a><a href="/ref/#execution">Execution commands</a><a href="/help/maintenance/">Installation and upgrades</a></div></section>
+  </article>
+</div>

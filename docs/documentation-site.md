@@ -6,19 +6,22 @@ only a generated deployment copy.
 
 ## Information Architecture
 
-- `/` explains the flexible human/AI development process.
-- `/help/` and its direct-loadable topic paths provide the detailed operating guide.
-- `/ref/` is one compact command page with stable section anchors.
+- `/` explains the flexible human/AI development process and sends operators to the right entry path.
+- `/guide/` is the ordered operating surface. Its new-project and existing-project entries join a
+  shared Project Map → Program Roadmap → campaign generation → queue → execution → evidence loop.
+- `/help/` and its direct-loadable topic paths explain individual Tool Shed concepts in depth.
+- `/ref/` is a dense, generated command table with stable group and command anchors.
 
-Page fragments live under `site/pages/`, shared styling lives under `site/assets/`, and the
+Page fragments live under `site/pages/`, shared styling and copy-control behavior live under `site/assets/`, and the
 deployment definition lives under `site/deploy/`. The generator wraps each fragment in the common
 semantic shell and validates internal links, anchors, required pages, assets, and public-content
 privacy markers.
 
 `docs/commands.md` is the only canonical command catalog. `scripts/build_docs_site.py` parses its
-documented prompt tables and command blocks to generate `/ref/`; do not manually add a second
-command inventory to the site. When commands change, update `docs/commands.md`, run the site check,
-and rebuild. Explanatory help pages may use selected examples but must not claim new routes.
+documented prompt tables and command blocks to generate `/ref/` rows, examples, copy controls, and
+Guide/Help links; do not manually add a second command inventory to the site. When commands change,
+update `docs/commands.md`, run the site check, and rebuild. Guide and Help pages may use selected
+formal prompts plus clearly labelled natural-language `ts:` requests, but must not claim new routes.
 
 ## Generate And Preview
 
@@ -82,9 +85,10 @@ host, or a wildcard router route for this site.
 Verify all layers rather than treating configuration as proof:
 
 - container health and the host-local health endpoint;
-- direct loads for `/`, `/help/`, every linked help topic, and `/ref/`;
+- direct loads for `/`, `/guide/`, both entry paths, every shared guide stage, `/help/`, every
+  linked help topic, and `/ref/`;
 - `/ref/#planning`, `/ref/#campaigns`, and `/ref/#maintenance`;
-- CSS response, internal links, and absence of private paths, addresses, credentials, and project
+- CSS and JavaScript responses, command-copy behavior, internal links, and absence of private paths, addresses, credentials, and project
   state in generated public HTML;
 - desktop and mobile viewport layouts;
 - router selection reports `X-Rookaro-Route: ts.rookaro.com` over public HTTPS;

@@ -1,0 +1,15 @@
+<div class="guide-layout">
+  <aside class="guide-rail"><p>Shared workflow</p><b>5 · Execute</b><a href="/help/execution/">Execution help</a></aside>
+  <article class="guide-content">
+    <header class="topic-hero"><p class="eyebrow">Step 5 of 6</p><h1>Choose the stopping point</h1><p class="lede">Work levels are cumulative endpoints. Replace <code>&lt;goal&gt;</code> or <code>&lt;scope&gt;</code> with the precise authorized outcome.</p></header>
+    <section class="guide-step"><h2>Implementation through production</h2><div class="endpoint-list">
+      <div><b>work1</b><span>Implement, quick check, local checkpoint; no deployment.</span><div class="copy-block"><code>ts:work1 &lt;goal&gt;</code><button class="copy-command" type="button" aria-label="Copy: ts:work1 goal">Copy</button></div></div>
+      <div><b>work2</b><span>work1 plus work-environment deployment and focused checks.</span><div class="copy-block"><code>ts:work2 &lt;goal&gt;</code><button class="copy-command" type="button" aria-label="Copy: ts:work2 goal">Copy</button></div></div>
+      <div><b>work3</b><span>Docs alignment, full validation/build, work update, local freeze.</span><div class="copy-block"><code>ts:work3 &lt;scope&gt;</code><button class="copy-command" type="button" aria-label="Copy: ts:work3 scope">Copy</button></div></div>
+      <div><b>work4</b><span>work3 plus push; no intentional production promotion.</span><div class="copy-block"><code>ts:work4 &lt;scope&gt;</code><button class="copy-command" type="button" aria-label="Copy: ts:work4 scope">Copy</button></div></div>
+      <div><b>work5</b><span>Qualify, push, release or promote, and verify production.</span><div class="copy-block"><code>ts:work5 &lt;scope&gt;</code><button class="copy-command" type="button" aria-label="Copy: ts:work5 scope">Copy</button></div></div>
+    </div><dl class="stage-facts"><div><dt>Required state</dt><dd>A clear authorized campaign outcome.</dd></div><div><dt>What it reads</dt><dd>Workspace policy, requested goal, configured target, and optional work-level hooks.</dd></div><div><dt>What it changes</dt><dd>Only the cumulative stages through the chosen endpoint.</dd></div><div><dt>Approval required</dt><dd>The explicit work-level request; protected or new authority boundaries still apply.</dd></div><div><dt>Success looks like</dt><dd>The selected endpoint is verified, checkpointed, and no broader stage is implied.</dd></div></dl></section>
+    <section class="guide-step"><h2>Validation only</h2><div class="copy-block"><code>ts:check focused</code><button class="copy-command" type="button" aria-label="Copy: ts:check focused">Copy</button></div><p>This checks focused behavior without implementing, committing, pushing, deploying, or releasing.</p></section>
+    <nav class="stage-nav" aria-label="Guide progress"><a href="/guide/queue-and-select/">← Queue and select</a><a href="/guide/complete-and-review/">Complete and review →</a></nav>
+  </article>
+</div>

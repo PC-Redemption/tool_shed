@@ -30,12 +30,22 @@ class Page:
 
 PAGES = (
     Page("", "Tool Shed", "Turn an incomplete idea into working, verified software with a flexible human and AI process.", "home.html", "overview"),
+    Page("guide", "Operator guide", "Follow Tool Shed from project entry through roadmap feedback, with copy-ready prompts at every step.", "guide/index.html", "guide"),
+    Page("guide/new-project", "Start a new project", "Start a new project with Tool Shed, then join the shared operating workflow.", "guide/new-project.html", "guide"),
+    Page("guide/existing-project", "Adopt an existing project", "Bring an existing repository onto the latest managed Tool Shed and establish trustworthy state.", "guide/existing-project.html", "guide"),
+    Page("guide/project-map", "Build the project map", "Map active workstreams before choosing bounded work or a Program Roadmap.", "guide/project-map.html", "guide"),
+    Page("guide/roadmap", "Develop the roadmap", "Develop, propose, and approve a strategic baseline without creating campaigns.", "guide/roadmap.html", "guide"),
+    Page("guide/generate-campaigns", "Generate campaigns", "Preview and approve campaigns for one roadmap milestone.", "guide/generate-campaigns.html", "guide"),
+    Page("guide/queue-and-select", "Queue and select", "Review execution state and select the first ready campaign.", "guide/queue-and-select.html", "guide"),
+    Page("guide/execute", "Execute the campaign", "Choose the cumulative Tool Shed execution endpoint that matches the authorized outcome.", "guide/execute.html", "guide"),
+    Page("guide/complete-and-review", "Complete and review", "Verify campaign completion and roll evidence back into roadmap direction.", "guide/complete-and-review.html", "guide"),
     Page("help", "Tool Shed Help", "Learn the Tool Shed process, then go deeper on the part of the lifecycle you need.", "help/index.html", "help"),
     Page("help/ideas", "Ideas and exploration", "Start with incomplete intent and explore the outcome before committing to a plan.", "help/ideas.html", "help"),
     Page("help/planning", "Planning", "Turn discoveries into proportionate, evidence-backed coordination.", "help/planning.html", "help"),
     Page("help/roadmaps", "Program roadmaps", "Give multi-milestone work direction without turning the plan into a rigid promise.", "help/roadmaps.html", "help"),
     Page("help/campaigns", "Campaigns", "Use focused owner-facing execution cycles with explicit outcomes and completion evidence.", "help/campaigns.html", "help"),
     Page("help/execution", "Execution levels", "Choose how far an authorized change should travel from implementation to production.", "help/execution.html", "help"),
+    Page("help/work-level-customization", "Workspace work-level customization", "Add project-specific actions around one Tool Shed execution endpoint or replace its standard behavior.", "help/work-level-customization.html", "help"),
     Page("help/review", "Review and completion", "Use actual evidence to accept the outcome, revise direction, or select the next campaign.", "help/review.html", "help"),
     Page("help/recovery", "Existing and interrupted work", "Orient safely in unfamiliar repositories and resume work without inventing history.", "help/recovery.html", "help"),
     Page("help/commands", "Using Tool Shed commands", "Route a request clearly while keeping natural language, scope, and authority intact.", "help/commands.html", "help"),
@@ -142,6 +152,31 @@ def command_id(command: str) -> str:
     return f"cmd-{value[:72]}"
 
 
+def guide_path_for(syntax: str) -> str:
+    routes = (
+        (("ts: version", "ts: fulltsupgrade", "ts: check for updates", "ts: update status"), "/guide/existing-project/"),
+        (("ts: develop roadmap", "ts: propose roadmap", "ts: approve roadmap"), "/guide/roadmap/"),
+        (("ts: derive campaigns", "ts: approve campaign plan"), "/guide/generate-campaigns/"),
+        (("ts: overview", "ts: status", "ts: queue", "ts: next", "ts: add"), "/guide/queue-and-select/"),
+        (("ts:work", "ts:freeze", "ts:push", "ts:ship", "ts:check"), "/guide/execute/"),
+        (("ts: roadmap status", "ts: review roadmap"), "/guide/complete-and-review/"),
+    )
+    for prefixes, path in routes:
+        if syntax.startswith(prefixes):
+            return path
+    return "/guide/"
+
+
+def copy_control(value: str, *, label: str = "Copy") -> str:
+    escaped = html.escape(value)
+    return (
+        '<div class="copy-block">'
+        f'<code>{escaped}</code>'
+        f'<button class="copy-command" type="button" aria-label="{label}: {html.escape(value, quote=True)}">{label}</button>'
+        "</div>"
+    )
+
+
 def render_reference(commands: list[Command]) -> str:
     group_order = ("discovery", "planning", "campaigns", "execution", "maintenance")
     groups: dict[str, list[Command]] = {key: [] for key in group_order}
@@ -158,20 +193,28 @@ def render_reference(commands: list[Command]) -> str:
     for group in group_order:
         if not groups[group]:
             continue
-        cards = []
+        rows = []
         for command in groups[group]:
-            cards.append(
-                f'''<article class="ref-card" id="{command_id(command.syntax)}">
-  <code>{html.escape(command.syntax)}</code>
-  <p>{html.escape(command.purpose)}</p>
-  <div class="ref-example"><span>Example</span><code>{html.escape(example_for(command.syntax))}</code></div>
-  <a class="detail-link" href="{command.help_path}">Detailed help <span aria-hidden="true">→</span></a>
-</article>'''
+            customize_link = (
+                '<span aria-hidden="true"> · </span><a href="/help/work-level-customization/">Customize</a>'
+                if re.match(r"ts:work[1-5](?: |$)", command.syntax)
+                else ""
+            )
+            rows.append(
+                f'''<tr id="{command_id(command.syntax)}">
+  <th scope="row">{copy_control(command.syntax)}</th>
+  <td>{html.escape(command.purpose)}</td>
+  <td>{copy_control(example_for(command.syntax), label="Copy example")}</td>
+  <td><a href="{guide_path_for(command.syntax)}">Guide</a><span aria-hidden="true"> · </span><a href="{command.help_path}">Help</a>{customize_link}</td>
+</tr>'''
             )
         sections.append(
             f'''<section class="ref-section" id="{group}" aria-labelledby="{group}-title">
   <div class="section-heading"><p class="eyebrow">Command group</p><h2 id="{group}-title">{html.escape(titles[group])}</h2><a href="#top">Back to top</a></div>
-  <div class="ref-grid">{"".join(cards)}</div>
+  <div class="table-scroll" tabindex="0" aria-label="{html.escape(titles[group])} command table"><table class="command-table">
+    <thead><tr><th scope="col">Command</th><th scope="col">Purpose</th><th scope="col">Example</th><th scope="col">Learn</th></tr></thead>
+    <tbody>{"".join(rows)}</tbody>
+  </table></div>
 </section>'''
         )
     return f'''<section class="page-hero compact" id="top">
@@ -187,6 +230,7 @@ def render_reference(commands: list[Command]) -> str:
 def navigation(section: str) -> str:
     items = (
         ("overview", "/", "Overview"),
+        ("guide", "/guide/", "Guide"),
         ("help", "/help/", "Help"),
         ("reference", "/ref/", "Reference"),
     )
@@ -207,6 +251,7 @@ def shell(*, title: str, description: str, body: str, section: str) -> str:
   <meta name="theme-color" content="#07131d">
   <meta name="description" content="{html.escape(description, quote=True)}">
   <link rel="stylesheet" href="/assets/site.css">
+  <script src="/assets/site.js" defer></script>
   <title>{html.escape(page_title)}</title>
 </head>
 <body>
@@ -216,7 +261,8 @@ def shell(*, title: str, description: str, body: str, section: str) -> str:
     <nav aria-label="Primary">{navigation(section)}</nav>
   </header>
   <main id="content">{body}</main>
-  <footer class="site-footer"><p><b>Tool Shed</b> keeps human intent and AI execution aligned.</p><nav aria-label="Footer"><a href="/help/">Help</a><a href="/ref/">Reference</a><a href="https://github.com/PC-Redemption/tool_shed">Source</a></nav></footer>
+  <div class="copy-status" role="status" aria-live="polite" aria-atomic="true"></div>
+  <footer class="site-footer"><p><b>Tool Shed</b> keeps human intent and AI execution aligned.</p><nav aria-label="Footer"><a href="/guide/">Guide</a><a href="/help/">Help</a><a href="/ref/">Reference</a><a href="https://github.com/PC-Redemption/tool_shed">Source</a></nav></footer>
 </body>
 </html>
 '''

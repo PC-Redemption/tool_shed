@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+import html
+import re
 import sys
 import tempfile
 import unittest
@@ -21,12 +23,22 @@ class DocumentationSiteTests(unittest.TestCase):
             public, commands = SITE_BUILDER.build(Path(temporary) / "bundle")
             expected = (
                 "index.html",
+                "guide/index.html",
+                "guide/new-project/index.html",
+                "guide/existing-project/index.html",
+                "guide/project-map/index.html",
+                "guide/roadmap/index.html",
+                "guide/generate-campaigns/index.html",
+                "guide/queue-and-select/index.html",
+                "guide/execute/index.html",
+                "guide/complete-and-review/index.html",
                 "help/index.html",
                 "help/ideas/index.html",
                 "help/planning/index.html",
                 "help/roadmaps/index.html",
                 "help/campaigns/index.html",
                 "help/execution/index.html",
+                "help/work-level-customization/index.html",
                 "help/review/index.html",
                 "help/recovery/index.html",
                 "help/commands/index.html",
@@ -41,6 +53,99 @@ class DocumentationSiteTests(unittest.TestCase):
                 self.assertIn(f'id="{anchor}"', reference)
             for command in commands:
                 self.assertIn(command.syntax.replace("<", "&lt;").replace(">", "&gt;"), reference)
+
+    def test_guide_exposes_complete_copy_ready_workflow(self) -> None:
+        prompts = (
+            "ts: version",
+            "ts: discuss <project idea>",
+            "ts: map the active workstreams",
+            "ts: fulltsupgrade",
+            "ts: onboard this existing project",
+            "ts: build focus areas",
+            "ts: review work state",
+            "ts: reconcile campaigns",
+            "ts: develop roadmap",
+            "ts: propose roadmap",
+            "ts: approve roadmap <token>",
+            "ts: derive campaigns for milestone M1",
+            "ts: approve campaign plan <token>",
+            "ts: add <campaign outcome>",
+            "ts: overview",
+            "ts: status",
+            "ts: next",
+            "ts:work1 <goal>",
+            "ts:work2 <goal>",
+            "ts:work3 <scope>",
+            "ts:work4 <scope>",
+            "ts:work5 <scope>",
+            "ts:check focused",
+            "ts: review the current campaign against its completion gate and complete it if verified",
+            "ts: roadmap status",
+            "ts: review roadmap",
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            public, _ = SITE_BUILDER.build(Path(temporary) / "bundle")
+            guide = "\n".join(
+                path.read_text(encoding="utf-8")
+                for path in sorted((public / "guide").rglob("index.html"))
+            )
+            visible = html.unescape(re.sub(r"<[^>]+>", "", guide))
+            for prompt in prompts:
+                self.assertIn(prompt, visible)
+            self.assertIn("creates no campaigns", visible.lower())
+            self.assertIn("previews a campaign manifest", visible.lower())
+            self.assertIn("bounded-work shortcut", visible.lower())
+
+    def test_copy_controls_are_accessible_and_copy_only_visible_code(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            public, commands = SITE_BUILDER.build(Path(temporary) / "bundle")
+            pages = [path for path in (public / "guide").rglob("index.html") if path.parent != public / "guide"]
+            pages.append(public / "ref" / "index.html")
+            for path in pages:
+                content = path.read_text(encoding="utf-8")
+                blocks = re.findall(r'<div class="copy-block"><code>(.*?)</code><button class="copy-command" type="button" aria-label="([^"]+)">([^<]+)</button></div>', content)
+                self.assertTrue(blocks, path)
+                for visible, label, button_text in blocks:
+                    self.assertTrue(html.unescape(visible).strip())
+                    self.assertIn("Copy", label)
+                    self.assertTrue(button_text.startswith("Copy"))
+            script = (public / "assets" / "site.js").read_text(encoding="utf-8")
+            self.assertIn("code.textContent.trim()", script)
+            self.assertIn("clipboard.writeText(value)", script)
+            self.assertIn('role="status" aria-live="polite"', (public / "ref" / "index.html").read_text(encoding="utf-8"))
+            reference = (public / "ref" / "index.html").read_text(encoding="utf-8")
+            self.assertIn('<table class="command-table">', reference)
+            self.assertNotIn('class="ref-card"', reference)
+            self.assertEqual(reference.count('<button class="copy-command"'), len(commands) * 2)
+            for level in range(1, 6):
+                command_anchor = SITE_BUILDER.command_id(f"ts:work{level} <goal>" if level < 3 else f"ts:work{level} [scope]")
+                row = reference.split(f'id="{command_anchor}"', 1)[1].split("</tr>", 1)[0]
+                self.assertIn('href="/help/work-level-customization/"', row)
+
+    def test_work_level_customization_help_is_complete(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            public, _ = SITE_BUILDER.build(Path(temporary) / "bundle")
+            page = (public / "help" / "work-level-customization" / "index.html").read_text(encoding="utf-8")
+            for detail in (
+                "work/tool-shed.yaml",
+                "schema_version: 1",
+                "work_model: split",
+                "before:",
+                "after:",
+                "run_default: false",
+                "tool_shed/scripts/work_level_config.py",
+                "scripts/work_level_config.py",
+                "Lower-level envelopes do not repeat",
+                "preserve its bytes",
+            ):
+                self.assertIn(detail, page)
+
+    def test_compact_layout_removes_large_card_minimums(self) -> None:
+        css = (ROOT / "site" / "assets" / "site.css").read_text(encoding="utf-8")
+        self.assertNotIn("min-height: 13rem", css)
+        self.assertNotIn(".ref-card", css)
+        self.assertIn(".table-scroll", css)
+        self.assertIn(".guide-layout", css)
 
     def test_overview_preserves_core_process_and_partnership_messages(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
