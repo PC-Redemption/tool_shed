@@ -57,6 +57,14 @@ Use `work/index.md` as the first orientation surface after README/docs. Use `wor
 - Spikes: `work/spikes/`
 - Checklists: `work/checklists/`
 
+## Workspace Work-Level Customization
+
+`work/tool-shed.yaml` may add workspace-specific actions around one canonical `work1` through
+`work5` endpoint without changing Tool Shed defaults elsewhere. Resolve it before executing a
+numbered route with `python3 tool_shed/scripts/work_level_config.py --workspace . resolve work3
+--json`. Missing configuration preserves standard behavior. Installation and upgrade preserve an
+owner-authored declaration.
+
 ## Durable Records
 
 - ADRs: `work/adr/`

@@ -21,6 +21,23 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
+      "disposition": "none",
+      "next_action": "execute when selected from the active campaign queue",
+      "parent": null,
+      "path": "work/00-campaigns/active/023-customize-work-level-actions-per-workspace.md",
+      "produces": null,
+      "project_map": null,
+      "status": "queued",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Customize work-level actions per workspace",
+      "type": "campaign",
+      "updated": "2026-08-17"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
       "disposition": "completed",
       "next_action": "none",
       "parent": null,
@@ -1013,8 +1030,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 1,
+    "active_artifacts": 2,
     "completed_or_decided_artifacts": 55,
-    "total_artifacts": 59
+    "total_artifacts": 60
   }
 }

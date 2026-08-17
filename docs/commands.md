@@ -78,6 +78,12 @@ Projects may define `work/tool-shed.yaml` with `work_model: combined` or `work_m
 Combined work and production targets mean work2 or work3 may affect the live site. Split mode
 reserves production promotion for work5.
 
+The same optional file may wrap one canonical endpoint with ordered workspace-specific `before`
+and `after` actions or set `run_default: false` to replace its standard behavior. Before executing
+a numbered route, resolve it with `tool_shed/scripts/work_level_config.py`; aliases use their
+canonical level, lower-level envelopes do not repeat, and absent configuration preserves the
+standard definitions above. See [workspace work-level customization](work-level-customization.md).
+
 ## Owner Campaign Queue
 
 Durable owner-facing state lives under `work/00-campaigns/`.

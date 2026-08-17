@@ -9,6 +9,7 @@ from pathlib import Path
 from codex_skill_sync import inspect_codex_skill, load_release_skill_digests
 from provider_adapters import provider_config, provider_ids
 from repository_policy import POLICY_FILE, format_bytes, inspect_snapshot_ignore, inspect_work_ignore
+from work_level_config import WorkLevelConfigError, validate_workspace_config
 from work_tree import ensure_work_tree
 from workspace_preflight import inspect
 
@@ -90,7 +91,9 @@ WORK_LEVEL_GUIDANCE = f"""{WORK_LEVEL_GUIDANCE_START}
 - `work4`: perform `work3`, then push without intentionally releasing or promoting production.
 - `work5`: qualify, push, release or promote production, and verify the production target; this is equivalent to explicit `ts:ship`.
 - Aliases are `ts:work` = `work2`, `ts:freeze` = `work3`, `ts:push` = `work4`, and `ts:ship` = `work5`. `ts:check <spot|focused|full|release>` validates only and does not mutate source, Git, or environments.
-- Read optional tracked project state from `work/tool-shed.yaml`. `work_model: combined` means work and production share a target, so state that `work2` or `work3` may change the live site. `work_model: split` keeps `work2` and `work3` on development and reserves production promotion for `work5`.
+- Before executing a work-level route, resolve its optional tracked workspace customization with `python3 tool_shed/scripts/work_level_config.py --workspace . resolve <route> --json` (use the canonical checkout's `scripts/` path when developing Tool Shed itself). Apply the selected canonical level's ordered `before` actions, its standard behavior unless `run_default: false`, then its ordered `after` actions. Aliases use the canonical level's single envelope; lower-level envelopes do not run separately.
+- Read optional tracked project state from `work/tool-shed.yaml`. `work_model: combined` means work and production share a target, so state that `work2` or `work3` may change the live site. `work_model: split` keeps `work2` and `work3` on development and reserves production promotion for `work5`. Missing customization preserves standard behavior; invalid configuration stops the route.
+- Report configured actions and explicit default suppression before acting. Run actions in declaration order and stop on the first failure. Invoking the route includes its declared in-scope actions, but configuration cannot bypass scope, credentials, approvals, destructive-action safeguards, or protected-environment controls.
 - Reuse existing workspace tooling. The config is not a credential store, deployment framework, or authority grant. If absent, preserve existing behavior and ask one concise target question only when safe routing cannot be derived. Reject invalid schemas or modes rather than guessing.
 - Preserve unrelated pre-existing changes. If they prevent a clean checkpoint, report it. If a `work4` push automatically deploys production, stop before pushing unless production release is explicitly authorized.
 {WORK_LEVEL_GUIDANCE_END}
@@ -458,6 +461,11 @@ def main() -> int:
     args = parse_args()
     root = Path(args.workspace).expanduser().resolve()
     providers = selected_providers(args.provider)
+    try:
+        validate_workspace_config(root)
+    except WorkLevelConfigError as error:
+        print(f"Work-level configuration failed: {error}", file=sys.stderr)
+        return 1
     if args.guidance_only:
         repository = inspect_work_ignore(root).repository
         if repository is None or repository != root:

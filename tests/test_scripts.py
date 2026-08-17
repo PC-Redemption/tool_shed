@@ -118,6 +118,7 @@ class ScriptTests(unittest.TestCase):
                 "update_work_index.py",
                 "work_tree.py",
                 "workspace_preflight.py",
+                "work_level_config.py",
             ):
                 shutil.copyfile(ROOT / "scripts" / name, repository / "scripts" / name)
             shutil.copytree(ROOT / "adapters", repository / "adapters")
@@ -177,6 +178,7 @@ class ScriptTests(unittest.TestCase):
                     "update_work_index.py",
                     "work_tree.py",
                     "workspace_preflight.py",
+                    "work_level_config.py",
                 )
             )
         content_hashes = {
@@ -927,6 +929,10 @@ for raw in sys.stdin:
         self.assertIn("ts:work1", skill_bundle)
         self.assertIn("ts:work5", skill_bundle)
         self.assertIn("work/tool-shed.yaml", guide)
+        self.assertIn("work-level customization", readme.lower())
+        self.assertIn("work_level_config.py", guide)
+        self.assertTrue((ROOT / "scripts" / "work_level_config.py").is_file())
+        self.assertTrue((ROOT / "docs" / "work-level-customization.md").is_file())
         self.assertIn("work_model: combined", readme)
         self.assertIn("In `split` mode", guide)
         self.assertIn("`ts:check", skill_bundle)
@@ -1095,6 +1101,9 @@ for raw in sys.stdin:
                     self.assertIn("work/tool-shed.yaml", guidance)
                     self.assertIn("work_model: combined", guidance)
                     self.assertIn("work_model: split", guidance)
+                    self.assertIn("work_level_config.py", guidance)
+                    self.assertIn("run_default: false", guidance)
+                    self.assertIn("stop on the first failure", guidance)
                     self.assertIn("automatically deploys production", guidance)
             self.assertTrue((workspace / "AGENTS.md").read_text(encoding="utf-8").startswith(owner_guidance))
 
@@ -3500,6 +3509,13 @@ stale loop guidance
             root = Path(temp)
             release = self.create_test_release(root)
             workspace = self.create_update_workspace(root)
+            customization = b"""schema_version: 1
+work_levels:
+  work3:
+    after:
+      - Generate the workspace handoff
+"""
+            (workspace / "work" / "tool-shed.yaml").write_bytes(customization)
             git_config = root / "global.gitconfig"
             git_config.write_text("[core]\n\tautocrlf = true\n", encoding="utf-8")
             environment = dict(os.environ)
@@ -3524,6 +3540,9 @@ stale loop guidance
             self.assertEqual(
                 (workspace / "work" / "operator-data.txt").read_text(encoding="utf-8"),
                 "preserve exactly\n",
+            )
+            self.assertEqual(
+                (workspace / "work" / "tool-shed.yaml").read_bytes(), customization
             )
             self.assertFalse((workspace / "tool_shed" / ".git").exists())
             self.assertFalse((workspace / "tool_shed" / "work").exists())
@@ -3995,6 +4014,14 @@ stale loop guidance
             (legacy / "ask.txt").write_text("Preserve and migrate this request.\n", encoding="utf-8")
             (legacy / "legacy-request.md").write_text("# Owner request\n", encoding="utf-8")
             before_operator = (workspace / "work" / "operator-data.txt").read_bytes()
+            customization = b"""schema_version: 1
+work_model: split
+work_levels:
+  work5:
+    after:
+      - Record the production acceptance evidence
+"""
+            (workspace / "work" / "tool-shed.yaml").write_bytes(customization)
 
             result = run_script(
                 str(ROOT / "scripts" / "update_snapshot.py"),
@@ -4015,6 +4042,9 @@ stale loop guidance
             self.assertIn("workspace_convergence", payload["post_install"])
             self.assertEqual(
                 (workspace / "work" / "operator-data.txt").read_bytes(), before_operator
+            )
+            self.assertEqual(
+                (workspace / "work" / "tool-shed.yaml").read_bytes(), customization
             )
             self.assertFalse(legacy.exists())
             self.assertEqual(
@@ -4050,6 +4080,10 @@ stale loop guidance
             legacy = workspace / "work" / "q&a"
             legacy.mkdir(parents=True)
             (legacy / "ask.txt").write_text("Restore this exact request.\n", encoding="utf-8")
+            (workspace / "work" / "tool-shed.yaml").write_text(
+                "schema_version: 1\nwork_levels:\n  work2:\n    after:\n      - Verify recovery\n",
+                encoding="utf-8",
+            )
             before_work = {
                 path.relative_to(workspace / "work").as_posix(): path.read_bytes()
                 for path in (workspace / "work").rglob("*")
@@ -4081,6 +4115,56 @@ stale loop guidance
             self.assertEqual((workspace / ".gitignore").read_bytes(), before_gitignore)
             self.assertTrue((workspace / "work" / "q&a" / "ask.txt").is_file())
             self.assertFalse((workspace / "work" / "01-q&a").exists())
+            self.assertTrue((workspace / "tool_shed" / "old-marker.txt").is_file())
+
+    def test_snapshot_upgrade_rejects_invalid_work_level_config_and_rolls_back(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(
+                root,
+                version="9.9.0",
+                include_provider_adapter=True,
+                minimum_updater_protocol=3,
+            )
+            workspace = self.create_update_workspace(root, version="0.13.0")
+            invalid_config = b"""schema_version: 1
+work_levels:
+  work2:
+    run_default: false
+"""
+            (workspace / "work" / "tool-shed.yaml").write_bytes(invalid_config)
+            before_work = {
+                path.relative_to(workspace / "work").as_posix(): path.read_bytes()
+                for path in (workspace / "work").rglob("*")
+                if path.is_file()
+            }
+            before_gitignore = (workspace / ".gitignore").read_bytes()
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--json",
+                cwd=workspace,
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertTrue(payload["rollback"])
+            self.assertIn("Work-level configuration failed", payload["error"])
+            after_work = {
+                path.relative_to(workspace / "work").as_posix(): path.read_bytes()
+                for path in (workspace / "work").rglob("*")
+                if path.is_file()
+            }
+            self.assertEqual(after_work, before_work)
+            self.assertEqual(
+                (workspace / "work" / "tool-shed.yaml").read_bytes(), invalid_config
+            )
+            self.assertEqual((workspace / ".gitignore").read_bytes(), before_gitignore)
             self.assertTrue((workspace / "tool_shed" / "old-marker.txt").is_file())
 
     def test_snapshot_updater_keeps_consecutive_updates_bytecode_free(self) -> None:

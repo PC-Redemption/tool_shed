@@ -45,6 +45,47 @@ hosting configuration, and runbooks. When the declaration is absent, preserve ex
 behavior and ask one concise target question only when repository evidence cannot route a requested
 remote stage safely. Reject unsupported schema versions or work models rather than guessing.
 
+Before executing a numbered route, resolve the selected route against that file with the
+workspace-local deterministic helper:
+
+```bash
+python3 tool_shed/scripts/work_level_config.py --workspace . resolve work3 --json
+```
+
+When developing the canonical Tool Shed checkout, use `scripts/work_level_config.py` instead. The
+optional `work_levels` mapping can add ordered actions around one canonical endpoint:
+
+```yaml
+schema_version: 1
+work_model: split
+work_levels:
+  work3:
+    before:
+      - Run the project's candidate-data refresh script
+    run_default: true
+    after:
+      - Generate the project-specific handoff summary
+  work4:
+    before:
+      - Run the controlled publication preflight
+    run_default: false
+    after:
+      - Verify the workspace-specific publication result
+```
+
+Apply exactly one customization envelope for the selected canonical endpoint: ordered `before`
+actions, the standard cumulative endpoint unless `run_default: false`, then ordered `after`
+actions. Aliases resolve first (`work` to `work2`, `freeze` to `work3`, `push` to `work4`, and
+`ship` to `work5`); they do not have separate configuration. Lower-level envelopes do not run
+again because the selected endpoint's standard behavior is already cumulative.
+
+Report the resolved actions and explicit default suppression before acting. Every action is
+required and runs in declaration order; stop on the first failure, do not run later phases, and do
+not report the endpoint complete. Invoking a configured route includes its declared in-scope
+actions, but the file cannot bypass request scope, credentials, approvals, destructive-action
+safeguards, protected environments, or outcome verification. Missing configuration or a missing
+level entry preserves the standard behavior. Reject malformed configuration instead of guessing.
+
 Do not force unrelated pre-existing changes into a checkpoint. If they prevent a clean worktree,
 preserve them and report the exception. If the only available `work4` push automatically deploys
 production, stop before pushing unless production release is explicitly authorized; never report

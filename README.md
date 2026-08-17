@@ -315,6 +315,13 @@ development and reserves production promotion for `work5`. The declaration is op
 Shed reuses existing workspace scripts and hosting configuration rather than requiring new
 infrastructure or credentials in this file.
 
+The same file may define `work_levels` entries with ordered `before` and `after` actions plus
+`run_default: false` when a workspace deliberately replaces one standard endpoint. Resolve the
+selected route with `tool_shed/scripts/work_level_config.py`; aliases share their canonical level,
+only the selected endpoint's envelope runs, and missing configuration preserves all standard
+behavior. See [workspace work-level customization](docs/work-level-customization.md) for the schema,
+ordering, failure, safety, installation, and upgrade contract.
+
 `ts:ship <goal>` is the end-to-end delivery route: plan, implement, validate, build, deploy, and
 verify the requested workspace goal. It continues through all applicable stages while preserving
 normal safety, approval, credential, and protected-environment boundaries.

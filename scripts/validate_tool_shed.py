@@ -128,6 +128,9 @@ def smoke_temp_workspace() -> None:
             "work/tool-shed.yaml",
             "work_model: combined",
             "work_model: split",
+            "work_level_config.py",
+            "run_default: false",
+            "stop on the first failure",
             "automatically deploys production",
         )
         if any(fragment not in agents_text for fragment in work_level_contract):

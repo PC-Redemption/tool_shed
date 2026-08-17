@@ -154,6 +154,32 @@ when safe routing is genuinely ambiguous. It rejects invalid schemas or modes. W
 automatically deploys production, `work4` stops before that push unless production release is
 explicitly authorized.
 
+An individual workspace may also add actions around one canonical endpoint:
+
+```yaml
+schema_version: 1
+work_model: split
+work_levels:
+  work3:
+    before:
+      - Run the candidate-data refresh script
+    run_default: true
+    after:
+      - Generate the project handoff summary
+  work4:
+    before:
+      - Run the controlled publication flow
+    run_default: false
+```
+
+Before a numbered route runs, Tool Shed resolves the declaration with
+`tool_shed/scripts/work_level_config.py`. It applies the selected canonical level's `before`
+actions, the standard cumulative behavior unless explicitly disabled, then its `after` actions.
+Aliases share that envelope and lower-level envelopes do not repeat. Actions stop on first failure,
+and default suppression is reported before execution. Missing configuration preserves the standard
+behavior. See [workspace work-level customization](work-level-customization.md) for the complete
+schema, ordering, validation, safety, installation, and upgrade contract.
+
 ## Ship End to End
 
 Use the ship route when the intended outcome is a delivered, verified change rather than a plan or
