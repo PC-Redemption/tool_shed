@@ -25,6 +25,7 @@ TRACKED_ROOT_FILES = (
     "existing-projects.md",
 )
 TRACKED_GLOBS = (
+    ".github/workflows/*.yml",
     "adapters/**/*.json",
     "adapters/**/*.md",
     "docs/*.md",

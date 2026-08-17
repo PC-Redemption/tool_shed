@@ -528,7 +528,8 @@ For a published release, also pass `--release-commit`, `--release-tag vMAJOR.MIN
 numbers with different canonical content are reported as `release-mismatch`.
 
 Follow [docs/releasing.md](docs/releasing.md) for the two-commit provenance workflow, annotated tag,
-and post-push verification.
+automated GitHub Release publication, and post-push verification. A pushed tag without its matching
+non-draft GitHub Release object is an incomplete publication.
 
 Before choosing an artifact, read:
 

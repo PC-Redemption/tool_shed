@@ -65,8 +65,35 @@ updater that cannot satisfy the release lifecycle.
    git tag -a vMAJOR.MINOR.PATCH -m "Tool Shed vMAJOR.MINOR.PATCH"
    ```
 
-10. Push the branch and tag, then verify that the canonical raw manifest reports the expected
-    version, content commit, tag, timestamp, and hashes.
+10. Push the branch and tag. The `Publish GitHub Release` workflow independently repeats full
+    validation, verifies that the checkout is the highest stable tag with exact two-commit
+    provenance, and creates an idempotent, non-draft GitHub Release marked latest.
+11. Verify both publication surfaces. The raw manifest and GitHub Release must report the same tag;
+    a tag-only publication is incomplete:
 
-Do not reuse a published version. Do not populate `release_commit` from a dirty work tree. Updating
-workspace snapshots remains a separately authorized operation.
+    ```bash
+    python3 scripts/check_shed_version.py --shed .
+    gh release view vMAJOR.MINOR.PATCH \
+      --repo PC-Redemption/tool_shed \
+      --json tagName,isDraft,isPrerelease,publishedAt,url
+    ```
+
+    If automation is unavailable after the tag's full validation succeeds, create the missing
+    Release object explicitly and then run the same verification:
+
+    ```bash
+    python3 scripts/prepare_github_release.py \
+      --repository . \
+      --tag vMAJOR.MINOR.PATCH \
+      --notes-file release-notes.md
+    gh release create vMAJOR.MINOR.PATCH \
+      --repo PC-Redemption/tool_shed \
+      --verify-tag \
+      --latest \
+      --title "Tool Shed vMAJOR.MINOR.PATCH" \
+      --notes-file release-notes.md
+    ```
+
+Do not reuse a published version. Do not populate `release_commit` from a dirty work tree. Never
+describe a tag as fully published until its GitHub Release object is verified. Updating workspace
+snapshots remains a separately authorized operation.

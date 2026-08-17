@@ -1,0 +1,70 @@
+name: Publish GitHub Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out tagged release
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Verify release integrity
+        run: |
+          python3 scripts/check_shed_version.py --shed . --local-only --strict --verification-only
+          python3 scripts/update_shed_manifest.py --check
+          python3 scripts/validate_tool_shed.py
+
+      - name: Prepare release metadata
+        run: >-
+          python3 scripts/prepare_github_release.py
+          --repository .
+          --tag "$GITHUB_REF_NAME"
+          --notes-file "$RUNNER_TEMP/tool-shed-release-notes.md"
+          --json
+
+      - name: Publish or verify GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            release_state=$(gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+              --json isDraft,isPrerelease --jq '.isDraft or .isPrerelease')
+            test "$release_state" = "false"
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              --repo "$GITHUB_REPOSITORY" \
+              --verify-tag \
+              --latest \
+              --title "Tool Shed $GITHUB_REF_NAME" \
+              --notes-file "$RUNNER_TEMP/tool-shed-release-notes.md"
+          fi
+          gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --latest
+
+      - name: Verify published GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          release_state=$(gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+            --json isDraft,isPrerelease --jq '.isDraft or .isPrerelease')
+          test "$release_state" = "false"
+          latest_tag=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq '.tag_name')
+          test "$latest_tag" = "$GITHUB_REF_NAME"
+          gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --json tagName,url
