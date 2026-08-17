@@ -21,6 +21,40 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
+      "disposition": "none",
+      "next_action": "execute when selected from the active campaign queue",
+      "parent": null,
+      "path": "work/00-campaigns/active/add-program-roadmap-lifecycle-between-project-maps-and-campaign-execution.md",
+      "produces": null,
+      "project_map": null,
+      "status": "queued",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Add program-roadmap lifecycle between project maps and campaign execution",
+      "type": "campaign",
+      "updated": "2026-08-17"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": "none",
+      "next_action": "execute when selected from the active campaign queue",
+      "parent": null,
+      "path": "work/00-campaigns/active/show-campaign-ids-on-ordered-active-campaign-queue-entries.md",
+      "produces": null,
+      "project_map": null,
+      "status": "queued",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Show campaign IDs on ordered Active Campaign Queue entries",
+      "type": "campaign",
+      "updated": "2026-08-17"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
       "disposition": "completed",
       "next_action": "none",
       "parent": null,
@@ -920,7 +954,7 @@
     }
   ],
   "description": "Generated from tool_shed artifact headers. Use as navigation, not canonical truth.",
-  "generated_at": "2026-08-15",
+  "generated_at": "2026-08-17",
   "reading_order": [
     "Read project README/docs for current truth.",
     "Read active maps and active work artifacts from this index.",
@@ -928,8 +962,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 1,
+    "active_artifacts": 3,
     "completed_or_decided_artifacts": 50,
-    "total_artifacts": 54
+    "total_artifacts": 56
   }
 }
