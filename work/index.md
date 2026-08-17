@@ -9,7 +9,6 @@ Updated: 2026-08-17
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
-| [work/00-campaigns/active/024-compact-tool-shed-site-and-publish-guided-workflows.md](work/00-campaigns/active/024-compact-tool-shed-site-and-publish-guided-workflows.md) | campaign | working | 2026-08-17 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -32,6 +31,7 @@ Updated: 2026-08-17
 | [work/00-campaigns/completed/021-standardize-campaign-numbering-during-tool-shed-upgrades.md](work/00-campaigns/completed/021-standardize-campaign-numbering-during-tool-shed-upgrades.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/022-publish-tool-shed-documentation-site-at-ts-rookaro-com.md](work/00-campaigns/completed/022-publish-tool-shed-documentation-site-at-ts-rookaro-com.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/023-customize-work-level-actions-per-workspace.md](work/00-campaigns/completed/023-customize-work-level-actions-per-workspace.md) | campaign | complete | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/024-compact-tool-shed-site-and-publish-guided-workflows.md](work/00-campaigns/completed/024-compact-tool-shed-site-and-publish-guided-workflows.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/checklists/checklist-refresh-readme-and-ai-command-reference.md](work/checklists/checklist-refresh-readme-and-ai-command-reference.md) | checklist | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/checklists/checklist-tool-shed-skill-field-test.md](work/checklists/checklist-tool-shed-skill-field-test.md) | checklist | complete | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/decisions/decision-codex-skill-readiness.md](work/decisions/decision-codex-skill-readiness.md) | decision-matrix | decided | 2026-07-05 | continue using skill on real projects; plugin packaging deferred | work/maps/map-tool-shed-foundation.md |
@@ -79,5 +79,5 @@ Updated: 2026-08-17
 ## Summary
 
 - Total artifacts: 61
-- Active artifacts: 2
-- Completed/decided artifacts: 56
+- Active artifacts: 1
+- Completed/decided artifacts: 57

@@ -21,23 +21,6 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
-      "disposition": "none",
-      "next_action": "execute the campaign completion gate",
-      "parent": null,
-      "path": "work/00-campaigns/active/024-compact-tool-shed-site-and-publish-guided-workflows.md",
-      "produces": null,
-      "project_map": null,
-      "status": "working",
-      "superseded_by": null,
-      "supersedes": null,
-      "title": "Publish compact end-to-end Tool Shed workflow guide",
-      "type": "campaign",
-      "updated": "2026-08-17"
-    },
-    {
-      "campaign": null,
-      "campaign_reason": null,
-      "canonical_truth": null,
       "disposition": "completed",
       "next_action": "none",
       "parent": null,
@@ -405,6 +388,23 @@
       "superseded_by": null,
       "supersedes": null,
       "title": "Customize work-level actions per workspace",
+      "type": "campaign",
+      "updated": "2026-08-17"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": "completed",
+      "next_action": "none",
+      "parent": null,
+      "path": "work/00-campaigns/completed/024-compact-tool-shed-site-and-publish-guided-workflows.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Publish compact end-to-end Tool Shed workflow guide",
       "type": "campaign",
       "updated": "2026-08-17"
     },
@@ -1047,8 +1047,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 2,
-    "completed_or_decided_artifacts": 56,
+    "active_artifacts": 1,
+    "completed_or_decided_artifacts": 57,
     "total_artifacts": 61
   }
 }

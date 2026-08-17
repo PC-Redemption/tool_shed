@@ -1,9 +1,9 @@
 # Publish compact end-to-end Tool Shed workflow guide
 
-Status: working
+Status: complete
 Type: campaign
 Updated: 2026-08-17
-Next Action: execute the campaign completion gate
+Next Action: none
 Campaign ID: compact-tool-shed-site-and-publish-guided-workflows
 Campaign Number: 024
 Outcome: Restructure ts.rookaro.com into a compact operator guide with distinct new-project and existing-project entry paths that join a shared Project Map to Program Roadmap to campaign generation to queue selection to work1-work5 execution to completion-and-review workflow; compact spacing across the entire site; replace the large /ref command tiles with a dense accessible row-and-column table generated from the canonical command catalog; and preserve direct-loadable paths, mobile usability, and clear links among Guide, Help, and Reference.
@@ -14,8 +14,10 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: Canonical source and the site generator produce the complete guided workflow hierarchy and compact site-wide layout; the Project Map, roadmap develop/propose/approve, campaign derive/approve, overview/next, work1-work5, completion, and roadmap-review boundaries are explicit; every workflow action presents an accurate selectable Tool Shed prompt with an accessible copy control and placeholder guidance so it can be pasted into Codex; /ref uses a compact accessible table rather than large tiles without duplicating docs/commands.md; focused documentation-site tests and the full Tool Shed validator pass; desktop and mobile layouts have no excessive section gaps or overflow; documentation and deployment instructions are current; and the exact generated candidate is deployed and verified on every public ts.rookaro.com route.
-Completion Evidence: none
-Disposition: none
+Completion Evidence: Frozen candidate 9a6988f generates 22 direct-loadable pages and 55 canonical reference commands; focused site tests and full Tool Shed validation (143 tests) passed; Playwright desktop/mobile checks found zero document overflow on every route and verified exact accessible clipboard behavior; all 22 public routes and assets returned 200 through X-Rookaro-Route ts.rookaro.com with hashes matching the candidate; GitHub issue #34 was updated with release-pending evidence.
+Completion Date: 2026-08-17
+Completion Order: 22
+Disposition: completed
 
 ## Request
 
