@@ -92,9 +92,9 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
   "notes": "Add deterministic workspace-specific work-level actions, prevent GitHub Release drift, and keep the public documentation aligned with current behavior.",
-  "release_commit": null,
+  "release_commit": "f9b8c59539105527b8817cd05fcba18fb691cbef",
   "release_tag": "v0.21.0",
-  "released_at": null,
+  "released_at": "2026-08-17T19:47:25Z",
   "shed_version": "0.21.0",
   "updated_at": "2026-08-17",
   "updater_mutation_paths": [
