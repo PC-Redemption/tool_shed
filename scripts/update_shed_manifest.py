@@ -34,6 +34,7 @@ TRACKED_GLOBS = (
     "skills/tool-shed/SKILL.md",
     "skills/tool-shed/agents/*.yaml",
     "skills/tool-shed/references/**/*.md",
+    "site/**/*",
     "templates/*.md",
     "templates/*.json",
 )

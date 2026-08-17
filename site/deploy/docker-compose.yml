@@ -1,0 +1,18 @@
+services:
+  docs:
+    image: nginx:alpine
+    container_name: ts-rookaro-com
+    restart: unless-stopped
+    ports:
+      - "8087:80"
+    volumes:
+      - ./public:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/healthz || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    security_opt:
+      - no-new-privileges:true

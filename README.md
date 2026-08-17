@@ -499,6 +499,11 @@ python3 scripts/validate_tool_shed.py
 ```
 
 GitHub Actions runs the same validation on push and pull requests.
+
+The public human/AI process guide and generated command reference are maintained under `site/` and
+published at [ts.rookaro.com](https://ts.rookaro.com). See the
+[documentation site maintainer guide](docs/documentation-site.md) for generation, preview,
+deployment, routing, verification, and command-propagation procedures.
 The same command is safe in a disconnected snapshot: canonical `work/` indexing and reconciliation
 steps are skipped, the snapshot source fingerprint must remain unchanged, and embedded `.git/` or
 `work/` content is refused.
