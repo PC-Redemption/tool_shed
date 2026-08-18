@@ -39,6 +39,7 @@ Updated: 2026-08-18
 | [work/00-campaigns/completed/029-define-nested-cycles-and-owning-transitions.md](work/00-campaigns/completed/029-define-nested-cycles-and-owning-transitions.md) | campaign | complete | 2026-08-18 | none | - |
 | [work/00-campaigns/completed/030-fail-closed-on-cross-workspace-routing.md](work/00-campaigns/completed/030-fail-closed-on-cross-workspace-routing.md) | campaign | complete | 2026-08-18 | none | - |
 | [work/00-campaigns/completed/031-add-workspace-wide-ts-doctor-command.md](work/00-campaigns/completed/031-add-workspace-wide-ts-doctor-command.md) | campaign | complete | 2026-08-18 | none | - |
+| [work/00-campaigns/completed/032-make-workflow-cycles-first-class-site-concept.md](work/00-campaigns/completed/032-make-workflow-cycles-first-class-site-concept.md) | campaign | complete | 2026-08-18 | none | - |
 | [work/checklists/checklist-refresh-readme-and-ai-command-reference.md](work/checklists/checklist-refresh-readme-and-ai-command-reference.md) | checklist | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/checklists/checklist-tool-shed-skill-field-test.md](work/checklists/checklist-tool-shed-skill-field-test.md) | checklist | complete | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/decisions/decision-codex-skill-readiness.md](work/decisions/decision-codex-skill-readiness.md) | decision-matrix | decided | 2026-07-05 | continue using skill on real projects; plugin packaging deferred | work/maps/map-tool-shed-foundation.md |
@@ -86,6 +87,6 @@ Updated: 2026-08-18
 
 ## Summary
 
-- Total artifacts: 69
+- Total artifacts: 70
 - Active artifacts: 1
-- Completed/decided artifacts: 65
+- Completed/decided artifacts: 66

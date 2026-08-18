@@ -311,7 +311,9 @@ states the exact question or approval, and explains what resumes afterward. A va
 
 ## Follow The Nested Cycles
 
-Tool Shed uses one nested control model:
+The Tool Shed workflow is the operator path from intent through direction, execution, evidence,
+and review. Tool Shed uses five nested control cycles underneath that workflow to decide what
+repeats, what counts as complete, and where control returns:
 
 ```text
 Program Cycle

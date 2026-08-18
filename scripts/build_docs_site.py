@@ -50,6 +50,7 @@ PAGES = (
     Page("help", "Tool Shed Help", "Learn the Tool Shed process, then go deeper on the part of the lifecycle you need.", "help/index.html", "help"),
     Page("help/ideas", "Ideas and exploration", "Start with incomplete intent and explore the outcome before committing to a plan.", "help/ideas.html", "help"),
     Page("help/planning", "Planning", "Turn discoveries into proportionate, evidence-backed coordination.", "help/planning.html", "help"),
+    Page("help/workflow-cycles", "Workflow and cycles", "Understand the operator workflow and the nested control cycles that keep work moving and return control upward.", "help/workflow-cycles.html", "help"),
     Page("help/roadmaps", "Program roadmaps", "Give multi-milestone work direction without turning the plan into a rigid promise.", "help/roadmaps.html", "help"),
     Page("help/campaigns", "Campaigns", "Use focused owner-facing execution cycles with explicit outcomes and completion evidence.", "help/campaigns.html", "help"),
     Page("help/execution", "Execution levels", "Choose how far an authorized change should travel from implementation to production.", "help/execution.html", "help"),

@@ -110,8 +110,9 @@ standard definitions above. See [workspace work-level customization](work-level-
 
 ## Nested Cycles And Work Origin
 
-Tool Shed names five nested control cycles. Completing an inner cycle returns control to its
-owner; it does not imply that the outer outcome is complete.
+The Tool Shed workflow is the operator path through direction, execution, evidence, and review.
+Five nested control cycles govern how that workflow repeats and returns control. Completing an
+inner cycle returns control to its owner; it does not imply that the outer outcome is complete.
 
 | Cycle | Repeating transition | Complete when | Control returns to |
 | --- | --- | --- | --- |

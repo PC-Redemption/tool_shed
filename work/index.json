@@ -531,6 +531,23 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
+      "disposition": "completed",
+      "next_action": "none",
+      "parent": null,
+      "path": "work/00-campaigns/completed/032-make-workflow-cycles-first-class-site-concept.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Make workflow cycles a first-class site concept",
+      "type": "campaign",
+      "updated": "2026-08-18"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
       "disposition": null,
       "next_action": "none",
       "parent": "work/maps/map-tool-shed-evolution.md",
@@ -1184,7 +1201,7 @@
   "schema_version": 1,
   "summary": {
     "active_artifacts": 1,
-    "completed_or_decided_artifacts": 65,
-    "total_artifacts": 69
+    "completed_or_decided_artifacts": 66,
+    "total_artifacts": 70
   }
 }

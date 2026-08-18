@@ -35,6 +35,7 @@ class DocumentationSiteTests(unittest.TestCase):
                 "help/index.html",
                 "help/ideas/index.html",
                 "help/planning/index.html",
+                "help/workflow-cycles/index.html",
                 "help/roadmaps/index.html",
                 "help/campaigns/index.html",
                 "help/execution/index.html",
@@ -141,22 +142,37 @@ class DocumentationSiteTests(unittest.TestCase):
             ):
                 self.assertIn(detail, page)
 
-    def test_campaign_help_teaches_nested_cycles_and_empty_queue_return(self) -> None:
+    def test_workflow_help_teaches_nested_cycles_and_context_pages_link_to_it(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             public, _ = SITE_BUILDER.build(Path(temporary) / "bundle")
+            workflow_help = (public / "help" / "workflow-cycles" / "index.html").read_text(
+                encoding="utf-8"
+            )
             campaign_help = (public / "help" / "campaigns" / "index.html").read_text(
                 encoding="utf-8"
             )
+            roadmap_help = (public / "help" / "roadmaps" / "index.html").read_text(
+                encoding="utf-8"
+            )
+            review_help = (public / "help" / "review" / "index.html").read_text(
+                encoding="utf-8"
+            )
+            guide = (public / "guide" / "index.html").read_text(encoding="utf-8")
             queue_guide = (public / "guide" / "queue-and-select" / "index.html").read_text(
                 encoding="utf-8"
             )
             for detail in (
                 "Program → Milestone Wave → Queue → Campaign → Evidence",
-                "direct, owner-originated, roadmap-derived, or detour",
+                "Work origin:",
                 "Empty is not complete",
                 "Cycle State Capsule",
             ):
-                self.assertIn(detail, campaign_help)
+                self.assertIn(detail, workflow_help)
+            for cycle in ("Program", "Milestone Wave", "Queue", "Campaign", "Evidence"):
+                self.assertIn(cycle, guide)
+            for contextual_page in (campaign_help, roadmap_help, review_help):
+                self.assertIn('href="/help/workflow-cycles/"', contextual_page)
+            self.assertNotIn('id="cycles"', campaign_help)
             self.assertIn("higher-level cycle owns the transition", queue_guide)
             self.assertIn("higher-level approvals remain separate", queue_guide)
 

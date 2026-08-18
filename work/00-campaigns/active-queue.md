@@ -4,7 +4,7 @@ Updated: 2026-08-18
 
 ## Owner State
 
-- Last completed: publish-and-verify-tool-shed-v0-22-0 — Publish and verify Tool Shed v0.22.0
+- Last completed: make-workflow-cycles-first-class-site-concept — Make workflow cycles a first-class site concept
 - Working now: none
 - Next: none
 - Blocker or decision needed: none
