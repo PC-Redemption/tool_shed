@@ -105,9 +105,9 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
   "notes": "Publish compact guided workflows and work-level customization help; fix reference layout and asset cache busting; harden campaign-number upgrade convergence; add public help links and stable targeted and wildcard campaign batches; fail closed on cross-workspace mutations with project identity; surface nested cycle ownership; add a read-only workspace doctor.",
-  "release_commit": null,
+  "release_commit": "501877657bf0902d7c0caafc490cc35b6bc64f33",
   "release_tag": "v0.22.0",
-  "released_at": null,
+  "released_at": "2026-08-18T15:22:01Z",
   "shed_version": "0.22.0",
   "updated_at": "2026-08-18",
   "updater_mutation_paths": [
