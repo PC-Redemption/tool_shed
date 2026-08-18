@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import campaign_queue
+from project_identity import ProjectIdentityError, bind_state_token, require_project_binding
 from update_work_index import discover_artifacts, render as render_index, render_json as render_index_json
 
 
@@ -138,11 +139,26 @@ def source_state_token(workspace: Path, roadmap_id: str | None = None) -> str:
         digest.update(b"\0")
         digest.update(path.read_bytes())
         digest.update(b"\0")
-    return digest.hexdigest()[:16]
+    return bind_state_token(
+        workspace,
+        "program-roadmap-source",
+        digest.hexdigest(),
+        allow_unidentified=True,
+    )
 
 
 def map_token(path: Path) -> str:
-    return _file_token(path)
+    try:
+        work_index = path.resolve().parts.index("work")
+    except ValueError as error:
+        raise RoadmapError(f"project map is outside work/: {path}") from error
+    workspace = Path(*path.resolve().parts[:work_index])
+    return bind_state_token(
+        workspace,
+        "program-roadmap-map",
+        _file_token(path),
+        allow_unidentified=True,
+    )
 
 
 def parse_headers(text: str) -> tuple[str, dict[str, str]]:
@@ -1047,20 +1063,24 @@ def build_parser() -> argparse.ArgumentParser:
     approve_project_map = commands.add_parser("approve-map")
     approve_project_map.add_argument("path")
     approve_project_map.add_argument("--expect", required=True)
+    approve_project_map.add_argument("--project-binding", required=True)
     propose_parser = commands.add_parser("propose")
     propose_parser.add_argument("--manifest", required=True)
     propose_parser.add_argument("--expect", required=True)
+    propose_parser.add_argument("--project-binding", required=True)
     approve_parser = commands.add_parser("approve")
     approve_parser.add_argument("roadmap_id")
     approve_parser.add_argument("--revision", type=int, required=True)
     approve_parser.add_argument("--expect", required=True)
     approve_parser.add_argument("--proposal-token", required=True)
+    approve_parser.add_argument("--project-binding", required=True)
     derive_parser = commands.add_parser("derive")
     derive_parser.add_argument("roadmap_id")
     derive_parser.add_argument("--milestone", required=True)
     apply_parser = commands.add_parser("apply-campaign-plan")
     apply_parser.add_argument("--manifest", required=True)
     apply_parser.add_argument("--expect", required=True)
+    apply_parser.add_argument("--project-binding", required=True)
     status = commands.add_parser("status")
     status.add_argument("roadmap_id", nargs="?")
     review = commands.add_parser("review")
@@ -1076,6 +1096,12 @@ def main() -> int:
     args = build_parser().parse_args()
     workspace = Path(args.workspace).expanduser().resolve()
     try:
+        if args.command in {"approve-map", "propose", "approve", "apply-campaign-plan"}:
+            require_project_binding(
+                workspace,
+                args.project_binding,
+                operation="program-roadmap",
+            )
         if args.command == "develop":
             payload: object = develop_payload(workspace, args.roadmap_id, args.project_map)
         elif args.command == "approve-map":
@@ -1100,7 +1126,13 @@ def main() -> int:
         else:
             findings = validate_all(workspace)
             payload = {"valid": not findings, "findings": findings}
-    except (RoadmapError, campaign_queue.CampaignError, OSError, json.JSONDecodeError) as error:
+    except (
+        RoadmapError,
+        campaign_queue.CampaignError,
+        ProjectIdentityError,
+        OSError,
+        json.JSONDecodeError,
+    ) as error:
         print(f"Program Roadmap operation failed: {error}", file=sys.stderr)
         return 2
     print(json.dumps(payload, indent=2, sort_keys=True))

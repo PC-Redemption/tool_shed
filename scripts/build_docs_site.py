@@ -44,7 +44,7 @@ PAGES = (
     Page("guide/project-map", "Build the project map", "Map active workstreams before choosing bounded work or a Program Roadmap.", "guide/project-map.html", "guide"),
     Page("guide/roadmap", "Develop the roadmap", "Develop, propose, and approve a strategic baseline without creating campaigns.", "guide/roadmap.html", "guide"),
     Page("guide/generate-campaigns", "Generate campaigns", "Preview and approve campaigns for one roadmap milestone.", "guide/generate-campaigns.html", "guide"),
-    Page("guide/queue-and-select", "Queue and select", "Review execution state and select the first ready campaign.", "guide/queue-and-select.html", "guide"),
+    Page("guide/queue-and-select", "Queue and select", "Review execution state and select one campaign or an explicit sequential batch.", "guide/queue-and-select.html", "guide"),
     Page("guide/execute", "Execute the campaign", "Choose the cumulative Tool Shed execution endpoint that matches the authorized outcome.", "guide/execute.html", "guide"),
     Page("guide/complete-and-review", "Complete and review", "Verify campaign completion and roll evidence back into roadmap direction.", "guide/complete-and-review.html", "guide"),
     Page("help", "Tool Shed Help", "Learn the Tool Shed process, then go deeper on the part of the lifecycle you need.", "help/index.html", "help"),
@@ -162,7 +162,7 @@ def command_id(command: str) -> str:
 
 def guide_path_for(syntax: str) -> str:
     routes = (
-        (("ts: version", "ts: fulltsupgrade", "ts: check for updates", "ts: update status"), "/guide/existing-project/"),
+        (("ts: doctor", "ts: version", "ts: fulltsupgrade", "ts: check for updates", "ts: update status"), "/guide/existing-project/"),
         (("ts: develop roadmap", "ts: propose roadmap", "ts: approve roadmap"), "/guide/roadmap/"),
         (("ts: derive campaigns", "ts: approve campaign plan"), "/guide/generate-campaigns/"),
         (("ts: overview", "ts: status", "ts: queue", "ts: next", "ts: add"), "/guide/queue-and-select/"),

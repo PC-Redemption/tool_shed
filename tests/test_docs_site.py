@@ -57,6 +57,7 @@ class DocumentationSiteTests(unittest.TestCase):
     def test_guide_exposes_complete_copy_ready_workflow(self) -> None:
         prompts = (
             "ts: version",
+            "ts: doctor",
             "ts: discuss <project idea>",
             "ts: map the active workstreams",
             "ts: fulltsupgrade",

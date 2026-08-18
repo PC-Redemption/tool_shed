@@ -30,6 +30,12 @@ Project-specific work artifacts live here.
 Use `tool_shed/selection.md` before choosing an artifact type.
 Use `work/index.md` as the first orientation surface after README/docs. Use `work/index.json` for automation.
 
+## Project Identity
+
+- `work/tool-shed-project.json` is the stable tracked project identity; preserve it across clones and upgrades.
+- Before mutation, run `tool_shed/scripts/project_identity.py --workspace . identity --operation <operation> --json`, surface the target capsule, and pass its operation-specific project binding.
+- Treat an outside-root path as `WORKSPACE_MISMATCH`; switch only through an explicit `ts: use` followed by target instruction and skill reload.
+
 ## Campaigns
 
 - Read `work/00-campaigns/active-queue.md` for the owner-facing execution order.
@@ -39,7 +45,7 @@ Use `work/index.md` as the first orientation surface after README/docs. Use `wor
 - Use `ts: build focus areas` to inspect existing project sources and present an exact catalog and
   campaign-assignment proposal; it writes only after explicit owner approval.
 - Keep `work/01-q&a/ask.txt` as transient intake; it is not the durable queue.
-- Use `python3 tool_shed/scripts/campaign_queue.py --workspace . status` to get the current stale-write token before a lifecycle mutation.
+- Use `python3 tool_shed/scripts/campaign_queue.py --workspace . status` to get the current project-bound stale-write token before a lifecycle mutation; pass the matching `--project-binding` too.
 - Use `python3 tool_shed/scripts/reconcile_campaign_queue.py --workspace . --json` to inspect queue drift and whole-work coverage while automatically creating or refreshing one Dangler Resolution campaign as the first queued work; add `--dry-run` for read-only inspection, and require an exact approved manifest plus the reported whole-work token for every other write.
 
 ## Program Roadmaps

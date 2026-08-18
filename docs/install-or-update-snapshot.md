@@ -7,7 +7,8 @@ installation.
 The supported cross-platform command is:
 
 ```text
-python /path/to/current-release/scripts/update_snapshot.py --workspace .
+python /path/to/current-release/scripts/update_snapshot.py --workspace . \
+  --project-binding <update-snapshot-binding>
 ```
 
 For Codex, add `--sync-codex-skill` to install or update the separately discovered user-level skill
@@ -15,7 +16,8 @@ at `${CODEX_HOME:-~/.codex}/skills/tool-shed`. Without the flag, the updater rem
 that user-level path and reports whether it is current, missing, stale, modified, or unsafe:
 
 ```text
-python /path/to/current-release/scripts/update_snapshot.py --workspace . --sync-codex-skill --json
+python /path/to/current-release/scripts/update_snapshot.py --workspace . --sync-codex-skill \
+  --project-binding <update-snapshot-binding> --json
 ```
 
 Progress is written to stderr, including clone/fetch, manifest verification, release validation,
@@ -32,6 +34,14 @@ replacing an older release and refuses modified, unmanaged, non-directory, or sy
 The release packages compact historical skill digests so updater and direct guidance-only status
 checks use the same offline identity set. Start a fresh Codex session after a change.
 
+For an identified workspace, first run the released `project_identity.py identity` command with
+operation `update-snapshot`, surface its project target capsule, and pass the returned binding.
+The project identity is a tracked UUIDv4 record at `work/tool-shed-project.json`; tokens bind to
+both that ID and the resolved root. New installations and legacy upgrades without the file create
+it atomically after backup and before snapshot replacement. Existing identity is preserved
+byte-for-byte. Malformed, duplicate, conflicting, foreign-project, or root-mismatched identity
+fails closed, and rollback removes a newly created identity or restores the prior one.
+
 Use the updater from a current released checkout outside the target project. This matters when an
 older installed snapshot predates newer upgrade safeguards. The updater selects the remote release;
 the target's stale in-snapshot updater is not a bootstrap authority. Releases declare a
@@ -43,8 +53,10 @@ Provider guidance is auto-detected from existing marked instruction files. If no
 the backward-compatible default. Override or install multiple adapters with:
 
 ```text
-python /path/to/current-release/scripts/update_snapshot.py --workspace . --provider claude-code
-python /path/to/current-release/scripts/update_snapshot.py --workspace . --provider all
+python /path/to/current-release/scripts/update_snapshot.py --workspace . --provider claude-code \
+  --project-binding <update-snapshot-binding>
+python /path/to/current-release/scripts/update_snapshot.py --workspace . --provider all \
+  --project-binding <update-snapshot-binding>
 ```
 
 From a downloaded Tool Shed checkout, the equivalent launchers are
@@ -73,6 +85,7 @@ and `.gitignore` convergence changes.
 Resolve state and choose the path:
 
 1. Resolve and display:
+   - the stable Tool Shed project ID and project name, if already present
    - the exact workspace root
    - the exact intended workspace/tool_shed path
    - the parent Git repository root, if present
@@ -84,6 +97,8 @@ Resolve state and choose the path:
    - If tool_shed/ exists but fails any boundary check, stop. Do not replace or repair it
      automatically.
 4. Display the selected path before making changes.
+   For an identified workspace, require the matching operation-specific project binding. A path
+   outside the bound root is `WORKSPACE_MISMATCH`; mentioning it never authorizes a switch.
 5. Confirm the parent repository ignores root /tool_shed/. If missing, append only that exact root
    entry to the repository-root .gitignore without replacing or reformatting existing content.
 
@@ -155,6 +170,10 @@ If EXISTING UPDATE:
     a release declares `updater_mutation_paths` as a list of objects with a workspace-relative
     `path`, a `mode` of `file`, `tree`, or `directory-marker`, and a non-empty `reason`; reject
     malformed declarations and paths that escape the workspace.
+    Before creating the backup, use the staged release's read-only campaign backfill plan to
+    discover exact inbound Markdown artifact references that a numbered campaign rename must
+    update. Add only those files to the declared mutation surface, record the old and new paths,
+    and keep them under the same verified rollback transaction as the campaign tree.
 15. Replace only the workspace's tool_shed/ directory with the staged snapshot at this stage. Keep
     the backup; the post-install transaction may then converge only the declared workspace surfaces.
 
@@ -170,9 +189,11 @@ Post-install verification for either path:
     submodule, and is ignored by the parent repository.
 17. Run, when present in the installed release:
     - python3 tool_shed/scripts/install_into_workspace.py . --provider <detected>
-    - read-only campaign validation; when it reports legacy numbering or filenames, run the
-      exact-token guarded campaign convergence inside the release-declared and backed-up
-      `work/00-campaigns` mutation scope, then regenerate indexes
+    - read-only campaign validation; when it reports legacy numbering or filenames, accept exact
+      supported legacy projections (including a valid empty pre-numbering queue), preview numbered
+      renames and inbound artifact-reference updates, run the exact-token guarded campaign
+      convergence inside the release-declared and dynamically planned backup scope, then regenerate
+      indexes
     - python3 tool_shed/scripts/workspace_preflight.py --workspace . --json
     - python3 tool_shed/scripts/check_work_tree.py --workspace . --json
     - python3 tool_shed/scripts/check_stale_paths.py --workspace .
@@ -203,6 +224,9 @@ Failure handling:
 
 21. For EXISTING UPDATE, if replacement or post-install verification fails:
     - remove only the failed replacement and affected migrated workspace paths
+    - report the compact failed transaction stage in JSON and human-readable output so an operator
+      can distinguish release selection, staging, campaign planning, backup, replacement,
+      post-install validation, and rollback failures without retaining raw logs
     - restore or remove exactly the paths and absence markers declared by the verified backup
       manifest
     - restore every selected provider instruction file byte-for-byte, removing only files created

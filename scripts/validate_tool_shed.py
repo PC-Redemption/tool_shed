@@ -109,6 +109,8 @@ def smoke_temp_workspace() -> None:
         campaign_root = workspace / "work" / "00-campaigns"
         if not (campaign_root / "active-queue.md").is_file() or not (campaign_root / "completed-queue.md").is_file():
             raise SystemExit("installer did not create the owner campaign queue")
+        if not (workspace / "work" / "tool-shed-project.json").is_file():
+            raise SystemExit("installer did not create the stable project identity")
         if not (workspace / "work" / "roadmaps").is_dir():
             raise SystemExit("installer did not create the opt-in Program Roadmap directory")
         agents_text = (workspace / "AGENTS.md").read_text(encoding="utf-8")
@@ -122,6 +124,23 @@ def smoke_temp_workspace() -> None:
             raise SystemExit("installer did not create the Tool Shed prospective-failure guidance")
         if "ts: discuss <topic>" not in agents_text or "Direct, Guided, Coordinated, or Deep" not in agents_text:
             raise SystemExit("installer did not create the Tool Shed discussion and coordination guidance")
+        identity_contract = (
+            "BEGIN TOOL SHED WORKSPACE IDENTITY GUIDANCE",
+            "WORKSPACE_MISMATCH",
+            "ts: use <project-alias-or-path>",
+            "generic file-editing and shell tools",
+        )
+        if any(fragment not in agents_text for fragment in identity_contract):
+            raise SystemExit("installer did not create the workspace identity boundary guidance")
+        doctor_contract = (
+            "BEGIN TOOL SHED DOCTOR GUIDANCE",
+            "ts: doctor",
+            "scripts/doctor.py",
+            "external or runtime truth",
+            "doctor-repair",
+        )
+        if any(fragment not in agents_text for fragment in doctor_contract):
+            raise SystemExit("installer did not create the workspace doctor guidance")
         work_level_contract = (
             "ts:work1` through `ts:work5",
             "`ts:work` = `work2`",

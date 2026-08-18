@@ -8,6 +8,11 @@ Use this page for the complete prompt inventory. Use the
 [operator guide](operator-guide.md) for workflows and examples, and use `--help` on the underlying
 Python scripts for their CLI arguments.
 
+All `ts: help`-family responses read these workspace-local sources and visibly include
+`Browse Tool Shed help: https://ts.rookaro.com/`. `ts: commands` and `ts: help all` also include
+`Browse the complete command reference: https://ts.rookaro.com/ref/`. These links supplement
+offline local help; rendering never performs a request-time availability check.
+
 ## Syntax
 
 ```text
@@ -25,14 +30,33 @@ ts: plan the documentation refresh, then work3
 Routes never bypass repository policy, safety controls, credentials, protected-environment
 approvals, or the authority stated in the request.
 
+## Workspace Identity
+
+| Prompt | Usage |
+| --- | --- |
+| `ts: identity` | Read the stable project ID, project name, resolved root, repository fingerprint, active campaign, and current session binding. Read-only. |
+| `ts: use <project-alias-or-path>` | Explicitly verify another workspace, then reload its instructions and Tool Shed skill and obtain fresh target-bound state. The verification itself is read-only. |
+
+Before a session's first mutation, bind it to the exact project ID and resolved root shown by:
+
+```bash
+python3 tool_shed/scripts/project_identity.py --workspace . identity \
+  --operation campaign-queue --json
+```
+
+Pass the returned operation-specific binding as `--project-binding` and use only state tokens read
+from that same target. Tokens hash the project ID and resolved root, so foreign-project and
+different-clone tokens fail even when work content is identical. An outside-root path produces
+`WORKSPACE_MISMATCH`; a path mention or read-only inspection never implies a switch.
+
 ## Help And Discovery
 
 | Prompt | Usage |
 | --- | --- |
-| `ts: help` | Return a concise use-case menu. Read-only unless the same request explicitly asks for a change. |
-| `ts: commands` | Return the complete command groups and usage from this reference. Read-only. |
-| `ts: help all` | Alias for the complete command reference. Read-only. |
-| `ts: help <topic-or-command>` | Explain the named workflow or route with relevant examples. Read-only. |
+| `ts: help` | Return a concise local use-case menu plus the public root help link. Read-only unless the same request explicitly asks for a change. |
+| `ts: commands` | Return the complete local command groups and usage plus the public `/ref/` link. Read-only. |
+| `ts: help all` | Alias for the complete local command reference, with both public help and `/ref/` links. Read-only. |
+| `ts: help <topic-or-command>` | Explain the named workflow locally with examples and retain the public root help link. Read-only. |
 | `ts: discuss <topic>` | Explore the outcome, constraints, assumptions, unknowns, and smallest useful next route without modifying workspace artifacts. |
 | `ts: build focus areas` | Inspect existing workspace sources and propose a project-specific focus-area catalog and active-campaign assignments. Requires explicit approval before writing. |
 | `ts: develop roadmap` | Read project evidence and clarify an opt-in Program Roadmap without mutation. |
@@ -88,12 +112,19 @@ standard definitions above. See [workspace work-level customization](work-level-
 
 Durable owner-facing state lives under `work/00-campaigns/`.
 
+All lifecycle mutations use `--project-binding` from `ts: identity` plus the fresh project-bound
+state token. Read-only status and validation do not require a mutation binding.
+
 | Prompt | Usage |
 | --- | --- |
 | `ts: status` | Show and validate the active owner capsule, including any pending or active Dangler Resolution campaign for unclassified work. |
 | `ts: queue` | Alias for `ts: status`. |
 | `ts: completed` | Summarize recent verified campaign completions. |
-| `ts: next` | Select the first ready campaign and surface pending Dangler Resolution work before reconciliation adds it. |
+| `ts: next` | Resume the working campaign or select and execute the first ready campaign; this remains the safe single-campaign default. |
+| `ts: next 1,2` | Execute an ordered batch from mutable queue positions in one fresh snapshot; this compatibility shorthand is equivalent to `que 1,2`. |
+| `ts: next que 1,2` | Execute explicit queue positions sequentially after resolving all of them to stable campaign IDs. |
+| `ts: next camp <number-or-id,...>` | Execute an ordered batch of exact zero-padded campaign numbers or full Campaign IDs. |
+| `ts: next *` | Drain every campaign in the validated active-queue snapshot, excluding campaigns added later. |
 | `ts: add <idea>` | Check active, deferred, and completed work for overlap or direction conflicts, then add the approved campaign using the current state token. |
 | `ts: unblock <campaign>` | Return blocked work to queued state and clear its recorded decision; starting remains a separate transition. |
 | `ts: reconcile campaigns` | Inspect queue and whole-`work/` coverage, automatically creating or refreshing one Dangler Resolution campaign as the first queued work. |
@@ -106,6 +137,16 @@ Owner-queue shorthand:
 | --- | --- |
 | `camp` | Alias for `campaign`. |
 | `que N` | Alias for the campaign currently at mutable 1-based queue position N, not its parenthesized campaign number. |
+
+Missing or out-of-range positions, duplicate resolutions, and invalid campaign references stop
+before execution. Targeted
+batches resume a selected working campaign first and otherwise preserve their requested order.
+They run sequentially with at most one working campaign; every campaign must pass its own gate,
+then Tool Shed refreshes and validates lifecycle, index, stale-path, work, and dependency state
+before advancing. A failure, blocker, decision, stale state, unsatisfied dependency, protected
+action, or missing authority stops at a reported resume point with completed and remaining stable
+IDs. `*` is a fixed invocation snapshot, and batch selection never authorizes work5, deployment,
+release, production promotion, destructive work, credentials, or other consequential actions.
 
 Resolve `que N` from a fresh queue status immediately before acting. Missing or out-of-range
 positions are errors and are never guessed. A heading such as `1. (004) Title` shows mutable queue
@@ -222,6 +263,8 @@ does not change the request's natural coordination level.
 
 | Prompt | Usage |
 | --- | --- |
+| `ts: doctor` | Audit the complete supported workspace surface read-only and return one health verdict with exact next actions. Use `--json` for stable automation output or `--strict` to fail unless fully healthy. |
+| `ts: doctor --repair` | Regenerate stale deterministic work indexes only after campaign source validates and exact current doctor state and project-binding tokens are supplied. It never chooses semantic truth or changes campaign lifecycle state. |
 | `ts: fulltsupgrade` | Upgrade the current existing Tool Shed installation end-to-end from the latest verified published GitHub release, including guarded backup/update, provider convergence, full validation, installed Codex skill synchronization when applicable, exact verification, and rollback. |
 | `ts: version` | Verify the local Tool Shed snapshot and report its version without network access. |
 | `ts: check for updates` | Verify locally, compare with the canonical manifest, and report the version relation. Read-only. |
@@ -229,6 +272,18 @@ does not change the request's natural coordination level.
 
 An update-status check does not authorize replacement. Ask explicitly to install or update Tool
 Shed when mutation is intended.
+
+The equivalent shell command is:
+
+```bash
+python3 tool_shed/scripts/doctor.py --workspace .
+python3 tool_shed/scripts/doctor.py --workspace . --json --strict
+```
+
+`doctor` distinguishes internal consistency from external/runtime truth. Findings use `error`,
+`warning`, `owner-decision-required`, and `external-evidence-required`; compact counts and samples
+avoid raw generated-evidence diffs. A repair requires the report's exact `state_token` and the
+binding returned by `project_identity.py identity --operation doctor-repair`.
 
 `ts: fulltsupgrade` is the concise full-authorization exception for the current installation. It
 does not authorize publishing a release, rewriting history, forcing over modified or unmanaged
@@ -281,11 +336,13 @@ The AI routes normally operate these deterministic scripts from the workspace-lo
 ```text
 scripts/campaign_queue.py
 scripts/check_work_tree.py
+scripts/doctor.py
 scripts/check_shed_version.py
 scripts/check_stale_paths.py
 scripts/complete_workpackage.py
 scripts/install_into_workspace.py
 scripts/new_artifact.py
+scripts/project_identity.py
 scripts/program_roadmap.py
 scripts/read_ask_inbox.py
 scripts/reconcile_campaign_queue.py

@@ -53,7 +53,11 @@ python3 tool_shed/scripts/work_level_config.py --workspace . resolve work3 --jso
 ```
 
 When developing the canonical Tool Shed checkout, use `scripts/work_level_config.py` instead. The
-optional `work_levels` mapping can add ordered actions around one canonical endpoint:
+resolver returns the project target capsule and operation-specific session binding. Verify that
+capsule before running any configured or default write action; generic editing and shell tools may
+not bypass it. A different resolved root is `WORKSPACE_MISMATCH` and requires `ts: use` plus fresh
+target instructions, skill, binding, and state. The optional `work_levels` mapping can add ordered
+actions around one canonical endpoint:
 
 ```yaml
 schema_version: 1
@@ -127,6 +131,28 @@ For nontrivial work:
 Command success alone is not outcome success. Adaptation does not broaden authority. Skip explicit
 loop ceremony for simple answers and known single-step reversible work.
 
+## Workspace Doctor Route
+
+Treat `ts: doctor` as a request to run the workspace-local `scripts/doctor.py --workspace .`.
+The default command is read-only and composes workspace/Git boundaries, snapshot integrity,
+repository preflight, Git checkpoint state, canonical work topology, campaign validation and
+status, generated-index freshness, stale paths, work-state drift, and whole-work reconciliation.
+It reports one `HEALTHY`, `DEGRADED`, `NEEDS_DECISION`, or `INVALID` verdict plus compact finding
+counts and exact next actions. `--json` is schema-stable; `--strict` exits nonzero unless the
+workspace is fully healthy.
+
+The doctor verifies internal workspace consistency, not current external or runtime truth. A
+completed campaign that makes a runtime or external claim without referencing a durable,
+sanitized `work/evidence/`, incident, runbook, or spike record is
+`external-evidence-required`; the doctor never fabricates or re-observes that evidence.
+
+`ts: doctor --repair` may regenerate only stale deterministic `work/index.md` and
+`work/index.json`, and only after campaign source validates, the operator supplies the exact
+current doctor state token, and the session supplies the `doctor-repair` project binding. It does
+not change lifecycle state, choose semantic truth, rewrite owner-authored artifacts, fabricate
+evidence, or apply campaign reconciliation. Queue repairs continue to require their exact approved
+manifest and fresh reconciliation token.
+
 ## Campaign Continuity
 
 The requested outcome is the campaign. Plans, artifacts, tests, builds, and deployments are stages,
@@ -162,12 +188,29 @@ campaign, but never moves, clears, or rewrites the inbox without explicit operat
 Use `python3 <shed>/scripts/campaign_queue.py --workspace <workspace>` for deterministic reads and
 mutations:
 
+Before any mutation, run `project_identity.py identity --operation campaign-queue`, surface the
+target capsule, and pass its `--project-binding` together with the fresh project-bound state token.
+
 - `ts: queue` and `ts: status`: run `status`, report the compact owner capsule, findings, and any
   pending or active Dangler Resolution campaign for unclassified unresolved work.
 - `ts: completed`: run `completed` and summarize recent verified outcomes.
-- `ts: next`: run `next`, surface pending Dangler Resolution work, then execute only a selected
-  active ready campaign under its natural coordination and requested work level. Run reconciliation
-  to add pending Dangler Resolution work to the active queue.
+- `ts: next`: run bare `next`, surface pending Dangler Resolution work, then preserve the existing
+  single-campaign behavior: resume the working campaign or execute the first ready campaign under
+  its natural coordination and requested work level. Run reconciliation to add pending Dangler
+  Resolution work to the active queue.
+- `ts: next 1,2`, `ts: next que 1,2`, `ts: next camp 025,example-id`, and `ts: next *`: pass the
+  selection to `next` (`*` must be quoted when invoking it through a shell). Queue positions are a
+  compatibility shorthand; `que` makes them explicit, `camp` selects exact zero-padded campaign
+  numbers or full IDs, and `*` snapshots every currently active campaign. Reject an invalid queue
+  projection, duplicate, missing, ambiguous, or out-of-range target. Retain the resolved stable IDs
+  and snapshot token so later queue movement or newly added campaigns cannot change the batch.
+  Resume a selected working campaign first, then run targets sequentially with at most one working
+  campaign. After every completion gate passes, use guarded completion, refresh indexes, validate
+  campaign and work state, check stale paths, and recompute dependency readiness. Stop at the first
+  failure, blocker, decision, stale state, unsatisfied dependency, protected action, or missing
+  authority; report completed and remaining stable IDs plus the exact resume point. Selection never
+  grants work5, deployment, release, production promotion, destructive, credential, or other
+  consequential authority.
 - `ts: add <idea>`: compare with active, deferred, and completed IDs and content; report material
   overlap or direction conflicts; after resolving placement, run `add` with the current state token.
 - `ts: unblock <campaign>`: run `unblock` with the current state token; return blocked work to
@@ -199,8 +242,9 @@ zero-padded numbers to legacy slug-only histories, atomically renames request fi
 `<number>-<campaign-id>.md`, and refreshes queue links before ordinary lifecycle mutations continue.
 Lifecycle commands accept either the exact zero-padded number or the full Campaign ID.
 
-Every mutation requires `--expect TOKEN` obtained immediately beforehand from `status`. Reject a
-stale token rather than overwriting newer state. Lifecycle operations use a recovery journal and
+Every mutation requires the operation-specific `--project-binding` and `--expect TOKEN` obtained
+immediately beforehand from the same target's `status`. Reject stale, foreign-project, or
+root-mismatched tokens rather than overwriting newer state. Lifecycle operations use a recovery journal and
 validate queue/folder invariants before committing. Do not silently reorder a campaign when
 priority or direction is ambiguous. Blocked campaigns stay active; deferral is an intentional
 priority decision; abandonment preserves disposition history.
@@ -282,8 +326,14 @@ End every Tool Shed campaign response with exactly one verdict:
 For `ts: commands` or `ts: help all`, read `docs/commands.md` and return the complete command groups
 and usage. For `ts: help`, read `docs/operator-guide.md` and return a concise use-case menu. For
 `ts: help <topic-or-command>`, read the relevant section of `docs/commands.md` and
-`docs/operator-guide.md`, then return focused usage and examples. Do not create or modify
-artifacts for a help-only request.
+`docs/operator-guide.md`, then return focused usage and examples. Every response in the `ts: help`
+family must visibly include `Browse Tool Shed help: https://ts.rookaro.com/`. A `ts: commands` or
+`ts: help all` response must also include
+`Browse the complete command reference: https://ts.rookaro.com/ref/`. Focused help may include a
+stable topic URL only when the public site defines it, and it must still retain the root help link.
+The public links supplement the required workspace-local reads: do not replace local help, perform
+a request-time network or availability check, or make offline help depend on the site. Do not
+create or modify artifacts for a help-only request.
 
 ## Q&A Inbox Route
 

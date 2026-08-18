@@ -16,6 +16,13 @@ The active agent should read this guide and return a concise menu of relevant us
 Help is read-only: it must not create or change artifacts unless the same request explicitly asks
 for a change.
 
+Every help response also shows this public navigation link while retaining the local response:
+
+> Browse Tool Shed help: https://ts.rookaro.com/
+
+The link is supplemental. Rendering help never checks the network, and the workspace-local guide
+remains sufficient when offline.
+
 For the complete prompt inventory rather than a focused menu, type:
 
 ```text
@@ -23,8 +30,12 @@ ts: commands
 ts: help all
 ```
 
-Both routes read the [AI command reference](commands.md). Use `ts: help <topic-or-command>` for a
-focused explanation and examples.
+Both routes read the [AI command reference](commands.md) and may also show:
+
+> Browse the complete command reference: https://ts.rookaro.com/ref/
+
+Use `ts: help <topic-or-command>` for a focused explanation and examples. A focused response may
+add a stable public topic URL when one exists, but it always retains the root help link.
 
 Ask for focused help with:
 
@@ -100,6 +111,56 @@ python3 tool_shed/scripts/install_into_workspace.py . --provider <provider-id>
 Repeat the option or use `--provider all`. Compatibility is expressed as a provider surface plus
 capability level; a static planning adapter does not imply that every surface can deploy or verify.
 See [provider adapters](provider-adapters.md).
+
+## Bind The Workspace Before Mutation
+
+Each installed project owns a tracked `work/tool-shed-project.json` UUID and name. At the first
+mutation in a provider session, run `ts: identity` or the underlying read-only command for the
+intended operation:
+
+```bash
+python3 tool_shed/scripts/project_identity.py --workspace . identity \
+  --operation campaign-queue --json
+```
+
+Surface the project name, ID, resolved root, repository fingerprint, active campaign or operation,
+and session binding. Pass the operation-specific binding as `--project-binding`, and obtain state
+tokens only from the same target. Tokens incorporate both project ID and resolved root, so another
+project—or a clone at another root—cannot reuse them even when its state is byte-identical.
+
+An absolute path outside the bound root is `WORKSPACE_MISMATCH`. Reading or mentioning it does not
+switch projects. Use `ts: use <project-alias-or-path>` to verify a switch explicitly, then reload
+that target's instructions and Tool Shed skill and obtain fresh target-bound state. Generic editor
+and shell operations obey the same boundary.
+
+## Diagnose Workspace Health
+
+Use one read-only command when individual validators may agree with their own source while the
+workspace remains contradictory:
+
+```text
+ts: doctor
+```
+
+The underlying command audits the resolved workspace and Git root, installed snapshot integrity,
+repository preflight, branch/HEAD and relevant dirty state, canonical work topology, campaign
+lifecycle and queue projections, generated index freshness, stale paths, work-state drift, and
+whole-work reconciliation:
+
+```bash
+python3 tool_shed/scripts/doctor.py --workspace .
+python3 tool_shed/scripts/doctor.py --workspace . --json --strict
+```
+
+The verdict is `HEALTHY`, `DEGRADED`, `NEEDS_DECISION`, or `INVALID`. Strict mode exits nonzero
+unless the result is fully healthy. The report verifies internal consistency only: external or
+runtime claims need a referenced, sanitized durable workspace evidence record and may need fresh
+observation when currency matters.
+
+Repair is deliberately narrow. `ts: doctor --repair` can regenerate stale deterministic work
+indexes only after campaign source validates and exact doctor state/project-binding tokens are
+provided. It never changes campaign lifecycle state, selects semantic truth, rewrites owner
+artifacts, fabricates evidence, or applies reconciliation without its separate approved manifest.
 
 To fully upgrade an existing Tool Shed installation with one short command, type:
 
@@ -256,7 +317,10 @@ Tool Shed places durable owner-facing execution state in the first-sorted
 | Route | Result |
 | --- | --- |
 | `ts: status` or `ts: queue` | Show last completed, working now, next, blockers, detours, lifecycle findings, and pending Dangler Resolution work. |
-| `ts: next` | Select the first ready campaign and surface pending Dangler Resolution work. |
+| `ts: next` | Resume or execute one campaign using the existing safe readiness behavior. |
+| `ts: next 1,2` or `ts: next que 1,2` | Resolve selected queue positions once, then execute that stable ordered batch sequentially. |
+| `ts: next camp <number-or-id,...>` | Execute exact stable campaign references in the requested order. |
+| `ts: next *` | Drain the validated active-queue snapshot without including campaigns added later. |
 | `ts: add <idea>` | Check overlap, dependencies, and direction conflicts before inserting an approved campaign. |
 | `ts: unblock <campaign>` | Return blocked work to queued state and clear the blocker decision without starting it. |
 | `ts: reconcile campaigns` | Inspect queue and whole-`work/` coverage, automatically creating or refreshing Dangler Resolution as the first queued work. |
@@ -273,6 +337,14 @@ acting and rejects missing or out-of-range positions rather than guessing. Numer
 existing IDs remain authoritative; every request filename uses `<number>-<campaign-id>.md`, and
 guarded `backfill-numbers` atomically renames legacy slug-only histories and refreshes projections.
 Lifecycle commands accept the full Campaign ID or exact zero-padded campaign number.
+
+Targeted `next` batches resolve every target before starting, resume a selected working campaign
+first, and keep at most one campaign working. Each target retains its own completion gate,
+coordination, and work level. After a successful transition, Tool Shed refreshes and validates the
+queue, indexes, stale paths, work state, and dependency readiness. It stops at the first failure,
+blocker, decision, stale state, dependency, protected action, or missing authority and reports the
+completed IDs, remaining IDs, and exact resume point. Selecting a batch never grants deployment,
+release, production, destructive, credential, or other consequential authority.
 Snapshot upgrades perform the same guarded convergence automatically after reporting the detected
 mismatch. The selected release backs up the complete campaign tree as a declared mutation surface;
 owner extensions are preserved, indexes are regenerated, and any later failure restores the
@@ -290,7 +362,8 @@ work/00-campaigns/
 └── abandoned/
 ```
 
-Every mutation uses the current state token returned by `status`; a stale token is rejected.
+Every mutation uses the current operation-specific project binding and state token returned by that
+same target's `status`; stale, foreign-project, and root-mismatched tokens are rejected.
 Completion requires the request's explicit completion gate and applicable verification, then moves
 the request and updates both queue views through a recoverable operation. Blocked work stays
 active. Deferral and abandonment require explicit lifecycle reasons.
@@ -556,7 +629,8 @@ work content, project docs, and code.
 Use the supported updater from a current released Tool Shed checkout:
 
 ```bash
-python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace .
+python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace . \
+  --project-binding <update-snapshot-binding>
 ```
 
 If the installed snapshot predates the updater, obtain the current released checkout outside the
@@ -577,8 +651,10 @@ Preview or override retention with:
 
 ```bash
 python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace . --prune-preview --json
-python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace . --backup-retention 4
-python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace . --no-prune-backups
+python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace . --backup-retention 4 \
+  --project-binding <update-snapshot-binding>
+python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace . --no-prune-backups \
+  --project-binding <update-snapshot-binding>
 ```
 
 `--prune-preview` performs no update or deletion. A tracked `.tool-shed-policy.json` may declare
@@ -597,6 +673,11 @@ Both commands detect a root `work/` ignore. An existing rule is not automaticall
 policy. Without a valid repository-root `.tool-shed-policy.json` exception, the output identifies
 the exact ignore source and matching rule and previews the count and size of ignored files. Remove
 only that root `/work/` rule. Do not delete, replace, relocate, or rewrite any `work/` evidence.
+
+The first install or a legacy upgrade atomically creates the project identity and needs no prior
+binding. Re-running the installer on an identified workspace preserves the identity exactly and
+requires a `workspace-install` binding. Snapshot backups include the identity path, so injected or
+real post-install failure restores the exact prior identity state.
 
 `work/evidence/` is the standard validation-evidence repository. Keep Markdown summaries and
 small manifests versioned there, and write raw captures, dumps, images, large logs, and test

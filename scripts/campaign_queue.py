@@ -13,6 +13,14 @@ from datetime import date
 from pathlib import Path
 from typing import Iterable
 
+from project_identity import (
+    ProjectIdentityError,
+    bind_state_token,
+    ensure_project_identity,
+    require_project_binding,
+    target_capsule,
+)
+
 
 ROOT_NAME = "00-campaigns"
 ACTIVE_STATES = {"queued", "working", "blocked"}
@@ -60,6 +68,19 @@ FOCUS_AREA_FIELDS = (
 )
 OUTCOME_FOCUS_RE = re.compile(
     r"(?i)(?:\s*[—-]\s*|\s+)focus areas?:\s*([^.;]+)[.;]?"
+)
+WORK_MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\((work/[^)\s]+\.md(?:#[^)]+)?)\)")
+WORK_REFERENCE_HEADER_KEYS = {
+    "Parent",
+    "Project Map",
+    "Canonical Truth",
+    "Supersedes",
+    "Superseded By",
+    "Source Project Map",
+}
+QUEUE_NUMBER_GUIDANCE = (
+    "Queue positions are mutable; parenthesized campaign numbers and full `Campaign ID` values "
+    "are stable."
 )
 
 
@@ -333,7 +354,12 @@ def state_token(workspace: Path) -> str:
         digest.update(b"\0")
         digest.update(path.read_bytes())
         digest.update(b"\0")
-    return digest.hexdigest()[:16]
+    return bind_state_token(
+        workspace,
+        "campaign-queue",
+        digest.hexdigest(),
+        allow_unidentified=True,
+    )
 
 
 def _short(campaign: Campaign | None) -> str:
@@ -614,7 +640,9 @@ def require_token(workspace: Path, expected: str | None) -> None:
         raise CampaignError("mutation requires --expect TOKEN from status")
     actual = state_token(workspace)
     if expected != actual:
-        raise CampaignError(f"stale campaign state: expected {expected}, current {actual}")
+        raise CampaignError(
+            f"stale campaign state or foreign-project token: expected {expected}, current {actual}"
+        )
 
 
 def _validate_graph(campaigns: dict[str, Campaign]) -> list[str]:
@@ -780,12 +808,15 @@ def validate(
         )
     )
     older_legacy_active = legacy_active.replace(
-        "Queue positions are mutable; parenthesized campaign numbers and full `Campaign ID` values are stable.",
+        QUEUE_NUMBER_GUIDANCE,
         "Queue positions are mutable; each card's `Campaign ID` is stable.",
     )
+    legacy_queue_variants = {legacy_active, older_legacy_active}
+    if not order:
+        legacy_queue_variants.add(legacy_active.replace(QUEUE_NUMBER_GUIDANCE + "\n\n", ""))
     if actual_active != expected_active and not (
         allow_legacy_queue
-        and actual_active in {legacy_active, older_legacy_active}
+        and actual_active in legacy_queue_variants
     ):
         findings.append("active-queue.md is stale or manually inconsistent")
     if without_updated(completed_path.read_text(encoding="utf-8")) != without_updated(render_completed_queue(campaigns)):
@@ -902,8 +933,47 @@ def add_campaign(args: argparse.Namespace, workspace: Path) -> None:
     apply_transaction(workspace, changes)
 
 
-def backfill_campaign_numbers(args: argparse.Namespace, workspace: Path) -> None:
-    require_token(workspace, args.expect)
+def _rewrite_work_references(
+    text: str,
+    replacements: dict[str, str],
+) -> tuple[str, list[dict[str, str]]]:
+    used: set[tuple[str, str]] = set()
+
+    def replace_target(target: str) -> str:
+        base, separator, anchor = target.partition("#")
+        replacement = replacements.get(base)
+        if replacement is None:
+            return target
+        used.add((base, replacement))
+        return replacement + (separator + anchor if separator else "")
+
+    def replace_link(match: re.Match[str]) -> str:
+        target = match.group(1)
+        replacement = replace_target(target)
+        return match.group(0).replace(target, replacement, 1)
+
+    rewritten: list[str] = []
+    for line in text.splitlines(keepends=True):
+        line = WORK_MARKDOWN_LINK_RE.sub(replace_link, line)
+        if ":" in line:
+            key, raw_value = line.split(":", 1)
+            if key.strip() in WORK_REFERENCE_HEADER_KEYS:
+                match = re.match(r"(\s*)(work/[^\s]+\.md(?:#[^\s]+)?)(.*)", raw_value)
+                if match is not None:
+                    target = match.group(2)
+                    replacement = replace_target(target)
+                    if replacement != target:
+                        line = key + ":" + match.group(1) + replacement + match.group(3)
+        rewritten.append(line)
+    return "".join(rewritten), [
+        {"from": source, "to": destination}
+        for source, destination in sorted(used)
+    ]
+
+
+def _backfill_plan(
+    workspace: Path,
+) -> tuple[dict[Path, str | None], dict[str, object]]:
     findings = validate(
         workspace,
         allow_missing_campaign_numbers=True,
@@ -958,6 +1028,9 @@ def backfill_campaign_numbers(args: argparse.Namespace, workspace: Path) -> None
         used.add(candidate)
         candidate += 1
         changed_ids.add(item.campaign_id)
+    original_paths = {item.campaign_id: item.path for item in campaigns.values()}
+    renames: list[dict[str, str]] = []
+    replacements: dict[str, str] = {}
     for item in campaigns.values():
         old_path = item.path
         new_path = old_path.parent / campaign_filename(
@@ -969,7 +1042,12 @@ def backfill_campaign_numbers(args: argparse.Namespace, workspace: Path) -> None
                     "campaign filename migration target already exists: "
                     + new_path.relative_to(workspace).as_posix()
                 )
-            changes[old_path] = None
+            old_relative = old_path.relative_to(workspace).as_posix()
+            new_relative = new_path.relative_to(workspace).as_posix()
+            renames.append(
+                {"campaign_id": item.campaign_id, "from": old_relative, "to": new_relative}
+            )
+            replacements[old_relative] = new_relative
             item.path = new_path
             changed_ids.add(item.campaign_id)
         if item.campaign_id in changed_ids:
@@ -977,8 +1055,89 @@ def backfill_campaign_numbers(args: argparse.Namespace, workspace: Path) -> None
             migrated_text[item.campaign_id] = set_campaign_header(
                 migrated_text[item.campaign_id], "Updated", item.fields["Updated"]
             )
-            changes[item.path] = migrated_text[item.campaign_id]
-    changes.update(_refresh_changes(workspace, order, campaigns))
+    try:
+        from check_stale_paths import iter_markdown_files
+
+        markdown_paths = iter_markdown_files(workspace)
+    except ImportError:
+        markdown_paths = sorted(workspace.rglob("*.md"))
+    skipped = {
+        "work/index.md",
+        "work/00-campaigns/active-queue.md",
+        "work/00-campaigns/completed-queue.md",
+    }
+    campaign_by_original = {
+        original_paths[item.campaign_id]: item for item in campaigns.values()
+    }
+    reference_updates: list[dict[str, object]] = []
+    seen_campaign_paths: set[Path] = set()
+    for path in markdown_paths:
+        relative = path.relative_to(workspace).as_posix()
+        if (
+            relative in skipped
+            or relative.startswith("work/evidence/generated/")
+            or not path.is_file()
+        ):
+            continue
+        campaign = campaign_by_original.get(path)
+        source_text = (
+            migrated_text[campaign.campaign_id]
+            if campaign is not None
+            else path.read_text(encoding="utf-8")
+        )
+        rewritten, applied = _rewrite_work_references(source_text, replacements)
+        if applied:
+            reference_updates.append({"path": relative, "replacements": applied})
+        if campaign is not None:
+            seen_campaign_paths.add(path)
+            if path != campaign.path:
+                changes[path] = None
+            if path != campaign.path or rewritten != path.read_text(encoding="utf-8"):
+                changes[campaign.path] = rewritten
+        elif rewritten != source_text:
+            changes[path] = rewritten
+    for item in campaigns.values():
+        original = original_paths[item.campaign_id]
+        if original in seen_campaign_paths:
+            continue
+        rewritten, applied = _rewrite_work_references(
+            migrated_text[item.campaign_id], replacements
+        )
+        if applied:
+            reference_updates.append(
+                {
+                    "path": original.relative_to(workspace).as_posix(),
+                    "replacements": applied,
+                }
+            )
+        if original != item.path:
+            changes[original] = None
+        if original != item.path or rewritten != original.read_text(encoding="utf-8"):
+            changes[item.path] = rewritten
+    for path, content in _refresh_changes(workspace, order, campaigns).items():
+        if not path.exists() or content != path.read_text(encoding="utf-8"):
+            changes[path] = content
+    mutation_paths = sorted(
+        {
+            str(update["path"])
+            for update in reference_updates
+            if not str(update["path"]).startswith("work/00-campaigns/")
+        }
+    )
+    payload: dict[str, object] = {
+        "state_token": state_token(workspace),
+        "needed": bool(changes),
+        "renames": sorted(renames, key=lambda item: item["campaign_id"]),
+        "reference_updates": sorted(reference_updates, key=lambda item: str(item["path"])),
+        "mutation_paths": mutation_paths,
+        "write_paths": sorted(path.relative_to(workspace).as_posix() for path in changes),
+    }
+    return changes, payload
+
+
+def backfill_campaign_numbers(args: argparse.Namespace, workspace: Path) -> None:
+    require_token(workspace, args.expect)
+    changes, _ = _backfill_plan(workspace)
     apply_transaction(workspace, changes)
 
 
@@ -1199,6 +1358,189 @@ def dangler_resolution_visibility(
     )
 
 
+def _selector_values(values: list[str]) -> list[str]:
+    result = [
+        item.strip()
+        for value in values
+        for item in value.split(",")
+        if item.strip()
+    ]
+    if not result:
+        raise CampaignError("next selection is empty")
+    return result
+
+
+def targeted_next_payload(
+    workspace: Path,
+    selection: list[str],
+) -> dict[str, object]:
+    campaigns = load_all(workspace)
+    order = queue_order(workspace)
+    findings = validate(workspace)
+    if findings:
+        raise CampaignError(
+            "campaign queue validation failed: " + "; ".join(findings)
+        )
+    state = state_token(workspace)
+    raw = list(selection)
+    normalized = [value.lower() for value in raw]
+    if "*" in raw:
+        if raw != ["*"]:
+            raise CampaignError("wildcard next selection cannot be combined with other targets")
+        mode = "wildcard"
+        target_ids = list(order)
+    else:
+        prefix = normalized[0]
+        if prefix in {"que", "queue", "queues"}:
+            mode = "queue-positions"
+            values = _selector_values(raw[1:])
+        elif prefix in {"camp", "camps", "campaign", "campaigns"}:
+            mode = "campaign-references"
+            values = _selector_values(raw[1:])
+        else:
+            values = _selector_values(raw)
+            mode = (
+                "queue-positions-shorthand"
+                if all(value.isdigit() for value in values)
+                else "campaign-references-shorthand"
+            )
+        if mode.startswith("queue-positions"):
+            positions: list[int] = []
+            for value in values:
+                if not value.isdigit() or int(value) < 1:
+                    raise CampaignError(f"invalid queue position: {value}")
+                position = int(value)
+                if position > len(order):
+                    raise CampaignError(f"queue position is outside the active queue: {value}")
+                positions.append(position)
+            if len(positions) != len(set(positions)):
+                raise CampaignError("next selection repeats a queue position")
+            target_ids = [order[position - 1] for position in positions]
+        else:
+            target_ids = []
+            for value in values:
+                campaign_id = resolve_campaign_reference(value, campaigns)
+                if campaign_id not in order:
+                    raise CampaignError(f"next selection is not active: {value}")
+                target_ids.append(campaign_id)
+    if len(target_ids) != len(set(target_ids)):
+        raise CampaignError("next selection resolves to duplicate campaigns")
+
+    working = next(
+        (campaign_id for campaign_id in order if campaigns[campaign_id].status == "working"),
+        None,
+    )
+    adjustment = None
+    working_stop = None
+    if working is not None:
+        if working not in target_ids:
+            working_stop = f"working campaign is outside the selection: {working}"
+        elif target_ids and target_ids[0] != working:
+            target_ids.remove(working)
+            target_ids.insert(0, working)
+            adjustment = f"moved working campaign {working} to the front"
+
+    completed = {
+        campaign_id
+        for campaign_id, item in campaigns.items()
+        if item.status == "complete"
+    }
+    simulated_completed = set(completed)
+    targets: list[dict[str, object]] = []
+    for campaign_id in target_ids:
+        item = campaigns[campaign_id]
+        incomplete = [
+            dependency
+            for dependency in item.dependencies
+            if dependency not in simulated_completed
+        ]
+        target_stop = None
+        if item.status == "blocked" or item.fields.get("Decision", "none") != "none":
+            target_stop = "campaign is blocked or needs a decision"
+        elif incomplete:
+            target_stop = "incomplete dependencies are not completed earlier in the batch: " + ", ".join(incomplete)
+        targets.append(
+            {
+                "queue_position": order.index(campaign_id) + 1,
+                "campaign_id": campaign_id,
+                "campaign_number": item.campaign_number,
+                "title": item.title,
+                "path": item.path.relative_to(workspace).as_posix(),
+                "status": item.status,
+                "readiness": campaign_readiness(item, campaigns),
+                "depends_on": item.dependencies,
+                "planned_stop": target_stop,
+            }
+        )
+        if target_stop is None:
+            simulated_completed.add(campaign_id)
+    first_planned_stop = next(
+        (
+            {
+                "target_index": index,
+                "campaign_id": target["campaign_id"],
+                "reason": target["planned_stop"],
+                "remaining_target_ids": target_ids[index - 1 :],
+            }
+            for index, target in enumerate(targets, start=1)
+            if target["planned_stop"] is not None
+        ),
+        None,
+    )
+    if working_stop is not None:
+        executable = False
+        stop_reason = working_stop
+    elif not targets:
+        executable = False
+        stop_reason = "active queue snapshot has no targets"
+    elif first_planned_stop is not None and first_planned_stop["target_index"] == 1:
+        executable = False
+        stop_reason = (
+            f"{first_planned_stop['campaign_id']}: {first_planned_stop['reason']}"
+        )
+    else:
+        executable = True
+        stop_reason = None
+    digest = hashlib.sha256()
+    digest.update(state.encode("ascii"))
+    for campaign_id in target_ids:
+        digest.update(b"\0")
+        digest.update(campaign_id.encode("utf-8"))
+    dangler_resolution = dangler_resolution_visibility(workspace, campaigns, order)
+    payload: dict[str, object] = {
+        "source": "campaign-queue-batch",
+        "selection_mode": mode,
+        "selection": raw,
+        "snapshot_state_token": state,
+        "batch_token": digest.hexdigest()[:16],
+        "target_ids": target_ids,
+        "targets": targets,
+        "target_count": len(target_ids),
+        "working_campaign": working,
+        "selection_adjustment": adjustment,
+        "executable": executable,
+        "stop_reason": stop_reason,
+        "planned_stop": first_planned_stop,
+        "remaining_target_ids": list(target_ids),
+        "execution": "sequential; refresh and validate state after every campaign completion",
+        "stop_conditions": [
+            "failed completion gate",
+            "blocked campaign or unresolved decision",
+            "stale queue state or changed target",
+            "unsatisfied dependency",
+            "protected, destructive, external, credential, deployment, or release action without authority",
+        ],
+        "authority": (
+            "Batch selection defines execution scope only; it does not authorize work5, deployment, "
+            "release, production promotion, destructive work, credentials, or other consequential "
+            "external actions."
+        ),
+    }
+    if dangler_resolution:
+        payload["dangler_resolution"] = dangler_resolution
+    return payload
+
+
 def status_payload(workspace: Path) -> dict[str, object]:
     campaigns = load_all(workspace)
     order = queue_order(workspace)
@@ -1221,6 +1563,7 @@ def status_payload(workspace: Path) -> dict[str, object]:
     dangler_resolution = dangler_resolution_visibility(workspace, campaigns, order)
     next_campaign = ready.campaign_id if ready else None
     return {
+        "project": target_capsule(workspace, operation="campaign-queue"),
         "state_token": state_token(workspace),
         "active_order": order,
         "last_completed": completed[0].campaign_id if completed else None,
@@ -1261,10 +1604,20 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("init")
     subparsers.add_parser("status")
-    subparsers.add_parser("next")
+    next_command = subparsers.add_parser(
+        "next",
+        help="select one campaign or resolve an explicit sequential batch",
+    )
+    next_command.add_argument(
+        "selection",
+        nargs="*",
+        metavar="SELECTION",
+        help="queue positions (1,2 or que 1,2), campaign references (camp 025,id), or *",
+    )
     subparsers.add_parser("completed")
     subparsers.add_parser("validate")
     subparsers.add_parser("migrate-preview")
+    subparsers.add_parser("backfill-plan")
     subparsers.add_parser("backfill-numbers")
     add = subparsers.add_parser("add")
     add.add_argument("campaign_id")
@@ -1296,6 +1649,7 @@ def build_parser() -> argparse.ArgumentParser:
         child.add_argument("--json", action="store_true", default=argparse.SUPPRESS)
         if child.prog.split()[-1] in {"add", "backfill-numbers", "reorder", "start", "block", "unblock", "defer", "abandon", "complete"}:
             child.add_argument("--expect", required=True)
+            child.add_argument("--project-binding", required=True)
     return parser
 
 
@@ -1305,10 +1659,21 @@ def main() -> int:
     try:
         root = campaign_root(workspace)
         if args.command == "init":
+            ensure_project_identity(workspace)
             ensure_tree(workspace)
         elif not root.is_dir():
             raise CampaignError("campaign tree is not initialized; run init or the Tool Shed workspace installer")
         recovered = recover_if_needed(workspace)
+        mutation_commands = {
+            "add", "backfill-numbers", "reorder", "start", "block", "unblock",
+            "defer", "abandon", "complete",
+        }
+        if args.command in mutation_commands:
+            require_project_binding(
+                workspace,
+                args.project_binding,
+                operation="campaign-queue",
+            )
         if args.command == "init":
             payload: object = {"root": str(campaign_root(workspace)), "state_token": state_token(workspace), "recovered": recovered}
         elif args.command == "status":
@@ -1317,28 +1682,31 @@ def main() -> int:
             findings = validate(workspace)
             payload = {"valid": not findings, "findings": findings, "state_token": state_token(workspace)}
         elif args.command == "next":
-            campaigns = load_all(workspace)
-            order = queue_order(workspace)
-            ordered = [campaigns[item] for item in order]
-            candidate = next((item for item in ordered if item.status == "working"), None)
-            if candidate is None:
-                candidate = first_ready_campaign(order, campaigns)
-            dangler_resolution = dangler_resolution_visibility(workspace, campaigns, order)
-            if candidate is None and dangler_resolution:
-                payload = dict(dangler_resolution)
-            elif candidate is None:
-                payload = None
+            if args.selection:
+                payload = targeted_next_payload(workspace, args.selection)
             else:
-                payload = {
-                    "campaign_id": candidate.campaign_id,
-                    "campaign_number": candidate.campaign_number,
-                    "title": candidate.title,
-                    "status": candidate.status,
-                    "path": candidate.path.relative_to(workspace).as_posix(),
-                    "source": "campaign-queue",
-                }
-                if dangler_resolution:
-                    payload["dangler_resolution"] = dangler_resolution
+                campaigns = load_all(workspace)
+                order = queue_order(workspace)
+                ordered = [campaigns[item] for item in order]
+                candidate = next((item for item in ordered if item.status == "working"), None)
+                if candidate is None:
+                    candidate = first_ready_campaign(order, campaigns)
+                dangler_resolution = dangler_resolution_visibility(workspace, campaigns, order)
+                if candidate is None and dangler_resolution:
+                    payload = dict(dangler_resolution)
+                elif candidate is None:
+                    payload = None
+                else:
+                    payload = {
+                        "campaign_id": candidate.campaign_id,
+                        "campaign_number": candidate.campaign_number,
+                        "title": candidate.title,
+                        "status": candidate.status,
+                        "path": candidate.path.relative_to(workspace).as_posix(),
+                        "source": "campaign-queue",
+                    }
+                    if dangler_resolution:
+                        payload["dangler_resolution"] = dangler_resolution
         elif args.command == "completed":
             campaigns = load_all(workspace)
             completed = sorted(
@@ -1349,6 +1717,8 @@ def main() -> int:
             payload = [{"campaign_id": item.campaign_id, "campaign_number": item.campaign_number, "title": item.title, "completed": item.fields.get("Completion Date"), "evidence": item.fields.get("Completion Evidence")} for item in completed]
         elif args.command == "migrate-preview":
             payload = migration_preview(workspace)
+        elif args.command == "backfill-plan":
+            _, payload = _backfill_plan(workspace)
         elif args.command == "add":
             add_campaign(args, workspace)
             payload = status_payload(workspace)
@@ -1358,7 +1728,7 @@ def main() -> int:
         else:
             mutate_campaign(args, workspace)
             payload = status_payload(workspace)
-    except (CampaignError, OSError, json.JSONDecodeError) as error:
+    except (CampaignError, ProjectIdentityError, OSError, json.JSONDecodeError) as error:
         print(f"Campaign operation failed: {error}", file=sys.stderr)
         return 2
     if args.json:

@@ -10,6 +10,11 @@ import sys
 from pathlib import Path
 from typing import Any
 
+try:
+    from project_identity import ProjectIdentityError, target_capsule
+except ModuleNotFoundError:  # Package import used by unit tests and embedders.
+    from scripts.project_identity import ProjectIdentityError, target_capsule
+
 
 CONFIG_RELATIVE = Path("work") / "tool-shed.yaml"
 SCHEMA_VERSION = 1
@@ -285,6 +290,7 @@ def resolve_workspace_level(workspace: Path, route: str) -> dict[str, Any]:
         "execution_order": order,
         "failure_policy": "stop-on-first-failure",
         "safety_policy": "configured actions cannot bypass scope, credentials, approvals, or safety controls",
+        "project": target_capsule(workspace, operation=f"work-level:{canonical}"),
     }
 
 
@@ -309,7 +315,7 @@ def main() -> int:
             if args.command == "validate"
             else resolve_workspace_level(workspace, args.route)
         )
-    except WorkLevelConfigError as error:
+    except (WorkLevelConfigError, ProjectIdentityError) as error:
         payload = {"valid": False, "error": str(error), "source": CONFIG_RELATIVE.as_posix()}
         if args.json:
             print(json.dumps(payload, indent=2, sort_keys=True))

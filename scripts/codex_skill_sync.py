@@ -96,7 +96,7 @@ def inspect_codex_skill(
         "source": str(source),
         "sync_command": (
             "python tool_shed/scripts/update_snapshot.py --workspace . "
-            "--sync-codex-skill --json"
+            "--sync-codex-skill --project-binding <update-snapshot-binding> --json"
         ),
     }
     if not source.exists() or is_filesystem_link(source) or not source.is_dir():

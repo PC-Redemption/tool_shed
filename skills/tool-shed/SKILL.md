@@ -35,12 +35,28 @@ Load only the route reference needed for the request:
 
 | Request shape | Required reference |
 | --- | --- |
+| `ts: identity` or `ts: use <project-alias-or-path>` | this file only |
 | discussion or campaign discovery | this file only |
 | artifact selection, creation, completion, onboarding, or reconciliation | `references/artifact-workflows.md` |
-| `ts:work1` through `ts:work5`, aliases, `ts:check`, `ts:ship`, campaign execution, owner campaign queues, Program Roadmaps, `ts: overview`, `ts: build focus areas`, `ts: help`, `ts: commands`, or `ts:ask` | `references/campaign-routes.md` |
+| `ts:work1` through `ts:work5`, aliases, `ts:check`, `ts:ship`, `ts: doctor`, campaign execution, owner campaign queues, Program Roadmaps, `ts: overview`, `ts: build focus areas`, `ts: help`, `ts: commands`, or `ts:ask` | `references/campaign-routes.md` |
 | `ts: fulltsupgrade`, version, update, snapshot, or provider-specific reasoning maintenance | `references/maintenance-routes.md` |
 
 Read a referenced file completely when its route applies. Do not load unrelated route references.
+
+## Workspace Identity Boundary
+
+Every installed workspace owns `work/tool-shed-project.json`, outside the reusable snapshot. Before
+the first mutation in a session, run the workspace-local `project_identity.py identity` command for
+the intended operation, surface its target capsule, and bind the session to that exact project ID
+and resolved root. Pass its operation-specific `--project-binding` and only fresh state tokens from
+the same target to mutation commands.
+
+Treat missing, malformed, duplicate, conflicting, foreign-project, or root-mismatched identity as
+a hard failure with no write. An absolute path outside the bound root is `WORKSPACE_MISMATCH`; path
+mention or read-only inspection does not authorize switching. `ts: use <project-alias-or-path>` is
+the explicit read-only switch route: verify the target identity, reload that target's instructions
+and Tool Shed skill, and obtain fresh target-bound state. Generic edit and shell tools must not
+bypass the same fence.
 
 ## Discussion Route
 

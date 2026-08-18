@@ -18,6 +18,53 @@ from unittest import mock
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _test_project_binding(workspace: Path, operation: str) -> str:
+    payload = json.loads(
+        (workspace / "work" / "tool-shed-project.json").read_text(encoding="utf-8")
+    )
+    digest = hashlib.sha256()
+    for value in (
+        "tool-shed-binding-v1",
+        payload["project_id"],
+        str(workspace.expanduser().resolve()),
+        operation,
+    ):
+        digest.update(value.encode("utf-8"))
+        digest.update(b"\0")
+    return digest.hexdigest()[:24]
+
+
+def _with_test_project_binding(arguments: tuple[str, ...], cwd: Path) -> tuple[str, ...]:
+    if not arguments or "--project-binding" in arguments:
+        return arguments
+    script = Path(arguments[0]).name
+    operation: str | None = None
+    workspace = cwd.resolve()
+    if "--workspace" in arguments:
+        workspace = Path(arguments[arguments.index("--workspace") + 1]).expanduser().resolve()
+    elif script == "install_into_workspace.py" and len(arguments) > 1 and not arguments[1].startswith("-"):
+        workspace = Path(arguments[1]).expanduser().resolve()
+    if script == "campaign_queue.py":
+        mutations = {
+            "add", "backfill-numbers", "reorder", "start", "block", "unblock",
+            "defer", "abandon", "complete",
+        }
+        operation = "campaign-queue" if any(item in arguments for item in mutations) else None
+    elif script == "program_roadmap.py":
+        mutations = {"approve-map", "propose", "approve", "apply-campaign-plan"}
+        operation = "program-roadmap" if any(item in arguments for item in mutations) else None
+    elif script == "reconcile_campaign_queue.py" and "--dry-run" not in arguments:
+        operation = "campaign-reconciliation"
+    elif script == "install_into_workspace.py":
+        operation = "workspace-install"
+    elif script == "update_snapshot.py" and "--prune-preview" not in arguments:
+        operation = "update-snapshot"
+    identity = workspace / "work" / "tool-shed-project.json"
+    if operation and identity.is_file():
+        return (*arguments, "--project-binding", _test_project_binding(workspace, operation))
+    return arguments
+
+
 def skill_tree_digest(files: dict[str, bytes]) -> str:
     fingerprint = {
         relative: hashlib.sha256(content).hexdigest()
@@ -38,9 +85,11 @@ def run_script(
     check: bool = True,
     env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
+    run_cwd = (cwd or ROOT).resolve()
+    arguments = _with_test_project_binding(args, run_cwd)
     return subprocess.run(
-        [sys.executable, *args],
-        cwd=str(cwd or ROOT),
+        [sys.executable, *arguments],
+        cwd=str(run_cwd),
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -109,9 +158,11 @@ class ScriptTests(unittest.TestCase):
                 "campaign_queue.py",
                 "check_stale_paths.py",
                 "check_work_tree.py",
+                "doctor.py",
                 "install_into_workspace.py",
                 "provider_adapters.py",
                 "program_roadmap.py",
+                "project_identity.py",
                 "reconcile_campaign_queue.py",
                 "repository_policy.py",
                 "review_work_state.py",
@@ -169,9 +220,11 @@ class ScriptTests(unittest.TestCase):
                     "campaign_queue.py",
                     "check_stale_paths.py",
                     "check_work_tree.py",
+                    "doctor.py",
                     "install_into_workspace.py",
                     "provider_adapters.py",
                     "program_roadmap.py",
+                    "project_identity.py",
                     "reconcile_campaign_queue.py",
                     "repository_policy.py",
                     "review_work_state.py",
@@ -885,6 +938,14 @@ for raw in sys.stdin:
         self.assertIn("## Common Use Cases", guide)
         self.assertIn("docs/operator-guide.md", skill_bundle)
         self.assertIn("docs/commands.md", skill_bundle)
+        for content in (guide, commands, skill_bundle, readme):
+            self.assertIn("https://ts.rookaro.com/", content)
+        self.assertIn("https://ts.rookaro.com/ref/", guide)
+        self.assertIn("https://ts.rookaro.com/ref/", commands)
+        self.assertIn("https://ts.rookaro.com/ref/", skill_bundle)
+        self.assertIn("https://ts.rookaro.com/ref/", readme)
+        self.assertIn("request-time network", skill_bundle)
+        self.assertIn("workspace-local reads", skill_bundle)
         self.assertIn("ts: commands", commands)
         self.assertIn("ts: build focus areas", commands)
         self.assertIn("ts: develop roadmap", commands)
@@ -932,6 +993,11 @@ for raw in sys.stdin:
         self.assertIn("work-level customization", readme.lower())
         self.assertIn("work_level_config.py", guide)
         self.assertTrue((ROOT / "scripts" / "work_level_config.py").is_file())
+        self.assertTrue((ROOT / "scripts" / "project_identity.py").is_file())
+        self.assertIn("ts: identity", commands)
+        self.assertIn("ts: use <project-alias-or-path>", skill_bundle)
+        self.assertIn("WORKSPACE_MISMATCH", guide)
+        self.assertIn("--project-binding", skill_bundle)
         self.assertTrue((ROOT / "docs" / "work-level-customization.md").is_file())
         self.assertIn("work_model: combined", readme)
         self.assertIn("In `split` mode", guide)
@@ -1800,6 +1866,170 @@ Next Action: keep going
             active_queue = (workspace / "work" / "00-campaigns" / "active-queue.md").read_text(encoding="utf-8")
             self.assertIn("Detour and return point: second", active_queue)
 
+    def test_project_identity_is_distinct_stable_and_root_bound(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            parent = Path(temp)
+            first = parent / "project-a"
+            second = parent / "project-b"
+            first.mkdir()
+            second.mkdir()
+            self.init_repository(first)
+            self.init_repository(second)
+            run_script("scripts/campaign_queue.py", "--workspace", str(first), "init")
+            run_script("scripts/campaign_queue.py", "--workspace", str(second), "init")
+
+            first_identity = json.loads(
+                (first / "work" / "tool-shed-project.json").read_text(encoding="utf-8")
+            )
+            second_identity = json.loads(
+                (second / "work" / "tool-shed-project.json").read_text(encoding="utf-8")
+            )
+            self.assertNotEqual(first_identity["project_id"], second_identity["project_id"])
+            first_status = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(first), "status", "--json"
+                ).stdout
+            )
+            second_status = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(second), "status", "--json"
+                ).stdout
+            )
+            self.assertNotEqual(first_status["state_token"], second_status["state_token"])
+
+            before = {
+                path.relative_to(second).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+                for path in second.rglob("*") if path.is_file() and ".git" not in path.parts
+            }
+            rejected = subprocess.run(
+                [
+                    sys.executable, str(ROOT / "scripts" / "campaign_queue.py"),
+                    "--workspace", str(second), "add", "foreign", "Foreign",
+                    "--outcome", "must not write", "--completion-gate", "never",
+                    "--expect", first_status["state_token"],
+                    "--project-binding", first_status["project"]["session_binding"],
+                ],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(rejected.returncode, 2)
+            self.assertIn("WORKSPACE_MISMATCH", rejected.stderr)
+            after = {
+                path.relative_to(second).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+                for path in second.rglob("*") if path.is_file() and ".git" not in path.parts
+            }
+            self.assertEqual(after, before)
+
+            (second / "work" / "tool-shed-project.json").write_bytes(
+                (first / "work" / "tool-shed-project.json").read_bytes()
+            )
+            cloned_status = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(second), "status", "--json"
+                ).stdout
+            )
+            self.assertEqual(
+                cloned_status["project"]["project_id"], first_status["project"]["project_id"]
+            )
+            self.assertNotEqual(cloned_status["state_token"], first_status["state_token"])
+            self.assertNotEqual(
+                cloned_status["project"]["session_binding"],
+                first_status["project"]["session_binding"],
+            )
+            duplicate = second / ".tool-shed-project.json"
+            duplicate.write_bytes((second / "work" / "tool-shed-project.json").read_bytes())
+            conflict = run_script(
+                "scripts/project_identity.py", "--workspace", str(second),
+                "identity", "--json", check=False,
+            )
+            self.assertEqual(conflict.returncode, 2)
+            self.assertIn("conflicting project identity", conflict.stderr)
+
+    def test_malformed_legacy_identity_fails_before_installer_writes(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace)
+            identity = workspace / "work" / "tool-shed-project.json"
+            identity.parent.mkdir()
+            identity.write_text('{"schema_version": 1, "project_id": "bad"}\n', encoding="utf-8")
+            before = identity.read_bytes()
+            result = subprocess.run(
+                [sys.executable, str(ROOT / "scripts" / "install_into_workspace.py"), str(workspace)],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("malformed project_id", result.stderr)
+            self.assertEqual(identity.read_bytes(), before)
+            self.assertFalse((workspace / "AGENTS.md").exists())
+
+    def test_direct_mutation_requires_project_binding_and_explicit_use_is_read_only(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            parent = Path(temp)
+            first = parent / "project-a"
+            second = parent / "project-b"
+            first.mkdir()
+            second.mkdir()
+            self.init_repository(first)
+            self.init_repository(second)
+            run_script("scripts/campaign_queue.py", "--workspace", str(first), "init")
+            run_script("scripts/campaign_queue.py", "--workspace", str(second), "init")
+            status = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(first), "status", "--json"
+                ).stdout
+            )
+            queue = first / "work" / "00-campaigns" / "active-queue.md"
+            before = queue.read_bytes()
+            missing = subprocess.run(
+                [
+                    sys.executable, str(ROOT / "scripts" / "campaign_queue.py"),
+                    "--workspace", str(first), "add", "unsafe", "Unsafe",
+                    "--outcome", "must not write", "--completion-gate", "never",
+                    "--expect", status["state_token"],
+                ],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(missing.returncode, 2)
+            self.assertIn("--project-binding", missing.stderr)
+            self.assertEqual(queue.read_bytes(), before)
+
+            installer_missing = subprocess.run(
+                [
+                    sys.executable,
+                    str(ROOT / "scripts" / "install_into_workspace.py"),
+                    str(first),
+                ],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(installer_missing.returncode, 1)
+            self.assertIn("--project-binding", installer_missing.stderr)
+            self.assertFalse((first / "AGENTS.md").exists())
+
+            mismatch = run_script(
+                "scripts/project_identity.py", "--workspace", str(first),
+                "identity", "--path", str(second / "README.md"), "--json",
+                check=False,
+            )
+            self.assertEqual(mismatch.returncode, 2)
+            self.assertIn("WORKSPACE_MISMATCH", mismatch.stderr)
+
+            before_second = {
+                path.relative_to(second).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+                for path in second.rglob("*") if path.is_file() and ".git" not in path.parts
+            }
+            switched = run_script(
+                "scripts/project_identity.py", "--workspace", str(first),
+                "use", str(second), "--json",
+            )
+            payload = json.loads(switched.stdout)
+            self.assertEqual(payload["resolved_root"], str(second.resolve()))
+            self.assertTrue(payload["switch"]["reload_required"])
+            self.assertTrue(payload["switch"]["fresh_target_state_required"])
+            after_second = {
+                path.relative_to(second).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+                for path in second.rglob("*") if path.is_file() and ".git" not in path.parts
+            }
+            self.assertEqual(after_second, before_second)
+
     def test_campaign_readiness_is_dependency_aware_across_surfaces(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)
@@ -1877,6 +2107,125 @@ Next Action: keep going
                 "active-queue.md is stale or manually inconsistent",
                 validation["findings"],
             )
+
+    def test_campaign_next_resolves_targeted_and_wildcard_batches_safely(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+
+            def status() -> dict[str, object]:
+                return json.loads(
+                    run_script(
+                        "scripts/campaign_queue.py", "--workspace", str(workspace),
+                        "status", "--json",
+                    ).stdout
+                )
+
+            def add(campaign_id: str, depends_on: str | None = None) -> None:
+                arguments = [
+                    "scripts/campaign_queue.py", "--workspace", str(workspace), "add",
+                    campaign_id, campaign_id.title(), "--outcome", f"deliver {campaign_id}",
+                    "--completion-gate", f"{campaign_id} verified",
+                    "--expect", str(status()["state_token"]),
+                ]
+                if depends_on:
+                    arguments.extend(["--depends-on", depends_on])
+                run_script(*arguments)
+
+            def select(*selection: str) -> dict[str, object]:
+                return json.loads(
+                    run_script(
+                        "scripts/campaign_queue.py", "--workspace", str(workspace),
+                        "next", *selection, "--json",
+                    ).stdout
+                )
+
+            add("alpha")
+            add("beta")
+            add("gamma", "beta")
+
+            bare = select()
+            self.assertEqual(
+                bare,
+                {
+                    "campaign_id": "alpha",
+                    "campaign_number": "001",
+                    "path": "work/00-campaigns/active/001-alpha.md",
+                    "source": "campaign-queue",
+                    "status": "queued",
+                    "title": "Alpha",
+                },
+            )
+
+            token = status()["state_token"]
+            shorthand = select("1,2")
+            self.assertEqual(shorthand["selection_mode"], "queue-positions-shorthand")
+            self.assertEqual(shorthand["snapshot_state_token"], token)
+            self.assertEqual(shorthand["target_ids"], ["alpha", "beta"])
+            self.assertTrue(shorthand["executable"])
+            self.assertIsNone(shorthand["planned_stop"])
+            self.assertIn("does not authorize work5", shorthand["authority"])
+
+            explicit_positions = select("que", "2,1")
+            self.assertEqual(explicit_positions["selection_mode"], "queue-positions")
+            self.assertEqual(explicit_positions["target_ids"], ["beta", "alpha"])
+
+            stable = select("camp", "002,gamma")
+            self.assertEqual(stable["selection_mode"], "campaign-references")
+            self.assertEqual(stable["target_ids"], ["beta", "gamma"])
+            self.assertTrue(stable["executable"])
+
+            dependency_stop = select("camp", "003,002")
+            self.assertFalse(dependency_stop["executable"])
+            self.assertEqual(dependency_stop["planned_stop"]["target_index"], 1)
+            self.assertEqual(
+                dependency_stop["planned_stop"]["remaining_target_ids"],
+                ["gamma", "beta"],
+            )
+            self.assertIn("incomplete dependencies", dependency_stop["stop_reason"])
+
+            wildcard = select("*")
+            original_wildcard_ids = list(wildcard["target_ids"])
+            self.assertEqual(wildcard["selection_mode"], "wildcard")
+            self.assertEqual(original_wildcard_ids, ["alpha", "beta", "gamma"])
+
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace), "start", "alpha",
+                "--expect", str(status()["state_token"]),
+            )
+            adjusted = select("que", "2,1")
+            self.assertEqual(adjusted["target_ids"], ["alpha", "beta"])
+            self.assertIn("moved working campaign alpha", adjusted["selection_adjustment"])
+
+            outside = select("camp", "002")
+            self.assertFalse(outside["executable"])
+            self.assertIn("working campaign is outside", outside["stop_reason"])
+
+            add("delta")
+            self.assertEqual(original_wildcard_ids, ["alpha", "beta", "gamma"])
+            self.assertEqual(select("*")["target_ids"], ["alpha", "beta", "gamma", "delta"])
+
+            for invalid in (("1,1",), ("que", "5"), ("camp", "999"), ("*", "1")):
+                result = run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace),
+                    "next", *invalid, "--json", check=False,
+                )
+                with self.subTest(invalid=invalid):
+                    self.assertEqual(result.returncode, 2)
+
+            queue_path = workspace / "work" / "00-campaigns" / "active-queue.md"
+            queue_path.write_text(
+                queue_path.read_text(encoding="utf-8").replace(
+                    "- Next: beta — Beta", "- Next: gamma — Gamma"
+                ),
+                encoding="utf-8",
+            )
+            stale = run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace),
+                "next", "1,2", "--json", check=False,
+            )
+            self.assertEqual(stale.returncode, 2)
+            self.assertIn("campaign queue validation failed", stale.stderr)
 
     def test_active_queue_cards_show_stable_numbers_and_ids_separate_from_mutable_positions(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -1973,9 +2322,30 @@ Next Action: keep going
                 ),
                 encoding="utf-8",
             )
+            decision = workspace / "work" / "adr" / "decision-review-bundle.md"
+            decision.parent.mkdir(parents=True)
+            decision.write_text(
+                "# Review decision\n\n"
+                "Status: active\n"
+                "Type: adr\n"
+                "Parent: work/00-campaigns/active/review-bundle.md\n\n"
+                "See [the campaign](work/00-campaigns/active/review-bundle.md#request).\n",
+                encoding="utf-8",
+            )
             legacy = status()
             self.assertIn(
                 "review-bundle is missing Campaign Number", legacy["findings"]
+            )
+            plan = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace),
+                    "backfill-plan", "--json",
+                ).stdout
+            )
+            self.assertEqual(plan["mutation_paths"], ["work/adr/decision-review-bundle.md"])
+            self.assertEqual(
+                plan["renames"][0]["to"],
+                "work/00-campaigns/active/001-review-bundle.md",
             )
             run_script(
                 "scripts/campaign_queue.py", "--workspace", str(workspace),
@@ -1989,11 +2359,59 @@ Next Action: keep going
                 queue_path.read_text(encoding="utf-8"),
             )
             self.assertEqual(status()["findings"], [])
+            decision_text = decision.read_text(encoding="utf-8")
+            self.assertIn(
+                "Parent: work/00-campaigns/active/001-review-bundle.md",
+                decision_text,
+            )
+            self.assertIn(
+                "(work/00-campaigns/active/001-review-bundle.md#request)",
+                decision_text,
+            )
             run_script(
                 "scripts/campaign_queue.py", "--workspace", str(workspace),
                 "start", "004", "--expect", str(status()["state_token"]),
             )
             self.assertEqual(status()["working"], ["004-produce-bundle"])
+
+    def test_backfill_accepts_v020_empty_active_queue_projection(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+            queue_path = workspace / "work" / "00-campaigns" / "active-queue.md"
+            queue_path.write_text(
+                queue_path.read_text(encoding="utf-8").replace(
+                    "Queue positions are mutable; parenthesized campaign numbers and full "
+                    "`Campaign ID` values are stable.\n\n",
+                    "",
+                ),
+                encoding="utf-8",
+            )
+            before = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace),
+                    "status", "--json",
+                ).stdout
+            )
+            self.assertIn(
+                "active-queue.md is stale or manually inconsistent",
+                before["findings"],
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace),
+                "backfill-numbers", "--expect", str(before["state_token"]),
+            )
+            after = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace),
+                    "status", "--json",
+                ).stdout
+            )
+            self.assertEqual(after["findings"], [])
+            self.assertIn(
+                "Queue positions are mutable; parenthesized campaign numbers",
+                queue_path.read_text(encoding="utf-8"),
+            )
 
     def test_focus_area_catalog_validation_and_readiness_cards(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -3098,6 +3516,7 @@ Produces:
             self.init_repository(workspace, original)
 
             first = run_script("scripts/install_into_workspace.py", str(workspace))
+            first_identity = (workspace / "work" / "tool-shed-project.json").read_bytes()
             second = run_script("scripts/install_into_workspace.py", str(workspace))
 
             gitignore = (workspace / ".gitignore").read_text(encoding="utf-8")
@@ -3111,10 +3530,15 @@ Produces:
             self.assertEqual(gitignore.count("/work/evidence/generated/"), 1)
             self.assertIn("Workspace preflight", first.stdout)
             self.assertEqual(second.returncode, 0)
+            self.assertEqual(
+                (workspace / "work" / "tool-shed-project.json").read_bytes(),
+                first_identity,
+            )
             guidance = (workspace / "AGENTS.md").read_text(encoding="utf-8")
             self.assertEqual(guidance.count("BEGIN TOOL SHED GENERATED EVIDENCE GUIDANCE"), 1)
             self.assertEqual(guidance.count("BEGIN TOOL SHED ROUTING GUIDANCE"), 1)
             self.assertEqual(guidance.count("BEGIN TOOL SHED DISCUSSION GUIDANCE"), 1)
+            self.assertEqual(guidance.count("BEGIN TOOL SHED HELP GUIDANCE"), 1)
             self.assertEqual(guidance.count("BEGIN TOOL SHED COORDINATION GUIDANCE"), 1)
             self.assertEqual(guidance.count("BEGIN TOOL SHED EVIDENCE RESPONSE GUIDANCE"), 1)
             self.assertEqual(guidance.count("BEGIN TOOL SHED CAMPAIGN GUIDANCE"), 1)
@@ -3212,8 +3636,22 @@ Produces:
                 text = path.read_text(encoding="utf-8")
                 self.assertEqual(text.count("BEGIN TOOL SHED ROUTING GUIDANCE"), 1)
                 self.assertEqual(text.count("BEGIN TOOL SHED DISCUSSION GUIDANCE"), 1)
+                self.assertEqual(text.count("BEGIN TOOL SHED HELP GUIDANCE"), 1)
                 self.assertEqual(text.count("BEGIN TOOL SHED COORDINATION GUIDANCE"), 1)
+                self.assertEqual(text.count("BEGIN TOOL SHED WORKSPACE IDENTITY GUIDANCE"), 1)
+                self.assertIn("WORKSPACE_MISMATCH", text)
+                self.assertIn("generic file-editing and shell tools", text)
                 self.assertIn("skills/tool-shed/SKILL.md", text)
+                self.assertIn("Browse Tool Shed help: https://ts.rookaro.com/", text)
+                self.assertIn(
+                    "Browse the complete command reference: https://ts.rookaro.com/ref/",
+                    text,
+                )
+                self.assertIn("Never replace the local reads", text)
+                self.assertIn("`ts: next 1,2`", text)
+                self.assertIn("`ts: next camp 025,example-id`", text)
+                self.assertIn("`ts: next *`", text)
+                self.assertIn("Batch scope never grants work5", text)
                 self.assertIn(f"Provider guidance ({provider_id}): updated", first.stdout)
                 self.assertNotIn(f"Provider guidance ({provider_id}): updated", second.stdout)
             for relative, content in owner_files.items():
@@ -3226,8 +3664,8 @@ Produces:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)
             self.init_repository(workspace, "# owner ignore\n")
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
             work = workspace / "work"
-            work.mkdir()
             evidence = work / "owner-plan.md"
             evidence.write_text("preserve exactly\n", encoding="utf-8")
             before_work = {
@@ -3264,6 +3702,7 @@ Produces:
             workspace = root / "workspace"
             workspace.mkdir()
             self.init_repository(workspace)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
             external = root / "outside.md"
             original = b"outside owner content\n"
             external.write_bytes(original)
@@ -3377,6 +3816,7 @@ stale loop guidance
             workspace = root / "workspace"
             workspace.mkdir()
             self.init_repository(workspace)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
             codex_home = root / "empty codex home"
             environment = {**os.environ, "CODEX_HOME": str(codex_home)}
 
@@ -3398,6 +3838,7 @@ stale loop guidance
             workspace = root / "workspace"
             workspace.mkdir()
             self.init_repository(workspace)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
             codex_home = root / "codex home"
             installed = codex_home / "skills" / "tool-shed"
             installed.mkdir(parents=True)
@@ -3504,6 +3945,34 @@ stale loop guidance
             self.assertTrue(unknown.is_dir())
             self.assertTrue(current_backup.is_dir())
 
+    def test_snapshot_updater_requires_matching_project_binding_before_mutation(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(root)
+            workspace = self.create_update_workspace(root)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+            before = {
+                path.relative_to(workspace).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+                for path in workspace.rglob("*") if path.is_file() and ".git" not in path.parts
+            }
+
+            result = subprocess.run(
+                [
+                    sys.executable, str(ROOT / "scripts" / "update_snapshot.py"),
+                    "--workspace", str(workspace), "--repository", str(release), "--json",
+                ],
+                cwd=workspace,
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            payload = json.loads(result.stdout)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("--project-binding", payload["error"])
+            after = {
+                path.relative_to(workspace).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+                for path in workspace.rglob("*") if path.is_file() and ".git" not in path.parts
+            }
+            self.assertEqual(after, before)
+
     def test_snapshot_updater_is_cross_platform_and_preserves_work(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -3536,6 +4005,8 @@ work_levels:
             self.assertEqual(payload["state"], "installed")
             self.assertEqual(payload["selected_tag"], "v9.8.7")
             self.assertEqual(payload["installed_version"], "9.8.7")
+            self.assertTrue(payload["project_identity"]["created"])
+            self.assertTrue((workspace / "work" / "tool-shed-project.json").is_file())
             self.assertTrue(payload["work_preserved"])
             self.assertEqual(
                 (workspace / "work" / "operator-data.txt").read_text(encoding="utf-8"),
@@ -3604,6 +4075,15 @@ work_levels:
                 .replace("active/001-legacy-campaign.md", "active/legacy-campaign.md"),
                 encoding="utf-8",
             )
+            decision = workspace / "work" / "adr" / "legacy-reference.md"
+            decision.parent.mkdir(parents=True)
+            decision.write_text(
+                "# Legacy reference\n\n"
+                "Status: active\n"
+                "Type: adr\n"
+                "Parent: work/00-campaigns/active/legacy-campaign.md\n",
+                encoding="utf-8",
+            )
 
             payload = json.loads(
                 run_script(
@@ -3630,6 +4110,66 @@ work_levels:
             self.assertIn(
                 "work/00-campaigns/active/001-legacy-campaign.md",
                 (workspace / "work" / "index.md").read_text(encoding="utf-8"),
+            )
+            self.assertIn(
+                "Parent: work/00-campaigns/active/001-legacy-campaign.md",
+                decision.read_text(encoding="utf-8"),
+            )
+            included = {
+                item["path"]: item for item in payload["backup_scope"]["included"]
+            }
+            self.assertEqual(included["work/adr/legacy-reference.md"]["mode"], "file")
+            self.assertEqual(payload["stage"], "complete")
+            self.assertEqual(
+                payload["campaign_convergence_plan"]["plan"]["mutation_paths"],
+                ["work/adr/legacy-reference.md"],
+            )
+
+    def test_snapshot_upgrade_accepts_v020_empty_campaign_queue_in_one_transaction(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(
+                root,
+                include_provider_adapter=True,
+                minimum_updater_protocol=3,
+                updater_mutation_paths=[
+                    {
+                        "path": "work/00-campaigns",
+                        "mode": "tree",
+                        "reason": "standardize legacy campaign numbering",
+                    }
+                ],
+            )
+            workspace = self.create_update_workspace(root)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+            queue = workspace / "work" / "00-campaigns" / "active-queue.md"
+            queue.write_text(
+                queue.read_text(encoding="utf-8").replace(
+                    "Queue positions are mutable; parenthesized campaign numbers and full "
+                    "`Campaign ID` values are stable.\n\n",
+                    "",
+                ),
+                encoding="utf-8",
+            )
+
+            payload = json.loads(
+                run_script(
+                    str(ROOT / "scripts" / "update_snapshot.py"),
+                    "--workspace", str(workspace), "--repository", str(release),
+                    "--json", cwd=workspace,
+                ).stdout
+            )
+
+            self.assertEqual(payload["state"], "installed")
+            self.assertEqual(payload["stage"], "complete")
+            self.assertTrue(payload["post_install"]["campaign_convergence"]["applied"])
+            self.assertEqual(
+                payload["post_install"]["campaign_convergence"]["after"]["findings"],
+                [],
+            )
+            self.assertIn(
+                "Queue positions are mutable; parenthesized campaign numbers",
+                queue.read_text(encoding="utf-8"),
             )
 
     def test_snapshot_campaign_convergence_rolls_back_after_injected_failure(self) -> None:
@@ -3674,9 +4214,24 @@ work_levels:
                 .replace("active/001-legacy.md", "active/legacy.md"),
                 encoding="utf-8",
             )
+            decision = workspace / "work" / "adr" / "legacy-parent.md"
+            decision.parent.mkdir(parents=True)
+            decision.write_text(
+                "# Legacy parent\n\n"
+                "Status: active\n"
+                "Type: adr\n"
+                "Parent: work/00-campaigns/active/legacy.md\n",
+                encoding="utf-8",
+            )
             before = {
                 path.relative_to(workspace / "work" / "00-campaigns").as_posix(): path.read_bytes()
                 for path in (workspace / "work" / "00-campaigns").rglob("*")
+                if path.is_file()
+            }
+            decision_before = decision.read_bytes()
+            snapshot_before = {
+                path.relative_to(workspace / "tool_shed").as_posix(): path.read_bytes()
+                for path in (workspace / "tool_shed").rglob("*")
                 if path.is_file()
             }
 
@@ -3687,6 +4242,10 @@ work_levels:
             )
 
             self.assertEqual(result.returncode, 1)
+            failure = json.loads(result.stdout)
+            self.assertTrue(failure["rollback"])
+            self.assertEqual(failure["failed_stage"], "post-install-validation")
+            self.assertTrue(failure["work_preserved"])
             self.assertEqual(
                 {
                     path.relative_to(workspace / "work" / "00-campaigns").as_posix(): path.read_bytes()
@@ -3696,6 +4255,15 @@ work_levels:
                 before,
             )
             self.assertTrue(legacy.is_file())
+            self.assertEqual(decision.read_bytes(), decision_before)
+            self.assertEqual(
+                {
+                    path.relative_to(workspace / "tool_shed").as_posix(): path.read_bytes()
+                    for path in (workspace / "tool_shed").rglob("*")
+                    if path.is_file()
+                },
+                snapshot_before,
+            )
 
     def test_snapshot_backup_scope_excludes_generated_evidence_and_preserves_hard_links(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -3924,6 +4492,7 @@ work_levels:
             self.assertEqual(evidence.read_bytes(), before)
             self.assertTrue((workspace / "tool_shed" / "old-marker.txt").is_file())
             self.assertEqual(len(list(workspace.glob("tool_shed.backup-*.tar"))), 1)
+            self.assertFalse((workspace / "work" / "tool-shed-project.json").exists())
 
     def test_backup_retention_policy_and_symlinked_preview_candidate_are_safe(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -4693,6 +5262,8 @@ old Tool Shed guidance
 
             self.assertEqual(payload["mode"], "new-installation")
             self.assertEqual(payload["installed_version"], "9.8.7")
+            self.assertTrue(payload["project_identity"]["created"])
+            self.assertTrue((workspace / "work" / "tool-shed-project.json").is_file())
             self.assertFalse(list(workspace.glob("tool_shed.backup-*.tar")))
             self.assertFalse((workspace / "tool_shed" / ".git").exists())
             self.assertFalse((workspace / "tool_shed" / "work").exists())

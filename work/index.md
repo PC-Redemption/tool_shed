@@ -2,13 +2,16 @@
 
 Generated from artifact headers. `work/index.json` contains the same navigation data for automation. Do not put durable project truth only here; keep current truth in docs or README files.
 
-Updated: 2026-08-17
+Updated: 2026-08-18
 
 ## Orientation
 
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
+| [work/00-campaigns/active/027-publish-and-verify-tool-shed-v0-22-0.md](work/00-campaigns/active/027-publish-and-verify-tool-shed-v0-22-0.md) | campaign | queued | 2026-08-18 | execute when selected from the active campaign queue | - |
+| [work/00-campaigns/active/029-define-nested-cycles-and-owning-transitions.md](work/00-campaigns/active/029-define-nested-cycles-and-owning-transitions.md) | campaign | queued | 2026-08-18 | execute when selected from the active campaign queue | - |
+| [work/00-campaigns/active/031-add-workspace-wide-ts-doctor-command.md](work/00-campaigns/active/031-add-workspace-wide-ts-doctor-command.md) | campaign | working | 2026-08-18 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -32,6 +35,10 @@ Updated: 2026-08-17
 | [work/00-campaigns/completed/022-publish-tool-shed-documentation-site-at-ts-rookaro-com.md](work/00-campaigns/completed/022-publish-tool-shed-documentation-site-at-ts-rookaro-com.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/023-customize-work-level-actions-per-workspace.md](work/00-campaigns/completed/023-customize-work-level-actions-per-workspace.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/024-compact-tool-shed-site-and-publish-guided-workflows.md](work/00-campaigns/completed/024-compact-tool-shed-site-and-publish-guided-workflows.md) | campaign | complete | 2026-08-17 | none | - |
+| [work/00-campaigns/completed/025-harden-upgrade-campaign-number-convergence.md](work/00-campaigns/completed/025-harden-upgrade-campaign-number-convergence.md) | campaign | complete | 2026-08-18 | none | - |
+| [work/00-campaigns/completed/026-link-public-help-site-from-help-responses.md](work/00-campaigns/completed/026-link-public-help-site-from-help-responses.md) | campaign | complete | 2026-08-18 | none | - |
+| [work/00-campaigns/completed/028-extend-next-with-targeted-and-wildcard-batches.md](work/00-campaigns/completed/028-extend-next-with-targeted-and-wildcard-batches.md) | campaign | complete | 2026-08-18 | none | - |
+| [work/00-campaigns/completed/030-fail-closed-on-cross-workspace-routing.md](work/00-campaigns/completed/030-fail-closed-on-cross-workspace-routing.md) | campaign | complete | 2026-08-18 | none | - |
 | [work/checklists/checklist-refresh-readme-and-ai-command-reference.md](work/checklists/checklist-refresh-readme-and-ai-command-reference.md) | checklist | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/checklists/checklist-tool-shed-skill-field-test.md](work/checklists/checklist-tool-shed-skill-field-test.md) | checklist | complete | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/decisions/decision-codex-skill-readiness.md](work/decisions/decision-codex-skill-readiness.md) | decision-matrix | decided | 2026-07-05 | continue using skill on real projects; plugin packaging deferred | work/maps/map-tool-shed-foundation.md |
@@ -78,6 +85,6 @@ Updated: 2026-08-17
 
 ## Summary
 
-- Total artifacts: 61
-- Active artifacts: 1
-- Completed/decided artifacts: 57
+- Total artifacts: 68
+- Active artifacts: 4
+- Completed/decided artifacts: 61

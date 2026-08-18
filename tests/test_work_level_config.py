@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts import work_level_config
+from scripts import project_identity, work_level_config
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -39,6 +39,7 @@ class WorkLevelConfigTests(unittest.TestCase):
     def test_absent_configuration_preserves_standard_alias_behavior(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             workspace = Path(temporary)
+            project_identity.ensure_project_identity(workspace)
             payload = work_level_config.resolve_workspace_level(workspace, "ts:ship release it")
             self.assertEqual(payload["canonical_level"], "work5")
             self.assertTrue(payload["alias_resolved"])
@@ -51,6 +52,7 @@ class WorkLevelConfigTests(unittest.TestCase):
     def test_ordered_actions_default_suppression_and_selected_endpoint_scope(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             workspace = Path(temporary)
+            project_identity.ensure_project_identity(workspace)
             self.write_config(
                 workspace,
                 """schema_version: 1
@@ -146,7 +148,16 @@ work_levels:
                     ".cursor/rules/tool-shed.mdc",
                 )
             }
-            second = subprocess.run(command, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            second = subprocess.run(
+                [
+                    *command,
+                    "--project-binding",
+                    project_identity.binding_token(workspace, operation="workspace-install"),
+                ],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
             self.assertEqual(second.returncode, 0, second.stderr)
             self.assertEqual(path.read_bytes(), before)
             for relative, content in guidance_before.items():

@@ -123,14 +123,16 @@ Canonical source: [https://github.com/PC-Redemption/tool_shed](https://github.co
 Use the supported cross-platform updater from a current Tool Shed release checkout:
 
 ```bash
-python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace .
+python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace . \
+  --project-binding <update-snapshot-binding>
 ```
 
 Codex users can explicitly synchronize the separately installed user-level skill during the same
 verified update:
 
 ```bash
-python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace . --sync-codex-skill
+python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace . --sync-codex-skill \
+  --project-binding <update-snapshot-binding>
 ```
 
 For the concise, fully authorized upgrade route, type:
@@ -270,9 +272,14 @@ ts: commands
 ts: help spikes
 ts: help existing projects
 ts: discuss <topic>
+ts: identity
+ts: use <project-alias-or-path>
+ts: doctor
 ts: build focus areas
 ts: status
 ts: next
+ts: next 1,2
+ts: next *
 ts:work1 <goal> ... ts:work5 <goal>
 ts:check <spot|focused|full|release>
 ts:ask
@@ -281,6 +288,33 @@ ts:ask
 See the [AI command reference](docs/commands.md) for every defined route, alias, and authority
 boundary. See the [Tool Shed operator guide](docs/operator-guide.md) for workflow explanations and
 examples.
+
+Every installed workspace has one tracked `work/tool-shed-project.json` identity containing a
+stable UUID and project name. Before the first mutation in a provider session, `ts: identity`
+surfaces a target capsule with that identity, the resolved repository root, repository fingerprint,
+working campaign or operation, and an operation-specific session binding. State tokens also hash
+the project ID and resolved root, so byte-identical workspaces and ordinary clones cannot exchange
+mutation tokens accidentally. Deterministic mutations require both the fresh state token and the
+matching `--project-binding` when they have a token-bearing lifecycle.
+
+An absolute path outside the bound root produces `WORKSPACE_MISMATCH`; mentioning or reading a path
+does not switch projects. `ts: use <project-alias-or-path>` is the explicit read-only switch
+boundary: verify the target identity, then reload its instructions and Tool Shed skill and obtain
+fresh target-bound state before writing. Generic file and shell tools obey the same fence.
+
+Audit the complete supported workspace surface with one read-only command:
+
+```bash
+python3 tool_shed/scripts/doctor.py --workspace .
+python3 tool_shed/scripts/doctor.py --workspace . --json --strict
+```
+
+Equivalent routing is `ts: doctor`. The command composes boundary, integrity, preflight, Git,
+topology, campaign, index-freshness, stale-path, work-state, and reconciliation checks into one
+`HEALTHY`, `DEGRADED`, `NEEDS_DECISION`, or `INVALID` verdict with compact findings and exact next
+actions. It explicitly does not prove current external/runtime truth. Token-bound `--repair`
+regenerates stale deterministic work indexes only; semantic and lifecycle repair remains under the
+existing manifest and owner-approval boundaries.
 
 `ts: discuss <topic>` is a non-mutating discovery route. A leading `discussion:` is an informal
 read-only campaign entry. Discussion surfaces a compact campaign seed and the smallest useful next
@@ -383,9 +417,16 @@ During installation or upgrade, Tool Shed copies and byte-verifies every file fr
 source-specific filenames; the old folders are removed only after verification.
 
 Use `ts: status`, `ts: next`, `ts: add <idea>`, `ts: unblock <campaign>`, `ts: defer <campaign>`,
-`ts: abandon <campaign>`, `ts: reconcile campaigns`, and `ts: completed`. Deterministic mutations require the current state
-token and reject stale writes. In owner-queue requests, `camp` aliases `campaign`, while `que N`
+`ts: abandon <campaign>`, `ts: reconcile campaigns`, and `ts: completed`. Deterministic mutations
+require the current project binding plus current project-and-root-bound state token and reject
+stale or foreign-project writes. In owner-queue requests, `camp` aliases `campaign`, while `que N`
 identifies the campaign at 1-based ordered queue number N and is resolved from a fresh status read.
+Bare `ts: next` still runs one campaign. `ts: next 1,2` (or explicit `que 1,2`) snapshots queue
+positions, `ts: next camp 025,example-id` uses stable references, and `ts: next *` snapshots all
+active campaigns. Batches execute sequentially, validate and recompute readiness after each passed
+completion gate, stop with completed/remaining IDs and a precise resume point, exclude later queue
+additions, and do not expand deployment, release, production, destructive, credential, or other
+consequential authority.
 `campaign_queue.py migrate-preview` reports legacy candidates but never moves or rewrites them;
 this includes legacy `Focus areas: ...` outcome prose. Projects may approve their own
 evidence-backed catalog at `work/focus-areas.md`; once approved, active campaigns use known
@@ -550,7 +591,9 @@ Never carry the prefix into a later request. Workspace owners may define unrelat
 in their own provider instructions; those are not part of Tool Shed's portable command surface.
 
 For a complete operator-facing inventory, use `ts: commands` or read
-[docs/commands.md](docs/commands.md).
+[docs/commands.md](docs/commands.md). Every `ts: help` response retains local offline guidance and
+also offers [public Tool Shed help](https://ts.rookaro.com/); command inventories may link directly
+to the [public reference](https://ts.rookaro.com/ref/) without checking site availability first.
 
 ```text
 ts: orient me

@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import campaign_queue
+from project_identity import ProjectIdentityError, bind_state_token, require_project_binding
 from update_work_index import Artifact, discover_artifacts
 
 
@@ -85,7 +86,12 @@ def whole_work_state_token(workspace: Path) -> str:
         digest.update(b"\0")
         digest.update(path.read_bytes())
         digest.update(b"\0")
-    return digest.hexdigest()[:16]
+    return bind_state_token(
+        workspace,
+        "campaign-reconciliation",
+        digest.hexdigest(),
+        allow_unidentified=True,
+    )
 
 
 def artifact_relationships(artifact: Artifact) -> list[str]:
@@ -1125,6 +1131,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--manifest",
         help="Exact approved JSON manifest; required with --apply.",
     )
+    parser.add_argument(
+        "--project-binding",
+        help="Current project binding from the identity command; required before a write.",
+    )
     return parser
 
 
@@ -1144,6 +1154,11 @@ def main() -> int:
                 "--dry-run cannot be combined with --apply, --expect, or --manifest"
             )
         if args.apply:
+            require_project_binding(
+                workspace,
+                args.project_binding,
+                operation="campaign-reconciliation",
+            )
             if not args.expect:
                 raise campaign_queue.CampaignError(
                     "--apply requires --expect TOKEN from the latest dry run"
@@ -1157,6 +1172,11 @@ def main() -> int:
         elif not args.dry_run:
             manifest = automatic_dangler_manifest(report)
             if manifest is not None:
+                require_project_binding(
+                    workspace,
+                    args.project_binding,
+                    operation="campaign-reconciliation",
+                )
                 operation = manifest["operations"][0]
                 report = apply_repairs(
                     workspace, report["state_token"], report, manifest
@@ -1165,7 +1185,12 @@ def main() -> int:
                     "campaign_id": operation["campaign_id"],
                     "operation": operation["op"],
                 }
-    except (campaign_queue.CampaignError, OSError, json.JSONDecodeError) as error:
+    except (
+        campaign_queue.CampaignError,
+        ProjectIdentityError,
+        OSError,
+        json.JSONDecodeError,
+    ) as error:
         print(f"Campaign reconciliation failed: {error}", file=sys.stderr)
         return 2
     if args.json:

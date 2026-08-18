@@ -36,10 +36,18 @@ workspace procedure for the Git fast-forward and client synchronization path.
 
 ## Snapshot Install And Update
 
+Before mutating an identified workspace, run `project_identity.py identity` for operation
+`update-snapshot` or `workspace-install`, surface the target capsule, and pass its
+operation-specific `--project-binding`. A new or legacy workspace without an identity is the only
+exception: the installer/updater creates one atomic UUIDv4 identity under
+`work/tool-shed-project.json`, includes that path in rollback scope, and preserves it exactly on
+later runs. Malformed, duplicate, or conflicting identity fails before snapshot mutation.
+
 For a normal project workspace, use a current released checkout:
 
 ```bash
-python <current-shed>/scripts/update_snapshot.py --workspace <workspace>
+python <current-shed>/scripts/update_snapshot.py --workspace <workspace> \
+  --project-binding <update-snapshot-binding>
 ```
 
 Never pull inside or develop from the disconnected workspace snapshot. The updater selects the
@@ -67,7 +75,8 @@ For a new project that still needs its `work/` tree initialized, or to add an ex
 adapter outside the snapshot updater, run:
 
 ```bash
-python3 <shed>/scripts/install_into_workspace.py <workspace> --provider <provider-id>
+python3 <shed>/scripts/install_into_workspace.py <workspace> --provider <provider-id> \
+  --project-binding <workspace-install-binding>
 ```
 
 Supported provider IDs come from `<shed>/adapters/providers.json`. Repeat `--provider` or use

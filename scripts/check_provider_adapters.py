@@ -11,6 +11,7 @@ import tempfile
 from pathlib import Path
 
 from provider_adapters import CAPABILITY_LEVELS, load_manifest
+from project_identity import IDENTITY_RELATIVE_PATH, binding_token
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,6 +19,7 @@ INSTALLER = ROOT / "scripts" / "install_into_workspace.py"
 ROUTING_MARKER = "BEGIN TOOL SHED ROUTING GUIDANCE"
 DISCUSSION_MARKER = "BEGIN TOOL SHED DISCUSSION GUIDANCE"
 COORDINATION_MARKER = "BEGIN TOOL SHED COORDINATION GUIDANCE"
+IDENTITY_MARKER = "BEGIN TOOL SHED WORKSPACE IDENTITY GUIDANCE"
 
 
 def parse_args() -> argparse.Namespace:
@@ -27,8 +29,13 @@ def parse_args() -> argparse.Namespace:
 
 
 def run_installer(workspace: Path) -> None:
+    arguments = [sys.executable, str(INSTALLER), str(workspace), "--provider", "all"]
+    if (workspace / IDENTITY_RELATIVE_PATH).is_file():
+        arguments.extend(
+            ("--project-binding", binding_token(workspace, operation="workspace-install"))
+        )
     subprocess.run(
-        [sys.executable, str(INSTALLER), str(workspace), "--provider", "all"],
+        arguments,
         cwd=str(ROOT),
         check=True,
         stdout=subprocess.DEVNULL,
@@ -63,7 +70,7 @@ def main() -> int:
                 raise SystemExit(f"{provider_id}: missing instruction file {relative}")
             text = path.read_text(encoding="utf-8")
             after_first[relative] = text
-            for marker in (ROUTING_MARKER, DISCUSSION_MARKER, COORDINATION_MARKER):
+            for marker in (ROUTING_MARKER, DISCUSSION_MARKER, COORDINATION_MARKER, IDENTITY_MARKER):
                 if text.count(marker) != 1:
                     raise SystemExit(f"{provider_id}: expected one {marker!r}")
             if owner_text.get(relative) and not text.startswith(owner_text[relative]):

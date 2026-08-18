@@ -30,6 +30,15 @@ from codex_skill_sync import (
     inspect_codex_skill,
     synchronize_codex_skill,
 )
+from project_identity import (
+    IDENTITY_RELATIVE_PATH,
+    LEGACY_IDENTITY_PATHS,
+    ProjectIdentityError,
+    binding_token,
+    ensure_project_identity,
+    load_project_identity,
+    require_project_binding,
+)
 
 
 DEFAULT_REPOSITORY = "https://github.com/PC-Redemption/tool_shed.git"
@@ -74,6 +83,7 @@ WORK_DIRECTORY_MARKERS = (
     "work/00-campaigns/abandoned",
 )
 WORK_MUTABLE_FILES = (
+    "work/tool-shed-project.json",
     "work/README.md",
     "work/index.md",
     "work/index.json",
@@ -853,7 +863,10 @@ def restore_backup(backup: Path, workspace: Path) -> dict[str, object]:
     return manifest
 
 
-def owner_content_fingerprint(workspace: Path) -> Counter[str]:
+def owner_content_fingerprint(
+    workspace: Path,
+    excluded_paths: set[str] | None = None,
+) -> Counter[str]:
     excluded = {
         "index.md",
         "index.json",
@@ -864,6 +877,9 @@ def owner_content_fingerprint(workspace: Path) -> Counter[str]:
     for root_name in ("work", "q&a"):
         root = workspace / root_name
         for relative, digest in fingerprint_tree(root).items():
+            workspace_relative = f"{root_name}/{relative}"
+            if workspace_relative in (excluded_paths or set()):
+                continue
             if root_name == "work" and relative in excluded:
                 continue
             if (
@@ -889,7 +905,12 @@ def contents_preserved(before: Counter[str], after: Counter[str]) -> bool:
     return all(after[digest] >= count for digest, count in before.items())
 
 
-def campaign_convergence_report(workspace: Path, target: Path) -> dict[str, object]:
+def campaign_convergence_report(
+    workspace: Path,
+    target: Path,
+    *,
+    include_plan: bool = False,
+) -> dict[str, object]:
     campaign_root = workspace / "work" / "00-campaigns"
     command = target / "scripts" / "campaign_queue.py"
     if not campaign_root.is_dir() or not command.is_file():
@@ -909,12 +930,32 @@ def campaign_convergence_report(workspace: Path, target: Path) -> dict[str, obje
     findings = payload.get("findings")
     if not isinstance(findings, list):
         raise UpdateError("campaign convergence validation returned invalid findings")
-    return {
+    report: dict[str, object] = {
         "supported": True,
         "needed": bool(findings),
         "findings": findings,
         "state_token": payload.get("state_token"),
     }
+    if include_plan and findings:
+        plan_result = run(
+            [
+                sys.executable,
+                "-B",
+                str(command),
+                "--workspace",
+                str(workspace),
+                "backfill-plan",
+                "--json",
+            ]
+        )
+        plan = json.loads(plan_result.stdout)
+        mutation_paths = plan.get("mutation_paths")
+        if not isinstance(mutation_paths, list) or not all(
+            isinstance(path, str) and path for path in mutation_paths
+        ):
+            raise UpdateError("campaign convergence plan returned invalid mutation paths")
+        report["plan"] = plan
+    return report
 
 
 def post_install_checks(
@@ -951,6 +992,8 @@ def post_install_checks(
             "-B",
             str(installer),
             str(workspace),
+            "--project-binding",
+            binding_token(workspace, operation="workspace-install"),
         ]
         for provider_id in providers:
             arguments.extend(("--provider", provider_id))
@@ -985,6 +1028,8 @@ def post_install_checks(
                 "backfill-numbers",
                 "--expect",
                 state_token,
+                "--project-binding",
+                binding_token(workspace, operation="campaign-queue"),
                 "--json",
             ],
             timeout=validation_timeout,
@@ -1462,6 +1507,10 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Read-only backup inventory showing exact retention and removal sets; do not update.",
     )
+    parser.add_argument(
+        "--project-binding",
+        help="Current binding from project_identity.py identity --operation update-snapshot.",
+    )
     return parser.parse_args()
 
 
@@ -1470,6 +1519,7 @@ def main() -> int:
     workspace = Path(args.workspace).expanduser().resolve()
     target = workspace / "tool_shed"
     work_before = fingerprint_tree(workspace / "work")
+    owner_content_exclusions: set[str] = set()
     owner_content_before = owner_content_fingerprint(workspace)
     initial_status = ""
     backup: Path | None = None
@@ -1486,6 +1536,7 @@ def main() -> int:
         "snapshot_path": str(target),
         "snapshot_relative_path": "tool_shed",
         "state": "failed",
+        "stage": "workspace-preflight",
     }
     try:
         if not workspace.is_dir():
@@ -1532,6 +1583,17 @@ def main() -> int:
                     f"{len(skill_report['unknown'])} preserved unknown."
                 )
             return 0
+        identity_exists = (workspace / IDENTITY_RELATIVE_PATH).exists() or any(
+            (workspace / relative).exists() for relative in LEGACY_IDENTITY_PATHS
+        )
+        if identity_exists:
+            load_project_identity(workspace)
+            require_project_binding(
+                workspace,
+                args.project_binding,
+                operation="update-snapshot",
+            )
+        payload["project_identity_preexisting"] = identity_exists
         initial_status = git(workspace, "status", "--short")
         mode = snapshot_boundary(workspace, target)
         snapshot_before = snapshot_fingerprint(target)
@@ -1543,6 +1605,7 @@ def main() -> int:
             temp = Path(temporary)
             clone = temp / "release"
             staged = temp / "staged"
+            payload["stage"] = "release-selection"
             selected, manifest, tag_commit, content_commit = clone_release(
                 args.repository,
                 clone,
@@ -1556,6 +1619,7 @@ def main() -> int:
                 )
             selected_protocol = minimum_updater_protocol(manifest)
             emit_progress("staging")
+            payload["stage"] = "staging"
             prepare_snapshot(clone, staged, selected_protocol, args.validation_timeout)
             staged_providers = load_staged_providers(staged)
             providers = select_providers(workspace, staged_providers, args.provider)
@@ -1595,6 +1659,7 @@ def main() -> int:
                 and snapshot_fingerprint(target) == snapshot_fingerprint(staged)
                 and not args.sync_codex_skill
                 and not current_campaigns["needed"]
+                and identity_exists
             ):
                 payload["installed_version"] = selected_version
                 payload["canonical_manifest_match"] = True
@@ -1629,6 +1694,35 @@ def main() -> int:
             transaction_id = hashlib.sha256(
                 f"{workspace}:{timestamp}:{previous_version}:{selected_version}".encode("utf-8")
             ).hexdigest()[:24]
+            payload["stage"] = "campaign-convergence-plan"
+            staged_campaigns = campaign_convergence_report(
+                workspace,
+                staged,
+                include_plan=True,
+            )
+            payload["campaign_convergence_plan"] = staged_campaigns
+            dynamic_mutation_paths: list[dict[str, str]] = []
+            raw_plan = staged_campaigns.get("plan")
+            if isinstance(raw_plan, dict):
+                for relative in raw_plan.get("mutation_paths", []):
+                    owner_content_exclusions.add(str(relative))
+                    dynamic_mutation_paths.append(
+                        {
+                            "path": str(relative),
+                            "mode": "file",
+                            "reason": "campaign-number inbound reference convergence",
+                        }
+                    )
+            owner_content_before = owner_content_fingerprint(
+                workspace,
+                owner_content_exclusions,
+            )
+            declared_mutation_paths = manifest.get("updater_mutation_paths")
+            if declared_mutation_paths is None:
+                declared_mutation_paths = []
+            if not isinstance(declared_mutation_paths, list):
+                raise UpdateError("updater_mutation_paths must be a list")
+            payload["stage"] = "backup"
             backup_scope = build_backup_scope(
                 workspace,
                 target,
@@ -1638,7 +1732,7 @@ def main() -> int:
                 target_version=selected_version,
                 protocol=selected_protocol,
                 transaction_id=transaction_id,
-                additional_paths=manifest.get("updater_mutation_paths"),
+                additional_paths=[*declared_mutation_paths, *dynamic_mutation_paths],
             )
             payload["backup_scope"] = backup_scope
             emit_progress(
@@ -1665,11 +1759,19 @@ def main() -> int:
                 backup_before = backup_fingerprint(workspace, temporary_scope)
                 create_backup(workspace, rollback_backup, temporary_scope)
             try:
+                identity, identity_created = ensure_project_identity(workspace)
+                payload["project_identity"] = {
+                    **identity,
+                    "created": identity_created,
+                    "path": IDENTITY_RELATIVE_PATH.as_posix(),
+                }
+                payload["stage"] = "snapshot-replacement"
                 shutil.move(str(staged), str(target))
                 installed = True
                 if args.inject_after_replacement_failure:
                     raise UpdateError("injected failure after snapshot replacement")
                 emit_progress("post-install validation")
+                payload["stage"] = "post-install-validation"
                 payload["post_install"] = post_install_checks(
                     workspace,
                     target,
@@ -1709,7 +1811,8 @@ def main() -> int:
                     )
                 payload["excluded_paths_preserved"] = True
                 if not contents_preserved(
-                    owner_content_before, owner_content_fingerprint(workspace)
+                    owner_content_before,
+                    owner_content_fingerprint(workspace, owner_content_exclusions),
                 ):
                     raise UpdateError(
                         "owner-authored work content was not preserved during convergence"
@@ -1732,6 +1835,9 @@ def main() -> int:
                     codex_skill["source"] = str(installed_skill)
                     payload["codex_skill"] = codex_skill
             except Exception as install_error:
+                failed_stage = str(payload.get("stage", "unknown"))
+                payload["failed_stage"] = failed_stage
+                payload["stage"] = "rollback"
                 rollback_errors: list[str] = []
                 try:
                     restore_instruction_files(workspace, instruction_files_before)
@@ -1765,7 +1871,8 @@ def main() -> int:
         payload["canonical_manifest_match"] = True
         work_after = fingerprint_tree(workspace / "work")
         payload["work_preserved"] = contents_preserved(
-            owner_content_before, owner_content_fingerprint(workspace)
+            owner_content_before,
+            owner_content_fingerprint(workspace, owner_content_exclusions),
         )
         payload["work_changed"] = work_after != work_before
         check_work_tree = payload.get("post_install", {}).get("check_work_tree.py")
@@ -1791,6 +1898,7 @@ def main() -> int:
             ),
         }
         payload["state"] = "installed"
+        payload["stage"] = "complete"
         emit_progress("completion")
         if args.json:
             print(json.dumps(payload, indent=2, sort_keys=True))
@@ -1823,8 +1931,17 @@ def main() -> int:
             else:
                 print("Root work/ preserved; selected release did not provide a structure check.")
         return 0
-    except (OSError, ValueError, json.JSONDecodeError, UpdateError, CodexSkillError) as error:
+    except (
+        OSError,
+        ValueError,
+        json.JSONDecodeError,
+        UpdateError,
+        ProjectIdentityError,
+        CodexSkillError,
+    ) as error:
         payload["error"] = str(error)
+        if "failed_stage" not in payload:
+            payload["failed_stage"] = str(payload.get("stage", "unknown"))
         payload["rollback"] = bool(rollback_backup and not installed)
         if fingerprint_tree(workspace / "work") != work_before:
             payload["work_preserved"] = False
@@ -1834,6 +1951,7 @@ def main() -> int:
             print(json.dumps(payload, indent=2, sort_keys=True))
         else:
             print(f"Tool Shed update failed: {error}", file=sys.stderr)
+            print(f"Failure stage: {payload['failed_stage']}", file=sys.stderr)
             if payload["rollback"]:
                 print("Previous snapshot restored from the verified backup.", file=sys.stderr)
         return 1

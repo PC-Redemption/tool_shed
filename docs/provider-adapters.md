@@ -38,6 +38,13 @@ Static qualification proves safe, idempotent installation, preservation of owner
 routing, discussion behavior, coordination behavior, and artifact compatibility. It does not claim
 that a provider's web, IDE, CLI, cloud, and API surfaces have identical tools or authority.
 
+Every adapter receives the same workspace-identity fence. Before its first mutation, it surfaces
+the stable project ID, resolved root, repository fingerprint, active campaign or operation, and
+session binding from `project_identity.py`. It passes that operation-specific binding to
+deterministic mutations and applies the same restriction to generic edit and shell tools. An
+outside-root path is `WORKSPACE_MISMATCH`; only explicit `ts: use` plus target instruction/skill
+reload and fresh target state changes the binding.
+
 ## Capability Levels
 
 1. `Discussion`: analyze and recommend without durable workspace mutation.
@@ -65,6 +72,10 @@ Repeat `--provider` or use `--provider all`. Omitting the option installs `codex
 compatibility. The installer preserves existing instruction-file content and creates or replaces
 only marked Tool Shed blocks. Re-running it is idempotent. Cursor receives MDC frontmatter only
 when its Tool Shed rule is first created.
+
+The first installation creates `work/tool-shed-project.json` and therefore needs no prior binding.
+Refreshing adapters in an identified workspace requires the `workspace-install` binding returned
+by the identity command.
 
 The installed routing tells the provider to read the workspace-local
 `tool_shed/skills/tool-shed/SKILL.md` when a request begins with `ts:`. This avoids copying and

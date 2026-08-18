@@ -59,7 +59,11 @@ python3 tool_shed/scripts/work_level_config.py --workspace . resolve work3 --jso
 ```
 
 Use `scripts/work_level_config.py` in the canonical Tool Shed development checkout. The helper also
-provides a validation-only command:
+returns the stable project identity, resolved root, selected operation, and session binding. Verify
+that capsule before configured or default mutations; generic edit and shell actions cannot bypass
+the workspace fence. A different root is `WORKSPACE_MISMATCH` until an explicit `ts: use` reloads
+the target instructions and skill and obtains fresh target-bound state. It also provides a
+validation-only command:
 
 ```bash
 python3 tool_shed/scripts/work_level_config.py --workspace . validate --json

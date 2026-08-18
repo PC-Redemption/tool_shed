@@ -8,6 +8,14 @@ from pathlib import Path
 
 from codex_skill_sync import inspect_codex_skill, load_release_skill_digests
 from provider_adapters import provider_config, provider_ids
+from project_identity import (
+    IDENTITY_RELATIVE_PATH,
+    LEGACY_IDENTITY_PATHS,
+    ProjectIdentityError,
+    ensure_project_identity,
+    load_project_identity,
+    require_project_binding,
+)
 from repository_policy import POLICY_FILE, format_bytes, inspect_snapshot_ignore, inspect_work_ignore
 from work_level_config import WorkLevelConfigError, validate_workspace_config
 from work_tree import ensure_work_tree
@@ -52,6 +60,31 @@ ROUTING_GUIDANCE = f"""{ROUTING_GUIDANCE_START}
 {ROUTING_GUIDANCE_END}
 """
 
+DOCTOR_GUIDANCE_START = "<!-- BEGIN TOOL SHED DOCTOR GUIDANCE -->"
+DOCTOR_GUIDANCE_END = "<!-- END TOOL SHED DOCTOR GUIDANCE -->"
+DOCTOR_GUIDANCE = f"""{DOCTOR_GUIDANCE_START}
+## Tool Shed workspace doctor
+
+- Treat `ts: doctor` as a request to run the workspace-local `scripts/doctor.py --workspace .` read-only health audit.
+- Report its single `HEALTHY`, `DEGRADED`, `NEEDS_DECISION`, or `INVALID` verdict, compact finding classes and counts, and exact next actions. Distinguish internally verified structure from external or runtime truth that was not observed.
+- `--strict` fails unless fully healthy. `ts: doctor --repair` may regenerate deterministic work indexes only after source validation and exact current `doctor-repair` project-binding and state tokens; it never changes lifecycle state, chooses semantic truth, fabricates evidence, or applies reconciliation.
+{DOCTOR_GUIDANCE_END}
+"""
+
+IDENTITY_GUIDANCE_START = "<!-- BEGIN TOOL SHED WORKSPACE IDENTITY GUIDANCE -->"
+IDENTITY_GUIDANCE_END = "<!-- END TOOL SHED WORKSPACE IDENTITY GUIDANCE -->"
+IDENTITY_GUIDANCE = f"""{IDENTITY_GUIDANCE_START}
+## Tool Shed workspace identity boundary
+
+- Before the first workspace mutation in a session, run the workspace-local `project_identity.py identity` command with the intended operation and surface its project name, stable project ID, resolved root, repository fingerprint, active campaign or operation, and session binding.
+- Bind the session to that exact project ID and resolved root. Pass the returned operation-specific project binding and fresh project-bound state token to deterministic mutation commands.
+- Treat any missing, malformed, duplicate, conflicting, foreign-project, or root-mismatched identity or token as a hard failure with no partial write.
+- If a referenced absolute path resolves outside the bound root, output `WORKSPACE_MISMATCH` and stop. A path mention or read-only inspection is evidence, not authorization to switch workspaces.
+- Treat `ts: use <project-alias-or-path>` as the only explicit workspace-switch route. Verify the target identity, reload that target's instructions and Tool Shed skill, and obtain fresh target-bound state before acting.
+- Apply the same fence to generic file-editing and shell tools; they may not bypass the identity checks enforced by lifecycle scripts. Read-only cross-project inspection never changes the active binding.
+{IDENTITY_GUIDANCE_END}
+"""
+
 DISCUSSION_GUIDANCE_START = "<!-- BEGIN TOOL SHED DISCUSSION GUIDANCE -->"
 DISCUSSION_GUIDANCE_END = "<!-- END TOOL SHED DISCUSSION GUIDANCE -->"
 DISCUSSION_GUIDANCE = f"""{DISCUSSION_GUIDANCE_START}
@@ -62,6 +95,19 @@ DISCUSSION_GUIDANCE = f"""{DISCUSSION_GUIDANCE_START}
 - Explore the outcome, motivation, constraints, assumptions, unknowns, and smallest useful next route.
 - Do not create or modify workspace artifacts unless the operator explicitly asks to capture or plan.
 {DISCUSSION_GUIDANCE_END}
+"""
+
+HELP_GUIDANCE_START = "<!-- BEGIN TOOL SHED HELP GUIDANCE -->"
+HELP_GUIDANCE_END = "<!-- END TOOL SHED HELP GUIDANCE -->"
+HELP_GUIDANCE = f"""{HELP_GUIDANCE_START}
+## Tool Shed help route
+
+- For `ts: help`, read the workspace-local operator guide and return a concise use-case menu. For `ts: commands` or `ts: help all`, read the local command reference and return its complete groups and usage. For `ts: help <topic-or-command>`, read the relevant local command and operator-guide sections and return focused usage and examples.
+- Every `ts: help`-family response must visibly include `Browse Tool Shed help: https://ts.rookaro.com/`.
+- `ts: commands` and `ts: help all` responses must also include `Browse the complete command reference: https://ts.rookaro.com/ref/`.
+- A focused response may add a defined stable topic URL, but it must retain the root help link.
+- Public links supplement local offline help. Never replace the local reads, perform a request-time network check, or make rendering depend on site availability.
+{HELP_GUIDANCE_END}
 """
 
 COORDINATION_GUIDANCE_START = "<!-- BEGIN TOOL SHED COORDINATION GUIDANCE -->"
@@ -174,7 +220,8 @@ CAMPAIGN_QUEUE_GUIDANCE = f"""{CAMPAIGN_QUEUE_GUIDANCE_START}
 
 - Keep durable owner-facing campaign state under first-sorted `work/00-campaigns/`; keep `work/01-q&a/ask.txt` as transient intake.
 - Treat `ts: queue` and `ts: status` as requests to read the active owner capsule and validate lifecycle state.
-- Treat `ts: next` as a request to select the first ready campaign, then execute only that campaign under its natural coordination and requested work level.
+- Treat bare `ts: next` as a request to resume the working campaign or select the first ready campaign, then execute only that campaign under its natural coordination and requested work level.
+- Treat `ts: next 1,2` and `ts: next que 1,2` as ordered queue-position batches, `ts: next camp 025,example-id` as an ordered stable campaign-number-or-ID batch, and `ts: next *` as every campaign in one fresh validated active-queue snapshot. Resolve the complete selection to stable IDs before execution, reject duplicates or invalid targets, retain the snapshot so wildcard excludes later additions, resume a selected working campaign first, and run sequentially with at most one working campaign. After each passed completion gate, complete through the guarded lifecycle command, refresh and validate campaign/index/stale-path/work state, and recompute readiness. Stop at the first failure, blocker, decision, stale state, dependency, protected action, or authority boundary and report completed and remaining IDs with the exact resume point. Batch scope never grants work5, deployment, release, production promotion, destructive, credential, or other consequential authority.
 - In owner-queue requests, interpret `camp` as `campaign`. Interpret `que N` as the mutable 1-based queue position, resolved from a fresh status read; a heading such as `1. (004) Title` distinguishes queue position 1 from stable campaign number 004, and every card separately displays its full stable `Campaign ID`. Name lifecycle requests `<number>-<campaign-id>.md`, preserve matching numeric ID prefixes, use guarded `backfill-numbers` to rename legacy slug-only histories and refresh projections, and accept an exact zero-padded number or full Campaign ID for lifecycle commands. Never guess a missing or out-of-range position.
 - Treat `ts: add`, `ts: unblock`, `ts: defer`, `ts: abandon`, and campaign completion as exact lifecycle mutations. `ts: unblock` returns blocked work to queued state, clears its decision, and does not start it. Read the current state token immediately before writing and reject stale state.
 - Treat `ts: reconcile campaigns` as authorization for `reconcile_campaign_queue.py` to automatically create or refresh exactly one Dangler Resolution campaign as the first queued work while preserving any working campaign. Report whole-work coverage, exclusions, and queue drift. Use `--dry-run` for read-only inspection. Apply all other operations only from an exact approved manifest with the reported whole-work state token; never apply proposed execution order or ambiguous lifecycle decisions implicitly.
@@ -254,7 +301,10 @@ def ensure_provider_guidance(repository: Path, provider_id: str) -> tuple[Path, 
     updated = existing
     for start, end, guidance in (
         (ROUTING_GUIDANCE_START, ROUTING_GUIDANCE_END, ROUTING_GUIDANCE),
+        (DOCTOR_GUIDANCE_START, DOCTOR_GUIDANCE_END, DOCTOR_GUIDANCE),
+        (IDENTITY_GUIDANCE_START, IDENTITY_GUIDANCE_END, IDENTITY_GUIDANCE),
         (DISCUSSION_GUIDANCE_START, DISCUSSION_GUIDANCE_END, DISCUSSION_GUIDANCE),
+        (HELP_GUIDANCE_START, HELP_GUIDANCE_END, HELP_GUIDANCE),
         (COORDINATION_GUIDANCE_START, COORDINATION_GUIDANCE_END, COORDINATION_GUIDANCE),
         (GUIDANCE_START, GUIDANCE_END, GUIDANCE),
     ):
@@ -427,6 +477,10 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Refresh provider instruction blocks without changing work/, indexes, inboxes, or .gitignore.",
     )
+    parser.add_argument(
+        "--project-binding",
+        help="Current binding from project_identity.py identity --operation workspace-install.",
+    )
     return parser.parse_args()
 
 
@@ -472,16 +526,37 @@ def main() -> int:
             print("Guidance-only installation requires the exact Git repository root.", file=sys.stderr)
             return 1
         try:
+            load_project_identity(root)
+            require_project_binding(
+                root,
+                args.project_binding,
+                operation="workspace-install",
+            )
             for provider_id in providers:
                 guidance_path, changed = ensure_provider_guidance(repository, provider_id)
                 state = "updated" if changed else "current"
                 print(f"Provider guidance ({provider_id}): {state} at {guidance_path}.")
-        except ValueError as error:
+        except (ProjectIdentityError, ValueError) as error:
             print(f"Provider guidance failed: {error}", file=sys.stderr)
             return 1
         if "codex" in providers:
             report_codex_skill_state()
         return 0
+    identity_exists = (root / IDENTITY_RELATIVE_PATH).exists() or any(
+        (root / relative).exists() for relative in LEGACY_IDENTITY_PATHS
+    )
+    try:
+        if identity_exists:
+            load_project_identity(root)
+            require_project_binding(
+                root,
+                args.project_binding,
+                operation="workspace-install",
+            )
+        identity, identity_created = ensure_project_identity(root)
+    except ProjectIdentityError as error:
+        print(f"Project identity failed: {error}", file=sys.stderr)
+        return 1
     ensure_work_tree(root)
     try:
         migrated_inboxes = migrate_legacy_q_and_a(root)
@@ -525,6 +600,11 @@ def main() -> int:
         )
 
     print(f"Initialized work tree under {root / 'work'}")
+    identity_state = "created" if identity_created else "preserved"
+    print(
+        f"Project identity: {identity_state} {identity['project_id']} at "
+        f"{root / 'work' / 'tool-shed-project.json'}"
+    )
     canonical_ask = root / "work" / "01-q&a" / "ask.txt"
     if ask_created:
         print(f"Initialized Tool Shed Q&A inbox at {canonical_ask}")

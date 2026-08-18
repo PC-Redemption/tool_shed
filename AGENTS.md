@@ -120,7 +120,8 @@
 
 - Keep durable owner-facing campaign state under first-sorted `work/00-campaigns/`; keep `work/01-q&a/ask.txt` as transient intake.
 - Treat `ts: queue` and `ts: status` as requests to read the active owner capsule and validate lifecycle state.
-- Treat `ts: next` as a request to select the first ready campaign, then execute only that campaign under its natural coordination and requested work level.
+- Treat bare `ts: next` as a request to resume the working campaign or select the first ready campaign, then execute only that campaign under its natural coordination and requested work level.
+- Treat `ts: next 1,2` and `ts: next que 1,2` as ordered queue-position batches, `ts: next camp 025,example-id` as an ordered stable campaign-number-or-ID batch, and `ts: next *` as every campaign in one fresh validated active-queue snapshot. Resolve the complete selection to stable IDs before execution, reject duplicates or invalid targets, retain the snapshot so wildcard excludes later additions, resume a selected working campaign first, and run sequentially with at most one working campaign. After each passed completion gate, complete through the guarded lifecycle command, refresh and validate campaign/index/stale-path/work state, and recompute readiness. Stop at the first failure, blocker, decision, stale state, dependency, protected action, or authority boundary and report completed and remaining IDs with the exact resume point. Batch scope never grants work5, deployment, release, production promotion, destructive, credential, or other consequential authority.
 - In owner-queue requests, interpret `camp` as `campaign`. Interpret `que N` as the mutable 1-based queue position, resolved from a fresh status read; a heading such as `1. (004) Title` distinguishes queue position 1 from stable campaign number 004, and every card separately displays its full stable `Campaign ID`. Name lifecycle requests `<number>-<campaign-id>.md`, preserve matching numeric ID prefixes, use guarded `backfill-numbers` to rename legacy slug-only histories and refresh projections, and accept an exact zero-padded number or full Campaign ID for lifecycle commands. Never guess a missing or out-of-range position.
 - Treat `ts: add`, `ts: unblock`, `ts: defer`, `ts: abandon`, and campaign completion as exact lifecycle mutations. `ts: unblock` returns blocked work to queued state, clears its decision, and does not start it. Read the current state token immediately before writing and reject stale state.
 - Treat `ts: reconcile campaigns` as authorization for `reconcile_campaign_queue.py` to automatically create or refresh exactly one Dangler Resolution campaign as the first queued work while preserving any working campaign. Report whole-work coverage, exclusions, and queue drift. Use `--dry-run` for read-only inspection. Apply all other operations only from an exact approved manifest with the reported whole-work state token; never apply proposed execution order or ambiguous lifecycle decisions implicitly.
@@ -144,3 +145,32 @@
 - Materialized campaigns must reference their Roadmap, Roadmap Revision, Milestone, and Unlocks Gate. Creating them does not authorize starting, deploying, releasing, or promoting them.
 - Installation and upgrade create only the empty compatible topology. They never ingest work, propose or approve a roadmap, or materialize campaigns implicitly.
 <!-- END TOOL SHED PROGRAM ROADMAP GUIDANCE -->
+
+<!-- BEGIN TOOL SHED HELP GUIDANCE -->
+## Tool Shed help route
+
+- For `ts: help`, read the workspace-local operator guide and return a concise use-case menu. For `ts: commands` or `ts: help all`, read the local command reference and return its complete groups and usage. For `ts: help <topic-or-command>`, read the relevant local command and operator-guide sections and return focused usage and examples.
+- Every `ts: help`-family response must visibly include `Browse Tool Shed help: https://ts.rookaro.com/`.
+- `ts: commands` and `ts: help all` responses must also include `Browse the complete command reference: https://ts.rookaro.com/ref/`.
+- A focused response may add a defined stable topic URL, but it must retain the root help link.
+- Public links supplement local offline help. Never replace the local reads, perform a request-time network check, or make rendering depend on site availability.
+<!-- END TOOL SHED HELP GUIDANCE -->
+
+<!-- BEGIN TOOL SHED WORKSPACE IDENTITY GUIDANCE -->
+## Tool Shed workspace identity boundary
+
+- Before the first workspace mutation in a session, run the workspace-local `project_identity.py identity` command with the intended operation and surface its project name, stable project ID, resolved root, repository fingerprint, active campaign or operation, and session binding.
+- Bind the session to that exact project ID and resolved root. Pass the returned operation-specific project binding and fresh project-bound state token to deterministic mutation commands.
+- Treat any missing, malformed, duplicate, conflicting, foreign-project, or root-mismatched identity or token as a hard failure with no partial write.
+- If a referenced absolute path resolves outside the bound root, output `WORKSPACE_MISMATCH` and stop. A path mention or read-only inspection is evidence, not authorization to switch workspaces.
+- Treat `ts: use <project-alias-or-path>` as the only explicit workspace-switch route. Verify the target identity, reload that target's instructions and Tool Shed skill, and obtain fresh target-bound state before acting.
+- Apply the same fence to generic file-editing and shell tools; they may not bypass the identity checks enforced by lifecycle scripts. Read-only cross-project inspection never changes the active binding.
+<!-- END TOOL SHED WORKSPACE IDENTITY GUIDANCE -->
+
+<!-- BEGIN TOOL SHED DOCTOR GUIDANCE -->
+## Tool Shed workspace doctor
+
+- Treat `ts: doctor` as a request to run the workspace-local `scripts/doctor.py --workspace .` read-only health audit.
+- Report its single `HEALTHY`, `DEGRADED`, `NEEDS_DECISION`, or `INVALID` verdict, compact finding classes and counts, and exact next actions. Distinguish internally verified structure from external or runtime truth that was not observed.
+- `--strict` fails unless fully healthy. `ts: doctor --repair` may regenerate deterministic work indexes only after source validation and exact current `doctor-repair` project-binding and state tokens; it never changes lifecycle state, chooses semantic truth, fabricates evidence, or applies reconciliation.
+<!-- END TOOL SHED DOCTOR GUIDANCE -->
