@@ -2069,11 +2069,17 @@ Next Action: keep going
             queue = queue_path.read_text(encoding="utf-8")
             self.assertIn("- Next: none", queue)
             self.assertIsNone(status()["next"])
-            self.assertIsNone(json.loads(
+            empty_next = json.loads(
                 run_script(
                     "scripts/campaign_queue.py", "--workspace", str(workspace), "next", "--json",
                 ).stdout
-            ))
+            )
+            self.assertIsNone(empty_next["campaign_id"])
+            self.assertEqual(empty_next["cycle_state"]["owning_cycle"], "queue")
+            self.assertEqual(
+                empty_next["cycle_state"]["next_transition"]["command"],
+                "ts: status",
+            )
 
             add("independent")
             queue = queue_path.read_text(encoding="utf-8")
@@ -2145,16 +2151,16 @@ Next Action: keep going
             add("gamma", "beta")
 
             bare = select()
+            self.assertEqual(bare["campaign_id"], "alpha")
+            self.assertEqual(bare["campaign_number"], "001")
+            self.assertEqual(bare["path"], "work/00-campaigns/active/001-alpha.md")
+            self.assertEqual(bare["source"], "campaign-queue")
+            self.assertEqual(bare["status"], "queued")
+            self.assertEqual(bare["title"], "Alpha")
+            self.assertEqual(bare["cycle_state"]["owning_cycle"], "queue")
             self.assertEqual(
-                bare,
-                {
-                    "campaign_id": "alpha",
-                    "campaign_number": "001",
-                    "path": "work/00-campaigns/active/001-alpha.md",
-                    "source": "campaign-queue",
-                    "status": "queued",
-                    "title": "Alpha",
-                },
+                bare["cycle_state"]["dimensions"]["work_origin"],
+                "owner-originated",
             )
 
             token = status()["state_token"]
@@ -2165,6 +2171,11 @@ Next Action: keep going
             self.assertTrue(shorthand["executable"])
             self.assertIsNone(shorthand["planned_stop"])
             self.assertIn("does not authorize work5", shorthand["authority"])
+            human_shorthand = run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace),
+                "next", "1,2",
+            ).stdout
+            self.assertIn("Selected campaign: alpha, beta", human_shorthand)
 
             explicit_positions = select("que", "2,1")
             self.assertEqual(explicit_positions["selection_mode"], "queue-positions")

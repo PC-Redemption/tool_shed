@@ -166,6 +166,9 @@ def smoke_temp_workspace() -> None:
         campaign_contract = (
             "work/00-campaigns/",
             "work/01-q&a/ask.txt` as transient intake",
+            "Cycle State Capsule",
+            "Program Cycle → Milestone Wave Cycle → Queue Cycle → Campaign Cycle → Evidence Loop",
+            "Roadmap traceability is roadmap-derived",
             "interpret `camp` as `campaign`",
             "Interpret `que N`",
             "`ts: unblock`",

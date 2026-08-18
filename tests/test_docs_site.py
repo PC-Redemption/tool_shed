@@ -141,6 +141,25 @@ class DocumentationSiteTests(unittest.TestCase):
             ):
                 self.assertIn(detail, page)
 
+    def test_campaign_help_teaches_nested_cycles_and_empty_queue_return(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            public, _ = SITE_BUILDER.build(Path(temporary) / "bundle")
+            campaign_help = (public / "help" / "campaigns" / "index.html").read_text(
+                encoding="utf-8"
+            )
+            queue_guide = (public / "guide" / "queue-and-select" / "index.html").read_text(
+                encoding="utf-8"
+            )
+            for detail in (
+                "Program → Milestone Wave → Queue → Campaign → Evidence",
+                "direct, owner-originated, roadmap-derived, or detour",
+                "Empty is not complete",
+                "Cycle State Capsule",
+            ):
+                self.assertIn(detail, campaign_help)
+            self.assertIn("higher-level cycle owns the transition", queue_guide)
+            self.assertIn("higher-level approvals remain separate", queue_guide)
+
     def test_compact_layout_removes_large_card_minimums(self) -> None:
         css = (ROOT / "site" / "assets" / "site.css").read_text(encoding="utf-8")
         self.assertNotIn("min-height: 13rem", css)

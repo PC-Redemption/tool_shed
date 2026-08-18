@@ -108,6 +108,40 @@ a numbered route, resolve it with `tool_shed/scripts/work_level_config.py`; alia
 canonical level, lower-level envelopes do not repeat, and absent configuration preserves the
 standard definitions above. See [workspace work-level customization](work-level-customization.md).
 
+## Nested Cycles And Work Origin
+
+Tool Shed names five nested control cycles. Completing an inner cycle returns control to its
+owner; it does not imply that the outer outcome is complete.
+
+| Cycle | Repeating transition | Complete when | Control returns to |
+| --- | --- | --- | --- |
+| Program Cycle | Approve roadmap → execute milestone waves → review drift/revise | Intended program outcome and all applicable gates pass | Owner/program review |
+| Milestone Wave Cycle | Derive plan → exact approval → materialize → run queue → evaluate gate | Milestone campaigns and evidence gate pass | Program Cycle |
+| Queue Cycle | Select ready campaign → run campaign cycle → repeat | No ready campaign remains | Milestone Wave Cycle, Program Cycle, or owner |
+| Campaign Cycle | Start → execute → verify gate → complete or block | Completion gate passes with evidence and lifecycle record completes | Queue Cycle |
+| Evidence Loop | Observe → act → verify → adapt | Actual state matches expected state or a real blocker is proven | Current Campaign Cycle |
+
+Work origin is computed from existing state: no queue record is `direct`; a campaign with
+`Roadmap` traceability is `roadmap-derived`; `Detour For` or `Return To` makes it `detour`; any
+other queued campaign is `owner-originated`. Do not call origin “standalone”: `Campaign:
+standalone` already means a work artifact intentionally outside campaign coverage.
+
+These four dimensions remain independent:
+
+| Dimension | Question | Values |
+| --- | --- | --- |
+| Work origin | Where did the work come from? | direct, owner-originated, roadmap-derived, detour |
+| Coordination | How much structure does it need? | Direct, Guided, Coordinated, Deep |
+| Execution endpoint | How far should it run? | work1 through work5 |
+| Cycle state | Which loop owns the next transition? | evidence, campaign, queue, milestone wave, program |
+
+A roadmap-derived campaign can still use Direct coordination and stop at work1. `ts: overview`,
+`ts: status`, and `ts: next` expose the same JSON and human-readable Cycle State Capsule. When no
+campaign is ready, `next` rolls control upward and reports the owning cycle plus one safe command:
+Dangler Resolution, exact persisted campaign-plan approval, incomplete milestone/gate review,
+next-milestone derivation, roadmap drift review, completed program, or an owner choice between
+direct work and `ts: add`. It never approves, materializes, starts, or revises implicitly.
+
 ## Owner Campaign Queue
 
 Durable owner-facing state lives under `work/00-campaigns/`.
@@ -117,10 +151,10 @@ state token. Read-only status and validation do not require a mutation binding.
 
 | Prompt | Usage |
 | --- | --- |
-| `ts: status` | Show and validate the active owner capsule, including any pending or active Dangler Resolution campaign for unclassified work. |
+| `ts: status` | Show and validate the active owner capsule and shared Cycle State Capsule, including any pending or active Dangler Resolution campaign. |
 | `ts: queue` | Alias for `ts: status`. |
 | `ts: completed` | Summarize recent verified campaign completions. |
-| `ts: next` | Resume the working campaign or select and execute the first ready campaign; this remains the safe single-campaign default. |
+| `ts: next` | Resume the working campaign or select the first ready campaign; when none is ready, report the owning higher-level cycle and exact safe transition. |
 | `ts: next 1,2` | Execute an ordered batch from mutable queue positions in one fresh snapshot; this compatibility shorthand is equivalent to `que 1,2`. |
 | `ts: next que 1,2` | Execute explicit queue positions sequentially after resolving all of them to stable campaign IDs. |
 | `ts: next camp <number-or-id,...>` | Execute an ordered batch of exact zero-padded campaign numbers or full Campaign IDs. |
@@ -246,7 +280,10 @@ python3 tool_shed/scripts/program_roadmap.py --workspace . overview --json
 ```
 
 Roadmap and campaign-plan approval are separate authority boundaries. Every mutation rejects stale
-source, roadmap, or queue state. Existing standalone maps and queues remain supported.
+source, roadmap, or queue state. Existing standalone maps and queues remain supported. When an
+operator explicitly persists an exact derived plan under `work/roadmaps/campaign-plans/*.json`,
+the shared Cycle State Capsule recognizes it only while its roadmap, queue, and manifest token
+remain current; otherwise it reports derivation rather than inventing pending approval state.
 
 ## Q&A Inbox
 

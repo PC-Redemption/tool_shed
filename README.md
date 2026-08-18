@@ -412,6 +412,18 @@ uncertain history stays uncertain, approved revisions are preserved when superse
 completion evidence rolls up to stable milestones and gates. Installation and upgrade create only
 the compatible empty directory—they never ingest or approve planning implicitly.
 
+The operating model is nested: Program Cycle → Milestone Wave Cycle → Queue Cycle → Campaign
+Cycle → Evidence Loop. Each inner completion returns control to its owner; an empty queue does not
+mean the milestone or program is done. `ts: overview`, `ts: status`, and `ts: next` share one Cycle
+State Capsule that identifies the owning cycle and exact safe transition, including pending exact
+plan approval, milestone derivation or gate review, roadmap review/completion, and the absence of a
+higher-level driver. The capsule never approves or materializes work.
+
+Work origin is independently computed as `direct`, `owner-originated`, `roadmap-derived`, or
+`detour`. It remains separate from Direct/Guided/Coordinated/Deep coordination, the work1–work5
+execution endpoint, and the current cycle state. `Campaign: standalone` keeps its existing meaning
+for work-artifact coverage and is not reused as an origin label.
+
 During installation or upgrade, Tool Shed copies and byte-verifies every file from legacy
 `work/q&a/` and root `q&a/` into `work/01-q&a/`. Name collisions are preserved with
 source-specific filenames; the old folders are removed only after verification.

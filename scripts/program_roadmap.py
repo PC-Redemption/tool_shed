@@ -857,6 +857,281 @@ def roadmap_payload(workspace: Path, roadmap: Roadmap) -> dict[str, Any]:
     }
 
 
+def campaign_origin(campaign: campaign_queue.Campaign | None) -> str:
+    """Compute work origin without adding another campaign header."""
+    if campaign is None:
+        return "direct"
+    if campaign.fields.get("Detour For", "none") != "none" or campaign.fields.get("Return To", "none") != "none":
+        return "detour"
+    if campaign.fields.get("Roadmap", "none") != "none":
+        return "roadmap-derived"
+    return "owner-originated"
+
+
+def _current_campaign_plan(
+    workspace: Path,
+    roadmap: Roadmap,
+    milestone_id: str,
+    expected: dict[str, Any],
+) -> dict[str, Any] | None:
+    plan_root = roadmap_root(workspace) / "campaign-plans"
+    if not plan_root.is_dir():
+        return None
+    for path in sorted(plan_root.glob("*.json")):
+        try:
+            payload = _load_json(path)
+        except (OSError, json.JSONDecodeError, RoadmapError):
+            continue
+        if (
+            payload.get("kind") == CAMPAIGN_PLAN_KIND
+            and payload.get("roadmap_id") == roadmap.roadmap_id
+            and payload.get("roadmap_revision") == roadmap.revision
+            and payload.get("milestone") == milestone_id
+            and payload.get("manifest_token") == expected.get("manifest_token")
+            and payload == expected
+        ):
+            return {
+                "path": path.relative_to(workspace).as_posix(),
+                "manifest_token": payload["manifest_token"],
+            }
+    return None
+
+
+def cycle_state_capsule(
+    workspace: Path,
+    *,
+    campaigns: dict[str, campaign_queue.Campaign] | None = None,
+    order: list[str] | None = None,
+    dangler_resolution: dict[str, object] | None = None,
+) -> dict[str, Any]:
+    """Return the shared nested-cycle projection used by overview, status, and next."""
+    campaigns = campaigns if campaigns is not None else (
+        campaign_queue.load_all(workspace)
+        if campaign_queue.campaign_root(workspace).is_dir()
+        else {}
+    )
+    order = order if order is not None else (
+        campaign_queue.queue_order(workspace)
+        if campaign_queue.campaign_root(workspace).is_dir()
+        else []
+    )
+    active = [campaigns[item] for item in order if item in campaigns]
+    working = next((item for item in active if item.status == "working"), None)
+    ready = campaign_queue.first_ready_campaign(order, campaigns) if order else None
+    blocked = [
+        item for item in active
+        if campaign_queue.campaign_readiness(item, campaigns) in {"blocked", "waiting"}
+    ]
+    selected = working or ready or (blocked[0] if blocked else None)
+    origin = campaign_origin(selected)
+    queue_state = (
+        "campaign-running" if working
+        else "ready" if ready
+        else "blocked-or-waiting" if blocked
+        else "empty"
+    )
+    campaign_cycle = {
+        "state": (
+            "executing" if working
+            else "ready" if ready
+            else "blocked-or-waiting" if blocked
+            else "none"
+        ),
+        "campaign_id": selected.campaign_id if selected else None,
+        "work_origin": origin,
+        "return_to": (
+            selected.fields.get("Return To")
+            if selected and selected.fields.get("Return To", "none") != "none"
+            else None
+        ),
+    }
+    capsule: dict[str, Any] = {
+        "schema_version": 1,
+        "program_cycle": {"state": "none", "roadmap_id": None, "revision": None},
+        "milestone_wave_cycle": {"state": "none", "milestone_id": None, "gate_ids": []},
+        "queue_cycle": {
+            "state": queue_state,
+            "active_count": len(active),
+            "ready_campaign_id": ready.campaign_id if ready else None,
+        },
+        "campaign_cycle": campaign_cycle,
+        "evidence_loop": {
+            "state": "observe-act-verify-adapt" if working or ready else "idle",
+            "returns_control_to": selected.campaign_id if selected else None,
+        },
+        "dimensions": {
+            "work_origin": origin,
+            "coordination_level": "independent-request-dimension",
+            "execution_endpoint": "independent-request-dimension",
+            "cycle_state": "campaign" if working else "queue" if ready or blocked else "owner",
+        },
+        "owning_cycle": "owner",
+        "next_transition": {
+            "command": "ts: add <campaign outcome> or request bounded direct work",
+            "requires_exact_approval": False,
+            "reason": "no active queue item or approved Program Roadmap owns the next transition",
+        },
+    }
+    if working:
+        capsule["owning_cycle"] = "campaign"
+        capsule["dimensions"]["cycle_state"] = "campaign"
+        capsule["next_transition"] = {
+            "command": "ts: next",
+            "requires_exact_approval": False,
+            "reason": f"resume working campaign {working.campaign_id}",
+        }
+        return capsule
+    if ready:
+        capsule["owning_cycle"] = "queue"
+        capsule["dimensions"]["cycle_state"] = "queue"
+        capsule["next_transition"] = {
+            "command": "ts: next",
+            "requires_exact_approval": False,
+            "reason": f"start ready campaign {ready.campaign_id}",
+        }
+        return capsule
+    if dangler_resolution:
+        capsule["owning_cycle"] = "queue"
+        capsule["queue_cycle"]["state"] = "dangler-resolution-pending"
+        capsule["dimensions"]["cycle_state"] = "queue"
+        capsule["next_transition"] = {
+            "command": "ts: reconcile campaigns",
+            "requires_exact_approval": False,
+            "reason": "unclassified unresolved work must enter the queue through Dangler Resolution",
+        }
+        return capsule
+    if blocked:
+        capsule["owning_cycle"] = "queue"
+        capsule["dimensions"]["cycle_state"] = "queue"
+        capsule["next_transition"] = {
+            "command": "ts: status",
+            "requires_exact_approval": True,
+            "reason": "active campaigns are blocked, awaiting decisions, or dependency-constrained",
+        }
+        return capsule
+
+    current = sorted(
+        (item for item in load_roadmaps(workspace) if item.status in CURRENT_STATUSES | {"proposed"}),
+        key=lambda item: (item.roadmap_id, item.revision),
+    )
+    if not current:
+        return capsule
+    roadmap = current[-1]
+    state = roadmap_payload(workspace, roadmap)
+    capsule["program_cycle"] = {
+        "state": roadmap.status,
+        "roadmap_id": roadmap.roadmap_id,
+        "revision": roadmap.revision,
+    }
+    if roadmap.status == "proposed":
+        capsule["owning_cycle"] = "program"
+        capsule["dimensions"]["cycle_state"] = "program"
+        capsule["next_transition"] = {
+            "command": f"ts: approve roadmap {roadmap.fields.get('Proposal Token', '<token>')}",
+            "requires_exact_approval": True,
+            "reason": "the Program Roadmap proposal awaits exact owner approval",
+        }
+        return capsule
+
+    milestone_id = state["computed_current_milestone"]
+    waiting_gates = [gate_id for gate_id, gate in state["gates"].items() if gate["status"] != "passed"]
+    if milestone_id:
+        milestone = state["milestones"][milestone_id]
+        gate_ids = [
+            gate["id"] for gate in roadmap.definition["gates"]
+            if milestone_id in gate["requires_milestones"] or milestone_id in gate["unlocks_milestones"]
+        ]
+        capsule["milestone_wave_cycle"] = {
+            "state": milestone["status"],
+            "milestone_id": milestone_id,
+            "gate_ids": gate_ids,
+        }
+        capsule["owning_cycle"] = "milestone-wave"
+        capsule["dimensions"]["cycle_state"] = "milestone-wave"
+        if milestone["status"] == "active":
+            capsule["next_transition"] = {
+                "command": "ts: roadmap status",
+                "requires_exact_approval": True,
+                "reason": "the materialized milestone or its evidence gate is incomplete with no ready campaign",
+            }
+            return capsule
+        expected_plan = derive(workspace, roadmap.roadmap_id, milestone_id)
+        pending = _current_campaign_plan(workspace, roadmap, milestone_id, expected_plan)
+        if pending:
+            capsule["milestone_wave_cycle"]["state"] = "awaiting-plan-approval"
+            capsule["next_transition"] = {
+                "command": f"ts: approve campaign plan {pending['manifest_token']}",
+                "requires_exact_approval": True,
+                "reason": f"the exact campaign plan at {pending['path']} awaits owner approval",
+            }
+        else:
+            capsule["milestone_wave_cycle"]["state"] = "derivable"
+            capsule["next_transition"] = {
+                "command": f"ts: derive campaigns for milestone {milestone_id}",
+                "requires_exact_approval": False,
+                "reason": "the next incomplete milestone is ready for read-only campaign derivation",
+            }
+        return capsule
+    if waiting_gates:
+        capsule["milestone_wave_cycle"] = {
+            "state": "awaiting-gate-evidence",
+            "milestone_id": None,
+            "gate_ids": waiting_gates,
+        }
+        capsule["owning_cycle"] = "milestone-wave"
+        capsule["dimensions"]["cycle_state"] = "milestone-wave"
+        capsule["next_transition"] = {
+            "command": "ts: roadmap status",
+            "requires_exact_approval": True,
+            "reason": f"milestones are complete but gate evidence remains incomplete: {', '.join(waiting_gates)}",
+        }
+        return capsule
+    if state["source_drift"]:
+        capsule["program_cycle"]["state"] = "review-required"
+        capsule["owning_cycle"] = "program"
+        capsule["dimensions"]["cycle_state"] = "program"
+        capsule["next_transition"] = {
+            "command": "ts: review roadmap",
+            "requires_exact_approval": False,
+            "reason": "approved roadmap inputs changed; review is required before any revision proposal",
+        }
+        return capsule
+    capsule["program_cycle"]["state"] = "complete"
+    capsule["owning_cycle"] = "program"
+    capsule["dimensions"]["cycle_state"] = "program"
+    capsule["next_transition"] = {
+        "command": "none",
+        "requires_exact_approval": False,
+        "reason": "all roadmap milestones and applicable gates are complete",
+    }
+    return capsule
+
+
+def render_cycle_state(capsule: dict[str, Any]) -> str:
+    program = capsule["program_cycle"]
+    milestone = capsule["milestone_wave_cycle"]
+    campaign = capsule["campaign_cycle"]
+    roadmap_label = (
+        f"{program['roadmap_id']} r{program['revision']}"
+        if program["roadmap_id"]
+        else "none"
+    )
+    return "\n".join(
+        [
+            "Cycle State Capsule:",
+            f"Program Cycle: {roadmap_label} / {program['state']}",
+            f"Milestone Wave: {milestone['milestone_id'] or 'none'} / {milestone['state']}",
+            f"Queue Cycle: {capsule['queue_cycle']['state']}",
+            f"Campaign Cycle: {campaign['campaign_id'] or 'none'} / {campaign['state']}",
+            f"Evidence Loop: {capsule['evidence_loop']['state']}",
+            f"Work Origin: {capsule['dimensions']['work_origin']}",
+            f"Owning Cycle: {capsule['owning_cycle']}",
+            f"Next Transition: {capsule['next_transition']['command']}",
+            f"Reason: {capsule['next_transition']['reason']}",
+        ]
+    )
+
+
 def derive(workspace: Path, roadmap_id: str, milestone_id: str) -> dict[str, Any]:
     roadmap = find_roadmap(workspace, roadmap_id)
     if roadmap.status not in {"approved", "executing"}:
@@ -1025,6 +1300,11 @@ def overview(workspace: Path) -> dict[str, Any]:
         drift.extend(f"campaign queue: {item}" for item in queue.get("findings", []))
     if any(item["source_drift"] for item in roadmap_states):
         drift.append("approved roadmap source inputs changed")
+    cycle_state = (
+        queue["cycle_state"]
+        if queue
+        else cycle_state_capsule(workspace, campaigns={}, order=[])
+    )
     return {
         "schema_version": SCHEMA_VERSION,
         "writes_performed": False,
@@ -1034,6 +1314,7 @@ def overview(workspace: Path) -> dict[str, Any]:
         "focus_area_coverage": focus_coverage,
         "index_drift": discovery["index_drift"],
         "campaign_queue": queue,
+        "cycle_state": cycle_state,
         "recommended_next": {"strategic": strategic, "execution": execution},
         "drift_findings": sorted(set(drift)),
     }
@@ -1135,7 +1416,18 @@ def main() -> int:
     ) as error:
         print(f"Program Roadmap operation failed: {error}", file=sys.stderr)
         return 2
-    print(json.dumps(payload, indent=2, sort_keys=True))
+    if args.command == "overview" and not args.json:
+        print(render_cycle_state(payload["cycle_state"]))
+        print(
+            "Strategic recommendation: "
+            + str(payload["recommended_next"]["strategic"] or "none")
+        )
+        print(
+            "Execution recommendation: "
+            + str(payload["recommended_next"]["execution"] or "none")
+        )
+    else:
+        print(json.dumps(payload, indent=2, sort_keys=True))
     return 0
 
 

@@ -171,6 +171,22 @@ not the campaign itself.
 
 Durable owner-facing campaign state lives under first-sorted `work/00-campaigns/`:
 
+Use one shared Cycle State Capsule calculation for `overview`, `status`, and `next`. The nested
+cycles are Program → Milestone Wave → Queue → Campaign → Evidence. Evidence returns to Campaign,
+Campaign to Queue, Queue to the owning Milestone Wave/Program/owner, and Milestone Wave to Program;
+Program completes only when its intended outcome and applicable gates complete. Compute work
+origin without a new required header: no queue record is `direct`, Roadmap traceability is
+`roadmap-derived`, Detour For/Return To is `detour`, and other queued work is
+`owner-originated`. Keep origin independent from coordination, work1–work5 endpoint, and cycle
+state; do not reuse `Campaign: standalone` as an origin.
+
+When bare `next` has no ready campaign, report the owning cycle and exact safe transition in this
+order: pending Dangler Resolution; an exact current campaign-plan manifest awaiting approval; an
+incomplete materialized milestone or evidence gate; a derivable next milestone; roadmap drift
+requiring review; fully completed roadmap; or no higher-level driver. Never turn the capsule into
+implicit approval, materialization, lifecycle mutation, roadmap revision, protected action, or
+release authority.
+
 - `active-queue.md`: canonical ordered queue plus last completed, working now, next, blockers,
   decisions, and detour/return state;
 - `completed-queue.md`: newest-first verified completion history;

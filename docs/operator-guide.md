@@ -309,6 +309,42 @@ When review is genuinely required, the agent points to the exact file or result 
 states the exact question or approval, and explains what resumes afterward. A vague request to
 "review this" or "let me know" is not a valid handoff.
 
+## Follow The Nested Cycles
+
+Tool Shed uses one nested control model:
+
+```text
+Program Cycle
+└─ Milestone Wave Cycle
+   └─ Queue Cycle
+      └─ Campaign Cycle
+         └─ Evidence Loop
+```
+
+- The Evidence Loop observes, acts, verifies, and adapts until reality matches expectation or a
+  real blocker is proven; control returns to the current campaign.
+- The Campaign Cycle starts, executes, verifies its completion gate, and completes or blocks;
+  control returns to the queue.
+- The Queue Cycle selects and runs ready campaigns until none remains; an empty queue returns
+  control upward and never proves the milestone or program complete.
+- The Milestone Wave Cycle derives a plan, obtains exact approval, materializes campaigns, runs
+  the queue, and evaluates its gate; control returns to the Program Cycle.
+- The Program Cycle executes approved milestone waves, reviews drift, and revises only through
+  exact proposal/approval; it ends when the intended outcome and every applicable gate complete.
+
+Work origin is separate: `direct` has no queue record, `owner-originated` was deliberately added,
+`roadmap-derived` carries Roadmap/Revision/Milestone/Gate traceability, and `detour` carries
+`Detour For` or `Return To`. Origin does not choose coordination or execution: roadmap-derived
+work may remain Direct and stop at work1. Likewise Direct, Guided, Coordinated, or Deep describes
+structure; work1–work5 describes the endpoint; cycle state says which loop owns the next move.
+
+`ts: overview`, `ts: status`, and `ts: next` render one shared Cycle State Capsule in human and
+JSON output. With no ready campaign, it checks Dangler Resolution, a persisted exact campaign plan
+awaiting approval, incomplete milestone/gate state, a derivable milestone, roadmap drift, completed
+program state, then the absence of any higher-level driver. The reported transition is guidance,
+not authority: plan approval, materialization, lifecycle, protected-environment, and release
+boundaries stay unchanged.
+
 ## Owner Campaign Queue
 
 Tool Shed places durable owner-facing execution state in the first-sorted

@@ -1358,6 +1358,23 @@ def dangler_resolution_visibility(
     )
 
 
+def cycle_state_payload(
+    workspace: Path,
+    campaigns: dict[str, Campaign],
+    order: list[str],
+    dangler_resolution: dict[str, object] | None,
+) -> dict[str, object]:
+    # Import lazily because Program Roadmaps build on queue lifecycle primitives in this module.
+    import program_roadmap
+
+    return program_roadmap.cycle_state_capsule(
+        workspace,
+        campaigns=campaigns,
+        order=order,
+        dangler_resolution=dangler_resolution,
+    )
+
+
 def _selector_values(values: list[str]) -> list[str]:
     result = [
         item.strip()
@@ -1538,6 +1555,9 @@ def targeted_next_payload(
     }
     if dangler_resolution:
         payload["dangler_resolution"] = dangler_resolution
+    payload["cycle_state"] = cycle_state_payload(
+        workspace, campaigns, order, dangler_resolution
+    )
     return payload
 
 
@@ -1562,7 +1582,7 @@ def status_payload(workspace: Path) -> dict[str, object]:
     ]
     dangler_resolution = dangler_resolution_visibility(workspace, campaigns, order)
     next_campaign = ready.campaign_id if ready else None
-    return {
+    payload: dict[str, object] = {
         "project": target_capsule(workspace, operation="campaign-queue"),
         "state_token": state_token(workspace),
         "active_order": order,
@@ -1595,6 +1615,41 @@ def status_payload(workspace: Path) -> dict[str, object]:
         "dangler_resolution": dangler_resolution,
         "findings": validate(workspace),
     }
+    payload["cycle_state"] = cycle_state_payload(
+        workspace, campaigns, order, dangler_resolution
+    )
+    return payload
+
+
+def render_status_human(payload: dict[str, object]) -> str:
+    import program_roadmap
+
+    lines = [
+        f"Campaign state token: {payload['state_token']}",
+        "Working: " + (", ".join(payload["working"]) if payload["working"] else "none"),
+        f"Next: {payload['next'] or 'none'}",
+        "Blocked: " + (", ".join(payload["blocked"]) if payload["blocked"] else "none"),
+        program_roadmap.render_cycle_state(payload["cycle_state"]),
+    ]
+    findings = payload.get("findings", [])
+    if findings:
+        lines.append("Findings: " + "; ".join(str(item) for item in findings))
+    return "\n".join(lines)
+
+
+def render_next_human(payload: dict[str, object]) -> str:
+    import program_roadmap
+
+    campaign_id = payload.get("campaign_id")
+    if campaign_id is None:
+        target_ids = payload.get("target_ids", [])
+        if isinstance(target_ids, list) and target_ids:
+            campaign_id = ", ".join(str(item) for item in target_ids)
+    lines = [
+        f"Selected campaign: {campaign_id or 'none'}",
+        program_roadmap.render_cycle_state(payload["cycle_state"]),
+    ]
+    return "\n".join(lines)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -1694,8 +1749,21 @@ def main() -> int:
                 dangler_resolution = dangler_resolution_visibility(workspace, campaigns, order)
                 if candidate is None and dangler_resolution:
                     payload = dict(dangler_resolution)
+                    payload["cycle_state"] = cycle_state_payload(
+                        workspace, campaigns, order, dangler_resolution
+                    )
                 elif candidate is None:
-                    payload = None
+                    payload = {
+                        "campaign_id": None,
+                        "campaign_number": None,
+                        "title": None,
+                        "status": None,
+                        "path": None,
+                        "source": "cycle-state",
+                        "cycle_state": cycle_state_payload(
+                            workspace, campaigns, order, None
+                        ),
+                    }
                 else:
                     payload = {
                         "campaign_id": candidate.campaign_id,
@@ -1704,6 +1772,9 @@ def main() -> int:
                         "status": candidate.status,
                         "path": candidate.path.relative_to(workspace).as_posix(),
                         "source": "campaign-queue",
+                        "cycle_state": cycle_state_payload(
+                            workspace, campaigns, order, dangler_resolution
+                        ),
                     }
                     if dangler_resolution:
                         payload["dangler_resolution"] = dangler_resolution
@@ -1733,6 +1804,10 @@ def main() -> int:
         return 2
     if args.json:
         print(json.dumps(payload, indent=2, sort_keys=True))
+    elif args.command == "status" and isinstance(payload, dict):
+        print(render_status_human(payload))
+    elif args.command == "next" and isinstance(payload, dict):
+        print(render_next_human(payload))
     else:
         if isinstance(payload, dict) and "state_token" in payload:
             print(f"Campaign state token: {payload['state_token']}")
