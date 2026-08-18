@@ -104,7 +104,7 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
-  "notes": "Publish the compact guided workflow site and complete workspace work-level customization help; harden campaign-number upgrade convergence for legacy empty queues, exact inbound-reference planning, transactional rollback coverage, and stage diagnostics; add safe targeted and wildcard ts: next batches with snapshot-stable IDs, sequential completion gates, resumable stops, and preserved authority boundaries; expose public Tool Shed help and command-reference links in every locally rendered help route without introducing a network dependency.",
+  "notes": "Publish compact guided workflows and work-level customization help; fix reference layout and asset cache busting; harden campaign-number upgrade convergence; add public help links and stable targeted and wildcard campaign batches; fail closed on cross-workspace mutations with project identity; surface nested cycle ownership; add a read-only workspace doctor.",
   "release_commit": null,
   "release_tag": "v0.22.0",
   "released_at": null,

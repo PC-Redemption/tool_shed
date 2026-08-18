@@ -22,4 +22,8 @@ Queue positions are mutable; parenthesized campaign numbers and full `Campaign I
    - 🔗 **DEPENDS ON:** `compact-tool-shed-site-and-publish-guided-workflows` — ✅ **COMPLETE**
    - 🔗 **DEPENDS ON:** `harden-upgrade-campaign-number-convergence` — ✅ **COMPLETE**
    - 🔗 **DEPENDS ON:** `link-public-help-site-from-help-responses` — ✅ **COMPLETE**
-   - 🏁 **OUTCOME:** Finish GitHub issue #34 and ship the verified fixes for issues #35 and #36 by freezing the complete v0.22.0 candidate, pushing it, publishing the traceable GitHub release, verifying canonical release and public documentation state, and closing each issue only when its acceptance evidence is satisfied.
+   - 🔗 **DEPENDS ON:** `extend-next-with-targeted-and-wildcard-batches` — ✅ **COMPLETE**
+   - 🔗 **DEPENDS ON:** `define-nested-cycles-and-owning-transitions` — ✅ **COMPLETE**
+   - 🔗 **DEPENDS ON:** `fail-closed-on-cross-workspace-routing` — ✅ **COMPLETE**
+   - 🔗 **DEPENDS ON:** `add-workspace-wide-ts-doctor-command` — ✅ **COMPLETE**
+   - 🏁 **OUTCOME:** Ship one verified Tool Shed v0.22.0 release that contains and accounts for every repository update since v0.21.0: the compact public operator workflows and follow-up layout/cache fix, upgrade campaign-number convergence, public help links, targeted and wildcard queue batches, fail-closed workspace identity and routing, nested cycle ownership, and the workspace doctor; freeze the exact candidate, push and publish it traceably, verify canonical release, updater, and public documentation state, and close issues #34 through #39 only when each issue's acceptance evidence is satisfied.
