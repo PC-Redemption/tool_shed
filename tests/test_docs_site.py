@@ -197,6 +197,12 @@ class DocumentationSiteTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             public, _ = SITE_BUILDER.build(Path(temporary) / "bundle")
             overview = (public / "index.html").read_text(encoding="utf-8")
+            for cycle in ("Program", "Milestone Wave", "Queue", "Campaign", "Evidence"):
+                self.assertIn(cycle, overview)
+            self.assertIn("Five cycles. One adaptive system.", overview)
+            self.assertIn("Work moves inward", overview)
+            self.assertIn("Evidence returns outward", overview)
+            self.assertIn('href="/help/workflow-cycles/"', overview)
             self.assertIn("Roadmaps provide direction. Campaigns provide execution.", overview)
             self.assertIn("Reality is allowed to change the roadmap.", overview)
             self.assertIn("You steer. AI works the process.", overview)
