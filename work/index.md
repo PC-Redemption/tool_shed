@@ -9,8 +9,7 @@ Updated: 2026-08-18
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
-| [work/00-campaigns/active/027-publish-and-verify-tool-shed-v0-22-0.md](work/00-campaigns/active/027-publish-and-verify-tool-shed-v0-22-0.md) | campaign | queued | 2026-08-18 | execute when selected from the active campaign queue | - |
-| [work/00-campaigns/active/029-define-nested-cycles-and-owning-transitions.md](work/00-campaigns/active/029-define-nested-cycles-and-owning-transitions.md) | campaign | working | 2026-08-18 | execute the campaign completion gate | - |
+| [work/00-campaigns/active/027-publish-and-verify-tool-shed-v0-22-0.md](work/00-campaigns/active/027-publish-and-verify-tool-shed-v0-22-0.md) | campaign | working | 2026-08-18 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -37,6 +36,7 @@ Updated: 2026-08-18
 | [work/00-campaigns/completed/025-harden-upgrade-campaign-number-convergence.md](work/00-campaigns/completed/025-harden-upgrade-campaign-number-convergence.md) | campaign | complete | 2026-08-18 | none | - |
 | [work/00-campaigns/completed/026-link-public-help-site-from-help-responses.md](work/00-campaigns/completed/026-link-public-help-site-from-help-responses.md) | campaign | complete | 2026-08-18 | none | - |
 | [work/00-campaigns/completed/028-extend-next-with-targeted-and-wildcard-batches.md](work/00-campaigns/completed/028-extend-next-with-targeted-and-wildcard-batches.md) | campaign | complete | 2026-08-18 | none | - |
+| [work/00-campaigns/completed/029-define-nested-cycles-and-owning-transitions.md](work/00-campaigns/completed/029-define-nested-cycles-and-owning-transitions.md) | campaign | complete | 2026-08-18 | none | - |
 | [work/00-campaigns/completed/030-fail-closed-on-cross-workspace-routing.md](work/00-campaigns/completed/030-fail-closed-on-cross-workspace-routing.md) | campaign | complete | 2026-08-18 | none | - |
 | [work/00-campaigns/completed/031-add-workspace-wide-ts-doctor-command.md](work/00-campaigns/completed/031-add-workspace-wide-ts-doctor-command.md) | campaign | complete | 2026-08-18 | none | - |
 | [work/checklists/checklist-refresh-readme-and-ai-command-reference.md](work/checklists/checklist-refresh-readme-and-ai-command-reference.md) | checklist | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
@@ -86,5 +86,5 @@ Updated: 2026-08-18
 ## Summary
 
 - Total artifacts: 68
-- Active artifacts: 3
-- Completed/decided artifacts: 62
+- Active artifacts: 2
+- Completed/decided artifacts: 63

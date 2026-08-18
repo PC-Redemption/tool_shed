@@ -4,9 +4,9 @@ Updated: 2026-08-18
 
 ## Owner State
 
-- Last completed: add-workspace-wide-ts-doctor-command — Add a workspace-wide ts: doctor integrity and consistency command
-- Working now: define-nested-cycles-and-owning-transitions — Define nested Tool Shed cycles and owning transitions
-- Next: publish-and-verify-tool-shed-v0-22-0 — Publish and verify Tool Shed v0.22.0
+- Last completed: define-nested-cycles-and-owning-transitions — Define nested Tool Shed cycles and owning transitions
+- Working now: publish-and-verify-tool-shed-v0-22-0 — Publish and verify Tool Shed v0.22.0
+- Next: none
 - Blocker or decision needed: none
 - Detour and return point: none
 
@@ -14,15 +14,9 @@ Updated: 2026-08-18
 
 Queue positions are mutable; parenthesized campaign numbers and full `Campaign ID` values are stable.
 
-1. (029) **[Define nested Tool Shed cycles and owning transitions](active/029-define-nested-cycles-and-owning-transitions.md)**
-   - 🆔 **CAMPAIGN ID:** `define-nested-cycles-and-owning-transitions`
-   - 🚦 **STATE:** 🔵 **WORKING**
-   - 🎯 **PRIMARY FOCUS AREAS:** Campaign Lifecycle
-   - 🧩 **SUPPORTING FOCUS AREAS:** Provider Portability; Qualification and Release
-   - 🏁 **OUTCOME:** Resolve GitHub issue #37 by defining the five nested Tool Shed cycles and four computed work origins, exposing one consistent Cycle State Capsule in overview, status, and next, and making empty-queue next report the owning higher-level cycle and exact safe transition without bypassing approval or materialization boundaries.
-2. (027) **[Publish and verify Tool Shed v0.22.0](active/027-publish-and-verify-tool-shed-v0-22-0.md)**
+1. (027) **[Publish and verify Tool Shed v0.22.0](active/027-publish-and-verify-tool-shed-v0-22-0.md)**
    - 🆔 **CAMPAIGN ID:** `publish-and-verify-tool-shed-v0-22-0`
-   - 🚦 **STATE:** 🟢 **READY**
+   - 🚦 **STATE:** 🔵 **WORKING**
    - 🎯 **PRIMARY FOCUS AREAS:** Qualification and Release
    - 🧩 **SUPPORTING FOCUS AREAS:** Snapshot Delivery; Provider Portability
    - 🔗 **DEPENDS ON:** `compact-tool-shed-site-and-publish-guided-workflows` — ✅ **COMPLETE**

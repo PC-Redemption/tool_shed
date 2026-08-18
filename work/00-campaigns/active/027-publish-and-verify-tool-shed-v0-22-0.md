@@ -1,9 +1,9 @@
 # Publish and verify Tool Shed v0.22.0
 
-Status: queued
+Status: working
 Type: campaign
 Updated: 2026-08-18
-Next Action: execute when selected from the active campaign queue
+Next Action: execute the campaign completion gate
 Campaign ID: publish-and-verify-tool-shed-v0-22-0
 Campaign Number: 027
 Outcome: Finish GitHub issue #34 and ship the verified fixes for issues #35 and #36 by freezing the complete v0.22.0 candidate, pushing it, publishing the traceable GitHub release, verifying canonical release and public documentation state, and closing each issue only when its acceptance evidence is satisfied.
