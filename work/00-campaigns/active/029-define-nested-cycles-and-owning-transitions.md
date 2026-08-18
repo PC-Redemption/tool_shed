@@ -1,9 +1,9 @@
 # Define nested Tool Shed cycles and owning transitions
 
-Status: queued
+Status: working
 Type: campaign
 Updated: 2026-08-18
-Next Action: execute when selected from the active campaign queue
+Next Action: execute the campaign completion gate
 Campaign ID: define-nested-cycles-and-owning-transitions
 Campaign Number: 029
 Outcome: Resolve GitHub issue #37 by defining the five nested Tool Shed cycles and four computed work origins, exposing one consistent Cycle State Capsule in overview, status, and next, and making empty-queue next report the owning higher-level cycle and exact safe transition without bypassing approval or materialization boundaries.
