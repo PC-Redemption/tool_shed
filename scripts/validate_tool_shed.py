@@ -114,24 +114,55 @@ def smoke_temp_workspace() -> None:
         if not (workspace / "work" / "roadmaps").is_dir():
             raise SystemExit("installer did not create the opt-in Program Roadmap directory")
         agents_text = (workspace / "AGENTS.md").read_text(encoding="utf-8")
-        if "ts:ship <goal>" not in agents_text or "plan, implement, validate, build, deploy, and verify" not in agents_text:
-            raise SystemExit("installer did not create the Tool Shed ship guidance")
-        if "Do not ask for repeated confirmation for reversible, in-scope steps" not in agents_text:
-            raise SystemExit("installer did not create the Tool Shed authorization-discipline guidance")
-        if "command success alone is not outcome success" not in agents_text:
-            raise SystemExit("installer did not create the Tool Shed evidence-response guidance")
-        if "at most three credible ways the plan could fail" not in agents_text:
-            raise SystemExit("installer did not create the Tool Shed prospective-failure guidance")
-        if "ts: discuss <topic>" not in agents_text or "Direct, Guided, Coordinated, or Deep" not in agents_text:
-            raise SystemExit("installer did not create the Tool Shed discussion and coordination guidance")
+        if agents_text.count("BEGIN TOOL SHED ROUTING GUIDANCE") != 1:
+            raise SystemExit("installer did not create one compact Codex routing block")
+        if any(
+            marker in agents_text
+            for marker in (
+                "BEGIN TOOL SHED GENERATED EVIDENCE GUIDANCE",
+                "BEGIN TOOL SHED WORKSPACE IDENTITY GUIDANCE",
+                "BEGIN TOOL SHED OWNER CAMPAIGN GUIDANCE",
+            )
+        ):
+            raise SystemExit("installer left expanded Tool Shed policy in Codex AGENTS.md")
+        if any(
+            fragment not in agents_text
+            for fragment in (
+                "Activate Tool Shed only",
+                "Do not activate Tool Shed merely because",
+                "TOOL_SHED_SKILL_MISMATCH",
+                "skills/tool-shed/SKILL.md",
+            )
+        ) or len(agents_text.encode("utf-8")) > 4096:
+            raise SystemExit("installer did not create compact conditional Codex routing")
+        portable_text = " ".join(
+            "\n".join(
+                (
+                    (ROOT / "skills" / "tool-shed" / "SKILL.md").read_text(encoding="utf-8"),
+                    (
+                        ROOT / "skills" / "tool-shed" / "references" / "campaign-routes.md"
+                    ).read_text(encoding="utf-8"),
+                )
+            ).split()
+        )
+        for fragment, label in (
+            ("ts:ship <goal>", "ship"),
+            ("Do not ask for repeated confirmation for reversible, in-scope steps", "authority"),
+            ("Command success alone is not outcome success", "evidence-response"),
+            ("at most three credible failure modes", "prospective-failure"),
+            ("ts: discuss <topic>", "discussion"),
+            ("Direct, Guided, Coordinated, and Deep", "coordination"),
+        ):
+            if fragment not in portable_text:
+                raise SystemExit(f"portable skill is missing the Tool Shed {label} contract")
         identity_contract = (
             "BEGIN TOOL SHED WORKSPACE IDENTITY GUIDANCE",
             "WORKSPACE_MISMATCH",
             "ts: use <project-alias-or-path>",
-            "generic file-editing and shell tools",
+            "Generic edit and shell tools",
         )
-        if any(fragment not in agents_text for fragment in identity_contract):
-            raise SystemExit("installer did not create the workspace identity boundary guidance")
+        if any(fragment not in portable_text for fragment in identity_contract[1:]):
+            raise SystemExit("portable skill did not retain the workspace identity boundary")
         doctor_contract = (
             "BEGIN TOOL SHED DOCTOR GUIDANCE",
             "ts: doctor",
@@ -139,11 +170,11 @@ def smoke_temp_workspace() -> None:
             "external or runtime truth",
             "doctor-repair",
         )
-        if any(fragment not in agents_text for fragment in doctor_contract):
-            raise SystemExit("installer did not create the workspace doctor guidance")
+        if any(fragment not in portable_text for fragment in doctor_contract[1:]):
+            raise SystemExit("portable skill did not retain the workspace doctor guidance")
         work_level_contract = (
             "ts:work1` through `ts:work5",
-            "`ts:work` = `work2`",
+            "`ts:work` for `work2`",
             "work/tool-shed.yaml",
             "work_model: combined",
             "work_model: split",
@@ -152,54 +183,66 @@ def smoke_temp_workspace() -> None:
             "stop on the first failure",
             "automatically deploys production",
         )
-        if any(fragment not in agents_text for fragment in work_level_contract):
-            raise SystemExit("installer did not create the complete Tool Shed work-level contract")
+        if any(fragment not in portable_text for fragment in work_level_contract):
+            raise SystemExit("portable skill did not retain the complete Tool Shed work-level contract")
         direct_contract = (
-            "single-repository bug fix or enhancement to Direct",
-            "orient to the named target once",
-            "campaign continuity does not upgrade Direct",
+            "Resolve the named repository and target once",
+            "Implement the focused change",
+            "Campaign continuity keeps Direct work moving",
             "ts:ask` does not turn a bounded Direct request",
-            "merely mentions or discusses `ts:ship`",
+            "wording that merely appears near or discusses `ts:ship`",
         )
-        if any(fragment not in agents_text for fragment in direct_contract):
-            raise SystemExit("installer did not create the complete Tool Shed Direct-route contract")
+        if any(fragment not in portable_text for fragment in direct_contract):
+            raise SystemExit("portable skill did not retain the complete Tool Shed Direct-route contract")
         campaign_contract = (
             "work/00-campaigns/",
             "work/01-q&a/ask.txt` as transient intake",
             "Cycle State Capsule",
-            "Program Cycle → Milestone Wave Cycle → Queue Cycle → Campaign Cycle → Evidence Loop",
-            "Roadmap traceability is roadmap-derived",
-            "interpret `camp` as `campaign`",
-            "Interpret `que N`",
-            "`ts: unblock`",
+            "cycles are Program → Milestone Wave → Queue → Campaign → Evidence",
+            "Roadmap traceability is `roadmap-derived`",
+            "`camp` is shorthand for `campaign`",
+            "`que N` means the campaign",
+            "`ts: unblock <campaign>`",
             "`ts: reconcile campaigns`",
             "current state token",
-            "preview-only",
+            "`--dry-run` never writes",
         )
-        if any(fragment not in agents_text for fragment in campaign_contract):
-            raise SystemExit("installer did not create the complete owner campaign contract")
+        if any(fragment not in portable_text for fragment in campaign_contract):
+            raise SystemExit("portable skill did not retain the complete owner campaign contract")
         roadmap_contract = (
             "ts: develop roadmap",
             "ts: approve roadmap <token>",
             "ts: approve campaign plan <token>",
-            "separate exact-token mutations",
-            "never ingest work",
+            "roadmap approval and campaign-plan approval are separate exact-token boundaries",
+            "never ingests existing work",
         )
-        if any(fragment not in agents_text for fragment in roadmap_contract):
-            raise SystemExit("installer did not create the complete Program Roadmap contract")
+        if any(fragment not in portable_text for fragment in roadmap_contract):
+            raise SystemExit("portable skill did not retain the complete Program Roadmap contract")
         provider_paths = {
             "claude-code": "CLAUDE.md",
             "gemini-cli": "GEMINI.md",
             "github-copilot": ".github/copilot-instructions.md",
             "cursor": ".cursor/rules/tool-shed.mdc",
         }
+        generated_work_level_contract = (
+            "ts:work1` through `ts:work5",
+            "`ts:work` = `work2`",
+            "work/tool-shed.yaml",
+            "run_default: false",
+        )
+        generated_direct_contract = (
+            "single-repository bug fix or enhancement to Direct",
+            "orient to the named target once",
+            "campaign continuity does not upgrade Direct",
+            "ts:ask` does not turn a bounded Direct request",
+        )
         for provider_id, relative in provider_paths.items():
             guidance = workspace / relative
             guidance_text = guidance.read_text(encoding="utf-8") if guidance.is_file() else ""
             if (
                 "BEGIN TOOL SHED ROUTING GUIDANCE" not in guidance_text
-                or any(fragment not in guidance_text for fragment in direct_contract)
-                or any(fragment not in guidance_text for fragment in work_level_contract)
+                or any(fragment not in guidance_text for fragment in generated_direct_contract)
+                or any(fragment not in guidance_text for fragment in generated_work_level_contract)
             ):
                 raise SystemExit(f"installer did not create {provider_id} adapter guidance")
         inbox_result = subprocess.run(

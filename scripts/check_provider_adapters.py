@@ -70,9 +70,24 @@ def main() -> int:
                 raise SystemExit(f"{provider_id}: missing instruction file {relative}")
             text = path.read_text(encoding="utf-8")
             after_first[relative] = text
-            for marker in (ROUTING_MARKER, DISCUSSION_MARKER, COORDINATION_MARKER, IDENTITY_MARKER):
-                if text.count(marker) != 1:
-                    raise SystemExit(f"{provider_id}: expected one {marker!r}")
+            if text.count(ROUTING_MARKER) != 1:
+                raise SystemExit(f"{provider_id}: expected one {ROUTING_MARKER!r}")
+            if provider_id == "codex":
+                for marker in (DISCUSSION_MARKER, COORDINATION_MARKER, IDENTITY_MARKER):
+                    if marker in text:
+                        raise SystemExit(f"{provider_id}: legacy expanded marker remains: {marker!r}")
+                for fragment in (
+                    "Activate Tool Shed only",
+                    "Do not activate Tool Shed merely because",
+                    "TOOL_SHED_SKILL_MISMATCH",
+                    "skills/tool-shed/SKILL.md",
+                ):
+                    if fragment not in text:
+                        raise SystemExit(f"{provider_id}: compact routing is missing {fragment!r}")
+            else:
+                for marker in (DISCUSSION_MARKER, COORDINATION_MARKER, IDENTITY_MARKER):
+                    if text.count(marker) != 1:
+                        raise SystemExit(f"{provider_id}: expected one {marker!r}")
             if owner_text.get(relative) and not text.startswith(owner_text[relative]):
                 raise SystemExit(f"{provider_id}: owner content was not preserved")
             if config["instruction_format"] == "mdc" and not text.startswith("---\n"):
@@ -87,6 +102,7 @@ def main() -> int:
                     "qualification_basis": config["qualification_basis"],
                     "owner_content_preserved": True,
                     "routing_present": True,
+                    "compact_routing": provider_id == "codex",
                 }
             )
 

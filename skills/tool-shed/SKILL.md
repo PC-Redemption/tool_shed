@@ -1,6 +1,6 @@
 ---
 name: tool-shed
-description: Structured work artifacts and workspace coordination with a local tool_shed. Use when an AI agent needs to discuss, choose, create, or maintain plans, checklists, tickets, project maps, workpackages, ADRs, runbooks, incidents, spikes, inventories, or decision matrices; when loading Tool Shed into an existing project; or when a workspace contains tool_shed/ or the canonical Tool Shed repository files.
+description: Route requests that explicitly begin with ts:, explicitly name Tool Shed, or explicitly ask to create or manage Tool Shed artifacts or campaign state. Do not activate from directory presence alone or for unrelated planning, coding, or conversation.
 ---
 
 # Tool Shed

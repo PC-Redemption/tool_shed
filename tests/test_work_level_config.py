@@ -163,9 +163,14 @@ work_levels:
             for relative, content in guidance_before.items():
                 self.assertEqual((workspace / relative).read_bytes(), content)
                 guidance = content.decode("utf-8")
-                self.assertIn("work_level_config.py", guidance)
-                self.assertIn("run_default: false", guidance)
-                self.assertIn("stop on the first failure", guidance)
+                if relative == "AGENTS.md":
+                    self.assertIn("Activate Tool Shed only", guidance)
+                    self.assertIn("skills/tool-shed/SKILL.md", guidance)
+                    self.assertNotIn("work_level_config.py", guidance)
+                else:
+                    self.assertIn("work_level_config.py", guidance)
+                    self.assertIn("run_default: false", guidance)
+                    self.assertIn("stop on the first failure", guidance)
 
     def test_installer_rejects_invalid_configuration_before_mutation(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

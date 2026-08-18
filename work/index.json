@@ -21,6 +21,23 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
+      "disposition": "none",
+      "next_action": "execute the campaign completion gate",
+      "parent": null,
+      "path": "work/00-campaigns/active/033-update-github-actions-dependencies-before-node-20-removal.md",
+      "produces": null,
+      "project_map": null,
+      "status": "working",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Update GitHub Actions dependencies before Node 20 removal",
+      "type": "campaign",
+      "updated": "2026-08-18"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
       "disposition": "completed",
       "next_action": "none",
       "parent": null,
@@ -541,6 +558,23 @@
       "superseded_by": null,
       "supersedes": null,
       "title": "Make workflow cycles a first-class site concept",
+      "type": "campaign",
+      "updated": "2026-08-18"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": "completed",
+      "next_action": "none",
+      "parent": null,
+      "path": "work/00-campaigns/completed/034-codex-adapter-compact-routing-and-explicit-activation.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Codex adapter compact routing and explicit Tool Shed activation",
       "type": "campaign",
       "updated": "2026-08-18"
     },
@@ -1200,8 +1234,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 1,
-    "completed_or_decided_artifacts": 66,
-    "total_artifacts": 70
+    "active_artifacts": 2,
+    "completed_or_decided_artifacts": 67,
+    "total_artifacts": 72
   }
 }

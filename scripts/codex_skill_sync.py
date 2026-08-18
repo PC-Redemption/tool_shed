@@ -103,6 +103,7 @@ def inspect_codex_skill(
         result.update(
             {
                 "state": "unsafe",
+                "compatibility": "unknown",
                 "sync_safe": False,
                 "detail": f"released Codex skill source is not a real directory: {source}",
             }
@@ -111,16 +112,24 @@ def inspect_codex_skill(
     try:
         current = fingerprint_skill(source)
         if not target.exists() and not target.is_symlink():
-            result.update({"state": "missing", "sync_safe": True})
+            result.update({"state": "missing", "compatibility": "missing", "sync_safe": True})
             return result
         installed = fingerprint_skill(target)
     except (OSError, CodexSkillError) as error:
-        result.update({"state": "unsafe", "sync_safe": False, "detail": str(error)})
+        result.update(
+            {
+                "state": "unsafe",
+                "compatibility": "unknown",
+                "sync_safe": False,
+                "detail": str(error),
+            }
+        )
         return result
     if installed == current:
         result.update(
             {
                 "state": "current",
+                "compatibility": "compatible",
                 "sync_safe": True,
                 "tree_sha256": fingerprint_digest(installed),
             }
@@ -135,6 +144,11 @@ def inspect_codex_skill(
             result.update(
                 {
                     "state": "stale-released",
+                    "compatibility": "mismatch",
+                    "compatibility_detail": (
+                        "the user-level Codex skill and workspace-local Tool Shed skill differ; "
+                        "use the workspace-local contract until they are synchronized"
+                    ),
                     "matched_release": version,
                     "sync_safe": True,
                     "tree_sha256": installed_digest,
@@ -144,6 +158,11 @@ def inspect_codex_skill(
     result.update(
         {
             "state": "modified-or-unmanaged",
+            "compatibility": "mismatch",
+            "compatibility_detail": (
+                "the user-level Codex skill and workspace-local Tool Shed skill differ; "
+                "their contracts must not be combined"
+            ),
             "sync_safe": False,
             "detail": "installed files do not exactly match the selected or a known released skill",
             "tree_sha256": installed_digest,

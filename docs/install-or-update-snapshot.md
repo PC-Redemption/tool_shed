@@ -59,6 +59,13 @@ python /path/to/current-release/scripts/update_snapshot.py --workspace . --provi
   --project-binding <update-snapshot-binding>
 ```
 
+Codex convergence leaves one compact conditional Tool Shed routing block in root `AGENTS.md` and
+removes legacy expanded Tool Shed blocks without changing owner-authored instruction text.
+Directory presence alone does not activate Tool Shed. If the separately installed user-level
+Codex skill differs from the workspace snapshot, installation emits
+`TOOL_SHED_SKILL_MISMATCH`; use the workspace-local contract until the documented skill sync route
+has made the copies exact.
+
 From a downloaded Tool Shed checkout, the equivalent launchers are
 `scripts/update-tool-shed.sh --workspace .` and
 `scripts/update-tool-shed.ps1 --workspace .`. The Python updater is authoritative; the launchers

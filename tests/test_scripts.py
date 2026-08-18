@@ -1034,7 +1034,6 @@ for raw in sys.stdin:
             self.init_repository(workspace)
             run_script("scripts/install_into_workspace.py", str(workspace), "--provider", "all")
             guidance_paths = (
-                workspace / "AGENTS.md",
                 workspace / "CLAUDE.md",
                 workspace / "GEMINI.md",
                 workspace / ".github" / "copilot-instructions.md",
@@ -1046,6 +1045,10 @@ for raw in sys.stdin:
                     self.assertIn("`ts: fulltsupgrade`", guidance)
                     self.assertIn("latest verified published GitHub release", guidance)
                     self.assertIn("installed Codex skill synchronization", guidance)
+            codex_guidance = (workspace / "AGENTS.md").read_text(encoding="utf-8")
+            self.assertIn("Activate Tool Shed only", codex_guidance)
+            self.assertIn("skills/tool-shed/SKILL.md", codex_guidance)
+            self.assertNotIn("`ts: fulltsupgrade`", codex_guidance)
 
     def test_direct_routing_scenarios_match_portable_and_installed_contract(self) -> None:
         scenarios = json.loads(
@@ -1083,7 +1086,6 @@ for raw in sys.stdin:
             run_script("scripts/install_into_workspace.py", str(workspace), "--provider", "all")
 
             guidance_paths = (
-                "AGENTS.md",
                 "CLAUDE.md",
                 "GEMINI.md",
                 ".github/copilot-instructions.md",
@@ -1097,6 +1099,10 @@ for raw in sys.stdin:
                     self.assertIn("campaign continuity does not upgrade Direct", guidance)
                     self.assertIn("ts:ask` does not turn a bounded Direct request", guidance)
                     self.assertIn("merely mentions or discusses `ts:ship`", guidance)
+            codex_guidance = (workspace / "AGENTS.md").read_text(encoding="utf-8")
+            self.assertIn("Activate Tool Shed only", codex_guidance)
+            self.assertIn("Do not activate Tool Shed merely because", codex_guidance)
+            self.assertNotIn("campaign continuity does not upgrade Direct", codex_guidance)
             self.assertTrue((workspace / "AGENTS.md").read_text(encoding="utf-8").startswith(owner_guidance))
 
             direct_ask = next(
@@ -1162,15 +1168,19 @@ for raw in sys.stdin:
                 guidance = (workspace / relative).read_text(encoding="utf-8")
                 with self.subTest(provider_guidance=relative):
                     self.assertEqual((workspace / relative).read_bytes(), initial)
-                    self.assertIn("ts:work1` through `ts:work5", guidance)
-                    self.assertIn("`ts:work` = `work2`", guidance)
-                    self.assertIn("work/tool-shed.yaml", guidance)
-                    self.assertIn("work_model: combined", guidance)
-                    self.assertIn("work_model: split", guidance)
-                    self.assertIn("work_level_config.py", guidance)
-                    self.assertIn("run_default: false", guidance)
-                    self.assertIn("stop on the first failure", guidance)
-                    self.assertIn("automatically deploys production", guidance)
+                    if relative == "AGENTS.md":
+                        self.assertIn("Activate Tool Shed only", guidance)
+                        self.assertNotIn("ts:work1` through `ts:work5", guidance)
+                    else:
+                        self.assertIn("ts:work1` through `ts:work5", guidance)
+                        self.assertIn("`ts:work` = `work2`", guidance)
+                        self.assertIn("work/tool-shed.yaml", guidance)
+                        self.assertIn("work_model: combined", guidance)
+                        self.assertIn("work_model: split", guidance)
+                        self.assertIn("work_level_config.py", guidance)
+                        self.assertIn("run_default: false", guidance)
+                        self.assertIn("stop on the first failure", guidance)
+                        self.assertIn("automatically deploys production", guidance)
             self.assertTrue((workspace / "AGENTS.md").read_text(encoding="utf-8").startswith(owner_guidance))
 
         documentation_contract = "create, read, update, or delete project documentation"
@@ -3546,36 +3556,23 @@ Produces:
                 first_identity,
             )
             guidance = (workspace / "AGENTS.md").read_text(encoding="utf-8")
-            self.assertEqual(guidance.count("BEGIN TOOL SHED GENERATED EVIDENCE GUIDANCE"), 1)
             self.assertEqual(guidance.count("BEGIN TOOL SHED ROUTING GUIDANCE"), 1)
-            self.assertEqual(guidance.count("BEGIN TOOL SHED DISCUSSION GUIDANCE"), 1)
-            self.assertEqual(guidance.count("BEGIN TOOL SHED HELP GUIDANCE"), 1)
-            self.assertEqual(guidance.count("BEGIN TOOL SHED COORDINATION GUIDANCE"), 1)
-            self.assertEqual(guidance.count("BEGIN TOOL SHED EVIDENCE RESPONSE GUIDANCE"), 1)
-            self.assertEqual(guidance.count("BEGIN TOOL SHED CAMPAIGN GUIDANCE"), 1)
-            self.assertEqual(guidance.count("BEGIN TOOL SHED Q&A GUIDANCE"), 1)
-            self.assertEqual(guidance.count("BEGIN TOOL SHED OWNER CAMPAIGN GUIDANCE"), 1)
-            self.assertIn("Campaign status: COMPLETE", guidance)
-            self.assertIn("A progress summary, artifact update, phase boundary", guidance)
-            self.assertIn("command success alone is not outcome success", guidance)
-            self.assertIn("at most three credible ways the plan could fail", guidance)
-            self.assertIn("ts: discuss <topic>", guidance)
-            self.assertIn("Direct, Guided, Coordinated, or Deep", guidance)
-            self.assertIn("orient to the named target once", guidance)
-            self.assertIn("campaign continuity does not upgrade Direct", guidance)
-            self.assertIn("ts:ask` does not turn a bounded Direct request", guidance)
-            self.assertIn("merely mentions or discusses `ts:ship`", guidance)
-            self.assertIn("interpret `camp` as `campaign`", guidance)
-            self.assertIn("Interpret `que N`", guidance)
-            self.assertIn("`ts: unblock` returns blocked work to queued state", guidance)
-            self.assertIn(
-                "`ts: reconcile campaigns` as authorization", guidance
-            )
-            self.assertIn("Dangler Resolution campaign as the first queued work", guidance)
-            self.assertIn("optional project-specific catalog", guidance)
-            self.assertIn("shared dependency/decision readiness states", guidance)
-            self.assertIn("`ts: build focus areas` as a two-stage route", guidance)
-            self.assertIn("A build or refresh request is not approval", guidance)
+            for legacy_marker in (
+                "BEGIN TOOL SHED GENERATED EVIDENCE GUIDANCE",
+                "BEGIN TOOL SHED DISCUSSION GUIDANCE",
+                "BEGIN TOOL SHED HELP GUIDANCE",
+                "BEGIN TOOL SHED COORDINATION GUIDANCE",
+                "BEGIN TOOL SHED EVIDENCE RESPONSE GUIDANCE",
+                "BEGIN TOOL SHED CAMPAIGN GUIDANCE",
+                "BEGIN TOOL SHED Q&A GUIDANCE",
+                "BEGIN TOOL SHED OWNER CAMPAIGN GUIDANCE",
+            ):
+                self.assertNotIn(legacy_marker, guidance)
+            self.assertIn("Activate Tool Shed only", guidance)
+            self.assertIn("Do not activate Tool Shed merely because", guidance)
+            self.assertIn("TOOL_SHED_SKILL_MISMATCH", guidance)
+            self.assertIn("skills/tool-shed/SKILL.md", guidance)
+            self.assertLess(len(guidance.encode("utf-8")), 4096)
 
     def test_build_focus_areas_route_is_portable_and_approval_gated(self) -> None:
         skill = (ROOT / "skills" / "tool-shed" / "SKILL.md").read_text(encoding="utf-8")
@@ -3599,7 +3596,6 @@ Produces:
             self.init_repository(workspace)
             run_script("scripts/install_into_workspace.py", str(workspace), "--provider", "all")
             for relative in (
-                "AGENTS.md",
                 "CLAUDE.md",
                 "GEMINI.md",
                 ".github/copilot-instructions.md",
@@ -3611,6 +3607,9 @@ Produces:
                     self.assertIn("A build or refresh request is not approval", guidance)
                     self.assertIn("apply all active-campaign assignments", guidance)
                     self.assertIn("Preserve stable IDs", guidance)
+            codex_guidance = (workspace / "AGENTS.md").read_text(encoding="utf-8")
+            self.assertIn("skills/tool-shed/SKILL.md", codex_guidance)
+            self.assertNotIn("`ts: build focus areas` as a two-stage route", codex_guidance)
 
     def test_installer_supports_all_provider_adapters_idempotently(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -3646,23 +3645,33 @@ Produces:
                 self.assertTrue(path.is_file(), provider_id)
                 text = path.read_text(encoding="utf-8")
                 self.assertEqual(text.count("BEGIN TOOL SHED ROUTING GUIDANCE"), 1)
-                self.assertEqual(text.count("BEGIN TOOL SHED DISCUSSION GUIDANCE"), 1)
-                self.assertEqual(text.count("BEGIN TOOL SHED HELP GUIDANCE"), 1)
-                self.assertEqual(text.count("BEGIN TOOL SHED COORDINATION GUIDANCE"), 1)
-                self.assertEqual(text.count("BEGIN TOOL SHED WORKSPACE IDENTITY GUIDANCE"), 1)
-                self.assertIn("WORKSPACE_MISMATCH", text)
-                self.assertIn("generic file-editing and shell tools", text)
                 self.assertIn("skills/tool-shed/SKILL.md", text)
-                self.assertIn("Browse Tool Shed help: https://ts.rookaro.com/", text)
-                self.assertIn(
-                    "Browse the complete command reference: https://ts.rookaro.com/ref/",
-                    text,
-                )
-                self.assertIn("Never replace the local reads", text)
-                self.assertIn("`ts: next 1,2`", text)
-                self.assertIn("`ts: next camp 025,example-id`", text)
-                self.assertIn("`ts: next *`", text)
-                self.assertIn("Batch scope never grants work5", text)
+                if provider_id == "codex":
+                    self.assertNotIn("BEGIN TOOL SHED DISCUSSION GUIDANCE", text)
+                    self.assertNotIn("BEGIN TOOL SHED HELP GUIDANCE", text)
+                    self.assertNotIn("BEGIN TOOL SHED COORDINATION GUIDANCE", text)
+                    self.assertNotIn("BEGIN TOOL SHED WORKSPACE IDENTITY GUIDANCE", text)
+                    self.assertIn("Activate Tool Shed only", text)
+                    self.assertIn("Do not activate Tool Shed merely because", text)
+                    self.assertIn("TOOL_SHED_SKILL_MISMATCH", text)
+                    self.assertLess(len(text.encode("utf-8")), 4096)
+                else:
+                    self.assertEqual(text.count("BEGIN TOOL SHED DISCUSSION GUIDANCE"), 1)
+                    self.assertEqual(text.count("BEGIN TOOL SHED HELP GUIDANCE"), 1)
+                    self.assertEqual(text.count("BEGIN TOOL SHED COORDINATION GUIDANCE"), 1)
+                    self.assertEqual(text.count("BEGIN TOOL SHED WORKSPACE IDENTITY GUIDANCE"), 1)
+                    self.assertIn("WORKSPACE_MISMATCH", text)
+                    self.assertIn("generic file-editing and shell tools", text)
+                    self.assertIn("Browse Tool Shed help: https://ts.rookaro.com/", text)
+                    self.assertIn(
+                        "Browse the complete command reference: https://ts.rookaro.com/ref/",
+                        text,
+                    )
+                    self.assertIn("Never replace the local reads", text)
+                    self.assertIn("`ts: next 1,2`", text)
+                    self.assertIn("`ts: next camp 025,example-id`", text)
+                    self.assertIn("`ts: next *`", text)
+                    self.assertIn("Batch scope never grants work5", text)
                 self.assertIn(f"Provider guidance ({provider_id}): updated", first.stdout)
                 self.assertNotIn(f"Provider guidance ({provider_id}): updated", second.stdout)
             for relative, content in owner_files.items():
@@ -3670,6 +3679,59 @@ Produces:
             cursor = (workspace / ".cursor/rules/tool-shed.mdc").read_text(encoding="utf-8")
             self.assertTrue(cursor.startswith("---\n"))
             self.assertIn("alwaysApply: true", cursor)
+
+    def test_codex_installer_collapses_legacy_blocks_and_narrows_activation(self) -> None:
+        marker_names = (
+            "GENERATED EVIDENCE GUIDANCE",
+            "SHIP GUIDANCE",
+            "CAMPAIGN GUIDANCE",
+            "Q&A GUIDANCE",
+            "EVIDENCE RESPONSE GUIDANCE",
+            "ROUTING GUIDANCE",
+            "DISCUSSION GUIDANCE",
+            "COORDINATION GUIDANCE",
+            "WORK LEVEL GUIDANCE",
+            "OWNER CAMPAIGN GUIDANCE",
+            "PROGRAM ROADMAP GUIDANCE",
+            "HELP GUIDANCE",
+            "WORKSPACE IDENTITY GUIDANCE",
+            "DOCTOR GUIDANCE",
+        )
+        legacy = "\n\n".join(
+            f"<!-- BEGIN TOOL SHED {name} -->\nlegacy {name}\n<!-- END TOOL SHED {name} -->"
+            for name in marker_names
+        )
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            self.init_repository(workspace)
+            owner_header = "# Owner header\n\nKeep this exact owner rule.\n\n"
+            owner_footer = "\n\n# Owner footer\n\nKeep this footer too.\n"
+            agents = workspace / "AGENTS.md"
+            agents.write_text(owner_header + legacy + owner_footer, encoding="utf-8")
+
+            first = run_script("scripts/install_into_workspace.py", str(workspace))
+            after_first = agents.read_text(encoding="utf-8")
+            second = run_script("scripts/install_into_workspace.py", str(workspace))
+
+            self.assertIn("Provider guidance (codex): updated", first.stdout)
+            self.assertNotIn("Provider guidance (codex): updated", second.stdout)
+            self.assertEqual(after_first, agents.read_text(encoding="utf-8"))
+            self.assertIn(owner_header, after_first)
+            self.assertIn(owner_footer, after_first)
+            self.assertEqual(after_first.count("BEGIN TOOL SHED ROUTING GUIDANCE"), 1)
+            for name in marker_names:
+                if name != "ROUTING GUIDANCE":
+                    self.assertNotIn(f"BEGIN TOOL SHED {name}", after_first)
+            self.assertIn("Activate Tool Shed only", after_first)
+            self.assertIn("Do not activate Tool Shed merely because", after_first)
+            self.assertIn("TOOL_SHED_SKILL_MISMATCH", after_first)
+            self.assertLess(len(after_first.encode("utf-8")), 4096)
+
+        skill = (ROOT / "skills" / "tool-shed" / "SKILL.md").read_text(encoding="utf-8")
+        description = skill.split("---", 2)[1]
+        self.assertIn("explicitly begin with ts:", description)
+        self.assertIn("Do not activate from directory presence alone", description)
+        self.assertNotIn("when a workspace contains tool_shed/", description)
 
     def test_installer_guidance_only_does_not_touch_work_inbox_index_or_gitignore(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -3798,11 +3860,12 @@ stale loop guidance
 
             self.assertIn("Provider guidance (codex): updated", first.stdout)
             self.assertNotIn("stale loop guidance", after_first)
-            self.assertIn("command success alone is not outcome success", after_first)
+            self.assertIn("Activate Tool Shed only", after_first)
             self.assertIn("# Owner guidance", after_first)
             self.assertIn("# Owner footer", after_first)
-            self.assertEqual(after_first.count("BEGIN TOOL SHED EVIDENCE RESPONSE GUIDANCE"), 1)
-            self.assertEqual(after_first.count("END TOOL SHED EVIDENCE RESPONSE GUIDANCE"), 1)
+            self.assertEqual(after_first.count("BEGIN TOOL SHED EVIDENCE RESPONSE GUIDANCE"), 0)
+            self.assertEqual(after_first.count("END TOOL SHED EVIDENCE RESPONSE GUIDANCE"), 0)
+            self.assertEqual(after_first.count("BEGIN TOOL SHED ROUTING GUIDANCE"), 1)
             self.assertEqual(after_second, after_first)
             self.assertNotIn("Provider guidance (codex): updated", second.stdout)
 
@@ -3843,7 +3906,7 @@ stale loop guidance
             self.assertIn("fresh Codex session", result.stdout)
             self.assertFalse((codex_home / "skills" / "tool-shed").exists())
 
-    def test_installer_refuses_modified_or_unmanaged_codex_skill(self) -> None:
+    def test_installer_reports_mismatch_for_newer_or_unmanaged_codex_skill(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             workspace = root / "workspace"
@@ -3864,6 +3927,8 @@ stale loop guidance
             )
 
             self.assertIn("Codex skill: modified-or-unmanaged", result.stdout)
+            self.assertIn("TOOL_SHED_SKILL_MISMATCH", result.stdout)
+            self.assertIn("contracts must not be combined", result.stdout)
             self.assertIn("synchronization refused", result.stdout)
             self.assertNotIn("Safe Codex skill synchronization:", result.stdout)
 
@@ -4937,8 +5002,10 @@ old Tool Shed guidance
             self.assertTrue(agents.startswith(owner_guidance))
             self.assertNotIn("old Tool Shed guidance", agents)
             self.assertEqual(agents.count("BEGIN TOOL SHED ROUTING GUIDANCE"), 1)
-            self.assertIn("ts: discuss <topic>", agents)
-            self.assertIn("Direct, Guided, Coordinated, or Deep", agents)
+            self.assertIn("Activate Tool Shed only", agents)
+            self.assertIn("Do not activate Tool Shed merely because", agents)
+            self.assertNotIn("BEGIN TOOL SHED GENERATED EVIDENCE GUIDANCE", agents)
+            self.assertNotIn("BEGIN TOOL SHED DISCUSSION GUIDANCE", agents)
             backup = Path(payload["backup_path"])
             with tarfile.open(backup, "r") as archive:
                 names = {member.name.replace("\\", "/") for member in archive.getmembers()}
@@ -4977,12 +5044,14 @@ old Tool Shed guidance
 
             self.assertEqual(payload["state"], "installed")
             self.assertEqual(payload["codex_skill"]["state"], "stale-released")
+            self.assertEqual(payload["codex_skill"]["compatibility"], "mismatch")
             self.assertEqual(payload["codex_skill"]["matched_release"], "v9.8.0")
             self.assertTrue(payload["codex_skill"]["sync_safe"])
             self.assertIn("--sync-codex-skill", payload["codex_skill"]["sync_command"])
             self.assertEqual((installed / "SKILL.md").read_bytes(), old_files["SKILL.md"])
             guidance = payload["post_install"]["provider_guidance"]
             self.assertIn("Codex skill: stale-released", guidance)
+            self.assertIn("TOOL_SHED_SKILL_MISMATCH", guidance)
             self.assertIn("Safe Codex skill synchronization:", guidance)
             self.assertNotIn("modified-or-unmanaged", guidance)
 
@@ -4994,6 +5063,7 @@ old Tool Shed guidance
                 env=environment,
             )
             self.assertIn("Codex skill: stale-released", direct.stdout)
+            self.assertIn("TOOL_SHED_SKILL_MISMATCH", direct.stdout)
             self.assertNotIn("modified-or-unmanaged", direct.stdout)
 
     def test_snapshot_upgrade_synchronizes_known_user_codex_skill_with_backup(self) -> None:
@@ -5555,12 +5625,12 @@ stale canonical-only guidance
 
             self.assertIn("Provider guidance (codex): updated", first.stdout)
             self.assertNotIn("stale canonical-only guidance", after_first)
-            self.assertIn("work/01-q&a/ask.txt", after_first)
-            self.assertIn("`work/q&a/ask.txt` only as a pre-migration legacy fallback", after_first)
+            self.assertIn("Activate Tool Shed only", after_first)
             self.assertIn("# Owner guidance", after_first)
             self.assertIn("# Owner footer", after_first)
-            self.assertEqual(after_first.count("BEGIN TOOL SHED Q&A GUIDANCE"), 1)
-            self.assertEqual(after_first.count("END TOOL SHED Q&A GUIDANCE"), 1)
+            self.assertEqual(after_first.count("BEGIN TOOL SHED Q&A GUIDANCE"), 0)
+            self.assertEqual(after_first.count("END TOOL SHED Q&A GUIDANCE"), 0)
+            self.assertEqual(after_first.count("BEGIN TOOL SHED ROUTING GUIDANCE"), 1)
             self.assertEqual(after_second, after_first)
             self.assertNotIn("Provider guidance (codex): updated", second.stdout)
 

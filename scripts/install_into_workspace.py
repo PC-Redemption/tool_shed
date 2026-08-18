@@ -53,8 +53,10 @@ ROUTING_GUIDANCE_END = "<!-- END TOOL SHED ROUTING GUIDANCE -->"
 ROUTING_GUIDANCE = f"""{ROUTING_GUIDANCE_START}
 ## Tool Shed request routing
 
-- Treat a leading `ts:` as authoritative Tool Shed routing for the current request only.
-- Locate the workspace-local shed, then read its `skills/tool-shed/SKILL.md` before acting.
+- Activate Tool Shed only when the request begins with `ts:`, explicitly names Tool Shed, or explicitly asks to create or manage Tool Shed artifacts or campaign state.
+- Do not activate Tool Shed merely because `tool_shed/`, `work/`, or canonical Tool Shed repository files exist in the workspace.
+- For an activated request, locate the workspace-local shed, then read its `skills/tool-shed/SKILL.md` before acting; load only the route reference that skill selects.
+- If a separately installed or already-loaded Tool Shed skill differs from the workspace-local copy, report `TOOL_SHED_SKILL_MISMATCH`, use the workspace-local contract for this workspace, and recommend the documented update or synchronization route instead of combining both contracts.
 - Keep project state in root `work/`; the workspace-local shed contains reusable machinery.
 - Use only the provider capabilities actually available in the current product surface.
 {ROUTING_GUIDANCE_END}
@@ -253,6 +255,27 @@ ROADMAP_GUIDANCE = f"""{ROADMAP_GUIDANCE_START}
 {ROADMAP_GUIDANCE_END}
 """
 
+GUIDANCE_BLOCKS = (
+    (ROUTING_GUIDANCE_START, ROUTING_GUIDANCE_END, ROUTING_GUIDANCE),
+    (DOCTOR_GUIDANCE_START, DOCTOR_GUIDANCE_END, DOCTOR_GUIDANCE),
+    (IDENTITY_GUIDANCE_START, IDENTITY_GUIDANCE_END, IDENTITY_GUIDANCE),
+    (DISCUSSION_GUIDANCE_START, DISCUSSION_GUIDANCE_END, DISCUSSION_GUIDANCE),
+    (HELP_GUIDANCE_START, HELP_GUIDANCE_END, HELP_GUIDANCE),
+    (COORDINATION_GUIDANCE_START, COORDINATION_GUIDANCE_END, COORDINATION_GUIDANCE),
+    (GUIDANCE_START, GUIDANCE_END, GUIDANCE),
+    (WORK_LEVEL_GUIDANCE_START, WORK_LEVEL_GUIDANCE_END, WORK_LEVEL_GUIDANCE),
+    (SHIP_GUIDANCE_START, SHIP_GUIDANCE_END, SHIP_GUIDANCE),
+    (EXECUTION_GUIDANCE_START, EXECUTION_GUIDANCE_END, EXECUTION_GUIDANCE),
+    (CAMPAIGN_GUIDANCE_START, CAMPAIGN_GUIDANCE_END, CAMPAIGN_GUIDANCE),
+    (ASK_GUIDANCE_START, ASK_GUIDANCE_END, ASK_GUIDANCE),
+    (
+        CAMPAIGN_QUEUE_GUIDANCE_START,
+        CAMPAIGN_QUEUE_GUIDANCE_END,
+        CAMPAIGN_QUEUE_GUIDANCE,
+    ),
+    (ROADMAP_GUIDANCE_START, ROADMAP_GUIDANCE_END, ROADMAP_GUIDANCE),
+)
+
 
 def ensure_root_gitignore(repository: Path) -> list[str]:
     path = repository / ".gitignore"
@@ -283,6 +306,22 @@ def replace_managed_block(existing: str, start: str, end: str, replacement: str)
     return updated, True
 
 
+def remove_managed_block(existing: str, start: str, end: str) -> tuple[str, bool]:
+    """Remove every complete managed block without rewriting surrounding owner text."""
+    updated = existing
+    changed = False
+    while True:
+        start_index = updated.find(start)
+        if start_index < 0:
+            return updated, changed
+        end_index = updated.find(end, start_index + len(start))
+        if end_index < 0:
+            raise ValueError(f"managed guidance block is missing its end marker: {start}")
+        end_index += len(end)
+        updated = updated[:start_index] + updated[end_index:]
+        changed = True
+
+
 def ensure_provider_guidance(repository: Path, provider_id: str) -> tuple[Path, bool]:
     config = provider_config(provider_id)
     path = repository / str(config["instruction_path"])
@@ -302,58 +341,18 @@ def ensure_provider_guidance(repository: Path, provider_id: str) -> tuple[Path, 
     if config["instruction_format"] == "mdc" and not existing:
         existing = "---\ndescription: Tool Shed workspace coordination\nalwaysApply: true\n---\n"
     updated = existing
-    for start, end, guidance in (
-        (ROUTING_GUIDANCE_START, ROUTING_GUIDANCE_END, ROUTING_GUIDANCE),
-        (DOCTOR_GUIDANCE_START, DOCTOR_GUIDANCE_END, DOCTOR_GUIDANCE),
-        (IDENTITY_GUIDANCE_START, IDENTITY_GUIDANCE_END, IDENTITY_GUIDANCE),
-        (DISCUSSION_GUIDANCE_START, DISCUSSION_GUIDANCE_END, DISCUSSION_GUIDANCE),
-        (HELP_GUIDANCE_START, HELP_GUIDANCE_END, HELP_GUIDANCE),
-        (COORDINATION_GUIDANCE_START, COORDINATION_GUIDANCE_END, COORDINATION_GUIDANCE),
-        (GUIDANCE_START, GUIDANCE_END, GUIDANCE),
-    ):
-        updated, _ = replace_managed_block(updated, start, end, guidance)
-    updated, _ = replace_managed_block(
-        updated,
-        WORK_LEVEL_GUIDANCE_START,
-        WORK_LEVEL_GUIDANCE_END,
-        WORK_LEVEL_GUIDANCE,
-    )
-    updated, _ = replace_managed_block(
-        updated,
-        SHIP_GUIDANCE_START,
-        SHIP_GUIDANCE_END,
-        SHIP_GUIDANCE,
-    )
-    updated, _ = replace_managed_block(
-        updated,
-        EXECUTION_GUIDANCE_START,
-        EXECUTION_GUIDANCE_END,
-        EXECUTION_GUIDANCE,
-    )
-    updated, _ = replace_managed_block(
-        updated,
-        CAMPAIGN_GUIDANCE_START,
-        CAMPAIGN_GUIDANCE_END,
-        CAMPAIGN_GUIDANCE,
-    )
-    updated, _ = replace_managed_block(
-        updated,
-        ASK_GUIDANCE_START,
-        ASK_GUIDANCE_END,
-        ASK_GUIDANCE,
-    )
-    updated, _ = replace_managed_block(
-        updated,
-        CAMPAIGN_QUEUE_GUIDANCE_START,
-        CAMPAIGN_QUEUE_GUIDANCE_END,
-        CAMPAIGN_QUEUE_GUIDANCE,
-    )
-    updated, _ = replace_managed_block(
-        updated,
-        ROADMAP_GUIDANCE_START,
-        ROADMAP_GUIDANCE_END,
-        ROADMAP_GUIDANCE,
-    )
+    if provider_id == "codex":
+        updated, _ = replace_managed_block(
+            updated,
+            ROUTING_GUIDANCE_START,
+            ROUTING_GUIDANCE_END,
+            ROUTING_GUIDANCE,
+        )
+        for start, end, _ in GUIDANCE_BLOCKS[1:]:
+            updated, _ = remove_managed_block(updated, start, end)
+    else:
+        for start, end, guidance in GUIDANCE_BLOCKS:
+            updated, _ = replace_managed_block(updated, start, end, guidance)
     if updated == existing:
         return path, False
     path.write_text(updated, encoding="utf-8", newline="\n")
@@ -504,6 +503,11 @@ def report_codex_skill_state() -> None:
     )
     state = inspect_codex_skill(source, known_releases)
     print(f"Codex skill: {state['state']} at {state['path']}.")
+    if state.get("compatibility") == "mismatch":
+        print(
+            "TOOL_SHED_SKILL_MISMATCH: "
+            f"{state['compatibility_detail']}."
+        )
     if state["state"] in {"missing", "stale-released"}:
         print(
             "Safe Codex skill synchronization: "

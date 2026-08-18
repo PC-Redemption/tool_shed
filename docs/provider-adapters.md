@@ -77,9 +77,12 @@ The first installation creates `work/tool-shed-project.json` and therefore needs
 Refreshing adapters in an identified workspace requires the `workspace-install` binding returned
 by the identity command.
 
-The installed routing tells the provider to read the workspace-local
-`tool_shed/skills/tool-shed/SKILL.md` when a request begins with `ts:`. This avoids copying and
-eventually drifting five separate workflow implementations.
+The Codex adapter writes one compact conditional routing block to root `AGENTS.md`. It activates
+only for a leading `ts:`, an explicit Tool Shed request, or explicit Tool Shed artifact/campaign
+work; directory presence alone is not activation. The block routes activated requests to the
+workspace-local `tool_shed/skills/tool-shed/SKILL.md`, where route-specific references hold the
+detailed contract. Upgrades remove legacy expanded Codex blocks while preserving owner-authored
+instruction text. Other provider adapters retain their currently qualified native guidance.
 
 Protocol-3 snapshot upgrades run the selected release's full workspace installer automatically.
 They detect every provider instruction file that already contains marked Tool Shed guidance,
@@ -91,11 +94,13 @@ preserved while indexes, queue projections, canonical Q&A paths, and `.gitignore
 
 Codex has one additional provider-owned lifecycle boundary: auto-discovery may load a user-level
 copy from `${CODEX_HOME:-~/.codex}/skills/tool-shed` before workspace routing takes effect. The
-installer reports when that copy differs from the released workspace skill. The snapshot updater's
+installer reports an explicit `TOOL_SHED_SKILL_MISMATCH` compatibility diagnostic whenever that
+copy differs from the released workspace skill. Until synchronization, the workspace-local
+contract governs that workspace and the two contracts must not be combined. The snapshot updater's
 explicit `--sync-codex-skill` option installs a missing copy or backs up and replaces an exact prior
 released copy. Backups remain outside the active `skills/` discovery directory; modified,
-unmanaged, or symlinked targets are refused. A fresh Codex session is
-required after synchronization.
+unmanaged, or symlinked targets are refused. A fresh Codex session is required after
+synchronization.
 
 `adapters/codex-skill-releases.json` carries compact tree digests for prior stable skills. It lets
 the disconnected installer and updater classify a byte-exact older release consistently without

@@ -9,6 +9,7 @@ Updated: 2026-08-18
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
+| [work/00-campaigns/active/033-update-github-actions-dependencies-before-node-20-removal.md](work/00-campaigns/active/033-update-github-actions-dependencies-before-node-20-removal.md) | campaign | working | 2026-08-18 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -40,6 +41,7 @@ Updated: 2026-08-18
 | [work/00-campaigns/completed/030-fail-closed-on-cross-workspace-routing.md](work/00-campaigns/completed/030-fail-closed-on-cross-workspace-routing.md) | campaign | complete | 2026-08-18 | none | - |
 | [work/00-campaigns/completed/031-add-workspace-wide-ts-doctor-command.md](work/00-campaigns/completed/031-add-workspace-wide-ts-doctor-command.md) | campaign | complete | 2026-08-18 | none | - |
 | [work/00-campaigns/completed/032-make-workflow-cycles-first-class-site-concept.md](work/00-campaigns/completed/032-make-workflow-cycles-first-class-site-concept.md) | campaign | complete | 2026-08-18 | none | - |
+| [work/00-campaigns/completed/034-codex-adapter-compact-routing-and-explicit-activation.md](work/00-campaigns/completed/034-codex-adapter-compact-routing-and-explicit-activation.md) | campaign | complete | 2026-08-18 | none | - |
 | [work/checklists/checklist-refresh-readme-and-ai-command-reference.md](work/checklists/checklist-refresh-readme-and-ai-command-reference.md) | checklist | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/checklists/checklist-tool-shed-skill-field-test.md](work/checklists/checklist-tool-shed-skill-field-test.md) | checklist | complete | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/decisions/decision-codex-skill-readiness.md](work/decisions/decision-codex-skill-readiness.md) | decision-matrix | decided | 2026-07-05 | continue using skill on real projects; plugin packaging deferred | work/maps/map-tool-shed-foundation.md |
@@ -87,6 +89,6 @@ Updated: 2026-08-18
 
 ## Summary
 
-- Total artifacts: 70
-- Active artifacts: 1
-- Completed/decided artifacts: 66
+- Total artifacts: 72
+- Active artifacts: 2
+- Completed/decided artifacts: 67

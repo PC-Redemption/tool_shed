@@ -679,10 +679,13 @@ This governance applies to intentional development checkouts of the canonical re
 `tool_shed` includes a thin provider-neutral Agent Skills package at `skills/tool-shed`.
 
 The skill may also be installed at `${CODEX_HOME:-~/.codex}/skills/tool-shed` for Codex
-auto-discovery. This user-level copy is a separate lifecycle target from a workspace snapshot;
-the updater reports drift and can synchronize it safely with `--sync-codex-skill`. Other providers
-use their native instruction adapter to route into the same workspace-local skill. It progressively
-loads route-specific references instead of duplicating templates or loading every procedure for
-every request.
+auto-discovery. Its metadata activates only for explicit Tool Shed routing or Tool Shed
+artifact/campaign work; merely containing `tool_shed/` does not activate it. Root `AGENTS.md`
+receives one compact conditional routing block instead of the portable workflow contract. This
+user-level copy is a separate lifecycle target from a workspace snapshot; the installer reports
+`TOOL_SHED_SKILL_MISMATCH` when the copies differ, and the updater can synchronize them safely with
+`--sync-codex-skill`. Other providers use their native instruction adapter to route into the same
+workspace-local skill. The skill progressively loads route-specific references instead of
+duplicating templates or loading every procedure for every request.
 
 Initial skill packaging is local plus repo-packaged. Plugin packaging is intentionally deferred until real use shows it is needed.
