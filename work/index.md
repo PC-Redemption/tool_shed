@@ -9,7 +9,6 @@ Updated: 2026-08-18
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
-| [work/00-campaigns/active/027-publish-and-verify-tool-shed-v0-22-0.md](work/00-campaigns/active/027-publish-and-verify-tool-shed-v0-22-0.md) | campaign | working | 2026-08-18 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -35,6 +34,7 @@ Updated: 2026-08-18
 | [work/00-campaigns/completed/024-compact-tool-shed-site-and-publish-guided-workflows.md](work/00-campaigns/completed/024-compact-tool-shed-site-and-publish-guided-workflows.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/025-harden-upgrade-campaign-number-convergence.md](work/00-campaigns/completed/025-harden-upgrade-campaign-number-convergence.md) | campaign | complete | 2026-08-18 | none | - |
 | [work/00-campaigns/completed/026-link-public-help-site-from-help-responses.md](work/00-campaigns/completed/026-link-public-help-site-from-help-responses.md) | campaign | complete | 2026-08-18 | none | - |
+| [work/00-campaigns/completed/027-publish-and-verify-tool-shed-v0-22-0.md](work/00-campaigns/completed/027-publish-and-verify-tool-shed-v0-22-0.md) | campaign | complete | 2026-08-18 | none | - |
 | [work/00-campaigns/completed/028-extend-next-with-targeted-and-wildcard-batches.md](work/00-campaigns/completed/028-extend-next-with-targeted-and-wildcard-batches.md) | campaign | complete | 2026-08-18 | none | - |
 | [work/00-campaigns/completed/029-define-nested-cycles-and-owning-transitions.md](work/00-campaigns/completed/029-define-nested-cycles-and-owning-transitions.md) | campaign | complete | 2026-08-18 | none | - |
 | [work/00-campaigns/completed/030-fail-closed-on-cross-workspace-routing.md](work/00-campaigns/completed/030-fail-closed-on-cross-workspace-routing.md) | campaign | complete | 2026-08-18 | none | - |
@@ -49,6 +49,7 @@ Updated: 2026-08-18
 | [work/evidence/evidence-adaptive-generated-evidence-safeguards.md](work/evidence/evidence-adaptive-generated-evidence-safeguards.md) | evidence | complete | 2026-07-25 | none | work/wp/completed/wp-generated-evidence-safety-and-migration.md |
 | [work/evidence/evidence-human-planning-mechanism-evaluation.md](work/evidence/evidence-human-planning-mechanism-evaluation.md) | evidence | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md](work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md) | evidence | complete | 2026-08-09 | none | work/wp/completed/wp-evidence-responsive-tool-shed-execution.md |
+| [work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md](work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md) | evidence | complete | 2026-08-18 | none | work/00-campaigns/completed/027-publish-and-verify-tool-shed-v0-22-0.md |
 | [work/evidence/evidence-tool-shed-provider-portability.md](work/evidence/evidence-tool-shed-provider-portability.md) | - | - | - | - | - |
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |
 | [work/focus-areas.md](work/focus-areas.md) | focus-area-catalog | approved | 2026-08-15 | review when an enduring responsibility boundary changes | - |
@@ -85,6 +86,6 @@ Updated: 2026-08-18
 
 ## Summary
 
-- Total artifacts: 68
-- Active artifacts: 2
-- Completed/decided artifacts: 63
+- Total artifacts: 69
+- Active artifacts: 1
+- Completed/decided artifacts: 65

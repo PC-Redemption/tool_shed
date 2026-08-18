@@ -1,9 +1,9 @@
 # Publish and verify Tool Shed v0.22.0
 
-Status: working
+Status: complete
 Type: campaign
 Updated: 2026-08-18
-Next Action: execute the campaign completion gate
+Next Action: none
 Campaign ID: publish-and-verify-tool-shed-v0-22-0
 Campaign Number: 027
 Outcome: Ship one verified Tool Shed v0.22.0 release that contains and accounts for every repository update since v0.21.0: the compact public operator workflows and follow-up layout/cache fix, upgrade campaign-number convergence, public help links, targeted and wildcard queue batches, fail-closed workspace identity and routing, nested cycle ownership, and the workspace doctor; freeze the exact candidate, push and publish it traceably, verify canonical release, updater, and public documentation state, and close issues #34 through #39 only when each issue's acceptance evidence is satisfied.
@@ -14,8 +14,10 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: Every commit and tracked change from v0.21.0 through the exact frozen candidate is inventoried and attributable to the compact public workflow guide plus its layout/cache follow-up, campaign-number upgrade convergence, public help links, targeted and wildcard queue batches, fail-closed workspace identity and routing, nested cycle ownership, or the workspace doctor; campaigns 024, 025, 026, 028, 029, 030, and 031 retain passing completion evidence; release qualification passes on that exact candidate; SHED_VERSION.json records the matching commit, v0.22.0 tag, and release timestamp; main is pushed without unrelated changes; GitHub Actions release checks pass; the GitHub v0.22.0 release and canonical manifest are reachable and internally consistent; ts.rookaro.com still serves all verified post-v0.21.0 documentation behavior; a published upgrade from v0.21.0 to v0.22.0 verifies the included migration, identity, queue, cycle, help, and doctor behavior; and issues #34, #35, #36, #37, #38, and #39 are closed with concise acceptance-evidence links.
-Completion Evidence: none
-Disposition: none
+Completion Evidence: work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md; https://github.com/PC-Redemption/tool_shed/releases/tag/v0.22.0; GitHub Actions runs 32154207120, 32154206930, and 32154207161; published v0.21.0-to-v0.22.0 updater fixture; live ts.rookaro.com checks; issues #34-#39 closed
+Completion Date: 2026-08-18
+Completion Order: 29
+Disposition: completed
 
 ## Request
 

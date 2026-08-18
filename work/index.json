@@ -21,23 +21,6 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
-      "disposition": "none",
-      "next_action": "execute the campaign completion gate",
-      "parent": null,
-      "path": "work/00-campaigns/active/027-publish-and-verify-tool-shed-v0-22-0.md",
-      "produces": null,
-      "project_map": null,
-      "status": "working",
-      "superseded_by": null,
-      "supersedes": null,
-      "title": "Publish and verify Tool Shed v0.22.0",
-      "type": "campaign",
-      "updated": "2026-08-18"
-    },
-    {
-      "campaign": null,
-      "campaign_reason": null,
-      "canonical_truth": null,
       "disposition": "completed",
       "next_action": "none",
       "parent": null,
@@ -466,6 +449,23 @@
       "disposition": "completed",
       "next_action": "none",
       "parent": null,
+      "path": "work/00-campaigns/completed/027-publish-and-verify-tool-shed-v0-22-0.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Publish and verify Tool Shed v0.22.0",
+      "type": "campaign",
+      "updated": "2026-08-18"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": "completed",
+      "next_action": "none",
+      "parent": null,
       "path": "work/00-campaigns/completed/028-extend-next-with-targeted-and-wildcard-batches.md",
       "produces": null,
       "project_map": null,
@@ -696,6 +696,23 @@
       "title": "Evidence: Tool Shed 0.11.0 release and client synchronization",
       "type": "evidence",
       "updated": "2026-08-09"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": null,
+      "next_action": "none",
+      "parent": "work/00-campaigns/completed/027-publish-and-verify-tool-shed-v0-22-0.md",
+      "path": "work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Tool Shed v0.22.0 release and published-upgrade qualification",
+      "type": "evidence",
+      "updated": "2026-08-18"
     },
     {
       "campaign": null,
@@ -1166,8 +1183,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 2,
-    "completed_or_decided_artifacts": 63,
-    "total_artifacts": 68
+    "active_artifacts": 1,
+    "completed_or_decided_artifacts": 65,
+    "total_artifacts": 69
   }
 }
