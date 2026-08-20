@@ -21,6 +21,23 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
+      "disposition": "none",
+      "next_action": "execute the campaign completion gate",
+      "parent": null,
+      "path": "work/00-campaigns/active/044-app-server-explicit-command-opt-in.md",
+      "produces": null,
+      "project_map": null,
+      "status": "working",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Add explicit App Server command opt-in",
+      "type": "campaign",
+      "updated": "2026-08-20"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
       "disposition": "completed",
       "next_action": "none",
       "parent": null,
@@ -1598,8 +1615,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 0,
+    "active_artifacts": 1,
     "completed_or_decided_artifacts": 83,
-    "total_artifacts": 92
+    "total_artifacts": 93
   }
 }

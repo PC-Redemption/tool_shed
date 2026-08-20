@@ -9,6 +9,7 @@ Updated: 2026-08-20
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
+| [work/00-campaigns/active/044-app-server-explicit-command-opt-in.md](work/00-campaigns/active/044-app-server-explicit-command-opt-in.md) | campaign | working | 2026-08-20 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -109,6 +110,6 @@ Updated: 2026-08-20
 
 ## Summary
 
-- Total artifacts: 92
-- Active artifacts: 0
+- Total artifacts: 93
+- Active artifacts: 1
 - Completed/decided artifacts: 83
