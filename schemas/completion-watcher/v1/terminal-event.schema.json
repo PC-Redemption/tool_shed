@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ts.rookaro.com/schemas/completion-watcher/v1/terminal-event.schema.json",
+  "title": "Tool Shed completion watcher terminal event v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_id",
+    "idempotency_key",
+    "watch_id",
+    "workspace",
+    "display_name",
+    "target",
+    "terminal_class",
+    "reason_code",
+    "occurred_at",
+    "enqueued_at",
+    "notification_adapter"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "event_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "idempotency_key": {"type": "string", "pattern": "^watch-terminal-v1:[0-9a-f]{64}$"},
+    "watch_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "workspace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "alias"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$"},
+        "alias": {"type": "string", "minLength": 1, "maxLength": 80}
+      }
+    },
+    "display_name": {"type": "string", "minLength": 1, "maxLength": 120},
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$"},
+        "id": {"type": "string", "minLength": 1, "maxLength": 256},
+        "generation": {"type": "string", "minLength": 1, "maxLength": 128}
+      }
+    },
+    "terminal_class": {
+      "enum": [
+        "SATISFIED",
+        "TERMINAL_UNSATISFIED",
+        "CHECK_ERROR_EXHAUSTED",
+        "WATCH_CANCELLED",
+        "RETIRED_WITHOUT_CONCLUSION"
+      ]
+    },
+    "reason_code": {
+      "enum": [
+        "TARGET_SUCCEEDED",
+        "CONDITION_MET",
+        "TARGET_FAILED",
+        "TARGET_CANCELLED",
+        "TARGET_PREEMPTED",
+        "TARGET_SUPERSEDED",
+        "TARGET_MISSING_AFTER_GRACE",
+        "CONSECUTIVE_CHECK_ERRORS_EXHAUSTED",
+        "OPERATOR_CANCELLED_WATCH",
+        "ADMINISTRATIVE_RETIREMENT"
+      ]
+    },
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "enqueued_at": {"type": "string", "format": "date-time"},
+    "notification_adapter": {"enum": ["none", "project", "hosted"]},
+    "sanitized_detail": {"type": "string", "maxLength": 512},
+    "review_url": {"type": "string", "format": "uri", "maxLength": 2048}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"terminal_class": {"const": "SATISFIED"}}},
+      "then": {"properties": {"reason_code": {"enum": ["TARGET_SUCCEEDED", "CONDITION_MET"]}}}
+    },
+    {
+      "if": {"properties": {"terminal_class": {"const": "TERMINAL_UNSATISFIED"}}},
+      "then": {
+        "properties": {
+          "reason_code": {
+            "enum": [
+              "TARGET_FAILED",
+              "TARGET_CANCELLED",
+              "TARGET_PREEMPTED",
+              "TARGET_SUPERSEDED",
+              "TARGET_MISSING_AFTER_GRACE"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"terminal_class": {"const": "CHECK_ERROR_EXHAUSTED"}}},
+      "then": {"properties": {"reason_code": {"const": "CONSECUTIVE_CHECK_ERRORS_EXHAUSTED"}}}
+    },
+    {
+      "if": {"properties": {"terminal_class": {"const": "WATCH_CANCELLED"}}},
+      "then": {"properties": {"reason_code": {"const": "OPERATOR_CANCELLED_WATCH"}}}
+    },
+    {
+      "if": {"properties": {"terminal_class": {"const": "RETIRED_WITHOUT_CONCLUSION"}}},
+      "then": {"properties": {"reason_code": {"const": "ADMINISTRATIVE_RETIREMENT"}}}
+    }
+  ]
+}

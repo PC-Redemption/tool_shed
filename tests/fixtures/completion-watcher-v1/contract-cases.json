@@ -1,0 +1,340 @@
+{
+  "schema_version": 1,
+  "descriptor": {
+    "schema_version": 1,
+    "watch_id": "123e4567-e89b-42d3-a456-426614174000",
+    "created_at": "2026-08-18T23:00:00Z",
+    "display_name": "Example qualification run",
+    "workspace": {
+      "id": "tool-shed",
+      "alias": "Tool Shed"
+    },
+    "target": {
+      "kind": "qualification-run",
+      "id": "build-8472",
+      "generation": "attempt-1"
+    },
+    "checker": {
+      "argv": ["python", "check_build.py", "--run-id", "build-8472"],
+      "timeout_seconds": 30,
+      "working_directory": "/srv/example",
+      "credential_profile": "local-gh"
+    },
+    "policy": {
+      "poll_interval_seconds": 60,
+      "missing_grace_checks": 3,
+      "max_consecutive_check_errors": 5,
+      "claim_lease_seconds": 180,
+      "idle_exit_scans": 2,
+      "review_after": "2026-08-19T23:00:00Z",
+      "administrative_retire_after": "2026-09-18T23:00:00Z"
+    },
+    "notification": {
+      "adapter": "hosted",
+      "profile": "primary"
+    },
+    "review_url": "https://example.invalid/runs/build-8472"
+  },
+  "watch_record": {
+    "record_version": 1,
+    "descriptor": {
+      "schema_version": 1,
+      "watch_id": "123e4567-e89b-42d3-a456-426614174000",
+      "created_at": "2026-08-18T23:00:00Z",
+      "display_name": "Example qualification run",
+      "workspace": {"id": "tool-shed", "alias": "Tool Shed"},
+      "target": {"kind": "qualification-run", "id": "build-8472", "generation": "attempt-1"},
+      "checker": {
+        "argv": ["python", "check_build.py", "--run-id", "build-8472"],
+        "timeout_seconds": 30,
+        "working_directory": "/srv/example",
+        "credential_profile": "local-gh"
+      },
+      "policy": {
+        "poll_interval_seconds": 60,
+        "missing_grace_checks": 3,
+        "max_consecutive_check_errors": 5,
+        "claim_lease_seconds": 180,
+        "idle_exit_scans": 2,
+        "review_after": "2026-08-19T23:00:00Z",
+        "administrative_retire_after": "2026-09-18T23:00:00Z"
+      },
+      "notification": {"adapter": "hosted", "profile": "primary"},
+      "review_url": "https://example.invalid/runs/build-8472"
+    },
+    "descriptor_sha256": "f163a2e5c2bac7b07bf1a0285b1dbf6aa6d200f258f1b96d141d480b717fe630",
+    "lifecycle_state": "PENDING",
+    "due_at": "2026-08-18T23:01:00Z",
+    "missing_streak": 0,
+    "error_streak": 0,
+    "checker_attempts": 0
+  },
+  "checker_results": {
+    "waiting": {
+      "schema_version": 1,
+      "state": "WAITING",
+      "observed_at": "2026-08-18T23:01:00Z",
+      "target": {
+        "kind": "qualification-run",
+        "id": "build-8472",
+        "generation": "attempt-1"
+      },
+      "reason_code": "TARGET_NONTERMINAL",
+      "identity_confirmed": true,
+      "target_exists": true,
+      "authoritative_nonterminal": true,
+      "progress_at": "2026-08-18T23:00:45Z",
+      "detail": "running"
+    },
+    "satisfied": {
+      "schema_version": 1,
+      "state": "SATISFIED",
+      "observed_at": "2026-08-18T23:02:00Z",
+      "target": {
+        "kind": "qualification-run",
+        "id": "build-8472",
+        "generation": "attempt-1"
+      },
+      "reason_code": "TARGET_SUCCEEDED",
+      "identity_confirmed": true,
+      "target_exists": true,
+      "authoritative_nonterminal": false,
+      "detail": "passed"
+    },
+    "cancelled": {
+      "schema_version": 1,
+      "state": "TERMINAL_UNSATISFIED",
+      "observed_at": "2026-08-18T23:02:00Z",
+      "target": {
+        "kind": "qualification-run",
+        "id": "build-8472",
+        "generation": "attempt-1"
+      },
+      "reason_code": "TARGET_CANCELLED",
+      "identity_confirmed": true,
+      "target_exists": true,
+      "authoritative_nonterminal": false,
+      "detail": "cancelled by the qualification system"
+    },
+    "missing": {
+      "schema_version": 1,
+      "state": "CHECK_ERROR",
+      "observed_at": "2026-08-18T23:02:00Z",
+      "target": {
+        "kind": "qualification-run",
+        "id": "build-8472",
+        "generation": "attempt-1"
+      },
+      "reason_code": "TARGET_MISSING_TRANSIENT",
+      "identity_confirmed": false,
+      "target_exists": false,
+      "authoritative_nonterminal": false,
+      "detail": "target lookup returned no record"
+    },
+    "source_unavailable": {
+      "schema_version": 1,
+      "state": "CHECK_ERROR",
+      "observed_at": "2026-08-18T23:02:00Z",
+      "target": {
+        "kind": "qualification-run",
+        "id": "build-8472",
+        "generation": "attempt-1"
+      },
+      "reason_code": "SOURCE_UNAVAILABLE",
+      "identity_confirmed": false,
+      "target_exists": false,
+      "authoritative_nonterminal": false,
+      "detail": "authoritative source timed out"
+    }
+  },
+  "terminal_events": {
+    "satisfied": {
+      "schema_version": 1,
+      "event_id": "513d3e4ca7188d86a2a9678364e327737edb12110fe6f5eaa2326c37326d4c53",
+      "idempotency_key": "watch-terminal-v1:513d3e4ca7188d86a2a9678364e327737edb12110fe6f5eaa2326c37326d4c53",
+      "watch_id": "123e4567-e89b-42d3-a456-426614174000",
+      "workspace": {"id": "tool-shed", "alias": "Tool Shed"},
+      "display_name": "Example qualification run",
+      "target": {
+        "kind": "qualification-run",
+        "id": "build-8472",
+        "generation": "attempt-1"
+      },
+      "terminal_class": "SATISFIED",
+      "reason_code": "TARGET_SUCCEEDED",
+      "occurred_at": "2026-08-18T23:02:00Z",
+      "enqueued_at": "2026-08-18T23:02:01Z",
+      "notification_adapter": "hosted",
+      "sanitized_detail": "passed",
+      "review_url": "https://example.invalid/runs/build-8472"
+    },
+    "checker_errors_exhausted": {
+      "schema_version": 1,
+      "event_id": "513d3e4ca7188d86a2a9678364e327737edb12110fe6f5eaa2326c37326d4c53",
+      "idempotency_key": "watch-terminal-v1:513d3e4ca7188d86a2a9678364e327737edb12110fe6f5eaa2326c37326d4c53",
+      "watch_id": "123e4567-e89b-42d3-a456-426614174000",
+      "workspace": {"id": "tool-shed", "alias": "Tool Shed"},
+      "display_name": "Example qualification run",
+      "target": {
+        "kind": "qualification-run",
+        "id": "build-8472",
+        "generation": "attempt-1"
+      },
+      "terminal_class": "CHECK_ERROR_EXHAUSTED",
+      "reason_code": "CONSECUTIVE_CHECK_ERRORS_EXHAUSTED",
+      "occurred_at": "2026-08-18T23:06:00Z",
+      "enqueued_at": "2026-08-18T23:06:01Z",
+      "notification_adapter": "hosted",
+      "sanitized_detail": "checker could not determine target state"
+    },
+    "retired_without_conclusion": {
+      "schema_version": 1,
+      "event_id": "513d3e4ca7188d86a2a9678364e327737edb12110fe6f5eaa2326c37326d4c53",
+      "idempotency_key": "watch-terminal-v1:513d3e4ca7188d86a2a9678364e327737edb12110fe6f5eaa2326c37326d4c53",
+      "watch_id": "123e4567-e89b-42d3-a456-426614174000",
+      "workspace": {"id": "tool-shed", "alias": "Tool Shed"},
+      "display_name": "Example qualification run",
+      "target": {
+        "kind": "qualification-run",
+        "id": "build-8472",
+        "generation": "attempt-1"
+      },
+      "terminal_class": "RETIRED_WITHOUT_CONCLUSION",
+      "reason_code": "ADMINISTRATIVE_RETIREMENT",
+      "occurred_at": "2026-09-18T23:00:00Z",
+      "enqueued_at": "2026-09-18T23:00:01Z",
+      "notification_adapter": "hosted",
+      "sanitized_detail": "retired without conclusion; no task failure inferred"
+    }
+  },
+  "invalid_payloads": [
+    {
+      "id": "waiting-without-authoritative-live-evidence",
+      "kind": "checker_result",
+      "base": "waiting",
+      "set": {"authoritative_nonterminal": false}
+    },
+    {
+      "id": "terminal-result-with-waiting-reason",
+      "kind": "checker_result",
+      "base": "cancelled",
+      "set": {"reason_code": "TARGET_NONTERMINAL"}
+    },
+    {
+      "id": "descriptor-allows-fast-polling",
+      "kind": "descriptor",
+      "set_path": ["policy", "poll_interval_seconds"],
+      "value": 5
+    },
+    {
+      "id": "event-reason-does-not-match-terminal-class",
+      "kind": "terminal_event",
+      "base": "satisfied",
+      "set": {"reason_code": "TARGET_FAILED"}
+    }
+  ],
+  "transition_cases": [
+    {
+      "id": "legitimate-long-wait-resets-error-streaks",
+      "previous": {"missing_streak": 2, "error_streak": 2},
+      "observation": {"type": "result", "result": "waiting"},
+      "expected": {"action": "REQUEUE", "state": "WAITING", "missing_streak": 0, "error_streak": 0}
+    },
+    {
+      "id": "success-enqueues-before-retirement",
+      "previous": {"missing_streak": 0, "error_streak": 0},
+      "observation": {"type": "result", "result": "satisfied"},
+      "expected": {"action": "ENQUEUE_TERMINAL", "terminal_class": "SATISFIED", "reason_code": "TARGET_SUCCEEDED"}
+    },
+    {
+      "id": "target-cancellation-is-terminal-unsatisfied",
+      "previous": {"missing_streak": 0, "error_streak": 0},
+      "observation": {"type": "result", "result": "cancelled"},
+      "expected": {"action": "ENQUEUE_TERMINAL", "terminal_class": "TERMINAL_UNSATISFIED", "reason_code": "TARGET_CANCELLED"}
+    },
+    {
+      "id": "transient-missing-target-retries",
+      "previous": {"missing_streak": 0, "error_streak": 0},
+      "observation": {"type": "result", "result": "missing"},
+      "expected": {"action": "REQUEUE", "state": "CHECK_ERROR", "missing_streak": 1, "error_streak": 1}
+    },
+    {
+      "id": "missing-target-grace-exhaustion-retires",
+      "previous": {"missing_streak": 2, "error_streak": 2},
+      "observation": {"type": "result", "result": "missing"},
+      "expected": {"action": "ENQUEUE_TERMINAL", "terminal_class": "TERMINAL_UNSATISFIED", "reason_code": "TARGET_MISSING_AFTER_GRACE"}
+    },
+    {
+      "id": "persistent-check-error-retires-without-task-conclusion",
+      "previous": {"missing_streak": 0, "error_streak": 4},
+      "observation": {"type": "result", "result": "source_unavailable"},
+      "expected": {"action": "ENQUEUE_TERMINAL", "terminal_class": "CHECK_ERROR_EXHAUSTED", "reason_code": "CONSECUTIVE_CHECK_ERRORS_EXHAUSTED"}
+    },
+    {
+      "id": "malformed-output-counts-as-check-error",
+      "previous": {"missing_streak": 0, "error_streak": 1},
+      "observation": {"type": "runner_fault", "reason": "MALFORMED_OUTPUT"},
+      "expected": {"action": "REQUEUE", "state": "CHECK_ERROR", "missing_streak": 0, "error_streak": 2}
+    },
+    {
+      "id": "immutable-target-mismatch-counts-as-check-error",
+      "previous": {"missing_streak": 0, "error_streak": 0},
+      "observation": {"type": "identity_mismatch", "result": "waiting"},
+      "expected": {"action": "REQUEUE", "state": "CHECK_ERROR", "missing_streak": 0, "error_streak": 1}
+    },
+    {
+      "id": "operator-cancellation-wins-before-terminal-enqueue",
+      "previous": {"missing_streak": 0, "error_streak": 0, "cancel_requested": true},
+      "observation": {"type": "result", "result": "waiting"},
+      "expected": {"action": "ENQUEUE_TERMINAL", "terminal_class": "WATCH_CANCELLED", "reason_code": "OPERATOR_CANCELLED_WATCH"}
+    },
+    {
+      "id": "durable-outbox-wins-over-replayed-check",
+      "previous": {"missing_streak": 0, "error_streak": 0, "outbox_has_terminal": true},
+      "observation": {"type": "result", "result": "satisfied"},
+      "expected": {"action": "RETIRE_AFTER_ENQUEUE"}
+    },
+    {
+      "id": "review-after-never-implies-failure",
+      "previous": {"missing_streak": 0, "error_streak": 0, "review_due": true},
+      "observation": {"type": "result", "result": "waiting"},
+      "expected": {"action": "REQUEUE_REVIEW_DUE", "state": "WAITING", "missing_streak": 0, "error_streak": 0}
+    },
+    {
+      "id": "explicit-administrative-retirement-is-inconclusive",
+      "previous": {"missing_streak": 0, "error_streak": 0, "administrative_retire_requested": true},
+      "observation": {"type": "result", "result": "waiting"},
+      "expected": {"action": "ENQUEUE_TERMINAL", "terminal_class": "RETIRED_WITHOUT_CONCLUSION", "reason_code": "ADMINISTRATIVE_RETIREMENT"}
+    },
+    {
+      "id": "new-singleton-owner-recovers-prior-runner-claim",
+      "previous": {"missing_streak": 0, "error_streak": 0, "claim_owner": "runner-old", "current_runner": "runner-new", "current_runner_has_lock": true},
+      "observation": {"type": "none"},
+      "expected": {"action": "RECOVER_CLAIM"}
+    },
+    {
+      "id": "stale-heartbeat-does-not-defeat-held-lock",
+      "previous": {"missing_streak": 0, "error_streak": 0, "runner_lock_held": true, "runner_heartbeat_stale": true},
+      "observation": {"type": "ensure_runner"},
+      "expected": {"action": "NO_START_LOCK_HELD"}
+    }
+  ],
+  "platform_cases": [
+    {
+      "platform": "linux",
+      "default_state_root": "$XDG_STATE_HOME/tool-shed/watchers/v1",
+      "fallback_state_root": "$HOME/.local/state/tool-shed/watchers/v1",
+      "directory_mode": "0700",
+      "file_mode": "0600",
+      "singleton_lock": "flock",
+      "reject_links": true
+    },
+    {
+      "platform": "windows",
+      "default_state_root": "%LOCALAPPDATA%\\ToolShed\\watchers\\v1",
+      "current_user_acl_required": true,
+      "singleton_lock": "LockFileEx",
+      "reject_links": true
+    }
+  ]
+}

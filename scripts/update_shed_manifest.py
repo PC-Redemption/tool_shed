@@ -32,6 +32,7 @@ TRACKED_GLOBS = (
     "scripts/*.py",
     "scripts/*.ps1",
     "scripts/*.sh",
+    "schemas/**/*.json",
     "skills/tool-shed/SKILL.md",
     "skills/tool-shed/agents/*.yaml",
     "skills/tool-shed/references/**/*.md",

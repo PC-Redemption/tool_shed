@@ -458,6 +458,15 @@ preserving any working campaign; `--dry-run` is read-only. Unresolved artifacts 
 require an exact approved manifest and a stale-write token covering the scanned work surface; it
 never silently resolves semantic decisions, and terminal operations preserve lifecycle history.
 
+## Planned Completion Watchers
+
+The accepted [completion watcher protocol](docs/completion-watcher-protocol.md) defines the v1
+descriptor, four-state checker result, durable outbox event, locking and lease recovery,
+permissions, cancellation, and downgrade behavior for GitHub issue #42. This workspace includes a
+local alpha watcher implementation (`scripts/completion_watcher.py`) with durable local state,
+status/cancel commands, and on-demand single-runner execution; hosted service integration remains
+an unshipped roadmap milestone.
+
 Check the installed snapshot without using the network, or compare it with the canonical manifest:
 
 ```bash

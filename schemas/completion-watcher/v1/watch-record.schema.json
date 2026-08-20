@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ts.rookaro.com/schemas/completion-watcher/v1/watch-record.schema.json",
+  "title": "Tool Shed completion watcher runtime record v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "record_version",
+    "descriptor",
+    "descriptor_sha256",
+    "lifecycle_state",
+    "due_at",
+    "missing_streak",
+    "error_streak",
+    "checker_attempts"
+  ],
+  "properties": {
+    "record_version": {"const": 1},
+    "descriptor": {"$ref": "watch-descriptor.schema.json"},
+    "descriptor_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "lifecycle_state": {"enum": ["PENDING", "CLAIMED", "RETIRING"]},
+    "due_at": {"type": "string", "format": "date-time"},
+    "missing_streak": {"type": "integer", "minimum": 0},
+    "error_streak": {"type": "integer", "minimum": 0},
+    "checker_attempts": {"type": "integer", "minimum": 0},
+    "last_checked_at": {"type": "string", "format": "date-time"},
+    "last_progress_at": {"type": "string", "format": "date-time"},
+    "cancel_requested_at": {"type": "string", "format": "date-time"},
+    "terminal_event_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runner_id", "claimed_at", "lease_until"],
+      "properties": {
+        "runner_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "claimed_at": {"type": "string", "format": "date-time"},
+        "lease_until": {"type": "string", "format": "date-time"}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"lifecycle_state": {"const": "CLAIMED"}}},
+      "then": {"required": ["claim"]}
+    },
+    {
+      "if": {"properties": {"lifecycle_state": {"const": "RETIRING"}}},
+      "then": {"required": ["terminal_event_id"]}
+    }
+  ]
+}

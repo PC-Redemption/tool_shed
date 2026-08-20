@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ts.rookaro.com/schemas/completion-watcher/v1/checker-result.schema.json",
+  "title": "Tool Shed completion watcher checker result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "state",
+    "observed_at",
+    "target",
+    "reason_code",
+    "identity_confirmed",
+    "target_exists",
+    "authoritative_nonterminal"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "state": {"enum": ["WAITING", "SATISFIED", "TERMINAL_UNSATISFIED", "CHECK_ERROR"]},
+    "observed_at": {"type": "string", "format": "date-time"},
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$"},
+        "id": {"type": "string", "minLength": 1, "maxLength": 256},
+        "generation": {"type": "string", "minLength": 1, "maxLength": 128}
+      }
+    },
+    "reason_code": {
+      "enum": [
+        "TARGET_NONTERMINAL",
+        "TARGET_SUCCEEDED",
+        "CONDITION_MET",
+        "TARGET_FAILED",
+        "TARGET_CANCELLED",
+        "TARGET_PREEMPTED",
+        "TARGET_SUPERSEDED",
+        "TARGET_MISSING_TRANSIENT",
+        "SOURCE_UNAVAILABLE",
+        "CHECKER_INTERNAL"
+      ]
+    },
+    "identity_confirmed": {"type": "boolean"},
+    "target_exists": {"type": "boolean"},
+    "authoritative_nonterminal": {"type": "boolean"},
+    "progress_at": {"type": "string", "format": "date-time"},
+    "detail": {"type": "string", "maxLength": 512}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"state": {"const": "WAITING"}}},
+      "then": {
+        "properties": {
+          "reason_code": {"const": "TARGET_NONTERMINAL"},
+          "identity_confirmed": {"const": true},
+          "target_exists": {"const": true},
+          "authoritative_nonterminal": {"const": true}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"state": {"const": "SATISFIED"}}},
+      "then": {
+        "properties": {
+          "reason_code": {"enum": ["TARGET_SUCCEEDED", "CONDITION_MET"]},
+          "identity_confirmed": {"const": true},
+          "authoritative_nonterminal": {"const": false}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"state": {"const": "TERMINAL_UNSATISFIED"}}},
+      "then": {
+        "properties": {
+          "reason_code": {
+            "enum": ["TARGET_FAILED", "TARGET_CANCELLED", "TARGET_PREEMPTED", "TARGET_SUPERSEDED"]
+          },
+          "identity_confirmed": {"const": true},
+          "authoritative_nonterminal": {"const": false}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"state": {"const": "CHECK_ERROR"}}},
+      "then": {
+        "properties": {
+          "reason_code": {
+            "enum": ["TARGET_MISSING_TRANSIENT", "SOURCE_UNAVAILABLE", "CHECKER_INTERNAL"]
+          },
+          "authoritative_nonterminal": {"const": false}
+        }
+      }
+    }
+  ]
+}
