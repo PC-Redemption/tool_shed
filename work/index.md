@@ -2,14 +2,13 @@
 
 Generated from artifact headers. `work/index.json` contains the same navigation data for automation. Do not put durable project truth only here; keep current truth in docs or README files.
 
-Updated: 2026-08-18
+Updated: 2026-08-20
 
 ## Orientation
 
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
-| [work/00-campaigns/active/033-update-github-actions-dependencies-before-node-20-removal.md](work/00-campaigns/active/033-update-github-actions-dependencies-before-node-20-removal.md) | campaign | working | 2026-08-18 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -41,7 +40,17 @@ Updated: 2026-08-18
 | [work/00-campaigns/completed/030-fail-closed-on-cross-workspace-routing.md](work/00-campaigns/completed/030-fail-closed-on-cross-workspace-routing.md) | campaign | complete | 2026-08-18 | none | - |
 | [work/00-campaigns/completed/031-add-workspace-wide-ts-doctor-command.md](work/00-campaigns/completed/031-add-workspace-wide-ts-doctor-command.md) | campaign | complete | 2026-08-18 | none | - |
 | [work/00-campaigns/completed/032-make-workflow-cycles-first-class-site-concept.md](work/00-campaigns/completed/032-make-workflow-cycles-first-class-site-concept.md) | campaign | complete | 2026-08-18 | none | - |
+| [work/00-campaigns/completed/033-update-github-actions-dependencies-before-node-20-removal.md](work/00-campaigns/completed/033-update-github-actions-dependencies-before-node-20-removal.md) | campaign | complete | 2026-08-18 | none | - |
 | [work/00-campaigns/completed/034-codex-adapter-compact-routing-and-explicit-activation.md](work/00-campaigns/completed/034-codex-adapter-compact-routing-and-explicit-activation.md) | campaign | complete | 2026-08-18 | none | - |
+| [work/00-campaigns/completed/036-define-completion-watcher-protocol-and-failure-model.md](work/00-campaigns/completed/036-define-completion-watcher-protocol-and-failure-model.md) | campaign | complete | 2026-08-18 | none | - |
+| [work/00-campaigns/completed/037-implement-portable-local-completion-watcher-alpha.md](work/00-campaigns/completed/037-implement-portable-local-completion-watcher-alpha.md) | campaign | complete | 2026-08-19 | none | - |
+| [work/00-campaigns/completed/038-qualify-and-release-local-completion-watchers.md](work/00-campaigns/completed/038-qualify-and-release-local-completion-watchers.md) | campaign | complete | 2026-08-19 | none | - |
+| [work/00-campaigns/completed/040-app-server-camp-token-optimization.md](work/00-campaigns/completed/040-app-server-camp-token-optimization.md) | campaign | complete | 2026-08-20 | none | - |
+| [work/00-campaigns/completed/041-integrate-qualified-app-server-and-reassess-hosted-watcher.md](work/00-campaigns/completed/041-integrate-qualified-app-server-and-reassess-hosted-watcher.md) | campaign | complete | 2026-08-20 | none | - |
+| [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
+| [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate when After Campaign 040 completes, reassess Campaign 039 against the App Server results and explicitly reactivate it only if the watcher work remains relevant. | - |
+| [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
+| [work/checklists/checklist-hosted-watcher-status-and-email-pilot.md](work/checklists/checklist-hosted-watcher-status-and-email-pilot.md) | checklist | active | 2026-08-19 | execute the checklist | work/roadmaps/roadmap-completion-watcher-program.md |
 | [work/checklists/checklist-refresh-readme-and-ai-command-reference.md](work/checklists/checklist-refresh-readme-and-ai-command-reference.md) | checklist | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/checklists/checklist-tool-shed-skill-field-test.md](work/checklists/checklist-tool-shed-skill-field-test.md) | checklist | complete | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/decisions/decision-codex-skill-readiness.md](work/decisions/decision-codex-skill-readiness.md) | decision-matrix | decided | 2026-07-05 | continue using skill on real projects; plugin packaging deferred | work/maps/map-tool-shed-foundation.md |
@@ -50,6 +59,9 @@ Updated: 2026-08-18
 | [work/decisions/decision-plugin-packaging-readiness.md](work/decisions/decision-plugin-packaging-readiness.md) | decision-matrix | decided | 2026-07-05 | defer plugin packaging until distribution friction appears | work/maps/map-tool-shed-foundation.md |
 | [work/decisions/decision-project-map-creation-trigger.md](work/decisions/decision-project-map-creation-trigger.md) | decision-matrix | decided | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/evidence/evidence-adaptive-generated-evidence-safeguards.md](work/evidence/evidence-adaptive-generated-evidence-safeguards.md) | evidence | complete | 2026-07-25 | none | work/wp/completed/wp-generated-evidence-safety-and-migration.md |
+| [work/evidence/evidence-completion-watcher-v1-alpha.md](work/evidence/evidence-completion-watcher-v1-alpha.md) | evidence | complete | 2026-08-19 | none | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
+| [work/evidence/evidence-completion-watcher-v1-contract.md](work/evidence/evidence-completion-watcher-v1-contract.md) | evidence | complete | 2026-08-18 | none | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
+| [work/evidence/evidence-completion-watcher-v1-release.md](work/evidence/evidence-completion-watcher-v1-release.md) | evidence | complete | 2026-08-19 | none | work/00-campaigns/completed/038-qualify-and-release-local-completion-watchers.md |
 | [work/evidence/evidence-human-planning-mechanism-evaluation.md](work/evidence/evidence-human-planning-mechanism-evaluation.md) | evidence | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md](work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md) | evidence | complete | 2026-08-09 | none | work/wp/completed/wp-evidence-responsive-tool-shed-execution.md |
 | [work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md](work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md) | evidence | complete | 2026-08-18 | none | work/00-campaigns/completed/027-publish-and-verify-tool-shed-v0-22-0.md |
@@ -58,8 +70,11 @@ Updated: 2026-08-18
 | [work/focus-areas.md](work/focus-areas.md) | focus-area-catalog | approved | 2026-08-15 | review when an enduring responsibility boundary changes | - |
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
+| [work/maps/map-disposable-completion-watchers-and-hosted-notifications.md](work/maps/map-disposable-completion-watchers-and-hosted-notifications.md) | project-map | active | 2026-08-18 | derive and approve the M2 local-alpha campaign after G1 contract evidence is recorded | - |
 | [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | active | 2026-08-14 | review the exact target manifest before authorizing the first guarded fleet snapshot update | - |
 | [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
+| [work/roadmaps/roadmap-completion-watcher-program.md](work/roadmaps/roadmap-completion-watcher-program.md) | program-roadmap | executing | 2026-08-19 | execute the first ready roadmap campaign through ts: next | none |
+| [work/spikes/spike-completion-watcher-protocol-and-failure-model.md](work/spikes/spike-completion-watcher-protocol-and-failure-model.md) | spike | complete | 2026-08-18 | none | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
 | [work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md](work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md) | spike | complete | 2026-08-09 | none | work/maps/map-tool-shed-evolution.md |
 | [work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md](work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md) | spike | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md](work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md) | ticket | complete | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
@@ -89,6 +104,6 @@ Updated: 2026-08-18
 
 ## Summary
 
-- Total artifacts: 72
-- Active artifacts: 2
-- Completed/decided artifacts: 67
+- Total artifacts: 87
+- Active artifacts: 3
+- Completed/decided artifacts: 78
