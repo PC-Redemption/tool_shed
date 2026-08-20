@@ -138,9 +138,9 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
   "notes": "Integrates the qualified default-off Codex App Server path and explicit per-command Tool Shed opt-in controls, preserving GUI fallback, bounded optimized CAMP execution, and reduced deferred hosted-notification scope.",
-  "release_commit": null,
+  "release_commit": "c9d29f63355554a049854745c273fbd48fcf0522",
   "release_tag": "v0.24.0",
-  "released_at": null,
+  "released_at": "2026-08-20T19:49:32Z",
   "shed_version": "0.24.0",
   "updated_at": "2026-08-20",
   "updater_mutation_paths": [
