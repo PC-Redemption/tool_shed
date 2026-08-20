@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "codex_app_server_enabled": false,
+  "role_flags": {
+    "planning": true,
+    "verification": true,
+    "program_derivation": false,
+    "program_creation": false,
+    "program_redesign": false,
+    "camp_derivation": false,
+    "camp_creation": false,
+    "camp_redesign": false,
+    "architecture": false,
+    "camp_execution": true,
+    "implementation": false,
+    "normal_debug": false,
+    "testing": false,
+    "build": false,
+    "deployment": false,
+    "deterministic_execution": false,
+    "escalation": false
+  },
+  "gui_native_routes": [
+    "ts: discuss",
+    "discussion:"
+  ],
+  "allowed_sandboxes": [
+    "read-only",
+    "workspace-write"
+  ],
+  "role_sandboxes": {
+    "planning": ["read-only"],
+    "verification": ["read-only"],
+    "camp_execution": ["workspace-write"]
+  },
+  "thread_policy": {
+    "planning": "new",
+    "verification": "new",
+    "camp_execution": "new"
+  },
+  "context": {
+    "scope": "focused_snapshot",
+    "delivery": "inline_relevant_files",
+    "restricted_read": false,
+    "max_snapshot_bytes": 2000000,
+    "max_inline_bytes": 100000,
+    "warning_input_tokens": {
+      "planning": 50000,
+      "verification": 50000,
+      "default": 50000
+    },
+    "regression_factor": 1.5
+  },
+  "qualification": {
+    "estimated_codex_baseline_input_tokens": 18800,
+    "validated_codex_cli_version": "0.144.6",
+    "minimum_planning_operations": 10,
+    "minimum_verification_operations": 20
+  },
+  "approvals": {
+    "workspace_write_enabled": false,
+    "default_decision": "cancel",
+    "timeout_seconds": 120
+  },
+  "write_execution": {
+    "qualified_codex_cli_version": "0.144.6",
+    "approval_policy": "never",
+    "network_access": false,
+    "exclude_slash_tmp": true,
+    "exclude_tmpdir_env_var": true,
+    "require_git": true,
+    "require_explicit_path_scope": true,
+    "retry_after_mutation": false,
+    "deployment_qualified": false
+  }
+}

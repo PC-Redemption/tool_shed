@@ -6,13 +6,15 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import queue
-import subprocess
 import tempfile
-import threading
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
+
+try:
+    from scripts.codex_app_server import AppServerError, CodexAppServerClient
+except ModuleNotFoundError:  # Direct execution: python scripts/reasoning_catalog.py
+    from codex_app_server import AppServerError, CodexAppServerClient  # type: ignore[no-redef]
 
 
 SCHEMA_VERSION = 1
@@ -33,105 +35,18 @@ def default_cache_path() -> Path:
     return root / "tool-shed" / "reasoning-catalog.json"
 
 
-def send_message(process: subprocess.Popen[str], message: dict[str, Any]) -> None:
-    if process.stdin is None:
-        raise CatalogError("Codex app-server stdin is unavailable")
-    process.stdin.write(json.dumps(message, separators=(",", ":")) + "\n")
-    process.stdin.flush()
-
-
-def wait_for_response(
-    messages: queue.Queue[str], request_id: int, *, timeout: float
-) -> dict[str, Any]:
-    deadline = utc_now().timestamp() + timeout
-    while True:
-        remaining = deadline - utc_now().timestamp()
-        if remaining <= 0:
-            raise CatalogError(f"timed out waiting for Codex app-server response {request_id}")
-        try:
-            raw = messages.get(timeout=remaining)
-        except queue.Empty as error:
-            raise CatalogError(f"timed out waiting for Codex app-server response {request_id}") from error
-        try:
-            message = json.loads(raw)
-        except json.JSONDecodeError:
-            continue
-        if message.get("id") != request_id:
-            continue
-        if "error" in message:
-            raise CatalogError(f"Codex app-server error: {message['error']}")
-        result = message.get("result")
-        if not isinstance(result, dict):
-            raise CatalogError(f"Codex app-server response {request_id} has no result object")
-        return result
-
-
 def query_codex_catalog(codex: str, *, timeout: float) -> tuple[list[dict[str, Any]], str]:
     try:
-        process = subprocess.Popen(
-            [codex, "app-server"],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            encoding="utf-8",
-            bufsize=1,
-        )
-    except OSError as error:
-        raise CatalogError(f"cannot start Codex app-server: {error}") from error
-
-    messages: queue.Queue[str] = queue.Queue()
-
-    def read_stdout() -> None:
-        if process.stdout is not None:
-            for line in process.stdout:
-                messages.put(line)
-
-    reader = threading.Thread(target=read_stdout, daemon=True)
-    reader.start()
-    try:
-        send_message(
-            process,
-            {
-                "method": "initialize",
-                "id": 0,
-                "params": {
-                    "clientInfo": {
-                        "name": "tool_shed",
-                        "title": "Tool Shed",
-                        "version": "1.0.0",
-                    }
-                },
-            },
-        )
-        initialized = wait_for_response(messages, 0, timeout=timeout)
-        send_message(process, {"method": "initialized", "params": {}})
-        send_message(
-            process,
-            {
-                "method": "model/list",
-                "id": 1,
-                "params": {"limit": 1000, "includeHidden": False},
-            },
-        )
-        result = wait_for_response(messages, 1, timeout=timeout)
-        models = result.get("data")
-        if not isinstance(models, list):
-            raise CatalogError("Codex model/list response has no data array")
-        user_agent = str(initialized.get("userAgent") or "unknown")
-        return [model for model in models if isinstance(model, dict)], user_agent
-    finally:
-        if process.stdin is not None:
-            process.stdin.close()
-        try:
-            process.terminate()
-        except OSError:
-            pass
-        try:
-            process.wait(timeout=2)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            process.wait(timeout=2)
+        with CodexAppServerClient(
+            codex,
+            timeout=timeout,
+            client_name="tool_shed",
+            client_title="Tool Shed",
+            client_version="1.0.0",
+        ) as client:
+            return client.list_models(include_hidden=False), client.user_agent
+    except AppServerError as error:
+        raise CatalogError(str(error)) from error
 
 
 def normalize_model(model: dict[str, Any]) -> dict[str, Any]:

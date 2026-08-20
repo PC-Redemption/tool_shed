@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-08-20",
+  "gui": {
+    "token_metrics": null,
+    "elapsed_seconds": null,
+    "note": "The existing GUI surface does not expose per-operation token or elapsed-time telemetry in this workspace. No values were estimated."
+  },
+  "paired_reference_strategy": {
+    "description": "Two representative real-work pairs compared the prior reference-file/tool-reading strategy with focused inline App Server context. This is a strategy comparison, not fabricated GUI telemetry.",
+    "pairs": [
+      {
+        "work": "Campaign 031 doctor planning",
+        "reference": {
+          "input_tokens": 186244,
+          "cached_input_tokens": 141568,
+          "output_tokens": 3928,
+          "reasoning_tokens": 2276,
+          "model_turns": 7,
+          "tool_calls": 6,
+          "duration_seconds": 100.853
+        },
+        "focused_inline": {
+          "input_tokens": 25666,
+          "cached_input_tokens": 9984,
+          "output_tokens": 773,
+          "reasoning_tokens": 36,
+          "model_turns": 1,
+          "tool_calls": 0,
+          "duration_seconds": 21.972
+        },
+        "input_reduction_percent": 86.22,
+        "duration_reduction_percent": 78.21
+      },
+      {
+        "work": "App Server focused-summary routing verification",
+        "reference": {
+          "input_tokens": 135797,
+          "cached_input_tokens": 109312,
+          "output_tokens": 1664,
+          "reasoning_tokens": 621,
+          "model_turns": 5,
+          "tool_calls": 4,
+          "duration_seconds": 38.262
+        },
+        "focused_inline": {
+          "input_tokens": 30550,
+          "cached_input_tokens": 15104,
+          "output_tokens": 850,
+          "reasoning_tokens": 501,
+          "model_turns": 1,
+          "tool_calls": 0,
+          "duration_seconds": 19.33
+        },
+        "input_reduction_percent": 77.5,
+        "duration_reduction_percent": 49.48
+      }
+    ],
+    "totals": {
+      "reference_input_tokens": 322041,
+      "focused_inline_input_tokens": 56216,
+      "input_reduction_percent": 82.54,
+      "reference_duration_seconds": 139.115,
+      "focused_inline_duration_seconds": 41.302,
+      "duration_reduction_percent": 70.31,
+      "reference_model_turns": 12,
+      "focused_inline_model_turns": 2,
+      "reference_tool_calls": 10,
+      "focused_inline_tool_calls": 0
+    }
+  },
+  "quality_review": {
+    "planning": "Focused inline Sol planning was scope-aligned and sufficient for downstream work. The reference strategy was more detailed and surfaced extra possible risks, but was substantially more expensive.",
+    "verification": "Terra was appropriately conservative when evidence was absent and found integration defects that were reproduced and fixed. Manual review also identified context-bound false positives, so verification findings still require evidence-based adjudication.",
+    "reliability": "All 30 core real-campaign turns completed without adapter failure. A live cancellation reconciliation race remains a promotion blocker."
+  }
+}
