@@ -129,4 +129,3 @@ Deletion policy:
 - Relevant schemas:
   - `schemas/completion-watcher-hosted/v1/terminal-event-snapshot.schema.json`
   - `schemas/completion-watcher-hosted/v1/watch-status.schema.json`
-  - `schemas/completion-watcher-hosted/v1/replay-request.schema.json`

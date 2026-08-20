@@ -1,9 +1,9 @@
 # Completion Watcher Hosted API Contract (Pilot v1)
 
-Status: draft
+Status: deferred draft
 Type: doc
 Updated: 2026-08-19
-Next Action: align local runner reporter with this bounded API contract
+Next Action: resume only for a named external/non-App-Server workload under reduced Campaign 039
 
 This document defines the minimum hosted API surface for the M4 hosted pilot.
 
@@ -13,6 +13,9 @@ This document defines the minimum hosted API surface for the M4 hosted pilot.
 - The hosted API is advisory and receives only outbound terminal events.
 - The service stores and serves advisory state for enrolled workspaces and sends centralized email.
 - This contract is production-shaped but bounded to the pilot scope.
+- The service has no endpoint for execution, lifecycle, originating-work recovery, manual replay,
+  remote retry, App Server monitoring, or workspace write-back. A local sender may safely repeat
+  the idempotent ingest request from its authoritative outbox.
 
 ## Shared Versioning
 
@@ -24,7 +27,6 @@ All payloads use `schema_version: 1`.
 - Bearer tokens are workspace-scoped and capability-scoped:
   - `watch:read`
   - `event:ingest`
-  - `event:replay`
 - Response codes:
   - `401` missing/invalid token
   - `403` token without required capability
@@ -83,18 +85,7 @@ Base path: `/api/v1`
 - Status semantics and status-to-business mapping are defined in
   `docs/completion-watcher-hosted-status-surface.md`.
 
-### 3) Manual replay
-
-`POST /api/v1/workspaces/{workspace_id}/watches/{watch_id}/replay`
-
-- Token capability required: `event:replay`
-- Body: `schemas/completion-watcher-hosted/v1/replay-request.schema.json`
-- Limits:
-  - bounded and scoped retries only,
-  - bounded replay rate per workspace,
-  - rejected when retry budget is exhausted with `409`.
-
-### 4) Health and readiness
+### 3) Health and readiness
 
 `GET /api/v1/health`
 
