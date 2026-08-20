@@ -654,12 +654,21 @@ class CodexExecutionAdapter:
                 None,
             )
             terminal_status = matching.get("status") if isinstance(matching, dict) else None
+            if terminal_status == "interrupted":
+                recovery_action = "resume"
+            elif terminal_status in {"completed", "failed"}:
+                recovery_action = "none" if terminal_status == "completed" else "retry"
+            else:
+                recovery_action = "user_intervention"
             return {
                 "outcome": (
                     "already_terminal"
                     if terminal_status in {"completed", "failed", "interrupted"}
+                    else "interrupt_race_active"
+                    if terminal_status == "inProgress"
                     else "no_active_turn"
                 ),
+                "recovery_action": recovery_action,
                 "thread_id": thread_id,
                 "turn_id": turn_id,
                 "turn_status": terminal_status,
@@ -668,6 +677,68 @@ class CodexExecutionAdapter:
 
     def get_status(self, thread_id: str) -> dict[str, Any]:
         return self.client.thread_status(thread_id)
+
+    def record_control_event(
+        self,
+        *,
+        operation: str,
+        qualification_id: str,
+        campaign: str,
+        recovery_action: str,
+        status: str,
+        thread_id: str | None = None,
+        turn_id: str | None = None,
+        fallback_used: bool = False,
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Record prompt-free recovery/fallback evidence from a controlled exercise."""
+
+        now = isoformat(utc_now())
+        self.telemetry.append(
+            {
+                "schema_version": 2,
+                "run_id": str(uuid.uuid4()),
+                "operation": operation,
+                "qualification_id": qualification_id,
+                "campaign": campaign,
+                "program": None,
+                "camp": None,
+                "role": "recovery_control",
+                "model_class": None,
+                "requested_model": None,
+                "actual_model": None,
+                "reasoning": None,
+                "thread_id": thread_id,
+                "turn_id": turn_id,
+                "started_at": now,
+                "ended_at": now,
+                "duration_seconds": 0.0,
+                "status": status,
+                "success": status in {"completed", "recovered", "fallback"},
+                "escalation": False,
+                "escalation_reason": None,
+                "rerouted": False,
+                "thread_reused": recovery_action == "resume",
+                "thread_mode": None,
+                "context_scope": None,
+                "context_warning": None,
+                "attempt": 1,
+                "retry": recovery_action == "retry",
+                "fallback_used": fallback_used,
+                "recovery_action": recovery_action,
+                "app_server_user_agent": self.client.user_agent,
+                "model_turns": None,
+                "model_turns_metric": "not_applicable_control_event",
+                "tool_calls": None,
+                "tool_call_types": [],
+                "token_usage": None,
+                "tokens": {},
+                "last_request_tokens": {},
+                "approval_events": [],
+                "error": None,
+                "details": details or {},
+            }
+        )
 
     def _record(
         self,
@@ -1057,7 +1128,11 @@ def _codex_version_from_records(records: list[dict[str, Any]]) -> str | None:
         user_agent = record.get("app_server_user_agent")
         if not isinstance(user_agent, str):
             continue
-        match = re.search(r"(?:codex|fake-codex)[/\s-]v?(\d+\.\d+\.\d+)", user_agent, re.I)
+        match = re.search(
+            r"(?:codex(?:_vscode)?|fake-codex)[/\s-]v?(\d+\.\d+\.\d+)",
+            user_agent,
+            re.I,
+        )
         if match:
             return match.group(1)
     return None
@@ -1162,7 +1237,13 @@ def qualification_report(
         if isinstance(item.get("tokens"), dict)
         and isinstance(item["tokens"].get("input"), int)
     ]
-    useful = [item for item in records if item.get("success") and not item.get("retry")]
+    useful = [
+        item
+        for item in records
+        if item.get("success")
+        and not item.get("retry")
+        and item.get("role") in {"planning", "verification"}
+    ]
     context = Counter()
     for item in records:
         scope = item.get("context_scope")
@@ -1198,6 +1279,7 @@ def qualification_report(
         "expected_codex_cli_version": expected_codex_version,
         "version_changed": bool(expected_codex_version and version != expected_codex_version),
         "operations": len(records),
+        "measured_model_operations": len(measured),
         "planning_sol": planning,
         "verification_terra": verification,
         "context": {
@@ -1213,18 +1295,14 @@ def qualification_report(
                 round(total_input / len(useful), 3) if useful else None
             ),
             "model_turns_per_operation_observed": (
-                round(total_turns / len(records), 3) if records else None
+                round(total_turns / len(measured), 3) if measured else None
             ),
             "tool_calls_per_operation": (
-                round(total_tool_calls / len(records), 3) if records else None
+                round(total_tool_calls / len(measured), 3) if measured else None
             ),
             "context_bytes_per_operation": (
-                round(
-                    (context["inline_context_bytes"] + context["summary_context_bytes"])
-                    / len(records),
-                    3,
-                )
-                if records
+                round(context["inline_context_bytes"] / len(measured), 3)
+                if measured
                 else None
             ),
             "model_turns_metric": "distinct_token_usage_last_updates",
@@ -1244,7 +1322,13 @@ def qualification_report(
             "observed_planning": planning["success"],
             "target_verification": 20,
             "observed_verification": verification["success"],
-            "met": planning["success"] >= 10 and verification["success"] >= 20,
+            "counts_met": planning["success"] >= 10 and verification["success"] >= 20,
+            "version_compatible": not bool(expected_codex_version and version != expected_codex_version),
+            "met": (
+                planning["success"] >= 10
+                and verification["success"] >= 20
+                and not bool(expected_codex_version and version != expected_codex_version)
+            ),
         },
     }
     return report

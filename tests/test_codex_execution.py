@@ -18,8 +18,10 @@ from scripts.codex_execution import (
 )
 from scripts.codex_orchestration import (
     AppServerFeatureConfig,
+    FeatureConfigError,
     benchmark_regressions,
     execute_bounded,
+    execute_if_enabled,
     inline_context_prompt,
     validate_summary_context,
 )
@@ -70,7 +72,11 @@ for raw in sys.stdin:
         print(json.dumps({"id": request_id, "result": {"thread": {"id": thread_id, "status": {"type": "idle"}}, "instructionSources": ["/workspace/AGENTS.md"]}}), flush=True)
     elif method == "thread/read":
         thread_id = message["params"]["threadId"]
-        print(json.dumps({"id": request_id, "result": {"thread": {"id": thread_id, "status": {"type": "idle"}}}}), flush=True)
+        thread = {"id": thread_id, "status": {"type": "idle"}}
+        terminal = os.environ.get("FAKE_CODEX_READ_TURN_STATUS")
+        if terminal:
+            thread["turns"] = [{"id": "turn_fake", "status": terminal}]
+        print(json.dumps({"id": request_id, "result": {"thread": thread}}), flush=True)
     elif method == "turn/start":
         turn_count += 1
         params = message["params"]
@@ -98,7 +104,10 @@ for raw in sys.stdin:
             print(json.dumps({"method": "thread/tokenUsage/updated", "params": {"threadId": params["threadId"], "turnId": turn_id, "tokenUsage": {"last": second, "total": total, "modelContextWindow": 1000}}}), flush=True)
         print(json.dumps({"method": "turn/completed", "params": {"threadId": params["threadId"], "turn": {"id": turn_id, "status": "completed", "items": []}}}), flush=True)
     elif method == "turn/interrupt":
-        print(json.dumps({"id": request_id, "result": {}}), flush=True)
+        if os.environ.get("FAKE_CODEX_NO_ACTIVE_INTERRUPT") == "1":
+            print(json.dumps({"id": request_id, "error": {"code": -32602, "message": "no active turn to interrupt"}}), flush=True)
+        else:
+            print(json.dumps({"id": request_id, "result": {}}), flush=True)
 '''
 
 
@@ -222,6 +231,19 @@ class CodexExecutionTests(unittest.TestCase):
             "planning", sandbox="workspace-write", enable_override=True
         )
         self.assertEqual(writing.reason, "sandbox_not_enabled")
+        self.assertEqual(config.thread_policy("planning"), "new")
+        with self.assertRaisesRegex(FeatureConfigError, "defaults to new threads"):
+            execute_if_enabled(
+                "resume",
+                role="planning",
+                cwd=ROOT,
+                enable_override=True,
+                thread_id="thr_existing",
+                config=config,
+                policy=self.policy,
+                codex=str(self.fake),
+                telemetry_path=self.root / "unexpected-resume.jsonl",
+            )
 
     def test_thread_resume_restart_and_stale_thread_classification(self) -> None:
         telemetry = self.root / "telemetry.jsonl"
@@ -391,6 +413,27 @@ class CodexExecutionTests(unittest.TestCase):
             result = adapter.cancel("thr_fake", "turn_fake")
         self.assertEqual(result["outcome"], "interrupt_requested")
 
+    def test_cancellation_race_reconciles_to_explicit_recovery_action(self) -> None:
+        os.environ["FAKE_CODEX_NO_ACTIVE_INTERRUPT"] = "1"
+        try:
+            for status, outcome, action in (
+                ("inProgress", "interrupt_race_active", "user_intervention"),
+                ("interrupted", "already_terminal", "resume"),
+            ):
+                with self.subTest(status=status):
+                    os.environ["FAKE_CODEX_READ_TURN_STATUS"] = status
+                    with CodexExecutionAdapter(
+                        policy=self.policy,
+                        codex=str(self.fake),
+                        telemetry_path=self.root / f"cancel-{status}.jsonl",
+                    ) as adapter:
+                        result = adapter.cancel("thr_fake", "turn_fake")
+                    self.assertEqual(result["outcome"], outcome)
+                    self.assertEqual(result["recovery_action"], action)
+        finally:
+            os.environ.pop("FAKE_CODEX_NO_ACTIVE_INTERRUPT", None)
+            os.environ.pop("FAKE_CODEX_READ_TURN_STATUS", None)
+
     def test_context_accounting_warns_without_blocking(self) -> None:
         telemetry = self.root / "context.jsonl"
         with CodexExecutionAdapter(
@@ -430,9 +473,15 @@ class CodexExecutionTests(unittest.TestCase):
         source = self.root / "source.md"
         source.write_text("source", encoding="utf-8")
         summary = self.root / "summary.md"
-        summary.write_text("Sources: source.md\n\nSummary", encoding="utf-8")
+        summary.write_text("## Source files\n\n- source.md\n\n## Summary\n\nSummary", encoding="utf-8")
         validate_summary_context(self.root, (summary,), (source,))
         summary.write_text("Summary without provenance", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "identify every source"):
+            validate_summary_context(self.root, (summary,), (source,))
+        summary.write_text(
+            "## Notes\n\nThe text source.md appears here, outside provenance.\n",
+            encoding="utf-8",
+        )
         with self.assertRaisesRegex(ValueError, "identify every source"):
             validate_summary_context(self.root, (summary,), (source,))
 
@@ -467,6 +516,15 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertEqual(qualification["verification_terra"]["avoidable_input_tokens"], 2)
         self.assertEqual(qualification["codex_cli_version"], "0.144.6")
         self.assertFalse(qualification["observation_gate"]["met"])
+        changed = qualification_report(
+            telemetry,
+            qualification_id="Q",
+            baseline_input_tokens=8,
+            expected_codex_version="9.9.9",
+            codex=str(self.fake),
+        )
+        self.assertTrue(changed["version_changed"])
+        self.assertFalse(changed["observation_gate"]["version_compatible"])
         baseline = self.root / "baseline.json"
         baseline.write_text(
             json.dumps({"results": [{"id": "small", "tokens": {"input": 10}}]}),

@@ -125,6 +125,14 @@ class AppServerFeatureConfig:
             raise FeatureConfigError(
                 "qualification.estimated_codex_baseline_input_tokens must be non-negative"
             )
+        thread_policy = self.payload.get("thread_policy")
+        if not isinstance(thread_policy, dict):
+            raise FeatureConfigError("thread_policy must be an object")
+        for role in ("planning", "verification"):
+            if thread_policy.get(role) not in {"new", "resume"}:
+                raise FeatureConfigError(
+                    f"thread_policy.{role} must be 'new' or 'resume'"
+                )
 
     @property
     def globally_enabled(self) -> bool:
@@ -132,6 +140,9 @@ class AppServerFeatureConfig:
 
     def role_enabled(self, role: str) -> bool:
         return self.payload["role_flags"].get(role) is True
+
+    def thread_policy(self, role: str) -> str:
+        return str(self.payload["thread_policy"].get(role) or "new")
 
     def validate_model_policy(self, policy: ModelPolicy) -> None:
         missing = sorted(set(policy.roles) - set(self.payload["role_flags"]))
@@ -287,7 +298,7 @@ def validate_summary_context(
         if not source.is_file():
             raise FeatureConfigError(f"summary source is not a regular file: {source}")
         source_labels.append(label)
-    combined = ""
+    declared_sources: set[str] = set()
     for supplied in summary_files:
         candidate = supplied if supplied.is_absolute() else root / supplied
         summary = candidate.resolve()
@@ -296,10 +307,19 @@ def validate_summary_context(
         except ValueError as error:
             raise FeatureConfigError(f"summary file escapes workspace: {summary}") from error
         try:
-            combined += summary.read_text(encoding="utf-8") + "\n"
+            content = summary.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError) as error:
             raise FeatureConfigError(f"cannot read UTF-8 summary file {summary}: {error}") from error
-    missing = [label for label in source_labels if label not in combined]
+        in_sources = False
+        for line in content.splitlines():
+            if line.strip() == "## Source files":
+                in_sources = True
+                continue
+            if in_sources and line.startswith("## "):
+                in_sources = False
+            if in_sources and line.startswith("- "):
+                declared_sources.add(line[2:].strip().strip("`"))
+    missing = [label for label in source_labels if label not in declared_sources]
     if missing:
         raise FeatureConfigError(
             "focused summary must identify every source file: " + ", ".join(missing)
@@ -388,7 +408,12 @@ def execute_if_enabled(
     validate_summary_context(cwd, summary_files, summary_source_files)
     all_inline_files = tuple(dict.fromkeys((*explicit_files, *summary_files)))
     effective_prompt = inline_context_prompt(features, cwd, all_inline_files, prompt)
-    persistent_thread = retain_thread or thread_id is not None
+    configured_thread_policy = features.thread_policy(role)
+    if thread_id is not None and configured_thread_policy == "new" and not retain_thread:
+        raise FeatureConfigError(
+            f"{role} defaults to new threads; pass --retain-thread with --thread-id for a controlled resume"
+        )
+    persistent_thread = retain_thread or configured_thread_policy == "resume"
     with context_target(
         features,
         cwd,
@@ -711,7 +736,9 @@ def main() -> int:
                 summary_files=tuple(args.summary_file),
                 summary_source_files=tuple(args.summary_source_file),
                 additional_context_requested=(
-                    True if args.additional_context_requested else False
+                    True
+                    if args.additional_context_requested
+                    else (False if args.summary_file else None)
                 ),
                 retain_thread=args.retain_thread,
                 config=config,

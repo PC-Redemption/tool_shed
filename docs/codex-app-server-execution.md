@@ -155,8 +155,9 @@ Larger inputs must be reduced to a relevant summary rather than silently copying
 workspace.
 
 For a focused summary, pass the summary as inline context and list every source file used to create
-it. The adapter rejects a summary that does not name each source path, records source and summary
-bytes separately, and does not cache summaries automatically:
+it. The summary must contain a `## Source files` section with one exact workspace-relative `- path`
+entry per source. The adapter rejects a summary that does not declare each source path, records
+source and summary bytes separately, and does not cache summaries automatically:
 
 ```bash
 python3 scripts/codex_orchestration.py \
@@ -212,9 +213,15 @@ The adapter classifies terminal and transport outcomes into an explicit recovery
 Qualification covers new threads, resumed threads, completed turns, cancellation/interruption,
 unexpected process termination, client/server restart, stale IDs, failed turns, bounded retries,
 and timeouts. Focused planning and verification threads are ephemeral by default. A controlled
-qualification can use `--retain-thread`, then supply the returned ID with `--thread-id`; because
+qualification can use `--retain-thread`, then supply the returned ID with both `--thread-id` and
+`--retain-thread`; because
 the complete selected context is inline, resume creates a new focused temporary directory and does
 not rely on the previous directory surviving. Routine operations still start fresh.
+
+CLI 0.144.6 can acknowledge `turn/interrupt` with `no active turn to interrupt` while an immediate
+`thread/read` still reports the target turn `inProgress`. The adapter labels that bounded race
+`interrupt_race_active` with `user_intervention`, rather than claiming cancellation or replaying the
+prompt. A later terminal `interrupted` state is eligible for `resume`.
 
 There are no unbounded retries. A Terra role receives at most two attempts: the initial attempt and
 one diagnostic retry. If both end in an explicitly recoverable failure, one Sol escalation is
@@ -265,7 +272,9 @@ python3 scripts/codex_execution.py \
 
 The report includes planning and verification totals, cached input, model-turn and tool-call rates,
 context and summary bytes, duration, recovery, retries, resumes, fallback and escalation counts,
-version drift, and progress against the 10-planning/20-verification observation gate. An optional
+version drift, and progress against the 10-planning/20-verification observation gate. Version
+compatibility participates in the gate, so a changed CLI cannot pass until compatibility smoke
+checks establish and configure a new validated version. An optional
 `--comparison` JSON file can attach manually reviewed GUI/App Server quality evidence; absent GUI
 token metrics remain `null` rather than being estimated.
 
@@ -275,11 +284,11 @@ App Server is ready for explicitly enabled, read-only planning and verification 
 ready to become Tool Shed's default execution path because:
 
 1. OpenAI still labels App Server experimental and unsupported for production workloads.
-2. The real Codex GUI approval surface is not connected to `ApprovalBridge`.
-3. Workspace-writing CAMP roles remain disabled and unqualified end to end.
-4. The installed runtime and published/schema restricted-read surfaces currently disagree.
-5. Representative real Programs and CAMPs still need an observation period against the token
-   regression baseline and feature-flag rollback.
+2. CLI 0.144.6 exhibited a live `turn/interrupt` versus `thread/read` cancellation-state race.
+3. The real Codex GUI approval surface is not connected to `ApprovalBridge`.
+4. Workspace-writing CAMP roles remain disabled and unqualified end to end.
+5. The installed runtime and published/schema restricted-read surfaces currently disagree.
 
 Promotion should occur only after those conditions are resolved. The existing GUI path remains the
-default and rollback path throughout.
+default and rollback path throughout. The completed real-campaign observation and measurements are
+recorded in [the 2026-08-20 qualification report](codex-app-server-qualification-2026-08-20.md).
