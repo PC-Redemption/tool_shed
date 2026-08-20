@@ -1,9 +1,9 @@
 # Program Roadmap: Disposable completion watchers and hosted notifications
 
-Status: executing
+Status: superseded
 Type: program-roadmap
-Updated: 2026-08-19
-Next Action: keep reduced Campaign 039 deferred until a concrete external/non-App-Server notification pilot is justified
+Updated: 2026-08-20
+Next Action: none
 Roadmap ID: completion-watcher-program
 Revision: 1
 Source Project Map: work/maps/map-disposable-completion-watchers-and-hosted-notifications.md
@@ -12,7 +12,7 @@ Proposal Token: b75f6bb7f157e07f
 Approved: 2026-08-18
 Current Milestone: M4-HOSTED-PILOT
 Supersedes: none
-Superseded By: none
+Superseded By: work/roadmaps/roadmap-completion-watcher-program-r2.md
 
 ## Roadmap Definition
 
@@ -870,4 +870,4 @@ Superseded By: none
 
 ## Revision History
 
-- Revision 1: executing on 2026-08-19.
+- Revision 1: superseded on 2026-08-20.

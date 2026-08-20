@@ -1,15 +1,15 @@
 # Program Roadmap: Disposable completion watchers: qualified local release closeout
 
-Status: proposed
+Status: approved
 Type: program-roadmap
 Updated: 2026-08-20
-Next Action: approve exact proposal token 4112e4535ee4a9c2
+Next Action: derive campaigns for milestone M1-CONTRACT
 Roadmap ID: completion-watcher-program
 Revision: 2
 Source Project Map: work/maps/map-tool-shed-evolution.md
 Source State Token: 109a847b414951bc
 Proposal Token: 4112e4535ee4a9c2
-Approved: none
+Approved: 2026-08-20
 Current Milestone: M1-CONTRACT
 Supersedes: work/roadmaps/roadmap-completion-watcher-program.md
 Superseded By: none
@@ -888,4 +888,4 @@ Superseded By: none
 
 ## Revision History
 
-- Revision 2: proposed on 2026-08-20.
+- Revision 2: approved on 2026-08-20.
