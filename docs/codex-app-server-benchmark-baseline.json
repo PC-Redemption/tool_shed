@@ -76,5 +76,25 @@
     "current_total_tokens": 111073,
     "total_token_reduction_percent": 67.55,
     "note": "The previous strategy caused one or more additional model requests after file-reading tools. Inline relevant files reduced the four-task suite to one model request per task."
+  },
+  "regression_policy": {
+    "per_task_input_warning_factor": 1.5,
+    "behavior": "qualification warning only; never blocks normal Tool Shed execution",
+    "report": [
+      "absolute input tokens",
+      "absolute change from baseline",
+      "relative change from baseline"
+    ]
+  },
+  "qualified_real_campaign_baseline": {
+    "evidence": "docs/codex-app-server-qualification-2026-08-20.md",
+    "reference_strategy_input_tokens": 322041,
+    "focused_inline_input_tokens": 56216,
+    "input_token_reduction_percent": 82.54,
+    "reference_strategy_elapsed_seconds": 139.115,
+    "focused_inline_elapsed_seconds": 41.302,
+    "elapsed_reduction_percent": 70.31,
+    "future_input_warning_factor": 1.25,
+    "note": "This is the real-campaign requalification reference. The repeatable four-task suite has a separate absolute baseline because the workloads are not interchangeable."
   }
 }

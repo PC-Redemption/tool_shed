@@ -12,6 +12,26 @@ handshake, thread and turn lifecycle, token events, and server-initiated approva
 the App Server command experimental and unsupported for production workloads. This integration
 therefore remains opt-in even though its read-only path is qualified.
 
+## Qualified Baseline
+
+Codex CLI 0.144.6 is the comparison baseline for future App Server changes:
+
+| Measurement | Qualified value |
+| --- | ---: |
+| Real planning operations | 10 |
+| Real verification operations | 20 |
+| Core successes | 30 / 30 |
+| Measured model operations | 33 |
+| Input tokens | 939,307 |
+| Estimated avoidable input | 323,297 |
+| Input reduction versus old strategy | 82.54% |
+| Elapsed-time reduction | 70.31% |
+
+The version-specific machine record is
+`adapters/codex-app-server-qualifications.json`. It records authentication, routing, read-only,
+cancellation, approval, restricted-read, workspace-writing, support-status, harness-baseline, and
+savings evidence explicitly. A new Codex version has no inherited qualification.
+
 ## Routing Boundary
 
 The feature policy is centralized in `adapters/codex-app-server-config.json`; model and reasoning
@@ -70,6 +90,15 @@ python3 scripts/codex_orchestration.py \
 
 When routing selects the fallback, the command reports that the initiating workflow must continue
 in the existing GUI. It does not attempt to emulate or spawn a second GUI conversation.
+
+App Server-selected routes compare the installed CLI with the qualified version. A mismatch is
+attached to route/run/benchmark output as `compatibility_warning`; it never blocks or warns on the
+normal GUI fallback path:
+
+```text
+Codex App Server version changed. Qualified version: 0.144.6. Installed version: <version>.
+Run the App Server compatibility smoke test before relying on App Server execution.
+```
 
 ## Authentication and Model Policy
 
@@ -193,9 +222,12 @@ python3 scripts/codex_orchestration.py \
 ```
 
 The benchmark compares current input against the committed baseline. A task exceeding 1.5 times
-its baseline is reported as a regression but is not hard-stopped. The equivalent GUI path does not
-expose per-turn token telemetry in this workspace, so a reliable numerical GUI comparison is not
-available.
+its baseline is reported as a regression but is not hard-stopped. Output records baseline and
+current absolute input, absolute token change, and relative percentage change per task and in
+aggregate. The 82.54% real-campaign reduction remains the version-specific qualification reference;
+the repeatable four-task suite protects against drift without pretending every legitimate task has
+the same size. The equivalent GUI path does not expose per-turn token telemetry in this workspace,
+so a reliable numerical GUI comparison is not available.
 
 ## Thread and Failure Recovery
 
@@ -214,14 +246,29 @@ Qualification covers new threads, resumed threads, completed turns, cancellation
 unexpected process termination, client/server restart, stale IDs, failed turns, bounded retries,
 and timeouts. Focused planning and verification threads are ephemeral by default. A controlled
 qualification can use `--retain-thread`, then supply the returned ID with both `--thread-id` and
-`--retain-thread`; because
-the complete selected context is inline, resume creates a new focused temporary directory and does
-not rely on the previous directory surviving. Routine operations still start fresh.
+`--retain-thread`; because the complete selected context is inline, resume creates a new focused
+temporary directory and does not rely on the previous directory surviving. Routine operations
+still start fresh.
 
 CLI 0.144.6 can acknowledge `turn/interrupt` with `no active turn to interrupt` while an immediate
-`thread/read` still reports the target turn `inProgress`. The adapter labels that bounded race
-`interrupt_race_active` with `user_intervention`, rather than claiming cancellation or replaying the
-prompt. A later terminal `interrupted` state is eligible for `resume`.
+`thread/read` still reports the target turn `inProgress`. Cancellation now performs a bounded
+reconciliation loop over queued `turn/completed` events and authoritative `thread/read` state. It
+returns exactly `cancelled`, `completed`, `failed`, or `unknown`; a completed turn observed after a
+cancel request is classified `completed`, never silently accepted as a successful cancellation.
+An unresolved `inProgress` state becomes `unknown` with `user_intervention` after the deadline.
+
+Each cancellation writes prompt-free diagnostics containing thread and turn IDs, cancel request and
+response timestamps, ordered observed events, terminal evidence, final classification, App Server
+process state, and recovery action. The loop is time-bounded and never replays a prompt. This makes
+the race diagnosable, but does not mark cancellation qualified: the live 0.144.6 inconsistency must
+still be re-observed as reliably terminal before promotion.
+
+The post-qualification smoke reproduced the exact sequence: `turn/interrupt` returned “no active
+turn,” `thread/read` kept returning `inProgress` for approximately 4.56 seconds, and the turn then
+became `completed`. Tool Shed correctly returned `completed`, not `cancelled`. Because the
+contradictory response and state both came from App Server while Tool Shed only observed and
+bounded them, the remaining defect is classified as an App Server/protocol inconsistency; Tool
+Shed's reconciler is a safety mitigation, not proof that cancellation works.
 
 There are no unbounded retries. A Terra role receives at most two attempts: the initial attempt and
 one diagnostic retry. If both end in an explicitly recoverable failure, one Sol escalation is
@@ -245,9 +292,32 @@ workspace-writing roles on the existing GUI path.
 The installed CLI/runtime also rejected `readOnly.access` with `Invalid request: readOnly.access is
 no longer supported; use permissionProfile for restricted reads`, although the generated 0.144.6
 schema and official documentation still describe that field. Tool Shed treats the observed runtime
-as authoritative and does not enable the beta permission-profile path in this phase.
+as authoritative and does not enable the beta permission-profile path in this phase. Compatibility
+smoke skips this expensive known-mismatch probe while the version remains 0.144.6 and automatically
+retests it after a version change; `--retest-restricted-read` is available for an explicit focused
+recheck.
 
 ## Operational Visibility
+
+Show the concise operator status:
+
+```bash
+python3 scripts/codex_app_server_compatibility.py status
+python3 scripts/codex_app_server_compatibility.py status --json
+```
+
+Run the live compatibility smoke after every Codex CLI update:
+
+```bash
+python3 scripts/codex_app_server_compatibility.py smoke --cwd .
+```
+
+The smoke checks CLI version detection, App Server startup, ChatGPT-only authentication, absent API
+fallback, Sol/Terra availability and reasoning, new read-only planning and verification threads,
+GUI/discussion fallback, cancellation reconciliation, fail-closed approvals, restricted-read
+behavior when the version changed, and the tiny-operation token baseline. It never updates the
+qualification registry automatically. Review new-version evidence, then add a version-specific
+record deliberately.
 
 Show the last 20 prompt-free operations:
 
@@ -292,3 +362,41 @@ ready to become Tool Shed's default execution path because:
 Promotion should occur only after those conditions are resolved. The existing GUI path remains the
 default and rollback path throughout. The completed real-campaign observation and measurements are
 recorded in [the 2026-08-20 qualification report](codex-app-server-qualification-2026-08-20.md).
+
+### Gate A: default planning and verification
+
+All of these must pass on the installed Codex version:
+
+- App Server support risk is acceptable explicitly;
+- cancellation reconciliation is reliable;
+- the compatibility smoke and version record agree;
+- authentication remains ChatGPT-only with no API fallback;
+- Sol/high and Terra/low routing remains correct;
+- focused-context savings remain strong against absolute and relative baselines;
+- the existing GUI fallback remains reliable.
+
+### Gate B: workspace-writing roles
+
+All Gate A criteria plus all of these must pass:
+
+- a supported bridge reaches the initiating GUI approval surface;
+- file-write and command approvals are qualified live;
+- denial, cancellation, and approval timeout are qualified live;
+- restricted-read behavior is understood and qualified;
+- structured CAMP outcomes are integrated;
+- workspace-writing roles receive live end-to-end qualification;
+- rollback and interrupted-write recovery are validated.
+
+Passing unit tests alone does not promote a role. API fallback and Luna routing remain out of scope.
+
+## Merge Readiness
+
+The infrastructure is sufficiently isolated to merge into the normal Tool Shed codebase while it
+remains disabled by default: it is confined to App Server adapters/scripts, explicit configuration,
+tests, and documentation; normal GUI routing is unchanged; and unsupported roles fail back to the
+existing path. The recommended long-term state is infrastructure present on `main`, global default
+disabled, explicit read-only opt-in available, and compatibility status visible.
+
+Do not merge by mutating or cleaning the active dirty checkout. Merge only through a reviewed,
+clean Git operation after its unrelated campaign work is reconciled. This hardening phase prepares
+that recommendation; it does not authorize or perform the merge.
