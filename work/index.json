@@ -1177,6 +1177,27 @@
       "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
+      "next_action": "approve exact proposal token 4112e4535ee4a9c2",
+      "parent": null,
+      "path": "work/roadmaps/roadmap-completion-watcher-program-r2.md",
+      "produces": null,
+      "project_map": null,
+      "revision": "2",
+      "roadmap_id": "completion-watcher-program",
+      "source_project_map": "work/maps/map-tool-shed-evolution.md",
+      "source_state_token": "109a847b414951bc",
+      "status": "proposed",
+      "superseded_by": "none",
+      "supersedes": "work/roadmaps/roadmap-completion-watcher-program.md",
+      "title": "Program Roadmap: Disposable completion watchers: qualified local release closeout",
+      "type": "program-roadmap",
+      "updated": "2026-08-20"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": null,
       "next_action": "keep reduced Campaign 039 deferred until a concrete external/non-App-Server notification pilot is justified",
       "parent": null,
       "path": "work/roadmaps/roadmap-completion-watcher-program.md",
@@ -1560,8 +1581,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 1,
+    "active_artifacts": 2,
     "completed_or_decided_artifacts": 81,
-    "total_artifacts": 90
+    "total_artifacts": 91
   }
 }
