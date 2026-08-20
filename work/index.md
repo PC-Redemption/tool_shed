@@ -52,6 +52,7 @@ Updated: 2026-08-20
 | [work/decisions/decision-plugin-packaging-readiness.md](work/decisions/decision-plugin-packaging-readiness.md) | decision-matrix | decided | 2026-07-05 | defer plugin packaging until distribution friction appears | work/maps/map-tool-shed-foundation.md |
 | [work/decisions/decision-project-map-creation-trigger.md](work/decisions/decision-project-map-creation-trigger.md) | decision-matrix | decided | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/evidence/evidence-adaptive-generated-evidence-safeguards.md](work/evidence/evidence-adaptive-generated-evidence-safeguards.md) | evidence | complete | 2026-07-25 | none | work/wp/completed/wp-generated-evidence-safety-and-migration.md |
+| [work/evidence/evidence-app-server-integration-and-watcher-reassessment.md](work/evidence/evidence-app-server-integration-and-watcher-reassessment.md) | evidence | complete | 2026-08-20 | - | - |
 | [work/evidence/evidence-human-planning-mechanism-evaluation.md](work/evidence/evidence-human-planning-mechanism-evaluation.md) | evidence | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md](work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md) | evidence | complete | 2026-08-09 | none | work/wp/completed/wp-evidence-responsive-tool-shed-execution.md |
 | [work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md](work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md) | evidence | complete | 2026-08-18 | none | work/00-campaigns/completed/027-publish-and-verify-tool-shed-v0-22-0.md |
@@ -91,6 +92,6 @@ Updated: 2026-08-20
 
 ## Summary
 
-- Total artifacts: 74
+- Total artifacts: 75
 - Active artifacts: 1
-- Completed/decided artifacts: 70
+- Completed/decided artifacts: 71

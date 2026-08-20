@@ -749,6 +749,23 @@
       "updated": "2026-07-25"
     },
     {
+      "campaign": "standalone",
+      "campaign_reason": "branch-local reconciliation evidence; Campaign 041 lifecycle remains in the preserved main worktree until merge review",
+      "canonical_truth": null,
+      "disposition": "documented",
+      "next_action": null,
+      "parent": null,
+      "path": "work/evidence/evidence-app-server-integration-and-watcher-reassessment.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "App Server integration and Campaign 039 reassessment evidence",
+      "type": "evidence",
+      "updated": "2026-08-20"
+    },
+    {
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
@@ -1269,7 +1286,7 @@
   "schema_version": 1,
   "summary": {
     "active_artifacts": 1,
-    "completed_or_decided_artifacts": 70,
-    "total_artifacts": 74
+    "completed_or_decided_artifacts": 71,
+    "total_artifacts": 75
   }
 }
