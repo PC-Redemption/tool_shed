@@ -1,9 +1,9 @@
 # Reconcile main, integrate App Server, and reduce hosted watcher
 
-Status: working
+Status: complete
 Type: campaign
 Updated: 2026-08-20
-Next Action: execute the campaign completion gate
+Next Action: none
 Campaign ID: reconcile-main-integrate-app-server-and-reduce-hosted-watcher
 Campaign Number: 042
 Outcome: Safely checkpoint every dirty-main work body, merge and validate the qualified default-off App Server lineage on main, and explicitly reduce deferred Campaign 039 to independent hosted status and notification responsibilities.
@@ -14,8 +14,10 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: Coherent dirty-work checkpoints are durable; main contains the reviewed App Server integration with GUI fallback, centralized qualified routes, default-off policy, compatibility and write safeguards intact; full repository and representative CAMP validation pass; Campaign 039 records an explicit evidence-based reduced scope and disposition; no release, deployment, push, or global enablement occurs.
-Completion Evidence: Main checkpoint commits d949f55, 1328454, ed8b3ee, f046280, and 5a504e4; superseded proof-of-concept checkpoint branch checkpoint/pre-mainline-app-server-poc-20260820 at 04ddb97; merge commit aa1e1ca with integration commit 93795a4 as second parent; 31 focused and 188 full tests passed; 132-file manifest, provider, campaign, roadmap, index, stale-path, strict work-state, and disposable smoke validation passed; live compatibility remained qualified_with_blockers on Codex CLI 0.144.6; live write qualification passed; representative CAMP recorded 56,969 input, 27,392 cached, 29,577 uncached, 420 output, 85 reasoning, two turns, one tool, 23 tests, safe journal, 13.651 seconds, and 34,836.2 weighted usage; Campaign 039 explicitly reduced and retained as deferred; work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md.
-Disposition: complete after final lifecycle transition
+Completion Evidence: work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md; merge aa1e1ca; 188 tests, live compatibility, write safety, and 2-turn/1-tool representative CAMP passed; Campaign 039 reduced and remains deferred
+Completion Date: 2026-08-20
+Completion Order: 38
+Disposition: completed
 
 ## Request
 
