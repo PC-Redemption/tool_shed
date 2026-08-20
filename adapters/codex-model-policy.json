@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "authentication": {
+    "required_account_type": "chatgpt",
+    "allow_api_key_fallback": false
+  },
+  "models": {
+    "frontier": {
+      "model": "gpt-5.6-sol"
+    },
+    "workhorse": {
+      "model": "gpt-5.6-terra"
+    }
+  },
+  "routing": {
+    "planning": {"class": "frontier", "reasoning": "high"},
+    "program_derivation": {"class": "frontier", "reasoning": "high"},
+    "program_creation": {"class": "frontier", "reasoning": "high"},
+    "program_redesign": {"class": "frontier", "reasoning": "high"},
+    "camp_derivation": {"class": "frontier", "reasoning": "high"},
+    "camp_creation": {"class": "frontier", "reasoning": "high"},
+    "camp_redesign": {"class": "frontier", "reasoning": "high"},
+    "camp_execution": {"class": "workhorse", "reasoning": "medium"},
+    "implementation": {"class": "workhorse", "reasoning": "medium"},
+    "normal_debug": {"class": "workhorse", "reasoning": "medium"},
+    "testing": {"class": "workhorse", "reasoning": "medium"},
+    "verification": {"class": "workhorse", "reasoning": "low"},
+    "build": {"class": "workhorse", "reasoning": "low"},
+    "deployment": {"class": "workhorse", "reasoning": "medium"},
+    "deterministic_execution": {"class": "workhorse", "reasoning": "low"},
+    "escalation": {"class": "frontier", "reasoning": "high"}
+  },
+  "escalation": {
+    "max_workhorse_attempts": 2,
+    "immediate_reasons": [
+      "architectural_blocker",
+      "unexpected_complex_failure"
+    ],
+    "never_retry_error_kinds": [
+      "BadRequest",
+      "ContextWindowExceeded",
+      "Unauthorized",
+      "UsageLimitExceeded"
+    ]
+  }
+}
