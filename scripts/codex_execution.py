@@ -77,6 +77,7 @@ class ExecutionResult:
     model_turns_metric: str
     tool_calls: int
     tool_call_types: tuple[str, ...]
+    mutation_events: tuple[dict[str, Any], ...]
     app_server_user_agent: str
 
 
@@ -424,6 +425,7 @@ class CodexExecutionAdapter:
         summary_files: tuple[Path, ...] = (),
         summary_source_files: tuple[Path, ...] = (),
         additional_context_requested: bool | None = None,
+        output_schema: dict[str, Any] | None = None,
     ) -> ExecutionResult:
         if self.account is None:
             self.start()
@@ -473,6 +475,7 @@ class CodexExecutionAdapter:
                 sandbox_policy=sandbox_policy(
                     sandbox, cwd, restricted_read=restricted_read
                 ),
+                output_schema=output_schema,
             )
             turn = self.client.wait_for_turn(active_thread_id, turn_id)
             actual_model = (
@@ -507,6 +510,7 @@ class CodexExecutionAdapter:
                 model_turns_metric=turn.model_turns_metric,
                 tool_calls=turn.tool_calls,
                 tool_call_types=turn.tool_call_types,
+                mutation_events=turn.mutation_events,
                 app_server_user_agent=self.client.user_agent,
             )
             self._record(
@@ -910,6 +914,7 @@ class CodexExecutionAdapter:
             "model_turns_metric": result.model_turns_metric,
             "tool_calls": result.tool_calls,
             "tool_call_types": list(result.tool_call_types),
+            "mutation_events": list(result.mutation_events),
             "token_usage": result.token_usage,
             "tokens": flatten_token_usage(result.token_usage),
             "last_request_tokens": last_token_usage(result.token_usage),
@@ -1133,6 +1138,8 @@ def sandbox_policy(
             "type": "workspaceWrite",
             "writableRoots": [str(cwd.resolve())],
             "networkAccess": False,
+            "excludeSlashTmp": True,
+            "excludeTmpdirEnvVar": True,
         }
     if sandbox == "danger-full-access":
         return {"type": "dangerFullAccess"}

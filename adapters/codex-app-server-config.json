@@ -11,7 +11,7 @@
     "camp_creation": false,
     "camp_redesign": false,
     "architecture": false,
-    "camp_execution": false,
+    "camp_execution": true,
     "implementation": false,
     "normal_debug": false,
     "testing": false,
@@ -25,11 +25,18 @@
     "discussion:"
   ],
   "allowed_sandboxes": [
-    "read-only"
+    "read-only",
+    "workspace-write"
   ],
+  "role_sandboxes": {
+    "planning": ["read-only"],
+    "verification": ["read-only"],
+    "camp_execution": ["workspace-write"]
+  },
   "thread_policy": {
     "planning": "new",
-    "verification": "new"
+    "verification": "new",
+    "camp_execution": "new"
   },
   "context": {
     "scope": "focused_snapshot",
@@ -54,5 +61,16 @@
     "workspace_write_enabled": false,
     "default_decision": "cancel",
     "timeout_seconds": 120
+  },
+  "write_execution": {
+    "qualified_codex_cli_version": "0.144.6",
+    "approval_policy": "never",
+    "network_access": false,
+    "exclude_slash_tmp": true,
+    "exclude_tmpdir_env_var": true,
+    "require_git": true,
+    "require_explicit_path_scope": true,
+    "retry_after_mutation": false,
+    "deployment_qualified": false
   }
 }

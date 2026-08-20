@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -20,6 +21,13 @@ from scripts.codex_execution import (
     activity_report,
     classify_recovery,
     qualification_report,
+    sandbox_policy,
+)
+from scripts.codex_camp_execution import (
+    CampExecutionError,
+    GitMutationJournal,
+    camp_next_action,
+    parse_camp_outcome,
 )
 from scripts.codex_orchestration import (
     AppServerFeatureConfig,
@@ -158,6 +166,106 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertEqual((testing.model, testing.reasoning), ("gpt-5.6-terra", "low"))
         self.assertNotIn("luna", json.dumps(self.policy.payload).lower())
 
+    def test_workspace_write_policy_excludes_implicit_temp_roots(self) -> None:
+        policy = sandbox_policy("workspace-write", self.root)
+        self.assertEqual(policy["type"], "workspaceWrite")
+        self.assertEqual(policy["writableRoots"], [str(self.root.resolve())])
+        self.assertFalse(policy["networkAccess"])
+        self.assertTrue(policy["excludeSlashTmp"])
+        self.assertTrue(policy["excludeTmpdirEnvVar"])
+
+    def test_camp_outcomes_are_strict_and_machine_readable(self) -> None:
+        outcome = parse_camp_outcome(
+            json.dumps(
+                {
+                    "outcome": "step_complete",
+                    "details": "Focused test passed.",
+                    "evidence": ["tests/test_sample.py"],
+                }
+            )
+        )
+        self.assertEqual(outcome.outcome, "step_complete")
+        with self.assertRaisesRegex(CampExecutionError, "missing or unexpected"):
+            parse_camp_outcome(
+                json.dumps(
+                    {
+                        "outcome": "step_complete",
+                        "details": "done",
+                        "evidence": [],
+                        "free_form": True,
+                    }
+                )
+            )
+        clean_journal = {
+            "safe": True,
+            "files_created": [],
+            "files_modified": [],
+            "files_deleted": [],
+        }
+        retry = parse_camp_outcome(
+            json.dumps(
+                {
+                    "outcome": "recoverable_failure",
+                    "details": "retry safely",
+                    "evidence": [],
+                }
+            )
+        )
+        self.assertEqual(
+            camp_next_action(retry, attempt=1, journal=clean_journal),
+            "retry_terra_once",
+        )
+        mutated = dict(clean_journal, files_modified=["target.txt"])
+        self.assertEqual(
+            camp_next_action(retry, attempt=1, journal=mutated),
+            "reconcile_workspace_before_retry",
+        )
+
+    def test_git_mutation_journal_preserves_unrelated_dirty_work(self) -> None:
+        repository = self.root / "repo"
+        repository.mkdir()
+        subprocess.run(["git", "init", "-q", str(repository)], check=True)
+        subprocess.run(
+            ["git", "-C", str(repository), "config", "user.email", "test@example.com"],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(repository), "config", "user.name", "Tool Shed Test"],
+            check=True,
+        )
+        target = repository / "target.txt"
+        unrelated = repository / "unrelated.txt"
+        target.write_text("before\n", encoding="utf-8")
+        unrelated.write_text("clean\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(repository), "add", "."], check=True)
+        subprocess.run(
+            ["git", "-C", str(repository), "commit", "-qm", "baseline"], check=True
+        )
+        unrelated.write_text("owner work\n", encoding="utf-8")
+        journal = GitMutationJournal.begin(
+            campaign="campaign-036",
+            camp="camp-write",
+            workspace=repository,
+            expected_paths=(Path("target.txt"),),
+        )
+        target.write_text("after\n", encoding="utf-8")
+        record = journal.finalize(
+            thread_id="thr_1",
+            turn_id="turn_1",
+            turn_status="completed",
+        )
+        self.assertTrue(record["safe"])
+        self.assertTrue(record["preexisting_dirty_preserved"])
+        self.assertEqual(record["files_modified"], ["target.txt"])
+        self.assertEqual(record["unexpected_paths"], [])
+        with self.assertRaisesRegex(CampExecutionError, "already contain dirty work"):
+            GitMutationJournal.begin(
+                campaign="campaign-036",
+                camp="camp-write",
+                workspace=repository,
+                expected_paths=(Path("unrelated.txt"),),
+            )
+
     def test_execution_requires_chatgpt_and_records_model_aware_telemetry(self) -> None:
         telemetry = self.root / "telemetry.jsonl"
         with CodexExecutionAdapter(
@@ -190,6 +298,7 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertEqual(record["thread_mode"], "new")
         self.assertEqual(record["model_turns"], 1)
         self.assertEqual(record["tool_calls"], 0)
+        self.assertEqual(record["mutation_events"], [])
         self.assertFalse(record["fallback_used"])
         self.assertGreaterEqual(record["duration_seconds"], 0)
         self.assertEqual(record["context_scope"]["instruction_sources"], ["/workspace/AGENTS.md"])
@@ -254,7 +363,15 @@ class CodexExecutionTests(unittest.TestCase):
         writing = config.route(
             "planning", sandbox="workspace-write", enable_override=True
         )
-        self.assertEqual(writing.reason, "sandbox_not_enabled")
+        self.assertEqual(writing.reason, "role_sandbox_not_enabled")
+        camp_write = config.route(
+            "camp_execution", sandbox="workspace-write", enable_override=True
+        )
+        self.assertTrue(camp_write.use_app_server)
+        self.assertEqual(camp_write.reason, "workspace_write_role_enabled")
+        self.assertFalse(
+            config.route("camp_execution", sandbox="read-only", enable_override=True).use_app_server
+        )
         self.assertIsNone(config.compatibility_warning(str(self.fake)))
         os.environ["FAKE_CODEX_VERSION"] = "0.200.0"
         try:

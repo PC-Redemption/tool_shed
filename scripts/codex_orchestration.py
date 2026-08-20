@@ -26,6 +26,15 @@ try:
         flatten_token_usage,
         last_token_usage,
     )
+    from scripts.codex_camp_execution import (
+        CAMP_OUTCOME_SCHEMA,
+        CampExecutionError,
+        CampStructuredOutcome,
+        GitMutationJournal,
+        camp_next_action,
+        parse_camp_outcome,
+        structured_outcome_record,
+    )
 except ModuleNotFoundError:  # Direct execution: python scripts/codex_orchestration.py
     from codex_app_server import AppServerError, AuthenticationError  # type: ignore[no-redef]
     from codex_execution import (  # type: ignore[no-redef]
@@ -38,6 +47,15 @@ except ModuleNotFoundError:  # Direct execution: python scripts/codex_orchestrat
         detect_codex_version,
         flatten_token_usage,
         last_token_usage,
+    )
+    from codex_camp_execution import (  # type: ignore[no-redef]
+        CAMP_OUTCOME_SCHEMA,
+        CampExecutionError,
+        CampStructuredOutcome,
+        GitMutationJournal,
+        camp_next_action,
+        parse_camp_outcome,
+        structured_outcome_record,
     )
 
 
@@ -113,6 +131,16 @@ class AppServerFeatureConfig:
             raise FeatureConfigError("allowed_sandboxes must be a non-empty list")
         if any(item not in {"read-only", "workspace-write", "danger-full-access"} for item in allowed):
             raise FeatureConfigError("allowed_sandboxes contains an unknown sandbox")
+        role_sandboxes = self.payload.get("role_sandboxes")
+        if not isinstance(role_sandboxes, dict):
+            raise FeatureConfigError("role_sandboxes must be an object")
+        for role, sandboxes in role_sandboxes.items():
+            if role not in flags or not isinstance(sandboxes, list) or not sandboxes:
+                raise FeatureConfigError(f"invalid role_sandboxes entry for {role!r}")
+            if any(sandbox not in allowed for sandbox in sandboxes):
+                raise FeatureConfigError(
+                    f"role_sandboxes.{role} contains a sandbox that is not globally allowed"
+                )
         approvals = self.payload.get("approvals")
         if not isinstance(approvals, dict):
             raise FeatureConfigError("approvals must be an object")
@@ -120,6 +148,31 @@ class AppServerFeatureConfig:
             raise FeatureConfigError(
                 "this phase requires approvals.workspace_write_enabled to remain false"
             )
+        write_execution = self.payload.get("write_execution")
+        if "workspace-write" in allowed:
+            required_write_policy = {
+                "approval_policy": "never",
+                "network_access": False,
+                "exclude_slash_tmp": True,
+                "exclude_tmpdir_env_var": True,
+                "require_git": True,
+                "require_explicit_path_scope": True,
+                "retry_after_mutation": False,
+                "deployment_qualified": False,
+            }
+            if not isinstance(write_execution, dict):
+                raise FeatureConfigError("workspace-write requires write_execution policy")
+            for key, expected in required_write_policy.items():
+                if write_execution.get(key) != expected:
+                    raise FeatureConfigError(
+                        f"write_execution.{key} must equal {expected!r}"
+                    )
+            if not flags.get("camp_execution"):
+                raise FeatureConfigError("workspace-write requires camp_execution role flag")
+            if role_sandboxes.get("camp_execution") != ["workspace-write"]:
+                raise FeatureConfigError(
+                    "camp_execution must be restricted to workspace-write"
+                )
         qualification = self.payload.get("qualification")
         if not isinstance(qualification, dict):
             raise FeatureConfigError("qualification must be an object")
@@ -131,7 +184,9 @@ class AppServerFeatureConfig:
         thread_policy = self.payload.get("thread_policy")
         if not isinstance(thread_policy, dict):
             raise FeatureConfigError("thread_policy must be an object")
-        for role in ("planning", "verification"):
+        for role in ("planning", "verification", "camp_execution"):
+            if role not in flags or not flags[role]:
+                continue
             if thread_policy.get(role) not in {"new", "resume"}:
                 raise FeatureConfigError(
                     f"thread_policy.{role} must be 'new' or 'resume'"
@@ -241,7 +296,14 @@ class AppServerFeatureConfig:
             return RouteDecision("existing-gui", role, "role_feature_disabled", enabled, role_enabled, sandbox)
         if sandbox not in self.payload["allowed_sandboxes"]:
             return RouteDecision("existing-gui", role, "sandbox_not_enabled", enabled, role_enabled, sandbox)
-        return RouteDecision("app-server", role, "read_only_role_enabled", enabled, role_enabled, sandbox)
+        role_sandboxes = self.payload.get("role_sandboxes")
+        permitted = role_sandboxes.get(role) if isinstance(role_sandboxes, dict) else None
+        if not isinstance(permitted, list) or sandbox not in permitted:
+            return RouteDecision(
+                "existing-gui", role, "role_sandbox_not_enabled", enabled, role_enabled, sandbox
+            )
+        reason = "workspace_write_role_enabled" if sandbox == "workspace-write" else "read_only_role_enabled"
+        return RouteDecision("app-server", role, reason, enabled, role_enabled, sandbox)
 
 
 @contextmanager
@@ -358,6 +420,8 @@ def inline_context_prompt(
     cwd: Path,
     explicit_files: tuple[Path, ...],
     prompt: str,
+    *,
+    read_only: bool = True,
 ) -> str:
     if config.context_delivery != "inline_relevant_files":
         return prompt
@@ -389,8 +453,9 @@ def inline_context_prompt(
         blocks.append(f"--- BEGIN {relative} ---\n{content}\n--- END {relative} ---")
     if not blocks:
         return prompt
+    context_label = "complete, read-only context" if read_only else "complete focused context"
     return (
-        "Use the following complete, read-only context. Do not reread it with tools.\n\n"
+        f"Use the following {context_label}. Do not reread unchanged supplied context with tools.\n\n"
         + "\n\n".join(blocks)
         + "\n\nREQUEST\n"
         + prompt
@@ -421,6 +486,10 @@ def execute_if_enabled(
     timeout: float = 300.0,
     telemetry_path: Path | None = None,
 ) -> tuple[RouteDecision, ExecutionResult | None]:
+    if sandbox == "workspace-write":
+        raise FeatureConfigError(
+            "generic run does not execute workspace writes; use camp-run with explicit expected paths"
+        )
     features = config or AppServerFeatureConfig.load()
     decision = features.route(
         role,
@@ -482,6 +551,144 @@ def execute_if_enabled(
                 additional_context_requested=additional_context_requested,
             )
     return decision, result
+
+
+def execute_camp_if_enabled(
+    prompt: str,
+    *,
+    cwd: Path,
+    campaign: str,
+    camp: str,
+    expected_paths: tuple[Path, ...],
+    explicit_files: tuple[Path, ...] = (),
+    attempt: int = 1,
+    enable_override: bool | None = None,
+    config: AppServerFeatureConfig | None = None,
+    policy: ModelPolicy | None = None,
+    codex: str = "codex",
+    timeout: float = 300.0,
+    telemetry_path: Path | None = None,
+) -> dict[str, Any]:
+    """Run one fail-closed Terra CAMP step; lifecycle transitions remain deterministic."""
+
+    features = config or AppServerFeatureConfig.load()
+    decision = features.route(
+        "camp_execution",
+        request_text="",
+        sandbox="workspace-write",
+        enable_override=enable_override,
+    )
+    if not decision.use_app_server:
+        return {
+            "route": asdict(decision),
+            "fallback": "continue in the existing Tool Shed/Codex GUI path",
+        }
+    warning = features.compatibility_warning(codex)
+    if warning:
+        decision = replace(decision, compatibility_warning=warning)
+        print(f"WARNING: {warning}", file=os.sys.stderr)
+    selected_policy = policy or ModelPolicy.load()
+    features.validate_model_policy(selected_policy)
+    journal = GitMutationJournal.begin(
+        campaign=campaign,
+        camp=camp,
+        workspace=cwd,
+        expected_paths=expected_paths,
+    )
+    effective_prompt = inline_context_prompt(
+        features,
+        cwd,
+        explicit_files,
+        (
+            "Execute exactly one bounded CAMP step. The authorized mutation scope is: "
+            + ", ".join(journal.expected_paths)
+            + ". Do not alter lifecycle files or claim a campaign transition; Tool Shed will "
+            "verify the Git journal and choose the next action.\n\n"
+            + prompt
+        ),
+        read_only=False,
+    )
+    with CodexExecutionAdapter(
+        policy=selected_policy,
+        codex=codex,
+        timeout=timeout,
+        telemetry_path=telemetry_path,
+    ) as adapter:
+        try:
+            result = adapter.execute(
+                effective_prompt,
+                role="camp_execution",
+                cwd=cwd.resolve(),
+                approval_policy="never",
+                sandbox="workspace-write",
+                program=None,
+                camp=camp,
+                campaign=campaign,
+                operation="camp_execute",
+                explicit_files=explicit_files,
+                context_mode="focused_workspace",
+                context_delivery=features.context_delivery,
+                warning_input_tokens=features.warning_threshold("camp_execution"),
+                restricted_read=False,
+                attempt=attempt,
+                ephemeral=False,
+                source_cwd=cwd.resolve(),
+                output_schema=CAMP_OUTCOME_SCHEMA,
+            )
+        except Exception:
+            failed_journal = journal.finalize(
+                thread_id=None,
+                turn_id=None,
+                turn_status="failed",
+                cancelled_or_interrupted=True,
+                recovery_action="needs_user_intervention",
+            )
+            adapter.record_control_event(
+                operation="camp_mutation_journal",
+                qualification_id=None,
+                campaign=campaign,
+                recovery_action="needs_user_intervention",
+                status="failed",
+                details=failed_journal,
+            )
+            raise
+        try:
+            outcome = parse_camp_outcome(result.text)
+        except CampExecutionError as error:
+            outcome = CampStructuredOutcome(
+                "unknown",
+                f"App Server returned an invalid structured outcome: {error}",
+                (),
+            )
+        journal_record = journal.finalize(
+            thread_id=result.thread_id,
+            turn_id=result.turn_id,
+            turn_status=result.status,
+            mutation_events=result.mutation_events,
+            recovery_action="none",
+        )
+        next_action = camp_next_action(outcome, attempt=attempt, journal=journal_record)
+        adapter.record_control_event(
+            operation="camp_mutation_journal",
+            qualification_id=None,
+            campaign=campaign,
+            recovery_action=next_action,
+            status=("completed" if journal_record["safe"] else "needs_user_intervention"),
+            thread_id=result.thread_id,
+            turn_id=result.turn_id,
+            details={
+                "camp": camp,
+                "outcome": structured_outcome_record(outcome),
+                "journal": journal_record,
+            },
+        )
+    return {
+        "route": asdict(decision),
+        "result": asdict(result),
+        "structured_outcome": structured_outcome_record(outcome),
+        "mutation_journal": journal_record,
+        "next_action": next_action,
+    }
 
 
 def execute_bounded(
@@ -780,6 +987,17 @@ def parse_args() -> argparse.Namespace:
     )
     run.add_argument("--sandbox", default="read-only")
 
+    camp_run = subparsers.add_parser(
+        "camp-run", help="Run one scoped, journaled App Server CAMP step."
+    )
+    camp_run.add_argument("--prompt", required=True)
+    camp_run.add_argument("--cwd", type=Path, default=Path.cwd())
+    camp_run.add_argument("--campaign", required=True)
+    camp_run.add_argument("--camp", required=True)
+    camp_run.add_argument("--expected-path", type=Path, action="append", required=True)
+    camp_run.add_argument("--file", type=Path, action="append", default=[])
+    camp_run.add_argument("--attempt", type=int, choices=(1, 2), default=1)
+
     benchmark = subparsers.add_parser("benchmark", help="Run the four repeatable token baselines.")
     benchmark.add_argument("--tasks", type=Path, default=DEFAULT_BENCHMARKS)
     benchmark.add_argument("--baseline", type=Path, default=DEFAULT_BASELINE)
@@ -848,6 +1066,26 @@ def main() -> int:
                 payload["fallback"] = "continue in the existing Tool Shed/Codex GUI path"
             print(json.dumps(payload, indent=2, sort_keys=True))
             return 0
+
+        if args.command == "camp-run":
+            payload = execute_camp_if_enabled(
+                args.prompt,
+                cwd=args.cwd,
+                campaign=args.campaign,
+                camp=args.camp,
+                expected_paths=tuple(args.expected_path),
+                explicit_files=tuple(args.file),
+                attempt=args.attempt,
+                enable_override=enabled,
+                config=config,
+                policy=policy,
+                codex=args.codex,
+                timeout=args.timeout,
+                telemetry_path=args.telemetry,
+            )
+            print(json.dumps(payload, indent=2, sort_keys=True))
+            journal = payload.get("mutation_journal")
+            return 0 if isinstance(journal, dict) and journal.get("safe") else 2
 
         tasks = load_benchmarks(args.tasks)
         decisions = [

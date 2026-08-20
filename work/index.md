@@ -9,6 +9,7 @@ Updated: 2026-08-20
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
+| [work/00-campaigns/active/036-app-server-write-qualification-and-camp-execution.md](work/00-campaigns/active/036-app-server-write-qualification-and-camp-execution.md) | campaign | working | 2026-08-20 | qualify the journaled camp-run path on one bounded real branch change | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -90,6 +91,6 @@ Updated: 2026-08-20
 
 ## Summary
 
-- Total artifacts: 73
-- Active artifacts: 1
+- Total artifacts: 74
+- Active artifacts: 2
 - Completed/decided artifacts: 69

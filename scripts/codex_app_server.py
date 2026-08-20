@@ -43,6 +43,7 @@ class TurnResult:
     model_turns_metric: str
     tool_calls: int
     tool_call_types: tuple[str, ...]
+    mutation_events: tuple[dict[str, Any], ...]
 
 
 class CodexAppServerClient:
@@ -408,18 +409,22 @@ class CodexAppServerClient:
         cwd: Path,
         approval_policy: str,
         sandbox_policy: dict[str, Any],
+        output_schema: dict[str, Any] | None = None,
     ) -> str:
+        params: dict[str, Any] = {
+            "threadId": thread_id,
+            "input": [{"type": "text", "text": prompt}],
+            "model": model,
+            "effort": effort,
+            "cwd": str(cwd.resolve()),
+            "approvalPolicy": approval_policy,
+            "sandboxPolicy": sandbox_policy,
+        }
+        if output_schema is not None:
+            params["outputSchema"] = output_schema
         result = self.request(
             "turn/start",
-            {
-                "threadId": thread_id,
-                "input": [{"type": "text", "text": prompt}],
-                "model": model,
-                "effort": effort,
-                "cwd": str(cwd.resolve()),
-                "approvalPolicy": approval_policy,
-                "sandboxPolicy": sandbox_policy,
-            },
+            params,
         )
         turn = result.get("turn")
         if not isinstance(turn, dict) or not turn.get("id"):
@@ -436,6 +441,7 @@ class CodexAppServerClient:
         reroutes: list[dict[str, Any]] = []
         model_usage_updates: set[tuple[int, ...]] = set()
         tool_call_types: list[str] = []
+        mutation_events: list[dict[str, Any]] = []
         try:
             while True:
                 message = self._next_notification(deadline)
@@ -466,6 +472,29 @@ class CodexAppServerClient:
                             "imageGeneration",
                         }:
                             tool_call_types.append(str(item_type))
+                            event: dict[str, Any] = {
+                                "item_id": item.get("id"),
+                                "type": str(item_type),
+                                "status": item.get("status"),
+                            }
+                            if item_type == "commandExecution":
+                                event.update(
+                                    {
+                                        "command": item.get("command"),
+                                        "cwd": item.get("cwd"),
+                                        "exit_code": item.get("exitCode"),
+                                    }
+                                )
+                            elif item_type == "fileChange":
+                                event["changes"] = [
+                                    {
+                                        "path": change.get("path"),
+                                        "kind": change.get("kind"),
+                                    }
+                                    for change in item.get("changes") or []
+                                    if isinstance(change, dict)
+                                ]
+                            mutation_events.append(event)
                 elif method == "thread/tokenUsage/updated":
                     usage = params.get("tokenUsage")
                     if isinstance(usage, dict):
@@ -539,9 +568,52 @@ class CodexAppServerClient:
                         model_turns_metric="distinct_token_usage_last_updates",
                         tool_calls=len(tool_call_types),
                         tool_call_types=tuple(tool_call_types),
+                        mutation_events=tuple(mutation_events),
                     )
         finally:
             self._notifications.extendleft(reversed(deferred))
+
+    def wait_for_notification(
+        self,
+        predicate: Callable[[dict[str, Any]], bool],
+        *,
+        timeout: float | None = None,
+    ) -> dict[str, Any]:
+        """Return the next matching notification without losing unrelated events."""
+
+        deadline = time.monotonic() + (self.timeout if timeout is None else timeout)
+        deferred: list[dict[str, Any]] = []
+        try:
+            while True:
+                message = self._next_notification(deadline)
+                if predicate(message):
+                    return message
+                deferred.append(message)
+        finally:
+            self._notifications.extendleft(reversed(deferred))
+
+    def command_exec(
+        self,
+        command: list[str],
+        *,
+        cwd: Path,
+        sandbox_policy: dict[str, Any],
+        timeout_ms: int = 10_000,
+    ) -> dict[str, Any]:
+        if not command:
+            raise ValueError("command must not be empty")
+        if timeout_ms <= 0:
+            raise ValueError("command timeout must be greater than zero")
+        return self.request(
+            "command/exec",
+            {
+                "command": list(command),
+                "cwd": str(cwd.resolve()),
+                "sandboxPolicy": dict(sandbox_policy),
+                "timeoutMs": timeout_ms,
+            },
+            timeout=max(self.timeout, timeout_ms / 1000 + 2),
+        )
 
     def interrupt(
         self, thread_id: str, turn_id: str, *, timeout: float | None = None
