@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ts.rookaro.com/schemas/completion-watcher-hosted/v1/watch-status.schema.json",
+  "title": "Tool Shed hosted watch status v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "watch_id",
+    "workspace_id",
+    "status",
+    "status_code",
+    "notification_state",
+    "updated_at"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "watch_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "workspace_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$"},
+    "status": {
+      "enum": ["active", "terminal", "not-found", "stale", "failed", "retrying"]
+    },
+    "status_code": {
+      "enum": [
+        "WATCH_ACTIVE",
+        "WATCH_TERMINAL",
+        "WATCH_NOT_FOUND",
+        "WATCH_STALE",
+        "WATCH_FAILED",
+        "REPORTING_RETRY"
+      ]
+    },
+    "notification_state": {
+      "enum": ["pending", "queued", "acked", "delivering", "delivered", "failed_permanent"]
+    },
+    "display_name": {"type": "string", "minLength": 1, "maxLength": 120},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "seen_at": {"type": "string", "format": "date-time"},
+    "retry_count": {"type": "integer", "minimum": 0, "maximum": 20},
+    "error_code": {"type": "string", "maxLength": 80},
+    "error_detail": {"type": "string", "maxLength": 512},
+    "retry_after": {"type": "string", "format": "date-time"}
+  }
+}

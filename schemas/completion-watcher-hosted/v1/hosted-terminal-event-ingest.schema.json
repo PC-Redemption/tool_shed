@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ts.rookaro.com/schemas/completion-watcher-hosted/v1/hosted-terminal-event-ingest.schema.json",
+  "title": "Tool Shed hosted terminal-event ingestion request v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "event": {"$ref": "terminal-event-snapshot.schema.json"}
+  }
+}
