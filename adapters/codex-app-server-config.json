@@ -44,6 +44,12 @@
     },
     "regression_factor": 1.5
   },
+  "qualification": {
+    "estimated_codex_baseline_input_tokens": 18800,
+    "validated_codex_cli_version": "0.144.6",
+    "minimum_planning_operations": 10,
+    "minimum_verification_operations": 20
+  },
   "approvals": {
     "workspace_write_enabled": false,
     "default_decision": "cancel",

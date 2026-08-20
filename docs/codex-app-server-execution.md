@@ -103,6 +103,16 @@ Telemetry distinguishes:
 - source workspace, execution directory, context mode and delivery strategy;
 - loaded `instructionSources`, explicitly selected file names and byte counts, and prompt size;
 - rerouting, retry attempt, escalation and reason, recovery action, and context warnings.
+- campaign, Program, CAMP, qualification run, timestamps, duration, and fallback use;
+- observed model turns and completed tool calls, with tool-call types;
+- inline file count and bytes, summary bytes, summary source files and source bytes, and whether
+  more context was requested after a summary.
+
+The App Server protocol does not expose a first-class model-request count. `model_turns` is therefore
+an observed proxy: the count of distinct `thread/tokenUsage/updated.last` payloads during the turn.
+Telemetry names that source as `distinct_token_usage_last_updates` rather than presenting it as an
+exact provider-side billing metric. Tool calls are counted only from completed App Server item
+types such as command execution, file change, MCP, dynamic-tool, and web-search items.
 
 Prompts, responses, account email, tokens, and credentials are not written to telemetry.
 
@@ -122,6 +132,12 @@ The approximately 18.8k baseline is therefore primarily the Codex harness: built
 available tool definitions, provider/session metadata, and the user-level instruction source. The
 repository `AGENTS.md` adds a comparatively small amount.
 
+Qualification uses a documented estimate of 18,800 input tokens per measured operation and reports
+`avoidable_input_tokens = max(actual_input_tokens - 18,800, 0)`. This is comparative analysis, not
+billing attribution. The estimate and validated CLI version are stored in
+`adapters/codex-app-server-config.json`; a CLI version change requires the protocol, authentication,
+routing, read-only/approval, and token-baseline smoke checks to be rerun.
+
 Thread reuse did not reduce input-token count: the second tiny turn rose from 19,007 to 19,033,
 while cached input remained 9,984. Reuse can improve cache composition, but it accumulates history.
 Planning and verification therefore default to new ephemeral threads. Resume remains available for
@@ -137,6 +153,25 @@ The current strategy keeps the focused temporary directory and supplies only the
 UTF-8 files inline, capped at 100,000 bytes. This reduced all four tasks to one model request each.
 Larger inputs must be reduced to a relevant summary rather than silently copying an unbounded
 workspace.
+
+For a focused summary, pass the summary as inline context and list every source file used to create
+it. The adapter rejects a summary that does not name each source path, records source and summary
+bytes separately, and does not cache summaries automatically:
+
+```bash
+python3 scripts/codex_orchestration.py \
+  --enable-app-server run \
+  --role planning \
+  --qualification-id 2026-08-real-campaigns \
+  --campaign 024-compact-tool-shed-site \
+  --cwd . \
+  --summary-file work/evidence/app-server/context-summary.md \
+  --summary-source-file work/00-campaigns/completed/024-compact-tool-shed-site-and-publish-guided-workflows.md \
+  --prompt "Plan the next safe read-only review from the supplied campaign summary."
+```
+
+Summaries remain ephemeral per operation until observed reuse demonstrates that campaign or
+Program/CAMP caching would save enough context to justify invalidation complexity.
 
 | Benchmark | Reference-file input | Inline input | Reduction |
 | --- | ---: | ---: | ---: |
@@ -176,9 +211,10 @@ The adapter classifies terminal and transport outcomes into an explicit recovery
 
 Qualification covers new threads, resumed threads, completed turns, cancellation/interruption,
 unexpected process termination, client/server restart, stale IDs, failed turns, bounded retries,
-and timeouts. Focused planning and verification threads are ephemeral and intentionally cannot be
-resumed after their temporary context disappears. Recovery resumes only a non-ephemeral thread
-whose durable context still exists.
+and timeouts. Focused planning and verification threads are ephemeral by default. A controlled
+qualification can use `--retain-thread`, then supply the returned ID with `--thread-id`; because
+the complete selected context is inline, resume creates a new focused temporary directory and does
+not rely on the previous directory surviving. Routine operations still start fresh.
 
 There are no unbounded retries. A Terra role receives at most two attempts: the initial attempt and
 one diagnostic retry. If both end in an explicitly recoverable failure, one Sol escalation is
@@ -215,6 +251,23 @@ python3 scripts/codex_execution.py activity --limit 20
 The report includes time, role, Program, CAMP, model, reasoning, token categories, success, failure,
 escalation and reason, thread reuse, and context warnings, plus aggregate counts by model and role.
 No dollar cost is inferred from ChatGPT subscription usage.
+
+Generate the aggregate observation report for one qualification run:
+
+```bash
+python3 scripts/codex_execution.py \
+  --telemetry ~/.codex/tool-shed/execution-telemetry.jsonl \
+  qualification-report \
+  --qualification-id 2026-08-real-campaigns \
+  --baseline-input-tokens 18800 \
+  --expected-codex-version 0.144.6
+```
+
+The report includes planning and verification totals, cached input, model-turn and tool-call rates,
+context and summary bytes, duration, recovery, retries, resumes, fallback and escalation counts,
+version drift, and progress against the 10-planning/20-verification observation gate. An optional
+`--comparison` JSON file can attach manually reviewed GUI/App Server quality evidence; absent GUI
+token metrics remain `null` rather than being estimated.
 
 ## Promotion Decision
 

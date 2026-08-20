@@ -7,6 +7,8 @@ import argparse
 import json
 import os
 import queue
+import re
+import subprocess
 import tempfile
 import threading
 import uuid
@@ -69,6 +71,12 @@ class ExecutionResult:
     recovery_action: str
     context_warning: dict[str, Any] | None
     attempt: int
+    duration_seconds: float
+    model_turns: int | None
+    model_turns_metric: str
+    tool_calls: int
+    tool_call_types: tuple[str, ...]
+    app_server_user_agent: str
 
 
 @dataclass(frozen=True)
@@ -399,6 +407,8 @@ class CodexExecutionAdapter:
         sandbox: str = "read-only",
         program: str | None = None,
         camp: str | None = None,
+        campaign: str | None = None,
+        qualification_id: str | None = None,
         operation: str = "execute",
         escalation: bool = False,
         escalation_reason: str | None = None,
@@ -410,6 +420,9 @@ class CodexExecutionAdapter:
         attempt: int = 1,
         ephemeral: bool = False,
         source_cwd: Path | None = None,
+        summary_files: tuple[Path, ...] = (),
+        summary_source_files: tuple[Path, ...] = (),
+        additional_context_requested: bool | None = None,
     ) -> ExecutionResult:
         if self.account is None:
             self.start()
@@ -442,6 +455,9 @@ class CodexExecutionAdapter:
             instruction_sources=tuple(thread.get("instructionSources") or ()),
             restricted_read=restricted_read,
             source_cwd=source_cwd,
+            summary_files=summary_files,
+            summary_source_files=summary_source_files,
+            additional_context_requested=additional_context_requested,
         )
         turn_id: str | None = None
         recorded = False
@@ -485,6 +501,12 @@ class CodexExecutionAdapter:
                 recovery_action=recovery,
                 context_warning=warning,
                 attempt=attempt,
+                duration_seconds=(utc_now() - started).total_seconds(),
+                model_turns=turn.model_turns,
+                model_turns_metric=turn.model_turns_metric,
+                tool_calls=turn.tool_calls,
+                tool_call_types=turn.tool_call_types,
+                app_server_user_agent=self.client.user_agent,
             )
             self._record(
                 result,
@@ -492,6 +514,8 @@ class CodexExecutionAdapter:
                 operation=operation,
                 program=program,
                 camp=camp,
+                campaign=campaign,
+                qualification_id=qualification_id,
                 error=turn.error,
             )
             recorded = True
@@ -506,9 +530,11 @@ class CodexExecutionAdapter:
             if not recorded:
                 self.telemetry.append(
                     {
-                        "schema_version": 1,
+                        "schema_version": 2,
                         "run_id": run_id,
                         "operation": operation,
+                        "qualification_id": qualification_id,
+                        "campaign": campaign or camp,
                         "program": program,
                         "camp": camp,
                         "role": role,
@@ -519,13 +545,22 @@ class CodexExecutionAdapter:
                         "turn_id": turn_id,
                         "started_at": isoformat(started),
                         "ended_at": isoformat(utc_now()),
+                        "duration_seconds": (utc_now() - started).total_seconds(),
                         "status": "failed",
+                        "success": False,
                         "escalation": escalation,
                         "escalation_reason": escalation_reason,
                         "thread_reused": thread_reused,
                         "thread_mode": "resumed" if thread_reused else "new",
                         "context_scope": context_scope,
                         "attempt": attempt,
+                        "retry": attempt > 1,
+                        "fallback_used": False,
+                        "app_server_user_agent": self.client.user_agent,
+                        "model_turns": None,
+                        "model_turns_metric": "unavailable_before_turn_completion",
+                        "tool_calls": None,
+                        "tool_call_types": [],
                         "recovery_action": classify_recovery(
                             "failed",
                             error.details if isinstance(error, AppServerError) else None,
@@ -551,6 +586,8 @@ class CodexExecutionAdapter:
         cwd: Path,
         program: str | None = None,
         camp: str | None = None,
+        campaign: str | None = None,
+        qualification_id: str | None = None,
         explicit_files: tuple[Path, ...] = (),
         context_mode: str = "workspace",
         context_delivery: str = "reference",
@@ -558,6 +595,9 @@ class CodexExecutionAdapter:
         restricted_read: bool = False,
         ephemeral: bool = False,
         source_cwd: Path | None = None,
+        summary_files: tuple[Path, ...] = (),
+        summary_source_files: tuple[Path, ...] = (),
+        additional_context_requested: bool | None = None,
     ) -> ExecutionResult:
         source = self.policy.select(source_role)
         if source.model_class != "workhorse":
@@ -577,6 +617,8 @@ class CodexExecutionAdapter:
             cwd=cwd,
             program=program,
             camp=camp,
+            campaign=campaign,
+            qualification_id=qualification_id,
             operation="escalate",
             escalation=True,
             escalation_reason=reason,
@@ -588,6 +630,9 @@ class CodexExecutionAdapter:
             attempt=workhorse_attempts + 1,
             ephemeral=ephemeral,
             source_cwd=source_cwd,
+            summary_files=summary_files,
+            summary_source_files=summary_source_files,
+            additional_context_requested=additional_context_requested,
         )
 
     def cancel(self, thread_id: str, turn_id: str) -> dict[str, Any]:
@@ -632,12 +677,16 @@ class CodexExecutionAdapter:
         operation: str,
         program: str | None,
         camp: str | None,
+        campaign: str | None,
+        qualification_id: str | None,
         error: dict[str, Any] | None,
     ) -> None:
         record = {
-            "schema_version": 1,
+            "schema_version": 2,
             "run_id": result.run_id,
             "operation": operation,
+            "qualification_id": qualification_id,
+            "campaign": campaign or camp,
             "program": program,
             "camp": camp,
             "role": result.role,
@@ -649,6 +698,7 @@ class CodexExecutionAdapter:
             "turn_id": result.turn_id,
             "started_at": isoformat(started),
             "ended_at": isoformat(utc_now()),
+            "duration_seconds": result.duration_seconds,
             "status": result.status,
             "success": result.status == "completed",
             "escalation": result.escalation,
@@ -659,7 +709,14 @@ class CodexExecutionAdapter:
             "context_scope": result.context_scope,
             "context_warning": result.context_warning,
             "attempt": result.attempt,
+            "retry": result.attempt > 1,
+            "fallback_used": False,
             "recovery_action": result.recovery_action,
+            "app_server_user_agent": result.app_server_user_agent,
+            "model_turns": result.model_turns,
+            "model_turns_metric": result.model_turns_metric,
+            "tool_calls": result.tool_calls,
+            "tool_call_types": list(result.tool_call_types),
             "token_usage": result.token_usage,
             "tokens": flatten_token_usage(result.token_usage),
             "last_request_tokens": last_token_usage(result.token_usage),
@@ -689,6 +746,9 @@ def describe_context_scope(
     instruction_sources: tuple[str, ...],
     restricted_read: bool,
     source_cwd: Path | None,
+    summary_files: tuple[Path, ...] = (),
+    summary_source_files: tuple[Path, ...] = (),
+    additional_context_requested: bool | None = None,
 ) -> dict[str, Any]:
     resolved_cwd = cwd.resolve()
     root = repository_root(resolved_cwd)
@@ -706,6 +766,32 @@ def describe_context_scope(
         except ValueError:
             label = str(resolved)
         files.append({"path": label, "bytes": size})
+    summary_labels = {
+        str((item if item.is_absolute() else metadata_root / item).resolve())
+        for item in summary_files
+    }
+    summary_context_bytes = sum(
+        int(item["bytes"])
+        for item in files
+        if isinstance(item.get("bytes"), int)
+        and str((metadata_root / str(item["path"])).resolve()) in summary_labels
+    )
+    summary_sources: list[dict[str, Any]] = []
+    for supplied in summary_source_files:
+        candidate = supplied if supplied.is_absolute() else metadata_root / supplied
+        resolved = candidate.resolve()
+        try:
+            label = str(resolved.relative_to(metadata_root))
+        except ValueError:
+            label = str(resolved)
+        try:
+            size = resolved.stat().st_size
+        except OSError:
+            size = None
+        summary_sources.append({"path": label, "bytes": size})
+    explicit_file_bytes = sum(
+        int(item["bytes"]) for item in files if isinstance(item.get("bytes"), int)
+    )
     return {
         "mode": mode,
         "delivery": delivery,
@@ -715,9 +801,17 @@ def describe_context_scope(
         "restricted_read": restricted_read,
         "instruction_sources": list(instruction_sources),
         "explicit_files": files,
-        "explicit_file_bytes": sum(
-            int(item["bytes"]) for item in files if isinstance(item.get("bytes"), int)
+        "explicit_file_bytes": explicit_file_bytes,
+        "files_supplied_inline": len(files) if delivery == "inline_relevant_files" else 0,
+        "inline_context_bytes": explicit_file_bytes if delivery == "inline_relevant_files" else 0,
+        "summary_context_bytes": summary_context_bytes,
+        "summary_source_files": summary_sources,
+        "summary_source_bytes": sum(
+            int(item["bytes"])
+            for item in summary_sources
+            if isinstance(item.get("bytes"), int)
         ),
+        "additional_context_requested": additional_context_requested,
         "prompt_characters": len(prompt),
     }
 
@@ -883,8 +977,8 @@ def sanitized_probe(adapter: CodexExecutionAdapter) -> dict[str, Any]:
     }
 
 
-def read_telemetry(path: Path, *, limit: int = 20) -> list[dict[str, Any]]:
-    if limit < 1:
+def read_telemetry(path: Path, *, limit: int | None = 20) -> list[dict[str, Any]]:
+    if limit is not None and limit < 1:
         raise ValueError("telemetry limit must be at least one")
     resolved = path.expanduser().resolve()
     try:
@@ -899,7 +993,7 @@ def read_telemetry(path: Path, *, limit: int = 20) -> list[dict[str, Any]]:
             continue
         if isinstance(record, dict):
             records.append(record)
-    return records[-limit:]
+    return records if limit is None else records[-limit:]
 
 
 def activity_report(path: Path, *, limit: int = 20) -> dict[str, Any]:
@@ -958,6 +1052,204 @@ def activity_report(path: Path, *, limit: int = 20) -> dict[str, Any]:
     }
 
 
+def _codex_version_from_records(records: list[dict[str, Any]]) -> str | None:
+    for record in reversed(records):
+        user_agent = record.get("app_server_user_agent")
+        if not isinstance(user_agent, str):
+            continue
+        match = re.search(r"(?:codex|fake-codex)[/\s-]v?(\d+\.\d+\.\d+)", user_agent, re.I)
+        if match:
+            return match.group(1)
+    return None
+
+
+def detect_codex_version(codex: str = "codex") -> str | None:
+    try:
+        completed = subprocess.run(
+            [codex, "--version"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    match = re.search(r"(\d+\.\d+\.\d+)", completed.stdout + completed.stderr)
+    return match.group(1) if match else None
+
+
+def _numeric(record: dict[str, Any], key: str) -> int:
+    value = record.get(key)
+    return int(value) if isinstance(value, (int, float)) else 0
+
+
+def qualification_report(
+    path: Path,
+    *,
+    qualification_id: str | None = None,
+    baseline_input_tokens: int = 18_800,
+    expected_codex_version: str | None = None,
+    codex: str = "codex",
+    comparison_path: Path | None = None,
+) -> dict[str, Any]:
+    """Summarize only observed App Server qualification telemetry.
+
+    ``model_turns`` is an observed proxy derived from distinct App Server token-usage
+    updates because the protocol does not expose a first-class model-request count.
+    """
+
+    if baseline_input_tokens < 0:
+        raise ValueError("baseline input tokens cannot be negative")
+    records = read_telemetry(path, limit=None)
+    if qualification_id is not None:
+        records = [item for item in records if item.get("qualification_id") == qualification_id]
+    else:
+        records = [item for item in records if item.get("qualification_id")]
+
+    def role_summary(role: str) -> dict[str, Any]:
+        selected = [item for item in records if item.get("role") == role]
+        totals = Counter()
+        turns: list[int] = []
+        tool_calls: list[int] = []
+        durations: list[float] = []
+        avoidable = 0
+        measured_input = 0
+        for item in selected:
+            tokens = item.get("tokens") if isinstance(item.get("tokens"), dict) else {}
+            for source, target in (
+                ("input", "input_tokens"),
+                ("cached_input", "cached_input_tokens"),
+                ("output", "output_tokens"),
+                ("reasoning_output", "reasoning_tokens"),
+                ("total", "total_tokens"),
+            ):
+                value = tokens.get(source)
+                if isinstance(value, int):
+                    totals[target] += value
+            input_tokens = tokens.get("input")
+            if isinstance(input_tokens, int):
+                measured_input += 1
+                avoidable += max(0, input_tokens - baseline_input_tokens)
+            if isinstance(item.get("model_turns"), int):
+                turns.append(int(item["model_turns"]))
+            if isinstance(item.get("tool_calls"), int):
+                tool_calls.append(int(item["tool_calls"]))
+            if isinstance(item.get("duration_seconds"), (int, float)):
+                durations.append(float(item["duration_seconds"]))
+        runs = len(selected)
+        successful = sum(bool(item.get("success")) for item in selected)
+        return {
+            "runs": runs,
+            "success": successful,
+            "failures": runs - successful,
+            **dict(totals),
+            "estimated_baseline_input_tokens": measured_input * baseline_input_tokens,
+            "avoidable_input_tokens": avoidable,
+            "average_model_turns_observed": round(sum(turns) / len(turns), 3) if turns else None,
+            "average_tool_calls": round(sum(tool_calls) / len(tool_calls), 3) if tool_calls else None,
+            "average_duration_seconds": round(sum(durations) / len(durations), 3) if durations else None,
+            "retries": sum(bool(item.get("retry")) for item in selected),
+            "resumed_threads": sum(bool(item.get("thread_reused")) for item in selected),
+            "fallbacks": sum(bool(item.get("fallback_used")) for item in selected),
+            "escalations": sum(bool(item.get("escalation")) for item in selected),
+        }
+
+    planning = role_summary("planning")
+    verification = role_summary("verification")
+    measured = [
+        item
+        for item in records
+        if isinstance(item.get("tokens"), dict)
+        and isinstance(item["tokens"].get("input"), int)
+    ]
+    useful = [item for item in records if item.get("success") and not item.get("retry")]
+    context = Counter()
+    for item in records:
+        scope = item.get("context_scope")
+        if not isinstance(scope, dict):
+            continue
+        for source, target in (
+            ("inline_context_bytes", "inline_context_bytes"),
+            ("summary_context_bytes", "summary_context_bytes"),
+            ("summary_source_bytes", "summary_source_bytes"),
+            ("files_supplied_inline", "files_supplied_inline"),
+        ):
+            value = scope.get(source)
+            if isinstance(value, int):
+                context[target] += value
+    total_input = sum(int(item["tokens"]["input"]) for item in measured)
+    total_turns = sum(_numeric(item, "model_turns") for item in records)
+    total_tool_calls = sum(_numeric(item, "tool_calls") for item in records)
+    version = _codex_version_from_records(records) or detect_codex_version(codex)
+    comparison: Any = None
+    if comparison_path is not None:
+        try:
+            comparison = json.loads(comparison_path.expanduser().resolve().read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise ValueError(f"cannot load GUI comparison {comparison_path}: {error}") from error
+    recovery = Counter(str(item.get("recovery_action") or "unknown") for item in records)
+    report = {
+        "schema_version": 1,
+        "title": "APP SERVER QUALIFICATION",
+        "qualification_id": qualification_id,
+        "telemetry": str(path.expanduser().resolve()),
+        "generated_at": isoformat(utc_now()),
+        "codex_cli_version": version,
+        "expected_codex_cli_version": expected_codex_version,
+        "version_changed": bool(expected_codex_version and version != expected_codex_version),
+        "operations": len(records),
+        "planning_sol": planning,
+        "verification_terra": verification,
+        "context": {
+            "total_input_tokens": total_input,
+            "estimated_codex_baseline_per_operation": baseline_input_tokens,
+            "estimated_baseline_input_tokens": len(measured) * baseline_input_tokens,
+            "avoidable_input_tokens": sum(
+                max(0, int(item["tokens"]["input"]) - baseline_input_tokens)
+                for item in measured
+            ),
+            **dict(context),
+            "input_tokens_per_useful_operation": (
+                round(total_input / len(useful), 3) if useful else None
+            ),
+            "model_turns_per_operation_observed": (
+                round(total_turns / len(records), 3) if records else None
+            ),
+            "tool_calls_per_operation": (
+                round(total_tool_calls / len(records), 3) if records else None
+            ),
+            "context_bytes_per_operation": (
+                round(
+                    (context["inline_context_bytes"] + context["summary_context_bytes"])
+                    / len(records),
+                    3,
+                )
+                if records
+                else None
+            ),
+            "model_turns_metric": "distinct_token_usage_last_updates",
+            "baseline_note": "Comparative estimate only; subtracts the documented fixed Codex harness baseline once per measured operation.",
+        },
+        "recovery": {
+            "classifications": dict(sorted(recovery.items())),
+            "retries": sum(bool(item.get("retry")) for item in records),
+            "resumes": sum(bool(item.get("thread_reused")) for item in records),
+            "new_threads": sum(item.get("thread_mode") == "new" for item in records),
+            "gui_fallbacks": sum(bool(item.get("fallback_used")) for item in records),
+            "escalations": sum(bool(item.get("escalation")) for item in records),
+        },
+        "comparison_to_gui": comparison,
+        "observation_gate": {
+            "target_planning": 10,
+            "observed_planning": planning["success"],
+            "target_verification": 20,
+            "observed_verification": verification["success"],
+            "met": planning["success"] >= 10 and verification["success"] >= 20,
+        },
+    }
+    return report
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--codex", default="codex")
@@ -972,6 +1264,14 @@ def parse_args() -> argparse.Namespace:
     )
     activity.add_argument("--limit", type=int, default=20)
 
+    qualification = subparsers.add_parser(
+        "qualification-report", help="Summarize observed read-only App Server qualification."
+    )
+    qualification.add_argument("--qualification-id")
+    qualification.add_argument("--baseline-input-tokens", type=int, default=18_800)
+    qualification.add_argument("--expected-codex-version", default="0.144.6")
+    qualification.add_argument("--comparison", type=Path)
+
     run = subparsers.add_parser("run", help="Execute one role-routed Codex turn.")
     run.add_argument("--role", required=True)
     run.add_argument("--prompt", required=True)
@@ -979,6 +1279,8 @@ def parse_args() -> argparse.Namespace:
     run.add_argument("--thread-id")
     run.add_argument("--program")
     run.add_argument("--camp")
+    run.add_argument("--campaign")
+    run.add_argument("--qualification-id")
     run.add_argument(
         "--sandbox",
         choices=("read-only", "workspace-write", "danger-full-access"),
@@ -995,6 +1297,22 @@ def main() -> int:
     try:
         if args.command == "activity":
             print(json.dumps(activity_report(args.telemetry, limit=args.limit), indent=2, sort_keys=True))
+            return 0
+        if args.command == "qualification-report":
+            print(
+                json.dumps(
+                    qualification_report(
+                        args.telemetry,
+                        qualification_id=args.qualification_id,
+                        baseline_input_tokens=args.baseline_input_tokens,
+                        expected_codex_version=args.expected_codex_version,
+                        codex=args.codex,
+                        comparison_path=args.comparison,
+                    ),
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
             return 0
         policy = ModelPolicy.load(args.policy)
         with CodexExecutionAdapter(
@@ -1015,6 +1333,8 @@ def main() -> int:
                     sandbox=args.sandbox,
                     program=args.program,
                     camp=args.camp,
+                    campaign=args.campaign,
+                    qualification_id=args.qualification_id,
                 )
                 print(json.dumps(asdict(result), indent=2, sort_keys=True))
                 return 0

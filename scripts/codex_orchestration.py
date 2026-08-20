@@ -117,6 +117,14 @@ class AppServerFeatureConfig:
             raise FeatureConfigError(
                 "this phase requires approvals.workspace_write_enabled to remain false"
             )
+        qualification = self.payload.get("qualification")
+        if not isinstance(qualification, dict):
+            raise FeatureConfigError("qualification must be an object")
+        baseline = qualification.get("estimated_codex_baseline_input_tokens")
+        if not isinstance(baseline, int) or baseline < 0:
+            raise FeatureConfigError(
+                "qualification.estimated_codex_baseline_input_tokens must be non-negative"
+            )
 
     @property
     def globally_enabled(self) -> bool:
@@ -203,6 +211,8 @@ def context_target(
     config: AppServerFeatureConfig,
     cwd: Path,
     explicit_files: tuple[Path, ...],
+    *,
+    persistent_thread: bool = False,
 ) -> Iterator[ContextTarget]:
     source_cwd = cwd.resolve()
     if config.context_mode != "focused_snapshot":
@@ -250,7 +260,49 @@ def context_target(
             tuple(copied),
             source_cwd,
             "focused_snapshot",
-            True,
+            not persistent_thread,
+        )
+
+
+def validate_summary_context(
+    cwd: Path,
+    summary_files: tuple[Path, ...],
+    summary_source_files: tuple[Path, ...],
+) -> None:
+    if not summary_files and not summary_source_files:
+        return
+    if not summary_files or not summary_source_files:
+        raise FeatureConfigError(
+            "focused summaries require both --summary-file and --summary-source-file"
+        )
+    root = cwd.resolve()
+    source_labels: list[str] = []
+    for supplied in summary_source_files:
+        candidate = supplied if supplied.is_absolute() else root / supplied
+        source = candidate.resolve()
+        try:
+            label = str(source.relative_to(root))
+        except ValueError as error:
+            raise FeatureConfigError(f"summary source escapes workspace: {source}") from error
+        if not source.is_file():
+            raise FeatureConfigError(f"summary source is not a regular file: {source}")
+        source_labels.append(label)
+    combined = ""
+    for supplied in summary_files:
+        candidate = supplied if supplied.is_absolute() else root / supplied
+        summary = candidate.resolve()
+        try:
+            summary.relative_to(root)
+        except ValueError as error:
+            raise FeatureConfigError(f"summary file escapes workspace: {summary}") from error
+        try:
+            combined += summary.read_text(encoding="utf-8") + "\n"
+        except (OSError, UnicodeDecodeError) as error:
+            raise FeatureConfigError(f"cannot read UTF-8 summary file {summary}: {error}") from error
+    missing = [label for label in source_labels if label not in combined]
+    if missing:
+        raise FeatureConfigError(
+            "focused summary must identify every source file: " + ", ".join(missing)
         )
 
 
@@ -309,7 +361,13 @@ def execute_if_enabled(
     thread_id: str | None = None,
     program: str | None = None,
     camp: str | None = None,
+    campaign: str | None = None,
+    qualification_id: str | None = None,
     explicit_files: tuple[Path, ...] = (),
+    summary_files: tuple[Path, ...] = (),
+    summary_source_files: tuple[Path, ...] = (),
+    additional_context_requested: bool | None = None,
+    retain_thread: bool = False,
     config: AppServerFeatureConfig | None = None,
     policy: ModelPolicy | None = None,
     codex: str = "codex",
@@ -327,8 +385,16 @@ def execute_if_enabled(
         return decision, None
     selected_policy = policy or ModelPolicy.load()
     features.validate_model_policy(selected_policy)
-    effective_prompt = inline_context_prompt(features, cwd, explicit_files, prompt)
-    with context_target(features, cwd, explicit_files) as target:
+    validate_summary_context(cwd, summary_files, summary_source_files)
+    all_inline_files = tuple(dict.fromkeys((*explicit_files, *summary_files)))
+    effective_prompt = inline_context_prompt(features, cwd, all_inline_files, prompt)
+    persistent_thread = retain_thread or thread_id is not None
+    with context_target(
+        features,
+        cwd,
+        all_inline_files,
+        persistent_thread=persistent_thread,
+    ) as target:
         if target.ephemeral and thread_id is not None:
             raise FeatureConfigError("focused_snapshot threads are short-lived and cannot resume")
         with CodexExecutionAdapter(
@@ -346,6 +412,8 @@ def execute_if_enabled(
                 sandbox=sandbox,
                 program=program,
                 camp=camp,
+                campaign=campaign,
+                qualification_id=qualification_id,
                 explicit_files=target.explicit_files,
                 context_mode=target.mode,
                 context_delivery=features.context_delivery,
@@ -353,6 +421,9 @@ def execute_if_enabled(
                 restricted_read=features.restricted_read,
                 ephemeral=target.ephemeral,
                 source_cwd=target.source_cwd,
+                summary_files=summary_files,
+                summary_source_files=summary_source_files,
+                additional_context_requested=additional_context_requested,
             )
     return decision, result
 
@@ -367,6 +438,8 @@ def execute_bounded(
     sandbox: str = "read-only",
     program: str | None = None,
     camp: str | None = None,
+    campaign: str | None = None,
+    qualification_id: str | None = None,
     explicit_files: tuple[Path, ...] = (),
     context_mode: str = "workspace",
     context_delivery: str = "reference",
@@ -374,6 +447,9 @@ def execute_bounded(
     restricted_read: bool = False,
     ephemeral: bool = False,
     source_cwd: Path | None = None,
+    summary_files: tuple[Path, ...] = (),
+    summary_source_files: tuple[Path, ...] = (),
+    additional_context_requested: bool | None = None,
 ) -> ExecutionResult:
     """Run at most two workhorse attempts, then one explicit Sol escalation."""
 
@@ -392,6 +468,8 @@ def execute_bounded(
                 sandbox=sandbox,
                 program=program,
                 camp=camp,
+                campaign=campaign,
+                qualification_id=qualification_id,
                 operation="execute" if attempt == 1 else "bounded_retry",
                 explicit_files=explicit_files,
                 context_mode=context_mode,
@@ -401,6 +479,9 @@ def execute_bounded(
                 attempt=attempt,
                 ephemeral=ephemeral,
                 source_cwd=source_cwd,
+                summary_files=summary_files,
+                summary_source_files=summary_source_files,
+                additional_context_requested=additional_context_requested,
             )
         except AppServerError as error:
             last_error = error
@@ -422,6 +503,8 @@ def execute_bounded(
         cwd=cwd,
         program=program,
         camp=camp,
+        campaign=campaign,
+        qualification_id=qualification_id,
         explicit_files=explicit_files,
         context_mode=context_mode,
         context_delivery=context_delivery,
@@ -429,6 +512,9 @@ def execute_bounded(
         restricted_read=restricted_read,
         ephemeral=ephemeral,
         source_cwd=source_cwd,
+        summary_files=summary_files,
+        summary_source_files=summary_source_files,
+        additional_context_requested=additional_context_requested,
     )
 
 
@@ -561,7 +647,21 @@ def parse_args() -> argparse.Namespace:
     run.add_argument("--thread-id")
     run.add_argument("--program")
     run.add_argument("--camp")
+    run.add_argument("--campaign")
+    run.add_argument("--qualification-id")
     run.add_argument("--file", type=Path, action="append", default=[])
+    run.add_argument("--summary-file", type=Path, action="append", default=[])
+    run.add_argument("--summary-source-file", type=Path, action="append", default=[])
+    run.add_argument(
+        "--additional-context-requested",
+        action="store_true",
+        help="Record that the operation needed context after receiving its focused summary.",
+    )
+    run.add_argument(
+        "--retain-thread",
+        action="store_true",
+        help="Persist a focused inline-context thread for a controlled later resume.",
+    )
     run.add_argument("--sandbox", default="read-only")
 
     benchmark = subparsers.add_parser("benchmark", help="Run the four repeatable token baselines.")
@@ -605,7 +705,15 @@ def main() -> int:
                 thread_id=args.thread_id,
                 program=args.program,
                 camp=args.camp,
+                campaign=args.campaign,
+                qualification_id=args.qualification_id,
                 explicit_files=tuple(args.file),
+                summary_files=tuple(args.summary_file),
+                summary_source_files=tuple(args.summary_source_file),
+                additional_context_requested=(
+                    True if args.additional_context_requested else False
+                ),
+                retain_thread=args.retain_thread,
                 config=config,
                 policy=policy,
                 codex=args.codex,

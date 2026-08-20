@@ -14,12 +14,14 @@ from scripts.codex_execution import (
     ModelPolicyError,
     activity_report,
     classify_recovery,
+    qualification_report,
 )
 from scripts.codex_orchestration import (
     AppServerFeatureConfig,
     benchmark_regressions,
     execute_bounded,
     inline_context_prompt,
+    validate_summary_context,
 )
 from scripts.reasoning_catalog import query_codex_catalog
 
@@ -88,6 +90,12 @@ for raw in sys.stdin:
         print(json.dumps({"method": "item/agentMessage/delta", "params": {"threadId": params["threadId"], "turnId": turn_id, "delta": "FAKE_OK"}}), flush=True)
         usage = {"inputTokens": 10, "cachedInputTokens": 2, "outputTokens": 3, "reasoningOutputTokens": 1, "totalTokens": 13}
         print(json.dumps({"method": "thread/tokenUsage/updated", "params": {"threadId": params["threadId"], "turnId": turn_id, "tokenUsage": {"last": usage, "total": usage, "modelContextWindow": 1000}}}), flush=True)
+        if os.environ.get("FAKE_CODEX_TOOL") == "1":
+            item = {"id": "item_tool", "type": "commandExecution", "status": "completed", "command": "true"}
+            print(json.dumps({"method": "item/completed", "params": {"threadId": params["threadId"], "turnId": turn_id, "item": item}}), flush=True)
+            second = {"inputTokens": 12, "cachedInputTokens": 3, "outputTokens": 4, "reasoningOutputTokens": 1, "totalTokens": 16}
+            total = {"inputTokens": 22, "cachedInputTokens": 5, "outputTokens": 7, "reasoningOutputTokens": 2, "totalTokens": 29}
+            print(json.dumps({"method": "thread/tokenUsage/updated", "params": {"threadId": params["threadId"], "turnId": turn_id, "tokenUsage": {"last": second, "total": total, "modelContextWindow": 1000}}}), flush=True)
         print(json.dumps({"method": "turn/completed", "params": {"threadId": params["threadId"], "turn": {"id": turn_id, "status": "completed", "items": []}}}), flush=True)
     elif method == "turn/interrupt":
         print(json.dumps({"id": request_id, "result": {}}), flush=True)
@@ -130,6 +138,8 @@ class CodexExecutionTests(unittest.TestCase):
                 cwd=ROOT,
                 program="program-a",
                 camp="camp-b",
+                campaign="campaign-b",
+                qualification_id="qualification-1",
             )
         self.assertEqual(result.text, "FAKE_OK")
         self.assertEqual(result.requested_model, "gpt-5.6-terra")
@@ -137,12 +147,18 @@ class CodexExecutionTests(unittest.TestCase):
         record = json.loads(telemetry.read_text(encoding="utf-8"))
         self.assertEqual(record["program"], "program-a")
         self.assertEqual(record["camp"], "camp-b")
+        self.assertEqual(record["campaign"], "campaign-b")
+        self.assertEqual(record["qualification_id"], "qualification-1")
         self.assertEqual(record["actual_model"], "gpt-5.6-terra")
         self.assertEqual(record["token_usage"]["last"]["totalTokens"], 13)
         self.assertEqual(record["tokens"]["input"], 10)
         self.assertEqual(record["tokens"]["cached_input"], 2)
         self.assertEqual(record["tokens"]["reasoning_output"], 1)
         self.assertEqual(record["thread_mode"], "new")
+        self.assertEqual(record["model_turns"], 1)
+        self.assertEqual(record["tool_calls"], 0)
+        self.assertFalse(record["fallback_used"])
+        self.assertGreaterEqual(record["duration_seconds"], 0)
         self.assertEqual(record["context_scope"]["instruction_sources"], ["/workspace/AGENTS.md"])
         self.assertTrue(record["success"])
 
@@ -394,6 +410,32 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertGreater(result.context_scope["explicit_file_bytes"], 0)
         self.assertTrue(result.context_scope["restricted_read"])
 
+    def test_observed_model_turns_and_tool_calls_are_counted_from_protocol_events(self) -> None:
+        os.environ["FAKE_CODEX_TOOL"] = "1"
+        try:
+            with CodexExecutionAdapter(
+                policy=self.policy,
+                codex=str(self.fake),
+                telemetry_path=self.root / "events.jsonl",
+            ) as adapter:
+                result = adapter.execute("inspect", role="verification", cwd=ROOT)
+        finally:
+            os.environ.pop("FAKE_CODEX_TOOL", None)
+        self.assertEqual(result.model_turns, 2)
+        self.assertEqual(result.model_turns_metric, "distinct_token_usage_last_updates")
+        self.assertEqual(result.tool_calls, 1)
+        self.assertEqual(result.tool_call_types, ("commandExecution",))
+
+    def test_focused_summary_must_name_all_source_files(self) -> None:
+        source = self.root / "source.md"
+        source.write_text("source", encoding="utf-8")
+        summary = self.root / "summary.md"
+        summary.write_text("Sources: source.md\n\nSummary", encoding="utf-8")
+        validate_summary_context(self.root, (summary,), (source,))
+        summary.write_text("Summary without provenance", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "identify every source"):
+            validate_summary_context(self.root, (summary,), (source,))
+
     def test_activity_report_is_prompt_free_and_summarized(self) -> None:
         telemetry = self.root / "activity.jsonl"
         with CodexExecutionAdapter(
@@ -407,12 +449,24 @@ class CodexExecutionTests(unittest.TestCase):
                 cwd=ROOT,
                 program="P",
                 camp="C",
+                qualification_id="Q",
             )
         report = activity_report(telemetry, limit=20)
         self.assertEqual(report["operation_count"], 1)
         self.assertEqual(report["summary"]["input_tokens"], 10)
         self.assertEqual(report["operations"][0]["program"], "P")
         self.assertNotIn("secret prompt", json.dumps(report))
+        qualification = qualification_report(
+            telemetry,
+            qualification_id="Q",
+            baseline_input_tokens=8,
+            expected_codex_version="0.144.6",
+            codex=str(self.fake),
+        )
+        self.assertEqual(qualification["operations"], 1)
+        self.assertEqual(qualification["verification_terra"]["avoidable_input_tokens"], 2)
+        self.assertEqual(qualification["codex_cli_version"], "0.144.6")
+        self.assertFalse(qualification["observation_gate"]["met"])
         baseline = self.root / "baseline.json"
         baseline.write_text(
             json.dumps({"results": [{"id": "small", "tokens": {"input": 10}}]}),

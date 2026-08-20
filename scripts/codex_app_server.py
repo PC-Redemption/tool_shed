@@ -39,6 +39,10 @@ class TurnResult:
     error: dict[str, Any] | None
     token_usage: dict[str, Any] | None
     reroutes: tuple[dict[str, Any], ...]
+    model_turns: int | None
+    model_turns_metric: str
+    tool_calls: int
+    tool_call_types: tuple[str, ...]
 
 
 class CodexAppServerClient:
@@ -430,6 +434,8 @@ class CodexAppServerClient:
         token_usage: dict[str, Any] | None = None
         turn_usage_baseline: dict[str, int] | None = None
         reroutes: list[dict[str, Any]] = []
+        model_usage_updates: set[tuple[int, ...]] = set()
+        tool_call_types: list[str] = []
         try:
             while True:
                 message = self._next_notification(deadline)
@@ -446,15 +452,40 @@ class CodexAppServerClient:
                     deltas.append(params["delta"])
                 elif method == "item/completed":
                     item = params.get("item")
-                    if isinstance(item, dict) and item.get("type") == "agentMessage":
-                        completed_text = str(item.get("text") or "")
+                    if isinstance(item, dict):
+                        item_type = item.get("type")
+                        if item_type == "agentMessage":
+                            completed_text = str(item.get("text") or "")
+                        elif item_type in {
+                            "commandExecution",
+                            "fileChange",
+                            "mcpToolCall",
+                            "dynamicToolCall",
+                            "webSearch",
+                            "imageView",
+                            "imageGeneration",
+                        }:
+                            tool_call_types.append(str(item_type))
                 elif method == "thread/tokenUsage/updated":
                     usage = params.get("tokenUsage")
                     if isinstance(usage, dict):
                         token_usage = dict(usage)
+                        last = usage.get("last")
+                        if isinstance(last, dict):
+                            model_usage_updates.add(
+                                tuple(
+                                    int(last.get(key) or 0)
+                                    for key in (
+                                        "inputTokens",
+                                        "cachedInputTokens",
+                                        "outputTokens",
+                                        "reasoningOutputTokens",
+                                        "totalTokens",
+                                    )
+                                )
+                            )
                         if turn_usage_baseline is None:
                             cumulative = usage.get("total")
-                            last = usage.get("last")
                             if isinstance(cumulative, dict) and isinstance(last, dict):
                                 turn_usage_baseline = {
                                     key: max(
@@ -504,6 +535,10 @@ class CodexAppServerClient:
                         error=error,
                         token_usage=token_usage,
                         reroutes=tuple(reroutes),
+                        model_turns=(len(model_usage_updates) or None),
+                        model_turns_metric="distinct_token_usage_last_updates",
+                        tool_calls=len(tool_call_types),
+                        tool_call_types=tuple(tool_call_types),
                     )
         finally:
             self._notifications.extendleft(reversed(deferred))
