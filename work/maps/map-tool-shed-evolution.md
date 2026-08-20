@@ -1,11 +1,11 @@
 # Project Map: Tool Shed evolution
 
-Status: active
+Status: complete
 Type: project-map
-Updated: 2026-08-14
-Next Action: review the exact target manifest before authorizing the first guarded fleet snapshot update
+Updated: 2026-08-20
+Next Action: none
 Campaign: standalone
-Campaign Reason: coordination surface only; executable follow-ups are tracked by their own owner campaigns
+Campaign Reason: completed coordination surface; future work requires a new bounded request or campaign
 
 ## Purpose
 
@@ -17,7 +17,7 @@ snapshot updates, and the lifecycle of project-specific work artifacts.
 ```mermaid
 flowchart TD
   A[Trustworthy workspace coordination] --> B[Artifact reconciliation]
-  A --> C[Snapshot routing and updates]
+  A --> C[Complete: snapshot routing and guarded updater]
   A --> F[Generated evidence safety]
   A --> H[Workspace performance measurement]
   A --> I[Agent planning mechanism evaluation]
@@ -28,7 +28,7 @@ flowchart TD
   A --> O[Operator documentation and command reference]
   I --> J[Complete: evidence-responsive execution guidance]
   B --> D[Ground: validate review_work_state.py]
-  C --> E[Gate: explicit approval before fleet update]
+  C --> E[Boundary preserved: no fleet update without a new exact approval]
   F --> G[Complete: adaptive safeguards validated]
 ```
 
@@ -45,17 +45,18 @@ flowchart TD
   snapshot updates; generated-evidence prevention and reversible migration; privacy-safe workspace
   performance measurement; evaluation and implementation of transferable planning mechanisms;
   campaign-entry discussion, adaptive coordination, token efficiency, and cross-provider product portability.
-- Key dependencies: reconciliation must stabilize before its instructions are distributed to existing snapshots.
+- Key dependency preserved: distribution to existing snapshots remains a separate, explicitly
+  approved operation.
 
 1,000 ft:
 
-- Active workpackage:
-  `work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md`.
-- Completed workpackages include
+- Completed routing and updater workpackage:
+  `work/wp/completed/wp-tool-shed-routing-and-fleet-snapshot-updates.md`.
+- Other completed workpackages include
   `work/wp/completed/wp-generated-evidence-safety-and-migration.md` and
   `work/wp/completed/wp-tool-shed-campaign-entry-improvements.md`.
 - Completed workpackages: `work/wp/completed/wp-work-artifact-reconciliation.md`.
-- Active ticket:
+- Completed installer ticket:
   `work/tickets/ticket-portable-verified-tool-shed-installer.md`.
 - Active execution-level ticket:
   none; numbered execution levels are complete.
@@ -65,12 +66,12 @@ flowchart TD
   `work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md`.
 - Completed planning-model evaluation:
   `work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md`.
-- Open decisions: whether reconciliation should become a strict CI gate after field use.
+- Open decisions: none within this completed map; future CI-policy or fleet-update work requires a
+  new bounded request.
 
 Ground:
 
-- Current next action: obtain explicit approval before the first guarded fleet
-  update.
+- Current next action: none; the owner abandoned the fleet-update campaign without applying it.
 - Owner/context: human and Codex in the canonical Tool Shed development workspace.
 - Verification: focused unit tests plus `python3 scripts/validate_tool_shed.py`.
 
@@ -79,13 +80,13 @@ Ground:
 | Workstream | Status | Lead Artifact | Depends On | Next Action |
 | --- | --- | --- | --- | --- |
 | Artifact reconciliation | complete | `work/wp/completed/wp-work-artifact-reconciliation.md` | existing index and stale-path checks | none |
-| Snapshot routing and updates | active | `work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md` | explicit approval; stable reconciliation guidance | hold before first fleet update |
+| Snapshot routing and updates | complete | `work/wp/completed/wp-tool-shed-routing-and-fleet-snapshot-updates.md` | reviewed routing and updater safety contract | none |
 | Generated evidence safety and migration | complete | `work/wp/completed/wp-generated-evidence-safety-and-migration.md` | imported incident and field-verification ticket | none |
 | Portable verified installer | complete | `work/tickets/ticket-portable-verified-tool-shed-installer.md` | native Linux and Windows fallback tests passed for new installation and existing update | none |
-| Workspace performance measurement | complete | `work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md` | completed profiling and fleet-measurement spike | gather approved longitudinal or multi-workspace measurements before proposing optimization |
+| Workspace performance measurement | complete | `work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md` | completed profiling and fleet-measurement spike | none |
 | Agent planning mechanism evaluation | complete | `work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md` | source-backed inventory and frozen instruction-level scenarios | none |
 | Evidence-responsive execution | complete | `work/wp/completed/wp-evidence-responsive-tool-shed-execution.md` | published v0.11.0, exact installed-client parity, and fresh-task smoke | none |
-| Campaign entry, token efficiency, and provider portability | complete | `work/wp/completed/wp-tool-shed-campaign-entry-improvements.md` | published v0.12.0, exact installed-client parity, and fresh-task smoke | run non-Codex runtime scenarios before increasing capability claims |
+| Campaign entry, token efficiency, and provider portability | complete | `work/wp/completed/wp-tool-shed-campaign-entry-improvements.md` | published v0.12.0, exact installed-client parity, and fresh-task smoke | none |
 | Direct coding request mitigation | complete | `work/tickets/ticket-mitigate-tool-shed-churn-for-direct-coding-requests.md` | issue #21; existing minimum-sufficient coordination and campaign routes | none |
 | Numbered execution levels and environment models | complete | `work/tickets/ticket-add-numbered-work-levels-and-environment-models.md` | existing Direct-route contract and campaign routing | none |
 | Owner-facing campaign queues and lifecycle | complete | `work/wp/completed/wp-owner-facing-campaign-queues-and-lifecycle-management.md` | approved `work/00-campaigns/` location and retained transient inbox | none |
@@ -93,8 +94,8 @@ Ground:
 
 ## Dependency Notes
 
-- Reconciliation guidance must ship inside a reviewed snapshot before existing workspaces can use it.
-- Fleet update remains a separate guarded operation and is not authorized by this workpackage.
+- Reconciliation guidance was shipped through its reviewed release path.
+- Any future fleet update remains a separate guarded operation and is not authorized by this map.
 - Generated-evidence improvements must pass varied disposable workspace profiles
   before they are distributed to existing workspaces.
 - Migration apply work must remain gated by an exact manifest, verified archive,
@@ -106,8 +107,8 @@ Ground:
 
 You are here:
 
-- The canonical AI command reference and refreshed operator documentation are qualified for
-  release.
+- All intended Tool Shed evolution workstreams in this map are complete. The first fleet-update
+  campaign was abandoned without applying changes to other workspaces.
 
 Do next:
 
@@ -124,7 +125,7 @@ Do next:
 - [x] Implement the stable-tag, cross-platform snapshot updater and rollback tests.
 - [x] Verify the complete validator matrix in native Windows and Linux CI.
 - [x] Pass launcher runtime fallback against disposable Windows and Linux workspaces.
-- [ ] Review current-workspace findings with the human before any fleet update.
+- [x] Review current-workspace findings; the owner declined a fleet update and Campaign 019 was abandoned.
 - [x] Define the workspace-performance report schema, privacy boundary, benchmark protocol, and fleet rollout plan.
 - [x] Implement and canary the privacy-safe local workspace profiler.
 - [x] Evaluate transferable human planning mechanisms and recommend proportionate Tool Shed updates.
@@ -149,8 +150,8 @@ Avoid for now:
 
 - Work index: `work/index.md`
 - Workpackages: `work/wp/completed/wp-work-artifact-reconciliation.md`,
-  `work/wp/active/wp-tool-shed-routing-and-fleet-snapshot-updates.md`,
-  `work/wp/active/wp-tool-shed-campaign-entry-improvements.md`,
+  `work/wp/completed/wp-tool-shed-routing-and-fleet-snapshot-updates.md`,
+  `work/wp/completed/wp-tool-shed-campaign-entry-improvements.md`,
   `work/wp/completed/wp-owner-facing-campaign-queues-and-lifecycle-management.md`,
   `work/wp/completed/wp-generated-evidence-safety-and-migration.md`,
   `work/wp/completed/wp-evidence-responsive-tool-shed-execution.md`

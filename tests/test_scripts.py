@@ -3382,6 +3382,34 @@ Uncertainty: none
             self.assertEqual(result.returncode, 1)
             self.assertIn("work/wp/completed/wp-demo.md", result.stdout)
 
+    def test_check_stale_paths_detects_inline_paths_in_active_planning(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            (workspace / "work" / "maps").mkdir(parents=True)
+            (workspace / "work" / "wp" / "completed").mkdir(parents=True)
+            (workspace / "work" / "maps" / "map-demo.md").write_text(
+                """# Project Map: Demo
+
+Status: active
+Type: project-map
+Updated: 2026-08-20
+Next Action: use the active workpackage
+
+Active workpackage: `work/wp/active/wp-demo.md`.
+""",
+                encoding="utf-8",
+            )
+            (workspace / "work" / "wp" / "completed" / "wp-demo.md").write_text(
+                "# Demo\n",
+                encoding="utf-8",
+            )
+
+            result = run_script("scripts/check_stale_paths.py", "--workspace", str(workspace), check=False)
+
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("map-demo.md:8", result.stdout)
+            self.assertIn("work/wp/completed/wp-demo.md", result.stdout)
+
     def test_check_stale_paths_uses_git_visible_markdown_set(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)
@@ -6187,6 +6215,18 @@ Next Action: approve the initial map
                     "--expect", discovery["source_state_token"], "--json",
                 ).stdout
             )
+            proposal_overview = json.loads(
+                run_script(
+                    "scripts/program_roadmap.py", "--workspace", str(workspace),
+                    "overview", "--json",
+                ).stdout
+            )
+            self.assertEqual(proposal_overview["index_drift"]["missing_from_index"], [])
+            self.assertEqual(proposal_overview["index_drift"]["missing_from_work_tree"], [])
+            self.assertNotIn(
+                "work index does not match the discovered artifact surface",
+                proposal_overview["drift_findings"],
+            )
             original_readme = (workspace / "work" / "README.md").read_text(encoding="utf-8")
             (workspace / "work" / "README.md").write_text(original_readme + "\nchanged\n", encoding="utf-8")
             stale = run_script(
@@ -6256,6 +6296,24 @@ Next Action: approve the initial map
             )
             self.assertEqual(status["milestones"]["M1"]["status"], "complete")
             self.assertEqual(status["gates"]["G1"]["status"], "passed")
+            original_readme = (workspace / "work" / "README.md").read_text(encoding="utf-8")
+            (workspace / "work" / "README.md").write_text(
+                original_readme + "\npost-completion owner work\n",
+                encoding="utf-8",
+            )
+            completed_overview = json.loads(
+                run_script(
+                    "scripts/program_roadmap.py", "--workspace", str(workspace),
+                    "overview", "--json",
+                ).stdout
+            )
+            completed_state = completed_overview["roadmaps"][0]
+            self.assertTrue(completed_state["source_drift"])
+            self.assertFalse(completed_state["source_drift_actionable"])
+            self.assertTrue(completed_state["program_complete"])
+            self.assertEqual(completed_overview["recommended_next"]["strategic"], None)
+            self.assertNotIn("approved roadmap source inputs changed", completed_overview["drift_findings"])
+            (workspace / "work" / "README.md").write_text(original_readme, encoding="utf-8")
 
             revision_discovery = json.loads(
                 run_script(

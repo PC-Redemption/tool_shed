@@ -22,12 +22,12 @@
       "campaign_reason": null,
       "canonical_truth": null,
       "disposition": "none",
-      "next_action": "execute when selected from the active campaign queue",
+      "next_action": "execute the campaign completion gate",
       "parent": null,
       "path": "work/00-campaigns/active/043-restore-trustworthy-overview-and-close-out-stale-evolution-map-state.md",
       "produces": null,
       "project_map": null,
-      "status": "queued",
+      "status": "working",
       "superseded_by": null,
       "supersedes": null,
       "title": "Restore trustworthy overview and close out stale evolution-map state",
@@ -1157,20 +1157,20 @@
     },
     {
       "campaign": "standalone",
-      "campaign_reason": "coordination surface only; executable follow-ups are tracked by their own owner campaigns",
+      "campaign_reason": "completed coordination surface; future work requires a new bounded request or campaign",
       "canonical_truth": null,
       "disposition": null,
-      "next_action": "review the exact target manifest before authorizing the first guarded fleet snapshot update",
+      "next_action": "none",
       "parent": null,
       "path": "work/maps/map-tool-shed-evolution.md",
       "produces": null,
       "project_map": null,
-      "status": "active",
+      "status": "complete",
       "superseded_by": null,
       "supersedes": null,
       "title": "Project Map: Tool Shed evolution",
       "type": "project-map",
-      "updated": "2026-08-14"
+      "updated": "2026-08-20"
     },
     {
       "campaign": null,
@@ -1598,8 +1598,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 2,
-    "completed_or_decided_artifacts": 81,
+    "active_artifacts": 1,
+    "completed_or_decided_artifacts": 82,
     "total_artifacts": 92
   }
 }

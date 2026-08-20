@@ -473,6 +473,7 @@ def _section_lines(path: Path, name: str) -> list[str]:
 def discover_project(workspace: Path) -> dict[str, Any]:
     work = workspace / "work"
     artifacts = discover_artifacts(work) if work.is_dir() else []
+    discovered_artifact_paths = {artifact.path.as_posix() for artifact in artifacts}
     evidence = []
     for artifact in artifacts:
         if artifact.kind() == "program-roadmap":
@@ -515,10 +516,9 @@ def discover_project(workspace: Path) -> dict[str, Any]:
             }
         except (json.JSONDecodeError, AttributeError) as error:
             index_error = str(error)
-    discovered_paths = {item["path"] for item in evidence}
     index_drift = {
-        "missing_from_index": sorted(discovered_paths - indexed_paths) if index_path.is_file() else [],
-        "missing_from_work_tree": sorted(indexed_paths - discovered_paths),
+        "missing_from_index": sorted(discovered_artifact_paths - indexed_paths) if index_path.is_file() else [],
+        "missing_from_work_tree": sorted(indexed_paths - discovered_artifact_paths),
         "error": index_error,
     }
     return {
@@ -841,6 +841,13 @@ def roadmap_payload(workspace: Path, roadmap: Roadmap) -> dict[str, Any]:
         ),
         None,
     )
+    current_source = source_state_token(workspace, roadmap.roadmap_id)
+    source_drift = roadmap.fields.get("Source State Token") != current_source
+    program_complete = (
+        bool(progress["milestones"])
+        and all(item["status"] == "complete" for item in progress["milestones"].values())
+        and all(item["status"] == "passed" for item in progress["gates"].values())
+    )
     return {
         "roadmap_id": roadmap.roadmap_id,
         "revision": roadmap.revision,
@@ -849,8 +856,10 @@ def roadmap_payload(workspace: Path, roadmap: Roadmap) -> dict[str, Any]:
         "roadmap_token": _file_token(roadmap.path),
         "proposal_token": roadmap.fields.get("Proposal Token"),
         "source_state_token": roadmap.fields.get("Source State Token"),
-        "current_source_state_token": source_state_token(workspace, roadmap.roadmap_id),
-        "source_drift": roadmap.fields.get("Source State Token") != source_state_token(workspace, roadmap.roadmap_id),
+        "current_source_state_token": current_source,
+        "source_drift": source_drift,
+        "source_drift_actionable": source_drift and not program_complete,
+        "program_complete": program_complete,
         "computed_current_milestone": computed_current,
         **progress,
         "findings": validate_roadmap(roadmap),
@@ -1086,7 +1095,7 @@ def cycle_state_capsule(
             "reason": f"milestones are complete but gate evidence remains incomplete: {', '.join(waiting_gates)}",
         }
         return capsule
-    if state["source_drift"]:
+    if state["source_drift_actionable"]:
         capsule["program_cycle"]["state"] = "review-required"
         capsule["owning_cycle"] = "program"
         capsule["dimensions"]["cycle_state"] = "program"
@@ -1275,7 +1284,10 @@ def overview(workspace: Path) -> dict[str, Any]:
     if roadmap_states:
         state = roadmap_states[-1]
         waiting_gates = [gate_id for gate_id, gate in state["gates"].items() if gate["status"] != "passed"]
-        strategic = f"satisfy gate {waiting_gates[0]}" if waiting_gates else "review roadmap completion"
+        if waiting_gates:
+            strategic = f"satisfy gate {waiting_gates[0]}"
+        elif not state["program_complete"]:
+            strategic = "review roadmap completion"
     execution = queue.get("working", [None])[0] if queue and queue.get("working") else queue.get("next") if queue else None
     focus_coverage: dict[str, Any] = {}
     catalog = campaign_queue.load_focus_area_catalog(workspace)
@@ -1298,7 +1310,7 @@ def overview(workspace: Path) -> dict[str, Any]:
         drift.append("work index does not match the discovered artifact surface")
     if queue:
         drift.extend(f"campaign queue: {item}" for item in queue.get("findings", []))
-    if any(item["source_drift"] for item in roadmap_states):
+    if any(item["source_drift_actionable"] for item in roadmap_states):
         drift.append("approved roadmap source inputs changed")
     cycle_state = (
         queue["cycle_state"]
@@ -1328,7 +1340,7 @@ def review_payload(workspace: Path, roadmap_id: str) -> dict[str, Any]:
         "unknowns": roadmap.definition["unknowns"],
         "decisions": roadmap.definition["decisions"],
         "authority_boundaries": roadmap.definition["authority_boundaries"],
-        "revision_recommended": payload["source_drift"] or bool(payload["findings"]),
+        "revision_recommended": payload["source_drift_actionable"] or bool(payload["findings"]),
     }
     return payload
 

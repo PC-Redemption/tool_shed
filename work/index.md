@@ -9,7 +9,7 @@ Updated: 2026-08-20
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
-| [work/00-campaigns/active/043-restore-trustworthy-overview-and-close-out-stale-evolution-map-state.md](work/00-campaigns/active/043-restore-trustworthy-overview-and-close-out-stale-evolution-map-state.md) | campaign | queued | 2026-08-20 | execute when selected from the active campaign queue | - |
+| [work/00-campaigns/active/043-restore-trustworthy-overview-and-close-out-stale-evolution-map-state.md](work/00-campaigns/active/043-restore-trustworthy-overview-and-close-out-stale-evolution-map-state.md) | campaign | working | 2026-08-20 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -75,7 +75,7 @@ Updated: 2026-08-20
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/maps/map-disposable-completion-watchers-and-hosted-notifications.md](work/maps/map-disposable-completion-watchers-and-hosted-notifications.md) | project-map | deferred | 2026-08-18 | preserve the completed local watcher and wait for a concrete external/non-App-Server notification need before revisiting hosted work | - |
-| [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | active | 2026-08-14 | review the exact target manifest before authorizing the first guarded fleet snapshot update | - |
+| [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | complete | 2026-08-20 | none | - |
 | [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
 | [work/roadmaps/roadmap-completion-watcher-program-r2.md](work/roadmaps/roadmap-completion-watcher-program-r2.md) | program-roadmap | approved | 2026-08-20 | derive campaigns for milestone M1-CONTRACT | none |
 | [work/roadmaps/roadmap-completion-watcher-program.md](work/roadmaps/roadmap-completion-watcher-program.md) | program-roadmap | superseded | 2026-08-20 | none | work/roadmaps/roadmap-completion-watcher-program-r2.md |
@@ -110,5 +110,5 @@ Updated: 2026-08-20
 ## Summary
 
 - Total artifacts: 92
-- Active artifacts: 2
-- Completed/decided artifacts: 81
+- Active artifacts: 1
+- Completed/decided artifacts: 82

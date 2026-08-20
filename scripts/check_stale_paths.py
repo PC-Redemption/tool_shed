@@ -9,10 +9,12 @@ from pathlib import Path
 
 
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\((work/[^)\s]+\.md(?:#[^)]+)?)\)")
+INLINE_WORK_PATH_RE = re.compile(r"`(work/[^`\s]+\.md(?:#[^`]*)?)`")
 HEADER_PATH_KEYS = {
     "Parent", "Project Map", "Canonical Truth", "Supersedes", "Superseded By",
     "Source Project Map",
 }
+ACTIVE_PLANNING_STATUSES = {"active", "approved", "blocked", "proposed", "queued", "working"}
 SKIP_DIRS = {".git", "__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache", "examples"}
 SKIP_FILES = {("work", "index.md")}
 
@@ -98,15 +100,28 @@ def completed_workpackage_for(reference_path: Path, root: Path) -> Path | None:
 def scan_file(path: Path, root: Path) -> list[Finding]:
     findings: list[Finding] = []
     relative_source = path.relative_to(root)
-    for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+    lines = path.read_text(encoding="utf-8").splitlines()
+    status = ""
+    if relative_source.parts[:1] == ("work",):
+        for line in lines[:40]:
+            if line.startswith("Status:"):
+                status = line.split(":", 1)[1].strip().lower()
+                break
+    scan_inline_paths = status in ACTIVE_PLANNING_STATUSES
+    for line_number, line in enumerate(lines, start=1):
         references = [match.group(1).rstrip(".,;:") for match in MARKDOWN_LINK_RE.finditer(line)]
+        if scan_inline_paths:
+            references.extend(
+                match.group(1).rstrip(".,;:")
+                for match in INLINE_WORK_PATH_RE.finditer(line)
+            )
         if ":" in line:
             key, raw_value = line.split(":", 1)
             if key.strip() in HEADER_PATH_KEYS:
                 value = raw_value.strip()
                 if value.startswith("work/") and ".md" in value:
                     references.append(value.split()[0].rstrip(".,;:"))
-        for reference in references:
+        for reference in dict.fromkeys(references):
             findings.extend(check_reference(relative_source, line_number, reference, root))
     return findings
 

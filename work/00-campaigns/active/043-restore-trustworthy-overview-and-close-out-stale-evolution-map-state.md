@@ -1,9 +1,9 @@
 # Restore trustworthy overview and close out stale evolution-map state
 
-Status: queued
+Status: working
 Type: campaign
 Updated: 2026-08-20
-Next Action: execute when selected from the active campaign queue
+Next Action: execute the campaign completion gate
 Campaign ID: restore-trustworthy-overview-and-close-out-stale-evolution-map-state
 Campaign Number: 043
 Outcome: Make Tool Shed's overview, index-drift reporting, stale-path detection, and active evolution-map state agree with the real tracked workspace after completion-watcher roadmap closeout.
