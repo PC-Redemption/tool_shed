@@ -1,10 +1,10 @@
 # Active Campaign Queue
 
-Updated: 2026-08-18
+Updated: 2026-08-20
 
 ## Owner State
 
-- Last completed: update-github-actions-dependencies-before-node-20-removal — Update GitHub Actions dependencies before Node 20 removal
+- Last completed: close-out-codex-app-server-integration — Close out Codex App Server integration
 - Working now: none
 - Next: none
 - Blocker or decision needed: none

@@ -1,6 +1,6 @@
 # Codex App Server Execution
 
-Status: feature-flagged read-only integration; default off
+Status: maintenance/watch; feature-flagged read-only integration; default off
 
 Tool Shed can route selected read-only lifecycle roles through the locally installed Codex App
 Server while retaining the current Codex GUI conversation as the default and fallback execution
@@ -11,6 +11,10 @@ The implementation targets Codex CLI 0.144.6 and App Server v2 over local stdio 
 handshake, thread and turn lifecycle, token events, and server-initiated approvals. It also labels
 the App Server command experimental and unsupported for production workloads. This integration
 therefore remains opt-in even though its read-only path is qualified.
+
+For the short operational handoff, read the
+[App Server maintainer note](codex-app-server-maintainer-note.md). Further engineering is
+event-triggered rather than an active Tool Shed development priority.
 
 ## Qualified Baseline
 
@@ -97,7 +101,7 @@ normal GUI fallback path:
 
 ```text
 Codex App Server version changed. Qualified version: 0.144.6. Installed version: <version>.
-Run the App Server compatibility smoke test before relying on App Server execution.
+Run `python3 scripts/codex_app_server_compatibility.py smoke --cwd .` before relying on App Server execution.
 ```
 
 ## Authentication and Model Policy

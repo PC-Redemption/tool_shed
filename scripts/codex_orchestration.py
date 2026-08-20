@@ -159,14 +159,16 @@ class AppServerFeatureConfig:
         if installed is None:
             return (
                 "Codex App Server version could not be detected. "
-                "Run the App Server compatibility smoke test before relying on App Server execution."
+                "Run `python3 scripts/codex_app_server_compatibility.py smoke --cwd .` "
+                "before relying on App Server execution."
             )
         if installed == qualified:
             return None
         return (
             "Codex App Server version changed. "
             f"Qualified version: {qualified}. Installed version: {installed}. "
-            "Run the App Server compatibility smoke test before relying on App Server execution."
+            "Run `python3 scripts/codex_app_server_compatibility.py smoke --cwd .` "
+            "before relying on App Server execution."
         )
 
     def validate_model_policy(self, policy: ModelPolicy) -> None:

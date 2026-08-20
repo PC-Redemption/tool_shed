@@ -5,6 +5,7 @@
       "codex_version": "0.144.6",
       "qualified_at": "2026-08-20",
       "status": "qualified_with_blockers",
+      "operating_mode": "maintenance_watch",
       "transport": "stdio",
       "authentication": {
         "chatgpt": true,
@@ -40,6 +41,11 @@
       "workspace_writing": false,
       "production_supported": false,
       "estimated_harness_input_tokens_per_operation": 18800,
+      "tiny_smoke_input_tokens": {
+        "minimum": 18254,
+        "maximum": 18255,
+        "observed_at": "2026-08-20"
+      },
       "observations": {
         "planning": 10,
         "verification": 20,

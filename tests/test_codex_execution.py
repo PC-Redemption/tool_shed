@@ -263,6 +263,10 @@ class CodexExecutionTests(unittest.TestCase):
             os.environ.pop("FAKE_CODEX_VERSION", None)
         self.assertIn("Qualified version: 0.144.6", warning or "")
         self.assertIn("Installed version: 0.200.0", warning or "")
+        self.assertIn(
+            "python3 scripts/codex_app_server_compatibility.py smoke --cwd .",
+            warning or "",
+        )
         self.assertEqual(config.thread_policy("planning"), "new")
         with self.assertRaisesRegex(FeatureConfigError, "defaults to new threads"):
             execute_if_enabled(
