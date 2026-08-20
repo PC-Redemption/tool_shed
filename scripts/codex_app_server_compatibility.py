@@ -97,11 +97,35 @@ def status_report(
     record = qualification_for_version(records, installed)
     planning = policy.select("planning")
     verification = policy.select("verification")
+    camp_execution = policy.select("camp_execution")
     configured_qualified = config.qualified_codex_version
     blockers = list(record.get("known_blockers") or []) if record else [
         "installed Codex version has no qualification record"
     ]
     savings = record.get("qualified_savings") if record else None
+    camp_record = (record.get("routing") or {}).get("camp_execution", {}) if record else {}
+    camp_enabled = bool(
+        config.role_enabled("camp_execution")
+        and camp_record.get("qualified")
+        and record.get("workspace_writing")
+    ) if record else False
+    enabled_roles: dict[str, Any] = {
+        "planning": {"model": planning.model, "reasoning": planning.reasoning},
+        "verification": {
+            "model": verification.model,
+            "reasoning": verification.reasoning,
+        },
+    }
+    if camp_enabled:
+        enabled_roles["camp_execution"] = {
+            "model": camp_execution.model,
+            "reasoning": camp_execution.reasoning,
+            "sandbox": "workspace-write",
+            "scope": "explicit paths with Git mutation journal",
+        }
+    disabled = ["implementation", "testing", "build", "deployment"]
+    if not camp_enabled:
+        disabled.insert(0, "CAMP execution")
     return {
         "schema_version": 1,
         "title": "CODEX APP SERVER",
@@ -111,19 +135,8 @@ def status_report(
         "qualified_codex": configured_qualified,
         "compatibility": record.get("status") if record else "unqualified_version",
         "version_warning": config.compatibility_warning(codex),
-        "enabled_roles": {
-            "planning": {"model": planning.model, "reasoning": planning.reasoning},
-            "verification": {
-                "model": verification.model,
-                "reasoning": verification.reasoning,
-            },
-        },
-        "disabled": [
-            "workspace writing",
-            "CAMP execution",
-            "implementation",
-            "deployment",
-        ],
+        "enabled_roles": enabled_roles,
+        "disabled": disabled,
         "known_blockers": blockers,
         "experimental_status": "unsupported for production workloads",
         "qualified_savings": savings,
@@ -148,13 +161,22 @@ def format_status(report: dict[str, Any]) -> str:
         "Enabled roles:",
         f"  planning      {roles['planning']['model']} / {roles['planning']['reasoning']}",
         f"  verification  {roles['verification']['model']} / {roles['verification']['reasoning']}",
-        "",
-        "Disabled:",
-        *(f"  {item}" for item in report["disabled"]),
-        "",
-        "Known blockers:",
-        *(f"  {item}" for item in report["known_blockers"]),
     ]
+    camp = roles.get("camp_execution")
+    if camp:
+        lines.append(
+            f"  camp execution {camp['model']} / {camp['reasoning']} ({camp['scope']})"
+        )
+    lines.extend(
+        [
+            "",
+            "Disabled:",
+            *(f"  {item}" for item in report["disabled"]),
+            "",
+            "Known blockers:",
+            *(f"  {item}" for item in report["known_blockers"]),
+        ]
+    )
     if savings:
         lines.extend(
             [
@@ -240,7 +262,8 @@ def smoke_report(
             approval_command == {"decision": "cancel"}
             and approval_permissions == {"permissions": []},
             {
-                "workspace_writing": "disabled",
+                "permission_expansion": "disabled",
+                "camp_write_approval_policy": "never",
                 "command": approval_command,
                 "permissions": approval_permissions,
                 "gui_approval_bridge": "NOT AVAILABLE",

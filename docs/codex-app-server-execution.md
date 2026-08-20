@@ -1,10 +1,11 @@
 # Codex App Server Execution
 
-Status: maintenance/watch; feature-flagged read-only integration; default off
+Status: maintenance/watch; feature-flagged read-only and bounded CAMP integration; default off
 
 Tool Shed can route selected read-only lifecycle roles through the locally installed Codex App
 Server while retaining the current Codex GUI conversation as the default and fallback execution
-surface. Workspace-writing CAMP execution is not enabled.
+surface. One explicitly bounded workspace-writing CAMP step is also qualified through the dedicated
+`camp-run` path; broader writing is not enabled.
 
 The implementation targets Codex CLI 0.144.6 and App Server v2 over local stdio JSONL. The
 [official App Server documentation](https://developers.openai.com/codex/app-server) describes the
@@ -33,8 +34,10 @@ Codex CLI 0.144.6 is the comparison baseline for future App Server changes:
 
 The version-specific machine record is
 `adapters/codex-app-server-qualifications.json`. It records authentication, routing, read-only,
-cancellation, approval, restricted-read, workspace-writing, support-status, harness-baseline, and
-savings evidence explicitly. A new Codex version has no inherited qualification.
+cancellation, approval, restricted-read, bounded workspace-writing, support-status,
+harness-baseline, and savings evidence explicitly. A new Codex version has no inherited
+qualification. The write evidence is in
+[the 2026-08-20 write qualification](codex-app-server-write-qualification-2026-08-20.md).
 
 ## Routing Boundary
 
@@ -45,7 +48,8 @@ policy remains centralized in `adapters/codex-model-policy.json`.
 ts: discuss              -> current Codex GUI conversation
 planning                 -> App Server / Sol / high, when explicitly enabled
 verification             -> App Server / Terra / low, when explicitly enabled
-all writing roles        -> existing GUI path
+camp_execution           -> App Server / Terra / medium through camp-run only, when explicitly enabled
+all other writing roles  -> existing GUI path
 feature disabled         -> existing GUI path
 ```
 
@@ -57,14 +61,14 @@ planning                 = true
 verification             = true
 program_derivation       = false
 camp_derivation          = false
-camp_execution           = false
+camp_execution           = true
 implementation           = false
 normal_debug             = false
 testing                   = false
 build                     = false
 deployment                = false
 escalation                = false
-allowed_sandboxes         = read-only only
+allowed_sandboxes         = read-only and workspace-write
 workspace_write_enabled   = false
 ```
 
@@ -91,6 +95,21 @@ python3 scripts/codex_orchestration.py \
   --file adapters/codex-model-policy.json \
   --prompt "Verify the supplied model policy."
 ```
+
+Run one explicitly scoped CAMP write from a clean Git state:
+
+```bash
+python3 scripts/codex_orchestration.py \
+  --enable-app-server camp-run \
+  --cwd . \
+  --campaign 036-app-server-write-qualification-and-camp-execution \
+  --camp focused-change \
+  --file tests/test_codex_execution.py \
+  --prompt "Make only the requested bounded change and run its focused test."
+```
+
+`camp-run` requires exact declared paths and a Git mutation journal. Generic `run` refuses the
+workspace-write sandbox.
 
 When routing selects the fallback, the command reports that the initiating workflow must continue
 in the existing GUI. It does not attempt to emulate or spawn a second GUI conversation.
@@ -121,8 +140,8 @@ efforts. The current policy is:
 | CAMP execution, implementation, normal debugging, deployment | `gpt-5.6-terra` | `medium` |
 | verification, testing, build | `gpt-5.6-terra` | `low` |
 
-Only planning and verification are currently App Server eligible. The other routes are prepared in
-the centralized model policy but disabled in the feature policy.
+Planning, verification, and the dedicated `camp_execution` path are currently App Server eligible.
+All other routes are prepared in the centralized model policy but disabled in the feature policy.
 
 ## Context and Token Accounting
 
@@ -289,9 +308,10 @@ requests fail closed.
 
 Tests cover shell-command approval, file-change approval, accept, decline, cancel, timeout, and
 malformed requests. However, there is no product-surface bridge from the standalone Python adapter
-back into the initiating Codex GUI approval panel. The feature configuration therefore keeps
-`workspace_write_enabled = false`, permits only the read-only sandbox, and leaves all
-workspace-writing roles on the existing GUI path.
+back into the initiating Codex GUI approval panel. Interactive permission expansion therefore stays
+disabled and fails closed. The qualified CAMP path instead uses approval policy `never`, a
+hardened exact-root workspace-write sandbox, an exact path allowlist, and a Git mutation journal.
+All other workspace-writing roles remain on the existing GUI path.
 
 The installed CLI/runtime also rejected `readOnly.access` with `Invalid request: readOnly.access is
 no longer supported; use permissionProfile for restricted reads`, although the generated 0.144.6
@@ -321,7 +341,8 @@ fallback, Sol/Terra availability and reasoning, new read-only planning and verif
 GUI/discussion fallback, cancellation reconciliation, fail-closed approvals, restricted-read
 behavior when the version changed, and the tiny-operation token baseline. It never updates the
 qualification registry automatically. Review new-version evidence, then add a version-specific
-record deliberately.
+record deliberately. Re-run `scripts/codex_app_server_write_qualification.py` separately before
+retaining workspace-write qualification on a new CLI version; compatibility smoke never writes.
 
 Show the last 20 prompt-free operations:
 
@@ -354,14 +375,15 @@ token metrics remain `null` rather than being estimated.
 
 ## Promotion Decision
 
-App Server is ready for explicitly enabled, read-only planning and verification trials. It is not
-ready to become Tool Shed's default execution path because:
+App Server is ready for explicitly enabled, read-only planning and verification trials and one
+bounded `camp_execution` step. It is not ready to become Tool Shed's default execution path because:
 
 1. OpenAI still labels App Server experimental and unsupported for production workloads.
 2. CLI 0.144.6 exhibited a live `turn/interrupt` versus `thread/read` cancellation-state race.
 3. The real Codex GUI approval surface is not connected to `ApprovalBridge`.
-4. Workspace-writing CAMP roles remain disabled and unqualified end to end.
-5. The installed runtime and published/schema restricted-read surfaces currently disagree.
+4. The representative write CAMP succeeded safely but used 241,524 input tokens, so savings were not demonstrated.
+5. Broader workspace writing, build, deployment, and permission expansion remain unqualified.
+6. The installed runtime and published/schema restricted-read surfaces currently disagree.
 
 Promotion should occur only after those conditions are resolved. The existing GUI path remains the
 default and rollback path throughout. The completed real-campaign observation and measurements are
@@ -379,7 +401,7 @@ All of these must pass on the installed Codex version:
 - focused-context savings remain strong against absolute and relative baselines;
 - the existing GUI fallback remains reliable.
 
-### Gate B: workspace-writing roles
+### Gate B: broader workspace-writing roles
 
 All Gate A criteria plus all of these must pass:
 
@@ -387,9 +409,13 @@ All Gate A criteria plus all of these must pass:
 - file-write and command approvals are qualified live;
 - denial, cancellation, and approval timeout are qualified live;
 - restricted-read behavior is understood and qualified;
-- structured CAMP outcomes are integrated;
-- workspace-writing roles receive live end-to-end qualification;
+- structured CAMP outcomes are integrated for the target role;
+- each additional workspace-writing role receives live end-to-end qualification;
 - rollback and interrupted-write recovery are validated.
+
+The narrow `camp_execution` exception passed its dedicated safety gate without passing this broader
+promotion gate. Its exact policy, partial-write evidence, real CAMP observation, and token finding
+are recorded in the write qualification report linked above.
 
 Passing unit tests alone does not promote a role. API fallback and Luna routing remain out of scope.
 

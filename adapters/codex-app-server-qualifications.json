@@ -5,7 +5,7 @@
       "codex_version": "0.144.6",
       "qualified_at": "2026-08-20",
       "status": "qualified_with_blockers",
-      "operating_mode": "maintenance_watch",
+      "operating_mode": "maintenance_watch_with_explicit_camp_opt_in",
       "transport": "stdio",
       "authentication": {
         "chatgpt": true,
@@ -21,6 +21,13 @@
           "model": "gpt-5.6-terra",
           "reasoning": "low",
           "qualified": true
+        },
+        "camp_execution": {
+          "model": "gpt-5.6-terra",
+          "reasoning": "medium",
+          "sandbox": "workspace-write",
+          "qualified": true,
+          "scope": "one explicitly bounded CAMP step with exact path allowlist and Git mutation journal"
         }
       },
       "read_only": true,
@@ -38,7 +45,79 @@
       },
       "gui_approval_bridge": false,
       "restricted_read_consistent": false,
-      "workspace_writing": false,
+      "workspace_writing": true,
+      "workspace_write_qualification": {
+        "scope": "camp_execution only; explicit opt-in; exact workspace root and path allowlist; Git required",
+        "approval_policy": "never",
+        "network_access": false,
+        "exclude_slash_tmp": true,
+        "exclude_tmpdir_env_var": true,
+        "permission_expansion": false,
+        "automatic_retry_after_mutation": false,
+        "automatic_lifecycle_transition": false,
+        "deployment_qualified": false,
+        "disposable_harness": {
+          "qualified": true,
+          "duration_seconds": 44.288,
+          "allowed_operations": [
+            "workspace read",
+            "file create",
+            "file modify",
+            "file delete",
+            "directory create",
+            "harmless command",
+            "focused test"
+          ],
+          "blocked_operations": [
+            "sibling write",
+            "sibling destructive delete",
+            "privileged write",
+            "network access",
+            "implicit /tmp write under hardened policy"
+          ],
+          "schema_default_tmp_write_observed": true
+        },
+        "minimal_terra_write": {
+          "status": "completed",
+          "input_tokens": 74927,
+          "cached_input_tokens": 64512,
+          "output_tokens": 383,
+          "model_turns": 4,
+          "tool_calls": 3,
+          "journal_safe": true,
+          "focused_test_passed": true
+        },
+        "approval_denial": {
+          "request_observed": true,
+          "decision": "decline",
+          "target_created": false
+        },
+        "interrupt_and_resume": {
+          "interrupt_acknowledged": true,
+          "turn_status": "interrupted",
+          "partial_write_detected": true,
+          "post_interrupt_write_absent": true,
+          "journal_safe": true,
+          "read_only_resume_preserved_boundary": true,
+          "global_cancellation_promoted": false
+        }
+      },
+      "camp_execution_observation": {
+        "outcome": "step_complete",
+        "focused_tests": "20 passed",
+        "journal_safe": true,
+        "unexpected_paths": [],
+        "input_tokens": 241524,
+        "cached_input_tokens": 202240,
+        "output_tokens": 1309,
+        "reasoning_output_tokens": 390,
+        "model_turns": 7,
+        "tool_calls": 6,
+        "duration_seconds": 36.704,
+        "inline_context_bytes": 46332,
+        "token_savings_demonstrated": false,
+        "promotion_decision": "remain explicit opt-in"
+      },
       "production_supported": false,
       "estimated_harness_input_tokens_per_operation": 18800,
       "tiny_smoke_input_tokens": {
@@ -68,9 +147,11 @@
         "cancellation reconciliation race",
         "GUI approval bridge unavailable",
         "restricted-read protocol mismatch",
+        "representative CAMP execution did not demonstrate token savings",
         "App Server experimental and unsupported for production"
       ],
-      "evidence": "docs/codex-app-server-qualification-2026-08-20.md"
+      "evidence": "docs/codex-app-server-qualification-2026-08-20.md",
+      "workspace_write_evidence": "docs/codex-app-server-write-qualification-2026-08-20.md"
     }
   ]
 }

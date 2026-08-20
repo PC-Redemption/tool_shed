@@ -215,10 +215,19 @@ class CodexExecutionTests(unittest.TestCase):
             camp_next_action(retry, attempt=1, journal=clean_journal),
             "retry_terra_once",
         )
+        self.assertEqual(
+            camp_next_action(retry, attempt=2, journal=clean_journal),
+            "escalate_to_sol_read_only",
+        )
         mutated = dict(clean_journal, files_modified=["target.txt"])
         self.assertEqual(
             camp_next_action(retry, attempt=1, journal=mutated),
             "reconcile_workspace_before_retry",
+        )
+        unsafe = dict(clean_journal, safe=False)
+        self.assertEqual(
+            camp_next_action(retry, attempt=1, journal=unsafe),
+            "needs_user_intervention",
         )
 
     def test_git_mutation_journal_preserves_unrelated_dirty_work(self) -> None:
@@ -726,6 +735,17 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertEqual(status["global_default"], "disabled")
         self.assertEqual(status["compatibility"], "qualified_with_blockers")
         self.assertEqual(status["qualified_savings"]["input_reduction_percent"], 82.54)
+        self.assertEqual(
+            status["enabled_roles"]["camp_execution"],
+            {
+                "model": "gpt-5.6-terra",
+                "reasoning": "medium",
+                "sandbox": "workspace-write",
+                "scope": "explicit paths with Git mutation journal",
+            },
+        )
+        self.assertNotIn("CAMP execution", status["disabled"])
+        self.assertIn("deployment", status["disabled"])
 
         telemetry = self.root / "smoke.jsonl"
         smoke = smoke_report(
