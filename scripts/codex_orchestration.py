@@ -403,12 +403,12 @@ def camp_context_target(
         temporary = Path(temporary_name)
         instructions = temporary / "AGENTS.md"
         instructions.write_text(
-            "# Focused Tool Shed CAMP worker\n\n"
+            "# Focused bounded workspace worker\n\n"
             "The request is the complete execution capsule. Do not inspect parent or project "
             "instruction files, rediscover Tool Shed state, or broaden scope. Modify only the "
             "authorized absolute repository paths. Do not change lifecycle files, use the "
             "network, or run verification commands reserved for Tool Shed. Return only the "
-            "required structured outcome.\n",
+            "required structured outcome. The enclosing orchestrator owns state transitions.\n",
             encoding="utf-8",
             newline="\n",
         )
@@ -659,17 +659,18 @@ def execute_camp_if_enabled(
         cwd,
         explicit_files,
         (
-            "Tool Shed has completed repository orientation and the Git preflight. Do not "
+            "The enclosing orchestrator has completed repository orientation and the Git "
+            "preflight. Do not "
             "repeat either operation or reread supplied files. Execute exactly one bounded "
-            "CAMP step. The repository root is "
+            "implementation step. The repository root is "
             + str(journal.repository_root)
             + ". The authorized mutation scope is: "
             + ", ".join(journal.expected_paths)
             + ". The starting state identifier is "
             + journal.start_state_identifier
-            + ". Deterministic verification reserved for Tool Shed: "
+            + ". Deterministic verification reserved for the enclosing orchestrator: "
             + json.dumps([list(command) for command in verification_commands], separators=(",", ":"))
-            + ". Do not alter lifecycle files or claim a campaign transition. Tool Shed will "
+            + ". Do not alter lifecycle files or claim a state transition. The orchestrator will "
             "run the declared deterministic verification commands, verify the Git journal, "
             "and choose the next action. Do not run tests or other verification commands "
             "yourself. Prefer one focused file-change operation, then return the required "
