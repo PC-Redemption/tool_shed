@@ -21,6 +21,23 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
+      "disposition": "none",
+      "next_action": "execute when selected from the active campaign queue",
+      "parent": null,
+      "path": "work/00-campaigns/active/043-restore-trustworthy-overview-and-close-out-stale-evolution-map-state.md",
+      "produces": null,
+      "project_map": null,
+      "status": "queued",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Restore trustworthy overview and close out stale evolution-map state",
+      "type": "campaign",
+      "updated": "2026-08-20"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
       "disposition": "completed",
       "next_action": "none",
       "parent": null,
@@ -1581,8 +1598,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 1,
+    "active_artifacts": 2,
     "completed_or_decided_artifacts": 81,
-    "total_artifacts": 91
+    "total_artifacts": 92
   }
 }
