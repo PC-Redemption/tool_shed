@@ -21,23 +21,6 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
-      "disposition": "none",
-      "next_action": "execute the campaign completion gate",
-      "parent": null,
-      "path": "work/00-campaigns/active/033-update-github-actions-dependencies-before-node-20-removal.md",
-      "produces": null,
-      "project_map": null,
-      "status": "working",
-      "superseded_by": null,
-      "supersedes": null,
-      "title": "Update GitHub Actions dependencies before Node 20 removal",
-      "type": "campaign",
-      "updated": "2026-08-18"
-    },
-    {
-      "campaign": null,
-      "campaign_reason": null,
-      "canonical_truth": null,
       "disposition": "completed",
       "next_action": "none",
       "parent": null,
@@ -558,6 +541,23 @@
       "superseded_by": null,
       "supersedes": null,
       "title": "Make workflow cycles a first-class site concept",
+      "type": "campaign",
+      "updated": "2026-08-18"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": "completed",
+      "next_action": "none",
+      "parent": null,
+      "path": "work/00-campaigns/completed/033-update-github-actions-dependencies-before-node-20-removal.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Update GitHub Actions dependencies before Node 20 removal",
       "type": "campaign",
       "updated": "2026-08-18"
     },
@@ -1226,7 +1226,7 @@
     }
   ],
   "description": "Generated from tool_shed artifact headers. Use as navigation, not canonical truth.",
-  "generated_at": "2026-08-18",
+  "generated_at": "2026-08-20",
   "reading_order": [
     "Read project README/docs for current truth.",
     "Read active maps and active work artifacts from this index.",
@@ -1234,8 +1234,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 2,
-    "completed_or_decided_artifacts": 67,
+    "active_artifacts": 1,
+    "completed_or_decided_artifacts": 68,
     "total_artifacts": 72
   }
 }
