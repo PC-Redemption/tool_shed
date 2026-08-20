@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import subprocess
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
@@ -292,11 +293,37 @@ def structured_outcome_record(outcome: CampStructuredOutcome) -> dict[str, Any]:
     return record
 
 
+def compact_command_evidence(
+    command: Iterable[str], response: dict[str, Any]
+) -> dict[str, Any]:
+    """Reduce deterministic command output to prompt-free, bounded evidence."""
+
+    argv = [str(item) for item in command]
+    stdout = str(response.get("stdout") or "")
+    stderr = str(response.get("stderr") or "")
+    exit_code = response.get("exitCode")
+    combined = stdout + "\n" + stderr
+    count_match = re.search(r"\bRan\s+(\d+)\s+tests?\b", combined)
+    return {
+        "schema_version": 1,
+        "command": argv,
+        "exit_code": int(exit_code) if isinstance(exit_code, (int, float)) else None,
+        "passed": exit_code == 0,
+        "stdout_bytes": len(stdout.encode("utf-8")),
+        "stderr_bytes": len(stderr.encode("utf-8")),
+        "stdout_sha256": hashlib.sha256(stdout.encode("utf-8")).hexdigest(),
+        "stderr_sha256": hashlib.sha256(stderr.encode("utf-8")).hexdigest(),
+        "test_count": int(count_match.group(1)) if count_match else None,
+        "output_retained": False,
+    }
+
+
 def camp_next_action(
     outcome: CampStructuredOutcome,
     *,
     attempt: int,
     journal: dict[str, Any],
+    verification_passed: bool | None = None,
 ) -> str:
     """Select the lifecycle action; model prose never changes CAMP state directly."""
 
@@ -308,6 +335,10 @@ def camp_next_action(
         journal.get(key)
         for key in ("files_created", "files_modified", "files_deleted")
     )
+    if verification_passed is False:
+        if mutated:
+            return "reconcile_workspace_before_retry"
+        return "retry_terra_once" if attempt == 1 else "escalate_to_sol_read_only"
     if outcome.outcome == "camp_complete":
         return "verify_before_campaign_transition"
     if outcome.outcome == "step_complete":

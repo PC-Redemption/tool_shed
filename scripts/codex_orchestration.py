@@ -25,6 +25,7 @@ try:
         detect_codex_version,
         flatten_token_usage,
         last_token_usage,
+        sandbox_policy,
     )
     from scripts.codex_camp_execution import (
         CAMP_OUTCOME_SCHEMA,
@@ -32,6 +33,7 @@ try:
         CampStructuredOutcome,
         GitMutationJournal,
         camp_next_action,
+        compact_command_evidence,
         parse_camp_outcome,
         structured_outcome_record,
     )
@@ -47,6 +49,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/codex_orchestrat
         detect_codex_version,
         flatten_token_usage,
         last_token_usage,
+        sandbox_policy,
     )
     from codex_camp_execution import (  # type: ignore[no-redef]
         CAMP_OUTCOME_SCHEMA,
@@ -54,6 +57,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/codex_orchestrat
         CampStructuredOutcome,
         GitMutationJournal,
         camp_next_action,
+        compact_command_evidence,
         parse_camp_outcome,
         structured_outcome_record,
     )
@@ -364,6 +368,60 @@ def context_target(
         )
 
 
+@contextmanager
+def camp_context_target(
+    cwd: Path,
+    explicit_files: tuple[Path, ...],
+    *,
+    max_snapshot_bytes: int,
+) -> Iterator[ContextTarget]:
+    """Create a minimal CAMP worker cwd while the real repository remains writable."""
+
+    source_cwd = cwd.resolve()
+    total = 0
+    normalized: list[Path] = []
+    for supplied in explicit_files:
+        candidate = supplied if supplied.is_absolute() else source_cwd / supplied
+        if candidate.is_symlink():
+            raise FeatureConfigError(f"focused CAMP context refuses symlinked file: {candidate}")
+        source = candidate.resolve()
+        try:
+            relative = source.relative_to(source_cwd)
+        except ValueError as error:
+            raise FeatureConfigError(
+                f"focused CAMP context file escapes source workspace: {source}"
+            ) from error
+        if not source.is_file():
+            raise FeatureConfigError(f"focused CAMP context requires a regular file: {source}")
+        total += source.stat().st_size
+        if total > max_snapshot_bytes:
+            raise FeatureConfigError(
+                f"focused CAMP context exceeds {max_snapshot_bytes} bytes"
+            )
+        normalized.append(relative)
+    with tempfile.TemporaryDirectory(prefix="tool-shed-camp-context-") as temporary_name:
+        temporary = Path(temporary_name)
+        instructions = temporary / "AGENTS.md"
+        instructions.write_text(
+            "# Focused Tool Shed CAMP worker\n\n"
+            "The request is the complete execution capsule. Do not inspect parent or project "
+            "instruction files, rediscover Tool Shed state, or broaden scope. Modify only the "
+            "authorized absolute repository paths. Do not change lifecycle files, use the "
+            "network, or run verification commands reserved for Tool Shed. Return only the "
+            "required structured outcome.\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        instructions.chmod(0o400)
+        yield ContextTarget(
+            temporary,
+            tuple(normalized),
+            source_cwd,
+            "focused_camp_capsule",
+            True,
+        )
+
+
 def validate_summary_context(
     cwd: Path,
     summary_files: tuple[Path, ...],
@@ -561,6 +619,7 @@ def execute_camp_if_enabled(
     camp: str,
     expected_paths: tuple[Path, ...],
     explicit_files: tuple[Path, ...] = (),
+    verification_commands: tuple[tuple[str, ...], ...] = (),
     attempt: int = 1,
     enable_override: bool | None = None,
     config: AppServerFeatureConfig | None = None,
@@ -600,15 +659,30 @@ def execute_camp_if_enabled(
         cwd,
         explicit_files,
         (
-            "Execute exactly one bounded CAMP step. The authorized mutation scope is: "
+            "Tool Shed has completed repository orientation and the Git preflight. Do not "
+            "repeat either operation or reread supplied files. Execute exactly one bounded "
+            "CAMP step. The repository root is "
+            + str(journal.repository_root)
+            + ". The authorized mutation scope is: "
             + ", ".join(journal.expected_paths)
-            + ". Do not alter lifecycle files or claim a campaign transition; Tool Shed will "
-            "verify the Git journal and choose the next action.\n\n"
+            + ". The starting state identifier is "
+            + journal.start_state_identifier
+            + ". Deterministic verification reserved for Tool Shed: "
+            + json.dumps([list(command) for command in verification_commands], separators=(",", ":"))
+            + ". Do not alter lifecycle files or claim a campaign transition. Tool Shed will "
+            "run the declared deterministic verification commands, verify the Git journal, "
+            "and choose the next action. Do not run tests or other verification commands "
+            "yourself. Prefer one focused file-change operation, then return the required "
+            "structured outcome.\n\n"
             + prompt
         ),
         read_only=False,
     )
-    with CodexExecutionAdapter(
+    with camp_context_target(
+        cwd,
+        explicit_files,
+        max_snapshot_bytes=features.max_snapshot_bytes,
+    ) as target, CodexExecutionAdapter(
         policy=selected_policy,
         codex=codex,
         timeout=timeout,
@@ -618,21 +692,22 @@ def execute_camp_if_enabled(
             result = adapter.execute(
                 effective_prompt,
                 role="camp_execution",
-                cwd=cwd.resolve(),
+                cwd=target.execution_cwd,
                 approval_policy="never",
                 sandbox="workspace-write",
                 program=None,
                 camp=camp,
                 campaign=campaign,
                 operation="camp_execute",
-                explicit_files=explicit_files,
-                context_mode="focused_workspace",
+                explicit_files=target.explicit_files,
+                context_mode=target.mode,
                 context_delivery=features.context_delivery,
                 warning_input_tokens=features.warning_threshold("camp_execution"),
                 restricted_read=False,
                 attempt=attempt,
-                ephemeral=False,
-                source_cwd=cwd.resolve(),
+                ephemeral=target.ephemeral,
+                source_cwd=target.source_cwd,
+                sandbox_root=cwd.resolve(),
                 output_schema=CAMP_OUTCOME_SCHEMA,
             )
         except Exception:
@@ -660,14 +735,67 @@ def execute_camp_if_enabled(
                 f"App Server returned an invalid structured outcome: {error}",
                 (),
             )
+        verification: list[dict[str, Any]] = []
+        command_events: list[dict[str, Any]] = []
+        if outcome.outcome in {"step_complete", "camp_complete"}:
+            for sequence, command in enumerate(verification_commands, start=1):
+                if not command or any(not str(argument) for argument in command):
+                    raise FeatureConfigError("verification commands must contain non-empty arguments")
+                try:
+                    response = adapter.client.command_exec(
+                        list(command),
+                        cwd=cwd.resolve(),
+                        sandbox_policy=sandbox_policy("workspace-write", cwd.resolve()),
+                        timeout_ms=max(1_000, int(timeout * 1_000)),
+                    )
+                    evidence = compact_command_evidence(command, response)
+                except AppServerError as error:
+                    evidence = {
+                        "schema_version": 1,
+                        "command": list(command),
+                        "exit_code": None,
+                        "passed": False,
+                        "stdout_bytes": 0,
+                        "stderr_bytes": 0,
+                        "stdout_sha256": None,
+                        "stderr_sha256": None,
+                        "test_count": None,
+                        "output_retained": False,
+                        "transport_error_kind": error.kind or "app_server_error",
+                    }
+                evidence["sequence"] = sequence
+                verification.append(evidence)
+                command_events.append(
+                    {
+                        "type": "commandExecution",
+                        "status": "completed" if evidence["passed"] else "failed",
+                        "command": list(command),
+                        "cwd": str(cwd.resolve()),
+                        "exit_code": evidence["exit_code"],
+                        "result_bytes": evidence["stdout_bytes"] + evidence["stderr_bytes"],
+                        "source": "tool_shed_deterministic_verification",
+                    }
+                )
+                if not evidence["passed"]:
+                    break
+        verification_passed = (
+            all(item["passed"] for item in verification)
+            if verification_commands and verification
+            else None
+        )
         journal_record = journal.finalize(
             thread_id=result.thread_id,
             turn_id=result.turn_id,
             turn_status=result.status,
-            mutation_events=result.mutation_events,
+            mutation_events=(*result.mutation_events, *command_events),
             recovery_action="none",
         )
-        next_action = camp_next_action(outcome, attempt=attempt, journal=journal_record)
+        next_action = camp_next_action(
+            outcome,
+            attempt=attempt,
+            journal=journal_record,
+            verification_passed=verification_passed,
+        )
         adapter.record_control_event(
             operation="camp_mutation_journal",
             qualification_id=None,
@@ -679,6 +807,7 @@ def execute_camp_if_enabled(
             details={
                 "camp": camp,
                 "outcome": structured_outcome_record(outcome),
+                "verification": verification,
                 "journal": journal_record,
             },
         )
@@ -686,6 +815,7 @@ def execute_camp_if_enabled(
         "route": asdict(decision),
         "result": asdict(result),
         "structured_outcome": structured_outcome_record(outcome),
+        "verification": verification,
         "mutation_journal": journal_record,
         "next_action": next_action,
     }
@@ -943,6 +1073,20 @@ def benchmark_comparison(
     }
 
 
+def parse_command_json(value: str) -> tuple[str, ...]:
+    try:
+        payload = json.loads(value)
+    except json.JSONDecodeError as error:
+        raise argparse.ArgumentTypeError(f"verification command is not valid JSON: {error}") from error
+    if not isinstance(payload, list) or not payload or any(
+        not isinstance(item, str) or not item for item in payload
+    ):
+        raise argparse.ArgumentTypeError(
+            "verification command must be a non-empty JSON array of non-empty strings"
+        )
+    return tuple(payload)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
@@ -996,6 +1140,13 @@ def parse_args() -> argparse.Namespace:
     camp_run.add_argument("--camp", required=True)
     camp_run.add_argument("--expected-path", type=Path, action="append", required=True)
     camp_run.add_argument("--file", type=Path, action="append", default=[])
+    camp_run.add_argument(
+        "--verify-command-json",
+        type=parse_command_json,
+        action="append",
+        default=[],
+        help="Shell-free deterministic verification argv as a JSON string array; repeatable.",
+    )
     camp_run.add_argument("--attempt", type=int, choices=(1, 2), default=1)
 
     benchmark = subparsers.add_parser("benchmark", help="Run the four repeatable token baselines.")
@@ -1075,6 +1226,7 @@ def main() -> int:
                 camp=args.camp,
                 expected_paths=tuple(args.expected_path),
                 explicit_files=tuple(args.file),
+                verification_commands=tuple(args.verify_command_json),
                 attempt=args.attempt,
                 enable_override=enabled,
                 config=config,
@@ -1085,7 +1237,17 @@ def main() -> int:
             )
             print(json.dumps(payload, indent=2, sort_keys=True))
             journal = payload.get("mutation_journal")
-            return 0 if isinstance(journal, dict) and journal.get("safe") else 2
+            successful_actions = {
+                "advance_to_next_camp_step",
+                "verify_before_campaign_transition",
+            }
+            return (
+                0
+                if isinstance(journal, dict)
+                and journal.get("safe")
+                and payload.get("next_action") in successful_actions
+                else 2
+            )
 
         tasks = load_benchmarks(args.tasks)
         decisions = [

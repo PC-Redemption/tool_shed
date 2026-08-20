@@ -41,6 +41,7 @@ class TurnResult:
     reroutes: tuple[dict[str, Any], ...]
     model_turns: int | None
     model_turns_metric: str
+    model_turn_events: tuple[dict[str, Any], ...]
     tool_calls: int
     tool_call_types: tuple[str, ...]
     mutation_events: tuple[dict[str, Any], ...]
@@ -432,6 +433,7 @@ class CodexAppServerClient:
         return str(turn["id"])
 
     def wait_for_turn(self, thread_id: str, turn_id: str, *, timeout: float | None = None) -> TurnResult:
+        started = time.monotonic()
         deadline = time.monotonic() + (self.timeout if timeout is None else timeout)
         deferred: list[dict[str, Any]] = []
         deltas: list[str] = []
@@ -440,6 +442,7 @@ class CodexAppServerClient:
         turn_usage_baseline: dict[str, int] | None = None
         reroutes: list[dict[str, Any]] = []
         model_usage_updates: set[tuple[int, ...]] = set()
+        model_turn_events: list[dict[str, Any]] = []
         tool_call_types: list[str] = []
         mutation_events: list[dict[str, Any]] = []
         try:
@@ -476,6 +479,11 @@ class CodexAppServerClient:
                                 "item_id": item.get("id"),
                                 "type": str(item_type),
                                 "status": item.get("status"),
+                                "result_bytes": len(
+                                    json.dumps(item, sort_keys=True, separators=(",", ":")).encode(
+                                        "utf-8"
+                                    )
+                                ),
                             }
                             if item_type == "commandExecution":
                                 event.update(
@@ -501,18 +509,39 @@ class CodexAppServerClient:
                         token_usage = dict(usage)
                         last = usage.get("last")
                         if isinstance(last, dict):
-                            model_usage_updates.add(
-                                tuple(
-                                    int(last.get(key) or 0)
-                                    for key in (
-                                        "inputTokens",
-                                        "cachedInputTokens",
-                                        "outputTokens",
-                                        "reasoningOutputTokens",
-                                        "totalTokens",
-                                    )
-                                )
+                            fields = (
+                                "inputTokens",
+                                "cachedInputTokens",
+                                "outputTokens",
+                                "reasoningOutputTokens",
+                                "totalTokens",
                             )
+                            signature = tuple(int(last.get(key) or 0) for key in fields)
+                            if signature not in model_usage_updates:
+                                model_usage_updates.add(signature)
+                                compact = {
+                                    "input": signature[0],
+                                    "cached_input": signature[1],
+                                    "uncached_input": max(0, signature[0] - signature[1]),
+                                    "output": signature[2],
+                                    "reasoning_output": signature[3],
+                                    "total": signature[4],
+                                }
+                                model_turn_events.append(
+                                    {
+                                        "sequence": len(model_turn_events) + 1,
+                                        "elapsed_seconds": round(time.monotonic() - started, 3),
+                                        "tokens": compact,
+                                        "preceding_tool": (
+                                            tool_call_types[-1] if tool_call_types else None
+                                        ),
+                                        "preceding_tool_result_bytes": (
+                                            mutation_events[-1].get("result_bytes")
+                                            if mutation_events
+                                            else None
+                                        ),
+                                    }
+                                )
                         if turn_usage_baseline is None:
                             cumulative = usage.get("total")
                             if isinstance(cumulative, dict) and isinstance(last, dict):
@@ -566,6 +595,7 @@ class CodexAppServerClient:
                         reroutes=tuple(reroutes),
                         model_turns=(len(model_usage_updates) or None),
                         model_turns_metric="distinct_token_usage_last_updates",
+                        model_turn_events=tuple(model_turn_events),
                         tool_calls=len(tool_call_types),
                         tool_call_types=tuple(tool_call_types),
                         mutation_events=tuple(mutation_events),

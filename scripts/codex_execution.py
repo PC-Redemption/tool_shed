@@ -37,6 +37,11 @@ except ModuleNotFoundError:  # Direct execution: python scripts/codex_execution.
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_POLICY = ROOT / "adapters" / "codex-model-policy.json"
+WEIGHTED_USAGE_VERSION = "openai-relative-token-rates-2026-08-20-v1"
+WEIGHTED_USAGE_WEIGHTS: dict[str, dict[str, float]] = {
+    "gpt-5.6-terra": {"uncached_input": 1.0, "cached_input": 0.1, "output": 6.0},
+    "gpt-5.6-sol": {"uncached_input": 2.5, "cached_input": 0.25, "output": 15.0},
+}
 
 
 class ModelPolicyError(ValueError):
@@ -75,9 +80,11 @@ class ExecutionResult:
     duration_seconds: float
     model_turns: int | None
     model_turns_metric: str
+    model_turn_events: tuple[dict[str, Any], ...]
     tool_calls: int
     tool_call_types: tuple[str, ...]
     mutation_events: tuple[dict[str, Any], ...]
+    weighted_usage: dict[str, Any]
     app_server_user_agent: str
 
 
@@ -422,6 +429,7 @@ class CodexExecutionAdapter:
         attempt: int = 1,
         ephemeral: bool = False,
         source_cwd: Path | None = None,
+        sandbox_root: Path | None = None,
         summary_files: tuple[Path, ...] = (),
         summary_source_files: tuple[Path, ...] = (),
         additional_context_requested: bool | None = None,
@@ -462,6 +470,7 @@ class CodexExecutionAdapter:
             summary_source_files=summary_source_files,
             additional_context_requested=additional_context_requested,
         )
+        context_scope["sandbox_root"] = str((sandbox_root or cwd).resolve())
         turn_id: str | None = None
         recorded = False
         try:
@@ -473,7 +482,7 @@ class CodexExecutionAdapter:
                 cwd=cwd,
                 approval_policy=approval_policy,
                 sandbox_policy=sandbox_policy(
-                    sandbox, cwd, restricted_read=restricted_read
+                    sandbox, sandbox_root or cwd, restricted_read=restricted_read
                 ),
                 output_schema=output_schema,
             )
@@ -508,9 +517,11 @@ class CodexExecutionAdapter:
                 duration_seconds=(utc_now() - started).total_seconds(),
                 model_turns=turn.model_turns,
                 model_turns_metric=turn.model_turns_metric,
+                model_turn_events=turn.model_turn_events,
                 tool_calls=turn.tool_calls,
                 tool_call_types=turn.tool_call_types,
                 mutation_events=turn.mutation_events,
+                weighted_usage=weighted_codex_usage(actual_model, turn.token_usage),
                 app_server_user_agent=self.client.user_agent,
             )
             self._record(
@@ -912,12 +923,14 @@ class CodexExecutionAdapter:
             "app_server_user_agent": result.app_server_user_agent,
             "model_turns": result.model_turns,
             "model_turns_metric": result.model_turns_metric,
+            "model_turn_events": list(result.model_turn_events),
             "tool_calls": result.tool_calls,
             "tool_call_types": list(result.tool_call_types),
             "mutation_events": list(result.mutation_events),
             "token_usage": result.token_usage,
             "tokens": flatten_token_usage(result.token_usage),
             "last_request_tokens": last_token_usage(result.token_usage),
+            "weighted_usage": result.weighted_usage,
             "approval_events": self.approval_bridge.events_for(
                 result.thread_id, result.turn_id
             ),
@@ -1050,6 +1063,50 @@ def last_token_usage(token_usage: dict[str, Any] | None) -> dict[str, int | None
         "reasoning_output": value("reasoningOutputTokens"),
         "total": value("totalTokens"),
     }
+
+
+def weighted_codex_usage(
+    model: str, token_usage: dict[str, Any] | None
+) -> dict[str, Any]:
+    """Return a model-aware relative usage proxy without double-counting reasoning.
+
+    The weights normalize published Terra API token rates to one uncached Terra
+    input token. They are a stable comparison metric, not a dollar estimate or
+    a claim about ChatGPT plan allowance consumption.
+    """
+
+    tokens = flatten_token_usage(token_usage)
+    weights = WEIGHTED_USAGE_WEIGHTS.get(model)
+    input_tokens = tokens["input"]
+    cached_tokens = tokens["cached_input"]
+    output_tokens = tokens["output"]
+    supported = (
+        weights is not None
+        and input_tokens is not None
+        and cached_tokens is not None
+        and output_tokens is not None
+    )
+    result: dict[str, Any] = {
+        "metric": "weighted_codex_usage",
+        "weights_version": WEIGHTED_USAGE_VERSION,
+        "model": model,
+        "supported": supported,
+        "units": None,
+        "components": {},
+        "reasoning_output_counted_separately": False,
+        "interpretation": "relative_usage_proxy_not_cost_or_chatgpt_allowance",
+    }
+    if not supported or weights is None:
+        return result
+    uncached = max(0, int(input_tokens) - int(cached_tokens))
+    components = {
+        "uncached_input": round(uncached * weights["uncached_input"], 3),
+        "cached_input": round(int(cached_tokens) * weights["cached_input"], 3),
+        "output": round(int(output_tokens) * weights["output"], 3),
+    }
+    result["components"] = components
+    result["units"] = round(sum(components.values()), 3)
+    return result
 
 
 def token_context_warning(
@@ -1202,6 +1259,7 @@ def activity_report(path: Path, *, limit: int = 20) -> dict[str, Any]:
     by_role: Counter[str] = Counter()
     totals = Counter()
     operations: list[dict[str, Any]] = []
+    weighted_units = 0.0
     for record in records:
         model = str(record.get("actual_model") or record.get("requested_model") or "unknown")
         role = str(record.get("role") or "unknown")
@@ -1220,6 +1278,9 @@ def activity_report(path: Path, *, limit: int = 20) -> dict[str, Any]:
             value = tokens.get(source)
             if isinstance(value, int):
                 totals[target] += value
+        weighted = record.get("weighted_usage")
+        if isinstance(weighted, dict) and isinstance(weighted.get("units"), (int, float)):
+            weighted_units += float(weighted["units"])
         operations.append(
             {
                 "time": record.get("started_at"),
@@ -1229,6 +1290,7 @@ def activity_report(path: Path, *, limit: int = 20) -> dict[str, Any]:
                 "model": model,
                 "reasoning": record.get("reasoning"),
                 "tokens": tokens,
+                "weighted_usage": weighted if isinstance(weighted, dict) else None,
                 "success": bool(record.get("success")),
                 "escalated": bool(record.get("escalation")),
                 "escalation_reason": record.get("escalation_reason"),
@@ -1245,6 +1307,8 @@ def activity_report(path: Path, *, limit: int = 20) -> dict[str, Any]:
             "by_model": dict(sorted(by_model.items())),
             "by_role": dict(sorted(by_role.items())),
             **dict(totals),
+            "weighted_codex_usage_units": round(weighted_units, 3),
+            "weighted_codex_usage_version": WEIGHTED_USAGE_VERSION,
             "escalations": sum(bool(item["escalated"]) for item in operations),
             "reused_threads": sum(bool(item["thread_reused"]) for item in operations),
             "context_warnings": sum(item["context_warning"] is not None for item in operations),
@@ -1316,6 +1380,7 @@ def qualification_report(
         turns: list[int] = []
         tool_calls: list[int] = []
         durations: list[float] = []
+        weighted_units = 0.0
         avoidable = 0
         measured_input = 0
         for item in selected:
@@ -1340,6 +1405,9 @@ def qualification_report(
                 tool_calls.append(int(item["tool_calls"]))
             if isinstance(item.get("duration_seconds"), (int, float)):
                 durations.append(float(item["duration_seconds"]))
+            weighted = item.get("weighted_usage")
+            if isinstance(weighted, dict) and isinstance(weighted.get("units"), (int, float)):
+                weighted_units += float(weighted["units"])
         runs = len(selected)
         successful = sum(bool(item.get("success")) for item in selected)
         return {
@@ -1352,6 +1420,8 @@ def qualification_report(
             "average_model_turns_observed": round(sum(turns) / len(turns), 3) if turns else None,
             "average_tool_calls": round(sum(tool_calls) / len(tool_calls), 3) if tool_calls else None,
             "average_duration_seconds": round(sum(durations) / len(durations), 3) if durations else None,
+            "weighted_codex_usage_units": round(weighted_units, 3),
+            "weighted_codex_usage_version": WEIGHTED_USAGE_VERSION,
             "retries": sum(bool(item.get("retry")) for item in selected),
             "resumed_threads": sum(bool(item.get("thread_reused")) for item in selected),
             "fallbacks": sum(bool(item.get("fallback_used")) for item in selected),

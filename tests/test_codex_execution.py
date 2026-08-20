@@ -22,11 +22,13 @@ from scripts.codex_execution import (
     classify_recovery,
     qualification_report,
     sandbox_policy,
+    weighted_codex_usage,
 )
 from scripts.codex_camp_execution import (
     CampExecutionError,
     GitMutationJournal,
     camp_next_action,
+    compact_command_evidence,
     parse_camp_outcome,
 )
 from scripts.codex_orchestration import (
@@ -35,6 +37,7 @@ from scripts.codex_orchestration import (
     benchmark_comparison,
     benchmark_regressions,
     execute_bounded,
+    execute_camp_if_enabled,
     execute_if_enabled,
     inline_context_prompt,
     validate_summary_context,
@@ -122,7 +125,16 @@ for raw in sys.stdin:
             error = {"message": "recoverable failure", "codexErrorInfo": {"type": "InternalServerError"}}
             print(json.dumps({"method": "turn/completed", "params": {"threadId": params["threadId"], "turn": {"id": turn_id, "status": "failed", "error": error, "items": []}}}), flush=True)
             continue
-        print(json.dumps({"method": "item/agentMessage/delta", "params": {"threadId": params["threadId"], "turnId": turn_id, "delta": "FAKE_OK"}}), flush=True)
+        camp_target = os.environ.get("FAKE_CODEX_CAMP_TARGET")
+        if camp_target:
+            with open(camp_target, "w", encoding="utf-8") as stream:
+                stream.write("after\n")
+            item = {"id": "item_change", "type": "fileChange", "status": "completed", "changes": [{"path": camp_target, "kind": "update"}]}
+            print(json.dumps({"method": "item/completed", "params": {"threadId": params["threadId"], "turnId": turn_id, "item": item}}), flush=True)
+            reply = json.dumps({"outcome": "step_complete", "details": "Focused edit complete.", "evidence": [camp_target]})
+        else:
+            reply = "FAKE_OK"
+        print(json.dumps({"method": "item/agentMessage/delta", "params": {"threadId": params["threadId"], "turnId": turn_id, "delta": reply}}), flush=True)
         usage = {"inputTokens": 10, "cachedInputTokens": 2, "outputTokens": 3, "reasoningOutputTokens": 1, "totalTokens": 13}
         print(json.dumps({"method": "thread/tokenUsage/updated", "params": {"threadId": params["threadId"], "turnId": turn_id, "tokenUsage": {"last": usage, "total": usage, "modelContextWindow": 1000}}}), flush=True)
         if os.environ.get("FAKE_CODEX_TOOL") == "1":
@@ -132,6 +144,9 @@ for raw in sys.stdin:
             total = {"inputTokens": 22, "cachedInputTokens": 5, "outputTokens": 7, "reasoningOutputTokens": 2, "totalTokens": 29}
             print(json.dumps({"method": "thread/tokenUsage/updated", "params": {"threadId": params["threadId"], "turnId": turn_id, "tokenUsage": {"last": second, "total": total, "modelContextWindow": 1000}}}), flush=True)
         print(json.dumps({"method": "turn/completed", "params": {"threadId": params["threadId"], "turn": {"id": turn_id, "status": "completed", "items": []}}}), flush=True)
+    elif method == "command/exec":
+        exit_code = int(os.environ.get("FAKE_CODEX_COMMAND_EXIT", "0"))
+        print(json.dumps({"id": request_id, "result": {"exitCode": exit_code, "stdout": "Ran 1 test in 0.001s\n", "stderr": ""}}), flush=True)
     elif method == "turn/interrupt":
         if os.environ.get("FAKE_CODEX_INTERRUPT_ERROR") == "1":
             print(json.dumps({"id": request_id, "error": {"code": -32000, "message": "interrupt unavailable"}}), flush=True)
@@ -230,6 +245,80 @@ class CodexExecutionTests(unittest.TestCase):
             "needs_user_intervention",
         )
 
+    def test_weighted_usage_and_compact_command_evidence_are_versioned(self) -> None:
+        usage = {
+            "turn": {
+                "inputTokens": 10,
+                "cachedInputTokens": 2,
+                "outputTokens": 3,
+                "reasoningOutputTokens": 1,
+                "totalTokens": 13,
+            }
+        }
+        weighted = weighted_codex_usage("gpt-5.6-terra", usage)
+        self.assertEqual(weighted["weights_version"], "openai-relative-token-rates-2026-08-20-v1")
+        self.assertEqual(weighted["units"], 26.2)
+        self.assertFalse(weighted["reasoning_output_counted_separately"])
+        evidence = compact_command_evidence(
+            ("python3", "-m", "unittest"),
+            {"exitCode": 0, "stdout": "Ran 7 tests in 0.01s\n", "stderr": ""},
+        )
+        self.assertTrue(evidence["passed"])
+        self.assertEqual(evidence["test_count"], 7)
+        self.assertFalse(evidence["output_retained"])
+        self.assertNotIn("stdout", evidence)
+
+    def test_camp_execution_uses_focused_capsule_and_deterministic_verification(self) -> None:
+        repository = self.root / "camp-repo"
+        repository.mkdir()
+        subprocess.run(["git", "init", "-q", str(repository)], check=True)
+        subprocess.run(
+            ["git", "-C", str(repository), "config", "user.email", "test@example.com"],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(repository), "config", "user.name", "Tool Shed Test"],
+            check=True,
+        )
+        target = repository / "target.txt"
+        target.write_text("before\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(repository), "add", "target.txt"], check=True)
+        subprocess.run(
+            ["git", "-C", str(repository), "commit", "-qm", "baseline"], check=True
+        )
+        os.environ["FAKE_CODEX_CAMP_TARGET"] = str(target)
+        try:
+            payload = execute_camp_if_enabled(
+                "Change the supplied target from before to after.",
+                cwd=repository,
+                campaign="campaign-040",
+                camp="representative-edit",
+                expected_paths=(Path("target.txt"),),
+                explicit_files=(Path("target.txt"),),
+                verification_commands=(("python3", "-c", "raise SystemExit(0)"),),
+                enable_override=True,
+                config=AppServerFeatureConfig.load(
+                    ROOT / "adapters" / "codex-app-server-config.json"
+                ),
+                policy=self.policy,
+                codex=str(self.fake),
+                telemetry_path=self.root / "camp-telemetry.jsonl",
+            )
+        finally:
+            os.environ.pop("FAKE_CODEX_CAMP_TARGET", None)
+        self.assertEqual(target.read_text(encoding="utf-8"), "after\n")
+        self.assertEqual(payload["next_action"], "advance_to_next_camp_step")
+        self.assertTrue(payload["verification"][0]["passed"])
+        self.assertEqual(payload["verification"][0]["test_count"], 1)
+        self.assertEqual(payload["mutation_journal"]["files_modified"], ["target.txt"])
+        self.assertEqual(
+            payload["mutation_journal"]["commands_executed"],
+            [["python3", "-c", "raise SystemExit(0)"]],
+        )
+        context = payload["result"]["context_scope"]
+        self.assertEqual(context["mode"], "focused_camp_capsule")
+        self.assertEqual(context["sandbox_root"], str(repository.resolve()))
+
     def test_git_mutation_journal_preserves_unrelated_dirty_work(self) -> None:
         repository = self.root / "repo"
         repository.mkdir()
@@ -306,6 +395,8 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertEqual(record["tokens"]["reasoning_output"], 1)
         self.assertEqual(record["thread_mode"], "new")
         self.assertEqual(record["model_turns"], 1)
+        self.assertEqual(record["model_turn_events"][0]["tokens"]["uncached_input"], 8)
+        self.assertEqual(record["weighted_usage"]["units"], 26.2)
         self.assertEqual(record["tool_calls"], 0)
         self.assertEqual(record["mutation_events"], [])
         self.assertFalse(record["fallback_used"])
@@ -649,6 +740,9 @@ class CodexExecutionTests(unittest.TestCase):
             os.environ.pop("FAKE_CODEX_TOOL", None)
         self.assertEqual(result.model_turns, 2)
         self.assertEqual(result.model_turns_metric, "distinct_token_usage_last_updates")
+        self.assertEqual(len(result.model_turn_events), 2)
+        self.assertEqual(result.model_turn_events[1]["preceding_tool"], "commandExecution")
+        self.assertGreater(result.model_turn_events[1]["preceding_tool_result_bytes"], 0)
         self.assertEqual(result.tool_calls, 1)
         self.assertEqual(result.tool_call_types, ("commandExecution",))
 
