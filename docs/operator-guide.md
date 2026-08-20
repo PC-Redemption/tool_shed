@@ -509,6 +509,32 @@ state.
 
 ## Common Use Cases
 
+### Explicitly test the qualified App Server path
+
+Normal Tool Shed work stays in the current Codex GUI. For deliberate real-world qualification,
+opt into one qualified operation at a time:
+
+```text
+ts: plan <request> --app-server
+ts: verify <request> --app-server
+ts: camp run <camp> --app-server
+ts: appserver status
+```
+
+The execution banner identifies App Server, role, model, reasoning, and explicit opt-in. Planning
+uses Sol/high, verification uses Terra/low, and CAMP execution reuses the optimized bounded
+Terra/medium `camp-run` path. The same commands without the option show `Execution: GUI` and remain
+in the normal GUI path.
+
+The selector fails closed before App Server starts when the installed Codex version or role is not
+qualified. Rerun without `--app-server` to use GUI fallback. `ts: discuss` always remains
+GUI-native, and `ts: discuss ... --app-server` is rejected with an explanation.
+
+Session-scoped `ts: appserver on|off` is not implemented: the current Codex skill surface has no
+reliable skill-owned per-session state store. Those commands explain the limitation and do not
+change user or repository configuration. Use the explicit option on each test command. The global
+App Server default and API fallback remain off.
+
 ### Check reasoning before substantial work
 
 Tool Shed performs a one-time, zero-I/O reasoning preflight before substantial routed work. It uses

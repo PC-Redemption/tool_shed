@@ -339,6 +339,33 @@ These optional routes apply only to Codex:
 
 Ordinary Tool Shed requests do not refresh or require this catalog.
 
+## Codex App Server Explicit Opt-In
+
+Normal Tool Shed execution remains in the Codex GUI. Add `--app-server` only when you intentionally
+want one of the three qualified roles to use the existing App Server integration:
+
+| Prompt | Selected execution |
+| --- | --- |
+| `ts: plan <request> --app-server` | App Server planning with `gpt-5.6-sol` / `high` |
+| `ts: verify <request> --app-server` | App Server verification with `gpt-5.6-terra` / `low` |
+| `ts: camp run <camp> --app-server` | Existing bounded App Server CAMP path with `gpt-5.6-terra` / `medium` |
+| `ts: appserver status` | Read-only default, compatibility, and qualified-role status |
+
+Without the option, `ts: plan`, `ts: verify`, and `ts: camp run` use the normal GUI path and report
+`Execution: GUI`. The explicit option is checked against the installed Codex version and the
+version-specific qualification registry before App Server starts. A mismatch or unqualified role
+is blocked with a clear reason and a suggestion to rerun without the option; there is no API
+fallback.
+
+`ts: discuss` is always GUI-native. `ts: discuss ... --app-server` is rejected instead of silently
+changing execution surfaces.
+
+`ts: appserver on` and `ts: appserver off` are intentionally unavailable because Codex does not
+expose reliable skill-owned session storage. They make no persistent change and direct the user to
+the per-command option. The unflagged form is the GUI override; Tool Shed does not add a redundant
+`--gui` option while session mode is unavailable. The committed global setting remains
+`codex_app_server_enabled = false`.
+
 ## Artifact And Workspace Requests
 
 Artifact operations use natural language after `ts:` rather than a rigid subcommand parser. Common
@@ -373,6 +400,7 @@ The AI routes normally operate these deterministic scripts from the workspace-lo
 
 ```text
 scripts/campaign_queue.py
+scripts/app_server_control.py
 scripts/check_work_tree.py
 scripts/doctor.py
 scripts/check_shed_version.py

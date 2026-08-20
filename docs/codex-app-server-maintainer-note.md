@@ -19,6 +19,13 @@ economically useful for bounded work but does not change the support or promotio
 writing, build, deployment, permission expansion, and automatic lifecycle transitions remain
 blocked.
 
+The user-facing opt-ins are `ts: plan <request> --app-server`, `ts: verify <request>
+--app-server`, and `ts: camp run <camp> --app-server`; `ts: appserver status` reports the exact
+local compatibility and routing state. The unflagged forms use the GUI. Session-wide on/off is
+deliberately unavailable because the Codex skill surface has no reliable skill-owned session
+storage, and no `--gui` alias is needed while the unflagged form is authoritative. The selector
+fails closed before App Server starts when the installed Codex version or role is unqualified.
+
 After a Codex update, run:
 
 ```bash

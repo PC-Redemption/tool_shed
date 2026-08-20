@@ -276,6 +276,10 @@ ts: identity
 ts: use <project-alias-or-path>
 ts: doctor
 ts: build focus areas
+ts: appserver status
+ts: plan <request> --app-server
+ts: verify <request> --app-server
+ts: camp run <camp> --app-server
 ts: status
 ts: next
 ts: next 1,2
@@ -288,6 +292,12 @@ ts:ask
 See the [AI command reference](docs/commands.md) for every defined route, alias, and authority
 boundary. See the [Tool Shed operator guide](docs/operator-guide.md) for workflow explanations and
 examples.
+
+The three `--app-server` forms are explicit, per-command opt-ins for qualified real-world testing.
+Unflagged commands remain in the GUI, `ts: discuss` is always GUI-native, incompatible Codex
+versions and unqualified roles fail closed, and the committed global App Server default remains
+off. `ts: appserver on|off` is intentionally unavailable because the skill surface has no reliable
+session-scoped state store; use the explicit option on each test command.
 
 Every installed workspace has one tracked `work/tool-shed-project.json` identity containing a
 stable UUID and project name. Before the first mutation in a provider session, `ts: identity`

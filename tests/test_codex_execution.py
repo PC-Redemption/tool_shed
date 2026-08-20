@@ -8,6 +8,14 @@ import unittest
 from pathlib import Path
 
 from scripts.codex_app_server import AppServerError, AuthenticationError
+from scripts.app_server_control import (
+    control_status,
+    format_control_status,
+    format_selection,
+    select_command,
+    select_role,
+    session_control,
+)
 from scripts.codex_app_server_compatibility import (
     load_qualifications,
     smoke_report,
@@ -569,6 +577,155 @@ class CodexExecutionTests(unittest.TestCase):
                 codex=str(self.fake),
                 telemetry_path=self.root / "unexpected-resume.jsonl",
             )
+
+    def test_user_command_control_preserves_gui_and_routes_qualified_roles(self) -> None:
+        normal = select_command(
+            "plan",
+            app_server_requested=False,
+            codex=str(self.fake),
+        )
+        self.assertTrue(normal.allowed)
+        self.assertEqual((normal.execution, normal.reason), ("GUI", "default_gui"))
+        self.assertEqual(format_selection(normal), "Execution: GUI")
+
+        expected = {
+            "plan": ("planning", "gpt-5.6-sol", "high", "run"),
+            "verify": ("verification", "gpt-5.6-terra", "low", "run"),
+            "camp-run": (
+                "CAMP execution",
+                "gpt-5.6-terra",
+                "medium",
+                "camp-run",
+            ),
+        }
+        for command, route in expected.items():
+            with self.subTest(command=command):
+                selected = select_command(
+                    command,
+                    app_server_requested=True,
+                    codex=str(self.fake),
+                )
+                self.assertTrue(selected.allowed)
+                self.assertEqual(selected.execution, "App Server")
+                self.assertEqual(
+                    (
+                        selected.role,
+                        selected.model,
+                        selected.reasoning,
+                        selected.orchestrator_subcommand,
+                    ),
+                    route,
+                )
+                self.assertEqual(selected.opt_in, "explicit")
+                self.assertEqual(selected.global_default, "OFF")
+                self.assertFalse(selected.api_fallback)
+                self.assertIn("Execution: App Server", format_selection(selected))
+
+    def test_user_command_control_rejects_discussion_and_unqualified_roles(self) -> None:
+        discussion = select_command(
+            "discuss",
+            app_server_requested=True,
+            codex=str(self.fake),
+        )
+        self.assertFalse(discussion.allowed)
+        self.assertEqual(discussion.execution, "GUI")
+        self.assertEqual(discussion.reason, "discussion_is_gui_native")
+        self.assertIn("App Server request: BLOCKED", format_selection(discussion))
+
+        deployment = select_role(
+            "deployment",
+            command="deployment",
+            display_role="deployment",
+            sandbox="workspace-write",
+            orchestrator_subcommand="none",
+            app_server_requested=True,
+            codex=str(self.fake),
+        )
+        self.assertFalse(deployment.allowed)
+        self.assertEqual(deployment.reason, "role_feature_disabled")
+        self.assertEqual(deployment.execution, "GUI")
+
+    def test_user_command_control_blocks_incompatible_codex_with_gui_fallback(self) -> None:
+        os.environ["FAKE_CODEX_VERSION"] = "0.200.0"
+        try:
+            selected = select_command(
+                "verify",
+                app_server_requested=True,
+                codex=str(self.fake),
+            )
+        finally:
+            os.environ.pop("FAKE_CODEX_VERSION", None)
+        self.assertFalse(selected.allowed)
+        self.assertEqual(selected.reason, "codex_version_not_qualified")
+        self.assertEqual(selected.execution, "GUI")
+        self.assertTrue(selected.fallback_available)
+        self.assertEqual(selected.installed_codex, "0.200.0")
+        self.assertEqual(selected.compatibility, "unqualified_version")
+        blocked_banner = format_selection(selected)
+        self.assertIn("Installed Codex: 0.200.0", blocked_banner)
+        self.assertIn("Qualified Codex: 0.144.6", blocked_banner)
+
+    def test_user_command_status_and_session_control_are_explicit_only(self) -> None:
+        report = control_status(codex=str(self.fake))
+        self.assertEqual(report["global_default"], "OFF")
+        self.assertEqual(report["session_opt_in"], "OFF")
+        self.assertFalse(report["session_control_supported"])
+        self.assertEqual(report["current_execution_default"], "GUI")
+        self.assertEqual(report["discussion_execution"], "GUI-native")
+        self.assertFalse(report["api_fallback"])
+        self.assertEqual(
+            (
+                report["enabled_roles"]["planning"]["model"],
+                report["enabled_roles"]["planning"]["reasoning"],
+            ),
+            ("gpt-5.6-sol", "high"),
+        )
+        self.assertIn("App Server global default: OFF", format_control_status(report))
+        for action in ("on", "off"):
+            with self.subTest(action=action):
+                session = session_control(action)
+                self.assertFalse(session["accepted"])
+                self.assertEqual(session["session_opt_in"], "OFF")
+                self.assertFalse(session["session_control_supported"])
+                self.assertFalse(session["persistent_changes"])
+                self.assertIn("--app-server", session["next_action"])
+
+    def test_user_command_control_cli_reports_banners_and_fail_closed_exits(self) -> None:
+        base = [
+            "python3",
+            str(ROOT / "scripts" / "app_server_control.py"),
+            "--codex",
+            str(self.fake),
+        ]
+        selected = subprocess.run(
+            [*base, "select", "camp-run", "--app-server"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(selected.returncode, 0)
+        self.assertIn("Execution: App Server", selected.stdout)
+        self.assertIn("Role: CAMP execution", selected.stdout)
+        self.assertIn("Model: gpt-5.6-terra", selected.stdout)
+        self.assertIn("Reasoning: medium", selected.stdout)
+
+        discussion = subprocess.run(
+            [*base, "select", "discuss", "--app-server"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(discussion.returncode, 2)
+        self.assertIn("discussion_is_gui_native", discussion.stdout)
+
+        session = subprocess.run(
+            [*base, "session", "on", "--json"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(session.returncode, 2)
+        self.assertFalse(json.loads(session.stdout)["persistent_changes"])
 
     def test_thread_resume_restart_and_stale_thread_classification(self) -> None:
         telemetry = self.root / "telemetry.jsonl"

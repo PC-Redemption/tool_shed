@@ -45,12 +45,14 @@ The feature policy is centralized in `adapters/codex-app-server-config.json`; mo
 policy remains centralized in `adapters/codex-model-policy.json`.
 
 ```text
-ts: discuss              -> current Codex GUI conversation
-planning                 -> App Server / Sol / high, when explicitly enabled
-verification             -> App Server / Terra / low, when explicitly enabled
-camp_execution           -> App Server / Terra / medium through camp-run only, when explicitly enabled
-all other writing roles  -> existing GUI path
-feature disabled         -> existing GUI path
+ts: discuss                                  -> current Codex GUI conversation
+ts: plan <request>                           -> current GUI path
+ts: plan <request> --app-server              -> App Server / Sol / high
+ts: verify <request>                         -> current GUI path
+ts: verify <request> --app-server            -> App Server / Terra / low
+ts: camp run <camp>                          -> current GUI path
+ts: camp run <camp> --app-server             -> App Server / Terra / medium through camp-run
+unqualified roles or incompatible Codex      -> blocked; GUI remains available without the flag
 ```
 
 The committed defaults are:
@@ -73,7 +75,28 @@ workspace_write_enabled   = false
 ```
 
 `--enable-app-server` is an invocation-scoped override for qualification; it does not modify the
-default-off configuration.
+default-off configuration. It is an internal orchestration flag. The user-facing Tool Shed option
+is `--app-server` on the qualified `ts:` commands above.
+
+Resolve and display the user-facing selection before execution:
+
+```bash
+python3 scripts/app_server_control.py select plan --app-server
+python3 scripts/app_server_control.py select verify --app-server
+python3 scripts/app_server_control.py select camp-run --app-server
+python3 scripts/app_server_control.py status
+```
+
+The selector reuses the centralized config, model policy, qualification registry, and installed
+Codex version check. Explicit App Server selection fails closed when the exact installed version
+or role is not qualified. The existing GUI remains available by rerunning without `--app-server`;
+the control never switches to API execution.
+
+`ts: discuss ... --app-server` is rejected because discussion is intentionally GUI-native.
+Session-scoped `ts: appserver on|off` is not implemented because the Codex skill surface does not
+provide reliable skill-owned session storage. The corresponding helper command reports that
+limitation without writing configuration. With no session mode, the unflagged command is the GUI
+choice and no separate `--gui` option is introduced.
 
 Show the selected backend without starting App Server:
 
@@ -118,9 +141,9 @@ compact success/diagnostic evidence, and exits nonzero if verification fails.
 When routing selects the fallback, the command reports that the initiating workflow must continue
 in the existing GUI. It does not attempt to emulate or spawn a second GUI conversation.
 
-App Server-selected routes compare the installed CLI with the qualified version. A mismatch is
-attached to route/run/benchmark output as `compatibility_warning`; it never blocks or warns on the
-normal GUI fallback path:
+Internal App Server routes attach a version mismatch as `compatibility_warning`. The user-facing
+selector is stricter: it blocks explicit App Server execution before the orchestrator starts. The
+normal GUI path never requires App Server compatibility:
 
 ```text
 Codex App Server version changed. Qualified version: 0.144.6. Installed version: <version>.

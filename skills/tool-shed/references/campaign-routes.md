@@ -1,7 +1,7 @@
 # Tool Shed campaign routes
 
-Read this reference for numbered work levels, `ts:ship`, campaign execution, `ts: help`,
-`ts: commands`, and `ts:ask`.
+Read this reference for numbered work levels, `ts:ship`, campaign execution, explicit App Server
+controls, `ts: help`, `ts: commands`, and `ts:ask`.
 
 ## Numbered Work Levels
 
@@ -336,6 +336,70 @@ End every Tool Shed campaign response with exactly one verdict:
   the next action. Do not stop if that action can safely run now.
 - `Campaign status: BLOCKED` when progress requires a named decision, dependency, permission,
   credential, external-state change, or required review; state the precise operator action.
+
+## Explicit App Server Route
+
+The committed App Server default remains off. Treat a standalone `--app-server` option on these
+exact user-facing routes as an invocation-scoped request for the already-qualified backend:
+
+| Prompt | Qualified role | Model / reasoning | Orchestrator path |
+| --- | --- | --- | --- |
+| `ts: plan <request> --app-server` | planning | `gpt-5.6-sol` / `high` | read-only `run` |
+| `ts: verify <request> --app-server` | verification | `gpt-5.6-terra` / `low` | read-only `run` |
+| `ts: camp run <camp> --app-server` | CAMP execution | `gpt-5.6-terra` / `medium` | bounded `camp-run` |
+
+Equivalent commands without `--app-server` remain in the current GUI and begin with the concise
+banner `Execution: GUI`. Do not interpret examples, quoted text, or a mere mention of the option as
+an opt-in. Remove the standalone option from the request passed to the worker.
+
+Before every explicit operation, run the deterministic selector from the workspace-local shed:
+
+```bash
+python3 <shed>/scripts/app_server_control.py select <plan|verify|camp-run> \
+  --app-server --json
+```
+
+Surface its concise execution banner. Continue to App Server only when `allowed` is true. A blocked
+selection must not call App Server or silently switch execution backends; report the reason and
+offer the same command without `--app-server` as the GUI fallback. The selector requires the exact
+installed Codex version to have a current `qualified` or `qualified_with_blockers` record, the role
+to be qualified, and the recorded model/reasoning pair to match centralized policy.
+
+For allowed planning and verification, call the existing `codex_orchestration.py
+--enable-app-server run` path with the selected role, a focused read-only prompt, the workspace,
+and only relevant explicit context files. App Server planning returns advisory planning output;
+any later artifact or source mutation remains owned by the GUI workflow and its ordinary authority
+boundaries.
+
+For allowed CAMP execution, resolve the exact campaign/CAMP step, writable repository root,
+expected path allowlist, focused context, and shell-free deterministic verification commands, then
+call the existing `codex_orchestration.py --enable-app-server camp-run` path. Never create a second
+CAMP implementation or weaken its Git journal, dirty-target refusal, approval policy, network,
+retry, lifecycle, or path restrictions.
+
+`ts: discuss` is always GUI-native. Reject `ts: discuss ... --app-server` with the selector's clear
+`discussion_is_gui_native` explanation; do not start App Server. Explicit App Server selection for
+any unqualified role is likewise rejected. Program/CAMP derivation, architecture, implementation,
+testing, build, deployment, deterministic execution, escalation, and other write roles do not
+become qualified through the option.
+
+Treat `ts: appserver status` as the read-only user status route:
+
+```bash
+python3 <shed>/scripts/app_server_control.py status
+```
+
+It reports the global default, session support, installed and qualified Codex versions,
+compatibility, qualified roles, current GUI default, GUI-native discussion, and disabled API
+fallback from centralized policy and qualification data.
+
+Codex does not expose reliable skill-owned session storage, so `ts: appserver on` and
+`ts: appserver off` are deliberately unavailable. Run `app_server_control.py session on|off`,
+explain the limitation, make no persistent change, and direct the operator to the explicit option.
+Do not fake conversational persistence, write a repository/user config toggle, or invent `--gui`;
+the unflagged command is the explicit GUI choice. This route never changes
+`codex_app_server_enabled`, enables API-key fallback, expands permissions, or grants release,
+deployment, push, credential, or external-mutation authority.
 
 ## Help Route
 
