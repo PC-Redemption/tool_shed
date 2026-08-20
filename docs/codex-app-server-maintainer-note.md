@@ -11,9 +11,13 @@ model unless the operator intentionally selects Sol for difficult direct GUI wor
 Explicit read-only planning (`gpt-5.6-sol` / high), verification (`gpt-5.6-terra` / low), and one
 explicitly scoped `camp_execution` step (`gpt-5.6-terra` / medium) are qualified. CAMP writing must
 use `camp-run`, exact declared paths, the hardened workspace-write sandbox, and a Git mutation
-journal. It remains opt-in because the representative CAMP used 241,524 input tokens and did not
-establish savings. Broader writing, build, deployment, permission expansion, and automatic
-lifecycle transitions remain blocked.
+journal. It remains opt-in. The representative CAMP used 241,524 input tokens and did not establish
+savings in the original qualification; Campaign 040 subsequently reduced the same
+fixture to 61,516 input tokens and two model requests while 22 focused tests passed. The result is
+economically useful for bounded work but does not change the support or promotion boundary. See
+[the token optimization report](codex-app-server-camp-token-optimization-2026-08-20.md). Broader
+writing, build, deployment, permission expansion, and automatic lifecycle transitions remain
+blocked.
 
 After a Codex update, run:
 

@@ -244,6 +244,20 @@ class CodexExecutionTests(unittest.TestCase):
             camp_next_action(retry, attempt=1, journal=unsafe),
             "needs_user_intervention",
         )
+        step_complete = parse_camp_outcome(
+            json.dumps(
+                {"outcome": "step_complete", "details": "edited", "evidence": []}
+            )
+        )
+        self.assertEqual(
+            camp_next_action(
+                step_complete,
+                attempt=1,
+                journal=mutated,
+                verification_passed=False,
+            ),
+            "reconcile_workspace_before_retry",
+        )
 
     def test_weighted_usage_and_compact_command_evidence_are_versioned(self) -> None:
         usage = {
@@ -267,6 +281,13 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertEqual(evidence["test_count"], 7)
         self.assertFalse(evidence["output_retained"])
         self.assertNotIn("stdout", evidence)
+        failed = compact_command_evidence(
+            ("python3", "-c", "raise SystemExit(7)"),
+            {"exitCode": 7, "stdout": "detail", "stderr": "failure"},
+        )
+        self.assertFalse(failed["passed"])
+        self.assertEqual((failed["stdout_bytes"], failed["stderr_bytes"]), (6, 7))
+        self.assertNotIn("detail", json.dumps(failed))
 
     def test_camp_execution_uses_focused_capsule_and_deterministic_verification(self) -> None:
         repository = self.root / "camp-repo"
@@ -307,10 +328,15 @@ class CodexExecutionTests(unittest.TestCase):
         finally:
             os.environ.pop("FAKE_CODEX_CAMP_TARGET", None)
         self.assertEqual(target.read_text(encoding="utf-8"), "after\n")
+        self.assertGreater(payload["camp_duration_seconds"], 0)
         self.assertEqual(payload["next_action"], "advance_to_next_camp_step")
         self.assertTrue(payload["verification"][0]["passed"])
         self.assertEqual(payload["verification"][0]["test_count"], 1)
         self.assertEqual(payload["mutation_journal"]["files_modified"], ["target.txt"])
+        self.assertEqual(
+            payload["mutation_journal"]["deterministic_verification"],
+            {"required": True, "passed": True, "commands_run": 1},
+        )
         self.assertEqual(
             payload["mutation_journal"]["commands_executed"],
             [["python3", "-c", "raise SystemExit(0)"]],
@@ -318,6 +344,52 @@ class CodexExecutionTests(unittest.TestCase):
         context = payload["result"]["context_scope"]
         self.assertEqual(context["mode"], "focused_camp_capsule")
         self.assertEqual(context["sandbox_root"], str(repository.resolve()))
+
+    def test_failed_deterministic_verification_requires_reconciliation(self) -> None:
+        repository = self.root / "failed-camp-repo"
+        repository.mkdir()
+        subprocess.run(["git", "init", "-q", str(repository)], check=True)
+        subprocess.run(
+            ["git", "-C", str(repository), "config", "user.email", "test@example.com"],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(repository), "config", "user.name", "Tool Shed Test"],
+            check=True,
+        )
+        target = repository / "target.txt"
+        target.write_text("before\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(repository), "add", "target.txt"], check=True)
+        subprocess.run(
+            ["git", "-C", str(repository), "commit", "-qm", "baseline"], check=True
+        )
+        os.environ["FAKE_CODEX_CAMP_TARGET"] = str(target)
+        os.environ["FAKE_CODEX_COMMAND_EXIT"] = "7"
+        try:
+            payload = execute_camp_if_enabled(
+                "Change before to after.",
+                cwd=repository,
+                campaign="campaign-040",
+                camp="diagnostic",
+                expected_paths=(Path("target.txt"),),
+                explicit_files=(Path("target.txt"),),
+                verification_commands=(("python3", "-c", "raise SystemExit(7)"),),
+                enable_override=True,
+                config=AppServerFeatureConfig.load(
+                    ROOT / "adapters" / "codex-app-server-config.json"
+                ),
+                policy=self.policy,
+                codex=str(self.fake),
+                telemetry_path=self.root / "failed-camp-telemetry.jsonl",
+            )
+        finally:
+            os.environ.pop("FAKE_CODEX_CAMP_TARGET", None)
+            os.environ.pop("FAKE_CODEX_COMMAND_EXIT", None)
+        self.assertEqual(payload["next_action"], "reconcile_workspace_before_retry")
+        self.assertEqual(payload["mutation_journal"]["final_state"], "verification_failed")
+        self.assertEqual(
+            payload["mutation_journal"]["deterministic_verification"]["passed"], False
+        )
 
     def test_git_mutation_journal_preserves_unrelated_dirty_work(self) -> None:
         repository = self.root / "repo"
@@ -780,6 +852,7 @@ class CodexExecutionTests(unittest.TestCase):
         report = activity_report(telemetry, limit=20)
         self.assertEqual(report["operation_count"], 1)
         self.assertEqual(report["summary"]["input_tokens"], 10)
+        self.assertEqual(report["summary"]["weighted_codex_usage_units"], 26.2)
         self.assertEqual(report["operations"][0]["program"], "P")
         self.assertNotIn("secret prompt", json.dumps(report))
         qualification = qualification_report(

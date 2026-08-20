@@ -104,12 +104,16 @@ python3 scripts/codex_orchestration.py \
   --cwd . \
   --campaign 036-app-server-write-qualification-and-camp-execution \
   --camp focused-change \
+  --expected-path tests/test_codex_execution.py \
   --file tests/test_codex_execution.py \
-  --prompt "Make only the requested bounded change and run its focused test."
+  --verify-command-json '["env","PYTHONDONTWRITEBYTECODE=1","python3","-m","unittest","tests.test_codex_execution"]' \
+  --prompt "Make only the requested bounded change."
 ```
 
 `camp-run` requires exact declared paths and a Git mutation journal. Generic `run` refuses the
-workspace-write sandbox.
+workspace-write sandbox. `--verify-command-json` accepts a shell-free JSON argv array and may be
+repeated. The orchestrator runs these checks through App Server after the model edit, retains only
+compact success/diagnostic evidence, and exits nonzero if verification fails.
 
 When routing selects the fallback, the command reports that the initiating workflow must continue
 in the existing GUI. It does not attempt to emulate or spawn a second GUI conversation.
@@ -157,6 +161,10 @@ Telemetry distinguishes:
 - rerouting, retry attempt, escalation and reason, recovery action, and context warnings.
 - campaign, Program, CAMP, qualification run, timestamps, duration, and fallback use;
 - observed model turns and completed tool calls, with tool-call types;
+- ordered model-turn anatomy with per-request token categories, elapsed time, preceding tool type,
+  and serialized tool-result bytes;
+- versioned model-aware `weighted_codex_usage`, including separate uncached, cached, and output
+  components without double-counting reasoning output;
 - inline file count and bytes, summary bytes, summary source files and source bytes, and whether
   more context was requested after a summary.
 
@@ -167,6 +175,19 @@ exact provider-side billing metric. Tool calls are counted only from completed A
 types such as command execution, file change, MCP, dynamic-tool, and web-search items.
 
 Prompts, responses, account email, tokens, and credentials are not written to telemetry.
+
+### Bounded CAMP token optimization
+
+Campaign 040 reduced the same representative controller-regression CAMP from 241,524 to 61,516
+input tokens, from seven to two observed model requests, and from six to one model tool. Full elapsed
+time fell from 36.704 to 12.458 seconds, while the versioned weighted proxy fell from 67,362.0 to
+36,468.4 units. The declared file remained the only changed path and all 22 focused tests passed.
+
+The reduction comes from a focused trigger-neutral worker capsule, orchestrator-owned Git state,
+and deterministic App Server verification outside the model turn. The exact safety boundary is
+unchanged. See
+[the 2026-08-20 CAMP token optimization report](codex-app-server-camp-token-optimization-2026-08-20.md)
+for per-turn anatomy, metric weights, additional samples, and limitations.
 
 ### Why a tiny turn was about 19k input tokens
 
@@ -381,7 +402,8 @@ bounded `camp_execution` step. It is not ready to become Tool Shed's default exe
 1. OpenAI still labels App Server experimental and unsupported for production workloads.
 2. CLI 0.144.6 exhibited a live `turn/interrupt` versus `thread/read` cancellation-state race.
 3. The real Codex GUI approval surface is not connected to `ApprovalBridge`.
-4. The representative write CAMP succeeded safely but used 241,524 input tokens, so savings were not demonstrated.
+4. The optimized representative write CAMP succeeded safely at 61,516 input tokens and demonstrated
+   material savings, but the fixed harness floor remains large and does not justify global enablement.
 5. Broader workspace writing, build, deployment, and permission expansion remain unqualified.
 6. The installed runtime and published/schema restricted-read surfaces currently disagree.
 

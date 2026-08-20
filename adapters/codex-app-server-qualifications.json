@@ -118,6 +118,48 @@
         "token_savings_demonstrated": false,
         "promotion_decision": "remain explicit opt-in"
       },
+      "camp_token_optimization": {
+        "campaign": "040-app-server-camp-token-optimization",
+        "weights_version": "openai-relative-token-rates-2026-08-20-v1",
+        "reference": {
+          "input_tokens": 241524,
+          "cached_input_tokens": 202240,
+          "uncached_input_tokens": 39284,
+          "output_tokens": 1309,
+          "reasoning_output_tokens": 390,
+          "model_turns": 7,
+          "tool_calls": 6,
+          "duration_seconds": 36.704,
+          "weighted_codex_usage": 67362.0
+        },
+        "optimized_reference": {
+          "outcome": "step_complete",
+          "focused_tests": "22 passed",
+          "journal_safe": true,
+          "unexpected_paths": [],
+          "input_tokens": 61516,
+          "cached_input_tokens": 30464,
+          "uncached_input_tokens": 31052,
+          "output_tokens": 395,
+          "reasoning_output_tokens": 41,
+          "model_turns": 2,
+          "tool_calls": 1,
+          "duration_seconds": 12.458,
+          "weighted_codex_usage": 36468.4,
+          "input_reduction_percent": 74.53,
+          "weighted_usage_reduction_percent": 45.86
+        },
+        "additional_samples": {
+          "small_input_tokens": 37962,
+          "larger_input_tokens": 67496,
+          "diagnostic_input_tokens": 37973,
+          "diagnostic_retry_suppressed_after_mutation": true,
+          "diagnostic_raw_output_retained": false
+        },
+        "economic_value": "meaningful for bounded explicit-opt-in CAMP execution",
+        "promotion_decision": "remain explicit opt-in",
+        "evidence": "docs/codex-app-server-camp-token-optimization-2026-08-20.md"
+      },
       "production_supported": false,
       "estimated_harness_input_tokens_per_operation": 18800,
       "tiny_smoke_input_tokens": {
@@ -147,7 +189,7 @@
         "cancellation reconciliation race",
         "GUI approval bridge unavailable",
         "restricted-read protocol mismatch",
-        "representative CAMP execution did not demonstrate token savings",
+        "fixed App Server harness cost remains material for tiny CAMPs",
         "App Server experimental and unsupported for production"
       ],
       "evidence": "docs/codex-app-server-qualification-2026-08-20.md",

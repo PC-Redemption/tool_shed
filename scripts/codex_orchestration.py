@@ -8,6 +8,7 @@ import json
 import os
 import shutil
 import tempfile
+import time
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
@@ -630,6 +631,7 @@ def execute_camp_if_enabled(
 ) -> dict[str, Any]:
     """Run one fail-closed Terra CAMP step; lifecycle transitions remain deterministic."""
 
+    camp_started = time.monotonic()
     features = config or AppServerFeatureConfig.load()
     decision = features.route(
         "camp_execution",
@@ -791,18 +793,34 @@ def execute_camp_if_enabled(
             mutation_events=(*result.mutation_events, *command_events),
             recovery_action="none",
         )
+        journal_record["deterministic_verification"] = {
+            "required": bool(verification_commands),
+            "passed": verification_passed,
+            "commands_run": len(verification),
+        }
+        if verification_passed is False:
+            journal_record["final_state"] = "verification_failed"
         next_action = camp_next_action(
             outcome,
             attempt=attempt,
             journal=journal_record,
             verification_passed=verification_passed,
         )
+        camp_duration_seconds = round(time.monotonic() - camp_started, 6)
         adapter.record_control_event(
             operation="camp_mutation_journal",
             qualification_id=None,
             campaign=campaign,
             recovery_action=next_action,
-            status=("completed" if journal_record["safe"] else "needs_user_intervention"),
+            status=(
+                "completed"
+                if journal_record["safe"] and verification_passed is not False
+                else (
+                    "verification_failed"
+                    if journal_record["safe"]
+                    else "needs_user_intervention"
+                )
+            ),
             thread_id=result.thread_id,
             turn_id=result.turn_id,
             details={
@@ -810,6 +828,7 @@ def execute_camp_if_enabled(
                 "outcome": structured_outcome_record(outcome),
                 "verification": verification,
                 "journal": journal_record,
+                "camp_duration_seconds": camp_duration_seconds,
             },
         )
     return {
@@ -819,6 +838,7 @@ def execute_camp_if_enabled(
         "verification": verification,
         "mutation_journal": journal_record,
         "next_action": next_action,
+        "camp_duration_seconds": camp_duration_seconds,
     }
 
 
