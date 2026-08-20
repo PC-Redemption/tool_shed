@@ -7,6 +7,7 @@ import json
 import sys
 import unittest
 import tempfile
+from unittest import mock
 from datetime import timedelta
 from pathlib import Path
 
@@ -141,6 +142,13 @@ class CompletionWatcherRuntimeTests(unittest.TestCase):
                 occurred_at=cw._utcnow(),
                 detail="different",
             )
+
+    def test_windows_directory_fsync_is_skipped(self) -> None:
+        state_root = self._new_state_root()
+        with mock.patch.object(cw.os, "name", "nt"), mock.patch.object(
+            cw.os, "open", side_effect=AssertionError("directory open must be skipped")
+        ):
+            cw._fsync_fd(state_root)
 
     def test_ensure_runner_respects_existing_lock(self) -> None:
         state_root = self._new_state_root()

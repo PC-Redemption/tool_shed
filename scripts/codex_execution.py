@@ -973,7 +973,7 @@ def describe_context_scope(
         except OSError:
             size = None
         try:
-            label = str(resolved.relative_to(metadata_root))
+            label = resolved.relative_to(metadata_root).as_posix()
         except ValueError:
             label = str(resolved)
         files.append({"path": label, "bytes": size})
@@ -992,7 +992,7 @@ def describe_context_scope(
         candidate = supplied if supplied.is_absolute() else metadata_root / supplied
         resolved = candidate.resolve()
         try:
-            label = str(resolved.relative_to(metadata_root))
+            label = resolved.relative_to(metadata_root).as_posix()
         except ValueError:
             label = str(resolved)
         try:

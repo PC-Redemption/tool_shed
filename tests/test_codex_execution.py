@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -170,9 +171,18 @@ class CodexExecutionTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name)
-        self.fake = self.root / "fake-codex"
-        self.fake.write_text(FAKE_CODEX, encoding="utf-8", newline="\n")
-        self.fake.chmod(0o755)
+        script = self.root / "fake-codex.py"
+        script.write_text(FAKE_CODEX, encoding="utf-8", newline="\n")
+        if os.name == "nt":
+            self.fake = self.root / "fake-codex.cmd"
+            self.fake.write_text(
+                f'@echo off\r\n"{sys.executable}" "{script}" %*\r\n',
+                encoding="utf-8",
+                newline="",
+            )
+        else:
+            script.chmod(0o755)
+            self.fake = script
         self.policy = ModelPolicy.load(ROOT / "adapters" / "codex-model-policy.json")
 
     def tearDown(self) -> None:
@@ -692,7 +702,7 @@ class CodexExecutionTests(unittest.TestCase):
 
     def test_user_command_control_cli_reports_banners_and_fail_closed_exits(self) -> None:
         base = [
-            "python3",
+            sys.executable,
             str(ROOT / "scripts" / "app_server_control.py"),
             "--codex",
             str(self.fake),

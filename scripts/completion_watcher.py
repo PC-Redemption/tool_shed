@@ -124,6 +124,11 @@ def _canonical_json(payload: Any) -> str:
 
 
 def _fsync_fd(path: Path) -> None:
+    # Windows does not permit opening directories through os.open. The file
+    # itself is flushed before os.replace; directory fsync is a POSIX-only
+    # durability enhancement.
+    if os.name == "nt" and path.is_dir():
+        return
     fd = os.open(path, os.O_RDONLY)
     try:
         os.fsync(fd)

@@ -440,7 +440,7 @@ def validate_summary_context(
         candidate = supplied if supplied.is_absolute() else root / supplied
         source = candidate.resolve()
         try:
-            label = str(source.relative_to(root))
+            label = source.relative_to(root).as_posix()
         except ValueError as error:
             raise FeatureConfigError(f"summary source escapes workspace: {source}") from error
         if not source.is_file():
@@ -509,7 +509,8 @@ def inline_context_prompt(
             content = raw.decode("utf-8")
         except UnicodeDecodeError as error:
             raise FeatureConfigError(f"inline context must be UTF-8 text: {source}") from error
-        blocks.append(f"--- BEGIN {relative} ---\n{content}\n--- END {relative} ---")
+        label = relative.as_posix()
+        blocks.append(f"--- BEGIN {label} ---\n{content}\n--- END {label} ---")
     if not blocks:
         return prompt
     context_label = "complete, read-only context" if read_only else "complete focused context"
