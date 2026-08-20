@@ -9,7 +9,6 @@ Updated: 2026-08-20
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
-| [work/00-campaigns/active/042-reconcile-main-integrate-app-server-and-reduce-hosted-watcher.md](work/00-campaigns/active/042-reconcile-main-integrate-app-server-and-reduce-hosted-watcher.md) | campaign | working | 2026-08-20 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -48,6 +47,7 @@ Updated: 2026-08-20
 | [work/00-campaigns/completed/038-qualify-and-release-local-completion-watchers.md](work/00-campaigns/completed/038-qualify-and-release-local-completion-watchers.md) | campaign | complete | 2026-08-19 | none | - |
 | [work/00-campaigns/completed/040-app-server-camp-token-optimization.md](work/00-campaigns/completed/040-app-server-camp-token-optimization.md) | campaign | complete | 2026-08-20 | none | - |
 | [work/00-campaigns/completed/041-integrate-qualified-app-server-and-reassess-hosted-watcher.md](work/00-campaigns/completed/041-integrate-qualified-app-server-and-reassess-hosted-watcher.md) | campaign | complete | 2026-08-20 | none | - |
+| [work/00-campaigns/completed/042-reconcile-main-integrate-app-server-and-reduce-hosted-watcher.md](work/00-campaigns/completed/042-reconcile-main-integrate-app-server-and-reduce-hosted-watcher.md) | campaign | complete | 2026-08-20 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -108,5 +108,5 @@ Updated: 2026-08-20
 ## Summary
 
 - Total artifacts: 90
-- Active artifacts: 2
-- Completed/decided artifacts: 80
+- Active artifacts: 1
+- Completed/decided artifacts: 81

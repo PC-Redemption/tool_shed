@@ -7,8 +7,8 @@ Next Action: keep reduced Campaign 039 deferred until a concrete external/non-Ap
 Roadmap ID: completion-watcher-program
 Revision: 1
 Source Project Map: work/maps/map-disposable-completion-watchers-and-hosted-notifications.md
-Source State Token: 7d67c2059ed5f1cd
-Proposal Token: ae41b8fd6cbacf60
+Source State Token: 811bfb62eab3493d
+Proposal Token: b75f6bb7f157e07f
 Approved: 2026-08-18
 Current Milestone: M4-HOSTED-PILOT
 Supersedes: none
