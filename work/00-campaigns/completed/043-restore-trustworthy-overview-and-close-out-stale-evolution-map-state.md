@@ -1,9 +1,9 @@
 # Restore trustworthy overview and close out stale evolution-map state
 
-Status: working
+Status: complete
 Type: campaign
 Updated: 2026-08-20
-Next Action: execute the campaign completion gate
+Next Action: none
 Campaign ID: restore-trustworthy-overview-and-close-out-stale-evolution-map-state
 Campaign Number: 043
 Outcome: Make Tool Shed's overview, index-drift reporting, stale-path detection, and active evolution-map state agree with the real tracked workspace after completion-watcher roadmap closeout.
@@ -14,8 +14,10 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: The roadmap-aware overview no longer reports tracked roadmap files as missing; regression tests cover the corrected index-drift comparison; stale planning references in the Tool Shed evolution map are reconciled to existing lifecycle paths and truthful statuses; the map is completed or intentionally deferred based on remaining work; focused tests, the full Tool Shed validator, overview, campaign validation, stale-path checks, strict work-state review, and generated-index verification pass; no fleet snapshot update, App Server promotion, hosted-watcher reactivation, release, deployment, or push occurs.
-Completion Evidence: none
-Disposition: none
+Completion Evidence: Implementation commit 7278742; focused regressions 4/4 passed; full Tool Shed validator 189/189 passed; overview index drift and actionable drift findings empty; evolution map completed; campaign, roadmap, stale-path, strict work-state, generated-index, and local manifest checks passed; no external action performed.
+Completion Date: 2026-08-20
+Completion Order: 39
+Disposition: completed
 
 ## Request
 
