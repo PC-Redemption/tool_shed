@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "records": [
+    {
+      "codex_version": "0.144.6",
+      "qualified_at": "2026-08-20",
+      "status": "qualified_with_blockers",
+      "transport": "stdio",
+      "authentication": {
+        "chatgpt": true,
+        "api_key_fallback": false
+      },
+      "routing": {
+        "planning": {
+          "model": "gpt-5.6-sol",
+          "reasoning": "high",
+          "qualified": true
+        },
+        "verification": {
+          "model": "gpt-5.6-terra",
+          "reasoning": "low",
+          "qualified": true
+        }
+      },
+      "read_only": true,
+      "cancellation_safe": false,
+      "cancellation_observation": {
+        "observed_at": "2026-08-20",
+        "interrupt_response": "no active turn to interrupt",
+        "reconciled_sequence": [
+          "inProgress",
+          "completed"
+        ],
+        "in_progress_duration_seconds": 4.56,
+        "tool_shed_classification": "completed",
+        "assessment": "App Server/protocol inconsistency; Tool Shed bounded reconciliation prevented a false cancelled result"
+      },
+      "gui_approval_bridge": false,
+      "restricted_read_consistent": false,
+      "workspace_writing": false,
+      "production_supported": false,
+      "estimated_harness_input_tokens_per_operation": 18800,
+      "observations": {
+        "planning": 10,
+        "verification": 20,
+        "core_successes": 30,
+        "core_operations": 30,
+        "measured_model_operations": 33,
+        "input_tokens": 939307,
+        "estimated_avoidable_input_tokens": 323297
+      },
+      "qualified_savings": {
+        "reference_strategy_input_tokens": 322041,
+        "focused_inline_input_tokens": 56216,
+        "input_reduction_percent": 82.54,
+        "reference_strategy_elapsed_seconds": 139.115,
+        "focused_inline_elapsed_seconds": 41.302,
+        "elapsed_reduction_percent": 70.31,
+        "input_regression_warning_factor": 1.25
+      },
+      "known_blockers": [
+        "cancellation reconciliation race",
+        "GUI approval bridge unavailable",
+        "restricted-read protocol mismatch",
+        "App Server experimental and unsupported for production"
+      ],
+      "evidence": "docs/codex-app-server-qualification-2026-08-20.md"
+    }
+  ]
+}

@@ -7,6 +7,11 @@ import unittest
 from pathlib import Path
 
 from scripts.codex_app_server import AppServerError, AuthenticationError
+from scripts.codex_app_server_compatibility import (
+    load_qualifications,
+    smoke_report,
+    status_report,
+)
 from scripts.codex_execution import (
     ApprovalBridge,
     CodexExecutionAdapter,
@@ -19,6 +24,7 @@ from scripts.codex_execution import (
 from scripts.codex_orchestration import (
     AppServerFeatureConfig,
     FeatureConfigError,
+    benchmark_comparison,
     benchmark_regressions,
     execute_bounded,
     execute_if_enabled,
@@ -37,8 +43,15 @@ import os
 import sys
 import time
 
+if "--version" in sys.argv:
+    print("codex-cli " + os.environ.get("FAKE_CODEX_VERSION", "0.144.6"))
+    raise SystemExit(0)
+
 account_type = os.environ.get("FAKE_CODEX_ACCOUNT", "chatgpt")
 turn_count = 0
+thread_count = 0
+read_count = 0
+interrupted = False
 for raw in sys.stdin:
     message = json.loads(raw)
     method = message.get("method")
@@ -68,12 +81,20 @@ for raw in sys.stdin:
         if method == "thread/resume" and os.environ.get("FAKE_CODEX_STALE_THREAD") == "1":
             print(json.dumps({"id": request_id, "error": {"code": -32602, "message": "thread not found: stale thread id"}}), flush=True)
             continue
-        thread_id = message.get("params", {}).get("threadId", "thr_fake")
+        if method == "thread/start":
+            thread_count += 1
+            thread_id = f"thr_fake_{thread_count}"
+        else:
+            thread_id = message.get("params", {}).get("threadId", "thr_fake")
         print(json.dumps({"id": request_id, "result": {"thread": {"id": thread_id, "status": {"type": "idle"}}, "instructionSources": ["/workspace/AGENTS.md"]}}), flush=True)
     elif method == "thread/read":
+        read_count += 1
         thread_id = message["params"]["threadId"]
         thread = {"id": thread_id, "status": {"type": "idle"}}
-        terminal = os.environ.get("FAKE_CODEX_READ_TURN_STATUS")
+        sequence = os.environ.get("FAKE_CODEX_READ_TURN_SEQUENCE", "").split(",")
+        terminal = sequence[min(read_count - 1, len(sequence) - 1)] if sequence and sequence[0] else None
+        terminal = terminal or os.environ.get("FAKE_CODEX_READ_TURN_STATUS")
+        terminal = terminal or ("interrupted" if interrupted else None)
         if terminal:
             thread["turns"] = [{"id": "turn_fake", "status": terminal}]
         print(json.dumps({"id": request_id, "result": {"thread": thread}}), flush=True)
@@ -104,9 +125,12 @@ for raw in sys.stdin:
             print(json.dumps({"method": "thread/tokenUsage/updated", "params": {"threadId": params["threadId"], "turnId": turn_id, "tokenUsage": {"last": second, "total": total, "modelContextWindow": 1000}}}), flush=True)
         print(json.dumps({"method": "turn/completed", "params": {"threadId": params["threadId"], "turn": {"id": turn_id, "status": "completed", "items": []}}}), flush=True)
     elif method == "turn/interrupt":
-        if os.environ.get("FAKE_CODEX_NO_ACTIVE_INTERRUPT") == "1":
+        if os.environ.get("FAKE_CODEX_INTERRUPT_ERROR") == "1":
+            print(json.dumps({"id": request_id, "error": {"code": -32000, "message": "interrupt unavailable"}}), flush=True)
+        elif os.environ.get("FAKE_CODEX_NO_ACTIVE_INTERRUPT") == "1":
             print(json.dumps({"id": request_id, "error": {"code": -32602, "message": "no active turn to interrupt"}}), flush=True)
         else:
+            interrupted = True
             print(json.dumps({"id": request_id, "result": {}}), flush=True)
 '''
 
@@ -231,6 +255,14 @@ class CodexExecutionTests(unittest.TestCase):
             "planning", sandbox="workspace-write", enable_override=True
         )
         self.assertEqual(writing.reason, "sandbox_not_enabled")
+        self.assertIsNone(config.compatibility_warning(str(self.fake)))
+        os.environ["FAKE_CODEX_VERSION"] = "0.200.0"
+        try:
+            warning = config.compatibility_warning(str(self.fake))
+        finally:
+            os.environ.pop("FAKE_CODEX_VERSION", None)
+        self.assertIn("Qualified version: 0.144.6", warning or "")
+        self.assertIn("Installed version: 0.200.0", warning or "")
         self.assertEqual(config.thread_policy("planning"), "new")
         with self.assertRaisesRegex(FeatureConfigError, "defaults to new threads"):
             execute_if_enabled(
@@ -411,27 +443,48 @@ class CodexExecutionTests(unittest.TestCase):
             telemetry_path=self.root / "cancel.jsonl",
         ) as adapter:
             result = adapter.cancel("thr_fake", "turn_fake")
-        self.assertEqual(result["outcome"], "interrupt_requested")
+        self.assertEqual(result["outcome"], "cancelled")
+        self.assertTrue(result["diagnostics"]["cancel_acknowledged"])
+        self.assertEqual(result["diagnostics"]["final_classification"], "cancelled")
 
     def test_cancellation_race_reconciles_to_explicit_recovery_action(self) -> None:
         os.environ["FAKE_CODEX_NO_ACTIVE_INTERRUPT"] = "1"
         try:
-            for status, outcome, action in (
-                ("inProgress", "interrupt_race_active", "user_intervention"),
-                ("interrupted", "already_terminal", "resume"),
+            for sequence, outcome, action in (
+                ("inProgress,inProgress", "unknown", "user_intervention"),
+                ("inProgress,interrupted", "cancelled", "resume"),
+                ("completed", "completed", "none"),
             ):
-                with self.subTest(status=status):
-                    os.environ["FAKE_CODEX_READ_TURN_STATUS"] = status
+                with self.subTest(sequence=sequence):
+                    os.environ["FAKE_CODEX_READ_TURN_SEQUENCE"] = sequence
                     with CodexExecutionAdapter(
                         policy=self.policy,
                         codex=str(self.fake),
-                        telemetry_path=self.root / f"cancel-{status}.jsonl",
+                        telemetry_path=self.root / f"cancel-{sequence}.jsonl",
                     ) as adapter:
-                        result = adapter.cancel("thr_fake", "turn_fake")
+                        result = adapter.cancel(
+                            "thr_fake", "turn_fake", timeout=0.03, poll_interval=0.005
+                        )
                     self.assertEqual(result["outcome"], outcome)
                     self.assertEqual(result["recovery_action"], action)
+                    self.assertGreaterEqual(len(result["diagnostics"]["event_sequence"]), 3)
         finally:
             os.environ.pop("FAKE_CODEX_NO_ACTIVE_INTERRUPT", None)
+            os.environ.pop("FAKE_CODEX_READ_TURN_SEQUENCE", None)
+
+        os.environ["FAKE_CODEX_INTERRUPT_ERROR"] = "1"
+        os.environ["FAKE_CODEX_READ_TURN_STATUS"] = "interrupted"
+        try:
+            with CodexExecutionAdapter(
+                policy=self.policy,
+                codex=str(self.fake),
+                telemetry_path=self.root / "cancel-error.jsonl",
+            ) as adapter:
+                result = adapter.cancel("thr_fake", "turn_fake", timeout=0.05)
+            self.assertEqual(result["outcome"], "cancelled")
+            self.assertFalse(result["diagnostics"]["cancel_acknowledged"])
+        finally:
+            os.environ.pop("FAKE_CODEX_INTERRUPT_ERROR", None)
             os.environ.pop("FAKE_CODEX_READ_TURN_STATUS", None)
 
     def test_context_accounting_warns_without_blocking(self) -> None:
@@ -534,6 +587,42 @@ class CodexExecutionTests(unittest.TestCase):
             [{"id": "small", "tokens": {"input": 16}}], baseline, factor=1.5
         )
         self.assertEqual(findings[0]["kind"], "input_token_regression")
+        self.assertEqual(findings[0]["absolute_change_tokens"], 6)
+        self.assertEqual(findings[0]["relative_change_percent"], 60.0)
+        comparison = benchmark_comparison(
+            [{"id": "small", "tokens": {"input": 12}}], baseline
+        )
+        self.assertEqual(comparison["aggregate"]["absolute_change_tokens"], 2)
+        self.assertEqual(comparison["aggregate"]["relative_change_percent"], 20.0)
+
+    def test_compatibility_status_and_smoke_are_version_aware(self) -> None:
+        qualifications = load_qualifications(
+            ROOT / "adapters" / "codex-app-server-qualifications.json"
+        )
+        self.assertEqual(qualifications[0]["codex_version"], "0.144.6")
+        status = status_report(codex=str(self.fake))
+        self.assertEqual(status["status"], "OPT-IN")
+        self.assertEqual(status["global_default"], "disabled")
+        self.assertEqual(status["compatibility"], "qualified_with_blockers")
+        self.assertEqual(status["qualified_savings"]["input_reduction_percent"], 82.54)
+
+        telemetry = self.root / "smoke.jsonl"
+        smoke = smoke_report(
+            codex=str(self.fake),
+            cwd=ROOT,
+            telemetry_path=telemetry,
+            timeout=2,
+        )
+        self.assertEqual(smoke["outcome"], "qualified_with_blockers")
+        by_name = {item["name"]: item for item in smoke["checks"]}
+        self.assertEqual(by_name["chatgpt_authentication"]["status"], "pass")
+        self.assertEqual(by_name["read_only_planning_turn"]["status"], "pass")
+        self.assertEqual(by_name["read_only_verification_turn"]["status"], "pass")
+        self.assertEqual(by_name["cancellation_reconciliation"]["status"], "blocked")
+        self.assertEqual(smoke["cancellation"]["outcome"], "completed")
+        self.assertEqual(by_name["restricted_read_behavior"]["status"], "blocked")
+        self.assertFalse(smoke["qualification_record_updated"])
+        self.assertNotIn("APP_SERVER_PLANNING_SMOKE_OK", telemetry.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ import os
 import shutil
 import tempfile
 from contextlib import contextmanager
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any, Iterator
 
@@ -22,6 +22,7 @@ try:
         ModelPolicyError,
         classify_recovery,
         default_telemetry_path,
+        detect_codex_version,
         flatten_token_usage,
         last_token_usage,
     )
@@ -34,6 +35,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/codex_orchestrat
         ModelPolicyError,
         classify_recovery,
         default_telemetry_path,
+        detect_codex_version,
         flatten_token_usage,
         last_token_usage,
     )
@@ -57,6 +59,7 @@ class RouteDecision:
     app_server_enabled: bool
     role_enabled: bool
     sandbox: str
+    compatibility_warning: str | None = None
 
     @property
     def use_app_server(self) -> bool:
@@ -143,6 +146,28 @@ class AppServerFeatureConfig:
 
     def thread_policy(self, role: str) -> str:
         return str(self.payload["thread_policy"].get(role) or "new")
+
+    @property
+    def qualified_codex_version(self) -> str:
+        qualification = self.payload.get("qualification")
+        value = qualification.get("validated_codex_cli_version") if isinstance(qualification, dict) else None
+        return str(value or "unknown")
+
+    def compatibility_warning(self, codex: str = "codex") -> str | None:
+        installed = detect_codex_version(codex)
+        qualified = self.qualified_codex_version
+        if installed is None:
+            return (
+                "Codex App Server version could not be detected. "
+                "Run the App Server compatibility smoke test before relying on App Server execution."
+            )
+        if installed == qualified:
+            return None
+        return (
+            "Codex App Server version changed. "
+            f"Qualified version: {qualified}. Installed version: {installed}. "
+            "Run the App Server compatibility smoke test before relying on App Server execution."
+        )
 
     def validate_model_policy(self, policy: ModelPolicy) -> None:
         missing = sorted(set(policy.roles) - set(self.payload["role_flags"]))
@@ -403,6 +428,10 @@ def execute_if_enabled(
     )
     if not decision.use_app_server:
         return decision, None
+    warning = features.compatibility_warning(codex)
+    if warning:
+        decision = replace(decision, compatibility_warning=warning)
+        print(f"WARNING: {warning}", file=os.sys.stderr)
     selected_policy = policy or ModelPolicy.load()
     features.validate_model_policy(selected_policy)
     validate_summary_context(cwd, summary_files, summary_source_files)
@@ -639,10 +668,70 @@ def benchmark_regressions(
                     "kind": "input_token_regression",
                     "baseline_input_tokens": baseline_input,
                     "current_input_tokens": current_input,
+                    "absolute_change_tokens": current_input - baseline_input,
+                    "relative_change_percent": round(
+                        ((current_input - baseline_input) / baseline_input) * 100, 2
+                    ),
                     "warning_factor": factor,
                 }
             )
     return findings
+
+
+def benchmark_comparison(
+    records: list[dict[str, Any]], baseline_path: Path
+) -> dict[str, Any]:
+    """Report absolute and relative input changes without turning warnings into runtime failures."""
+
+    try:
+        payload = json.loads(baseline_path.expanduser().resolve().read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise FeatureConfigError(f"cannot load benchmark baseline {baseline_path}: {error}") from error
+    baseline_results = payload.get("results") if isinstance(payload, dict) else None
+    if not isinstance(baseline_results, list):
+        raise FeatureConfigError("benchmark baseline must contain results")
+    baseline_by_id = {
+        str(item.get("id")): item
+        for item in baseline_results
+        if isinstance(item, dict) and item.get("id")
+    }
+    operations: list[dict[str, Any]] = []
+    current_total = 0
+    baseline_total = 0
+    for record in records:
+        baseline = baseline_by_id.get(str(record.get("id")))
+        current_tokens = record.get("tokens")
+        baseline_tokens = baseline.get("tokens") if isinstance(baseline, dict) else None
+        current = current_tokens.get("input") if isinstance(current_tokens, dict) else None
+        prior = baseline_tokens.get("input") if isinstance(baseline_tokens, dict) else None
+        if not isinstance(current, int) or not isinstance(prior, int) or prior <= 0:
+            continue
+        change = current - prior
+        current_total += current
+        baseline_total += prior
+        operations.append(
+            {
+                "id": record.get("id"),
+                "baseline_input_tokens": prior,
+                "current_input_tokens": current,
+                "absolute_change_tokens": change,
+                "relative_change_percent": round((change / prior) * 100, 2),
+            }
+        )
+    aggregate_change = current_total - baseline_total
+    return {
+        "operations": operations,
+        "aggregate": {
+            "baseline_input_tokens": baseline_total,
+            "current_input_tokens": current_total,
+            "absolute_change_tokens": aggregate_change,
+            "relative_change_percent": (
+                round((aggregate_change / baseline_total) * 100, 2)
+                if baseline_total
+                else None
+            ),
+        },
+    }
 
 
 def parse_args() -> argparse.Namespace:
@@ -702,16 +791,19 @@ def main() -> int:
         config = AppServerFeatureConfig.load(args.config)
         enabled = True if args.enable_app_server else None
         if args.command == "route":
+            decision = config.route(
+                args.role,
+                request_text=args.request,
+                sandbox=args.sandbox,
+                enable_override=enabled,
+            )
+            if decision.use_app_server:
+                warning = config.compatibility_warning(args.codex)
+                if warning:
+                    decision = replace(decision, compatibility_warning=warning)
             print(
                 json.dumps(
-                    asdict(
-                        config.route(
-                            args.role,
-                            request_text=args.request,
-                            sandbox=args.sandbox,
-                            enable_override=enabled,
-                        )
-                    ),
+                    asdict(decision),
                     indent=2,
                     sort_keys=True,
                 )
@@ -777,6 +869,9 @@ def main() -> int:
                 file=os.sys.stderr,
             )
             return 2
+        warning = config.compatibility_warning(args.codex)
+        if warning:
+            print(f"WARNING: {warning}", file=os.sys.stderr)
         records: list[dict[str, Any]] = []
         with CodexExecutionAdapter(
             policy=policy,
@@ -811,6 +906,7 @@ def main() -> int:
             else 1.5
         )
         regressions = benchmark_regressions(records, args.baseline, factor=factor)
+        comparison = benchmark_comparison(records, args.baseline)
         print(
             json.dumps(
                 {
@@ -819,7 +915,9 @@ def main() -> int:
                     "tasks": str(args.tasks.expanduser().resolve()),
                     "baseline": str(args.baseline.expanduser().resolve()),
                     "results": records,
+                    "comparison": comparison,
                     "regressions": regressions,
+                    "compatibility_warning": warning,
                 },
                 indent=2,
                 sort_keys=True,

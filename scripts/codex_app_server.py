@@ -543,12 +543,60 @@ class CodexAppServerClient:
         finally:
             self._notifications.extendleft(reversed(deferred))
 
-    def interrupt(self, thread_id: str, turn_id: str) -> None:
-        self.request("turn/interrupt", {"threadId": thread_id, "turnId": turn_id})
+    def interrupt(
+        self, thread_id: str, turn_id: str, *, timeout: float | None = None
+    ) -> None:
+        self.request(
+            "turn/interrupt",
+            {"threadId": thread_id, "turnId": turn_id},
+            timeout=timeout,
+        )
 
-    def read_thread(self, thread_id: str, *, include_turns: bool = False) -> dict[str, Any]:
+    def pop_turn_terminal_notification(
+        self, thread_id: str, turn_id: str
+    ) -> dict[str, Any] | None:
+        """Consume one queued terminal notification for a specific turn."""
+
+        selected: dict[str, Any] | None = None
+        retained: deque[dict[str, Any]] = deque()
+        while self._notifications:
+            message = self._notifications.popleft()
+            params = message.get("params")
+            turn = params.get("turn") if isinstance(params, dict) else None
+            if (
+                selected is None
+                and message.get("method") == "turn/completed"
+                and isinstance(params, dict)
+                and params.get("threadId") in {None, thread_id}
+                and isinstance(turn, dict)
+                and turn.get("id") == turn_id
+            ):
+                selected = message
+                continue
+            retained.append(message)
+        self._notifications.extend(retained)
+        return selected
+
+    def process_state(self) -> dict[str, Any]:
+        process = self.process
+        if process is None:
+            return {"state": "not_started", "returncode": None}
+        return {
+            "state": "running" if process.poll() is None else "exited",
+            "returncode": process.poll(),
+        }
+
+    def read_thread(
+        self,
+        thread_id: str,
+        *,
+        include_turns: bool = False,
+        timeout: float | None = None,
+    ) -> dict[str, Any]:
         result = self.request(
-            "thread/read", {"threadId": thread_id, "includeTurns": include_turns}
+            "thread/read",
+            {"threadId": thread_id, "includeTurns": include_turns},
+            timeout=timeout,
         )
         thread = result.get("thread")
         if not isinstance(thread, dict):

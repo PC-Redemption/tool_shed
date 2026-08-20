@@ -11,6 +11,7 @@ import re
 import subprocess
 import tempfile
 import threading
+import time
 import uuid
 from collections import Counter
 from dataclasses import asdict, dataclass
@@ -635,45 +636,166 @@ class CodexExecutionAdapter:
             additional_context_requested=additional_context_requested,
         )
 
-    def cancel(self, thread_id: str, turn_id: str) -> dict[str, Any]:
+    def cancel(
+        self,
+        thread_id: str,
+        turn_id: str,
+        *,
+        timeout: float = 5.0,
+        poll_interval: float = 0.1,
+        qualification_id: str | None = None,
+        campaign: str | None = None,
+    ) -> dict[str, Any]:
+        """Request cancellation, then reconcile to a bounded authoritative state."""
+
+        if timeout <= 0 or poll_interval <= 0:
+            raise ValueError("cancellation timeout and poll interval must be greater than zero")
+        requested_at = utc_now()
+        events: list[dict[str, Any]] = [
+            {"event": "cancel_requested", "observed_at": isoformat(requested_at)}
+        ]
+        acknowledged = False
+        response_at: datetime | None = None
+        deadline = time.monotonic() + timeout
         try:
-            self.client.interrupt(thread_id, turn_id)
-            return {"outcome": "interrupt_requested", "thread_id": thread_id, "turn_id": turn_id}
+            self.client.interrupt(thread_id, turn_id, timeout=timeout)
+            acknowledged = True
+            response_at = utc_now()
+            events.append(
+                {
+                    "event": "cancel_response",
+                    "observed_at": isoformat(response_at),
+                    "result": "acknowledged",
+                }
+            )
         except AppServerError as error:
             message = str(error.details or error).lower()
-            if "no active turn to interrupt" not in message:
-                raise
-            thread = self.client.read_thread(thread_id, include_turns=True)
-            turns = thread.get("turns")
-            matching = next(
-                (
-                    item
-                    for item in turns or []
-                    if isinstance(item, dict) and item.get("id") == turn_id
-                ),
-                None,
+            response_at = utc_now()
+            events.append(
+                {
+                    "event": "cancel_response",
+                    "observed_at": isoformat(response_at),
+                    "result": (
+                        "no_active_turn"
+                        if "no active turn to interrupt" in message
+                        else "error"
+                    ),
+                    "error_kind": error.kind,
+                }
             )
-            terminal_status = matching.get("status") if isinstance(matching, dict) else None
-            if terminal_status == "interrupted":
-                recovery_action = "resume"
-            elif terminal_status in {"completed", "failed"}:
-                recovery_action = "none" if terminal_status == "completed" else "retry"
-            else:
-                recovery_action = "user_intervention"
-            return {
-                "outcome": (
-                    "already_terminal"
-                    if terminal_status in {"completed", "failed", "interrupted"}
-                    else "interrupt_race_active"
-                    if terminal_status == "inProgress"
-                    else "no_active_turn"
-                ),
-                "recovery_action": recovery_action,
-                "thread_id": thread_id,
-                "turn_id": turn_id,
-                "turn_status": terminal_status,
-                "thread_status": thread.get("status"),
-            }
+
+        terminal_status: str | None = None
+        terminal_event: dict[str, Any] | None = None
+        thread_status: Any = None
+        while time.monotonic() < deadline:
+            notification = self.client.pop_turn_terminal_notification(thread_id, turn_id)
+            if notification is not None:
+                params = notification.get("params")
+                turn = params.get("turn") if isinstance(params, dict) else None
+                terminal_status = str(turn.get("status")) if isinstance(turn, dict) else None
+                terminal_event = {
+                    "source": "turn/completed",
+                    "status": terminal_status,
+                    "observed_at": isoformat(utc_now()),
+                }
+                events.append({"event": "terminal_event", **terminal_event})
+            if terminal_status not in {"completed", "failed", "interrupted"}:
+                try:
+                    remaining = max(0.001, deadline - time.monotonic())
+                    thread = self.client.read_thread(
+                        thread_id, include_turns=True, timeout=remaining
+                    )
+                except AppServerError as error:
+                    events.append(
+                        {
+                            "event": "thread_read_error",
+                            "observed_at": isoformat(utc_now()),
+                            "error_kind": error.kind,
+                            "error": str(error),
+                        }
+                    )
+                    break
+                thread_status = thread.get("status")
+                turns = thread.get("turns")
+                matching = next(
+                    (
+                        item
+                        for item in turns or []
+                        if isinstance(item, dict) and item.get("id") == turn_id
+                    ),
+                    None,
+                )
+                observed = matching.get("status") if isinstance(matching, dict) else None
+                observed_at = isoformat(utc_now())
+                prior = events[-1] if events else None
+                if (
+                    isinstance(prior, dict)
+                    and prior.get("event") == "thread_read"
+                    and prior.get("turn_status") == observed
+                ):
+                    prior["observation_count"] = int(prior.get("observation_count") or 1) + 1
+                    prior["last_observed_at"] = observed_at
+                else:
+                    events.append(
+                        {
+                            "event": "thread_read",
+                            "observed_at": observed_at,
+                            "turn_status": observed,
+                            "observation_count": 1,
+                        }
+                    )
+                if observed in {"completed", "failed", "interrupted"}:
+                    terminal_status = str(observed)
+                    terminal_event = {
+                        "source": "thread/read",
+                        "status": terminal_status,
+                        "observed_at": observed_at,
+                    }
+            if terminal_status in {"completed", "failed", "interrupted"}:
+                break
+            time.sleep(min(poll_interval, max(0.0, deadline - time.monotonic())))
+
+        classification = {
+            "interrupted": "cancelled",
+            "completed": "completed",
+            "failed": "failed",
+        }.get(terminal_status, "unknown")
+        recovery_action = {
+            "interrupted": "resume",
+            "completed": "none",
+            "failed": "retry",
+        }.get(terminal_status, "user_intervention")
+        diagnostic = {
+            "thread_id": thread_id,
+            "turn_id": turn_id,
+            "cancel_request_timestamp": isoformat(requested_at),
+            "cancel_response_timestamp": isoformat(response_at or utc_now()),
+            "cancel_acknowledged": acknowledged,
+            "event_sequence": events,
+            "terminal_event": terminal_event,
+            "final_classification": classification,
+            "server_process_state": self.client.process_state(),
+            "fallback_recovery_action": recovery_action,
+        }
+        self.record_control_event(
+            operation="cancel",
+            qualification_id=qualification_id,
+            campaign=campaign,
+            recovery_action=recovery_action,
+            status=classification,
+            thread_id=thread_id,
+            turn_id=turn_id,
+            details=diagnostic,
+        )
+        return {
+            "outcome": classification,
+            "recovery_action": recovery_action,
+            "thread_id": thread_id,
+            "turn_id": turn_id,
+            "turn_status": terminal_status,
+            "thread_status": thread_status,
+            "diagnostics": diagnostic,
+        }
 
     def get_status(self, thread_id: str) -> dict[str, Any]:
         return self.client.thread_status(thread_id)
@@ -682,8 +804,8 @@ class CodexExecutionAdapter:
         self,
         *,
         operation: str,
-        qualification_id: str,
-        campaign: str,
+        qualification_id: str | None,
+        campaign: str | None,
         recovery_action: str,
         status: str,
         thread_id: str | None = None,
@@ -714,7 +836,7 @@ class CodexExecutionAdapter:
                 "ended_at": now,
                 "duration_seconds": 0.0,
                 "status": status,
-                "success": status in {"completed", "recovered", "fallback"},
+                "success": status in {"completed", "recovered", "fallback", "cancelled"},
                 "escalation": False,
                 "escalation_reason": None,
                 "rerouted": False,
