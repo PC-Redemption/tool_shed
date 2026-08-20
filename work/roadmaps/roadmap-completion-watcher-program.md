@@ -3,14 +3,14 @@
 Status: executing
 Type: program-roadmap
 Updated: 2026-08-19
-Next Action: execute the first ready roadmap campaign through ts: next
+Next Action: keep reduced Campaign 039 deferred until a concrete external/non-App-Server notification pilot is justified
 Roadmap ID: completion-watcher-program
 Revision: 1
 Source Project Map: work/maps/map-disposable-completion-watchers-and-hosted-notifications.md
 Source State Token: 7d67c2059ed5f1cd
-Proposal Token: 83459d28a9f13fcc
+Proposal Token: ae41b8fd6cbacf60
 Approved: 2026-08-18
-Current Milestone: M1-CONTRACT
+Current Milestone: M4-HOSTED-PILOT
 Supersedes: none
 Superseded By: none
 
@@ -687,16 +687,16 @@ Superseded By: none
     },
     {
       "campaign_id": "build-hosted-watcher-status-and-email-pilot",
-      "completion_gate": "The selected hosted architecture, authenticated UI, scoped credentials, durable event store, idempotent API/outbox acknowledgement, notification worker, retention policy, tenant isolation, stale-reporter behavior, offline replay, service-outage recovery, and independent static documentation/backend deployment and rollback pass focused security, privacy, and operational tests in an explicitly bounded pilot.",
+      "completion_gate": "One named external or non-App-Server workload completes a bounded pilot in which authenticated tenant-isolated ingestion, sanitized payloads, durable idempotency, advisory status, centralized notification delivery, retention, reporter-staleness semantics, sender-owned offline replay, service-outage tolerance, and independent backend/static-site rollback pass focused tests; the hosted service has no execution, lifecycle, recovery-control, or local write authority.",
       "depends_on": [
         "qualify-and-release-local-completion-watchers"
       ],
       "milestone": "M4-HOSTED-PILOT",
-      "outcome": "Deliver a bounded authenticated pilot at the Tool Shed public service boundary for sanitized advisory status and centralized email delivery.",
+      "outcome": "Prove a bounded hosted companion for external or non-App-Server work that accepts outbound-only sanitized terminal events, presents tenant-scoped advisory status, and delivers centralized notifications without controlling originating work.",
       "primary_focus_areas": [
         "provider-portability"
       ],
-      "request": "Resolve the remaining hosted technology and operations decisions, then build the smallest production-shaped pilot consistent with the accepted hosted-email ADR. Keep local state authoritative, accept outbound-only sanitized events, configure recipients and mail credentials only on the server, and exclude remote-control endpoints.",
+      "request": "For one named workload outside the App Server-controlled path, build the smallest production-shaped notification pilot consistent with the accepted hosted-email ADR. Keep the local watcher authoritative, accept outbound-only sanitized terminal events, configure recipients and credentials only on the server, and exclude execution, recovery, lifecycle, and write-back endpoints.",
       "supporting_focus_areas": [
         "workspace-safety",
         "qualification-release"
@@ -724,13 +724,14 @@ Superseded By: none
       "unlocks_gate": "G5-PRODUCTION-QUALIFIED"
     }
   ],
-  "constraints": "Local task evidence remains authoritative. Default polling is 60 seconds. The runner is on-demand rather than a new permanent service. WAITING requires authoritative live evidence for an immutable target ID. Terminal events enter a durable local outbox before watcher retirement. Hosted reporting is outbound-only, opt-in, sanitized, authenticated, idempotent, and advisory. Linux and Windows behavior, crash recovery, downgrade-safe state, independent static-site/backend rollback, and normal verified Tool Shed release distribution must be evidenced.",
+  "constraints": "Local task evidence remains authoritative. Default polling is 60 seconds. The runner is on-demand rather than a new permanent service. WAITING requires authoritative live evidence for an immutable target ID. Terminal events enter a durable local outbox before watcher retirement. Hosted reporting is outbound-only, opt-in, sanitized, authenticated, idempotent, and advisory, and is limited to external or non-App-Server work. It cannot orchestrate execution, monitor App Server turns, decide recovery, manage agent lifecycle, or write back. Linux and Windows behavior, crash recovery, downgrade-safe state, independent static-site/backend rollback, and normal verified Tool Shed release distribution must be evidenced.",
   "decisions": [
     "Use the full Project Map \u2192 Program Roadmap \u2192 milestone/gate \u2192 campaign \u2192 workpackage \u2192 evidence model.",
     "Preserve the original owner campaign as deferred intake and replace single-campaign execution with separately approved roadmap-derived campaigns.",
     "Deliver and qualify the local watcher and durable outbox before building the hosted companion.",
     "Use the accepted ADR at work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md: local state is authoritative and the optional hosted backend is the preferred centralized email adapter.",
-    "Promise durable idempotent event processing, not unconditional exactly-once recipient delivery."
+    "Promise durable idempotent event processing, not unconditional exactly-once recipient delivery.",
+    "After Campaigns 041 and 042, reserve hosted scope for advisory status and notification delivery outside the App Server-controlled execution path."
   ],
   "desired_outcome": "Tool Shed provides a released, provider-neutral completion-watcher capability that observes immutable long-running targets once per minute, survives defined local failures, records terminal outcomes durably, and can optionally report sanitized status and delegate email delivery to an authenticated advisory service at ts.rookaro.com without making hosted infrastructure authoritative for local work.",
   "gates": [
@@ -770,7 +771,7 @@ Superseded By: none
     {
       "evidence_required": true,
       "id": "G4-HOSTED-PILOT-PROVEN",
-      "pass_criteria": "The hosted pilot demonstrates authenticated tenant isolation, sanitized payloads, durable idempotent ingestion, offline retry/replay, stale-reporter semantics, centralized email behavior, key revocation, retention, service-outage recovery, and independent static-site/backend rollback.",
+      "pass_criteria": "A named external or non-App-Server workload demonstrates authenticated tenant isolation, sanitized payloads, durable idempotent ingestion, sender-owned offline replay, stale-reporter semantics, centralized notification behavior, key revocation, retention, service-outage tolerance, and independent static-site/backend rollback with no remote execution, recovery, lifecycle, or workspace-control authority.",
       "requires_milestones": [
         "M4-HOSTED-PILOT"
       ],
@@ -816,7 +817,7 @@ Superseded By: none
         "M3-LOCAL-RELEASE"
       ],
       "id": "M4-HOSTED-PILOT",
-      "outcome": "An authenticated, outbound-only hosted pilot durably ingests and deduplicates sanitized watcher events, presents advisory status, sends centralized email, tolerates reporting outages, and preserves independent documentation-site rollback.",
+      "outcome": "For a named external or non-App-Server workload, an authenticated outbound-only hosted pilot durably ingests sanitized terminal events, presents advisory status, sends centralized notifications, tolerates reporting outages, and has no execution or recovery authority.",
       "phase": "P3-HOSTED-PILOT"
     },
     {

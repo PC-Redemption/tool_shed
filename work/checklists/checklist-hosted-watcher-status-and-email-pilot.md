@@ -1,18 +1,22 @@
 # Checklist: Hosted watcher status and email pilot
 
-Status: active
+Status: deferred
 Type: checklist
 Updated: 2026-08-19
-Next Action: execute the checklist
+Next Action: wait for a named external or non-App-Server workload, service owner, and notification recipient before resuming
 Campaign: build-hosted-watcher-status-and-email-pilot
 Parent: work/roadmaps/roadmap-completion-watcher-program.md
 Project Map: work/maps/map-disposable-completion-watchers-and-hosted-notifications.md
 
 ## Goal
 
-Deliver the first bounded hosted pilot for completion watchers while preserving local authority, with
-advisory status, idempotent event ingestion, and centralized email under explicit authentication and
-tenant isolation.
+Deliver a bounded hosted notification companion only for work outside the App Server-controlled
+path. Preserve local watcher authority while providing tenant-scoped advisory status, idempotent
+terminal-event ingestion, and centralized notification delivery.
+
+The hosted service must not orchestrate execution, detect completion for App Server CAMPs, monitor
+App Server turns, retry or recover originating work, manage agent lifecycle, or write back to the
+originating workspace.
 
 ## Checklist
 
@@ -20,7 +24,7 @@ tenant isolation.
   - endpoint for terminal event ingestion with versioned schema, deterministic event ID, and duplicate
     rejection,
   - endpoint for advisory status read with redacted / tenant-scoped payloads,
-  - endpoint for manual replay/retry requests within bounded limits,
+  - idempotent acknowledgement so the sender-owned local outbox can replay safely,
   - clear authentication error behavior and 401/403/404 semantics.
 - [x] Add a minimal, auditable datastore path for hosted pilot:
   - durable terminal-event table/collection with idempotency key constraints,
@@ -44,10 +48,10 @@ tenant isolation.
 - [ ] Status-surface contract committed to
   `docs/completion-watcher-hosted-status-surface.md` with tenant checks, stale/reporting mapping, and
   advisory status semantics.
-- [ ] Implement recovery and resilience checks:
+- [ ] Implement hosted-delivery resilience checks:
   - outbox retry/replay after service restart,
   - stale reporter behavior (no false local-task conclusions),
-  - service outage fallback path that preserves local outbox ownership,
+  - service outage behavior that preserves local outbox ownership and performs no remote recovery,
   - rollback plan for backend and static-site deployments that can be executed independently.
 - [ ] Recovery and rollout playbook committed to
   `docs/completion-watcher-hosted-recovery-rollout.md` including outage replay, stale-reporter semantics,
@@ -57,10 +61,11 @@ tenant isolation.
   - payload redaction controls for sensitive paths / stderr / command text,
   - rate limiting and abuse guardrails for pilot traffic,
   - minimal logging plus audit record retention policy.
-- [ ] Run a bounded pilot on the hosted surface:
-  - at least one workspace enrollment,
+- [ ] Run a bounded pilot on the hosted surface only after reactivation:
+  - at least one named external or non-App-Server workload enrollment,
   - terminal events captured and reported without hosted write-back to local state,
-  - email path proves exactly once processing is bounded and durable (not exactly-once email delivery claim).
+  - email or selected notification path proves bounded durable processing (not exactly-once delivery),
+  - no execution, recovery, lifecycle, or workspace-control endpoint exists.
 - [ ] Record evidence for each acceptance criterion in a single campaign evidence artifact
   (runtime logs, request IDs, and bounded rollout results).
 
@@ -72,6 +77,7 @@ tenant isolation.
 
 ## Verification
 
-- The checklist is complete when campaign `039` can be moved to complete with evidence pointing to:
-  authenticated ingress, idempotent terminal delivery, bounded notification worker behavior, and
-  recovery/rollback evidence.
+- The checklist is complete when reduced campaign `039` can be moved to complete with evidence from
+  a real external/non-App-Server workload covering authenticated ingress, idempotent terminal
+  delivery, advisory status, bounded notification behavior, sender-owned replay, and hosted
+  rollback. App Server execution evidence does not satisfy this gate.

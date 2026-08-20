@@ -1,11 +1,10 @@
 # Project Map: Disposable completion watchers and hosted notifications
 
-Status: active
+Status: deferred
 Type: project-map
 Updated: 2026-08-18
-Next Action: derive and approve the M2 local-alpha campaign after G1 contract evidence is recorded
-Campaign: standalone
-Campaign Reason: strategic coordination surface; executable work will be materialized from an approved Program Roadmap
+Next Action: preserve the completed local watcher and wait for a concrete external/non-App-Server notification need before revisiting hosted work
+Campaign: build-hosted-watcher-status-and-email-pilot
 
 ## Purpose
 
@@ -13,6 +12,10 @@ Coordinate the local watcher runtime, cross-platform qualification, optional hos
 email companion, release distribution, and evidence-driven rollout described by GitHub issue #42.
 This map separates portable local truth from advisory hosted services and keeps implementation,
 publication, deployment, and broader enablement behind distinct gates.
+
+After qualified App Server integration, hosted scope excludes execution orchestration, App Server
+monitoring, CAMP completion detection, recovery control, and agent lifecycle. Only advisory status
+and notification delivery for external or non-App-Server work remain eligible.
 
 ## Visual Map
 
@@ -52,15 +55,17 @@ flowchart TD
 
 1,000 ft:
 
-- Active workpackages: none; M1 was a bounded contract spike rather than runner implementation.
-- Active campaigns: roadmap-derived Campaign 036 records the completed M1 contract; deferred
-  campaign 035 remains intake context and must not execute as an umbrella campaign.
-- Open decisions: hosted technology, authenticated UI, tenancy, retention, and operational
-  ownership remain for later milestones. Local v1 watcher semantics are frozen.
+- Active workpackages: none.
+- Campaigns 036 through 038 completed the local contract, implementation, qualification, and
+  release; Campaign 035 remains deferred intake context and Campaign 039 remains deferred in
+  reduced form.
+- Open decisions apply only if hosted work is reactivated: concrete external workload, recipient,
+  hosted technology, authentication, tenancy, retention, and operational ownership.
 
 Ground:
 
-- Current next action: derive and separately approve the M2 local-alpha campaign plan.
+- Current next action: none until a named external/non-App-Server workload and notification
+  recipient justify reactivating reduced Campaign 039.
 - Owner/context: human and Codex in the canonical Tool Shed maintainer workspace.
 - Verification: M1 contract fixtures plus roadmap validation, queue reconciliation, index
   freshness, stale-path checks, and work-state review.
@@ -70,11 +75,11 @@ Ground:
 | Workstream | Status | Lead Artifact | Depends On | Next Action |
 | --- | --- | --- | --- | --- |
 | Watch protocol and failure model | complete | `docs/completion-watcher-protocol.md` | issue #42 requirements | preserve the v1 contract and executable oracle |
-| Portable local runner and outbox | planned | this map | approved protocol and failure-model gate | derive and approve the M2 campaign |
-| Linux and Windows qualification | planned | this map | portable runner alpha | run concurrency, crash, reboot, missing-target, and outage scenarios |
-| Local release and pilot | planned | this map | cross-platform qualification | release opt-in local capability and capture pilot evidence |
-| Hosted status and email companion | planned | `work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md` | local outbox contract and local release evidence | settle hosted architecture and run a bounded pilot |
-| Hosted production rollout | planned | this map | hosted pilot evidence and privacy/security review | qualify independent deployment, rollback, retention, and notification behavior |
+| Portable local runner and outbox | complete | `scripts/completion_watcher.py` | approved protocol and failure-model gate | preserve the qualified local implementation |
+| Linux and Windows qualification | complete | `work/evidence/evidence-completion-watcher-v1-release.md` | portable runner alpha | preserve cross-platform evidence |
+| Local release and pilot | complete | `work/evidence/evidence-completion-watcher-v1-release.md` | cross-platform qualification | maintain the opt-in local capability |
+| Hosted status and notification companion | deferred | `work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md` | named external/non-App-Server workload and recipient | reassess only when a concrete independent need exists |
+| Hosted production rollout | deferred | this map | reduced hosted pilot evidence and privacy/security review | do not materialize before a useful pilot passes |
 
 ## Dependency Notes
 
@@ -93,19 +98,22 @@ Ground:
 
 You are here:
 
-- The v1 local watcher contract, schemas, and executable oracle are complete. Production runner
-  behavior remains unimplemented and belongs to M2.
+- The v1 local watcher, contract, cross-platform qualification, and release evidence are complete.
+- Qualified App Server execution owns in-path CAMP orchestration and completion behavior.
+- The reduced hosted companion remains deferred with no current real pilot workload.
 
 Do next:
 
-- [x] Approve the Program Roadmap and materialize M1.
-- [x] Freeze the v1 protocol and record G1 evidence.
-- [ ] Derive and separately approve the M2 local-alpha campaign plan.
+- [x] Approve the Program Roadmap and complete M1 through M3.
+- [x] Integrate the qualified App Server path and revise Campaign 039's boundary.
+- [ ] If a real external/non-App-Server notification need appears, explicitly reactivate reduced
+  Campaign 039 and bind the pilot to that workload and recipient.
 
 Avoid for now:
 
 - Do not execute campaign 035 as a single end-to-end implementation.
-- Do not build the hosted backend before local lifecycle and outbox evidence pass their gate.
+- Do not build the hosted backend without a concrete external/non-App-Server pilot need.
+- Do not duplicate App Server orchestration, monitoring, recovery, or agent lifecycle.
 - Do not deploy, publish, release, synchronize clients, or configure credentials from planning
   approval alone.
 
@@ -115,7 +123,7 @@ Avoid for now:
 - Existing campaign: `work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md`
 - Workpackages: none yet
 - Tickets: none yet
-- Checklists: none yet
+- Checklists: `work/checklists/checklist-hosted-watcher-status-and-email-pilot.md` (deferred)
 - Spikes: `work/spikes/spike-completion-watcher-protocol-and-failure-model.md`
 - Protocol: `docs/completion-watcher-protocol.md`
 - ADRs: `work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md`

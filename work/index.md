@@ -49,9 +49,9 @@ Updated: 2026-08-20
 | [work/00-campaigns/completed/040-app-server-camp-token-optimization.md](work/00-campaigns/completed/040-app-server-camp-token-optimization.md) | campaign | complete | 2026-08-20 | none | - |
 | [work/00-campaigns/completed/041-integrate-qualified-app-server-and-reassess-hosted-watcher.md](work/00-campaigns/completed/041-integrate-qualified-app-server-and-reassess-hosted-watcher.md) | campaign | complete | 2026-08-20 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
-| [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate when After Campaign 040 completes, reassess Campaign 039 against the App Server results and explicitly reactivate it only if the watcher work remains relevant. | - |
+| [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
-| [work/checklists/checklist-hosted-watcher-status-and-email-pilot.md](work/checklists/checklist-hosted-watcher-status-and-email-pilot.md) | checklist | active | 2026-08-19 | execute the checklist | work/roadmaps/roadmap-completion-watcher-program.md |
+| [work/checklists/checklist-hosted-watcher-status-and-email-pilot.md](work/checklists/checklist-hosted-watcher-status-and-email-pilot.md) | checklist | deferred | 2026-08-19 | wait for a named external or non-App-Server workload, service owner, and notification recipient before resuming | work/roadmaps/roadmap-completion-watcher-program.md |
 | [work/checklists/checklist-refresh-readme-and-ai-command-reference.md](work/checklists/checklist-refresh-readme-and-ai-command-reference.md) | checklist | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/checklists/checklist-tool-shed-skill-field-test.md](work/checklists/checklist-tool-shed-skill-field-test.md) | checklist | complete | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/decisions/decision-codex-skill-readiness.md](work/decisions/decision-codex-skill-readiness.md) | decision-matrix | decided | 2026-07-05 | continue using skill on real projects; plugin packaging deferred | work/maps/map-tool-shed-foundation.md |
@@ -65,6 +65,7 @@ Updated: 2026-08-20
 | [work/evidence/evidence-completion-watcher-v1-contract.md](work/evidence/evidence-completion-watcher-v1-contract.md) | evidence | complete | 2026-08-18 | none | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
 | [work/evidence/evidence-completion-watcher-v1-release.md](work/evidence/evidence-completion-watcher-v1-release.md) | evidence | complete | 2026-08-19 | none | work/00-campaigns/completed/038-qualify-and-release-local-completion-watchers.md |
 | [work/evidence/evidence-human-planning-mechanism-evaluation.md](work/evidence/evidence-human-planning-mechanism-evaluation.md) | evidence | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
+| [work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md](work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md) | evidence | complete | 2026-08-20 | none | - |
 | [work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md](work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md) | evidence | complete | 2026-08-09 | none | work/wp/completed/wp-evidence-responsive-tool-shed-execution.md |
 | [work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md](work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md) | evidence | complete | 2026-08-18 | none | work/00-campaigns/completed/027-publish-and-verify-tool-shed-v0-22-0.md |
 | [work/evidence/evidence-tool-shed-provider-portability.md](work/evidence/evidence-tool-shed-provider-portability.md) | - | - | - | - | - |
@@ -72,10 +73,10 @@ Updated: 2026-08-20
 | [work/focus-areas.md](work/focus-areas.md) | focus-area-catalog | approved | 2026-08-15 | review when an enduring responsibility boundary changes | - |
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
-| [work/maps/map-disposable-completion-watchers-and-hosted-notifications.md](work/maps/map-disposable-completion-watchers-and-hosted-notifications.md) | project-map | active | 2026-08-18 | derive and approve the M2 local-alpha campaign after G1 contract evidence is recorded | - |
+| [work/maps/map-disposable-completion-watchers-and-hosted-notifications.md](work/maps/map-disposable-completion-watchers-and-hosted-notifications.md) | project-map | deferred | 2026-08-18 | preserve the completed local watcher and wait for a concrete external/non-App-Server notification need before revisiting hosted work | - |
 | [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | active | 2026-08-14 | review the exact target manifest before authorizing the first guarded fleet snapshot update | - |
 | [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
-| [work/roadmaps/roadmap-completion-watcher-program.md](work/roadmaps/roadmap-completion-watcher-program.md) | program-roadmap | executing | 2026-08-19 | execute the first ready roadmap campaign through ts: next | none |
+| [work/roadmaps/roadmap-completion-watcher-program.md](work/roadmaps/roadmap-completion-watcher-program.md) | program-roadmap | executing | 2026-08-19 | keep reduced Campaign 039 deferred until a concrete external/non-App-Server notification pilot is justified | none |
 | [work/spikes/spike-completion-watcher-protocol-and-failure-model.md](work/spikes/spike-completion-watcher-protocol-and-failure-model.md) | spike | complete | 2026-08-18 | none | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
 | [work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md](work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md) | spike | complete | 2026-08-09 | none | work/maps/map-tool-shed-evolution.md |
 | [work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md](work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md) | spike | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
@@ -106,6 +107,6 @@ Updated: 2026-08-20
 
 ## Summary
 
-- Total artifacts: 89
-- Active artifacts: 4
-- Completed/decided artifacts: 79
+- Total artifacts: 90
+- Active artifacts: 2
+- Completed/decided artifacts: 80

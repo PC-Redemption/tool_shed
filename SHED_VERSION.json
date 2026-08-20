@@ -137,7 +137,7 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
-  "notes": "Integrates the qualified default-off Codex App Server path alongside the completion watcher v1 work, preserving GUI fallback, bounded CAMP execution, and current campaign history.",
+  "notes": "Integrates the qualified default-off Codex App Server path alongside the completion watcher v1 work, preserving GUI fallback, bounded CAMP execution, and reduced deferred hosted-notification scope.",
   "release_commit": null,
   "release_tag": "v0.24.0",
   "released_at": null,
