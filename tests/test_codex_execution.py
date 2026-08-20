@@ -6,8 +6,21 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.codex_app_server import AuthenticationError
-from scripts.codex_execution import CodexExecutionAdapter, ModelPolicy, ModelPolicyError
+from scripts.codex_app_server import AppServerError, AuthenticationError
+from scripts.codex_execution import (
+    ApprovalBridge,
+    CodexExecutionAdapter,
+    ModelPolicy,
+    ModelPolicyError,
+    activity_report,
+    classify_recovery,
+)
+from scripts.codex_orchestration import (
+    AppServerFeatureConfig,
+    benchmark_regressions,
+    execute_bounded,
+    inline_context_prompt,
+)
 from scripts.reasoning_catalog import query_codex_catalog
 
 
@@ -18,8 +31,10 @@ FAKE_CODEX = r'''#!/usr/bin/env python3
 import json
 import os
 import sys
+import time
 
 account_type = os.environ.get("FAKE_CODEX_ACCOUNT", "chatgpt")
+turn_count = 0
 for raw in sys.stdin:
     message = json.loads(raw)
     method = message.get("method")
@@ -46,15 +61,30 @@ for raw in sys.stdin:
             })
         print(json.dumps({"id": request_id, "result": {"data": data, "nextCursor": None}}), flush=True)
     elif method in ("thread/start", "thread/resume", "thread/fork"):
+        if method == "thread/resume" and os.environ.get("FAKE_CODEX_STALE_THREAD") == "1":
+            print(json.dumps({"id": request_id, "error": {"code": -32602, "message": "thread not found: stale thread id"}}), flush=True)
+            continue
         thread_id = message.get("params", {}).get("threadId", "thr_fake")
-        print(json.dumps({"id": request_id, "result": {"thread": {"id": thread_id, "status": {"type": "idle"}}}}), flush=True)
+        print(json.dumps({"id": request_id, "result": {"thread": {"id": thread_id, "status": {"type": "idle"}}, "instructionSources": ["/workspace/AGENTS.md"]}}), flush=True)
     elif method == "thread/read":
         thread_id = message["params"]["threadId"]
         print(json.dumps({"id": request_id, "result": {"thread": {"id": thread_id, "status": {"type": "idle"}}}}), flush=True)
     elif method == "turn/start":
+        turn_count += 1
         params = message["params"]
         turn_id = "turn_fake"
         print(json.dumps({"id": request_id, "result": {"turn": {"id": turn_id, "status": "inProgress", "items": []}}}), flush=True)
+        if os.environ.get("FAKE_CODEX_EXIT_ON_TURN") == "1":
+            sys.exit(7)
+        if os.environ.get("FAKE_CODEX_DELAY_TURN") == "1":
+            time.sleep(0.3)
+        if os.environ.get("FAKE_CODEX_INTERRUPT") == "1":
+            print(json.dumps({"method": "turn/completed", "params": {"threadId": params["threadId"], "turn": {"id": turn_id, "status": "interrupted", "items": []}}}), flush=True)
+            continue
+        if os.environ.get("FAKE_CODEX_FAIL_TERRA") == "1" and params.get("model") == "gpt-5.6-terra":
+            error = {"message": "recoverable failure", "codexErrorInfo": {"type": "InternalServerError"}}
+            print(json.dumps({"method": "turn/completed", "params": {"threadId": params["threadId"], "turn": {"id": turn_id, "status": "failed", "error": error, "items": []}}}), flush=True)
+            continue
         print(json.dumps({"method": "item/agentMessage/delta", "params": {"threadId": params["threadId"], "turnId": turn_id, "delta": "FAKE_OK"}}), flush=True)
         usage = {"inputTokens": 10, "cachedInputTokens": 2, "outputTokens": 3, "reasoningOutputTokens": 1, "totalTokens": 13}
         print(json.dumps({"method": "thread/tokenUsage/updated", "params": {"threadId": params["threadId"], "turnId": turn_id, "tokenUsage": {"last": usage, "total": usage, "modelContextWindow": 1000}}}), flush=True)
@@ -79,8 +109,12 @@ class CodexExecutionTests(unittest.TestCase):
     def test_policy_routes_frontier_and_workhorse_roles(self) -> None:
         planning = self.policy.select("planning")
         verification = self.policy.select("verification")
+        architecture = self.policy.select("architecture")
+        testing = self.policy.select("testing")
         self.assertEqual((planning.model, planning.reasoning), ("gpt-5.6-sol", "high"))
         self.assertEqual((verification.model, verification.reasoning), ("gpt-5.6-terra", "low"))
+        self.assertEqual((architecture.model, architecture.reasoning), ("gpt-5.6-sol", "xhigh"))
+        self.assertEqual((testing.model, testing.reasoning), ("gpt-5.6-terra", "low"))
         self.assertNotIn("luna", json.dumps(self.policy.payload).lower())
 
     def test_execution_requires_chatgpt_and_records_model_aware_telemetry(self) -> None:
@@ -105,6 +139,11 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertEqual(record["camp"], "camp-b")
         self.assertEqual(record["actual_model"], "gpt-5.6-terra")
         self.assertEqual(record["token_usage"]["last"]["totalTokens"], 13)
+        self.assertEqual(record["tokens"]["input"], 10)
+        self.assertEqual(record["tokens"]["cached_input"], 2)
+        self.assertEqual(record["tokens"]["reasoning_output"], 1)
+        self.assertEqual(record["thread_mode"], "new")
+        self.assertEqual(record["context_scope"]["instruction_sources"], ["/workspace/AGENTS.md"])
         self.assertTrue(record["success"])
 
     def test_api_key_authentication_fails_closed(self) -> None:
@@ -144,6 +183,245 @@ class CodexExecutionTests(unittest.TestCase):
         models, user_agent = query_codex_catalog(str(self.fake), timeout=5)
         self.assertEqual(user_agent, "fake-codex/0.144.6")
         self.assertEqual({item["id"] for item in models}, {"gpt-5.6-sol", "gpt-5.6-terra"})
+
+    def test_feature_flags_preserve_gui_fallback_and_discussion(self) -> None:
+        config = AppServerFeatureConfig.load(ROOT / "adapters" / "codex-app-server-config.json")
+        self.assertEqual(config.context_delivery, "inline_relevant_files")
+        inline = inline_context_prompt(
+            config,
+            ROOT,
+            (Path("adapters/codex-model-policy.json"),),
+            "verify",
+        )
+        self.assertIn("BEGIN adapters/codex-model-policy.json", inline)
+        self.assertEqual(config.route("planning").reason, "global_feature_disabled")
+        self.assertTrue(config.route("planning", enable_override=True).use_app_server)
+        self.assertTrue(config.route("verification", enable_override=True).use_app_server)
+        self.assertFalse(config.route("implementation", enable_override=True).use_app_server)
+        discussion = config.route(
+            "planning", request_text="ts: discuss context", enable_override=True
+        )
+        self.assertEqual((discussion.backend, discussion.reason), ("existing-gui", "gui_native_discussion"))
+        writing = config.route(
+            "planning", sandbox="workspace-write", enable_override=True
+        )
+        self.assertEqual(writing.reason, "sandbox_not_enabled")
+
+    def test_thread_resume_restart_and_stale_thread_classification(self) -> None:
+        telemetry = self.root / "telemetry.jsonl"
+        with CodexExecutionAdapter(
+            policy=self.policy,
+            codex=str(self.fake),
+            telemetry_path=telemetry,
+        ) as adapter:
+            first = adapter.execute("first", role="planning", cwd=ROOT)
+            adapter.client.restart()
+            resumed = adapter.execute(
+                "second", role="planning", cwd=ROOT, thread_id=first.thread_id
+            )
+        self.assertTrue(resumed.thread_reused)
+        self.assertEqual(resumed.thread_id, first.thread_id)
+
+        prior = os.environ.get("FAKE_CODEX_STALE_THREAD")
+        os.environ["FAKE_CODEX_STALE_THREAD"] = "1"
+        try:
+            adapter = CodexExecutionAdapter(
+                policy=self.policy,
+                codex=str(self.fake),
+                telemetry_path=self.root / "stale.jsonl",
+            )
+            with self.assertRaises(AppServerError) as captured:
+                adapter.execute("stale", role="planning", cwd=ROOT, thread_id="thr_stale")
+            adapter.close()
+            self.assertEqual(
+                classify_recovery("failed", captured.exception.details),
+                "requires_new_thread",
+            )
+        finally:
+            if prior is None:
+                os.environ.pop("FAKE_CODEX_STALE_THREAD", None)
+            else:
+                os.environ["FAKE_CODEX_STALE_THREAD"] = prior
+
+    def test_interrupted_and_terminated_streams_are_resume_not_replay(self) -> None:
+        scenarios = (
+            ("FAKE_CODEX_INTERRUPT", "safe_to_resume"),
+            ("FAKE_CODEX_EXIT_ON_TURN", "safe_to_resume"),
+        )
+        for variable, expected in scenarios:
+            with self.subTest(variable=variable):
+                os.environ[variable] = "1"
+                telemetry = self.root / f"{variable}.jsonl"
+                adapter = CodexExecutionAdapter(
+                    policy=self.policy,
+                    codex=str(self.fake),
+                    telemetry_path=telemetry,
+                )
+                try:
+                    with self.assertRaises(AppServerError):
+                        adapter.execute("test", role="planning", cwd=ROOT)
+                finally:
+                    adapter.close()
+                    os.environ.pop(variable, None)
+                record = json.loads(telemetry.read_text(encoding="utf-8"))
+                self.assertEqual(record["recovery_action"], expected)
+        os.environ["FAKE_CODEX_DELAY_TURN"] = "1"
+        timeout_telemetry = self.root / "timeout.jsonl"
+        adapter = CodexExecutionAdapter(
+            policy=self.policy,
+            codex=str(self.fake),
+            timeout=0.1,
+            telemetry_path=timeout_telemetry,
+        )
+        try:
+            with self.assertRaises(AppServerError):
+                adapter.execute("test", role="planning", cwd=ROOT)
+        finally:
+            adapter.close()
+            os.environ.pop("FAKE_CODEX_DELAY_TURN", None)
+        timeout_record = json.loads(timeout_telemetry.read_text(encoding="utf-8"))
+        self.assertEqual(timeout_record["recovery_action"], "safe_to_resume")
+
+    def test_bounded_terra_retry_escalates_once_to_sol(self) -> None:
+        os.environ["FAKE_CODEX_FAIL_TERRA"] = "1"
+        telemetry = self.root / "bounded.jsonl"
+        try:
+            with CodexExecutionAdapter(
+                policy=self.policy,
+                codex=str(self.fake),
+                telemetry_path=telemetry,
+            ) as adapter:
+                result = execute_bounded(
+                    adapter,
+                    "verify",
+                    role="verification",
+                    cwd=ROOT,
+                )
+        finally:
+            os.environ.pop("FAKE_CODEX_FAIL_TERRA", None)
+        records = [json.loads(line) for line in telemetry.read_text(encoding="utf-8").splitlines()]
+        self.assertEqual([item["attempt"] for item in records[:2]], [1, 2])
+        self.assertEqual(result.actual_model, "gpt-5.6-sol")
+        self.assertTrue(result.escalation)
+        self.assertEqual(result.escalation_reason, "recoverable_failure_exhausted")
+        self.assertEqual(sum(bool(item["escalation"]) for item in records), 1)
+
+    def test_approval_bridge_is_bounded_and_fail_closed(self) -> None:
+        command = {
+            "threadId": "thr_1",
+            "turnId": "turn_1",
+            "itemId": "item_1",
+            "availableDecisions": ["accept", "decline", "cancel"],
+            "command": "true",
+        }
+        file_change = {
+            "threadId": "thr_1",
+            "turnId": "turn_1",
+            "itemId": "item_2",
+        }
+        disabled = ApprovalBridge(lambda _: "accept")
+        self.assertEqual(
+            disabled("item/commandExecution/requestApproval", command),
+            {"decision": "cancel"},
+        )
+        accepting = ApprovalBridge(lambda _: "accept", workspace_write_enabled=True)
+        self.assertEqual(
+            accepting("item/fileChange/requestApproval", file_change),
+            {"decision": "accept"},
+        )
+        denied = ApprovalBridge(lambda _: "decline", workspace_write_enabled=True)
+        self.assertEqual(
+            denied("item/commandExecution/requestApproval", command),
+            {"decision": "decline"},
+        )
+        cancelled = ApprovalBridge(lambda _: "cancel", workspace_write_enabled=True)
+        self.assertEqual(
+            cancelled("item/fileChange/requestApproval", file_change),
+            {"decision": "cancel"},
+        )
+        self.assertEqual(
+            accepting("item/commandExecution/requestApproval", command),
+            {"decision": "accept"},
+        )
+        malformed = ApprovalBridge(lambda _: "accept", workspace_write_enabled=True)
+        self.assertEqual(
+            malformed("item/fileChange/requestApproval", {"threadId": "thr_1"}),
+            {"decision": "cancel"},
+        )
+        timed_out = ApprovalBridge(
+            lambda _: __import__("time").sleep(0.05) or "accept",
+            workspace_write_enabled=True,
+            timeout=0.005,
+        )
+        self.assertEqual(
+            timed_out("item/commandExecution/requestApproval", command),
+            {"decision": "cancel"},
+        )
+        self.assertEqual(timed_out.events[-1]["outcome"], "timed_out")
+        self.assertEqual(
+            accepting(
+                "item/permissions/requestApproval",
+                {"threadId": "thr_1", "turnId": "turn_1", "itemId": "item_3"},
+            ),
+            {"permissions": []},
+        )
+
+    def test_cancellation_calls_bounded_turn_interrupt(self) -> None:
+        with CodexExecutionAdapter(
+            policy=self.policy,
+            codex=str(self.fake),
+            telemetry_path=self.root / "cancel.jsonl",
+        ) as adapter:
+            result = adapter.cancel("thr_fake", "turn_fake")
+        self.assertEqual(result["outcome"], "interrupt_requested")
+
+    def test_context_accounting_warns_without_blocking(self) -> None:
+        telemetry = self.root / "context.jsonl"
+        with CodexExecutionAdapter(
+            policy=self.policy,
+            codex=str(self.fake),
+            telemetry_path=telemetry,
+        ) as adapter:
+            result = adapter.execute(
+                "inspect policy",
+                role="verification",
+                cwd=ROOT,
+                explicit_files=(Path("adapters/codex-model-policy.json"),),
+                restricted_read=True,
+                warning_input_tokens=5,
+            )
+        self.assertEqual(result.context_warning["input_tokens"], 10)
+        self.assertGreater(result.context_scope["explicit_file_bytes"], 0)
+        self.assertTrue(result.context_scope["restricted_read"])
+
+    def test_activity_report_is_prompt_free_and_summarized(self) -> None:
+        telemetry = self.root / "activity.jsonl"
+        with CodexExecutionAdapter(
+            policy=self.policy,
+            codex=str(self.fake),
+            telemetry_path=telemetry,
+        ) as adapter:
+            adapter.execute(
+                "secret prompt not retained",
+                role="verification",
+                cwd=ROOT,
+                program="P",
+                camp="C",
+            )
+        report = activity_report(telemetry, limit=20)
+        self.assertEqual(report["operation_count"], 1)
+        self.assertEqual(report["summary"]["input_tokens"], 10)
+        self.assertEqual(report["operations"][0]["program"], "P")
+        self.assertNotIn("secret prompt", json.dumps(report))
+        baseline = self.root / "baseline.json"
+        baseline.write_text(
+            json.dumps({"results": [{"id": "small", "tokens": {"input": 10}}]}),
+            encoding="utf-8",
+        )
+        findings = benchmark_regressions(
+            [{"id": "small", "tokens": {"input": 16}}], baseline, factor=1.5
+        )
+        self.assertEqual(findings[0]["kind"], "input_token_regression")
 
 
 if __name__ == "__main__":

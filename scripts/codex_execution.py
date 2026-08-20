@@ -6,12 +6,15 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import queue
 import tempfile
+import threading
 import uuid
+from collections import Counter
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 try:
     from scripts.codex_app_server import (
@@ -60,6 +63,134 @@ class ExecutionResult:
     token_usage: dict[str, Any] | None
     rerouted: bool
     escalation: bool
+    escalation_reason: str | None
+    thread_reused: bool
+    context_scope: dict[str, Any]
+    recovery_action: str
+    context_warning: dict[str, Any] | None
+    attempt: int
+
+
+@dataclass(frozen=True)
+class ApprovalRequest:
+    kind: str
+    method: str
+    thread_id: str
+    turn_id: str
+    item_id: str
+    params: dict[str, Any]
+
+
+ApprovalResolver = Callable[[ApprovalRequest], str | dict[str, Any]]
+
+
+class ApprovalBridge:
+    """Synchronous, bounded bridge for App Server approval requests.
+
+    Workspace-write execution remains disabled unless the caller explicitly
+    enables this bridge and supplies an operator-facing resolver.
+    """
+
+    METHODS = {
+        "item/commandExecution/requestApproval": "command",
+        "item/fileChange/requestApproval": "file_change",
+        "item/permissions/requestApproval": "permissions",
+        "execCommandApproval": "legacy_command",
+        "applyPatchApproval": "legacy_file_change",
+    }
+    DECISIONS = {"accept", "acceptForSession", "decline", "cancel"}
+
+    def __init__(
+        self,
+        resolver: ApprovalResolver | None = None,
+        *,
+        workspace_write_enabled: bool = False,
+        timeout: float = 120.0,
+    ) -> None:
+        if timeout <= 0:
+            raise ValueError("approval timeout must be greater than zero")
+        self.resolver = resolver
+        self.workspace_write_enabled = workspace_write_enabled
+        self.timeout = timeout
+        self.events: list[dict[str, Any]] = []
+
+    def __call__(self, method: str, params: dict[str, Any]) -> dict[str, Any]:
+        kind = self.METHODS.get(method)
+        if kind == "permissions":
+            self._record(method, params, "none", "permissions_disabled")
+            return {"permissions": []}
+        if kind in {"legacy_command", "legacy_file_change"}:
+            self._record(method, params, "cancel", "legacy_fail_closed")
+            return {"decision": "cancel"}
+        thread_id = params.get("threadId")
+        turn_id = params.get("turnId")
+        item_id = params.get("itemId")
+        if (
+            kind is None
+            or not isinstance(thread_id, str)
+            or not thread_id
+            or not isinstance(turn_id, str)
+            or not turn_id
+            or not isinstance(item_id, str)
+            or not item_id
+        ):
+            self._record(method, params, "cancel", "malformed_or_unexpected")
+            return {"decision": "cancel"}
+        request = ApprovalRequest(kind, method, thread_id, turn_id, item_id, dict(params))
+        if not self.workspace_write_enabled or self.resolver is None:
+            self._record(method, params, "cancel", "workspace_write_disabled")
+            return {"decision": "cancel"}
+
+        answers: queue.Queue[Any] = queue.Queue(maxsize=1)
+
+        def resolve() -> None:
+            try:
+                answers.put(self.resolver(request))
+            except Exception as error:  # pragma: no cover - exact error text is unimportant
+                answers.put(error)
+
+        threading.Thread(target=resolve, daemon=True).start()
+        try:
+            answer = answers.get(timeout=self.timeout)
+        except queue.Empty:
+            self._record(method, params, "cancel", "timed_out")
+            return {"decision": "cancel"}
+        if isinstance(answer, Exception):
+            self._record(method, params, "cancel", "resolver_failed")
+            return {"decision": "cancel"}
+        decision = answer.get("decision") if isinstance(answer, dict) else answer
+        if decision not in self.DECISIONS:
+            self._record(method, params, "cancel", "invalid_decision")
+            return {"decision": "cancel"}
+        available = params.get("availableDecisions")
+        if isinstance(available, list) and available and decision not in available:
+            self._record(method, params, "cancel", "decision_not_available")
+            return {"decision": "cancel"}
+        self._record(method, params, str(decision), "resolved")
+        return {"decision": decision}
+
+    def _record(
+        self, method: str, params: dict[str, Any], decision: str, outcome: str
+    ) -> None:
+        self.events.append(
+            {
+                "time": isoformat(utc_now()),
+                "method": method,
+                "thread_id": params.get("threadId"),
+                "turn_id": params.get("turnId"),
+                "item_id": params.get("itemId"),
+                "decision": decision,
+                "outcome": outcome,
+            }
+        )
+
+    def events_for(self, thread_id: str, turn_id: str | None) -> list[dict[str, Any]]:
+        return [
+            dict(event)
+            for event in self.events
+            if event.get("thread_id") == thread_id
+            and (turn_id is None or event.get("turn_id") == turn_id)
+        ]
 
 
 def utc_now() -> datetime:
@@ -189,14 +320,17 @@ class CodexExecutionAdapter:
         codex: str = "codex",
         timeout: float = 300.0,
         telemetry_path: Path | None = None,
+        approval_bridge: ApprovalBridge | None = None,
     ) -> None:
         self.policy = policy or ModelPolicy.load()
+        self.approval_bridge = approval_bridge or ApprovalBridge()
         self.client = CodexAppServerClient(
             codex,
             timeout=timeout,
             client_name="tool_shed_execution",
             client_title="Tool Shed Execution Adapter",
             client_version="0.1.0",
+            approval_handler=self.approval_bridge,
         )
         self.telemetry = TelemetryRecorder(telemetry_path or default_telemetry_path())
         self.account: dict[str, Any] | None = None
@@ -267,11 +401,21 @@ class CodexExecutionAdapter:
         camp: str | None = None,
         operation: str = "execute",
         escalation: bool = False,
+        escalation_reason: str | None = None,
+        explicit_files: tuple[Path, ...] = (),
+        context_mode: str = "workspace",
+        context_delivery: str = "reference",
+        warning_input_tokens: int | None = None,
+        restricted_read: bool = False,
+        attempt: int = 1,
+        ephemeral: bool = False,
+        source_cwd: Path | None = None,
     ) -> ExecutionResult:
         if self.account is None:
             self.start()
         started = utc_now()
         run_id = str(uuid.uuid4())
+        thread_reused = thread_id is not None
         if thread_id:
             selection, thread = self.resume_work(
                 thread_id,
@@ -286,9 +430,21 @@ class CodexExecutionAdapter:
                 cwd=cwd,
                 approval_policy=approval_policy,
                 sandbox=sandbox,
+                ephemeral=ephemeral,
             )
         active_thread_id = str(thread["id"])
+        context_scope = describe_context_scope(
+            cwd,
+            prompt=prompt,
+            mode=context_mode,
+            delivery=context_delivery,
+            explicit_files=explicit_files,
+            instruction_sources=tuple(thread.get("instructionSources") or ()),
+            restricted_read=restricted_read,
+            source_cwd=source_cwd,
+        )
         turn_id: str | None = None
+        recorded = False
         try:
             turn_id = self.client.start_turn(
                 active_thread_id,
@@ -297,12 +453,18 @@ class CodexExecutionAdapter:
                 effort=selection.reasoning,
                 cwd=cwd,
                 approval_policy=approval_policy,
-                sandbox_policy=sandbox_policy(sandbox, cwd),
+                sandbox_policy=sandbox_policy(
+                    sandbox, cwd, restricted_read=restricted_read
+                ),
             )
             turn = self.client.wait_for_turn(active_thread_id, turn_id)
             actual_model = (
                 str(turn.reroutes[-1].get("toModel")) if turn.reroutes else selection.model
             )
+            warning = token_context_warning(
+                role, turn.token_usage, threshold=warning_input_tokens
+            )
+            recovery = classify_recovery(turn.status, turn.error)
             result = ExecutionResult(
                 run_id=run_id,
                 role=role,
@@ -317,6 +479,12 @@ class CodexExecutionAdapter:
                 token_usage=turn.token_usage,
                 rerouted=bool(turn.reroutes),
                 escalation=escalation,
+                escalation_reason=escalation_reason,
+                thread_reused=thread_reused,
+                context_scope=context_scope,
+                recovery_action=recovery,
+                context_warning=warning,
+                attempt=attempt,
             )
             self._record(
                 result,
@@ -326,14 +494,16 @@ class CodexExecutionAdapter:
                 camp=camp,
                 error=turn.error,
             )
+            recorded = True
             if turn.status != "completed":
                 raise AppServerError(
                     f"Codex turn {turn.turn_id} ended with status {turn.status}",
                     details=turn.error,
+                    kind=f"turn_{turn.status}",
                 )
             return result
         except Exception as error:
-            if turn_id is None or not isinstance(error, AppServerError) or not error.details:
+            if not recorded:
                 self.telemetry.append(
                     {
                         "schema_version": 1,
@@ -351,6 +521,21 @@ class CodexExecutionAdapter:
                         "ended_at": isoformat(utc_now()),
                         "status": "failed",
                         "escalation": escalation,
+                        "escalation_reason": escalation_reason,
+                        "thread_reused": thread_reused,
+                        "thread_mode": "resumed" if thread_reused else "new",
+                        "context_scope": context_scope,
+                        "attempt": attempt,
+                        "recovery_action": classify_recovery(
+                            "failed",
+                            error.details if isinstance(error, AppServerError) else None,
+                            transport_kind=(
+                                error.kind if isinstance(error, AppServerError) else None
+                            ),
+                        ),
+                        "approval_events": self.approval_bridge.events_for(
+                            active_thread_id, turn_id
+                        ),
                         "error": str(error),
                     }
                 )
@@ -366,6 +551,13 @@ class CodexExecutionAdapter:
         cwd: Path,
         program: str | None = None,
         camp: str | None = None,
+        explicit_files: tuple[Path, ...] = (),
+        context_mode: str = "workspace",
+        context_delivery: str = "reference",
+        warning_input_tokens: int | None = None,
+        restricted_read: bool = False,
+        ephemeral: bool = False,
+        source_cwd: Path | None = None,
     ) -> ExecutionResult:
         source = self.policy.select(source_role)
         if source.model_class != "workhorse":
@@ -387,10 +579,47 @@ class CodexExecutionAdapter:
             camp=camp,
             operation="escalate",
             escalation=True,
+            escalation_reason=reason,
+            explicit_files=explicit_files,
+            context_mode=context_mode,
+            context_delivery=context_delivery,
+            warning_input_tokens=warning_input_tokens,
+            restricted_read=restricted_read,
+            attempt=workhorse_attempts + 1,
+            ephemeral=ephemeral,
+            source_cwd=source_cwd,
         )
 
-    def cancel(self, thread_id: str, turn_id: str) -> None:
-        self.client.interrupt(thread_id, turn_id)
+    def cancel(self, thread_id: str, turn_id: str) -> dict[str, Any]:
+        try:
+            self.client.interrupt(thread_id, turn_id)
+            return {"outcome": "interrupt_requested", "thread_id": thread_id, "turn_id": turn_id}
+        except AppServerError as error:
+            message = str(error.details or error).lower()
+            if "no active turn to interrupt" not in message:
+                raise
+            thread = self.client.read_thread(thread_id, include_turns=True)
+            turns = thread.get("turns")
+            matching = next(
+                (
+                    item
+                    for item in turns or []
+                    if isinstance(item, dict) and item.get("id") == turn_id
+                ),
+                None,
+            )
+            terminal_status = matching.get("status") if isinstance(matching, dict) else None
+            return {
+                "outcome": (
+                    "already_terminal"
+                    if terminal_status in {"completed", "failed", "interrupted"}
+                    else "no_active_turn"
+                ),
+                "thread_id": thread_id,
+                "turn_id": turn_id,
+                "turn_status": terminal_status,
+                "thread_status": thread.get("status"),
+            }
 
     def get_status(self, thread_id: str) -> dict[str, Any]:
         return self.client.thread_status(thread_id)
@@ -423,16 +652,195 @@ class CodexExecutionAdapter:
             "status": result.status,
             "success": result.status == "completed",
             "escalation": result.escalation,
+            "escalation_reason": result.escalation_reason,
             "rerouted": result.rerouted,
+            "thread_reused": result.thread_reused,
+            "thread_mode": "resumed" if result.thread_reused else "new",
+            "context_scope": result.context_scope,
+            "context_warning": result.context_warning,
+            "attempt": result.attempt,
+            "recovery_action": result.recovery_action,
             "token_usage": result.token_usage,
+            "tokens": flatten_token_usage(result.token_usage),
+            "last_request_tokens": last_token_usage(result.token_usage),
+            "approval_events": self.approval_bridge.events_for(
+                result.thread_id, result.turn_id
+            ),
             "error": error,
         }
         self.telemetry.append(record)
 
 
-def sandbox_policy(sandbox: str, cwd: Path) -> dict[str, Any]:
+def repository_root(cwd: Path) -> Path | None:
+    resolved = cwd.resolve()
+    for candidate in (resolved, *resolved.parents):
+        if (candidate / ".git").exists():
+            return candidate
+    return None
+
+
+def describe_context_scope(
+    cwd: Path,
+    *,
+    prompt: str,
+    mode: str,
+    delivery: str,
+    explicit_files: tuple[Path, ...],
+    instruction_sources: tuple[str, ...],
+    restricted_read: bool,
+    source_cwd: Path | None,
+) -> dict[str, Any]:
+    resolved_cwd = cwd.resolve()
+    root = repository_root(resolved_cwd)
+    metadata_root = source_cwd.resolve() if source_cwd else resolved_cwd
+    files: list[dict[str, Any]] = []
+    for supplied in explicit_files:
+        candidate = supplied if supplied.is_absolute() else metadata_root / supplied
+        resolved = candidate.resolve()
+        try:
+            size = resolved.stat().st_size
+        except OSError:
+            size = None
+        try:
+            label = str(resolved.relative_to(metadata_root))
+        except ValueError:
+            label = str(resolved)
+        files.append({"path": label, "bytes": size})
+    return {
+        "mode": mode,
+        "delivery": delivery,
+        "cwd": str(resolved_cwd),
+        "repository_root": str(root) if root else None,
+        "source_cwd": str(source_cwd.resolve()) if source_cwd else str(resolved_cwd),
+        "restricted_read": restricted_read,
+        "instruction_sources": list(instruction_sources),
+        "explicit_files": files,
+        "explicit_file_bytes": sum(
+            int(item["bytes"]) for item in files if isinstance(item.get("bytes"), int)
+        ),
+        "prompt_characters": len(prompt),
+    }
+
+
+def flatten_token_usage(token_usage: dict[str, Any] | None) -> dict[str, int | None]:
+    usage = token_usage.get("turn") if isinstance(token_usage, dict) else None
+    if not isinstance(usage, dict):
+        usage = token_usage.get("total") if isinstance(token_usage, dict) else None
+    if not isinstance(usage, dict):
+        usage = token_usage if isinstance(token_usage, dict) else {}
+
+    def value(name: str) -> int | None:
+        raw = usage.get(name)
+        return int(raw) if isinstance(raw, (int, float)) else None
+
+    return {
+        "input": value("inputTokens"),
+        "cached_input": value("cachedInputTokens"),
+        "output": value("outputTokens"),
+        "reasoning_output": value("reasoningOutputTokens"),
+        "total": value("totalTokens"),
+    }
+
+
+def last_token_usage(token_usage: dict[str, Any] | None) -> dict[str, int | None]:
+    last = token_usage.get("last") if isinstance(token_usage, dict) else None
+    if not isinstance(last, dict):
+        last = {}
+
+    def value(name: str) -> int | None:
+        raw = last.get(name)
+        return int(raw) if isinstance(raw, (int, float)) else None
+
+    return {
+        "input": value("inputTokens"),
+        "cached_input": value("cachedInputTokens"),
+        "output": value("outputTokens"),
+        "reasoning_output": value("reasoningOutputTokens"),
+        "total": value("totalTokens"),
+    }
+
+
+def token_context_warning(
+    role: str,
+    token_usage: dict[str, Any] | None,
+    *,
+    threshold: int | None,
+) -> dict[str, Any] | None:
+    input_tokens = flatten_token_usage(token_usage)["input"]
+    if threshold is None or input_tokens is None or input_tokens <= threshold:
+        return None
+    return {
+        "kind": "input_tokens_above_threshold",
+        "role": role,
+        "input_tokens": input_tokens,
+        "threshold": threshold,
+    }
+
+
+def _error_kind(error: dict[str, Any] | None) -> str | None:
+    if not isinstance(error, dict):
+        return None
+    info = error.get("codexErrorInfo")
+    if isinstance(info, dict):
+        kind = info.get("type") or info.get("kind")
+        if isinstance(kind, str):
+            return kind
+    kind = error.get("type") or error.get("kind")
+    return str(kind) if isinstance(kind, str) else None
+
+
+def classify_recovery(
+    status: str,
+    error: dict[str, Any] | None,
+    *,
+    transport_kind: str | None = None,
+) -> str:
+    """Map protocol outcomes to the four recovery actions Tool Shed exposes."""
+
+    if status == "completed":
+        return "none"
+    if status == "interrupted":
+        return "safe_to_resume"
+    if transport_kind in {
+        "timeout",
+        "transport_closed",
+        "server_terminated",
+        "turn_interrupted",
+    }:
+        # The turn may have reached Codex. Reconcile the stored thread before
+        # issuing any new turn; never blindly replay the prompt.
+        return "safe_to_resume"
+    kind = (_error_kind(error) or "").lower()
+    message = str(error or "").lower()
+    if (
+        "thread" in message
+        and any(word in message for word in ("not found", "no rollout found", "stale", "unknown"))
+    ):
+        return "requires_new_thread"
+    if kind in {"contextwindowexceeded", "context_window_exceeded"}:
+        return "requires_new_thread"
+    if kind in {
+        "badrequest",
+        "unauthorized",
+        "usagelimitexceeded",
+        "usage_limit_exceeded",
+    }:
+        return "requires_user_intervention"
+    return "safe_to_retry"
+
+
+def sandbox_policy(
+    sandbox: str, cwd: Path, *, restricted_read: bool = False
+) -> dict[str, Any]:
     if sandbox == "read-only":
-        return {"type": "readOnly", "networkAccess": False}
+        policy: dict[str, Any] = {"type": "readOnly", "networkAccess": False}
+        if restricted_read:
+            policy["access"] = {
+                "type": "restricted",
+                "includePlatformDefaults": True,
+                "readableRoots": [str(cwd.resolve())],
+            }
+        return policy
     if sandbox == "workspace-write":
         return {
             "type": "workspaceWrite",
@@ -475,6 +883,81 @@ def sanitized_probe(adapter: CodexExecutionAdapter) -> dict[str, Any]:
     }
 
 
+def read_telemetry(path: Path, *, limit: int = 20) -> list[dict[str, Any]]:
+    if limit < 1:
+        raise ValueError("telemetry limit must be at least one")
+    resolved = path.expanduser().resolve()
+    try:
+        lines = resolved.read_text(encoding="utf-8").splitlines()
+    except FileNotFoundError:
+        return []
+    records: list[dict[str, Any]] = []
+    for line in lines:
+        try:
+            record = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(record, dict):
+            records.append(record)
+    return records[-limit:]
+
+
+def activity_report(path: Path, *, limit: int = 20) -> dict[str, Any]:
+    records = read_telemetry(path, limit=limit)
+    by_model: Counter[str] = Counter()
+    by_role: Counter[str] = Counter()
+    totals = Counter()
+    operations: list[dict[str, Any]] = []
+    for record in records:
+        model = str(record.get("actual_model") or record.get("requested_model") or "unknown")
+        role = str(record.get("role") or "unknown")
+        by_model[model] += 1
+        by_role[role] += 1
+        tokens = record.get("tokens")
+        if not isinstance(tokens, dict):
+            tokens = flatten_token_usage(record.get("token_usage"))
+        for source, target in (
+            ("input", "input_tokens"),
+            ("cached_input", "cached_input_tokens"),
+            ("output", "output_tokens"),
+            ("reasoning_output", "reasoning_tokens"),
+            ("total", "total_tokens"),
+        ):
+            value = tokens.get(source)
+            if isinstance(value, int):
+                totals[target] += value
+        operations.append(
+            {
+                "time": record.get("started_at"),
+                "role": role,
+                "program": record.get("program"),
+                "camp": record.get("camp"),
+                "model": model,
+                "reasoning": record.get("reasoning"),
+                "tokens": tokens,
+                "success": bool(record.get("success")),
+                "escalated": bool(record.get("escalation")),
+                "escalation_reason": record.get("escalation_reason"),
+                "thread_reused": bool(record.get("thread_reused")),
+                "context_warning": record.get("context_warning"),
+            }
+        )
+    return {
+        "title": f"Last {limit} Tool Shed AI operations",
+        "telemetry": str(path.expanduser().resolve()),
+        "operation_count": len(operations),
+        "operations": operations,
+        "summary": {
+            "by_model": dict(sorted(by_model.items())),
+            "by_role": dict(sorted(by_role.items())),
+            **dict(totals),
+            "escalations": sum(bool(item["escalated"]) for item in operations),
+            "reused_threads": sum(bool(item["thread_reused"]) for item in operations),
+            "context_warnings": sum(item["context_warning"] is not None for item in operations),
+        },
+    }
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--codex", default="codex")
@@ -483,6 +966,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--telemetry", type=Path, default=default_telemetry_path())
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("probe", help="Verify ChatGPT auth and configured model availability.")
+
+    activity = subparsers.add_parser(
+        "activity", help="Show recent prompt-free App Server telemetry."
+    )
+    activity.add_argument("--limit", type=int, default=20)
 
     run = subparsers.add_parser("run", help="Execute one role-routed Codex turn.")
     run.add_argument("--role", required=True)
@@ -505,6 +993,9 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     try:
+        if args.command == "activity":
+            print(json.dumps(activity_report(args.telemetry, limit=args.limit), indent=2, sort_keys=True))
+            return 0
         policy = ModelPolicy.load(args.policy)
         with CodexExecutionAdapter(
             policy=policy,

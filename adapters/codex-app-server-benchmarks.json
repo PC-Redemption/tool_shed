@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "tasks": [
+    {
+      "id": "small-planning",
+      "role": "planning",
+      "size": "small",
+      "files": ["README.md"],
+      "prompt": "Using the supplied README.md context, return one sentence naming Tool Shed's primary purpose. Do not modify files."
+    },
+    {
+      "id": "medium-planning",
+      "role": "planning",
+      "size": "medium",
+      "files": ["README.md", "selection.md", "conventions.md"],
+      "prompt": "Using the supplied README.md, selection.md, and conventions.md context, return a five-item implementation plan for adding a small read-only reporting command. Do not modify files."
+    },
+    {
+      "id": "small-verification",
+      "role": "verification",
+      "size": "small",
+      "files": ["adapters/codex-model-policy.json"],
+      "prompt": "Using the supplied adapters/codex-model-policy.json context, report whether planning routes to Sol/high and verification routes to Terra/low. Do not modify files."
+    },
+    {
+      "id": "medium-verification",
+      "role": "verification",
+      "size": "medium",
+      "files": [
+        "scripts/codex_app_server.py",
+        "scripts/codex_execution.py",
+        "tests/test_codex_execution.py"
+      ],
+      "prompt": "Using the supplied scripts/codex_app_server.py, scripts/codex_execution.py, and tests/test_codex_execution.py context, return a concise verification checklist covering authentication, routing, telemetry, cancellation, and escalation. Do not modify files."
+    }
+  ]
+}

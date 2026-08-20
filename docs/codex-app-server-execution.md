@@ -1,121 +1,232 @@
-# Codex App Server Execution Adapter
+# Codex App Server Execution
 
-Status: proof of concept
+Status: feature-flagged read-only integration; default off
 
-Tool Shed can use the locally installed `codex app-server` as an opt-in machine-facing execution
-backend while retaining the interactive Codex UI as its operator surface. The existing interactive
-execution path remains unchanged and is the fallback until this adapter is qualified.
+Tool Shed can route selected read-only lifecycle roles through the locally installed Codex App
+Server while retaining the current Codex GUI conversation as the default and fallback execution
+surface. Workspace-writing CAMP execution is not enabled.
 
-## Verified Local Surface
+The implementation targets Codex CLI 0.144.6 and App Server v2 over local stdio JSONL. The
+[official App Server documentation](https://developers.openai.com/codex/app-server) describes the
+handshake, thread and turn lifecycle, token events, and server-initiated approvals. It also labels
+the App Server command experimental and unsupported for production workloads. This integration
+therefore remains opt-in even though its read-only path is qualified.
 
-The proof of concept targets Codex CLI 0.144.6 and App Server v2 over the default stdio JSONL
-transport. At runtime the adapter performs the required `initialize` / `initialized` handshake,
-calls `account/read`, and refuses execution unless the returned account type is exactly `chatgpt`.
-It never accepts, reads, or falls back to an OpenAI API key.
+## Routing Boundary
 
-`model/list` is the runtime authority for model identifiers and supported effort labels. The
-central policy is `adapters/codex-model-policy.json`; Programs and CAMPs pass only lifecycle roles.
-The adapter validates every configured role against the live catalog before starting work.
-
-The installed CLI still labels `app-server` experimental. Clients can stay off explicitly
-experimental v2 methods and fields by omitting `capabilities.experimentalApi`, but this proof of
-concept should not be treated as a production-stable integration until OpenAI changes the command's
-stability commitment.
-
-## Boundary
+The feature policy is centralized in `adapters/codex-app-server-config.json`; model and reasoning
+policy remains centralized in `adapters/codex-model-policy.json`.
 
 ```text
-Tool Shed lifecycle role
-        |
-        v
-CodexExecutionAdapter ---- centralized model policy
-        |
-        v
-CodexAppServerClient ----- stdio JSONL / v2
-        |
-        v
-ChatGPT-authenticated Codex
+ts: discuss              -> current Codex GUI conversation
+planning                 -> App Server / Sol / high, when explicitly enabled
+verification             -> App Server / Terra / low, when explicitly enabled
+all writing roles        -> existing GUI path
+feature disabled         -> existing GUI path
 ```
 
-`CodexExecutionAdapter` provides `start_work`, `resume_work`, `execute`, `cancel`, `get_status`,
-and an explicit bounded `escalate` operation. `CodexAppServerClient` isolates the handshake,
-request correlation, thread/turn lifecycle, streaming notifications, approvals, and process
-shutdown. The existing reasoning catalog now reuses this transport.
+The committed defaults are:
 
-## Operation
-
-Probe authentication and policy compatibility without exposing account email or tokens:
-
-```bash
-python3 scripts/codex_execution.py probe
+```text
+codex_app_server_enabled = false
+planning                 = true
+verification             = true
+program_derivation       = false
+camp_derivation          = false
+camp_execution           = false
+implementation           = false
+normal_debug             = false
+testing                   = false
+build                     = false
+deployment                = false
+escalation                = false
+allowed_sandboxes         = read-only only
+workspace_write_enabled   = false
 ```
 
-Run a role-routed request:
+`--enable-app-server` is an invocation-scoped override for qualification; it does not modify the
+default-off configuration.
+
+Show the selected backend without starting App Server:
 
 ```bash
-python3 scripts/codex_execution.py run \
-  --role camp_execution \
+python3 scripts/codex_orchestration.py route --role planning
+python3 scripts/codex_orchestration.py \
+  --enable-app-server route --role planning
+python3 scripts/codex_orchestration.py \
+  --enable-app-server route --role discussion --request "ts: discuss context cost"
+```
+
+Run a selected read-only role:
+
+```bash
+python3 scripts/codex_orchestration.py \
+  --enable-app-server run \
+  --role verification \
   --cwd . \
-  --prompt "Execute the established CAMP instructions."
+  --file adapters/codex-model-policy.json \
+  --prompt "Verify the supplied model policy."
 ```
 
-Run the two-model proof of concept:
+When routing selects the fallback, the command reports that the initiating workflow must continue
+in the existing GUI. It does not attempt to emulate or spawn a second GUI conversation.
+
+## Authentication and Model Policy
+
+On every new App Server client connection the adapter completes `initialize` / `initialized`, calls
+`account/read`, and refuses execution unless `account.type` is exactly `chatgpt`. API-key,
+unauthenticated, Bedrock, and other provider modes fail closed. Tool Shed does not read, persist, or
+accept an OpenAI API key and has no API-key fallback.
+
+The live `model/list` response is the authority for model identifiers and supported reasoning
+efforts. The current policy is:
+
+| Lifecycle roles | Model | Reasoning |
+| --- | --- | --- |
+| planning, program/campaign derivation and design, escalation | `gpt-5.6-sol` | `high` |
+| architecture | `gpt-5.6-sol` | `xhigh` |
+| CAMP execution, implementation, normal debugging, deployment | `gpt-5.6-terra` | `medium` |
+| verification, testing, build | `gpt-5.6-terra` | `low` |
+
+Only planning and verification are currently App Server eligible. The other routes are prepared in
+the centralized model policy but disabled in the feature policy.
+
+## Context and Token Accounting
+
+Telemetry distinguishes:
+
+- cumulative input, cached input, output, reasoning-output, and total tokens for the current turn;
+- the last model request inside the turn;
+- raw App Server thread-cumulative usage;
+- model, reasoning, role, thread and turn IDs;
+- new versus resumed thread;
+- source workspace, execution directory, context mode and delivery strategy;
+- loaded `instructionSources`, explicitly selected file names and byte counts, and prompt size;
+- rerouting, retry attempt, escalation and reason, recovery action, and context warnings.
+
+Prompts, responses, account email, tokens, and credentials are not written to telemetry.
+
+### Why a tiny turn was about 19k input tokens
+
+Live measurements isolated the fixed harness cost:
+
+| Scope | Instruction sources | Input tokens |
+| --- | ---: | ---: |
+| Empty temporary directory, 51-character prompt | user `AGENTS.md` only | 18,782 |
+| Tool Shed worktree, 55-character prompt | user and repository `AGENTS.md` | 19,007 |
+| Resumed Tool Shed thread, 54-character prompt | same two sources | 19,033 |
+
+Only 225 tokens separated the empty directory from the repository. Tool Shed supplied only the
+short user prompt; it did not copy the outer GUI conversation or workspace files into App Server.
+The approximately 18.8k baseline is therefore primarily the Codex harness: built-in instructions,
+available tool definitions, provider/session metadata, and the user-level instruction source. The
+repository `AGENTS.md` adds a comparatively small amount.
+
+Thread reuse did not reduce input-token count: the second tiny turn rose from 19,007 to 19,033,
+while cached input remained 9,984. Reuse can improve cache composition, but it accumulates history.
+Planning and verification therefore default to new ephemeral threads. Resume remains available for
+recovery of a known interrupted thread, not as the routine short-task optimization.
+
+### Avoiding repeated fixed harness cost
+
+The first benchmark strategy placed only relevant files in a focused temporary snapshot and asked
+the agent to read them. It successfully constrained scope, but every file-reading/tool round paid
+the fixed harness cost again. The four tasks used 339,602 input tokens.
+
+The current strategy keeps the focused temporary directory and supplies only the explicitly named
+UTF-8 files inline, capped at 100,000 bytes. This reduced all four tasks to one model request each.
+Larger inputs must be reduced to a relevant summary rather than silently copying an unbounded
+workspace.
+
+| Benchmark | Reference-file input | Inline input | Reduction |
+| --- | ---: | ---: | ---: |
+| Small planning | 38,914 | 25,819 | 33.65% |
+| Medium planning | 101,486 | 31,961 | 68.51% |
+| Small verification | 37,211 | 18,813 | 49.44% |
+| Medium verification | 161,991 | 33,893 | 79.08% |
+| Total | 339,602 | 110,486 | 67.47% |
+
+The repeatable tasks are in `adapters/codex-app-server-benchmarks.json`; the measured baseline is
+`docs/codex-app-server-benchmark-baseline.json`.
+
+Run them with:
 
 ```bash
-python3 scripts/codex_execution.py poc --cwd .
+python3 scripts/codex_orchestration.py \
+  --enable-app-server benchmark --cwd .
 ```
 
-The CLI defaults to `read-only`, `approvalPolicy: never`, and no network. Workspace-changing
-callers must deliberately select a different sandbox and implement an approval bridge appropriate
-to their user surface.
+The benchmark compares current input against the committed baseline. A task exceeding 1.5 times
+its baseline is reported as a regression but is not hard-stopped. The equivalent GUI path does not
+expose per-turn token telemetry in this workspace, so a reliable numerical GUI comparison is not
+available.
 
-## Protocol Findings
+## Thread and Failure Recovery
 
-- Launch: spawn `codex app-server --stdio`; one process can own multiple loaded threads.
-- Authentication: `account/read` reports `chatgpt`, `apiKey`, or another configured provider. Only
-  managed `chatgpt` is accepted here; Codex owns OAuth persistence and refresh.
-- Model and effort: set `model` on `thread/start` or `thread/resume`, and set both `model` and
-  `effort` on `turn/start`. Discover valid values through `model/list`.
-- Threads: stable methods cover start, resume, fork, read, list, archive, and unsubscribe. There is
-  no ordinary "terminate thread" call; interrupt the active turn and unsubscribe or close the
-  client. Permanent `thread/delete` is destructive and outside this adapter.
-- Streaming: consume `turn/*`, `item/*`, `thread/tokenUsage/updated`, warnings, errors, and model
-  reroute notifications until `turn/completed` reports `completed`, `interrupted`, or `failed`.
-- Agent capabilities: shell runs and file changes appear as streamed items. When approval is
-  required, App Server sends a server-initiated request that the client must answer. This proof of
-  concept cancels unhandled approval requests rather than granting authority silently.
-- Errors: failed turns include typed `codexErrorInfo` values. Authentication, usage-limit, bad
-  request, and context-limit failures must fail without retries or model escalation. Transient
-  transport retries belong in a later orchestrator layer and must remain bounded.
-- Usage: `thread/tokenUsage/updated` exposes input, cached input, output, reasoning output, and total
-  tokens. It does not establish dollar cost for ChatGPT subscription usage.
+The adapter classifies terminal and transport outcomes into an explicit recovery contract:
 
-## Escalation Policy
+| Evidence | Recovery action |
+| --- | --- |
+| Completed turn | `none` |
+| Interrupted turn | `safe_to_resume` |
+| Timeout, transport close, or server termination | `safe_to_resume` after status reconciliation; never blind replay |
+| Recoverable failed turn | `safe_to_retry` |
+| Stale/unknown thread or context-window exhaustion | `requires_new_thread` |
+| Bad request, authentication, or usage-limit failure | `requires_user_intervention` |
 
-The adapter never loops automatically. Workhorse execution is capped at two attempts. A caller may
-request frontier escalation after the cap, or immediately for the named architectural or complex
-failure reasons. Escalation is recorded separately. Semantic blocker detection should eventually
-use a structured CAMP result rather than guessing from prose.
+Qualification covers new threads, resumed threads, completed turns, cancellation/interruption,
+unexpected process termination, client/server restart, stale IDs, failed turns, bounded retries,
+and timeouts. Focused planning and verification threads are ephemeral and intentionally cannot be
+resumed after their temporary context disappears. Recovery resumes only a non-ephemeral thread
+whose durable context still exists.
 
-## Telemetry
+There are no unbounded retries. A Terra role receives at most two attempts: the initial attempt and
+one diagnostic retry. If both end in an explicitly recoverable failure, one Sol escalation is
+allowed and records `recoverable_failure_exhausted`. Authentication, usage-limit, bad-request,
+context-limit, timeout, and ambiguous transport failures are never automatically replayed.
 
-The default append-only JSONL file is `~/.codex/tool-shed/execution-telemetry.jsonl`. Records include
-run and operation IDs, Program and CAMP identifiers when supplied, role, model class, requested and
-actual model, reasoning effort, thread/turn IDs, timestamps, status, rerouting, escalation, and
-token usage. Prompts, responses, account email, tokens, and credentials are deliberately excluded.
+## Approval Bridge
 
-## Incremental Migration Plan
+`ApprovalBridge` implements a bounded callback contract for current v2 command-execution and
+file-change approval requests. It validates thread, turn, and item IDs; restricts responses to the
+documented decisions; respects `availableDecisions`; times out; and records prompt-free approval
+events. Malformed, unexpected, denied, cancelled, timed-out, unavailable, or resolver-failed
+requests fail closed.
 
-1. Keep the adapter opt-in and qualify read-only planning and verification turns against current
-   Codex releases. Preserve the interactive path unchanged.
-2. Add a provider-owned execution-role field at the Tool Shed orchestration boundary. Programs and
-   CAMPs continue to describe lifecycle intent and never contain RPC method names or model IDs.
-3. Route Program/CAMP derivation to frontier roles and established CAMP execution to workhorse
-   roles behind a feature flag. Persist thread IDs only in runtime state, not canonical artifacts.
-4. Bridge server-initiated approvals to the interactive Codex UI or another explicit operator
-   surface before enabling workspace-write execution. Never auto-approve commands or patches.
-5. Add structured CAMP outcomes (`success`, `expected_failure`, `unexpected_blocker`) so bounded
-   retry and escalation decisions are evidence-based.
-6. Compare Sol/Terra role and token telemetry over representative campaigns. Promote App Server to
-   the default only after cancellation, restart/resume, approval, and interrupted-stream recovery
-   tests pass; retain a feature-flag rollback to the interactive execution path.
+Tests cover shell-command approval, file-change approval, accept, decline, cancel, timeout, and
+malformed requests. However, there is no product-surface bridge from the standalone Python adapter
+back into the initiating Codex GUI approval panel. The feature configuration therefore keeps
+`workspace_write_enabled = false`, permits only the read-only sandbox, and leaves all
+workspace-writing roles on the existing GUI path.
+
+The installed CLI/runtime also rejected `readOnly.access` with `Invalid request: readOnly.access is
+no longer supported; use permissionProfile for restricted reads`, although the generated 0.144.6
+schema and official documentation still describe that field. Tool Shed treats the observed runtime
+as authoritative and does not enable the beta permission-profile path in this phase.
+
+## Operational Visibility
+
+Show the last 20 prompt-free operations:
+
+```bash
+python3 scripts/codex_execution.py activity --limit 20
+```
+
+The report includes time, role, Program, CAMP, model, reasoning, token categories, success, failure,
+escalation and reason, thread reuse, and context warnings, plus aggregate counts by model and role.
+No dollar cost is inferred from ChatGPT subscription usage.
+
+## Promotion Decision
+
+App Server is ready for explicitly enabled, read-only planning and verification trials. It is not
+ready to become Tool Shed's default execution path because:
+
+1. OpenAI still labels App Server experimental and unsupported for production workloads.
+2. The real Codex GUI approval surface is not connected to `ApprovalBridge`.
+3. Workspace-writing CAMP roles remain disabled and unqualified end to end.
+4. The installed runtime and published/schema restricted-read surfaces currently disagree.
+5. Representative real Programs and CAMPs still need an observation period against the token
+   regression baseline and feature-flag rollback.
+
+Promotion should occur only after those conditions are resolved. The existing GUI path remains the
+default and rollback path throughout.

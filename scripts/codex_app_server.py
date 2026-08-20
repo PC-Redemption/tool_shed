@@ -17,9 +17,10 @@ from typing import Any, Callable
 class AppServerError(RuntimeError):
     """Raised when app-server cannot satisfy a protocol request."""
 
-    def __init__(self, message: str, *, details: Any = None) -> None:
+    def __init__(self, message: str, *, details: Any = None, kind: str | None = None) -> None:
         super().__init__(message)
         self.details = details
+        self.kind = kind
 
 
 class AuthenticationError(AppServerError):
@@ -81,6 +82,12 @@ class CodexAppServerClient:
     def start(self) -> None:
         if self.process is not None:
             return
+        # A client object may be restarted after an app-server failure. Never
+        # retain the previous reader's EOF marker or unmatched messages.
+        self._messages = queue.Queue()
+        self._notifications.clear()
+        self._responses.clear()
+        self._stderr.clear()
         try:
             self.process = subprocess.Popen(
                 [self.codex, "app-server", "--stdio"],
@@ -92,23 +99,29 @@ class CodexAppServerClient:
                 bufsize=1,
             )
         except OSError as error:
-            raise AppServerError(f"cannot start Codex app-server: {error}") from error
+            raise AppServerError(
+                f"cannot start Codex app-server: {error}", kind="server_start_failed"
+            ) from error
+
+        process = self.process
+        messages = self._messages
+        stderr_lines = self._stderr
 
         def read_stdout() -> None:
-            assert self.process is not None and self.process.stdout is not None
-            for line in self.process.stdout:
+            assert process.stdout is not None
+            for line in process.stdout:
                 try:
                     message = json.loads(line)
                 except json.JSONDecodeError:
                     continue
                 if isinstance(message, dict):
-                    self._messages.put(message)
-            self._messages.put(None)
+                    messages.put(message)
+            messages.put(None)
 
         def read_stderr() -> None:
-            assert self.process is not None and self.process.stderr is not None
-            for line in self.process.stderr:
-                self._stderr.append(line.rstrip())
+            assert process.stderr is not None
+            for line in process.stderr:
+                stderr_lines.append(line.rstrip())
 
         threading.Thread(target=read_stdout, daemon=True).start()
         threading.Thread(target=read_stderr, daemon=True).start()
@@ -140,6 +153,12 @@ class CodexAppServerClient:
                 except OSError:
                     pass
 
+    def restart(self) -> None:
+        """Restart the transport without changing persisted Codex threads."""
+
+        self.close()
+        self.start()
+
     def _send(self, message: dict[str, Any]) -> None:
         process = self.process
         if process is None or process.stdin is None:
@@ -148,7 +167,10 @@ class CodexAppServerClient:
             process.stdin.write(json.dumps(message, separators=(",", ":")) + "\n")
             process.stdin.flush()
         except (BrokenPipeError, OSError) as error:
-            raise AppServerError(self._process_failure("Codex app-server pipe closed")) from error
+            raise AppServerError(
+                self._process_failure("Codex app-server pipe closed"),
+                kind="transport_closed",
+            ) from error
 
     def _process_failure(self, prefix: str) -> str:
         detail = "\n".join(self._stderr)
@@ -172,7 +194,11 @@ class CodexAppServerClient:
         response = self._responses.pop(request_id)
         if "error" in response:
             error = response["error"]
-            raise AppServerError(f"Codex app-server {method} failed: {error}", details=error)
+            raise AppServerError(
+                f"Codex app-server {method} failed: {error}",
+                details=error,
+                kind="rpc_error",
+            )
         result = response.get("result")
         if not isinstance(result, dict):
             raise AppServerError(f"Codex app-server {method} returned no result object")
@@ -181,13 +207,18 @@ class CodexAppServerClient:
     def _pump(self, deadline: float) -> None:
         remaining = deadline - time.monotonic()
         if remaining <= 0:
-            raise AppServerError("timed out waiting for Codex app-server")
+            raise AppServerError("timed out waiting for Codex app-server", kind="timeout")
         try:
             message = self._messages.get(timeout=remaining)
         except queue.Empty as error:
-            raise AppServerError("timed out waiting for Codex app-server") from error
+            raise AppServerError(
+                "timed out waiting for Codex app-server", kind="timeout"
+            ) from error
         if message is None:
-            raise AppServerError(self._process_failure("Codex app-server exited"))
+            raise AppServerError(
+                self._process_failure("Codex app-server exited"),
+                kind="server_terminated",
+            )
         if "id" in message and "method" in message:
             self._handle_server_request(message)
         elif "id" in message:
@@ -202,14 +233,14 @@ class CodexAppServerClient:
         params = message.get("params")
         if not isinstance(params, dict):
             params = {}
-        if self.approval_handler is not None:
-            result = self.approval_handler(method, params)
-        elif method in {
+        approval_methods = {
             "item/commandExecution/requestApproval",
             "item/fileChange/requestApproval",
-        }:
-            result = {"decision": "cancel"}
-        else:
+            "applyPatchApproval",
+            "execCommandApproval",
+            "item/permissions/requestApproval",
+        }
+        if method not in approval_methods:
             self._send(
                 {
                     "id": message["id"],
@@ -220,7 +251,21 @@ class CodexAppServerClient:
                 }
             )
             return
+        if self.approval_handler is not None:
+            try:
+                result = self.approval_handler(method, params)
+            except Exception as error:  # The protocol must still receive a fail-closed answer.
+                result = self._fail_closed_approval(method)
+                self._stderr.append(f"approval handler failed closed: {error}")
+        else:
+            result = self._fail_closed_approval(method)
         self._send({"id": message["id"], "result": result})
+
+    @staticmethod
+    def _fail_closed_approval(method: str) -> dict[str, Any]:
+        if method == "item/permissions/requestApproval":
+            return {"permissions": []}
+        return {"decision": "cancel"}
 
     def _next_notification(self, deadline: float) -> dict[str, Any]:
         while not self._notifications:
@@ -282,7 +327,12 @@ class CodexAppServerClient:
         thread = result.get("thread")
         if not isinstance(thread, dict) or not thread.get("id"):
             raise AppServerError("Codex app-server thread/start returned no thread id")
-        return thread
+        enriched = dict(thread)
+        sources = result.get("instructionSources")
+        enriched["instructionSources"] = [
+            str(source) for source in sources or [] if isinstance(source, str)
+        ]
+        return enriched
 
     def resume_thread(
         self,
@@ -306,7 +356,12 @@ class CodexAppServerClient:
         thread = result.get("thread")
         if not isinstance(thread, dict) or not thread.get("id"):
             raise AppServerError("Codex app-server thread/resume returned no thread id")
-        return thread
+        enriched = dict(thread)
+        sources = result.get("instructionSources")
+        enriched["instructionSources"] = [
+            str(source) for source in sources or [] if isinstance(source, str)
+        ]
+        return enriched
 
     def fork_thread(
         self,
@@ -332,7 +387,12 @@ class CodexAppServerClient:
         thread = result.get("thread")
         if not isinstance(thread, dict) or not thread.get("id"):
             raise AppServerError("Codex app-server thread/fork returned no thread id")
-        return thread
+        enriched = dict(thread)
+        sources = result.get("instructionSources")
+        enriched["instructionSources"] = [
+            str(source) for source in sources or [] if isinstance(source, str)
+        ]
+        return enriched
 
     def start_turn(
         self,
@@ -368,6 +428,7 @@ class CodexAppServerClient:
         deltas: list[str] = []
         completed_text = ""
         token_usage: dict[str, Any] | None = None
+        turn_usage_baseline: dict[str, int] | None = None
         reroutes: list[dict[str, Any]] = []
         try:
             while True:
@@ -391,6 +452,24 @@ class CodexAppServerClient:
                     usage = params.get("tokenUsage")
                     if isinstance(usage, dict):
                         token_usage = dict(usage)
+                        if turn_usage_baseline is None:
+                            cumulative = usage.get("total")
+                            last = usage.get("last")
+                            if isinstance(cumulative, dict) and isinstance(last, dict):
+                                turn_usage_baseline = {
+                                    key: max(
+                                        0,
+                                        int(cumulative.get(key) or 0)
+                                        - int(last.get(key) or 0),
+                                    )
+                                    for key in (
+                                        "inputTokens",
+                                        "cachedInputTokens",
+                                        "outputTokens",
+                                        "reasoningOutputTokens",
+                                        "totalTokens",
+                                    )
+                                }
                 elif method == "model/rerouted":
                     reroutes.append(dict(params))
                 elif method == "turn/completed":
@@ -400,6 +479,23 @@ class CodexAppServerClient:
                         continue
                     status = str(turn.get("status") or "failed")
                     error = turn.get("error") if isinstance(turn.get("error"), dict) else None
+                    if token_usage is not None and turn_usage_baseline is not None:
+                        cumulative = token_usage.get("total")
+                        if isinstance(cumulative, dict):
+                            token_usage["turn"] = {
+                                key: max(
+                                    0,
+                                    int(cumulative.get(key) or 0)
+                                    - turn_usage_baseline.get(key, 0),
+                                )
+                                for key in (
+                                    "inputTokens",
+                                    "cachedInputTokens",
+                                    "outputTokens",
+                                    "reasoningOutputTokens",
+                                    "totalTokens",
+                                )
+                            }
                     return TurnResult(
                         thread_id=thread_id,
                         turn_id=turn_id,
@@ -415,9 +511,14 @@ class CodexAppServerClient:
     def interrupt(self, thread_id: str, turn_id: str) -> None:
         self.request("turn/interrupt", {"threadId": thread_id, "turnId": turn_id})
 
-    def thread_status(self, thread_id: str) -> dict[str, Any]:
-        result = self.request("thread/read", {"threadId": thread_id, "includeTurns": False})
+    def read_thread(self, thread_id: str, *, include_turns: bool = False) -> dict[str, Any]:
+        result = self.request(
+            "thread/read", {"threadId": thread_id, "includeTurns": include_turns}
+        )
         thread = result.get("thread")
         if not isinstance(thread, dict):
             raise AppServerError("Codex app-server thread/read returned no thread")
         return thread
+
+    def thread_status(self, thread_id: str) -> dict[str, Any]:
+        return self.read_thread(thread_id, include_turns=False)

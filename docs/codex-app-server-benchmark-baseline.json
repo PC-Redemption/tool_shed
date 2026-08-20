@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "measured_at": "2026-08-20",
+  "codex_cli": "0.144.6",
+  "transport": "stdio",
+  "authentication": "chatgpt",
+  "context_strategy": "focused_snapshot:inline_relevant_files",
+  "results": [
+    {
+      "id": "small-planning",
+      "role": "planning",
+      "size": "small",
+      "model": "gpt-5.6-sol",
+      "reasoning": "high",
+      "explicit_file_bytes": 35423,
+      "tokens": {
+        "input": 25819,
+        "cached_input": 9984,
+        "output": 31,
+        "reasoning_output": 0,
+        "total": 25850
+      }
+    },
+    {
+      "id": "medium-planning",
+      "role": "planning",
+      "size": "medium",
+      "model": "gpt-5.6-sol",
+      "reasoning": "high",
+      "explicit_file_bytes": 65282,
+      "tokens": {
+        "input": 31961,
+        "cached_input": 9984,
+        "output": 258,
+        "reasoning_output": 61,
+        "total": 32219
+      }
+    },
+    {
+      "id": "small-verification",
+      "role": "verification",
+      "size": "small",
+      "model": "gpt-5.6-terra",
+      "reasoning": "low",
+      "explicit_file_bytes": 1625,
+      "tokens": {
+        "input": 18813,
+        "cached_input": 9984,
+        "output": 39,
+        "reasoning_output": 0,
+        "total": 18852
+      }
+    },
+    {
+      "id": "medium-verification",
+      "role": "verification",
+      "size": "medium",
+      "model": "gpt-5.6-terra",
+      "reasoning": "low",
+      "explicit_file_bytes": 73548,
+      "tokens": {
+        "input": 33893,
+        "cached_input": 9984,
+        "output": 259,
+        "reasoning_output": 0,
+        "total": 34152
+      }
+    }
+  ],
+  "comparison": {
+    "previous_strategy": "focused_snapshot:reference_files",
+    "previous_input_tokens": 339602,
+    "current_input_tokens": 110486,
+    "input_token_reduction_percent": 67.47,
+    "previous_total_tokens": 342268,
+    "current_total_tokens": 111073,
+    "total_token_reduction_percent": 67.55,
+    "note": "The previous strategy caused one or more additional model requests after file-reading tools. Inline relevant files reduced the four-task suite to one model request per task."
+  }
+}

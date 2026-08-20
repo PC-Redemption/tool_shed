@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "codex_app_server_enabled": false,
+  "role_flags": {
+    "planning": true,
+    "verification": true,
+    "program_derivation": false,
+    "program_creation": false,
+    "program_redesign": false,
+    "camp_derivation": false,
+    "camp_creation": false,
+    "camp_redesign": false,
+    "architecture": false,
+    "camp_execution": false,
+    "implementation": false,
+    "normal_debug": false,
+    "testing": false,
+    "build": false,
+    "deployment": false,
+    "deterministic_execution": false,
+    "escalation": false
+  },
+  "gui_native_routes": [
+    "ts: discuss",
+    "discussion:"
+  ],
+  "allowed_sandboxes": [
+    "read-only"
+  ],
+  "thread_policy": {
+    "planning": "new",
+    "verification": "new"
+  },
+  "context": {
+    "scope": "focused_snapshot",
+    "delivery": "inline_relevant_files",
+    "restricted_read": false,
+    "max_snapshot_bytes": 2000000,
+    "max_inline_bytes": 100000,
+    "warning_input_tokens": {
+      "planning": 50000,
+      "verification": 50000,
+      "default": 50000
+    },
+    "regression_factor": 1.5
+  },
+  "approvals": {
+    "workspace_write_enabled": false,
+    "default_decision": "cancel",
+    "timeout_seconds": 120
+  }
+}
