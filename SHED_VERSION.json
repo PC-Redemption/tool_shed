@@ -140,9 +140,9 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
   "notes": "Fixes documentation-site command extraction so the public reference includes every Codex App Server explicit opt-in route, including ts: next --app-server.",
-  "release_commit": null,
+  "release_commit": "b35e8cc68e204433a2201289dcc5695ec946a977",
   "release_tag": "v0.25.1",
-  "released_at": null,
+  "released_at": "2026-08-21T13:20:52Z",
   "shed_version": "0.25.1",
   "updated_at": "2026-08-21",
   "updater_mutation_paths": [
