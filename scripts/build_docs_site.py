@@ -70,6 +70,7 @@ SECTION_ANCHORS = {
     "Q&A Inbox": ("maintenance", "Maintenance and continuity", "/help/recovery/"),
     "Version And Update Status": ("maintenance", "Maintenance and continuity", "/help/maintenance/"),
     "Codex Reasoning Maintenance": ("maintenance", "Maintenance and continuity", "/help/maintenance/"),
+    "Codex App Server Explicit Opt-In": ("execution", "Execution", "/help/execution/"),
     "Artifact And Workspace Requests": ("planning", "Planning and roadmaps", "/help/planning/"),
 }
 

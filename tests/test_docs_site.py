@@ -54,6 +54,14 @@ class DocumentationSiteTests(unittest.TestCase):
                 self.assertIn(f'id="{anchor}"', reference)
             for command in commands:
                 self.assertIn(command.syntax.replace("<", "&lt;").replace(">", "&gt;"), reference)
+            for command in (
+                "ts: plan <request> --app-server",
+                "ts: verify <request> --app-server",
+                "ts: camp run <camp> --app-server",
+                "ts: next --app-server",
+                "ts: appserver status",
+            ):
+                self.assertIn(html.escape(command), reference)
 
     def test_guide_exposes_complete_copy_ready_workflow(self) -> None:
         prompts = (
