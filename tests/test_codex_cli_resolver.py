@@ -99,16 +99,18 @@ class CodexCliResolverTests(unittest.TestCase):
 
         def globber(pattern):
             patterns.append(pattern)
-            return [str(bundled)] if ".vscode-server/" in pattern and "linux-aarch64" in pattern else []
+            normalized = pattern.replace("\\", "/")
+            return [str(bundled)] if ".vscode-server/" in normalized and "linux-aarch64" in normalized else []
 
         result = self.resolver(
             files=(bundled,), responses=self.supported(bundled), platform="linux",
             home=Path("/home/me"), path_lookup=lambda _: None, globber=globber,
         ).resolve()
         self.assertEqual(bundled, result.executable)
-        self.assertTrue(any(".vscode/extensions/openai.chatgpt-*" in item for item in patterns))
-        self.assertTrue(any(".vscode-server/extensions/openai.chatgpt-*" in item for item in patterns))
-        self.assertTrue(all("openai.chatgpt-*" in item for item in patterns))
+        normalized_patterns = [item.replace("\\", "/") for item in patterns]
+        self.assertTrue(any(".vscode/extensions/openai.chatgpt-*" in item for item in normalized_patterns))
+        self.assertTrue(any(".vscode-server/extensions/openai.chatgpt-*" in item for item in normalized_patterns))
+        self.assertTrue(all("openai.chatgpt-*" in item for item in normalized_patterns))
 
     def test_linux_standard_trusted_location_precedes_extension_bundle(self):
         local = Path("/home/me/.local/bin/codex")
