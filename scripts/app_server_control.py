@@ -16,8 +16,9 @@ try:
         load_qualifications,
         qualification_for_version,
         status_report,
+        resolve_codex_cli,
     )
-    from scripts.codex_execution import DEFAULT_POLICY, ModelPolicy, ModelPolicyError, detect_codex_version
+    from scripts.codex_execution import DEFAULT_POLICY, ModelPolicy, ModelPolicyError
     from scripts.codex_orchestration import (
         DEFAULT_CONFIG,
         AppServerFeatureConfig,
@@ -30,12 +31,12 @@ except ModuleNotFoundError:  # Direct execution: python scripts/app_server_contr
         load_qualifications,
         qualification_for_version,
         status_report,
+        resolve_codex_cli,
     )
     from codex_execution import (  # type: ignore[no-redef]
         DEFAULT_POLICY,
         ModelPolicy,
         ModelPolicyError,
-        detect_codex_version,
     )
     from codex_orchestration import (  # type: ignore[no-redef]
         DEFAULT_CONFIG,
@@ -90,7 +91,7 @@ def select_role(
     sandbox: str,
     orchestrator_subcommand: str,
     app_server_requested: bool,
-    codex: str = "codex",
+    codex: str | None = None,
     config_path: Path = DEFAULT_CONFIG,
     policy_path: Path = DEFAULT_POLICY,
     qualifications_path: Path = DEFAULT_QUALIFICATIONS,
@@ -155,10 +156,16 @@ def select_role(
             compatibility=None,
         )
 
-    installed = detect_codex_version(codex)
     records = load_qualifications(qualifications_path)
+    resolution = resolve_codex_cli(codex, records)
+    # Pass the concrete resolver result throughout this decision; never fall
+    # back to an independent bare-`codex` lookup.
+    installed = resolution.version
     record = qualification_for_version(records, installed)
-    compatibility = str(record.get("status")) if record else "unqualified_version"
+    compatibility = (
+        str(record.get("status")) if record
+        else ("unqualified_version" if resolution.found else resolution.readiness.value)
+    )
     route_record = (record.get("routing") or {}).get(role) if record else None
     version_matches = installed == config.qualified_codex_version
     route_qualified = isinstance(route_record, dict) and route_record.get("qualified") is True
@@ -169,7 +176,9 @@ def select_role(
     )
     camp_write_qualified = role != "camp_execution" or bool(record and record.get("workspace_writing"))
     compatible = compatibility in {"qualified", "qualified_with_blockers"}
-    if not version_matches or not compatible:
+    if not resolution.app_server_available:
+        reason = "codex_app_server_unavailable"
+    elif not version_matches or not compatible:
         reason = "codex_version_not_qualified"
     elif not route_qualified or not camp_write_qualified:
         reason = "role_not_qualified"
@@ -194,7 +203,7 @@ def select_command(
     command: str,
     *,
     app_server_requested: bool,
-    codex: str = "codex",
+    codex: str | None = None,
     config_path: Path = DEFAULT_CONFIG,
     policy_path: Path = DEFAULT_POLICY,
     qualifications_path: Path = DEFAULT_QUALIFICATIONS,
@@ -219,7 +228,7 @@ def select_command(
 
 def control_status(
     *,
-    codex: str = "codex",
+    codex: str | None = None,
     config_path: Path = DEFAULT_CONFIG,
     policy_path: Path = DEFAULT_POLICY,
     qualifications_path: Path = DEFAULT_QUALIFICATIONS,
@@ -303,6 +312,10 @@ def format_control_status(report: dict[str, Any]) -> str:
         "Session controls: unavailable; explicit per-command only",
         f"Session note: {report['session_note']}",
         "",
+        f"Codex CLI: {report.get('codex_cli', 'NOT FOUND')}",
+        f"Discovery: {report.get('codex_discovery', 'not found')}",
+        f"Executable: {report.get('codex_executable') or 'not detected'}",
+        f"App Server: {'AVAILABLE' if report.get('app_server_available') else 'UNAVAILABLE'}",
         f"Installed Codex: {report.get('installed_codex') or 'not detected'}",
         f"Qualified Codex: {report['qualified_codex']}",
         f"Compatibility: {str(report['compatibility']).replace('_', ' ')}",
@@ -327,7 +340,7 @@ def format_control_status(report: dict[str, Any]) -> str:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--codex", default="codex")
+    parser.add_argument("--codex", default=None)
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--policy", type=Path, default=DEFAULT_POLICY)
     parser.add_argument("--qualifications", type=Path, default=DEFAULT_QUALIFICATIONS)

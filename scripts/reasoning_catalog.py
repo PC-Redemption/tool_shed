@@ -13,8 +13,10 @@ from typing import Any
 
 try:
     from scripts.codex_app_server import AppServerError, CodexAppServerClient
+    from scripts.codex_cli_resolver import CodexCliResolver
 except ModuleNotFoundError:  # Direct execution: python scripts/reasoning_catalog.py
     from codex_app_server import AppServerError, CodexAppServerClient  # type: ignore[no-redef]
+    from codex_cli_resolver import CodexCliResolver  # type: ignore[no-redef]
 
 
 SCHEMA_VERSION = 1
@@ -137,7 +139,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
     refresh = subparsers.add_parser("refresh", help="Refresh the cache through Codex app-server model/list.")
-    refresh.add_argument("--codex", default="codex", help="Codex executable. Defaults to codex on PATH.")
+    refresh.add_argument("--codex", default=None, help="Authoritative Codex executable override.")
     refresh.add_argument("--timeout", type=float, default=15.0, help="Seconds allowed per app-server response.")
     refresh.add_argument("--ttl-hours", type=float, default=DEFAULT_TTL_HOURS)
     refresh.add_argument("--cache", type=Path, default=default_cache_path())
@@ -153,7 +155,11 @@ def main() -> int:
         if args.command == "refresh":
             if args.timeout <= 0 or args.ttl_hours <= 0:
                 raise CatalogError("--timeout and --ttl-hours must be greater than zero")
-            models, user_agent = query_codex_catalog(args.codex, timeout=args.timeout)
+            resolution = CodexCliResolver().resolve(executable_override=args.codex)
+            if not resolution.app_server_available or resolution.executable is None:
+                detail = resolution.error or resolution.readiness.value.replace("_", " ")
+                raise CatalogError(f"Codex App Server is unavailable: {detail}")
+            models, user_agent = query_codex_catalog(str(resolution.executable), timeout=args.timeout)
             payload = build_catalog(models, user_agent, ttl_hours=args.ttl_hours)
             if not payload["models"]:
                 raise CatalogError("Codex returned an empty visible model catalog")

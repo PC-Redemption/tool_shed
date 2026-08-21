@@ -349,6 +349,7 @@ want one of the three qualified roles to use the existing App Server integration
 | `ts: plan <request> --app-server` | App Server planning with `gpt-5.6-sol` / `high` |
 | `ts: verify <request> --app-server` | App Server verification with `gpt-5.6-terra` / `low` |
 | `ts: camp run <camp> --app-server` | Existing bounded App Server CAMP path with `gpt-5.6-terra` / `medium` |
+| `ts: next --app-server` | Run normal `next` selection, then forward the explicit option only to the selected qualified role; CAMP execution uses the existing Terra/medium path. |
 | `ts: appserver status` | Read-only default, compatibility, and qualified-role status |
 
 Without the option, `ts: plan`, `ts: verify`, and `ts: camp run` use the normal GUI path and report
@@ -356,6 +357,12 @@ Without the option, `ts: plan`, `ts: verify`, and `ts: camp run` use the normal 
 version-specific qualification registry before App Server starts. A mismatch or unqualified role
 is blocked with a clear reason and a suggestion to rerun without the option; there is no API
 fallback.
+
+`next` is not a new App Server role. The flagged and unflagged forms select the same next action.
+When that action is executable CAMP work, Tool Shed applies the existing `camp-run` selector and
+safety path. Discussion, decisions, blocked work, external gates, and unsupported roles remain on
+their ordinary route and are reported without starting CAMP execution. The option never persists
+beyond the invocation.
 
 `ts: discuss` is always GUI-native. `ts: discuss ... --app-server` is rejected instead of silently
 changing execution surfaces.
@@ -365,6 +372,23 @@ expose reliable skill-owned session storage. They make no persistent change and 
 the per-command option. The unflagged form is the GUI override; Tool Shed does not add a redundant
 `--gui` option while session mode is unavailable. The committed global setting remains
 `codex_app_server_enabled = false`.
+
+Every App Server path uses one bounded Codex resolver: a supported explicit override, then
+`PATH`, then trusted platform locations, including newest-valid OpenAI VS Code extension bundles.
+It reports the selected executable and discovery source as `NOT FOUND`, `INVALID EXECUTABLE`,
+`APP SERVER UNAVAILABLE`, `UNQUALIFIED VERSION`, or qualified `AVAILABLE`. Status, selection,
+smoke, startup, version detection, qualification, reasoning refresh, and install/upgrade readiness
+share that result. Discovery does not qualify a version; Tool Shed never installs Codex, changes
+permanent `PATH`, searches arbitrary locations, persists a user path, or falls back to an API.
+When Codex is unavailable, normal unflagged GUI use remains available.
+
+Linux bundle discovery is limited to the user's desktop, Insiders, remote-server, and
+remote-server Insiders VS Code extension roots and the x86_64, aarch64, and arm64 payloads.
+
+Automated regression coverage does not satisfy the Windows GUI release gate. Required external
+evidence is a fresh normally launched Codex GUI session with `Get-Command codex` still not found
+and no `PATH` preparation, where status discovers the trusted VS Code bundle and GUI-triggered
+App Server execution, smoke, startup, version detection, and qualification use the same path.
 
 ## Artifact And Workspace Requests
 

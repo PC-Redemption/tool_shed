@@ -194,6 +194,119 @@
       ],
       "evidence": "docs/codex-app-server-qualification-2026-08-20.md",
       "workspace_write_evidence": "docs/codex-app-server-write-qualification-2026-08-20.md"
+    },
+    {
+      "codex_version": "0.149.0",
+      "qualified_at": "2026-08-21",
+      "status": "qualified_with_blockers",
+      "operating_mode": "maintenance_watch_with_explicit_camp_opt_in",
+      "transport": "stdio",
+      "authentication": {
+        "chatgpt": true,
+        "api_key_fallback": false
+      },
+      "routing": {
+        "planning": {
+          "model": "gpt-5.6-sol",
+          "reasoning": "high",
+          "qualified": true
+        },
+        "verification": {
+          "model": "gpt-5.6-terra",
+          "reasoning": "low",
+          "qualified": true
+        },
+        "camp_execution": {
+          "model": "gpt-5.6-terra",
+          "reasoning": "medium",
+          "sandbox": "workspace-write",
+          "qualified": true,
+          "scope": "one explicitly bounded CAMP step with exact path allowlist and Git mutation journal"
+        }
+      },
+      "read_only": true,
+      "cancellation_safe": false,
+      "cancellation_observation": {
+        "observed_at": "2026-08-21",
+        "interrupt_response": "no active turn",
+        "reconciled_status": "interrupted",
+        "tool_shed_classification": "cancelled",
+        "assessment": "The acknowledgement race remains, but terminal reconciliation produced a safe cancelled result."
+      },
+      "gui_approval_bridge": false,
+      "restricted_read_consistent": false,
+      "workspace_writing": true,
+      "workspace_write_qualification": {
+        "scope": "camp_execution only; explicit opt-in; exact workspace root and path allowlist; Git required",
+        "approval_policy": "never",
+        "network_access": false,
+        "exclude_slash_tmp": true,
+        "exclude_tmpdir_env_var": true,
+        "permission_expansion": false,
+        "automatic_retry_after_mutation": false,
+        "automatic_lifecycle_transition": false,
+        "deployment_qualified": false,
+        "disposable_harness": {
+          "qualified": true,
+          "duration_seconds": 36.693,
+          "allowed_operations": [
+            "workspace read",
+            "file create",
+            "file modify",
+            "file delete",
+            "directory create",
+            "harmless command",
+            "focused test"
+          ],
+          "blocked_operations": [
+            "sibling write",
+            "sibling destructive delete",
+            "privileged write",
+            "network access",
+            "implicit /tmp write under hardened policy"
+          ],
+          "schema_default_tmp_write_observed": true
+        },
+        "minimal_terra_write": {
+          "status": "completed",
+          "input_tokens": 77864,
+          "cached_input_tokens": 56576,
+          "output_tokens": 393,
+          "model_turns": 4,
+          "tool_calls": 3,
+          "journal_safe": true,
+          "focused_test_passed": true
+        },
+        "approval_denial": {
+          "request_observed": true,
+          "decision": "decline",
+          "target_created": false
+        },
+        "interrupt_and_resume": {
+          "turn_status": "interrupted",
+          "partial_write_detected": true,
+          "post_interrupt_write_absent": true,
+          "journal_safe": true,
+          "read_only_resume_preserved_boundary": true,
+          "global_cancellation_promoted": false
+        }
+      },
+      "production_supported": false,
+      "estimated_harness_input_tokens_per_operation": 18800,
+      "tiny_smoke_input_tokens": {
+        "minimum": 18983,
+        "maximum": 18984,
+        "observed_at": "2026-08-21"
+      },
+      "known_blockers": [
+        "cancellation acknowledgement race",
+        "GUI approval bridge unavailable",
+        "restricted-read protocol mismatch",
+        "fixed App Server harness cost remains material for tiny CAMPs",
+        "App Server experimental and unsupported for production"
+      ],
+      "evidence": "docs/codex-app-server-requalification-2026-08-21.md",
+      "workspace_write_evidence": "docs/codex-app-server-requalification-2026-08-21.md"
     }
   ]
 }

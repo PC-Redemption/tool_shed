@@ -154,6 +154,7 @@ class ScriptTests(unittest.TestCase):
             )
         if include_provider_adapter:
             for name in (
+                "codex_cli_resolver.py",
                 "codex_skill_sync.py",
                 "campaign_queue.py",
                 "check_stale_paths.py",
@@ -216,6 +217,7 @@ class ScriptTests(unittest.TestCase):
             hashed_paths.extend(
                 f"scripts/{name}"
                 for name in (
+                    "codex_cli_resolver.py",
                     "codex_skill_sync.py",
                     "campaign_queue.py",
                     "check_stale_paths.py",
@@ -289,6 +291,13 @@ class ScriptTests(unittest.TestCase):
             """#!/usr/bin/env python3
 import json
 import sys
+
+if sys.argv[1:] == ["--version"]:
+    print("codex 0.144.6")
+    raise SystemExit(0)
+if sys.argv[1:] == ["app-server", "--help"]:
+    print("Codex App Server")
+    raise SystemExit(0)
 
 for raw in sys.stdin:
     message = json.loads(raw)
@@ -3942,6 +3951,32 @@ stale loop guidance
             self.assertIn("fresh Codex session", result.stdout)
             self.assertFalse((codex_home / "skills" / "tool-shed").exists())
 
+    def test_install_readiness_reporting_distinguishes_missing_and_discovered_codex(self) -> None:
+        from scripts.codex_cli_resolver import CodexCliResolution, CodexReadiness, CodexSource
+
+        with mock.patch.object(sys, "path", [str(ROOT / "scripts"), *sys.path]):
+            from scripts import install_into_workspace
+
+        missing = CodexCliResolution(None, None, None, CodexReadiness.NOT_FOUND)
+        bundled = CodexCliResolution(
+            CodexSource.VSCODE_EXTENSION,
+            Path("C:/Users/me/.vscode/extensions/openai.chatgpt-1.2.0/bin/windows-x86_64/codex.exe"),
+            "0.144.6",
+            CodexReadiness.AVAILABLE_UNQUALIFIED,
+        )
+        with mock.patch.object(install_into_workspace, "CodexCliResolver") as resolver:
+            resolver.return_value.resolve.return_value = missing
+            missing_report = install_into_workspace.codex_cli_readiness_report()
+            resolver.return_value.resolve.return_value = bundled
+            bundled_report = install_into_workspace.codex_cli_readiness_report()
+
+        self.assertEqual(missing_report["codex_cli"], "NOT FOUND")
+        self.assertEqual(missing_report["compatibility"], "NOT INSTALLED OR NOT FOUND")
+        self.assertEqual(bundled_report["codex_cli"], "AVAILABLE")
+        self.assertEqual(bundled_report["discovery"], "OpenAI VS Code extension")
+        self.assertEqual(bundled_report["version"], "0.144.6")
+        self.assertEqual(bundled_report["compatibility"], "UNQUALIFIED VERSION")
+
     def test_installer_reports_mismatch_for_newer_or_unmanaged_codex_skill(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -5394,6 +5429,26 @@ old Tool Shed guidance
             )
             positions = [result.stderr.index(f"Tool Shed update: {phase}") for phase in phases]
             self.assertEqual(positions, sorted(positions))
+
+    def test_snapshot_upgrade_reports_discovered_codex_readiness_without_blocking(self) -> None:
+        from scripts.codex_cli_resolver import CodexCliResolution, CodexReadiness, CodexSource
+        from scripts import update_snapshot
+
+        resolution = CodexCliResolution(
+            CodexSource.VSCODE_EXTENSION,
+            Path("C:/Users/me/.vscode/extensions/openai.chatgpt-2.0.0/bin/windows-x86_64/codex.exe"),
+            "0.144.6",
+            CodexReadiness.AVAILABLE_UNQUALIFIED,
+        )
+        with mock.patch.object(update_snapshot, "CodexCliResolver") as resolver:
+            resolver.return_value.resolve.return_value = resolution
+            report = update_snapshot.codex_cli_readiness_report()
+
+        self.assertEqual(report["codex_cli"], "AVAILABLE")
+        self.assertEqual(report["source"], "openai_vscode_extension")
+        self.assertEqual(report["discovery"], "OpenAI VS Code extension")
+        self.assertEqual(report["readiness"], "available_unqualified")
+        self.assertEqual(report["compatibility"], "UNQUALIFIED VERSION")
 
     def test_native_launcher_runtime_fallback_installs_and_updates_workspaces(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

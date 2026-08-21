@@ -2,7 +2,7 @@
 
 Generated from artifact headers. `work/index.json` contains the same navigation data for automation. Do not put durable project truth only here; keep current truth in docs or README files.
 
-Updated: 2026-08-20
+Updated: 2026-08-21
 
 ## Orientation
 
@@ -50,6 +50,8 @@ Updated: 2026-08-20
 | [work/00-campaigns/completed/042-reconcile-main-integrate-app-server-and-reduce-hosted-watcher.md](work/00-campaigns/completed/042-reconcile-main-integrate-app-server-and-reduce-hosted-watcher.md) | campaign | complete | 2026-08-20 | none | - |
 | [work/00-campaigns/completed/043-restore-trustworthy-overview-and-close-out-stale-evolution-map-state.md](work/00-campaigns/completed/043-restore-trustworthy-overview-and-close-out-stale-evolution-map-state.md) | campaign | complete | 2026-08-20 | none | - |
 | [work/00-campaigns/completed/044-app-server-explicit-command-opt-in.md](work/00-campaigns/completed/044-app-server-explicit-command-opt-in.md) | campaign | complete | 2026-08-20 | none | - |
+| [work/00-campaigns/completed/045-resolve-codex-cli-and-report-app-server-readiness.md](work/00-campaigns/completed/045-resolve-codex-cli-and-report-app-server-readiness.md) | campaign | complete | 2026-08-21 | none | - |
+| [work/00-campaigns/completed/046-forward-next-app-server-to-qualified-camp-execution.md](work/00-campaigns/completed/046-forward-next-app-server-to-qualified-camp-execution.md) | campaign | complete | 2026-08-21 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -110,6 +112,6 @@ Updated: 2026-08-20
 
 ## Summary
 
-- Total artifacts: 93
+- Total artifacts: 95
 - Active artifacts: 0
-- Completed/decided artifacts: 84
+- Completed/decided artifacts: 86

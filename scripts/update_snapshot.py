@@ -21,6 +21,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from codex_cli_resolver import CodexCliResolver, CodexReadiness
 from codex_skill_sync import (
     CodexSkillError,
     SKILL_BACKUP_MANIFEST_SUFFIX,
@@ -1437,6 +1438,44 @@ def unique_transaction_timestamp(workspace: Path) -> str:
     raise UpdateError("cannot allocate a unique updater transaction timestamp")
 
 
+def codex_cli_readiness_report() -> dict[str, Any]:
+    """Return install-compatible, non-blocking local Codex readiness."""
+
+    resolution = CodexCliResolver().resolve()
+    report = resolution.as_dict()
+    report["codex_cli"] = (
+        "INVALID" if resolution.readiness is CodexReadiness.INVALID_EXECUTABLE
+        else ("AVAILABLE" if resolution.found else "NOT FOUND")
+    )
+    report["discovery"] = (
+        "OpenAI VS Code extension"
+        if resolution.source and resolution.source.value == "openai_vscode_extension"
+        else (resolution.source.value.replace("_", " ").title() if resolution.source else "not found")
+    )
+    report["compatibility"] = {
+        CodexReadiness.AVAILABLE_QUALIFIED: "QUALIFIED VERSION",
+        CodexReadiness.AVAILABLE_UNQUALIFIED: "UNQUALIFIED VERSION",
+        CodexReadiness.APP_SERVER_UNAVAILABLE: "APP SERVER UNAVAILABLE",
+        CodexReadiness.INVALID_EXECUTABLE: "INVALID EXECUTABLE",
+        CodexReadiness.NOT_FOUND: "NOT INSTALLED OR NOT FOUND",
+    }[resolution.readiness]
+    return report
+
+
+def print_codex_cli_readiness(report: dict[str, Any]) -> None:
+    print(f"Codex CLI: {report['codex_cli']}")
+    print(f"Discovery: {report['discovery']}")
+    print(f"Executable: {report['executable'] or 'not detected'}")
+    print(f"Installed Codex: {report['version'] or 'not detected'}")
+    print(
+        "App Server: "
+        f"{'AVAILABLE' if report['readiness'] in {'available_qualified', 'available_unqualified'} else 'UNAVAILABLE'}"
+    )
+    print(f"Compatibility: {report['compatibility']}")
+    if report["readiness"] not in {"available_qualified", "available_unqualified"}:
+        print("Normal GUI Tool Shed operation remains available; only App Server execution is unavailable.")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workspace", default=".", help="Exact project repository root.")
@@ -1642,6 +1681,8 @@ def main() -> int:
                 }
             )
             inspect_codex = args.sync_codex_skill or "codex" in providers
+            if "codex" in providers:
+                payload["codex_cli_readiness"] = codex_cli_readiness_report()
             if inspect_codex:
                 staged_skill = staged / "skills" / "tool-shed"
                 codex_skill = inspect_codex_skill(staged_skill, known_skill_releases)
@@ -1689,6 +1730,8 @@ def main() -> int:
                     print(json.dumps(payload, indent=2, sort_keys=True))
                 else:
                     print(f"Tool Shed {selected_version} is already current; no backup was created.")
+                    if "codex_cli_readiness" in payload:
+                        print_codex_cli_readiness(payload["codex_cli_readiness"])
                 return 0
             timestamp = unique_transaction_timestamp(workspace)
             transaction_id = hashlib.sha256(
@@ -1926,6 +1969,8 @@ def main() -> int:
                     print(f"Safe synchronization command: {codex_skill.get('sync_command')}")
                 if codex_skill.get("restart_required"):
                     print("Start a fresh Codex session to load the synchronized skill.")
+            if "codex_cli_readiness" in payload:
+                print_codex_cli_readiness(payload["codex_cli_readiness"])
             if payload.get("work_converged"):
                 print("Root work/ converged to the selected release structure with owner content preserved.")
             else:

@@ -7,7 +7,8 @@ Server while retaining the current Codex GUI conversation as the default and fal
 surface. One explicitly bounded workspace-writing CAMP step is also qualified through the dedicated
 `camp-run` path; broader writing is not enabled.
 
-The implementation targets Codex CLI 0.144.6 and App Server v2 over local stdio JSONL. The
+The current qualified implementation targets Codex CLI 0.149.0 and App Server v2 over local stdio
+JSONL. The
 [official App Server documentation](https://developers.openai.com/codex/app-server) describes the
 handshake, thread and turn lifecycle, token events, and server-initiated approvals. It also labels
 the App Server command experimental and unsupported for production workloads. This integration
@@ -19,7 +20,9 @@ event-triggered rather than an active Tool Shed development priority.
 
 ## Qualified Baseline
 
-Codex CLI 0.144.6 is the comparison baseline for future App Server changes:
+Codex CLI 0.144.6 remains the larger real-campaign comparison baseline for future App Server
+changes. Codex CLI 0.149.0 was separately requalified for protocol, routing, and bounded writing on
+2026-08-21; it does not inherit the older version's qualification record.
 
 | Measurement | Qualified value |
 | --- | ---: |
@@ -32,7 +35,9 @@ Codex CLI 0.144.6 is the comparison baseline for future App Server changes:
 | Input reduction versus old strategy | 82.54% |
 | Elapsed-time reduction | 70.31% |
 
-The version-specific machine record is
+The current requalification evidence is in
+[the 2026-08-21 report](codex-app-server-requalification-2026-08-21.md). The version-specific
+machine record is
 `adapters/codex-app-server-qualifications.json`. It records authentication, routing, read-only,
 cancellation, approval, restricted-read, bounded workspace-writing, support-status,
 harness-baseline, and savings evidence explicitly. A new Codex version has no inherited
@@ -52,6 +57,8 @@ ts: verify <request>                         -> current GUI path
 ts: verify <request> --app-server            -> App Server / Terra / low
 ts: camp run <camp>                          -> current GUI path
 ts: camp run <camp> --app-server             -> App Server / Terra / medium through camp-run
+ts: next                                     -> normal selection and current GUI path
+ts: next --app-server                        -> normal selection, then the selected qualified role
 unqualified roles or incompatible Codex      -> blocked; GUI remains available without the flag
 ```
 
@@ -78,6 +85,13 @@ workspace_write_enabled   = false
 default-off configuration. It is an internal orchestration flag. The user-facing Tool Shed option
 is `--app-server` on the qualified `ts:` commands above.
 
+`ts: next --app-server` is forwarding, not a fourth execution role. Tool Shed first performs the
+same navigation and readiness selection as ordinary `ts: next`. When the selected action is CAMP
+execution, it invokes the existing `camp-run` selector and bounded Terra/medium runner. A selected
+discussion, decision, blocker, external gate, GUI-native action, or unsupported role is reported
+on its natural route without starting App Server. Compatibility failure remains fail-closed, the
+unflagged GUI route stays available, and the selector is not retained for later commands.
+
 Resolve and display the user-facing selection before execution:
 
 ```bash
@@ -91,6 +105,40 @@ The selector reuses the centralized config, model policy, qualification registry
 Codex version check. Explicit App Server selection fails closed when the exact installed version
 or role is not qualified. The existing GUI remains available by rerunning without `--app-server`;
 the control never switches to API execution.
+
+## Codex Executable Readiness
+
+One centralized resolver selects a Codex executable for every App Server consumer. It tries a
+supported explicit override first, then `PATH`, then bounded trusted platform locations, including
+version-ordered OpenAI VS Code extension bundles. It validates `--version` before accepting a
+candidate and probes App Server availability separately; discovery never qualifies a version.
+
+`status`, selection, compatibility smoke, App Server startup, version detection, qualification,
+reasoning-catalog refresh, and installation and upgrade readiness reporting all use that same
+resolver and report its selected path and source. The user-facing states are `NOT FOUND`,
+`INVALID EXECUTABLE`, `APP SERVER UNAVAILABLE`, `UNQUALIFIED VERSION`, and `AVAILABLE` with
+qualified compatibility. A missing or unsupported CLI blocks only explicit App Server execution:
+unflagged Tool Shed requests remain in the GUI, and there is no API fallback.
+
+Trusted discovery is deliberately bounded. Tool Shed does not search arbitrary disk locations,
+install or copy Codex, modify permanent `PATH`, persist discovered user paths in tracked files, or
+automatically qualify a discovered version. When several OpenAI VS Code extension bundles are
+valid, the resolver selects the newest compatible bundle deterministically. Linux extension
+discovery covers the normal `.vscode`, `.vscode-insiders`, `.vscode-server`, and
+`.vscode-server-insiders` extension roots and the `linux-x86_64`, `linux-aarch64`, and
+`linux-arm64` payload directories.
+
+### Windows GUI release gate (external evidence still required)
+
+Automated regression coverage exercises resolver precedence, invalid and missing candidates,
+App Server absence, qualification states, Windows extension-version ordering, Linux behavior, and
+resolver use across status and execution paths. It does **not** replace the required Windows field
+test. From a fresh, normally launched Codex GUI session with `Get-Command codex` still failing and
+without any temporary or permanent `PATH` preparation, `ts: appserver status` must identify the
+trusted OpenAI VS Code bundle and report its path, source, version, and compatibility state. A
+GUI-triggered `--app-server` operation, smoke, startup, version detection, and qualification must
+then record the same executable identity. Do not mark this release gate passed until that external
+evidence exists.
 
 `ts: discuss ... --app-server` is rejected because discussion is intentionally GUI-native.
 Session-scoped `ts: appserver on|off` is not implemented because the Codex skill surface does not
@@ -146,7 +194,7 @@ selector is stricter: it blocks explicit App Server execution before the orchest
 normal GUI path never requires App Server compatibility:
 
 ```text
-Codex App Server version changed. Qualified version: 0.144.6. Installed version: <version>.
+Codex App Server version changed. Qualified version: 0.149.0. Installed version: <version>.
 Run `python3 scripts/codex_app_server_compatibility.py smoke --cwd .` before relying on App Server execution.
 ```
 
@@ -317,8 +365,10 @@ qualification can use `--retain-thread`, then supply the returned ID with both `
 temporary directory and does not rely on the previous directory surviving. Routine operations
 still start fresh.
 
-CLI 0.144.6 can acknowledge `turn/interrupt` with `no active turn to interrupt` while an immediate
-`thread/read` still reports the target turn `inProgress`. Cancellation now performs a bounded
+CLI 0.144.6 demonstrated that `turn/interrupt` can return `no active turn to interrupt` while an
+immediate `thread/read` still reports the target turn `inProgress`. CLI 0.149.0 retained the
+contradictory acknowledgement but its immediate reconciled state was terminal `interrupted`.
+Cancellation performs a bounded
 reconciliation loop over queued `turn/completed` events and authoritative `thread/read` state. It
 returns exactly `cancelled`, `completed`, `failed`, or `unknown`; a completed turn observed after a
 cancel request is classified `completed`, never silently accepted as a successful cancellation.
@@ -327,8 +377,9 @@ An unresolved `inProgress` state becomes `unknown` with `user_intervention` afte
 Each cancellation writes prompt-free diagnostics containing thread and turn IDs, cancel request and
 response timestamps, ordered observed events, terminal evidence, final classification, App Server
 process state, and recovery action. The loop is time-bounded and never replays a prompt. This makes
-the race diagnosable, but does not mark cancellation qualified: the live 0.144.6 inconsistency must
-still be re-observed as reliably terminal before promotion.
+the race diagnosable, but does not mark cancellation globally safe: the acknowledgement
+inconsistency remains a blocker even though the 0.149.0 reconciliation safely classified the
+observed turn.
 
 The post-qualification smoke reproduced the exact sequence: `turn/interrupt` returned “no active
 turn,” `thread/read` kept returning `inProgress` for approximately 4.56 seconds, and the turn then
@@ -357,13 +408,12 @@ disabled and fails closed. The qualified CAMP path instead uses approval policy 
 hardened exact-root workspace-write sandbox, an exact path allowlist, and a Git mutation journal.
 All other workspace-writing roles remain on the existing GUI path.
 
-The installed CLI/runtime also rejected `readOnly.access` with `Invalid request: readOnly.access is
-no longer supported; use permissionProfile for restricted reads`, although the generated 0.144.6
-schema and official documentation still describe that field. Tool Shed treats the observed runtime
-as authoritative and does not enable the beta permission-profile path in this phase. Compatibility
-smoke skips this expensive known-mismatch probe while the version remains 0.144.6 and automatically
-retests it after a version change; `--retest-restricted-read` is available for an explicit focused
-recheck.
+Both qualified CLI runtimes rejected `readOnly.access` with `Invalid request: readOnly.access is no
+longer supported; use permissionProfile for restricted reads`. Tool Shed treats the observed
+runtime as authoritative and does not enable a version-specific permission-profile workaround in
+this phase. Compatibility smoke skips this expensive known-mismatch probe while the version remains
+0.149.0 and automatically retests it after a version change; `--retest-restricted-read` is
+available for an explicit focused recheck.
 
 ## Operational Visibility
 
@@ -406,7 +456,7 @@ python3 scripts/codex_execution.py \
   qualification-report \
   --qualification-id 2026-08-real-campaigns \
   --baseline-input-tokens 18800 \
-  --expected-codex-version 0.144.6
+  --expected-codex-version 0.149.0
 ```
 
 The report includes planning and verification totals, cached input, model-turn and tool-call rates,
@@ -423,7 +473,8 @@ App Server is ready for explicitly enabled, read-only planning and verification 
 bounded `camp_execution` step. It is not ready to become Tool Shed's default execution path because:
 
 1. OpenAI still labels App Server experimental and unsupported for production workloads.
-2. CLI 0.144.6 exhibited a live `turn/interrupt` versus `thread/read` cancellation-state race.
+2. CLI 0.149.0 still returned a contradictory `turn/interrupt` acknowledgement, although bounded
+   reconciliation safely observed terminal `interrupted`.
 3. The real Codex GUI approval surface is not connected to `ApprovalBridge`.
 4. The optimized representative write CAMP succeeded safely at 61,516 input tokens and demonstrated
    material savings, but the fixed harness floor remains large and does not justify global enablement.

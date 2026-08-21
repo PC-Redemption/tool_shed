@@ -26,6 +26,7 @@ try:
         CodexAppServerClient,
         TurnResult,
     )
+    from scripts.codex_cli_resolver import CodexCliResolver, CodexReadiness
 except ModuleNotFoundError:  # Direct execution: python scripts/codex_execution.py
     from codex_app_server import (  # type: ignore[no-redef]
         AppServerError,
@@ -33,6 +34,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/codex_execution.
         CodexAppServerClient,
         TurnResult,
     )
+    from codex_cli_resolver import CodexCliResolver, CodexReadiness  # type: ignore[no-redef]
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -334,7 +336,7 @@ class CodexExecutionAdapter:
         self,
         *,
         policy: ModelPolicy | None = None,
-        codex: str = "codex",
+        codex: str | None = None,
         timeout: float = 300.0,
         telemetry_path: Path | None = None,
         approval_bridge: ApprovalBridge | None = None,
@@ -1331,19 +1333,25 @@ def _codex_version_from_records(records: list[dict[str, Any]]) -> str | None:
     return None
 
 
-def detect_codex_version(codex: str = "codex") -> str | None:
-    try:
-        completed = subprocess.run(
-            [codex, "--version"],
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=5,
+def resolve_codex_executable(codex: str | None = None) -> str:
+    """Resolve one App-Server-capable executable for a user-facing operation."""
+
+    resolution = CodexCliResolver().resolve(executable_override=codex)
+    if not resolution.app_server_available or resolution.executable is None:
+        detail = resolution.error or resolution.readiness.value.replace("_", " ")
+        raise AppServerError(
+            f"Codex App Server is unavailable: {detail}",
+            details=resolution.as_dict(),
+            kind="codex_not_ready",
         )
-    except (OSError, subprocess.TimeoutExpired):
-        return None
-    match = re.search(r"(\d+\.\d+\.\d+)", completed.stdout + completed.stderr)
-    return match.group(1) if match else None
+    return str(resolution.executable)
+
+
+def detect_codex_version(codex: str | None = None) -> str | None:
+    """Return the resolver-validated local Codex version, if available."""
+
+    resolution = CodexCliResolver().resolve(executable_override=codex)
+    return resolution.version if resolution.readiness is not CodexReadiness.INVALID_EXECUTABLE else None
 
 
 def _numeric(record: dict[str, Any], key: str) -> int:
@@ -1357,7 +1365,7 @@ def qualification_report(
     qualification_id: str | None = None,
     baseline_input_tokens: int = 18_800,
     expected_codex_version: str | None = None,
-    codex: str = "codex",
+    codex: str | None = None,
     comparison_path: Path | None = None,
 ) -> dict[str, Any]:
     """Summarize only observed App Server qualification telemetry.
@@ -1535,7 +1543,7 @@ def qualification_report(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--codex", default="codex")
+    parser.add_argument("--codex", default=None)
     parser.add_argument("--policy", type=Path, default=DEFAULT_POLICY)
     parser.add_argument("--timeout", type=float, default=300.0)
     parser.add_argument("--telemetry", type=Path, default=default_telemetry_path())
@@ -1552,7 +1560,7 @@ def parse_args() -> argparse.Namespace:
     )
     qualification.add_argument("--qualification-id")
     qualification.add_argument("--baseline-input-tokens", type=int, default=18_800)
-    qualification.add_argument("--expected-codex-version", default="0.144.6")
+    qualification.add_argument("--expected-codex-version", default="0.149.0")
     qualification.add_argument("--comparison", type=Path)
 
     run = subparsers.add_parser("run", help="Execute one role-routed Codex turn.")

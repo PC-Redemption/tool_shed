@@ -347,6 +347,7 @@ exact user-facing routes as an invocation-scoped request for the already-qualifi
 | `ts: plan <request> --app-server` | planning | `gpt-5.6-sol` / `high` | read-only `run` |
 | `ts: verify <request> --app-server` | verification | `gpt-5.6-terra` / `low` | read-only `run` |
 | `ts: camp run <camp> --app-server` | CAMP execution | `gpt-5.6-terra` / `medium` | bounded `camp-run` |
+| `ts: next --app-server` | selected qualified role only | selected role policy | normal `next`, then its existing runner |
 
 Equivalent commands without `--app-server` remain in the current GUI and begin with the concise
 banner `Execution: GUI`. Do not interpret examples, quoted text, or a mere mention of the option as
@@ -376,6 +377,23 @@ expected path allowlist, focused context, and shell-free deterministic verificat
 call the existing `codex_orchestration.py --enable-app-server camp-run` path. Never create a second
 CAMP implementation or weaken its Git journal, dirty-target refusal, approval policy, network,
 retry, lifecycle, or path restrictions.
+
+For `ts: next --app-server`, first perform the ordinary `next` selection unchanged. The option is
+an invocation-scoped forwarding preference, not an App Server role, and it must select the same
+action and CAMP as unflagged `ts: next`. If that selected action is CAMP execution, run the existing
+`app_server_control.py select camp-run --app-server --json` selector and, only when it is allowed,
+forward to the existing bounded `camp-run` path. That path retains the centralized CAMP execution
+policy of `gpt-5.6-terra` with `medium` reasoning. Do not create a `next` selector, a second CAMP
+runner, or duplicate executable, version, role, authentication, model, or reasoning policy.
+
+When `next` selects discussion, user interaction or decision work, blocked work, a qualification
+gate, external work, GUI-native work, or any unqualified or unsupported role, report the selected
+action and its ordinary next route without starting CAMP execution. Discussion remains GUI-native.
+If the existing `camp-run` selector fails closed because Codex is missing or unqualified, App Server
+is unavailable, or another compatibility gate fails, report the reason and retain the ordinary GUI
+route as the available unflagged command; do not silently switch backends. This forwarding never
+persists state, changes the global default from off, enables implicit App Server use, or enables API
+fallback.
 
 `ts: discuss` is always GUI-native. Reject `ts: discuss ... --app-server` with the selector's clear
 `discussion_is_gui_native` explanation; do not start App Server. Explicit App Server selection for

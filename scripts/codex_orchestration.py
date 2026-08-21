@@ -27,6 +27,7 @@ try:
         flatten_token_usage,
         last_token_usage,
         sandbox_policy,
+        resolve_codex_executable,
     )
     from scripts.codex_camp_execution import (
         CAMP_OUTCOME_SCHEMA,
@@ -51,6 +52,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/codex_orchestrat
         flatten_token_usage,
         last_token_usage,
         sandbox_policy,
+        resolve_codex_executable,
     )
     from codex_camp_execution import (  # type: ignore[no-redef]
         CAMP_OUTCOME_SCHEMA,
@@ -213,7 +215,7 @@ class AppServerFeatureConfig:
         value = qualification.get("validated_codex_cli_version") if isinstance(qualification, dict) else None
         return str(value or "unknown")
 
-    def compatibility_warning(self, codex: str = "codex") -> str | None:
+    def compatibility_warning(self, codex: str | None = None) -> str | None:
         installed = detect_codex_version(codex)
         qualified = self.qualified_codex_version
         if installed is None:
@@ -542,7 +544,7 @@ def execute_if_enabled(
     retain_thread: bool = False,
     config: AppServerFeatureConfig | None = None,
     policy: ModelPolicy | None = None,
-    codex: str = "codex",
+    codex: str | None = None,
     timeout: float = 300.0,
     telemetry_path: Path | None = None,
 ) -> tuple[RouteDecision, ExecutionResult | None]:
@@ -559,6 +561,7 @@ def execute_if_enabled(
     )
     if not decision.use_app_server:
         return decision, None
+    codex = resolve_codex_executable(codex)
     warning = features.compatibility_warning(codex)
     if warning:
         decision = replace(decision, compatibility_warning=warning)
@@ -626,7 +629,7 @@ def execute_camp_if_enabled(
     enable_override: bool | None = None,
     config: AppServerFeatureConfig | None = None,
     policy: ModelPolicy | None = None,
-    codex: str = "codex",
+    codex: str | None = None,
     timeout: float = 300.0,
     telemetry_path: Path | None = None,
 ) -> dict[str, Any]:
@@ -645,6 +648,7 @@ def execute_camp_if_enabled(
             "route": asdict(decision),
             "fallback": "continue in the existing Tool Shed/Codex GUI path",
         }
+    codex = resolve_codex_executable(codex)
     warning = features.compatibility_warning(codex)
     if warning:
         decision = replace(decision, compatibility_warning=warning)
@@ -1113,7 +1117,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--policy", type=Path, default=ROOT / "adapters" / "codex-model-policy.json")
-    parser.add_argument("--codex", default="codex")
+    parser.add_argument("--codex", default=None)
     parser.add_argument("--timeout", type=float, default=300.0)
     parser.add_argument("--telemetry", type=Path, default=default_telemetry_path())
     parser.add_argument(
@@ -1191,7 +1195,8 @@ def main() -> int:
                 enable_override=enabled,
             )
             if decision.use_app_server:
-                warning = config.compatibility_warning(args.codex)
+                resolved_codex = resolve_codex_executable(args.codex)
+                warning = config.compatibility_warning(resolved_codex)
                 if warning:
                     decision = replace(decision, compatibility_warning=warning)
             print(
@@ -1293,13 +1298,14 @@ def main() -> int:
                 file=os.sys.stderr,
             )
             return 2
-        warning = config.compatibility_warning(args.codex)
+        resolved_codex = resolve_codex_executable(args.codex)
+        warning = config.compatibility_warning(resolved_codex)
         if warning:
             print(f"WARNING: {warning}", file=os.sys.stderr)
         records: list[dict[str, Any]] = []
         with CodexExecutionAdapter(
             policy=policy,
-            codex=args.codex,
+            codex=resolved_codex,
             timeout=args.timeout,
             telemetry_path=args.telemetry,
         ) as adapter:

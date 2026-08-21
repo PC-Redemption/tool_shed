@@ -1,10 +1,10 @@
 # Active Campaign Queue
 
-Updated: 2026-08-20
+Updated: 2026-08-21
 
 ## Owner State
 
-- Last completed: app-server-explicit-command-opt-in — Add explicit App Server command opt-in
+- Last completed: forward-next-app-server-to-qualified-camp-execution — Forward next App Server selection to qualified CAMP execution
 - Working now: none
 - Next: none
 - Blocker or decision needed: none

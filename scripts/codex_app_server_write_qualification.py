@@ -21,7 +21,7 @@ try:
         parse_camp_outcome,
         structured_outcome_record,
     )
-    from scripts.codex_execution import detect_codex_version, flatten_token_usage, sandbox_policy
+    from scripts.codex_execution import detect_codex_version, flatten_token_usage, resolve_codex_executable, sandbox_policy
 except ModuleNotFoundError:  # Direct execution: python scripts/codex_app_server_write_qualification.py
     from codex_app_server import AppServerError, CodexAppServerClient, TurnResult  # type: ignore[no-redef]
     from codex_camp_execution import (  # type: ignore[no-redef]
@@ -33,6 +33,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/codex_app_server
     from codex_execution import (  # type: ignore[no-redef]
         detect_codex_version,
         flatten_token_usage,
+        resolve_codex_executable,
         sandbox_policy,
     )
 
@@ -91,8 +92,8 @@ def _turn_record(turn: TurnResult) -> dict[str, Any]:
 
 
 class WriteQualificationHarness:
-    def __init__(self, *, codex: str, timeout: float, base_dir: Path) -> None:
-        self.codex = codex
+    def __init__(self, *, codex: str | None, timeout: float, base_dir: Path) -> None:
+        self.codex = resolve_codex_executable(codex)
         self.timeout = timeout
         self.base_dir = base_dir.expanduser().resolve()
         self.approval_events: list[dict[str, Any]] = []
@@ -520,7 +521,7 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--codex", default="codex")
+    parser.add_argument("--codex", default=None)
     parser.add_argument("--timeout", type=float, default=180.0)
     parser.add_argument("--base-dir", type=Path, default=Path("/home/jon/docker"))
     parser.add_argument("--deterministic-only", action="store_true")

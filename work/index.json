@@ -730,6 +730,40 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
+      "disposition": "completed",
+      "next_action": "none",
+      "parent": null,
+      "path": "work/00-campaigns/completed/045-resolve-codex-cli-and-report-app-server-readiness.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Resolve Codex CLI and report App Server readiness",
+      "type": "campaign",
+      "updated": "2026-08-21"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": "completed",
+      "next_action": "none",
+      "parent": null,
+      "path": "work/00-campaigns/completed/046-forward-next-app-server-to-qualified-camp-execution.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Forward next App Server selection to qualified CAMP execution",
+      "type": "campaign",
+      "updated": "2026-08-21"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
       "disposition": "Replaced as the executable entrypoint by a full Program Roadmap proposal with staged milestones, evidence gates, and separately approved roadmap-derived campaigns.",
       "next_action": "reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign.",
       "parent": null,
@@ -1607,7 +1641,7 @@
     }
   ],
   "description": "Generated from tool_shed artifact headers. Use as navigation, not canonical truth.",
-  "generated_at": "2026-08-20",
+  "generated_at": "2026-08-21",
   "reading_order": [
     "Read project README/docs for current truth.",
     "Read active maps and active work artifacts from this index.",
@@ -1616,7 +1650,7 @@
   "schema_version": 1,
   "summary": {
     "active_artifacts": 0,
-    "completed_or_decided_artifacts": 84,
-    "total_artifacts": 93
+    "completed_or_decided_artifacts": 86,
+    "total_artifacts": 95
   }
 }

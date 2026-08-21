@@ -12,13 +12,13 @@ from typing import Any
 
 try:
     from scripts.codex_app_server import AppServerError, AuthenticationError
+    from scripts.codex_cli_resolver import CodexCliResolver, CodexReadiness
     from scripts.codex_execution import (
         ApprovalBridge,
         CodexExecutionAdapter,
         ModelPolicy,
         ModelPolicyError,
         default_telemetry_path,
-        detect_codex_version,
         flatten_token_usage,
         sandbox_policy,
         sanitized_probe,
@@ -26,13 +26,13 @@ try:
     from scripts.codex_orchestration import AppServerFeatureConfig, FeatureConfigError
 except ModuleNotFoundError:  # Direct execution: python scripts/codex_app_server_compatibility.py
     from codex_app_server import AppServerError, AuthenticationError  # type: ignore[no-redef]
+    from codex_cli_resolver import CodexCliResolver, CodexReadiness  # type: ignore[no-redef]
     from codex_execution import (  # type: ignore[no-redef]
         ApprovalBridge,
         CodexExecutionAdapter,
         ModelPolicy,
         ModelPolicyError,
         default_telemetry_path,
-        detect_codex_version,
         flatten_token_usage,
         sandbox_policy,
         sanitized_probe,
@@ -83,9 +83,35 @@ def qualification_for_version(
     return next((record for record in records if record.get("codex_version") == version), None)
 
 
+def resolve_codex_cli(codex: str | None, records: list[dict[str, Any]]):
+    """Resolve once for a reporting or execution operation.
+
+    ``None`` deliberately means bounded discovery; a supplied ``--codex`` value
+    remains the resolver's authoritative override.
+    """
+
+    return CodexCliResolver().resolve(
+        executable_override=codex,
+        is_qualified=lambda version: bool(
+            (record := qualification_for_version(records, version))
+            and record.get("status") in {"qualified", "qualified_with_blockers"}
+        ),
+    )
+
+
+def _compatibility_for_resolution(resolution, record: dict[str, Any] | None) -> str:
+    if resolution.readiness is CodexReadiness.NOT_FOUND:
+        return "not_installed_or_not_found"
+    if resolution.readiness is CodexReadiness.INVALID_EXECUTABLE:
+        return "invalid_executable"
+    if resolution.readiness is CodexReadiness.APP_SERVER_UNAVAILABLE:
+        return "app_server_unavailable"
+    return str(record.get("status")) if record else "unqualified_version"
+
+
 def status_report(
     *,
-    codex: str = "codex",
+    codex: str | None = None,
     config_path: Path = DEFAULT_CONFIG,
     policy_path: Path = DEFAULT_POLICY,
     qualifications_path: Path = DEFAULT_QUALIFICATIONS,
@@ -93,7 +119,8 @@ def status_report(
     config = AppServerFeatureConfig.load(config_path)
     policy = ModelPolicy.load(policy_path)
     records = load_qualifications(qualifications_path)
-    installed = detect_codex_version(codex)
+    resolution = resolve_codex_cli(codex, records)
+    installed = resolution.version
     record = qualification_for_version(records, installed)
     planning = policy.select("planning")
     verification = policy.select("verification")
@@ -133,8 +160,24 @@ def status_report(
         "global_default": "disabled" if not config.globally_enabled else "enabled",
         "installed_codex": installed,
         "qualified_codex": configured_qualified,
-        "compatibility": record.get("status") if record else "unqualified_version",
-        "version_warning": config.compatibility_warning(codex),
+        "compatibility": _compatibility_for_resolution(resolution, record),
+        "version_warning": (
+            None if installed == configured_qualified else
+            ("Codex CLI is not detected." if installed is None else
+             f"Installed Codex {installed} does not match qualified version {configured_qualified}.")
+        ),
+        "codex_cli": (
+            "INVALID" if resolution.readiness is CodexReadiness.INVALID_EXECUTABLE
+            else ("AVAILABLE" if resolution.found else "NOT FOUND")
+        ),
+        "codex_discovery": (
+            "OpenAI VS Code extension" if resolution.source and resolution.source.value == "openai_vscode_extension"
+            else (resolution.source.value.replace("_", " ").title() if resolution.source else "not found")
+        ),
+        "codex_executable": str(resolution.executable) if resolution.executable else None,
+        "app_server_available": resolution.app_server_available,
+        "codex_readiness": resolution.readiness.value,
+        "codex_error": resolution.error,
         "enabled_roles": enabled_roles,
         "disabled": disabled,
         "known_blockers": blockers,
@@ -153,7 +196,11 @@ def format_status(report: dict[str, Any]) -> str:
         f"Status: {report['status']}",
         f"Global default: {report['global_default']}",
         "",
+        f"Codex CLI: {report['codex_cli']}",
+        f"Discovery: {report['codex_discovery']}",
+        f"Executable: {report.get('codex_executable') or 'not detected'}",
         f"Installed Codex: {report.get('installed_codex') or 'not detected'}",
+        f"App Server: {'AVAILABLE' if report['app_server_available'] else 'UNAVAILABLE'}",
         f"Qualified Codex: {report['qualified_codex']}",
         f"Compatibility: {str(report['compatibility']).replace('_', ' ')}",
         "Experimental: unsupported for production workloads",
@@ -202,7 +249,7 @@ def check(name: str, passed: bool, detail: Any, *, blocker: bool = False) -> dic
 
 def smoke_report(
     *,
-    codex: str = "codex",
+    codex: str | None = None,
     cwd: Path = ROOT,
     config_path: Path = DEFAULT_CONFIG,
     policy_path: Path = DEFAULT_POLICY,
@@ -217,11 +264,19 @@ def smoke_report(
     config = AppServerFeatureConfig.load(config_path)
     policy = ModelPolicy.load(policy_path)
     records = load_qualifications(qualifications_path)
-    installed = detect_codex_version(codex)
+    resolution = resolve_codex_cli(codex, records)
+    resolved_codex = str(resolution.executable) if resolution.executable else None
+    installed = resolution.version
     record = qualification_for_version(records, installed)
     configured_version = config.qualified_codex_version
     version_changed = installed != configured_version
     checks: list[dict[str, Any]] = [
+        check(
+            "codex_cli_resolution",
+            resolution.app_server_available,
+            resolution.as_dict(),
+            blocker=not resolution.app_server_available,
+        ),
         check("codex_version_detection", installed is not None, installed or "not detected"),
         check(
             "qualification_record",
@@ -278,6 +333,9 @@ def smoke_report(
     restricted_result: dict[str, Any]
     server_state: dict[str, Any] | None = None
     try:
+        if not resolution.app_server_available or resolved_codex is None:
+            detail = resolution.error or resolution.readiness.value.replace("_", " ")
+            raise AppServerError(f"Codex App Server is unavailable: {detail}", kind="codex_not_ready")
         with tempfile.TemporaryDirectory(prefix="tool-shed-app-server-smoke-") as temporary_name:
             smoke_cwd = Path(temporary_name)
             (smoke_cwd / "AGENTS.md").write_text(
@@ -286,7 +344,7 @@ def smoke_report(
             )
             with CodexExecutionAdapter(
                 policy=policy,
-                codex=codex,
+                codex=resolved_codex,
                 timeout=timeout,
                 telemetry_path=telemetry,
             ) as adapter:
@@ -518,7 +576,7 @@ def smoke_report(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--codex", default="codex")
+    parser.add_argument("--codex", default=None)
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--policy", type=Path, default=DEFAULT_POLICY)
     parser.add_argument("--qualifications", type=Path, default=DEFAULT_QUALIFICATIONS)

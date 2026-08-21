@@ -53,7 +53,7 @@
   },
   "qualification": {
     "estimated_codex_baseline_input_tokens": 18800,
-    "validated_codex_cli_version": "0.144.6",
+    "validated_codex_cli_version": "0.149.0",
     "minimum_planning_operations": 10,
     "minimum_verification_operations": 20
   },
@@ -63,7 +63,7 @@
     "timeout_seconds": 120
   },
   "write_execution": {
-    "qualified_codex_cli_version": "0.144.6",
+    "qualified_codex_cli_version": "0.149.0",
     "approval_policy": "never",
     "network_access": false,
     "exclude_slash_tmp": true,

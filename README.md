@@ -282,6 +282,7 @@ ts: verify <request> --app-server
 ts: camp run <camp> --app-server
 ts: status
 ts: next
+ts: next --app-server
 ts: next 1,2
 ts: next *
 ts:work1 <goal> ... ts:work5 <goal>
@@ -293,11 +294,25 @@ See the [AI command reference](docs/commands.md) for every defined route, alias,
 boundary. See the [Tool Shed operator guide](docs/operator-guide.md) for workflow explanations and
 examples.
 
-The three `--app-server` forms are explicit, per-command opt-ins for qualified real-world testing.
+The four `--app-server` forms are explicit, per-command opt-ins for qualified real-world testing.
+`ts: next --app-server` performs the ordinary `next` selection and forwards the option only when
+the selected action already has a qualified App Server role; CAMP execution reuses the existing
+Terra/medium runner. `next` itself is not an App Server role.
 Unflagged commands remain in the GUI, `ts: discuss` is always GUI-native, incompatible Codex
 versions and unqualified roles fail closed, and the committed global App Server default remains
 off. `ts: appserver on|off` is intentionally unavailable because the skill surface has no reliable
 session-scoped state store; use the explicit option on each test command.
+
+App Server tooling resolves Codex through one bounded resolver: a supported explicit override,
+then `PATH`, then trusted platform locations, including version-ordered OpenAI VS Code extension
+bundles. On Linux, those bundles are limited to the normal desktop, Insiders, remote-server, and
+remote-server Insiders extension roots and the x86_64, aarch64, and arm64 Codex payloads. It
+validates `--version` and App Server support separately, so status can report
+`NOT FOUND`, `INVALID EXECUTABLE`, `APP SERVER UNAVAILABLE`, `UNQUALIFIED VERSION`, or available
+and qualified, with the selected path and discovery source. The same resolver is used by status,
+selection, smoke, startup, version detection, qualification, reasoning refresh, and installation
+and upgrade readiness checks. It never installs Codex, changes permanent `PATH`, searches arbitrary
+locations, or enables API fallback; missing Codex only makes explicit App Server execution unavailable.
 
 Every installed workspace has one tracked `work/tool-shed-project.json` identity containing a
 stable UUID and project name. Before the first mutation in a provider session, `ts: identity`

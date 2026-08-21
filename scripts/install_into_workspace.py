@@ -6,6 +6,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from codex_cli_resolver import CodexCliResolver, CodexReadiness
 from codex_skill_sync import inspect_codex_skill, load_release_skill_digests
 from provider_adapters import provider_config, provider_ids
 from project_identity import (
@@ -223,6 +224,7 @@ CAMPAIGN_QUEUE_GUIDANCE = f"""{CAMPAIGN_QUEUE_GUIDANCE_START}
 - Keep durable owner-facing campaign state under first-sorted `work/00-campaigns/`; keep `work/01-q&a/ask.txt` as transient intake.
 - Treat `ts: queue` and `ts: status` as requests to read the active owner capsule and validate lifecycle state.
 - Treat bare `ts: next` as a request to resume the working campaign or select the first ready campaign, then execute only that campaign under its natural coordination and requested work level.
+- Treat `ts: next --app-server` as normal `next` navigation followed by invocation-scoped forwarding only when the selected action maps to an already-qualified App Server role. For CAMP execution, run the existing `camp-run` selector and bounded Terra/medium path. Do not make `next` a role, change its selection, persist the preference, force GUI-native or non-executable work through CAMP execution, bypass compatibility, or add API fallback.
 - Use one shared Cycle State Capsule in `overview`, `status`, and `next`: Program Cycle → Milestone Wave Cycle → Queue Cycle → Campaign Cycle → Evidence Loop. Completing an inner cycle returns control upward and never proves an outer cycle complete.
 - Compute work origin independently from coordination and work1-work5: no queue record is direct; Roadmap traceability is roadmap-derived; Detour For/Return To is detour; other queued work is owner-originated. Do not reuse `Campaign: standalone` as an origin.
 - When bare `next` has no ready campaign, report the owning cycle and exact safe transition: Dangler Resolution, exact current persisted plan approval, incomplete milestone/gate review, next-milestone derivation, roadmap drift review, completed roadmap, or no higher-level driver. Never approve, materialize, start, revise, or bypass authority from this projection.
@@ -518,6 +520,48 @@ def report_codex_skill_state() -> None:
     print("Codex skill changes require a fresh Codex session before they take effect.")
 
 
+def codex_cli_readiness_report() -> dict[str, Any]:
+    """Return the shared resolver vocabulary used for install-time reporting."""
+
+    resolution = CodexCliResolver().resolve()
+    report = resolution.as_dict()
+    report["codex_cli"] = (
+        "INVALID" if resolution.readiness is CodexReadiness.INVALID_EXECUTABLE
+        else ("AVAILABLE" if resolution.found else "NOT FOUND")
+    )
+    report["discovery"] = (
+        "OpenAI VS Code extension"
+        if resolution.source and resolution.source.value == "openai_vscode_extension"
+        else (resolution.source.value.replace("_", " ").title() if resolution.source else "not found")
+    )
+    report["compatibility"] = {
+        CodexReadiness.AVAILABLE_QUALIFIED: "QUALIFIED VERSION",
+        CodexReadiness.AVAILABLE_UNQUALIFIED: "UNQUALIFIED VERSION",
+        CodexReadiness.APP_SERVER_UNAVAILABLE: "APP SERVER UNAVAILABLE",
+        CodexReadiness.INVALID_EXECUTABLE: "INVALID EXECUTABLE",
+        CodexReadiness.NOT_FOUND: "NOT INSTALLED OR NOT FOUND",
+    }[resolution.readiness]
+    return report
+
+
+def report_codex_cli_readiness() -> dict[str, Any]:
+    """Print non-blocking App Server readiness when the Codex provider applies."""
+
+    report = codex_cli_readiness_report()
+    print(f"Codex CLI: {report['codex_cli']}")
+    print(f"Discovery: {report['discovery']}")
+    print(f"Executable: {report['executable'] or 'not detected'}")
+    print(f"Installed Codex: {report['version'] or 'not detected'}")
+    print(
+        "App Server: "
+        f"{'AVAILABLE' if report['readiness'] in {'available_qualified', 'available_unqualified'} else 'UNAVAILABLE'}"
+    )
+    print(f"Compatibility: {report['compatibility']}")
+    if report["readiness"] not in {"available_qualified", "available_unqualified"}:
+        print("Normal GUI Tool Shed operation remains available; only App Server execution is unavailable.")
+    return report
+
+
 def main() -> int:
     args = parse_args()
     root = Path(args.workspace).expanduser().resolve()
@@ -548,6 +592,7 @@ def main() -> int:
             return 1
         if "codex" in providers:
             report_codex_skill_state()
+            report_codex_cli_readiness()
         return 0
     identity_exists = (root / IDENTITY_RELATIVE_PATH).exists() or any(
         (root / relative).exists() for relative in LEGACY_IDENTITY_PATHS
@@ -597,6 +642,7 @@ def main() -> int:
             return 1
         if "codex" in providers:
             report_codex_skill_state()
+            report_codex_cli_readiness()
 
     index_script = Path(__file__).resolve().with_name("update_work_index.py")
     if index_script.exists():

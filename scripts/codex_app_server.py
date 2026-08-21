@@ -13,6 +13,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
 
+try:
+    from scripts.codex_cli_resolver import CodexCliResolver
+except ModuleNotFoundError:  # Direct execution: python scripts/codex_app_server.py
+    from codex_cli_resolver import CodexCliResolver  # type: ignore[no-redef]
+
 
 class AppServerError(RuntimeError):
     """Raised when app-server cannot satisfy a protocol request."""
@@ -52,7 +57,7 @@ class CodexAppServerClient:
 
     def __init__(
         self,
-        codex: str = "codex",
+        codex: str | None = None,
         *,
         timeout: float = 30.0,
         client_name: str = "tool_shed",
@@ -62,6 +67,8 @@ class CodexAppServerClient:
     ) -> None:
         if timeout <= 0:
             raise ValueError("timeout must be greater than zero")
+        # None means discover from the bounded allowlist. A supplied value is
+        # an authoritative user override and is never silently replaced.
         self.codex = codex
         self.timeout = timeout
         self.client_info = {
@@ -94,9 +101,10 @@ class CodexAppServerClient:
         self._notifications.clear()
         self._responses.clear()
         self._stderr.clear()
+        executable = self._resolved_executable()
         try:
             self.process = subprocess.Popen(
-                [self.codex, "app-server", "--stdio"],
+                [executable, "app-server", "--stdio"],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -134,6 +142,19 @@ class CodexAppServerClient:
         initialized = self.request("initialize", {"clientInfo": self.client_info})
         self.user_agent = str(initialized.get("userAgent") or "unknown")
         self.notify("initialized", {})
+
+    def _resolved_executable(self) -> str:
+        resolution = CodexCliResolver().resolve(executable_override=self.codex)
+        if not resolution.app_server_available or resolution.executable is None:
+            detail = resolution.error or resolution.readiness.value.replace("_", " ")
+            raise AppServerError(
+                f"Codex App Server is unavailable: {detail}",
+                details=resolution.as_dict(),
+                kind="codex_not_ready",
+            )
+        executable = str(resolution.executable)
+        self.codex = executable
+        return executable
 
     def close(self) -> None:
         process = self.process

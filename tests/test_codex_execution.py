@@ -7,8 +7,10 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
-from scripts.codex_app_server import AppServerError, AuthenticationError
+from scripts.codex_app_server import AppServerError, AuthenticationError, CodexAppServerClient
+from scripts.codex_cli_resolver import CodexCliResolution, CodexReadiness, CodexSource
 from scripts.app_server_control import (
     control_status,
     format_control_status,
@@ -30,6 +32,7 @@ from scripts.codex_execution import (
     activity_report,
     classify_recovery,
     qualification_report,
+    detect_codex_version,
     sandbox_policy,
     weighted_codex_usage,
 )
@@ -64,7 +67,7 @@ import sys
 import time
 
 if "--version" in sys.argv:
-    print("codex-cli " + os.environ.get("FAKE_CODEX_VERSION", "0.144.6"))
+    print("codex-cli " + os.environ.get("FAKE_CODEX_VERSION", "0.149.0"))
     raise SystemExit(0)
 
 account_type = os.environ.get("FAKE_CODEX_ACCOUNT", "chatgpt")
@@ -77,7 +80,7 @@ for raw in sys.stdin:
     method = message.get("method")
     request_id = message.get("id")
     if method == "initialize":
-        print(json.dumps({"id": request_id, "result": {"userAgent": "fake-codex/0.144.6"}}), flush=True)
+        print(json.dumps({"id": request_id, "result": {"userAgent": "fake-codex/0.149.0"}}), flush=True)
     elif method == "account/read":
         account = {"type": account_type}
         if account_type == "chatgpt":
@@ -529,7 +532,7 @@ class CodexExecutionTests(unittest.TestCase):
 
     def test_reasoning_catalog_uses_shared_app_server_client(self) -> None:
         models, user_agent = query_codex_catalog(str(self.fake), timeout=5)
-        self.assertEqual(user_agent, "fake-codex/0.144.6")
+        self.assertEqual(user_agent, "fake-codex/0.149.0")
         self.assertEqual({item["id"] for item in models}, {"gpt-5.6-sol", "gpt-5.6-terra"})
 
     def test_feature_flags_preserve_gui_fallback_and_discussion(self) -> None:
@@ -568,7 +571,7 @@ class CodexExecutionTests(unittest.TestCase):
             warning = config.compatibility_warning(str(self.fake))
         finally:
             os.environ.pop("FAKE_CODEX_VERSION", None)
-        self.assertIn("Qualified version: 0.144.6", warning or "")
+        self.assertIn("Qualified version: 0.149.0", warning or "")
         self.assertIn("Installed version: 0.200.0", warning or "")
         self.assertIn(
             "python3 scripts/codex_app_server_compatibility.py smoke --cwd .",
@@ -673,7 +676,7 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertEqual(selected.compatibility, "unqualified_version")
         blocked_banner = format_selection(selected)
         self.assertIn("Installed Codex: 0.200.0", blocked_banner)
-        self.assertIn("Qualified Codex: 0.144.6", blocked_banner)
+        self.assertIn("Qualified Codex: 0.149.0", blocked_banner)
 
     def test_user_command_status_and_session_control_are_explicit_only(self) -> None:
         report = control_status(codex=str(self.fake))
@@ -1026,12 +1029,12 @@ class CodexExecutionTests(unittest.TestCase):
             telemetry,
             qualification_id="Q",
             baseline_input_tokens=8,
-            expected_codex_version="0.144.6",
+            expected_codex_version="0.149.0",
             codex=str(self.fake),
         )
         self.assertEqual(qualification["operations"], 1)
         self.assertEqual(qualification["verification_terra"]["avoidable_input_tokens"], 2)
-        self.assertEqual(qualification["codex_cli_version"], "0.144.6")
+        self.assertEqual(qualification["codex_cli_version"], "0.149.0")
         self.assertFalse(qualification["observation_gate"]["met"])
         changed = qualification_report(
             telemetry,
@@ -1059,16 +1062,60 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertEqual(comparison["aggregate"]["absolute_change_tokens"], 2)
         self.assertEqual(comparison["aggregate"]["relative_change_percent"], 20.0)
 
+    def test_resolved_bundled_executable_is_shared_by_version_detection_and_startup(self) -> None:
+        # The resolver's source records that this represents a trusted VS Code
+        # bundle; the executable remains platform-native for this test run.
+        bundled = self.fake
+        resolution = CodexCliResolution(
+            CodexSource.VSCODE_EXTENSION,
+            bundled,
+            "0.144.6",
+            CodexReadiness.AVAILABLE_UNQUALIFIED,
+        )
+
+        class BundledResolver:
+            def resolve(self, **_kwargs: object) -> CodexCliResolution:
+                return resolution
+
+        with patch("scripts.codex_execution.CodexCliResolver", return_value=BundledResolver()), patch(
+            "scripts.codex_app_server.CodexCliResolver", return_value=BundledResolver()
+        ):
+            self.assertEqual(detect_codex_version(), "0.144.6")
+            with CodexAppServerClient(timeout=2) as client:
+                self.assertEqual(client.codex, str(bundled))
+
+    def test_orchestration_resolves_once_before_passing_to_adapter(self) -> None:
+        discovered = str(self.fake)
+        config = AppServerFeatureConfig.load(ROOT / "adapters" / "codex-app-server-config.json")
+        with patch("scripts.codex_orchestration.resolve_codex_executable", return_value=discovered) as resolve:
+            decision, result = execute_if_enabled(
+                "use the discovered executable",
+                role="planning",
+                cwd=ROOT,
+                enable_override=True,
+                config=config,
+                policy=self.policy,
+                codex=None,
+                telemetry_path=self.root / "resolved.jsonl",
+            )
+        self.assertTrue(decision.use_app_server)
+        self.assertIsNotNone(result)
+        resolve.assert_called_once_with(None)
+
     def test_compatibility_status_and_smoke_are_version_aware(self) -> None:
         qualifications = load_qualifications(
             ROOT / "adapters" / "codex-app-server-qualifications.json"
         )
-        self.assertEqual(qualifications[0]["codex_version"], "0.144.6")
+        self.assertEqual(qualifications[-1]["codex_version"], "0.149.0")
         status = status_report(codex=str(self.fake))
         self.assertEqual(status["status"], "OPT-IN")
         self.assertEqual(status["global_default"], "disabled")
         self.assertEqual(status["compatibility"], "qualified_with_blockers")
-        self.assertEqual(status["qualified_savings"]["input_reduction_percent"], 82.54)
+        self.assertIsNone(status["qualified_savings"])
+        self.assertEqual(
+            status["qualification_record"]["tiny_smoke_input_tokens"]["minimum"],
+            18983,
+        )
         self.assertEqual(
             status["enabled_roles"]["camp_execution"],
             {

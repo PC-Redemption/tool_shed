@@ -518,6 +518,7 @@ opt into one qualified operation at a time:
 ts: plan <request> --app-server
 ts: verify <request> --app-server
 ts: camp run <camp> --app-server
+ts: next --app-server
 ts: appserver status
 ```
 
@@ -525,6 +526,12 @@ The execution banner identifies App Server, role, model, reasoning, and explicit
 uses Sol/high, verification uses Terra/low, and CAMP execution reuses the optimized bounded
 Terra/medium `camp-run` path. The same commands without the option show `Execution: GUI` and remain
 in the normal GUI path.
+
+`ts: next --app-server` keeps normal navigation authoritative: it selects exactly what unflagged
+`ts: next` would select, then forwards the option only if that action maps to an existing qualified
+role. CAMP work uses the existing Terra/medium runner. Discussion, owner decisions, blocked work,
+external gates, and unsupported actions are surfaced without being forced through CAMP execution.
+The preference applies only to that invocation; `next` does not become an App Server role.
 
 The selector fails closed before App Server starts when the installed Codex version or role is not
 qualified. Rerun without `--app-server` to use GUI fallback. `ts: discuss` always remains
@@ -534,6 +541,29 @@ Session-scoped `ts: appserver on|off` is not implemented: the current Codex skil
 reliable skill-owned per-session state store. Those commands explain the limitation and do not
 change user or repository configuration. Use the explicit option on each test command. The global
 App Server default and API fallback remain off.
+
+App Server commands use one centralized Codex resolver. It prefers a supported explicit override,
+then `PATH`, then bounded trusted platform locations, including the newest valid OpenAI VS Code
+extension bundle. It validates the executable version and App Server support independently and
+shows the selected path and source. Readiness is reported as `NOT FOUND`, `INVALID EXECUTABLE`,
+`APP SERVER UNAVAILABLE`, `UNQUALIFIED VERSION`, or qualified `AVAILABLE`; a discovered version is
+never qualified automatically. The same resolver serves status, selection, smoke, startup, version
+detection, qualification, reasoning refresh, and install/upgrade readiness. It does not install or
+copy Codex, alter permanent `PATH`, search arbitrary disk locations, persist user paths, or enable
+an API fallback. If Codex is unavailable, only explicit App Server work is unavailable; normal GUI
+Tool Shed work continues.
+
+On Linux, trusted bundle discovery checks the user's `.vscode`, `.vscode-insiders`,
+`.vscode-server`, and `.vscode-server-insiders` extension roots for x86_64, aarch64, and arm64
+Codex payloads. This supports ordinary desktop and remote GUI launches where `codex` is absent
+from the inherited `PATH`.
+
+Automated Windows and Linux regression coverage verifies these rules but does not pass the Windows
+GUI release gate. That still requires field evidence from a fresh normally launched Codex GUI with
+`Get-Command codex` not found and no `PATH` preparation: `ts: appserver status` must discover the
+trusted VS Code bundle, and GUI-triggered App Server execution, smoke, startup, version detection,
+and qualification must identify the same executable. Treat the gate as pending until that evidence
+is recorded.
 
 ### Check reasoning before substantial work
 
