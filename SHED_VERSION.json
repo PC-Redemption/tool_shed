@@ -140,9 +140,9 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
   "notes": "Adds centralized Codex CLI discovery, trusted Windows and Linux VS Code bundle resolution, resolver-backed App Server execution and readiness reporting, Codex CLI 0.149.0 requalification with retained blockers, Windows GUI-path qualification gates, and explicit ts: next --app-server forwarding to qualified execution roles.",
-  "release_commit": null,
+  "release_commit": "d9bf7d9813ee70087f1a77b9f1c6684b9b7aedf2",
   "release_tag": "v0.25.0",
-  "released_at": null,
+  "released_at": "2026-08-21T13:13:15Z",
   "shed_version": "0.25.0",
   "updated_at": "2026-08-21",
   "updater_mutation_paths": [
