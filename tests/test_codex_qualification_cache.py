@@ -7,6 +7,8 @@ import stat
 import tempfile
 import unittest
 from pathlib import Path
+from subprocess import CompletedProcess
+from unittest.mock import patch
 
 from scripts.codex_qualification_cache import (
     QualificationCache,
@@ -151,42 +153,42 @@ class QualificationCacheTests(unittest.TestCase):
         config.write_text(json.dumps({"qualification": {"minimum": "0.146.0"}}))
         policy.write_text(json.dumps({"roles": {"planning": "model"}}))
         generated = self.root / "generated-codex"
-        generated.write_text(
-            "#!/usr/bin/env python3\n"
-            "import json, pathlib, sys\n"
-            "if 'generate-json-schema' in sys.argv:\n"
-            "    out = pathlib.Path(sys.argv[sys.argv.index('--out') + 1])\n"
-            "    (out / 'schema.json').write_text(json.dumps({'protocol': 2}))\n"
-            "    raise SystemExit(0)\n"
-            "raise SystemExit(1)\n",
-            encoding="utf-8",
-        )
-        generated.chmod(0o755)
-        generated_identity = build_qualification_identity(
-            executable=generated,
-            codex_version="0.200.0",
-            config_path=config,
-            model_policy_path=policy,
-        )
+        generated.write_text("generated fixture", encoding="utf-8")
+
+        def generate_schema(command: list[str], **_: object) -> CompletedProcess[str]:
+            out = Path(command[command.index("--out") + 1])
+            (out / "schema.json").write_text(
+                json.dumps({"protocol": 2}), encoding="utf-8"
+            )
+            return CompletedProcess(command, 0, "", "")
+
+        with patch(
+            "scripts.codex_qualification_cache.subprocess.run",
+            side_effect=generate_schema,
+        ):
+            generated_identity = build_qualification_identity(
+                executable=generated,
+                codex_version="0.200.0",
+                config_path=config,
+                model_policy_path=policy,
+            )
         self.assertEqual(generated_identity.protocol_source, "generated-schema")
 
         fallback = self.root / "fallback-codex"
-        fallback.write_text(
-            "#!/usr/bin/env python3\n"
-            "import sys\n"
-            "if '--help' in sys.argv:\n"
-            "    print('app-server protocol help')\n"
-            "    raise SystemExit(0)\n"
-            "raise SystemExit(1)\n",
-            encoding="utf-8",
-        )
-        fallback.chmod(0o755)
-        fallback_identity = build_qualification_identity(
-            executable=fallback,
-            codex_version="0.200.0",
-            config_path=config,
-            model_policy_path=policy,
-        )
+        fallback.write_text("fallback fixture", encoding="utf-8")
+        with patch(
+            "scripts.codex_qualification_cache.subprocess.run",
+            side_effect=[
+                CompletedProcess([], 1, "", "schema unavailable"),
+                CompletedProcess([], 0, "app-server protocol help\n", ""),
+            ],
+        ):
+            fallback_identity = build_qualification_identity(
+                executable=fallback,
+                codex_version="0.200.0",
+                config_path=config,
+                model_policy_path=policy,
+            )
         self.assertEqual(fallback_identity.protocol_source, "runtime-probe")
         self.assertNotIn("app-server protocol help", fallback_identity.protocol_sha256)
 
