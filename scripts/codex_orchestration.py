@@ -183,6 +183,26 @@ class AppServerFeatureConfig:
         qualification = self.payload.get("qualification")
         if not isinstance(qualification, dict):
             raise FeatureConfigError("qualification must be an object")
+        primary_version = qualification.get("validated_codex_cli_version")
+        if not isinstance(primary_version, str) or not primary_version:
+            raise FeatureConfigError(
+                "qualification.validated_codex_cli_version must be a non-empty string"
+            )
+        validated_versions = qualification.get("validated_codex_cli_versions")
+        if validated_versions is not None:
+            if (
+                not isinstance(validated_versions, list)
+                or not validated_versions
+                or any(not isinstance(item, str) or not item for item in validated_versions)
+                or len(set(validated_versions)) != len(validated_versions)
+            ):
+                raise FeatureConfigError(
+                    "qualification.validated_codex_cli_versions must be a non-empty unique string list"
+                )
+            if primary_version not in validated_versions:
+                raise FeatureConfigError(
+                    "qualification.validated_codex_cli_versions must include the primary version"
+                )
         baseline = qualification.get("estimated_codex_baseline_input_tokens")
         if not isinstance(baseline, int) or baseline < 0:
             raise FeatureConfigError(
@@ -215,20 +235,39 @@ class AppServerFeatureConfig:
         value = qualification.get("validated_codex_cli_version") if isinstance(qualification, dict) else None
         return str(value or "unknown")
 
+    @property
+    def qualified_codex_versions(self) -> tuple[str, ...]:
+        qualification = self.payload.get("qualification")
+        values = qualification.get("validated_codex_cli_versions") if isinstance(qualification, dict) else None
+        if isinstance(values, list):
+            return tuple(str(value) for value in values)
+        return (self.qualified_codex_version,)
+
+    @property
+    def qualified_write_codex_versions(self) -> tuple[str, ...]:
+        write_execution = self.payload.get("write_execution")
+        if not isinstance(write_execution, dict):
+            return ()
+        values = write_execution.get("qualified_codex_cli_versions")
+        if isinstance(values, list):
+            return tuple(str(value) for value in values)
+        value = write_execution.get("qualified_codex_cli_version")
+        return (str(value),) if isinstance(value, str) and value else ()
+
     def compatibility_warning(self, codex: str | None = None) -> str | None:
         installed = detect_codex_version(codex)
-        qualified = self.qualified_codex_version
+        qualified = self.qualified_codex_versions
         if installed is None:
             return (
                 "Codex App Server version could not be detected. "
                 "Run `python3 scripts/codex_app_server_compatibility.py smoke --cwd .` "
                 "before relying on App Server execution."
             )
-        if installed == qualified:
+        if installed in qualified:
             return None
         return (
             "Codex App Server version changed. "
-            f"Qualified version: {qualified}. Installed version: {installed}. "
+            f"Qualified versions: {', '.join(qualified)}. Installed version: {installed}. "
             "Run `python3 scripts/codex_app_server_compatibility.py smoke --cwd .` "
             "before relying on App Server execution."
         )

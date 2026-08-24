@@ -110,7 +110,7 @@ def select_role(
         "fallback_available": True,
         "global_default": _global_default(config),
         "session_opt_in": "OFF",
-        "qualified_codex": config.qualified_codex_version,
+        "qualified_codex": ", ".join(config.qualified_codex_versions),
         "api_fallback": api_fallback,
         "orchestrator_subcommand": orchestrator_subcommand,
     }
@@ -167,14 +167,18 @@ def select_role(
         else ("unqualified_version" if resolution.found else resolution.readiness.value)
     )
     route_record = (record.get("routing") or {}).get(role) if record else None
-    version_matches = installed == config.qualified_codex_version
+    version_matches = installed in config.qualified_codex_versions
     route_qualified = isinstance(route_record, dict) and route_record.get("qualified") is True
     policy_matches = bool(
         route_qualified
         and route_record.get("model") == selected.model
         and route_record.get("reasoning") == selected.reasoning
     )
-    camp_write_qualified = role != "camp_execution" or bool(record and record.get("workspace_writing"))
+    camp_write_qualified = role != "camp_execution" or bool(
+        record
+        and record.get("workspace_writing")
+        and installed in config.qualified_write_codex_versions
+    )
     compatible = compatibility in {"qualified", "qualified_with_blockers"}
     if not resolution.app_server_available:
         reason = "codex_app_server_unavailable"

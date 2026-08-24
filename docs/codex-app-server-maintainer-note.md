@@ -63,6 +63,10 @@ disposable write harness separately before retaining CAMP qualification. Resume 
 only for a concrete CLI, support-status, cancellation, restricted-read, approval, token-efficiency,
 or production-contract change.
 
-The current reviewed version is Codex CLI 0.149.0. Its 2026-08-21 smoke and disposable write
-qualification retained explicit planning, verification, and CAMP roles with blockers; see
+The current reviewed versions are Codex CLI 0.149.0 and 0.149.0-alpha.4.3. Stable 0.149.0 retains
+explicit planning, verification, and CAMP roles with blockers after its smoke and disposable write
+qualification; see
 [`codex-app-server-requalification-2026-08-21.md`](codex-app-server-requalification-2026-08-21.md).
+The extension-bundled alpha is qualified only for explicit read-only planning and verification;
+see
+[`codex-app-server-alpha-requalification-2026-08-24.md`](codex-app-server-alpha-requalification-2026-08-24.md).

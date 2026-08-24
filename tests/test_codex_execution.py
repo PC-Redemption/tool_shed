@@ -70,6 +70,10 @@ if "--version" in sys.argv:
     print("codex-cli " + os.environ.get("FAKE_CODEX_VERSION", "0.149.0"))
     raise SystemExit(0)
 
+if "app-server" in sys.argv and "--help" in sys.argv:
+    print("Run the Codex App Server over stdio.")
+    raise SystemExit(0)
+
 account_type = os.environ.get("FAKE_CODEX_ACCOUNT", "chatgpt")
 turn_count = 0
 thread_count = 0
@@ -565,13 +569,21 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertFalse(
             config.route("camp_execution", sandbox="read-only", enable_override=True).use_app_server
         )
+        self.assertEqual(
+            config.qualified_codex_versions,
+            ("0.149.0", "0.149.0-alpha.4.3"),
+        )
+        self.assertEqual(config.qualified_write_codex_versions, ("0.149.0",))
         self.assertIsNone(config.compatibility_warning(str(self.fake)))
         os.environ["FAKE_CODEX_VERSION"] = "0.200.0"
         try:
             warning = config.compatibility_warning(str(self.fake))
         finally:
             os.environ.pop("FAKE_CODEX_VERSION", None)
-        self.assertIn("Qualified version: 0.149.0", warning or "")
+        self.assertIn(
+            "Qualified versions: 0.149.0, 0.149.0-alpha.4.3",
+            warning or "",
+        )
         self.assertIn("Installed version: 0.200.0", warning or "")
         self.assertIn(
             "python3 scripts/codex_app_server_compatibility.py smoke --cwd .",
@@ -677,6 +689,30 @@ class CodexExecutionTests(unittest.TestCase):
         blocked_banner = format_selection(selected)
         self.assertIn("Installed Codex: 0.200.0", blocked_banner)
         self.assertIn("Qualified Codex: 0.149.0", blocked_banner)
+
+    def test_user_command_control_allows_alpha_reads_but_blocks_alpha_camp(self) -> None:
+        os.environ["FAKE_CODEX_VERSION"] = "0.149.0-alpha.4.3"
+        try:
+            planning = select_command(
+                "plan",
+                app_server_requested=True,
+                codex=str(self.fake),
+            )
+            camp = select_command(
+                "camp-run",
+                app_server_requested=True,
+                codex=str(self.fake),
+            )
+            status = status_report(codex=str(self.fake))
+        finally:
+            os.environ.pop("FAKE_CODEX_VERSION", None)
+        self.assertTrue(planning.allowed)
+        self.assertEqual(planning.reason, "explicit_qualified_opt_in")
+        self.assertFalse(camp.allowed)
+        self.assertEqual(camp.reason, "role_not_qualified")
+        self.assertEqual(status["compatibility"], "qualified_with_blockers")
+        self.assertNotIn("camp_execution", status["enabled_roles"])
+        self.assertIn("CAMP execution", status["disabled"])
 
     def test_user_command_status_and_session_control_are_explicit_only(self) -> None:
         report = control_status(codex=str(self.fake))

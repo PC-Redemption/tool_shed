@@ -125,7 +125,8 @@ def status_report(
     planning = policy.select("planning")
     verification = policy.select("verification")
     camp_execution = policy.select("camp_execution")
-    configured_qualified = config.qualified_codex_version
+    configured_versions = config.qualified_codex_versions
+    configured_qualified = ", ".join(configured_versions)
     blockers = list(record.get("known_blockers") or []) if record else [
         "installed Codex version has no qualification record"
     ]
@@ -162,7 +163,7 @@ def status_report(
         "qualified_codex": configured_qualified,
         "compatibility": _compatibility_for_resolution(resolution, record),
         "version_warning": (
-            None if installed == configured_qualified else
+            None if installed in configured_versions else
             ("Codex CLI is not detected." if installed is None else
              f"Installed Codex {installed} does not match qualified version {configured_qualified}.")
         ),
@@ -268,8 +269,9 @@ def smoke_report(
     resolved_codex = str(resolution.executable) if resolution.executable else None
     installed = resolution.version
     record = qualification_for_version(records, installed)
-    configured_version = config.qualified_codex_version
-    version_changed = installed != configured_version
+    configured_versions = config.qualified_codex_versions
+    configured_version = ", ".join(configured_versions)
+    version_changed = installed not in configured_versions
     checks: list[dict[str, Any]] = [
         check(
             "codex_cli_resolution",

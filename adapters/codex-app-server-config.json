@@ -54,6 +54,10 @@
   "qualification": {
     "estimated_codex_baseline_input_tokens": 18800,
     "validated_codex_cli_version": "0.149.0",
+    "validated_codex_cli_versions": [
+      "0.149.0",
+      "0.149.0-alpha.4.3"
+    ],
     "minimum_planning_operations": 10,
     "minimum_verification_operations": 20
   },

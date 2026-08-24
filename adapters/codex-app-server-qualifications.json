@@ -196,6 +196,64 @@
       "workspace_write_evidence": "docs/codex-app-server-write-qualification-2026-08-20.md"
     },
     {
+      "codex_version": "0.149.0-alpha.4.3",
+      "qualified_at": "2026-08-24",
+      "status": "qualified_with_blockers",
+      "operating_mode": "read_only_explicit_opt_in",
+      "transport": "stdio",
+      "authentication": {
+        "chatgpt": true,
+        "api_key_fallback": false
+      },
+      "routing": {
+        "planning": {
+          "model": "gpt-5.6-sol",
+          "reasoning": "high",
+          "qualified": true
+        },
+        "verification": {
+          "model": "gpt-5.6-terra",
+          "reasoning": "low",
+          "qualified": true
+        },
+        "camp_execution": {
+          "model": "gpt-5.6-terra",
+          "reasoning": "medium",
+          "sandbox": "workspace-write",
+          "qualified": false,
+          "scope": "not qualified; no reviewed disposable workspace-write harness"
+        }
+      },
+      "read_only": true,
+      "cancellation_safe": false,
+      "cancellation_observation": {
+        "observed_at": "2026-08-24",
+        "interrupt_response": "no active turn",
+        "reconciled_status": "interrupted",
+        "tool_shed_classification": "cancelled",
+        "assessment": "Cancellation was not acknowledged, but immediate thread reconciliation produced a safe cancelled result."
+      },
+      "gui_approval_bridge": false,
+      "restricted_read_consistent": false,
+      "workspace_writing": false,
+      "production_supported": false,
+      "estimated_harness_input_tokens_per_operation": 18800,
+      "tiny_smoke_input_tokens": {
+        "minimum": 18916,
+        "maximum": 18917,
+        "observed_at": "2026-08-24"
+      },
+      "known_blockers": [
+        "cancellation acknowledgement race",
+        "GUI approval bridge unavailable",
+        "restricted-read permissionProfile protocol mismatch",
+        "CAMP workspace writing not qualified",
+        "fixed App Server harness cost remains material for tiny operations",
+        "App Server experimental and unsupported for production"
+      ],
+      "evidence": "docs/codex-app-server-alpha-requalification-2026-08-24.md"
+    },
+    {
       "codex_version": "0.149.0",
       "qualified_at": "2026-08-21",
       "status": "qualified_with_blockers",
