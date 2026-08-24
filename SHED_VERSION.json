@@ -142,9 +142,9 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
   "notes": "Make Codex qualification cache tests platform-neutral on Windows.",
-  "release_commit": null,
+  "release_commit": "6b1ae69ba8e52d7f714e50dd16e12ee8750c70ae",
   "release_tag": "v0.26.1",
-  "released_at": null,
+  "released_at": "2026-08-24T19:07:41Z",
   "shed_version": "0.26.1",
   "updated_at": "2026-08-24",
   "updater_mutation_paths": [
