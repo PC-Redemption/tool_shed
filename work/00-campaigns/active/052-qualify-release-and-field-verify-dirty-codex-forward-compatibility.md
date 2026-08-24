@@ -1,9 +1,9 @@
 # Qualify, release, and field-verify dirty Codex forward compatibility
 
-Status: queued
+Status: working
 Type: campaign
 Updated: 2026-08-24
-Next Action: execute when selected from the active campaign queue
+Next Action: execute the campaign completion gate
 Campaign ID: qualify-release-and-field-verify-dirty-codex-forward-compatibility
 Campaign Number: 052
 Outcome: Prove the dirty-qualification system across Windows and Linux candidate layouts, publish it in the next integrity-verifiable Tool Shed release, and upgrade the Bactron Core Windows snapshot to confirm unseen newer Codex versions qualify and run without modifying snapshot machinery.
