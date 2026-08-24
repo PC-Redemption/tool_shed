@@ -1,9 +1,9 @@
 # Harden dirty-qualification cache and failure semantics
 
-Status: queued
+Status: working
 Type: campaign
 Updated: 2026-08-24
-Next Action: execute when selected from the active campaign queue
+Next Action: execute the campaign completion gate
 Campaign ID: harden-dirty-qualification-cache-and-failure-semantics
 Campaign Number: 051
 Outcome: Persist reusable dirty-qualification evidence in protected user-local state without modifying installed Tool Shed snapshots, while making cache identity, corruption recovery, concurrency, invalidation, transient retry, and authoritative unsafe-denial behavior explicit and fail-closed.
