@@ -208,6 +208,16 @@ class AppServerFeatureConfig:
             raise FeatureConfigError(
                 "qualification.estimated_codex_baseline_input_tokens must be non-negative"
             )
+        automatic_dirty_read = qualification.get("automatic_dirty_read_qualification")
+        if automatic_dirty_read is not True:
+            raise FeatureConfigError(
+                "qualification.automatic_dirty_read_qualification must equal true"
+            )
+        minimum_dirty_read = qualification.get("minimum_dirty_read_codex_cli_version")
+        if not isinstance(minimum_dirty_read, str) or not minimum_dirty_read:
+            raise FeatureConfigError(
+                "qualification.minimum_dirty_read_codex_cli_version must be a non-empty string"
+            )
         thread_policy = self.payload.get("thread_policy")
         if not isinstance(thread_policy, dict):
             raise FeatureConfigError("thread_policy must be an object")
@@ -253,6 +263,16 @@ class AppServerFeatureConfig:
             return tuple(str(value) for value in values)
         value = write_execution.get("qualified_codex_cli_version")
         return (str(value),) if isinstance(value, str) and value else ()
+
+    @property
+    def minimum_dirty_read_codex_version(self) -> str:
+        qualification = self.payload.get("qualification")
+        value = (
+            qualification.get("minimum_dirty_read_codex_cli_version")
+            if isinstance(qualification, dict)
+            else None
+        )
+        return str(value or "0.146.0")
 
     def compatibility_warning(self, codex: str | None = None) -> str | None:
         installed = detect_codex_version(codex)

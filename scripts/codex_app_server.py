@@ -139,7 +139,16 @@ class CodexAppServerClient:
 
         threading.Thread(target=read_stdout, daemon=True).start()
         threading.Thread(target=read_stderr, daemon=True).start()
-        initialized = self.request("initialize", {"clientInfo": self.client_info})
+        initialized = self.request(
+            "initialize",
+            {
+                "clientInfo": self.client_info,
+                # Permission profiles are part of the experimental App Server
+                # surface. Advertising this capability is required before the
+                # server accepts `permissions` on thread and turn requests.
+                "capabilities": {"experimentalApi": True},
+            },
+        )
         self.user_agent = str(initialized.get("userAgent") or "unknown")
         self.notify("initialized", {})
 
@@ -331,6 +340,27 @@ class CodexAppServerClient:
                 return models
             cursor = next_cursor
 
+    def list_permission_profiles(self, *, cwd: Path) -> list[dict[str, Any]]:
+        """Return permission profiles exposed by experimental app-server builds."""
+
+        profiles: list[dict[str, Any]] = []
+        cursor: str | None = None
+        while True:
+            params: dict[str, Any] = {"cwd": str(cwd.resolve()), "limit": 1000}
+            if cursor:
+                params["cursor"] = cursor
+            result = self.request("permissionProfile/list", params)
+            data = result.get("data")
+            if not isinstance(data, list):
+                raise AppServerError(
+                    "Codex app-server permissionProfile/list returned no data array"
+                )
+            profiles.extend(item for item in data if isinstance(item, dict))
+            next_cursor = result.get("nextCursor")
+            if not isinstance(next_cursor, str) or not next_cursor:
+                return profiles
+            cursor = next_cursor
+
     def start_thread(
         self,
         *,
@@ -338,19 +368,21 @@ class CodexAppServerClient:
         cwd: Path,
         approval_policy: str,
         sandbox: str,
+        permission_profile: str | None = None,
         ephemeral: bool = False,
     ) -> dict[str, Any]:
-        result = self.request(
-            "thread/start",
-            {
-                "model": model,
-                "cwd": str(cwd.resolve()),
-                "approvalPolicy": approval_policy,
-                "sandbox": sandbox,
-                "ephemeral": ephemeral,
-                "serviceName": "tool_shed",
-            },
-        )
+        params: dict[str, Any] = {
+            "model": model,
+            "cwd": str(cwd.resolve()),
+            "approvalPolicy": approval_policy,
+            "ephemeral": ephemeral,
+            "serviceName": "tool_shed",
+        }
+        if permission_profile:
+            params["permissions"] = permission_profile
+        else:
+            params["sandbox"] = sandbox
+        result = self.request("thread/start", params)
         thread = result.get("thread")
         if not isinstance(thread, dict) or not thread.get("id"):
             raise AppServerError("Codex app-server thread/start returned no thread id")
@@ -369,17 +401,19 @@ class CodexAppServerClient:
         cwd: Path,
         approval_policy: str,
         sandbox: str,
+        permission_profile: str | None = None,
     ) -> dict[str, Any]:
-        result = self.request(
-            "thread/resume",
-            {
-                "threadId": thread_id,
-                "model": model,
-                "cwd": str(cwd.resolve()),
-                "approvalPolicy": approval_policy,
-                "sandbox": sandbox,
-            },
-        )
+        params: dict[str, Any] = {
+            "threadId": thread_id,
+            "model": model,
+            "cwd": str(cwd.resolve()),
+            "approvalPolicy": approval_policy,
+        }
+        if permission_profile:
+            params["permissions"] = permission_profile
+        else:
+            params["sandbox"] = sandbox
+        result = self.request("thread/resume", params)
         thread = result.get("thread")
         if not isinstance(thread, dict) or not thread.get("id"):
             raise AppServerError("Codex app-server thread/resume returned no thread id")
@@ -398,19 +432,21 @@ class CodexAppServerClient:
         cwd: Path,
         approval_policy: str,
         sandbox: str,
+        permission_profile: str | None = None,
         ephemeral: bool = False,
     ) -> dict[str, Any]:
-        result = self.request(
-            "thread/fork",
-            {
-                "threadId": thread_id,
-                "model": model,
-                "cwd": str(cwd.resolve()),
-                "approvalPolicy": approval_policy,
-                "sandbox": sandbox,
-                "ephemeral": ephemeral,
-            },
-        )
+        params: dict[str, Any] = {
+            "threadId": thread_id,
+            "model": model,
+            "cwd": str(cwd.resolve()),
+            "approvalPolicy": approval_policy,
+            "ephemeral": ephemeral,
+        }
+        if permission_profile:
+            params["permissions"] = permission_profile
+        else:
+            params["sandbox"] = sandbox
+        result = self.request("thread/fork", params)
         thread = result.get("thread")
         if not isinstance(thread, dict) or not thread.get("id"):
             raise AppServerError("Codex app-server thread/fork returned no thread id")
@@ -431,6 +467,7 @@ class CodexAppServerClient:
         cwd: Path,
         approval_policy: str,
         sandbox_policy: dict[str, Any],
+        permission_profile: str | None = None,
         output_schema: dict[str, Any] | None = None,
     ) -> str:
         params: dict[str, Any] = {
@@ -440,8 +477,11 @@ class CodexAppServerClient:
             "effort": effort,
             "cwd": str(cwd.resolve()),
             "approvalPolicy": approval_policy,
-            "sandboxPolicy": sandbox_policy,
         }
+        if permission_profile:
+            params["permissions"] = permission_profile
+        else:
+            params["sandboxPolicy"] = sandbox_policy
         if output_schema is not None:
             params["outputSchema"] = output_schema
         result = self.request(

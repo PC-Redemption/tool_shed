@@ -52,7 +52,9 @@
     "regression_factor": 1.5
   },
   "qualification": {
+    "automatic_dirty_read_qualification": true,
     "estimated_codex_baseline_input_tokens": 18800,
+    "minimum_dirty_read_codex_cli_version": "0.146.0",
     "validated_codex_cli_version": "0.149.0",
     "validated_codex_cli_versions": [
       "0.149.0",

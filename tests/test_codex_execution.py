@@ -20,6 +20,9 @@ from scripts.app_server_control import (
     session_control,
 )
 from scripts.codex_app_server_compatibility import (
+    codex_version_at_least,
+    codex_version_core,
+    dirty_read_qualification_report,
     load_qualifications,
     smoke_report,
     status_report,
@@ -79,11 +82,17 @@ turn_count = 0
 thread_count = 0
 read_count = 0
 interrupted = False
+active_turn_id = None
+active_thread_id = None
 for raw in sys.stdin:
     message = json.loads(raw)
     method = message.get("method")
     request_id = message.get("id")
     if method == "initialize":
+        capabilities = message.get("params", {}).get("capabilities", {})
+        if capabilities.get("experimentalApi") is not True:
+            print(json.dumps({"id": request_id, "error": {"code": -32600, "message": "experimentalApi capability required"}}), flush=True)
+            continue
         print(json.dumps({"id": request_id, "result": {"userAgent": "fake-codex/0.149.0"}}), flush=True)
     elif method == "account/read":
         account = {"type": account_type}
@@ -104,7 +113,21 @@ for raw in sys.stdin:
                 ],
             })
         print(json.dumps({"id": request_id, "result": {"data": data, "nextCursor": None}}), flush=True)
+    elif method == "permissionProfile/list":
+        if os.environ.get("FAKE_CODEX_NO_PERMISSION_PROFILES") == "1":
+            print(json.dumps({"id": request_id, "error": {"code": -32601, "message": "method not found"}}), flush=True)
+        else:
+            allowed = os.environ.get("FAKE_CODEX_DISALLOW_READ_ONLY") != "1"
+            data = [
+                {"id": ":read-only", "description": None, "allowed": allowed},
+                {"id": ":workspace", "description": None, "allowed": True},
+            ]
+            print(json.dumps({"id": request_id, "result": {"data": data, "nextCursor": None}}), flush=True)
     elif method in ("thread/start", "thread/resume", "thread/fork"):
+        params = message.get("params", {})
+        if "permissions" in params and "sandbox" in params:
+            print(json.dumps({"id": request_id, "error": {"code": -32602, "message": "permissions cannot be combined with sandbox"}}), flush=True)
+            continue
         if method == "thread/resume" and os.environ.get("FAKE_CODEX_STALE_THREAD") == "1":
             print(json.dumps({"id": request_id, "error": {"code": -32602, "message": "thread not found: stale thread id"}}), flush=True)
             continue
@@ -128,8 +151,20 @@ for raw in sys.stdin:
     elif method == "turn/start":
         turn_count += 1
         params = message["params"]
+        if "permissions" in params and "sandboxPolicy" in params:
+            print(json.dumps({"id": request_id, "error": {"code": -32602, "message": "permissions cannot be combined with sandboxPolicy"}}), flush=True)
+            continue
         turn_id = "turn_fake"
         print(json.dumps({"id": request_id, "result": {"turn": {"id": turn_id, "status": "inProgress", "items": []}}}), flush=True)
+        prompt = " ".join(
+            str(item.get("text", ""))
+            for item in params.get("input", [])
+            if isinstance(item, dict)
+        )
+        if "ACTIVE_CANCELLATION_PROBE" in prompt:
+            active_turn_id = turn_id
+            active_thread_id = params["threadId"]
+            continue
         if os.environ.get("FAKE_CODEX_EXIT_ON_TURN") == "1":
             sys.exit(7)
         if os.environ.get("FAKE_CODEX_DELAY_TURN") == "1":
@@ -171,6 +206,10 @@ for raw in sys.stdin:
         else:
             interrupted = True
             print(json.dumps({"id": request_id, "result": {}}), flush=True)
+            if active_turn_id is not None:
+                print(json.dumps({"method": "turn/completed", "params": {"threadId": active_thread_id, "turn": {"id": active_turn_id, "status": "interrupted", "items": []}}}), flush=True)
+                active_turn_id = None
+                active_thread_id = None
 '''
 
 
@@ -574,6 +613,7 @@ class CodexExecutionTests(unittest.TestCase):
             ("0.149.0", "0.149.0-alpha.4.3"),
         )
         self.assertEqual(config.qualified_write_codex_versions, ("0.149.0",))
+        self.assertEqual(config.minimum_dirty_read_codex_version, "0.146.0")
         self.assertIsNone(config.compatibility_warning(str(self.fake)))
         os.environ["FAKE_CODEX_VERSION"] = "0.200.0"
         try:
@@ -670,8 +710,8 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertEqual(deployment.reason, "role_feature_disabled")
         self.assertEqual(deployment.execution, "GUI")
 
-    def test_user_command_control_blocks_incompatible_codex_with_gui_fallback(self) -> None:
-        os.environ["FAKE_CODEX_VERSION"] = "0.200.0"
+    def test_user_command_control_blocks_codex_below_dirty_read_minimum(self) -> None:
+        os.environ["FAKE_CODEX_VERSION"] = "0.145.9"
         try:
             selected = select_command(
                 "verify",
@@ -681,14 +721,166 @@ class CodexExecutionTests(unittest.TestCase):
         finally:
             os.environ.pop("FAKE_CODEX_VERSION", None)
         self.assertFalse(selected.allowed)
-        self.assertEqual(selected.reason, "codex_version_not_qualified")
+        self.assertEqual(selected.reason, "codex_below_minimum_dirty_read_version")
         self.assertEqual(selected.execution, "GUI")
         self.assertTrue(selected.fallback_available)
-        self.assertEqual(selected.installed_codex, "0.200.0")
+        self.assertEqual(selected.installed_codex, "0.145.9")
         self.assertEqual(selected.compatibility, "unqualified_version")
+        self.assertEqual(selected.qualification_mode, "below_minimum")
+        self.assertIsNone(selected.dirty_qualification)
         blocked_banner = format_selection(selected)
-        self.assertIn("Installed Codex: 0.200.0", blocked_banner)
+        self.assertIn("Installed Codex: 0.145.9", blocked_banner)
         self.assertIn("Qualified Codex: 0.149.0", blocked_banner)
+
+    def test_unseen_newer_codex_dirty_qualifies_and_continues_read_request(self) -> None:
+        os.environ["FAKE_CODEX_VERSION"] = "0.200.0-alpha.7"
+        telemetry = self.root / "dirty-select.jsonl"
+        try:
+            with patch(
+                "scripts.codex_app_server_compatibility.default_telemetry_path",
+                return_value=telemetry,
+            ):
+                selected = select_command(
+                    "verify",
+                    app_server_requested=True,
+                    codex=str(self.fake),
+                )
+            decision, result = execute_if_enabled(
+                "continue the original explicit verification request",
+                role="verification",
+                cwd=ROOT,
+                enable_override=True,
+                config=AppServerFeatureConfig.load(
+                    ROOT / "adapters" / "codex-app-server-config.json"
+                ),
+                policy=self.policy,
+                codex=str(self.fake),
+                telemetry_path=self.root / "continued.jsonl",
+            )
+        finally:
+            os.environ.pop("FAKE_CODEX_VERSION", None)
+        self.assertTrue(selected.allowed)
+        self.assertEqual(selected.reason, "explicit_dirty_qualified_opt_in")
+        self.assertEqual(selected.qualification_mode, "dirty_read")
+        self.assertEqual(selected.compatibility, "qualified")
+        self.assertEqual(selected.dirty_qualification["fatal_failures"], [])
+        self.assertTrue(decision.use_app_server)
+        self.assertEqual(result.status, "completed")
+
+    def test_dirty_read_version_floor_accepts_prereleases_without_upper_cutoff(self) -> None:
+        self.assertEqual(codex_version_core("0.149.0-alpha.4.3"), (0, 149, 0))
+        for version in ("0.146.0-alpha.1", "0.149.0", "0.150.0", "1.0.0-beta.2"):
+            with self.subTest(version=version):
+                self.assertTrue(codex_version_at_least(version, "0.146.0"))
+        for version in ("0.145.99", "bad", None):
+            with self.subTest(version=version):
+                self.assertFalse(codex_version_at_least(version, "0.146.0"))
+
+    def test_dirty_read_qualification_negotiates_profile_and_legacy_fallback(self) -> None:
+        os.environ["FAKE_CODEX_VERSION"] = "0.200.0"
+        try:
+            profile = dirty_read_qualification_report(
+                codex=str(self.fake),
+                cwd=ROOT,
+                telemetry_path=self.root / "profile.jsonl",
+                timeout=2,
+            )
+            os.environ["FAKE_CODEX_NO_PERMISSION_PROFILES"] = "1"
+            legacy = dirty_read_qualification_report(
+                codex=str(self.fake),
+                cwd=ROOT,
+                telemetry_path=self.root / "legacy.jsonl",
+                timeout=2,
+            )
+        finally:
+            os.environ.pop("FAKE_CODEX_NO_PERMISSION_PROFILES", None)
+            os.environ.pop("FAKE_CODEX_VERSION", None)
+        self.assertEqual(profile["outcome"], "qualified")
+        self.assertEqual(
+            profile["permission_negotiation"]["permission_profile"], ":read-only"
+        )
+        self.assertEqual(legacy["outcome"], "qualified")
+        self.assertEqual(
+            legacy["permission_negotiation"]["mode"], "legacy_sandbox_policy"
+        )
+        for report in (profile, legacy):
+            by_name = {item["name"]: item for item in report["checks"]}
+            self.assertEqual(by_name["read_only_workspace_unchanged"]["status"], "pass")
+            self.assertEqual(by_name["read_only_no_mutation_events"]["status"], "pass")
+            self.assertEqual(by_name["cancellation_reconciliation"]["status"], "pass")
+
+    def test_dirty_read_qualification_classifies_unsafe_and_unknown_failures(self) -> None:
+        os.environ["FAKE_CODEX_VERSION"] = "0.200.0"
+        os.environ["FAKE_CODEX_ACCOUNT"] = "apiKey"
+        try:
+            fatal = dirty_read_qualification_report(
+                codex=str(self.fake),
+                cwd=ROOT,
+                telemetry_path=self.root / "fatal.jsonl",
+                timeout=2,
+            )
+        finally:
+            os.environ.pop("FAKE_CODEX_ACCOUNT", None)
+        os.environ["FAKE_CODEX_DISALLOW_READ_ONLY"] = "1"
+        try:
+            unknown = dirty_read_qualification_report(
+                codex=str(self.fake),
+                cwd=ROOT,
+                telemetry_path=self.root / "unknown.jsonl",
+                timeout=2,
+            )
+        finally:
+            os.environ.pop("FAKE_CODEX_DISALLOW_READ_ONLY", None)
+            os.environ.pop("FAKE_CODEX_VERSION", None)
+        self.assertEqual(fatal["outcome"], "unqualified_fatal")
+        self.assertIn("app_server_runtime", fatal["fatal_failures"])
+        self.assertEqual(unknown["outcome"], "unqualified_unknown")
+        self.assertIn("app_server_runtime", unknown["unknown_failures"])
+
+    def test_dirty_read_qualification_keeps_safe_blockers_distinct(self) -> None:
+        os.environ.update(
+            {
+                "FAKE_CODEX_VERSION": "0.200.0",
+                "FAKE_CODEX_NO_ACTIVE_INTERRUPT": "1",
+                "FAKE_CODEX_READ_TURN_STATUS": "interrupted",
+            }
+        )
+        try:
+            report = dirty_read_qualification_report(
+                codex=str(self.fake),
+                cwd=ROOT,
+                telemetry_path=self.root / "safe-blocker.jsonl",
+                timeout=2,
+            )
+        finally:
+            for name in (
+                "FAKE_CODEX_VERSION",
+                "FAKE_CODEX_NO_ACTIVE_INTERRUPT",
+                "FAKE_CODEX_READ_TURN_STATUS",
+            ):
+                os.environ.pop(name, None)
+        self.assertEqual(report["outcome"], "qualified_with_blockers")
+        self.assertEqual(report["safe_blockers"], ["cancellation_acknowledgement"])
+        self.assertEqual(report["fatal_failures"], [])
+        self.assertEqual(report["unknown_failures"], [])
+
+    def test_unseen_version_never_inherits_workspace_write_qualification(self) -> None:
+        os.environ["FAKE_CODEX_VERSION"] = "0.200.0"
+        try:
+            with patch(
+                "scripts.app_server_control.dirty_read_qualification_report"
+            ) as dirty_qualify:
+                selected = select_command(
+                    "camp-run",
+                    app_server_requested=True,
+                    codex=str(self.fake),
+                )
+        finally:
+            os.environ.pop("FAKE_CODEX_VERSION", None)
+        dirty_qualify.assert_not_called()
+        self.assertFalse(selected.allowed)
+        self.assertEqual(selected.reason, "codex_version_not_qualified")
+        self.assertEqual(selected.qualification_mode, "none")
 
     def test_user_command_control_allows_alpha_reads_but_blocks_alpha_camp(self) -> None:
         os.environ["FAKE_CODEX_VERSION"] = "0.149.0-alpha.4.3"
@@ -722,6 +914,7 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertEqual(report["current_execution_default"], "GUI")
         self.assertEqual(report["discussion_execution"], "GUI-native")
         self.assertFalse(report["api_fallback"])
+        self.assertEqual(report["minimum_dirty_read_codex"], "0.146.0")
         self.assertEqual(
             (
                 report["enabled_roles"]["planning"]["model"],
@@ -1176,8 +1369,8 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertEqual(by_name["chatgpt_authentication"]["status"], "pass")
         self.assertEqual(by_name["read_only_planning_turn"]["status"], "pass")
         self.assertEqual(by_name["read_only_verification_turn"]["status"], "pass")
-        self.assertEqual(by_name["cancellation_reconciliation"]["status"], "blocked")
-        self.assertEqual(smoke["cancellation"]["outcome"], "completed")
+        self.assertEqual(by_name["cancellation_reconciliation"]["status"], "pass")
+        self.assertEqual(smoke["cancellation"]["outcome"], "cancelled")
         self.assertEqual(by_name["restricted_read_behavior"]["status"], "blocked")
         self.assertFalse(smoke["qualification_record_updated"])
         self.assertNotIn("APP_SERVER_PLANNING_SMOKE_OK", telemetry.read_text(encoding="utf-8"))

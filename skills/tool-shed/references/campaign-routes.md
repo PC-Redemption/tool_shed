@@ -362,9 +362,14 @@ python3 <shed>/scripts/app_server_control.py select <plan|verify|camp-run> \
 
 Surface its concise execution banner. Continue to App Server only when `allowed` is true. A blocked
 selection must not call App Server or silently switch execution backends; report the reason and
-offer the same command without `--app-server` as the GUI fallback. The selector requires the exact
-installed Codex version to have a current `qualified` or `qualified_with_blockers` record, the role
-to be qualified, and the recorded model/reasoning pair to match centralized policy.
+offer the same command without `--app-server` as the GUI fallback. CAMP execution requires the exact
+installed Codex version to have a current `qualified` or `qualified_with_blockers` write record,
+the role to be qualified, and the recorded model/reasoning pair to match centralized policy.
+Planning and verification may instead use an unseen version whose numeric release core is at least
+`0.146.0`: the selector must automatically run the bounded dirty read qualification and continue
+the original explicit request in the same invocation only when it returns `qualified` or
+`qualified_with_blockers`. Versions below the floor and fatal or unknown dirty outcomes fail closed.
+Never transfer a dirty read result to CAMP or another workspace-writing role.
 
 For allowed planning and verification, call the existing `codex_orchestration.py
 --enable-app-server run` path with the selected role, a focused read-only prompt, the workspace,

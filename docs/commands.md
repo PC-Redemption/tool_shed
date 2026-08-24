@@ -353,10 +353,13 @@ want one of the three qualified roles to use the existing App Server integration
 | `ts: appserver status` | Read-only default, compatibility, and qualified-role status |
 
 Without the option, `ts: plan`, `ts: verify`, and `ts: camp run` use the normal GUI path and report
-`Execution: GUI`. The explicit option is checked against the installed Codex version and the
-version-specific qualification registry before App Server starts. A mismatch or unqualified role
-is blocked with a clear reason and a suggestion to rerun without the option; there is no API
-fallback.
+`Execution: GUI`. For planning and verification, the selector accepts exact reviewed records or an
+unseen Codex version whose numeric release core is at least `0.146.0`. An unseen eligible executable
+runs the bounded dirty read qualification in the same invocation; a passing result continues the
+original request without updating the repository registry. Prereleases use their numeric release
+core, and there is no upper cutoff. Versions below the floor and fatal or unknown qualification
+results are blocked with a clear GUI fallback. CAMP execution still requires an exact reviewed
+workspace-write record and separate write harness. There is no API fallback.
 
 `next` is not a new App Server role. The flagged and unflagged forms select the same next action.
 When that action is executable CAMP work, Tool Shed applies the existing `camp-run` selector and
@@ -378,7 +381,8 @@ Every App Server path uses one bounded Codex resolver: a supported explicit over
 It reports the selected executable and discovery source as `NOT FOUND`, `INVALID EXECUTABLE`,
 `APP SERVER UNAVAILABLE`, `UNQUALIFIED VERSION`, or qualified `AVAILABLE`. Status, selection,
 smoke, startup, version detection, qualification, reasoning refresh, and install/upgrade readiness
-share that result. Discovery does not qualify a version; Tool Shed never installs Codex, changes
+share that result. Discovery alone does not qualify a version; eligible unseen read-only requests
+must pass the live dirty harness. Tool Shed never installs Codex, changes
 permanent `PATH`, searches arbitrary locations, persists a user path, or falls back to an API.
 When Codex is unavailable, normal unflagged GUI use remains available.
 

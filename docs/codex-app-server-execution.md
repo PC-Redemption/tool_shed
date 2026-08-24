@@ -102,9 +102,11 @@ python3 scripts/app_server_control.py status
 ```
 
 The selector reuses the centralized config, model policy, qualification registry, and installed
-Codex version check. Explicit App Server selection fails closed when the exact installed version
-or role is not qualified. The existing GUI remains available by rerunning without `--app-server`;
-the control never switches to API execution.
+Codex version check. Exact records remain authoritative for known versions and all CAMP writing.
+For planning and verification, an unseen executable with a numeric release core of `0.146.0` or
+newer runs the dirty read harness automatically, with no upper cutoff. The original explicit
+request continues in the same invocation only after a qualified result. The existing GUI remains
+available by rerunning without `--app-server`; the control never switches to API execution.
 
 ## Codex Executable Readiness
 
@@ -278,9 +280,11 @@ repository `AGENTS.md` adds a comparatively small amount.
 
 Qualification uses a documented estimate of 18,800 input tokens per measured operation and reports
 `avoidable_input_tokens = max(actual_input_tokens - 18,800, 0)`. This is comparative analysis, not
-billing attribution. The estimate and validated CLI version are stored in
-`adapters/codex-app-server-config.json`; a CLI version change requires the protocol, authentication,
-routing, read-only/approval, and token-baseline smoke checks to be rerun.
+billing attribution. The estimate, exact reviewed versions, and `0.146.0` dirty-read floor are
+stored in `adapters/codex-app-server-config.json`. An unseen eligible read-only request
+automatically reruns the protocol, authentication, routing, read-only/approval, cancellation,
+unchanged-workspace, and token-baseline checks. Workspace-write remains a separate exact-version
+qualification.
 
 Thread reuse did not reduce input-token count: the second tiny turn rose from 19,007 to 19,033,
 while cached input remained 9,984. Reuse can improve cache composition, but it accumulates history.
@@ -408,12 +412,11 @@ disabled and fails closed. The qualified CAMP path instead uses approval policy 
 hardened exact-root workspace-write sandbox, an exact path allowlist, and a Git mutation journal.
 All other workspace-writing roles remain on the existing GUI path.
 
-Both qualified CLI runtimes rejected `readOnly.access` with `Invalid request: readOnly.access is no
-longer supported; use permissionProfile for restricted reads`. Tool Shed treats the observed
-runtime as authoritative and does not enable a version-specific permission-profile workaround in
-this phase. Compatibility smoke skips this expensive known-mismatch probe while the version remains
-0.149.0 and automatically retests it after a version change; `--retest-restricted-read` is
-available for an explicit focused recheck.
+Both reviewed CLI runtimes rejected `readOnly.access` and directed clients to permission profiles.
+Dirty qualification negotiates this protocol rather than keying behavior to a version: it queries
+`permissionProfile/list`, requires the allowed built-in `:read-only` profile, and sends
+`permissions` without `sandbox` or `sandboxPolicy`. If the method is unavailable, the same turns
+validate the legacy read-only sandbox. Exposed-but-unavailable read-only profiles fail closed.
 
 ## Operational Visibility
 
@@ -432,11 +435,12 @@ python3 scripts/codex_app_server_compatibility.py smoke --cwd .
 
 The smoke checks CLI version detection, App Server startup, ChatGPT-only authentication, absent API
 fallback, Sol/Terra availability and reasoning, new read-only planning and verification threads,
-GUI/discussion fallback, cancellation reconciliation, fail-closed approvals, restricted-read
-behavior when the version changed, and the tiny-operation token baseline. It never updates the
-qualification registry automatically. Review new-version evidence, then add a version-specific
-record deliberately. Re-run `scripts/codex_app_server_write_qualification.py` separately before
-retaining workspace-write qualification on a new CLI version; compatibility smoke never writes.
+GUI/discussion fallback, deliberately active-turn cancellation, fail-closed approvals,
+permission-profile or legacy enforcement, unchanged disposable workspace contents, absent protocol
+mutation events, and the tiny-operation token baseline. Dirty mode reports safe blockers separately
+from fatal and unknown states and never updates the qualification registry. Re-run
+`scripts/codex_app_server_write_qualification.py` separately before retaining workspace-write
+qualification on a new CLI version.
 
 Show the last 20 prompt-free operations:
 

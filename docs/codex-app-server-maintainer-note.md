@@ -25,8 +25,11 @@ normal next-action selection and forwards only to an already-qualified role rath
 `next` a role. `ts: appserver status` reports the exact
 local compatibility and routing state. The unflagged forms use the GUI. Session-wide on/off is
 deliberately unavailable because the Codex skill surface has no reliable skill-owned session
-storage, and no `--gui` alias is needed while the unflagged form is authoritative. The selector
-fails closed before App Server starts when the installed Codex version or role is unqualified.
+storage, and no `--gui` alias is needed while the unflagged form is authoritative. Exact reviewed
+records remain authoritative for CAMP. For planning and verification, an unseen executable whose
+numeric release core is at least `0.146.0` is dirty-qualified automatically with no upper cutoff;
+the selector continues the original request only after the bounded read-only harness passes.
+Versions below the floor and fatal or unknown outcomes fail closed.
 
 All Codex consumers use one resolver: supported explicit override, `PATH`, then bounded trusted
 platform locations, including newest-valid OpenAI VS Code extension bundles. It validates the CLI
@@ -34,8 +37,9 @@ version and App Server command independently and reports the selected path and s
 FOUND`, `INVALID EXECUTABLE`, `APP SERVER UNAVAILABLE`, `UNQUALIFIED VERSION`, or qualified
 `AVAILABLE`. The resolver also backs install/upgrade readiness, reasoning refresh, smoke, startup,
 version detection, and qualification. It neither installs Codex nor changes permanent `PATH`,
-persists user paths, searches arbitrary locations, auto-qualifies a version, or enables API
-fallback. Missing Codex therefore leaves normal GUI Tool Shed work available.
+persists user paths, searches arbitrary locations, or enables API fallback. Discovery alone does
+not qualify a version; automatic dirty read qualification is an ephemeral live safety harness.
+Missing Codex therefore leaves normal GUI Tool Shed work available.
 
 Linux extension discovery is bounded to the desktop, Insiders, remote-server, and remote-server
 Insiders extension roots under the user's home directory, with x86_64, aarch64, and arm64 Codex
@@ -57,11 +61,13 @@ python3 scripts/codex_app_server_compatibility.py smoke --cwd .
 python3 scripts/codex_app_server_write_qualification.py --help
 ```
 
-Record reviewed results in `adapters/codex-app-server-qualifications.json`; never inherit or
-automatically declare qualification for a new version. After a version change, run and review the
-disposable write harness separately before retaining CAMP qualification. Resume broader engineering
-only for a concrete CLI, support-status, cancellation, restricted-read, approval, token-efficiency,
-or production-contract change.
+Record durable reviewed results in `adapters/codex-app-server-qualifications.json`. Read-only
+planning and verification do not require a new record for every eligible version: the explicit
+selector automatically dirty-qualifies unseen versions at or above `0.146.0` without persisting a
+registry change. Never inherit workspace-write qualification. After a version change, run and
+review the disposable write harness separately before retaining CAMP qualification. Resume broader
+engineering only for a concrete CLI, support-status, cancellation, restricted-read, approval,
+token-efficiency, or production-contract change.
 
 The current reviewed versions are Codex CLI 0.149.0 and 0.149.0-alpha.4.3. Stable 0.149.0 retains
 explicit planning, verification, and CAMP roles with blockers after its smoke and disposable write
@@ -70,3 +76,11 @@ qualification; see
 The extension-bundled alpha is qualified only for explicit read-only planning and verification;
 see
 [`codex-app-server-alpha-requalification-2026-08-24.md`](codex-app-server-alpha-requalification-2026-08-24.md).
+
+Dirty qualification queries `permissionProfile/list`, selects the allowed built-in `:read-only`
+profile, and sends `permissions` without the mutually exclusive `sandbox` or `sandboxPolicy`
+fields. If that method is unavailable, it validates the legacy read-only sandbox. A runtime that
+exposes profiles without an allowed read-only profile fails closed. The disposable qualification
+tree is fingerprinted before and after the model turns, and protocol mutation events must remain
+empty. Safe blockers such as a missing interrupt acknowledgement after authoritative interrupted
+state are reported separately from fatal safety failures and unknown runtime outcomes.

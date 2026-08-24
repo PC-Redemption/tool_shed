@@ -376,6 +376,7 @@ class CodexExecutionAdapter:
         cwd: Path,
         approval_policy: str = "never",
         sandbox: str = "read-only",
+        permission_profile: str | None = None,
         ephemeral: bool = False,
     ) -> tuple[ModelSelection, dict[str, Any]]:
         selection = self.policy.select(role)
@@ -384,6 +385,7 @@ class CodexExecutionAdapter:
             cwd=cwd,
             approval_policy=approval_policy,
             sandbox=sandbox,
+            permission_profile=permission_profile,
             ephemeral=ephemeral,
         )
         return selection, thread
@@ -396,6 +398,7 @@ class CodexExecutionAdapter:
         cwd: Path,
         approval_policy: str = "never",
         sandbox: str = "read-only",
+        permission_profile: str | None = None,
     ) -> tuple[ModelSelection, dict[str, Any]]:
         selection = self.policy.select(role)
         thread = self.client.resume_thread(
@@ -404,6 +407,7 @@ class CodexExecutionAdapter:
             cwd=cwd,
             approval_policy=approval_policy,
             sandbox=sandbox,
+            permission_profile=permission_profile,
         )
         return selection, thread
 
@@ -428,6 +432,7 @@ class CodexExecutionAdapter:
         context_delivery: str = "reference",
         warning_input_tokens: int | None = None,
         restricted_read: bool = False,
+        permission_profile: str | None = None,
         attempt: int = 1,
         ephemeral: bool = False,
         source_cwd: Path | None = None,
@@ -449,6 +454,7 @@ class CodexExecutionAdapter:
                 cwd=cwd,
                 approval_policy=approval_policy,
                 sandbox=sandbox,
+                permission_profile=permission_profile,
             )
         else:
             selection, thread = self.start_work(
@@ -456,6 +462,7 @@ class CodexExecutionAdapter:
                 cwd=cwd,
                 approval_policy=approval_policy,
                 sandbox=sandbox,
+                permission_profile=permission_profile,
                 ephemeral=ephemeral,
             )
         active_thread_id = str(thread["id"])
@@ -473,6 +480,10 @@ class CodexExecutionAdapter:
             additional_context_requested=additional_context_requested,
         )
         context_scope["sandbox_root"] = str((sandbox_root or cwd).resolve())
+        context_scope["permission_profile"] = permission_profile
+        context_scope["permission_enforcement"] = (
+            "named_profile" if permission_profile else "legacy_sandbox_policy"
+        )
         turn_id: str | None = None
         recorded = False
         try:
@@ -486,6 +497,7 @@ class CodexExecutionAdapter:
                 sandbox_policy=sandbox_policy(
                     sandbox, sandbox_root or cwd, restricted_read=restricted_read
                 ),
+                permission_profile=permission_profile,
                 output_schema=output_schema,
             )
             turn = self.client.wait_for_turn(active_thread_id, turn_id)

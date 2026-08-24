@@ -13,6 +13,8 @@ try:
     from scripts.codex_app_server_compatibility import (
         CompatibilityError,
         DEFAULT_QUALIFICATIONS,
+        codex_version_at_least,
+        dirty_read_qualification_report,
         load_qualifications,
         qualification_for_version,
         status_report,
@@ -28,6 +30,8 @@ except ModuleNotFoundError:  # Direct execution: python scripts/app_server_contr
     from codex_app_server_compatibility import (  # type: ignore[no-redef]
         CompatibilityError,
         DEFAULT_QUALIFICATIONS,
+        codex_version_at_least,
+        dirty_read_qualification_report,
         load_qualifications,
         qualification_for_version,
         status_report,
@@ -75,6 +79,9 @@ class CommandSelection:
     installed_codex: str | None
     qualified_codex: str
     compatibility: str | None
+    qualification_mode: str
+    minimum_dirty_read_codex: str
+    dirty_qualification: dict[str, Any] | None
     api_fallback: bool
     orchestrator_subcommand: str
 
@@ -111,6 +118,7 @@ def select_role(
         "global_default": _global_default(config),
         "session_opt_in": "OFF",
         "qualified_codex": ", ".join(config.qualified_codex_versions),
+        "minimum_dirty_read_codex": config.minimum_dirty_read_codex_version,
         "api_fallback": api_fallback,
         "orchestrator_subcommand": orchestrator_subcommand,
     }
@@ -124,6 +132,8 @@ def select_role(
             reason="default_gui",
             installed_codex=None,
             compatibility=None,
+            qualification_mode="not_requested",
+            dirty_qualification=None,
         )
     if role == "discussion":
         return CommandSelection(
@@ -135,6 +145,8 @@ def select_role(
             reason="discussion_is_gui_native",
             installed_codex=None,
             compatibility=None,
+            qualification_mode="not_applicable",
+            dirty_qualification=None,
         )
 
     selected = policy.select(role)
@@ -154,6 +166,8 @@ def select_role(
             reason=decision.reason,
             installed_codex=None,
             compatibility=None,
+            qualification_mode="feature_blocked",
+            dirty_qualification=None,
         )
 
     records = load_qualifications(qualifications_path)
@@ -162,12 +176,40 @@ def select_role(
     # back to an independent bare-`codex` lookup.
     installed = resolution.version
     record = qualification_for_version(records, installed)
+    dirty_qualification: dict[str, Any] | None = None
+    qualification_mode = "exact_record" if record else "none"
     compatibility = (
         str(record.get("status")) if record
         else ("unqualified_version" if resolution.found else resolution.readiness.value)
     )
     route_record = (record.get("routing") or {}).get(role) if record else None
     version_matches = installed in config.qualified_codex_versions
+    dirty_read_allowed = bool(
+        role in {"planning", "verification"}
+        and record is None
+        and resolution.app_server_available
+        and resolution.executable is not None
+        and codex_version_at_least(installed, config.minimum_dirty_read_codex_version)
+    )
+    if dirty_read_allowed:
+        dirty_qualification = dirty_read_qualification_report(
+            codex=str(resolution.executable),
+            cwd=Path.cwd(),
+            config_path=config_path,
+            policy_path=policy_path,
+            qualifications_path=qualifications_path,
+        )
+        qualification_mode = "dirty_read"
+        compatibility = str(dirty_qualification["outcome"])
+        if compatibility in {"qualified", "qualified_with_blockers"}:
+            route_record = {
+                "model": selected.model,
+                "reasoning": selected.reasoning,
+                "qualified": True,
+            }
+            version_matches = True
+    elif role in {"planning", "verification"} and record is None and installed is not None:
+        qualification_mode = "below_minimum"
     route_qualified = isinstance(route_record, dict) and route_record.get("qualified") is True
     policy_matches = bool(
         route_qualified
@@ -182,15 +224,25 @@ def select_role(
     compatible = compatibility in {"qualified", "qualified_with_blockers"}
     if not resolution.app_server_available:
         reason = "codex_app_server_unavailable"
+    elif qualification_mode == "dirty_read" and not compatible:
+        reason = (
+            "dirty_qualification_unknown"
+            if compatibility == "unqualified_unknown"
+            else "dirty_qualification_failed"
+        )
+    elif qualification_mode == "below_minimum":
+        reason = "codex_below_minimum_dirty_read_version"
     elif not version_matches or not compatible:
         reason = "codex_version_not_qualified"
     elif not route_qualified or not camp_write_qualified:
         reason = "role_not_qualified"
     elif not policy_matches:
         reason = "qualification_policy_mismatch"
+    elif qualification_mode == "dirty_read":
+        reason = "explicit_dirty_qualified_opt_in"
     else:
         reason = "explicit_qualified_opt_in"
-    allowed = reason == "explicit_qualified_opt_in"
+    allowed = reason in {"explicit_qualified_opt_in", "explicit_dirty_qualified_opt_in"}
     return CommandSelection(
         **common,
         execution="App Server" if allowed else "GUI",
@@ -200,6 +252,8 @@ def select_role(
         reason=reason,
         installed_codex=installed,
         compatibility=compatibility,
+        qualification_mode=qualification_mode,
+        dirty_qualification=dirty_qualification,
     )
 
 
@@ -287,6 +341,7 @@ def format_selection(selection: CommandSelection) -> str:
                 f"Model: {selection.model}",
                 f"Reasoning: {selection.reasoning}",
                 "Opt-in: explicit",
+                f"Qualification: {selection.qualification_mode}",
             ]
         )
     if selection.allowed:
@@ -301,6 +356,7 @@ def format_selection(selection: CommandSelection) -> str:
             [
                 f"Installed Codex: {selection.installed_codex or 'not detected'}",
                 f"Qualified Codex: {selection.qualified_codex}",
+                f"Minimum dirty-read Codex: {selection.minimum_dirty_read_codex}",
                 f"Compatibility: {selection.compatibility}",
             ]
         )
@@ -322,6 +378,7 @@ def format_control_status(report: dict[str, Any]) -> str:
         f"App Server: {'AVAILABLE' if report.get('app_server_available') else 'UNAVAILABLE'}",
         f"Installed Codex: {report.get('installed_codex') or 'not detected'}",
         f"Qualified Codex: {report['qualified_codex']}",
+        f"Minimum dirty-read Codex: {report['minimum_dirty_read_codex']}",
         f"Compatibility: {str(report['compatibility']).replace('_', ' ')}",
         "",
         "Qualified roles:",

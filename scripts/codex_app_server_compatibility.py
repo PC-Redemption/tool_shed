@@ -4,7 +4,10 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
+import re
 import tempfile
 from dataclasses import asdict
 from pathlib import Path
@@ -51,6 +54,97 @@ DEFAULT_QUALIFICATIONS = ROOT / "adapters" / "codex-app-server-qualifications.js
 
 class CompatibilityError(ValueError):
     pass
+
+
+CODEX_VERSION_PATTERN = re.compile(
+    r"^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)(?:[-+][0-9A-Za-z.-]+)?$"
+)
+
+
+def codex_version_core(version: str | None) -> tuple[int, int, int] | None:
+    """Parse the numeric Codex release core while accepting prerelease suffixes."""
+
+    if not isinstance(version, str):
+        return None
+    match = CODEX_VERSION_PATTERN.fullmatch(version)
+    if match is None:
+        return None
+    return tuple(int(match.group(name)) for name in ("major", "minor", "patch"))
+
+
+def codex_version_at_least(version: str | None, minimum: str) -> bool:
+    parsed = codex_version_core(version)
+    floor = codex_version_core(minimum)
+    if floor is None:
+        raise CompatibilityError(f"invalid minimum Codex version: {minimum}")
+    return parsed is not None and parsed >= floor
+
+
+def _workspace_snapshot(root: Path) -> dict[str, dict[str, Any]]:
+    """Capture a compact content and metadata fingerprint for a disposable tree."""
+
+    snapshot: dict[str, dict[str, Any]] = {}
+    for path in sorted(root.rglob("*")):
+        relative = path.relative_to(root).as_posix()
+        metadata = path.lstat()
+        if path.is_symlink():
+            snapshot[relative] = {
+                "kind": "symlink",
+                "target": os.readlink(path),
+                "mode": metadata.st_mode & 0o777,
+            }
+        elif path.is_dir():
+            snapshot[relative] = {
+                "kind": "directory",
+                "mode": metadata.st_mode & 0o777,
+            }
+        elif path.is_file():
+            snapshot[relative] = {
+                "kind": "file",
+                "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                "size": metadata.st_size,
+                "mode": metadata.st_mode & 0o777,
+            }
+        else:
+            snapshot[relative] = {"kind": "other", "mode": metadata.st_mode & 0o777}
+    return snapshot
+
+
+def negotiate_read_only_permission(
+    adapter: CodexExecutionAdapter, cwd: Path
+) -> dict[str, Any]:
+    """Prefer the experimental named read-only profile, or validate legacy fallback."""
+
+    try:
+        profiles = adapter.client.list_permission_profiles(cwd=cwd)
+    except AppServerError as error:
+        details = error.details if isinstance(error.details, dict) else {}
+        message = str(details.get("message") or error).lower()
+        if details.get("code") == -32601 or "method not found" in message:
+            return {
+                "mode": "legacy_sandbox_policy",
+                "permission_profile": None,
+                "profile_api_supported": False,
+                "reason": "permissionProfile/list is unavailable; validated legacy read-only policy",
+            }
+        raise
+    allowed = {
+        str(item.get("id"))
+        for item in profiles
+        if item.get("allowed") is True and isinstance(item.get("id"), str)
+    }
+    if ":read-only" not in allowed:
+        raise AppServerError(
+            "Codex app-server exposes permission profiles but no allowed :read-only profile",
+            details={"allowed_profiles": sorted(allowed)},
+            kind="read_only_permission_profile_unavailable",
+        )
+    return {
+        "mode": "named_permission_profile",
+        "permission_profile": ":read-only",
+        "profile_api_supported": True,
+        "allowed_profiles": sorted(allowed),
+    }
 
 
 def load_qualifications(path: Path = DEFAULT_QUALIFICATIONS) -> list[dict[str, Any]]:
@@ -161,6 +255,10 @@ def status_report(
         "global_default": "disabled" if not config.globally_enabled else "enabled",
         "installed_codex": installed,
         "qualified_codex": configured_qualified,
+        "minimum_dirty_read_codex": config.minimum_dirty_read_codex_version,
+        "dirty_read_eligible": codex_version_at_least(
+            installed, config.minimum_dirty_read_codex_version
+        ),
         "compatibility": _compatibility_for_resolution(resolution, record),
         "version_warning": (
             None if installed in configured_versions else
@@ -203,6 +301,7 @@ def format_status(report: dict[str, Any]) -> str:
         f"Installed Codex: {report.get('installed_codex') or 'not detected'}",
         f"App Server: {'AVAILABLE' if report['app_server_available'] else 'UNAVAILABLE'}",
         f"Qualified Codex: {report['qualified_codex']}",
+        f"Minimum dirty-read Codex: {report['minimum_dirty_read_codex']}",
         f"Compatibility: {str(report['compatibility']).replace('_', ' ')}",
         "Experimental: unsupported for production workloads",
         "",
@@ -258,6 +357,7 @@ def smoke_report(
     telemetry_path: Path | None = None,
     timeout: float = 120.0,
     retest_restricted_read: bool = False,
+    dirty_qualification: bool = False,
 ) -> dict[str, Any]:
     source_workspace = cwd.expanduser().resolve()
     if not source_workspace.is_dir():
@@ -272,6 +372,8 @@ def smoke_report(
     configured_versions = config.qualified_codex_versions
     configured_version = ", ".join(configured_versions)
     version_changed = installed not in configured_versions
+    minimum_dirty_read = config.minimum_dirty_read_codex_version
+    version_eligible = codex_version_at_least(installed, minimum_dirty_read)
     checks: list[dict[str, Any]] = [
         check(
             "codex_cli_resolution",
@@ -281,9 +383,26 @@ def smoke_report(
         ),
         check("codex_version_detection", installed is not None, installed or "not detected"),
         check(
+            "minimum_dirty_read_version",
+            version_eligible,
+            {
+                "installed": installed,
+                "minimum": minimum_dirty_read,
+                "prerelease_uses_numeric_release_core": True,
+            },
+        ),
+        check(
             "qualification_record",
-            record is not None,
-            record.get("status") if record else f"no record for {installed}",
+            record is not None or (dirty_qualification and version_eligible),
+            (
+                record.get("status")
+                if record
+                else (
+                    "unseen eligible version accepted for bounded dirty read qualification"
+                    if dirty_qualification and version_eligible
+                    else f"no record for {installed}"
+                )
+            ),
         ),
     ]
     fallback = config.route("planning", enable_override=None)
@@ -333,6 +452,7 @@ def smoke_report(
     verification_tokens: dict[str, Any] = {}
     cancellation: dict[str, Any] | None = None
     restricted_result: dict[str, Any]
+    permission_negotiation: dict[str, Any] | None = None
     server_state: dict[str, Any] | None = None
     try:
         if not resolution.app_server_available or resolved_codex is None:
@@ -344,6 +464,7 @@ def smoke_report(
                 "# Compatibility smoke\n\nRead-only checks only. Do not use tools.\n",
                 encoding="utf-8",
             )
+            workspace_before = _workspace_snapshot(smoke_cwd)
             with CodexExecutionAdapter(
                 policy=policy,
                 codex=resolved_codex,
@@ -351,6 +472,21 @@ def smoke_report(
                 telemetry_path=telemetry,
             ) as adapter:
                 probe = sanitized_probe(adapter)
+                if dirty_qualification:
+                    permission_negotiation = negotiate_read_only_permission(adapter, smoke_cwd)
+                    checks.append(
+                        check(
+                            "read_only_permission_negotiation",
+                            True,
+                            permission_negotiation,
+                        )
+                    )
+                permission_profile = (
+                    str(permission_negotiation["permission_profile"])
+                    if permission_negotiation
+                    and isinstance(permission_negotiation.get("permission_profile"), str)
+                    else None
+                )
                 checks.extend(
                     [
                         check("app_server_startup", True, probe["app_server_user_agent"]),
@@ -387,6 +523,7 @@ def smoke_report(
                     role="planning",
                     cwd=smoke_cwd,
                     sandbox="read-only",
+                    permission_profile=permission_profile,
                     ephemeral=True,
                     operation="compatibility_smoke",
                 )
@@ -408,6 +545,7 @@ def smoke_report(
                     role="verification",
                     cwd=smoke_cwd,
                     sandbox="read-only",
+                    permission_profile=permission_profile,
                     ephemeral=True,
                     operation="compatibility_smoke",
                 )
@@ -440,16 +578,24 @@ def smoke_report(
                     )
                 )
                 selection, thread = adapter.start_work(
-                    "planning", cwd=smoke_cwd, sandbox="read-only", ephemeral=False
+                    "planning",
+                    cwd=smoke_cwd,
+                    sandbox="read-only",
+                    permission_profile=permission_profile,
+                    ephemeral=False,
                 )
                 turn_id = adapter.client.start_turn(
                     str(thread["id"]),
-                    "Read-only cancellation compatibility probe. Do not use tools.",
+                    (
+                        "ACTIVE_CANCELLATION_PROBE: remain active while reasoning through a long "
+                        "read-only compatibility checklist. Do not use tools or write files."
+                    ),
                     model=selection.model,
                     effort=selection.reasoning,
                     cwd=smoke_cwd,
                     approval_policy="never",
                     sandbox_policy=sandbox_policy("read-only", smoke_cwd),
+                    permission_profile=permission_profile,
                 )
                 cancellation = adapter.cancel(
                     str(thread["id"]),
@@ -467,8 +613,36 @@ def smoke_report(
                         blocker=not cancellation_safe,
                     )
                 )
-                should_retest_restricted = retest_restricted_read or version_changed
-                if should_retest_restricted:
+                checks.append(
+                    check(
+                        "cancellation_acknowledgement",
+                        bool(cancellation["diagnostics"].get("cancel_acknowledged")),
+                        {
+                            "acknowledged": cancellation["diagnostics"].get(
+                                "cancel_acknowledged"
+                            ),
+                            "safe_reconciliation": cancellation_safe,
+                        },
+                        blocker=(
+                            cancellation_safe
+                            and not bool(
+                                cancellation["diagnostics"].get("cancel_acknowledged")
+                            )
+                        ),
+                    )
+                )
+                should_retest_restricted = (
+                    retest_restricted_read or version_changed or dirty_qualification
+                )
+                if dirty_qualification:
+                    restricted_result = {
+                        "retested": True,
+                        "accepted": True,
+                        "mode": permission_negotiation["mode"] if permission_negotiation else None,
+                        "permission_profile": permission_profile,
+                        "validated_by": "planning, verification, and cancellation turns",
+                    }
+                elif should_retest_restricted:
                     try:
                         restricted = adapter.execute(
                             "Reply with exactly RESTRICTED_READ_SMOKE_OK.",
@@ -505,13 +679,45 @@ def smoke_report(
                         blocker=not bool(restricted_result["accepted"]),
                     )
                 )
+                no_mutation_events = not planning.mutation_events and not verification.mutation_events
+                checks.append(
+                    check(
+                        "read_only_no_mutation_events",
+                        no_mutation_events,
+                        {
+                            "planning": len(planning.mutation_events),
+                            "verification": len(verification.mutation_events),
+                        },
+                    )
+                )
                 server_state = adapter.client.process_state()
+            workspace_after = _workspace_snapshot(smoke_cwd)
+            checks.append(
+                check(
+                    "read_only_workspace_unchanged",
+                    workspace_after == workspace_before,
+                    {
+                        "unchanged": workspace_after == workspace_before,
+                        "before_entries": len(workspace_before),
+                        "after_entries": len(workspace_after),
+                    },
+                )
+            )
     except (AppServerError, AuthenticationError, ModelPolicyError) as error:
+        runtime_classification = (
+            "fatal"
+            if isinstance(error, (AuthenticationError, ModelPolicyError))
+            else "unknown"
+        )
         checks.append(
             check(
                 "app_server_runtime",
                 False,
-                {"error": str(error), "kind": getattr(error, "kind", None)},
+                {
+                    "error": str(error),
+                    "kind": getattr(error, "kind", None),
+                    "classification": runtime_classification,
+                },
             )
         )
 
@@ -540,11 +746,43 @@ def smoke_report(
                     max(0, tiny_input - baseline) if isinstance(tiny_input, int) else None
                 ),
             },
+            blocker=dirty_qualification and not baseline_ok,
         )
     )
     failed = [item for item in checks if item["status"] == "fail"]
     blockers = [item for item in checks if item["status"] == "blocked"]
-    if installed is None or record is None or failed:
+    safe_blocker_names = {
+        "cancellation_acknowledgement",
+        "tiny_operation_token_baseline",
+    }
+    safe_blockers = [
+        item for item in blockers if item["name"] in safe_blocker_names
+    ]
+    fatal_failures: list[dict[str, Any]] = []
+    unknown_failures: list[dict[str, Any]] = []
+    if dirty_qualification:
+        for item in checks:
+            if item["status"] == "pass" or item["name"] in safe_blocker_names:
+                continue
+            if (
+                item["name"] == "app_server_runtime"
+                and isinstance(item.get("detail"), dict)
+                and item["detail"].get("classification") == "unknown"
+            ):
+                unknown_failures.append(item)
+            else:
+                fatal_failures.append(item)
+        if not version_eligible:
+            outcome = "ineligible"
+        elif unknown_failures:
+            outcome = "unqualified_unknown"
+        elif fatal_failures:
+            outcome = "unqualified_fatal"
+        elif safe_blockers:
+            outcome = "qualified_with_blockers"
+        else:
+            outcome = "qualified"
+    elif installed is None or record is None or failed:
         outcome = "unqualified"
     elif blockers or record.get("status") == "qualified_with_blockers":
         outcome = "qualified_with_blockers"
@@ -557,8 +795,15 @@ def smoke_report(
         "configured_qualified_codex": configured_version,
         "source_workspace": str(source_workspace),
         "version_changed": version_changed,
+        "qualification_mode": "dirty_read" if dirty_qualification else "exact_record_smoke",
+        "minimum_dirty_read_codex": minimum_dirty_read,
+        "version_eligible": version_eligible,
         "outcome": outcome,
         "checks": checks,
+        "safe_blockers": [item["name"] for item in safe_blockers],
+        "fatal_failures": [item["name"] for item in fatal_failures],
+        "unknown_failures": [item["name"] for item in unknown_failures],
+        "permission_negotiation": permission_negotiation,
         "token_baseline": {
             "planning": planning_tokens,
             "verification": verification_tokens,
@@ -569,11 +814,40 @@ def smoke_report(
         "telemetry": str(telemetry.expanduser().resolve()),
         "qualification_record_updated": False,
         "next_action": (
-            "Review smoke evidence and add a version-specific qualification record."
+            "Continue the original explicit read-only request in this invocation."
+            if dirty_qualification and outcome in {"qualified", "qualified_with_blockers"}
+            else "Fail closed; inspect the classified dirty-qualification checks."
+            if dirty_qualification
+            else "Review smoke evidence and add a version-specific qualification record."
             if record is None
             else "Keep App Server opt-in until recorded blockers are cleared and requalified."
         ),
     }
+
+
+def dirty_read_qualification_report(
+    *,
+    codex: str,
+    cwd: Path = ROOT,
+    config_path: Path = DEFAULT_CONFIG,
+    policy_path: Path = DEFAULT_POLICY,
+    qualifications_path: Path = DEFAULT_QUALIFICATIONS,
+    telemetry_path: Path | None = None,
+    timeout: float = 120.0,
+) -> dict[str, Any]:
+    """Run an ephemeral, non-writing qualification for one unseen eligible CLI."""
+
+    return smoke_report(
+        codex=codex,
+        cwd=cwd,
+        config_path=config_path,
+        policy_path=policy_path,
+        qualifications_path=qualifications_path,
+        telemetry_path=telemetry_path,
+        timeout=timeout,
+        retest_restricted_read=True,
+        dirty_qualification=True,
+    )
 
 
 def parse_args() -> argparse.Namespace:

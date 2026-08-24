@@ -1,9 +1,9 @@
 # Implement minimum-version dirty read qualification
 
-Status: queued
+Status: working
 Type: campaign
 Updated: 2026-08-24
-Next Action: execute when selected from the active campaign queue
+Next Action: execute the campaign completion gate
 Campaign ID: implement-minimum-version-dirty-read-qualification
 Campaign Number: 049
 Outcome: Replace exact-only read qualification with a minimum Codex version of 0.146.0 and no upper cutoff, automatically dirty-qualify every unseen eligible executable, and continue the same explicit planning or verification request immediately when its bounded read-only qualification passes.

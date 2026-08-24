@@ -298,10 +298,14 @@ The four `--app-server` forms are explicit, per-command opt-ins for qualified re
 `ts: next --app-server` performs the ordinary `next` selection and forwards the option only when
 the selected action already has a qualified App Server role; CAMP execution reuses the existing
 Terra/medium runner. `next` itself is not an App Server role.
-Unflagged commands remain in the GUI, `ts: discuss` is always GUI-native, incompatible Codex
-versions and unqualified roles fail closed, and the committed global App Server default remains
-off. `ts: appserver on|off` is intentionally unavailable because the skill surface has no reliable
-session-scoped state store; use the explicit option on each test command.
+Unflagged commands remain in the GUI and `ts: discuss` is always GUI-native. Read-only planning and
+verification use a minimum Codex version of `0.146.0` with no upper cutoff: an unseen eligible
+version runs a bounded, non-persistent dirty qualification and continues the original explicit
+request immediately only when that qualification passes. Versions below the floor, unsafe or
+unknown qualification outcomes, and unqualified roles fail closed. CAMP writing remains
+version-specific and requires a separate reviewed write harness. The committed global App Server
+default remains off. `ts: appserver on|off` is intentionally unavailable because the skill surface
+has no reliable session-scoped state store; use the explicit option on each test command.
 
 App Server tooling resolves Codex through one bounded resolver: a supported explicit override,
 then `PATH`, then trusted platform locations, including version-ordered OpenAI VS Code extension

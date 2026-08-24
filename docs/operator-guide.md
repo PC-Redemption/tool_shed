@@ -533,9 +533,17 @@ role. CAMP work uses the existing Terra/medium runner. Discussion, owner decisio
 external gates, and unsupported actions are surfaced without being forced through CAMP execution.
 The preference applies only to that invocation; `next` does not become an App Server role.
 
-The selector fails closed before App Server starts when the installed Codex version or role is not
-qualified. Rerun without `--app-server` to use GUI fallback. `ts: discuss` always remains
-GUI-native, and `ts: discuss ... --app-server` is rejected with an explanation.
+The selector uses exact reviewed qualification for known versions. For an unseen planning or
+verification executable at or above `0.146.0`, including prereleases and versions beyond `0.150.0`,
+it runs a bounded dirty read qualification and continues the same explicit request only if that
+qualification passes. The dirty harness proves ChatGPT authentication, required models and
+reasoning, isolated read-only turns, fail-closed approvals, unchanged disposable workspace state,
+and active-turn cancellation. It negotiates the named `:read-only` permission profile when the
+runtime exposes it and otherwise validates the legacy read-only sandbox. Fatal and unknown outcomes
+remain blocked; safe non-fatal blockers are reported separately. CAMP writing never inherits this
+result and still requires an exact reviewed write record. Rerun without `--app-server` to use GUI
+fallback. `ts: discuss` always remains GUI-native, and `ts: discuss ... --app-server` is rejected
+with an explanation.
 
 Session-scoped `ts: appserver on|off` is not implemented: the current Codex skill surface has no
 reliable skill-owned per-session state store. Those commands explain the limitation and do not
@@ -546,8 +554,8 @@ App Server commands use one centralized Codex resolver. It prefers a supported e
 then `PATH`, then bounded trusted platform locations, including the newest valid OpenAI VS Code
 extension bundle. It validates the executable version and App Server support independently and
 shows the selected path and source. Readiness is reported as `NOT FOUND`, `INVALID EXECUTABLE`,
-`APP SERVER UNAVAILABLE`, `UNQUALIFIED VERSION`, or qualified `AVAILABLE`; a discovered version is
-never qualified automatically. The same resolver serves status, selection, smoke, startup, version
+`APP SERVER UNAVAILABLE`, `UNQUALIFIED VERSION`, or qualified `AVAILABLE`; discovery alone is not
+qualification. The same resolver serves status, selection, smoke, startup, version
 detection, qualification, reasoning refresh, and install/upgrade readiness. It does not install or
 copy Codex, alter permanent `PATH`, search arbitrary disk locations, persist user paths, or enable
 an API fallback. If Codex is unavailable, only explicit App Server work is unavailable; normal GUI
