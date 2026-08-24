@@ -34,6 +34,47 @@ class CodexReadiness(str, Enum):
     AVAILABLE_QUALIFIED = "available_qualified"
 
 
+class CodexQualificationState(str, Enum):
+    """Qualification posture for one discovered executable."""
+
+    INVALID = "invalid"
+    APP_SERVER_UNAVAILABLE = "app_server_unavailable"
+    EXACT_QUALIFIED = "exact_qualified"
+    DIRTY_QUALIFYING = "dirty_qualifying"
+    BELOW_MINIMUM = "below_minimum"
+    UNQUALIFIED = "unqualified"
+
+
+@dataclass(frozen=True)
+class CodexCliCandidate:
+    """One bounded discovery candidate and the evidence used to rank it."""
+
+    source: CodexSource
+    executable: Path
+    version: str | None
+    readiness: CodexReadiness
+    qualification_state: CodexQualificationState
+    error: str | None = None
+
+    @property
+    def app_server_available(self) -> bool:
+        return self.readiness in {
+            CodexReadiness.AVAILABLE_UNQUALIFIED,
+            CodexReadiness.AVAILABLE_QUALIFIED,
+        }
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "source": self.source.value,
+            "executable": str(self.executable),
+            "version": self.version,
+            "readiness": self.readiness.value,
+            "app_server_available": self.app_server_available,
+            "qualification_state": self.qualification_state.value,
+            "error": self.error,
+        }
+
+
 @dataclass(frozen=True)
 class CodexCliResolution:
     """The result of local Codex discovery, validation, and readiness probing."""
@@ -44,6 +85,8 @@ class CodexCliResolution:
     readiness: CodexReadiness
     error: str | None = None
     diagnostics: tuple[str, ...] = field(default_factory=tuple)
+    qualification_state: CodexQualificationState = CodexQualificationState.UNQUALIFIED
+    inventory: tuple[CodexCliCandidate, ...] = field(default_factory=tuple)
 
     @property
     def found(self) -> bool:
@@ -68,6 +111,8 @@ class CodexCliResolution:
             "readiness": self.readiness.value,
             "error": self.error,
             "diagnostics": list(self.diagnostics),
+            "qualification_state": self.qualification_state.value,
+            "inventory": [candidate.as_dict() for candidate in self.inventory],
         }
 
 
@@ -110,6 +155,47 @@ def _extension_version(path: Path) -> tuple[int, ...]:
     return tuple(int(piece) for piece in re.findall(r"\d+", match.group(1)))
 
 
+SEMANTIC_VERSION_PATTERN = re.compile(
+    r"^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)"
+    r"(?:-(?P<prerelease>[0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$"
+)
+
+
+def semantic_version_core(version: str | None) -> tuple[int, int, int] | None:
+    if not isinstance(version, str):
+        return None
+    match = SEMANTIC_VERSION_PATTERN.fullmatch(version)
+    if match is None:
+        return None
+    return tuple(int(match.group(name)) for name in ("major", "minor", "patch"))
+
+
+def semantic_version_key(version: str | None) -> tuple[Any, ...]:
+    """Return a SemVer-compatible key; a stable release sorts above its prereleases."""
+
+    if not isinstance(version, str):
+        return (-1, -1, -1, -1, ())
+    match = SEMANTIC_VERSION_PATTERN.fullmatch(version)
+    if match is None:
+        return (-1, -1, -1, -1, ())
+    core = tuple(int(match.group(name)) for name in ("major", "minor", "patch"))
+    prerelease = match.group("prerelease")
+    if prerelease is None:
+        return (*core, 1, ())
+    identifiers = tuple(
+        (0, int(piece)) if piece.isdigit() else (1, piece.lower())
+        for piece in prerelease.split(".")
+    )
+    return (*core, 0, identifiers)
+
+
+SOURCE_PRIORITY = {
+    CodexSource.PATH: 0,
+    CodexSource.TRUSTED_LOCATION: 1,
+    CodexSource.VSCODE_EXTENSION: 2,
+}
+
+
 class CodexCliResolver:
     """Resolve Codex through only explicitly trusted, deterministic locations."""
 
@@ -144,6 +230,7 @@ class CodexCliResolver:
         executable_override: str | Path | None = None,
         qualified_versions: Iterable[str] = (),
         is_qualified: Qualifier | None = None,
+        minimum_version: str | None = None,
     ) -> CodexCliResolution:
         """Discover one usable CLI without changing system or user configuration.
 
@@ -154,33 +241,147 @@ class CodexCliResolver:
         """
 
         qualifier = is_qualified or set(qualified_versions).__contains__
-        diagnostics: list[str] = []
+        candidates = self.inventory(
+            executable_override=executable_override,
+            is_qualified=qualifier,
+            minimum_version=minimum_version,
+        )
+        diagnostics = tuple(
+            f"{candidate.executable}: {candidate.error or candidate.readiness.value}"
+            for candidate in candidates
+            if candidate.readiness is CodexReadiness.INVALID_EXECUTABLE
+        )
         if executable_override is not None:
-            return self._validate(
-                CodexSource.EXPLICIT_OVERRIDE, Path(executable_override), qualifier, diagnostics
+            selected = next(
+                candidate
+                for candidate in candidates
+                if candidate.source is CodexSource.EXPLICIT_OVERRIDE
             )
+            return self._resolution(selected, candidates, diagnostics)
 
-        path_candidate = self.path_lookup("codex")
-        if path_candidate:
-            result = self._validate(CodexSource.PATH, Path(path_candidate), qualifier, diagnostics)
-            if result.readiness is not CodexReadiness.INVALID_EXECUTABLE:
-                return result
-            diagnostics.extend(result.diagnostics)
+        available = [
+            candidate
+            for candidate in candidates
+            if candidate.app_server_available
+            and (
+                minimum_version is None
+                or (
+                    (core := semantic_version_core(candidate.version)) is not None
+                    and (floor := semantic_version_core(minimum_version)) is not None
+                    and core >= floor
+                )
+            )
+        ]
+        if available:
+            selected = self._highest(available)
+            return self._resolution(selected, candidates, diagnostics)
 
-        for candidate in self._trusted_candidates():
-            result = self._validate(candidate[0], candidate[1], qualifier, diagnostics)
-            if result.readiness is not CodexReadiness.INVALID_EXECUTABLE:
-                return result
-            diagnostics.extend(result.diagnostics)
-
+        versioned = [candidate for candidate in candidates if candidate.version is not None]
+        if versioned:
+            selected = self._highest(versioned)
+            return self._resolution(selected, candidates, diagnostics)
         if diagnostics:
             return CodexCliResolution(
                 None, None, None, CodexReadiness.INVALID_EXECUTABLE,
-                "No discovered Codex candidate passed --version validation.", tuple(diagnostics),
+                "No discovered Codex candidate passed --version validation.", diagnostics,
+                CodexQualificationState.INVALID, candidates,
             )
         return CodexCliResolution(
             None, None, None, CodexReadiness.NOT_FOUND,
             "Codex CLI was not found in the supported locations.", (),
+            CodexQualificationState.UNQUALIFIED, candidates,
+        )
+
+    def inventory(
+        self,
+        *,
+        executable_override: str | Path | None = None,
+        qualified_versions: Iterable[str] = (),
+        is_qualified: Qualifier | None = None,
+        minimum_version: str | None = None,
+    ) -> tuple[CodexCliCandidate, ...]:
+        """Probe every bounded candidate without allowing source order to hide a newer CLI."""
+
+        qualifier = is_qualified or set(qualified_versions).__contains__
+        discovered: list[tuple[CodexSource, Path]] = []
+        if executable_override is not None:
+            discovered.append((CodexSource.EXPLICIT_OVERRIDE, Path(executable_override)))
+        path_candidate = self.path_lookup("codex")
+        if path_candidate:
+            discovered.append((CodexSource.PATH, Path(path_candidate)))
+        discovered.extend(self._trusted_candidates())
+
+        seen: set[str] = set()
+        inventory: list[CodexCliCandidate] = []
+        for source, executable in discovered:
+            identity = str(executable).casefold()
+            if identity in seen:
+                continue
+            seen.add(identity)
+            validated = self._validate(source, executable, qualifier, [])
+            inventory.append(
+                CodexCliCandidate(
+                    source=source,
+                    executable=executable,
+                    version=validated.version,
+                    readiness=validated.readiness,
+                    qualification_state=self._qualification_state(
+                        validated, minimum_version=minimum_version
+                    ),
+                    error=validated.error,
+                )
+            )
+        return tuple(inventory)
+
+    @staticmethod
+    def _qualification_state(
+        resolution: CodexCliResolution, *, minimum_version: str | None
+    ) -> CodexQualificationState:
+        if resolution.readiness is CodexReadiness.INVALID_EXECUTABLE:
+            return CodexQualificationState.INVALID
+        if resolution.readiness is CodexReadiness.APP_SERVER_UNAVAILABLE:
+            return CodexQualificationState.APP_SERVER_UNAVAILABLE
+        if resolution.qualified:
+            return CodexQualificationState.EXACT_QUALIFIED
+        if minimum_version is None:
+            return CodexQualificationState.UNQUALIFIED
+        core = semantic_version_core(resolution.version)
+        floor = semantic_version_core(minimum_version)
+        if core is not None and floor is not None and core >= floor:
+            return CodexQualificationState.DIRTY_QUALIFYING
+        return CodexQualificationState.BELOW_MINIMUM
+
+    @staticmethod
+    def _highest(candidates: list[CodexCliCandidate]) -> CodexCliCandidate:
+        highest_key = max(semantic_version_key(candidate.version) for candidate in candidates)
+        tied = [
+            candidate
+            for candidate in candidates
+            if semantic_version_key(candidate.version) == highest_key
+        ]
+        return min(
+            tied,
+            key=lambda candidate: (
+                SOURCE_PRIORITY.get(candidate.source, 99),
+                str(candidate.executable).casefold(),
+            ),
+        )
+
+    @staticmethod
+    def _resolution(
+        selected: CodexCliCandidate,
+        inventory: tuple[CodexCliCandidate, ...],
+        diagnostics: tuple[str, ...],
+    ) -> CodexCliResolution:
+        return CodexCliResolution(
+            selected.source,
+            selected.executable,
+            selected.version,
+            selected.readiness,
+            selected.error,
+            diagnostics,
+            selected.qualification_state,
+            inventory,
         )
 
     def _trusted_candidates(self) -> Iterable[tuple[CodexSource, Path]]:

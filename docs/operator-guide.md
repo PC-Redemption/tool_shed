@@ -550,12 +550,14 @@ reliable skill-owned per-session state store. Those commands explain the limitat
 change user or repository configuration. Use the explicit option on each test command. The global
 App Server default and API fallback remain off.
 
-App Server commands use one centralized Codex resolver. It prefers a supported explicit override,
-then `PATH`, then bounded trusted platform locations, including the newest valid OpenAI VS Code
-extension bundle. It validates the executable version and App Server support independently and
-shows the selected path and source. Readiness is reported as `NOT FOUND`, `INVALID EXECUTABLE`,
-`APP SERVER UNAVAILABLE`, `UNQUALIFIED VERSION`, or qualified `AVAILABLE`; discovery alone is not
-qualification. The same resolver serves status, selection, smoke, startup, version
+App Server commands use one centralized Codex resolver. A supported explicit override remains
+authoritative. Without one, it inventories `PATH`, bounded trusted platform locations, and OpenAI
+VS Code extension bundles, then selects the highest semantically eligible version at or above
+`0.146.0`; source priority breaks only equal-version ties. It reports every candidate and the
+selected path, source, App Server availability, qualification state, and actually usable roles.
+Status and selection distinguish `exact-qualified`, `dirty-qualifying`, `dirty-qualified`,
+`transient-fallback`, `unsafe-blocked`, `below-minimum`, and `write-not-qualified`; discovery alone
+is not qualification. The same resolver serves status, selection, smoke, startup, version
 detection, qualification, reasoning refresh, and install/upgrade readiness. It does not install or
 copy Codex, alter permanent `PATH`, search arbitrary disk locations, persist user paths, or enable
 an API fallback. If Codex is unavailable, only explicit App Server work is unavailable; normal GUI

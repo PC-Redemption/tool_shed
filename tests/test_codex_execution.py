@@ -727,9 +727,13 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertEqual(selected.installed_codex, "0.145.9")
         self.assertEqual(selected.compatibility, "unqualified_version")
         self.assertEqual(selected.qualification_mode, "below_minimum")
+        self.assertEqual(selected.qualification_state, "below-minimum")
+        self.assertEqual(selected.codex_executable, str(self.fake))
         self.assertIsNone(selected.dirty_qualification)
         blocked_banner = format_selection(selected)
         self.assertIn("Installed Codex: 0.145.9", blocked_banner)
+        self.assertIn(f"Executable: {self.fake}", blocked_banner)
+        self.assertIn("Qualification state: below-minimum", blocked_banner)
         self.assertIn("Qualified Codex: 0.149.0", blocked_banner)
 
     def test_unseen_newer_codex_dirty_qualifies_and_continues_read_request(self) -> None:
@@ -762,8 +766,11 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertTrue(selected.allowed)
         self.assertEqual(selected.reason, "explicit_dirty_qualified_opt_in")
         self.assertEqual(selected.qualification_mode, "dirty_read")
+        self.assertEqual(selected.qualification_state, "dirty-qualified")
         self.assertEqual(selected.compatibility, "qualified")
         self.assertEqual(selected.dirty_qualification["fatal_failures"], [])
+        self.assertIn("Reason: explicit_dirty_qualified_opt_in", format_selection(selected))
+        self.assertIn(f"Executable: {self.fake}", format_selection(selected))
         self.assertTrue(decision.use_app_server)
         self.assertEqual(result.status, "completed")
 
@@ -881,6 +888,28 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertFalse(selected.allowed)
         self.assertEqual(selected.reason, "codex_version_not_qualified")
         self.assertEqual(selected.qualification_mode, "none")
+        self.assertEqual(selected.qualification_state, "write-not-qualified")
+
+    def test_dirty_selection_distinguishes_transient_fallback_and_unsafe_block(self) -> None:
+        os.environ["FAKE_CODEX_VERSION"] = "0.200.0"
+        try:
+            for outcome, expected_state, expected_reason in (
+                ("unqualified_unknown", "transient-fallback", "dirty_qualification_unknown"),
+                ("unqualified_fatal", "unsafe-blocked", "dirty_qualification_failed"),
+            ):
+                with self.subTest(outcome=outcome), patch(
+                    "scripts.app_server_control.dirty_read_qualification_report",
+                    return_value={"outcome": outcome},
+                ):
+                    selected = select_command(
+                        "verify", app_server_requested=True, codex=str(self.fake)
+                    )
+                    self.assertFalse(selected.allowed)
+                    self.assertEqual(selected.qualification_state, expected_state)
+                    self.assertEqual(selected.reason, expected_reason)
+                    self.assertIn(f"Executable: {self.fake}", format_selection(selected))
+        finally:
+            os.environ.pop("FAKE_CODEX_VERSION", None)
 
     def test_user_command_control_allows_alpha_reads_but_blocks_alpha_camp(self) -> None:
         os.environ["FAKE_CODEX_VERSION"] = "0.149.0-alpha.4.3"
@@ -902,6 +931,7 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertEqual(planning.reason, "explicit_qualified_opt_in")
         self.assertFalse(camp.allowed)
         self.assertEqual(camp.reason, "role_not_qualified")
+        self.assertEqual(camp.qualification_state, "write-not-qualified")
         self.assertEqual(status["compatibility"], "qualified_with_blockers")
         self.assertNotIn("camp_execution", status["enabled_roles"])
         self.assertIn("CAMP execution", status["disabled"])
@@ -1352,6 +1382,7 @@ class CodexExecutionTests(unittest.TestCase):
                 "reasoning": "medium",
                 "sandbox": "workspace-write",
                 "scope": "explicit paths with Git mutation journal",
+                "qualification": "exact-qualified",
             },
         )
         self.assertNotIn("CAMP execution", status["disabled"])

@@ -110,22 +110,23 @@ available by rerunning without `--app-server`; the control never switches to API
 
 ## Codex Executable Readiness
 
-One centralized resolver selects a Codex executable for every App Server consumer. It tries a
-supported explicit override first, then `PATH`, then bounded trusted platform locations, including
-version-ordered OpenAI VS Code extension bundles. It validates `--version` before accepting a
-candidate and probes App Server availability separately; discovery never qualifies a version.
+One centralized resolver selects a Codex executable for every App Server consumer. A supported
+explicit override is authoritative. Without one, it inventories `PATH`, bounded trusted platform
+locations, and OpenAI VS Code extension bundles, validates `--version` and App Server support for
+each, and selects the highest semantically eligible version at or above `0.146.0`. Source priority
+breaks only equal-version ties, so an older `PATH` executable cannot mask a newer eligible bundle.
 
 `status`, selection, compatibility smoke, App Server startup, version detection, qualification,
 reasoning-catalog refresh, and installation and upgrade readiness reporting all use that same
-resolver and report its selected path and source. The user-facing states are `NOT FOUND`,
-`INVALID EXECUTABLE`, `APP SERVER UNAVAILABLE`, `UNQUALIFIED VERSION`, and `AVAILABLE` with
-qualified compatibility. A missing or unsupported CLI blocks only explicit App Server execution:
+resolver and report its inventory, selected path, source, version, App Server availability,
+qualification state, and executable-specific usable roles. Status and selection distinguish
+`exact-qualified`, `dirty-qualifying`, `dirty-qualified`, `transient-fallback`, `unsafe-blocked`,
+`below-minimum`, and `write-not-qualified`. A missing or unsupported CLI blocks only explicit App Server execution:
 unflagged Tool Shed requests remain in the GUI, and there is no API fallback.
 
 Trusted discovery is deliberately bounded. Tool Shed does not search arbitrary disk locations,
 install or copy Codex, modify permanent `PATH`, persist discovered user paths in tracked files, or
-automatically qualify a discovered version. When several OpenAI VS Code extension bundles are
-valid, the resolver selects the newest compatible bundle deterministically. Linux extension
+automatically qualify a discovered version. Linux extension
 discovery covers the normal `.vscode`, `.vscode-insiders`, `.vscode-server`, and
 `.vscode-server-insiders` extension roots and the `linux-x86_64`, `linux-aarch64`, and
 `linux-arm64` payload directories.

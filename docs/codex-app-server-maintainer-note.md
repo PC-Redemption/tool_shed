@@ -31,11 +31,12 @@ numeric release core is at least `0.146.0` is dirty-qualified automatically with
 the selector continues the original request only after the bounded read-only harness passes.
 Versions below the floor and fatal or unknown outcomes fail closed.
 
-All Codex consumers use one resolver: supported explicit override, `PATH`, then bounded trusted
-platform locations, including newest-valid OpenAI VS Code extension bundles. It validates the CLI
-version and App Server command independently and reports the selected path and source as `NOT
-FOUND`, `INVALID EXECUTABLE`, `APP SERVER UNAVAILABLE`, `UNQUALIFIED VERSION`, or qualified
-`AVAILABLE`. The resolver also backs install/upgrade readiness, reasoning refresh, smoke, startup,
+All Codex consumers use one resolver. A supported explicit override remains authoritative.
+Otherwise the resolver inventories `PATH`, bounded trusted platform locations, and OpenAI VS Code
+extension bundles, then selects the highest semantically eligible CLI at or above `0.146.0`;
+source priority breaks equal-version ties only. It reports every candidate plus the selected path,
+source, App Server availability, qualification state, write posture, and actually usable roles.
+The resolver also backs install/upgrade readiness, reasoning refresh, smoke, startup,
 version detection, and qualification. It neither installs Codex nor changes permanent `PATH`,
 persists user paths, searches arbitrary locations, or enables API fallback. Discovery alone does
 not qualify a version; automatic dirty read qualification is an ephemeral live safety harness.

@@ -15,7 +15,11 @@ from typing import Any
 
 try:
     from scripts.codex_app_server import AppServerError, AuthenticationError
-    from scripts.codex_cli_resolver import CodexCliResolver, CodexReadiness
+    from scripts.codex_cli_resolver import (
+        CodexCliResolver,
+        CodexQualificationState,
+        CodexReadiness,
+    )
     from scripts.codex_execution import (
         ApprovalBridge,
         CodexExecutionAdapter,
@@ -29,7 +33,11 @@ try:
     from scripts.codex_orchestration import AppServerFeatureConfig, FeatureConfigError
 except ModuleNotFoundError:  # Direct execution: python scripts/codex_app_server_compatibility.py
     from codex_app_server import AppServerError, AuthenticationError  # type: ignore[no-redef]
-    from codex_cli_resolver import CodexCliResolver, CodexReadiness  # type: ignore[no-redef]
+    from codex_cli_resolver import (  # type: ignore[no-redef]
+        CodexCliResolver,
+        CodexQualificationState,
+        CodexReadiness,
+    )
     from codex_execution import (  # type: ignore[no-redef]
         ApprovalBridge,
         CodexExecutionAdapter,
@@ -177,7 +185,11 @@ def qualification_for_version(
     return next((record for record in records if record.get("codex_version") == version), None)
 
 
-def resolve_codex_cli(codex: str | None, records: list[dict[str, Any]]):
+def resolve_codex_cli(
+    codex: str | None,
+    records: list[dict[str, Any]],
+    minimum_version: str = "0.146.0",
+):
     """Resolve once for a reporting or execution operation.
 
     ``None`` deliberately means bounded discovery; a supplied ``--codex`` value
@@ -190,6 +202,7 @@ def resolve_codex_cli(codex: str | None, records: list[dict[str, Any]]):
             (record := qualification_for_version(records, version))
             and record.get("status") in {"qualified", "qualified_with_blockers"}
         ),
+        minimum_version=minimum_version,
     )
 
 
@@ -203,6 +216,51 @@ def _compatibility_for_resolution(resolution, record: dict[str, Any] | None) -> 
     return str(record.get("status")) if record else "unqualified_version"
 
 
+def _recorded_role_usable(
+    *,
+    role: str,
+    record: dict[str, Any] | None,
+    config: AppServerFeatureConfig,
+    policy: ModelPolicy,
+    installed: str | None,
+) -> bool:
+    if not record or record.get("status") not in {"qualified", "qualified_with_blockers"}:
+        return False
+    selected = policy.select(role)
+    route = (record.get("routing") or {}).get(role)
+    usable = bool(
+        config.role_enabled(role)
+        and installed in config.qualified_codex_versions
+        and isinstance(route, dict)
+        and route.get("qualified") is True
+        and route.get("model") == selected.model
+        and route.get("reasoning") == selected.reasoning
+    )
+    if role == "camp_execution":
+        usable = bool(
+            usable
+            and record.get("workspace_writing") is True
+            and installed in config.qualified_write_codex_versions
+        )
+    return usable
+
+
+def _status_qualification_state(
+    resolution, record: dict[str, Any] | None
+) -> str:
+    if record and record.get("status") in {"qualified", "qualified_with_blockers"}:
+        return "exact-qualified"
+    if record and record.get("status") == "unqualified":
+        return "unsafe-blocked"
+    mapping = {
+        CodexQualificationState.DIRTY_QUALIFYING: "dirty-qualifying",
+        CodexQualificationState.BELOW_MINIMUM: "below-minimum",
+        CodexQualificationState.APP_SERVER_UNAVAILABLE: "transient-fallback",
+        CodexQualificationState.INVALID: "unsafe-blocked",
+    }
+    return mapping.get(resolution.qualification_state, "unsafe-blocked")
+
+
 def status_report(
     *,
     codex: str | None = None,
@@ -213,7 +271,9 @@ def status_report(
     config = AppServerFeatureConfig.load(config_path)
     policy = ModelPolicy.load(policy_path)
     records = load_qualifications(qualifications_path)
-    resolution = resolve_codex_cli(codex, records)
+    resolution = resolve_codex_cli(
+        codex, records, config.minimum_dirty_read_codex_version
+    )
     installed = resolution.version
     record = qualification_for_version(records, installed)
     planning = policy.select("planning")
@@ -221,29 +281,56 @@ def status_report(
     camp_execution = policy.select("camp_execution")
     configured_versions = config.qualified_codex_versions
     configured_qualified = ", ".join(configured_versions)
-    blockers = list(record.get("known_blockers") or []) if record else [
-        "installed Codex version has no qualification record"
-    ]
+    qualification_state = _status_qualification_state(resolution, record)
+    if record:
+        blockers = list(record.get("known_blockers") or [])
+    elif qualification_state == "dirty-qualifying":
+        blockers = [
+            "read-only roles require live dirty qualification",
+            "workspace-write is not qualified",
+        ]
+    elif qualification_state == "below-minimum":
+        blockers = ["selected Codex is below the minimum dirty-read version"]
+    else:
+        blockers = [resolution.error or "selected Codex is not qualified"]
     savings = record.get("qualified_savings") if record else None
-    camp_record = (record.get("routing") or {}).get("camp_execution", {}) if record else {}
-    camp_enabled = bool(
-        config.role_enabled("camp_execution")
-        and camp_record.get("qualified")
-        and record.get("workspace_writing")
-    ) if record else False
-    enabled_roles: dict[str, Any] = {
-        "planning": {"model": planning.model, "reasoning": planning.reasoning},
-        "verification": {
-            "model": verification.model,
-            "reasoning": verification.reasoning,
-        },
+    role_selections = {
+        "planning": planning,
+        "verification": verification,
+        "camp_execution": camp_execution,
     }
+    enabled_roles: dict[str, Any] = {}
+    for role in ("planning", "verification"):
+        selected = role_selections[role]
+        if resolution.app_server_available and _recorded_role_usable(
+            role=role,
+            record=record,
+            config=config,
+            policy=policy,
+            installed=installed,
+        ):
+            enabled_roles[role] = {
+                "model": selected.model,
+                "reasoning": selected.reasoning,
+                "qualification": "exact-qualified",
+            }
+    camp_enabled = bool(
+        resolution.app_server_available
+        and _recorded_role_usable(
+            role="camp_execution",
+            record=record,
+            config=config,
+            policy=policy,
+            installed=installed,
+        )
+    )
     if camp_enabled:
         enabled_roles["camp_execution"] = {
             "model": camp_execution.model,
             "reasoning": camp_execution.reasoning,
             "sandbox": "workspace-write",
             "scope": "explicit paths with Git mutation journal",
+            "qualification": "exact-qualified",
         }
     disabled = ["implementation", "testing", "build", "deployment"]
     if not camp_enabled:
@@ -259,11 +346,19 @@ def status_report(
         "dirty_read_eligible": codex_version_at_least(
             installed, config.minimum_dirty_read_codex_version
         ),
+        "qualification_state": qualification_state,
+        "write_qualification_state": (
+            "exact-qualified" if camp_enabled else "write-not-qualified"
+        ),
         "compatibility": _compatibility_for_resolution(resolution, record),
         "version_warning": (
-            None if installed in configured_versions else
-            ("Codex CLI is not detected." if installed is None else
-             f"Installed Codex {installed} does not match qualified version {configured_qualified}.")
+            None
+            if record and record.get("status") in {"qualified", "qualified_with_blockers"}
+            else (
+                "Codex CLI is not detected."
+                if installed is None
+                else f"Selected Codex {installed} is {qualification_state}."
+            )
         ),
         "codex_cli": (
             "INVALID" if resolution.readiness is CodexReadiness.INVALID_EXECUTABLE
@@ -277,7 +372,13 @@ def status_report(
         "app_server_available": resolution.app_server_available,
         "codex_readiness": resolution.readiness.value,
         "codex_error": resolution.error,
+        "codex_inventory": [candidate.as_dict() for candidate in resolution.inventory],
         "enabled_roles": enabled_roles,
+        "dirty_qualifying_roles": (
+            ["planning", "verification"]
+            if qualification_state == "dirty-qualifying" and resolution.app_server_available
+            else []
+        ),
         "disabled": disabled,
         "known_blockers": blockers,
         "experimental_status": "unsupported for production workloads",
@@ -302,18 +403,41 @@ def format_status(report: dict[str, Any]) -> str:
         f"App Server: {'AVAILABLE' if report['app_server_available'] else 'UNAVAILABLE'}",
         f"Qualified Codex: {report['qualified_codex']}",
         f"Minimum dirty-read Codex: {report['minimum_dirty_read_codex']}",
+        f"Qualification state: {report['qualification_state']}",
+        f"Write qualification: {report['write_qualification_state']}",
         f"Compatibility: {str(report['compatibility']).replace('_', ' ')}",
         "Experimental: unsupported for production workloads",
         "",
         "Enabled roles:",
-        f"  planning      {roles['planning']['model']} / {roles['planning']['reasoning']}",
-        f"  verification  {roles['verification']['model']} / {roles['verification']['reasoning']}",
     ]
-    camp = roles.get("camp_execution")
-    if camp:
-        lines.append(
-            f"  camp execution {camp['model']} / {camp['reasoning']} ({camp['scope']})"
+    for role in ("planning", "verification", "camp_execution"):
+        item = roles.get(role)
+        if item:
+            detail = f"  {role.replace('_', ' ')} {item['model']} / {item['reasoning']}"
+            if item.get("scope"):
+                detail += f" ({item['scope']})"
+            lines.append(detail)
+    if not roles:
+        lines.append("  none")
+    if report.get("dirty_qualifying_roles"):
+        lines.extend(
+            [
+                "",
+                "Dirty qualification available:",
+                *(f"  {role}" for role in report["dirty_qualifying_roles"]),
+            ]
         )
+    inventory = report.get("codex_inventory") or []
+    lines.extend(["", "Candidate inventory:"])
+    if inventory:
+        lines.extend(
+            f"  {item['version'] or 'unknown'} | {item['source']} | "
+            f"app-server={'available' if item['app_server_available'] else 'unavailable'} | "
+            f"{item['qualification_state']} | {item['executable']}"
+            for item in inventory
+        )
+    else:
+        lines.append("  none")
     lines.extend(
         [
             "",
@@ -365,7 +489,9 @@ def smoke_report(
     config = AppServerFeatureConfig.load(config_path)
     policy = ModelPolicy.load(policy_path)
     records = load_qualifications(qualifications_path)
-    resolution = resolve_codex_cli(codex, records)
+    resolution = resolve_codex_cli(
+        codex, records, config.minimum_dirty_read_codex_version
+    )
     resolved_codex = str(resolution.executable) if resolution.executable else None
     installed = resolution.version
     record = qualification_for_version(records, installed)

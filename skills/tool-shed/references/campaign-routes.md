@@ -412,9 +412,12 @@ Treat `ts: appserver status` as the read-only user status route:
 python3 <shed>/scripts/app_server_control.py status
 ```
 
-It reports the global default, session support, installed and qualified Codex versions,
-compatibility, qualified roles, current GUI default, GUI-native discussion, and disabled API
-fallback from centralized policy and qualification data.
+It reports the global default, session support, the complete bounded candidate inventory, selected
+executable and source, installed and qualified Codex versions, executable-specific qualification
+and write states, only actually usable roles, current GUI default, GUI-native discussion, and
+disabled API fallback from centralized policy and qualification data. A supplied override is
+authoritative; otherwise the highest semantically eligible candidate at or above `0.146.0` wins,
+with source priority used only for equal-version ties.
 
 Codex does not expose reliable skill-owned session storage, so `ts: appserver on` and
 `ts: appserver off` are deliberately unavailable. Run `app_server_control.py session on|off`,

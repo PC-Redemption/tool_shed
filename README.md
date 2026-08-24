@@ -307,13 +307,16 @@ version-specific and requires a separate reviewed write harness. The committed g
 default remains off. `ts: appserver on|off` is intentionally unavailable because the skill surface
 has no reliable session-scoped state store; use the explicit option on each test command.
 
-App Server tooling resolves Codex through one bounded resolver: a supported explicit override,
-then `PATH`, then trusted platform locations, including version-ordered OpenAI VS Code extension
-bundles. On Linux, those bundles are limited to the normal desktop, Insiders, remote-server, and
+App Server tooling resolves Codex through one bounded resolver. A supplied override remains
+authoritative. Without one, the resolver inventories `PATH`, trusted platform locations, and
+OpenAI VS Code extension bundles, then selects the highest semantically eligible CLI at or above
+`0.146.0`; source priority breaks only equal-version ties. An older `PATH` executable therefore
+cannot mask a newer eligible bundle. On Linux, bundles are limited to desktop, Insiders, remote-server, and
 remote-server Insiders extension roots and the x86_64, aarch64, and arm64 Codex payloads. It
 validates `--version` and App Server support separately, so status can report
-`NOT FOUND`, `INVALID EXECUTABLE`, `APP SERVER UNAVAILABLE`, `UNQUALIFIED VERSION`, or available
-and qualified, with the selected path and discovery source. The same resolver is used by status,
+the complete candidate inventory, selected path and source, executable-specific enabled roles,
+and exact-qualified, dirty-qualifying, below-minimum, transient-fallback, unsafe-blocked, and
+write-not-qualified states. The same resolver is used by status,
 selection, smoke, startup, version detection, qualification, reasoning refresh, and installation
 and upgrade readiness checks. It never installs Codex, changes permanent `PATH`, searches arbitrary
 locations, or enables API fallback; missing Codex only makes explicit App Server execution unavailable.

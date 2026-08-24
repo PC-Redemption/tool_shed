@@ -77,11 +77,15 @@ class CommandSelection:
     global_default: str
     session_opt_in: str
     installed_codex: str | None
+    codex_executable: str | None
+    codex_discovery: str | None
     qualified_codex: str
     compatibility: str | None
     qualification_mode: str
+    qualification_state: str
     minimum_dirty_read_codex: str
     dirty_qualification: dict[str, Any] | None
+    codex_inventory: tuple[dict[str, Any], ...]
     api_fallback: bool
     orchestrator_subcommand: str
 
@@ -131,9 +135,13 @@ def select_role(
             allowed=True,
             reason="default_gui",
             installed_codex=None,
+            codex_executable=None,
+            codex_discovery=None,
             compatibility=None,
             qualification_mode="not_requested",
+            qualification_state="not-requested",
             dirty_qualification=None,
+            codex_inventory=(),
         )
     if role == "discussion":
         return CommandSelection(
@@ -144,9 +152,13 @@ def select_role(
             allowed=False,
             reason="discussion_is_gui_native",
             installed_codex=None,
+            codex_executable=None,
+            codex_discovery=None,
             compatibility=None,
             qualification_mode="not_applicable",
+            qualification_state="not-applicable",
             dirty_qualification=None,
+            codex_inventory=(),
         )
 
     selected = policy.select(role)
@@ -165,19 +177,30 @@ def select_role(
             allowed=False,
             reason=decision.reason,
             installed_codex=None,
+            codex_executable=None,
+            codex_discovery=None,
             compatibility=None,
             qualification_mode="feature_blocked",
+            qualification_state="unsafe-blocked",
             dirty_qualification=None,
+            codex_inventory=(),
         )
 
     records = load_qualifications(qualifications_path)
-    resolution = resolve_codex_cli(codex, records)
+    resolution = resolve_codex_cli(
+        codex, records, config.minimum_dirty_read_codex_version
+    )
     # Pass the concrete resolver result throughout this decision; never fall
     # back to an independent bare-`codex` lookup.
     installed = resolution.version
     record = qualification_for_version(records, installed)
     dirty_qualification: dict[str, Any] | None = None
     qualification_mode = "exact_record" if record else "none"
+    qualification_state = (
+        "exact-qualified"
+        if record and record.get("status") in {"qualified", "qualified_with_blockers"}
+        else "unsafe-blocked"
+    )
     compatibility = (
         str(record.get("status")) if record
         else ("unqualified_version" if resolution.found else resolution.readiness.value)
@@ -192,6 +215,7 @@ def select_role(
         and codex_version_at_least(installed, config.minimum_dirty_read_codex_version)
     )
     if dirty_read_allowed:
+        qualification_state = "dirty-qualifying"
         dirty_qualification = dirty_read_qualification_report(
             codex=str(resolution.executable),
             cwd=Path.cwd(),
@@ -202,14 +226,20 @@ def select_role(
         qualification_mode = "dirty_read"
         compatibility = str(dirty_qualification["outcome"])
         if compatibility in {"qualified", "qualified_with_blockers"}:
+            qualification_state = "dirty-qualified"
             route_record = {
                 "model": selected.model,
                 "reasoning": selected.reasoning,
                 "qualified": True,
             }
             version_matches = True
+        elif compatibility == "unqualified_unknown":
+            qualification_state = "transient-fallback"
+        else:
+            qualification_state = "unsafe-blocked"
     elif role in {"planning", "verification"} and record is None and installed is not None:
         qualification_mode = "below_minimum"
+        qualification_state = "below-minimum"
     route_qualified = isinstance(route_record, dict) and route_record.get("qualified") is True
     policy_matches = bool(
         route_qualified
@@ -221,9 +251,16 @@ def select_role(
         and record.get("workspace_writing")
         and installed in config.qualified_write_codex_versions
     )
+    if role == "camp_execution" and resolution.app_server_available and not camp_write_qualified:
+        qualification_state = "write-not-qualified"
     compatible = compatibility in {"qualified", "qualified_with_blockers"}
     if not resolution.app_server_available:
         reason = "codex_app_server_unavailable"
+        qualification_state = (
+            "unsafe-blocked"
+            if resolution.readiness.value == "invalid_executable"
+            else "transient-fallback"
+        )
     elif qualification_mode == "dirty_read" and not compatible:
         reason = (
             "dirty_qualification_unknown"
@@ -251,9 +288,13 @@ def select_role(
         allowed=allowed,
         reason=reason,
         installed_codex=installed,
+        codex_executable=str(resolution.executable) if resolution.executable else None,
+        codex_discovery=resolution.source.value if resolution.source else None,
         compatibility=compatibility,
         qualification_mode=qualification_mode,
+        qualification_state=qualification_state,
         dirty_qualification=dirty_qualification,
+        codex_inventory=tuple(candidate.as_dict() for candidate in resolution.inventory),
     )
 
 
@@ -341,7 +382,11 @@ def format_selection(selection: CommandSelection) -> str:
                 f"Model: {selection.model}",
                 f"Reasoning: {selection.reasoning}",
                 "Opt-in: explicit",
+                f"Reason: {selection.reason}",
                 f"Qualification: {selection.qualification_mode}",
+                f"Qualification state: {selection.qualification_state}",
+                f"Executable: {selection.codex_executable or 'not detected'}",
+                f"Discovery: {selection.codex_discovery or 'not found'}",
             ]
         )
     if selection.allowed:
@@ -355,8 +400,11 @@ def format_selection(selection: CommandSelection) -> str:
         lines.extend(
             [
                 f"Installed Codex: {selection.installed_codex or 'not detected'}",
+                f"Executable: {selection.codex_executable or 'not detected'}",
+                f"Discovery: {selection.codex_discovery or 'not found'}",
                 f"Qualified Codex: {selection.qualified_codex}",
                 f"Minimum dirty-read Codex: {selection.minimum_dirty_read_codex}",
+                f"Qualification state: {selection.qualification_state}",
                 f"Compatibility: {selection.compatibility}",
             ]
         )
@@ -379,15 +427,31 @@ def format_control_status(report: dict[str, Any]) -> str:
         f"Installed Codex: {report.get('installed_codex') or 'not detected'}",
         f"Qualified Codex: {report['qualified_codex']}",
         f"Minimum dirty-read Codex: {report['minimum_dirty_read_codex']}",
+        f"Qualification state: {report['qualification_state']}",
+        f"Write qualification: {report['write_qualification_state']}",
         f"Compatibility: {str(report['compatibility']).replace('_', ' ')}",
         "",
         "Qualified roles:",
-        f"  planning        {roles['planning']['model']} / {roles['planning']['reasoning']}",
-        f"  verification    {roles['verification']['model']} / {roles['verification']['reasoning']}",
     ]
-    camp = roles.get("camp_execution")
-    if camp:
-        lines.append(f"  camp_execution  {camp['model']} / {camp['reasoning']}")
+    for role in ("planning", "verification", "camp_execution"):
+        selected = roles.get(role)
+        if selected:
+            lines.append(
+                f"  {role:<16}{selected['model']} / {selected['reasoning']}"
+            )
+    if not roles:
+        lines.append("  none")
+    inventory = report.get("codex_inventory") or []
+    lines.extend(["", "Candidate inventory:"])
+    if inventory:
+        lines.extend(
+            f"  {item['version'] or 'unknown'} | {item['source']} | "
+            f"app-server={'available' if item['app_server_available'] else 'unavailable'} | "
+            f"{item['qualification_state']} | {item['executable']}"
+            for item in inventory
+        )
+    else:
+        lines.append("  none")
     lines.extend(
         [
             "",

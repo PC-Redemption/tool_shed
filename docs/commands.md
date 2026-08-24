@@ -376,10 +376,13 @@ the per-command option. The unflagged form is the GUI override; Tool Shed does n
 `--gui` option while session mode is unavailable. The committed global setting remains
 `codex_app_server_enabled = false`.
 
-Every App Server path uses one bounded Codex resolver: a supported explicit override, then
-`PATH`, then trusted platform locations, including newest-valid OpenAI VS Code extension bundles.
-It reports the selected executable and discovery source as `NOT FOUND`, `INVALID EXECUTABLE`,
-`APP SERVER UNAVAILABLE`, `UNQUALIFIED VERSION`, or qualified `AVAILABLE`. Status, selection,
+Every App Server path uses one bounded Codex resolver. A supported explicit override is
+authoritative. Otherwise it inventories `PATH`, trusted platform locations, and OpenAI VS Code
+extension bundles, then selects the highest semantically eligible version at or above `0.146.0`;
+source priority resolves only equal-version ties. Status reports the full inventory and only roles
+usable by the selected executable. Status and selection distinguish `exact-qualified`,
+`dirty-qualifying`, `dirty-qualified`, `transient-fallback`, `unsafe-blocked`, `below-minimum`, and
+`write-not-qualified`. Status, selection,
 smoke, startup, version detection, qualification, reasoning refresh, and install/upgrade readiness
 share that result. Discovery alone does not qualify a version; eligible unseen read-only requests
 must pass the live dirty harness. Tool Shed never installs Codex, changes
