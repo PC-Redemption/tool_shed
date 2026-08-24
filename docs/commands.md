@@ -303,7 +303,7 @@ does not change the request's natural coordination level.
 | --- | --- |
 | `ts: doctor` | Audit the complete supported workspace surface read-only and return one health verdict with exact next actions. Use `--json` for stable automation output or `--strict` to fail unless fully healthy. |
 | `ts: doctor --repair` | Regenerate stale deterministic work indexes only after campaign source validates and exact current doctor state and project-binding tokens are supplied. It never chooses semantic truth or changes campaign lifecycle state. |
-| `ts: fulltsupgrade` | Upgrade the current existing Tool Shed installation end-to-end from the latest verified published GitHub release, including guarded backup/update, provider convergence, full validation, installed Codex skill synchronization when applicable, exact verification, and rollback. |
+| `ts: fulltsupgrade` | Upgrade the current existing Tool Shed installation end-to-end from the latest verified published GitHub release, including guarded backup/update, provider convergence, attested focused client validation with fail-closed full-validation fallback, installed Codex skill synchronization when applicable, exact verification, and rollback. |
 | `ts: version` | Verify the local Tool Shed snapshot and report its version without network access. |
 | `ts: check for updates` | Verify locally, compare with the canonical manifest, and report the version relation. Read-only. |
 | `ts: update status` | Alias for `ts: check for updates`. Read-only. |

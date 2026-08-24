@@ -45,6 +45,12 @@ COMMIT = re.compile(r"^[0-9a-f]{7,40}$")
 CURRENT_UPDATER_PROTOCOL = 3
 RELEASE_TAG = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
 TREE_DIGEST = re.compile(r"^[0-9a-f]{64}$")
+QUALIFICATION_PATHS = (
+    "scripts/validate_tool_shed.py",
+    "scripts/validate_snapshot_client.py",
+    ".github/workflows/validate.yml",
+    ".github/workflows/release.yml",
+)
 
 
 def hash_file(path: Path) -> str:
@@ -155,6 +161,45 @@ def json_bytes(payload: dict[str, object]) -> bytes:
     return (json.dumps(payload, indent=2, sort_keys=True) + "\n").encode("utf-8")
 
 
+def release_qualification(
+    hashes: dict[str, str],
+    *,
+    release_commit: str | None,
+    released_at: str | None,
+) -> dict[str, object] | None:
+    if not release_commit:
+        return None
+    missing = [path for path in QUALIFICATION_PATHS if path not in hashes]
+    if missing:
+        raise ValueError(
+            "release qualification paths are missing from content hashes: "
+            + ", ".join(missing)
+        )
+    return {
+        "schema_version": 1,
+        "subject_commit": release_commit,
+        "attested_at": released_at,
+        "full_validator": {
+            "path": "scripts/validate_tool_shed.py",
+            "sha256": hashes["scripts/validate_tool_shed.py"],
+        },
+        "client_smoke": {
+            "path": "scripts/validate_snapshot_client.py",
+            "sha256": hashes["scripts/validate_snapshot_client.py"],
+        },
+        "required_ci": [
+            {
+                "path": ".github/workflows/validate.yml",
+                "sha256": hashes[".github/workflows/validate.yml"],
+            },
+            {
+                "path": ".github/workflows/release.yml",
+                "sha256": hashes[".github/workflows/release.yml"],
+            },
+        ],
+    }
+
+
 def stage_bytes(path: Path, payload: bytes) -> Path:
     descriptor, staged_name = tempfile.mkstemp(
         dir=path.parent,
@@ -262,6 +307,23 @@ def validate_manifest(manifest: dict[str, object]) -> list[str]:
     minimum_updater = manifest.get("minimum_updater_protocol", 1)
     if not isinstance(minimum_updater, int) or isinstance(minimum_updater, bool) or minimum_updater < 1:
         errors.append("minimum_updater_protocol must be a positive integer")
+    hashes = manifest.get("content_hashes")
+    if not isinstance(hashes, dict):
+        errors.append("content_hashes must be an object")
+    else:
+        try:
+            expected_qualification = release_qualification(
+                {str(path): str(digest) for path, digest in hashes.items()},
+                release_commit=str(commit) if commit else None,
+                released_at=str(released_at) if released_at else None,
+            )
+        except ValueError as error:
+            errors.append(str(error))
+        else:
+            if manifest.get("release_qualification") != expected_qualification:
+                errors.append(
+                    "release_qualification does not match release identity and shipped validator hashes"
+                )
     return errors
 
 
@@ -338,6 +400,11 @@ def main() -> int:
     manifest["release_tag"] = release_tag
     manifest["release_commit"] = args.release_commit
     manifest["released_at"] = args.released_at
+    manifest["release_qualification"] = release_qualification(
+        hashes,
+        release_commit=args.release_commit,
+        released_at=args.released_at,
+    )
     write_release_metadata(catalog=catalog, manifest=json_bytes(manifest))
     print(f"Updated {MANIFEST} with {len(hashes)} tracked files.")
     return 0

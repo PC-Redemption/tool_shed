@@ -11,6 +11,7 @@ Updated: 2026-08-24
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
 | [work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md](work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md) | campaign | abandoned | 2026-08-24 | none | - |
 | [work/00-campaigns/active/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md](work/00-campaigns/active/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md) | campaign | blocked | 2026-08-24 | resolve blocker or decision: Owner reserved the Bactron Core snapshot upgrade for the normal Windows workspace process. Completion requires upgrading the dirty snapshot to the latest verified published release with unrelated files preserved, verifying integrity and extension-only Codex resolution without PATH, and recording sanitized dirty-qualified read-only planning or verification evidence. | - |
+| [work/00-campaigns/active/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md](work/00-campaigns/active/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md) | campaign | blocked | 2026-08-24 | resolve blocker or decision: Native Windows cold and warm-retry qualification of the unpublished 0.27.0 candidate requires either authorization to push the candidate for Windows CI or explicit authorization to mutate and execute it in a Windows workspace; ts: next grants neither. | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -76,6 +77,7 @@ Updated: 2026-08-24
 | [work/evidence/evidence-completion-watcher-v1-release.md](work/evidence/evidence-completion-watcher-v1-release.md) | evidence | complete | 2026-08-19 | none | work/00-campaigns/completed/038-qualify-and-release-local-completion-watchers.md |
 | [work/evidence/evidence-human-planning-mechanism-evaluation.md](work/evidence/evidence-human-planning-mechanism-evaluation.md) | evidence | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md](work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md) | evidence | complete | 2026-08-20 | none | - |
+| [work/evidence/evidence-snapshot-upgrade-performance-and-retry-safety.md](work/evidence/evidence-snapshot-upgrade-performance-and-retry-safety.md) | evidence | active | 2026-08-24 | run the candidate on native Windows through an authorized branch/CI or workspace route and record cold plus warm-retry timing | work/00-campaigns/active/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md |
 | [work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md](work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md) | evidence | complete | 2026-08-09 | none | work/wp/completed/wp-evidence-responsive-tool-shed-execution.md |
 | [work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md](work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md) | evidence | complete | 2026-08-18 | none | work/00-campaigns/completed/027-publish-and-verify-tool-shed-v0-22-0.md |
 | [work/evidence/evidence-tool-shed-0-26-0-dirty-codex-forward-compatibility.md](work/evidence/evidence-tool-shed-0-26-0-dirty-codex-forward-compatibility.md) | evidence | active | 2026-08-24 | upgrade Bactron Core through its normal Windows workspace process and record sanitized Windows field evidence | work/00-campaigns/active/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md |
@@ -120,6 +122,6 @@ Updated: 2026-08-24
 
 ## Summary
 
-- Total artifacts: 103
-- Active artifacts: 2
+- Total artifacts: 105
+- Active artifacts: 4
 - Completed/decided artifacts: 91

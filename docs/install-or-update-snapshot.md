@@ -21,11 +21,24 @@ python /path/to/current-release/scripts/update_snapshot.py --workspace . --sync-
 ```
 
 Progress is written to stderr, including clone/fetch, manifest verification, release validation,
-staging, post-install validation, and completion, so JSON stdout remains valid. Each clone or fetch
-command has a 120-second default timeout and each release or post-install validator has a
-300-second default timeout. Override these explicit bounds with `--network-timeout SECONDS` and
-`--validation-timeout SECONDS`; a timeout stops with an actionable error instead of waiting
-indefinitely.
+staging, post-install validation, and completion. A 20-second heartbeat keeps long phases visible,
+while JSON stdout remains valid. Each clone or fetch command has a 120-second default timeout and
+each release or post-install validator has a 900-second default timeout. Override these explicit
+bounds with `--network-timeout SECONDS` and `--validation-timeout SECONDS`; a timeout stops with an
+actionable error instead of waiting indefinitely.
+
+Official releases with an exact qualification attestation run the shipped focused client smoke
+after provenance and all manifest hashes pass. Repository overrides, missing or invalid
+attestations, and changed validator identities fail over to the complete local validator.
+Successful validation is cached only by the exact release commit, validator hash, platform,
+architecture, and Python identity so a post-install retry does not repeat unchanged validation.
+
+The updater holds a recoverable user-local singleton lock for the exact workspace. Each attempt
+writes a sanitized report beneath
+`${CODEX_HOME:-~/.codex}/tool-shed/snapshot-upgrade-transactions/`; it contains stage durations,
+validation mode/cache state, a bounded error class, and rollback outcome, never prompts, responses,
+command output, credentials, secrets, or workspace paths. State files use mode `0600` where the
+platform supports POSIX permissions.
 
 Synchronization accepts only a missing target or a target that exactly matches a skill recorded
 by a stable Tool Shed release. It keeps a timestamped backup under
@@ -135,7 +148,9 @@ Select and verify the release:
       manifest commit; release_commit must not equal tag_commit.
     - python3 scripts/check_shed_version.py --shed . --local-only --strict
       --updater-protocol <current-protocol> passes.
-    - python3 scripts/validate_tool_shed.py passes.
+    - the release qualification attestation matches the exact release commit and shipped validator
+      and CI-workflow hashes, then `scripts/validate_snapshot_client.py` passes; or, for an
+      overridden, unattested, or changed identity, `scripts/validate_tool_shed.py` passes.
     - When Codex is selected, compare the user-level skill against the selected skill and the exact
       skill hashes recorded by stable release manifests. Report drift even when synchronization was
       not requested. If synchronization was requested and the target is modified, unmanaged, or

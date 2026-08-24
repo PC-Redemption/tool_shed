@@ -17,6 +17,11 @@ Protocol 3 adds transactional work-tree convergence, affected-workspace rollback
 explicit structural verification step. Do not lower this field to preserve compatibility with an
 updater that cannot satisfy the release lifecycle.
 
+Published provenance also records `release_qualification`: the exact content commit, full
+validator hash, focused client-smoke hash, and hashes of both comprehensive CI workflows. The
+updater accepts the focused path only from the canonical repository when every identity matches.
+Overrides, unattested releases, and any changed identity run full local validation instead.
+
 ## Release Procedure
 
 1. Confirm the work tree contains only the intended release scope.

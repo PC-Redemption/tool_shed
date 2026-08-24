@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import time
 import unittest
 from datetime import date
 from pathlib import Path
@@ -87,6 +88,12 @@ def run_script(
 ) -> subprocess.CompletedProcess[str]:
     run_cwd = (cwd or ROOT).resolve()
     arguments = _with_test_project_binding(args, run_cwd)
+    environment = dict(os.environ if env is None else env)
+    if arguments and Path(arguments[0]).name == "update_snapshot.py":
+        environment.setdefault(
+            "TOOL_SHED_STATE_ROOT",
+            str(run_cwd / ".git" / "tool-shed-test-state"),
+        )
     return subprocess.run(
         [sys.executable, *arguments],
         cwd=str(run_cwd),
@@ -94,7 +101,7 @@ def run_script(
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         check=check,
-        env=env,
+        env=environment,
     )
 
 
@@ -5590,8 +5597,69 @@ old Tool Shed guidance
             self.assertIn("timed out after 0.05 seconds", payload["error"])
             self.assertIn("increase --validation-timeout", payload["error"])
             self.assertIn("Tool Shed update: release validation", result.stderr)
+            report = json.loads(Path(payload["transaction_report"]).read_text(encoding="utf-8"))
+            self.assertEqual(report["failed_stage"], "release-validation")
+            self.assertEqual(report["error_class"], "timeout")
+            self.assertEqual(report["rollback_outcome"], "not-started")
             self.assertEqual((workspace / "tool_shed" / "old-marker.txt").read_bytes(), original)
             self.assertFalse(list(workspace.glob("tool_shed.backup-*.tar")))
+
+    def test_snapshot_upgrade_warm_retry_reuses_validation_and_reaches_install_under_one_minute(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(root, validation_delay=0.2)
+            workspace = self.create_update_workspace(root)
+            operator_data = workspace / "work" / "operator-data.txt"
+            operator_data.write_text("preserve dirty owner edit\n", encoding="utf-8")
+            owner_source = workspace / "src" / "owner-dirty.txt"
+            owner_source.parent.mkdir()
+            owner_source.write_text("untracked owner source\n", encoding="utf-8")
+            work_before = operator_data.read_bytes()
+            source_before = owner_source.read_bytes()
+
+            failed = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--inject-post-install-failure",
+                "--json",
+                cwd=workspace,
+                check=False,
+            )
+            failed_payload = json.loads(failed.stdout)
+            self.assertEqual(failed.returncode, 1)
+            self.assertTrue(failed_payload["rollback"])
+            self.assertEqual(failed_payload["release_validation"]["cache"], "stored")
+            self.assertEqual(operator_data.read_bytes(), work_before)
+            self.assertEqual(owner_source.read_bytes(), source_before)
+
+            started = time.monotonic()
+            retried = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--json",
+                cwd=workspace,
+            )
+            elapsed = time.monotonic() - started
+            retried_payload = json.loads(retried.stdout)
+
+            self.assertEqual(retried_payload["state"], "installed")
+            self.assertEqual(retried_payload["release_validation"]["cache"], "hit")
+            self.assertLess(elapsed, 60.0)
+            print(f"warm snapshot retry reached installation in {elapsed:.3f}s", flush=True)
+            self.assertEqual(operator_data.read_bytes(), work_before)
+            self.assertEqual(owner_source.read_bytes(), source_before)
+            report = json.loads(
+                Path(retried_payload["transaction_report"]).read_text(encoding="utf-8")
+            )
+            self.assertEqual(report["state"], "installed")
+            self.assertEqual(report["rollback_outcome"], "not-required")
+            self.assertIn("backup", report["stage_durations_seconds"])
 
     def test_snapshot_subprocess_timeout_names_recovery_option(self) -> None:
         scripts_path = str(ROOT / "scripts")

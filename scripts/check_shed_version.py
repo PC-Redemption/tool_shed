@@ -80,6 +80,28 @@ def validate_manifest(manifest: dict[str, Any], *, canonical: bool) -> None:
     minimum_updater = manifest.get("minimum_updater_protocol", 1)
     if not isinstance(minimum_updater, int) or isinstance(minimum_updater, bool) or minimum_updater < 1:
         raise ValueError(f"{label} minimum_updater_protocol must be a positive integer")
+    qualification = manifest.get("release_qualification")
+    if qualification is not None:
+        if not isinstance(qualification, dict) or qualification.get("schema_version") != 1:
+            raise ValueError(f"{label} release_qualification must use schema version 1")
+        if qualification.get("subject_commit") != commit:
+            raise ValueError(f"{label} release_qualification subject must equal release_commit")
+        if qualification.get("attested_at") != released_at:
+            raise ValueError(f"{label} release_qualification timestamp must equal released_at")
+        hashes = manifest["content_hashes"]
+        required = [qualification.get("full_validator"), qualification.get("client_smoke")]
+        required_ci = qualification.get("required_ci")
+        required.extend(required_ci if isinstance(required_ci, list) else [])
+        if len(required) != 4:
+            raise ValueError(
+                f"{label} release_qualification must identify both validators and both CI workflows"
+            )
+        for item in required:
+            if not isinstance(item, dict):
+                raise ValueError(f"{label} release_qualification contains an invalid path identity")
+            path = item.get("path")
+            if not isinstance(path, str) or item.get("sha256") != hashes.get(path):
+                raise ValueError(f"{label} release_qualification path hash does not match content_hashes")
 
 
 def validate_updater_context(

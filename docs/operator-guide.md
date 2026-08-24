@@ -169,7 +169,8 @@ ts: fulltsupgrade
 ```
 
 This authorizes the complete current-installation upgrade from the latest verified published
-GitHub release: guarded backup/update, provider convergence, full validation, installed Codex skill
+GitHub release: guarded backup/update, provider convergence, attested focused client validation
+with fail-closed full-validation fallback, installed Codex skill
 synchronization when applicable, exact verification, and rollback. It does not authorize release
 publication, history rewriting, unsafe overwrite, deletion of unknown recovery material, or
 changes to other workspaces or fleet targets.

@@ -40,12 +40,21 @@ from project_identity import (
     load_project_identity,
     require_project_binding,
 )
+from snapshot_upgrade_state import (
+    ProgressHeartbeat,
+    SnapshotStateError,
+    TransactionRecorder,
+    ValidationCache,
+    WorkspaceTransactionLock,
+    classify_error,
+    validation_identity,
+)
 
 
 DEFAULT_REPOSITORY = "https://github.com/PC-Redemption/tool_shed.git"
 UPDATER_PROTOCOL = 3
 DEFAULT_NETWORK_TIMEOUT_SECONDS = 120.0
-DEFAULT_VALIDATION_TIMEOUT_SECONDS = 300.0
+DEFAULT_VALIDATION_TIMEOUT_SECONDS = 900.0
 STABLE_TAG = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
 REQUIRED_PATHS = (
     "SHED_VERSION.json",
@@ -98,6 +107,9 @@ class UpdateError(RuntimeError):
     pass
 
 
+_ACTIVE_PROGRESS: ProgressHeartbeat | None = None
+
+
 def minimum_updater_protocol(manifest: dict[str, Any]) -> int:
     value = manifest.get("minimum_updater_protocol", 1)
     if not isinstance(value, int) or isinstance(value, bool) or value < 1:
@@ -147,6 +159,8 @@ def run(
 
 
 def emit_progress(phase: str) -> None:
+    if _ACTIVE_PROGRESS is not None:
+        _ACTIVE_PROGRESS.update(phase)
     print(f"Tool Shed update: {phase}", file=sys.stderr, flush=True)
 
 
@@ -243,12 +257,79 @@ def require_ignored(workspace: Path) -> None:
             raise UpdateError("parent repository must ignore the exact root /tool_shed/ path")
 
 
+def release_validation_plan(
+    repository: str,
+    release: Path,
+    manifest: dict[str, Any],
+    content_commit: str,
+) -> tuple[str, Path, str, str]:
+    """Select focused validation only for an exact official attested release."""
+    hashes = manifest.get("content_hashes")
+    qualification = manifest.get("release_qualification")
+    if (
+        repository.rstrip("/") == DEFAULT_REPOSITORY.rstrip("/")
+        and isinstance(hashes, dict)
+        and isinstance(qualification, dict)
+    ):
+        full = qualification.get("full_validator")
+        smoke = qualification.get("client_smoke")
+        required_ci = qualification.get("required_ci")
+        expected_ci = {".github/workflows/validate.yml", ".github/workflows/release.yml"}
+        ci_paths = (
+            {
+                str(item.get("path"))
+                for item in required_ci
+                if isinstance(item, dict)
+            }
+            if isinstance(required_ci, list)
+            else set()
+        )
+        identities = [full, smoke, *(required_ci if isinstance(required_ci, list) else [])]
+        identities_valid = all(
+            isinstance(item, dict)
+            and isinstance(item.get("path"), str)
+            and item.get("sha256") == hashes.get(item.get("path"))
+            for item in identities
+        )
+        if (
+            qualification.get("schema_version") == 1
+            and qualification.get("subject_commit") == content_commit
+            and qualification.get("attested_at") == manifest.get("released_at")
+            and isinstance(full, dict)
+            and full.get("path") == "scripts/validate_tool_shed.py"
+            and isinstance(smoke, dict)
+            and smoke.get("path") == "scripts/validate_snapshot_client.py"
+            and ci_paths == expected_ci
+            and len(required_ci) == 2
+            and identities_valid
+        ):
+            validator = release / str(smoke["path"])
+            return (
+                "attested-focused-smoke",
+                validator,
+                str(smoke["sha256"]),
+                "official-attestation",
+            )
+
+    validator = release / "scripts" / "validate_tool_shed.py"
+    validator_hash = hashlib.sha256(validator.read_bytes()).hexdigest()
+    reason = (
+        "repository-override"
+        if repository.rstrip("/") != DEFAULT_REPOSITORY.rstrip("/")
+        else "missing-or-invalid-attestation"
+    )
+    return "full-local-validation", validator, validator_hash, reason
+
+
 def clone_release(
     repository: str,
     destination: Path,
     network_timeout: float,
     validation_timeout: float,
-) -> tuple[str, dict[str, Any], str, str]:
+    validation_cache: ValidationCache,
+    recorder: TransactionRecorder,
+) -> tuple[str, dict[str, Any], str, str, dict[str, Any]]:
+    recorder.phase("clone-fetch")
     emit_progress("clone/fetch")
     run(
         [
@@ -280,6 +361,7 @@ def clone_release(
         raise UpdateError("canonical repository has no stable vMAJOR.MINOR.PATCH tag")
     _, selected = max(candidates)
     git(destination, "-c", "core.autocrlf=false", "checkout", "--quiet", "--detach", selected)
+    recorder.phase("manifest-verification")
     emit_progress("manifest verification")
     manifest = json.loads((destination / "SHED_VERSION.json").read_text(encoding="utf-8"))
     version = selected.removeprefix("v")
@@ -311,14 +393,36 @@ def clone_release(
         ),
         cwd=destination,
     )
-    emit_progress("release validation")
-    run(
-        [sys.executable, "-B", "scripts/validate_tool_shed.py"],
-        cwd=destination,
-        timeout=validation_timeout,
-        timeout_option="--validation-timeout",
+    validation_mode, validator, validator_hash, selection_reason = release_validation_plan(
+        repository,
+        destination,
+        manifest,
+        content_commit,
     )
-    return selected, manifest, tag_commit, content_commit
+    cache_identity = validation_identity(
+        release_commit=content_commit,
+        validator_sha256=validator_hash,
+    )
+    cache_hit = validation_cache.lookup(cache_identity)
+    recorder.phase("release-validation")
+    if cache_hit:
+        emit_progress(f"release validation cache hit ({validation_mode})")
+    else:
+        emit_progress(f"release validation ({validation_mode})")
+        run(
+            [sys.executable, "-B", str(validator.relative_to(destination))],
+            cwd=destination,
+            timeout=validation_timeout,
+            timeout_option="--validation-timeout",
+        )
+        validation_cache.store_success(cache_identity, mode=validation_mode)
+    validation_report = {
+        "mode": validation_mode,
+        "selection_reason": selection_reason,
+        "cache": "hit" if cache_hit else "stored",
+        "identity": cache_identity,
+    }
+    return selected, manifest, tag_commit, content_commit, validation_report
 
 
 def released_skill_fingerprints(repository: Path) -> list[tuple[str, dict[str, str]]]:
@@ -1493,7 +1597,7 @@ def parse_args() -> argparse.Namespace:
         type=positive_timeout,
         default=DEFAULT_VALIDATION_TIMEOUT_SECONDS,
         metavar="SECONDS",
-        help="Timeout for each release or post-install validation command (default: 300 seconds).",
+        help="Timeout for each release or post-install validation command (default: 900 seconds).",
     )
     parser.add_argument(
         "--provider",
@@ -1554,9 +1658,16 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    global _ACTIVE_PROGRESS
     args = parse_args()
     workspace = Path(args.workspace).expanduser().resolve()
     target = workspace / "tool_shed"
+    transaction_id = os.urandom(12).hex()
+    recorder = TransactionRecorder(transaction_id)
+    progress = ProgressHeartbeat(sys.stderr)
+    transaction_lock: WorkspaceTransactionLock | None = None
+    progress.start()
+    _ACTIVE_PROGRESS = progress
     work_before = fingerprint_tree(workspace / "work")
     owner_content_exclusions: set[str] = set()
     owner_content_before = owner_content_fingerprint(workspace)
@@ -1576,8 +1687,11 @@ def main() -> int:
         "snapshot_relative_path": "tool_shed",
         "state": "failed",
         "stage": "workspace-preflight",
+        "transaction_id": transaction_id,
+        "transaction_report": str(recorder.path),
     }
     try:
+        recorder.phase("workspace-preflight")
         if not workspace.is_dir():
             raise UpdateError(f"workspace does not exist: {workspace}")
         ensure_workspace_repository(workspace)
@@ -1622,6 +1736,9 @@ def main() -> int:
                     f"{len(skill_report['unknown'])} preserved unknown."
                 )
             return 0
+        transaction_lock = WorkspaceTransactionLock(workspace, transaction_id)
+        transaction_lock.acquire()
+        payload["transaction_lock"] = "acquired"
         identity_exists = (workspace / IDENTITY_RELATIVE_PATH).exists() or any(
             (workspace / relative).exists() for relative in LEGACY_IDENTITY_PATHS
         )
@@ -1645,12 +1762,16 @@ def main() -> int:
             clone = temp / "release"
             staged = temp / "staged"
             payload["stage"] = "release-selection"
-            selected, manifest, tag_commit, content_commit = clone_release(
+            recorder.phase("release-selection")
+            selected, manifest, tag_commit, content_commit, release_validation = clone_release(
                 args.repository,
                 clone,
                 args.network_timeout,
                 args.validation_timeout,
+                ValidationCache(),
+                recorder,
             )
+            payload["release_validation"] = release_validation
             selected_version = str(manifest["shed_version"])
             if previous_version and version_tuple(previous_version) > version_tuple(selected_version):
                 raise UpdateError(
@@ -1659,6 +1780,7 @@ def main() -> int:
             selected_protocol = minimum_updater_protocol(manifest)
             emit_progress("staging")
             payload["stage"] = "staging"
+            recorder.phase("staging")
             prepare_snapshot(clone, staged, selected_protocol, args.validation_timeout)
             staged_providers = load_staged_providers(staged)
             providers = select_providers(workspace, staged_providers, args.provider)
@@ -1710,6 +1832,8 @@ def main() -> int:
                 payload["work_converged"] = None
                 payload["git_status_changed"] = False
                 payload["state"] = "current"
+                payload["stage"] = "complete"
+                recorder.phase("complete")
                 payload["backup_retention"] = {
                     "workspace": inventory_workspace_backups(
                         workspace,
@@ -1734,10 +1858,8 @@ def main() -> int:
                         print_codex_cli_readiness(payload["codex_cli_readiness"])
                 return 0
             timestamp = unique_transaction_timestamp(workspace)
-            transaction_id = hashlib.sha256(
-                f"{workspace}:{timestamp}:{previous_version}:{selected_version}".encode("utf-8")
-            ).hexdigest()[:24]
             payload["stage"] = "campaign-convergence-plan"
+            recorder.phase("campaign-convergence-plan")
             staged_campaigns = campaign_convergence_report(
                 workspace,
                 staged,
@@ -1766,6 +1888,7 @@ def main() -> int:
             if not isinstance(declared_mutation_paths, list):
                 raise UpdateError("updater_mutation_paths must be a list")
             payload["stage"] = "backup"
+            recorder.phase("backup")
             backup_scope = build_backup_scope(
                 workspace,
                 target,
@@ -1809,12 +1932,14 @@ def main() -> int:
                     "path": IDENTITY_RELATIVE_PATH.as_posix(),
                 }
                 payload["stage"] = "snapshot-replacement"
+                recorder.phase("snapshot-replacement")
                 shutil.move(str(staged), str(target))
                 installed = True
                 if args.inject_after_replacement_failure:
                     raise UpdateError("injected failure after snapshot replacement")
                 emit_progress("post-install validation")
                 payload["stage"] = "post-install-validation"
+                recorder.phase("post-install-validation")
                 payload["post_install"] = post_install_checks(
                     workspace,
                     target,
@@ -1881,6 +2006,7 @@ def main() -> int:
                 failed_stage = str(payload.get("stage", "unknown"))
                 payload["failed_stage"] = failed_stage
                 payload["stage"] = "rollback"
+                recorder.phase("rollback")
                 rollback_errors: list[str] = []
                 try:
                     restore_instruction_files(workspace, instruction_files_before)
@@ -1942,6 +2068,7 @@ def main() -> int:
         }
         payload["state"] = "installed"
         payload["stage"] = "complete"
+        recorder.phase("complete")
         emit_progress("completion")
         if args.json:
             print(json.dumps(payload, indent=2, sort_keys=True))
@@ -1983,10 +2110,14 @@ def main() -> int:
         UpdateError,
         ProjectIdentityError,
         CodexSkillError,
+        SnapshotStateError,
     ) as error:
         payload["error"] = str(error)
+        payload["error_class"] = classify_error(error)
         if "failed_stage" not in payload:
-            payload["failed_stage"] = str(payload.get("stage", "unknown"))
+            payload["failed_stage"] = recorder.current_phase or str(
+                payload.get("stage", "unknown")
+            )
         payload["rollback"] = bool(rollback_backup and not installed)
         if fingerprint_tree(workspace / "work") != work_before:
             payload["work_preserved"] = False
@@ -2000,6 +2131,33 @@ def main() -> int:
             if payload["rollback"]:
                 print("Previous snapshot restored from the verified backup.", file=sys.stderr)
         return 1
+    finally:
+        metadata = {
+            key: payload[key]
+            for key in ("selected_tag", "selected_version", "content_commit", "release_validation")
+            if key in payload
+        }
+        if payload.get("state") in {"installed", "current", "prune-preview"}:
+            rollback_outcome = "not-required"
+        elif payload.get("rollback"):
+            rollback_outcome = "restored"
+        elif rollback_backup is None:
+            rollback_outcome = "not-started"
+        else:
+            rollback_outcome = "not-restored"
+        try:
+            recorder.finish(
+                str(payload.get("state", "failed")),
+                failed_stage=str(payload.get("failed_stage")) if payload.get("failed_stage") else None,
+                error_class=str(payload.get("error_class")) if payload.get("error_class") else None,
+                rollback_outcome=rollback_outcome,
+                metadata=metadata or None,
+            )
+        finally:
+            if transaction_lock is not None:
+                transaction_lock.release()
+            progress.stop()
+            _ACTIVE_PROGRESS = None
 
 
 if __name__ == "__main__":

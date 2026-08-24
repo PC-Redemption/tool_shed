@@ -55,6 +55,23 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
+      "disposition": "none",
+      "next_action": "resolve blocker or decision: Native Windows cold and warm-retry qualification of the unpublished 0.27.0 candidate requires either authorization to push the candidate for Windows CI or explicit authorization to mutate and execute it in a Windows workspace; ts: next grants neither.",
+      "parent": null,
+      "path": "work/00-campaigns/active/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md",
+      "produces": null,
+      "project_map": null,
+      "status": "blocked",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Make stable snapshot upgrades fast, observable, and retry-safe",
+      "type": "campaign",
+      "updated": "2026-08-24"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
       "disposition": "completed",
       "next_action": "none",
       "parent": null,
@@ -1173,6 +1190,23 @@
       "updated": "2026-08-20"
     },
     {
+      "campaign": "make-stable-snapshot-upgrades-fast-observable-and-retry-safe",
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": null,
+      "next_action": "run the candidate on native Windows through an authorized branch/CI or workspace route and record cold plus warm-retry timing",
+      "parent": "work/00-campaigns/active/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md",
+      "path": "work/evidence/evidence-snapshot-upgrade-performance-and-retry-safety.md",
+      "produces": null,
+      "project_map": null,
+      "status": "active",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Snapshot upgrade performance and retry-safety qualification",
+      "type": "evidence",
+      "updated": "2026-08-24"
+    },
+    {
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
@@ -1785,8 +1819,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 2,
+    "active_artifacts": 4,
     "completed_or_decided_artifacts": 91,
-    "total_artifacts": 103
+    "total_artifacts": 105
   }
 }

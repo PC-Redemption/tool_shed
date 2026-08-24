@@ -154,7 +154,7 @@ SHIP_GUIDANCE = f"""{SHIP_GUIDANCE_START}
 ## Tool Shed ship route
 
 - Treat `ts:ship <goal>` and `ts: ship <goal>` as authorization to plan, implement, validate, build, deploy, and verify the workspace goal end-to-end.
-- Treat `ts: fulltsupgrade` and `ts:fulltsupgrade` as authorization to upgrade the current existing Tool Shed installation end-to-end from the latest verified published GitHub release, including guarded backup and update, provider convergence, full validation, installed Codex skill synchronization and exact verification when applicable, and rollback on failure.
+- Treat `ts: fulltsupgrade` and `ts:fulltsupgrade` as authorization to upgrade the current existing Tool Shed installation end-to-end from the latest verified published GitHub release, including guarded backup and update, provider convergence, exact release qualification plus focused client smoke (with full local validation for overridden, unattested, or changed identities), installed Codex skill synchronization and exact verification when applicable, and rollback on failure.
 - The full-upgrade route does not authorize publishing a release, rewriting history, overwriting a modified or unmanaged installation, deleting unknown recovery material, or changing other workspaces or fleet targets.
 - Treat lifecycle stages as applicable only when the requested outcome includes them, repository policy mandates them, or concrete risk or observed failure justifies them. Wording that merely mentions or discusses `ts:ship` is not an end-to-end delivery request.
 - State the concrete reason before expanding focused verification into broad qualification, deployment, or external publication.

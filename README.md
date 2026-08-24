@@ -142,8 +142,10 @@ ts: fulltsupgrade
 ```
 
 This upgrades the current existing Tool Shed installation from the latest verified published
-GitHub release, including backup, provider convergence, full validation, installed Codex skill
-synchronization when applicable, exact verification, and rollback on failure. It does not publish
+GitHub release, including backup, provider convergence, exact release qualification and focused
+client-installation validation, installed Codex skill synchronization when applicable, exact
+verification, and rollback on failure. Overridden, unattested, or changed validation identities
+fall back to the complete local validator. It does not publish
 a new release, rewrite history, overwrite modified or unmanaged installations, delete unknown
 recovery material, or update other workspaces.
 
@@ -177,10 +179,17 @@ the read-only `--prune-preview`. A repository policy can set
 archive.
 
 The updater emits concise clone/fetch, manifest, release-validation, staging, post-install, and
-completion progress to stderr, leaving `--json` stdout machine-readable. Clone and fetch commands
-default to a 120-second timeout; release and post-install validators default to 300 seconds. Use
-`--network-timeout SECONDS` or `--validation-timeout SECONDS` when a known-slow environment needs
-a different explicit bound.
+completion progress to stderr, plus a heartbeat every 20 seconds while a phase remains active,
+leaving `--json` stdout machine-readable. Clone and fetch commands default to a 120-second timeout;
+release and post-install validators default to 900 seconds. Use `--network-timeout SECONDS` or
+`--validation-timeout SECONDS` when a known-slow environment needs a different explicit bound.
+
+One recoverable user-local lock prevents concurrent upgrades of the same workspace. Successful
+release validation is reusable only for the exact release commit, validator hash, operating
+system, architecture, Python implementation, and Python version. Every attempt writes a sanitized
+transaction report beneath `${CODEX_HOME:-~/.codex}/tool-shed/snapshot-upgrade-transactions/` with
+stage durations, validation mode/cache state, error class, and rollback outcome. Reports never
+contain prompts, responses, command output, credentials, secrets, or workspace paths.
 
 If the installed snapshot predates `update_snapshot.py`, obtain a current released Tool Shed
 checkout outside the project and run the updater from that checkout. Never replace or pull inside

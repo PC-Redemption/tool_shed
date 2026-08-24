@@ -22,8 +22,10 @@ snapshot. Never replace a canonical checkout with a snapshot.
 The route authorizes all normal in-scope functions needed to finish the one upgrade without
 repeated confirmation: fetch release metadata and tags; verify provenance and hashes; preserve
 unrelated work; create a verified rollback backup; update or replace the supported installation;
-run released installer and provider-guidance convergence; perform full validation and post-update
-verification; synchronize the separately installed Codex skill when Codex is in use, even when the
+run released installer and provider-guidance convergence; verify exact release qualification and
+run the focused client smoke, falling back to full local validation for overridden, unattested, or
+changed identities; perform post-update verification; synchronize the separately installed Codex
+skill when Codex is in use, even when the
 workspace snapshot was already current; verify exact skill parity; and roll back if a post-update
 check fails. Apply retention only to verified updater-owned backups and preserve unknown or
 unverifiable recovery material.
