@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 import platform
+import re
 import tempfile
 import threading
 import time
@@ -19,6 +20,61 @@ SCHEMA_VERSION = 1
 LOCK_WAIT_SECONDS = 5.0
 MALFORMED_LOCK_GRACE_SECONDS = 300.0
 MAX_VALIDATION_RECORDS = 64
+ISSUE_CODE = re.compile(r"^TSU-[0-9]{3}$")
+
+ISSUE_CODE_REGISTRY: dict[str, dict[str, str]] = {
+    "TSU-000": {
+        "name": "no-issue",
+        "summary": "The snapshot operation completed without a reportable failure.",
+    },
+    "TSU-101": {
+        "name": "concurrent-upgrade",
+        "summary": "Another upgrade already owns the workspace transaction lock.",
+    },
+    "TSU-201": {
+        "name": "timeout",
+        "summary": "A bounded upgrade phase exceeded its configured timeout.",
+    },
+    "TSU-301": {
+        "name": "network",
+        "summary": "Release acquisition failed at a bounded network operation.",
+    },
+    "TSU-401": {
+        "name": "integrity",
+        "summary": "Release provenance, manifest, or content integrity validation failed.",
+    },
+    "TSU-501": {
+        "name": "validation",
+        "summary": "Release or post-install validation failed.",
+    },
+    "TSU-601": {
+        "name": "permission",
+        "summary": "The updater lacked permission for a required local operation.",
+    },
+    "TSU-701": {
+        "name": "filesystem",
+        "summary": "A local filesystem operation failed.",
+    },
+    "TSU-801": {
+        "name": "unknown",
+        "summary": "The updater failed without a more specific sanitized classification.",
+    },
+    "TSU-901": {
+        "name": "rollback-incomplete",
+        "summary": "The previous snapshot was not verified as restored after failure.",
+    },
+}
+
+ERROR_CLASS_ISSUE_CODES = {
+    "concurrent-upgrade": "TSU-101",
+    "timeout": "TSU-201",
+    "network": "TSU-301",
+    "integrity": "TSU-401",
+    "validation": "TSU-501",
+    "permission": "TSU-601",
+    "filesystem": "TSU-701",
+    "unknown": "TSU-801",
+}
 
 
 class SnapshotStateError(RuntimeError):
@@ -29,11 +85,24 @@ class ConcurrentUpgradeError(SnapshotStateError):
     pass
 
 
+def issue_code_for(
+    *,
+    state: str,
+    error_class: str | None,
+    rollback_outcome: str | None,
+) -> str:
+    if state in {"installed", "current", "prune-preview"}:
+        return "TSU-000"
+    if rollback_outcome == "not-restored":
+        return "TSU-901"
+    return ERROR_CLASS_ISSUE_CODES.get(error_class or "unknown", "TSU-801")
+
+
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
-def state_root() -> Path:
+def state_root(*, create: bool = True) -> Path:
     override = os.environ.get("TOOL_SHED_STATE_ROOT")
     if override:
         root = Path(override).expanduser()
@@ -42,10 +111,12 @@ def state_root() -> Path:
         codex_root = Path(codex_home).expanduser() if codex_home else Path.home() / ".codex"
         root = codex_root / "tool-shed"
     root = root.absolute()
-    if root.exists() and (root.is_symlink() or not root.is_dir()):
-        raise SnapshotStateError(f"Tool Shed state root must be a real directory: {root}")
-    root.mkdir(parents=True, exist_ok=True)
-    if os.name != "nt":
+    if root.exists():
+        if root.is_symlink() or not root.is_dir():
+            raise SnapshotStateError(f"Tool Shed state root must be a real directory: {root}")
+    elif create:
+        root.mkdir(parents=True, exist_ok=True)
+    if create and os.name != "nt":
         os.chmod(root, 0o700)
     return root
 
@@ -285,8 +356,9 @@ class ValidationCache:
 
 
 class TransactionRecorder:
-    def __init__(self, transaction_id: str) -> None:
+    def __init__(self, transaction_id: str, *, updater: dict[str, Any] | None = None) -> None:
         self.transaction_id = transaction_id
+        self.updater = dict(updater) if updater else None
         self.path = state_root() / "snapshot-upgrade-transactions" / f"{transaction_id}.json"
         self.started_wall = utc_now()
         self.started_monotonic = time.monotonic()
@@ -312,6 +384,7 @@ class TransactionRecorder:
         error_class: str | None = None,
         rollback_outcome: str | None = None,
         metadata: dict[str, Any] | None = None,
+        issue_code: str | None = None,
     ) -> dict[str, Any]:
         now = time.monotonic()
         durations = dict(self.durations)
@@ -339,6 +412,12 @@ class TransactionRecorder:
             payload["error_class"] = error_class
         if rollback_outcome:
             payload["rollback_outcome"] = rollback_outcome
+        if issue_code:
+            if issue_code not in ISSUE_CODE_REGISTRY:
+                raise SnapshotStateError(f"unknown snapshot upgrade issue code: {issue_code}")
+            payload["issue_code"] = issue_code
+        if self.updater:
+            payload["updater"] = self.updater
         if metadata:
             payload["release"] = metadata
         return payload
@@ -349,6 +428,14 @@ class TransactionRecorder:
     def finish(self, state: str, **kwargs: Any) -> None:
         if self._finished:
             return
+        kwargs.setdefault(
+            "issue_code",
+            issue_code_for(
+                state=state,
+                error_class=kwargs.get("error_class"),
+                rollback_outcome=kwargs.get("rollback_outcome"),
+            ),
+        )
         self._write(state, **kwargs)
         self._finished = True
 

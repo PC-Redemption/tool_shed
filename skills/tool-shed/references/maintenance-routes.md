@@ -36,6 +36,23 @@ unmanaged installations, deleting unknown recovery material, or updating any oth
 fleet target. In the canonical Tool Shed development checkout, follow the host-local development
 workspace procedure for the Git fast-forward and client synchronization path.
 
+## Upgrade Issue Report Route
+
+Treat `ts: upgrade report` and `ts: upgrade report latest` as requests to render the newest
+protected snapshot-upgrade transaction. An exact transaction ID may replace `latest`. Run:
+
+```bash
+python3 <shed>/scripts/snapshot_upgrade_report.py <latest-or-transaction-id>
+```
+
+The route is read-only and local. It accepts only the allowlisted final transaction schema from the
+current platform and emits sanitized maintainer-ready Markdown by default; use `--json` for the
+equivalent structured report. It rejects malformed, symlinked, permission-exposed,
+foreign-platform, unknown-field, mismatched-identity, and incorrect-issue-code records. It never
+prints raw exception text or owner/workspace data and has no network or GitHub publication
+capability. Review the exact draft and obtain separate external-write authorization before using
+`gh issue create`.
+
 ## Snapshot Install And Update
 
 Before mutating an identified workspace, run `project_identity.py identity` for operation

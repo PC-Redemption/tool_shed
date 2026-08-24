@@ -986,6 +986,10 @@ for raw in sys.stdin:
         self.assertIn("ts: fulltsupgrade", guide)
         self.assertIn("ts: fulltsupgrade", skill_bundle)
         self.assertIn("ts: fulltsupgrade", readme)
+        for surface in (commands, guide, skill_bundle):
+            self.assertIn("ts: upgrade report", surface)
+            self.assertIn("separate", surface.lower())
+        self.assertTrue((ROOT / "scripts" / "snapshot_upgrade_report.py").is_file())
         self.assertIn("ts:ask", commands)
         self.assertIn("01-q&a/ask.txt", skill_bundle)
         self.assertIn("scripts/read_ask_inbox.py", skill_bundle)
@@ -5600,7 +5604,10 @@ old Tool Shed guidance
             report = json.loads(Path(payload["transaction_report"]).read_text(encoding="utf-8"))
             self.assertEqual(report["failed_stage"], "release-validation")
             self.assertEqual(report["error_class"], "timeout")
+            self.assertEqual(report["issue_code"], "TSU-201")
             self.assertEqual(report["rollback_outcome"], "not-started")
+            self.assertEqual(report["updater"]["shed_version"], "0.27.0")
+            self.assertEqual(report["updater"]["protocol"], 3)
             self.assertEqual((workspace / "tool_shed" / "old-marker.txt").read_bytes(), original)
             self.assertFalse(list(workspace.glob("tool_shed.backup-*.tar")))
 
@@ -5658,6 +5665,7 @@ old Tool Shed guidance
                 Path(retried_payload["transaction_report"]).read_text(encoding="utf-8")
             )
             self.assertEqual(report["state"], "installed")
+            self.assertEqual(report["issue_code"], "TSU-000")
             self.assertEqual(report["rollback_outcome"], "not-required")
             self.assertIn("backup", report["stage_durations_seconds"])
 

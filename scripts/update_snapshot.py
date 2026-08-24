@@ -47,6 +47,7 @@ from snapshot_upgrade_state import (
     ValidationCache,
     WorkspaceTransactionLock,
     classify_error,
+    issue_code_for,
     validation_identity,
 )
 
@@ -108,6 +109,20 @@ class UpdateError(RuntimeError):
 
 
 _ACTIVE_PROGRESS: ProgressHeartbeat | None = None
+
+
+def updater_identity() -> dict[str, object]:
+    root = Path(__file__).resolve().parents[1]
+    manifest = json.loads((root / "SHED_VERSION.json").read_text(encoding="utf-8"))
+    version = manifest.get("shed_version")
+    if not isinstance(version, str) or not STABLE_TAG.fullmatch(f"v{version}"):
+        raise UpdateError("updater manifest has an invalid shed_version")
+    return {
+        "schema_version": 1,
+        "shed_version": version,
+        "protocol": UPDATER_PROTOCOL,
+        "script_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+    }
 
 
 def minimum_updater_protocol(manifest: dict[str, Any]) -> int:
@@ -1663,7 +1678,7 @@ def main() -> int:
     workspace = Path(args.workspace).expanduser().resolve()
     target = workspace / "tool_shed"
     transaction_id = os.urandom(12).hex()
-    recorder = TransactionRecorder(transaction_id)
+    recorder = TransactionRecorder(transaction_id, updater=updater_identity())
     progress = ProgressHeartbeat(sys.stderr)
     transaction_lock: WorkspaceTransactionLock | None = None
     progress.start()
@@ -2146,13 +2161,23 @@ def main() -> int:
         else:
             rollback_outcome = "not-restored"
         try:
+            issue_code = issue_code_for(
+                state=str(payload.get("state", "failed")),
+                error_class=str(payload.get("error_class")) if payload.get("error_class") else None,
+                rollback_outcome=rollback_outcome,
+            )
+            payload["issue_code"] = issue_code
             recorder.finish(
                 str(payload.get("state", "failed")),
                 failed_stage=str(payload.get("failed_stage")) if payload.get("failed_stage") else None,
                 error_class=str(payload.get("error_class")) if payload.get("error_class") else None,
                 rollback_outcome=rollback_outcome,
                 metadata=metadata or None,
+                issue_code=issue_code,
             )
+            if payload.get("state") not in {"installed", "current", "prune-preview"} and not args.json:
+                print(f"Issue code: {issue_code}", file=sys.stderr)
+                print(f"Sanitized transaction report: {recorder.path}", file=sys.stderr)
         finally:
             if transaction_lock is not None:
                 transaction_lock.release()

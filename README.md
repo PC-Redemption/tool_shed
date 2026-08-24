@@ -191,6 +191,11 @@ transaction report beneath `${CODEX_HOME:-~/.codex}/tool-shed/snapshot-upgrade-t
 stage durations, validation mode/cache state, error class, and rollback outcome. Reports never
 contain prompts, responses, command output, credentials, secrets, or workspace paths.
 
+Final transactions also carry stable `TSU-*` issue codes and a bounded updater identity. Run
+`python scripts/snapshot_upgrade_report.py latest` (or supply an exact transaction ID) for a
+sanitized maintainer-ready Markdown draft; add `--json` for structured output. The reporter is
+read-only, rejects foreign or malformed records, and cannot publish to GitHub.
+
 If the installed snapshot predates `update_snapshot.py`, obtain a current released Tool Shed
 checkout outside the project and run the updater from that checkout. Never replace or pull inside
 the stale workspace snapshot to bootstrap the updater.

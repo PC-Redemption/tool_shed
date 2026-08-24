@@ -102,7 +102,15 @@ class SnapshotUpgradeStateTests(unittest.TestCase):
             os.environ,
             {"TOOL_SHED_STATE_ROOT": temporary},
         ):
-            recorder = state.TransactionRecorder("transaction-test")
+            recorder = state.TransactionRecorder(
+                "transaction-test",
+                updater={
+                    "schema_version": 1,
+                    "shed_version": "0.27.0",
+                    "protocol": 3,
+                    "script_sha256": "a" * 64,
+                },
+            )
             recorder.phase("release-validation")
             recorder.finish(
                 "failed",
@@ -113,12 +121,42 @@ class SnapshotUpgradeStateTests(unittest.TestCase):
             )
             payload = json.loads(recorder.path.read_text(encoding="utf-8"))
             self.assertEqual(payload["error_class"], "timeout")
+            self.assertEqual(payload["issue_code"], "TSU-201")
             self.assertEqual(payload["rollback_outcome"], "not-started")
+            self.assertEqual(payload["updater"]["shed_version"], "0.27.0")
             self.assertIn("release-validation", payload["stage_durations_seconds"])
             serialized = json.dumps(payload)
             self.assertNotIn(str(Path.home()), serialized)
             self.assertNotIn("prompt", serialized.lower())
             self.assertNotIn("credential", serialized.lower())
+
+    def test_issue_code_registry_is_stable_and_rollback_failure_wins(self) -> None:
+        self.assertEqual(len(state.ISSUE_CODE_REGISTRY), len(set(state.ISSUE_CODE_REGISTRY)))
+        self.assertEqual(
+            state.issue_code_for(
+                state="installed",
+                error_class=None,
+                rollback_outcome="not-required",
+            ),
+            "TSU-000",
+        )
+        for error_class, expected in state.ERROR_CLASS_ISSUE_CODES.items():
+            self.assertEqual(
+                state.issue_code_for(
+                    state="failed",
+                    error_class=error_class,
+                    rollback_outcome="not-started",
+                ),
+                expected,
+            )
+        self.assertEqual(
+            state.issue_code_for(
+                state="failed",
+                error_class="validation",
+                rollback_outcome="not-restored",
+            ),
+            "TSU-901",
+        )
 
     def test_heartbeat_keeps_a_long_phase_visible(self) -> None:
         stream = io.StringIO()

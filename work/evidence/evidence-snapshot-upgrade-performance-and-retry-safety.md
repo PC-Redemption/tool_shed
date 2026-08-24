@@ -3,7 +3,7 @@
 Status: active
 Type: evidence
 Updated: 2026-08-24
-Next Action: run the candidate on native Windows through an authorized branch/CI or workspace route and record cold plus warm-retry timing
+Next Action: obtain authorization to push the frozen 0.27.0 candidate to a qualification branch, then record native Windows CI and cold plus warm-retry evidence
 Campaign: make-stable-snapshot-upgrades-fast-observable-and-retry-safe
 Parent: work/00-campaigns/active/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md
 
@@ -39,6 +39,29 @@ intact. This establishes the safety baseline but not the new performance gate.
 - The unpublished candidate manifest is `0.27.0`; no tag, push, release, or client deployment has
   been performed by this campaign.
 
+## Sanitized maintainer issue reporting
+
+- Every final transaction now records one stable `TSU-*` issue code. Codes distinguish successful
+  completion, concurrency, timeout, network, integrity, validation, permission, filesystem,
+  unknown, and incomplete-rollback outcomes; incomplete rollback takes precedence over the
+  initiating error class.
+- Transaction records bind the updater version, protocol, and exact updater-script SHA-256 without
+  retaining its path.
+- `scripts/snapshot_upgrade_report.py` renders `latest` or one exact transaction ID as sanitized
+  maintainer-ready Markdown or JSON. It is read-only and has no network, `gh`, upload, or publish
+  operation.
+- The reporter accepts only final records with the allowlisted schema, same platform and
+  architecture, private state/report permissions where supported, matching filename identity, and
+  a correct derived issue code. It rejects symlinks, malformed JSON, unknown fields,
+  foreign-platform records, exposed permissions, unsafe values, and failure records missing their
+  bounded stage or error class.
+- Rendered reports omit the release-validation cache identity and expose only bounded release and
+  updater identity, phase durations, validation/cache mode, issue code, error class, and rollback
+  outcome. Prompts, responses, raw output, exception text, workspace paths, usernames, dirty
+  filenames, credentials, and secrets are never rendered.
+- The documented `ts: upgrade report [latest|<transaction-id>]` route requires separate review and
+  external-write authorization before any `gh issue create` action.
+
 ## Local verification
 
 Focused command:
@@ -71,15 +94,22 @@ python3 scripts/workspace_preflight.py --workspace .
 python3 scripts/validate_tool_shed.py
 ```
 
-Result: preflight passed; the final exact candidate passed all 250 tests in 62.814 seconds; provider conformance, generated
-indexes, stale-path checks, work-state review, Program Roadmap validation, disposable all-provider
+Result before the reporter scope freeze: preflight passed and all 250 tests passed in 62.814
+seconds. After the reporter was added as the final candidate scope, 16 focused reporter, updater,
+privacy, documentation-route, focused-client-smoke, timeout, and warm-retry tests passed. The final
+warm retry reached installation in 0.200 seconds during focused validation and 0.218 seconds during
+the full run. The exact final candidate then passed all 256 tests in 62.718 seconds. Provider
+conformance, exact 139-file manifest validation, documentation-site validation, generated indexes,
+stale-path checks, work-state review, Program Roadmap validation, disposable all-provider
 installation, and template sanity passed. The focused client smoke also passed in a disposable
-release image.
+release image containing the new report command.
 
 ## Remaining completion evidence
 
-Native Windows has not executed this unpublished candidate. Campaign completion still requires a
-Windows cold attempt plus warm retry to pass with visible heartbeat/timing evidence, dirty-work and
-rollback preservation, exact cache identity, and warm progress to backup or installation in under
-one minute. Running that candidate requires an authorized push/CI route or an explicitly authorized
-Windows workspace mutation; `ts: next` alone grants neither.
+Native Windows has not executed this unpublished candidate. The owner froze the reporter as the
+final `0.27.0` scope and prohibited further features or prerequisite campaigns before
+qualification. Campaign completion still requires a Windows cold attempt plus warm retry to pass
+with visible heartbeat/timing evidence, dirty-work and rollback preservation, exact cache
+identity, and warm progress to backup or installation in under one minute. The next action is a
+qualification-branch push, which requires separate authorization. No tag, GitHub Release,
+installed-skill synchronization, or Bactron Core upgrade is authorized by that branch push.

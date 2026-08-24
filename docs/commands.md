@@ -304,6 +304,7 @@ does not change the request's natural coordination level.
 | `ts: doctor` | Audit the complete supported workspace surface read-only and return one health verdict with exact next actions. Use `--json` for stable automation output or `--strict` to fail unless fully healthy. |
 | `ts: doctor --repair` | Regenerate stale deterministic work indexes only after campaign source validates and exact current doctor state and project-binding tokens are supplied. It never chooses semantic truth or changes campaign lifecycle state. |
 | `ts: fulltsupgrade` | Upgrade the current existing Tool Shed installation end-to-end from the latest verified published GitHub release, including guarded backup/update, provider convergence, attested focused client validation with fail-closed full-validation fallback, installed Codex skill synchronization when applicable, exact verification, and rollback. |
+| `ts: upgrade report [latest\|<transaction-id>]` | Render one protected local snapshot-upgrade transaction as sanitized maintainer-ready Markdown without publishing it. Use `--json` for structured output. |
 | `ts: version` | Verify the local Tool Shed snapshot and report its version without network access. |
 | `ts: check for updates` | Verify locally, compare with the canonical manifest, and report the version relation. Read-only. |
 | `ts: update status` | Alias for `ts: check for updates`. Read-only. |
@@ -326,6 +327,12 @@ binding returned by `project_identity.py identity --operation doctor-repair`.
 `ts: fulltsupgrade` is the concise full-authorization exception for the current installation. It
 does not authorize publishing a release, rewriting history, forcing over modified or unmanaged
 state, deleting unknown recovery material, or updating other workspaces or fleet targets.
+
+`ts: upgrade report` reads the protected user-local transaction registry created by the snapshot
+updater. It accepts `latest` or one exact transaction ID, validates that the record belongs to the
+current platform and matches its stable `TSU-*` issue code, and emits only allowlisted release,
+updater, stage-duration, validation/cache, error-class, and rollback fields. It never files an
+issue. Review the draft before separately authorizing `gh issue create`.
 
 ## Codex Reasoning Maintenance
 

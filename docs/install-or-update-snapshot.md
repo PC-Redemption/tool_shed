@@ -40,6 +40,12 @@ validation mode/cache state, a bounded error class, and rollback outcome, never 
 command output, credentials, secrets, or workspace paths. State files use mode `0600` where the
 platform supports POSIX permissions.
 
+Each final transaction also records a stable `TSU-*` issue code plus the updater version, protocol,
+and script hash. Render `latest` or an exact transaction ID locally with
+`scripts/snapshot_upgrade_report.py`; Markdown is the default and `--json` emits the equivalent
+structured report. The command validates an allowlisted same-platform schema and cannot publish an
+issue. Review its sanitized draft before separately authorizing any GitHub write.
+
 Synchronization accepts only a missing target or a target that exactly matches a skill recorded
 by a stable Tool Shed release. It keeps a timestamped backup under
 `${CODEX_HOME:-~/.codex}/tool-shed-backups/`, outside the active skill-discovery directory, when

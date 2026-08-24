@@ -776,6 +776,21 @@ python /path/to/current/tool_shed/scripts/update_snapshot.py --workspace . --no-
 precedence. Retention is the total verified archive count including the protected immediate
 rollback archive and cannot be below one.
 
+Every completed attempt has a stable `TSU-*` issue code in its protected user-local transaction
+record. Generate a maintainer-ready draft for the newest or one exact transaction without exposing
+raw output or publishing anything:
+
+```text
+ts: upgrade report latest
+ts: upgrade report <transaction-id> --json
+```
+
+The reporter rejects malformed, symlinked, permission-exposed, foreign-platform, unknown-field, or
+identity-mismatched records. Its Markdown and JSON contain only bounded release/updater identity,
+platform, stage durations, validation/cache mode, issue code, error class, and rollback outcome.
+Review the draft before separately authorizing a GitHub issue; report generation never authorizes
+or performs `gh issue create`.
+
 After installation or update, run:
 
 ```bash
