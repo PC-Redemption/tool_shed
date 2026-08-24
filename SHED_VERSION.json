@@ -142,9 +142,9 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
   "notes": "Harden dirty-read qualification caching, invalidation, and transient failure handling.",
-  "release_commit": null,
+  "release_commit": "b334b40af20436dc3f02edaa541184b8a0a43354",
   "release_tag": "v0.26.0",
-  "released_at": null,
+  "released_at": "2026-08-24T18:57:27Z",
   "shed_version": "0.26.0",
   "updated_at": "2026-08-24",
   "updater_mutation_paths": [
