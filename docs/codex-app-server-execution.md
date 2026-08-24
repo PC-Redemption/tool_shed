@@ -108,6 +108,19 @@ newer runs the dirty read harness automatically, with no upper cutoff. The origi
 request continues in the same invocation only after a qualified result. The existing GUI remains
 available by rerunning without `--app-server`; the control never switches to API execution.
 
+Dirty read summaries are stored in a protected user-local cache at
+`$CODEX_HOME/tool-shed/dirty-read-qualifications.json`, falling back to the matching `~/.codex`
+location. The path is rejected if it is inside canonical or installed Tool Shed content. Records
+contain only the executable path and hash, version, protocol fingerprint, qualification-policy
+hash, model-policy hash, platform, sanitized outcome and blocker names, and timestamps—never
+prompts, responses, credentials, secrets, or telemetry. Writes use an inter-process lock, atomic
+replacement, and mode `0600` where supported. Malformed, partial, foreign-platform, stale, or
+mismatched successes are ignored safely. Reviewed unsafe denials do not expire on the success TTL;
+they remain authoritative until a relevant fingerprint changes or `select ... --requalify` is
+used. Transient authentication, network, service, and model-catalog failures remain GUI fallbacks
+and are not cached, so later explicit requests retry. Status exposes cache source and invalidation
+reason without exposing probe content.
+
 ## Codex Executable Readiness
 
 One centralized resolver selects a Codex executable for every App Server consumer. A supported
@@ -439,7 +452,7 @@ fallback, Sol/Terra availability and reasoning, new read-only planning and verif
 GUI/discussion fallback, deliberately active-turn cancellation, fail-closed approvals,
 permission-profile or legacy enforcement, unchanged disposable workspace contents, absent protocol
 mutation events, and the tiny-operation token baseline. Dirty mode reports safe blockers separately
-from fatal and unknown states and never updates the qualification registry. Re-run
+from fatal, transient, and unknown states and never updates the qualification registry. Re-run
 `scripts/codex_app_server_write_qualification.py` separately before retaining workspace-write
 qualification on a new CLI version.
 

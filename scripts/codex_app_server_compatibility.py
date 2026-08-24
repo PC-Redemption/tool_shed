@@ -20,6 +20,11 @@ try:
         CodexQualificationState,
         CodexReadiness,
     )
+    from scripts.codex_qualification_cache import (
+        QualificationCache,
+        QualificationCacheError,
+        build_qualification_identity,
+    )
     from scripts.codex_execution import (
         ApprovalBridge,
         CodexExecutionAdapter,
@@ -37,6 +42,11 @@ except ModuleNotFoundError:  # Direct execution: python scripts/codex_app_server
         CodexCliResolver,
         CodexQualificationState,
         CodexReadiness,
+    )
+    from codex_qualification_cache import (  # type: ignore[no-redef]
+        QualificationCache,
+        QualificationCacheError,
+        build_qualification_identity,
     )
     from codex_execution import (  # type: ignore[no-redef]
         ApprovalBridge,
@@ -261,12 +271,33 @@ def _status_qualification_state(
     return mapping.get(resolution.qualification_state, "unsafe-blocked")
 
 
+def _runtime_failure_classification(error: Exception) -> str:
+    if isinstance(error, (AuthenticationError, ModelPolicyError)):
+        return "transient"
+    if isinstance(error, AppServerError) and error.kind == "read_only_permission_profile_unavailable":
+        return "unsafe"
+    message = str(error).lower()
+    transient_markers = (
+        "authentication",
+        "network",
+        "timeout",
+        "timed out",
+        "temporarily",
+        "unavailable",
+        "service",
+        "rate limit",
+        "model catalog",
+    )
+    return "transient" if any(marker in message for marker in transient_markers) else "unknown"
+
+
 def status_report(
     *,
     codex: str | None = None,
     config_path: Path = DEFAULT_CONFIG,
     policy_path: Path = DEFAULT_POLICY,
     qualifications_path: Path = DEFAULT_QUALIFICATIONS,
+    qualification_cache_path: Path | None = None,
 ) -> dict[str, Any]:
     config = AppServerFeatureConfig.load(config_path)
     policy = ModelPolicy.load(policy_path)
@@ -282,8 +313,55 @@ def status_report(
     configured_versions = config.qualified_codex_versions
     configured_qualified = ", ".join(configured_versions)
     qualification_state = _status_qualification_state(resolution, record)
+    cache_status: dict[str, Any] = {
+        "status": "not-applicable",
+        "source": "user-local-cache",
+        "invalidation_reason": None,
+        "record": None,
+    }
+    if (
+        record is None
+        and resolution.app_server_available
+        and resolution.executable is not None
+        and installed is not None
+        and qualification_state == "dirty-qualifying"
+    ):
+        try:
+            identity = build_qualification_identity(
+                executable=resolution.executable,
+                codex_version=installed,
+                config_path=config_path,
+                model_policy_path=policy_path,
+            )
+            cache = QualificationCache(
+                qualification_cache_path,
+                max_age_seconds=config.dirty_read_cache_max_age_seconds,
+            )
+            lookup = cache.lookup(identity)
+            cache_status = lookup.as_dict()
+            if lookup.status == "hit" and lookup.record:
+                qualification_state = (
+                    "dirty-qualified"
+                    if lookup.record.get("state") == "qualified"
+                    else "unsafe-blocked"
+                )
+        except (OSError, QualificationCacheError) as error:
+            cache_status = {
+                "status": "unavailable",
+                "source": "user-local-cache",
+                "invalidation_reason": type(error).__name__,
+                "record": None,
+            }
     if record:
         blockers = list(record.get("known_blockers") or [])
+    elif qualification_state == "dirty-qualified":
+        blockers = list((cache_status.get("record") or {}).get("safe_blockers") or [])
+        blockers.append("workspace-write is not qualified")
+    elif (
+        qualification_state == "unsafe-blocked"
+        and (cache_status.get("record") or {}).get("state") == "unsafe_denied"
+    ):
+        blockers = ["reviewed unsafe dirty-qualification denial is cached"]
     elif qualification_state == "dirty-qualifying":
         blockers = [
             "read-only roles require live dirty qualification",
@@ -302,17 +380,21 @@ def status_report(
     enabled_roles: dict[str, Any] = {}
     for role in ("planning", "verification"):
         selected = role_selections[role]
-        if resolution.app_server_available and _recorded_role_usable(
+        exact_usable = _recorded_role_usable(
             role=role,
             record=record,
             config=config,
             policy=policy,
             installed=installed,
-        ):
+        )
+        dirty_usable = bool(
+            qualification_state == "dirty-qualified" and config.role_enabled(role)
+        )
+        if resolution.app_server_available and (exact_usable or dirty_usable):
             enabled_roles[role] = {
                 "model": selected.model,
                 "reasoning": selected.reasoning,
-                "qualification": "exact-qualified",
+                "qualification": qualification_state,
             }
     camp_enabled = bool(
         resolution.app_server_available
@@ -350,10 +432,16 @@ def status_report(
         "write_qualification_state": (
             "exact-qualified" if camp_enabled else "write-not-qualified"
         ),
-        "compatibility": _compatibility_for_resolution(resolution, record),
+        "compatibility": (
+            "dirty_qualified"
+            if qualification_state == "dirty-qualified"
+            else _compatibility_for_resolution(resolution, record)
+        ),
         "version_warning": (
             None
-            if record and record.get("status") in {"qualified", "qualified_with_blockers"}
+            if (
+                record and record.get("status") in {"qualified", "qualified_with_blockers"}
+            ) or qualification_state == "dirty-qualified"
             else (
                 "Codex CLI is not detected."
                 if installed is None
@@ -373,6 +461,7 @@ def status_report(
         "codex_readiness": resolution.readiness.value,
         "codex_error": resolution.error,
         "codex_inventory": [candidate.as_dict() for candidate in resolution.inventory],
+        "qualification_cache": cache_status,
         "enabled_roles": enabled_roles,
         "dirty_qualifying_roles": (
             ["planning", "verification"]
@@ -405,6 +494,9 @@ def format_status(report: dict[str, Any]) -> str:
         f"Minimum dirty-read Codex: {report['minimum_dirty_read_codex']}",
         f"Qualification state: {report['qualification_state']}",
         f"Write qualification: {report['write_qualification_state']}",
+        f"Qualification cache: {report['qualification_cache']['status']} "
+        f"from {report['qualification_cache']['source']} "
+        f"({report['qualification_cache'].get('invalidation_reason') or 'current'})",
         f"Compatibility: {str(report['compatibility']).replace('_', ' ')}",
         "Experimental: unsupported for production workloads",
         "",
@@ -830,11 +922,7 @@ def smoke_report(
                 )
             )
     except (AppServerError, AuthenticationError, ModelPolicyError) as error:
-        runtime_classification = (
-            "fatal"
-            if isinstance(error, (AuthenticationError, ModelPolicyError))
-            else "unknown"
-        )
+        runtime_classification = _runtime_failure_classification(error)
         checks.append(
             check(
                 "app_server_runtime",
@@ -885,12 +973,19 @@ def smoke_report(
         item for item in blockers if item["name"] in safe_blocker_names
     ]
     fatal_failures: list[dict[str, Any]] = []
+    transient_failures: list[dict[str, Any]] = []
     unknown_failures: list[dict[str, Any]] = []
     if dirty_qualification:
         for item in checks:
             if item["status"] == "pass" or item["name"] in safe_blocker_names:
                 continue
             if (
+                item["name"] == "app_server_runtime"
+                and isinstance(item.get("detail"), dict)
+                and item["detail"].get("classification") == "transient"
+            ):
+                transient_failures.append(item)
+            elif (
                 item["name"] == "app_server_runtime"
                 and isinstance(item.get("detail"), dict)
                 and item["detail"].get("classification") == "unknown"
@@ -900,6 +995,8 @@ def smoke_report(
                 fatal_failures.append(item)
         if not version_eligible:
             outcome = "ineligible"
+        elif transient_failures:
+            outcome = "unqualified_transient"
         elif unknown_failures:
             outcome = "unqualified_unknown"
         elif fatal_failures:
@@ -928,7 +1025,9 @@ def smoke_report(
         "checks": checks,
         "safe_blockers": [item["name"] for item in safe_blockers],
         "fatal_failures": [item["name"] for item in fatal_failures],
+        "transient_failures": [item["name"] for item in transient_failures],
         "unknown_failures": [item["name"] for item in unknown_failures],
+        "cacheable_unsafe": bool(fatal_failures) and not transient_failures and not unknown_failures,
         "permission_negotiation": permission_negotiation,
         "token_baseline": {
             "planning": planning_tokens,

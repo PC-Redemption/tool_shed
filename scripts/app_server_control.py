@@ -21,6 +21,11 @@ try:
         resolve_codex_cli,
     )
     from scripts.codex_execution import DEFAULT_POLICY, ModelPolicy, ModelPolicyError
+    from scripts.codex_qualification_cache import (
+        QualificationCache,
+        QualificationCacheError,
+        build_qualification_identity,
+    )
     from scripts.codex_orchestration import (
         DEFAULT_CONFIG,
         AppServerFeatureConfig,
@@ -41,6 +46,11 @@ except ModuleNotFoundError:  # Direct execution: python scripts/app_server_contr
         DEFAULT_POLICY,
         ModelPolicy,
         ModelPolicyError,
+    )
+    from codex_qualification_cache import (  # type: ignore[no-redef]
+        QualificationCache,
+        QualificationCacheError,
+        build_qualification_identity,
     )
     from codex_orchestration import (  # type: ignore[no-redef]
         DEFAULT_CONFIG,
@@ -85,6 +95,7 @@ class CommandSelection:
     qualification_state: str
     minimum_dirty_read_codex: str
     dirty_qualification: dict[str, Any] | None
+    qualification_cache: dict[str, Any]
     codex_inventory: tuple[dict[str, Any], ...]
     api_fallback: bool
     orchestrator_subcommand: str
@@ -106,6 +117,8 @@ def select_role(
     config_path: Path = DEFAULT_CONFIG,
     policy_path: Path = DEFAULT_POLICY,
     qualifications_path: Path = DEFAULT_QUALIFICATIONS,
+    qualification_cache_path: Path | None = None,
+    force_requalification: bool = False,
 ) -> CommandSelection:
     """Resolve one command without executing either backend."""
 
@@ -141,6 +154,7 @@ def select_role(
             qualification_mode="not_requested",
             qualification_state="not-requested",
             dirty_qualification=None,
+            qualification_cache={"status": "not-applicable", "source": "none"},
             codex_inventory=(),
         )
     if role == "discussion":
@@ -158,6 +172,7 @@ def select_role(
             qualification_mode="not_applicable",
             qualification_state="not-applicable",
             dirty_qualification=None,
+            qualification_cache={"status": "not-applicable", "source": "none"},
             codex_inventory=(),
         )
 
@@ -183,6 +198,7 @@ def select_role(
             qualification_mode="feature_blocked",
             qualification_state="unsafe-blocked",
             dirty_qualification=None,
+            qualification_cache={"status": "not-applicable", "source": "none"},
             codex_inventory=(),
         )
 
@@ -195,6 +211,13 @@ def select_role(
     installed = resolution.version
     record = qualification_for_version(records, installed)
     dirty_qualification: dict[str, Any] | None = None
+    cache_summary: dict[str, Any] = {
+        "status": "not-applicable",
+        "source": "user-local-cache",
+        "invalidation_reason": None,
+        "record": None,
+        "decision_source": "exact-record" if record else "none",
+    }
     qualification_mode = "exact_record" if record else "none"
     qualification_state = (
         "exact-qualified"
@@ -216,13 +239,89 @@ def select_role(
     )
     if dirty_read_allowed:
         qualification_state = "dirty-qualifying"
-        dirty_qualification = dirty_read_qualification_report(
-            codex=str(resolution.executable),
-            cwd=Path.cwd(),
-            config_path=config_path,
-            policy_path=policy_path,
-            qualifications_path=qualifications_path,
-        )
+        cache: QualificationCache | None = None
+        identity = None
+        try:
+            identity = build_qualification_identity(
+                executable=resolution.executable,
+                codex_version=str(installed),
+                config_path=config_path,
+                model_policy_path=policy_path,
+            )
+            cache = QualificationCache(
+                qualification_cache_path,
+                max_age_seconds=config.dirty_read_cache_max_age_seconds,
+            )
+            lookup = cache.lookup(identity)
+            cache_summary = {**lookup.as_dict(), "decision_source": "cache"}
+        except (OSError, QualificationCacheError) as error:
+            lookup = None
+            cache_summary = {
+                "status": "unavailable",
+                "source": "user-local-cache",
+                "invalidation_reason": type(error).__name__,
+                "record": None,
+                "decision_source": "live",
+            }
+        if not force_requalification and lookup and lookup.status == "hit" and lookup.record:
+            cached_state = str(lookup.record.get("state"))
+            dirty_qualification = {
+                "outcome": lookup.record.get("outcome"),
+                "safe_blockers": list(lookup.record.get("safe_blockers") or []),
+                "fatal_failures": ["cached_reviewed_unsafe_denial"]
+                if cached_state == "unsafe_denied"
+                else [],
+                "transient_failures": [],
+                "unknown_failures": [],
+                "cacheable_unsafe": cached_state == "unsafe_denied",
+                "qualification_record_updated": False,
+                "source": "user-local-cache",
+            }
+        else:
+            dirty_qualification = dirty_read_qualification_report(
+                codex=str(resolution.executable),
+                cwd=Path.cwd(),
+                config_path=config_path,
+                policy_path=policy_path,
+                qualifications_path=qualifications_path,
+            )
+            cache_summary["decision_source"] = (
+                "live-requalification" if force_requalification else "live"
+            )
+            outcome = str(dirty_qualification.get("outcome"))
+            if cache is not None and identity is not None:
+                try:
+                    if outcome in {"qualified", "qualified_with_blockers"}:
+                        stored = cache.store(
+                            identity,
+                            state="qualified",
+                            outcome=outcome,
+                            safe_blockers=dirty_qualification.get("safe_blockers") or [],
+                        )
+                        cache_summary = {
+                            **stored.as_dict(),
+                            "decision_source": cache_summary["decision_source"],
+                        }
+                    elif outcome == "unqualified_fatal" and dirty_qualification.get(
+                        "cacheable_unsafe"
+                    ):
+                        stored = cache.store(
+                            identity,
+                            state="unsafe_denied",
+                            outcome=outcome,
+                        )
+                        cache_summary = {
+                            **stored.as_dict(),
+                            "decision_source": cache_summary["decision_source"],
+                        }
+                except (OSError, QualificationCacheError) as error:
+                    cache_summary = {
+                        "status": "unavailable",
+                        "source": "user-local-cache",
+                        "invalidation_reason": type(error).__name__,
+                        "record": None,
+                        "decision_source": "live",
+                    }
         qualification_mode = "dirty_read"
         compatibility = str(dirty_qualification["outcome"])
         if compatibility in {"qualified", "qualified_with_blockers"}:
@@ -233,7 +332,7 @@ def select_role(
                 "qualified": True,
             }
             version_matches = True
-        elif compatibility == "unqualified_unknown":
+        elif compatibility in {"unqualified_unknown", "unqualified_transient"}:
             qualification_state = "transient-fallback"
         else:
             qualification_state = "unsafe-blocked"
@@ -262,11 +361,10 @@ def select_role(
             else "transient-fallback"
         )
     elif qualification_mode == "dirty_read" and not compatible:
-        reason = (
-            "dirty_qualification_unknown"
-            if compatibility == "unqualified_unknown"
-            else "dirty_qualification_failed"
-        )
+        reason = {
+            "unqualified_unknown": "dirty_qualification_unknown",
+            "unqualified_transient": "dirty_qualification_transient",
+        }.get(compatibility, "dirty_qualification_failed")
     elif qualification_mode == "below_minimum":
         reason = "codex_below_minimum_dirty_read_version"
     elif not version_matches or not compatible:
@@ -294,6 +392,7 @@ def select_role(
         qualification_mode=qualification_mode,
         qualification_state=qualification_state,
         dirty_qualification=dirty_qualification,
+        qualification_cache=cache_summary,
         codex_inventory=tuple(candidate.as_dict() for candidate in resolution.inventory),
     )
 
@@ -306,6 +405,8 @@ def select_command(
     config_path: Path = DEFAULT_CONFIG,
     policy_path: Path = DEFAULT_POLICY,
     qualifications_path: Path = DEFAULT_QUALIFICATIONS,
+    qualification_cache_path: Path | None = None,
+    force_requalification: bool = False,
 ) -> CommandSelection:
     try:
         role, display_role, sandbox, orchestrator = COMMAND_ROUTES[command]
@@ -322,6 +423,8 @@ def select_command(
         config_path=config_path,
         policy_path=policy_path,
         qualifications_path=qualifications_path,
+        qualification_cache_path=qualification_cache_path,
+        force_requalification=force_requalification,
     )
 
 
@@ -331,12 +434,14 @@ def control_status(
     config_path: Path = DEFAULT_CONFIG,
     policy_path: Path = DEFAULT_POLICY,
     qualifications_path: Path = DEFAULT_QUALIFICATIONS,
+    qualification_cache_path: Path | None = None,
 ) -> dict[str, Any]:
     report = status_report(
         codex=codex,
         config_path=config_path,
         policy_path=policy_path,
         qualifications_path=qualifications_path,
+        qualification_cache_path=qualification_cache_path,
     )
     policy = ModelPolicy.load(policy_path)
     report.update(
@@ -387,6 +492,8 @@ def format_selection(selection: CommandSelection) -> str:
                 f"Qualification state: {selection.qualification_state}",
                 f"Executable: {selection.codex_executable or 'not detected'}",
                 f"Discovery: {selection.codex_discovery or 'not found'}",
+                f"Qualification cache: {selection.qualification_cache.get('status')} "
+                f"({selection.qualification_cache.get('decision_source')})",
             ]
         )
     if selection.allowed:
@@ -406,6 +513,8 @@ def format_selection(selection: CommandSelection) -> str:
                 f"Minimum dirty-read Codex: {selection.minimum_dirty_read_codex}",
                 f"Qualification state: {selection.qualification_state}",
                 f"Compatibility: {selection.compatibility}",
+                f"Qualification cache: {selection.qualification_cache.get('status')} "
+                f"({selection.qualification_cache.get('decision_source')})",
             ]
         )
     lines.append("Fallback: rerun the command without --app-server")
@@ -469,12 +578,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--policy", type=Path, default=DEFAULT_POLICY)
     parser.add_argument("--qualifications", type=Path, default=DEFAULT_QUALIFICATIONS)
+    parser.add_argument("--qualification-cache", type=Path, default=None)
     subparsers = parser.add_subparsers(dest="operation", required=True)
 
     select = subparsers.add_parser("select", help="Resolve one user-facing Tool Shed command.")
     select.add_argument("command", choices=tuple(COMMAND_ROUTES))
     select.add_argument("--app-server", action="store_true")
     select.add_argument("--json", action="store_true")
+    select.add_argument("--requalify", action="store_true")
 
     status = subparsers.add_parser("status", help="Show user-facing App Server control status.")
     status.add_argument("--json", action="store_true")
@@ -498,6 +609,8 @@ def main() -> int:
                 config_path=args.config,
                 policy_path=args.policy,
                 qualifications_path=args.qualifications,
+                qualification_cache_path=args.qualification_cache,
+                force_requalification=args.requalify,
             )
             print(
                 json.dumps(asdict(selection), indent=2, sort_keys=True)
@@ -511,6 +624,7 @@ def main() -> int:
                 config_path=args.config,
                 policy_path=args.policy,
                 qualifications_path=args.qualifications,
+                qualification_cache_path=args.qualification_cache,
             )
             print(
                 json.dumps(report, indent=2, sort_keys=True)

@@ -540,9 +540,18 @@ qualification passes. The dirty harness proves ChatGPT authentication, required 
 reasoning, isolated read-only turns, fail-closed approvals, unchanged disposable workspace state,
 and active-turn cancellation. It negotiates the named `:read-only` permission profile when the
 runtime exposes it and otherwise validates the legacy read-only sandbox. Fatal and unknown outcomes
-remain blocked; safe non-fatal blockers are reported separately. CAMP writing never inherits this
-result and still requires an exact reviewed write record. Rerun without `--app-server` to use GUI
-fallback. `ts: discuss` always remains GUI-native, and `ts: discuss ... --app-server` is rejected
+remain blocked; safe non-fatal blockers are reported separately. Passing summaries and reviewed
+unsafe denials are cached in `$CODEX_HOME/tool-shed/dirty-read-qualifications.json` (or the
+equivalent `~/.codex` path), never inside canonical or installed Tool Shed trees. The cache contains
+hashes and sanitized check names, not prompts, responses, credentials, secrets, or telemetry. Its
+identity binds the exact binary, version, generated protocol schema or runtime-probe fingerprint,
+Tool Shed qualification policy, model policy, and platform. Successes expire after the configured
+TTL. Reviewed unsafe denials persist until that identity changes; add `--requalify` to the explicit
+request to deliberately rerun them. Transient authentication, network, service, and model-catalog
+failures are never cached, so the next explicit request retries. Status reports whether its decision
+came from live evidence or the cache and explains misses and invalidation. CAMP writing never
+inherits this result and still requires an exact reviewed write record. Rerun without `--app-server`
+to use GUI fallback. `ts: discuss` always remains GUI-native, and `ts: discuss ... --app-server` is rejected
 with an explanation.
 
 Session-scoped `ts: appserver on|off` is not implemented: the current Codex skill surface has no

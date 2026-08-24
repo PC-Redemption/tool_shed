@@ -356,9 +356,13 @@ Without the option, `ts: plan`, `ts: verify`, and `ts: camp run` use the normal 
 `Execution: GUI`. For planning and verification, the selector accepts exact reviewed records or an
 unseen Codex version whose numeric release core is at least `0.146.0`. An unseen eligible executable
 runs the bounded dirty read qualification in the same invocation; a passing result continues the
-original request without updating the repository registry. Prereleases use their numeric release
-core, and there is no upper cutoff. Versions below the floor and fatal or unknown qualification
-results are blocked with a clear GUI fallback. CAMP execution still requires an exact reviewed
+original request without updating the repository registry. A sanitized user-local cache reuses a
+result only when the executable hash, Codex version, protocol fingerprint, qualification policy,
+model policy, and platform still match. Successes expire normally; reviewed unsafe denials persist
+until a relevant fingerprint changes or `--requalify` is supplied on the explicit App Server
+request. Transient authentication, network, service, and model-catalog failures are not cached.
+Prereleases use their numeric release core, and there is no upper cutoff. Versions below the floor
+and fatal or unknown qualification results are blocked with a clear GUI fallback. CAMP execution still requires an exact reviewed
 workspace-write record and separate write harness. There is no API fallback.
 
 `next` is not a new App Server role. The flagged and unflagged forms select the same next action.

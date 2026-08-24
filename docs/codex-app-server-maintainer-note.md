@@ -39,7 +39,8 @@ source, App Server availability, qualification state, write posture, and actuall
 The resolver also backs install/upgrade readiness, reasoning refresh, smoke, startup,
 version detection, and qualification. It neither installs Codex nor changes permanent `PATH`,
 persists user paths, searches arbitrary locations, or enables API fallback. Discovery alone does
-not qualify a version; automatic dirty read qualification is an ephemeral live safety harness.
+not qualify a version; automatic dirty read qualification is a bounded live safety harness whose
+sanitized result may be reused from protected user-local state.
 Missing Codex therefore leaves normal GUI Tool Shed work available.
 
 Linux extension discovery is bounded to the desktop, Insiders, remote-server, and remote-server
@@ -65,7 +66,12 @@ python3 scripts/codex_app_server_write_qualification.py --help
 Record durable reviewed results in `adapters/codex-app-server-qualifications.json`. Read-only
 planning and verification do not require a new record for every eligible version: the explicit
 selector automatically dirty-qualifies unseen versions at or above `0.146.0` without persisting a
-registry change. Never inherit workspace-write qualification. After a version change, run and
+registry change. It caches only sanitized pass summaries and reviewed unsafe denials outside Tool
+Shed, keyed by executable, version, protocol, qualification policy, model policy, and platform.
+Success records expire; unsafe records require a fingerprint change or explicit `--requalify`.
+Transient infrastructure, authentication, and catalog failures are never cached. Cache writes are
+locked, atomic, and permission-restricted, and status reports cache source and invalidation reason.
+Never inherit workspace-write qualification. After a version change, run and
 review the disposable write harness separately before retaining CAMP qualification. Resume broader
 engineering only for a concrete CLI, support-status, cancellation, restricted-read, approval,
 token-efficiency, or production-contract change.

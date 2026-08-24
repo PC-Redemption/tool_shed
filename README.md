@@ -300,9 +300,13 @@ the selected action already has a qualified App Server role; CAMP execution reus
 Terra/medium runner. `next` itself is not an App Server role.
 Unflagged commands remain in the GUI and `ts: discuss` is always GUI-native. Read-only planning and
 verification use a minimum Codex version of `0.146.0` with no upper cutoff: an unseen eligible
-version runs a bounded, non-persistent dirty qualification and continues the original explicit
-request immediately only when that qualification passes. Versions below the floor, unsafe or
-unknown qualification outcomes, and unqualified roles fail closed. CAMP writing remains
+version runs a bounded dirty qualification and continues the original explicit request immediately
+only when that qualification passes. Sanitized results are cached outside Tool Shed under the
+user's Codex state so the same executable and policies do not repeat the harness. Transient
+authentication, network, service, or model-catalog failures are never cached and remain retryable;
+reviewed unsafe denials remain authoritative until their fingerprint changes or the operator uses
+explicit requalification. Versions below the floor, unsafe or unknown qualification outcomes, and
+unqualified roles fail closed. CAMP writing remains
 version-specific and requires a separate reviewed write harness. The committed global App Server
 default remains off. `ts: appserver on|off` is intentionally unavailable because the skill surface
 has no reliable session-scoped state store; use the explicit option on each test command.

@@ -53,6 +53,7 @@
   },
   "qualification": {
     "automatic_dirty_read_qualification": true,
+    "dirty_read_cache_max_age_seconds": 604800,
     "estimated_codex_baseline_input_tokens": 18800,
     "minimum_dirty_read_codex_cli_version": "0.146.0",
     "validated_codex_cli_version": "0.149.0",

@@ -218,6 +218,11 @@ class AppServerFeatureConfig:
             raise FeatureConfigError(
                 "qualification.minimum_dirty_read_codex_cli_version must be a non-empty string"
             )
+        cache_max_age = qualification.get("dirty_read_cache_max_age_seconds")
+        if not isinstance(cache_max_age, int) or cache_max_age <= 0:
+            raise FeatureConfigError(
+                "qualification.dirty_read_cache_max_age_seconds must be a positive integer"
+            )
         thread_policy = self.payload.get("thread_policy")
         if not isinstance(thread_policy, dict):
             raise FeatureConfigError("thread_policy must be an object")
@@ -273,6 +278,16 @@ class AppServerFeatureConfig:
             else None
         )
         return str(value or "0.146.0")
+
+    @property
+    def dirty_read_cache_max_age_seconds(self) -> int:
+        qualification = self.payload.get("qualification")
+        value = (
+            qualification.get("dirty_read_cache_max_age_seconds")
+            if isinstance(qualification, dict)
+            else None
+        )
+        return int(value or 604800)
 
     def compatibility_warning(self, codex: str | None = None) -> str | None:
         installed = detect_codex_version(codex)

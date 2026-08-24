@@ -371,6 +371,18 @@ the original explicit request in the same invocation only when it returns `quali
 `qualified_with_blockers`. Versions below the floor and fatal or unknown dirty outcomes fail closed.
 Never transfer a dirty read result to CAMP or another workspace-writing role.
 
+Dirty-read selection may reuse only the protected user-local cache at
+`$CODEX_HOME/tool-shed/dirty-read-qualifications.json` (or `~/.codex/tool-shed/...`). Never place
+that cache in canonical or installed Tool Shed content. The identity must match the exact executable
+hash and path, Codex version, generated protocol-schema hash or sanitized runtime-probe fingerprint,
+Tool Shed qualification-policy hash, model-policy hash, and platform. Treat malformed, partial,
+foreign-platform, stale, or mismatched success entries as misses. Cache only sanitized qualified
+summaries and reviewed unsafe denials—never prompts, responses, credentials, secrets, telemetry, or
+transient authentication, network, service, or model-catalog failures. Success entries use the
+configured TTL. Unsafe denials remain authoritative until their identity changes or the user adds
+`--requalify` to the explicit App Server request. Writes must remain atomic, inter-process safe, and
+mode `0600` where supported. Surface cache source and invalidation reason in selection/status.
+
 For allowed planning and verification, call the existing `codex_orchestration.py
 --enable-app-server run` path with the selected role, a focused read-only prompt, the workspace,
 and only relevant explicit context files. App Server planning returns advisory planning output;

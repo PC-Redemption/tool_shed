@@ -748,6 +748,7 @@ class CodexExecutionTests(unittest.TestCase):
                     "verify",
                     app_server_requested=True,
                     codex=str(self.fake),
+                    qualification_cache_path=self.root / "dirty-cache.json",
                 )
             decision, result = execute_if_enabled(
                 "continue the original explicit verification request",
@@ -816,11 +817,11 @@ class CodexExecutionTests(unittest.TestCase):
             self.assertEqual(by_name["read_only_no_mutation_events"]["status"], "pass")
             self.assertEqual(by_name["cancellation_reconciliation"]["status"], "pass")
 
-    def test_dirty_read_qualification_classifies_unsafe_and_unknown_failures(self) -> None:
+    def test_dirty_read_qualification_classifies_transient_and_unsafe_failures(self) -> None:
         os.environ["FAKE_CODEX_VERSION"] = "0.200.0"
         os.environ["FAKE_CODEX_ACCOUNT"] = "apiKey"
         try:
-            fatal = dirty_read_qualification_report(
+            transient = dirty_read_qualification_report(
                 codex=str(self.fake),
                 cwd=ROOT,
                 telemetry_path=self.root / "fatal.jsonl",
@@ -830,7 +831,7 @@ class CodexExecutionTests(unittest.TestCase):
             os.environ.pop("FAKE_CODEX_ACCOUNT", None)
         os.environ["FAKE_CODEX_DISALLOW_READ_ONLY"] = "1"
         try:
-            unknown = dirty_read_qualification_report(
+            unsafe = dirty_read_qualification_report(
                 codex=str(self.fake),
                 cwd=ROOT,
                 telemetry_path=self.root / "unknown.jsonl",
@@ -839,10 +840,12 @@ class CodexExecutionTests(unittest.TestCase):
         finally:
             os.environ.pop("FAKE_CODEX_DISALLOW_READ_ONLY", None)
             os.environ.pop("FAKE_CODEX_VERSION", None)
-        self.assertEqual(fatal["outcome"], "unqualified_fatal")
-        self.assertIn("app_server_runtime", fatal["fatal_failures"])
-        self.assertEqual(unknown["outcome"], "unqualified_unknown")
-        self.assertIn("app_server_runtime", unknown["unknown_failures"])
+        self.assertEqual(transient["outcome"], "unqualified_transient")
+        self.assertIn("app_server_runtime", transient["transient_failures"])
+        self.assertFalse(transient["cacheable_unsafe"])
+        self.assertEqual(unsafe["outcome"], "unqualified_fatal")
+        self.assertIn("app_server_runtime", unsafe["fatal_failures"])
+        self.assertTrue(unsafe["cacheable_unsafe"])
 
     def test_dirty_read_qualification_keeps_safe_blockers_distinct(self) -> None:
         os.environ.update(
@@ -902,12 +905,147 @@ class CodexExecutionTests(unittest.TestCase):
                     return_value={"outcome": outcome},
                 ):
                     selected = select_command(
-                        "verify", app_server_requested=True, codex=str(self.fake)
+                        "verify",
+                        app_server_requested=True,
+                        codex=str(self.fake),
+                        qualification_cache_path=self.root / f"{outcome}.json",
                     )
                     self.assertFalse(selected.allowed)
                     self.assertEqual(selected.qualification_state, expected_state)
                     self.assertEqual(selected.reason, expected_reason)
                     self.assertIn(f"Executable: {self.fake}", format_selection(selected))
+        finally:
+            os.environ.pop("FAKE_CODEX_VERSION", None)
+
+    def test_dirty_qualification_cache_reuses_safe_results_and_retries_transient_failures(self) -> None:
+        os.environ["FAKE_CODEX_VERSION"] = "0.200.0"
+        safe_cache = self.root / "safe-cache.json"
+        transient_cache = self.root / "transient-cache.json"
+        try:
+            with patch(
+                "scripts.app_server_control.dirty_read_qualification_report",
+                return_value={
+                    "outcome": "qualified_with_blockers",
+                    "safe_blockers": ["cancellation_acknowledgement"],
+                    "fatal_failures": [],
+                    "transient_failures": [],
+                    "unknown_failures": [],
+                    "cacheable_unsafe": False,
+                },
+            ) as qualify:
+                first = select_command(
+                    "verify",
+                    app_server_requested=True,
+                    codex=str(self.fake),
+                    qualification_cache_path=safe_cache,
+                )
+                second = select_command(
+                    "verify",
+                    app_server_requested=True,
+                    codex=str(self.fake),
+                    qualification_cache_path=safe_cache,
+                )
+            self.assertEqual(qualify.call_count, 1)
+            self.assertTrue(first.allowed)
+            self.assertTrue(second.allowed)
+            self.assertEqual(second.qualification_cache["decision_source"], "cache")
+            self.assertEqual(second.qualification_cache["record"]["state"], "qualified")
+
+            status = status_report(
+                codex=str(self.fake), qualification_cache_path=safe_cache
+            )
+            self.assertEqual(status["qualification_state"], "dirty-qualified")
+            self.assertEqual(status["compatibility"], "dirty_qualified")
+            self.assertIn("planning", status["enabled_roles"])
+            self.assertIn("verification", status["enabled_roles"])
+            self.assertNotIn("camp_execution", status["enabled_roles"])
+            self.assertIsNone(status["version_warning"])
+            self.assertIn("workspace-write is not qualified", status["known_blockers"])
+
+            with patch(
+                "scripts.app_server_control.dirty_read_qualification_report",
+                return_value={
+                    "outcome": "unqualified_transient",
+                    "safe_blockers": [],
+                    "fatal_failures": [],
+                    "transient_failures": ["app_server_runtime"],
+                    "unknown_failures": [],
+                    "cacheable_unsafe": False,
+                },
+            ) as qualify:
+                for _ in range(2):
+                    selected = select_command(
+                        "verify",
+                        app_server_requested=True,
+                        codex=str(self.fake),
+                        qualification_cache_path=transient_cache,
+                    )
+                    self.assertFalse(selected.allowed)
+                    self.assertEqual(selected.qualification_state, "transient-fallback")
+            self.assertEqual(qualify.call_count, 2)
+            self.assertFalse(transient_cache.exists())
+        finally:
+            os.environ.pop("FAKE_CODEX_VERSION", None)
+
+    def test_cached_unsafe_denial_requires_explicit_requalification(self) -> None:
+        os.environ["FAKE_CODEX_VERSION"] = "0.200.0"
+        cache_path = self.root / "unsafe-cache.json"
+        try:
+            with patch(
+                "scripts.app_server_control.dirty_read_qualification_report",
+                return_value={
+                    "outcome": "unqualified_fatal",
+                    "safe_blockers": [],
+                    "fatal_failures": ["read_only_permission_profile"],
+                    "transient_failures": [],
+                    "unknown_failures": [],
+                    "cacheable_unsafe": True,
+                },
+            ) as qualify:
+                first = select_command(
+                    "verify",
+                    app_server_requested=True,
+                    codex=str(self.fake),
+                    qualification_cache_path=cache_path,
+                )
+                second = select_command(
+                    "verify",
+                    app_server_requested=True,
+                    codex=str(self.fake),
+                    qualification_cache_path=cache_path,
+                )
+            self.assertEqual(qualify.call_count, 1)
+            self.assertFalse(first.allowed)
+            self.assertFalse(second.allowed)
+            self.assertEqual(second.qualification_cache["decision_source"], "cache")
+            self.assertEqual(
+                second.qualification_cache["record"]["state"], "unsafe_denied"
+            )
+
+            with patch(
+                "scripts.app_server_control.dirty_read_qualification_report",
+                return_value={
+                    "outcome": "qualified",
+                    "safe_blockers": [],
+                    "fatal_failures": [],
+                    "transient_failures": [],
+                    "unknown_failures": [],
+                    "cacheable_unsafe": False,
+                },
+            ) as qualify:
+                requalified = select_command(
+                    "verify",
+                    app_server_requested=True,
+                    codex=str(self.fake),
+                    qualification_cache_path=cache_path,
+                    force_requalification=True,
+                )
+            qualify.assert_called_once()
+            self.assertTrue(requalified.allowed)
+            self.assertEqual(
+                requalified.qualification_cache["decision_source"],
+                "live-requalification",
+            )
         finally:
             os.environ.pop("FAKE_CODEX_VERSION", None)
 
