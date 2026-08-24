@@ -1211,6 +1211,23 @@
       "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
+      "next_action": "obtain explicit publication authority, publish v0.26.0, upgrade Bactron Core, and record Windows field evidence",
+      "parent": "work/00-campaigns/active/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md",
+      "path": "work/evidence/evidence-tool-shed-0-26-0-dirty-codex-forward-compatibility.md",
+      "produces": null,
+      "project_map": null,
+      "status": "active",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Tool Shed v0.26.0 dirty Codex forward-compatibility qualification",
+      "type": "evidence",
+      "updated": "2026-08-24"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": null,
       "next_action": null,
       "parent": null,
       "path": "work/evidence/evidence-tool-shed-provider-portability.md",
@@ -1768,8 +1785,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 1,
+    "active_artifacts": 2,
     "completed_or_decided_artifacts": 91,
-    "total_artifacts": 102
+    "total_artifacts": 103
   }
 }

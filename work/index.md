@@ -78,6 +78,7 @@ Updated: 2026-08-24
 | [work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md](work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md) | evidence | complete | 2026-08-20 | none | - |
 | [work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md](work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md) | evidence | complete | 2026-08-09 | none | work/wp/completed/wp-evidence-responsive-tool-shed-execution.md |
 | [work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md](work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md) | evidence | complete | 2026-08-18 | none | work/00-campaigns/completed/027-publish-and-verify-tool-shed-v0-22-0.md |
+| [work/evidence/evidence-tool-shed-0-26-0-dirty-codex-forward-compatibility.md](work/evidence/evidence-tool-shed-0-26-0-dirty-codex-forward-compatibility.md) | evidence | active | 2026-08-24 | obtain explicit publication authority, publish v0.26.0, upgrade Bactron Core, and record Windows field evidence | work/00-campaigns/active/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md |
 | [work/evidence/evidence-tool-shed-provider-portability.md](work/evidence/evidence-tool-shed-provider-portability.md) | - | - | - | - | - |
 | [work/evidence/evidence-w1-dev-smb-access.md](work/evidence/evidence-w1-dev-smb-access.md) | evidence | complete | 2026-08-24 | none | - |
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |
@@ -119,6 +120,6 @@ Updated: 2026-08-24
 
 ## Summary
 
-- Total artifacts: 102
-- Active artifacts: 1
+- Total artifacts: 103
+- Active artifacts: 2
 - Completed/decided artifacts: 91
