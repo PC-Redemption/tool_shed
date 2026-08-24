@@ -2,13 +2,18 @@
 
 Generated from artifact headers. `work/index.json` contains the same navigation data for automation. Do not put durable project truth only here; keep current truth in docs or README files.
 
-Updated: 2026-08-21
+Updated: 2026-08-24
 
 ## Orientation
 
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
+| [work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md](work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md) | campaign | abandoned | 2026-08-24 | none | - |
+| [work/00-campaigns/active/049-implement-minimum-version-dirty-read-qualification.md](work/00-campaigns/active/049-implement-minimum-version-dirty-read-qualification.md) | campaign | queued | 2026-08-24 | execute when selected from the active campaign queue | - |
+| [work/00-campaigns/active/050-make-codex-candidate-resolution-and-readiness-truthful.md](work/00-campaigns/active/050-make-codex-candidate-resolution-and-readiness-truthful.md) | campaign | queued | 2026-08-24 | execute when selected from the active campaign queue | - |
+| [work/00-campaigns/active/051-harden-dirty-qualification-cache-and-failure-semantics.md](work/00-campaigns/active/051-harden-dirty-qualification-cache-and-failure-semantics.md) | campaign | queued | 2026-08-24 | execute when selected from the active campaign queue | - |
+| [work/00-campaigns/active/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md](work/00-campaigns/active/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md) | campaign | queued | 2026-08-24 | execute when selected from the active campaign queue | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -52,6 +57,7 @@ Updated: 2026-08-21
 | [work/00-campaigns/completed/044-app-server-explicit-command-opt-in.md](work/00-campaigns/completed/044-app-server-explicit-command-opt-in.md) | campaign | complete | 2026-08-20 | none | - |
 | [work/00-campaigns/completed/045-resolve-codex-cli-and-report-app-server-readiness.md](work/00-campaigns/completed/045-resolve-codex-cli-and-report-app-server-readiness.md) | campaign | complete | 2026-08-21 | none | - |
 | [work/00-campaigns/completed/046-forward-next-app-server-to-qualified-camp-execution.md](work/00-campaigns/completed/046-forward-next-app-server-to-qualified-camp-execution.md) | campaign | complete | 2026-08-21 | none | - |
+| [work/00-campaigns/completed/047-establish-secure-smb-access-to-bactron-workspace.md](work/00-campaigns/completed/047-establish-secure-smb-access-to-bactron-workspace.md) | campaign | complete | 2026-08-24 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -73,6 +79,7 @@ Updated: 2026-08-21
 | [work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md](work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md) | evidence | complete | 2026-08-09 | none | work/wp/completed/wp-evidence-responsive-tool-shed-execution.md |
 | [work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md](work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md) | evidence | complete | 2026-08-18 | none | work/00-campaigns/completed/027-publish-and-verify-tool-shed-v0-22-0.md |
 | [work/evidence/evidence-tool-shed-provider-portability.md](work/evidence/evidence-tool-shed-provider-portability.md) | - | - | - | - | - |
+| [work/evidence/evidence-w1-dev-smb-access.md](work/evidence/evidence-w1-dev-smb-access.md) | evidence | complete | 2026-08-24 | none | - |
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |
 | [work/focus-areas.md](work/focus-areas.md) | focus-area-catalog | approved | 2026-08-15 | review when an enduring responsibility boundary changes | - |
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
@@ -112,6 +119,6 @@ Updated: 2026-08-21
 
 ## Summary
 
-- Total artifacts: 95
-- Active artifacts: 0
-- Completed/decided artifacts: 86
+- Total artifacts: 102
+- Active artifacts: 4
+- Completed/decided artifacts: 88
