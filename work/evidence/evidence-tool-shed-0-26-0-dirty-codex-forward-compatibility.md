@@ -4,6 +4,7 @@ Status: active
 Type: evidence
 Updated: 2026-08-24
 Next Action: obtain explicit publication authority, publish v0.26.0, upgrade Bactron Core, and record Windows field evidence
+Campaign: qualify-release-and-field-verify-dirty-codex-forward-compatibility
 Parent: work/00-campaigns/active/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md
 
 ## Candidate
