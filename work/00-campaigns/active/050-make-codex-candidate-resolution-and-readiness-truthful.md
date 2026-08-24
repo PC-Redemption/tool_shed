@@ -1,9 +1,9 @@
 # Make Codex candidate resolution and readiness truthful
 
-Status: queued
+Status: working
 Type: campaign
 Updated: 2026-08-24
-Next Action: execute when selected from the active campaign queue
+Next Action: execute the campaign completion gate
 Campaign ID: make-codex-candidate-resolution-and-readiness-truthful
 Campaign Number: 050
 Outcome: Discover and report every trusted Codex executable, deliberately select the highest eligible version when no explicit override is supplied, and make status and command routing advertise only roles that are actually exact-qualified or dirty-qualified for the selected executable.
