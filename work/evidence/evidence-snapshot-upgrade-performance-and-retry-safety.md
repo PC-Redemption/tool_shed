@@ -1,11 +1,11 @@
 # Snapshot upgrade performance and retry-safety qualification
 
-Status: active
+Status: complete
 Type: evidence
 Updated: 2026-08-24
-Next Action: obtain authorization to push the frozen 0.27.0 candidate to a qualification branch, then record native Windows CI and cold plus warm-retry evidence
+Next Action: none
 Campaign: make-stable-snapshot-upgrades-fast-observable-and-retry-safe
-Parent: work/00-campaigns/active/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md
+Parent: work/00-campaigns/completed/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md
 
 ## Baseline
 
@@ -36,8 +36,10 @@ intact. This establishes the safety baseline but not the new performance gate.
   validator, and both comprehensive CI workflows. Overrides, missing attestations, and every
   changed identity fall back to full local validation.
 - The Ubuntu/Windows and Python 3.11/current-Python full validation matrix remains unchanged.
-- The unpublished candidate manifest is `0.27.0`; no tag, push, release, or client deployment has
-  been performed by this campaign.
+- The unpublished candidate manifest is `0.27.0`. Exact candidate commit
+  `159f1e99186fddcc48866d9268e8643364e46e69` was pushed only to the non-release
+  `qualification/v0.27.0-snapshot-upgrade` branch. No tag, GitHub Release, installed-client
+  synchronization, or workspace deployment was performed by this campaign.
 
 ## Sanitized maintainer issue reporting
 
@@ -104,12 +106,25 @@ stale-path checks, work-state review, Program Roadmap validation, disposable all
 installation, and template sanity passed. The focused client smoke also passed in a disposable
 release image containing the new report command.
 
-## Remaining completion evidence
+## Native Windows qualification
 
-Native Windows has not executed this unpublished candidate. The owner froze the reporter as the
-final `0.27.0` scope and prohibited further features or prerequisite campaigns before
-qualification. Campaign completion still requires a Windows cold attempt plus warm retry to pass
-with visible heartbeat/timing evidence, dirty-work and rollback preservation, exact cache
-identity, and warm progress to backup or installation in under one minute. The next action is a
-qualification-branch push, which requires separate authorization. No tag, GitHub Release,
-installed-skill synchronization, or Bactron Core upgrade is authorized by that branch push.
+The owner authorized only a qualification-branch push. GitHub Actions run
+[`32785448555`](https://github.com/PC-Redemption/tool_shed/actions/runs/32785448555) validated exact
+candidate commit `159f1e99186fddcc48866d9268e8643364e46e69` on the unchanged Ubuntu/Windows and
+Python 3.11/current-Python matrix. All four jobs passed.
+
+- Windows current Python job `97616314510` used Python 3.14.7, passed all 256 tests in 318.310
+  seconds, reached installation on the warm retry in 1.514 seconds, and passed the PowerShell
+  launcher smoke.
+- Windows Python 3.11 job `97616314592` used Python 3.11.9, passed all 256 tests in 389.819
+  seconds, reached installation on the warm retry in 1.266 seconds, and passed the PowerShell
+  launcher smoke.
+- In both native Windows runs, the cold-validation/post-install-failure path, rollback, dirty
+  tracked and unrelated untracked file preservation, exact validation-cache identity, warm retry,
+  transactional updater cases, stable issue codes, sanitized reporter, and fail-closed record
+  validation passed. The POSIX-only permission-mode assertion was the sole expected skip.
+- Both Ubuntu jobs also passed, preserving the complete cross-platform matrix gate.
+
+This satisfies the campaign's native Windows cold/warm-retry and under-one-minute progress gates.
+Publishing `v0.27.0`, merging or deleting the qualification branch, synchronizing the installed
+Codex skill, and upgrading Bactron Core remain separate actions requiring their own authority.

@@ -1,21 +1,23 @@
 # Make stable snapshot upgrades fast, observable, and retry-safe
 
-Status: blocked
+Status: complete
 Type: campaign
 Updated: 2026-08-24
-Next Action: resolve blocker or decision: The frozen unpublished 0.27.0 candidate, including the final sanitized issue reporter, passes focused and full local validation; native Windows qualification now requires separate authorization to push a qualification branch. A branch push does not authorize a tag, GitHub Release, installed-skill synchronization, or Bactron Core upgrade.
+Next Action: none
 Campaign ID: make-stable-snapshot-upgrades-fast-observable-and-retry-safe
 Campaign Number: 053
 Outcome: Reduce normal stable-release snapshot upgrade latency and eliminate opaque or repeated validation delays while preserving exact release provenance, content integrity, dirty-work protection, verified backup and rollback, provider convergence, Codex skill synchronization, and fail-closed post-install checks, while producing privacy-safe maintainer-ready issue evidence when an upgrade finds a problem.
 Primary Focus Areas: snapshot-delivery
 Supporting Focus Areas: qualification-release, workspace-safety
 Depends On: none
-Decision: The frozen unpublished 0.27.0 candidate, including the final sanitized issue reporter, passes focused and full local validation; native Windows qualification now requires separate authorization to push a qualification branch. A branch push does not authorize a tag, GitHub Release, installed-skill synchronization, or Bactron Core upgrade.
+Decision: none
 Detour For: none
 Return To: none
 Completion Gate: Windows-safe phase timeouts exceed measured validation duration; no upgrade phase is silent for more than 30 seconds; every transaction records a sanitized user-local stage, duration, stable issue code, error class, and rollback outcome without prompts, responses, credentials, secrets, workspace paths, usernames, dirty filenames, or raw command output; a deterministic local report route converts a selected transaction into validated sanitized JSON and maintainer-ready Markdown for a Tool Shed GitHub issue without automatically publishing it; stable official releases use exact provenance, manifest hashes, and verifiable exact-tag qualification evidence plus focused client installation smoke instead of rerunning the complete developer suite, while overridden, unattested, or changed validation identities fall back to full local validation; successful release validation is cached only by exact release commit, validator hash, platform, architecture, and Python identity and is safely reusable after post-install retry; concurrent duplicate upgrades fail closed under a recoverable transaction lock; full release CI remains comprehensive; Windows qualification proves ordinary cold and warm-retry upgrades preserve dirty work and rollback invariants with visible timing evidence, with warm retry reaching backup or install in under one minute; focused tests prove issue-code stability, report sanitization, malformed or foreign transaction rejection, and review-before-publication behavior.
-Completion Evidence: none
-Disposition: none
+Completion Evidence: work/evidence/evidence-snapshot-upgrade-performance-and-retry-safety.md; GitHub Actions run 32785448555 passed exact commit 159f1e99186fddcc48866d9268e8643364e46e69 on Ubuntu and Windows Python 3.11/current, with Windows warm retries reaching installation in 1.266s and 1.514s.
+Completion Date: 2026-08-24
+Completion Order: 47
+Disposition: completed
 
 ## Request
 

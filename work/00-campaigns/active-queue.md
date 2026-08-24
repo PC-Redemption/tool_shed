@@ -4,10 +4,10 @@ Updated: 2026-08-24
 
 ## Owner State
 
-- Last completed: harden-dirty-qualification-cache-and-failure-semantics — Harden dirty-qualification cache and failure semantics
+- Last completed: make-stable-snapshot-upgrades-fast-observable-and-retry-safe — Make stable snapshot upgrades fast, observable, and retry-safe
 - Working now: none
 - Next: none
-- Blocker or decision needed: qualify-release-and-field-verify-dirty-codex-forward-compatibility — Qualify, release, and field-verify dirty Codex forward compatibility; make-stable-snapshot-upgrades-fast-observable-and-retry-safe — Make stable snapshot upgrades fast, observable, and retry-safe
+- Blocker or decision needed: qualify-release-and-field-verify-dirty-codex-forward-compatibility — Qualify, release, and field-verify dirty Codex forward compatibility
 - Detour and return point: none
 
 ## Ordered Queue
@@ -23,10 +23,3 @@ Queue positions are mutable; parenthesized campaign numbers and full `Campaign I
    - 🔗 **DEPENDS ON:** `harden-dirty-qualification-cache-and-failure-semantics` — ✅ **COMPLETE**
    - ⚠️ **DECISION NEEDED:** Owner reserved the Bactron Core snapshot upgrade for the normal Windows workspace process. Completion requires upgrading the dirty snapshot to the latest verified published release with unrelated files preserved, verifying integrity and extension-only Codex resolution without PATH, and recording sanitized dirty-qualified read-only planning or verification evidence.
    - 🏁 **OUTCOME:** Prove the dirty-qualification system across Windows and Linux candidate layouts, publish it in the next integrity-verifiable Tool Shed release, and upgrade the Bactron Core Windows snapshot to confirm unseen newer Codex versions qualify and run without modifying snapshot machinery.
-2. (053) **[Make stable snapshot upgrades fast, observable, and retry-safe](active/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md)**
-   - 🆔 **CAMPAIGN ID:** `make-stable-snapshot-upgrades-fast-observable-and-retry-safe`
-   - 🚦 **STATE:** 🔴 **BLOCKED**
-   - 🎯 **PRIMARY FOCUS AREAS:** Snapshot Delivery
-   - 🧩 **SUPPORTING FOCUS AREAS:** Qualification and Release; Workspace Safety and Performance
-   - ⚠️ **DECISION NEEDED:** The frozen unpublished 0.27.0 candidate, including the final sanitized issue reporter, passes focused and full local validation; native Windows qualification now requires separate authorization to push a qualification branch. A branch push does not authorize a tag, GitHub Release, installed-skill synchronization, or Bactron Core upgrade.
-   - 🏁 **OUTCOME:** Reduce normal stable-release snapshot upgrade latency and eliminate opaque or repeated validation delays while preserving exact release provenance, content integrity, dirty-work protection, verified backup and rollback, provider convergence, Codex skill synchronization, and fail-closed post-install checks, while producing privacy-safe maintainer-ready issue evidence when an upgrade finds a problem.
