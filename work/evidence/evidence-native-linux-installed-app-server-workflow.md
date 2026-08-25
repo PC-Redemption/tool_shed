@@ -3,7 +3,7 @@
 Status: complete
 Type: evidence
 Updated: 2026-08-25
-Next Action: derive M4 and stop only at the retained Bactron Core snapshot and Windows execution consent gate
+Next Action: use Campaign 060 to eliminate the nested wrapper and prove direct Linux dispatch before returning to the Windows consent gate
 Campaign: prove-installed-native-linux-app-server-workflow
 
 ## Target and release

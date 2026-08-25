@@ -1652,6 +1652,48 @@ def render_next_human(payload: dict[str, object]) -> str:
     return "\n".join(lines)
 
 
+def next_campaign_payload(workspace: Path) -> dict[str, object]:
+    """Return the ordinary single-campaign `next` selection without mutation."""
+
+    campaigns = load_all(workspace)
+    order = queue_order(workspace)
+    ordered = [campaigns[item] for item in order]
+    candidate = next((item for item in ordered if item.status == "working"), None)
+    if candidate is None:
+        candidate = first_ready_campaign(order, campaigns)
+    dangler_resolution = dangler_resolution_visibility(workspace, campaigns, order)
+    if candidate is None and dangler_resolution:
+        payload = dict(dangler_resolution)
+        payload["cycle_state"] = cycle_state_payload(
+            workspace, campaigns, order, dangler_resolution
+        )
+        return payload
+    if candidate is None:
+        return {
+            "campaign_id": None,
+            "campaign_number": None,
+            "title": None,
+            "status": None,
+            "path": None,
+            "source": "cycle-state",
+            "cycle_state": cycle_state_payload(workspace, campaigns, order, None),
+        }
+    payload = {
+        "campaign_id": candidate.campaign_id,
+        "campaign_number": candidate.campaign_number,
+        "title": candidate.title,
+        "status": candidate.status,
+        "path": candidate.path.relative_to(workspace).as_posix(),
+        "source": "campaign-queue",
+        "cycle_state": cycle_state_payload(
+            workspace, campaigns, order, dangler_resolution
+        ),
+    }
+    if dangler_resolution:
+        payload["dangler_resolution"] = dangler_resolution
+    return payload
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Manage Tool Shed owner-facing campaign queues.")
     parser.add_argument("--workspace", default=".", help="Project workspace root.")
@@ -1740,44 +1782,7 @@ def main() -> int:
             if args.selection:
                 payload = targeted_next_payload(workspace, args.selection)
             else:
-                campaigns = load_all(workspace)
-                order = queue_order(workspace)
-                ordered = [campaigns[item] for item in order]
-                candidate = next((item for item in ordered if item.status == "working"), None)
-                if candidate is None:
-                    candidate = first_ready_campaign(order, campaigns)
-                dangler_resolution = dangler_resolution_visibility(workspace, campaigns, order)
-                if candidate is None and dangler_resolution:
-                    payload = dict(dangler_resolution)
-                    payload["cycle_state"] = cycle_state_payload(
-                        workspace, campaigns, order, dangler_resolution
-                    )
-                elif candidate is None:
-                    payload = {
-                        "campaign_id": None,
-                        "campaign_number": None,
-                        "title": None,
-                        "status": None,
-                        "path": None,
-                        "source": "cycle-state",
-                        "cycle_state": cycle_state_payload(
-                            workspace, campaigns, order, None
-                        ),
-                    }
-                else:
-                    payload = {
-                        "campaign_id": candidate.campaign_id,
-                        "campaign_number": candidate.campaign_number,
-                        "title": candidate.title,
-                        "status": candidate.status,
-                        "path": candidate.path.relative_to(workspace).as_posix(),
-                        "source": "campaign-queue",
-                        "cycle_state": cycle_state_payload(
-                            workspace, campaigns, order, dangler_resolution
-                        ),
-                    }
-                    if dangler_resolution:
-                        payload["dangler_resolution"] = dangler_resolution
+                payload = next_campaign_payload(workspace)
         elif args.command == "completed":
             campaigns = load_all(workspace)
             completed = sorted(

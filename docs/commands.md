@@ -356,7 +356,7 @@ want one of the three qualified roles to use the existing App Server integration
 | `ts: plan <request> --app-server` | App Server planning with `gpt-5.6-sol` / `high` |
 | `ts: verify <request> --app-server` | App Server verification with `gpt-5.6-terra` / `low` |
 | `ts: camp run <camp> --app-server` | Existing bounded App Server CAMP path with `gpt-5.6-terra` / `medium` |
-| `ts: next --app-server` | Run normal `next` selection, then forward the explicit option only to the selected qualified role; CAMP execution uses the existing Terra/medium path. |
+| `ts: next --app-server` | Invoke one deterministic dispatcher that reuses normal `next` selection and the existing Terra/medium CAMP path; never launch a nested Codex agent. |
 | `ts: appserver status` | Read-only default, compatibility, and qualified-role status |
 
 Without the option, `ts: plan`, `ts: verify`, and `ts: camp run` use the normal GUI path and report
@@ -373,10 +373,15 @@ and fatal or unknown qualification results are blocked with a clear GUI fallback
 workspace-write record and separate write harness. There is no API fallback.
 
 `next` is not a new App Server role. The flagged and unflagged forms select the same next action.
-When that action is executable CAMP work, Tool Shed applies the existing `camp-run` selector and
-safety path. Discussion, decisions, blocked work, external gates, and unsupported roles remain on
-their ordinary route and are reported without starting CAMP execution. The option never persists
-beyond the invocation.
+The GUI immediately runs
+`python3 <shed>/scripts/app_server_dispatch.py --workspace . next --app-server --json` once; it does
+not wrap that command in `codex exec` or another agent. Executable CAMP work requires a strict
+campaign-local JSON execution capsule with the matching campaign/CAMP IDs, prompt, relative path
+allowlists, focused context, and shell-free verification argv. The dispatcher validates Codex
+state, managed ChatGPT authentication, network/model access, and qualification before mutation,
+then calls the existing `camp-run` safety path. Discussion, decisions, blocked work, invalid or
+missing capsules, external gates, and unsupported roles remain on their ordinary route and are
+reported without starting CAMP execution. The option never persists beyond the invocation.
 
 The CAMP worker reports `step_ready_for_verification` or `camp_ready_for_verification` after bounded
 implementation. App Server `turn/completed` is only a terminal protocol event. The controller runs
@@ -450,6 +455,7 @@ The AI routes normally operate these deterministic scripts from the workspace-lo
 ```text
 scripts/campaign_queue.py
 scripts/app_server_control.py
+scripts/app_server_dispatch.py
 scripts/check_work_tree.py
 scripts/doctor.py
 scripts/check_shed_version.py

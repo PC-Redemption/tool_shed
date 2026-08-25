@@ -58,7 +58,7 @@ ts: verify <request> --app-server            -> App Server / Terra / low
 ts: camp run <camp>                          -> current GUI path
 ts: camp run <camp> --app-server             -> App Server / Terra / medium through camp-run
 ts: next                                     -> normal selection and current GUI path
-ts: next --app-server                        -> normal selection, then the selected qualified role
+ts: next --app-server                        -> one deterministic normal-next dispatch, no nested Codex agent
 unqualified roles or incompatible Codex      -> blocked; GUI remains available without the flag
 ```
 
@@ -85,12 +85,16 @@ workspace_write_enabled   = false
 default-off configuration. It is an internal orchestration flag. The user-facing Tool Shed option
 is `--app-server` on the qualified `ts:` commands above.
 
-`ts: next --app-server` is forwarding, not a fourth execution role. Tool Shed first performs the
-same navigation and readiness selection as ordinary `ts: next`. When the selected action is CAMP
-execution, it invokes the existing `camp-run` selector and bounded Terra/medium runner. A selected
-discussion, decision, blocker, external gate, GUI-native action, or unsupported role is reported
-on its natural route without starting App Server. Compatibility failure remains fail-closed, the
-unflagged GUI route stays available, and the selector is not retained for later commands.
+`ts: next --app-server` is forwarding, not a fourth execution role. The GUI invokes
+`python3 <shed>/scripts/app_server_dispatch.py --workspace . next --app-server --json` directly and
+never wraps it in `codex exec` or another agent. The dispatcher performs the same navigation and
+readiness selection as ordinary `ts: next`, validates the selected campaign's strict execution
+capsule, and preflights writable Codex state, managed ChatGPT authentication, network/model access,
+and exact write qualification before mutation. It then invokes the existing bounded Terra/medium
+`camp-run`. A selected discussion, decision, blocker, invalid or missing capsule, external gate,
+GUI-native action, or unsupported role is reported on its natural route without starting App
+Server. Compatibility failure remains fail-closed, the unflagged GUI route stays available, and
+the selector is not retained for later commands.
 
 Resolve and display the user-facing selection before execution:
 
@@ -99,7 +103,31 @@ python3 scripts/app_server_control.py select plan --app-server
 python3 scripts/app_server_control.py select verify --app-server
 python3 scripts/app_server_control.py select camp-run --app-server
 python3 scripts/app_server_control.py status
+python3 scripts/app_server_dispatch.py --workspace . next --app-server --json
 ```
+
+The selected campaign's executable contract is explicit and reviewable:
+
+````markdown
+## App Server Execution Capsule
+
+```json
+{
+  "schema_version": 1,
+  "campaign_id": "example-campaign",
+  "camp": "implement-one-step",
+  "prompt": "Make only the declared bounded change.",
+  "expected_paths": ["src/example.py"],
+  "context_files": ["src/example.py"],
+  "verification_commands": [["python3", "-m", "unittest", "tests.test_example"]]
+}
+```
+````
+
+Paths use repository-relative POSIX notation and may not traverse symlinks. Verification commands
+are direct JSON argv arrays; shell executables are rejected. Capsule validation, App Server startup,
+ChatGPT authentication, model-list network access, and exact CAMP qualification all complete before
+the dispatcher starts a queued campaign or permits workspace mutation.
 
 The selector reuses the centralized config, model policy, qualification registry, and installed
 Codex version check. Exact records remain authoritative for known versions and all CAMP writing.

@@ -3,7 +3,7 @@
 Status: active
 Type: project-map
 Updated: 2026-08-25
-Next Action: derive the M3 native Linux installed-use campaign; retain the hard owner-consent gate before any Core snapshot or skill change
+Next Action: obtain owner consent before unblocking Campaign 059 for the Bactron Core snapshot upgrade and bounded Windows proof
 Campaign: standalone
 Campaign Reason: source coordination surface for the approved, executing Program Roadmap
 
@@ -78,10 +78,15 @@ flowchart LR
   G --> H[Dogfood in maintained Linux Tool Shed]
   H --> I[Publish minimum usable release]
   I --> J[Prove installed native Linux]
-  I --> K[Prove installed native Windows]
-  J --> L[Adopt as normal low-token execution loop]
+  J --> M[Eliminate nested Codex wrapper and prove direct Linux dispatch]
+  M --> K[Prove installed native Windows]
+  M --> L[Adopt as normal low-token execution loop]
   K --> L
 ```
+
+Campaign 060 is an owner-directed Linux-first detour discovered from M3 evidence. It corrects the
+test-fixture and routing weakness before operator-heavy Windows work, then returns to Campaign 059.
+It does not revise M4's outcome or grant Core mutation authority.
 
 ## Zoom Levels
 
@@ -122,8 +127,8 @@ flowchart LR
 
 Ground:
 
-- Current next action: derive the M3 native Linux installed-use campaign without starting any Core
-  snapshot or installed-skill change.
+- Current next action: wait at the explicit owner-consent gate before unblocking Campaign 059 or
+  changing the Bactron Core snapshot or installed skill.
 - Owner/context: human owner and Codex in `/home/jon/docker/tool_shed`; native Windows proof occurs
   through a normally launched Codex GUI on the work PC in `E:\dev\bactron-core`.
 - Verification: focused changed-path tests plus one real dogfood run during development; one full
@@ -138,8 +143,8 @@ Ground:
 | App Server shared execution core | dogfooded | `scripts/app_server_control.py` and Campaign 055 evidence | Campaigns 040-054 | preserve while proving installed native use |
 | Lean qualification policy | active | approved roadmap gates | owner dogfood-first decision | continue focused native-real-use gates without repeating the release suite |
 | Minimum usable release | complete | milestone `M2-MINIMUM-RELEASE` and v0.28.0 evidence | successful maintained-workspace dogfood | preserve the published release and synchronized maintainer skill |
-| Installed native Linux | planned | proposed milestone `M3-LINUX-INSTALLED` | verified release | install or upgrade and complete one real campaign |
-| Installed native Windows | planned | proposed milestone `M4-WINDOWS-INSTALLED` | verified release | upgrade Core and complete one real asset-aware campaign |
+| Installed native Linux | complete | milestone `M3-LINUX-INSTALLED` plus Campaign 060 direct-dispatch evidence | verified release | preserve the direct one-call proof |
+| Installed native Windows | blocked on owner consent | proposed milestone `M4-WINDOWS-INSTALLED` | verified release and direct Linux dispatch | after consent, upgrade Core and complete one real asset-aware campaign |
 | Owner operating loop | planned | proposed milestone `M5-ADOPTION` | both native proofs | publish exact usage and recovery path, then use it for ordinary campaigns |
 
 ## Dependency Notes
@@ -164,9 +169,10 @@ Ground:
 
 You are here:
 
-- The App Server mechanism and its major repairs exist in the maintained Tool Shed candidate.
-- The missing work is a short outcome loop: dogfood it locally, release it once, prove it on native
-  installed Linux and Windows, and start using it.
+- The direct Linux dispatcher is implemented and proved in the maintained Tool Shed `0.29.0`
+  candidate with no nested Codex wrapper.
+- The remaining platform gate is the consent-held Bactron Core snapshot upgrade and native Windows
+  proof, followed by ordinary-use adoption.
 
 Do next:
 
@@ -175,7 +181,8 @@ Do next:
 - [x] Attempt that campaign through App Server; repair observed failures without opening new fires.
 - [x] Materialize and execute the pre-authorized v0.28.0 release campaign.
 - [x] Execute the pre-authorized maintainer installed-skill synchronization and fresh-session smoke.
-- [ ] Prove the released installed path on native Linux and Windows.
+- [x] Prove the released installed path on native Linux and eliminate the nested wrapper.
+- [ ] After explicit owner consent, prove the candidate path on native Windows in Bactron Core.
 - [ ] Adopt the command for ordinary campaign execution and track actual savings.
 
 Avoid for now:

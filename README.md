@@ -309,9 +309,11 @@ boundary. See the [Tool Shed operator guide](docs/operator-guide.md) for workflo
 examples.
 
 The four `--app-server` forms are explicit, per-command opt-ins for qualified real-world testing.
-`ts: next --app-server` performs the ordinary `next` selection and forwards the option only when
-the selected action already has a qualified App Server role; CAMP execution reuses the existing
-Terra/medium runner. `next` itself is not an App Server role.
+`ts: next --app-server` runs one deterministic `app_server_dispatch.py` command directly—never a
+nested `codex exec`—to perform ordinary `next` selection, validate a strict campaign execution
+capsule and host preflight, and forward only when the selected action already has a qualified App
+Server role. CAMP execution reuses the existing Terra/medium runner. `next` itself is not an App
+Server role.
 Unflagged commands remain in the GUI and `ts: discuss` is always GUI-native. Read-only planning and
 verification use a minimum Codex version of `0.146.0` with no upper cutoff: an unseen eligible
 version runs a bounded dirty qualification and continues the original explicit request immediately

@@ -29,9 +29,10 @@ context warning or oversized tool result is a compact, enforceable finding that 
 advance even when mutation and deterministic checks are otherwise safe.
 
 The user-facing opt-ins are `ts: plan <request> --app-server`, `ts: verify <request>
---app-server`, `ts: camp run <camp> --app-server`, and `ts: next --app-server`; the last performs
-normal next-action selection and forwards only to an already-qualified role rather than making
-`next` a role. `ts: appserver status` reports the exact
+--app-server`, `ts: camp run <camp> --app-server`, and `ts: next --app-server`; the last invokes
+`app_server_dispatch.py` directly, with no nested `codex exec`, to perform normal next-action
+selection, validate the campaign execution capsule and host preflight, and forward only to an
+already-qualified role rather than making `next` a role. `ts: appserver status` reports the exact
 local compatibility and routing state. The unflagged forms use the GUI. Session-wide on/off is
 deliberately unavailable because the Codex skill surface has no reliable skill-owned session
 storage, and no `--gui` alias is needed while the unflagged form is authoritative. Exact reviewed

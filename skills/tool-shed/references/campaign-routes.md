@@ -347,7 +347,7 @@ exact user-facing routes as an invocation-scoped request for the already-qualifi
 | `ts: plan <request> --app-server` | planning | `gpt-5.6-sol` / `high` | read-only `run` |
 | `ts: verify <request> --app-server` | verification | `gpt-5.6-terra` / `low` | read-only `run` |
 | `ts: camp run <camp> --app-server` | CAMP execution | `gpt-5.6-terra` / `medium` | bounded `camp-run` |
-| `ts: next --app-server` | selected qualified role only | selected role policy | normal `next`, then its existing runner |
+| `ts: next --app-server` | selected qualified role only | selected role policy | one deterministic dispatch to normal `next`, then its existing runner |
 
 Equivalent commands without `--app-server` remain in the current GUI and begin with the concise
 banner `Execution: GUI`. Do not interpret examples, quoted text, or a mere mention of the option as
@@ -406,17 +406,31 @@ Malformed, partial, `unknown`, interrupted, unsafe, and unexpected-path results 
 retry after mutation. A focused-context token warning or oversized tool result must emit a compact
 enforceable finding and block lifecycle advance; do not retain raw tool output in the journal.
 
-For `ts: next --app-server`, first perform the ordinary `next` selection unchanged. The option is
-an invocation-scoped forwarding preference, not an App Server role, and it must select the same
-action and CAMP as unflagged `ts: next`. If that selected action is CAMP execution, run the existing
-`app_server_control.py select camp-run --app-server --json` selector and, only when it is allowed,
-forward to the existing bounded `camp-run` path. That path retains the centralized CAMP execution
-policy of `gpt-5.6-terra` with `medium` reasoning. Do not create a `next` selector, a second CAMP
-runner, or duplicate executable, version, role, authentication, model, or reasoning policy.
+For `ts: next --app-server`, immediately invoke the deterministic dispatcher once:
+
+```bash
+python3 <shed>/scripts/app_server_dispatch.py --workspace . next --app-server --json
+```
+
+Do not launch `codex exec`, another Codex conversation, or an agent wrapper around this command.
+The dispatcher reuses ordinary `next` selection unchanged; `next` remains an invocation-scoped
+forwarding preference, not an App Server role. A selected CAMP must contain exactly one
+`## App Server Execution Capsule` section with a fenced JSON object declaring schema version 1,
+matching campaign ID, CAMP ID, prompt, repository-relative expected paths and context files, and
+one or more shell-free deterministic verification argv arrays. The dispatcher validates the
+capsule and selected executable, writable Codex state, managed ChatGPT authentication, network/model
+catalog access, and qualification before lifecycle or workspace mutation. It then starts a queued
+campaign when needed and calls the existing bounded `camp-run` path once. That path retains the
+centralized CAMP execution policy of `gpt-5.6-terra` with `medium` reasoning. The dispatcher emits
+only compact route, usage, journal, verification, and recovery fields; its deterministic process
+uses zero model tokens and reports GUI token usage as unavailable when the provider does not expose
+it. Do not create a `next` role selector, a second CAMP runner, or duplicate executable, version,
+role, authentication, model, or reasoning policy.
 
 When `next` selects discussion, user interaction or decision work, blocked work, a qualification
-gate, external work, GUI-native work, or any unqualified or unsupported role, report the selected
-action and its ordinary next route without starting CAMP execution. Discussion remains GUI-native.
+gate, external work, GUI-native work, a campaign without a valid execution capsule, or any
+unqualified or unsupported role, report the selected action and its ordinary next route without
+starting CAMP execution. Discussion remains GUI-native.
 If the existing `camp-run` selector fails closed because Codex is missing or unqualified, App Server
 is unavailable, or another compatibility gate fails, report the reason and retain the ordinary GUI
 route as the available unflagged command; do not silently switch backends. This forwarding never

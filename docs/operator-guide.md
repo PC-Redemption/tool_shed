@@ -536,11 +536,20 @@ safe path journal is `safe_unverified` until that handoff and verification succe
 partial, interrupted, or unexpected-path results do not advance or retry after mutation. Context
 token warnings and oversized tool results likewise stop lifecycle advance with a compact finding.
 
-`ts: next --app-server` keeps normal navigation authoritative: it selects exactly what unflagged
-`ts: next` would select, then forwards the option only if that action maps to an existing qualified
-role. CAMP work uses the existing Terra/medium runner. Discussion, owner decisions, blocked work,
-external gates, and unsupported actions are surfaced without being forced through CAMP execution.
-The preference applies only to that invocation; `next` does not become an App Server role.
+`ts: next --app-server` keeps normal navigation authoritative through one deterministic command:
+
+```text
+python3 <shed>/scripts/app_server_dispatch.py --workspace . next --app-server --json
+```
+
+The GUI must run that command directly, never through `codex exec` or another agent. The dispatcher
+selects exactly what unflagged `ts: next` would select and requires a strict campaign execution
+capsule declaring the matching IDs, prompt, relative allowed paths, focused context, and shell-free
+verification argv. It preflights Codex state, ChatGPT authentication, network/model access, and
+qualification before mutation, then uses the existing Terra/medium runner. Discussion, owner
+decisions, blocked work, invalid or missing capsules, external gates, and unsupported actions are
+surfaced without being forced through CAMP execution. The preference applies only to that
+invocation; `next` does not become an App Server role.
 
 The selector uses exact reviewed qualification for known versions. For an unseen planning or
 verification executable at or above `0.146.0`, including prereleases and versions beyond `0.150.0`,
