@@ -10,8 +10,9 @@ Updated: 2026-08-25
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
 | [work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md](work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md) | campaign | abandoned | 2026-08-24 | none | - |
+| [work/00-campaigns/abandoned/061-publish-and-synchronize-direct-app-server-dispatch.md](work/00-campaigns/abandoned/061-publish-and-synchronize-direct-app-server-dispatch.md) | campaign | abandoned | 2026-08-25 | none | - |
 | [work/00-campaigns/active/059-prove-bactron-core-native-windows-app-server-workflow.md](work/00-campaigns/active/059-prove-bactron-core-native-windows-app-server-workflow.md) | campaign | blocked | 2026-08-25 | resolve blocker or decision: Owner consent is required before any Bactron Core snapshot change or Windows App Server proof. | - |
-| [work/00-campaigns/active/061-publish-and-synchronize-direct-app-server-dispatch.md](work/00-campaigns/active/061-publish-and-synchronize-direct-app-server-dispatch.md) | campaign | working | 2026-08-25 | execute the campaign completion gate | - |
+| [work/00-campaigns/active/062-publish-and-synchronize-direct-app-server-dispatch-v0-29-1.md](work/00-campaigns/active/062-publish-and-synchronize-direct-app-server-dispatch-v0-29-1.md) | campaign | working | 2026-08-25 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -136,6 +137,6 @@ Updated: 2026-08-25
 
 ## Summary
 
-- Total artifacts: 119
+- Total artifacts: 120
 - Active artifacts: 3
 - Completed/decided artifacts: 105

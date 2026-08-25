@@ -38,6 +38,23 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
+      "disposition": "The pushed v0.29.0 tag failed clean-runner validation before GitHub Release creation because the new test relied on developer-only PYTHONPATH; published versions cannot be reused.; replacement: publish-and-synchronize-direct-app-server-dispatch-v0-29-1",
+      "next_action": "none",
+      "parent": null,
+      "path": "work/00-campaigns/abandoned/061-publish-and-synchronize-direct-app-server-dispatch.md",
+      "produces": null,
+      "project_map": null,
+      "status": "abandoned",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Publish and synchronize direct App Server dispatch",
+      "type": "campaign",
+      "updated": "2026-08-25"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
       "disposition": "none",
       "milestone": "M4-WINDOWS-INSTALLED",
       "next_action": "resolve blocker or decision: Owner consent is required before any Bactron Core snapshot change or Windows App Server proof.",
@@ -62,13 +79,13 @@
       "disposition": "none",
       "next_action": "execute the campaign completion gate",
       "parent": null,
-      "path": "work/00-campaigns/active/061-publish-and-synchronize-direct-app-server-dispatch.md",
+      "path": "work/00-campaigns/active/062-publish-and-synchronize-direct-app-server-dispatch-v0-29-1.md",
       "produces": null,
       "project_map": null,
       "status": "working",
       "superseded_by": null,
       "supersedes": null,
-      "title": "Publish and synchronize direct App Server dispatch",
+      "title": "Publish and synchronize direct App Server dispatch v0.29.1",
       "type": "campaign",
       "updated": "2026-08-25"
     },
@@ -2083,6 +2100,6 @@
   "summary": {
     "active_artifacts": 3,
     "completed_or_decided_artifacts": 105,
-    "total_artifacts": 119
+    "total_artifacts": 120
   }
 }

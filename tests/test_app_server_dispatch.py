@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import tempfile
 import unittest
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
 
 from scripts import campaign_queue
 from scripts.app_server_dispatch import DispatchError, dispatch_next, parse_execution_capsule
