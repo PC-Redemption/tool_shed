@@ -440,25 +440,26 @@ class CodexExecutionTests(unittest.TestCase):
         )
         os.environ["FAKE_CODEX_CAMP_TARGET"] = str(target)
         try:
-            payload = execute_camp_if_enabled(
-                "Change the supplied target from before to after.",
-                cwd=repository,
-                campaign="campaign-040",
-                camp="representative-edit",
-                expected_paths=(Path("target.txt"),),
-                explicit_files=(Path("target.txt"),),
-                verification_commands=(
-                    ("python3", "-c", "raise SystemExit(0)"),
-                    ("python3", "-c", "raise SystemExit(0)"),
-                ),
-                enable_override=True,
-                config=AppServerFeatureConfig.load(
-                    ROOT / "adapters" / "codex-app-server-config.json"
-                ),
-                policy=self.policy,
-                codex=str(self.fake),
-                telemetry_path=self.root / "camp-telemetry.jsonl",
-            )
+            with patch("scripts.codex_orchestration.sys.platform", "linux"):
+                payload = execute_camp_if_enabled(
+                    "Change the supplied target from before to after.",
+                    cwd=repository,
+                    campaign="campaign-040",
+                    camp="representative-edit",
+                    expected_paths=(Path("target.txt"),),
+                    explicit_files=(Path("target.txt"),),
+                    verification_commands=(
+                        ("python3", "-c", "raise SystemExit(0)"),
+                        ("python3", "-c", "raise SystemExit(0)"),
+                    ),
+                    enable_override=True,
+                    config=AppServerFeatureConfig.load(
+                        ROOT / "adapters" / "codex-app-server-config.json"
+                    ),
+                    policy=self.policy,
+                    codex=str(self.fake),
+                    telemetry_path=self.root / "camp-telemetry.jsonl",
+                )
         finally:
             os.environ.pop("FAKE_CODEX_CAMP_TARGET", None)
         self.assertEqual(target.read_text(encoding="utf-8"), "after\n")
@@ -549,25 +550,26 @@ class CodexExecutionTests(unittest.TestCase):
         os.environ["FAKE_CODEX_COMMAND_EXIT"] = "7"
         os.environ["FAKE_CODEX_CAMP_OUTCOME"] = "step_complete"
         try:
-            payload = execute_camp_if_enabled(
-                "Change before to after.",
-                cwd=repository,
-                campaign="campaign-040",
-                camp="diagnostic",
-                expected_paths=(Path("target.txt"),),
-                explicit_files=(Path("target.txt"),),
-                verification_commands=(
-                    ("python3", "-c", "raise SystemExit(7)"),
-                    ("python3", "-c", "raise SystemExit(7)"),
-                ),
-                enable_override=True,
-                config=AppServerFeatureConfig.load(
-                    ROOT / "adapters" / "codex-app-server-config.json"
-                ),
-                policy=self.policy,
-                codex=str(self.fake),
-                telemetry_path=self.root / "failed-camp-telemetry.jsonl",
-            )
+            with patch("scripts.codex_orchestration.sys.platform", "linux"):
+                payload = execute_camp_if_enabled(
+                    "Change before to after.",
+                    cwd=repository,
+                    campaign="campaign-040",
+                    camp="diagnostic",
+                    expected_paths=(Path("target.txt"),),
+                    explicit_files=(Path("target.txt"),),
+                    verification_commands=(
+                        ("python3", "-c", "raise SystemExit(7)"),
+                        ("python3", "-c", "raise SystemExit(7)"),
+                    ),
+                    enable_override=True,
+                    config=AppServerFeatureConfig.load(
+                        ROOT / "adapters" / "codex-app-server-config.json"
+                    ),
+                    policy=self.policy,
+                    codex=str(self.fake),
+                    telemetry_path=self.root / "failed-camp-telemetry.jsonl",
+                )
         finally:
             os.environ.pop("FAKE_CODEX_CAMP_TARGET", None)
             os.environ.pop("FAKE_CODEX_COMMAND_EXIT", None)
