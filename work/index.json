@@ -57,7 +57,7 @@
       "canonical_truth": null,
       "disposition": "none",
       "milestone": "M4-WINDOWS-INSTALLED",
-      "next_action": "resolve blocker or decision: Detour Campaign 063 must repair and release project-scoped direct dispatch before the Windows proof can continue.",
+      "next_action": "resolve blocker or decision: Detour Campaign 064 must replace the failing Windows post-turn command RPC before the final fresh proof.",
       "parent": null,
       "path": "work/00-campaigns/active/059-prove-bactron-core-native-windows-app-server-workflow.md",
       "produces": null,
@@ -79,13 +79,13 @@
       "disposition": "none",
       "next_action": "execute the campaign completion gate",
       "parent": null,
-      "path": "work/00-campaigns/active/063-repair-project-scoped-app-server-dispatch.md",
+      "path": "work/00-campaigns/active/064-route-windows-verification-through-console-sandbox.md",
       "produces": null,
       "project_map": null,
       "status": "working",
       "superseded_by": null,
       "supersedes": null,
-      "title": "Repair project-scoped App Server dispatch",
+      "title": "Route Windows verification through console sandbox",
       "type": "campaign",
       "updated": "2026-08-25"
     },
@@ -1073,6 +1073,23 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
+      "disposition": "completed",
+      "next_action": "none",
+      "parent": null,
+      "path": "work/00-campaigns/completed/063-repair-project-scoped-app-server-dispatch.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Repair project-scoped App Server dispatch",
+      "type": "campaign",
+      "updated": "2026-08-25"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
       "disposition": "Replaced as the executable entrypoint by a full Program Roadmap proposal with staged milestones, evidence gates, and separately approved roadmap-derived campaigns.",
       "next_action": "reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign.",
       "parent": null,
@@ -1412,6 +1429,23 @@
       "title": "Evidence: Native Linux installed App Server workflow",
       "type": "evidence",
       "updated": "2026-08-25"
+    },
+    {
+      "campaign": "063 `repair-project-scoped-app-server-dispatch`",
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": null,
+      "next_action": null,
+      "parent": null,
+      "path": "work/evidence/evidence-project-scoped-app-server-dispatch-v0-29-2.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Evidence: Project-scoped App Server dispatch v0.29.2",
+      "type": null,
+      "updated": null
     },
     {
       "campaign": "make-stable-snapshot-upgrades-fast-observable-and-retry-safe",
@@ -2133,7 +2167,7 @@
   "schema_version": 1,
   "summary": {
     "active_artifacts": 3,
-    "completed_or_decided_artifacts": 107,
-    "total_artifacts": 122
+    "completed_or_decided_artifacts": 109,
+    "total_artifacts": 124
   }
 }

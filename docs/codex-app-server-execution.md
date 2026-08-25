@@ -577,6 +577,11 @@ Only one of those four handoff outcomes authorizes the orchestrator to run the d
 deterministic verification commands. Each declared command runs exactly once. The Git mutation
 journal then reports the combined result truthfully:
 
+On Windows, deterministic verification runs through the selected GUI Codex executable's local
+`:read-only` sandbox command in the active console session. This avoids the alpha App Server's
+post-turn command RPC while retaining zero-model execution and a sandbox boundary. Other platforms
+retain the qualified App Server command path.
+
 - `safe_unverified` means the path boundary is safe but CAMP verification did not establish
   completion;
 - `verification_failed` means at least one reserved deterministic command failed;

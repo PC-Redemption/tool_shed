@@ -10,13 +10,13 @@
     "adapters/codex-app-server-config.json": "9ee82433d20abdef7567bd65d6ddbcf0d1d816a92296f3ecd84d836dfb4cb7ed",
     "adapters/codex-app-server-qualifications.json": "35c2052487e2e292ec38c78ea8c2146b9abd064ba0fa5486eb9854a8b25b2ef4",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "1d3ba083b6baae07daa778d72f0db9661476f67a9e5d7621c445c740ed9c5e6f",
+    "adapters/codex-skill-releases.json": "3c541465aa243489e5dc6b0375eadcf08a83e5369598393f2bfc35982f42065e",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "95069c265c5384c7e62e91be7cad996eb1ce4c13f43ca57f5051c0487e2f9c02",
     "docs/codex-app-server-alpha-requalification-2026-08-24.md": "80789afbdcfb878257547934fd6ca7358fd56f79f16b081a4fc61e888579b962",
     "docs/codex-app-server-camp-token-baseline-2026-08-20.md": "5148859c74dc0b79a7f3dd1b86b8085f03091a3268bf95dfe769337fe3fdccc9",
     "docs/codex-app-server-camp-token-optimization-2026-08-20.md": "7c28ad01af86288141bf94b6f9b9d048ed69424075c762d44d421f82330b0235",
-    "docs/codex-app-server-execution.md": "75d8b301b917f83baab269d1bf359fedeb2f004f8e7986abb8e4a6f616817e35",
+    "docs/codex-app-server-execution.md": "b3c664d05f3b11c243ee10bdd5854613a40bb2b9b2999ce8caefd57fdf9e4dea",
     "docs/codex-app-server-maintainer-note.md": "607d79f5613f1f92300def5b01e8ae2baca744703888c0ef370d17767d4a738c",
     "docs/codex-app-server-qualification-2026-08-20.md": "d4d70d0a51bb6be1ed69ce45ce63124b16f4d1acca35e9072d926b4d43b79c31",
     "docs/codex-app-server-requalification-2026-08-21.md": "9aacfac50f3debb8ccff2b3b06d33f6b52c6354e7df5b7bc9c5f2114f85663b4",
@@ -59,7 +59,7 @@
     "scripts/codex_camp_execution.py": "d83d331175cdbd90f5996d00c31159c00a3848c385e743b9f5a0cc434019c6ef",
     "scripts/codex_cli_resolver.py": "8188226dfef2d8fef0cb19905eb168f49ce3e0227ee0197d58c069601ed4ebed",
     "scripts/codex_execution.py": "447493b30cb3913a4ec6c3c6f1e611c8409e1e0ee3fe48457c8ba536536be48e",
-    "scripts/codex_orchestration.py": "7f23c67ceebc85afc72203064e5c37a12d0ecd2893706fe0372799acc5adaf4d",
+    "scripts/codex_orchestration.py": "0df2399e68fc5a4189ea0ccd81f5656a46d602c2bd6b3700ce3ab1abf06577a8",
     "scripts/codex_qualification_cache.py": "7726bf573a96af6ca468536e6283e87788760b0045a9c36690e64bc68623b69a",
     "scripts/codex_skill_sync.py": "78cf6c2d6605854c429cc54e63eb60b7fa7e81e47dcae9fc87c60b5f93d564a8",
     "scripts/complete_workpackage.py": "5de264d68998db84c898da83dbfa09682003c3119913b7941f1414dbac7f4d6c",
@@ -145,34 +145,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
-  "notes": "Preserve project-scoped App Server dispatch configuration through execution and enforce optional exact executable digests for workspace-write qualification.",
-  "release_commit": "db5344b31935f6cb2e01f4978dddd63879e740e0",
-  "release_qualification": {
-    "attested_at": "2026-08-25T21:23:16Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "d740896c470e02ba526ed08a6d2a8b40865764e67951583e6f8a97db65402766"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "8fc34912f27434fefea4870607350a6543c3293666e4efd96d55b320739c42d6"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "b62203b7c1c21f03dc77e42d714db6b0d742550c3524a4dc33d67c5c283cc54e"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "74ee83963f0c20eef755bcae7f51c0caaa35fe3ce2f7001cbcfcf381911d0a45"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "db5344b31935f6cb2e01f4978dddd63879e740e0"
-  },
-  "release_tag": "v0.29.2",
-  "released_at": "2026-08-25T21:23:16Z",
-  "shed_version": "0.29.2",
+  "notes": "Run Windows CAMP deterministic verification through the selected GUI Codex local read-only sandbox instead of the failing post-turn App Server command RPC.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.29.3",
+  "released_at": null,
+  "shed_version": "0.29.3",
   "updated_at": "2026-08-25",
   "updater_mutation_paths": [
     {

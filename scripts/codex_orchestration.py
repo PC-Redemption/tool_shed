@@ -7,6 +7,8 @@ import argparse
 import json
 import os
 import shutil
+import subprocess
+import sys
 import tempfile
 import time
 from contextlib import contextmanager
@@ -700,6 +702,57 @@ def execute_if_enabled(
     return decision, result
 
 
+def execute_deterministic_verification(
+    adapter: CodexExecutionAdapter,
+    command: tuple[str, ...],
+    *,
+    cwd: Path,
+    codex: str,
+    timeout: float,
+) -> dict[str, Any]:
+    """Run declared verification through the reliable platform sandbox path."""
+
+    resolved_cwd = cwd.resolve()
+    if sys.platform != "win32":
+        return adapter.client.command_exec(
+            list(command),
+            cwd=resolved_cwd,
+            sandbox_policy=sandbox_policy("workspace-write", resolved_cwd),
+            timeout_ms=max(1_000, int(timeout * 1_000)),
+        )
+    environment = dict(os.environ)
+    environment["PYTHONDONTWRITEBYTECODE"] = "1"
+    try:
+        completed = subprocess.run(
+            [
+                codex,
+                "sandbox",
+                "--permission-profile",
+                ":read-only",
+                "-C",
+                str(resolved_cwd),
+                *command,
+            ],
+            cwd=resolved_cwd,
+            env=environment,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise AppServerError(
+            "Windows deterministic verification sandbox failed",
+            details=type(error).__name__,
+            kind="windows_verification_sandbox_failed",
+        ) from error
+    return {
+        "exitCode": completed.returncode,
+        "stdout": completed.stdout,
+        "stderr": completed.stderr,
+    }
+
+
 def execute_camp_if_enabled(
     prompt: str,
     *,
@@ -838,11 +891,12 @@ def execute_camp_if_enabled(
         if outcome.outcome in CAMP_VERIFICATION_HANDOFF_OUTCOMES:
             for sequence, command in enumerate(verification_commands, start=1):
                 try:
-                    response = adapter.client.command_exec(
-                        list(command),
-                        cwd=cwd.resolve(),
-                        sandbox_policy=sandbox_policy("workspace-write", cwd.resolve()),
-                        timeout_ms=max(1_000, int(timeout * 1_000)),
+                    response = execute_deterministic_verification(
+                        adapter,
+                        command,
+                        cwd=cwd,
+                        codex=codex,
+                        timeout=timeout,
                     )
                     evidence = compact_command_evidence(command, response)
                 except AppServerError as error:

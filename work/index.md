@@ -11,8 +11,8 @@ Updated: 2026-08-25
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
 | [work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md](work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md) | campaign | abandoned | 2026-08-24 | none | - |
 | [work/00-campaigns/abandoned/061-publish-and-synchronize-direct-app-server-dispatch.md](work/00-campaigns/abandoned/061-publish-and-synchronize-direct-app-server-dispatch.md) | campaign | abandoned | 2026-08-25 | none | - |
-| [work/00-campaigns/active/059-prove-bactron-core-native-windows-app-server-workflow.md](work/00-campaigns/active/059-prove-bactron-core-native-windows-app-server-workflow.md) | campaign | blocked | 2026-08-25 | resolve blocker or decision: Detour Campaign 063 must repair and release project-scoped direct dispatch before the Windows proof can continue. | - |
-| [work/00-campaigns/active/063-repair-project-scoped-app-server-dispatch.md](work/00-campaigns/active/063-repair-project-scoped-app-server-dispatch.md) | campaign | working | 2026-08-25 | execute the campaign completion gate | - |
+| [work/00-campaigns/active/059-prove-bactron-core-native-windows-app-server-workflow.md](work/00-campaigns/active/059-prove-bactron-core-native-windows-app-server-workflow.md) | campaign | blocked | 2026-08-25 | resolve blocker or decision: Detour Campaign 064 must replace the failing Windows post-turn command RPC before the final fresh proof. | - |
+| [work/00-campaigns/active/064-route-windows-verification-through-console-sandbox.md](work/00-campaigns/active/064-route-windows-verification-through-console-sandbox.md) | campaign | working | 2026-08-25 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -69,6 +69,7 @@ Updated: 2026-08-25
 | [work/00-campaigns/completed/058-prove-installed-native-linux-app-server-workflow.md](work/00-campaigns/completed/058-prove-installed-native-linux-app-server-workflow.md) | campaign | complete | 2026-08-25 | none | - |
 | [work/00-campaigns/completed/060-eliminate-nested-codex-wrapper-and-prove-linux-dispatch.md](work/00-campaigns/completed/060-eliminate-nested-codex-wrapper-and-prove-linux-dispatch.md) | campaign | complete | 2026-08-25 | none | - |
 | [work/00-campaigns/completed/062-publish-and-synchronize-direct-app-server-dispatch-v0-29-1.md](work/00-campaigns/completed/062-publish-and-synchronize-direct-app-server-dispatch-v0-29-1.md) | campaign | complete | 2026-08-25 | none | - |
+| [work/00-campaigns/completed/063-repair-project-scoped-app-server-dispatch.md](work/00-campaigns/completed/063-repair-project-scoped-app-server-dispatch.md) | campaign | complete | 2026-08-25 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -89,6 +90,7 @@ Updated: 2026-08-25
 | [work/evidence/evidence-human-planning-mechanism-evaluation.md](work/evidence/evidence-human-planning-mechanism-evaluation.md) | evidence | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md](work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md) | evidence | complete | 2026-08-20 | none | - |
 | [work/evidence/evidence-native-linux-installed-app-server-workflow.md](work/evidence/evidence-native-linux-installed-app-server-workflow.md) | evidence | complete | 2026-08-25 | use Campaign 060 to eliminate the nested wrapper and prove direct Linux dispatch before returning to the Windows consent gate | - |
+| [work/evidence/evidence-project-scoped-app-server-dispatch-v0-29-2.md](work/evidence/evidence-project-scoped-app-server-dispatch-v0-29-2.md) | - | complete | - | - | - |
 | [work/evidence/evidence-snapshot-upgrade-performance-and-retry-safety.md](work/evidence/evidence-snapshot-upgrade-performance-and-retry-safety.md) | evidence | complete | 2026-08-24 | none | work/00-campaigns/completed/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md |
 | [work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md](work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md) | evidence | complete | 2026-08-09 | none | work/wp/completed/wp-evidence-responsive-tool-shed-execution.md |
 | [work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md](work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md) | evidence | complete | 2026-08-18 | none | work/00-campaigns/completed/027-publish-and-verify-tool-shed-v0-22-0.md |
@@ -139,6 +141,6 @@ Updated: 2026-08-25
 
 ## Summary
 
-- Total artifacts: 122
+- Total artifacts: 124
 - Active artifacts: 3
-- Completed/decided artifacts: 107
+- Completed/decided artifacts: 109

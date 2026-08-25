@@ -8,7 +8,8 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
 
 from scripts.codex_app_server import AppServerError, AuthenticationError, CodexAppServerClient
 from scripts.codex_cli_resolver import CodexCliResolution, CodexReadiness, CodexSource
@@ -55,6 +56,7 @@ from scripts.codex_orchestration import (
     benchmark_regressions,
     execute_bounded,
     execute_camp_if_enabled,
+    execute_deterministic_verification,
     execute_if_enabled,
     inline_context_prompt,
     validate_summary_context,
@@ -485,6 +487,45 @@ class CodexExecutionTests(unittest.TestCase):
         context = payload["result"]["context_scope"]
         self.assertEqual(context["mode"], "focused_camp_capsule")
         self.assertEqual(context["sandbox_root"], str(repository.resolve()))
+
+    def test_windows_verification_uses_local_read_only_codex_sandbox(self) -> None:
+        client = SimpleNamespace(command_exec=Mock())
+        adapter = SimpleNamespace(client=client)
+        completed = subprocess.CompletedProcess(
+            args=[], returncode=0, stdout="verified\n", stderr=""
+        )
+        with (
+            patch("scripts.codex_orchestration.sys.platform", "win32"),
+            patch(
+                "scripts.codex_orchestration.subprocess.run",
+                return_value=completed,
+            ) as run,
+        ):
+            response = execute_deterministic_verification(
+                adapter,
+                ("python", "verify.py"),
+                cwd=self.root,
+                codex="C:/gui/codex.exe",
+                timeout=30,
+            )
+
+        self.assertEqual(0, response["exitCode"])
+        self.assertEqual("verified\n", response["stdout"])
+        client.command_exec.assert_not_called()
+        self.assertEqual(
+            [
+                "C:/gui/codex.exe",
+                "sandbox",
+                "--permission-profile",
+                ":read-only",
+                "-C",
+                str(self.root.resolve()),
+                "python",
+                "verify.py",
+            ],
+            run.call_args.args[0],
+        )
+        self.assertEqual("1", run.call_args.kwargs["env"]["PYTHONDONTWRITEBYTECODE"])
 
     def test_failed_deterministic_verification_requires_reconciliation(self) -> None:
         repository = self.root / "failed-camp-repo"
