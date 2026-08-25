@@ -10,8 +10,6 @@ Updated: 2026-08-25
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
 | [work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md](work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md) | campaign | abandoned | 2026-08-24 | none | - |
-| [work/00-campaigns/active/056-publish-minimum-usable-tool-shed-v0-28-0.md](work/00-campaigns/active/056-publish-minimum-usable-tool-shed-v0-28-0.md) | campaign | working | 2026-08-25 | execute the campaign completion gate | - |
-| [work/00-campaigns/active/057-synchronize-maintainer-skill-and-smoke-v0-28-0.md](work/00-campaigns/active/057-synchronize-maintainer-skill-and-smoke-v0-28-0.md) | campaign | queued | 2026-08-25 | execute when selected from the active campaign queue | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -63,6 +61,8 @@ Updated: 2026-08-25
 | [work/00-campaigns/completed/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md](work/00-campaigns/completed/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md) | campaign | complete | 2026-08-24 | none | - |
 | [work/00-campaigns/completed/054-harden-app-server-camp-verification-handoff.md](work/00-campaigns/completed/054-harden-app-server-camp-verification-handoff.md) | campaign | complete | 2026-08-25 | none | - |
 | [work/00-campaigns/completed/055-dogfood-maintained-tool-shed-app-server-execution.md](work/00-campaigns/completed/055-dogfood-maintained-tool-shed-app-server-execution.md) | campaign | complete | 2026-08-25 | none | - |
+| [work/00-campaigns/completed/056-publish-minimum-usable-tool-shed-v0-28-0.md](work/00-campaigns/completed/056-publish-minimum-usable-tool-shed-v0-28-0.md) | campaign | complete | 2026-08-25 | none | - |
+| [work/00-campaigns/completed/057-synchronize-maintainer-skill-and-smoke-v0-28-0.md](work/00-campaigns/completed/057-synchronize-maintainer-skill-and-smoke-v0-28-0.md) | campaign | complete | 2026-08-25 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -86,13 +86,15 @@ Updated: 2026-08-25
 | [work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md](work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md) | evidence | complete | 2026-08-18 | none | work/00-campaigns/completed/027-publish-and-verify-tool-shed-v0-22-0.md |
 | [work/evidence/evidence-tool-shed-0-26-0-dirty-codex-forward-compatibility.md](work/evidence/evidence-tool-shed-0-26-0-dirty-codex-forward-compatibility.md) | evidence | complete | 2026-08-25 | none | work/00-campaigns/completed/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md |
 | [work/evidence/evidence-tool-shed-provider-portability.md](work/evidence/evidence-tool-shed-provider-portability.md) | - | - | - | - | - |
+| [work/evidence/evidence-tool-shed-v0-28-0-maintainer-skill-sync.md](work/evidence/evidence-tool-shed-v0-28-0-maintainer-skill-sync.md) | evidence | complete | 2026-08-25 | derive the M3 native Linux installed-use campaign; stop before the Bactron Core snapshot consent gate | - |
+| [work/evidence/evidence-tool-shed-v0-28-0-release.md](work/evidence/evidence-tool-shed-v0-28-0-release.md) | evidence | complete | 2026-08-25 | use the synchronized release for the M3 native Linux installed-use proof | - |
 | [work/evidence/evidence-w1-dev-smb-access.md](work/evidence/evidence-w1-dev-smb-access.md) | evidence | complete | 2026-08-24 | none | - |
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |
 | [work/focus-areas.md](work/focus-areas.md) | focus-area-catalog | approved | 2026-08-15 | review when an enduring responsibility boundary changes | - |
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/maps/map-disposable-completion-watchers-and-hosted-notifications.md](work/maps/map-disposable-completion-watchers-and-hosted-notifications.md) | project-map | deferred | 2026-08-18 | preserve the completed local watcher and wait for a concrete external/non-App-Server notification need before revisiting hosted work | - |
-| [work/maps/map-low-token-cross-platform-campaign-execution.md](work/maps/map-low-token-cross-platform-campaign-execution.md) | project-map | active | 2026-08-25 | materialize and execute the pre-authorized M2 release and maintainer-skill campaigns; stop before any Core snapshot or skill change | - |
+| [work/maps/map-low-token-cross-platform-campaign-execution.md](work/maps/map-low-token-cross-platform-campaign-execution.md) | project-map | active | 2026-08-25 | derive the M3 native Linux installed-use campaign; retain the hard owner-consent gate before any Core snapshot or skill change | - |
 | [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | complete | 2026-08-20 | none | - |
 | [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
 | [work/roadmaps/roadmap-completion-watcher-program-r2.md](work/roadmaps/roadmap-completion-watcher-program-r2.md) | program-roadmap | approved | 2026-08-20 | derive campaigns for milestone M1-CONTRACT | none |
@@ -128,6 +130,6 @@ Updated: 2026-08-25
 
 ## Summary
 
-- Total artifacts: 111
-- Active artifacts: 3
-- Completed/decided artifacts: 97
+- Total artifacts: 113
+- Active artifacts: 1
+- Completed/decided artifacts: 101

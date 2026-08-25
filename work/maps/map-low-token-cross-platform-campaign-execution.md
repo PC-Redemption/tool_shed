@@ -3,9 +3,9 @@
 Status: active
 Type: project-map
 Updated: 2026-08-25
-Next Action: materialize and execute the pre-authorized M2 release and maintainer-skill campaigns; stop before any Core snapshot or skill change
+Next Action: derive the M3 native Linux installed-use campaign; retain the hard owner-consent gate before any Core snapshot or skill change
 Campaign: standalone
-Campaign Reason: source coordination surface for a gated Program Roadmap; campaign materialization awaits exact roadmap approval
+Campaign Reason: source coordination surface for the approved, executing Program Roadmap
 
 ## Purpose
 
@@ -97,8 +97,8 @@ flowchart LR
 
 Ground:
 
-- Current next action: materialize the already-derived M2 plan and execute its release and
-  maintainer-skill campaigns in dependency order under the standing owner authorization above.
+- Current next action: derive the M3 native Linux installed-use campaign without starting any Core
+  snapshot or installed-skill change.
 - Owner/context: human owner and Codex in `/home/jon/docker/tool_shed`; native Windows proof occurs
   through a normally launched Codex GUI on the work PC in `E:\dev\bactron-core`.
 - Verification: focused changed-path tests plus one real dogfood run during development; one full
@@ -110,9 +110,9 @@ Ground:
 | Workstream | Status | Lead Artifact | Depends On | Next Action |
 | --- | --- | --- | --- | --- |
 | Existing Tool Shed control plane | complete | current Tool Shed source and `work/` lifecycle | completed foundation and evolution work | preserve; do not redesign |
-| App Server shared execution core | implemented, needs real dogfood | `scripts/app_server_control.py` and related adapters | Campaigns 040-054 | run one useful maintained-workspace campaign and repair only observed failures |
-| Lean qualification policy | planned | proposed roadmap gates | owner dogfood-first decision | enforce focused-development, single-release-suite, and native-real-use gates |
-| Minimum usable release | planned | proposed milestone `M2-MINIMUM-RELEASE` | successful maintained-workspace dogfood | publish and synchronize the proven candidate |
+| App Server shared execution core | dogfooded | `scripts/app_server_control.py` and Campaign 055 evidence | Campaigns 040-054 | preserve while proving installed native use |
+| Lean qualification policy | active | approved roadmap gates | owner dogfood-first decision | continue focused native-real-use gates without repeating the release suite |
+| Minimum usable release | complete | milestone `M2-MINIMUM-RELEASE` and v0.28.0 evidence | successful maintained-workspace dogfood | preserve the published release and synchronized maintainer skill |
 | Installed native Linux | planned | proposed milestone `M3-LINUX-INSTALLED` | verified release | install or upgrade and complete one real campaign |
 | Installed native Windows | planned | proposed milestone `M4-WINDOWS-INSTALLED` | verified release | upgrade Core and complete one real asset-aware campaign |
 | Owner operating loop | planned | proposed milestone `M5-ADOPTION` | both native proofs | publish exact usage and recovery path, then use it for ordinary campaigns |
@@ -148,8 +148,8 @@ Do next:
 - [x] Approve the exact outcome-driven Program Roadmap proposal.
 - [x] Derive, approve, and complete the maintained-Linux dogfood campaign.
 - [x] Attempt that campaign through App Server; repair observed failures without opening new fires.
-- [ ] Materialize and execute the pre-authorized v0.28.0 release campaign.
-- [ ] Execute the pre-authorized maintainer installed-skill synchronization and fresh-session smoke.
+- [x] Materialize and execute the pre-authorized v0.28.0 release campaign.
+- [x] Execute the pre-authorized maintainer installed-skill synchronization and fresh-session smoke.
 - [ ] Prove the released installed path on native Linux and Windows.
 - [ ] Adopt the command for ordinary campaign execution and track actual savings.
 
