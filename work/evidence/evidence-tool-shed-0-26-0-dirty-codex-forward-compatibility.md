@@ -1,4 +1,4 @@
-# Tool Shed v0.26.1 dirty Codex forward-compatibility qualification
+# Tool Shed v0.27.0 dirty Codex forward-compatibility qualification
 
 Status: active
 Type: evidence
@@ -9,17 +9,17 @@ Parent: work/00-campaigns/active/052-qualify-release-and-field-verify-dirty-code
 
 ## Published release
 
-- Latest stable version: `v0.26.1`
-- Release URL: `https://github.com/PC-Redemption/tool_shed/releases/tag/v0.26.1`
-- Content commit: `6b1ae69ba8e52d7f714e50dd16e12ee8750c70ae`
-- Provenance commit: `4be32cd382270076b533b6b8a4721ec708634222`
-- Annotated tag object: `3bd89601d064ba091e300b697d1d78d47f1fb44e`
-- Manifest release timestamp: `2026-08-24T19:07:41Z`
-- GitHub Release publication timestamp: `2026-08-24T19:09:39Z`
-- Manifest integrity: passed for all 136 shipped paths; canonical version comparison reports
+- Latest stable version: `v0.27.0`
+- Release URL: `https://github.com/PC-Redemption/tool_shed/releases/tag/v0.27.0`
+- Content commit: `99f69eb4948f1838de6da40eabdb0a53c62cf0e3`
+- Provenance commit: `d3e1259248bdb13eb377c3f14be28d75a876bcdf`
+- Annotated tag object: `05c6a3b714a984212813ada86e70f8bd03efd9df`
+- Manifest release timestamp: `2026-08-25T00:43:04Z`
+- GitHub Release publication timestamp: `2026-08-25T00:46:12Z`
+- Manifest integrity: passed for all 139 shipped paths; canonical version comparison reports
   `current` with updater protocol 3.
 
-The initially published `v0.26.0` tag exposed a Windows-only test-fixture defect: the generated
+The prior `v0.26.0` tag exposed a Windows-only test-fixture defect: the generated
 schema unit test attempted to execute a POSIX shebang fixture directly. The shipped runtime behavior
 was not implicated, but both main and tag Windows validation correctly failed. The fixture was made
 platform-neutral with a mocked subprocess boundary, all local validation was repeated, and the fix
@@ -27,19 +27,20 @@ was published as `v0.26.1`. The already-published `v0.26.0` tag was not moved or
 
 ## Release validation
 
-- The complete local canonical validator passed 242 tests after the Windows fixture correction.
-- The `v0.26.1` tag workflow passed Ubuntu Python 3.x/3.11 and Windows Python 3.x/3.11:
-  `https://github.com/PC-Redemption/tool_shed/actions/runs/32766383593`.
+- The exact `v0.27.0` content and provenance candidates each passed the complete local canonical
+  validator with 256 tests.
+- The `v0.27.0` tag workflow passed Ubuntu Python 3.x/3.11 and Windows Python 3.x/3.11:
+  `https://github.com/PC-Redemption/tool_shed/actions/runs/32794836239`.
 - The matching main workflow passed the same four matrices:
-  `https://github.com/PC-Redemption/tool_shed/actions/runs/32766380706`.
+  `https://github.com/PC-Redemption/tool_shed/actions/runs/32794836245`.
 - Automated GitHub Release publication passed:
-  `https://github.com/PC-Redemption/tool_shed/actions/runs/32766383420`.
-- GitHub reports `v0.26.1` as the Latest, non-draft, non-prerelease release.
+  `https://github.com/PC-Redemption/tool_shed/actions/runs/32794836244`.
+- GitHub reports `v0.27.0` as the Latest, non-draft, non-prerelease release.
 
 ## Cross-platform qualification
 
 The focused resolver, reporting, qualification-cache, App Server execution, and `next` forwarding
-suite passed 73 tests. The complete canonical validator passed 242 tests plus provider-adapter,
+suite passed. The complete canonical validator passed 256 tests plus provider-adapter,
 manifest, generated-index, stale-path, work-state, roadmap, disconnected-snapshot, and template
 checks.
 
@@ -90,11 +91,11 @@ recorded here.
 
 - Canonical source: `/home/jon/docker/tool_shed/skills/tool-shed`
 - Installed target: `/home/jon/.codex/skills/tool-shed`
-- Pre-synchronization drift was limited to `references/campaign-routes.md`.
+- Pre-synchronization drift was limited to `references/maintenance-routes.md`.
 - The canonical source, staged replacement, and installed replacement each passed skill validation.
 - Exact recursive comparison between canonical and installed skill is empty.
 - Prior installed copy:
-  `/home/jon/.codex/skills/tool-shed.backup-20260824T191424Z`
+  `/home/jon/.codex/skills/tool-shed.backup-20260825T005119Z`
 - A fresh Codex task is required to load the synchronized installed skill; this already-running task
   retains its originally loaded instructions.
 
