@@ -1,8 +1,8 @@
-# Tool Shed v0.27.0 dirty Codex forward-compatibility qualification
+# Tool Shed v0.27.x dirty Codex forward-compatibility qualification
 
 Status: active
 Type: evidence
-Updated: 2026-08-24
+Updated: 2026-08-25
 Next Action: upgrade Bactron Core through its normal Windows workspace process and record sanitized Windows field evidence
 Campaign: qualify-release-and-field-verify-dirty-codex-forward-compatibility
 Parent: work/00-campaigns/active/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md
@@ -24,6 +24,22 @@ schema unit test attempted to execute a POSIX shebang fixture directly. The ship
 was not implicated, but both main and tag Windows validation correctly failed. The fixture was made
 platform-neutral with a mocked subprocess boundary, all local validation was repeated, and the fix
 was published as `v0.26.1`. The already-published `v0.26.0` tag was not moved or reused.
+
+## v0.27.0 Windows field failure and v0.27.1 remediation
+
+The normal Windows `ts: fulltsupgrade` attempt against Bactron Core did not install `v0.27.0`.
+Sanitized transaction `05be2fa74898ad3731f61410` reported `TSU-801`: the post-install stale-path
+validator saw Markdown in the updater's temporary `.tool_shed.retired-*` directory. Rollback
+restored the verified `v0.26.1` snapshot, preserved installed-skill parity and project identity,
+removed temporary snapshot directories, and left the target worktree clean.
+
+The `v0.27.1` patch removes the retired snapshot immediately after replacement and before any
+post-install workspace scan; its already-verified archive remains the rollback authority. Failure
+classification now uses the recorded release-validation or post-install-validation stage as a
+safe fallback when validator text is opaque, producing `TSU-501` rather than `TSU-801`. Regression
+coverage proves both that retired Markdown cannot contaminate a successful post-install scan and
+that a forced opaque post-install failure restores the old snapshot without leaving a retirement
+directory. Bactron Core was not modified while preparing this patch.
 
 ## Release validation
 

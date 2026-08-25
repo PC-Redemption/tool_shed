@@ -158,6 +158,22 @@ class SnapshotUpgradeStateTests(unittest.TestCase):
             "TSU-901",
         )
 
+    def test_validation_stage_classifies_opaque_failure(self) -> None:
+        error_class = state.classify_error(
+            RuntimeError("command exited with status 1"),
+            stage="post-install-validation",
+        )
+
+        self.assertEqual(error_class, "validation")
+        self.assertEqual(
+            state.issue_code_for(
+                state="failed",
+                error_class=error_class,
+                rollback_outcome="restored",
+            ),
+            "TSU-501",
+        )
+
     def test_heartbeat_keeps_a_long_phase_visible(self) -> None:
         stream = io.StringIO()
         heartbeat = state.ProgressHeartbeat(stream, interval_seconds=0.02)

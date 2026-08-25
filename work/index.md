@@ -2,7 +2,7 @@
 
 Generated from artifact headers. `work/index.json` contains the same navigation data for automation. Do not put durable project truth only here; keep current truth in docs or README files.
 
-Updated: 2026-08-24
+Updated: 2026-08-25
 
 ## Orientation
 
@@ -80,7 +80,7 @@ Updated: 2026-08-24
 | [work/evidence/evidence-snapshot-upgrade-performance-and-retry-safety.md](work/evidence/evidence-snapshot-upgrade-performance-and-retry-safety.md) | evidence | complete | 2026-08-24 | none | work/00-campaigns/completed/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md |
 | [work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md](work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md) | evidence | complete | 2026-08-09 | none | work/wp/completed/wp-evidence-responsive-tool-shed-execution.md |
 | [work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md](work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md) | evidence | complete | 2026-08-18 | none | work/00-campaigns/completed/027-publish-and-verify-tool-shed-v0-22-0.md |
-| [work/evidence/evidence-tool-shed-0-26-0-dirty-codex-forward-compatibility.md](work/evidence/evidence-tool-shed-0-26-0-dirty-codex-forward-compatibility.md) | evidence | active | 2026-08-24 | upgrade Bactron Core through its normal Windows workspace process and record sanitized Windows field evidence | work/00-campaigns/active/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md |
+| [work/evidence/evidence-tool-shed-0-26-0-dirty-codex-forward-compatibility.md](work/evidence/evidence-tool-shed-0-26-0-dirty-codex-forward-compatibility.md) | evidence | active | 2026-08-25 | upgrade Bactron Core through its normal Windows workspace process and record sanitized Windows field evidence | work/00-campaigns/active/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md |
 | [work/evidence/evidence-tool-shed-provider-portability.md](work/evidence/evidence-tool-shed-provider-portability.md) | - | - | - | - | - |
 | [work/evidence/evidence-w1-dev-smb-access.md](work/evidence/evidence-w1-dev-smb-access.md) | evidence | complete | 2026-08-24 | none | - |
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |

@@ -5009,6 +5009,31 @@ work_levels:
             self.assertNotIn("rollback", payload)
             self.assertIn("No stale work paths found.", payload["post_install"]["check_stale_paths.py"])
 
+    def test_snapshot_updater_retires_old_snapshot_before_post_install_scans(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(root, include_stale_checker=True)
+            workspace = self.create_update_workspace(root)
+            (workspace / "tool_shed" / "retired-stale-link.md").write_text(
+                "# Retired snapshot fixture\n\n[missing](work/tickets/missing.md)\n",
+                encoding="utf-8",
+            )
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--json",
+                cwd=workspace,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertEqual(payload["state"], "installed")
+            self.assertIn("No stale work paths found.", payload["post_install"]["check_stale_paths.py"])
+            self.assertFalse(list(workspace.glob(".tool_shed.retired-*")))
+
     def test_snapshot_updater_rolls_back_from_verified_archive(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -5031,11 +5056,17 @@ work_levels:
             self.assertNotEqual(result.returncode, 0)
             self.assertTrue(payload["rollback"])
             self.assertTrue(payload["work_preserved"])
+            self.assertEqual(payload["failed_stage"], "post-install-validation")
+            self.assertEqual(payload["error_class"], "validation")
             self.assertEqual(
                 (workspace / "tool_shed" / "old-marker.txt").read_text(encoding="utf-8"),
                 "old snapshot\n",
             )
             self.assertEqual(len(list(workspace.glob("tool_shed.backup-*.tar"))), 1)
+            self.assertFalse(list(workspace.glob(".tool_shed.retired-*")))
+            report = json.loads(Path(payload["transaction_report"]).read_text(encoding="utf-8"))
+            self.assertEqual(report["error_class"], "validation")
+            self.assertEqual(report["issue_code"], "TSU-501")
 
     def test_snapshot_upgrade_replaces_old_skill_and_refreshes_guidance_transactionally(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -5606,7 +5637,10 @@ old Tool Shed guidance
             self.assertEqual(report["error_class"], "timeout")
             self.assertEqual(report["issue_code"], "TSU-201")
             self.assertEqual(report["rollback_outcome"], "not-started")
-            self.assertEqual(report["updater"]["shed_version"], "0.27.0")
+            self.assertEqual(
+                report["updater"]["shed_version"],
+                json.loads((ROOT / "SHED_VERSION.json").read_text(encoding="utf-8"))["shed_version"],
+            )
             self.assertEqual(report["updater"]["protocol"], 3)
             self.assertEqual((workspace / "tool_shed" / "old-marker.txt").read_bytes(), original)
             self.assertFalse(list(workspace.glob("tool_shed.backup-*.tar")))

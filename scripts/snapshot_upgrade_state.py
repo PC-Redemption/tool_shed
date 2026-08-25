@@ -440,7 +440,7 @@ class TransactionRecorder:
         self._finished = True
 
 
-def classify_error(error: BaseException) -> str:
+def classify_error(error: BaseException, *, stage: str | None = None) -> str:
     if isinstance(error, ConcurrentUpgradeError):
         return "concurrent-upgrade"
     text = str(error).lower()
@@ -456,6 +456,8 @@ def classify_error(error: BaseException) -> str:
         return "network"
     if isinstance(error, OSError):
         return "filesystem"
+    if stage in {"release-validation", "post-install-validation"}:
+        return "validation"
     return "unknown"
 
 

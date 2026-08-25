@@ -1253,9 +1253,9 @@
       "status": "active",
       "superseded_by": null,
       "supersedes": null,
-      "title": "Tool Shed v0.27.0 dirty Codex forward-compatibility qualification",
+      "title": "Tool Shed v0.27.x dirty Codex forward-compatibility qualification",
       "type": "evidence",
-      "updated": "2026-08-24"
+      "updated": "2026-08-25"
     },
     {
       "campaign": null,
@@ -1811,7 +1811,7 @@
     }
   ],
   "description": "Generated from tool_shed artifact headers. Use as navigation, not canonical truth.",
-  "generated_at": "2026-08-24",
+  "generated_at": "2026-08-25",
   "reading_order": [
     "Read project README/docs for current truth.",
     "Read active maps and active work artifacts from this index.",

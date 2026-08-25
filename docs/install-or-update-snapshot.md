@@ -46,6 +46,12 @@ and script hash. Render `latest` or an exact transaction ID locally with
 structured report. The command validates an allowlisted same-platform schema and cannot publish an
 issue. Review its sanitized draft before separately authorizing any GitHub write.
 
+For an existing update, the verified archive is the rollback authority after replacement. The
+temporary retired snapshot is removed before workspace-wide post-install validators run, so old
+Markdown and other retired files cannot contaminate validation of the selected release. A failure
+whose recorded stage is release or post-install validation is reported as `TSU-501` even when the
+underlying validator emits only an opaque nonzero-exit message.
+
 Synchronization accepts only a missing target or a target that exactly matches a skill recorded
 by a stable Tool Shed release. It keeps a timestamped backup under
 `${CODEX_HOME:-~/.codex}/tool-shed-backups/`, outside the active skill-discovery directory, when

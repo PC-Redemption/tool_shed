@@ -1950,6 +1950,9 @@ def main() -> int:
                 recorder.phase("snapshot-replacement")
                 shutil.move(str(staged), str(target))
                 installed = True
+                if retired is not None and retired.exists():
+                    shutil.rmtree(retired)
+                    retired = None
                 if args.inject_after_replacement_failure:
                     raise UpdateError("injected failure after snapshot replacement")
                 emit_progress("post-install validation")
@@ -2128,11 +2131,14 @@ def main() -> int:
         SnapshotStateError,
     ) as error:
         payload["error"] = str(error)
-        payload["error_class"] = classify_error(error)
         if "failed_stage" not in payload:
             payload["failed_stage"] = recorder.current_phase or str(
                 payload.get("stage", "unknown")
             )
+        payload["error_class"] = classify_error(
+            error,
+            stage=str(payload["failed_stage"]),
+        )
         payload["rollback"] = bool(rollback_backup and not installed)
         if fingerprint_tree(workspace / "work") != work_before:
             payload["work_preserved"] = False

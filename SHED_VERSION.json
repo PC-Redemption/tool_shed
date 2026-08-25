@@ -10,7 +10,7 @@
     "adapters/codex-app-server-config.json": "eae7407b809e8781611e1148f44677c2902bfef42cdd051149cf2056bfe0135f",
     "adapters/codex-app-server-qualifications.json": "35c2052487e2e292ec38c78ea8c2146b9abd064ba0fa5486eb9854a8b25b2ef4",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "54bac3b360d28ec542deb06edd5768aaa5e7d0bcb9edb7f8b02ed7a5f0cb530f",
+    "adapters/codex-skill-releases.json": "114269be3546d93b72a269ae0c14ee6c2fb6417a6111de897ad16cc7ff2b0462",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "95069c265c5384c7e62e91be7cad996eb1ce4c13f43ca57f5051c0487e2f9c02",
     "docs/codex-app-server-alpha-requalification-2026-08-24.md": "80789afbdcfb878257547934fd6ca7358fd56f79f16b081a4fc61e888579b962",
@@ -30,7 +30,7 @@
     "docs/completion-watcher-protocol.md": "2fb0057ead6f1524a22a17833b448f419312588858553b0ad68ddf0c873e10bb",
     "docs/documentation-site.md": "848de0bb06a3da3f54d03799a0522389281a29d7e1344dd7142780f6ef04231a",
     "docs/fleet-snapshot-updates.md": "4016143af0bd7eec601ebc3782fc7ca9e036eee96517b6397b34e0809f5b7cb3",
-    "docs/install-or-update-snapshot.md": "f42dd2c48e3c3364283c647caaca0f6e059c88ad7f86b9cff0e13aa0f233036a",
+    "docs/install-or-update-snapshot.md": "607783b7782c122849f0f3af9354af43bae20ccf94ebabf8331c537d45c11dda",
     "docs/operator-guide.md": "979f0039919838bf6c58ce35182b99b41a43fc83660336076f4262d93c9b6e62",
     "docs/provider-adapters.md": "edf50dc13fd15cb6415904981ca3dea56fd73aad32a473429ef34d1b56cea25b",
     "docs/releasing.md": "8c7d1ad0291935a64ab6f813ce98c0424dfb8455fb675e3a219ce79c39978313",
@@ -80,11 +80,11 @@
     "scripts/repository_policy.py": "7037bc56621a961f63266d93f37f3533c5d281359afeef87da872570f28f6c44",
     "scripts/review_work_state.py": "095c6e7a60e8597c9bf0d70c12f22e2030bf3a16afa6fd3ac0555abe6b7817a0",
     "scripts/snapshot_upgrade_report.py": "e8d81eda2abbea3e2a62bc579bc63026a63f83638ae32ef4a39393b25230d064",
-    "scripts/snapshot_upgrade_state.py": "4f2c14f45cdb25e08defaa05629ae6f4dc20024ff0d4aa23f3439a879dd7ef85",
+    "scripts/snapshot_upgrade_state.py": "06da95258fd6ba2b16c0fe8b5a102ebcb6e142f809e4847433406a6bd2c4f92a",
     "scripts/update-tool-shed.ps1": "271d8970201341f66595b902de0c1e03ace41203ef113b81eed5464b2a75591d",
     "scripts/update-tool-shed.sh": "51740376eca2cbe2eba8590333f55bfa7cf7bd6b720b27176a127a0e44223fdb",
     "scripts/update_shed_manifest.py": "46abc76a41e8001f541f76b47ad3fe2e018004f948fc22b1dd846fec73a04227",
-    "scripts/update_snapshot.py": "07124b930b51a7b1f0845388811d5e145261c1004b92a1b592b642051eb2acef",
+    "scripts/update_snapshot.py": "7ab67b1266626505f925da5ef911fc7d626fddffc32d48ec9374b6e8210101f5",
     "scripts/update_work_index.py": "81f5fe7c37709fa07de9498bbcd29c23e252ac93a4b96ce38543aca8686b7015",
     "scripts/validate_snapshot_client.py": "d740896c470e02ba526ed08a6d2a8b40865764e67951583e6f8a97db65402766",
     "scripts/validate_tool_shed.py": "8fc34912f27434fefea4870607350a6543c3293666e4efd96d55b320739c42d6",
@@ -144,35 +144,13 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
-  "notes": "Faster observable retry-safe snapshot upgrades with sanitized issue reporting",
-  "release_commit": "99f69eb4948f1838de6da40eabdb0a53c62cf0e3",
-  "release_qualification": {
-    "attested_at": "2026-08-25T00:43:04Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "d740896c470e02ba526ed08a6d2a8b40865764e67951583e6f8a97db65402766"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "8fc34912f27434fefea4870607350a6543c3293666e4efd96d55b320739c42d6"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "b62203b7c1c21f03dc77e42d714db6b0d742550c3524a4dc33d67c5c283cc54e"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "74ee83963f0c20eef755bcae7f51c0caaa35fe3ce2f7001cbcfcf381911d0a45"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "99f69eb4948f1838de6da40eabdb0a53c62cf0e3"
-  },
-  "release_tag": "v0.27.0",
-  "released_at": "2026-08-25T00:43:04Z",
-  "shed_version": "0.27.0",
-  "updated_at": "2026-08-24",
+  "notes": "Fix retired-snapshot validation and post-install issue classification",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.27.1",
+  "released_at": null,
+  "shed_version": "0.27.1",
+  "updated_at": "2026-08-25",
   "updater_mutation_paths": [
     {
       "mode": "tree",
