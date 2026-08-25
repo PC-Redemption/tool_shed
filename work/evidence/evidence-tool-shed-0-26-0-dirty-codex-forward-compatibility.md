@@ -1,11 +1,11 @@
 # Tool Shed v0.27.x dirty Codex forward-compatibility qualification
 
-Status: active
+Status: complete
 Type: evidence
 Updated: 2026-08-25
-Next Action: upgrade Bactron Core through its normal Windows workspace process and record sanitized Windows field evidence
+Next Action: none
 Campaign: qualify-release-and-field-verify-dirty-codex-forward-compatibility
-Parent: work/00-campaigns/active/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md
+Parent: work/00-campaigns/completed/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md
 
 ## Published release
 
@@ -58,7 +58,7 @@ directory. Bactron Core was not modified while preparing this patch.
 ## Cross-platform qualification
 
 The focused resolver, reporting, qualification-cache, App Server execution, and `next` forwarding
-suite passed. The complete canonical validator passed 256 tests plus provider-adapter,
+suite passed. The complete canonical validator passed 258 tests plus provider-adapter,
 manifest, generated-index, stale-path, work-state, roadmap, disconnected-snapshot, and template
 checks.
 
@@ -105,6 +105,33 @@ recorded here.
   mutation surface.
 - The share remains available through the approved read/write, no-execute mount route.
 
+## Bactron Core Windows field verification
+
+The owner ran the normal Windows `ts: fulltsupgrade` route from Bactron Core and then started a
+fresh Codex session. Transaction `418f2206963949c1fb39ca37` completed successfully as `TSU-000`:
+
+- the workspace snapshot and installed Codex skill became byte-exact `v0.27.1` matches;
+- the release content commit was `84d2b74780c59372325e9ae5c5d51a1f07fc98dd`;
+- convergence was committed as `06d2ad3`, and the worktree was clean;
+- the verified immediate rollback archive was retained as
+  `tool_shed.backup-20260825T111845Z.tar`;
+- retention removed three older verified backups, reclaimed 5,004,141 bytes, and retained two
+  workspace plus two skill backups.
+
+The fresh-session App Server status selected Codex `0.149.0-alpha.4.3` through the normal Windows
+resolver without a PATH preparation step. Its reviewed record was `exact-qualified` with blockers
+for read-only planning (`gpt-5.6-sol` / high) and verification (`gpt-5.6-terra` / low). CAMP and
+workspace writing remained unqualified, global and session defaults remained off, ordinary
+execution remained GUI, and API fallback remained disabled.
+
+A real verification turn then ran through App Server with `gpt-5.6-terra` / low. It reported Tool
+Shed `v0.27.1`, the exact release content commit, branch `work/2026-05-26` at 27 commits ahead of
+origin, and a clean worktree. Pre/post Git status and manifest hashes were identical, and no files
+changed. The owner explicitly accepted this exact-qualified Windows execution as field evidence
+because the installed alpha is now a reviewed record; cross-platform tests and live Linux evidence
+continue to cover the unseen-version dirty-read path. This acceptance does not extend to CAMP or
+any other workspace-writing role.
+
 ## Installed Codex skill synchronization
 
 - Canonical source: `/home/jon/docker/tool_shed/skills/tool-shed`
@@ -122,12 +149,10 @@ installed directories remained byte-for-byte identical and each passed `quick_va
 Synchronization was therefore a verified no-op: no installed files were replaced, no backup was
 created, and no additional restart requirement was introduced.
 
-## Remaining field gate
+## Field gate disposition
 
-Publication and host-local installed-client synchronization are complete. At the owner's request,
-this task did not mutate Bactron Core. The remaining completion gate is owner-run through Bactron
-Core's normal Windows workspace upgrade process: upgrade the dirty snapshot to the latest verified
-published release while preserving unrelated files, verify snapshot integrity, confirm extension-
-only Codex discovery without requiring `PATH`, and collect sanitized dirty-qualified read-only
-planning or verification evidence. Workspace-write qualification remains separately exact-version
-gated.
+Publication, host-local installed-client synchronization, normal Windows Bactron Core upgrade, and
+read-only Windows App Server field execution are complete. The owner accepted exact-qualified or
+dirty-qualified read-only execution for this field gate when the installed executable is already a
+reviewed record. Workspace-write qualification remains separately exact-version gated and was not
+granted to `0.149.0-alpha.4.3`.

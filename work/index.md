@@ -10,7 +10,6 @@ Updated: 2026-08-25
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
 | [work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md](work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md) | campaign | abandoned | 2026-08-24 | none | - |
-| [work/00-campaigns/active/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md](work/00-campaigns/active/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md) | campaign | blocked | 2026-08-24 | resolve blocker or decision: Owner reserved the Bactron Core snapshot upgrade for the normal Windows workspace process. Completion requires upgrading the dirty snapshot to the latest verified published release with unrelated files preserved, verifying integrity and extension-only Codex resolution without PATH, and recording sanitized dirty-qualified read-only planning or verification evidence. | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -58,6 +57,7 @@ Updated: 2026-08-25
 | [work/00-campaigns/completed/049-implement-minimum-version-dirty-read-qualification.md](work/00-campaigns/completed/049-implement-minimum-version-dirty-read-qualification.md) | campaign | complete | 2026-08-24 | none | - |
 | [work/00-campaigns/completed/050-make-codex-candidate-resolution-and-readiness-truthful.md](work/00-campaigns/completed/050-make-codex-candidate-resolution-and-readiness-truthful.md) | campaign | complete | 2026-08-24 | none | - |
 | [work/00-campaigns/completed/051-harden-dirty-qualification-cache-and-failure-semantics.md](work/00-campaigns/completed/051-harden-dirty-qualification-cache-and-failure-semantics.md) | campaign | complete | 2026-08-24 | none | - |
+| [work/00-campaigns/completed/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md](work/00-campaigns/completed/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md) | campaign | complete | 2026-08-25 | none | - |
 | [work/00-campaigns/completed/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md](work/00-campaigns/completed/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md) | campaign | complete | 2026-08-24 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
@@ -80,7 +80,7 @@ Updated: 2026-08-25
 | [work/evidence/evidence-snapshot-upgrade-performance-and-retry-safety.md](work/evidence/evidence-snapshot-upgrade-performance-and-retry-safety.md) | evidence | complete | 2026-08-24 | none | work/00-campaigns/completed/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md |
 | [work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md](work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md) | evidence | complete | 2026-08-09 | none | work/wp/completed/wp-evidence-responsive-tool-shed-execution.md |
 | [work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md](work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md) | evidence | complete | 2026-08-18 | none | work/00-campaigns/completed/027-publish-and-verify-tool-shed-v0-22-0.md |
-| [work/evidence/evidence-tool-shed-0-26-0-dirty-codex-forward-compatibility.md](work/evidence/evidence-tool-shed-0-26-0-dirty-codex-forward-compatibility.md) | evidence | active | 2026-08-25 | upgrade Bactron Core through its normal Windows workspace process and record sanitized Windows field evidence | work/00-campaigns/active/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md |
+| [work/evidence/evidence-tool-shed-0-26-0-dirty-codex-forward-compatibility.md](work/evidence/evidence-tool-shed-0-26-0-dirty-codex-forward-compatibility.md) | evidence | complete | 2026-08-25 | none | work/00-campaigns/completed/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md |
 | [work/evidence/evidence-tool-shed-provider-portability.md](work/evidence/evidence-tool-shed-provider-portability.md) | - | - | - | - | - |
 | [work/evidence/evidence-w1-dev-smb-access.md](work/evidence/evidence-w1-dev-smb-access.md) | evidence | complete | 2026-08-24 | none | - |
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |
@@ -123,5 +123,5 @@ Updated: 2026-08-25
 ## Summary
 
 - Total artifacts: 105
-- Active artifacts: 2
-- Completed/decided artifacts: 93
+- Active artifacts: 0
+- Completed/decided artifacts: 95
