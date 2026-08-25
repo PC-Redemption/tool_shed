@@ -9,13 +9,13 @@ Parent: work/00-campaigns/active/052-qualify-release-and-field-verify-dirty-code
 
 ## Published release
 
-- Latest stable version: `v0.27.0`
-- Release URL: `https://github.com/PC-Redemption/tool_shed/releases/tag/v0.27.0`
-- Content commit: `99f69eb4948f1838de6da40eabdb0a53c62cf0e3`
-- Provenance commit: `d3e1259248bdb13eb377c3f14be28d75a876bcdf`
-- Annotated tag object: `05c6a3b714a984212813ada86e70f8bd03efd9df`
-- Manifest release timestamp: `2026-08-25T00:43:04Z`
-- GitHub Release publication timestamp: `2026-08-25T00:46:12Z`
+- Latest stable version: `v0.27.1`
+- Release URL: `https://github.com/PC-Redemption/tool_shed/releases/tag/v0.27.1`
+- Content commit: `84d2b74780c59372325e9ae5c5d51a1f07fc98dd`
+- Provenance commit: `010110197377b44157f518e0a38079d0520aade2`
+- Annotated tag object: `9f29a5423e609985768257bda33f109aeb75bd98`
+- Manifest release timestamp: `2026-08-25T10:57:11Z`
+- GitHub Release publication timestamp: `2026-08-25T11:00:10Z`
 - Manifest integrity: passed for all 139 shipped paths; canonical version comparison reports
   `current` with updater protocol 3.
 
@@ -43,15 +43,17 @@ directory. Bactron Core was not modified while preparing this patch.
 
 ## Release validation
 
-- The exact `v0.27.0` content and provenance candidates each passed the complete local canonical
-  validator with 256 tests.
-- The `v0.27.0` tag workflow passed Ubuntu Python 3.x/3.11 and Windows Python 3.x/3.11:
-  `https://github.com/PC-Redemption/tool_shed/actions/runs/32794836239`.
+- The exact `v0.27.1` content and provenance candidates each passed the complete local canonical
+  validator with 258 tests.
+- The exact content commit passed Ubuntu Python 3.x/3.11 and Windows Python 3.x/3.11 qualification:
+  `https://github.com/PC-Redemption/tool_shed/actions/runs/32839290767`.
+- The `v0.27.1` tag workflow passed the same four matrices:
+  `https://github.com/PC-Redemption/tool_shed/actions/runs/32839913524`.
 - The matching main workflow passed the same four matrices:
-  `https://github.com/PC-Redemption/tool_shed/actions/runs/32794836245`.
+  `https://github.com/PC-Redemption/tool_shed/actions/runs/32839913526`.
 - Automated GitHub Release publication passed:
-  `https://github.com/PC-Redemption/tool_shed/actions/runs/32794836244`.
-- GitHub reports `v0.27.0` as the Latest, non-draft, non-prerelease release.
+  `https://github.com/PC-Redemption/tool_shed/actions/runs/32839913485`.
+- GitHub reports `v0.27.1` as the Latest, non-draft, non-prerelease release.
 
 ## Cross-platform qualification
 
@@ -114,6 +116,11 @@ recorded here.
   `/home/jon/.codex/skills/tool-shed.backup-20260825T005119Z`
 - A fresh Codex task is required to load the synchronized installed skill; this already-running task
   retains its originally loaded instructions.
+
+The `v0.27.1` patch did not change `skills/tool-shed`. After publication, the canonical and
+installed directories remained byte-for-byte identical and each passed `quick_validate.py`.
+Synchronization was therefore a verified no-op: no installed files were replaced, no backup was
+created, and no additional restart requirement was introduced.
 
 ## Remaining field gate
 
