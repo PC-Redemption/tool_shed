@@ -226,6 +226,31 @@ def _compatibility_for_resolution(resolution, record: dict[str, Any] | None) -> 
     return str(record.get("status")) if record else "unqualified_version"
 
 
+def write_executable_identity_matches(
+    record: dict[str, Any] | None,
+    executable: Path | None,
+) -> bool:
+    """Enforce an optional project-scoped workspace-write executable digest."""
+
+    qualification = (record or {}).get("workspace_write_qualification")
+    if not isinstance(qualification, dict):
+        return True
+    expected = qualification.get("executable_sha256")
+    if expected is None:
+        return True
+    if (
+        not isinstance(expected, str)
+        or re.fullmatch(r"[0-9A-Fa-f]{64}", expected) is None
+        or executable is None
+    ):
+        return False
+    try:
+        actual = hashlib.sha256(executable.read_bytes()).hexdigest()
+    except OSError:
+        return False
+    return actual == expected.lower()
+
+
 def _recorded_role_usable(
     *,
     role: str,
@@ -233,6 +258,7 @@ def _recorded_role_usable(
     config: AppServerFeatureConfig,
     policy: ModelPolicy,
     installed: str | None,
+    executable: Path | None = None,
 ) -> bool:
     if not record or record.get("status") not in {"qualified", "qualified_with_blockers"}:
         return False
@@ -251,6 +277,7 @@ def _recorded_role_usable(
             usable
             and record.get("workspace_writing") is True
             and installed in config.qualified_write_codex_versions
+            and write_executable_identity_matches(record, executable)
         )
     return usable
 
@@ -386,6 +413,7 @@ def status_report(
             config=config,
             policy=policy,
             installed=installed,
+            executable=resolution.executable,
         )
         dirty_usable = bool(
             qualification_state == "dirty-qualified" and config.role_enabled(role)
@@ -404,6 +432,7 @@ def status_report(
             config=config,
             policy=policy,
             installed=installed,
+            executable=resolution.executable,
         )
     )
     if camp_enabled:

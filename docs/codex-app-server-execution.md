@@ -129,6 +129,12 @@ are direct JSON argv arrays; shell executables are rejected. Capsule validation,
 ChatGPT authentication, model-list network access, and exact CAMP qualification all complete before
 the dispatcher starts a queued campaign or permits workspace mutation.
 
+When a workspace supplies explicit `--config`, `--policy`, and `--qualifications` files, the
+dispatcher uses the selected config and policy for both authorization and the resulting bounded
+execution. A project-scoped workspace-write qualification may additionally pin
+`workspace_write_qualification.executable_sha256`; selection and status then require the resolved
+GUI executable to match that digest as well as the recorded version.
+
 The selector reuses the centralized config, model policy, qualification registry, and installed
 Codex version check. Exact records remain authoritative for known versions and all CAMP writing.
 For planning and verification, an unseen executable with a numeric release core of `0.146.0` or

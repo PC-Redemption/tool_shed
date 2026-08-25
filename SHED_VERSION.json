@@ -10,13 +10,13 @@
     "adapters/codex-app-server-config.json": "9ee82433d20abdef7567bd65d6ddbcf0d1d816a92296f3ecd84d836dfb4cb7ed",
     "adapters/codex-app-server-qualifications.json": "35c2052487e2e292ec38c78ea8c2146b9abd064ba0fa5486eb9854a8b25b2ef4",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "bacc0af3f3fcd68544285d3b9fcaec61628871f2c796e07eab90cd18e9737251",
+    "adapters/codex-skill-releases.json": "1d3ba083b6baae07daa778d72f0db9661476f67a9e5d7621c445c740ed9c5e6f",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "95069c265c5384c7e62e91be7cad996eb1ce4c13f43ca57f5051c0487e2f9c02",
     "docs/codex-app-server-alpha-requalification-2026-08-24.md": "80789afbdcfb878257547934fd6ca7358fd56f79f16b081a4fc61e888579b962",
     "docs/codex-app-server-camp-token-baseline-2026-08-20.md": "5148859c74dc0b79a7f3dd1b86b8085f03091a3268bf95dfe769337fe3fdccc9",
     "docs/codex-app-server-camp-token-optimization-2026-08-20.md": "7c28ad01af86288141bf94b6f9b9d048ed69424075c762d44d421f82330b0235",
-    "docs/codex-app-server-execution.md": "897eb98a4db19596475f54972886505ee73b72fa2c50e3478d4a5d0185a1969a",
+    "docs/codex-app-server-execution.md": "75d8b301b917f83baab269d1bf359fedeb2f004f8e7986abb8e4a6f616817e35",
     "docs/codex-app-server-maintainer-note.md": "607d79f5613f1f92300def5b01e8ae2baca744703888c0ef370d17767d4a738c",
     "docs/codex-app-server-qualification-2026-08-20.md": "d4d70d0a51bb6be1ed69ce45ce63124b16f4d1acca35e9072d926b4d43b79c31",
     "docs/codex-app-server-requalification-2026-08-21.md": "9aacfac50f3debb8ccff2b3b06d33f6b52c6354e7df5b7bc9c5f2114f85663b4",
@@ -45,8 +45,8 @@
     "schemas/completion-watcher/v1/terminal-event.schema.json": "ea1dc7ba12f788d11f8d74c9a28cea7e01e209d04486a98d82c4f765fc5afbb2",
     "schemas/completion-watcher/v1/watch-descriptor.schema.json": "e6b54939fb06111b7a9f687ceb9be281a9e8dc389bdc28a72d9ee3078eb5fe4f",
     "schemas/completion-watcher/v1/watch-record.schema.json": "7455db4c2e7a271ec8efbd7b0828143a141dcd1daa55d25540132ab0b53a5b1d",
-    "scripts/app_server_control.py": "2543e919b442bda5d27f99b3c5bf942474e2463e73b523d63a0ccf41f6514141",
-    "scripts/app_server_dispatch.py": "59b06bea599ba67fc51a6f9ae393f5615b581d532392c1bac279d01374ceb738",
+    "scripts/app_server_control.py": "0eca268c61639d2920b72ed2578758cc2a3a33a6121ab720f48fc225e3e123d3",
+    "scripts/app_server_dispatch.py": "2ba83fc20eccbac9b238a517b4bee7c1a12b29aa1427d39ff90eec229f927baf",
     "scripts/build_docs_site.py": "eb7436a456c87ab2bc20914b0a0442b034d2a48c17b290846924033c94e1aa0c",
     "scripts/campaign_queue.py": "6ad5fe93e4d973e2cb6ac705009f029cda06e58da68b9b32d824dc712131c84f",
     "scripts/check_provider_adapters.py": "acbf0c355a00f380cd1b2c201992be51f77a3bb857c1b5d569c1badc8a114051",
@@ -54,7 +54,7 @@
     "scripts/check_stale_paths.py": "fc3db5f5848eb6e7c510447508e31b684e554b8bafc176816c30aaf73a7276fd",
     "scripts/check_work_tree.py": "966e72958b947eb4da3105c557faf1670b742eba4389d433fcb6c9e0559f3220",
     "scripts/codex_app_server.py": "c2bb0c33be08bcf168869c68a0e817eeafb44e3f2dd8f977e45cd03b8c29c629",
-    "scripts/codex_app_server_compatibility.py": "c12282d7131433f755a2f0626502367749c72d70c3814fb00c7a15479fa97edb",
+    "scripts/codex_app_server_compatibility.py": "eeeb86538033ecdc5f9d72c5402fbf85e90fa1f39f5ea8eea76e4c4395fa147b",
     "scripts/codex_app_server_write_qualification.py": "87ca950aea60f40f39b0f849c151bdd92cdf2dfc6407c2de4b6dd2ef47558f88",
     "scripts/codex_camp_execution.py": "d83d331175cdbd90f5996d00c31159c00a3848c385e743b9f5a0cc434019c6ef",
     "scripts/codex_cli_resolver.py": "8188226dfef2d8fef0cb19905eb168f49ce3e0227ee0197d58c069601ed4ebed",
@@ -145,34 +145,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
-  "notes": "Fix clean-runner dispatcher test imports and release deterministic one-call App Server dispatch.",
-  "release_commit": "e321711830a3b36ccab995d8e61280713583d8c3",
-  "release_qualification": {
-    "attested_at": "2026-08-25T21:02:58Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "d740896c470e02ba526ed08a6d2a8b40865764e67951583e6f8a97db65402766"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "8fc34912f27434fefea4870607350a6543c3293666e4efd96d55b320739c42d6"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "b62203b7c1c21f03dc77e42d714db6b0d742550c3524a4dc33d67c5c283cc54e"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "74ee83963f0c20eef755bcae7f51c0caaa35fe3ce2f7001cbcfcf381911d0a45"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "e321711830a3b36ccab995d8e61280713583d8c3"
-  },
-  "release_tag": "v0.29.1",
-  "released_at": "2026-08-25T21:02:58Z",
-  "shed_version": "0.29.1",
+  "notes": "Preserve project-scoped App Server dispatch configuration through execution and enforce optional exact executable digests for workspace-write qualification.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.29.2",
+  "released_at": null,
+  "shed_version": "0.29.2",
   "updated_at": "2026-08-25",
   "updater_mutation_paths": [
     {

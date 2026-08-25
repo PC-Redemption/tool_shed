@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import subprocess
@@ -1210,6 +1211,84 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertEqual(status["compatibility"], "qualified_with_blockers")
         self.assertNotIn("camp_execution", status["enabled_roles"])
         self.assertIn("CAMP execution", status["disabled"])
+
+    def test_project_write_qualification_rejects_executable_hash_mismatch(self) -> None:
+        config_payload = json.loads(
+            (ROOT / "adapters" / "codex-app-server-config.json").read_text(encoding="utf-8")
+        )
+        config_payload["qualification"]["validated_codex_cli_version"] = "0.149.0-alpha.4.3"
+        config_payload["qualification"]["validated_codex_cli_versions"] = [
+            "0.149.0-alpha.4.3"
+        ]
+        config_payload["write_execution"]["qualified_codex_cli_version"] = (
+            "0.149.0-alpha.4.3"
+        )
+        config_payload["write_execution"].pop("qualified_codex_cli_versions", None)
+        config_path = self.root / "project-config.json"
+        config_path.write_text(json.dumps(config_payload), encoding="utf-8")
+        qualifications_path = self.root / "project-qualifications.json"
+        qualifications_path.write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "records": [
+                        {
+                            "codex_version": "0.149.0-alpha.4.3",
+                            "status": "qualified_with_blockers",
+                            "routing": {
+                                "camp_execution": {
+                                    "model": "gpt-5.6-terra",
+                                    "reasoning": "medium",
+                                    "qualified": True,
+                                }
+                            },
+                            "workspace_writing": True,
+                            "workspace_write_qualification": {
+                                "executable_sha256": "0" * 64,
+                            },
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        os.environ["FAKE_CODEX_VERSION"] = "0.149.0-alpha.4.3"
+        try:
+            selected = select_command(
+                "camp-run",
+                app_server_requested=True,
+                codex=str(self.fake),
+                config_path=config_path,
+                qualifications_path=qualifications_path,
+            )
+        finally:
+            os.environ.pop("FAKE_CODEX_VERSION", None)
+        self.assertFalse(selected.allowed)
+        self.assertEqual("codex_executable_hash_mismatch", selected.reason)
+        self.assertEqual("write-not-qualified", selected.qualification_state)
+
+        qualification_payload = json.loads(
+            qualifications_path.read_text(encoding="utf-8")
+        )
+        qualification_payload["records"][0]["workspace_write_qualification"][
+            "executable_sha256"
+        ] = hashlib.sha256(self.fake.read_bytes()).hexdigest()
+        qualifications_path.write_text(
+            json.dumps(qualification_payload), encoding="utf-8"
+        )
+        os.environ["FAKE_CODEX_VERSION"] = "0.149.0-alpha.4.3"
+        try:
+            matching = select_command(
+                "camp-run",
+                app_server_requested=True,
+                codex=str(self.fake),
+                config_path=config_path,
+                qualifications_path=qualifications_path,
+            )
+        finally:
+            os.environ.pop("FAKE_CODEX_VERSION", None)
+        self.assertTrue(matching.allowed)
+        self.assertEqual("explicit_qualified_opt_in", matching.reason)
 
     def test_user_command_status_and_session_control_are_explicit_only(self) -> None:
         report = control_status(codex=str(self.fake))

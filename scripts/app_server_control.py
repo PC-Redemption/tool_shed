@@ -19,6 +19,7 @@ try:
         qualification_for_version,
         status_report,
         resolve_codex_cli,
+        write_executable_identity_matches,
     )
     from scripts.codex_execution import DEFAULT_POLICY, ModelPolicy, ModelPolicyError
     from scripts.codex_qualification_cache import (
@@ -41,6 +42,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/app_server_contr
         qualification_for_version,
         status_report,
         resolve_codex_cli,
+        write_executable_identity_matches,
     )
     from codex_execution import (  # type: ignore[no-redef]
         DEFAULT_POLICY,
@@ -349,6 +351,11 @@ def select_role(
         record
         and record.get("workspace_writing")
         and installed in config.qualified_write_codex_versions
+        and write_executable_identity_matches(record, resolution.executable)
+    )
+    write_identity_matches = bool(
+        role != "camp_execution"
+        or write_executable_identity_matches(record, resolution.executable)
     )
     if role == "camp_execution" and resolution.app_server_available and not camp_write_qualified:
         qualification_state = "write-not-qualified"
@@ -369,6 +376,8 @@ def select_role(
         reason = "codex_below_minimum_dirty_read_version"
     elif not version_matches or not compatible:
         reason = "codex_version_not_qualified"
+    elif role == "camp_execution" and not write_identity_matches:
+        reason = "codex_executable_hash_mismatch"
     elif not route_qualified or not camp_write_qualified:
         reason = "role_not_qualified"
     elif not policy_matches:

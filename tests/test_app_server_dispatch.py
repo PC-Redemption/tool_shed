@@ -152,6 +152,50 @@ class AppServerDispatchTests(unittest.TestCase):
         execute.assert_called_once()
         self.assertEqual("/qualified/codex", execute.call_args.kwargs["codex"])
 
+    def test_dispatch_passes_selected_config_and_policy_to_execution(self) -> None:
+        self.add_campaign("dispatch-proof")
+        selection = SimpleNamespace(
+            allowed=True,
+            reason="explicit_app_server",
+            codex_executable="/qualified/codex",
+            installed_codex="0.149.0",
+            qualification_state="exact-qualified",
+            role="CAMP execution",
+            model="gpt-5.6-terra",
+            reasoning="medium",
+            api_fallback=False,
+        )
+        execution = {
+            "result": {},
+            "mutation_journal": {
+                "safe": True,
+                "final_state": "verified",
+                "deterministic_verification": {"commands_run": 1, "passed": True},
+            },
+        }
+        config = ROOT / "adapters" / "codex-app-server-config.json"
+        policy = ROOT / "adapters" / "codex-model-policy.json"
+        with (
+            patch("scripts.app_server_dispatch.select_command", return_value=selection),
+            patch(
+                "scripts.app_server_dispatch._app_server_host_preflight",
+                return_value={},
+            ),
+            patch(
+                "scripts.app_server_dispatch.execute_camp_if_enabled",
+                return_value=execution,
+            ) as execute,
+        ):
+            dispatch_next(
+                self.workspace,
+                app_server_requested=True,
+                config_path=config,
+                policy_path=policy,
+            )
+
+        self.assertEqual(config.resolve(), execute.call_args.kwargs["config"].source)
+        self.assertEqual(policy.resolve(), execute.call_args.kwargs["policy"].source)
+
     def test_invalid_capsule_fails_before_lifecycle_mutation(self) -> None:
         path = self.add_campaign("dispatch-proof")
         text = path.read_text(encoding="utf-8").replace(

@@ -25,9 +25,10 @@ try:
         AuthenticationError,
         CodexAppServerClient,
     )
-    from scripts.codex_execution import flatten_token_usage
+    from scripts.codex_execution import ModelPolicy, flatten_token_usage
     from scripts.codex_orchestration import (
         DEFAULT_CONFIG,
+        AppServerFeatureConfig,
         execute_camp_if_enabled,
     )
     from scripts.codex_execution import DEFAULT_POLICY
@@ -41,9 +42,14 @@ except ModuleNotFoundError:  # Direct execution: python scripts/app_server_dispa
         AuthenticationError,
         CodexAppServerClient,
     )
-    from codex_execution import DEFAULT_POLICY, flatten_token_usage  # type: ignore[no-redef]
+    from codex_execution import (  # type: ignore[no-redef]
+        DEFAULT_POLICY,
+        ModelPolicy,
+        flatten_token_usage,
+    )
     from codex_orchestration import (  # type: ignore[no-redef]
         DEFAULT_CONFIG,
+        AppServerFeatureConfig,
         execute_camp_if_enabled,
     )
     from codex_app_server_compatibility import (  # type: ignore[no-redef]
@@ -473,6 +479,8 @@ def dispatch_next(
             recovery_action="rerun the same Tool Shed command without --app-server",
         )
     preflight = _app_server_host_preflight(selection, timeout=timeout)
+    execution_config = AppServerFeatureConfig.load(config_path)
+    execution_policy = ModelPolicy.load(policy_path)
     campaign_started = False
     if campaign.status == "queued":
         _start_selected_campaign(root, campaign_id)
@@ -493,6 +501,8 @@ def dispatch_next(
             explicit_files=capsule.context_files,
             verification_commands=capsule.verification_commands,
             enable_override=True,
+            config=execution_config,
+            policy=execution_policy,
             codex=selection.codex_executable,
             timeout=timeout,
             telemetry_path=telemetry_path,

@@ -3,14 +3,14 @@
 Status: blocked
 Type: campaign
 Updated: 2026-08-25
-Next Action: resolve blocker or decision: Owner consent is required before any Bactron Core snapshot change or Windows App Server proof.
+Next Action: resolve blocker or decision: Detour Campaign 063 must repair and release project-scoped direct dispatch before the Windows proof can continue.
 Campaign ID: prove-bactron-core-native-windows-app-server-workflow
 Campaign Number: 059
 Outcome: Show that the released Tool Shed works through the normal Windows GUI environment for a fresh asset-aware Core campaign.
 Primary Focus Areas: snapshot-delivery
 Supporting Focus Areas: provider-portability, workspace-safety, qualification-release
 Depends On: synchronize-maintainer-skill-and-smoke-v0-28-0
-Decision: Owner consent is required before any Bactron Core snapshot change or Windows App Server proof.
+Decision: Detour Campaign 063 must repair and release project-scoped direct dispatch before the Windows proof can continue.
 Detour For: none
 Return To: none
 Completion Gate: G4-WINDOWS-INSTALLED-WORKS passes with version, resolver, asset-aware execution, exactly-once verification, journal, and usage evidence.
