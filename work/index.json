@@ -76,23 +76,6 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
-      "disposition": "none",
-      "next_action": "execute the campaign completion gate",
-      "parent": null,
-      "path": "work/00-campaigns/active/062-publish-and-synchronize-direct-app-server-dispatch-v0-29-1.md",
-      "produces": null,
-      "project_map": null,
-      "status": "working",
-      "superseded_by": null,
-      "supersedes": null,
-      "title": "Publish and synchronize direct App Server dispatch v0.29.1",
-      "type": "campaign",
-      "updated": "2026-08-25"
-    },
-    {
-      "campaign": null,
-      "campaign_reason": null,
-      "canonical_truth": null,
       "disposition": "completed",
       "next_action": "none",
       "parent": null,
@@ -1056,6 +1039,23 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
+      "disposition": "completed",
+      "next_action": "none",
+      "parent": null,
+      "path": "work/00-campaigns/completed/062-publish-and-synchronize-direct-app-server-dispatch-v0-29-1.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Publish and synchronize direct App Server dispatch v0.29.1",
+      "type": "campaign",
+      "updated": "2026-08-25"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
       "disposition": "Replaced as the executable entrypoint by a full Program Roadmap proposal with staged milestones, evidence gates, and separately approved roadmap-derived campaigns.",
       "next_action": "reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign.",
       "parent": null,
@@ -1516,6 +1516,23 @@
       "updated": "2026-08-25"
     },
     {
+      "campaign": "publish-and-synchronize-direct-app-server-dispatch-v0-29-1",
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": null,
+      "next_action": "return to Campaign 059 for the authorized Bactron Core Windows proof",
+      "parent": null,
+      "path": "work/evidence/evidence-tool-shed-v0-29-1-release-and-skill-sync.md",
+      "produces": null,
+      "project_map": null,
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Evidence: Tool Shed v0.29.1 release and installed-skill synchronization",
+      "type": "evidence",
+      "updated": "2026-08-25"
+    },
+    {
       "campaign": "establish-secure-smb-access-to-bactron-workspace",
       "campaign_reason": null,
       "canonical_truth": null,
@@ -1622,7 +1639,7 @@
       "campaign_reason": "source coordination surface for the approved, executing Program Roadmap",
       "canonical_truth": null,
       "disposition": null,
-      "next_action": "obtain owner consent before unblocking Campaign 059 for the Bactron Core snapshot upgrade and bounded Windows proof",
+      "next_action": "execute the owner-authorized Campaign 059 Bactron Core snapshot upgrade and bounded Windows proof with Tool Shed v0.29.1",
       "parent": null,
       "path": "work/maps/map-low-token-cross-platform-campaign-execution.md",
       "produces": null,
@@ -2098,8 +2115,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 3,
-    "completed_or_decided_artifacts": 105,
-    "total_artifacts": 120
+    "active_artifacts": 2,
+    "completed_or_decided_artifacts": 107,
+    "total_artifacts": 121
   }
 }

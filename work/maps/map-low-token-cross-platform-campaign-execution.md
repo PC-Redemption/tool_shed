@@ -3,7 +3,7 @@
 Status: active
 Type: project-map
 Updated: 2026-08-25
-Next Action: obtain owner consent before unblocking Campaign 059 for the Bactron Core snapshot upgrade and bounded Windows proof
+Next Action: execute the owner-authorized Campaign 059 Bactron Core snapshot upgrade and bounded Windows proof with Tool Shed v0.29.1
 Campaign: standalone
 Campaign Reason: source coordination surface for the approved, executing Program Roadmap
 
@@ -64,6 +64,11 @@ action expressly retained behind consent below.
 The M4 Bactron Core snapshot and installed-skill upgrade, and the subsequent Windows execution in
 `E:\dev\bactron-core`, remain the explicit owner-consent gate. This continuation directive does not
 authorize that mutation, Campaign 013 replay, or Bactron application deployment.
+
+On 2026-08-25, the owner explicitly authorized publication and synchronization of the direct
+dispatcher release plus Campaign 059's bounded Core snapshot upgrade and Windows proof. This
+authorization applies to that declared campaign only; Campaign 013 replay and Bactron deployment
+remain excluded.
 
 ## Visual Map
 
@@ -127,8 +132,8 @@ It does not revise M4's outcome or grant Core mutation authority.
 
 Ground:
 
-- Current next action: wait at the explicit owner-consent gate before unblocking Campaign 059 or
-  changing the Bactron Core snapshot or installed skill.
+- Current next action: unblock and execute Campaign 059 through the approved bounded Windows/Core
+  route; do not replay Campaign 013 or deploy Bactron.
 - Owner/context: human owner and Codex in `/home/jon/docker/tool_shed`; native Windows proof occurs
   through a normally launched Codex GUI on the work PC in `E:\dev\bactron-core`.
 - Verification: focused changed-path tests plus one real dogfood run during development; one full
@@ -142,9 +147,9 @@ Ground:
 | Existing Tool Shed control plane | complete | current Tool Shed source and `work/` lifecycle | completed foundation and evolution work | preserve; do not redesign |
 | App Server shared execution core | dogfooded | `scripts/app_server_control.py` and Campaign 055 evidence | Campaigns 040-054 | preserve while proving installed native use |
 | Lean qualification policy | active | approved roadmap gates | owner dogfood-first decision | continue focused native-real-use gates without repeating the release suite |
-| Minimum usable release | complete | milestone `M2-MINIMUM-RELEASE` and v0.28.0 evidence | successful maintained-workspace dogfood | preserve the published release and synchronized maintainer skill |
+| Minimum usable release | complete | milestone `M2-MINIMUM-RELEASE`, v0.28.0 evidence, and v0.29.1 dispatcher release evidence | successful maintained-workspace dogfood and direct Linux proof | preserve v0.29.1 and the synchronized maintainer skill |
 | Installed native Linux | complete | milestone `M3-LINUX-INSTALLED` plus Campaign 060 direct-dispatch evidence | verified release | preserve the direct one-call proof |
-| Installed native Windows | blocked on owner consent | proposed milestone `M4-WINDOWS-INSTALLED` | verified release and direct Linux dispatch | after consent, upgrade Core and complete one real asset-aware campaign |
+| Installed native Windows | authorized and executing | milestone `M4-WINDOWS-INSTALLED` / Campaign 059 | verified v0.29.1 release and direct Linux dispatch | upgrade Core and complete one real asset-aware campaign |
 | Owner operating loop | planned | proposed milestone `M5-ADOPTION` | both native proofs | publish exact usage and recovery path, then use it for ordinary campaigns |
 
 ## Dependency Notes
@@ -169,10 +174,10 @@ Ground:
 
 You are here:
 
-- The direct Linux dispatcher is implemented and proved in the maintained Tool Shed `0.29.0`
-  candidate with no nested Codex wrapper.
-- The remaining platform gate is the consent-held Bactron Core snapshot upgrade and native Windows
-  proof, followed by ordinary-use adoption.
+- The direct Linux dispatcher is implemented, published as Tool Shed `0.29.1`, and synchronized to
+  the maintained host with no nested Codex wrapper.
+- The remaining platform gate is the now-authorized Bactron Core snapshot upgrade and native
+  Windows proof, followed by ordinary-use adoption.
 
 Do next:
 
