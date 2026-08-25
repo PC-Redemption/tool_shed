@@ -5,16 +5,25 @@ Updated: 2026-08-25
 ## Owner State
 
 - Last completed: eliminate-nested-codex-wrapper-and-prove-linux-dispatch — Eliminate the nested Codex wrapper and prove one-call Linux App Server dispatch
-- Working now: none
+- Working now: publish-and-synchronize-direct-app-server-dispatch — Publish and synchronize direct App Server dispatch
 - Next: none
 - Blocker or decision needed: prove-bactron-core-native-windows-app-server-workflow — Prove the Bactron Core native Windows App Server workflow
-- Detour and return point: none
+- Detour and return point: publish-and-synchronize-direct-app-server-dispatch — Publish and synchronize direct App Server dispatch
 
 ## Ordered Queue
 
 Queue positions are mutable; parenthesized campaign numbers and full `Campaign ID` values are stable.
 
-1. (059) **[Prove the Bactron Core native Windows App Server workflow](active/059-prove-bactron-core-native-windows-app-server-workflow.md)**
+1. (061) **[Publish and synchronize direct App Server dispatch](active/061-publish-and-synchronize-direct-app-server-dispatch.md)**
+   - 🆔 **CAMPAIGN ID:** `publish-and-synchronize-direct-app-server-dispatch`
+   - 🚦 **STATE:** 🔵 **WORKING**
+   - 🎯 **PRIMARY FOCUS AREAS:** Qualification and Release
+   - 🧩 **SUPPORTING FOCUS AREAS:** Provider Portability; Snapshot Delivery
+   - 🔗 **DEPENDS ON:** `eliminate-nested-codex-wrapper-and-prove-linux-dispatch` — ✅ **COMPLETE**
+   - ↪️ **DETOUR FOR:** prove-bactron-core-native-windows-app-server-workflow
+   - ↩️ **RETURN TO:** prove-bactron-core-native-windows-app-server-workflow
+   - 🏁 **OUTCOME:** Release Tool Shed 0.29.0 with verified two-commit provenance and install the exact released Tool Shed skill on this host before Windows adoption.
+2. (059) **[Prove the Bactron Core native Windows App Server workflow](active/059-prove-bactron-core-native-windows-app-server-workflow.md)**
    - 🆔 **CAMPAIGN ID:** `prove-bactron-core-native-windows-app-server-workflow`
    - 🚦 **STATE:** 🔴 **BLOCKED**
    - 🎯 **PRIMARY FOCUS AREAS:** Snapshot Delivery
