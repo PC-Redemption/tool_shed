@@ -531,6 +531,29 @@ The narrow `camp_execution` exception passed its dedicated safety gate without p
 promotion gate. Its exact policy, partial-write evidence, real CAMP observation, and token finding
 are recorded in the write qualification report linked above.
 
+### CAMP completion and verification handoff
+
+App Server `turn/completed` means that the model turn reached a protocol terminal event. It does
+not prove that a CAMP is verified. A bounded CAMP worker that has finished its authorized edits
+returns `step_ready_for_verification` or `camp_ready_for_verification`; it must not run commands
+reserved by the enclosing orchestrator. The older `step_complete` and `camp_complete` values remain
+accepted for compatibility, but have the same implementation-ready, verification-pending meaning.
+
+Only one of those four handoff outcomes authorizes the orchestrator to run the declared
+deterministic verification commands. Each declared command runs exactly once. The Git mutation
+journal then reports the combined result truthfully:
+
+- `safe_unverified` means the path boundary is safe but CAMP verification did not establish
+  completion;
+- `verification_failed` means at least one reserved deterministic command failed;
+- `verified` means the mutation boundary is safe and every required deterministic command passed.
+
+Malformed, partial, `unknown`, interrupted, unsafe, or unexpected-path results remain fail-closed.
+After any mutation they are not retried or replayed automatically. Input-token warnings and worker
+tool results above `context.max_tool_result_bytes` are retained only as compact metadata and block
+lifecycle advance with an explicit context-budget finding; command output is not copied into the
+journal.
+
 Passing unit tests alone does not promote a role. API fallback and Luna routing remain out of scope.
 
 ## Merge Readiness

@@ -7,21 +7,21 @@
     ".github/workflows/validate.yml": "b62203b7c1c21f03dc77e42d714db6b0d742550c3524a4dc33d67c5c283cc54e",
     "README.md": "ed0535a8c1d520bf53948dc59c8d95a8eabf514fbfb090cc2e3584af5027c81b",
     "adapters/codex-app-server-benchmarks.json": "20ef4ef6d7e3964e01791ea2623e16091a5c5bd85ddae84179952ba31872dbe3",
-    "adapters/codex-app-server-config.json": "eae7407b809e8781611e1148f44677c2902bfef42cdd051149cf2056bfe0135f",
+    "adapters/codex-app-server-config.json": "9ee82433d20abdef7567bd65d6ddbcf0d1d816a92296f3ecd84d836dfb4cb7ed",
     "adapters/codex-app-server-qualifications.json": "35c2052487e2e292ec38c78ea8c2146b9abd064ba0fa5486eb9854a8b25b2ef4",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "114269be3546d93b72a269ae0c14ee6c2fb6417a6111de897ad16cc7ff2b0462",
+    "adapters/codex-skill-releases.json": "e2f5e7463e5fdf6120246a6e434611c1475e0e12616e50e09688a94dc8ae62dd",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "95069c265c5384c7e62e91be7cad996eb1ce4c13f43ca57f5051c0487e2f9c02",
     "docs/codex-app-server-alpha-requalification-2026-08-24.md": "80789afbdcfb878257547934fd6ca7358fd56f79f16b081a4fc61e888579b962",
     "docs/codex-app-server-camp-token-baseline-2026-08-20.md": "5148859c74dc0b79a7f3dd1b86b8085f03091a3268bf95dfe769337fe3fdccc9",
     "docs/codex-app-server-camp-token-optimization-2026-08-20.md": "7c28ad01af86288141bf94b6f9b9d048ed69424075c762d44d421f82330b0235",
-    "docs/codex-app-server-execution.md": "5edcda73210857b1cc59f56a10d3b5ad25ee223fc7e2a40f8c457242fdd9e918",
-    "docs/codex-app-server-maintainer-note.md": "2c5e020d09beaff70ce1bc9eca6ef4bb5f099e77ea1a31b17bc2c365a601f43e",
+    "docs/codex-app-server-execution.md": "8b79c1e35047621794a446fd16b153d2665e6f06234d190ccfe5cf3e3b4ddc2f",
+    "docs/codex-app-server-maintainer-note.md": "ec375a635ac513e589e13e9bf688382845b97e09b8058b5a192400d5f92ddd07",
     "docs/codex-app-server-qualification-2026-08-20.md": "d4d70d0a51bb6be1ed69ce45ce63124b16f4d1acca35e9072d926b4d43b79c31",
     "docs/codex-app-server-requalification-2026-08-21.md": "9aacfac50f3debb8ccff2b3b06d33f6b52c6354e7df5b7bc9c5f2114f85663b4",
     "docs/codex-app-server-write-qualification-2026-08-20.md": "db297ad88feb73f46a46178ae92304445afc2fb2447c2543d3bec84609af3923",
-    "docs/commands.md": "13ef9dcf7c733b4d19367416ac25d8896369365cfdc139ea94d31eb29ee322a5",
+    "docs/commands.md": "36d687a3a55d993acc0cf38a31aa09eb734a5887cb34febfeb36841a30301d56",
     "docs/completion-watcher-hosted-api-contract.md": "95d6915bbfa0f9e81bea2e6aaecbf8cdb1165b9aeb38a6f7a6d80b95b2ece983",
     "docs/completion-watcher-hosted-datastore.md": "5f06d3db3e92a428d5762d27f3ebef5aa05519234c412e469883a34fe5772f5f",
     "docs/completion-watcher-hosted-notification-worker.md": "d5c240a648e2c5aa22d855b6b0a3f8f4f42389bfffe66caadb03ab20ec0aaa60",
@@ -31,7 +31,7 @@
     "docs/documentation-site.md": "848de0bb06a3da3f54d03799a0522389281a29d7e1344dd7142780f6ef04231a",
     "docs/fleet-snapshot-updates.md": "4016143af0bd7eec601ebc3782fc7ca9e036eee96517b6397b34e0809f5b7cb3",
     "docs/install-or-update-snapshot.md": "607783b7782c122849f0f3af9354af43bae20ccf94ebabf8331c537d45c11dda",
-    "docs/operator-guide.md": "979f0039919838bf6c58ce35182b99b41a43fc83660336076f4262d93c9b6e62",
+    "docs/operator-guide.md": "47ae66bebb529ee0e489425e19b2b7391f64a1e9f69ce6dd97fbb432c3af1eaf",
     "docs/provider-adapters.md": "edf50dc13fd15cb6415904981ca3dea56fd73aad32a473429ef34d1b56cea25b",
     "docs/releasing.md": "8c7d1ad0291935a64ab6f813ce98c0424dfb8455fb675e3a219ce79c39978313",
     "docs/work-level-customization.md": "d110b51c461b3edc73ee2682269641d3bdb97ce76d4ae53eae10341e77aa8a70",
@@ -55,10 +55,10 @@
     "scripts/codex_app_server.py": "c2bb0c33be08bcf168869c68a0e817eeafb44e3f2dd8f977e45cd03b8c29c629",
     "scripts/codex_app_server_compatibility.py": "c12282d7131433f755a2f0626502367749c72d70c3814fb00c7a15479fa97edb",
     "scripts/codex_app_server_write_qualification.py": "87ca950aea60f40f39b0f849c151bdd92cdf2dfc6407c2de4b6dd2ef47558f88",
-    "scripts/codex_camp_execution.py": "f83f6776fd10c835558e64c6057a97ccbc08dd242a3286957d79844d92bfe796",
+    "scripts/codex_camp_execution.py": "d83d331175cdbd90f5996d00c31159c00a3848c385e743b9f5a0cc434019c6ef",
     "scripts/codex_cli_resolver.py": "8188226dfef2d8fef0cb19905eb168f49ce3e0227ee0197d58c069601ed4ebed",
     "scripts/codex_execution.py": "447493b30cb3913a4ec6c3c6f1e611c8409e1e0ee3fe48457c8ba536536be48e",
-    "scripts/codex_orchestration.py": "48435b7663693000575bc441023e57de756fa40ea1131f77029fbb27b727cc32",
+    "scripts/codex_orchestration.py": "7f23c67ceebc85afc72203064e5c37a12d0ecd2893706fe0372799acc5adaf4d",
     "scripts/codex_qualification_cache.py": "7726bf573a96af6ca468536e6283e87788760b0045a9c36690e64bc68623b69a",
     "scripts/codex_skill_sync.py": "78cf6c2d6605854c429cc54e63eb60b7fa7e81e47dcae9fc87c60b5f93d564a8",
     "scripts/complete_workpackage.py": "5de264d68998db84c898da83dbfa09682003c3119913b7941f1414dbac7f4d6c",
@@ -121,7 +121,7 @@
     "skills/tool-shed/SKILL.md": "0cbd0fd69e2f3fcedf48fef99fdcf4c8d759e252fd50ecaae80c859a37cfbbba",
     "skills/tool-shed/agents/openai.yaml": "5b39ceb5df84a19a82f6c406bc80c5e8c88ea236211c6c618d80c37dc7301a23",
     "skills/tool-shed/references/artifact-workflows.md": "00b6125af4981828f475bbb6edd4c56f1c0733f168bfff8394c9b4954cb96931",
-    "skills/tool-shed/references/campaign-routes.md": "9897503513c1768fe1851302fbed31b6bb11eab15e986c4d5af3b6615bb138c9",
+    "skills/tool-shed/references/campaign-routes.md": "ef6d8797c1a1d4cfbcf4b4f7645a89c5dfe5c74963c7c6c2577b53efa55a7834",
     "skills/tool-shed/references/maintenance-routes.md": "4a5b05d130f1fb7081e647f3bd8198ba62fd97fc774babf797479376b08b0219",
     "templates/active-campaign-queue.md": "c3035949566b873937924207bca052254d3d3a531437bc4d6b4326c13711c836",
     "templates/adr.md": "45e0c25ff6e6ef20fc071ea1dedef03f93a058afae9b40c934026a9f9772a268",
@@ -144,34 +144,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
-  "notes": "Fix retired-snapshot validation and post-install issue classification",
-  "release_commit": "84d2b74780c59372325e9ae5c5d51a1f07fc98dd",
-  "release_qualification": {
-    "attested_at": "2026-08-25T10:57:11Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "d740896c470e02ba526ed08a6d2a8b40865764e67951583e6f8a97db65402766"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "8fc34912f27434fefea4870607350a6543c3293666e4efd96d55b320739c42d6"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "b62203b7c1c21f03dc77e42d714db6b0d742550c3524a4dc33d67c5c283cc54e"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "74ee83963f0c20eef755bcae7f51c0caaa35fe3ce2f7001cbcfcf381911d0a45"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "84d2b74780c59372325e9ae5c5d51a1f07fc98dd"
-  },
-  "release_tag": "v0.27.1",
-  "released_at": "2026-08-25T10:57:11Z",
-  "shed_version": "0.27.1",
+  "notes": "Harden App Server CAMP verification handoff",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.28.0",
+  "released_at": null,
+  "shed_version": "0.28.0",
   "updated_at": "2026-08-25",
   "updater_mutation_paths": [
     {

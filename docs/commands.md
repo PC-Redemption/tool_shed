@@ -378,6 +378,13 @@ safety path. Discussion, decisions, blocked work, external gates, and unsupporte
 their ordinary route and are reported without starting CAMP execution. The option never persists
 beyond the invocation.
 
+The CAMP worker reports `step_ready_for_verification` or `camp_ready_for_verification` after bounded
+implementation. App Server `turn/completed` is only a terminal protocol event. The controller runs
+each reserved deterministic command exactly once, then records `safe_unverified`,
+`verification_failed`, or `verified` from the Git boundary and check results. Unknown or invalid
+outcomes remain fail-closed, with no retry after mutation; focused-context budget findings prevent
+lifecycle advance.
+
 `ts: discuss` is always GUI-native. `ts: discuss ... --app-server` is rejected instead of silently
 changing execution surfaces.
 

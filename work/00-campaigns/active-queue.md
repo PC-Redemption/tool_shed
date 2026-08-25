@@ -4,7 +4,7 @@ Updated: 2026-08-25
 
 ## Owner State
 
-- Last completed: qualify-release-and-field-verify-dirty-codex-forward-compatibility — Qualify, release, and field-verify dirty Codex forward compatibility
+- Last completed: harden-app-server-camp-verification-handoff — Harden App Server CAMP verification handoff
 - Working now: none
 - Next: none
 - Blocker or decision needed: none

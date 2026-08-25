@@ -44,6 +44,7 @@
     "restricted_read": false,
     "max_snapshot_bytes": 2000000,
     "max_inline_bytes": 100000,
+    "max_tool_result_bytes": 100000,
     "warning_input_tokens": {
       "planning": 50000,
       "verification": 50000,

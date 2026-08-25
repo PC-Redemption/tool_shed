@@ -31,11 +31,13 @@ try:
     )
     from scripts.codex_camp_execution import (
         CAMP_OUTCOME_SCHEMA,
+        CAMP_VERIFICATION_HANDOFF_OUTCOMES,
         CampExecutionError,
         CampStructuredOutcome,
         GitMutationJournal,
         camp_next_action,
         compact_command_evidence,
+        focused_context_finding,
         parse_camp_outcome,
         structured_outcome_record,
     )
@@ -56,11 +58,13 @@ except ModuleNotFoundError:  # Direct execution: python scripts/codex_orchestrat
     )
     from codex_camp_execution import (  # type: ignore[no-redef]
         CAMP_OUTCOME_SCHEMA,
+        CAMP_VERIFICATION_HANDOFF_OUTCOMES,
         CampExecutionError,
         CampStructuredOutcome,
         GitMutationJournal,
         camp_next_action,
         compact_command_evidence,
+        focused_context_finding,
         parse_camp_outcome,
         structured_outcome_record,
     )
@@ -352,6 +356,12 @@ class AppServerFeatureConfig:
     def max_inline_bytes(self) -> int:
         context = self.payload.get("context")
         value = context.get("max_inline_bytes") if isinstance(context, dict) else None
+        return int(value) if isinstance(value, int) and value > 0 else 100_000
+
+    @property
+    def max_tool_result_bytes(self) -> int:
+        context = self.payload.get("context")
+        value = context.get("max_tool_result_bytes") if isinstance(context, dict) else None
         return int(value) if isinstance(value, int) and value > 0 else 100_000
 
     def route(
@@ -722,6 +732,9 @@ def execute_camp_if_enabled(
             "route": asdict(decision),
             "fallback": "continue in the existing Tool Shed/Codex GUI path",
         }
+    for command in verification_commands:
+        if not command or any(not str(argument) for argument in command):
+            raise FeatureConfigError("verification commands must contain non-empty arguments")
     codex = resolve_codex_executable(codex)
     warning = features.compatibility_warning(codex)
     if warning:
@@ -754,8 +767,11 @@ def execute_camp_if_enabled(
             + ". Do not alter lifecycle files or claim a state transition. The orchestrator will "
             "run the declared deterministic verification commands, verify the Git journal, "
             "and choose the next action. Do not run tests or other verification commands "
-            "yourself. Prefer one focused file-change operation, then return the required "
-            "structured outcome.\n\n"
+            "yourself. When the authorized implementation is ready for those reserved checks, "
+            "return step_ready_for_verification or camp_ready_for_verification as appropriate; "
+            "these outcomes mean implementation-ready, not already verified. Do not return "
+            "unknown merely because the reserved checks have not run. Prefer one focused "
+            "file-change operation, then return the required structured outcome.\n\n"
             + prompt
         ),
         read_only=False,
@@ -819,10 +835,8 @@ def execute_camp_if_enabled(
             )
         verification: list[dict[str, Any]] = []
         command_events: list[dict[str, Any]] = []
-        if outcome.outcome in {"step_complete", "camp_complete"}:
+        if outcome.outcome in CAMP_VERIFICATION_HANDOFF_OUTCOMES:
             for sequence, command in enumerate(verification_commands, start=1):
-                if not command or any(not str(argument) for argument in command):
-                    raise FeatureConfigError("verification commands must contain non-empty arguments")
                 try:
                     response = adapter.client.command_exec(
                         list(command),
@@ -858,8 +872,6 @@ def execute_camp_if_enabled(
                         "source": "tool_shed_deterministic_verification",
                     }
                 )
-                if not evidence["passed"]:
-                    break
         verification_passed = (
             all(item["passed"] for item in verification)
             if verification_commands and verification
@@ -877,13 +889,29 @@ def execute_camp_if_enabled(
             "passed": verification_passed,
             "commands_run": len(verification),
         }
-        if verification_passed is False:
+        context_finding = focused_context_finding(
+            context_warning=result.context_warning,
+            mutation_events=result.mutation_events,
+            max_tool_result_bytes=features.max_tool_result_bytes,
+        )
+        journal_record["focused_context"] = context_finding
+        if not journal_record["safe"]:
+            journal_record["final_state"] = "needs_user_intervention"
+        elif verification_passed is False:
             journal_record["final_state"] = "verification_failed"
+        elif outcome.outcome in CAMP_VERIFICATION_HANDOFF_OUTCOMES and (
+            not verification_commands or verification_passed is True
+        ):
+            journal_record["final_state"] = "verified"
+        else:
+            journal_record["final_state"] = "safe_unverified"
         next_action = camp_next_action(
             outcome,
             attempt=attempt,
             journal=journal_record,
             verification_passed=verification_passed,
+            verification_required=bool(verification_commands),
+            context_budget_exceeded=not context_finding["within_budget"],
         )
         camp_duration_seconds = round(time.monotonic() - camp_started, 6)
         adapter.record_control_event(
@@ -892,12 +920,20 @@ def execute_camp_if_enabled(
             campaign=campaign,
             recovery_action=next_action,
             status=(
-                "completed"
-                if journal_record["safe"] and verification_passed is not False
+                "needs_user_intervention"
+                if not journal_record["safe"]
                 else (
                     "verification_failed"
-                    if journal_record["safe"]
-                    else "needs_user_intervention"
+                    if journal_record["final_state"] == "verification_failed"
+                    else (
+                        "context_budget_exceeded"
+                        if not context_finding["within_budget"]
+                        else (
+                            "completed"
+                            if journal_record["final_state"] == "verified"
+                            else "needs_user_intervention"
+                        )
+                    )
                 )
             ),
             thread_id=result.thread_id,

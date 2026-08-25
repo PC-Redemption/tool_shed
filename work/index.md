@@ -59,6 +59,7 @@ Updated: 2026-08-25
 | [work/00-campaigns/completed/051-harden-dirty-qualification-cache-and-failure-semantics.md](work/00-campaigns/completed/051-harden-dirty-qualification-cache-and-failure-semantics.md) | campaign | complete | 2026-08-24 | none | - |
 | [work/00-campaigns/completed/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md](work/00-campaigns/completed/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md) | campaign | complete | 2026-08-25 | none | - |
 | [work/00-campaigns/completed/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md](work/00-campaigns/completed/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md) | campaign | complete | 2026-08-24 | none | - |
+| [work/00-campaigns/completed/054-harden-app-server-camp-verification-handoff.md](work/00-campaigns/completed/054-harden-app-server-camp-verification-handoff.md) | campaign | complete | 2026-08-25 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -122,6 +123,6 @@ Updated: 2026-08-25
 
 ## Summary
 
-- Total artifacts: 105
+- Total artifacts: 106
 - Active artifacts: 0
-- Completed/decided artifacts: 95
+- Completed/decided artifacts: 96

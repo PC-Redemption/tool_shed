@@ -395,6 +395,17 @@ call the existing `codex_orchestration.py --enable-app-server camp-run` path. Ne
 CAMP implementation or weaken its Git journal, dirty-target refusal, approval policy, network,
 retry, lifecycle, or path restrictions.
 
+Treat App Server `turn/completed` only as protocol turn completion. The CAMP worker must return
+`step_ready_for_verification` or `camp_ready_for_verification` when its bounded implementation is
+ready; it must not run reserved deterministic commands itself. The compatibility outcomes
+`step_complete` and `camp_complete` have the same verification-pending meaning. Only those handoff
+outcomes authorize the orchestrator to run every declared deterministic command exactly once.
+Record a path-safe result as `safe_unverified` until that succeeds, `verification_failed` when any
+declared command fails, and `verified` only for the combined safe boundary and successful checks.
+Malformed, partial, `unknown`, interrupted, unsafe, and unexpected-path results fail closed. Do not
+retry after mutation. A focused-context token warning or oversized tool result must emit a compact
+enforceable finding and block lifecycle advance; do not retain raw tool output in the journal.
+
 For `ts: next --app-server`, first perform the ordinary `next` selection unchanged. The option is
 an invocation-scoped forwarding preference, not an App Server role, and it must select the same
 action and CAMP as unflagged `ts: next`. If that selected action is CAMP execution, run the existing

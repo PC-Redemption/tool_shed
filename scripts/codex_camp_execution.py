@@ -17,6 +17,8 @@ class CampExecutionError(RuntimeError):
 
 
 CAMP_OUTCOMES = {
+    "step_ready_for_verification",
+    "camp_ready_for_verification",
     "step_complete",
     "camp_complete",
     "needs_more_context",
@@ -27,6 +29,16 @@ CAMP_OUTCOMES = {
     "cancelled",
     "unknown",
 }
+
+# The ready outcomes are the current worker-to-orchestrator contract. The complete
+# outcomes remain accepted for compatibility with already-qualified Codex builds
+# and historical fixtures; both mean that reserved verification still belongs to
+# the enclosing orchestrator.
+CAMP_STEP_HANDOFF_OUTCOMES = {"step_ready_for_verification", "step_complete"}
+CAMP_CAMPAIGN_HANDOFF_OUTCOMES = {"camp_ready_for_verification", "camp_complete"}
+CAMP_VERIFICATION_HANDOFF_OUTCOMES = (
+    CAMP_STEP_HANDOFF_OUTCOMES | CAMP_CAMPAIGN_HANDOFF_OUTCOMES
+)
 
 CAMP_OUTCOME_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -259,7 +271,10 @@ class GitMutationJournal:
             if event.get("type") == "commandExecution" and event.get("command") is not None:
                 commands.append(event.get("command"))
         safe = not unexpected and preserved_dirty
-        final_state = "verified" if safe else "needs_user_intervention"
+        # Path safety is necessary but is not deterministic verification. The
+        # orchestrator may promote this state only after it evaluates the CAMP
+        # outcome and runs every reserved verification command.
+        final_state = "safe_unverified" if safe else "needs_user_intervention"
         return {
             "schema_version": 1,
             "campaign": self.campaign,
@@ -318,12 +333,52 @@ def compact_command_evidence(
     }
 
 
+def focused_context_finding(
+    *,
+    context_warning: dict[str, Any] | None,
+    mutation_events: Iterable[dict[str, Any]],
+    max_tool_result_bytes: int,
+) -> dict[str, Any]:
+    """Return a bounded, enforceable finding without retaining tool output."""
+
+    if max_tool_result_bytes < 1:
+        raise CampExecutionError("max tool-result bytes must be positive")
+    oversized: list[dict[str, Any]] = []
+    total = 0
+    for sequence, event in enumerate(mutation_events, start=1):
+        raw_bytes = event.get("result_bytes")
+        result_bytes = int(raw_bytes) if isinstance(raw_bytes, (int, float)) else 0
+        total += max(0, result_bytes)
+        if result_bytes > max_tool_result_bytes:
+            oversized.append(
+                {
+                    "sequence": sequence,
+                    "type": str(event.get("type") or "unknown"),
+                    "result_bytes": result_bytes,
+                }
+            )
+    exceeded = context_warning is not None or bool(oversized)
+    return {
+        "schema_version": 1,
+        "within_budget": not exceeded,
+        "input_token_warning": context_warning,
+        "max_tool_result_bytes": max_tool_result_bytes,
+        "total_tool_result_bytes": total,
+        "oversized_tool_results": oversized,
+        "enforcement": (
+            "needs_user_intervention_before_lifecycle_advance" if exceeded else "none"
+        ),
+    }
+
+
 def camp_next_action(
     outcome: CampStructuredOutcome,
     *,
     attempt: int,
     journal: dict[str, Any],
     verification_passed: bool | None = None,
+    verification_required: bool = False,
+    context_budget_exceeded: bool = False,
 ) -> str:
     """Select the lifecycle action; model prose never changes CAMP state directly."""
 
@@ -339,9 +394,14 @@ def camp_next_action(
         if mutated:
             return "reconcile_workspace_before_retry"
         return "retry_terra_once" if attempt == 1 else "escalate_to_sol_read_only"
-    if outcome.outcome == "camp_complete":
+    if outcome.outcome in CAMP_VERIFICATION_HANDOFF_OUTCOMES:
+        if verification_required and verification_passed is not True:
+            return "needs_user_intervention"
+        if context_budget_exceeded:
+            return "needs_user_intervention"
+    if outcome.outcome in CAMP_CAMPAIGN_HANDOFF_OUTCOMES:
         return "verify_before_campaign_transition"
-    if outcome.outcome == "step_complete":
+    if outcome.outcome in CAMP_STEP_HANDOFF_OUTCOMES:
         return "advance_to_next_camp_step"
     if outcome.outcome == "needs_more_context":
         return "gather_focused_context"

@@ -154,5 +154,46 @@ created, and no additional restart requirement was introduced.
 Publication, host-local installed-client synchronization, normal Windows Bactron Core upgrade, and
 read-only Windows App Server field execution are complete. The owner accepted exact-qualified or
 dirty-qualified read-only execution for this field gate when the installed executable is already a
-reviewed record. Workspace-write qualification remains separately exact-version gated and was not
-granted to `0.149.0-alpha.4.3`.
+reviewed record. At this field gate's close, workspace-write qualification remained separately
+exact-version gated and had not been granted to `0.149.0-alpha.4.3`.
+
+## Post-completion exact-write field trial
+
+Later on 2026-08-25, Bactron Core separately qualified the exact installed Codex binary and ran one
+genuine, explicitly opted-in App Server CAMP write trial. This follow-up does not broaden the dirty
+forward-compatibility qualification above: workspace writes remain exact-binary gated, and App
+Server remains default-off.
+
+- Exact Codex identity: version `0.149.0-alpha.4.3`, SHA-256
+  `21f44f04e70d41d011268863d5109f5d7fc2862c14f390083e39ca3398b5ca47`.
+- Qualification commit: `c3e1bb0d1ee9ad30ef7a1bf5e6c68b5757a82d7b`.
+- Trial policy: `gpt-5.6-terra` / `medium`, one bounded CAMP, exact workspace root and path
+  allowlist, Git mutation journal, no approvals, and no network.
+- Journal result: safe; all four expected source paths changed, no unexpected paths changed, and
+  no retry or GUI fallback occurred after mutation.
+- Structured outcome: `unknown` / `needs_user_intervention`. The worker skipped reserved
+  deterministic verification and referenced two approved icon binaries without delivering them.
+  Local reconciliation supplied those binaries and ran the omitted verification without replaying
+  the App Server mutation.
+- Reconciled implementation commit: `1f592457e09c321d800da8a4dd634a51b9b5d347`.
+- Verification and deployment: Panel Forge validated and compiled 95 screens and 114 asset sources;
+  64 focused tests passed; generated outputs were rebuilt; the exact implementation commit deployed
+  successfully to `bac-b621ef`.
+- Runtime proof: authenticated Web and native-HMI captures showed the restored timer and O2
+  icon-frame-value-UOM composition without clipping, overlap, or duplicate legacy elements.
+- Bactron Core Campaign 012's remaining Web/HMI gate was accepted and Campaign 012 completed.
+  Campaign 013 completed at commit `13f87ac6995b60b08fef242c3464f30501dae9b0`; its active queue is
+  empty, and Web tunnel plus HMI command control returned to disabled defaults.
+
+Source records in the Bactron Core repository:
+
+- `work/evidence/evidence-codex-app-server-write-qualification-alpha-2026-08-25.md`
+- `work/evidence/evidence-app-server-two-campaign-field-trial.md`
+- `work/00-campaigns/completed/012-align-settings-stepper-controls-right.md`
+- `work/00-campaigns/completed/013-restore-workspace-commissioning-panel-forge-parity.md`
+
+The field trial qualifies only this exact binary for the stated bounded role. It does not qualify
+automatic retry, lifecycle transitions, deployment authority, global enablement, or another binary
+with the same version string. The source trial report retains an initial-abort status line from the
+first Campaign 012 attempt; its finalized Campaign 012 resume section, Campaign 013 section, final
+assessment, completed campaign records, and completion commit document the later end-to-end result.

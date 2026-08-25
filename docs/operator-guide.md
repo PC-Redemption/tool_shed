@@ -528,6 +528,14 @@ uses Sol/high, verification uses Terra/low, and CAMP execution reuses the optimi
 Terra/medium `camp-run` path. The same commands without the option show `Execution: GUI` and remain
 in the normal GUI path.
 
+For an App Server CAMP, `turn/completed` confirms only that the protocol turn ended. The worker
+returns `step_ready_for_verification` or `camp_ready_for_verification` after its bounded edits, then
+the controller runs every declared deterministic command once and verifies the Git boundary. A
+safe path journal is `safe_unverified` until that handoff and verification succeed; failures become
+`verification_failed`, and only the combined success becomes `verified`. Unknown, malformed,
+partial, interrupted, or unexpected-path results do not advance or retry after mutation. Context
+token warnings and oversized tool results likewise stop lifecycle advance with a compact finding.
+
 `ts: next --app-server` keeps normal navigation authoritative: it selects exactly what unflagged
 `ts: next` would select, then forwards the option only if that action maps to an existing qualified
 role. CAMP work uses the existing Terra/medium runner. Discussion, owner decisions, blocked work,

@@ -19,6 +19,15 @@ economically useful for bounded work but does not change the support or promotio
 writing, build, deployment, permission expansion, and automatic lifecycle transitions remain
 blocked.
 
+For CAMP, a protocol-level `turn/completed` event is not verification. The worker hands completed
+edits back as `step_ready_for_verification` or `camp_ready_for_verification`, and the controller
+runs every declared deterministic verification command exactly once. Compatibility outcomes
+`step_complete` and `camp_complete` carry the same verification-pending meaning. Journals distinguish
+`safe_unverified`, `verification_failed`, and `verified`; malformed, partial, `unknown`, interrupted,
+unsafe, and unexpected-path results fail closed. Mutated failures are never replayed. A focused
+context warning or oversized tool result is a compact, enforceable finding that prevents lifecycle
+advance even when mutation and deterministic checks are otherwise safe.
+
 The user-facing opt-ins are `ts: plan <request> --app-server`, `ts: verify <request>
 --app-server`, `ts: camp run <camp> --app-server`, and `ts: next --app-server`; the last performs
 normal next-action selection and forwards only to an already-qualified role rather than making
