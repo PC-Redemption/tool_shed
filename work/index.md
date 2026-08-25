@@ -11,8 +11,6 @@ Updated: 2026-08-25
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
 | [work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md](work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md) | campaign | abandoned | 2026-08-24 | none | - |
 | [work/00-campaigns/abandoned/061-publish-and-synchronize-direct-app-server-dispatch.md](work/00-campaigns/abandoned/061-publish-and-synchronize-direct-app-server-dispatch.md) | campaign | abandoned | 2026-08-25 | none | - |
-| [work/00-campaigns/active/059-prove-bactron-core-native-windows-app-server-workflow.md](work/00-campaigns/active/059-prove-bactron-core-native-windows-app-server-workflow.md) | campaign | blocked | 2026-08-25 | resolve blocker or decision: Detour Campaign 064 must replace the failing Windows post-turn command RPC before the final fresh proof. | - |
-| [work/00-campaigns/active/064-route-windows-verification-through-console-sandbox.md](work/00-campaigns/active/064-route-windows-verification-through-console-sandbox.md) | campaign | working | 2026-08-25 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -67,9 +65,12 @@ Updated: 2026-08-25
 | [work/00-campaigns/completed/056-publish-minimum-usable-tool-shed-v0-28-0.md](work/00-campaigns/completed/056-publish-minimum-usable-tool-shed-v0-28-0.md) | campaign | complete | 2026-08-25 | none | - |
 | [work/00-campaigns/completed/057-synchronize-maintainer-skill-and-smoke-v0-28-0.md](work/00-campaigns/completed/057-synchronize-maintainer-skill-and-smoke-v0-28-0.md) | campaign | complete | 2026-08-25 | none | - |
 | [work/00-campaigns/completed/058-prove-installed-native-linux-app-server-workflow.md](work/00-campaigns/completed/058-prove-installed-native-linux-app-server-workflow.md) | campaign | complete | 2026-08-25 | none | - |
+| [work/00-campaigns/completed/059-prove-bactron-core-native-windows-app-server-workflow.md](work/00-campaigns/completed/059-prove-bactron-core-native-windows-app-server-workflow.md) | campaign | complete | 2026-08-25 | none | - |
 | [work/00-campaigns/completed/060-eliminate-nested-codex-wrapper-and-prove-linux-dispatch.md](work/00-campaigns/completed/060-eliminate-nested-codex-wrapper-and-prove-linux-dispatch.md) | campaign | complete | 2026-08-25 | none | - |
 | [work/00-campaigns/completed/062-publish-and-synchronize-direct-app-server-dispatch-v0-29-1.md](work/00-campaigns/completed/062-publish-and-synchronize-direct-app-server-dispatch-v0-29-1.md) | campaign | complete | 2026-08-25 | none | - |
 | [work/00-campaigns/completed/063-repair-project-scoped-app-server-dispatch.md](work/00-campaigns/completed/063-repair-project-scoped-app-server-dispatch.md) | campaign | complete | 2026-08-25 | none | - |
+| [work/00-campaigns/completed/064-route-windows-verification-through-console-sandbox.md](work/00-campaigns/completed/064-route-windows-verification-through-console-sandbox.md) | campaign | complete | 2026-08-25 | none | - |
+| [work/00-campaigns/completed/065-adopt-low-token-app-server-campaign-loop.md](work/00-campaigns/completed/065-adopt-low-token-app-server-campaign-loop.md) | campaign | complete | 2026-08-25 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -83,11 +84,13 @@ Updated: 2026-08-25
 | [work/decisions/decision-project-map-creation-trigger.md](work/decisions/decision-project-map-creation-trigger.md) | decision-matrix | decided | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/evidence/evidence-adaptive-generated-evidence-safeguards.md](work/evidence/evidence-adaptive-generated-evidence-safeguards.md) | evidence | complete | 2026-07-25 | none | work/wp/completed/wp-generated-evidence-safety-and-migration.md |
 | [work/evidence/evidence-app-server-integration-and-watcher-reassessment.md](work/evidence/evidence-app-server-integration-and-watcher-reassessment.md) | evidence | complete | 2026-08-20 | - | - |
+| [work/evidence/evidence-bactron-core-native-windows-app-server-workflow.md](work/evidence/evidence-bactron-core-native-windows-app-server-workflow.md) | - | - | - | - | - |
 | [work/evidence/evidence-completion-watcher-v1-alpha.md](work/evidence/evidence-completion-watcher-v1-alpha.md) | evidence | complete | 2026-08-19 | none | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
 | [work/evidence/evidence-completion-watcher-v1-contract.md](work/evidence/evidence-completion-watcher-v1-contract.md) | evidence | complete | 2026-08-18 | none | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
 | [work/evidence/evidence-completion-watcher-v1-release.md](work/evidence/evidence-completion-watcher-v1-release.md) | evidence | complete | 2026-08-19 | none | work/00-campaigns/completed/038-qualify-and-release-local-completion-watchers.md |
 | [work/evidence/evidence-direct-linux-app-server-dispatch.md](work/evidence/evidence-direct-linux-app-server-dispatch.md) | evidence | complete | 2026-08-25 | return to the Campaign 059 Windows and Bactron Core consent boundary | - |
 | [work/evidence/evidence-human-planning-mechanism-evaluation.md](work/evidence/evidence-human-planning-mechanism-evaluation.md) | evidence | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
+| [work/evidence/evidence-low-token-app-server-owner-adoption.md](work/evidence/evidence-low-token-app-server-owner-adoption.md) | - | - | - | - | - |
 | [work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md](work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md) | evidence | complete | 2026-08-20 | none | - |
 | [work/evidence/evidence-native-linux-installed-app-server-workflow.md](work/evidence/evidence-native-linux-installed-app-server-workflow.md) | evidence | complete | 2026-08-25 | use Campaign 060 to eliminate the nested wrapper and prove direct Linux dispatch before returning to the Windows consent gate | - |
 | [work/evidence/evidence-project-scoped-app-server-dispatch-v0-29-2.md](work/evidence/evidence-project-scoped-app-server-dispatch-v0-29-2.md) | - | complete | - | - | - |
@@ -100,6 +103,7 @@ Updated: 2026-08-25
 | [work/evidence/evidence-tool-shed-v0-28-0-release.md](work/evidence/evidence-tool-shed-v0-28-0-release.md) | evidence | complete | 2026-08-25 | use the synchronized release for the M3 native Linux installed-use proof | - |
 | [work/evidence/evidence-tool-shed-v0-29-1-release-and-skill-sync.md](work/evidence/evidence-tool-shed-v0-29-1-release-and-skill-sync.md) | evidence | complete | 2026-08-25 | return to Campaign 059 for the authorized Bactron Core Windows proof | - |
 | [work/evidence/evidence-w1-dev-smb-access.md](work/evidence/evidence-w1-dev-smb-access.md) | evidence | complete | 2026-08-24 | none | - |
+| [work/evidence/evidence-windows-console-sandbox-verification-v0-29-4.md](work/evidence/evidence-windows-console-sandbox-verification-v0-29-4.md) | - | - | - | - | - |
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |
 | [work/focus-areas.md](work/focus-areas.md) | focus-area-catalog | approved | 2026-08-15 | review when an enduring responsibility boundary changes | - |
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
@@ -141,6 +145,6 @@ Updated: 2026-08-25
 
 ## Summary
 
-- Total artifacts: 124
-- Active artifacts: 3
-- Completed/decided artifacts: 109
+- Total artifacts: 128
+- Active artifacts: 1
+- Completed/decided artifacts: 112

@@ -2,7 +2,7 @@
 
 Status: complete
 Date: 2026-08-25
-Campaign: 063 `repair-project-scoped-app-server-dispatch`
+Campaign: repair-project-scoped-app-server-dispatch
 
 The direct dispatcher now loads the explicitly selected App Server config and model policy once
 and passes those same objects into bounded CAMP execution. Project qualification records may pin an

@@ -1,21 +1,23 @@
 # Prove the Bactron Core native Windows App Server workflow
 
-Status: blocked
+Status: complete
 Type: campaign
 Updated: 2026-08-25
-Next Action: resolve blocker or decision: Detour Campaign 064 must replace the failing Windows post-turn command RPC before the final fresh proof.
+Next Action: none
 Campaign ID: prove-bactron-core-native-windows-app-server-workflow
 Campaign Number: 059
 Outcome: Show that the released Tool Shed works through the normal Windows GUI environment for a fresh asset-aware Core campaign.
 Primary Focus Areas: snapshot-delivery
 Supporting Focus Areas: provider-portability, workspace-safety, qualification-release
 Depends On: synchronize-maintainer-skill-and-smoke-v0-28-0
-Decision: Detour Campaign 064 must replace the failing Windows post-turn command RPC before the final fresh proof.
+Decision: none
 Detour For: none
 Return To: none
 Completion Gate: G4-WINDOWS-INSTALLED-WORKS passes with version, resolver, asset-aware execution, exactly-once verification, journal, and usage evidence.
-Completion Evidence: none
-Disposition: none
+Completion Evidence: G4-WINDOWS-INSTALLED-WORKS passed. Core v0.29.4 snapshot and skill are current; exact GUI Codex 0.149.0-alpha.4.3 and executable hash were project-qualified without PATH preparation; fresh asset-aware Campaign 017 changed only two declared paths, verified exactly once, ended safe and verified, used 38,324 input/38,703 total tokens in 13.031s, and used zero dispatcher model tokens with no nested Codex. Campaign 013 was not replayed and Bactron was not deployed. See work/evidence/evidence-bactron-core-native-windows-app-server-workflow.md.
+Completion Date: 2026-08-25
+Completion Order: 58
+Disposition: completed
 Roadmap: low-token-cross-platform-campaign-execution
 Roadmap Revision: 1
 Milestone: M4-WINDOWS-INSTALLED
