@@ -40,6 +40,31 @@ recovery, new external targets, or material expansion beyond the named campaign 
 safety, evidence, dependency, and fail-closed boundaries remain active. When an authorized M2 step
 passes, continue to the next authorized M2 step without requesting another approval.
 
+### Automatic Roadmap Continuation
+
+Effective 2026-08-25, continue this approved Program Roadmap end to end without pausing merely to
+ask the owner to repeat a known next command, token, or approval phrase. This standing directive
+authorizes the agent to:
+
+- run read-only roadmap status, review, and campaign derivation transitions;
+- accept and apply an exact current campaign-plan manifest when it contains only the candidates
+  already declared by approved Roadmap Revision 1;
+- start, execute, verify, and complete materialized campaigns whose declared actions are local,
+  reversible, bounded to an already-authorized target, and do not cross a protected boundary;
+- create durable evidence, refresh generated work indexes, make scoped lifecycle commits, and push
+  those commits when needed to preserve the already-authorized roadmap's truthful state; and
+- proceed immediately to each next safe roadmap transition after its evidence gate passes.
+
+Do not stop at derivation, materialization, campaign start, focused verification, evidence capture,
+or a normal phase boundary. Stop only when progress actually requires owner intervention: a
+material unresolved choice, contradictory evidence, new credential or permission, destructive or
+irreversible recovery, a protected or unknown external target, new publication authority, or an
+action expressly retained behind consent below.
+
+The M4 Bactron Core snapshot and installed-skill upgrade, and the subsequent Windows execution in
+`E:\dev\bactron-core`, remain the explicit owner-consent gate. This continuation directive does not
+authorize that mutation, Campaign 013 replay, or Bactron application deployment.
+
 ## Visual Map
 
 ```mermaid
