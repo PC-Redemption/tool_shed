@@ -821,6 +821,7 @@ class CodexExecutionTests(unittest.TestCase):
                 self.assertEqual(selected.global_default, "OFF")
                 self.assertFalse(selected.api_fallback)
                 self.assertIn("Execution: App Server", format_selection(selected))
+                self.assertIn("API fallback: disabled", format_selection(selected))
 
     def test_user_command_control_rejects_discussion_and_unqualified_roles(self) -> None:
         discussion = select_command(

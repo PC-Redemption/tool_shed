@@ -1,0 +1,1363 @@
+# Program Roadmap: Low-token cross-platform campaign execution
+
+Status: executing
+Type: program-roadmap
+Updated: 2026-08-25
+Next Action: execute the first ready roadmap campaign through ts: next
+Roadmap ID: low-token-cross-platform-campaign-execution
+Revision: 1
+Source Project Map: work/maps/map-low-token-cross-platform-campaign-execution.md
+Source State Token: 1559ecbe8d8a77ef
+Proposal Token: 1138f4bdb927e06e
+Approved: 2026-08-25
+Current Milestone: M1-MAINTAINER-DOGFOOD
+Supersedes: none
+Superseded By: none
+
+## Roadmap Definition
+
+```json
+{
+  "artifact_mappings": [
+    {
+      "classification": "superseded",
+      "conflicts": [],
+      "evidence": "Type campaign; Status abandoned",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md",
+      "phase": null,
+      "state_token": "8d357c377b27f9a9"
+    },
+    {
+      "classification": "superseded",
+      "conflicts": [],
+      "evidence": "Type campaign; Status abandoned",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md",
+      "phase": null,
+      "state_token": "b0544158439195b6"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/001-owner-facing-campaign-queues.md",
+      "phase": null,
+      "state_token": "ed67746ae950d738"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md",
+      "phase": null,
+      "state_token": "ebb0905e2cff1e7d"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md",
+      "phase": null,
+      "state_token": "3ec50fd7acb2b71f"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/004-converge-upgrades-to-current-work-structure.md",
+      "phase": null,
+      "state_token": "527b7fe7add4bdb8"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/005-audit-and-refresh-tool-shed-documentation.md",
+      "phase": null,
+      "state_token": "5f1a1fcf7b207bff"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/006-reconcile-whole-work-campaign-coverage.md",
+      "phase": null,
+      "state_token": "d718e5ff9b06fab0"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/007-automate-dangler-resolution-reconciliation.md",
+      "phase": null,
+      "state_token": "0fcb9ac53f6d29d9"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/008-resolve-unclassified-work.md",
+      "phase": null,
+      "state_token": "73123eccec562562"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/009-complete-portable-verified-installer.md",
+      "phase": null,
+      "state_token": "9cf6b70d0b7e2157"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/010-file-codex-desktop-robustness-issue.md",
+      "phase": null,
+      "state_token": "581ac3ffb2943336"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/011-evaluate-workspace-performance-collector.md",
+      "phase": null,
+      "state_token": "79b0559b4b5bbb34"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/012-unify-dependency-aware-campaign-readiness.md",
+      "phase": null,
+      "state_token": "e5116884f492148d"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/013-discover-focus-areas-and-render-readiness-cards.md",
+      "phase": null,
+      "state_token": "d94d16b7edd05199"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/014-bound-updater-backup-scope-and-prune-archives.md",
+      "phase": null,
+      "state_token": "998e8f985c628dc1"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/015-build-focus-areas-from-existing-source.md",
+      "phase": null,
+      "state_token": "26bd929c3449a196"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/016-align-work3-documents-with-coded-work.md",
+      "phase": null,
+      "state_token": "9560a253aa6a688c"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/017-add-program-roadmap-lifecycle-between-project-maps-and-campaign-execution.md",
+      "phase": null,
+      "state_token": "33142e120fec19c3"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/018-show-campaign-ids-on-ordered-active-campaign-queue-entries.md",
+      "phase": null,
+      "state_token": "51adec6bb222985d"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/020-test-campaign-id-heading-review.md",
+      "phase": null,
+      "state_token": "cdf3b5b32acfc6bb"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/021-standardize-campaign-numbering-during-tool-shed-upgrades.md",
+      "phase": null,
+      "state_token": "cf6bfee4464b3af7"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/022-publish-tool-shed-documentation-site-at-ts-rookaro-com.md",
+      "phase": null,
+      "state_token": "9f75c210c2bd755b"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/023-customize-work-level-actions-per-workspace.md",
+      "phase": null,
+      "state_token": "3bb2dbd24938c87d"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/024-compact-tool-shed-site-and-publish-guided-workflows.md",
+      "phase": null,
+      "state_token": "af5a17eb7a3a184c"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/025-harden-upgrade-campaign-number-convergence.md",
+      "phase": null,
+      "state_token": "c7d4b2440cb37793"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/026-link-public-help-site-from-help-responses.md",
+      "phase": null,
+      "state_token": "05e96b0c3002b5c0"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/027-publish-and-verify-tool-shed-v0-22-0.md",
+      "phase": null,
+      "state_token": "4657cdac67b40e33"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/028-extend-next-with-targeted-and-wildcard-batches.md",
+      "phase": null,
+      "state_token": "66c65cabbbaaf9d8"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/029-define-nested-cycles-and-owning-transitions.md",
+      "phase": null,
+      "state_token": "524b813f4a00f048"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/030-fail-closed-on-cross-workspace-routing.md",
+      "phase": null,
+      "state_token": "c280c044a9733bd5"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/031-add-workspace-wide-ts-doctor-command.md",
+      "phase": null,
+      "state_token": "b04d19d4ed757ad8"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/032-make-workflow-cycles-first-class-site-concept.md",
+      "phase": null,
+      "state_token": "165d707d21abcc4f"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/033-update-github-actions-dependencies-before-node-20-removal.md",
+      "phase": null,
+      "state_token": "c499bf29c516af34"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/034-codex-adapter-compact-routing-and-explicit-activation.md",
+      "phase": null,
+      "state_token": "f4cc6dc80e72d3d6"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/036-define-completion-watcher-protocol-and-failure-model.md",
+      "phase": null,
+      "state_token": "2ae5e2bc5cbff0fc"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/037-implement-portable-local-completion-watcher-alpha.md",
+      "phase": null,
+      "state_token": "e3cc82602b3a45ba"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/038-qualify-and-release-local-completion-watchers.md",
+      "phase": null,
+      "state_token": "6443127f76566ff7"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/040-app-server-camp-token-optimization.md",
+      "phase": null,
+      "state_token": "2ac7f563fd74fa17"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/041-integrate-qualified-app-server-and-reassess-hosted-watcher.md",
+      "phase": null,
+      "state_token": "dd0de7025c5b53e0"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/042-reconcile-main-integrate-app-server-and-reduce-hosted-watcher.md",
+      "phase": null,
+      "state_token": "f9539f2bab8fb036"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/043-restore-trustworthy-overview-and-close-out-stale-evolution-map-state.md",
+      "phase": null,
+      "state_token": "c61465c07dc4c27e"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/044-app-server-explicit-command-opt-in.md",
+      "phase": null,
+      "state_token": "a139c33bb86df0fb"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/045-resolve-codex-cli-and-report-app-server-readiness.md",
+      "phase": null,
+      "state_token": "7fb759eb9acc8a59"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/046-forward-next-app-server-to-qualified-camp-execution.md",
+      "phase": null,
+      "state_token": "4c60b03bc00c9c4a"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/047-establish-secure-smb-access-to-bactron-workspace.md",
+      "phase": null,
+      "state_token": "1c05d1467460a431"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/049-implement-minimum-version-dirty-read-qualification.md",
+      "phase": null,
+      "state_token": "6e317cfc0ad7c89f"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/050-make-codex-candidate-resolution-and-readiness-truthful.md",
+      "phase": null,
+      "state_token": "b00e568a6f81cec6"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/051-harden-dirty-qualification-cache-and-failure-semantics.md",
+      "phase": null,
+      "state_token": "2773b3e0abdfbc61"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md",
+      "phase": null,
+      "state_token": "a336a6792bb08d27"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md",
+      "phase": null,
+      "state_token": "fb1d371cf6e86c61"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/054-harden-app-server-camp-verification-handoff.md",
+      "phase": null,
+      "state_token": "063f88e44baa9280"
+    },
+    {
+      "classification": "remaining",
+      "conflicts": [],
+      "evidence": "Type campaign; Status deferred",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md",
+      "phase": null,
+      "state_token": "7725bd9fd9acc0ed"
+    },
+    {
+      "classification": "remaining",
+      "conflicts": [],
+      "evidence": "Type campaign; Status deferred",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md",
+      "phase": null,
+      "state_token": "0d84775700841e53"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type adr; Status accepted",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md",
+      "phase": null,
+      "state_token": "f14b76704a8c3915"
+    },
+    {
+      "classification": "remaining",
+      "conflicts": [],
+      "evidence": "Type checklist; Status deferred",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/checklists/checklist-hosted-watcher-status-and-email-pilot.md",
+      "phase": null,
+      "state_token": "e961722337e044d6"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type checklist; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/checklists/checklist-refresh-readme-and-ai-command-reference.md",
+      "phase": null,
+      "state_token": "d099b45fe52623e0"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type checklist; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/checklists/checklist-tool-shed-skill-field-test.md",
+      "phase": null,
+      "state_token": "6561d6cbcdf90681"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type decision-matrix; Status decided",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/decisions/decision-codex-skill-readiness.md",
+      "phase": null,
+      "state_token": "4ddfd4622b7b6d69"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type decision-matrix; Status decided",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/decisions/decision-human-planning-mechanisms-for-tool-shed.md",
+      "phase": null,
+      "state_token": "6b1aa1f11a39931b"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type decision-matrix; Status decided",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/decisions/decision-level-2-onboarding-helper-automation.md",
+      "phase": null,
+      "state_token": "36895ea5d947b44c"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type decision-matrix; Status decided",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/decisions/decision-plugin-packaging-readiness.md",
+      "phase": null,
+      "state_token": "f1e83bd6fb266a51"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type decision-matrix; Status decided",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/decisions/decision-project-map-creation-trigger.md",
+      "phase": null,
+      "state_token": "68bef13ffb9592f3"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-adaptive-generated-evidence-safeguards.md",
+      "phase": null,
+      "state_token": "81e11103e8264b50"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-app-server-integration-and-watcher-reassessment.md",
+      "phase": null,
+      "state_token": "10648406c5a35b92"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-completion-watcher-v1-alpha.md",
+      "phase": null,
+      "state_token": "e1398cfd29cac4dd"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-completion-watcher-v1-contract.md",
+      "phase": null,
+      "state_token": "fc28aad7763d2866"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-completion-watcher-v1-release.md",
+      "phase": null,
+      "state_token": "d52d97bf6e6c06f1"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-human-planning-mechanism-evaluation.md",
+      "phase": null,
+      "state_token": "81fffad766f53803"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md",
+      "phase": null,
+      "state_token": "cc7d18cda55e2efb"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-snapshot-upgrade-performance-and-retry-safety.md",
+      "phase": null,
+      "state_token": "a272c6245d07209b"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md",
+      "phase": null,
+      "state_token": "f031f74e2b1d37ba"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md",
+      "phase": null,
+      "state_token": "2e1a11cdd5b7bea4"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-tool-shed-0-26-0-dirty-codex-forward-compatibility.md",
+      "phase": null,
+      "state_token": "f9e935dfcfa39052"
+    },
+    {
+      "classification": "uncertain",
+      "conflicts": [
+        "ambiguous lifecycle evidence"
+      ],
+      "evidence": "Type unknown; Status unknown",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-tool-shed-provider-portability.md",
+      "phase": null,
+      "state_token": "34fd8c56765919e0"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-w1-dev-smb-access.md",
+      "phase": null,
+      "state_token": "d71487e94bd74a02"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md",
+      "phase": null,
+      "state_token": "5cb35b63904386b6"
+    },
+    {
+      "classification": "excluded",
+      "conflicts": [],
+      "evidence": "Type focus-area-catalog; Status approved",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/focus-areas.md",
+      "phase": null,
+      "state_token": "25d7f3ca18b4e325"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type incident; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md",
+      "phase": null,
+      "state_token": "594e1baf725570a3"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type inventory; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md",
+      "phase": null,
+      "state_token": "0b5859f672faa12f"
+    },
+    {
+      "classification": "remaining",
+      "conflicts": [],
+      "evidence": "Type project-map; Status deferred",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/maps/map-disposable-completion-watchers-and-hosted-notifications.md",
+      "phase": null,
+      "state_token": "0f011d123fbd16d8"
+    },
+    {
+      "classification": "active",
+      "conflicts": [],
+      "evidence": "Type project-map; Status active",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/maps/map-low-token-cross-platform-campaign-execution.md",
+      "phase": null,
+      "state_token": "18e73e1332ea4b0e"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type project-map; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/maps/map-tool-shed-evolution.md",
+      "phase": null,
+      "state_token": "419fd598b6e4f102"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type project-map; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/maps/map-tool-shed-foundation.md",
+      "phase": null,
+      "state_token": "6534a16b55152b79"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type spike; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/spikes/spike-completion-watcher-protocol-and-failure-model.md",
+      "phase": null,
+      "state_token": "a89923df97ea6126"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type spike; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md",
+      "phase": null,
+      "state_token": "1f45282177da1af3"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type spike; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md",
+      "phase": null,
+      "state_token": "9d241e6b21386e3c"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type ticket; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/tickets/ticket-add-codex-skill-after-foundation-stabilizes.md",
+      "phase": null,
+      "state_token": "a1a1117ace858080"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type ticket; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/tickets/ticket-add-numbered-work-levels-and-environment-models.md",
+      "phase": null,
+      "state_token": "901731ac16184d96"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type ticket; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/tickets/ticket-add-tool-shed-operator-help.md",
+      "phase": null,
+      "state_token": "aca9c164a9184a73"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type ticket; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/tickets/ticket-add-tool-shed-version-status.md",
+      "phase": null,
+      "state_token": "f09ffea4d1f3c1e6"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type ticket; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/tickets/ticket-field-verify-generated-evidence-safeguards.md",
+      "phase": null,
+      "state_token": "be19b7a3560b3b96"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type ticket; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/tickets/ticket-harden-tool-shed-release-and-drift-semantics.md",
+      "phase": null,
+      "state_token": "32548dba89c2808c"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type ticket; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/tickets/ticket-implement-privacy-safe-workspace-performance-profiler.md",
+      "phase": null,
+      "state_token": "0b2543661775dac5"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type ticket; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/tickets/ticket-mitigate-tool-shed-churn-for-direct-coding-requests.md",
+      "phase": null,
+      "state_token": "e74a399027c99868"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type ticket; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/tickets/ticket-portable-verified-tool-shed-installer.md",
+      "phase": null,
+      "state_token": "76bd39174cce8696"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type ticket; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/tickets/ticket-prepare-tool-shed-0-2-0-release.md",
+      "phase": null,
+      "state_token": "a04b725c2936f537"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type workpackage; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/wp/completed/wp-evidence-responsive-tool-shed-execution.md",
+      "phase": null,
+      "state_token": "0cbe20d71f24e4cb"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type workpackage; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/wp/completed/wp-existing-project-onboarding-and-backfill.md",
+      "phase": null,
+      "state_token": "4360a6f0c53394af"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type workpackage; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/wp/completed/wp-generated-evidence-safety-and-migration.md",
+      "phase": null,
+      "state_token": "924bd4eccb08ef6d"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type workpackage; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/wp/completed/wp-owner-facing-campaign-queues-and-lifecycle-management.md",
+      "phase": null,
+      "state_token": "4b8a5e72e6198aa7"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type workpackage; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/wp/completed/wp-reasoning-level-preflight-and-recommendation.md",
+      "phase": null,
+      "state_token": "6bd1b2b14bcd7667"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type workpackage; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/wp/completed/wp-tool-shed-campaign-entry-improvements.md",
+      "phase": null,
+      "state_token": "307d39f4c9c8bb69"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type workpackage; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/wp/completed/wp-tool-shed-routing-and-fleet-snapshot-updates.md",
+      "phase": null,
+      "state_token": "54e38fb64ad66561"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type workpackage; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/wp/completed/wp-work-artifact-reconciliation.md",
+      "phase": null,
+      "state_token": "b166e95828287752"
+    }
+  ],
+  "assumptions": [
+    "The current Tool Shed candidate already contains the shared App Server execution core, role/model routing, token telemetry, safety controls, cross-platform launchers, versioned installers, and Campaign 054 verification repair.",
+    "The maintained Tool Shed workspace is a native Linux dogfood target and Bactron Core on the work PC is the first native Windows installed target.",
+    "The existing role policy is adequate for the first usable release: Sol/high for planning or explicit escalation, Terra/medium for campaign execution, and Terra/low for verification.",
+    "A bounded disposable or owner-approved Linux workspace can prove installed-mode behavior without requiring a fleet inventory.",
+    "Observed ordinary defects can be repaired inside the campaign that exposed them without creating detour campaigns."
+  ],
+  "authority_boundaries": "Roadmap approval does not execute campaigns, publish releases, synchronize installed skills, upgrade snapshots, or deploy applications. Campaign-plan approval only materializes the exact milestone campaigns. Every external mutation remains inside its materialized campaign and declared work level. App Server is explicit opt-in until the owner separately changes that policy. No target outside the named maintained Tool Shed, a bounded native Linux install target, and Bactron Core may be mutated.",
+  "candidate_campaigns": [
+    {
+      "campaign_id": "dogfood-maintained-tool-shed-app-server-execution",
+      "completion_gate": "G1-DOGFOOD-WORKS passes with real-run, focused-check, journal, model-routing, and usage evidence.",
+      "decision": "none",
+      "depends_on": [],
+      "milestone": "M1-MAINTAINER-DOGFOOD",
+      "outcome": "Use the current candidate to complete one useful bounded Tool Shed campaign through App Server and close only defects exposed by that real run.",
+      "primary_focus_areas": [
+        "provider-portability"
+      ],
+      "request": "Choose the smallest currently useful Tool Shed source or operator-facing improvement with one deterministic focused check and a narrow declared path set. From the canonical maintained Linux workspace, attempt this campaign through the explicit App Server route using the current qualified execution role. Capture selected executable/model/effort, bounded context, model turns, raw and weighted usage, elapsed time, tool calls, declared verification counts, changed paths, and journal state. If an ordinary defect blocks the run, preserve its smallest diagnostic, repair it through the normal GUI inside this same campaign, rerun only the failed focused check, then perform one App Server end-to-end smoke. Do not run the full validator, publish, synchronize an installed skill, create a detour campaign, or expand platform scope.",
+      "supporting_focus_areas": [
+        "workspace-safety",
+        "campaign-lifecycle"
+      ],
+      "title": "Dogfood maintained Tool Shed App Server execution",
+      "unlocks_gate": "G1-DOGFOOD-WORKS"
+    },
+    {
+      "campaign_id": "publish-minimum-usable-tool-shed-v0-28-0",
+      "completion_gate": "The release portion of G2-RELEASE-USABLE has one full-validator result and verified public provenance.",
+      "decision": "none",
+      "depends_on": [
+        "dogfood-maintained-tool-shed-app-server-execution"
+      ],
+      "milestone": "M2-MINIMUM-RELEASE",
+      "outcome": "Publish the dogfooded App Server candidate through the existing traceable release path without adding speculative qualification.",
+      "primary_focus_areas": [
+        "qualification-release"
+      ],
+      "request": "After maintained-workspace dogfood passes, freeze the intended release inputs and run the complete Tool Shed validator once. If unchanged inputs pass, follow the documented two-commit provenance flow for v0.28.0, create the annotated tag, push branch and tag, and verify the raw manifest plus non-draft GitHub Release. If code changes after a failure, run only the relevant focused check before one replacement full-validator run. Do not synchronize installed skills, upgrade downstream snapshots, add platform matrices, or deploy applications in this campaign.",
+      "supporting_focus_areas": [
+        "provider-portability"
+      ],
+      "title": "Publish the minimum usable Tool Shed v0.28.0 release",
+      "unlocks_gate": "none"
+    },
+    {
+      "campaign_id": "synchronize-maintainer-skill-and-smoke-v0-28-0",
+      "completion_gate": "G2-RELEASE-USABLE passes with exact installed-skill parity and fresh-session evidence.",
+      "decision": "none",
+      "depends_on": [
+        "publish-minimum-usable-tool-shed-v0-28-0"
+      ],
+      "milestone": "M2-MINIMUM-RELEASE",
+      "outcome": "Make the published low-token execution contract available to fresh Codex sessions on the maintainer host.",
+      "primary_focus_areas": [
+        "snapshot-delivery"
+      ],
+      "request": "After public v0.28.0 verification, use the dual-role workspace procedure to quick-validate the released source skill, exact-diff source and installed copies, create one bounded timestamped backup, stage and replace the installed skill, verify exact parity, and perform one fresh-session routing/readiness smoke. Do not rerun the full repository validator or modify downstream project snapshots.",
+      "supporting_focus_areas": [
+        "provider-portability",
+        "qualification-release"
+      ],
+      "title": "Synchronize the maintainer skill and smoke v0.28.0",
+      "unlocks_gate": "G2-RELEASE-USABLE"
+    },
+    {
+      "campaign_id": "prove-installed-native-linux-app-server-workflow",
+      "completion_gate": "G3-LINUX-INSTALLED-WORKS passes with install/update, real-use, controlled-failure, recovery, and usage evidence.",
+      "decision": "none",
+      "depends_on": [
+        "synchronize-maintainer-skill-and-smoke-v0-28-0"
+      ],
+      "milestone": "M3-LINUX-INSTALLED",
+      "outcome": "Show that the released snapshot and skill install or upgrade cleanly and complete a real low-touch campaign on native Linux.",
+      "primary_focus_areas": [
+        "snapshot-delivery"
+      ],
+      "request": "Use a bounded disposable native Linux workspace unless the owner explicitly names an existing project. Install or upgrade from the verified v0.28.0 release using existing guarded tooling, verify snapshot and installed-skill versions, exact executable readiness, backup, and rollback, then execute one real bounded campaign through the same explicit App Server command. Also exercise one safe pre-mutation failure such as an intentionally invalid declared target or unqualified override and confirm the result identifies the category, reports no mutation, and gives one recovery action; recover and run one successful smoke. Run only platform-relevant focused checks. Do not inventory or mutate other installs.",
+      "supporting_focus_areas": [
+        "provider-portability",
+        "workspace-safety"
+      ],
+      "title": "Prove the installed native Linux App Server workflow",
+      "unlocks_gate": "G3-LINUX-INSTALLED-WORKS"
+    },
+    {
+      "campaign_id": "prove-bactron-core-native-windows-app-server-workflow",
+      "completion_gate": "G4-WINDOWS-INSTALLED-WORKS passes with version, resolver, asset-aware execution, exactly-once verification, journal, and usage evidence.",
+      "decision": "none",
+      "depends_on": [
+        "synchronize-maintainer-skill-and-smoke-v0-28-0"
+      ],
+      "milestone": "M4-WINDOWS-INSTALLED",
+      "outcome": "Show that the released Tool Shed works through the normal Windows GUI environment for a fresh asset-aware Core campaign.",
+      "primary_focus_areas": [
+        "snapshot-delivery"
+      ],
+      "request": "Using normal GUI execution on the work PC in E:\\dev\\bactron-core, upgrade the Tool Shed snapshot and Windows installed skill from the verified v0.28.0 release with bounded backups and rollback. Without PATH preparation, verify that all App Server consumers select the same exact GUI-provided Codex executable and readiness state. Create and execute one fresh bounded non-production asset-aware Core campaign through explicit App Server selection, capturing model/effort, context, tokens, turns, elapsed time, tool calls, changed paths, exactly-once declared verification, journal truth, and compact return. Repair ordinary setup defects inside this campaign with focused checks and one smoke. Do not replay Campaign 013, deploy Bactron, alter unrelated product scope, or run unrelated suites.",
+      "supporting_focus_areas": [
+        "provider-portability",
+        "workspace-safety",
+        "qualification-release"
+      ],
+      "title": "Prove the Bactron Core native Windows App Server workflow",
+      "unlocks_gate": "G4-WINDOWS-INSTALLED-WORKS"
+    },
+    {
+      "campaign_id": "adopt-low-token-app-server-campaign-loop",
+      "completion_gate": "G5-OWNER-ADOPTION passes and the program states exactly where the path is usable and where it is not.",
+      "decision": "none",
+      "depends_on": [
+        "prove-installed-native-linux-app-server-workflow",
+        "prove-bactron-core-native-windows-app-server-workflow"
+      ],
+      "milestone": "M5-ADOPTION",
+      "outcome": "Give the owner one reliable command, one compact result, and one recovery path for ordinary Tool Shed campaign execution.",
+      "primary_focus_areas": [
+        "provider-portability"
+      ],
+      "request": "Using the completed maintained, installed Linux, and native Windows evidence, keep only the minimum operator guidance and stable runtime defaults needed for daily use. Confirm the one-command explicit App Server path, role/model policy, hard blockers, warning-only conditions, failure category/mutation state/recovery output, and GUI fallback invocation. Compare raw, cached, output, reasoning, weighted usage, turns, elapsed time, and owner interactions without inventing unavailable GUI telemetry. Run no new suite when implementation inputs are unchanged; only smoke any operator-facing change. State supported environments and limitations, then mark the program complete only when the owner can use the path for ordinary campaigns.",
+      "supporting_focus_areas": [
+        "snapshot-delivery",
+        "campaign-lifecycle"
+      ],
+      "title": "Adopt the low-token App Server campaign loop",
+      "unlocks_gate": "G5-OWNER-ADOPTION"
+    }
+  ],
+  "constraints": "Reuse the existing Tool Shed control plane, release machinery, App Server routing, and qualified Sol/Terra role policy. Dogfood the maintained Linux candidate before release. Installed workspaces consume a verified stable release. Keep common behavior portable and isolate only genuine Linux and Windows differences. During repair run changed-path tests plus one smoke; run the full deterministic Tool Shed validator once at the unchanged release boundary; run one native installation/update smoke and one real bounded campaign per supported platform. Preserve exact-root/path allowlists, dirty-target refusal, ChatGPT authentication with no API fallback, disabled network, no replay after mutation, truthful journals, backups, and rollback.",
+  "decisions": [
+    "Treat Tool Shed as the existing control plane and App Server as a focused local execution adapter.",
+    "Optimize both model weighting and raw context: select the lowest adequate qualified model, send bounded context, compact successful evidence, minimize model turns, and keep the App Server transcript out of the foreground GUI.",
+    "Use dogfood-first pre-commercial qualification: real useful execution outranks speculative compatibility coverage.",
+    "Run focused tests during development, one full validator at release, and one representative native workflow per supported platform; do not repeat unchanged suites.",
+    "Repair ordinary failures inside the milestone and campaign that exposed them, rerun the failed focused check, then one end-to-end smoke.",
+    "Hard-block only unsafe or dirty declared targets, unqualified exact executables, authentication/no-API-fallback violations, failed declared correctness, or ambiguous post-mutation state.",
+    "Keep native per-host operation as the first delivery boundary; defer central dispatch, macOS, hosted services, and commercial qualification.",
+    "Do not claim a numerical GUI token reduction where GUI telemetry is unavailable; prove one-command operation, model routing, bounded App Server metrics, and reduced foreground owner interaction."
+  ],
+  "desired_outcome": "From one explicit Tool Shed command, the canonical maintained Linux workspace and installed native Linux and Windows workspaces can complete the next bounded campaign through App Server using the lowest adequate qualified model and effort, with truthful exactly-once verification, materially reduced foreground-session context and owner intervention, useful token telemetry, and one clear recovery action on failure.",
+  "gates": [
+    {
+      "evidence_required": true,
+      "id": "G1-DOGFOOD-WORKS",
+      "pass_criteria": "A useful canonical-workspace campaign starts from one explicit owner command, selects Terra/medium for routine execution, changes only declared paths, runs declared deterministic verification exactly once, reaches a truthful terminal journal state, returns compact metrics, and needs no repeated full suite; if a defect appears, its same-campaign focused repair and single smoke pass.",
+      "requires_milestones": [
+        "M1-MAINTAINER-DOGFOOD"
+      ],
+      "title": "Maintained-workspace real-use gate",
+      "unlocks_milestones": [
+        "M2-MINIMUM-RELEASE"
+      ]
+    },
+    {
+      "evidence_required": true,
+      "id": "G2-RELEASE-USABLE",
+      "pass_criteria": "The full Tool Shed validator passes once on unchanged release inputs; v0.28.0 content/provenance commits, annotated tag, raw manifest, and non-draft GitHub Release agree; the maintainer installed skill exact-diffs clean and a fresh session resolves the released contract.",
+      "requires_milestones": [
+        "M2-MINIMUM-RELEASE"
+      ],
+      "title": "Minimum release and maintainer client gate",
+      "unlocks_milestones": [
+        "M3-LINUX-INSTALLED",
+        "M4-WINDOWS-INSTALLED"
+      ]
+    },
+    {
+      "evidence_required": true,
+      "id": "G3-LINUX-INSTALLED-WORKS",
+      "pass_criteria": "A native Linux target passes only the relevant install/update, App Server readiness, focused correctness, real campaign, and controlled recovery checks; the successful campaign uses the intended model, truthful journal, bounded context, compact result, and recorded usage without an unrelated full-matrix rerun.",
+      "requires_milestones": [
+        "M3-LINUX-INSTALLED"
+      ],
+      "title": "Native Linux installed-use gate",
+      "unlocks_milestones": [
+        "M5-ADOPTION"
+      ]
+    },
+    {
+      "evidence_required": true,
+      "id": "G4-WINDOWS-INSTALLED-WORKS",
+      "pass_criteria": "A normally launched Windows Codex GUI resolves one exact qualified executable without PATH preparation; Core snapshot and skill match v0.28.0; a fresh bounded asset-aware campaign verifies exactly once with truthful state and recorded usage; no Campaign 013 replay or application deployment occurs.",
+      "requires_milestones": [
+        "M4-WINDOWS-INSTALLED"
+      ],
+      "title": "Native Windows installed-use gate",
+      "unlocks_milestones": [
+        "M5-ADOPTION"
+      ]
+    },
+    {
+      "evidence_required": true,
+      "id": "G5-OWNER-ADOPTION",
+      "pass_criteria": "The operator path is one explicit Tool Shed command; normal successful CAMP execution remains at the established two-model-turn shape when comparable, routine work uses Terra rather than Sol absent explicit escalation, GUI receives only a compact result, failure output includes category/mutation state/recovery action, and actual Linux and Windows token/turn/time/owner-interaction evidence plus limitations are visible.",
+      "requires_milestones": [
+        "M5-ADOPTION"
+      ],
+      "title": "Owner utility gate",
+      "unlocks_milestones": []
+    }
+  ],
+  "milestones": [
+    {
+      "depends_on": [],
+      "id": "M1-MAINTAINER-DOGFOOD",
+      "outcome": "One explicit App Server command completes a useful bounded campaign in the canonical maintained Linux workspace with the intended Terra execution role, bounded context, exactly-once verification, safe journal state, compact return, token telemetry, and focused-only development checks; any observed ordinary defect is repaired in the same campaign.",
+      "phase": "P1-DOGFOOD",
+      "title": "Maintained Linux Tool Shed dogfood works"
+    },
+    {
+      "depends_on": [
+        "M1-MAINTAINER-DOGFOOD"
+      ],
+      "id": "M2-MINIMUM-RELEASE",
+      "outcome": "The dogfooded candidate passes one unchanged full validator, is published with valid v0.28.0 provenance and GitHub release evidence, and the maintainer installed Tool Shed skill exactly matches that release in a fresh Codex session.",
+      "phase": "P2-MINIMUM-RELEASE",
+      "title": "Minimum usable App Server release published and synchronized"
+    },
+    {
+      "depends_on": [
+        "M2-MINIMUM-RELEASE"
+      ],
+      "id": "M3-LINUX-INSTALLED",
+      "outcome": "A bounded native Linux target installs or upgrades the verified release and completes one real campaign through the same App Server command, including one controlled safe pre-mutation failure that produces a useful category and exact recovery action.",
+      "phase": "P3-NATIVE-INSTALLS",
+      "title": "Installed native Linux workflow works"
+    },
+    {
+      "depends_on": [
+        "M2-MINIMUM-RELEASE"
+      ],
+      "id": "M4-WINDOWS-INSTALLED",
+      "outcome": "Bactron Core on the work PC upgrades its Tool Shed snapshot and installed skill, resolves the normal GUI-provided Codex executable without PATH preparation, and completes one fresh bounded asset-aware App Server campaign without replaying Campaign 013 or deploying Bactron.",
+      "phase": "P3-NATIVE-INSTALLS",
+      "title": "Installed native Windows workflow works"
+    },
+    {
+      "depends_on": [
+        "M3-LINUX-INSTALLED",
+        "M4-WINDOWS-INSTALLED"
+      ],
+      "id": "M5-ADOPTION",
+      "outcome": "The owner has one concise command and recovery path for ordinary App Server campaign execution, real Linux and Windows results are summarized with raw and weighted usage plus owner interactions, the representative two-turn optimization has not materially regressed, and unsupported targets or limitations are explicit.",
+      "phase": "P4-ADOPTION",
+      "title": "Low-token App Server execution becomes an owner-usable Tool Shed path"
+    }
+  ],
+  "non_goals": "Redesigning Tool Shed planning or campaign lifecycle; building another orchestrator, hosted service, remote cross-host dispatcher, or operating-system fork; automatic global App Server enablement; macOS qualification; commercial-scale compatibility matrices or support commitments; Bactron application deployment; replaying Bactron Core Campaign 013; unrelated doctor-warning cleanup.",
+  "phases": [
+    {
+      "depends_on": [],
+      "id": "P1-DOGFOOD",
+      "title": "Prove the maintained Tool Shed execution loop"
+    },
+    {
+      "depends_on": [
+        "P1-DOGFOOD"
+      ],
+      "id": "P2-MINIMUM-RELEASE",
+      "title": "Publish and synchronize the minimum usable release"
+    },
+    {
+      "depends_on": [
+        "P2-MINIMUM-RELEASE"
+      ],
+      "id": "P3-NATIVE-INSTALLS",
+      "title": "Prove installed native Linux and Windows operation"
+    },
+    {
+      "depends_on": [
+        "P3-NATIVE-INSTALLS"
+      ],
+      "id": "P4-ADOPTION",
+      "title": "Adopt the low-token operating loop"
+    }
+  ],
+  "unknowns": [
+    "The smallest currently useful Tool Shed improvement to use as the maintained-workspace dogfood edit; select it when the first campaign is prepared without broadening scope.",
+    "Whether the first native Linux installed proof should use a disposable workspace or an existing owner-selected project; default to disposable unless the owner names a project.",
+    "How much of the owner account limit maps to raw versus weighted model usage; report raw, cached, output, reasoning, weighted usage, turns, elapsed time, and owner interactions separately.",
+    "Which platform-specific defects, if any, the real Linux and Windows trials will expose."
+  ]
+}
+```
+
+## Revision History
+
+- Revision 1: executing on 2026-08-25.

@@ -100,3 +100,5 @@ exposes profiles without an allowed read-only profile fails closed. The disposab
 tree is fingerprinted before and after the model turns, and protocol mutation events must remain
 empty. Safe blockers such as a missing interrupt acknowledgement after authoritative interrupted
 state are reported separately from fatal safety failures and unknown runtime outcomes.
+
+A successful App Server selection banner reports API fallback: disabled so the no-fallback boundary is visible before execution.

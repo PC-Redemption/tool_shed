@@ -486,6 +486,7 @@ def format_selection(selection: CommandSelection) -> str:
                 f"Role: {selection.role}",
                 f"Model: {selection.model}",
                 f"Reasoning: {selection.reasoning}",
+                f"API fallback: {'enabled' if selection.api_fallback else 'disabled'}",
                 "Opt-in: explicit",
                 f"Reason: {selection.reason}",
                 f"Qualification: {selection.qualification_mode}",

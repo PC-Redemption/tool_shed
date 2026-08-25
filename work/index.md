@@ -10,6 +10,8 @@ Updated: 2026-08-25
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
 | [work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md](work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md) | campaign | abandoned | 2026-08-24 | none | - |
+| [work/00-campaigns/active/056-publish-minimum-usable-tool-shed-v0-28-0.md](work/00-campaigns/active/056-publish-minimum-usable-tool-shed-v0-28-0.md) | campaign | working | 2026-08-25 | execute the campaign completion gate | - |
+| [work/00-campaigns/active/057-synchronize-maintainer-skill-and-smoke-v0-28-0.md](work/00-campaigns/active/057-synchronize-maintainer-skill-and-smoke-v0-28-0.md) | campaign | queued | 2026-08-25 | execute when selected from the active campaign queue | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -60,6 +62,7 @@ Updated: 2026-08-25
 | [work/00-campaigns/completed/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md](work/00-campaigns/completed/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md) | campaign | complete | 2026-08-25 | none | - |
 | [work/00-campaigns/completed/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md](work/00-campaigns/completed/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md) | campaign | complete | 2026-08-24 | none | - |
 | [work/00-campaigns/completed/054-harden-app-server-camp-verification-handoff.md](work/00-campaigns/completed/054-harden-app-server-camp-verification-handoff.md) | campaign | complete | 2026-08-25 | none | - |
+| [work/00-campaigns/completed/055-dogfood-maintained-tool-shed-app-server-execution.md](work/00-campaigns/completed/055-dogfood-maintained-tool-shed-app-server-execution.md) | campaign | complete | 2026-08-25 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -89,10 +92,12 @@ Updated: 2026-08-25
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/maps/map-disposable-completion-watchers-and-hosted-notifications.md](work/maps/map-disposable-completion-watchers-and-hosted-notifications.md) | project-map | deferred | 2026-08-18 | preserve the completed local watcher and wait for a concrete external/non-App-Server notification need before revisiting hosted work | - |
+| [work/maps/map-low-token-cross-platform-campaign-execution.md](work/maps/map-low-token-cross-platform-campaign-execution.md) | project-map | active | 2026-08-25 | materialize and execute the pre-authorized M2 release and maintainer-skill campaigns; stop before any Core snapshot or skill change | - |
 | [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | complete | 2026-08-20 | none | - |
 | [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
 | [work/roadmaps/roadmap-completion-watcher-program-r2.md](work/roadmaps/roadmap-completion-watcher-program-r2.md) | program-roadmap | approved | 2026-08-20 | derive campaigns for milestone M1-CONTRACT | none |
 | [work/roadmaps/roadmap-completion-watcher-program.md](work/roadmaps/roadmap-completion-watcher-program.md) | program-roadmap | superseded | 2026-08-20 | none | work/roadmaps/roadmap-completion-watcher-program-r2.md |
+| [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution.md) | program-roadmap | executing | 2026-08-25 | execute the first ready roadmap campaign through ts: next | none |
 | [work/spikes/spike-completion-watcher-protocol-and-failure-model.md](work/spikes/spike-completion-watcher-protocol-and-failure-model.md) | spike | complete | 2026-08-18 | none | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
 | [work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md](work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md) | spike | complete | 2026-08-09 | none | work/maps/map-tool-shed-evolution.md |
 | [work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md](work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md) | spike | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
@@ -123,6 +128,6 @@ Updated: 2026-08-25
 
 ## Summary
 
-- Total artifacts: 106
-- Active artifacts: 0
-- Completed/decided artifacts: 96
+- Total artifacts: 111
+- Active artifacts: 3
+- Completed/decided artifacts: 97
