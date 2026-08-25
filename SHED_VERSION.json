@@ -10,7 +10,7 @@
     "adapters/codex-app-server-config.json": "9ee82433d20abdef7567bd65d6ddbcf0d1d816a92296f3ecd84d836dfb4cb7ed",
     "adapters/codex-app-server-qualifications.json": "35c2052487e2e292ec38c78ea8c2146b9abd064ba0fa5486eb9854a8b25b2ef4",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "3c541465aa243489e5dc6b0375eadcf08a83e5369598393f2bfc35982f42065e",
+    "adapters/codex-skill-releases.json": "3c5d22c3d9401c53c8f4019690c0d0a50a08cf29101b2a6bc811812c7ac6b72c",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "95069c265c5384c7e62e91be7cad996eb1ce4c13f43ca57f5051c0487e2f9c02",
     "docs/codex-app-server-alpha-requalification-2026-08-24.md": "80789afbdcfb878257547934fd6ca7358fd56f79f16b081a4fc61e888579b962",
@@ -145,34 +145,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
-  "notes": "Run Windows CAMP deterministic verification through the selected GUI Codex local read-only sandbox instead of the failing post-turn App Server command RPC.",
-  "release_commit": "6ad8477674208820642b885cac2e3613d4c1a6be",
-  "release_qualification": {
-    "attested_at": "2026-08-25T21:44:37Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "d740896c470e02ba526ed08a6d2a8b40865764e67951583e6f8a97db65402766"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "8fc34912f27434fefea4870607350a6543c3293666e4efd96d55b320739c42d6"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "b62203b7c1c21f03dc77e42d714db6b0d742550c3524a4dc33d67c5c283cc54e"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "74ee83963f0c20eef755bcae7f51c0caaa35fe3ce2f7001cbcfcf381911d0a45"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "6ad8477674208820642b885cac2e3613d4c1a6be"
-  },
-  "release_tag": "v0.29.3",
-  "released_at": "2026-08-25T21:44:37Z",
-  "shed_version": "0.29.3",
+  "notes": "Correct v0.29.3 release packaging while retaining Windows console-sandbox deterministic verification.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.29.4",
+  "released_at": null,
+  "shed_version": "0.29.4",
   "updated_at": "2026-08-25",
   "updater_mutation_paths": [
     {
