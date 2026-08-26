@@ -1,16 +1,16 @@
 # Adopt first-pass App Server preparation in Core
 
-Status: blocked
+Status: working
 Type: campaign
 Updated: 2026-08-26
-Next Action: resolve blocker or decision: Campaign 086 repaired the v0.29.10 context-padding defect locally; Campaign 087 must publish and synchronize the corrective patch before the already-authorized Core re-upgrade and Windows proof resume
+Next Action: execute the campaign completion gate
 Campaign ID: adopt-first-pass-app-server-preparation-in-core
 Campaign Number: 085
 Outcome: A fresh ordinary Core campaign completes on its first automatically prepared Windows App Server attempt.
 Primary Focus Areas: provider-portability
 Supporting Focus Areas: snapshot-delivery, workspace-safety, campaign-lifecycle
 Depends On: publish-and-synchronize-first-pass-app-server-preparation
-Decision: Campaign 086 repaired the v0.29.10 context-padding defect locally; Campaign 087 must publish and synchronize the corrective patch before the already-authorized Core re-upgrade and Windows proof resume
+Decision: none
 Detour For: none
 Return To: none
 Completion Gate: G13-CORE-FIRST-PASS-OWNER-READY passes with exact upgrade, first-attempt execution, exactly-once verification, bounded usage, and no deployment.

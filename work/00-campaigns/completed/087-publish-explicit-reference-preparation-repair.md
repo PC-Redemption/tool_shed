@@ -1,9 +1,9 @@
 # Publish Explicit-Reference Preparation Repair
 
-Status: working
+Status: complete
 Type: campaign
 Updated: 2026-08-26
-Next Action: execute the campaign completion gate
+Next Action: none
 Campaign ID: publish-explicit-reference-preparation-repair
 Campaign Number: 087
 Outcome: Publish the validated explicit-reference preparation bound in a verified Tool Shed patch release and synchronize the maintainer installed skill so the already-authorized Core adoption campaign can resume from a stable release.
@@ -14,8 +14,10 @@ Decision: none
 Detour For: adopt-first-pass-app-server-preparation-in-core
 Return To: adopt-first-pass-app-server-preparation-in-core
 Completion Gate: The unchanged candidate passes the full validator; content and provenance commits, annotated tag, live manifest, and non-draft latest GitHub Release agree; the maintainer installed skill is backed up, synchronized, exact-diff clean, and fresh-session verified; no Core snapshot or Bactron deployment changes.
-Completion Evidence: none
-Disposition: none
+Completion Evidence: work/evidence/evidence-tool-shed-v0-29-11-release-and-maintainer-sync.md
+Completion Date: 2026-08-26
+Completion Order: 72
+Disposition: completed
 
 ## Request
 

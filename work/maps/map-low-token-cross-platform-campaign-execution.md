@@ -3,7 +3,7 @@
 Status: active
 Type: project-map
 Updated: 2026-08-26
-Next Action: obtain separate owner authorization for Campaign 087's patch release publication and maintainer skill synchronization, then resume the already-authorized Campaign 085 Core upgrade and Windows proof
+Next Action: upgrade Core to verified Tool Shed v0.29.11 and resume Campaign 085's already-authorized Windows first-pass proof
 Campaign: standalone
 Campaign Reason: source coordination surface for the approved, executing Program Roadmap
 
@@ -91,6 +91,10 @@ failed closed before capsule persistence, worker launch, or product mutation. Ca
 and focused-tested that defect locally. Publishing the repair and synchronizing the maintainer skill
 remain the separate consent boundary represented by Campaign 087; after that boundary passes,
 Campaign 085 may re-upgrade Core and resume without asking for Core authorization again.
+
+The owner authorized Campaign 087 on 2026-08-26. Tool Shed v0.29.11 was published as the verified
+latest stable release and the maintainer skill was backed up and exactly synchronized. Campaign 087
+is complete, so Campaign 085 has resumed under its existing Core and Windows authorization.
 
 Later Core Campaigns 018 through 021 showed that hard runtime ceilings alone do not make the path
 reliable: automatic preparation can choose oversized context, unavailable executables, broad or
@@ -201,11 +205,9 @@ It does not revise M4's outcome or grant Core mutation authority.
 
 Ground:
 
-- Current next action: Core now has the exact Tool Shed v0.29.10 snapshot and matching Windows skill,
-  but its first ordinary preparation attempt failed closed when unrelated generic-keyword artifacts
-  pushed planning to 50,595 input tokens. Campaign 086 locally repaired and proved a 48,000-byte
-  explicit-reference context bound. Obtain separate authorization for Campaign 087 to publish and
-  synchronize that repair; then re-upgrade Core and resume the already-authorized Campaign 085 proof.
+- Current next action: Tool Shed v0.29.11 is published and the maintainer installed skill matches it.
+  Upgrade Core from v0.29.10 to v0.29.11, verify exact snapshot and Windows-skill parity, then resume
+  the already-authorized ordinary Campaign 022 proof through the logged-in Windows console.
 - Owner/context: human owner and Codex in `/home/jon/docker/tool_shed`; native Windows proof occurs
   through a normally launched Codex GUI on the work PC in `E:\dev\bactron-core`.
 - Verification: focused changed-path tests plus one real dogfood run during development; one full
@@ -222,8 +224,8 @@ Ground:
 | Minimum usable release | complete | milestone `M2-MINIMUM-RELEASE`, v0.28.0 evidence, and v0.29.1 dispatcher release evidence | successful maintained-workspace dogfood and direct Linux proof | preserve v0.29.1 and the synchronized maintainer skill |
 | Installed native Linux | complete | milestone `M3-LINUX-INSTALLED` plus Campaign 060 direct-dispatch evidence | verified release | preserve the direct one-call proof |
 | Installed native Windows | v0.29.10 installed; first-pass preparation failed closed | Campaign 085 Core result and Campaign 086 evidence | Campaign 087 corrective release | re-upgrade and resume the authorized Windows proof after publication |
-| First-pass App Server collateral | Core field defect repaired locally; publication pending | Roadmap Revision 7, Campaigns 071, 077, 082, 083, and 086 | Core Campaigns 018-022 field results | authorize Campaign 087's patch release and maintainer synchronization |
-| Owner operating loop | Core upgrade authorized; proof blocked on corrective release | Campaign 085 | Campaign 087 publication and synchronization | re-upgrade Core and resume the Windows proof after Campaign 087 |
+| First-pass App Server collateral | corrected release published | Roadmap Revision 7, Campaigns 071, 077, 082, 083, 086, and 087 | Core Campaigns 018-022 field results | preserve the v0.29.11 preparation bound through Core proof |
+| Owner operating loop | executing Core adoption | Campaign 085 | Campaign 087 complete | upgrade Core and resume the authorized Windows proof |
 
 ## Dependency Notes
 
@@ -279,8 +281,8 @@ You are here:
   084 published and synchronized Tool Shed v0.29.10. The owner authorized Campaign 085; its Core
   upgrade completed exactly, but first-pass preparation selected unrelated Core artifacts and
   exceeded the focused-context threshold before mutation. Campaign 086 now bounds explicit-reference
-  context locally, and Campaign 087 holds the separate publication/synchronization boundary needed
-  before Campaign 085 resumes.
+  context; Campaign 087 published it as v0.29.11 and synchronized the maintainer skill. Campaign 085
+  is now executing the authorized Core re-upgrade and Windows proof.
 
 Do next:
 
@@ -304,8 +306,8 @@ Do next:
 - [x] After separate consent, publish and synchronize the proven correction.
 - [x] Obtain separate Core-upgrade and Windows-operation consent and upgrade Core to v0.29.10.
 - [x] Repair and focused-test the explicit-reference context-padding defect exposed by Core.
-- [ ] After separate consent, publish and synchronize the Campaign 086 corrective patch through
-      Campaign 087.
+- [x] After separate consent, publish and synchronize the Campaign 086 corrective patch through
+      Campaign 087 as Tool Shed v0.29.11.
 - [ ] Re-upgrade Core and resume the already-authorized ordinary first-attempt Windows proof, then
       close the owner-adoption gate.
 
@@ -331,5 +333,6 @@ Avoid for now:
 - Realistic Windows budget and preparation repair: `work/evidence/evidence-windows-realistic-app-server-budget-v0-29-8.md`
 - Realistic owner readoption history: `work/evidence/evidence-realistic-low-token-owner-readoption.md`
 - Core explicit-reference preparation bound: `work/evidence/evidence-core-explicit-reference-preparation-bound.md`
+- Tool Shed v0.29.11 release and maintainer synchronization: `work/evidence/evidence-tool-shed-v0-29-11-release-and-maintainer-sync.md`
 - Standing owner authorization: this map's `Standing Owner Authorization` section
 - Bactron Core enabling work: Campaign 014 in `E:\dev\bactron-core`
