@@ -93,6 +93,9 @@ AUTO_PREPARATION_KEYS = {
     "estimated_max_tool_result_bytes",
 }
 AUTO_PREPARATION_MAX_CONTEXT_BYTES = 64_000
+AUTO_PREPARATION_MAX_SNAPSHOT_BYTES = 48_000
+AUTO_PREPARATION_MAX_INVENTORY_BYTES = 12_000
+AUTO_PREPARATION_MAX_EXCERPT_FILES = 8
 AUTO_PREPARATION_MAX_EXPECTED_PATHS = 8
 AUTO_PREPARATION_MAX_VERIFICATION_COMMANDS = 4
 AUTO_PREPARATION_MAX_ESTIMATED_TURNS = 3
@@ -849,6 +852,17 @@ def _automatic_preparation_context(
         stderr=subprocess.DEVNULL,
         check=False,
     ).stdout.strip()
+    explicit_reference_score = 2 if referenced else 1
+    relevant_candidates = [
+        item
+        for item in candidates
+        if item[0] >= explicit_reference_score
+        or item[1] in referenced
+        or item[1] in preferred
+    ]
+    if not relevant_candidates:
+        relevant_candidates = candidates[:200]
+
     sections = [
         "# Automatic CAMP Preparation Context",
         "",
@@ -871,25 +885,40 @@ def _automatic_preparation_context(
         "File sizes below are actual bytes; context_files must stay within that combined budget.",
         "",
     ]
+    total = len("\n".join(sections).encode("utf-8"))
+    if total > AUTO_PREPARATION_MAX_SNAPSHOT_BYTES:
+        raise DispatchError(
+            "automatic_preparation_context_limit",
+            "automatic CAMP preparation campaign and workspace state exceed the deterministic snapshot budget",
+            recovery_action="reduce the campaign intent before retrying",
+        )
     inventory_bytes = 0
-    for score, relative in candidates[:500]:
+    for score, relative in relevant_candidates[:200]:
         file_bytes = (workspace / relative).stat().st_size
         line = f"- {relative.as_posix()} ({file_bytes} bytes; relevance {score})"
         size = len((line + "\n").encode("utf-8"))
-        if inventory_bytes + size > 24_000:
+        if (
+            inventory_bytes + size > AUTO_PREPARATION_MAX_INVENTORY_BYTES
+            or total + size > AUTO_PREPARATION_MAX_SNAPSHOT_BYTES
+        ):
             break
         sections.append(line)
         inventory_bytes += size
+        total += size
     sections.extend(["", "## Bounded relevant file excerpts", ""])
     excerpt_targets: list[Path] = []
     for relative in [
         *sorted(referenced),
-        *(path for score, path in candidates if score > 0 and path not in preferred),
+        *(
+            path
+            for score, path in candidates
+            if score >= explicit_reference_score and path not in preferred
+        ),
         *sorted(preferred),
     ]:
         if relative not in excerpt_targets:
             excerpt_targets.append(relative)
-        if len(excerpt_targets) >= 14:
+        if len(excerpt_targets) >= AUTO_PREPARATION_MAX_EXCERPT_FILES:
             break
     total = len("\n".join(sections).encode("utf-8"))
     for relative in excerpt_targets:
@@ -900,7 +929,7 @@ def _automatic_preparation_context(
             continue
         block = f"### {relative.as_posix()}\n\n```text\n{excerpt}\n```\n"
         size = len(block.encode("utf-8"))
-        if total + size > 90_000:
+        if total + size > AUTO_PREPARATION_MAX_SNAPSHOT_BYTES:
             continue
         sections.append(block)
         total += size

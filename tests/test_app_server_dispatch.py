@@ -14,6 +14,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from scripts import campaign_queue
 from scripts.app_server_dispatch import (
+    AUTO_PREPARATION_MAX_SNAPSHOT_BYTES,
     DispatchError,
     _automatic_preparation_context,
     _automatic_preparation_prompt,
@@ -550,6 +551,53 @@ class AppServerDispatchTests(unittest.TestCase):
         readme_heading = context.index("### README.md")
         self.assertLess(source_heading, readme_heading)
         self.assertLess(test_heading, readme_heading)
+
+    def test_explicit_reference_bounds_core_shaped_preparation_context(self) -> None:
+        path = self.add_campaign("dispatch-proof", with_capsule=False)
+        text = path.read_text(encoding="utf-8").replace(
+            "Add detailed execution context here.",
+            (
+                "Update only `docs/app_server_camp_preparation.md` with source-fresh "
+                "automatic preparation while retaining the asset-manifest validator, "
+                "exactly-once verification, and no-deployment boundaries."
+            ),
+        )
+        path.write_text(text, encoding="utf-8")
+        files = {
+            "docs/app_server_camp_preparation.md": "automatic preparation\n" * 20,
+            "tests/unit/test_validate_app_server_camp_preparation.py": "def test_automatic_preparation():\n    pass\n" * 20,
+            "tools/validate_app_server_camp_preparation.py": "def validate_automatic_preparation():\n    pass\n" * 20,
+            "AGENTS.md": "project instructions\n" * 40,
+            "README.md": "project readme\n" * 40,
+            "docs/script_index.md": "validator script index\n" * 40,
+            ".codex-lifecycle/generated/lifecycle.sqlite3": "generated lifecycle record\n" * 40,
+            "docs/gpt/heat_pid_controller_export_corrected.csv": "corrected,1\n" * 40,
+            "manual_pid/runs/acceptance/actions.ndjson": '{"acceptance": true}\n' * 40,
+            "prodsys_identity/inventory/production-differences.json": '{"production": true}\n' * 40,
+        }
+        for relative, content in files.items():
+            target = self.workspace / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(content, encoding="utf-8")
+
+        context = _automatic_preparation_context(
+            self.workspace,
+            campaign_queue.parse_campaign(path),
+            max_context_bytes=64_000,
+        )
+
+        self.assertLessEqual(
+            len(context.encode("utf-8")),
+            AUTO_PREPARATION_MAX_SNAPSHOT_BYTES,
+        )
+        self.assertIn("### docs/app_server_camp_preparation.md", context)
+        self.assertIn("### tests/unit/test_validate_app_server_camp_preparation.py", context)
+        self.assertIn("### tools/validate_app_server_camp_preparation.py", context)
+        self.assertIn("### AGENTS.md", context)
+        self.assertNotIn(".codex-lifecycle/generated/lifecycle.sqlite3", context)
+        self.assertNotIn("heat_pid_controller_export_corrected.csv", context)
+        self.assertNotIn("manual_pid/runs/acceptance", context)
+        self.assertNotIn("prodsys_identity/inventory", context)
 
     def test_automatic_preparation_normalizes_python_and_drops_broad_git_diff(self) -> None:
         path = self.add_campaign("dispatch-proof", with_capsule=False)

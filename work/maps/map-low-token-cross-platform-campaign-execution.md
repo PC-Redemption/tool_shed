@@ -3,7 +3,7 @@
 Status: active
 Type: project-map
 Updated: 2026-08-26
-Next Action: obtain separate owner authorization before executing Campaign 085 Core upgrade and Windows first-pass proof
+Next Action: obtain separate owner authorization for Campaign 087's patch release publication and maintainer skill synchronization, then resume the already-authorized Campaign 085 Core upgrade and Windows proof
 Campaign: standalone
 Campaign Reason: source coordination surface for the approved, executing Program Roadmap
 
@@ -83,6 +83,14 @@ a Linux-first corrective campaign. Local planning, implementation, focused testi
 campaign lifecycle work are authorized to continue automatically. Publishing a corrective Tool
 Shed release, synchronizing installed skills, upgrading Core's snapshot, and the operator-assisted
 Windows proof remain separate consent boundaries.
+
+On 2026-08-26, the owner explicitly authorized Campaign 085's bounded Core snapshot and installed-
+skill upgrade plus the operator-assisted Windows first-pass proof. The v0.29.10 upgrade completed
+exactly, but the first preparation attempt exposed an unrelated-artifact context-padding defect and
+failed closed before capsule persistence, worker launch, or product mutation. Campaign 086 repaired
+and focused-tested that defect locally. Publishing the repair and synchronizing the maintainer skill
+remain the separate consent boundary represented by Campaign 087; after that boundary passes,
+Campaign 085 may re-upgrade Core and resume without asking for Core authorization again.
 
 Later Core Campaigns 018 through 021 showed that hard runtime ceilings alone do not make the path
 reliable: automatic preparation can choose oversized context, unavailable executables, broad or
@@ -193,9 +201,11 @@ It does not revise M4's outcome or grant Core mutation authority.
 
 Ground:
 
-- Current next action: Tool Shed v0.29.10 is published and the maintainer installed skill matches it.
-  Campaign 085 is materialized at the retained owner-consent boundary; obtain separate authorization
-  before upgrading Core or performing the operator-assisted Windows proof.
+- Current next action: Core now has the exact Tool Shed v0.29.10 snapshot and matching Windows skill,
+  but its first ordinary preparation attempt failed closed when unrelated generic-keyword artifacts
+  pushed planning to 50,595 input tokens. Campaign 086 locally repaired and proved a 48,000-byte
+  explicit-reference context bound. Obtain separate authorization for Campaign 087 to publish and
+  synchronize that repair; then re-upgrade Core and resume the already-authorized Campaign 085 proof.
 - Owner/context: human owner and Codex in `/home/jon/docker/tool_shed`; native Windows proof occurs
   through a normally launched Codex GUI on the work PC in `E:\dev\bactron-core`.
 - Verification: focused changed-path tests plus one real dogfood run during development; one full
@@ -211,9 +221,9 @@ Ground:
 | Lean qualification policy | release-boundary blocked | approved roadmap gates | G11 Linux first-pass evidence | after separate consent, run one full validator on unchanged release inputs |
 | Minimum usable release | complete | milestone `M2-MINIMUM-RELEASE`, v0.28.0 evidence, and v0.29.1 dispatcher release evidence | successful maintained-workspace dogfood and direct Linux proof | preserve v0.29.1 and the synchronized maintainer skill |
 | Installed native Linux | complete | milestone `M3-LINUX-INSTALLED` plus Campaign 060 direct-dispatch evidence | verified release | preserve the direct one-call proof |
-| Installed native Windows | transport proven, realistic efficiency failed | Campaign 019 Core result and regression evidence | current v0.29.7 snapshot | wait for Linux bound and separately authorized corrective release |
-| First-pass App Server collateral | Linux-proven | Roadmap Revision 7 and Campaigns 071, 077, 082, 083 | Core Campaigns 018-021 field results | preserve the first-pass contract through the authorized release |
-| Owner operating loop | awaiting Core adoption | Campaign 085 | G12 passed and v0.29.10 synchronized | separately authorize the Core upgrade and Windows proof |
+| Installed native Windows | v0.29.10 installed; first-pass preparation failed closed | Campaign 085 Core result and Campaign 086 evidence | Campaign 087 corrective release | re-upgrade and resume the authorized Windows proof after publication |
+| First-pass App Server collateral | Core field defect repaired locally; publication pending | Roadmap Revision 7, Campaigns 071, 077, 082, 083, and 086 | Core Campaigns 018-022 field results | authorize Campaign 087's patch release and maintainer synchronization |
+| Owner operating loop | Core upgrade authorized; proof blocked on corrective release | Campaign 085 | Campaign 087 publication and synchronization | re-upgrade Core and resume the Windows proof after Campaign 087 |
 
 ## Dependency Notes
 
@@ -266,8 +276,11 @@ You are here:
   that gate and the fresh replacement proofs.
 - Revision 7 closed the Linux reliability gate: Campaign 082 passed the code/test shape and Campaign
   083 passed the asset-aware shape on their first workers with no worker shell or replay. Campaign
-  084 published and synchronized Tool Shed v0.29.10; Campaign 085 now represents the separately
-  authorized Core upgrade and operator-assisted Windows proof boundary.
+  084 published and synchronized Tool Shed v0.29.10. The owner authorized Campaign 085; its Core
+  upgrade completed exactly, but first-pass preparation selected unrelated Core artifacts and
+  exceeded the focused-context threshold before mutation. Campaign 086 now bounds explicit-reference
+  context locally, and Campaign 087 holds the separate publication/synchronization boundary needed
+  before Campaign 085 resumes.
 
 Do next:
 
@@ -289,8 +302,12 @@ Do next:
 - [x] Prove first-pass behavior on Linux across representative documentation, code/test, and
       asset-or-binary-aware campaign shapes with no manual capsule repair, replay, or reconciliation.
 - [x] After separate consent, publish and synchronize the proven correction.
-- [ ] After separate Core-upgrade and Windows-operation consent, run one ordinary Core campaign on
-      the first attempt and close the owner-adoption gate.
+- [x] Obtain separate Core-upgrade and Windows-operation consent and upgrade Core to v0.29.10.
+- [x] Repair and focused-test the explicit-reference context-padding defect exposed by Core.
+- [ ] After separate consent, publish and synchronize the Campaign 086 corrective patch through
+      Campaign 087.
+- [ ] Re-upgrade Core and resume the already-authorized ordinary first-attempt Windows proof, then
+      close the owner-adoption gate.
 
 Avoid for now:
 
@@ -313,5 +330,6 @@ Avoid for now:
 - Realistic token regression: `work/evidence/evidence-realistic-core-app-server-token-regression.md`
 - Realistic Windows budget and preparation repair: `work/evidence/evidence-windows-realistic-app-server-budget-v0-29-8.md`
 - Realistic owner readoption history: `work/evidence/evidence-realistic-low-token-owner-readoption.md`
+- Core explicit-reference preparation bound: `work/evidence/evidence-core-explicit-reference-preparation-bound.md`
 - Standing owner authorization: this map's `Standing Owner Authorization` section
 - Bactron Core enabling work: Campaign 014 in `E:\dev\bactron-core`
