@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import subprocess
 import tempfile
 import unittest
 import sys
@@ -11,7 +13,12 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from scripts import campaign_queue
-from scripts.app_server_dispatch import DispatchError, dispatch_next, parse_execution_capsule
+from scripts.app_server_dispatch import (
+    DispatchError,
+    _parse_automatic_preparation,
+    dispatch_next,
+    parse_execution_capsule,
+)
 from scripts.project_identity import ensure_project_identity
 
 
@@ -45,13 +52,23 @@ class AppServerDispatchTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.workspace = Path(self.temporary.name).resolve()
+        subprocess.run(
+            ["git", "init", "-q", "-b", "main", str(self.workspace)],
+            check=True,
+        )
         ensure_project_identity(self.workspace, project_name="dispatch-test")
         campaign_queue.ensure_tree(self.workspace)
 
     def tearDown(self) -> None:
         self.temporary.cleanup()
 
-    def add_campaign(self, campaign_id: str, *, shell: bool = False) -> Path:
+    def add_campaign(
+        self,
+        campaign_id: str,
+        *,
+        shell: bool = False,
+        with_capsule: bool = True,
+    ) -> Path:
         path = (
             self.workspace
             / "work"
@@ -70,7 +87,8 @@ class AppServerDispatchTests(unittest.TestCase):
             "none",
             campaign_number="001",
         )
-        text = text[: text.index("## Request")] + capsule(campaign_id, shell=shell)
+        if with_capsule:
+            text = text[: text.index("## Request")] + capsule(campaign_id, shell=shell)
         path.write_text(text, encoding="utf-8")
         campaigns = campaign_queue.load_all(self.workspace)
         (self.workspace / "work" / "00-campaigns" / "active-queue.md").write_text(
@@ -79,26 +97,9 @@ class AppServerDispatchTests(unittest.TestCase):
         )
         return path
 
-    def test_capsule_rejects_shell_verification(self) -> None:
-        path = self.add_campaign("dispatch-proof", shell=True)
-        campaign = campaign_queue.parse_campaign(path)
-        with self.assertRaisesRegex(DispatchError, "cannot invoke a shell"):
-            parse_execution_capsule(self.workspace, campaign)
-
-    def test_dispatch_uses_ordinary_next_starts_once_and_returns_compact_usage(self) -> None:
-        self.add_campaign("dispatch-proof")
-        selection = SimpleNamespace(
-            allowed=True,
-            reason="explicit_app_server",
-            codex_executable="/qualified/codex",
-            installed_codex="0.149.0",
-            qualification_state="exact-qualified",
-            role="CAMP execution",
-            model="gpt-5.6-terra",
-            reasoning="medium",
-            api_fallback=False,
-        )
-        execution = {
+    @staticmethod
+    def execution_result() -> dict[str, object]:
+        return {
             "result": {
                 "token_usage": {
                     "total": {
@@ -127,6 +128,27 @@ class AppServerDispatchTests(unittest.TestCase):
             "camp_duration_seconds": 5.0,
             "next_action": "advance_to_next_camp_step",
         }
+
+    def test_capsule_rejects_shell_verification(self) -> None:
+        path = self.add_campaign("dispatch-proof", shell=True)
+        campaign = campaign_queue.parse_campaign(path)
+        with self.assertRaisesRegex(DispatchError, "cannot invoke a shell"):
+            parse_execution_capsule(self.workspace, campaign)
+
+    def test_dispatch_uses_ordinary_next_starts_once_and_returns_compact_usage(self) -> None:
+        self.add_campaign("dispatch-proof")
+        selection = SimpleNamespace(
+            allowed=True,
+            reason="explicit_app_server",
+            codex_executable="/qualified/codex",
+            installed_codex="0.149.0",
+            qualification_state="exact-qualified",
+            role="CAMP execution",
+            model="gpt-5.6-terra",
+            reasoning="medium",
+            api_fallback=False,
+        )
+        execution = self.execution_result()
         with (
             patch("scripts.app_server_dispatch.select_command", return_value=selection),
             patch("scripts.app_server_dispatch._app_server_host_preflight", return_value={
@@ -151,6 +173,152 @@ class AppServerDispatchTests(unittest.TestCase):
         self.assertEqual("working", campaign_queue.load_all(self.workspace)["dispatch-proof"].status)
         execute.assert_called_once()
         self.assertEqual("/qualified/codex", execute.call_args.kwargs["codex"])
+
+    def test_missing_capsule_is_prepared_persisted_and_executed_once(self) -> None:
+        path = self.add_campaign("dispatch-proof", with_capsule=False)
+        planning = SimpleNamespace(
+            allowed=True,
+            reason="explicit_qualified_opt_in",
+            codex_executable="/qualified/codex",
+            installed_codex="0.149.0",
+            qualification_state="exact-qualified",
+            role="planning",
+            model="gpt-5.6-sol",
+            reasoning="high",
+            api_fallback=False,
+        )
+        camp = SimpleNamespace(
+            **{
+                **planning.__dict__,
+                "role": "CAMP execution",
+                "model": "gpt-5.6-terra",
+                "reasoning": "medium",
+            }
+        )
+        prepared = {
+            "status": "prepared",
+            "reason": "one bounded proof",
+            "schema_version": 1,
+            "campaign_id": "dispatch-proof",
+            "camp": "create-proof",
+            "prompt": "Create proof.txt and return camp_ready_for_verification.",
+            "expected_paths": ["proof.txt"],
+            "context_files": [],
+            "verification_commands": [["python3", "-c", "assert True"]],
+        }
+        preparation_result = SimpleNamespace(
+            status="completed",
+            text=json.dumps(prepared),
+            context_warning=None,
+            mutation_events=(),
+            actual_model="gpt-5.6-sol",
+            reasoning="high",
+            token_usage={"total": {"inputTokens": 1000, "totalTokens": 1100}},
+            model_turns=1,
+            duration_seconds=2.0,
+        )
+        with (
+            patch(
+                "scripts.app_server_dispatch.select_command",
+                side_effect=[planning, camp],
+            ),
+            patch(
+                "scripts.app_server_dispatch._app_server_host_preflight",
+                return_value={},
+            ) as preflight,
+            patch(
+                "scripts.app_server_dispatch.execute_preparation_if_enabled",
+                return_value=(SimpleNamespace(use_app_server=True), preparation_result),
+            ) as prepare,
+            patch(
+                "scripts.app_server_dispatch.execute_camp_if_enabled",
+                return_value=self.execution_result(),
+            ) as execute,
+        ):
+            result = dispatch_next(self.workspace, app_server_requested=True)
+
+        persisted = path.read_text(encoding="utf-8")
+        self.assertEqual(1, persisted.count("## App Server Execution Capsule"))
+        self.assertEqual("automatic", result["preparation"]["mode"])
+        self.assertTrue(result["preparation"]["persisted"])
+        self.assertEqual(2, preflight.call_count)
+        prepare.assert_called_once()
+        execute.assert_called_once()
+        self.assertEqual("working", campaign_queue.load_all(self.workspace)["dispatch-proof"].status)
+
+    def test_blocked_automatic_preparation_does_not_mutate_or_execute(self) -> None:
+        path = self.add_campaign("dispatch-proof", with_capsule=False)
+        selection = SimpleNamespace(
+            allowed=True,
+            reason="explicit_qualified_opt_in",
+            codex_executable="/qualified/codex",
+            installed_codex="0.149.0",
+            qualification_state="exact-qualified",
+            role="planning",
+            model="gpt-5.6-sol",
+            reasoning="high",
+            api_fallback=False,
+        )
+        blocked = {
+            "status": "blocked",
+            "reason": "exact mutation paths require an owner decision",
+            "schema_version": 1,
+            "campaign_id": "dispatch-proof",
+            "camp": "",
+            "prompt": "",
+            "expected_paths": [],
+            "context_files": [],
+            "verification_commands": [],
+        }
+        preparation_result = SimpleNamespace(
+            status="completed",
+            text=json.dumps(blocked),
+            context_warning=None,
+            mutation_events=(),
+        )
+        before = path.read_bytes()
+        with (
+            patch("scripts.app_server_dispatch.select_command", return_value=selection),
+            patch("scripts.app_server_dispatch._app_server_host_preflight", return_value={}),
+            patch(
+                "scripts.app_server_dispatch.execute_preparation_if_enabled",
+                return_value=(SimpleNamespace(use_app_server=True), preparation_result),
+            ),
+            patch("scripts.app_server_dispatch.execute_camp_if_enabled") as execute,
+        ):
+            with self.assertRaises(DispatchError) as raised:
+                dispatch_next(self.workspace, app_server_requested=True)
+
+        self.assertEqual("automatic_preparation_blocked", raised.exception.category)
+        self.assertEqual(before, path.read_bytes())
+        self.assertEqual("queued", campaign_queue.load_all(self.workspace)["dispatch-proof"].status)
+        execute.assert_not_called()
+
+    def test_automatic_preparation_rejects_campaign_lifecycle_mutation(self) -> None:
+        path = self.add_campaign("dispatch-proof", with_capsule=False)
+        campaign = campaign_queue.parse_campaign(path)
+        prepared = {
+            "status": "prepared",
+            "reason": "unsafe lifecycle mutation",
+            "schema_version": 1,
+            "campaign_id": "dispatch-proof",
+            "camp": "edit-campaign",
+            "prompt": "Edit the campaign request.",
+            "expected_paths": ["work/00-campaigns/active/001-dispatch-proof.md"],
+            "context_files": [],
+            "verification_commands": [["python3", "-c", "assert True"]],
+        }
+        result = SimpleNamespace(
+            status="completed",
+            text=json.dumps(prepared),
+            context_warning=None,
+            mutation_events=(),
+        )
+
+        with self.assertRaises(DispatchError) as raised:
+            _parse_automatic_preparation(self.workspace, campaign, result)
+
+        self.assertEqual("automatic_preparation_unsafe", raised.exception.category)
 
     def test_dispatch_passes_selected_config_and_policy_to_execution(self) -> None:
         self.add_campaign("dispatch-proof")

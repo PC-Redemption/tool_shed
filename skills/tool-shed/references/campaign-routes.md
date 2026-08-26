@@ -414,23 +414,30 @@ python3 <shed>/scripts/app_server_dispatch.py --workspace . next --app-server --
 
 Do not launch `codex exec`, another Codex conversation, or an agent wrapper around this command.
 The dispatcher reuses ordinary `next` selection unchanged; `next` remains an invocation-scoped
-forwarding preference, not an App Server role. A selected CAMP must contain exactly one
-`## App Server Execution Capsule` section with a fenced JSON object declaring schema version 1,
-matching campaign ID, CAMP ID, prompt, repository-relative expected paths and context files, and
-one or more shell-free deterministic verification argv arrays. The dispatcher validates the
-capsule and selected executable, writable Codex state, managed ChatGPT authentication, network/model
-catalog access, and qualification before lifecycle or workspace mutation. It then starts a queued
-campaign when needed and calls the existing bounded `camp-run` path once. That path retains the
-centralized CAMP execution policy of `gpt-5.6-terra` with `medium` reasoning. The dispatcher emits
-only compact route, usage, journal, verification, and recovery fields; its deterministic process
-uses zero model tokens and reports GUI token usage as unavailable when the provider does not expose
-it. Do not create a `next` role selector, a second CAMP runner, or duplicate executable, version,
-role, authentication, model, or reasoning policy.
+forwarding preference, not an App Server role. Reuse a selected CAMP's single valid
+`## App Server Execution Capsule` section when present. When a ready campaign has no capsule,
+assemble a deterministic focused snapshot from the campaign, project instructions, Git state,
+relevant file inventory, and bounded source excerpts. Give only that isolated snapshot to the
+existing qualified read-only App Server planning role, with no tool access, to return a strict
+structured schema-version-1 capsule with matching campaign/CAMP IDs, prompt, repository-relative
+expected paths and context files, and shell-free deterministic verification argv arrays. Validate
+the planning result, context budget, protected-path exclusions, selected executables, writable
+Codex state, managed ChatGPT authentication, network/model catalog access, and both role
+qualifications before any workspace or lifecycle mutation. Persist valid preparation through the
+guarded campaign transaction, reload and revalidate it, then continue in the same invocation: start
+the queued campaign when needed and call the existing bounded `camp-run` path once. Existing valid
+capsules skip planning. Unsafe, indeterminate, invalid, or over-budget preparation fails closed
+before mutation. The CAMP path retains `gpt-5.6-terra` with `medium` reasoning; preparation uses the
+centralized planning policy. Emit compact separate preparation and execution usage, journal,
+verification, and recovery fields. The deterministic dispatcher uses zero model tokens and reports
+GUI token usage as unavailable when the provider does not expose it.
+Do not create a `next` role selector, a second CAMP runner, or duplicate executable, version, role,
+authentication, model, or reasoning policy.
 
 When `next` selects discussion, user interaction or decision work, blocked work, a qualification
-gate, external work, GUI-native work, a campaign without a valid execution capsule, or any
-unqualified or unsupported role, report the selected action and its ordinary next route without
-starting CAMP execution. Discussion remains GUI-native.
+gate, external work, GUI-native work, an invalid existing capsule, preparation that cannot safely
+establish exact execution boundaries, or any unqualified or unsupported role, report the selected
+action and its ordinary next route without starting CAMP execution. Discussion remains GUI-native.
 If the existing `camp-run` selector fails closed because Codex is missing or unqualified, App Server
 is unavailable, or another compatibility gate fails, report the reason and retain the ordinary GUI
 route as the available unflagged command; do not silently switch backends. This forwarding never

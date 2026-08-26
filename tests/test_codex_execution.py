@@ -42,6 +42,7 @@ from scripts.codex_execution import (
     weighted_codex_usage,
 )
 from scripts.codex_camp_execution import (
+    CAMP_OUTCOME_SCHEMA,
     CampExecutionError,
     GitMutationJournal,
     camp_next_action,
@@ -282,6 +283,7 @@ class CodexExecutionTests(unittest.TestCase):
                     }
                 )
             )
+        self.assertEqual(CAMP_OUTCOME_SCHEMA["properties"]["details"]["minLength"], 1)
         clean_journal = {
             "safe": True,
             "files_created": [],

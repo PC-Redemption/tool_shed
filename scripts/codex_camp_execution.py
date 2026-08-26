@@ -44,8 +44,11 @@ CAMP_OUTCOME_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
         "outcome": {"type": "string", "enum": sorted(CAMP_OUTCOMES)},
-        "details": {"type": "string"},
-        "evidence": {"type": "array", "items": {"type": "string"}},
+        "details": {"type": "string", "minLength": 1},
+        "evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1},
+        },
     },
     "required": ["outcome", "details", "evidence"],
     "additionalProperties": False,

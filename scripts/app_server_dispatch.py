@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 from dataclasses import dataclass
@@ -30,6 +31,7 @@ try:
         DEFAULT_CONFIG,
         AppServerFeatureConfig,
         execute_camp_if_enabled,
+        execute_preparation_if_enabled,
     )
     from scripts.codex_execution import DEFAULT_POLICY
     from scripts.codex_app_server_compatibility import DEFAULT_QUALIFICATIONS
@@ -51,6 +53,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/app_server_dispa
         DEFAULT_CONFIG,
         AppServerFeatureConfig,
         execute_camp_if_enabled,
+        execute_preparation_if_enabled,
     )
     from codex_app_server_compatibility import (  # type: ignore[no-redef]
         DEFAULT_QUALIFICATIONS,
@@ -71,6 +74,35 @@ CAPSULE_KEYS = {
     "context_files",
     "verification_commands",
 }
+AUTO_PREPARATION_KEYS = {"status", "reason", *CAPSULE_KEYS}
+AUTO_PREPARATION_SCHEMA = {
+    "type": "object",
+    "additionalProperties": False,
+    "properties": {
+        "status": {"type": "string", "enum": ["prepared", "blocked"]},
+        "reason": {"type": "string"},
+        "schema_version": {"type": "integer"},
+        "campaign_id": {"type": "string"},
+        "camp": {"type": "string"},
+        "prompt": {"type": "string"},
+        "expected_paths": {
+            "type": "array",
+            "items": {"type": "string"},
+        },
+        "context_files": {
+            "type": "array",
+            "items": {"type": "string"},
+        },
+        "verification_commands": {
+            "type": "array",
+            "items": {
+                "type": "array",
+                "items": {"type": "string"},
+            },
+        },
+    },
+    "required": sorted(AUTO_PREPARATION_KEYS),
+}
 ID_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 SHELL_EXECUTABLES = {
     "bash",
@@ -83,6 +115,52 @@ SHELL_EXECUTABLES = {
     "pwsh.exe",
     "sh",
     "zsh",
+}
+PREPARATION_TEXT_SUFFIXES = {
+    ".c",
+    ".cc",
+    ".cpp",
+    ".css",
+    ".h",
+    ".hpp",
+    ".html",
+    ".ini",
+    ".js",
+    ".json",
+    ".md",
+    ".py",
+    ".sh",
+    ".toml",
+    ".ts",
+    ".tsx",
+    ".txt",
+    ".yaml",
+    ".yml",
+}
+PREPARATION_STOPWORDS = {
+    "active",
+    "campaign",
+    "change",
+    "complete",
+    "completion",
+    "current",
+    "existing",
+    "from",
+    "into",
+    "must",
+    "none",
+    "only",
+    "preserve",
+    "request",
+    "should",
+    "status",
+    "that",
+    "their",
+    "this",
+    "through",
+    "while",
+    "with",
+    "without",
 }
 
 
@@ -215,6 +293,14 @@ def parse_execution_capsule(
     campaign: campaign_queue.Campaign,
 ) -> ExecutionCapsule:
     payload = _capsule_payload(campaign.body)
+    return _execution_capsule_from_payload(workspace, campaign, payload)
+
+
+def _execution_capsule_from_payload(
+    workspace: Path,
+    campaign: campaign_queue.Campaign,
+    payload: dict[str, Any],
+) -> ExecutionCapsule:
     if payload["schema_version"] != 1:
         raise DispatchError(
             "execution_capsule_invalid",
@@ -301,6 +387,312 @@ def parse_execution_capsule(
     )
 
 
+def _automatic_preparation_prompt(campaign: campaign_queue.Campaign) -> str:
+    return f"""Prepare exactly one bounded implementation CAMP for campaign {campaign.campaign_id!r}.
+
+Use only the supplied deterministic campaign, instruction, Git-status, relevant-file inventory,
+and bounded source excerpts to identify a coherent first implementation boundary. Do not call
+tools or read any other files. Return the strict structured object requested by the output schema.
+
+If a safe bounded CAMP can be prepared, set status to prepared and:
+- use schema_version 1 and the exact campaign_id {campaign.campaign_id!r};
+- choose one lowercase kebab-case camp ID;
+- write a complete worker prompt that permits only the declared mutations, forbids lifecycle,
+  deployment, network, and protected-environment work, reserves verification for the orchestrator,
+  and requires camp_ready_for_verification after implementation;
+- declare every worker-owned mutation in expected_paths as unique repository-relative POSIX paths;
+- declare only existing regular UTF-8 context files needed by the worker;
+- provide one to eight deterministic shell-free verification commands as direct argv arrays;
+- use platform-local executable paths that do not depend on shell activation;
+- exclude work/00-campaigns, Tool Shed snapshot machinery, Git metadata, deployment, production,
+  credentials, generated outputs not owned by the worker, and unrelated cleanup.
+
+If exact mutation paths or safe deterministic verification cannot be established without an owner
+decision, protected action, or broader planning, set status to blocked, explain the limiting
+condition in reason, and return schema_version 1, the exact campaign_id, and empty camp, prompt,
+expected_paths, context_files, and verification_commands. Do not guess or broaden authority.
+"""
+
+
+def _preparation_keywords(campaign: campaign_queue.Campaign) -> tuple[str, ...]:
+    text = "\n".join((campaign.title, campaign.outcome, campaign.body)).lower()
+    words = {
+        word
+        for word in re.findall(r"[a-z][a-z0-9_-]{3,}", text)
+        if word not in PREPARATION_STOPWORDS and not word.isdigit()
+    }
+    return tuple(sorted(words, key=lambda word: (-len(word), word))[:80])
+
+
+def _referenced_workspace_files(
+    workspace: Path,
+    campaign: campaign_queue.Campaign,
+) -> set[Path]:
+    candidates = set(re.findall(r"`([^`\n]+)`", campaign.body))
+    candidates.update(
+        re.findall(
+            r"(?<![A-Za-z0-9_.-])((?:[A-Za-z0-9_.-]+/)+[A-Za-z0-9_.-]+)",
+            campaign.body,
+        )
+    )
+    result: set[Path] = set()
+    for raw in candidates:
+        normalized = raw.strip().strip(".,:;()[]{}\"'").replace("\\", "/")
+        pure = PurePosixPath(normalized)
+        if pure.is_absolute() or any(part in {"", ".", ".."} for part in pure.parts):
+            continue
+        path = workspace.joinpath(*pure.parts)
+        if path.is_file() and not path.is_symlink():
+            result.add(Path(*pure.parts))
+    return result
+
+
+def _bounded_excerpt(path: Path, keywords: tuple[str, ...]) -> str | None:
+    try:
+        raw = path.read_bytes()
+    except OSError:
+        return None
+    if b"\0" in raw:
+        return None
+    try:
+        lines = raw.decode("utf-8").splitlines()
+    except UnicodeDecodeError:
+        return None
+    if len(lines) <= 80:
+        selected = lines
+    else:
+        matches = [
+            index
+            for index, line in enumerate(lines)
+            if any(keyword in line.lower() for keyword in keywords)
+        ]
+        indexes: set[int] = set()
+        for match in matches[:16]:
+            indexes.update(range(max(0, match - 2), min(len(lines), match + 3)))
+        if not indexes:
+            indexes.update(range(min(40, len(lines))))
+        selected = [f"{index + 1}: {lines[index]}" for index in sorted(indexes)[:80]]
+    excerpt = "\n".join(selected)
+    encoded = excerpt.encode("utf-8")
+    if len(encoded) > 12_000:
+        excerpt = encoded[:12_000].decode("utf-8", errors="ignore")
+    return excerpt
+
+
+def _automatic_preparation_context(
+    workspace: Path,
+    campaign: campaign_queue.Campaign,
+) -> str:
+    completed = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(workspace),
+            "ls-files",
+            "--cached",
+            "--others",
+            "--exclude-standard",
+        ],
+        text=True,
+        encoding="utf-8",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise DispatchError(
+            "automatic_preparation_failed",
+            "automatic CAMP preparation could not inventory the Git workspace",
+            recovery_action="repair Git workspace access before retrying",
+        )
+    keywords = _preparation_keywords(campaign)
+    referenced = _referenced_workspace_files(workspace, campaign)
+    preferred = {Path("AGENTS.md"), Path("README.md"), Path("docs/script_index.md")}
+    candidates: list[tuple[int, Path]] = []
+    for raw in completed.stdout.splitlines():
+        pure = PurePosixPath(raw)
+        if (
+            pure.is_absolute()
+            or any(part in {"", ".", ".."} for part in pure.parts)
+            or pure.parts[0] in {".git", "tool_shed"}
+            or pure.parts[:3] == ("work", "evidence", "generated")
+        ):
+            continue
+        relative = Path(*pure.parts)
+        absolute = workspace / relative
+        if not absolute.is_file() or absolute.is_symlink():
+            continue
+        lowered = relative.as_posix().lower()
+        score = sum(1 for keyword in keywords if keyword in lowered)
+        if relative in referenced:
+            score += 100
+        if relative in preferred:
+            score += 50
+        candidates.append((score, relative))
+    candidates.sort(key=lambda item: (-item[0], item[1].as_posix()))
+
+    status = subprocess.run(
+        ["git", "-C", str(workspace), "status", "--short"],
+        text=True,
+        encoding="utf-8",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    ).stdout.strip()
+    sections = [
+        "# Automatic CAMP Preparation Context",
+        "",
+        f"Platform: {sys.platform}",
+        f"Workspace: {workspace}",
+        "",
+        "## Selected campaign",
+        "",
+        campaign.path.read_text(encoding="utf-8"),
+        "",
+        "## Pre-existing Git status",
+        "",
+        status or "clean",
+        "",
+        "## Relevant repository file inventory",
+        "",
+    ]
+    inventory_bytes = 0
+    for score, relative in candidates[:500]:
+        line = f"- {relative.as_posix()} (relevance {score})"
+        size = len((line + "\n").encode("utf-8"))
+        if inventory_bytes + size > 24_000:
+            break
+        sections.append(line)
+        inventory_bytes += size
+    sections.extend(["", "## Bounded relevant file excerpts", ""])
+    excerpt_targets: list[Path] = []
+    for relative in [*sorted(referenced), *sorted(preferred), *(path for score, path in candidates if score > 0)]:
+        if relative not in excerpt_targets:
+            excerpt_targets.append(relative)
+        if len(excerpt_targets) >= 14:
+            break
+    total = len("\n".join(sections).encode("utf-8"))
+    for relative in excerpt_targets:
+        if relative.parts[:2] == ("work", "00-campaigns"):
+            continue
+        excerpt = _bounded_excerpt(workspace / relative, keywords)
+        if excerpt is None:
+            continue
+        block = f"### {relative.as_posix()}\n\n```text\n{excerpt}\n```\n"
+        size = len(block.encode("utf-8"))
+        if total + size > 90_000:
+            break
+        sections.append(block)
+        total += size
+    return "\n".join(sections).rstrip() + "\n"
+
+
+def _parse_automatic_preparation(
+    workspace: Path,
+    campaign: campaign_queue.Campaign,
+    result: Any,
+) -> tuple[ExecutionCapsule, str]:
+    if result is None or result.status != "completed":
+        raise DispatchError(
+            "automatic_preparation_failed",
+            "App Server planning did not complete automatic CAMP preparation",
+            recovery_action="inspect the compact preparation result; no campaign or product mutation occurred",
+        )
+    if result.context_warning is not None:
+        raise DispatchError(
+            "automatic_preparation_context_limit",
+            "automatic CAMP preparation exceeded the focused context warning threshold",
+            recovery_action="reduce the campaign preparation scope before retrying",
+        )
+    if result.mutation_events:
+        raise DispatchError(
+            "automatic_preparation_unsafe",
+            "read-only automatic CAMP preparation reported mutation events",
+            recovery_action="inspect the planning environment before retrying",
+            mutation_state="unknown",
+        )
+    if not isinstance(result.text, str) or len(result.text.encode("utf-8")) > 65_536:
+        raise DispatchError(
+            "automatic_preparation_invalid",
+            "automatic CAMP preparation output exceeded the structured result limit",
+            recovery_action="reduce the preparation scope before retrying",
+        )
+    try:
+        payload = json.loads(result.text)
+    except (TypeError, json.JSONDecodeError) as error:
+        raise DispatchError(
+            "automatic_preparation_invalid",
+            "automatic CAMP preparation did not return valid structured JSON",
+            recovery_action="repair the App Server planning output contract before retrying",
+        ) from error
+    if not isinstance(payload, dict) or set(payload) != AUTO_PREPARATION_KEYS:
+        raise DispatchError(
+            "automatic_preparation_invalid",
+            "automatic CAMP preparation returned unsupported or missing fields",
+            recovery_action="repair the App Server planning output contract before retrying",
+        )
+    reason = str(payload.get("reason") or "").strip()
+    if len(reason.encode("utf-8")) > 2_048:
+        raise DispatchError(
+            "automatic_preparation_invalid",
+            "automatic CAMP preparation reason exceeded the compact result limit",
+            recovery_action="reduce the preparation scope before retrying",
+        )
+    if payload.get("status") != "prepared":
+        raise DispatchError(
+            "automatic_preparation_blocked",
+            reason or "automatic CAMP preparation could not establish a safe bounded execution",
+            recovery_action="resolve the reported campaign preparation condition, then rerun once",
+        )
+    capsule_payload = {key: payload[key] for key in CAPSULE_KEYS}
+    capsule = _execution_capsule_from_payload(workspace, campaign, capsule_payload)
+    forbidden_roots = {".git", "tool_shed"}
+    for path in capsule.expected_paths:
+        if path.parts[0] in forbidden_roots or path.parts[:2] == ("work", "00-campaigns"):
+            raise DispatchError(
+                "automatic_preparation_unsafe",
+                f"automatic CAMP preparation selected a protected mutation path: {path.as_posix()}",
+                recovery_action="repair the automatic preparation boundary before retrying",
+            )
+    return capsule, reason
+
+
+def _capsule_payload_from_execution(capsule: ExecutionCapsule) -> dict[str, Any]:
+    return {
+        "schema_version": 1,
+        "campaign_id": capsule.campaign_id,
+        "camp": capsule.camp,
+        "prompt": capsule.prompt,
+        "expected_paths": [path.as_posix() for path in capsule.expected_paths],
+        "context_files": [path.as_posix() for path in capsule.context_files],
+        "verification_commands": [list(command) for command in capsule.verification_commands],
+    }
+
+
+def _persist_automatic_capsule(
+    workspace: Path,
+    campaign: campaign_queue.Campaign,
+    capsule: ExecutionCapsule,
+) -> campaign_queue.Campaign:
+    payload = _capsule_payload_from_execution(capsule)
+    section = (
+        CAPSULE_HEADING
+        + "\n\n```json\n"
+        + json.dumps(payload, indent=2, sort_keys=True)
+        + "\n```"
+    )
+    campaign_queue.attach_app_server_capsule(
+        workspace,
+        campaign.campaign_id,
+        section,
+        expect=campaign_queue.state_token(workspace),
+        project_binding=binding_token(workspace, operation="campaign-queue"),
+    )
+    persisted = campaign_queue.load_all(workspace)[campaign.campaign_id]
+    parse_execution_capsule(workspace, persisted)
+    return persisted
+
+
 def _app_server_host_preflight(selection: Any, *, timeout: float) -> dict[str, Any]:
     configured = os.environ.get("CODEX_HOME")
     state = Path(configured).expanduser() if configured else Path.home() / ".codex"
@@ -371,6 +763,7 @@ def _compact_success(
     dispatch_elapsed: float,
     campaign_started: bool,
     preflight: dict[str, Any],
+    preparation: dict[str, Any],
 ) -> dict[str, Any]:
     result = execution.get("result") if isinstance(execution.get("result"), dict) else {}
     journal = (
@@ -399,6 +792,7 @@ def _compact_success(
             "codex_version": selection.installed_codex,
             "qualification_state": selection.qualification_state,
         },
+        "preparation": preparation,
         "route": {
             "role": selection.role,
             "model": selection.model,
@@ -462,7 +856,71 @@ def dispatch_next(
         )
     campaigns = campaign_queue.load_all(root)
     campaign = campaigns[campaign_id]
-    capsule = parse_execution_capsule(root, campaign)
+    execution_config = AppServerFeatureConfig.load(config_path)
+    execution_policy = ModelPolicy.load(policy_path)
+    capsule_headings = sum(
+        line.strip() == CAPSULE_HEADING for line in campaign.body.splitlines()
+    )
+    preparation: dict[str, Any] = {
+        "mode": "embedded",
+        "persisted": True,
+        "model": None,
+        "reasoning": None,
+        "tokens": flatten_token_usage(None),
+        "model_turns": 0,
+        "duration_seconds": 0.0,
+    }
+    planning_preflight: dict[str, Any] | None = None
+    if capsule_headings == 0:
+        planning_selection = select_command(
+            "plan",
+            app_server_requested=app_server_requested,
+            codex=codex,
+            config_path=config_path,
+            policy_path=policy_path,
+            qualifications_path=qualifications_path,
+            qualification_cache_path=qualification_cache_path,
+        )
+        if not planning_selection.allowed or not app_server_requested:
+            raise DispatchError(
+                planning_selection.reason,
+                "automatic App Server CAMP preparation was not allowed",
+                recovery_action="rerun the same Tool Shed command without --app-server",
+            )
+        planning_preflight = _app_server_host_preflight(
+            planning_selection,
+            timeout=timeout,
+        )
+        _, preparation_result = execute_preparation_if_enabled(
+            _automatic_preparation_prompt(campaign),
+            cwd=root,
+            campaign=campaign_id,
+            preparation_context=_automatic_preparation_context(root, campaign),
+            output_schema=AUTO_PREPARATION_SCHEMA,
+            enable_override=True,
+            config=execution_config,
+            policy=execution_policy,
+            codex=planning_selection.codex_executable,
+            timeout=timeout,
+            telemetry_path=telemetry_path,
+        )
+        capsule, preparation_reason = _parse_automatic_preparation(
+            root,
+            campaign,
+            preparation_result,
+        )
+        preparation = {
+            "mode": "automatic",
+            "persisted": False,
+            "model": preparation_result.actual_model,
+            "reasoning": preparation_result.reasoning,
+            "tokens": flatten_token_usage(preparation_result.token_usage),
+            "model_turns": preparation_result.model_turns,
+            "duration_seconds": preparation_result.duration_seconds,
+            "reason": preparation_reason,
+        }
+    else:
+        capsule = parse_execution_capsule(root, campaign)
     selection = select_command(
         "camp-run",
         app_server_requested=app_server_requested,
@@ -479,8 +937,11 @@ def dispatch_next(
             recovery_action="rerun the same Tool Shed command without --app-server",
         )
     preflight = _app_server_host_preflight(selection, timeout=timeout)
-    execution_config = AppServerFeatureConfig.load(config_path)
-    execution_policy = ModelPolicy.load(policy_path)
+    if planning_preflight is not None:
+        preflight["automatic_preparation"] = planning_preflight
+        campaign = _persist_automatic_capsule(root, campaign, capsule)
+        capsule = parse_execution_capsule(root, campaign)
+        preparation["persisted"] = True
     campaign_started = False
     if campaign.status == "queued":
         _start_selected_campaign(root, campaign_id)
@@ -521,6 +982,7 @@ def dispatch_next(
         dispatch_elapsed=time.monotonic() - started_at,
         campaign_started=campaign_started,
         preflight=preflight,
+        preparation=preparation,
     )
 
 

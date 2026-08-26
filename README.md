@@ -310,10 +310,14 @@ examples.
 
 The four `--app-server` forms are explicit, per-command opt-ins for qualified real-world testing.
 `ts: next --app-server` runs one deterministic `app_server_dispatch.py` command directly—never a
-nested `codex exec`—to perform ordinary `next` selection, validate a strict campaign execution
-capsule and host preflight, and forward only when the selected action already has a qualified App
-Server role. CAMP execution reuses the existing Terra/medium runner. `next` itself is not an App
-Server role.
+nested `codex exec`—to perform ordinary `next` selection. An existing strict execution capsule is
+reused. When the selected ready campaign has no capsule, one read-only App Server planning turn
+receives a deterministic focused snapshot assembled from the campaign, project instructions, Git
+state, relevant file inventory, and bounded source excerpts. It returns strict structured
+preparation, which the dispatcher validates and persists through the guarded campaign transaction
+before continuing in the same invocation.
+Unsafe or indeterminate preparation stops before mutation. CAMP execution reuses the existing
+Terra/medium runner. `next` itself is not an App Server role.
 Unflagged commands remain in the GUI and `ts: discuss` is always GUI-native. Read-only planning and
 verification use a minimum Codex version of `0.146.0` with no upper cutoff: an unseen eligible
 version runs a bounded dirty qualification and continues the original explicit request immediately

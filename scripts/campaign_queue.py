@@ -82,6 +82,7 @@ QUEUE_NUMBER_GUIDANCE = (
     "Queue positions are mutable; parenthesized campaign numbers and full `Campaign ID` values "
     "are stable."
 )
+APP_SERVER_CAPSULE_HEADING = "## App Server Execution Capsule"
 
 
 class CampaignError(ValueError):
@@ -643,6 +644,48 @@ def require_token(workspace: Path, expected: str | None) -> None:
         raise CampaignError(
             f"stale campaign state or foreign-project token: expected {expected}, current {actual}"
         )
+
+
+def attach_app_server_capsule(
+    workspace: Path,
+    campaign_id: str,
+    capsule_section: str,
+    *,
+    expect: str,
+    project_binding: str,
+) -> Path:
+    """Attach one generated capsule through the guarded campaign transaction."""
+
+    require_project_binding(
+        workspace,
+        project_binding,
+        operation="campaign-queue",
+    )
+    require_token(workspace, expect)
+    require_valid(workspace)
+    campaigns = load_all(workspace)
+    resolved_id = resolve_campaign_reference(campaign_id, campaigns)
+    item = campaigns[resolved_id]
+    if item.status not in {"queued", "working"}:
+        raise CampaignError("only a queued or working campaign can receive an App Server capsule")
+    headings = [
+        line
+        for line in item.path.read_text(encoding="utf-8").splitlines()
+        if line.strip() == APP_SERVER_CAPSULE_HEADING
+    ]
+    if headings:
+        raise CampaignError("campaign already contains an App Server Execution Capsule")
+    normalized = capsule_section.strip()
+    if not normalized.startswith(APP_SERVER_CAPSULE_HEADING + "\n"):
+        raise CampaignError("generated capsule section has an invalid heading")
+    text = item.path.read_text(encoding="utf-8")
+    marker = "\n## Completion Check\n"
+    if text.count(marker) != 1:
+        raise CampaignError("campaign must contain exactly one Completion Check section")
+    text = text.replace(marker, f"\n{normalized}\n{marker}", 1)
+    text = set_campaign_header(text, "Updated", date.today().isoformat())
+    apply_transaction(workspace, {item.path: text})
+    return item.path
 
 
 def _validate_graph(campaigns: dict[str, Campaign]) -> list[str]:

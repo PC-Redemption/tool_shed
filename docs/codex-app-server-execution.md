@@ -88,13 +88,18 @@ is `--app-server` on the qualified `ts:` commands above.
 `ts: next --app-server` is forwarding, not a fourth execution role. The GUI invokes
 `python3 <shed>/scripts/app_server_dispatch.py --workspace . next --app-server --json` directly and
 never wraps it in `codex exec` or another agent. The dispatcher performs the same navigation and
-readiness selection as ordinary `ts: next`, validates the selected campaign's strict execution
-capsule, and preflights writable Codex state, managed ChatGPT authentication, network/model access,
-and exact write qualification before mutation. It then invokes the existing bounded Terra/medium
-`camp-run`. A selected discussion, decision, blocker, invalid or missing capsule, external gate,
-GUI-native action, or unsupported role is reported on its natural route without starting App
-Server. Compatibility failure remains fail-closed, the unflagged GUI route stays available, and
-the selector is not retained for later commands.
+readiness selection as ordinary `ts: next` and reuses an existing strict execution capsule. When a
+ready campaign has no capsule, the same dispatcher assembles a deterministic focused snapshot from
+the campaign, project instructions, Git state, relevant file inventory, and bounded source
+excerpts. The qualified read-only planning role receives only that isolated snapshot, has no tool
+access, and returns strict structured preparation. The dispatcher deterministically validates exact
+paths, focused context, and shell-free verification, completes planning and CAMP host preflight,
+persists the capsule through the guarded campaign transaction, and continues to the existing
+bounded Terra/medium `camp-run` in the same invocation. Invalid, unsafe, ambiguous, or over-budget
+preparation stops before workspace or lifecycle mutation. A selected discussion,
+decision, blocker, external gate, GUI-native action, or unsupported role remains on its natural
+route. Compatibility failure remains fail-closed, the unflagged GUI route stays available, and the
+selector is not retained for later commands.
 
 Resolve and display the user-facing selection before execution:
 

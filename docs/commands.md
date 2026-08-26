@@ -356,7 +356,7 @@ want one of the three qualified roles to use the existing App Server integration
 | `ts: plan <request> --app-server` | App Server planning with `gpt-5.6-sol` / `high` |
 | `ts: verify <request> --app-server` | App Server verification with `gpt-5.6-terra` / `low` |
 | `ts: camp run <camp> --app-server` | Existing bounded App Server CAMP path with `gpt-5.6-terra` / `medium` |
-| `ts: next --app-server` | Invoke one deterministic dispatcher that reuses normal `next` selection and the existing Terra/medium CAMP path; never launch a nested Codex agent. |
+| `ts: next --app-server` | Invoke one deterministic dispatcher that reuses normal `next` selection, automatically prepares an unprepared ready campaign through read-only App Server planning, and continues to the existing Terra/medium CAMP path; never launch a nested Codex agent. |
 | `ts: appserver status` | Read-only default, compatibility, and qualified-role status |
 
 Without the option, `ts: plan`, `ts: verify`, and `ts: camp run` use the normal GUI path and report
@@ -375,13 +375,17 @@ workspace-write record and separate write harness. There is no API fallback.
 `next` is not a new App Server role. The flagged and unflagged forms select the same next action.
 The GUI immediately runs
 `python3 <shed>/scripts/app_server_dispatch.py --workspace . next --app-server --json` once; it does
-not wrap that command in `codex exec` or another agent. Executable CAMP work requires a strict
+not wrap that command in `codex exec` or another agent. Executable CAMP work uses a strict
 campaign-local JSON execution capsule with the matching campaign/CAMP IDs, prompt, relative path
-allowlists, focused context, and shell-free verification argv. The dispatcher validates Codex
-state, managed ChatGPT authentication, network/model access, and qualification before mutation,
-then calls the existing `camp-run` safety path. Discussion, decisions, blocked work, invalid or
-missing capsules, external gates, and unsupported roles remain on their ordinary route and are
-reported without starting CAMP execution. The option never persists beyond the invocation.
+allowlists, focused context, and shell-free verification argv. If that capsule is absent, the same
+invocation assembles a deterministic focused snapshot from the campaign, project instructions, Git
+state, relevant file inventory, and bounded source excerpts. Read-only App Server planning receives
+only that isolated snapshot, without tools, and returns strict structured preparation. The
+dispatcher validates it, completes host and qualification preflight, and persists it through the
+guarded campaign transaction before continuing to the existing `camp-run` safety path. Unsafe,
+ambiguous, invalid, or over-budget preparation stops before mutation. Existing valid capsules skip
+planning. Discussion, decisions, blocked work, external gates, and unsupported roles remain on
+their ordinary route. The option never persists beyond the invocation.
 
 The CAMP worker reports `step_ready_for_verification` or `camp_ready_for_verification` after bounded
 implementation. App Server `turn/completed` is only a terminal protocol event. The controller runs

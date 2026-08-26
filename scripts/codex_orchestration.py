@@ -1033,6 +1033,7 @@ def execute_bounded(
     summary_files: tuple[Path, ...] = (),
     summary_source_files: tuple[Path, ...] = (),
     additional_context_requested: bool | None = None,
+    output_schema: dict[str, Any] | None = None,
 ) -> ExecutionResult:
     """Run at most two workhorse attempts, then one explicit Sol escalation."""
 
@@ -1065,6 +1066,7 @@ def execute_bounded(
                 summary_files=summary_files,
                 summary_source_files=summary_source_files,
                 additional_context_requested=additional_context_requested,
+                output_schema=output_schema,
             )
         except AppServerError as error:
             last_error = error
@@ -1098,7 +1100,113 @@ def execute_bounded(
         summary_files=summary_files,
         summary_source_files=summary_source_files,
         additional_context_requested=additional_context_requested,
+        output_schema=output_schema,
     )
+
+
+def execute_preparation_if_enabled(
+    prompt: str,
+    *,
+    cwd: Path,
+    campaign: str,
+    preparation_context: str,
+    output_schema: dict[str, Any],
+    enable_override: bool | None = None,
+    config: AppServerFeatureConfig | None = None,
+    policy: ModelPolicy | None = None,
+    codex: str | None = None,
+    timeout: float = 300.0,
+    telemetry_path: Path | None = None,
+) -> tuple[RouteDecision, ExecutionResult | None]:
+    """Prepare one CAMP from deterministic focused context in a read-only snapshot."""
+
+    features = config or AppServerFeatureConfig.load()
+    decision = features.route(
+        "planning",
+        request_text="ts: next --app-server",
+        sandbox="read-only",
+        enable_override=enable_override,
+    )
+    if not decision.use_app_server:
+        return decision, None
+    resolved_codex = resolve_codex_executable(codex)
+    warning = features.compatibility_warning(resolved_codex)
+    if warning:
+        decision = replace(decision, compatibility_warning=warning)
+        print(f"WARNING: {warning}", file=os.sys.stderr)
+    selected_policy = policy or ModelPolicy.load()
+    features.validate_model_policy(selected_policy)
+    encoded = preparation_context.encode("utf-8")
+    if len(encoded) > features.max_inline_bytes:
+        raise FeatureConfigError(
+            f"automatic preparation context exceeds {features.max_inline_bytes} bytes"
+        )
+    effective_prompt = (
+        "Use only the complete deterministic context below. Do not call tools, read skills, "
+        "or inspect any other files.\n\n"
+        + preparation_context
+        + "\n\nREQUEST\n"
+        + prompt
+    )
+    with tempfile.TemporaryDirectory(prefix="tool-shed-auto-preparation-") as temporary_name:
+        temporary = Path(temporary_name).resolve()
+        instructions = temporary / "AGENTS.md"
+        instructions.write_text(
+            "# Focused automatic CAMP preparation\n\n"
+            "Use only context supplied in the request. Do not use tools, read external skills or "
+            "files, modify state, or broaden authority. Return only the requested structured "
+            "result.\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        instructions.chmod(0o400)
+        with CodexExecutionAdapter(
+            policy=selected_policy,
+            codex=resolved_codex,
+            timeout=timeout,
+            telemetry_path=telemetry_path,
+        ) as adapter:
+            permission_profile: str | None = None
+            try:
+                profiles = adapter.client.list_permission_profiles(cwd=temporary)
+            except AppServerError as error:
+                details = error.details if isinstance(error.details, dict) else {}
+                message = str(details.get("message") or error).lower()
+                if details.get("code") != -32601 and "method not found" not in message:
+                    raise
+            else:
+                allowed_profiles = {
+                    str(item.get("id"))
+                    for item in profiles
+                    if item.get("allowed") is True and isinstance(item.get("id"), str)
+                }
+                if ":read-only" not in allowed_profiles:
+                    raise AppServerError(
+                        "Codex app-server exposes permission profiles but no allowed "
+                        ":read-only profile",
+                        details={"allowed_profiles": sorted(allowed_profiles)},
+                        kind="read_only_permission_profile_unavailable",
+                    )
+                permission_profile = ":read-only"
+            result = adapter.execute(
+                effective_prompt,
+                role="planning",
+                cwd=temporary,
+                sandbox="read-only",
+                campaign=campaign,
+                operation="automatic_camp_preparation",
+                explicit_files=(),
+                context_mode="focused_automatic_preparation",
+                context_delivery="inline_deterministic_context",
+                warning_input_tokens=features.warning_threshold("planning"),
+                restricted_read=True,
+                permission_profile=permission_profile,
+                ephemeral=True,
+                source_cwd=cwd.resolve(),
+                sandbox_root=temporary,
+                output_schema=output_schema,
+            )
+    return decision, result
 
 
 def load_benchmarks(path: Path) -> list[dict[str, Any]]:

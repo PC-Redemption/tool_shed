@@ -543,13 +543,17 @@ python3 <shed>/scripts/app_server_dispatch.py --workspace . next --app-server --
 ```
 
 The GUI must run that command directly, never through `codex exec` or another agent. The dispatcher
-selects exactly what unflagged `ts: next` would select and requires a strict campaign execution
-capsule declaring the matching IDs, prompt, relative allowed paths, focused context, and shell-free
-verification argv. It preflights Codex state, ChatGPT authentication, network/model access, and
-qualification before mutation, then uses the existing Terra/medium runner. Discussion, owner
-decisions, blocked work, invalid or missing capsules, external gates, and unsupported actions are
-surfaced without being forced through CAMP execution. The preference applies only to that
-invocation; `next` does not become an App Server role.
+selects exactly what unflagged `ts: next` would select. It reuses a valid strict campaign execution
+capsule when present. If the ready campaign is unprepared, the dispatcher assembles a deterministic
+focused snapshot from the campaign, project instructions, Git state, relevant file inventory, and
+bounded source excerpts. One isolated read-only App Server planning turn receives only that
+snapshot, without tools, and returns a structured capsule declaring the matching IDs, prompt,
+relative allowed paths, focused context, and shell-free verification argv. The dispatcher validates
+the result, preflights both planning and CAMP execution, persists the capsule through the guarded
+campaign transaction, and continues with the existing Terra/medium runner in the same invocation.
+Unsafe, ambiguous, invalid, or over-budget preparation stops before mutation. Discussion, owner
+decisions, blocked work, external gates, and unsupported actions remain on their natural route.
+The preference applies only to that invocation; `next` does not become an App Server role.
 
 The selector uses exact reviewed qualification for known versions. For an unseen planning or
 verification executable at or above `0.146.0`, including prereleases and versions beyond `0.150.0`,

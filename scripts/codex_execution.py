@@ -628,6 +628,7 @@ class CodexExecutionAdapter:
         summary_files: tuple[Path, ...] = (),
         summary_source_files: tuple[Path, ...] = (),
         additional_context_requested: bool | None = None,
+        output_schema: dict[str, Any] | None = None,
     ) -> ExecutionResult:
         source = self.policy.select(source_role)
         if source.model_class != "workhorse":
@@ -663,6 +664,7 @@ class CodexExecutionAdapter:
             summary_files=summary_files,
             summary_source_files=summary_source_files,
             additional_context_requested=additional_context_requested,
+            output_schema=output_schema,
         )
 
     def cancel(
