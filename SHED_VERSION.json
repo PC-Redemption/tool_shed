@@ -148,10 +148,32 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
   "notes": "Define PRM, KISS, and durable Brainstorm/Idea Brief discovery",
-  "release_commit": null,
-  "release_qualification": null,
+  "release_commit": "6f54f95955c2e1ce6ef9e3445659755904bbc6fd",
+  "release_qualification": {
+    "attested_at": "2026-08-26T21:55:46Z",
+    "client_smoke": {
+      "path": "scripts/validate_snapshot_client.py",
+      "sha256": "d740896c470e02ba526ed08a6d2a8b40865764e67951583e6f8a97db65402766"
+    },
+    "full_validator": {
+      "path": "scripts/validate_tool_shed.py",
+      "sha256": "ff09e520f73e2bf64e2e41c35ed1c9378f92f999f8d05bf6e3d464bfd00c72ac"
+    },
+    "required_ci": [
+      {
+        "path": ".github/workflows/validate.yml",
+        "sha256": "b62203b7c1c21f03dc77e42d714db6b0d742550c3524a4dc33d67c5c283cc54e"
+      },
+      {
+        "path": ".github/workflows/release.yml",
+        "sha256": "74ee83963f0c20eef755bcae7f51c0caaa35fe3ce2f7001cbcfcf381911d0a45"
+      }
+    ],
+    "schema_version": 1,
+    "subject_commit": "6f54f95955c2e1ce6ef9e3445659755904bbc6fd"
+  },
   "release_tag": "v0.29.14",
-  "released_at": null,
+  "released_at": "2026-08-26T21:55:46Z",
   "shed_version": "0.29.14",
   "updated_at": "2026-08-26",
   "updater_mutation_paths": [
