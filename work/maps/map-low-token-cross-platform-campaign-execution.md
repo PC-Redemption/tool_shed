@@ -3,7 +3,7 @@
 Status: active
 Type: project-map
 Updated: 2026-08-26
-Next Action: obtain separate authority to publish and synchronize the locally proven post-v0.29.11 handoff and documentation-verifier correction, then resume Campaign 085's already-authorized Core upgrade and Windows proof
+Next Action: authorize Campaign 091 to publish and synchronize the locally proven case-normalized documentation verifier
 Campaign: standalone
 Campaign Reason: source coordination surface for the approved, executing Program Roadmap
 
@@ -169,11 +169,9 @@ It does not revise M4's outcome or grant Core mutation authority.
 - Completed enabling work: Campaign 040 proved material App Server token/turn reduction; Campaigns
   041 through 053 integrated and qualified routing, compatibility, executable resolution, and
   snapshot delivery; Campaign 054 repaired the generic verification handoff.
-- Current limiting condition: execution transport and hard ceilings work, but automatic collateral
-  preparation occurs too late, validates mostly schema and path safety, persists a capsule before
-  proving that it fits the worker budget, and then reuses that capsule without a source-freshness
-  binding. Recent Core runs therefore required preventable recovery even when product checks later
-  passed directly.
+- Current limiting condition: the case-normalized semantic verifier is locally proven but not yet
+  published or synchronized. Core remains on v0.29.12, and Campaign 085 correctly waits for the
+  separately authorized Campaign 091 release before running a fresh replacement Windows proof.
 - M10 now supplies source-bound, statically checked collateral. The first M11 documentation worker
   verified successfully, but the first code/test worker emitted a 19,301-byte inspection result
   before mutation despite an 8,192-byte preparation estimate. Preparation must inject existing
@@ -203,17 +201,23 @@ It does not revise M4's outcome or grant Core mutation authority.
   its completed first `fileChange` coincided with the fourth-turn ceiling and therefore skipped the
   reserved verifier. The generated prose verifier was also sensitive to Markdown line wrapping.
   Campaign 088 now passes 71 focused tests for a no-additional-request handoff, unchanged non-turn
-  ceilings, and whitespace-robust documentation verification. Publication and synchronization of
-  that local correction remain a separate consent boundary before another Core proof.
+  ceilings, and whitespace-robust documentation verification. Campaign 089 published that
+  correction as Tool Shed v0.29.12 and exactly synchronized the maintainer skill, enabling Core
+  Campaign 023 to exercise the repaired handoff.
+- Core Campaign 023 then proved the v0.29.12 first-file-change handoff in one preparation turn and
+  one command-free worker turn. Its exactly-once verifier failed only because it normalized
+  whitespace without normalizing sentence capitalization. Campaign 090 now rejects that
+  whitespace-only verifier and accepts only a shared whitespace-and-case normalizer. Campaign 091
+  is the explicit publication and maintainer-synchronization boundary before a fresh Core proof.
 - Open measurement: report raw input, cached input, output, weighted usage, model turns, elapsed
   time, and owner interactions separately; do not claim a GUI token comparison that the GUI cannot
   expose.
 
 Ground:
 
-- Current next action: Tool Shed v0.29.11 is published and the maintainer installed skill matches it.
-  Upgrade Core from v0.29.10 to v0.29.11, verify exact snapshot and Windows-skill parity, then resume
-  the already-authorized ordinary Campaign 022 proof through the logged-in Windows console.
+- Current next action: authorize Campaign 091 to publish the Campaign 090 correction and exactly
+  synchronize the maintainer skill. Campaign 085 can then upgrade Core and run a fresh replacement
+  Windows proof without another Core authorization request.
 - Owner/context: human owner and Codex in `/home/jon/docker/tool_shed`; native Windows proof occurs
   through a normally launched Codex GUI on the work PC in `E:\dev\bactron-core`.
 - Verification: focused changed-path tests plus one real dogfood run during development; one full
@@ -229,9 +233,9 @@ Ground:
 | Lean qualification policy | release-boundary blocked | approved roadmap gates | G11 Linux first-pass evidence | after separate consent, run one full validator on unchanged release inputs |
 | Minimum usable release | complete | milestone `M2-MINIMUM-RELEASE`, v0.28.0 evidence, and v0.29.1 dispatcher release evidence | successful maintained-workspace dogfood and direct Linux proof | preserve v0.29.1 and the synchronized maintainer skill |
 | Installed native Linux | complete | milestone `M3-LINUX-INSTALLED` plus Campaign 060 direct-dispatch evidence | verified release | preserve the direct one-call proof |
-| Installed native Windows | v0.29.11 installed; first file change needs corrected handoff release | Campaign 085 and Core Campaign 022 evidence | local Campaign 088 correction plus separate publication | after publication, re-upgrade and resume the authorized Windows proof |
-| First-pass App Server collateral | post-v0.29.11 correction locally proven | Roadmap Revision 7, Campaigns 071, 077, 082, 083, 086-088 | Core Campaigns 018-022 field results | publish and synchronize the narrow handoff/verifier correction after consent |
-| Owner operating loop | blocked at publication boundary | Campaign 085 | locally complete Campaign 088; corrective release not authorized | authorize publication/sync, then continue existing Core authorization |
+| Installed native Windows | v0.29.12 installed; replacement proof awaiting corrective release | Campaign 085 and Core Campaign 023 evidence | Campaign 091 | after release, re-upgrade and resume the authorized Windows proof |
+| First-pass App Server collateral | case-normalization repair locally proven | Roadmap Revision 7, Campaigns 071, 077, 082, 083, 086-091 | Core Campaigns 018-023 field results | authorize Campaign 091 publication and synchronization |
+| Owner operating loop | release-boundary blocked | Campaign 085 | Campaign 091 | publish, synchronize, then run a fresh Core replacement proof |
 
 ## Dependency Notes
 
@@ -289,9 +293,11 @@ You are here:
   exceeded the focused-context threshold before mutation. Campaign 086 now bounds explicit-reference
   context; Campaign 087 published it as v0.29.11 and synchronized the maintainer skill. Campaign 085
   upgraded Core and ran Campaign 022. That proof exposed a same-boundary turn-ceiling handoff defect
-  and Markdown-formatting-fragile verifier. Campaign 088 repairs both locally and passes 71 focused
-  tests; a new release and installed-skill synchronization require separate authority before the
-  already-authorized Core proof can resume.
+  and Markdown-formatting-fragile verifier. Campaign 088 repaired both locally and Campaign 089
+  published the correction as v0.29.12 with exact maintainer-skill synchronization. Core Campaign
+  023 proved the handoff but exposed case-sensitive semantic matching. Campaign 090 now requires a
+  shared whitespace-and-case normalizer; Campaign 091 owns its separately authorized release and
+  maintainer synchronization before the already-authorized Core proof resumes.
 
 Do next:
 
@@ -319,8 +325,12 @@ Do next:
       Campaign 087 as Tool Shed v0.29.11.
 - [x] Repair and focused-test the same-boundary file-change handoff and formatting-fragile
       documentation verifier exposed by Core Campaign 022.
-- [ ] After separate consent, publish and synchronize that narrow correction.
-- [ ] Re-upgrade Core and resume the already-authorized ordinary first-attempt Windows proof, then
+- [x] After separate consent, publish and synchronize that narrow correction as Tool Shed v0.29.12.
+- [x] Re-upgrade Core and prove the repaired first-file-change handoff through Core Campaign 023.
+- [x] Repair and focused-test the case-sensitive semantic verifier exposed by that proof.
+- [ ] After separate consent, publish and synchronize the case-normalized verifier through Campaign
+      091.
+- [ ] Re-upgrade Core and run a fresh replacement ordinary first-attempt Windows proof, then
       close the owner-adoption gate.
 
 Avoid for now:
@@ -347,5 +357,7 @@ Avoid for now:
 - Core explicit-reference preparation bound: `work/evidence/evidence-core-explicit-reference-preparation-bound.md`
 - Tool Shed v0.29.11 release and maintainer synchronization: `work/evidence/evidence-tool-shed-v0-29-11-release-and-maintainer-sync.md`
 - File-change handoff and robust documentation verification: `work/evidence/evidence-file-change-handoff-and-robust-doc-verification.md`
+- Tool Shed v0.29.12 release and maintainer synchronization: `work/evidence/evidence-tool-shed-v0-29-12-release-and-maintainer-sync.md`
+- Case-normalized documentation verification: `work/evidence/evidence-case-normalized-documentation-verification.md`
 - Standing owner authorization: this map's `Standing Owner Authorization` section
 - Bactron Core enabling work: Campaign 014 in `E:\dev\bactron-core`

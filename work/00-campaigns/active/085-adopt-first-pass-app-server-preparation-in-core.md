@@ -3,14 +3,14 @@
 Status: blocked
 Type: campaign
 Updated: 2026-08-26
-Next Action: resolve blocker or decision: authorize Campaign 089 publication and maintainer skill synchronization; then re-upgrade Core and run a fresh first-attempt Windows proof under the existing Core authorization
+Next Action: after Campaign 091 publishes and synchronizes the proven case-normalization repair, upgrade Core and run a fresh replacement campaign under the existing authorization
 Campaign ID: adopt-first-pass-app-server-preparation-in-core
 Campaign Number: 085
 Outcome: A fresh ordinary Core campaign completes on its first automatically prepared Windows App Server attempt.
 Primary Focus Areas: provider-portability
 Supporting Focus Areas: snapshot-delivery, workspace-safety, campaign-lifecycle
-Depends On: publish-and-synchronize-file-change-handoff-repair
-Decision: Campaign 088 repaired and focused-tested the two defects exposed by Core Campaign 022; publishing that new correction and synchronizing the maintainer skill require separate owner authorization before the already-authorized Core proof resumes
+Depends On: publish-and-synchronize-case-normalized-verification
+Decision: Campaign 090 repaired and locally proved the case-normalization defect; Campaign 091 requires separate publication and maintainer-skill synchronization authorization before the existing Core authorization can resume.
 Detour For: none
 Return To: none
 Completion Gate: G13-CORE-FIRST-PASS-OWNER-READY passes with exact upgrade, first-attempt execution, exactly-once verification, bounded usage, and no deployment.
@@ -23,7 +23,18 @@ Unlocks Gate: G13-CORE-FIRST-PASS-OWNER-READY
 
 ## Request
 
-Under the Core-upgrade and operator-assisted Windows authorization granted on 2026-08-26, upgrade Core's disconnected Tool Shed snapshot and installed skill to the verified first-pass release with bounded backups. The v0.29.11 upgrade completed exactly, but Core Campaign 022 exposed a same-boundary file-change handoff defect and formatting-fragile documentation verification. After Campaign 089 publishes and synchronizes the locally proven Campaign 088 correction, re-upgrade Core to that stable patch without requesting Core authorization again. From the normal logged-in Windows GUI console, run one fresh ordinary non-production Core campaign through ts: next --app-server without manually authoring or repairing its capsule. Capture source binding, preparation and execution usage, turns, tool-result bytes, expected and actual paths, journal, and exactly-once verification. Complete only if the first worker attempt succeeds without replay or preventable reconciliation. Do not replay completed campaigns or deploy Bactron.
+Under the Core-upgrade and operator-assisted Windows authorization granted on 2026-08-26, upgrade
+Core's disconnected Tool Shed snapshot and installed skill to the verified first-pass release with
+bounded backups. The v0.29.11 and v0.29.12 upgrades completed exactly. Core Campaign 022 exposed a
+same-boundary file-change handoff defect and whitespace-fragile verification; Core Campaign 023 then
+proved the v0.29.12 handoff in one worker turn but exposed case-sensitive semantic verification.
+After Campaign 091 publishes and synchronizes the locally proven Campaign 090 correction, re-upgrade
+Core to that stable patch without requesting Core authorization again. From the normal logged-in
+Windows GUI console, create and run one fresh ordinary non-production Core campaign through
+`ts: next --app-server` without manually authoring or repairing its capsule. Capture source binding,
+preparation and execution usage, turns, tool-result bytes, expected and actual paths, journal, and
+exactly-once verification. Complete only if the first worker attempt succeeds without replay or
+preventable reconciliation. Do not replay completed campaigns or deploy Bactron.
 
 ## App Server Preparation Contract
 

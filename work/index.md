@@ -19,8 +19,8 @@ Updated: 2026-08-26
 | [work/00-campaigns/abandoned/079-prove-command-free-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/abandoned/079-prove-command-free-first-pass-asset-aware-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
 | [work/00-campaigns/abandoned/080-prove-specified-command-free-first-pass-code-test-campaign-on-linux.md](work/00-campaigns/abandoned/080-prove-specified-command-free-first-pass-code-test-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
 | [work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
-| [work/00-campaigns/active/085-adopt-first-pass-app-server-preparation-in-core.md](work/00-campaigns/active/085-adopt-first-pass-app-server-preparation-in-core.md) | campaign | blocked | 2026-08-26 | resolve blocker or decision: authorize Campaign 089 publication and maintainer skill synchronization; then re-upgrade Core and run a fresh first-attempt Windows proof under the existing Core authorization | - |
-| [work/00-campaigns/active/089-publish-and-synchronize-file-change-handoff-repair.md](work/00-campaigns/active/089-publish-and-synchronize-file-change-handoff-repair.md) | campaign | working | 2026-08-26 | execute the campaign completion gate | - |
+| [work/00-campaigns/active/085-adopt-first-pass-app-server-preparation-in-core.md](work/00-campaigns/active/085-adopt-first-pass-app-server-preparation-in-core.md) | campaign | blocked | 2026-08-26 | after Campaign 091 publishes and synchronizes the proven case-normalization repair, upgrade Core and run a fresh replacement campaign under the existing authorization | - |
+| [work/00-campaigns/active/091-publish-and-synchronize-case-normalized-verification.md](work/00-campaigns/active/091-publish-and-synchronize-case-normalized-verification.md) | campaign | queued | 2026-08-26 | execute when selected from the active campaign queue | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -95,6 +95,8 @@ Updated: 2026-08-26
 | [work/00-campaigns/completed/086-bound-explicit-reference-app-server-preparation.md](work/00-campaigns/completed/086-bound-explicit-reference-app-server-preparation.md) | campaign | complete | 2026-08-26 | none | - |
 | [work/00-campaigns/completed/087-publish-explicit-reference-preparation-repair.md](work/00-campaigns/completed/087-publish-explicit-reference-preparation-repair.md) | campaign | complete | 2026-08-26 | none | - |
 | [work/00-campaigns/completed/088-preserve-file-change-handoff-and-robust-doc-verification.md](work/00-campaigns/completed/088-preserve-file-change-handoff-and-robust-doc-verification.md) | campaign | complete | 2026-08-26 | none | - |
+| [work/00-campaigns/completed/089-publish-and-synchronize-file-change-handoff-repair.md](work/00-campaigns/completed/089-publish-and-synchronize-file-change-handoff-repair.md) | campaign | complete | 2026-08-26 | none | - |
+| [work/00-campaigns/completed/090-require-case-normalized-documentation-verification.md](work/00-campaigns/completed/090-require-case-normalized-documentation-verification.md) | campaign | complete | 2026-08-26 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -111,6 +113,7 @@ Updated: 2026-08-26
 | [work/evidence/evidence-app-server-first-pass-prelaunch-collateral.md](work/evidence/evidence-app-server-first-pass-prelaunch-collateral.md) | evidence | complete | 2026-08-26 | derive and execute M11 Linux first-pass proof campaigns | - |
 | [work/evidence/evidence-app-server-integration-and-watcher-reassessment.md](work/evidence/evidence-app-server-integration-and-watcher-reassessment.md) | evidence | complete | 2026-08-20 | - | - |
 | [work/evidence/evidence-bactron-core-native-windows-app-server-workflow.md](work/evidence/evidence-bactron-core-native-windows-app-server-workflow.md) | - | - | - | - | - |
+| [work/evidence/evidence-case-normalized-documentation-verification.md](work/evidence/evidence-case-normalized-documentation-verification.md) | evidence | verified | 2026-08-26 | - | - |
 | [work/evidence/evidence-completion-watcher-v1-alpha.md](work/evidence/evidence-completion-watcher-v1-alpha.md) | evidence | complete | 2026-08-19 | none | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
 | [work/evidence/evidence-completion-watcher-v1-contract.md](work/evidence/evidence-completion-watcher-v1-contract.md) | evidence | complete | 2026-08-18 | none | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
 | [work/evidence/evidence-completion-watcher-v1-release.md](work/evidence/evidence-completion-watcher-v1-release.md) | evidence | complete | 2026-08-19 | none | work/00-campaigns/completed/038-qualify-and-release-local-completion-watchers.md |
@@ -141,6 +144,7 @@ Updated: 2026-08-26
 | [work/evidence/evidence-tool-shed-v0-29-1-release-and-skill-sync.md](work/evidence/evidence-tool-shed-v0-29-1-release-and-skill-sync.md) | evidence | complete | 2026-08-25 | return to Campaign 059 for the authorized Bactron Core Windows proof | - |
 | [work/evidence/evidence-tool-shed-v0-29-10-release-and-maintainer-sync.md](work/evidence/evidence-tool-shed-v0-29-10-release-and-maintainer-sync.md) | evidence | verified | 2026-08-26 | - | - |
 | [work/evidence/evidence-tool-shed-v0-29-11-release-and-maintainer-sync.md](work/evidence/evidence-tool-shed-v0-29-11-release-and-maintainer-sync.md) | evidence | verified | 2026-08-26 | - | - |
+| [work/evidence/evidence-tool-shed-v0-29-12-release-and-maintainer-sync.md](work/evidence/evidence-tool-shed-v0-29-12-release-and-maintainer-sync.md) | evidence | verified | 2026-08-26 | - | - |
 | [work/evidence/evidence-tool-shed-v0-29-8-release-and-maintainer-sync.md](work/evidence/evidence-tool-shed-v0-29-8-release-and-maintainer-sync.md) | evidence | complete | 2026-08-26 | complete Campaign 067 and derive the M8 Core snapshot campaign without upgrading Core | - |
 | [work/evidence/evidence-tool-shed-v0-29-9-release-sync-core-upgrade.md](work/evidence/evidence-tool-shed-v0-29-9-release-sync-core-upgrade.md) | evidence | complete | 2026-08-26 | use the released one-command App Server path for the next appropriate Core campaign | - |
 | [work/evidence/evidence-w1-dev-smb-access.md](work/evidence/evidence-w1-dev-smb-access.md) | evidence | complete | 2026-08-24 | none | - |
@@ -151,7 +155,7 @@ Updated: 2026-08-26
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/maps/map-disposable-completion-watchers-and-hosted-notifications.md](work/maps/map-disposable-completion-watchers-and-hosted-notifications.md) | project-map | deferred | 2026-08-18 | preserve the completed local watcher and wait for a concrete external/non-App-Server notification need before revisiting hosted work | - |
-| [work/maps/map-low-token-cross-platform-campaign-execution.md](work/maps/map-low-token-cross-platform-campaign-execution.md) | project-map | active | 2026-08-26 | obtain separate authority to publish and synchronize the locally proven post-v0.29.11 handoff and documentation-verifier correction, then resume Campaign 085's already-authorized Core upgrade and Windows proof | - |
+| [work/maps/map-low-token-cross-platform-campaign-execution.md](work/maps/map-low-token-cross-platform-campaign-execution.md) | project-map | active | 2026-08-26 | authorize Campaign 091 to publish and synchronize the locally proven case-normalized documentation verifier | - |
 | [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | complete | 2026-08-20 | none | - |
 | [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
 | [work/roadmaps/roadmap-completion-watcher-program-r2.md](work/roadmaps/roadmap-completion-watcher-program-r2.md) | program-roadmap | approved | 2026-08-20 | derive campaigns for milestone M1-CONTRACT | none |
@@ -193,6 +197,6 @@ Updated: 2026-08-26
 
 ## Summary
 
-- Total artifacts: 176
+- Total artifacts: 180
 - Active artifacts: 3
-- Completed/decided artifacts: 135
+- Completed/decided artifacts: 137

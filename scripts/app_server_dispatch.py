@@ -707,8 +707,9 @@ If a safe bounded CAMP can be prepared, set status to prepared and:
   unbounded listing or diff;
 - use platform-local executable paths that do not depend on shell activation;
 - use the exact current Python executable advertised in the preparation context for Python checks;
-- for prose or documentation checks, normalize whitespace before asserting multiword semantic
-  phrases so Markdown line wrapping cannot change the verification result;
+- for prose or documentation checks, use one shared normalizer for both document text and expected
+  multiword semantic phrases; it must collapse whitespace and normalize case so Markdown line
+  wrapping or sentence capitalization cannot change the verification result;
 - do not assert that the whole Git worktree is clean or exclude only expected_paths from a clean
   diff check because the dispatcher persists the capsule and lifecycle state before execution;
 - exclude work/00-campaigns, Tool Shed snapshot machinery, Git metadata, deployment, production,
@@ -974,9 +975,9 @@ def _normalize_automatic_verification_commands(
         if _documentation_verifier_is_formatting_fragile(capsule, tuple(argv)):
             raise DispatchError(
                 "automatic_preparation_output_risk",
-                "automatic documentation verification depends on raw Markdown line wrapping",
+                "automatic documentation verification lacks shared whitespace-and-case normalization",
                 recovery_action=(
-                    "normalize document whitespace before asserting multiword semantic phrases"
+                    "apply one shared whitespace-and-case normalizer to the document and expected phrases"
                 ),
             )
         commands.append(tuple(argv))
@@ -1004,7 +1005,7 @@ def _documentation_verifier_is_formatting_fragile(
     capsule: ExecutionCapsule,
     command: tuple[str, ...],
 ) -> bool:
-    """Recognize planner-produced raw phrase checks for Markdown documentation."""
+    """Recognize Markdown phrase checks lacking shared whitespace-and-case normalization."""
 
     if not any(path.suffix.lower() == ".md" for path in capsule.expected_paths):
         return False
@@ -1035,11 +1036,42 @@ def _documentation_verifier_is_formatting_fragile(
     phrase_membership = (
         "required" in compact and " not in " in compact and has_multiword_literal
     )
-    split_join_normalization = ".join(" in compact and ".split()" in compact
-    regex_normalization = "re.sub" in compact and "\\s" in compact
-    return phrase_membership and not (
-        split_join_normalization or regex_normalization
-    )
+    shared_normalizers: set[str] = set()
+
+    def normalizes_whitespace_and_case(node: ast.AST) -> bool:
+        attributes = {
+            child.func.attr.lower()
+            for child in ast.walk(node)
+            if isinstance(child, ast.Call) and isinstance(child.func, ast.Attribute)
+        }
+        collapses_whitespace = "split" in attributes and "join" in attributes
+        normalizes_case = bool({"casefold", "lower"} & attributes)
+        return collapses_whitespace and normalizes_case
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign) and isinstance(node.value, ast.Lambda):
+            if normalizes_whitespace_and_case(node.value):
+                shared_normalizers.update(
+                    target.id for target in node.targets if isinstance(target, ast.Name)
+                )
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            if normalizes_whitespace_and_case(node):
+                shared_normalizers.add(node.name)
+
+    shared_normalization_applied = False
+    for name in shared_normalizers:
+        arguments = {
+            ast.dump(node.args[0], include_attributes=False)
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == name
+            and node.args
+        }
+        if len(arguments) >= 2:
+            shared_normalization_applied = True
+            break
+    return phrase_membership and not shared_normalization_applied
 
 
 def _include_existing_expected_context(

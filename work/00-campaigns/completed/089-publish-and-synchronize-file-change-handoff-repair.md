@@ -1,9 +1,9 @@
 # Publish and Synchronize File-Change Handoff Repair
 
-Status: working
+Status: complete
 Type: campaign
 Updated: 2026-08-26
-Next Action: execute the campaign completion gate
+Next Action: none
 Campaign ID: publish-and-synchronize-file-change-handoff-repair
 Campaign Number: 089
 Outcome: Publish the locally proven file-change handoff and whitespace-robust documentation-verifier correction as a verified Tool Shed patch release and synchronize the maintainer installed skill so Campaign 085 can resume under its existing Core authorization.
@@ -14,8 +14,10 @@ Decision: none
 Detour For: adopt-first-pass-app-server-preparation-in-core
 Return To: adopt-first-pass-app-server-preparation-in-core
 Completion Gate: The unchanged Campaign 088 candidate passes the full validator; content and provenance commits, annotated tag, live manifest, and non-draft latest GitHub Release agree; the maintainer installed skill is backed up, synchronized, exact-diff clean, and fresh-session verified; Core and Bactron remain unchanged.
-Completion Evidence: none
-Disposition: none
+Completion Evidence: work/evidence/evidence-tool-shed-v0-29-12-release-and-maintainer-sync.md
+Completion Date: 2026-08-26
+Completion Order: 74
+Disposition: completed
 
 ## Request
 

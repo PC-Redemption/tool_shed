@@ -522,7 +522,8 @@ class AppServerDispatchTests(unittest.TestCase):
         self.assertIn("do not assert that the whole Git worktree is clean", prompt)
         self.assertIn("forbidden to use commandExecution at any point", prompt)
         self.assertIn("first\n  completed file change as the verification handoff", prompt)
-        self.assertIn("normalize whitespace before asserting multiword semantic", prompt)
+        self.assertIn("one shared normalizer for both document text and expected", prompt)
+        self.assertIn("collapse whitespace and normalize case", prompt)
         self.assertIn(f"src/proof.py ({source.stat().st_size} bytes;", context)
 
     def test_generic_provider_portability_campaign_excerpts_code_before_routing_docs(self) -> None:
@@ -673,11 +674,25 @@ class AppServerDispatchTests(unittest.TestCase):
             _parse_automatic_preparation(self.workspace, campaign, prepared(fragile))
         self.assertEqual("automatic_preparation_output_risk", raised.exception.category)
 
-        robust = (
-            "from pathlib import Path; text=' '.join(Path('docs/app_server_camp_preparation.md')"
-            ".read_text().split()); required=['expected-path starting states', "
+        whitespace_only = (
+            "from pathlib import Path; raw=Path('docs/app_server_camp_preparation.md')"
+            ".read_text(); text=' '.join(raw.split()); required=['expected-path starting states', "
             "'first completed fileChange']; missing=[phrase for phrase in required if phrase not in text]; "
             "assert not missing"
+        )
+        with self.assertRaises(DispatchError) as raised:
+            _parse_automatic_preparation(
+                self.workspace,
+                campaign,
+                prepared(whitespace_only),
+            )
+        self.assertEqual("automatic_preparation_output_risk", raised.exception.category)
+
+        robust = (
+            "from pathlib import Path; normalize=lambda value:' '.join(value.casefold().split()); "
+            "raw=Path('docs/app_server_camp_preparation.md').read_text(); text=normalize(raw); "
+            "required=['expected-path starting states', 'first completed fileChange']; "
+            "missing=[phrase for phrase in required if normalize(phrase) not in text]; assert not missing"
         )
         capsule, _ = _parse_automatic_preparation(
             self.workspace,
