@@ -2676,6 +2676,7 @@ Uncertainty: none
             self.assertIn("Outcome: deliver legacy", campaign)
             self.assertIn("Primary Focus Areas: firmware, qualification", campaign)
             self.assertNotIn("Focus areas:", campaign)
+            self.assertIn('"objective": "deliver legacy"', campaign)
             self.assertEqual(applied["validation_findings"], [])
 
     def test_campaign_same_day_completions_preserve_completion_order(self) -> None:

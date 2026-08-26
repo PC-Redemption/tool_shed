@@ -903,6 +903,7 @@ def prepare_manifest_changes(
                 item.fields["Outcome"] = campaign_queue.OUTCOME_FOCUS_RE.sub(
                     "", item.outcome
                 ).strip(" —-;.")
+                campaign_queue.refresh_app_server_preparation_contract(item)
             item.fields["Updated"] = date.today().isoformat()
             changes[item.path] = campaign_queue.render_campaign(item)
             campaign_changed = True

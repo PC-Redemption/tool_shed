@@ -763,6 +763,36 @@ def app_server_preparation_contract(
     )
 
 
+def refresh_app_server_preparation_contract(item: Campaign) -> None:
+    """Keep stable preparation intent aligned after an approved semantic header rewrite."""
+
+    lines = item.body.splitlines()
+    headings = [
+        index for index, line in enumerate(lines)
+        if line.strip() == APP_SERVER_PREPARATION_HEADING
+    ]
+    if not headings:
+        return
+    if len(headings) != 1:
+        raise CampaignError(
+            "campaign must contain at most one App Server Preparation Contract"
+        )
+    start = headings[0]
+    end = next(
+        (
+            index for index in range(start + 1, len(lines))
+            if lines[index].startswith("## ")
+        ),
+        len(lines),
+    )
+    replacement = app_server_preparation_contract(
+        item.campaign_id,
+        item.outcome,
+        item.fields.get("Completion Gate", ""),
+    ).splitlines()
+    item.body = "\n".join([*lines[:start], *replacement, *lines[end:]]).rstrip() + "\n"
+
+
 def _validate_graph(campaigns: dict[str, Campaign]) -> list[str]:
     findings: list[str] = []
     visiting: set[str] = set()
