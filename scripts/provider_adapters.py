@@ -25,10 +25,17 @@ class AdapterManifestError(ValueError):
 
 def _safe_relative_path(value: object, *, field: str) -> str:
     text = str(value or "")
-    path = Path(text)
-    if not text or path.is_absolute() or ".." in path.parts:
+    if (
+        not text
+        or "\\" in text
+        or text.startswith("/")
+        or (len(text) >= 3 and text[0].isalpha() and text[1] == ":" and text[2] == "/")
+    ):
         raise AdapterManifestError(f"{field} must be a safe repository-relative path")
-    return path.as_posix()
+    parts = tuple(part for part in text.split("/") if part)
+    if not parts or all(part == "." for part in parts) or ".." in parts:
+        raise AdapterManifestError(f"{field} must be a safe repository-relative path")
+    return "/".join(parts)
 
 
 def load_manifest(path: Path = MANIFEST) -> dict[str, Any]:

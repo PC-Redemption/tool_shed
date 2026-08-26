@@ -1,9 +1,9 @@
 # Prove path-state command-free asset revision on Linux
 
-Status: queued
+Status: working
 Type: campaign
 Updated: 2026-08-26
-Next Action: execute when selected from the active campaign queue
+Next Action: execute the campaign completion gate
 Campaign ID: prove-path-state-command-free-first-pass-asset-aware-campaign-on-linux
 Campaign Number: 083
 Outcome: Documentation asset cache revisions cover every direct site asset deterministically through a command-free worker with explicit expected-path starting states.
