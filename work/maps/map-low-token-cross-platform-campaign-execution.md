@@ -3,7 +3,7 @@
 Status: active
 Type: project-map
 Updated: 2026-08-26
-Next Action: replace underspecified Campaigns 078-079 with semantic-outcome Linux proofs in Roadmap Revision 6
+Next Action: replace Campaigns 080-081 after adding deterministic expected-path starting states, then rerun fresh Linux proofs
 Campaign: standalone
 Campaign Reason: source coordination surface for the approved, executing Program Roadmap
 
@@ -179,15 +179,19 @@ It does not revise M4's outcome or grant Core mutation authority.
   integration point absent from its complete source context; the one-turn command-free worker
   correctly returned unknown without mutation. Replacement proofs must state a real semantic defect
   and leave only exact collateral resolution to dispatch.
+- Campaign 080 supplied a real semantic outcome and complete existing source, but did not tell the
+  command-free worker that its expected new test path was absent and authorized for creation. The
+  worker again stopped safely without mutation. Tool Shed now injects deterministic starting states
+  for every expected path; fresh replacements belong to Revision 7.
 - Open measurement: report raw input, cached input, output, weighted usage, model turns, elapsed
   time, and owner interactions separately; do not claim a GUI token comparison that the GUI cannot
   expose.
 
 Ground:
 
-- Current next action: preserve Campaign 078 as failed no-replay evidence, supersede its dependent
-  Campaign 079, approve Roadmap Revision 6 with explicit semantic code/test and asset-aware outcomes,
-  and continue the Linux first-pass gate. Do not publish or upgrade Core yet.
+- Current next action: preserve Campaign 080 as failed no-replay evidence, supersede its dependent
+  Campaign 081, approve Roadmap Revision 7 with the same semantic outcomes behind the new expected-
+  path state contract, and continue the Linux first-pass gate. Do not publish or upgrade Core yet.
 - Owner/context: human owner and Codex in `/home/jon/docker/tool_shed`; native Windows proof occurs
   through a normally launched Codex GUI on the work PC in `E:\dev\bactron-core`.
 - Verification: focused changed-path tests plus one real dogfood run during development; one full

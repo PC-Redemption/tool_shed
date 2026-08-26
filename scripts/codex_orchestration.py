@@ -787,6 +787,26 @@ def execute_deterministic_verification(
     }
 
 
+def expected_path_start_states(journal: GitMutationJournal) -> dict[str, str]:
+    """Describe declared targets without making a worker rediscover filesystem state."""
+
+    states: dict[str, str] = {}
+    for relative in journal.expected_paths:
+        candidate = journal.repository_root / relative
+        if candidate.is_symlink():
+            state = "symlink"
+        elif candidate.is_file():
+            state = "existing-file"
+        elif candidate.is_dir():
+            state = "existing-directory"
+        elif candidate.exists():
+            state = "existing-other"
+        else:
+            state = "absent-authorized-creation"
+        states[relative] = state
+    return states
+
+
 def execute_camp_if_enabled(
     prompt: str,
     *,
@@ -835,6 +855,7 @@ def execute_camp_if_enabled(
         workspace=cwd,
         expected_paths=expected_paths,
     )
+    expected_start_states = expected_path_start_states(journal)
     effective_prompt = inline_context_prompt(
         features,
         cwd,
@@ -849,7 +870,11 @@ def execute_camp_if_enabled(
             + ", ".join(journal.expected_paths)
             + ". The starting state identifier is "
             + journal.start_state_identifier
-            + ". Deterministic verification reserved for the enclosing orchestrator: "
+            + ". Expected path starting states are "
+            + json.dumps(expected_start_states, sort_keys=True, separators=(",", ":"))
+            + ". A path marked absent-authorized-creation has no prior content to preserve and "
+            "may be created as part of the declared mutation. "
+            + "Deterministic verification reserved for the enclosing orchestrator: "
             + json.dumps([list(command) for command in verification_commands], separators=(",", ":"))
             + ". Do not alter lifecycle files or claim a state transition. The orchestrator will "
             "run the declared deterministic verification commands, verify the Git journal, "

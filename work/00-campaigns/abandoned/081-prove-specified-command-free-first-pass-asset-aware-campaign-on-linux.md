@@ -1,9 +1,9 @@
 # Prove specified command-free documentation asset revision on Linux
 
-Status: queued
+Status: abandoned
 Type: campaign
 Updated: 2026-08-26
-Next Action: execute when selected from the active campaign queue
+Next Action: none
 Campaign ID: prove-specified-command-free-first-pass-asset-aware-campaign-on-linux
 Campaign Number: 081
 Outcome: Documentation asset cache revisions cover every direct site asset deterministically, and the asset-aware fix completes through the command-free first-file-change handoff.
@@ -15,7 +15,7 @@ Detour For: none
 Return To: none
 Completion Gate: G11-LINUX-FIRST-PASS-RELIABLE passes across documentation plus specified command-free code/test and asset-aware task shapes.
 Completion Evidence: none
-Disposition: none
+Disposition: Dependent proof cannot run after Campaign 080 exposed missing expected-path starting-state collateral; preserve it without execution.; replacement: prove-path-state-command-free-first-pass-asset-aware-campaign-on-linux
 Roadmap: low-token-cross-platform-campaign-execution
 Roadmap Revision: 6
 Milestone: M11-LINUX-FIRST-PASS-PROOF

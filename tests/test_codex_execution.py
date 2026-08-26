@@ -64,6 +64,7 @@ from scripts.codex_orchestration import (
     execute_camp_if_enabled,
     execute_deterministic_verification,
     execute_if_enabled,
+    expected_path_start_states,
     inline_context_prompt,
     validate_summary_context,
 )
@@ -280,6 +281,43 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertFalse(policy["networkAccess"])
         self.assertTrue(policy["excludeSlashTmp"])
         self.assertTrue(policy["excludeTmpdirEnvVar"])
+
+    def test_expected_path_start_states_distinguish_existing_and_creation_targets(self) -> None:
+        repository = self.root / "expected-state-repo"
+        repository.mkdir()
+        subprocess.run(["git", "init", "-q", str(repository)], check=True)
+        existing = repository / "existing.txt"
+        existing.write_text("before\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(repository), "add", "existing.txt"], check=True)
+        subprocess.run(
+            [
+                "git",
+                "-C",
+                str(repository),
+                "-c",
+                "user.name=Tool Shed Test",
+                "-c",
+                "user.email=test@example.com",
+                "commit",
+                "-qm",
+                "baseline",
+            ],
+            check=True,
+        )
+        journal = GitMutationJournal.begin(
+            campaign="campaign-state",
+            camp="state-boundary",
+            workspace=repository,
+            expected_paths=(Path("existing.txt"), Path("new.txt")),
+        )
+
+        self.assertEqual(
+            expected_path_start_states(journal),
+            {
+                "existing.txt": "existing-file",
+                "new.txt": "absent-authorized-creation",
+            },
+        )
 
     def test_live_camp_usage_budget_classifies_each_ceiling_compactly(self) -> None:
         budget = {
@@ -598,6 +636,21 @@ class CodexExecutionTests(unittest.TestCase):
                 ["python3", "-c", "raise SystemExit(0)"],
                 ["python3", "-c", "raise SystemExit(0)"],
             ],
+        )
+        telemetry_rows = [
+            json.loads(line)
+            for line in (self.root / "camp-telemetry.jsonl").read_text(
+                encoding="utf-8"
+            ).splitlines()
+        ]
+        execution = next(
+            row for row in telemetry_rows if row.get("operation") == "camp_execute"
+        )
+        self.assertEqual(
+            execution["context_scope"]["explicit_files"][0]["path"], "target.txt"
+        )
+        self.assertEqual(
+            payload["result"]["control_stop"]["kind"], "worker_file_change_ready"
         )
         context = payload["result"]["context_scope"]
         self.assertEqual(context["mode"], "focused_camp_capsule")
