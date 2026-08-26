@@ -1,9 +1,9 @@
 # Publish and synchronize first-pass App Server preparation
 
-Status: working
+Status: complete
 Type: campaign
 Updated: 2026-08-26
-Next Action: execute the campaign completion gate
+Next Action: none
 Campaign ID: publish-and-synchronize-first-pass-app-server-preparation
 Campaign Number: 084
 Outcome: Make the Linux-proven first-pass preparation contract available to new maintainer sessions through a verified release.
@@ -14,8 +14,10 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: G12-FIRST-PASS-RELEASE-USABLE passes with one full validator, verified provenance, exact installed-skill parity, and a fresh-session smoke.
-Completion Evidence: none
-Disposition: none
+Completion Evidence: work/evidence/evidence-tool-shed-v0-29-10-release-and-maintainer-sync.md
+Completion Date: 2026-08-26
+Completion Order: 70
+Disposition: completed
 Roadmap: low-token-cross-platform-campaign-execution
 Roadmap Revision: 7
 Milestone: M12-FIRST-PASS-DISTRIBUTION

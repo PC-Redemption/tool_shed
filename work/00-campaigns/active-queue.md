@@ -4,21 +4,22 @@ Updated: 2026-08-26
 
 ## Owner State
 
-- Last completed: prove-path-state-command-free-first-pass-asset-aware-campaign-on-linux — Prove path-state command-free asset revision on Linux
-- Working now: publish-and-synchronize-first-pass-app-server-preparation — Publish and synchronize first-pass App Server preparation
+- Last completed: publish-and-synchronize-first-pass-app-server-preparation — Publish and synchronize first-pass App Server preparation
+- Working now: none
 - Next: none
-- Blocker or decision needed: none
+- Blocker or decision needed: adopt-first-pass-app-server-preparation-in-core — Adopt first-pass App Server preparation in Core
 - Detour and return point: none
 
 ## Ordered Queue
 
 Queue positions are mutable; parenthesized campaign numbers and full `Campaign ID` values are stable.
 
-1. (084) **[Publish and synchronize first-pass App Server preparation](active/084-publish-and-synchronize-first-pass-app-server-preparation.md)**
-   - 🆔 **CAMPAIGN ID:** `publish-and-synchronize-first-pass-app-server-preparation`
-   - 🚦 **STATE:** 🔵 **WORKING**
-   - 🎯 **PRIMARY FOCUS AREAS:** Qualification and Release
-   - 🧩 **SUPPORTING FOCUS AREAS:** Provider Portability; Snapshot Delivery
-   - 🔗 **DEPENDS ON:** `prove-path-state-command-free-first-pass-asset-aware-campaign-on-linux` — ✅ **COMPLETE**
-   - 🗺️ **ROADMAP:** low-token-cross-platform-campaign-execution r7 / M12-FIRST-PASS-DISTRIBUTION / unlocks G12-FIRST-PASS-RELEASE-USABLE
-   - 🏁 **OUTCOME:** Make the Linux-proven first-pass preparation contract available to new maintainer sessions through a verified release.
+1. (085) **[Adopt first-pass App Server preparation in Core](active/085-adopt-first-pass-app-server-preparation-in-core.md)**
+   - 🆔 **CAMPAIGN ID:** `adopt-first-pass-app-server-preparation-in-core`
+   - 🚦 **STATE:** 🔴 **BLOCKED**
+   - 🎯 **PRIMARY FOCUS AREAS:** Provider Portability
+   - 🧩 **SUPPORTING FOCUS AREAS:** Snapshot Delivery; Workspace Safety and Performance; Campaign Lifecycle
+   - 🔗 **DEPENDS ON:** `publish-and-synchronize-first-pass-app-server-preparation` — ✅ **COMPLETE**
+   - ⚠️ **DECISION NEEDED:** separate owner Core upgrade and operator-assisted Windows authorization required
+   - 🗺️ **ROADMAP:** low-token-cross-platform-campaign-execution r7 / M13-CORE-FIRST-PASS-ADOPTION / unlocks G13-CORE-FIRST-PASS-OWNER-READY
+   - 🏁 **OUTCOME:** A fresh ordinary Core campaign completes on its first automatically prepared Windows App Server attempt.

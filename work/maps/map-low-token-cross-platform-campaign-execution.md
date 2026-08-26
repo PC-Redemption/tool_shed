@@ -3,7 +3,7 @@
 Status: active
 Type: project-map
 Updated: 2026-08-26
-Next Action: obtain separate owner authorization before executing Campaign 084 publication and installed-skill synchronization
+Next Action: obtain separate owner authorization before executing Campaign 085 Core upgrade and Windows first-pass proof
 Campaign: standalone
 Campaign Reason: source coordination surface for the approved, executing Program Roadmap
 
@@ -193,9 +193,9 @@ It does not revise M4's outcome or grant Core mutation authority.
 
 Ground:
 
-- Current next action: Campaign 084 is materialized and blocked at the retained owner-consent
-  boundary. Obtain separate authorization before publishing or synchronizing the installed skill;
-  do not upgrade Core yet.
+- Current next action: Tool Shed v0.29.10 is published and the maintainer installed skill matches it.
+  Campaign 085 is materialized at the retained owner-consent boundary; obtain separate authorization
+  before upgrading Core or performing the operator-assisted Windows proof.
 - Owner/context: human owner and Codex in `/home/jon/docker/tool_shed`; native Windows proof occurs
   through a normally launched Codex GUI on the work PC in `E:\dev\bactron-core`.
 - Verification: focused changed-path tests plus one real dogfood run during development; one full
@@ -213,7 +213,7 @@ Ground:
 | Installed native Linux | complete | milestone `M3-LINUX-INSTALLED` plus Campaign 060 direct-dispatch evidence | verified release | preserve the direct one-call proof |
 | Installed native Windows | transport proven, realistic efficiency failed | Campaign 019 Core result and regression evidence | current v0.29.7 snapshot | wait for Linux bound and separately authorized corrective release |
 | First-pass App Server collateral | Linux-proven | Roadmap Revision 7 and Campaigns 071, 077, 082, 083 | Core Campaigns 018-021 field results | preserve the first-pass contract through the authorized release |
-| Owner operating loop | awaiting distribution | Campaign 084 | G11 passed | separately authorize release and synchronization, then separately adopt in Core |
+| Owner operating loop | awaiting Core adoption | Campaign 085 | G12 passed and v0.29.10 synchronized | separately authorize the Core upgrade and Windows proof |
 
 ## Dependency Notes
 
@@ -266,8 +266,8 @@ You are here:
   that gate and the fresh replacement proofs.
 - Revision 7 closed the Linux reliability gate: Campaign 082 passed the code/test shape and Campaign
   083 passed the asset-aware shape on their first workers with no worker shell or replay. Campaign
-  084 now represents the separately authorized publication and installed-skill synchronization
-  boundary.
+  084 published and synchronized Tool Shed v0.29.10; Campaign 085 now represents the separately
+  authorized Core upgrade and operator-assisted Windows proof boundary.
 
 Do next:
 
@@ -288,7 +288,7 @@ Do next:
       before capsule persistence or worker launch; automatically repair or split unsafe work.
 - [x] Prove first-pass behavior on Linux across representative documentation, code/test, and
       asset-or-binary-aware campaign shapes with no manual capsule repair, replay, or reconciliation.
-- [ ] After separate consent, publish and synchronize the proven correction.
+- [x] After separate consent, publish and synchronize the proven correction.
 - [ ] After separate Core-upgrade and Windows-operation consent, run one ordinary Core campaign on
       the first attempt and close the owner-adoption gate.
 
