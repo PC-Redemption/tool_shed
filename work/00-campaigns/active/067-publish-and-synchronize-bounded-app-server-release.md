@@ -1,16 +1,16 @@
 # Publish and synchronize the bounded App Server release
 
-Status: queued
+Status: working
 Type: campaign
 Updated: 2026-08-26
-Next Action: execute when selected from the active campaign queue
+Next Action: execute the campaign completion gate
 Campaign ID: publish-and-synchronize-bounded-app-server-release
 Campaign Number: 067
 Outcome: Make the Linux-proven bounded CAMP contract available to fresh maintainer sessions through the verified release path.
 Primary Focus Areas: qualification-release
 Supporting Focus Areas: provider-portability, snapshot-delivery
 Depends On: bound-realistic-app-server-campaign-growth
-Decision: separate owner publication authorization required
+Decision: none
 Detour For: none
 Return To: none
 Completion Gate: G7-CORRECTIVE-RELEASE-USABLE passes with one full validator, verified public provenance, exact installed-skill parity, and a fresh-session policy smoke.
