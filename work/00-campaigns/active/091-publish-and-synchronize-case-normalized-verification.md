@@ -1,16 +1,16 @@
 # Publish and Synchronize Case-Normalized Verification
 
-Status: queued
+Status: working
 Type: campaign
 Updated: 2026-08-26
-Next Action: execute when selected from the active campaign queue
+Next Action: execute the campaign completion gate
 Campaign ID: publish-and-synchronize-case-normalized-verification
 Campaign Number: 091
 Outcome: A verified Tool Shed patch release publishes the case-normalized documentation verifier and the maintainer installed skill exactly matches it, allowing Campaign 085 to resume with a fresh Core replacement proof.
 Primary Focus Areas: qualification-release
 Supporting Focus Areas: provider-portability, snapshot-delivery
 Depends On: require-case-normalized-documentation-verification
-Decision: Owner authorization is required before publishing the patch release or replacing the installed maintainer skill.
+Decision: none
 Detour For: adopt-first-pass-app-server-preparation-in-core
 Return To: adopt-first-pass-app-server-preparation-in-core
 Completion Gate: The full Tool Shed validator passes twice around immutable release provenance; a patch version is committed, annotated, pushed, and verified as the latest non-draft GitHub release; the maintainer skill is backed up, quick-valid, and byte-identical to canonical source; Core and Bactron remain unchanged.
