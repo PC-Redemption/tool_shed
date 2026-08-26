@@ -16,6 +16,35 @@ from tests.test_scripts import run_script  # noqa: E402
 
 
 class CycleStateTests(unittest.TestCase):
+    def test_abandoned_history_may_retain_an_abandoned_dependency(self) -> None:
+        dependency = campaign_queue.Campaign(
+            Path("dependency.md"),
+            "Dependency",
+            {"Campaign ID": "dependency", "Status": "abandoned", "Depends On": "none"},
+            "",
+        )
+        historical = campaign_queue.Campaign(
+            Path("historical.md"),
+            "Historical",
+            {"Campaign ID": "historical", "Status": "abandoned", "Depends On": "dependency"},
+            "",
+        )
+        active = campaign_queue.Campaign(
+            Path("active.md"),
+            "Active",
+            {"Campaign ID": "active", "Status": "queued", "Depends On": "dependency"},
+            "",
+        )
+
+        self.assertEqual([], campaign_queue._validate_graph({
+            "dependency": dependency,
+            "historical": historical,
+        }))
+        self.assertIn(
+            "active depends on abandoned campaign dependency",
+            campaign_queue._validate_graph({"dependency": dependency, "active": active}),
+        )
+
     def install(self, workspace: Path) -> None:
         run_script("scripts/install_into_workspace.py", str(workspace))
 

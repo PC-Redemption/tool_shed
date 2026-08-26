@@ -685,12 +685,16 @@ If a safe bounded CAMP can be prepared, set status to prepared and:
 - write a complete worker prompt that permits only the declared mutations, forbids lifecycle,
   deployment, network, and protected-environment work, reserves verification for the orchestrator,
   and requires camp_ready_for_verification after implementation;
+- make the worker prompt and selected inline context complete enough for the first file-change;
+  the worker is forbidden to use commandExecution at any point, Tool Shed treats the first
+  completed file change as the verification handoff, and the worker must return unknown without
+  mutation when the supplied boundary is insufficient;
 - declare every worker-owned mutation in expected_paths as unique repository-relative POSIX paths;
 - declare only existing regular UTF-8 context files needed by the worker, with their combined
   actual file sizes no greater than {max_context_bytes} bytes;
-- prefer no context_files, or only small immutable instructions and contracts; the CAMP worker has
-  bounded workspace tools and should inspect exact symbols itself instead of receiving whole large
-  implementation or test files inline;
+- prefer small immutable instructions and contracts; existing UTF-8 expected source paths are
+  injected deterministically when they fit the context budget, so the worker must not reread them
+  through command output;
 - provide one to eight deterministic shell-free verification commands as direct argv arrays;
 - retain at most {AUTO_PREPARATION_MAX_VERIFICATION_COMMANDS} focused verification commands and at
   most {AUTO_PREPARATION_MAX_EXPECTED_PATHS} expected mutation paths for automatic execution;
@@ -946,14 +950,74 @@ def _normalize_automatic_verification_commands(
     )
 
 
+def _include_existing_expected_context(
+    workspace: Path,
+    capsule: ExecutionCapsule,
+    *,
+    max_context_bytes: int,
+) -> ExecutionCapsule:
+    """Supply bounded expected source files so the worker need not print them through tools."""
+
+    context = list(capsule.context_files)
+    total = sum((workspace / path).stat().st_size for path in context)
+    for relative in capsule.expected_paths:
+        if relative in context or relative.suffix.lower() not in PREPARATION_TEXT_SUFFIXES:
+            continue
+        path = workspace / relative
+        if not path.is_file() or path.is_symlink():
+            continue
+        raw = path.read_bytes()
+        if b"\0" in raw:
+            continue
+        try:
+            raw.decode("utf-8")
+        except UnicodeDecodeError:
+            continue
+        if total + len(raw) > max_context_bytes:
+            raise DispatchError(
+                "automatic_preparation_context_limit",
+                f"existing expected source {relative.as_posix()} does not fit the inline context budget",
+                recovery_action="reduce the campaign to a smaller source boundary before retrying",
+            )
+        context.append(relative)
+        total += len(raw)
+    return ExecutionCapsule(
+        campaign_id=capsule.campaign_id,
+        camp=capsule.camp,
+        prompt=capsule.prompt,
+        expected_paths=capsule.expected_paths,
+        context_files=tuple(context),
+        verification_commands=capsule.verification_commands,
+        source_state_token=capsule.source_state_token,
+        execution_shape=capsule.execution_shape,
+        estimated_model_turns=capsule.estimated_model_turns,
+        estimated_max_tool_result_bytes=capsule.estimated_max_tool_result_bytes,
+    )
+
+
 def _verification_output_is_broad(command: tuple[str, ...]) -> bool:
     executable = Path(command[0]).name.lower()
     lowered = [argument.lower() for argument in command[1:]]
-    if executable in {"git", "git.exe"} and "diff" in lowered and "--quiet" not in lowered:
-        return True
+    if executable in {"git", "git.exe"} and "diff" in lowered:
+        separator = lowered.index("--") if "--" in lowered else -1
+        scopes = lowered[separator + 1 :] if separator >= 0 else []
+        bounded_mode = any(
+            option in lowered
+            for option in {"--quiet", "--check", "--name-only", "--name-status", "--stat"}
+        )
+        if not scopes or any(scope == "." or scope.startswith(":(") for scope in scopes):
+            return True
+        if not bounded_mode:
+            return True
     if executable in {"python", "python.exe", "python3", "python3.exe"}:
         if "unittest" in lowered and "discover" in lowered:
-            return True
+            pattern = None
+            for option in ("-p", "--pattern"):
+                if option in lowered and lowered.index(option) + 1 < len(lowered):
+                    pattern = lowered[lowered.index(option) + 1]
+                    break
+            if not pattern or any(character in pattern for character in "*?[]"):
+                return True
     if executable in {"pytest", "pytest.exe"}:
         positional = [argument for argument in command[1:] if argument and not argument.startswith("-")]
         if not positional:
@@ -1098,6 +1162,11 @@ def _parse_automatic_preparation(
     }
     capsule = _execution_capsule_from_payload(workspace, campaign, capsule_payload)
     capsule = _normalize_automatic_verification_commands(capsule)
+    capsule = _include_existing_expected_context(
+        workspace,
+        capsule,
+        max_context_bytes=max_context_bytes,
+    )
     if len(capsule.expected_paths) > AUTO_PREPARATION_MAX_EXPECTED_PATHS:
         raise DispatchError(
             "automatic_preparation_non_atomic",

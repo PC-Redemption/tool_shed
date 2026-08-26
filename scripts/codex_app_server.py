@@ -51,6 +51,7 @@ class TurnResult:
     tool_call_types: tuple[str, ...]
     mutation_events: tuple[dict[str, Any], ...]
     usage_budget: dict[str, Any] | None
+    control_stop: dict[str, Any] | None
 
 
 def usage_budget_breach(
@@ -561,6 +562,8 @@ class CodexAppServerClient:
         *,
         timeout: float | None = None,
         usage_budget: dict[str, int] | None = None,
+        disallow_command_execution: bool = False,
+        stop_after_file_change: bool = False,
     ) -> TurnResult:
         started = time.monotonic()
         deadline = time.monotonic() + (self.timeout if timeout is None else timeout)
@@ -575,8 +578,36 @@ class CodexAppServerClient:
         tool_call_types: list[str] = []
         mutation_events: list[dict[str, Any]] = []
         usage_budget_finding: dict[str, Any] | None = None
+        control_stop_finding: dict[str, Any] | None = None
         total_tool_result_bytes = 0
         largest_tool_result_bytes = 0
+
+        def request_control_stop(kind: str, item: dict[str, Any]) -> None:
+            nonlocal control_stop_finding
+            if control_stop_finding is not None:
+                return
+            control_stop_finding = {
+                "schema_version": 1,
+                "kind": kind,
+                "item_id": item.get("id"),
+                "item_type": item.get("type"),
+                "interrupt_requested": True,
+                "interrupt_acknowledged": None,
+                "interrupt_error_kind": None,
+                "output_retained": False,
+            }
+            try:
+                self.interrupt(
+                    thread_id,
+                    turn_id,
+                    timeout=min(5.0, max(0.1, deadline - time.monotonic())),
+                )
+                control_stop_finding["interrupt_acknowledged"] = True
+            except AppServerError as error:
+                control_stop_finding["interrupt_acknowledged"] = False
+                control_stop_finding["interrupt_error_kind"] = (
+                    error.kind or "app_server_error"
+                )
 
         def enforce_usage_budget(input_tokens: int) -> None:
             nonlocal usage_budget_finding
@@ -616,6 +647,14 @@ class CodexAppServerClient:
                     continue
                 if method == "item/agentMessage/delta" and isinstance(params.get("delta"), str):
                     deltas.append(params["delta"])
+                elif method == "item/started":
+                    item = params.get("item")
+                    if (
+                        disallow_command_execution
+                        and isinstance(item, dict)
+                        and item.get("type") == "commandExecution"
+                    ):
+                        request_control_stop("worker_command_execution_disallowed", item)
                 elif method == "item/completed":
                     item = params.get("item")
                     if isinstance(item, dict):
@@ -679,6 +718,8 @@ class CodexAppServerClient:
                                             - turn_usage_baseline.get("inputTokens", 0),
                                         )
                             enforce_usage_budget(current_input)
+                            if item_type == "fileChange" and stop_after_file_change:
+                                request_control_stop("worker_file_change_ready", item)
                 elif method == "thread/tokenUsage/updated":
                     usage = params.get("tokenUsage")
                     if isinstance(usage, dict):
@@ -787,6 +828,7 @@ class CodexAppServerClient:
                         tool_call_types=tuple(tool_call_types),
                         mutation_events=tuple(mutation_events),
                         usage_budget=usage_budget_finding,
+                        control_stop=control_stop_finding,
                     )
         finally:
             self._notifications.extendleft(reversed(deferred))

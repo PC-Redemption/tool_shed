@@ -11,7 +11,12 @@ Updated: 2026-08-26
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
 | [work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md](work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md) | campaign | abandoned | 2026-08-24 | none | - |
 | [work/00-campaigns/abandoned/061-publish-and-synchronize-direct-app-server-dispatch.md](work/00-campaigns/abandoned/061-publish-and-synchronize-direct-app-server-dispatch.md) | campaign | abandoned | 2026-08-25 | none | - |
-| [work/00-campaigns/active/071-make-app-server-collateral-correct-before-worker-launch.md](work/00-campaigns/active/071-make-app-server-collateral-correct-before-worker-launch.md) | campaign | queued | 2026-08-26 | execute when selected from the active campaign queue | - |
+| [work/00-campaigns/abandoned/073-prove-first-pass-code-test-campaign-on-linux.md](work/00-campaigns/abandoned/073-prove-first-pass-code-test-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
+| [work/00-campaigns/abandoned/074-prove-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/abandoned/074-prove-first-pass-asset-aware-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
+| [work/00-campaigns/abandoned/075-prove-repaired-first-pass-code-test-campaign-on-linux.md](work/00-campaigns/abandoned/075-prove-repaired-first-pass-code-test-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
+| [work/00-campaigns/abandoned/076-prove-repaired-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/abandoned/076-prove-repaired-first-pass-asset-aware-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
+| [work/00-campaigns/active/078-prove-command-free-first-pass-code-test-campaign-on-linux.md](work/00-campaigns/active/078-prove-command-free-first-pass-code-test-campaign-on-linux.md) | campaign | queued | 2026-08-26 | execute when selected from the active campaign queue | - |
+| [work/00-campaigns/active/079-prove-command-free-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/active/079-prove-command-free-first-pass-asset-aware-campaign-on-linux.md) | campaign | queued | 2026-08-26 | execute when selected from the active campaign queue | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -77,6 +82,9 @@ Updated: 2026-08-26
 | [work/00-campaigns/completed/068-repair-and-reprove-windows-app-server-campaign-path.md](work/00-campaigns/completed/068-repair-and-reprove-windows-app-server-campaign-path.md) | campaign | complete | 2026-08-26 | none | - |
 | [work/00-campaigns/completed/069-requalify-realistic-low-token-owner-loop.md](work/00-campaigns/completed/069-requalify-realistic-low-token-owner-loop.md) | campaign | complete | 2026-08-26 | none | - |
 | [work/00-campaigns/completed/070-publish-synchronize-and-upgrade-app-server-repair.md](work/00-campaigns/completed/070-publish-synchronize-and-upgrade-app-server-repair.md) | campaign | complete | 2026-08-26 | none | - |
+| [work/00-campaigns/completed/071-make-app-server-collateral-correct-before-worker-launch.md](work/00-campaigns/completed/071-make-app-server-collateral-correct-before-worker-launch.md) | campaign | complete | 2026-08-26 | none | - |
+| [work/00-campaigns/completed/072-prove-first-pass-documentation-campaign-on-linux.md](work/00-campaigns/completed/072-prove-first-pass-documentation-campaign-on-linux.md) | campaign | complete | 2026-08-26 | none | - |
+| [work/00-campaigns/completed/077-establish-deterministic-app-server-worker-handoff.md](work/00-campaigns/completed/077-establish-deterministic-app-server-worker-handoff.md) | campaign | complete | 2026-08-26 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -89,6 +97,8 @@ Updated: 2026-08-26
 | [work/decisions/decision-plugin-packaging-readiness.md](work/decisions/decision-plugin-packaging-readiness.md) | decision-matrix | decided | 2026-07-05 | defer plugin packaging until distribution friction appears | work/maps/map-tool-shed-foundation.md |
 | [work/decisions/decision-project-map-creation-trigger.md](work/decisions/decision-project-map-creation-trigger.md) | decision-matrix | decided | 2026-07-05 | none | work/maps/map-tool-shed-foundation.md |
 | [work/evidence/evidence-adaptive-generated-evidence-safeguards.md](work/evidence/evidence-adaptive-generated-evidence-safeguards.md) | evidence | complete | 2026-07-25 | none | work/wp/completed/wp-generated-evidence-safety-and-migration.md |
+| [work/evidence/evidence-app-server-deterministic-worker-handoff.md](work/evidence/evidence-app-server-deterministic-worker-handoff.md) | evidence | verified | 2026-08-26 | - | - |
+| [work/evidence/evidence-app-server-first-pass-prelaunch-collateral.md](work/evidence/evidence-app-server-first-pass-prelaunch-collateral.md) | evidence | complete | 2026-08-26 | derive and execute M11 Linux first-pass proof campaigns | - |
 | [work/evidence/evidence-app-server-integration-and-watcher-reassessment.md](work/evidence/evidence-app-server-integration-and-watcher-reassessment.md) | evidence | complete | 2026-08-20 | - | - |
 | [work/evidence/evidence-bactron-core-native-windows-app-server-workflow.md](work/evidence/evidence-bactron-core-native-windows-app-server-workflow.md) | - | - | - | - | - |
 | [work/evidence/evidence-completion-watcher-v1-alpha.md](work/evidence/evidence-completion-watcher-v1-alpha.md) | evidence | complete | 2026-08-19 | none | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -96,6 +106,8 @@ Updated: 2026-08-26
 | [work/evidence/evidence-completion-watcher-v1-release.md](work/evidence/evidence-completion-watcher-v1-release.md) | evidence | complete | 2026-08-19 | none | work/00-campaigns/completed/038-qualify-and-release-local-completion-watchers.md |
 | [work/evidence/evidence-direct-linux-app-server-dispatch.md](work/evidence/evidence-direct-linux-app-server-dispatch.md) | evidence | complete | 2026-08-25 | return to the Campaign 059 Windows and Bactron Core consent boundary | - |
 | [work/evidence/evidence-human-planning-mechanism-evaluation.md](work/evidence/evidence-human-planning-mechanism-evaluation.md) | evidence | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
+| [work/evidence/evidence-linux-first-pass-code-proof-interruption.md](work/evidence/evidence-linux-first-pass-code-proof-interruption.md) | evidence | complete | 2026-08-26 | replace the failed code/test and dependent asset-aware proofs in Roadmap Revision 4 | - |
+| [work/evidence/evidence-linux-first-pass-code-proof-turn-limit.md](work/evidence/evidence-linux-first-pass-code-proof-turn-limit.md) | evidence | complete | 2026-08-26 | replace Campaign 075 after enforcing mutation-first worker execution | - |
 | [work/evidence/evidence-low-token-app-server-owner-adoption.md](work/evidence/evidence-low-token-app-server-owner-adoption.md) | - | - | - | - | - |
 | [work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md](work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md) | evidence | complete | 2026-08-20 | none | - |
 | [work/evidence/evidence-native-linux-installed-app-server-workflow.md](work/evidence/evidence-native-linux-installed-app-server-workflow.md) | evidence | complete | 2026-08-25 | use Campaign 060 to eliminate the nested wrapper and prove direct Linux dispatch before returning to the Windows consent gate | - |
@@ -121,13 +133,15 @@ Updated: 2026-08-26
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/maps/map-disposable-completion-watchers-and-hosted-notifications.md](work/maps/map-disposable-completion-watchers-and-hosted-notifications.md) | project-map | deferred | 2026-08-18 | preserve the completed local watcher and wait for a concrete external/non-App-Server notification need before revisiting hosted work | - |
-| [work/maps/map-low-token-cross-platform-campaign-execution.md](work/maps/map-low-token-cross-platform-campaign-execution.md) | project-map | active | 2026-08-26 | approve Roadmap Revision 3 for first-pass App Server collateral preparation, then derive its first corrective milestone | - |
+| [work/maps/map-low-token-cross-platform-campaign-execution.md](work/maps/map-low-token-cross-platform-campaign-execution.md) | project-map | active | 2026-08-26 | approve Roadmap Revision 5, complete its deterministic worker-handoff gate, then execute fresh Linux code/test and asset-aware proofs | - |
 | [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | complete | 2026-08-20 | none | - |
 | [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
 | [work/roadmaps/roadmap-completion-watcher-program-r2.md](work/roadmaps/roadmap-completion-watcher-program-r2.md) | program-roadmap | approved | 2026-08-20 | derive campaigns for milestone M1-CONTRACT | none |
 | [work/roadmaps/roadmap-completion-watcher-program.md](work/roadmaps/roadmap-completion-watcher-program.md) | program-roadmap | superseded | 2026-08-20 | none | work/roadmaps/roadmap-completion-watcher-program-r2.md |
 | [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r2.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r2.md) | program-roadmap | superseded | 2026-08-26 | none | work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r3.md |
-| [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r3.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r3.md) | program-roadmap | executing | 2026-08-26 | execute the first ready roadmap campaign through ts: next | none |
+| [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r3.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r3.md) | program-roadmap | superseded | 2026-08-26 | none | work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r4.md |
+| [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r4.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r4.md) | program-roadmap | superseded | 2026-08-26 | none | work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r5.md |
+| [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r5.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r5.md) | program-roadmap | executing | 2026-08-26 | execute the first ready roadmap campaign through ts: next | none |
 | [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution.md) | program-roadmap | superseded | 2026-08-26 | none | work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r2.md |
 | [work/spikes/spike-completion-watcher-protocol-and-failure-model.md](work/spikes/spike-completion-watcher-protocol-and-failure-model.md) | spike | complete | 2026-08-18 | none | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
 | [work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md](work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md) | spike | complete | 2026-08-09 | none | work/maps/map-tool-shed-evolution.md |
@@ -159,6 +173,6 @@ Updated: 2026-08-26
 
 ## Summary
 
-- Total artifacts: 142
-- Active artifacts: 2
-- Completed/decided artifacts: 123
+- Total artifacts: 156
+- Active artifacts: 3
+- Completed/decided artifacts: 129

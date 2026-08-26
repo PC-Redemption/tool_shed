@@ -3,7 +3,7 @@
 Status: active
 Type: project-map
 Updated: 2026-08-26
-Next Action: approve Roadmap Revision 3 for first-pass App Server collateral preparation, then derive its first corrective milestone
+Next Action: approve Roadmap Revision 5, complete its deterministic worker-handoff gate, then execute fresh Linux code/test and asset-aware proofs
 Campaign: standalone
 Campaign Reason: source coordination surface for the approved, executing Program Roadmap
 
@@ -118,7 +118,8 @@ flowchart LR
   R --> S[Define early preparation contract]
   S --> T[Validate repair or split before worker launch]
   T --> U[Prove first-pass Linux execution across real task shapes]
-  U --> V[Separately authorize release and Core adoption proof]
+  U --> W[Enforce command-free worker and file-change handoff]
+  W --> V[Separately authorize release and Core adoption proof]
 ```
 
 Campaign 060 is an owner-directed Linux-first detour discovered from M3 evidence. It corrects the
@@ -161,14 +162,27 @@ It does not revise M4's outcome or grant Core mutation authority.
   proving that it fits the worker budget, and then reuses that capsule without a source-freshness
   binding. Recent Core runs therefore required preventable recovery even when product checks later
   passed directly.
+- M10 now supplies source-bound, statically checked collateral. The first M11 documentation worker
+  verified successfully, but the first code/test worker emitted a 19,301-byte inspection result
+  before mutation despite an 8,192-byte preparation estimate. Preparation must inject existing
+  expected source files and constrain inspection output before a fresh proof replaces that failed
+  campaign.
+- The first Revision 4 replacement kept every tool result bounded and changed only expected paths,
+  but two exploratory command turns left no request for the verification handoff before the fourth
+  model-request ceiling. Its reserved verifier then failed during no-replay reconciliation.
+- Official and installed App Server contracts expose interruption but no per-turn built-in-tool
+  allowlist. The repaired protocol therefore makes read-only preparation the complete inspection
+  phase, interrupts any write-worker command request, treats the first completed file change as the
+  verification handoff, and runs the reserved verifier without another model request.
 - Open measurement: report raw input, cached input, output, weighted usage, model turns, elapsed
   time, and owner interactions separately; do not claim a GUI token comparison that the GUI cannot
   expose.
 
 Ground:
 
-- Current next action: establish and approve Roadmap Revision 3, then implement and prove first-pass
-  collateral preparation locally on Linux. Do not publish or upgrade Core yet.
+- Current next action: approve Roadmap Revision 5, complete the deterministic worker-handoff gate,
+  materialize fresh code/test and asset-aware proofs, and continue the Linux first-pass gate. Do
+  not publish or upgrade Core yet.
 - Owner/context: human owner and Codex in `/home/jon/docker/tool_shed`; native Windows proof occurs
   through a normally launched Codex GUI on the work PC in `E:\dev\bactron-core`.
 - Verification: focused changed-path tests plus one real dogfood run during development; one full
@@ -227,6 +241,16 @@ You are here:
   that ordinary campaigns are reliably prepared on the first attempt.
 - Revision 3 must preserve that history while reopening owner adoption around pre-execution
   collateral quality. Core remains unchanged until a separately authorized release and upgrade.
+- Campaign 072 proved the documentation shape on its first worker attempt. Campaign 073 stopped
+  safely before mutation when a 19,301-byte inspection result exceeded the 16 KiB ceiling; it and
+  its dependent Campaign 074 are preserved as abandoned proof history. The shared preparation path
+  now injects bounded existing expected sources and caps inspection-command output; fresh
+  replacements belong to Revision 4.
+- Revision 4 Campaign 075 proved that injected source fixed tool-output growth, but it reached the
+  fourth request after mutation and its one reconciliation verifier failed. Campaigns 075-076 are
+  abandoned without replay. Prompt-only mutation-first control was insufficient. Focused evidence
+  now proves a client-enforced command-free worker and first-file-change handoff; Revision 5 owns
+  that gate and the fresh replacement proofs.
 
 Do next:
 

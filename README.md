@@ -2,7 +2,7 @@
 
 [![Validate](https://github.com/PC-Redemption/tool_shed/actions/workflows/validate.yml/badge.svg)](https://github.com/PC-Redemption/tool_shed/actions/workflows/validate.yml)
 
-`tool_shed` is a provider-neutral collaboration toolkit for structured work with AI agents.
+`tool_shed` is a provider-portable collaboration toolkit for structured work with AI agents.
 
 It is not the project. It is the workbench copied into or referenced from a project workspace so human and assistant can choose the right artifact, use the same shapes consistently, and keep project code/documentation uncluttered.
 

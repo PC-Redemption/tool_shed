@@ -186,6 +186,17 @@ for raw in sys.stdin:
             error = {"message": "recoverable failure", "codexErrorInfo": {"type": "InternalServerError"}}
             print(json.dumps({"method": "turn/completed", "params": {"threadId": params["threadId"], "turn": {"id": turn_id, "status": "failed", "error": error, "items": []}}}), flush=True)
             continue
+        if os.environ.get("FAKE_CODEX_DISALLOWED_COMMAND") == "1":
+            item = {
+                "id": "item_disallowed_command",
+                "type": "commandExecution",
+                "status": "inProgress",
+                "command": "git status --short",
+            }
+            print(json.dumps({"method": "item/started", "params": {"threadId": params["threadId"], "turnId": turn_id, "item": item}}), flush=True)
+            active_turn_id = turn_id
+            active_thread_id = params["threadId"]
+            continue
         camp_target = os.environ.get("FAKE_CODEX_CAMP_TARGET")
         if camp_target:
             with open(camp_target, "w", encoding="utf-8") as stream:
@@ -689,7 +700,7 @@ class CodexExecutionTests(unittest.TestCase):
             payload["mutation_journal"]["deterministic_verification"]["commands_run"], 2
         )
 
-    def test_safe_unknown_after_mutation_stays_unverified_without_retry_or_checks(self) -> None:
+    def test_first_completed_file_change_is_verified_without_a_handoff_model_turn(self) -> None:
         repository = self.root / "unknown-camp-repo"
         repository.mkdir()
         subprocess.run(["git", "init", "-q", str(repository)], check=True)
@@ -730,14 +741,69 @@ class CodexExecutionTests(unittest.TestCase):
             os.environ.pop("FAKE_CODEX_CAMP_TARGET", None)
             os.environ.pop("FAKE_CODEX_CAMP_OUTCOME", None)
         self.assertEqual(target.read_text(encoding="utf-8"), "after\n")
-        self.assertEqual(payload["structured_outcome"]["outcome"], "unknown")
-        self.assertEqual(payload["verification"], [])
+        self.assertEqual(
+            payload["structured_outcome"]["outcome"], "step_ready_for_verification"
+        )
+        self.assertEqual(
+            payload["result"]["control_stop"]["kind"], "worker_file_change_ready"
+        )
+        self.assertEqual(len(payload["verification"]), 1)
         self.assertEqual(
             payload["mutation_journal"]["deterministic_verification"],
-            {"required": True, "passed": None, "commands_run": 0},
+            {"required": True, "passed": True, "commands_run": 1},
         )
-        self.assertEqual(payload["mutation_journal"]["final_state"], "safe_unverified")
-        self.assertEqual(payload["next_action"], "needs_user_intervention")
+        self.assertEqual(payload["mutation_journal"]["final_state"], "verified")
+        self.assertEqual(payload["next_action"], "advance_to_next_camp_step")
+
+    def test_worker_command_execution_is_interrupted_before_mutation(self) -> None:
+        repository = self.root / "command-free-camp-repo"
+        repository.mkdir()
+        subprocess.run(["git", "init", "-q", str(repository)], check=True)
+        subprocess.run(
+            ["git", "-C", str(repository), "config", "user.email", "test@example.com"],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(repository), "config", "user.name", "Tool Shed Test"],
+            check=True,
+        )
+        target = repository / "target.txt"
+        target.write_text("before\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(repository), "add", "target.txt"], check=True)
+        subprocess.run(
+            ["git", "-C", str(repository), "commit", "-qm", "baseline"], check=True
+        )
+        os.environ["FAKE_CODEX_DISALLOWED_COMMAND"] = "1"
+        try:
+            payload = execute_camp_if_enabled(
+                "Make one bounded edit without shell inspection.",
+                cwd=repository,
+                campaign="campaign-command-free",
+                camp="command-free-edit",
+                expected_paths=(Path("target.txt"),),
+                explicit_files=(Path("target.txt"),),
+                verification_commands=(("python3", "-c", "raise SystemExit(0)"),),
+                enable_override=True,
+                config=AppServerFeatureConfig.load(
+                    ROOT / "adapters" / "codex-app-server-config.json"
+                ),
+                policy=self.policy,
+                codex=str(self.fake),
+                telemetry_path=self.root / "command-free-telemetry.jsonl",
+            )
+        finally:
+            os.environ.pop("FAKE_CODEX_DISALLOWED_COMMAND", None)
+        self.assertEqual(target.read_text(encoding="utf-8"), "before\n")
+        self.assertEqual(payload["result"]["status"], "interrupted")
+        self.assertEqual(
+            payload["result"]["control_stop"]["kind"],
+            "worker_command_execution_disallowed",
+        )
+        self.assertEqual(payload["verification"], [])
+        self.assertEqual(payload["mutation_journal"]["files_modified"], [])
+        self.assertEqual(
+            payload["next_action"], "prepare_fresh_camp_with_complete_context"
+        )
 
     def test_git_mutation_journal_preserves_unrelated_dirty_work(self) -> None:
         repository = self.root / "repo"

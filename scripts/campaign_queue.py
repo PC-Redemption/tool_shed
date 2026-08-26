@@ -779,7 +779,7 @@ def _validate_graph(campaigns: dict[str, Campaign]) -> list[str]:
         for dependency in item.dependencies:
             if dependency not in campaigns:
                 findings.append(f"{campaign_id} has missing dependency {dependency}")
-            elif campaigns[dependency].status == "abandoned":
+            elif campaigns[dependency].status == "abandoned" and item.status in ACTIVE_STATES:
                 findings.append(f"{campaign_id} depends on abandoned campaign {dependency}")
             else:
                 visit(dependency, [*chain, campaign_id])

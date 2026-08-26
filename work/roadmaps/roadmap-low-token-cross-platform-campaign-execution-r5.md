@@ -1,18 +1,18 @@
 # Program Roadmap: Low-token cross-platform campaign execution
 
-Status: superseded
+Status: executing
 Type: program-roadmap
 Updated: 2026-08-26
-Next Action: none
+Next Action: execute the first ready roadmap campaign through ts: next
 Roadmap ID: low-token-cross-platform-campaign-execution
-Revision: 3
+Revision: 5
 Source Project Map: work/maps/map-low-token-cross-platform-campaign-execution.md
-Source State Token: d75f61892ec8bde9
-Proposal Token: 991e8bbc34fe7378
+Source State Token: 40f3236a69696a83
+Proposal Token: 3efac651ea968073
 Approved: 2026-08-26
 Current Milestone: M1-MAINTAINER-DOGFOOD
-Supersedes: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r2.md
-Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r4.md
+Supersedes: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r4.md
+Superseded By: none
 
 ## Roadmap Definition
 
@@ -48,6 +48,46 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "path": "work/00-campaigns/abandoned/061-publish-and-synchronize-direct-app-server-dispatch.md",
       "phase": null,
       "state_token": "25cd78560da14040"
+    },
+    {
+      "classification": "superseded",
+      "conflicts": [],
+      "evidence": "Type campaign; Status abandoned",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/abandoned/073-prove-first-pass-code-test-campaign-on-linux.md",
+      "phase": null,
+      "state_token": "e6cc50c39e4cc75a"
+    },
+    {
+      "classification": "superseded",
+      "conflicts": [],
+      "evidence": "Type campaign; Status abandoned",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/abandoned/074-prove-first-pass-asset-aware-campaign-on-linux.md",
+      "phase": null,
+      "state_token": "6e14206f3632d859"
+    },
+    {
+      "classification": "superseded",
+      "conflicts": [],
+      "evidence": "Type campaign; Status abandoned",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/abandoned/075-prove-repaired-first-pass-code-test-campaign-on-linux.md",
+      "phase": null,
+      "state_token": "fbe207cd910e6b8a"
+    },
+    {
+      "classification": "superseded",
+      "conflicts": [],
+      "evidence": "Type campaign; Status abandoned",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/abandoned/076-prove-repaired-first-pass-asset-aware-campaign-on-linux.md",
+      "phase": null,
+      "state_token": "e8743b2710ae570b"
     },
     {
       "classification": "completed",
@@ -700,6 +740,26 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "state_token": "4c2aeb74c60cafe3"
     },
     {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/071-make-app-server-collateral-correct-before-worker-launch.md",
+      "phase": null,
+      "state_token": "b219fbd73f7e481d"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/072-prove-first-pass-documentation-campaign-on-linux.md",
+      "phase": null,
+      "state_token": "e03027221accddfe"
+    },
+    {
       "classification": "remaining",
       "conflicts": [],
       "evidence": "Type campaign; Status deferred",
@@ -820,6 +880,28 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "state_token": "81e11103e8264b50"
     },
     {
+      "classification": "uncertain",
+      "conflicts": [
+        "ambiguous lifecycle evidence"
+      ],
+      "evidence": "Type evidence; Status verified",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-app-server-deterministic-worker-handoff.md",
+      "phase": null,
+      "state_token": "fb46ba322fbe9117"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-app-server-first-pass-prelaunch-collateral.md",
+      "phase": null,
+      "state_token": "875eb3ea2a8705fb"
+    },
+    {
       "classification": "completed",
       "conflicts": [],
       "evidence": "Type evidence; Status complete",
@@ -890,6 +972,26 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "path": "work/evidence/evidence-human-planning-mechanism-evaluation.md",
       "phase": null,
       "state_token": "81fffad766f53803"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-linux-first-pass-code-proof-interruption.md",
+      "phase": null,
+      "state_token": "ec6dbe5233ea9e73"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-linux-first-pass-code-proof-turn-limit.md",
+      "phase": null,
+      "state_token": "9d521bbf5246c85b"
     },
     {
       "classification": "uncertain",
@@ -1155,7 +1257,7 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "milestone": null,
       "path": "work/maps/map-low-token-cross-platform-campaign-execution.md",
       "phase": null,
-      "state_token": "022980f4ebfd8f4d"
+      "state_token": "d1a1f32338a1531a"
     },
     {
       "classification": "completed",
@@ -1641,51 +1743,11 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "unlocks_gate": "none"
     },
     {
-      "campaign_id": "prove-first-pass-code-test-campaign-on-linux",
-      "completion_gate": "The code/test proof contributes passing evidence to G11 with scoped output, first-attempt execution, and exactly-once verification.",
-      "decision": "none",
-      "depends_on": [
-        "prove-first-pass-documentation-campaign-on-linux"
-      ],
-      "milestone": "M11-LINUX-FIRST-PASS-PROOF",
-      "outcome": "A fresh bounded code-and-test campaign completes from one App Server command without preparation repair after launch.",
-      "primary_focus_areas": [
-        "provider-portability"
-      ],
-      "request": "Select one small useful code-and-focused-test improvement in the maintained Tool Shed workspace. Start it through ts: next --app-server with no manually authored execution capsule. The automatic preparation must select exact source/test paths and a deterministic verifier whose output fits the declared limit. Capture source binding, preparation and execution usage, turns, tool-result bytes, journal, and exactly-once verification. Complete only if the first worker attempt verifies within default budgets and changes only declared paths. Do not publish, synchronize skills, upgrade clients, or run the full suite.",
-      "supporting_focus_areas": [
-        "campaign-lifecycle",
-        "workspace-safety"
-      ],
-      "title": "Prove first-pass code and test preparation on Linux",
-      "unlocks_gate": "none"
-    },
-    {
-      "campaign_id": "prove-first-pass-asset-aware-campaign-on-linux",
-      "completion_gate": "G11-LINUX-FIRST-PASS-RELIABLE passes across all three task shapes with first-pass or prelaunch-reduction evidence.",
-      "decision": "none",
-      "depends_on": [
-        "prove-first-pass-code-test-campaign-on-linux"
-      ],
-      "milestone": "M11-LINUX-FIRST-PASS-PROOF",
-      "outcome": "A fresh asset-aware campaign is safely prepared and completed or reduced before worker launch without oversized context or tool output.",
-      "primary_focus_areas": [
-        "provider-portability"
-      ],
-      "request": "Select a bounded useful Tool Shed task whose repository context includes binary or generated assets but whose authorized mutation remains a small exact path set. Start it through ts: next --app-server with no manually authored execution capsule. Automatic preparation must exclude binary payloads and generated evidence from inline context, retain only bounded metadata or text context, and predict a verifier that fits output limits. Capture source binding, usage, turns, tool-result bytes, journal, and exactly-once verification. Complete only on first-worker verification or a correct pre-worker bounded reduction requiring no manual capsule repair. Do not publish, synchronize skills, upgrade clients, or run the full suite.",
-      "supporting_focus_areas": [
-        "workspace-safety",
-        "campaign-lifecycle"
-      ],
-      "title": "Prove first-pass asset-aware preparation on Linux",
-      "unlocks_gate": "G11-LINUX-FIRST-PASS-RELIABLE"
-    },
-    {
       "campaign_id": "publish-and-synchronize-first-pass-app-server-preparation",
       "completion_gate": "G12-FIRST-PASS-RELEASE-USABLE passes with one full validator, verified provenance, exact installed-skill parity, and a fresh-session smoke.",
       "decision": "separate owner publication and synchronization authorization required",
       "depends_on": [
-        "prove-first-pass-asset-aware-campaign-on-linux"
+        "prove-command-free-first-pass-asset-aware-campaign-on-linux"
       ],
       "milestone": "M12-FIRST-PASS-DISTRIBUTION",
       "outcome": "Make the Linux-proven first-pass preparation contract available to new maintainer sessions through a verified release.",
@@ -1720,9 +1782,70 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       ],
       "title": "Adopt first-pass App Server preparation in Core",
       "unlocks_gate": "G13-CORE-FIRST-PASS-OWNER-READY"
+    },
+    {
+      "campaign_id": "establish-deterministic-app-server-worker-handoff",
+      "completion_gate": "G10B-DETERMINISTIC-WORKER-HANDOFF passes with official-contract research, client-enforced control, focused tests, and durable evidence.",
+      "decision": "none",
+      "depends_on": [
+        "make-app-server-collateral-correct-before-worker-launch"
+      ],
+      "milestone": "M10B-DETERMINISTIC-WORKER",
+      "outcome": "Replace prompt-only mutation-first behavior with a deterministic command-free worker and first-file-change verification handoff.",
+      "primary_focus_areas": [
+        "provider-portability"
+      ],
+      "request": "Use official Codex App Server documentation and the installed client schema to determine whether built-in tools can be restricted per turn. Implement the narrowest supported deterministic protocol: read-only preparation supplies complete context; a write worker may not use commandExecution; the first completed fileChange is the handoff to Tool Shed-owned journaling and exactly-once verification without another model request. Interrupt fail-closed on a worker shell attempt, retain truthful recovery for any race-observed mutation, add focused protocol and dispatcher tests, and record compact evidence. Do not run a real worker proof, publish, synchronize skills, upgrade Core, run the full validator, or deploy anything.",
+      "supporting_focus_areas": [
+        "campaign-lifecycle",
+        "workspace-safety"
+      ],
+      "title": "Establish deterministic App Server worker handoff",
+      "unlocks_gate": "G10B-DETERMINISTIC-WORKER-HANDOFF"
+    },
+    {
+      "campaign_id": "prove-command-free-first-pass-code-test-campaign-on-linux",
+      "completion_gate": "The command-free code/test proof contributes passing evidence to G11 with one file-change handoff, no worker shell, and exactly-once verification.",
+      "decision": "none",
+      "depends_on": [
+        "prove-first-pass-documentation-campaign-on-linux",
+        "establish-deterministic-app-server-worker-handoff"
+      ],
+      "milestone": "M11-LINUX-FIRST-PASS-PROOF",
+      "outcome": "A fresh bounded code-and-test campaign completes from one App Server command through the command-free first-file-change handoff.",
+      "primary_focus_areas": [
+        "provider-portability"
+      ],
+      "request": "Select one small useful code-and-focused-test improvement in the maintained Tool Shed workspace. Start it through ts: next --app-server with no manually authored capsule. Automatic preparation must provide complete bounded source context, exact expected paths, and a quiet verifier. The write worker must issue no commandExecution; its first completed fileChange must be interrupted into Tool Shed-owned exactly-once verification without a final model handoff request. Capture source binding, preparation and execution usage, turns, control stop, journal, and verification. Complete only if the first worker verifies within default budgets and changes only declared paths. Do not replay Campaigns 073 or 075, publish, synchronize skills, upgrade clients, or run the full suite.",
+      "supporting_focus_areas": [
+        "campaign-lifecycle",
+        "workspace-safety"
+      ],
+      "title": "Prove command-free first-pass code and test preparation on Linux",
+      "unlocks_gate": "none"
+    },
+    {
+      "campaign_id": "prove-command-free-first-pass-asset-aware-campaign-on-linux",
+      "completion_gate": "G11-LINUX-FIRST-PASS-RELIABLE passes across documentation plus command-free code/test and asset-aware task shapes.",
+      "decision": "none",
+      "depends_on": [
+        "prove-command-free-first-pass-code-test-campaign-on-linux"
+      ],
+      "milestone": "M11-LINUX-FIRST-PASS-PROOF",
+      "outcome": "A fresh asset-aware campaign completes or is reduced before worker launch using metadata-only asset context and the command-free first-file-change handoff.",
+      "primary_focus_areas": [
+        "provider-portability"
+      ],
+      "request": "Select a bounded useful Tool Shed task whose context includes binary or generated assets but whose authorized mutation is a small exact path set. Start it through ts: next --app-server with no manually authored capsule. Preparation must exclude binary payloads and generated evidence from inline context, provide complete bounded text context, retain asset metadata only, and choose a quiet verifier. The write worker must issue no commandExecution; its first completed fileChange must hand off directly to Tool Shed-owned exactly-once verification. Capture source binding, usage, turns, control stop, journal, and verification. Complete only on first-worker verification or correct pre-worker reduction. Do not replay Campaigns 074 or 076, publish, synchronize skills, upgrade clients, or run the full suite.",
+      "supporting_focus_areas": [
+        "workspace-safety",
+        "campaign-lifecycle"
+      ],
+      "title": "Prove command-free first-pass asset-aware preparation on Linux",
+      "unlocks_gate": "G11-LINUX-FIRST-PASS-RELIABLE"
     }
   ],
-  "constraints": "Reuse the existing Tool Shed control plane, release machinery, App Server routing, qualified Sol/Terra role policy, and bounded CAMP runner. Add only the preparation metadata and transitions needed to make collateral correct before worker launch. Stable semantic intent is recorded when a campaign is created or materialized; exact paths, context, executables, verification commands, and budgets are resolved against current source state immediately before execution. Unsafe, stale, over-budget, or non-atomic work is repaired, regenerated, or reduced to one bounded executable slice before persistence and launch. During implementation run focused changed-path tests and one dispatcher smoke; use three representative Linux task shapes for field proof; run the full validator once only at the separately authorized release boundary. Preserve exact-root/path allowlists, dirty-target refusal, ChatGPT authentication with no API fallback, disabled network, no replay after mutation, truthful journals, backups, and rollback.",
+  "constraints": "Reuse the existing Tool Shed control plane, release machinery, App Server routing, qualified Sol/Terra role policy, and bounded CAMP runner. Add only the preparation metadata and transitions needed to make collateral correct before worker launch. Stable semantic intent is recorded when a campaign is created or materialized; exact paths, context, executables, verification commands, and budgets are resolved against current source state immediately before execution. Unsafe, stale, over-budget, or non-atomic work is repaired, regenerated, or reduced to one bounded executable slice before persistence and launch. During implementation run focused changed-path tests and one dispatcher smoke; use three representative Linux task shapes for field proof; run the full validator once only at the separately authorized release boundary. Preserve exact-root/path allowlists, dirty-target refusal, ChatGPT authentication with no API fallback, disabled network, no replay after mutation, truthful journals, backups, and rollback. Write-capable CAMP workers receive complete bounded context, may not invoke commandExecution, and are stopped after the first completed fileChange so verification never depends on a final model turn.",
   "decisions": [
     "Treat Tool Shed as the existing control plane and App Server as a focused local execution adapter.",
     "Optimize both model weighting and raw context: select the lowest adequate qualified model, send bounded context, compact successful evidence, minimize model turns, and keep the App Server transcript out of the foreground GUI.",
@@ -1740,7 +1863,13 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
     "Bind persisted automatic capsules to source state and regenerate them when relevant campaign or workspace inputs are stale.",
     "Run deterministic feasibility checks before persistence and launch for context size, executable availability, verification scope and likely output, turn sufficiency, protected paths, and atomicity.",
     "Repair or reduce unsafe preparation before worker launch; reserve post-mutation reconciliation for exceptional runtime divergence.",
-    "Use focused tests and three representative Linux task shapes before the release boundary; do not impose commercial-scale qualification."
+    "Use focused tests and three representative Linux task shapes before the release boundary; do not impose commercial-scale qualification.",
+    "A worker-side output ceiling reached before mutation is safe recovery evidence but does not pass a first-worker proof gate.",
+    "Inject existing expected UTF-8 source files into bounded worker context and require inspection commands below 12,288 serialized bytes before repeating the code/test proof.",
+    "Preserve failed and dependent campaigns as abandoned history; use fresh campaign IDs for replacement first-pass evidence instead of replaying them.",
+    "Treat read-only automatic preparation as the complete repository-inspection phase for a write-capable CAMP worker.",
+    "Because App Server exposes interruption but no per-turn built-in-tool allowlist, interrupt any write-worker commandExecution event and require a fresh source-complete preparation before another worker launch.",
+    "Treat the first completed worker fileChange as the deterministic verification handoff, interrupt the worker, journal actual paths, and run the reserved verifier without another model request."
   ],
   "desired_outcome": "One Tool Shed command completes ordinary representative campaigns on native Linux and Windows through the lowest adequate qualified model, with correct source-fresh first-pass collateral, proactive usage bounds, deterministic focused work, truthful journals, compact recovery, and materially lower token use than GUI-managed or repeatedly repaired App Server execution.",
   "gates": [
@@ -1860,13 +1989,25 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       ],
       "title": "Prelaunch collateral correctness gate",
       "unlocks_milestones": [
+        "M10B-DETERMINISTIC-WORKER"
+      ]
+    },
+    {
+      "evidence_required": true,
+      "id": "G10B-DETERMINISTIC-WORKER-HANDOFF",
+      "pass_criteria": "Official and installed App Server contracts are checked; focused tests prove that a worker commandExecution is interrupted before lifecycle advance, the first completed fileChange becomes the verification handoff, reserved verification runs without another model request, path journaling remains authoritative, and no unsupported App Server field is assumed.",
+      "requires_milestones": [
+        "M10B-DETERMINISTIC-WORKER"
+      ],
+      "title": "Deterministic App Server write-worker handoff gate",
+      "unlocks_milestones": [
         "M11-LINUX-FIRST-PASS-PROOF"
       ]
     },
     {
       "evidence_required": true,
       "id": "G11-LINUX-FIRST-PASS-RELIABLE",
-      "pass_criteria": "Fresh documentation, code/test, and asset-aware Linux campaigns are automatically prepared from current source and each either completes and verifies on its first worker attempt or is safely reduced before any worker starts; executable cases require zero manual capsule edits, zero worker replay, zero preventable post-mutation reconciliation, expected-path-only journals, exactly-once deterministic verification, and execution within all default budgets.",
+      "pass_criteria": "Fresh documentation, code/test, and asset-aware Linux campaigns are automatically prepared from current source and each either completes and verifies on its first worker attempt or is safely reduced before any worker starts; executable cases require zero worker commandExecution calls, no post-fileChange handoff model request, zero manual capsule edits, zero worker replay, zero preventable post-mutation reconciliation, expected-path-only journals, exactly-once deterministic verification, and execution within all default budgets.",
       "requires_milestones": [
         "M11-LINUX-FIRST-PASS-PROOF"
       ],
@@ -1992,6 +2133,15 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "depends_on": [
         "M10-FIRST-PASS-PREPARATION"
       ],
+      "id": "M10B-DETERMINISTIC-WORKER",
+      "outcome": "Tool Shed supplies a complete read-only preparation handoff, interrupts any write-worker shell attempt, and treats the first completed file change as readiness for orchestrator-owned exactly-once verification without another model request.",
+      "phase": "P9B-DETERMINISTIC-WORKER",
+      "title": "App Server write workers have a deterministic bounded handoff"
+    },
+    {
+      "depends_on": [
+        "M10B-DETERMINISTIC-WORKER"
+      ],
       "id": "M11-LINUX-FIRST-PASS-PROOF",
       "outcome": "Fresh documentation, code/test, and asset-aware Linux campaigns each follow the one-command path with source-fresh automatically prepared collateral and no manual capsule editing, worker replay, or preventable post-mutation reconciliation.",
       "phase": "P10-LINUX-FIRST-PASS-PROOF",
@@ -2083,6 +2233,13 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "depends_on": [
         "P9-FIRST-PASS-PREPARATION"
       ],
+      "id": "P9B-DETERMINISTIC-WORKER",
+      "title": "Make write-worker completion deterministic"
+    },
+    {
+      "depends_on": [
+        "P9B-DETERMINISTIC-WORKER"
+      ],
       "id": "P10-LINUX-FIRST-PASS-PROOF",
       "title": "Prove first-pass preparation on representative Linux work"
     },
@@ -2110,11 +2267,12 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
     "Whether the repeated Windows verifier stderr transport failure is specific to the current Core snapshot, Codex build, or console transport.",
     "Which conservative command and context heuristics best detect likely oversized tool output without rejecting ordinary focused verification.",
     "Whether a non-atomic campaign should be represented as one generated bounded CAMP slice or as an explicit pre-mutation split result while preserving one-command continuation.",
-    "Which small useful maintained-workspace edits will provide the clearest documentation, code/test, and asset-aware Linux proof shapes."
+    "Which small useful maintained-workspace edits will provide the clearest documentation, code/test, and asset-aware Linux proof shapes.",
+    "Whether the command-free first-file-change handoff completes the fresh code/test and asset-aware Linux proofs within the current default input budget."
   ]
 }
 ```
 
 ## Revision History
 
-- Revision 3: superseded on 2026-08-26.
+- Revision 5: executing on 2026-08-26.

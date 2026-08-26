@@ -19,11 +19,13 @@ from scripts.app_server_dispatch import (
     _automatic_preparation_prompt,
     _capsule_source_is_stale,
     _execution_capsule_from_payload,
+    _include_existing_expected_context,
     _parse_automatic_preparation,
     _persist_automatic_capsule,
     _preparation_contract,
     _source_bound_capsule,
     _validate_prelaunch_capsule,
+    _verification_output_is_broad,
     dispatch_next,
     parse_execution_capsule,
 )
@@ -310,6 +312,61 @@ class AppServerDispatchTests(unittest.TestCase):
 
         self.assertEqual("automatic_preparation_executable_missing", raised.exception.category)
 
+    def test_path_scoped_git_diff_check_is_bounded_verification(self) -> None:
+        self.assertFalse(
+            _verification_output_is_broad(
+                ("git", "diff", "--check", "--", "docs/operator-guide.md")
+            )
+        )
+        self.assertTrue(_verification_output_is_broad(("git", "diff", "--check", "--", ".")))
+        self.assertFalse(
+            _verification_output_is_broad(
+                (
+                    sys.executable,
+                    "-m",
+                    "unittest",
+                    "discover",
+                    "-s",
+                    "tests",
+                    "-p",
+                    "test_check_provider_adapters.py",
+                    "-q",
+                )
+            )
+        )
+        self.assertTrue(
+            _verification_output_is_broad(
+                (sys.executable, "-m", "unittest", "discover", "-s", "tests")
+            )
+        )
+
+    def test_existing_expected_source_is_injected_as_worker_context(self) -> None:
+        path = self.add_campaign("dispatch-proof")
+        campaign = campaign_queue.parse_campaign(path)
+        source = self.workspace / "proof.py"
+        source.write_text("value = 1\n", encoding="utf-8")
+        payload = {
+            "schema_version": 1,
+            "campaign_id": "dispatch-proof",
+            "camp": "update-proof",
+            "prompt": "Update proof.py and return camp_ready_for_verification.",
+            "expected_paths": ["proof.py", "new_test.py"],
+            "context_files": [],
+            "verification_commands": [[sys.executable, "-c", "assert True"]],
+            "execution_shape": "atomic",
+            "estimated_model_turns": 2,
+            "estimated_max_tool_result_bytes": 2048,
+        }
+        capsule_value = _execution_capsule_from_payload(self.workspace, campaign, payload)
+
+        enriched = _include_existing_expected_context(
+            self.workspace,
+            capsule_value,
+            max_context_bytes=64_000,
+        )
+
+        self.assertEqual((Path("proof.py"),), enriched.context_files)
+
     def test_stale_automatic_capsule_is_reprepared_before_worker_launch(self) -> None:
         path = self.add_campaign("dispatch-proof", with_capsule=False)
         campaign = campaign_queue.parse_campaign(path)
@@ -462,6 +519,8 @@ class AppServerDispatchTests(unittest.TestCase):
         self.assertIn("Automatic capsule context budget: 1234 bytes total", context)
         self.assertIn(Path(sys.executable).as_posix(), context)
         self.assertIn("do not assert that the whole Git worktree is clean", prompt)
+        self.assertIn("forbidden to use commandExecution at any point", prompt)
+        self.assertIn("first\n  completed file change as the verification handoff", prompt)
         self.assertIn(f"src/proof.py ({source.stat().st_size} bytes;", context)
 
     def test_automatic_preparation_normalizes_python_and_drops_broad_git_diff(self) -> None:

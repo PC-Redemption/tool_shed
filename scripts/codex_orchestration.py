@@ -854,12 +854,12 @@ def execute_camp_if_enabled(
             + ". Do not alter lifecycle files or claim a state transition. The orchestrator will "
             "run the declared deterministic verification commands, verify the Git journal, "
             "and choose the next action. Do not run tests or other verification commands "
-            "yourself. When the authorized implementation is ready for those reserved checks, "
-            "return step_ready_for_verification or camp_ready_for_verification as appropriate; "
-            "these outcomes mean implementation-ready, not already verified. Do not return "
-            "unknown merely because the reserved checks have not run. Prefer one focused "
-            "file-change operation that covers the bounded step, then immediately return the "
-            "required structured outcome. The live usage ceiling is "
+            "yourself. Treat the first completed file-change operation as the verification "
+            "handoff; Tool Shed interrupts the worker at that event and does not require another "
+            "model message. Treat the capsule prompt and supplied inline context as complete for "
+            "that mutation. Do not call commandExecution at any point in this worker turn. If the "
+            "context is insufficient, return unknown without mutation instead of exploring. The "
+            "live usage ceiling is "
             + json.dumps(features.camp_usage_budget, sort_keys=True, separators=(",", ":"))
             + "; the orchestrator interrupts the turn when any ceiling is reached.\n\n"
             + prompt
@@ -892,6 +892,8 @@ def execute_camp_if_enabled(
                 context_delivery=features.context_delivery,
                 warning_input_tokens=features.warning_threshold("camp_execution"),
                 usage_budget=features.camp_usage_budget,
+                disallow_command_execution=True,
+                stop_after_file_change=True,
                 restricted_read=False,
                 attempt=attempt,
                 ephemeral=target.ephemeral,
@@ -916,18 +918,32 @@ def execute_camp_if_enabled(
                 details=failed_journal,
             )
             raise
-        try:
-            outcome = parse_camp_outcome(result.text)
-        except CampExecutionError as error:
+        if (
+            result.control_stop is not None
+            and result.control_stop.get("kind") == "worker_file_change_ready"
+        ):
             outcome = CampStructuredOutcome(
-                "unknown",
-                f"App Server returned an invalid structured outcome: {error}",
+                "step_ready_for_verification",
+                "Tool Shed stopped the worker after its first completed file change.",
                 (),
             )
+        else:
+            try:
+                outcome = parse_camp_outcome(result.text)
+            except CampExecutionError as error:
+                outcome = CampStructuredOutcome(
+                    "unknown",
+                    f"App Server returned an invalid structured outcome: {error}",
+                    (),
+                )
         verification: list[dict[str, Any]] = []
         command_events: list[dict[str, Any]] = []
         if (
             result.usage_budget is None
+            and (
+                result.control_stop is None
+                or result.control_stop.get("kind") == "worker_file_change_ready"
+            )
             and outcome.outcome in CAMP_VERIFICATION_HANDOFF_OUTCOMES
         ):
             for sequence, command in enumerate(verification_commands, start=1):
@@ -978,7 +994,9 @@ def execute_camp_if_enabled(
             turn_status=result.status,
             mutation_events=(*result.mutation_events, *command_events),
             cancelled_or_interrupted=(
-                result.status == "interrupted" or result.usage_budget is not None
+                result.status == "interrupted"
+                or result.usage_budget is not None
+                or result.control_stop is not None
             ),
             recovery_action="none",
         )
@@ -994,6 +1012,7 @@ def execute_camp_if_enabled(
         )
         journal_record["focused_context"] = context_finding
         journal_record["usage_budget"] = result.usage_budget
+        journal_record["control_stop"] = result.control_stop
         if result.usage_budget is not None:
             context_finding["within_budget"] = False
             context_finding["enforcement"] = "interrupted_before_lifecycle_advance"
@@ -1016,6 +1035,20 @@ def execute_camp_if_enabled(
                 "reconcile_workspace_then_resume_bounded_camp"
                 if mutated
                 else "resume_bounded_camp"
+            )
+            journal_record["recovery_action"] = next_action
+        elif (
+            result.control_stop is not None
+            and result.control_stop.get("kind") == "worker_command_execution_disallowed"
+        ):
+            mutated = any(
+                journal_record.get(key)
+                for key in ("files_created", "files_modified", "files_deleted")
+            )
+            next_action = (
+                "reconcile_workspace_then_prepare_fresh_camp"
+                if mutated
+                else "prepare_fresh_camp_with_complete_context"
             )
             journal_record["recovery_action"] = next_action
         else:
