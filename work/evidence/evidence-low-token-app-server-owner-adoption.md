@@ -5,6 +5,11 @@ Campaign: adopt-low-token-app-server-campaign-loop
 Gate: G5-OWNER-ADOPTION
 Result: passed
 
+Superseded conclusion: This fixture-scale adoption proof remains valid transport history, but its
+general efficiency conclusion is superseded by
+`work/evidence/evidence-realistic-low-token-owner-readoption.md`, which uses representative Linux
+and Windows work and records the Windows reconciliation requirement.
+
 ## Daily path
 
 For a prepared, ready Tool Shed campaign in a qualified Linux or Windows workspace, send one

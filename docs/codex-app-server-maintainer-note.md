@@ -8,15 +8,70 @@ describes it as experimental and unsupported for production workloads. Do not en
 Normal Tool Shed and `ts: discuss` remain on the existing GUI path; Terra is the normal interactive
 model unless the operator intentionally selects Sol for difficult direct GUI work.
 
+## Daily owner contract
+
+For one ready campaign in a qualified Linux or Windows workspace, use the normal Codex GUI and
+send:
+
+```text
+ts: next --app-server
+```
+
+The dispatcher selects the ordinary next campaign, automatically prepares and persists a bounded
+capsule when one is absent, runs routine CAMP work with Terra/medium, reserves deterministic
+verification for the controller, and returns a compact journal. It never launches a nested
+`codex exec` agent. Discussion, decisions, deployment, unsupported roles, and work that is not a
+ready bounded campaign stay on their normal routes.
+
+The enforced CAMP defaults are four observed model requests, 180,000 cumulative input tokens,
+65,536 cumulative serialized tool-result bytes, and 16,384 bytes for one serialized result. When
+a ceiling is reached, Tool Shed interrupts the turn and skips reserved verification. Before any
+mutation, follow `resume_bounded_camp`. After an authorized path changes, follow
+`reconcile_workspace_then_resume_bounded_camp`; inspect and preserve the mutation journal first,
+and never replay the worker blindly. For an ordinary preflight or preparation failure before
+mutation, repair the reported condition and rerun once, or omit `--app-server` to use the normal
+GUI route.
+
+Representative evidence now supersedes the earlier fixture-only efficiency conclusion:
+
+| Measure | Native Linux realistic CAMP | Windows Core Campaign 020 |
+| --- | ---: | ---: |
+| Model requests / limit | 2 / 4 | 3 / 4, including preparation |
+| Input tokens / limit | 40,016 / 180,000 | 81,570 / 180,000 |
+| Weighted usage proxy | 26,600.0 | 168,501.6 combined |
+| Tool-result bytes / limit | 1,820 / 65,536 | 2,362 / 65,536 |
+| Largest tool result / limit | below 16,384 | 2,362 / 16,384 |
+| Model/CAMP time | 16.851 / 17.350 seconds | 75.240 seconds model stages / 79.843 seconds dispatch |
+| Mid-run owner prompts | 0 | 0 before the safe verification stop |
+| Result | safe, verified | verified after one no-replay reconciliation |
+
+The Linux proof completed two declared file changes and one reserved verification command without
+intervention. The Windows one-command path prepared and performed the one declared map change
+within every ceiling, then stopped safely because v0.29.8 preparation selected an unavailable
+Python launcher and a verifier assertion that included dispatcher-owned lifecycle edits. The
+worker was not replayed; one reconciliation corrected only the reserved checks, and the built-in
+console verifier passed three commands. Canonical source now normalizes the current Python
+executable, removes redundant broad diff assertions, and decodes Windows sandbox output as UTF-8.
+That repair is not in v0.29.8: publication, skill synchronization, and client snapshot upgrades
+remain separate owner-authorized work.
+
+Linux execution is proven with qualified local Codex. Windows execution and verification must run
+in the logged-in GUI console; an SSH service session cannot reach the GUI sandbox runner pipe,
+though it may trigger an interactive console task. API-key fallback, globally enabled App Server,
+unqualified workspace writing, macOS, deployment, and production workloads are not supported by
+this contract. The outer GUI token count is not exposed. Weighted usage is a comparative proxy,
+not price or ChatGPT allowance.
+
 Explicit read-only planning (`gpt-5.6-sol` / high), verification (`gpt-5.6-terra` / low), and one
 explicitly scoped `camp_execution` step (`gpt-5.6-terra` / medium) are qualified. CAMP writing must
 use `camp-run`, exact declared paths, the hardened workspace-write sandbox, and a Git mutation
 journal. It remains opt-in. The representative CAMP used 241,524 input tokens and did not establish
-savings in the original qualification; Campaign 040 subsequently reduced the same
-fixture to 61,516 input tokens and two model requests while 22 focused tests passed. The result is
-economically useful for bounded work but does not change the support or promotion boundary. See
-[the token optimization report](codex-app-server-camp-token-optimization-2026-08-20.md). Broader
-writing, build, deployment, permission expansion, and automatic lifecycle transitions remain
+savings in the original qualification; Campaign 040 subsequently reduced the same fixture to
+61,516 input tokens and two model requests. Those results remain fixture history, not general
+owner-efficiency evidence. The realistic Linux and Windows results above are authoritative for the
+current operating conclusion. See
+[the token optimization report](codex-app-server-camp-token-optimization-2026-08-20.md) for the
+historical comparison. Broader writing, build, deployment, and permission expansion remain
 blocked.
 
 For CAMP, a protocol-level `turn/completed` event is not verification. The worker hands completed

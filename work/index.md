@@ -74,6 +74,7 @@ Updated: 2026-08-26
 | [work/00-campaigns/completed/066-bound-realistic-app-server-campaign-growth.md](work/00-campaigns/completed/066-bound-realistic-app-server-campaign-growth.md) | campaign | complete | 2026-08-26 | none | - |
 | [work/00-campaigns/completed/067-publish-and-synchronize-bounded-app-server-release.md](work/00-campaigns/completed/067-publish-and-synchronize-bounded-app-server-release.md) | campaign | complete | 2026-08-26 | none | - |
 | [work/00-campaigns/completed/068-repair-and-reprove-windows-app-server-campaign-path.md](work/00-campaigns/completed/068-repair-and-reprove-windows-app-server-campaign-path.md) | campaign | complete | 2026-08-26 | none | - |
+| [work/00-campaigns/completed/069-requalify-realistic-low-token-owner-loop.md](work/00-campaigns/completed/069-requalify-realistic-low-token-owner-loop.md) | campaign | complete | 2026-08-26 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -99,6 +100,7 @@ Updated: 2026-08-26
 | [work/evidence/evidence-project-scoped-app-server-dispatch-v0-29-2.md](work/evidence/evidence-project-scoped-app-server-dispatch-v0-29-2.md) | - | complete | - | - | - |
 | [work/evidence/evidence-realistic-core-app-server-token-regression.md](work/evidence/evidence-realistic-core-app-server-token-regression.md) | evidence | complete | 2026-08-26 | none | - |
 | [work/evidence/evidence-realistic-linux-app-server-camp-budget.md](work/evidence/evidence-realistic-linux-app-server-camp-budget.md) | evidence | complete | 2026-08-26 | publish and synchronize the corrective release only after separate owner authorization | - |
+| [work/evidence/evidence-realistic-low-token-owner-readoption.md](work/evidence/evidence-realistic-low-token-owner-readoption.md) | evidence | complete | 2026-08-26 | publish and synchronize the post-v0.29.8 preparation and verifier repair only after separate owner authorization | - |
 | [work/evidence/evidence-snapshot-upgrade-performance-and-retry-safety.md](work/evidence/evidence-snapshot-upgrade-performance-and-retry-safety.md) | evidence | complete | 2026-08-24 | none | work/00-campaigns/completed/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md |
 | [work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md](work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md) | evidence | complete | 2026-08-09 | none | work/wp/completed/wp-evidence-responsive-tool-shed-execution.md |
 | [work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md](work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md) | evidence | complete | 2026-08-18 | none | work/00-campaigns/completed/027-publish-and-verify-tool-shed-v0-22-0.md |
@@ -153,6 +155,6 @@ Updated: 2026-08-26
 
 ## Summary
 
-- Total artifacts: 136
+- Total artifacts: 138
 - Active artifacts: 1
-- Completed/decided artifacts: 119
+- Completed/decided artifacts: 121

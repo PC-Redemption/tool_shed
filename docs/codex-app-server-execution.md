@@ -16,7 +16,9 @@ therefore remains opt-in even though its read-only path is qualified.
 
 For the short operational handoff, read the
 [App Server maintainer note](codex-app-server-maintainer-note.md). Further engineering is
-event-triggered rather than an active Tool Shed development priority.
+event-triggered rather than an active Tool Shed development priority. Its realistic Linux and
+Windows measurements supersede fixture-only owner-efficiency conclusions while preserving those
+fixtures as qualification history.
 
 ## Qualified Baseline
 

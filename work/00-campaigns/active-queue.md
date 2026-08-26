@@ -4,7 +4,7 @@ Updated: 2026-08-26
 
 ## Owner State
 
-- Last completed: repair-and-reprove-windows-app-server-campaign-path — Repair and re-prove the Windows App Server campaign path
+- Last completed: requalify-realistic-low-token-owner-loop — Requalify the realistic low-token owner loop
 - Working now: none
 - Next: none
 - Blocker or decision needed: none
