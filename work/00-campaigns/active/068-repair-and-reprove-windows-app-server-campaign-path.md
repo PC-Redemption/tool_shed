@@ -1,16 +1,16 @@
 # Repair and re-prove the Windows App Server campaign path
 
-Status: queued
+Status: working
 Type: campaign
 Updated: 2026-08-26
-Next Action: execute when selected from the active campaign queue
+Next Action: execute the campaign completion gate
 Campaign ID: repair-and-reprove-windows-app-server-campaign-path
 Campaign Number: 068
 Outcome: Make realistic Core App Server execution use the shared budget and reliable built-in deterministic verification transport.
 Primary Focus Areas: provider-portability
 Supporting Focus Areas: snapshot-delivery, workspace-safety, qualification-release
 Depends On: publish-and-synchronize-bounded-app-server-release
-Decision: separate owner Core snapshot and operator-assisted Windows authorization required
+Decision: none
 Detour For: none
 Return To: none
 Completion Gate: G8-WINDOWS-REALISTIC-BOUNDED passes with normal verifier transport and a representative verified Core CAMP within every shared default.
