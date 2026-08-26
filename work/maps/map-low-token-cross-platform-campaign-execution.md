@@ -1,9 +1,9 @@
 # Project Map: Low-token cross-platform campaign execution
 
-Status: active
+Status: complete
 Type: project-map
 Updated: 2026-08-26
-Next Action: authorize Campaign 091 to publish and synchronize the locally proven case-normalized documentation verifier
+Next Action: use `ts: next --app-server` for ordinary bounded campaigns on the proven Linux and Windows paths
 Campaign: standalone
 Campaign Reason: source coordination surface for the approved, executing Program Roadmap
 
@@ -96,6 +96,13 @@ The owner authorized Campaign 087 on 2026-08-26. Tool Shed v0.29.11 was publishe
 latest stable release and the maintainer skill was backed up and exactly synchronized. Campaign 087
 is complete, so Campaign 085 has resumed under its existing Core and Windows authorization.
 
+The owner authorized Campaign 091 and continuation of Campaign 085 on 2026-08-26. Tool Shed
+v0.29.13 was published with verified provenance and exact maintainer-skill synchronization. Core
+then upgraded transactionally to v0.29.13 and fresh Core Campaign 024 completed on its first Windows
+App Server worker attempt with automatically prepared source-fresh collateral, expected-path-only
+mutation, exactly-once verification, bounded usage, no replay, and no Bactron deployment. The
+superseded v0.29.12 Campaign 023 was abandoned rather than replayed.
+
 Later Core Campaigns 018 through 021 showed that hard runtime ceilings alone do not make the path
 reliable: automatic preparation can choose oversized context, unavailable executables, broad or
 transport-fragile verification, and work that cannot finish inside the worker's turn or tool-result
@@ -169,9 +176,10 @@ It does not revise M4's outcome or grant Core mutation authority.
 - Completed enabling work: Campaign 040 proved material App Server token/turn reduction; Campaigns
   041 through 053 integrated and qualified routing, compatibility, executable resolution, and
   snapshot delivery; Campaign 054 repaired the generic verification handoff.
-- Current limiting condition: the case-normalized semantic verifier is locally proven but not yet
-  published or synchronized. Core remains on v0.29.12, and Campaign 085 correctly waits for the
-  separately authorized Campaign 091 release before running a fresh replacement Windows proof.
+- Owner-ready state: Tool Shed v0.29.13 and the maintainer skill are synchronized, Core is upgraded
+  to that verified release, and fresh Core Campaign 024 passed the Windows one-command path on its
+  first worker attempt without manual capsule repair, replay, preventable reconciliation, or
+  deployment.
 - M10 now supplies source-bound, statically checked collateral. The first M11 documentation worker
   verified successfully, but the first code/test worker emitted a 19,301-byte inspection result
   before mutation despite an 8,192-byte preparation estimate. Preparation must inject existing
@@ -204,20 +212,18 @@ It does not revise M4's outcome or grant Core mutation authority.
   ceilings, and whitespace-robust documentation verification. Campaign 089 published that
   correction as Tool Shed v0.29.12 and exactly synchronized the maintainer skill, enabling Core
   Campaign 023 to exercise the repaired handoff.
-- Core Campaign 023 then proved the v0.29.12 first-file-change handoff in one preparation turn and
-  one command-free worker turn. Its exactly-once verifier failed only because it normalized
-  whitespace without normalizing sentence capitalization. Campaign 090 now rejects that
-  whitespace-only verifier and accepts only a shared whitespace-and-case normalizer. Campaign 091
-  is the explicit publication and maintainer-synchronization boundary before a fresh Core proof.
+- Core Campaign 023 then proved the v0.29.12 first-file-change handoff but failed its exactly-once
+  verifier only because semantic matching was case-sensitive. Campaign 090 repaired that invariant,
+  Campaign 091 published and synchronized it as v0.29.13, and fresh Core Campaign 024 passed the
+  corrected first-attempt Windows path. Campaign 023 remains preserved as abandoned history.
 - Open measurement: report raw input, cached input, output, weighted usage, model turns, elapsed
   time, and owner interactions separately; do not claim a GUI token comparison that the GUI cannot
   expose.
 
 Ground:
 
-- Current next action: authorize Campaign 091 to publish the Campaign 090 correction and exactly
-  synchronize the maintainer skill. Campaign 085 can then upgrade Core and run a fresh replacement
-  Windows proof without another Core authorization request.
+- Current next action: use `ts: next --app-server` for an ordinary bounded campaign when one is
+  ready; the low-token cross-platform roadmap has no remaining evidence gate.
 - Owner/context: human owner and Codex in `/home/jon/docker/tool_shed`; native Windows proof occurs
   through a normally launched Codex GUI on the work PC in `E:\dev\bactron-core`.
 - Verification: focused changed-path tests plus one real dogfood run during development; one full
@@ -230,12 +236,12 @@ Ground:
 | --- | --- | --- | --- | --- |
 | Existing Tool Shed control plane | complete | current Tool Shed source and `work/` lifecycle | completed foundation and evolution work | preserve; do not redesign |
 | App Server shared execution core | Linux-proven | `scripts/codex_orchestration.py` and Campaign 066 evidence | Campaigns 040-066 | preserve the live ceilings through release |
-| Lean qualification policy | release-boundary blocked | approved roadmap gates | G11 Linux first-pass evidence | after separate consent, run one full validator on unchanged release inputs |
+| Lean qualification policy | complete | approved roadmap gates | G11 Linux first-pass evidence | preserve focused repair checks and one full validator per release boundary |
 | Minimum usable release | complete | milestone `M2-MINIMUM-RELEASE`, v0.28.0 evidence, and v0.29.1 dispatcher release evidence | successful maintained-workspace dogfood and direct Linux proof | preserve v0.29.1 and the synchronized maintainer skill |
 | Installed native Linux | complete | milestone `M3-LINUX-INSTALLED` plus Campaign 060 direct-dispatch evidence | verified release | preserve the direct one-call proof |
-| Installed native Windows | v0.29.12 installed; replacement proof awaiting corrective release | Campaign 085 and Core Campaign 023 evidence | Campaign 091 | after release, re-upgrade and resume the authorized Windows proof |
-| First-pass App Server collateral | case-normalization repair locally proven | Roadmap Revision 7, Campaigns 071, 077, 082, 083, 086-091 | Core Campaigns 018-023 field results | authorize Campaign 091 publication and synchronization |
-| Owner operating loop | release-boundary blocked | Campaign 085 | Campaign 091 | publish, synchronize, then run a fresh Core replacement proof |
+| Installed native Windows | complete on v0.29.13 | Campaign 085 and Core Campaign 024 evidence | Campaign 091 | preserve the verified first-pass path |
+| First-pass App Server collateral | complete | Roadmap Revision 7, Campaigns 071, 077, 082, 083, 086-091 | Core Campaigns 018-024 field results | preserve source-fresh preparation and shared semantic normalization |
+| Owner operating loop | owner-ready | Campaign 085 | G13 evidence | use `ts: next --app-server` for ordinary bounded campaigns |
 
 ## Dependency Notes
 
@@ -295,9 +301,10 @@ You are here:
   upgraded Core and ran Campaign 022. That proof exposed a same-boundary turn-ceiling handoff defect
   and Markdown-formatting-fragile verifier. Campaign 088 repaired both locally and Campaign 089
   published the correction as v0.29.12 with exact maintainer-skill synchronization. Core Campaign
-  023 proved the handoff but exposed case-sensitive semantic matching. Campaign 090 now requires a
-  shared whitespace-and-case normalizer; Campaign 091 owns its separately authorized release and
-  maintainer synchronization before the already-authorized Core proof resumes.
+  023 proved the handoff but exposed case-sensitive semantic matching. Campaign 090 required a
+  shared whitespace-and-case normalizer; Campaign 091 published and synchronized it as v0.29.13.
+  Core then upgraded and fresh Campaign 024 passed automatically on its first worker attempt. The
+  failed Campaign 023 was not replayed, and no Bactron deployment occurred.
 
 Do next:
 
@@ -328,9 +335,9 @@ Do next:
 - [x] After separate consent, publish and synchronize that narrow correction as Tool Shed v0.29.12.
 - [x] Re-upgrade Core and prove the repaired first-file-change handoff through Core Campaign 023.
 - [x] Repair and focused-test the case-sensitive semantic verifier exposed by that proof.
-- [ ] After separate consent, publish and synchronize the case-normalized verifier through Campaign
+- [x] After separate consent, publish and synchronize the case-normalized verifier through Campaign
       091.
-- [ ] Re-upgrade Core and run a fresh replacement ordinary first-attempt Windows proof, then
+- [x] Re-upgrade Core and run a fresh replacement ordinary first-attempt Windows proof, then
       close the owner-adoption gate.
 
 Avoid for now:
@@ -359,5 +366,7 @@ Avoid for now:
 - File-change handoff and robust documentation verification: `work/evidence/evidence-file-change-handoff-and-robust-doc-verification.md`
 - Tool Shed v0.29.12 release and maintainer synchronization: `work/evidence/evidence-tool-shed-v0-29-12-release-and-maintainer-sync.md`
 - Case-normalized documentation verification: `work/evidence/evidence-case-normalized-documentation-verification.md`
+- Tool Shed v0.29.13 release and maintainer synchronization: `work/evidence/evidence-tool-shed-v0-29-13-release-and-maintainer-sync.md`
+- Core v0.29.13 first-pass owner-ready proof: `work/evidence/evidence-core-v0-29-13-first-pass-owner-ready.md`
 - Standing owner authorization: this map's `Standing Owner Authorization` section
 - Bactron Core enabling work: Campaign 014 in `E:\dev\bactron-core`

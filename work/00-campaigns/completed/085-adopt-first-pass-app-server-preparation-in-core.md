@@ -1,21 +1,23 @@
 # Adopt first-pass App Server preparation in Core
 
-Status: blocked
+Status: complete
 Type: campaign
 Updated: 2026-08-26
-Next Action: after Campaign 091 publishes and synchronizes the proven case-normalization repair, upgrade Core and run a fresh replacement campaign under the existing authorization
+Next Action: none
 Campaign ID: adopt-first-pass-app-server-preparation-in-core
 Campaign Number: 085
 Outcome: A fresh ordinary Core campaign completes on its first automatically prepared Windows App Server attempt.
 Primary Focus Areas: provider-portability
 Supporting Focus Areas: snapshot-delivery, workspace-safety, campaign-lifecycle
 Depends On: publish-and-synchronize-case-normalized-verification
-Decision: Campaign 090 repaired and locally proved the case-normalization defect; Campaign 091 requires separate publication and maintainer-skill synchronization authorization before the existing Core authorization can resume.
+Decision: none
 Detour For: none
 Return To: none
 Completion Gate: G13-CORE-FIRST-PASS-OWNER-READY passes with exact upgrade, first-attempt execution, exactly-once verification, bounded usage, and no deployment.
-Completion Evidence: none
-Disposition: none
+Completion Evidence: work/evidence/evidence-core-v0-29-13-first-pass-owner-ready.md
+Completion Date: 2026-08-26
+Completion Order: 77
+Disposition: completed
 Roadmap: low-token-cross-platform-campaign-execution
 Roadmap Revision: 7
 Milestone: M13-CORE-FIRST-PASS-ADOPTION

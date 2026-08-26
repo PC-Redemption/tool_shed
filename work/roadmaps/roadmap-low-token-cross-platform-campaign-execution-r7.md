@@ -1,16 +1,16 @@
 # Program Roadmap: Low-token cross-platform campaign execution
 
-Status: executing
+Status: complete
 Type: program-roadmap
 Updated: 2026-08-26
-Next Action: execute the first ready roadmap campaign through ts: next
+Next Action: none
 Roadmap ID: low-token-cross-platform-campaign-execution
 Revision: 7
 Source Project Map: work/maps/map-low-token-cross-platform-campaign-execution.md
-Source State Token: 5b5e68f7554728e1
-Proposal Token: 7a28cdbc808dcc18
+Source State Token: 456dd7e3e2dd2aa4
+Proposal Token: 5f995e884c568f6d
 Approved: 2026-08-26
-Current Milestone: M1-MAINTAINER-DOGFOOD
+Current Milestone: none
 Supersedes: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r6.md
 Superseded By: none
 
