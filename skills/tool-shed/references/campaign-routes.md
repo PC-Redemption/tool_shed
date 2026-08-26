@@ -405,6 +405,12 @@ declared command fails, and `verified` only for the combined safe boundary and s
 Malformed, partial, `unknown`, interrupted, unsafe, and unexpected-path results fail closed. Do not
 retry after mutation. A focused-context token warning or oversized tool result must emit a compact
 enforceable finding and block lifecycle advance; do not retain raw tool output in the journal.
+During CAMP execution, enforce the configured live ceiling before another model request can expand
+the turn: four observed model requests, 180,000 cumulative input tokens, 64 KiB cumulative
+serialized tool results, and 16 KiB for one result by default. On a reached ceiling, request
+`turn/interrupt`, retain only counts/limits and acknowledgement state, skip reserved verification,
+and preserve the Git journal. Return `resume_bounded_camp` when no mutation occurred or
+`reconcile_workspace_then_resume_bounded_camp` when it did; never replay the mutated step.
 
 For `ts: next --app-server`, immediately invoke the deterministic dispatcher once:
 

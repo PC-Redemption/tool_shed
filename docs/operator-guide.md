@@ -535,6 +535,10 @@ safe path journal is `safe_unverified` until that handoff and verification succe
 `verification_failed`, and only the combined success becomes `verified`. Unknown, malformed,
 partial, interrupted, or unexpected-path results do not advance or retry after mutation. Context
 token warnings and oversized tool results likewise stop lifecycle advance with a compact finding.
+Live CAMP execution also stops at the shipped ceiling of four observed model requests, 180,000
+cumulative input tokens, 64 KiB cumulative serialized tool results, or a 16 KiB single result.
+Tool Shed interrupts the turn and reports `resume_bounded_camp` before mutation or
+`reconcile_workspace_then_resume_bounded_camp` after an authorized path changed.
 
 `ts: next --app-server` keeps normal navigation authoritative through one deterministic command:
 

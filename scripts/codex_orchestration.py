@@ -186,6 +186,25 @@ class AppServerFeatureConfig:
                 raise FeatureConfigError(
                     "camp_execution must be restricted to workspace-write"
                 )
+            budget = write_execution.get("camp_usage_budget")
+            required_budget_keys = {
+                "max_model_turns",
+                "max_input_tokens",
+                "max_total_tool_result_bytes",
+                "max_single_tool_result_bytes",
+            }
+            if not isinstance(budget, dict) or set(budget) != required_budget_keys:
+                raise FeatureConfigError(
+                    "write_execution.camp_usage_budget must define exactly "
+                    + ", ".join(sorted(required_budget_keys))
+                )
+            if any(
+                not isinstance(budget[key], int) or budget[key] <= 0
+                for key in required_budget_keys
+            ):
+                raise FeatureConfigError(
+                    "write_execution.camp_usage_budget values must be positive integers"
+                )
         qualification = self.payload.get("qualification")
         if not isinstance(qualification, dict):
             raise FeatureConfigError("qualification must be an object")
@@ -365,6 +384,18 @@ class AppServerFeatureConfig:
         context = self.payload.get("context")
         value = context.get("max_tool_result_bytes") if isinstance(context, dict) else None
         return int(value) if isinstance(value, int) and value > 0 else 100_000
+
+    @property
+    def camp_usage_budget(self) -> dict[str, int]:
+        write_execution = self.payload.get("write_execution")
+        budget = (
+            write_execution.get("camp_usage_budget")
+            if isinstance(write_execution, dict)
+            else None
+        )
+        if not isinstance(budget, dict):
+            raise FeatureConfigError("CAMP usage budget is unavailable")
+        return {key: int(value) for key, value in budget.items()}
 
     def route(
         self,
@@ -824,7 +855,10 @@ def execute_camp_if_enabled(
             "return step_ready_for_verification or camp_ready_for_verification as appropriate; "
             "these outcomes mean implementation-ready, not already verified. Do not return "
             "unknown merely because the reserved checks have not run. Prefer one focused "
-            "file-change operation, then return the required structured outcome.\n\n"
+            "file-change operation that covers the bounded step, then immediately return the "
+            "required structured outcome. The live usage ceiling is "
+            + json.dumps(features.camp_usage_budget, sort_keys=True, separators=(",", ":"))
+            + "; the orchestrator interrupts the turn when any ceiling is reached.\n\n"
             + prompt
         ),
         read_only=False,
@@ -854,6 +888,7 @@ def execute_camp_if_enabled(
                 context_mode=target.mode,
                 context_delivery=features.context_delivery,
                 warning_input_tokens=features.warning_threshold("camp_execution"),
+                usage_budget=features.camp_usage_budget,
                 restricted_read=False,
                 attempt=attempt,
                 ephemeral=target.ephemeral,
@@ -888,7 +923,10 @@ def execute_camp_if_enabled(
             )
         verification: list[dict[str, Any]] = []
         command_events: list[dict[str, Any]] = []
-        if outcome.outcome in CAMP_VERIFICATION_HANDOFF_OUTCOMES:
+        if (
+            result.usage_budget is None
+            and outcome.outcome in CAMP_VERIFICATION_HANDOFF_OUTCOMES
+        ):
             for sequence, command in enumerate(verification_commands, start=1):
                 try:
                     response = execute_deterministic_verification(
@@ -936,6 +974,9 @@ def execute_camp_if_enabled(
             turn_id=result.turn_id,
             turn_status=result.status,
             mutation_events=(*result.mutation_events, *command_events),
+            cancelled_or_interrupted=(
+                result.status == "interrupted" or result.usage_budget is not None
+            ),
             recovery_action="none",
         )
         journal_record["deterministic_verification"] = {
@@ -949,6 +990,10 @@ def execute_camp_if_enabled(
             max_tool_result_bytes=features.max_tool_result_bytes,
         )
         journal_record["focused_context"] = context_finding
+        journal_record["usage_budget"] = result.usage_budget
+        if result.usage_budget is not None:
+            context_finding["within_budget"] = False
+            context_finding["enforcement"] = "interrupted_before_lifecycle_advance"
         if not journal_record["safe"]:
             journal_record["final_state"] = "needs_user_intervention"
         elif verification_passed is False:
@@ -959,14 +1004,26 @@ def execute_camp_if_enabled(
             journal_record["final_state"] = "verified"
         else:
             journal_record["final_state"] = "safe_unverified"
-        next_action = camp_next_action(
-            outcome,
-            attempt=attempt,
-            journal=journal_record,
-            verification_passed=verification_passed,
-            verification_required=bool(verification_commands),
-            context_budget_exceeded=not context_finding["within_budget"],
-        )
+        if result.usage_budget is not None:
+            mutated = any(
+                journal_record.get(key)
+                for key in ("files_created", "files_modified", "files_deleted")
+            )
+            next_action = (
+                "reconcile_workspace_then_resume_bounded_camp"
+                if mutated
+                else "resume_bounded_camp"
+            )
+            journal_record["recovery_action"] = next_action
+        else:
+            next_action = camp_next_action(
+                outcome,
+                attempt=attempt,
+                journal=journal_record,
+                verification_passed=verification_passed,
+                verification_required=bool(verification_commands),
+                context_budget_exceeded=not context_finding["within_budget"],
+            )
         camp_duration_seconds = round(time.monotonic() - camp_started, 6)
         adapter.record_control_event(
             operation="camp_mutation_journal",

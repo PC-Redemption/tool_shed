@@ -1,18 +1,18 @@
 # Program Roadmap: Low-token cross-platform campaign execution
 
-Status: superseded
+Status: executing
 Type: program-roadmap
 Updated: 2026-08-26
-Next Action: none
+Next Action: execute the first ready roadmap campaign through ts: next
 Roadmap ID: low-token-cross-platform-campaign-execution
-Revision: 1
+Revision: 2
 Source Project Map: work/maps/map-low-token-cross-platform-campaign-execution.md
-Source State Token: 1559ecbe8d8a77ef
-Proposal Token: 1138f4bdb927e06e
-Approved: 2026-08-25
+Source State Token: 730ef8e35683d6e5
+Proposal Token: d08c2adbde79cae7
+Approved: 2026-08-26
 Current Milestone: M1-MAINTAINER-DOGFOOD
-Supersedes: none
-Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r2.md
+Supersedes: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution.md
+Superseded By: none
 
 ## Roadmap Definition
 
@@ -38,6 +38,16 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "path": "work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md",
       "phase": null,
       "state_token": "b0544158439195b6"
+    },
+    {
+      "classification": "superseded",
+      "conflicts": [],
+      "evidence": "Type campaign; Status abandoned",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/abandoned/061-publish-and-synchronize-direct-app-server-dispatch.md",
+      "phase": null,
+      "state_token": "25cd78560da14040"
     },
     {
       "classification": "completed",
@@ -540,6 +550,106 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "state_token": "063f88e44baa9280"
     },
     {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/055-dogfood-maintained-tool-shed-app-server-execution.md",
+      "phase": null,
+      "state_token": "ff985af39d327bac"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/056-publish-minimum-usable-tool-shed-v0-28-0.md",
+      "phase": null,
+      "state_token": "c9f0b2d12d498eef"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/057-synchronize-maintainer-skill-and-smoke-v0-28-0.md",
+      "phase": null,
+      "state_token": "655b9eb0b8f6d193"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/058-prove-installed-native-linux-app-server-workflow.md",
+      "phase": null,
+      "state_token": "bab2f4a91eba6e70"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/059-prove-bactron-core-native-windows-app-server-workflow.md",
+      "phase": null,
+      "state_token": "031ad6ad739644df"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/060-eliminate-nested-codex-wrapper-and-prove-linux-dispatch.md",
+      "phase": null,
+      "state_token": "2505fac30c82db99"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/062-publish-and-synchronize-direct-app-server-dispatch-v0-29-1.md",
+      "phase": null,
+      "state_token": "5dd639e9bc550feb"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/063-repair-project-scoped-app-server-dispatch.md",
+      "phase": null,
+      "state_token": "2d59250e8d71c2d7"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/064-route-windows-verification-through-console-sandbox.md",
+      "phase": null,
+      "state_token": "242690dce77ea6e6"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/065-adopt-low-token-app-server-campaign-loop.md",
+      "phase": null,
+      "state_token": "a0e726b290015ef0"
+    },
+    {
       "classification": "remaining",
       "conflicts": [],
       "evidence": "Type campaign; Status deferred",
@@ -670,6 +780,18 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "state_token": "10648406c5a35b92"
     },
     {
+      "classification": "uncertain",
+      "conflicts": [
+        "ambiguous lifecycle evidence"
+      ],
+      "evidence": "Type unknown; Status unknown",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-bactron-core-native-windows-app-server-workflow.md",
+      "phase": null,
+      "state_token": "95f14120bceefb51"
+    },
+    {
       "classification": "completed",
       "conflicts": [],
       "evidence": "Type evidence; Status complete",
@@ -705,9 +827,31 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "evidence": "Type evidence; Status complete",
       "mapping_state": "unmapped",
       "milestone": null,
+      "path": "work/evidence/evidence-direct-linux-app-server-dispatch.md",
+      "phase": null,
+      "state_token": "9b40cd61a5fe3642"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
       "path": "work/evidence/evidence-human-planning-mechanism-evaluation.md",
       "phase": null,
       "state_token": "81fffad766f53803"
+    },
+    {
+      "classification": "uncertain",
+      "conflicts": [
+        "ambiguous lifecycle evidence"
+      ],
+      "evidence": "Type unknown; Status unknown",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-low-token-app-server-owner-adoption.md",
+      "phase": null,
+      "state_token": "a89422352b1621fa"
     },
     {
       "classification": "completed",
@@ -718,6 +862,36 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "path": "work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md",
       "phase": null,
       "state_token": "cc7d18cda55e2efb"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-native-linux-installed-app-server-workflow.md",
+      "phase": null,
+      "state_token": "70ca03d66fe2c22b"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type unknown; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-project-scoped-app-server-dispatch-v0-29-2.md",
+      "phase": null,
+      "state_token": "a3ea5ec5083ca149"
+    },
+    {
+      "classification": "active",
+      "conflicts": [],
+      "evidence": "Type evidence; Status active",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-realistic-core-app-server-token-regression.md",
+      "phase": null,
+      "state_token": "dddf89d67143f514"
     },
     {
       "classification": "completed",
@@ -777,9 +951,51 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "evidence": "Type evidence; Status complete",
       "mapping_state": "unmapped",
       "milestone": null,
+      "path": "work/evidence/evidence-tool-shed-v0-28-0-maintainer-skill-sync.md",
+      "phase": null,
+      "state_token": "bdf71223912aa5c9"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-tool-shed-v0-28-0-release.md",
+      "phase": null,
+      "state_token": "aa8780b277351ae9"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-tool-shed-v0-29-1-release-and-skill-sync.md",
+      "phase": null,
+      "state_token": "ce9b2c70ae4557ae"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
       "path": "work/evidence/evidence-w1-dev-smb-access.md",
       "phase": null,
       "state_token": "d71487e94bd74a02"
+    },
+    {
+      "classification": "uncertain",
+      "conflicts": [
+        "ambiguous lifecycle evidence"
+      ],
+      "evidence": "Type unknown; Status unknown",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-windows-console-sandbox-verification-v0-29-4.md",
+      "phase": null,
+      "state_token": "5e07d302e1ca9f8b"
     },
     {
       "classification": "completed",
@@ -839,7 +1055,7 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "milestone": null,
       "path": "work/maps/map-low-token-cross-platform-campaign-execution.md",
       "phase": null,
-      "state_token": "18e73e1332ea4b0e"
+      "state_token": "ff2035382d309cf6"
     },
     {
       "classification": "completed",
@@ -1079,7 +1295,7 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
     "A bounded disposable or owner-approved Linux workspace can prove installed-mode behavior without requiring a fleet inventory.",
     "Observed ordinary defects can be repaired inside the campaign that exposed them without creating detour campaigns."
   ],
-  "authority_boundaries": "Roadmap approval does not execute campaigns, publish releases, synchronize installed skills, upgrade snapshots, or deploy applications. Campaign-plan approval only materializes the exact milestone campaigns. Every external mutation remains inside its materialized campaign and declared work level. App Server is explicit opt-in until the owner separately changes that policy. No target outside the named maintained Tool Shed, a bounded native Linux install target, and Bactron Core may be mutated.",
+  "authority_boundaries": "Roadmap approval does not execute campaigns, publish releases, synchronize installed skills, upgrade snapshots, or deploy applications. Campaign-plan approval only materializes the exact milestone campaigns. Every external mutation remains inside its materialized campaign and declared work level. App Server is explicit opt-in until the owner separately changes that policy. No target outside the named maintained Tool Shed, a bounded native Linux install target, and Bactron Core may be mutated. The corrective Linux implementation and proof are authorized. Publishing the corrective release, synchronizing installed skills, upgrading the Core snapshot, and operator-assisted Windows proof remain separate authorization boundaries.",
   "candidate_campaigns": [
     {
       "campaign_id": "dogfood-maintained-tool-shed-app-server-execution",
@@ -1199,9 +1415,91 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       ],
       "title": "Adopt the low-token App Server campaign loop",
       "unlocks_gate": "G5-OWNER-ADOPTION"
+    },
+    {
+      "campaign_id": "bound-realistic-app-server-campaign-growth",
+      "completion_gate": "G6-LINUX-REALISTIC-BOUNDED passes with focused limiter tests, compact recovery evidence, and one representative verified Linux App Server campaign inside every declared default.",
+      "decision": "none",
+      "depends_on": [
+        "adopt-low-token-app-server-campaign-loop"
+      ],
+      "milestone": "M6-LINUX-REALISTIC-BOUNDS",
+      "outcome": "Make representative App Server CAMP work complete within an enforced low-token envelope and stop safely before runaway context growth.",
+      "primary_focus_areas": [
+        "provider-portability"
+      ],
+      "request": "Through normal GUI execution, add proactive CAMP ceilings for observed model requests, cumulative input tokens, cumulative serialized tool results, and one oversized result. Interrupt immediately when a ceiling is observed, retain only compact metrics, preserve exact Git mutation truth, never replay after mutation, and expose one deterministic resume/reconcile action. Tighten the worker contract so representative work is one focused implementation step and does not rediscover or verify model-side. Run focused tests only during repair. Then use the repaired App Server path directly, without codex exec or another agent wrapper, for one representative multi-file native Linux campaign. The proof must complete and verify within defaults of four observed model requests, 180,000 input tokens, 64 KiB cumulative tool results, and 16 KiB per result, and materially beat the 540,741-input-token Core worker. Do not publish, synchronize skills, upgrade Core, or run the full release validator.",
+      "supporting_focus_areas": [
+        "workspace-safety",
+        "campaign-lifecycle",
+        "qualification-release"
+      ],
+      "title": "Bound realistic App Server campaign growth",
+      "unlocks_gate": "G6-LINUX-REALISTIC-BOUNDED"
+    },
+    {
+      "campaign_id": "publish-and-synchronize-bounded-app-server-release",
+      "completion_gate": "G7-CORRECTIVE-RELEASE-USABLE passes with one full validator, verified public provenance, exact installed-skill parity, and a fresh-session policy smoke.",
+      "decision": "separate owner publication authorization required",
+      "depends_on": [
+        "bound-realistic-app-server-campaign-growth"
+      ],
+      "milestone": "M7-CORRECTIVE-RELEASE",
+      "outcome": "Make the Linux-proven bounded CAMP contract available to fresh maintainer sessions through the verified release path.",
+      "primary_focus_areas": [
+        "qualification-release"
+      ],
+      "request": "After separate owner authorization, freeze unchanged Linux-proven inputs, run the complete validator once, publish the next semantic Tool Shed release through the documented two-commit provenance path, verify the public release, synchronize the maintainer installed skill with one bounded backup, exact-diff it, and run one fresh-session bounded-policy smoke. Do not upgrade Core or deploy applications.",
+      "supporting_focus_areas": [
+        "provider-portability",
+        "snapshot-delivery"
+      ],
+      "title": "Publish and synchronize the bounded App Server release",
+      "unlocks_gate": "G7-CORRECTIVE-RELEASE-USABLE"
+    },
+    {
+      "campaign_id": "repair-and-reprove-windows-app-server-campaign-path",
+      "completion_gate": "G8-WINDOWS-REALISTIC-BOUNDED passes with normal verifier transport and a representative verified Core CAMP within every shared default.",
+      "decision": "separate owner Core snapshot and operator-assisted Windows authorization required",
+      "depends_on": [
+        "publish-and-synchronize-bounded-app-server-release"
+      ],
+      "milestone": "M8-WINDOWS-REALISTIC-REPROOF",
+      "outcome": "Make realistic Core App Server execution use the shared budget and reliable built-in deterministic verification transport.",
+      "primary_focus_areas": [
+        "provider-portability"
+      ],
+      "request": "After separate owner authorization, upgrade Core's disconnected snapshot and Windows installed skill to the corrective release with bounded backups. Reproduce and repair the deterministic verifier transport that twice returned the same 5,403-byte stderr payload, using focused checks. From the normal logged-in Windows GUI console, execute one representative non-production Core campaign through ts: next --app-server and capture usage, turns, tool-result bytes, journal, and verification. Do not replay Campaign 013 or deploy Bactron.",
+      "supporting_focus_areas": [
+        "snapshot-delivery",
+        "workspace-safety",
+        "qualification-release"
+      ],
+      "title": "Repair and re-prove the Windows App Server campaign path",
+      "unlocks_gate": "G8-WINDOWS-REALISTIC-BOUNDED"
+    },
+    {
+      "campaign_id": "requalify-realistic-low-token-owner-loop",
+      "completion_gate": "G9-OWNER-READOPTION passes and the roadmap reports the one-command path, enforced ceilings, measured realistic results, recovery, and limitations truthfully.",
+      "decision": "none",
+      "depends_on": [
+        "repair-and-reprove-windows-app-server-campaign-path"
+      ],
+      "milestone": "M9-READOPTION",
+      "outcome": "Replace fixture-only adoption guidance with a concise operating contract grounded in realistic Linux and Windows evidence.",
+      "primary_focus_areas": [
+        "provider-portability"
+      ],
+      "request": "Using the completed realistic Linux and Windows evidence, update the minimum operator guidance for ts: next --app-server. State the enforced defaults, what happens before and after mutation when a ceiling is reached, the exact resume/reconcile action, raw and weighted usage, turns, elapsed time, owner interactions, and platform limitations. Preserve the earlier fixture proof as history while clearly superseding its general efficiency conclusion. Run only a focused documentation smoke when implementation inputs are unchanged.",
+      "supporting_focus_areas": [
+        "campaign-lifecycle",
+        "snapshot-delivery"
+      ],
+      "title": "Requalify the realistic low-token owner loop",
+      "unlocks_gate": "G9-OWNER-READOPTION"
     }
   ],
-  "constraints": "Reuse the existing Tool Shed control plane, release machinery, App Server routing, and qualified Sol/Terra role policy. Dogfood the maintained Linux candidate before release. Installed workspaces consume a verified stable release. Keep common behavior portable and isolate only genuine Linux and Windows differences. During repair run changed-path tests plus one smoke; run the full deterministic Tool Shed validator once at the unchanged release boundary; run one native installation/update smoke and one real bounded campaign per supported platform. Preserve exact-root/path allowlists, dirty-target refusal, ChatGPT authentication with no API fallback, disabled network, no replay after mutation, truthful journals, backups, and rollback.",
+  "constraints": "Reuse the existing Tool Shed control plane, release machinery, App Server routing, and qualified Sol/Terra role policy. Dogfood the maintained Linux candidate before release. Installed workspaces consume a verified stable release. Keep common behavior portable and isolate only genuine Linux and Windows differences. During repair run changed-path tests plus one smoke; run the full deterministic Tool Shed validator once at the unchanged release boundary; run one native installation/update smoke and one real bounded campaign per supported platform. Preserve exact-root/path allowlists, dirty-target refusal, ChatGPT authentication with no API fallback, disabled network, no replay after mutation, truthful journals, backups, and rollback. Realistic CAMP execution must enforce predeclared cumulative budgets rather than report excess only after completion. Repair and Linux proof use normal GUI execution until the bounded path itself is ready for its App Server proof.",
   "decisions": [
     "Treat Tool Shed as the existing control plane and App Server as a focused local execution adapter.",
     "Optimize both model weighting and raw context: select the lowest adequate qualified model, send bounded context, compact successful evidence, minimize model turns, and keep the App Server transcript out of the foreground GUI.",
@@ -1210,9 +1508,12 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
     "Repair ordinary failures inside the milestone and campaign that exposed them, rerun the failed focused check, then one end-to-end smoke.",
     "Hard-block only unsafe or dirty declared targets, unqualified exact executables, authentication/no-API-fallback violations, failed declared correctness, or ambiguous post-mutation state.",
     "Keep native per-host operation as the first delivery boundary; defer central dispatch, macOS, hosted services, and commercial qualification.",
-    "Do not claim a numerical GUI token reduction where GUI telemetry is unavailable; prove one-command operation, model routing, bounded App Server metrics, and reduced foreground owner interaction."
+    "Do not claim a numerical GUI token reduction where GUI telemetry is unavailable; prove one-command operation, model routing, bounded App Server metrics, and reduced foreground owner interaction.",
+    "The 540,741- and 625,383-input-token Core workers supersede the fixture-only G5 efficiency conclusion without erasing its historical evidence.",
+    "Implement and prove shared cumulative usage bounds on Linux before repairing the Windows verifier transport.",
+    "The default CAMP ceiling is four observed model requests, 180,000 cumulative input tokens, 64 KiB cumulative serialized tool results, and 16 KiB for one result; crossing any ceiling interrupts and preserves compact recovery evidence."
   ],
-  "desired_outcome": "From one explicit Tool Shed command, the canonical maintained Linux workspace and installed native Linux and Windows workspaces can complete the next bounded campaign through App Server using the lowest adequate qualified model and effort, with truthful exactly-once verification, materially reduced foreground-session context and owner intervention, useful token telemetry, and one clear recovery action on failure.",
+  "desired_outcome": "One Tool Shed command completes representative campaigns on native Linux and Windows through the lowest adequate qualified model with proactive cumulative usage bounds, deterministic focused work, truthful journals, compact recovery, and materially lower token use than GUI-managed or runaway App Server execution.",
   "gates": [
     {
       "evidence_required": true,
@@ -1272,6 +1573,52 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       ],
       "title": "Owner utility gate",
       "unlocks_milestones": []
+    },
+    {
+      "evidence_required": true,
+      "id": "G6-LINUX-REALISTIC-BOUNDED",
+      "pass_criteria": "Focused tests prove live interruption at four observed model requests, 180,000 cumulative input tokens, 64 KiB cumulative tool results, or 16 KiB for one result; compact telemetry and journal state preserve mutation truth; one representative multi-file native Linux App Server campaign completes safely and verifies within all defaults with materially less than 540,741 input tokens.",
+      "requires_milestones": [
+        "M6-LINUX-REALISTIC-BOUNDS"
+      ],
+      "title": "Representative Linux usage-bound gate",
+      "unlocks_milestones": [
+        "M7-CORRECTIVE-RELEASE"
+      ]
+    },
+    {
+      "evidence_required": true,
+      "id": "G7-CORRECTIVE-RELEASE-USABLE",
+      "pass_criteria": "The unchanged candidate passes one full validator; content commit, provenance commit, annotated tag, manifest, and public release agree; the maintainer installed skill exact-diffs clean and a fresh session resolves the bounded CAMP policy.",
+      "requires_milestones": [
+        "M7-CORRECTIVE-RELEASE"
+      ],
+      "title": "Corrective release and maintainer parity gate",
+      "unlocks_milestones": [
+        "M8-WINDOWS-REALISTIC-REPROOF"
+      ]
+    },
+    {
+      "evidence_required": true,
+      "id": "G8-WINDOWS-REALISTIC-BOUNDED",
+      "pass_criteria": "The separately authorized Core upgrade uses the corrective release; built-in deterministic verification passes through its normal transport; a representative Windows CAMP completes within the shared model-request, input-token, and tool-result defaults; no Campaign 013 replay or Bactron deployment occurs.",
+      "requires_milestones": [
+        "M8-WINDOWS-REALISTIC-REPROOF"
+      ],
+      "title": "Representative Windows verifier and usage gate",
+      "unlocks_milestones": [
+        "M9-READOPTION"
+      ]
+    },
+    {
+      "evidence_required": true,
+      "id": "G9-OWNER-READOPTION",
+      "pass_criteria": "The one-command path is documented with enforceable defaults, compact interruption recovery, representative Linux and Windows usage, owner interactions, and explicit unsupported boundaries; fixture-only adoption claims are clearly superseded.",
+      "requires_milestones": [
+        "M9-READOPTION"
+      ],
+      "title": "Realistic owner utility gate",
+      "unlocks_milestones": []
     }
   ],
   "milestones": [
@@ -1318,6 +1665,42 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "outcome": "The owner has one concise command and recovery path for ordinary App Server campaign execution, real Linux and Windows results are summarized with raw and weighted usage plus owner interactions, the representative two-turn optimization has not materially regressed, and unsupported targets or limitations are explicit.",
       "phase": "P4-ADOPTION",
       "title": "Low-token App Server execution becomes an owner-usable Tool Shed path"
+    },
+    {
+      "depends_on": [
+        "M5-ADOPTION"
+      ],
+      "id": "M6-LINUX-REALISTIC-BOUNDS",
+      "outcome": "Tool Shed enforces cumulative model-request, input-token, and tool-result ceilings during CAMP execution, reports a compact safe recovery state on interruption, and completes one representative multi-file Linux campaign within the declared default budget.",
+      "phase": "P5-REALISTIC-BOUNDS",
+      "title": "Representative native Linux CAMP execution is proactively bounded"
+    },
+    {
+      "depends_on": [
+        "M6-LINUX-REALISTIC-BOUNDS"
+      ],
+      "id": "M7-CORRECTIVE-RELEASE",
+      "outcome": "One unchanged corrective candidate passes the full validator, is published with verified provenance, and the maintainer installed skill exactly matches the release.",
+      "phase": "P6-CORRECTIVE-DISTRIBUTION",
+      "title": "Bounded execution is released and synchronized"
+    },
+    {
+      "depends_on": [
+        "M7-CORRECTIVE-RELEASE"
+      ],
+      "id": "M8-WINDOWS-REALISTIC-REPROOF",
+      "outcome": "Core uses the corrective snapshot and installed skill, its built-in deterministic verifier transport succeeds without the repeatable stderr failure, and one representative Windows campaign completes inside the shared usage budget without deployment.",
+      "phase": "P7-WINDOWS-REPROOF",
+      "title": "Realistic native Windows execution is bounded and verifies reliably"
+    },
+    {
+      "depends_on": [
+        "M8-WINDOWS-REALISTIC-REPROOF"
+      ],
+      "id": "M9-READOPTION",
+      "outcome": "The daily command, hard ceilings, bounded-continuation recovery, Linux and Windows measurements, and remaining limitations are documented from representative evidence rather than tiny fixtures.",
+      "phase": "P8-READOPTION",
+      "title": "Low-token owner adoption is requalified from realistic evidence"
     }
   ],
   "non_goals": "Redesigning Tool Shed planning or campaign lifecycle; building another orchestrator, hosted service, remote cross-host dispatcher, or operating-system fork; automatic global App Server enablement; macOS qualification; commercial-scale compatibility matrices or support commitments; Bactron application deployment; replaying Bactron Core Campaign 013; unrelated doctor-warning cleanup.",
@@ -1347,17 +1730,47 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       ],
       "id": "P4-ADOPTION",
       "title": "Adopt the low-token operating loop"
+    },
+    {
+      "depends_on": [
+        "P4-ADOPTION"
+      ],
+      "id": "P5-REALISTIC-BOUNDS",
+      "title": "Bound representative Linux CAMP execution"
+    },
+    {
+      "depends_on": [
+        "P5-REALISTIC-BOUNDS"
+      ],
+      "id": "P6-CORRECTIVE-DISTRIBUTION",
+      "title": "Publish and synchronize the bounded execution contract"
+    },
+    {
+      "depends_on": [
+        "P6-CORRECTIVE-DISTRIBUTION"
+      ],
+      "id": "P7-WINDOWS-REPROOF",
+      "title": "Repair and re-prove realistic Windows execution"
+    },
+    {
+      "depends_on": [
+        "P7-WINDOWS-REPROOF"
+      ],
+      "id": "P8-READOPTION",
+      "title": "Requalify the owner operating loop"
     }
   ],
   "unknowns": [
     "The smallest currently useful Tool Shed improvement to use as the maintained-workspace dogfood edit; select it when the first campaign is prepared without broadening scope.",
     "Whether the first native Linux installed proof should use a disposable workspace or an existing owner-selected project; default to disposable unless the owner names a project.",
     "How much of the owner account limit maps to raw versus weighted model usage; report raw, cached, output, reasoning, weighted usage, turns, elapsed time, and owner interactions separately.",
-    "Which platform-specific defects, if any, the real Linux and Windows trials will expose."
+    "Which platform-specific defects, if any, the real Linux and Windows trials will expose.",
+    "Whether the first representative Linux proof completes within the default ceiling or exposes a smaller deterministic CAMP-splitting requirement.",
+    "Whether the repeated Windows verifier stderr transport failure is specific to the current Core snapshot, Codex build, or console transport."
   ]
 }
 ```
 
 ## Revision History
 
-- Revision 1: superseded on 2026-08-26.
+- Revision 2: executing on 2026-08-26.

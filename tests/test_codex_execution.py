@@ -11,7 +11,12 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
-from scripts.codex_app_server import AppServerError, AuthenticationError, CodexAppServerClient
+from scripts.codex_app_server import (
+    AppServerError,
+    AuthenticationError,
+    CodexAppServerClient,
+    usage_budget_breach,
+)
 from scripts.codex_cli_resolver import CodexCliResolution, CodexReadiness, CodexSource
 from scripts.app_server_control import (
     control_status,
@@ -196,6 +201,10 @@ for raw in sys.stdin:
         print(json.dumps({"method": "item/agentMessage/delta", "params": {"threadId": params["threadId"], "turnId": turn_id, "delta": reply}}), flush=True)
         usage = {"inputTokens": 10, "cachedInputTokens": 2, "outputTokens": 3, "reasoningOutputTokens": 1, "totalTokens": 13}
         print(json.dumps({"method": "thread/tokenUsage/updated", "params": {"threadId": params["threadId"], "turnId": turn_id, "tokenUsage": {"last": usage, "total": usage, "modelContextWindow": 1000}}}), flush=True)
+        if os.environ.get("FAKE_CODEX_BUDGET_STREAM") == "1":
+            active_turn_id = turn_id
+            active_thread_id = params["threadId"]
+            continue
         if os.environ.get("FAKE_CODEX_TOOL") == "1":
             item = {"id": "item_tool", "type": "commandExecution", "status": "completed", "command": "true"}
             print(json.dumps({"method": "item/completed", "params": {"threadId": params["threadId"], "turnId": turn_id, "item": item}}), flush=True)
@@ -260,6 +269,98 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertFalse(policy["networkAccess"])
         self.assertTrue(policy["excludeSlashTmp"])
         self.assertTrue(policy["excludeTmpdirEnvVar"])
+
+    def test_live_camp_usage_budget_classifies_each_ceiling_compactly(self) -> None:
+        budget = {
+            "max_model_turns": 4,
+            "max_input_tokens": 180_000,
+            "max_total_tool_result_bytes": 65_536,
+            "max_single_tool_result_bytes": 16_384,
+        }
+        cases = (
+            ({"model_turns": 4}, "model_turns"),
+            ({"input_tokens": 180_000}, "input_tokens"),
+            ({"total_tool_result_bytes": 65_536}, "total_tool_result_bytes"),
+            ({"largest_tool_result_bytes": 16_385}, "single_tool_result_bytes"),
+        )
+        defaults = {
+            "model_turns": 1,
+            "input_tokens": 10,
+            "total_tool_result_bytes": 10,
+            "largest_tool_result_bytes": 10,
+        }
+        for override, expected in cases:
+            with self.subTest(limit=expected):
+                finding = usage_budget_breach(budget, **(defaults | override))
+                self.assertIsNotNone(finding)
+                assert finding is not None
+                self.assertEqual(expected, finding["breached_limit"])
+                self.assertFalse(finding["output_retained"])
+                self.assertNotIn("prompt", json.dumps(finding))
+
+    def test_live_camp_budget_interrupt_preserves_mutation_truth_and_skips_verifier(self) -> None:
+        repository = self.root / "budget-camp-repo"
+        repository.mkdir()
+        subprocess.run(["git", "init", "-q", str(repository)], check=True)
+        subprocess.run(
+            ["git", "-C", str(repository), "config", "user.email", "test@example.com"],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(repository), "config", "user.name", "Tool Shed Test"],
+            check=True,
+        )
+        target = repository / "target.txt"
+        target.write_text("before\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(repository), "add", "target.txt"], check=True)
+        subprocess.run(
+            ["git", "-C", str(repository), "commit", "-qm", "baseline"], check=True
+        )
+        payload = json.loads(
+            (ROOT / "adapters" / "codex-app-server-config.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        payload["write_execution"]["camp_usage_budget"]["max_model_turns"] = 1
+        config = AppServerFeatureConfig(payload, source=self.root / "budget-config.json")
+        os.environ["FAKE_CODEX_CAMP_TARGET"] = str(target)
+        os.environ["FAKE_CODEX_BUDGET_STREAM"] = "1"
+        try:
+            with patch("scripts.codex_orchestration.sys.platform", "linux"):
+                result = execute_camp_if_enabled(
+                    "Change the supplied target from before to after.",
+                    cwd=repository,
+                    campaign="campaign-budget",
+                    camp="bounded-edit",
+                    expected_paths=(Path("target.txt"),),
+                    explicit_files=(Path("target.txt"),),
+                    verification_commands=(("python3", "-c", "raise SystemExit(0)"),),
+                    enable_override=True,
+                    config=config,
+                    policy=self.policy,
+                    codex=str(self.fake),
+                    telemetry_path=self.root / "budget-telemetry.jsonl",
+                )
+        finally:
+            os.environ.pop("FAKE_CODEX_CAMP_TARGET", None)
+            os.environ.pop("FAKE_CODEX_BUDGET_STREAM", None)
+        self.assertEqual("after\n", target.read_text(encoding="utf-8"))
+        self.assertEqual("interrupted", result["result"]["status"])
+        self.assertEqual(
+            "model_turns", result["result"]["usage_budget"]["breached_limit"]
+        )
+        self.assertTrue(result["result"]["usage_budget"]["interrupt_acknowledged"])
+        self.assertEqual([], result["verification"])
+        self.assertEqual(
+            "safe_unverified", result["mutation_journal"]["final_state"]
+        )
+        self.assertEqual(
+            ["target.txt"], result["mutation_journal"]["files_modified"]
+        )
+        self.assertEqual(
+            "reconcile_workspace_then_resume_bounded_camp", result["next_action"]
+        )
+        self.assertNotIn("after", json.dumps(result["result"]["usage_budget"]))
 
     def test_camp_outcomes_are_strict_and_machine_readable(self) -> None:
         outcome = parse_camp_outcome(
@@ -762,7 +863,16 @@ class CodexExecutionTests(unittest.TestCase):
     def test_feature_flags_preserve_gui_fallback_and_discussion(self) -> None:
         config = AppServerFeatureConfig.load(ROOT / "adapters" / "codex-app-server-config.json")
         self.assertEqual(config.context_delivery, "inline_relevant_files")
-        self.assertEqual(config.max_tool_result_bytes, 100_000)
+        self.assertEqual(config.max_tool_result_bytes, 16_384)
+        self.assertEqual(
+            config.camp_usage_budget,
+            {
+                "max_model_turns": 4,
+                "max_input_tokens": 180_000,
+                "max_total_tool_result_bytes": 65_536,
+                "max_single_tool_result_bytes": 16_384,
+            },
+        )
         inline = inline_context_prompt(
             config,
             ROOT,

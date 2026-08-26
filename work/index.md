@@ -2,7 +2,7 @@
 
 Generated from artifact headers. `work/index.json` contains the same navigation data for automation. Do not put durable project truth only here; keep current truth in docs or README files.
 
-Updated: 2026-08-25
+Updated: 2026-08-26
 
 ## Orientation
 
@@ -11,6 +11,7 @@ Updated: 2026-08-25
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
 | [work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md](work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md) | campaign | abandoned | 2026-08-24 | none | - |
 | [work/00-campaigns/abandoned/061-publish-and-synchronize-direct-app-server-dispatch.md](work/00-campaigns/abandoned/061-publish-and-synchronize-direct-app-server-dispatch.md) | campaign | abandoned | 2026-08-25 | none | - |
+| [work/00-campaigns/active/067-publish-and-synchronize-bounded-app-server-release.md](work/00-campaigns/active/067-publish-and-synchronize-bounded-app-server-release.md) | campaign | queued | 2026-08-26 | execute when selected from the active campaign queue | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -71,6 +72,7 @@ Updated: 2026-08-25
 | [work/00-campaigns/completed/063-repair-project-scoped-app-server-dispatch.md](work/00-campaigns/completed/063-repair-project-scoped-app-server-dispatch.md) | campaign | complete | 2026-08-25 | none | - |
 | [work/00-campaigns/completed/064-route-windows-verification-through-console-sandbox.md](work/00-campaigns/completed/064-route-windows-verification-through-console-sandbox.md) | campaign | complete | 2026-08-25 | none | - |
 | [work/00-campaigns/completed/065-adopt-low-token-app-server-campaign-loop.md](work/00-campaigns/completed/065-adopt-low-token-app-server-campaign-loop.md) | campaign | complete | 2026-08-25 | none | - |
+| [work/00-campaigns/completed/066-bound-realistic-app-server-campaign-growth.md](work/00-campaigns/completed/066-bound-realistic-app-server-campaign-growth.md) | campaign | complete | 2026-08-26 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -94,6 +96,8 @@ Updated: 2026-08-25
 | [work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md](work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md) | evidence | complete | 2026-08-20 | none | - |
 | [work/evidence/evidence-native-linux-installed-app-server-workflow.md](work/evidence/evidence-native-linux-installed-app-server-workflow.md) | evidence | complete | 2026-08-25 | use Campaign 060 to eliminate the nested wrapper and prove direct Linux dispatch before returning to the Windows consent gate | - |
 | [work/evidence/evidence-project-scoped-app-server-dispatch-v0-29-2.md](work/evidence/evidence-project-scoped-app-server-dispatch-v0-29-2.md) | - | complete | - | - | - |
+| [work/evidence/evidence-realistic-core-app-server-token-regression.md](work/evidence/evidence-realistic-core-app-server-token-regression.md) | evidence | complete | 2026-08-26 | none | - |
+| [work/evidence/evidence-realistic-linux-app-server-camp-budget.md](work/evidence/evidence-realistic-linux-app-server-camp-budget.md) | evidence | complete | 2026-08-26 | publish and synchronize the corrective release only after separate owner authorization | - |
 | [work/evidence/evidence-snapshot-upgrade-performance-and-retry-safety.md](work/evidence/evidence-snapshot-upgrade-performance-and-retry-safety.md) | evidence | complete | 2026-08-24 | none | work/00-campaigns/completed/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md |
 | [work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md](work/evidence/evidence-tool-shed-0-11-0-release-and-client-sync.md) | evidence | complete | 2026-08-09 | none | work/wp/completed/wp-evidence-responsive-tool-shed-execution.md |
 | [work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md](work/evidence/evidence-tool-shed-0-22-0-release-and-upgrade.md) | evidence | complete | 2026-08-18 | none | work/00-campaigns/completed/027-publish-and-verify-tool-shed-v0-22-0.md |
@@ -109,12 +113,13 @@ Updated: 2026-08-25
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/maps/map-disposable-completion-watchers-and-hosted-notifications.md](work/maps/map-disposable-completion-watchers-and-hosted-notifications.md) | project-map | deferred | 2026-08-18 | preserve the completed local watcher and wait for a concrete external/non-App-Server notification need before revisiting hosted work | - |
-| [work/maps/map-low-token-cross-platform-campaign-execution.md](work/maps/map-low-token-cross-platform-campaign-execution.md) | project-map | active | 2026-08-25 | execute the owner-authorized Campaign 059 Bactron Core snapshot upgrade and bounded Windows proof with Tool Shed v0.29.1 | - |
+| [work/maps/map-low-token-cross-platform-campaign-execution.md](work/maps/map-low-token-cross-platform-campaign-execution.md) | project-map | active | 2026-08-26 | obtain separate owner authorization to publish and synchronize the Linux-proven bounded App Server release | - |
 | [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | complete | 2026-08-20 | none | - |
 | [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
 | [work/roadmaps/roadmap-completion-watcher-program-r2.md](work/roadmaps/roadmap-completion-watcher-program-r2.md) | program-roadmap | approved | 2026-08-20 | derive campaigns for milestone M1-CONTRACT | none |
 | [work/roadmaps/roadmap-completion-watcher-program.md](work/roadmaps/roadmap-completion-watcher-program.md) | program-roadmap | superseded | 2026-08-20 | none | work/roadmaps/roadmap-completion-watcher-program-r2.md |
-| [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution.md) | program-roadmap | executing | 2026-08-25 | execute the first ready roadmap campaign through ts: next | none |
+| [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r2.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r2.md) | program-roadmap | executing | 2026-08-26 | execute the first ready roadmap campaign through ts: next | none |
+| [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution.md) | program-roadmap | superseded | 2026-08-26 | none | work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r2.md |
 | [work/spikes/spike-completion-watcher-protocol-and-failure-model.md](work/spikes/spike-completion-watcher-protocol-and-failure-model.md) | spike | complete | 2026-08-18 | none | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
 | [work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md](work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md) | spike | complete | 2026-08-09 | none | work/maps/map-tool-shed-evolution.md |
 | [work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md](work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md) | spike | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
@@ -145,6 +150,6 @@ Updated: 2026-08-25
 
 ## Summary
 
-- Total artifacts: 128
-- Active artifacts: 1
-- Completed/decided artifacts: 112
+- Total artifacts: 133
+- Active artifacts: 2
+- Completed/decided artifacts: 115

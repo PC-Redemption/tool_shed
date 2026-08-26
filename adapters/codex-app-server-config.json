@@ -44,7 +44,7 @@
     "restricted_read": false,
     "max_snapshot_bytes": 2000000,
     "max_inline_bytes": 100000,
-    "max_tool_result_bytes": 100000,
+    "max_tool_result_bytes": 16384,
     "warning_input_tokens": {
       "planning": 50000,
       "verification": 50000,
@@ -82,6 +82,12 @@
     "require_git": true,
     "require_explicit_path_scope": true,
     "retry_after_mutation": false,
-    "deployment_qualified": false
+    "deployment_qualified": false,
+    "camp_usage_budget": {
+      "max_model_turns": 4,
+      "max_input_tokens": 180000,
+      "max_total_tool_result_bytes": 65536,
+      "max_single_tool_result_bytes": 16384
+    }
   }
 }

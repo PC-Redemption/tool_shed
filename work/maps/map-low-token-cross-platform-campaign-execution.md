@@ -2,8 +2,8 @@
 
 Status: active
 Type: project-map
-Updated: 2026-08-25
-Next Action: execute the owner-authorized Campaign 059 Bactron Core snapshot upgrade and bounded Windows proof with Tool Shed v0.29.1
+Updated: 2026-08-26
+Next Action: obtain separate owner authorization to publish and synchronize the Linux-proven bounded App Server release
 Campaign: standalone
 Campaign Reason: source coordination surface for the approved, executing Program Roadmap
 
@@ -70,6 +70,13 @@ dispatcher release plus Campaign 059's bounded Core snapshot upgrade and Windows
 authorization applies to that declared campaign only; Campaign 013 replay and Bactron deployment
 remain excluded.
 
+On 2026-08-26, realistic Bactron Core execution contradicted the tiny-fixture adoption conclusion:
+two CAMP workers consumed 540,741 and 625,383 input tokens across 14 turns each. The owner approved
+a Linux-first corrective campaign. Local planning, implementation, focused testing, evidence, and
+campaign lifecycle work are authorized to continue automatically. Publishing a corrective Tool
+Shed release, synchronizing installed skills, upgrading Core's snapshot, and the operator-assisted
+Windows proof remain separate consent boundaries.
+
 ## Visual Map
 
 ```mermaid
@@ -87,6 +94,10 @@ flowchart LR
   M --> K[Prove installed native Windows]
   M --> L[Adopt as normal low-token execution loop]
   K --> L
+  L --> N[Observe realistic Core token regression]
+  N --> O[Enforce and prove Linux usage bounds]
+  O --> P[Publish and synchronize corrective release]
+  P --> Q[Repair Windows verifier transport and re-prove]
 ```
 
 Campaign 060 is an owner-directed Linux-first detour discovered from M3 evidence. It corrects the
@@ -124,16 +135,17 @@ It does not revise M4's outcome or grant Core mutation authority.
 - Completed enabling work: Campaign 040 proved material App Server token/turn reduction; Campaigns
   041 through 053 integrated and qualified routing, compatibility, executable resolution, and
   snapshot delivery; Campaign 054 repaired the generic verification handoff.
-- Current limiting condition: the repaired path has not completed the simple dogfood-to-release-to-
-  native-install loop, so the owner still cannot rely on it for everyday campaign execution.
+- Current limiting condition: the shared live budget is implemented and a representative Linux
+  CAMP completed in 40,016 input tokens and two turns, but downstream installs cannot use the
+  correction until a separately authorized release and skill synchronization occur.
 - Open measurement: report raw input, cached input, output, weighted usage, model turns, elapsed
   time, and owner interactions separately; do not claim a GUI token comparison that the GUI cannot
   expose.
 
 Ground:
 
-- Current next action: unblock and execute Campaign 059 through the approved bounded Windows/Core
-  route; do not replay Campaign 013 or deploy Bactron.
+- Current next action: after explicit publication authorization, run the single release validator,
+  publish the corrective version, and synchronize the maintainer skill. Do not upgrade Core yet.
 - Owner/context: human owner and Codex in `/home/jon/docker/tool_shed`; native Windows proof occurs
   through a normally launched Codex GUI on the work PC in `E:\dev\bactron-core`.
 - Verification: focused changed-path tests plus one real dogfood run during development; one full
@@ -145,12 +157,12 @@ Ground:
 | Workstream | Status | Lead Artifact | Depends On | Next Action |
 | --- | --- | --- | --- | --- |
 | Existing Tool Shed control plane | complete | current Tool Shed source and `work/` lifecycle | completed foundation and evolution work | preserve; do not redesign |
-| App Server shared execution core | dogfooded | `scripts/app_server_control.py` and Campaign 055 evidence | Campaigns 040-054 | preserve while proving installed native use |
-| Lean qualification policy | active | approved roadmap gates | owner dogfood-first decision | continue focused native-real-use gates without repeating the release suite |
+| App Server shared execution core | Linux-proven | `scripts/codex_orchestration.py` and Campaign 066 evidence | Campaigns 040-066 | preserve the live ceilings through release |
+| Lean qualification policy | active | approved roadmap gates | Campaign 066 realistic Linux evidence | run one full validator only at the authorized release boundary |
 | Minimum usable release | complete | milestone `M2-MINIMUM-RELEASE`, v0.28.0 evidence, and v0.29.1 dispatcher release evidence | successful maintained-workspace dogfood and direct Linux proof | preserve v0.29.1 and the synchronized maintainer skill |
 | Installed native Linux | complete | milestone `M3-LINUX-INSTALLED` plus Campaign 060 direct-dispatch evidence | verified release | preserve the direct one-call proof |
-| Installed native Windows | authorized and executing | milestone `M4-WINDOWS-INSTALLED` / Campaign 059 | verified v0.29.1 release and direct Linux dispatch | upgrade Core and complete one real asset-aware campaign |
-| Owner operating loop | planned | proposed milestone `M5-ADOPTION` | both native proofs | publish exact usage and recovery path, then use it for ordinary campaigns |
+| Installed native Windows | transport proven, realistic efficiency failed | Campaign 019 Core result and regression evidence | current v0.29.7 snapshot | wait for Linux bound and separately authorized corrective release |
+| Owner operating loop | reopened | corrective roadmap revision | realistic Linux proof complete; Windows pending | publish, re-prove Windows, then replace fixture-only guidance |
 
 ## Dependency Notes
 
@@ -176,8 +188,11 @@ You are here:
 
 - The direct Linux dispatcher is implemented, published as Tool Shed `0.29.1`, and synchronized to
   the maintained host with no nested Codex wrapper.
-- The remaining platform gate is the now-authorized Bactron Core snapshot upgrade and native
-  Windows proof, followed by ordinary-use adoption.
+- Tool Shed v0.29.7 and Core Campaign 019 prove the one-command mutation path works.
+- Representative execution invalidated the fixture-only low-token adoption claim. Campaign 066 now
+  enforces live ceilings and completed the representative Linux proof in 40,016 input tokens.
+- Campaign 067 is materialized at the separate publication and maintainer-synchronization consent
+  boundary; Core remains unchanged.
 
 Do next:
 
@@ -187,8 +202,12 @@ Do next:
 - [x] Materialize and execute the pre-authorized v0.28.0 release campaign.
 - [x] Execute the pre-authorized maintainer installed-skill synchronization and fresh-session smoke.
 - [x] Prove the released installed path on native Linux and eliminate the nested wrapper.
-- [ ] After explicit owner consent, prove the candidate path on native Windows in Bactron Core.
-- [ ] Adopt the command for ordinary campaign execution and track actual savings.
+- [x] After explicit owner consent, prove the candidate path on native Windows in Bactron Core.
+- [x] Adopt the command provisionally from the small two-turn fixtures.
+- [x] Enforce cumulative turn/input/tool-output bounds and prove them on realistic native Linux work.
+- [ ] After separate consent, publish and synchronize the corrective Tool Shed release.
+- [ ] After separate publication and Core-upgrade consent, repair Windows verifier transport and
+      prove the realistic Windows path within the same bound.
 
 Avoid for now:
 
@@ -207,5 +226,6 @@ Avoid for now:
 - Compatibility and forward qualification: `work/00-campaigns/completed/049-implement-minimum-version-dirty-read-qualification.md`, `work/00-campaigns/completed/050-make-codex-candidate-resolution-and-readiness-truthful.md`, `work/00-campaigns/completed/051-harden-dirty-qualification-cache-and-failure-semantics.md`, `work/00-campaigns/completed/052-qualify-release-and-field-verify-dirty-codex-forward-compatibility.md`
 - Snapshot delivery: `work/00-campaigns/completed/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md`
 - Verification handoff repair: `work/00-campaigns/completed/054-harden-app-server-camp-verification-handoff.md`
+- Realistic token regression: `work/evidence/evidence-realistic-core-app-server-token-regression.md`
 - Standing owner authorization: this map's `Standing Owner Authorization` section
 - Bactron Core enabling work: Campaign 014 in `E:\dev\bactron-core`

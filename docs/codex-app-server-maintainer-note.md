@@ -28,6 +28,12 @@ unsafe, and unexpected-path results fail closed. Mutated failures are never repl
 context warning or oversized tool result is a compact, enforceable finding that prevents lifecycle
 advance even when mutation and deterministic checks are otherwise safe.
 
+Workspace-writing CAMP also has a live default ceiling: four observed model requests, 180,000
+cumulative input tokens, 64 KiB cumulative serialized tool results, and 16 KiB for one result.
+Reaching a ceiling interrupts the active turn, skips reserved verification, preserves the Git
+journal, and returns either `resume_bounded_camp` or
+`reconcile_workspace_then_resume_bounded_camp`. Telemetry retains no raw tool output.
+
 The user-facing opt-ins are `ts: plan <request> --app-server`, `ts: verify <request>
 --app-server`, `ts: camp run <camp> --app-server`, and `ts: next --app-server`; the last invokes
 `app_server_dispatch.py` directly, with no nested `codex exec`, to perform normal next-action

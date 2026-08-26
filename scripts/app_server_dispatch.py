@@ -845,6 +845,7 @@ def _compact_success(
                 "tool_call_types": result.get("tool_call_types") or [],
                 "model_duration_seconds": result.get("duration_seconds"),
                 "camp_duration_seconds": execution.get("camp_duration_seconds"),
+                "usage_budget": result.get("usage_budget"),
             },
         },
         "journal": {
@@ -857,9 +858,16 @@ def _compact_success(
             "unexpected_paths": journal.get("unexpected_paths") or [],
             "verification_commands_run": deterministic.get("commands_run"),
             "verification_passed": deterministic.get("passed"),
+            "cancelled_or_interrupted": journal.get("cancelled_or_interrupted"),
+            "usage_budget": journal.get("usage_budget"),
         },
         "next_action": execution.get("next_action"),
-        "recovery_action": "none" if journal.get("final_state") == "verified" else "inspect the compact journal and do not replay after mutation",
+        "recovery_action": (
+            "none"
+            if journal.get("final_state") == "verified"
+            else execution.get("next_action")
+            or "inspect the compact journal and do not replay after mutation"
+        ),
     }
 
 

@@ -50,6 +50,67 @@ class TurnResult:
     tool_calls: int
     tool_call_types: tuple[str, ...]
     mutation_events: tuple[dict[str, Any], ...]
+    usage_budget: dict[str, Any] | None
+
+
+def usage_budget_breach(
+    budget: dict[str, int] | None,
+    *,
+    model_turns: int,
+    input_tokens: int,
+    total_tool_result_bytes: int,
+    largest_tool_result_bytes: int,
+) -> dict[str, Any] | None:
+    """Return the first compact live CAMP budget finding, without raw output."""
+
+    if budget is None:
+        return None
+    limits = {
+        "model_turns": int(budget.get("max_model_turns", 0)),
+        "input_tokens": int(budget.get("max_input_tokens", 0)),
+        "total_tool_result_bytes": int(
+            budget.get("max_total_tool_result_bytes", 0)
+        ),
+        "single_tool_result_bytes": int(
+            budget.get("max_single_tool_result_bytes", 0)
+        ),
+    }
+    if any(value <= 0 for value in limits.values()):
+        raise ValueError("every CAMP usage budget limit must be positive")
+    observed = {
+        "model_turns": max(0, model_turns),
+        "input_tokens": max(0, input_tokens),
+        "total_tool_result_bytes": max(0, total_tool_result_bytes),
+        "single_tool_result_bytes": max(0, largest_tool_result_bytes),
+    }
+    checks = (
+        (
+            "single_tool_result_bytes",
+            observed["single_tool_result_bytes"] > limits["single_tool_result_bytes"],
+        ),
+        (
+            "total_tool_result_bytes",
+            observed["total_tool_result_bytes"] >= limits["total_tool_result_bytes"],
+        ),
+        ("input_tokens", observed["input_tokens"] >= limits["input_tokens"]),
+        ("model_turns", observed["model_turns"] >= limits["model_turns"]),
+    )
+    breached = next((name for name, matched in checks if matched), None)
+    if breached is None:
+        return None
+    return {
+        "schema_version": 1,
+        "kind": "camp_usage_budget_reached",
+        "breached_limit": breached,
+        "limit": limits[breached],
+        "observed": observed[breached],
+        "limits": limits,
+        "observed_totals": observed,
+        "interrupt_requested": True,
+        "interrupt_acknowledged": None,
+        "interrupt_error_kind": None,
+        "output_retained": False,
+    }
 
 
 class CodexAppServerClient:
@@ -493,7 +554,14 @@ class CodexAppServerClient:
             raise AppServerError("Codex app-server turn/start returned no turn id")
         return str(turn["id"])
 
-    def wait_for_turn(self, thread_id: str, turn_id: str, *, timeout: float | None = None) -> TurnResult:
+    def wait_for_turn(
+        self,
+        thread_id: str,
+        turn_id: str,
+        *,
+        timeout: float | None = None,
+        usage_budget: dict[str, int] | None = None,
+    ) -> TurnResult:
         started = time.monotonic()
         deadline = time.monotonic() + (self.timeout if timeout is None else timeout)
         deferred: list[dict[str, Any]] = []
@@ -506,6 +574,34 @@ class CodexAppServerClient:
         model_turn_events: list[dict[str, Any]] = []
         tool_call_types: list[str] = []
         mutation_events: list[dict[str, Any]] = []
+        usage_budget_finding: dict[str, Any] | None = None
+        total_tool_result_bytes = 0
+        largest_tool_result_bytes = 0
+
+        def enforce_usage_budget(input_tokens: int) -> None:
+            nonlocal usage_budget_finding
+            if usage_budget_finding is not None:
+                return
+            finding = usage_budget_breach(
+                usage_budget,
+                model_turns=len(model_usage_updates),
+                input_tokens=input_tokens,
+                total_tool_result_bytes=total_tool_result_bytes,
+                largest_tool_result_bytes=largest_tool_result_bytes,
+            )
+            if finding is None:
+                return
+            usage_budget_finding = finding
+            try:
+                self.interrupt(
+                    thread_id,
+                    turn_id,
+                    timeout=min(5.0, max(0.1, deadline - time.monotonic())),
+                )
+                finding["interrupt_acknowledged"] = True
+            except AppServerError as error:
+                finding["interrupt_acknowledged"] = False
+                finding["interrupt_error_kind"] = error.kind or "app_server_error"
         try:
             while True:
                 message = self._next_notification(deadline)
@@ -564,6 +660,25 @@ class CodexAppServerClient:
                                     if isinstance(change, dict)
                                 ]
                             mutation_events.append(event)
+                            result_bytes = int(event.get("result_bytes") or 0)
+                            total_tool_result_bytes += max(0, result_bytes)
+                            largest_tool_result_bytes = max(
+                                largest_tool_result_bytes, result_bytes
+                            )
+                            current_input = 0
+                            if token_usage is not None:
+                                cumulative = token_usage.get("total")
+                                if isinstance(cumulative, dict):
+                                    current_input = int(
+                                        cumulative.get("inputTokens") or 0
+                                    )
+                                    if turn_usage_baseline is not None:
+                                        current_input = max(
+                                            0,
+                                            current_input
+                                            - turn_usage_baseline.get("inputTokens", 0),
+                                        )
+                            enforce_usage_budget(current_input)
                 elif method == "thread/tokenUsage/updated":
                     usage = params.get("tokenUsage")
                     if isinstance(usage, dict):
@@ -620,6 +735,17 @@ class CodexAppServerClient:
                                         "totalTokens",
                                     )
                                 }
+                        cumulative = usage.get("total")
+                        current_input = 0
+                        if isinstance(cumulative, dict):
+                            current_input = int(cumulative.get("inputTokens") or 0)
+                            if turn_usage_baseline is not None:
+                                current_input = max(
+                                    0,
+                                    current_input
+                                    - turn_usage_baseline.get("inputTokens", 0),
+                                )
+                        enforce_usage_budget(current_input)
                 elif method == "model/rerouted":
                     reroutes.append(dict(params))
                 elif method == "turn/completed":
@@ -660,6 +786,7 @@ class CodexAppServerClient:
                         tool_calls=len(tool_call_types),
                         tool_call_types=tuple(tool_call_types),
                         mutation_events=tuple(mutation_events),
+                        usage_budget=usage_budget_finding,
                     )
         finally:
             self._notifications.extendleft(reversed(deferred))

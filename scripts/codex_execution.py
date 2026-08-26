@@ -86,6 +86,7 @@ class ExecutionResult:
     tool_calls: int
     tool_call_types: tuple[str, ...]
     mutation_events: tuple[dict[str, Any], ...]
+    usage_budget: dict[str, Any] | None
     weighted_usage: dict[str, Any]
     app_server_user_agent: str
 
@@ -431,6 +432,7 @@ class CodexExecutionAdapter:
         context_mode: str = "workspace",
         context_delivery: str = "reference",
         warning_input_tokens: int | None = None,
+        usage_budget: dict[str, int] | None = None,
         restricted_read: bool = False,
         permission_profile: str | None = None,
         attempt: int = 1,
@@ -500,7 +502,11 @@ class CodexExecutionAdapter:
                 permission_profile=permission_profile,
                 output_schema=output_schema,
             )
-            turn = self.client.wait_for_turn(active_thread_id, turn_id)
+            turn = self.client.wait_for_turn(
+                active_thread_id,
+                turn_id,
+                usage_budget=usage_budget,
+            )
             actual_model = (
                 str(turn.reroutes[-1].get("toModel")) if turn.reroutes else selection.model
             )
@@ -535,6 +541,7 @@ class CodexExecutionAdapter:
                 tool_calls=turn.tool_calls,
                 tool_call_types=turn.tool_call_types,
                 mutation_events=turn.mutation_events,
+                usage_budget=turn.usage_budget,
                 weighted_usage=weighted_codex_usage(actual_model, turn.token_usage),
                 app_server_user_agent=self.client.user_agent,
             )
@@ -549,7 +556,7 @@ class CodexExecutionAdapter:
                 error=turn.error,
             )
             recorded = True
-            if turn.status != "completed":
+            if turn.status != "completed" and turn.usage_budget is None:
                 raise AppServerError(
                     f"Codex turn {turn.turn_id} ended with status {turn.status}",
                     details=turn.error,

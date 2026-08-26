@@ -306,6 +306,20 @@ types such as command execution, file change, MCP, dynamic-tool, and web-search 
 
 Prompts, responses, account email, tokens, and credentials are not written to telemetry.
 
+### Live CAMP usage ceiling
+
+CAMP execution limits growth while the App Server turn is active instead of merely warning after
+completion. The shipped defaults are four observed model requests, 180,000 cumulative input
+tokens, 64 KiB of cumulative serialized tool results, and 16 KiB for one result. The client checks
+compact token-usage and completed-item notifications and requests `turn/interrupt` as soon as a
+ceiling is reached. A completed two-turn CAMP is unaffected.
+
+An interrupted CAMP never advances lifecycle state or runs the reserved deterministic verifier.
+Its result retains only the reached limit, observed count, configured ceilings, interrupt
+acknowledgement, and the existing Git mutation journal. If no mutation occurred, recovery is
+`resume_bounded_camp`. If an authorized path changed, recovery is
+`reconcile_workspace_then_resume_bounded_camp`; automatic replay remains forbidden.
+
 ### Bounded CAMP token optimization
 
 Campaign 040 reduced the same representative controller-regression CAMP from 241,524 to 61,516
