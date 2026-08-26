@@ -19,7 +19,8 @@ Updated: 2026-08-26
 | [work/00-campaigns/abandoned/079-prove-command-free-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/abandoned/079-prove-command-free-first-pass-asset-aware-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
 | [work/00-campaigns/abandoned/080-prove-specified-command-free-first-pass-code-test-campaign-on-linux.md](work/00-campaigns/abandoned/080-prove-specified-command-free-first-pass-code-test-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
 | [work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
-| [work/00-campaigns/active/085-adopt-first-pass-app-server-preparation-in-core.md](work/00-campaigns/active/085-adopt-first-pass-app-server-preparation-in-core.md) | campaign | working | 2026-08-26 | execute the campaign completion gate | - |
+| [work/00-campaigns/active/085-adopt-first-pass-app-server-preparation-in-core.md](work/00-campaigns/active/085-adopt-first-pass-app-server-preparation-in-core.md) | campaign | blocked | 2026-08-26 | resolve blocker or decision: authorize Campaign 089 publication and maintainer skill synchronization; then re-upgrade Core and run a fresh first-attempt Windows proof under the existing Core authorization | - |
+| [work/00-campaigns/active/089-publish-and-synchronize-file-change-handoff-repair.md](work/00-campaigns/active/089-publish-and-synchronize-file-change-handoff-repair.md) | campaign | queued | 2026-08-26 | execute when selected from the active campaign queue | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -93,6 +94,7 @@ Updated: 2026-08-26
 | [work/00-campaigns/completed/084-publish-and-synchronize-first-pass-app-server-preparation.md](work/00-campaigns/completed/084-publish-and-synchronize-first-pass-app-server-preparation.md) | campaign | complete | 2026-08-26 | none | - |
 | [work/00-campaigns/completed/086-bound-explicit-reference-app-server-preparation.md](work/00-campaigns/completed/086-bound-explicit-reference-app-server-preparation.md) | campaign | complete | 2026-08-26 | none | - |
 | [work/00-campaigns/completed/087-publish-explicit-reference-preparation-repair.md](work/00-campaigns/completed/087-publish-explicit-reference-preparation-repair.md) | campaign | complete | 2026-08-26 | none | - |
+| [work/00-campaigns/completed/088-preserve-file-change-handoff-and-robust-doc-verification.md](work/00-campaigns/completed/088-preserve-file-change-handoff-and-robust-doc-verification.md) | campaign | complete | 2026-08-26 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -114,6 +116,7 @@ Updated: 2026-08-26
 | [work/evidence/evidence-completion-watcher-v1-release.md](work/evidence/evidence-completion-watcher-v1-release.md) | evidence | complete | 2026-08-19 | none | work/00-campaigns/completed/038-qualify-and-release-local-completion-watchers.md |
 | [work/evidence/evidence-core-explicit-reference-preparation-bound.md](work/evidence/evidence-core-explicit-reference-preparation-bound.md) | evidence | verified | 2026-08-26 | - | - |
 | [work/evidence/evidence-direct-linux-app-server-dispatch.md](work/evidence/evidence-direct-linux-app-server-dispatch.md) | evidence | complete | 2026-08-25 | return to the Campaign 059 Windows and Bactron Core consent boundary | - |
+| [work/evidence/evidence-file-change-handoff-and-robust-doc-verification.md](work/evidence/evidence-file-change-handoff-and-robust-doc-verification.md) | evidence | verified | 2026-08-26 | - | - |
 | [work/evidence/evidence-human-planning-mechanism-evaluation.md](work/evidence/evidence-human-planning-mechanism-evaluation.md) | evidence | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/evidence/evidence-linux-command-free-code-proof-underspecified.md](work/evidence/evidence-linux-command-free-code-proof-underspecified.md) | evidence | verified | 2026-08-26 | - | - |
 | [work/evidence/evidence-linux-first-pass-code-proof-interruption.md](work/evidence/evidence-linux-first-pass-code-proof-interruption.md) | evidence | complete | 2026-08-26 | replace the failed code/test and dependent asset-aware proofs in Roadmap Revision 4 | - |
@@ -148,7 +151,7 @@ Updated: 2026-08-26
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/maps/map-disposable-completion-watchers-and-hosted-notifications.md](work/maps/map-disposable-completion-watchers-and-hosted-notifications.md) | project-map | deferred | 2026-08-18 | preserve the completed local watcher and wait for a concrete external/non-App-Server notification need before revisiting hosted work | - |
-| [work/maps/map-low-token-cross-platform-campaign-execution.md](work/maps/map-low-token-cross-platform-campaign-execution.md) | project-map | active | 2026-08-26 | upgrade Core to verified Tool Shed v0.29.11 and resume Campaign 085's already-authorized Windows first-pass proof | - |
+| [work/maps/map-low-token-cross-platform-campaign-execution.md](work/maps/map-low-token-cross-platform-campaign-execution.md) | project-map | active | 2026-08-26 | obtain separate authority to publish and synchronize the locally proven post-v0.29.11 handoff and documentation-verifier correction, then resume Campaign 085's already-authorized Core upgrade and Windows proof | - |
 | [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | complete | 2026-08-20 | none | - |
 | [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
 | [work/roadmaps/roadmap-completion-watcher-program-r2.md](work/roadmaps/roadmap-completion-watcher-program-r2.md) | program-roadmap | approved | 2026-08-20 | derive campaigns for milestone M1-CONTRACT | none |
@@ -190,6 +193,6 @@ Updated: 2026-08-26
 
 ## Summary
 
-- Total artifacts: 173
-- Active artifacts: 2
-- Completed/decided artifacts: 134
+- Total artifacts: 176
+- Active artifacts: 3
+- Completed/decided artifacts: 135

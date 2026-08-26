@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import json
 import os
@@ -706,6 +707,8 @@ If a safe bounded CAMP can be prepared, set status to prepared and:
   unbounded listing or diff;
 - use platform-local executable paths that do not depend on shell activation;
 - use the exact current Python executable advertised in the preparation context for Python checks;
+- for prose or documentation checks, normalize whitespace before asserting multiword semantic
+  phrases so Markdown line wrapping cannot change the verification result;
 - do not assert that the whole Git worktree is clean or exclude only expected_paths from a clean
   diff check because the dispatcher persists the capsule and lifecycle state before execution;
 - exclude work/00-campaigns, Tool Shed snapshot machinery, Git metadata, deployment, production,
@@ -968,6 +971,14 @@ def _normalize_automatic_verification_commands(
                 continue
             if "--exit-code" in argv and "--quiet" not in argv:
                 argv[argv.index("--exit-code")] = "--quiet"
+        if _documentation_verifier_is_formatting_fragile(capsule, tuple(argv)):
+            raise DispatchError(
+                "automatic_preparation_output_risk",
+                "automatic documentation verification depends on raw Markdown line wrapping",
+                recovery_action=(
+                    "normalize document whitespace before asserting multiword semantic phrases"
+                ),
+            )
         commands.append(tuple(argv))
     if not commands:
         raise DispatchError(
@@ -986,6 +997,48 @@ def _normalize_automatic_verification_commands(
         execution_shape=capsule.execution_shape,
         estimated_model_turns=capsule.estimated_model_turns,
         estimated_max_tool_result_bytes=capsule.estimated_max_tool_result_bytes,
+    )
+
+
+def _documentation_verifier_is_formatting_fragile(
+    capsule: ExecutionCapsule,
+    command: tuple[str, ...],
+) -> bool:
+    """Recognize planner-produced raw phrase checks for Markdown documentation."""
+
+    if not any(path.suffix.lower() == ".md" for path in capsule.expected_paths):
+        return False
+    executable = Path(command[0]).name.lower()
+    if executable not in {
+        "python",
+        "python.exe",
+        "python3",
+        "python3.exe",
+        Path(sys.executable).name.lower(),
+    }:
+        return False
+    try:
+        code = command[command.index("-c") + 1]
+    except (ValueError, IndexError):
+        return False
+    compact = re.sub(r"\s+", " ", code.lower())
+    try:
+        tree = ast.parse(code)
+    except SyntaxError:
+        return False
+    has_multiword_literal = any(
+        isinstance(node, ast.Constant)
+        and isinstance(node.value, str)
+        and len(node.value.split()) > 1
+        for node in ast.walk(tree)
+    )
+    phrase_membership = (
+        "required" in compact and " not in " in compact and has_multiword_literal
+    )
+    split_join_normalization = ".join(" in compact and ".split()" in compact
+    regex_normalization = "re.sub" in compact and "\\s" in compact
+    return phrase_membership and not (
+        split_join_normalization or regex_normalization
     )
 
 

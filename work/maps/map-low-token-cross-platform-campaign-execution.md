@@ -3,7 +3,7 @@
 Status: active
 Type: project-map
 Updated: 2026-08-26
-Next Action: upgrade Core to verified Tool Shed v0.29.11 and resume Campaign 085's already-authorized Windows first-pass proof
+Next Action: obtain separate authority to publish and synchronize the locally proven post-v0.29.11 handoff and documentation-verifier correction, then resume Campaign 085's already-authorized Core upgrade and Windows proof
 Campaign: standalone
 Campaign Reason: source coordination surface for the approved, executing Program Roadmap
 
@@ -199,6 +199,12 @@ It does not revise M4's outcome or grant Core mutation authority.
   turn, exactly one `fileChange`, zero worker commands, an acknowledged first-file-change control
   stop, expected-path-only mutation, and Tool Shed-owned exactly-once verification. Together with
   Campaign 072, G11-LINUX-FIRST-PASS-RELIABLE is passed.
+- Core Campaign 022 proved v0.29.11 automatic preparation selected a tight one-file boundary, but
+  its completed first `fileChange` coincided with the fourth-turn ceiling and therefore skipped the
+  reserved verifier. The generated prose verifier was also sensitive to Markdown line wrapping.
+  Campaign 088 now passes 71 focused tests for a no-additional-request handoff, unchanged non-turn
+  ceilings, and whitespace-robust documentation verification. Publication and synchronization of
+  that local correction remain a separate consent boundary before another Core proof.
 - Open measurement: report raw input, cached input, output, weighted usage, model turns, elapsed
   time, and owner interactions separately; do not claim a GUI token comparison that the GUI cannot
   expose.
@@ -223,9 +229,9 @@ Ground:
 | Lean qualification policy | release-boundary blocked | approved roadmap gates | G11 Linux first-pass evidence | after separate consent, run one full validator on unchanged release inputs |
 | Minimum usable release | complete | milestone `M2-MINIMUM-RELEASE`, v0.28.0 evidence, and v0.29.1 dispatcher release evidence | successful maintained-workspace dogfood and direct Linux proof | preserve v0.29.1 and the synchronized maintainer skill |
 | Installed native Linux | complete | milestone `M3-LINUX-INSTALLED` plus Campaign 060 direct-dispatch evidence | verified release | preserve the direct one-call proof |
-| Installed native Windows | v0.29.10 installed; first-pass preparation failed closed | Campaign 085 Core result and Campaign 086 evidence | Campaign 087 corrective release | re-upgrade and resume the authorized Windows proof after publication |
-| First-pass App Server collateral | corrected release published | Roadmap Revision 7, Campaigns 071, 077, 082, 083, 086, and 087 | Core Campaigns 018-022 field results | preserve the v0.29.11 preparation bound through Core proof |
-| Owner operating loop | executing Core adoption | Campaign 085 | Campaign 087 complete | upgrade Core and resume the authorized Windows proof |
+| Installed native Windows | v0.29.11 installed; first file change needs corrected handoff release | Campaign 085 and Core Campaign 022 evidence | local Campaign 088 correction plus separate publication | after publication, re-upgrade and resume the authorized Windows proof |
+| First-pass App Server collateral | post-v0.29.11 correction locally proven | Roadmap Revision 7, Campaigns 071, 077, 082, 083, 086-088 | Core Campaigns 018-022 field results | publish and synchronize the narrow handoff/verifier correction after consent |
+| Owner operating loop | blocked at publication boundary | Campaign 085 | locally complete Campaign 088; corrective release not authorized | authorize publication/sync, then continue existing Core authorization |
 
 ## Dependency Notes
 
@@ -282,7 +288,10 @@ You are here:
   upgrade completed exactly, but first-pass preparation selected unrelated Core artifacts and
   exceeded the focused-context threshold before mutation. Campaign 086 now bounds explicit-reference
   context; Campaign 087 published it as v0.29.11 and synchronized the maintainer skill. Campaign 085
-  is now executing the authorized Core re-upgrade and Windows proof.
+  upgraded Core and ran Campaign 022. That proof exposed a same-boundary turn-ceiling handoff defect
+  and Markdown-formatting-fragile verifier. Campaign 088 repairs both locally and passes 71 focused
+  tests; a new release and installed-skill synchronization require separate authority before the
+  already-authorized Core proof can resume.
 
 Do next:
 
@@ -308,6 +317,9 @@ Do next:
 - [x] Repair and focused-test the explicit-reference context-padding defect exposed by Core.
 - [x] After separate consent, publish and synchronize the Campaign 086 corrective patch through
       Campaign 087 as Tool Shed v0.29.11.
+- [x] Repair and focused-test the same-boundary file-change handoff and formatting-fragile
+      documentation verifier exposed by Core Campaign 022.
+- [ ] After separate consent, publish and synchronize that narrow correction.
 - [ ] Re-upgrade Core and resume the already-authorized ordinary first-attempt Windows proof, then
       close the owner-adoption gate.
 
@@ -334,5 +346,6 @@ Avoid for now:
 - Realistic owner readoption history: `work/evidence/evidence-realistic-low-token-owner-readoption.md`
 - Core explicit-reference preparation bound: `work/evidence/evidence-core-explicit-reference-preparation-bound.md`
 - Tool Shed v0.29.11 release and maintainer synchronization: `work/evidence/evidence-tool-shed-v0-29-11-release-and-maintainer-sync.md`
+- File-change handoff and robust documentation verification: `work/evidence/evidence-file-change-handoff-and-robust-doc-verification.md`
 - Standing owner authorization: this map's `Standing Owner Authorization` section
 - Bactron Core enabling work: Campaign 014 in `E:\dev\bactron-core`

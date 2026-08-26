@@ -203,6 +203,11 @@ for raw in sys.stdin:
             with open(camp_target, "w", encoding="utf-8") as stream:
                 stream.write("after\n")
             item = {"id": "item_change", "type": "fileChange", "status": "completed", "changes": [{"path": camp_target, "kind": "update"}]}
+            if os.environ.get("FAKE_CODEX_FILE_CHANGE_AT_TURN_CEILING") == "1":
+                for sequence in range(1, 5):
+                    last = {"inputTokens": 10 + sequence, "cachedInputTokens": 2, "outputTokens": 3, "reasoningOutputTokens": 1, "totalTokens": 13 + sequence}
+                    total = {"inputTokens": 10 * sequence, "cachedInputTokens": 2 * sequence, "outputTokens": 3 * sequence, "reasoningOutputTokens": sequence, "totalTokens": 13 * sequence}
+                    print(json.dumps({"method": "thread/tokenUsage/updated", "params": {"threadId": params["threadId"], "turnId": turn_id, "tokenUsage": {"last": last, "total": total, "modelContextWindow": 1000}}}), flush=True)
             print(json.dumps({"method": "item/completed", "params": {"threadId": params["threadId"], "turnId": turn_id, "item": item}}), flush=True)
             outcome = os.environ.get(
                 "FAKE_CODEX_CAMP_OUTCOME", "step_ready_for_verification"
@@ -212,7 +217,8 @@ for raw in sys.stdin:
             reply = "FAKE_OK"
         print(json.dumps({"method": "item/agentMessage/delta", "params": {"threadId": params["threadId"], "turnId": turn_id, "delta": reply}}), flush=True)
         usage = {"inputTokens": 10, "cachedInputTokens": 2, "outputTokens": 3, "reasoningOutputTokens": 1, "totalTokens": 13}
-        print(json.dumps({"method": "thread/tokenUsage/updated", "params": {"threadId": params["threadId"], "turnId": turn_id, "tokenUsage": {"last": usage, "total": usage, "modelContextWindow": 1000}}}), flush=True)
+        if os.environ.get("FAKE_CODEX_FILE_CHANGE_AT_TURN_CEILING") != "1":
+            print(json.dumps({"method": "thread/tokenUsage/updated", "params": {"threadId": params["threadId"], "turnId": turn_id, "tokenUsage": {"last": usage, "total": usage, "modelContextWindow": 1000}}}), flush=True)
         if os.environ.get("FAKE_CODEX_BUDGET_STREAM") == "1":
             active_turn_id = turn_id
             active_thread_id = params["threadId"]
@@ -410,6 +416,139 @@ class CodexExecutionTests(unittest.TestCase):
             "reconcile_workspace_then_resume_bounded_camp", result["next_action"]
         )
         self.assertNotIn("after", json.dumps(result["result"]["usage_budget"]))
+
+    def test_completed_file_change_at_turn_ceiling_runs_reserved_verifier(self) -> None:
+        repository = self.root / "handoff-ceiling-camp-repo"
+        repository.mkdir()
+        subprocess.run(["git", "init", "-q", str(repository)], check=True)
+        subprocess.run(
+            ["git", "-C", str(repository), "config", "user.email", "test@example.com"],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(repository), "config", "user.name", "Tool Shed Test"],
+            check=True,
+        )
+        target = repository / "target.txt"
+        target.write_text("before\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(repository), "add", "target.txt"], check=True)
+        subprocess.run(
+            ["git", "-C", str(repository), "commit", "-qm", "baseline"], check=True
+        )
+        os.environ["FAKE_CODEX_CAMP_TARGET"] = str(target)
+        os.environ["FAKE_CODEX_FILE_CHANGE_AT_TURN_CEILING"] = "1"
+        try:
+            result = execute_camp_if_enabled(
+                "Make one bounded edit and stop at its completed file change.",
+                cwd=repository,
+                campaign="campaign-handoff-ceiling",
+                camp="bounded-edit",
+                expected_paths=(Path("target.txt"),),
+                explicit_files=(Path("target.txt"),),
+                verification_commands=(("python3", "-c", "raise SystemExit(0)"),),
+                enable_override=True,
+                config=AppServerFeatureConfig.load(
+                    ROOT / "adapters" / "codex-app-server-config.json"
+                ),
+                policy=self.policy,
+                codex=str(self.fake),
+                telemetry_path=self.root / "handoff-ceiling-telemetry.jsonl",
+            )
+        finally:
+            os.environ.pop("FAKE_CODEX_CAMP_TARGET", None)
+            os.environ.pop("FAKE_CODEX_FILE_CHANGE_AT_TURN_CEILING", None)
+        self.assertEqual(4, result["result"]["model_turns"])
+        self.assertIsNone(result["result"]["usage_budget"])
+        self.assertEqual(
+            "worker_file_change_ready", result["result"]["control_stop"]["kind"]
+        )
+        self.assertEqual(1, len(result["verification"]))
+        self.assertTrue(result["verification"][0]["passed"])
+        self.assertEqual("verified", result["mutation_journal"]["final_state"])
+        self.assertEqual("advance_to_next_camp_step", result["next_action"])
+
+    def test_completed_file_change_does_not_override_other_live_ceilings(self) -> None:
+        usage = {
+            "last": {
+                "inputTokens": 50,
+                "cachedInputTokens": 0,
+                "outputTokens": 1,
+                "reasoningOutputTokens": 0,
+                "totalTokens": 51,
+            },
+            "total": {
+                "inputTokens": 50,
+                "cachedInputTokens": 0,
+                "outputTokens": 1,
+                "reasoningOutputTokens": 0,
+                "totalTokens": 51,
+            },
+        }
+        item = {
+            "id": "item_change",
+            "type": "fileChange",
+            "status": "completed",
+            "changes": [{"path": "target.txt", "kind": "update"}],
+        }
+
+        def wait_with_budget(budget: dict[str, int]):
+            client = CodexAppServerClient(codex=str(self.fake), timeout=1)
+            client.interrupt = Mock(return_value={})
+            client._notifications.extend(
+                [
+                    {
+                        "method": "thread/tokenUsage/updated",
+                        "params": {
+                            "threadId": "thread",
+                            "turnId": "turn",
+                            "tokenUsage": usage,
+                        },
+                    },
+                    {
+                        "method": "item/completed",
+                        "params": {
+                            "threadId": "thread",
+                            "turnId": "turn",
+                            "item": item,
+                        },
+                    },
+                    {
+                        "method": "turn/completed",
+                        "params": {
+                            "threadId": "thread",
+                            "turn": {"id": "turn", "status": "interrupted"},
+                        },
+                    },
+                ]
+            )
+            return client.wait_for_turn(
+                "thread",
+                "turn",
+                usage_budget=budget,
+                stop_after_file_change=True,
+            )
+
+        input_limited = wait_with_budget(
+            {
+                "max_model_turns": 4,
+                "max_input_tokens": 1,
+                "max_total_tool_result_bytes": 65_536,
+                "max_single_tool_result_bytes": 16_384,
+            }
+        )
+        self.assertEqual("input_tokens", input_limited.usage_budget["breached_limit"])
+
+        tool_limited = wait_with_budget(
+            {
+                "max_model_turns": 1,
+                "max_input_tokens": 180_000,
+                "max_total_tool_result_bytes": 1,
+                "max_single_tool_result_bytes": 1,
+            }
+        )
+        self.assertEqual(
+            "single_tool_result_bytes", tool_limited.usage_budget["breached_limit"]
+        )
 
     def test_camp_outcomes_are_strict_and_machine_readable(self) -> None:
         outcome = parse_camp_outcome(

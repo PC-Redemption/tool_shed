@@ -633,6 +633,30 @@ class CodexAppServerClient:
             except AppServerError as error:
                 finding["interrupt_acknowledged"] = False
                 finding["interrupt_error_kind"] = error.kind or "app_server_error"
+
+        def preserve_completed_file_change_handoff(input_tokens: int) -> None:
+            """Let a completed mutation hand off at the turn ceiling, not beyond it."""
+
+            nonlocal usage_budget_finding
+            if (
+                usage_budget_finding is None
+                or usage_budget_finding.get("breached_limit") != "model_turns"
+            ):
+                return
+            non_turn_finding = usage_budget_breach(
+                usage_budget,
+                model_turns=0,
+                input_tokens=input_tokens,
+                total_tool_result_bytes=total_tool_result_bytes,
+                largest_tool_result_bytes=largest_tool_result_bytes,
+            )
+            if non_turn_finding is None:
+                usage_budget_finding = None
+                return
+            for key in ("interrupt_acknowledged", "interrupt_error_kind"):
+                if key in usage_budget_finding:
+                    non_turn_finding[key] = usage_budget_finding[key]
+            usage_budget_finding = non_turn_finding
         try:
             while True:
                 message = self._next_notification(deadline)
@@ -717,9 +741,12 @@ class CodexAppServerClient:
                                             current_input
                                             - turn_usage_baseline.get("inputTokens", 0),
                                         )
-                            enforce_usage_budget(current_input)
                             if item_type == "fileChange" and stop_after_file_change:
+                                enforce_usage_budget(current_input)
+                                preserve_completed_file_change_handoff(current_input)
                                 request_control_stop("worker_file_change_ready", item)
+                            else:
+                                enforce_usage_budget(current_input)
                 elif method == "thread/tokenUsage/updated":
                     usage = params.get("tokenUsage")
                     if isinstance(usage, dict):

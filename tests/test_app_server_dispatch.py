@@ -522,6 +522,7 @@ class AppServerDispatchTests(unittest.TestCase):
         self.assertIn("do not assert that the whole Git worktree is clean", prompt)
         self.assertIn("forbidden to use commandExecution at any point", prompt)
         self.assertIn("first\n  completed file change as the verification handoff", prompt)
+        self.assertIn("normalize whitespace before asserting multiword semantic", prompt)
         self.assertIn(f"src/proof.py ({source.stat().st_size} bytes;", context)
 
     def test_generic_provider_portability_campaign_excerpts_code_before_routing_docs(self) -> None:
@@ -632,6 +633,58 @@ class AppServerDispatchTests(unittest.TestCase):
             ((Path(sys.executable).as_posix(), "-c", "assert True"),),
             capsule.verification_commands,
         )
+
+    def test_automatic_preparation_rejects_formatting_fragile_markdown_verifier(self) -> None:
+        path = self.add_campaign("dispatch-proof", with_capsule=False)
+        campaign = campaign_queue.parse_campaign(path)
+        document = self.workspace / "docs" / "app_server_camp_preparation.md"
+        document.parent.mkdir()
+        document.write_text("source-fresh preparation\n", encoding="utf-8")
+
+        def prepared(code: str) -> SimpleNamespace:
+            return SimpleNamespace(
+                status="completed",
+                text=json.dumps(
+                    {
+                        "status": "prepared",
+                        "reason": "bounded documentation correction",
+                        "execution_shape": "atomic",
+                        "estimated_model_turns": 2,
+                        "estimated_max_tool_result_bytes": 2048,
+                        "schema_version": 1,
+                        "campaign_id": "dispatch-proof",
+                        "camp": "document-source-fresh-preparation",
+                        "prompt": "Correct the bounded preparation documentation.",
+                        "expected_paths": ["docs/app_server_camp_preparation.md"],
+                        "context_files": [],
+                        "verification_commands": [["python3", "-c", code]],
+                    }
+                ),
+                context_warning=None,
+                mutation_events=(),
+            )
+
+        fragile = (
+            "from pathlib import Path; text=Path('docs/app_server_camp_preparation.md')"
+            ".read_text(); required=['expected-path starting states', 'first completed fileChange']; "
+            "missing=[phrase for phrase in required if phrase not in text]; assert not missing"
+        )
+        with self.assertRaises(DispatchError) as raised:
+            _parse_automatic_preparation(self.workspace, campaign, prepared(fragile))
+        self.assertEqual("automatic_preparation_output_risk", raised.exception.category)
+
+        robust = (
+            "from pathlib import Path; text=' '.join(Path('docs/app_server_camp_preparation.md')"
+            ".read_text().split()); required=['expected-path starting states', "
+            "'first completed fileChange']; missing=[phrase for phrase in required if phrase not in text]; "
+            "assert not missing"
+        )
+        capsule, _ = _parse_automatic_preparation(
+            self.workspace,
+            campaign,
+            prepared(robust),
+        )
+        self.assertEqual(1, len(capsule.verification_commands))
 
     def test_automatic_preparation_rejects_oversized_inline_context(self) -> None:
         path = self.add_campaign("dispatch-proof", with_capsule=False)
