@@ -1,9 +1,9 @@
 # Publish and Synchronize File-Change Handoff Repair
 
-Status: queued
+Status: working
 Type: campaign
 Updated: 2026-08-26
-Next Action: execute when selected from the active campaign queue
+Next Action: execute the campaign completion gate
 Campaign ID: publish-and-synchronize-file-change-handoff-repair
 Campaign Number: 089
 Outcome: Publish the locally proven file-change handoff and whitespace-robust documentation-verifier correction as a verified Tool Shed patch release and synchronize the maintainer installed skill so Campaign 085 can resume under its existing Core authorization.

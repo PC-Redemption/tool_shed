@@ -10,7 +10,7 @@
     "adapters/codex-app-server-config.json": "d79964bc2371a39d50b7bcad534af133564e55bbf491baf4f3031b36e01b7e49",
     "adapters/codex-app-server-qualifications.json": "995ccd3bea135448b316045ea240c10d272f4c7e2ff65085111e0380cef947c1",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "9d19681f826135deecc9b554dbe5cbada4679aad754adecaf6a37a36670cea10",
+    "adapters/codex-skill-releases.json": "06b9c6c88f048e78ae78342a8a26f68b525093463a0277ac4e7ad9642f609ff5",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "95069c265c5384c7e62e91be7cad996eb1ce4c13f43ca57f5051c0487e2f9c02",
     "docs/codex-app-server-alpha-requalification-2026-08-24.md": "be240e9b4b63db13689c69c9fec9a870627fc39a85d5176ee4c6ce6ad256721c",
@@ -47,14 +47,14 @@
     "schemas/completion-watcher/v1/watch-descriptor.schema.json": "e6b54939fb06111b7a9f687ceb9be281a9e8dc389bdc28a72d9ee3078eb5fe4f",
     "schemas/completion-watcher/v1/watch-record.schema.json": "7455db4c2e7a271ec8efbd7b0828143a141dcd1daa55d25540132ab0b53a5b1d",
     "scripts/app_server_control.py": "0eca268c61639d2920b72ed2578758cc2a3a33a6121ab720f48fc225e3e123d3",
-    "scripts/app_server_dispatch.py": "792116bb0dd514db698fc9afbf9f0c7a69a826a329a9892cc2f297f816e6a5d5",
+    "scripts/app_server_dispatch.py": "810c771f807eb7510b654ee55cc142f8a594fd042f02a8e1cef2b50ad4db63ae",
     "scripts/build_docs_site.py": "083e95ed555f3e174d0259a8e2a353e96b6f3adaf5c4c9d5129671404134935f",
     "scripts/campaign_queue.py": "ae6cc4f32db134bd25eac061f92652c82ab4376888f6d57364b2c8886cd19652",
     "scripts/check_provider_adapters.py": "acbf0c355a00f380cd1b2c201992be51f77a3bb857c1b5d569c1badc8a114051",
     "scripts/check_shed_version.py": "00bef60c378246e8bdb8d91709192e51316f1d11b2397e5517741c999e8d497d",
     "scripts/check_stale_paths.py": "fc3db5f5848eb6e7c510447508e31b684e554b8bafc176816c30aaf73a7276fd",
     "scripts/check_work_tree.py": "966e72958b947eb4da3105c557faf1670b742eba4389d433fcb6c9e0559f3220",
-    "scripts/codex_app_server.py": "de6b3460734874f17499ab013e8e59406847957a2e0c2fd2de8e67d46522dae7",
+    "scripts/codex_app_server.py": "8551db99e4ae9fb865cd04aa37b01d6b62c0e082a53e9fac1b78faa1aa31be7f",
     "scripts/codex_app_server_compatibility.py": "eeeb86538033ecdc5f9d72c5402fbf85e90fa1f39f5ea8eea76e4c4395fa147b",
     "scripts/codex_app_server_write_qualification.py": "87ca950aea60f40f39b0f849c151bdd92cdf2dfc6407c2de4b6dd2ef47558f88",
     "scripts/codex_camp_execution.py": "b4262ab572b4e0bf2cfc74acc575b10a21700a4c50e269fc43182dde2ec6a0a7",
@@ -146,34 +146,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
-  "notes": "Bound explicit-reference App Server preparation context",
-  "release_commit": "4a483253e7a0b828008f1fc453025e31a05d6795",
-  "release_qualification": {
-    "attested_at": "2026-08-26T16:45:46Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "d740896c470e02ba526ed08a6d2a8b40865764e67951583e6f8a97db65402766"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "8fc34912f27434fefea4870607350a6543c3293666e4efd96d55b320739c42d6"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "b62203b7c1c21f03dc77e42d714db6b0d742550c3524a4dc33d67c5c283cc54e"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "74ee83963f0c20eef755bcae7f51c0caaa35fe3ce2f7001cbcfcf381911d0a45"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "4a483253e7a0b828008f1fc453025e31a05d6795"
-  },
-  "release_tag": "v0.29.11",
-  "released_at": "2026-08-26T16:45:46Z",
-  "shed_version": "0.29.11",
+  "notes": "Preserve first file-change verification handoff and robust documentation checks",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.29.12",
+  "released_at": null,
+  "shed_version": "0.29.12",
   "updated_at": "2026-08-26",
   "updater_mutation_paths": [
     {
