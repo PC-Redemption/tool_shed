@@ -3,7 +3,7 @@
 Status: active
 Type: project-map
 Updated: 2026-08-26
-Next Action: obtain separate owner authorization to publish and synchronize the Linux-proven bounded App Server release
+Next Action: approve Roadmap Revision 3 for first-pass App Server collateral preparation, then derive its first corrective milestone
 Campaign: standalone
 Campaign Reason: source coordination surface for the approved, executing Program Roadmap
 
@@ -14,6 +14,13 @@ Shed select the lowest adequate model and effort, provide bounded context, execu
 campaign with minimal owner intervention, and return a compact truthful result. Dogfood the path in
 the canonical maintained Linux workspace, then distribute and prove the same operator experience in
 installed native Linux and Windows workspaces.
+
+The execution layer is owner-usable only when Tool Shed also prepares correct first-pass execution
+collateral. An ordinary ready campaign must reach `ts: next --app-server` with stable semantic
+preparation intent, have exact paths, context, commands, and budgets resolved against fresh source
+state immediately before execution, and be repaired or split before a worker starts when the work
+cannot fit safely. Eventual success after manual capsule edits, worker replay, or preventable
+post-mutation reconciliation does not satisfy this outcome.
 
 This is a pre-commercial, owner-utility program. Real useful execution is the primary evidence.
 Testing remains smart and proportional: focused checks during repair, one full deterministic suite
@@ -77,6 +84,15 @@ campaign lifecycle work are authorized to continue automatically. Publishing a c
 Shed release, synchronizing installed skills, upgrading Core's snapshot, and the operator-assisted
 Windows proof remain separate consent boundaries.
 
+Later Core Campaigns 018 through 021 showed that hard runtime ceilings alone do not make the path
+reliable: automatic preparation can choose oversized context, unavailable executables, broad or
+transport-fragile verification, and work that cannot finish inside the worker's turn or tool-result
+limits. The owner therefore authorized this program to continue through local first-pass collateral
+design, implementation, focused Linux proof, campaign derivation, and campaign execution without
+repeating known approval phrases. Public release, installed-skill synchronization, Core snapshot
+upgrade, operator-assisted Windows execution, and Bactron deployment retain their existing consent
+boundaries.
+
 ## Visual Map
 
 ```mermaid
@@ -98,6 +114,11 @@ flowchart LR
   N --> O[Enforce and prove Linux usage bounds]
   O --> P[Publish and synchronize corrective release]
   P --> Q[Repair Windows verifier transport and re-prove]
+  Q --> R[Observe repeated first-pass collateral failures]
+  R --> S[Define early preparation contract]
+  S --> T[Validate repair or split before worker launch]
+  T --> U[Prove first-pass Linux execution across real task shapes]
+  U --> V[Separately authorize release and Core adoption proof]
 ```
 
 Campaign 060 is an owner-directed Linux-first detour discovered from M3 evidence. It corrects the
@@ -130,22 +151,24 @@ It does not revise M4's outcome or grant Core mutation authority.
 1,000 ft:
 
 - Existing capability: Tool Shed already provides plans, roadmaps, campaigns, safety boundaries,
-  versioned snapshots, installers, skill synchronization, App Server routing, token telemetry, and
-  a two-turn optimized CAMP path.
+  versioned snapshots, installers, skill synchronization, App Server routing, token telemetry,
+  runtime ceilings, and a bounded CAMP path.
 - Completed enabling work: Campaign 040 proved material App Server token/turn reduction; Campaigns
   041 through 053 integrated and qualified routing, compatibility, executable resolution, and
   snapshot delivery; Campaign 054 repaired the generic verification handoff.
-- Current limiting condition: the shared live budget is implemented and a representative Linux
-  CAMP completed in 40,016 input tokens and two turns, but downstream installs cannot use the
-  correction until a separately authorized release and skill synchronization occur.
+- Current limiting condition: execution transport and hard ceilings work, but automatic collateral
+  preparation occurs too late, validates mostly schema and path safety, persists a capsule before
+  proving that it fits the worker budget, and then reuses that capsule without a source-freshness
+  binding. Recent Core runs therefore required preventable recovery even when product checks later
+  passed directly.
 - Open measurement: report raw input, cached input, output, weighted usage, model turns, elapsed
   time, and owner interactions separately; do not claim a GUI token comparison that the GUI cannot
   expose.
 
 Ground:
 
-- Current next action: after explicit publication authorization, run the single release validator,
-  publish the corrective version, and synchronize the maintainer skill. Do not upgrade Core yet.
+- Current next action: establish and approve Roadmap Revision 3, then implement and prove first-pass
+  collateral preparation locally on Linux. Do not publish or upgrade Core yet.
 - Owner/context: human owner and Codex in `/home/jon/docker/tool_shed`; native Windows proof occurs
   through a normally launched Codex GUI on the work PC in `E:\dev\bactron-core`.
 - Verification: focused changed-path tests plus one real dogfood run during development; one full
@@ -162,7 +185,8 @@ Ground:
 | Minimum usable release | complete | milestone `M2-MINIMUM-RELEASE`, v0.28.0 evidence, and v0.29.1 dispatcher release evidence | successful maintained-workspace dogfood and direct Linux proof | preserve v0.29.1 and the synchronized maintainer skill |
 | Installed native Linux | complete | milestone `M3-LINUX-INSTALLED` plus Campaign 060 direct-dispatch evidence | verified release | preserve the direct one-call proof |
 | Installed native Windows | transport proven, realistic efficiency failed | Campaign 019 Core result and regression evidence | current v0.29.7 snapshot | wait for Linux bound and separately authorized corrective release |
-| Owner operating loop | reopened | corrective roadmap revision | realistic Linux proof complete; Windows pending | publish, re-prove Windows, then replace fixture-only guidance |
+| First-pass App Server collateral | corrective work required | Roadmap Revision 3 | Core Campaigns 018-021 field results | define early semantic intent, validate exact late-bound collateral, and split before worker launch |
+| Owner operating loop | reopened | corrective roadmap revision | transport and ceilings proven; first-pass preparation not proven | prove Linux first-pass reliability, then separately release and adopt in Core |
 
 ## Dependency Notes
 
@@ -170,6 +194,13 @@ Ground:
   selection, lifecycle transitions, verification decisions, and the next action.
 - Model selection alone changes weighted usage; bounded context, compact deterministic evidence,
   fewer turns, and no GUI transcript carryover reduce raw tokens.
+- App Server collateral has two entry points: campaign materialization records stable semantic
+  preparation intent, while dispatch resolves exact paths, context, commands, executables, and
+  budgets against current source state. Neither layer may guess product behavior from a stale
+  persisted capsule.
+- Before persistence or worker launch, deterministic preparation must reject or repair unavailable
+  executables, excessive context, likely oversized tool output, insufficient turns, broad lifecycle
+  assertions, and non-atomic work. Work that cannot fit must be split into a bounded campaign step.
 - The common core must not fork by operating system. Native differences stay behind narrow Linux
   and Windows adapters and receive only their relevant focused tests.
 - Hard blockers are limited to unsafe/dirty declared targets, unqualified exact executables,
@@ -191,8 +222,11 @@ You are here:
 - Tool Shed v0.29.7 and Core Campaign 019 prove the one-command mutation path works.
 - Representative execution invalidated the fixture-only low-token adoption claim. Campaign 066 now
   enforces live ceilings and completed the representative Linux proof in 40,016 input tokens.
-- Campaign 067 is materialized at the separate publication and maintainer-synchronization consent
-  boundary; Core remains unchanged.
+- Revision 2 completed transport, release, cross-platform execution, runtime bounds, and realistic
+  readoption through Campaign 069. Subsequent Core Campaigns 018-021 contradicted its implication
+  that ordinary campaigns are reliably prepared on the first attempt.
+- Revision 3 must preserve that history while reopening owner adoption around pre-execution
+  collateral quality. Core remains unchanged until a separately authorized release and upgrade.
 
 Do next:
 
@@ -205,13 +239,22 @@ Do next:
 - [x] After explicit owner consent, prove the candidate path on native Windows in Bactron Core.
 - [x] Adopt the command provisionally from the small two-turn fixtures.
 - [x] Enforce cumulative turn/input/tool-output bounds and prove them on realistic native Linux work.
-- [ ] After separate consent, publish and synchronize the corrective Tool Shed release.
-- [ ] After separate publication and Core-upgrade consent, repair Windows verifier transport and
+- [x] After separate consent, publish and synchronize the corrective Tool Shed release.
+- [x] After separate publication and Core-upgrade consent, repair Windows verifier transport and
       prove the realistic Windows path within the same bound.
+- [ ] Define a campaign-level App Server preparation contract and source-freshness rule.
+- [ ] Validate predicted context, executable, verification, tool-output, turn, and atomicity limits
+      before capsule persistence or worker launch; automatically repair or split unsafe work.
+- [ ] Prove first-pass behavior on Linux across representative documentation, code/test, and
+      asset-or-binary-aware campaign shapes with no manual capsule repair, replay, or reconciliation.
+- [ ] After separate consent, publish and synchronize the proven correction.
+- [ ] After separate Core-upgrade and Windows-operation consent, run one ordinary Core campaign on
+      the first attempt and close the owner-adoption gate.
 
 Avoid for now:
 
-- Do not redesign Tool Shed's planning or campaign system.
+- Do not redesign unrelated Tool Shed planning or campaign lifecycle behavior; add only the
+  preparation contract and transitions needed for reliable App Server execution.
 - Do not build another orchestrator, hosted service, remote dispatcher, or operating-system fork.
 - Do not require commercial-grade compatibility matrices before owner use.
 - Do not replay Bactron Core Campaign 013 or deploy the Bactron application.
@@ -227,5 +270,7 @@ Avoid for now:
 - Snapshot delivery: `work/00-campaigns/completed/053-make-stable-snapshot-upgrades-fast-observable-and-retry-safe.md`
 - Verification handoff repair: `work/00-campaigns/completed/054-harden-app-server-camp-verification-handoff.md`
 - Realistic token regression: `work/evidence/evidence-realistic-core-app-server-token-regression.md`
+- Realistic Windows budget and preparation repair: `work/evidence/evidence-windows-realistic-app-server-budget-v0-29-8.md`
+- Realistic owner readoption history: `work/evidence/evidence-realistic-low-token-owner-readoption.md`
 - Standing owner authorization: this map's `Standing Owner Authorization` section
 - Bactron Core enabling work: Campaign 014 in `E:\dev\bactron-core`

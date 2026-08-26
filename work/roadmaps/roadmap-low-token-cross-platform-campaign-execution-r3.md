@@ -1,18 +1,18 @@
 # Program Roadmap: Low-token cross-platform campaign execution
 
-Status: superseded
+Status: executing
 Type: program-roadmap
 Updated: 2026-08-26
-Next Action: none
+Next Action: execute the first ready roadmap campaign through ts: next
 Roadmap ID: low-token-cross-platform-campaign-execution
-Revision: 2
+Revision: 3
 Source Project Map: work/maps/map-low-token-cross-platform-campaign-execution.md
-Source State Token: 730ef8e35683d6e5
-Proposal Token: d08c2adbde79cae7
+Source State Token: d75f61892ec8bde9
+Proposal Token: 991e8bbc34fe7378
 Approved: 2026-08-26
 Current Milestone: M1-MAINTAINER-DOGFOOD
-Supersedes: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution.md
-Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r3.md
+Supersedes: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r2.md
+Superseded By: none
 
 ## Roadmap Definition
 
@@ -650,6 +650,56 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "state_token": "a0e726b290015ef0"
     },
     {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/066-bound-realistic-app-server-campaign-growth.md",
+      "phase": null,
+      "state_token": "63e0b156534ba1bb"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/067-publish-and-synchronize-bounded-app-server-release.md",
+      "phase": null,
+      "state_token": "eb91fc959e95baae"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/068-repair-and-reprove-windows-app-server-campaign-path.md",
+      "phase": null,
+      "state_token": "f555af411d1a260d"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/069-requalify-realistic-low-token-owner-loop.md",
+      "phase": null,
+      "state_token": "eb0b971199edb31a"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/070-publish-synchronize-and-upgrade-app-server-repair.md",
+      "phase": null,
+      "state_token": "4c2aeb74c60cafe3"
+    },
+    {
       "classification": "remaining",
       "conflicts": [],
       "evidence": "Type campaign; Status deferred",
@@ -851,7 +901,7 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "milestone": null,
       "path": "work/evidence/evidence-low-token-app-server-owner-adoption.md",
       "phase": null,
-      "state_token": "a89422352b1621fa"
+      "state_token": "dce651bf3e0829d8"
     },
     {
       "classification": "completed",
@@ -884,14 +934,34 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "state_token": "a3ea5ec5083ca149"
     },
     {
-      "classification": "active",
+      "classification": "completed",
       "conflicts": [],
-      "evidence": "Type evidence; Status active",
+      "evidence": "Type evidence; Status complete",
       "mapping_state": "unmapped",
       "milestone": null,
       "path": "work/evidence/evidence-realistic-core-app-server-token-regression.md",
       "phase": null,
-      "state_token": "dddf89d67143f514"
+      "state_token": "7564f1f13f50c4af"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-realistic-linux-app-server-camp-budget.md",
+      "phase": null,
+      "state_token": "3ab4eab0a8897ca3"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-realistic-low-token-owner-readoption.md",
+      "phase": null,
+      "state_token": "f3c4bc21b89ef05f"
     },
     {
       "classification": "completed",
@@ -981,6 +1051,26 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "evidence": "Type evidence; Status complete",
       "mapping_state": "unmapped",
       "milestone": null,
+      "path": "work/evidence/evidence-tool-shed-v0-29-8-release-and-maintainer-sync.md",
+      "phase": null,
+      "state_token": "982a62e8b69d868b"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-tool-shed-v0-29-9-release-sync-core-upgrade.md",
+      "phase": null,
+      "state_token": "ee46a34dc5bd27e0"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
       "path": "work/evidence/evidence-w1-dev-smb-access.md",
       "phase": null,
       "state_token": "d71487e94bd74a02"
@@ -1006,6 +1096,16 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "path": "work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md",
       "phase": null,
       "state_token": "5cb35b63904386b6"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type evidence; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-windows-realistic-app-server-budget-v0-29-8.md",
+      "phase": null,
+      "state_token": "9670ce7f7818061f"
     },
     {
       "classification": "excluded",
@@ -1055,7 +1155,7 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "milestone": null,
       "path": "work/maps/map-low-token-cross-platform-campaign-execution.md",
       "phase": null,
-      "state_token": "ff2035382d309cf6"
+      "state_token": "022980f4ebfd8f4d"
     },
     {
       "classification": "completed",
@@ -1293,9 +1393,12 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
     "The maintained Tool Shed workspace is a native Linux dogfood target and Bactron Core on the work PC is the first native Windows installed target.",
     "The existing role policy is adequate for the first usable release: Sol/high for planning or explicit escalation, Terra/medium for campaign execution, and Terra/low for verification.",
     "A bounded disposable or owner-approved Linux workspace can prove installed-mode behavior without requiring a fleet inventory.",
-    "Observed ordinary defects can be repaired inside the campaign that exposed them without creating detour campaigns."
+    "Observed ordinary defects can be repaired inside the campaign that exposed them without creating detour campaigns.",
+    "Core Campaigns 018 through 021 are representative enough to prove that runtime ceilings alone do not provide first-pass reliability.",
+    "Conservative deterministic feasibility checks can catch the observed collateral failures without attempting to predict arbitrary product behavior.",
+    "The shared preparation behavior can be implemented and proven on Linux before requiring operator-assisted Windows work."
   ],
-  "authority_boundaries": "Roadmap approval does not execute campaigns, publish releases, synchronize installed skills, upgrade snapshots, or deploy applications. Campaign-plan approval only materializes the exact milestone campaigns. Every external mutation remains inside its materialized campaign and declared work level. App Server is explicit opt-in until the owner separately changes that policy. No target outside the named maintained Tool Shed, a bounded native Linux install target, and Bactron Core may be mutated. The corrective Linux implementation and proof are authorized. Publishing the corrective release, synchronizing installed skills, upgrading the Core snapshot, and operator-assisted Windows proof remain separate authorization boundaries.",
+  "authority_boundaries": "Roadmap approval and campaign-plan materialization do not independently authorize publication, installed-skill synchronization, downstream snapshot upgrades, operator-assisted Windows execution, or deployment. The owner has authorized local Tool Shed design, implementation, focused tests, Linux first-pass proofs, durable evidence, campaign lifecycle updates, and automatic continuation through those stages. Publishing and synchronizing the corrective release require separate owner consent. Upgrading Core and running the final Windows adoption proof require separate owner consent after publication. Bactron deployment, destructive recovery, credentials, and unknown targets remain excluded.",
   "candidate_campaigns": [
     {
       "campaign_id": "dogfood-maintained-tool-shed-app-server-execution",
@@ -1497,9 +1600,129 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       ],
       "title": "Requalify the realistic low-token owner loop",
       "unlocks_gate": "G9-OWNER-READOPTION"
+    },
+    {
+      "campaign_id": "make-app-server-collateral-correct-before-worker-launch",
+      "completion_gate": "G10-PRELAUNCH-COLLATERAL-SAFE passes with focused contract, freshness, feasibility, repair-or-reduction, persistence, and dispatcher evidence.",
+      "decision": "none",
+      "depends_on": [
+        "requalify-realistic-low-token-owner-loop"
+      ],
+      "milestone": "M10-FIRST-PASS-PREPARATION",
+      "outcome": "Move collateral correctness ahead of worker launch while preserving one-command execution and the existing bounded CAMP runner.",
+      "primary_focus_areas": [
+        "provider-portability"
+      ],
+      "request": "Using normal GUI execution, add a compact App Server preparation contract to campaign creation and roadmap materialization so stable semantic intent is available before dispatch without requiring exact paths too early. At ts: next --app-server, resolve exact paths, context, executables, deterministic verification, and budgets against current campaign and source state. Bind persisted automatic capsules to that state; regenerate stale capsules. Before persistence or worker launch, deterministically reject or repair unavailable executables, protected or broad paths, excessive context, likely oversized verification output, insufficient turn budget, and non-atomic work; reduce work to one bounded executable slice when safe. Never replay after mutation and retain the existing CAMP runner and safety controls. Run focused changed-path tests plus one dispatcher smoke for unsafe and valid preparation. Do not publish, synchronize installed skills, upgrade Core, run the full validator, or deploy anything.",
+      "supporting_focus_areas": [
+        "campaign-lifecycle",
+        "workspace-safety"
+      ],
+      "title": "Make App Server collateral correct before worker launch",
+      "unlocks_gate": "G10-PRELAUNCH-COLLATERAL-SAFE"
+    },
+    {
+      "campaign_id": "prove-first-pass-documentation-campaign-on-linux",
+      "completion_gate": "The documentation proof contributes passing evidence to G11 with no manual capsule repair, replay, or preventable reconciliation.",
+      "decision": "none",
+      "depends_on": [
+        "make-app-server-collateral-correct-before-worker-launch"
+      ],
+      "milestone": "M11-LINUX-FIRST-PASS-PROOF",
+      "outcome": "A fresh useful documentation campaign completes from one App Server command using automatically prepared current collateral.",
+      "primary_focus_areas": [
+        "provider-portability"
+      ],
+      "request": "Select one small useful documentation correction in the maintained Tool Shed workspace that has an exact path and focused assertion. Start it through ts: next --app-server with no manually authored execution capsule. Capture preparation source binding, preparation and execution usage, turns, tool-result bytes, journal, and exactly-once verification. Complete only if the first worker attempt verifies within default budgets and changes only declared paths. Repair any shared preparation defect in the owning M10 implementation before retrying this proof; do not edit the proof capsule manually, publish, synchronize skills, or run the full suite.",
+      "supporting_focus_areas": [
+        "campaign-lifecycle"
+      ],
+      "title": "Prove first-pass documentation preparation on Linux",
+      "unlocks_gate": "none"
+    },
+    {
+      "campaign_id": "prove-first-pass-code-test-campaign-on-linux",
+      "completion_gate": "The code/test proof contributes passing evidence to G11 with scoped output, first-attempt execution, and exactly-once verification.",
+      "decision": "none",
+      "depends_on": [
+        "prove-first-pass-documentation-campaign-on-linux"
+      ],
+      "milestone": "M11-LINUX-FIRST-PASS-PROOF",
+      "outcome": "A fresh bounded code-and-test campaign completes from one App Server command without preparation repair after launch.",
+      "primary_focus_areas": [
+        "provider-portability"
+      ],
+      "request": "Select one small useful code-and-focused-test improvement in the maintained Tool Shed workspace. Start it through ts: next --app-server with no manually authored execution capsule. The automatic preparation must select exact source/test paths and a deterministic verifier whose output fits the declared limit. Capture source binding, preparation and execution usage, turns, tool-result bytes, journal, and exactly-once verification. Complete only if the first worker attempt verifies within default budgets and changes only declared paths. Do not publish, synchronize skills, upgrade clients, or run the full suite.",
+      "supporting_focus_areas": [
+        "campaign-lifecycle",
+        "workspace-safety"
+      ],
+      "title": "Prove first-pass code and test preparation on Linux",
+      "unlocks_gate": "none"
+    },
+    {
+      "campaign_id": "prove-first-pass-asset-aware-campaign-on-linux",
+      "completion_gate": "G11-LINUX-FIRST-PASS-RELIABLE passes across all three task shapes with first-pass or prelaunch-reduction evidence.",
+      "decision": "none",
+      "depends_on": [
+        "prove-first-pass-code-test-campaign-on-linux"
+      ],
+      "milestone": "M11-LINUX-FIRST-PASS-PROOF",
+      "outcome": "A fresh asset-aware campaign is safely prepared and completed or reduced before worker launch without oversized context or tool output.",
+      "primary_focus_areas": [
+        "provider-portability"
+      ],
+      "request": "Select a bounded useful Tool Shed task whose repository context includes binary or generated assets but whose authorized mutation remains a small exact path set. Start it through ts: next --app-server with no manually authored execution capsule. Automatic preparation must exclude binary payloads and generated evidence from inline context, retain only bounded metadata or text context, and predict a verifier that fits output limits. Capture source binding, usage, turns, tool-result bytes, journal, and exactly-once verification. Complete only on first-worker verification or a correct pre-worker bounded reduction requiring no manual capsule repair. Do not publish, synchronize skills, upgrade clients, or run the full suite.",
+      "supporting_focus_areas": [
+        "workspace-safety",
+        "campaign-lifecycle"
+      ],
+      "title": "Prove first-pass asset-aware preparation on Linux",
+      "unlocks_gate": "G11-LINUX-FIRST-PASS-RELIABLE"
+    },
+    {
+      "campaign_id": "publish-and-synchronize-first-pass-app-server-preparation",
+      "completion_gate": "G12-FIRST-PASS-RELEASE-USABLE passes with one full validator, verified provenance, exact installed-skill parity, and a fresh-session smoke.",
+      "decision": "separate owner publication and synchronization authorization required",
+      "depends_on": [
+        "prove-first-pass-asset-aware-campaign-on-linux"
+      ],
+      "milestone": "M12-FIRST-PASS-DISTRIBUTION",
+      "outcome": "Make the Linux-proven first-pass preparation contract available to new maintainer sessions through a verified release.",
+      "primary_focus_areas": [
+        "qualification-release"
+      ],
+      "request": "After separate owner publication authorization, freeze unchanged Linux-proven inputs, run the complete Tool Shed validator once, publish the next semantic release through the documented provenance flow, verify the public release, synchronize the maintainer installed skill with one bounded backup and exact diff, and run one fresh-session first-pass preparation smoke. Do not upgrade Core or deploy applications.",
+      "supporting_focus_areas": [
+        "provider-portability",
+        "snapshot-delivery"
+      ],
+      "title": "Publish and synchronize first-pass App Server preparation",
+      "unlocks_gate": "G12-FIRST-PASS-RELEASE-USABLE"
+    },
+    {
+      "campaign_id": "adopt-first-pass-app-server-preparation-in-core",
+      "completion_gate": "G13-CORE-FIRST-PASS-OWNER-READY passes with exact upgrade, first-attempt execution, exactly-once verification, bounded usage, and no deployment.",
+      "decision": "separate owner Core upgrade and operator-assisted Windows authorization required",
+      "depends_on": [
+        "publish-and-synchronize-first-pass-app-server-preparation"
+      ],
+      "milestone": "M13-CORE-FIRST-PASS-ADOPTION",
+      "outcome": "A fresh ordinary Core campaign completes on its first automatically prepared Windows App Server attempt.",
+      "primary_focus_areas": [
+        "provider-portability"
+      ],
+      "request": "After separate owner Core-upgrade and operator-assisted Windows authorization, upgrade Core's disconnected Tool Shed snapshot and installed skill to the verified first-pass release with bounded backups. From the normal logged-in Windows GUI console, run one fresh ordinary non-production Core campaign through ts: next --app-server without manually authoring or repairing its capsule. Capture source binding, preparation and execution usage, turns, tool-result bytes, expected and actual paths, journal, and exactly-once verification. Complete only if the first worker attempt succeeds without replay or preventable reconciliation. Do not replay completed campaigns or deploy Bactron.",
+      "supporting_focus_areas": [
+        "snapshot-delivery",
+        "workspace-safety",
+        "campaign-lifecycle"
+      ],
+      "title": "Adopt first-pass App Server preparation in Core",
+      "unlocks_gate": "G13-CORE-FIRST-PASS-OWNER-READY"
     }
   ],
-  "constraints": "Reuse the existing Tool Shed control plane, release machinery, App Server routing, and qualified Sol/Terra role policy. Dogfood the maintained Linux candidate before release. Installed workspaces consume a verified stable release. Keep common behavior portable and isolate only genuine Linux and Windows differences. During repair run changed-path tests plus one smoke; run the full deterministic Tool Shed validator once at the unchanged release boundary; run one native installation/update smoke and one real bounded campaign per supported platform. Preserve exact-root/path allowlists, dirty-target refusal, ChatGPT authentication with no API fallback, disabled network, no replay after mutation, truthful journals, backups, and rollback. Realistic CAMP execution must enforce predeclared cumulative budgets rather than report excess only after completion. Repair and Linux proof use normal GUI execution until the bounded path itself is ready for its App Server proof.",
+  "constraints": "Reuse the existing Tool Shed control plane, release machinery, App Server routing, qualified Sol/Terra role policy, and bounded CAMP runner. Add only the preparation metadata and transitions needed to make collateral correct before worker launch. Stable semantic intent is recorded when a campaign is created or materialized; exact paths, context, executables, verification commands, and budgets are resolved against current source state immediately before execution. Unsafe, stale, over-budget, or non-atomic work is repaired, regenerated, or reduced to one bounded executable slice before persistence and launch. During implementation run focused changed-path tests and one dispatcher smoke; use three representative Linux task shapes for field proof; run the full validator once only at the separately authorized release boundary. Preserve exact-root/path allowlists, dirty-target refusal, ChatGPT authentication with no API fallback, disabled network, no replay after mutation, truthful journals, backups, and rollback.",
   "decisions": [
     "Treat Tool Shed as the existing control plane and App Server as a focused local execution adapter.",
     "Optimize both model weighting and raw context: select the lowest adequate qualified model, send bounded context, compact successful evidence, minimize model turns, and keep the App Server transcript out of the foreground GUI.",
@@ -1511,9 +1734,15 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
     "Do not claim a numerical GUI token reduction where GUI telemetry is unavailable; prove one-command operation, model routing, bounded App Server metrics, and reduced foreground owner interaction.",
     "The 540,741- and 625,383-input-token Core workers supersede the fixture-only G5 efficiency conclusion without erasing its historical evidence.",
     "Implement and prove shared cumulative usage bounds on Linux before repairing the Windows verifier transport.",
-    "The default CAMP ceiling is four observed model requests, 180,000 cumulative input tokens, 64 KiB cumulative serialized tool results, and 16 KiB for one result; crossing any ceiling interrupts and preserves compact recovery evidence."
+    "The default CAMP ceiling is four observed model requests, 180,000 cumulative input tokens, 64 KiB cumulative serialized tool results, and 16 KiB for one result; crossing any ceiling interrupts and preserves compact recovery evidence.",
+    "Measure first-pass success rather than eventual success: no manual capsule repair, worker replay, or preventable post-mutation reconciliation.",
+    "Record stable semantic App Server preparation intent at campaign creation or roadmap materialization, but late-bind exact execution collateral immediately before launch.",
+    "Bind persisted automatic capsules to source state and regenerate them when relevant campaign or workspace inputs are stale.",
+    "Run deterministic feasibility checks before persistence and launch for context size, executable availability, verification scope and likely output, turn sufficiency, protected paths, and atomicity.",
+    "Repair or reduce unsafe preparation before worker launch; reserve post-mutation reconciliation for exceptional runtime divergence.",
+    "Use focused tests and three representative Linux task shapes before the release boundary; do not impose commercial-scale qualification."
   ],
-  "desired_outcome": "One Tool Shed command completes representative campaigns on native Linux and Windows through the lowest adequate qualified model with proactive cumulative usage bounds, deterministic focused work, truthful journals, compact recovery, and materially lower token use than GUI-managed or runaway App Server execution.",
+  "desired_outcome": "One Tool Shed command completes ordinary representative campaigns on native Linux and Windows through the lowest adequate qualified model, with correct source-fresh first-pass collateral, proactive usage bounds, deterministic focused work, truthful journals, compact recovery, and materially lower token use than GUI-managed or repeatedly repaired App Server execution.",
   "gates": [
     {
       "evidence_required": true,
@@ -1618,6 +1847,54 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
         "M9-READOPTION"
       ],
       "title": "Realistic owner utility gate",
+      "unlocks_milestones": [
+        "M10-FIRST-PASS-PREPARATION"
+      ]
+    },
+    {
+      "evidence_required": true,
+      "id": "G10-PRELAUNCH-COLLATERAL-SAFE",
+      "pass_criteria": "Focused tests prove stable early preparation intent, exact late binding, source-state invalidation, executable and protected-path checks, context and likely-output budgets, verification scoping, turn sufficiency, and automatic repair or bounded reduction before persistence; one focused dispatcher smoke reaches no worker with unsafe collateral and one worker with valid collateral.",
+      "requires_milestones": [
+        "M10-FIRST-PASS-PREPARATION"
+      ],
+      "title": "Prelaunch collateral correctness gate",
+      "unlocks_milestones": [
+        "M11-LINUX-FIRST-PASS-PROOF"
+      ]
+    },
+    {
+      "evidence_required": true,
+      "id": "G11-LINUX-FIRST-PASS-RELIABLE",
+      "pass_criteria": "Fresh documentation, code/test, and asset-aware Linux campaigns are automatically prepared from current source and each either completes and verifies on its first worker attempt or is safely reduced before any worker starts; executable cases require zero manual capsule edits, zero worker replay, zero preventable post-mutation reconciliation, expected-path-only journals, exactly-once deterministic verification, and execution within all default budgets.",
+      "requires_milestones": [
+        "M11-LINUX-FIRST-PASS-PROOF"
+      ],
+      "title": "Representative Linux first-pass gate",
+      "unlocks_milestones": [
+        "M12-FIRST-PASS-DISTRIBUTION"
+      ]
+    },
+    {
+      "evidence_required": true,
+      "id": "G12-FIRST-PASS-RELEASE-USABLE",
+      "pass_criteria": "After separate owner authorization, the unchanged Linux-proven candidate passes one full validator; content commit, provenance commit, annotated tag, manifest, and public release agree; the maintainer installed skill exact-diffs clean and a fresh session resolves the first-pass preparation contract.",
+      "requires_milestones": [
+        "M12-FIRST-PASS-DISTRIBUTION"
+      ],
+      "title": "First-pass release and maintainer parity gate",
+      "unlocks_milestones": [
+        "M13-CORE-FIRST-PASS-ADOPTION"
+      ]
+    },
+    {
+      "evidence_required": true,
+      "id": "G13-CORE-FIRST-PASS-OWNER-READY",
+      "pass_criteria": "After separate owner authorization, Core snapshot and installed skill match the verified release and one fresh ordinary non-production Windows campaign completes from ts: next --app-server with automatically generated source-fresh collateral, no manual capsule repair, no worker replay, no preventable reconciliation, expected-path-only mutation, exactly-once verification, compact telemetry, and no Bactron deployment.",
+      "requires_milestones": [
+        "M13-CORE-FIRST-PASS-ADOPTION"
+      ],
+      "title": "Core first-pass owner adoption gate",
       "unlocks_milestones": []
     }
   ],
@@ -1701,9 +1978,45 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "outcome": "The daily command, hard ceilings, bounded-continuation recovery, Linux and Windows measurements, and remaining limitations are documented from representative evidence rather than tiny fixtures.",
       "phase": "P8-READOPTION",
       "title": "Low-token owner adoption is requalified from realistic evidence"
+    },
+    {
+      "depends_on": [
+        "M9-READOPTION"
+      ],
+      "id": "M10-FIRST-PASS-PREPARATION",
+      "outcome": "Tool Shed records stable semantic preparation intent for new campaigns, resolves exact collateral against fresh source state just before execution, and deterministically regenerates, repairs, or reduces stale, unsafe, oversized, or non-atomic preparation before persistence or worker launch.",
+      "phase": "P9-FIRST-PASS-PREPARATION",
+      "title": "App Server collateral is validated before worker launch"
+    },
+    {
+      "depends_on": [
+        "M10-FIRST-PASS-PREPARATION"
+      ],
+      "id": "M11-LINUX-FIRST-PASS-PROOF",
+      "outcome": "Fresh documentation, code/test, and asset-aware Linux campaigns each follow the one-command path with source-fresh automatically prepared collateral and no manual capsule editing, worker replay, or preventable post-mutation reconciliation.",
+      "phase": "P10-LINUX-FIRST-PASS-PROOF",
+      "title": "Representative native Linux campaigns work on the first attempt"
+    },
+    {
+      "depends_on": [
+        "M11-LINUX-FIRST-PASS-PROOF"
+      ],
+      "id": "M12-FIRST-PASS-DISTRIBUTION",
+      "outcome": "After separate owner consent, one unchanged Linux-proven candidate passes the full validator, is published with verified provenance, and the maintainer installed skill exactly matches it.",
+      "phase": "P11-FIRST-PASS-DISTRIBUTION",
+      "title": "First-pass preparation is released and synchronized"
+    },
+    {
+      "depends_on": [
+        "M12-FIRST-PASS-DISTRIBUTION"
+      ],
+      "id": "M13-CORE-FIRST-PASS-ADOPTION",
+      "outcome": "After separate owner consent, Core receives the verified release and one fresh ordinary non-production campaign automatically prepares, executes, and verifies on Windows without manual capsule repair, worker replay, or preventable reconciliation.",
+      "phase": "P12-CORE-FIRST-PASS-ADOPTION",
+      "title": "An ordinary Core campaign completes on its first App Server attempt"
     }
   ],
-  "non_goals": "Redesigning Tool Shed planning or campaign lifecycle; building another orchestrator, hosted service, remote cross-host dispatcher, or operating-system fork; automatic global App Server enablement; macOS qualification; commercial-scale compatibility matrices or support commitments; Bactron application deployment; replaying Bactron Core Campaign 013; unrelated doctor-warning cleanup.",
+  "non_goals": "Redesigning unrelated Tool Shed planning or campaign lifecycle behavior; building another orchestrator, hosted service, remote cross-host dispatcher, or operating-system fork; automatic global App Server enablement; macOS qualification; commercial-scale compatibility matrices or support commitments; predicting arbitrary program behavior exactly; Bactron application deployment; replaying completed Core campaigns; unrelated doctor-warning cleanup.",
   "phases": [
     {
       "depends_on": [],
@@ -1758,6 +2071,34 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       ],
       "id": "P8-READOPTION",
       "title": "Requalify the owner operating loop"
+    },
+    {
+      "depends_on": [
+        "P8-READOPTION"
+      ],
+      "id": "P9-FIRST-PASS-PREPARATION",
+      "title": "Make collateral correct before worker launch"
+    },
+    {
+      "depends_on": [
+        "P9-FIRST-PASS-PREPARATION"
+      ],
+      "id": "P10-LINUX-FIRST-PASS-PROOF",
+      "title": "Prove first-pass preparation on representative Linux work"
+    },
+    {
+      "depends_on": [
+        "P10-LINUX-FIRST-PASS-PROOF"
+      ],
+      "id": "P11-FIRST-PASS-DISTRIBUTION",
+      "title": "Publish and synchronize the proven preparation contract"
+    },
+    {
+      "depends_on": [
+        "P11-FIRST-PASS-DISTRIBUTION"
+      ],
+      "id": "P12-CORE-FIRST-PASS-ADOPTION",
+      "title": "Adopt and prove first-pass preparation in Core"
     }
   ],
   "unknowns": [
@@ -1766,11 +2107,14 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
     "How much of the owner account limit maps to raw versus weighted model usage; report raw, cached, output, reasoning, weighted usage, turns, elapsed time, and owner interactions separately.",
     "Which platform-specific defects, if any, the real Linux and Windows trials will expose.",
     "Whether the first representative Linux proof completes within the default ceiling or exposes a smaller deterministic CAMP-splitting requirement.",
-    "Whether the repeated Windows verifier stderr transport failure is specific to the current Core snapshot, Codex build, or console transport."
+    "Whether the repeated Windows verifier stderr transport failure is specific to the current Core snapshot, Codex build, or console transport.",
+    "Which conservative command and context heuristics best detect likely oversized tool output without rejecting ordinary focused verification.",
+    "Whether a non-atomic campaign should be represented as one generated bounded CAMP slice or as an explicit pre-mutation split result while preserving one-command continuation.",
+    "Which small useful maintained-workspace edits will provide the clearest documentation, code/test, and asset-aware Linux proof shapes."
   ]
 }
 ```
 
 ## Revision History
 
-- Revision 2: superseded on 2026-08-26.
+- Revision 3: executing on 2026-08-26.

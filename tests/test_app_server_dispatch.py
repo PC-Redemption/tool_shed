@@ -17,11 +17,17 @@ from scripts.app_server_dispatch import (
     DispatchError,
     _automatic_preparation_context,
     _automatic_preparation_prompt,
+    _capsule_source_is_stale,
+    _execution_capsule_from_payload,
     _parse_automatic_preparation,
+    _persist_automatic_capsule,
+    _preparation_contract,
+    _source_bound_capsule,
+    _validate_prelaunch_capsule,
     dispatch_next,
     parse_execution_capsule,
 )
-from scripts.project_identity import ensure_project_identity
+from scripts.project_identity import binding_token, ensure_project_identity
 
 
 def capsule(campaign_id: str, *, shell: bool = False) -> str:
@@ -200,6 +206,9 @@ class AppServerDispatchTests(unittest.TestCase):
         prepared = {
             "status": "prepared",
             "reason": "one bounded proof",
+            "execution_shape": "atomic",
+            "estimated_model_turns": 2,
+            "estimated_max_tool_result_bytes": 2048,
             "schema_version": 1,
             "campaign_id": "dispatch-proof",
             "camp": "create-proof",
@@ -241,6 +250,7 @@ class AppServerDispatchTests(unittest.TestCase):
 
         persisted = path.read_text(encoding="utf-8")
         self.assertEqual(1, persisted.count("## App Server Execution Capsule"))
+        self.assertIn('"source_state_token":', persisted)
         self.assertEqual("automatic", result["preparation"]["mode"])
         self.assertTrue(result["preparation"]["persisted"])
         self.assertEqual(0, result["preparation"]["context_files"])
@@ -250,6 +260,166 @@ class AppServerDispatchTests(unittest.TestCase):
         prepare.assert_called_once()
         execute.assert_called_once()
         self.assertEqual("working", campaign_queue.load_all(self.workspace)["dispatch-proof"].status)
+
+    def test_new_campaign_records_stable_preparation_contract(self) -> None:
+        path = self.add_campaign("dispatch-proof", with_capsule=False)
+        campaign = campaign_queue.parse_campaign(path)
+
+        contract = _preparation_contract(campaign)
+
+        self.assertEqual("dispatch-proof", contract["campaign_id"])
+        self.assertEqual("single-bounded-camp", contract["execution_shape"])
+        self.assertEqual("dispatch-time", contract["exact_resolution"])
+        self.assertEqual("required", contract["source_freshness"])
+        self.assertEqual("metadata-only", contract["inline_assets"])
+
+    def test_bound_capsule_becomes_stale_when_an_exact_input_changes(self) -> None:
+        path = self.add_campaign("dispatch-proof")
+        campaign = campaign_queue.parse_campaign(path)
+        unbound = parse_execution_capsule(self.workspace, campaign)
+        bound = _source_bound_capsule(self.workspace, campaign, unbound)
+
+        self.assertFalse(_capsule_source_is_stale(self.workspace, campaign, bound))
+        (self.workspace / "proof.txt").write_text("changed\n", encoding="utf-8")
+        self.assertTrue(_capsule_source_is_stale(self.workspace, campaign, bound))
+
+    def test_prelaunch_rejects_unavailable_verification_executable(self) -> None:
+        path = self.add_campaign("dispatch-proof")
+        campaign = campaign_queue.parse_campaign(path)
+        payload = {
+            "schema_version": 1,
+            "campaign_id": "dispatch-proof",
+            "camp": "create-proof",
+            "prompt": "Create proof.txt and return camp_ready_for_verification.",
+            "expected_paths": ["proof.txt"],
+            "context_files": [],
+            "verification_commands": [["definitely-unavailable-tool-shed-command", "--check"]],
+            "execution_shape": "atomic",
+            "estimated_model_turns": 2,
+            "estimated_max_tool_result_bytes": 2048,
+        }
+        capsule_value = _execution_capsule_from_payload(self.workspace, campaign, payload)
+
+        with self.assertRaises(DispatchError) as raised:
+            _validate_prelaunch_capsule(
+                self.workspace,
+                capsule_value,
+                max_context_bytes=64_000,
+                automatic=True,
+            )
+
+        self.assertEqual("automatic_preparation_executable_missing", raised.exception.category)
+
+    def test_stale_automatic_capsule_is_reprepared_before_worker_launch(self) -> None:
+        path = self.add_campaign("dispatch-proof", with_capsule=False)
+        campaign = campaign_queue.parse_campaign(path)
+        payload = {
+            "schema_version": 1,
+            "campaign_id": "dispatch-proof",
+            "camp": "create-proof",
+            "prompt": "Create proof.txt and return camp_ready_for_verification.",
+            "expected_paths": ["proof.txt"],
+            "context_files": [],
+            "verification_commands": [[sys.executable, "-c", "assert True"]],
+            "execution_shape": "atomic",
+            "estimated_model_turns": 2,
+            "estimated_max_tool_result_bytes": 2048,
+        }
+        first = _execution_capsule_from_payload(self.workspace, campaign, payload)
+        _persist_automatic_capsule(self.workspace, campaign, first)
+        old_token = parse_execution_capsule(
+            self.workspace,
+            campaign_queue.parse_campaign(path),
+        ).source_state_token
+        (self.workspace / "proof.txt").write_text("pre-existing\n", encoding="utf-8")
+        planning = SimpleNamespace(
+            allowed=True,
+            reason="explicit_qualified_opt_in",
+            codex_executable="/qualified/codex",
+            installed_codex="0.149.0",
+            qualification_state="exact-qualified",
+            role="planning",
+            model="gpt-5.6-sol",
+            reasoning="high",
+            api_fallback=False,
+        )
+        camp = SimpleNamespace(
+            **{**planning.__dict__, "role": "CAMP execution", "model": "gpt-5.6-terra", "reasoning": "medium"}
+        )
+        prepared = {"status": "prepared", "reason": "refreshed", **payload}
+        result = SimpleNamespace(
+            status="completed",
+            text=json.dumps(prepared),
+            context_warning=None,
+            mutation_events=(),
+            actual_model="gpt-5.6-sol",
+            reasoning="high",
+            token_usage={"total": {"inputTokens": 1000, "totalTokens": 1100}},
+            model_turns=1,
+            duration_seconds=2.0,
+        )
+        with (
+            patch("scripts.app_server_dispatch.select_command", side_effect=[camp, planning]),
+            patch("scripts.app_server_dispatch._app_server_host_preflight", return_value={}),
+            patch(
+                "scripts.app_server_dispatch.execute_preparation_if_enabled",
+                return_value=(SimpleNamespace(use_app_server=True), result),
+            ),
+            patch(
+                "scripts.app_server_dispatch.execute_camp_if_enabled",
+                return_value=self.execution_result(),
+            ) as execute,
+        ):
+            dispatch = dispatch_next(self.workspace, app_server_requested=True)
+
+        persisted = path.read_text(encoding="utf-8")
+        refreshed = parse_execution_capsule(self.workspace, campaign_queue.parse_campaign(path))
+        self.assertEqual(1, persisted.count("## App Server Execution Capsule"))
+        self.assertNotEqual(old_token, refreshed.source_state_token)
+        self.assertEqual("automatic-refresh", dispatch["preparation"]["mode"])
+        self.assertEqual("bound", dispatch["preparation"]["source_state"])
+        execute.assert_called_once()
+
+    def test_stale_working_capsule_never_replays_worker(self) -> None:
+        path = self.add_campaign("dispatch-proof", with_capsule=False)
+        campaign = campaign_queue.parse_campaign(path)
+        payload = {
+            "schema_version": 1,
+            "campaign_id": "dispatch-proof",
+            "camp": "create-proof",
+            "prompt": "Create proof.txt and return camp_ready_for_verification.",
+            "expected_paths": ["proof.txt"],
+            "context_files": [],
+            "verification_commands": [[sys.executable, "-c", "assert True"]],
+            "execution_shape": "atomic",
+            "estimated_model_turns": 2,
+            "estimated_max_tool_result_bytes": 2048,
+        }
+        first = _execution_capsule_from_payload(self.workspace, campaign, payload)
+        _persist_automatic_capsule(self.workspace, campaign, first)
+        campaign_queue.mutate_campaign(
+            SimpleNamespace(
+                command="start",
+                campaign_id="dispatch-proof",
+                expect=campaign_queue.state_token(self.workspace),
+                project_binding=binding_token(self.workspace, operation="campaign-queue"),
+            ),
+            self.workspace,
+        )
+        (self.workspace / "proof.txt").write_text("possibly mutated\n", encoding="utf-8")
+        with (
+            patch("scripts.app_server_dispatch.select_command") as select,
+            patch("scripts.app_server_dispatch.execute_preparation_if_enabled") as prepare,
+            patch("scripts.app_server_dispatch.execute_camp_if_enabled") as execute,
+        ):
+            with self.assertRaises(DispatchError) as raised:
+                dispatch_next(self.workspace, app_server_requested=True)
+
+        self.assertEqual("execution_capsule_stale_after_start", raised.exception.category)
+        self.assertEqual("unknown", raised.exception.mutation_state)
+        select.assert_not_called()
+        prepare.assert_not_called()
+        execute.assert_not_called()
 
     def test_unprepared_campaign_checks_camp_before_spending_planning_tokens(self) -> None:
         path = self.add_campaign("dispatch-proof", with_capsule=False)
@@ -300,6 +470,9 @@ class AppServerDispatchTests(unittest.TestCase):
         prepared = {
             "status": "prepared",
             "reason": "bounded proof",
+            "execution_shape": "atomic",
+            "estimated_model_turns": 2,
+            "estimated_max_tool_result_bytes": 2048,
             "schema_version": 1,
             "campaign_id": "dispatch-proof",
             "camp": "create-proof",
@@ -333,6 +506,9 @@ class AppServerDispatchTests(unittest.TestCase):
         prepared = {
             "status": "prepared",
             "reason": "bounded proof",
+            "execution_shape": "atomic",
+            "estimated_model_turns": 2,
+            "estimated_max_tool_result_bytes": 2048,
             "schema_version": 1,
             "campaign_id": "dispatch-proof",
             "camp": "create-proof",
@@ -375,6 +551,9 @@ class AppServerDispatchTests(unittest.TestCase):
         blocked = {
             "status": "blocked",
             "reason": "exact mutation paths require an owner decision",
+            "execution_shape": "blocked",
+            "estimated_model_turns": 0,
+            "estimated_max_tool_result_bytes": 0,
             "schema_version": 1,
             "campaign_id": "dispatch-proof",
             "camp": "",
@@ -413,6 +592,9 @@ class AppServerDispatchTests(unittest.TestCase):
         prepared = {
             "status": "prepared",
             "reason": "unsafe lifecycle mutation",
+            "execution_shape": "atomic",
+            "estimated_model_turns": 2,
+            "estimated_max_tool_result_bytes": 2048,
             "schema_version": 1,
             "campaign_id": "dispatch-proof",
             "camp": "edit-campaign",

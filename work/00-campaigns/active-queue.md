@@ -4,7 +4,7 @@ Updated: 2026-08-26
 
 ## Owner State
 
-- Last completed: publish-synchronize-and-upgrade-app-server-repair — Publish, Synchronize, and Upgrade the App Server Repair
+- Last completed: make-app-server-collateral-correct-before-worker-launch — Make App Server collateral correct before worker launch
 - Working now: none
 - Next: none
 - Blocker or decision needed: none

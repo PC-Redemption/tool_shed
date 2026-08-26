@@ -4,9 +4,11 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -65,7 +67,8 @@ except ModuleNotFoundError:  # Direct execution: python scripts/app_server_dispa
 
 
 CAPSULE_HEADING = "## App Server Execution Capsule"
-CAPSULE_KEYS = {
+PREPARATION_CONTRACT_HEADING = "## App Server Preparation Contract"
+CAPSULE_REQUIRED_KEYS = {
     "schema_version",
     "campaign_id",
     "camp",
@@ -74,8 +77,26 @@ CAPSULE_KEYS = {
     "context_files",
     "verification_commands",
 }
-AUTO_PREPARATION_KEYS = {"status", "reason", *CAPSULE_KEYS}
+CAPSULE_OPTIONAL_KEYS = {
+    "source_state_token",
+    "execution_shape",
+    "estimated_model_turns",
+    "estimated_max_tool_result_bytes",
+}
+CAPSULE_KEYS = CAPSULE_REQUIRED_KEYS | CAPSULE_OPTIONAL_KEYS
+AUTO_PREPARATION_KEYS = {
+    "status",
+    "reason",
+    *CAPSULE_REQUIRED_KEYS,
+    "execution_shape",
+    "estimated_model_turns",
+    "estimated_max_tool_result_bytes",
+}
 AUTO_PREPARATION_MAX_CONTEXT_BYTES = 64_000
+AUTO_PREPARATION_MAX_EXPECTED_PATHS = 8
+AUTO_PREPARATION_MAX_VERIFICATION_COMMANDS = 4
+AUTO_PREPARATION_MAX_ESTIMATED_TURNS = 3
+AUTO_PREPARATION_MAX_ESTIMATED_TOOL_RESULT_BYTES = 12_288
 AUTO_PREPARATION_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
@@ -100,6 +121,16 @@ AUTO_PREPARATION_SCHEMA = {
                 "type": "array",
                 "items": {"type": "string"},
             },
+        },
+        "execution_shape": {
+            "type": "string",
+            "enum": ["atomic", "bounded-slice", "blocked"],
+        },
+        "estimated_model_turns": {"type": "integer", "minimum": 0, "maximum": 3},
+        "estimated_max_tool_result_bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 12288,
         },
     },
     "required": sorted(AUTO_PREPARATION_KEYS),
@@ -188,6 +219,10 @@ class ExecutionCapsule:
     expected_paths: tuple[Path, ...]
     context_files: tuple[Path, ...]
     verification_commands: tuple[tuple[str, ...], ...]
+    source_state_token: str | None = None
+    execution_shape: str | None = None
+    estimated_model_turns: int | None = None
+    estimated_max_tool_result_bytes: int | None = None
 
 
 def _capsule_payload(text: str) -> dict[str, Any]:
@@ -233,7 +268,7 @@ def _capsule_payload(text: str) -> dict[str, Any]:
             recovery_action="repair the selected campaign execution capsule",
         )
     unknown = sorted(set(payload) - CAPSULE_KEYS)
-    missing = sorted(CAPSULE_KEYS - set(payload))
+    missing = sorted(CAPSULE_REQUIRED_KEYS - set(payload))
     if unknown or missing:
         details = []
         if missing:
@@ -297,6 +332,196 @@ def parse_execution_capsule(
     return _execution_capsule_from_payload(workspace, campaign, payload)
 
 
+def _preparation_contract(campaign: campaign_queue.Campaign) -> dict[str, Any]:
+    """Read stable semantic intent, with a compatible default for legacy campaigns."""
+
+    lines = campaign.body.splitlines()
+    headings = [
+        index for index, line in enumerate(lines)
+        if line.strip() == PREPARATION_CONTRACT_HEADING
+    ]
+    if not headings:
+        return {
+            "schema_version": 1,
+            "campaign_id": campaign.campaign_id,
+            "objective": campaign.outcome,
+            "completion_evidence": campaign.fields.get("Completion Gate", ""),
+            "execution_shape": "single-bounded-camp",
+            "exact_resolution": "dispatch-time",
+            "source_freshness": "required",
+            "inline_assets": "metadata-only",
+            "verification": "orchestrator-exactly-once",
+            "origin": "legacy-derived",
+        }
+    if len(headings) != 1:
+        raise DispatchError(
+            "preparation_contract_invalid",
+            "campaign must contain at most one App Server Preparation Contract",
+            recovery_action="repair the campaign preparation contract before retrying",
+        )
+    index = headings[0] + 1
+    while index < len(lines) and not lines[index].strip():
+        index += 1
+    if index >= len(lines) or lines[index].strip() != "```json":
+        raise DispatchError(
+            "preparation_contract_invalid",
+            "App Server Preparation Contract must begin with an exact ```json fence",
+            recovery_action="repair the campaign preparation contract before retrying",
+        )
+    end = next(
+        (cursor for cursor in range(index + 1, len(lines)) if lines[cursor].strip() == "```"),
+        None,
+    )
+    if end is None:
+        raise DispatchError(
+            "preparation_contract_invalid",
+            "App Server Preparation Contract JSON fence is not closed",
+            recovery_action="repair the campaign preparation contract before retrying",
+        )
+    try:
+        payload = json.loads("\n".join(lines[index + 1 : end]))
+    except json.JSONDecodeError as error:
+        raise DispatchError(
+            "preparation_contract_invalid",
+            "App Server Preparation Contract is malformed JSON",
+            recovery_action="repair the campaign preparation contract before retrying",
+        ) from error
+    required = {
+        "schema_version",
+        "campaign_id",
+        "objective",
+        "completion_evidence",
+        "execution_shape",
+        "exact_resolution",
+        "source_freshness",
+        "inline_assets",
+        "verification",
+    }
+    if not isinstance(payload, dict) or set(payload) != required:
+        raise DispatchError(
+            "preparation_contract_invalid",
+            "App Server Preparation Contract fields do not match schema version 1",
+            recovery_action="regenerate the campaign preparation contract before retrying",
+        )
+    expected = {
+        "schema_version": 1,
+        "campaign_id": campaign.campaign_id,
+        "execution_shape": "single-bounded-camp",
+        "exact_resolution": "dispatch-time",
+        "source_freshness": "required",
+        "inline_assets": "metadata-only",
+        "verification": "orchestrator-exactly-once",
+    }
+    if any(payload.get(key) != value for key, value in expected.items()):
+        raise DispatchError(
+            "preparation_contract_invalid",
+            "App Server Preparation Contract does not match the selected campaign or policy",
+            recovery_action="regenerate the campaign preparation contract before retrying",
+        )
+    if not all(
+        isinstance(payload.get(key), str) and payload[key].strip()
+        for key in ("objective", "completion_evidence")
+    ):
+        raise DispatchError(
+            "preparation_contract_invalid",
+            "App Server Preparation Contract requires objective and completion evidence",
+            recovery_action="repair the campaign preparation contract before retrying",
+        )
+    return payload
+
+
+def _request_text(campaign: campaign_queue.Campaign) -> str:
+    match = re.search(r"(?ms)^## Request\s*$\n(.*?)(?=^## |\Z)", campaign.body)
+    return match.group(1).strip() if match else ""
+
+
+def _capsule_source_state_token(
+    workspace: Path,
+    campaign: campaign_queue.Campaign,
+    capsule: ExecutionCapsule,
+) -> str:
+    """Bind automatic collateral to its semantic request and exact file boundary."""
+
+    try:
+        head = subprocess.run(
+            ["git", "-C", str(workspace), "rev-parse", "HEAD"],
+            text=True,
+            encoding="utf-8",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        ).stdout.strip()
+    except OSError:
+        head = ""
+    files: list[dict[str, object]] = []
+    for relative in sorted(
+        set((*capsule.expected_paths, *capsule.context_files)),
+        key=lambda path: path.as_posix(),
+    ):
+        path = workspace / relative
+        record: dict[str, object] = {"path": relative.as_posix()}
+        if path.is_file() and not path.is_symlink():
+            raw = path.read_bytes()
+            record.update({"state": "file", "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()})
+        elif path.exists():
+            record["state"] = "non-file"
+        else:
+            record["state"] = "missing"
+        files.append(record)
+    payload = {
+        "campaign_id": campaign.campaign_id,
+        "outcome": campaign.outcome,
+        "completion_gate": campaign.fields.get("Completion Gate", ""),
+        "request": _request_text(campaign),
+        "contract": _preparation_contract(campaign),
+        "head": head,
+        "capsule": {
+            "camp": capsule.camp,
+            "prompt": capsule.prompt,
+            "expected_paths": [path.as_posix() for path in capsule.expected_paths],
+            "context_files": [path.as_posix() for path in capsule.context_files],
+            "verification_commands": [list(command) for command in capsule.verification_commands],
+            "execution_shape": capsule.execution_shape,
+            "estimated_model_turns": capsule.estimated_model_turns,
+            "estimated_max_tool_result_bytes": capsule.estimated_max_tool_result_bytes,
+        },
+        "files": files,
+    }
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()[:16]
+
+
+def _source_bound_capsule(
+    workspace: Path,
+    campaign: campaign_queue.Campaign,
+    capsule: ExecutionCapsule,
+) -> ExecutionCapsule:
+    token = _capsule_source_state_token(workspace, campaign, capsule)
+    return ExecutionCapsule(
+        campaign_id=capsule.campaign_id,
+        camp=capsule.camp,
+        prompt=capsule.prompt,
+        expected_paths=capsule.expected_paths,
+        context_files=capsule.context_files,
+        verification_commands=capsule.verification_commands,
+        source_state_token=token,
+        execution_shape=capsule.execution_shape,
+        estimated_model_turns=capsule.estimated_model_turns,
+        estimated_max_tool_result_bytes=capsule.estimated_max_tool_result_bytes,
+    )
+
+
+def _capsule_source_is_stale(
+    workspace: Path,
+    campaign: campaign_queue.Campaign,
+    capsule: ExecutionCapsule,
+) -> bool:
+    return (
+        capsule.source_state_token is not None
+        and capsule.source_state_token != _capsule_source_state_token(workspace, campaign, capsule)
+    )
+
+
 def _execution_capsule_from_payload(
     workspace: Path,
     campaign: campaign_queue.Campaign,
@@ -332,6 +557,45 @@ def _execution_capsule_from_payload(
     expected_raw = payload["expected_paths"]
     context_raw = payload["context_files"]
     commands_raw = payload["verification_commands"]
+    source_state_token = payload.get("source_state_token")
+    execution_shape = payload.get("execution_shape")
+    estimated_model_turns = payload.get("estimated_model_turns")
+    estimated_max_tool_result_bytes = payload.get("estimated_max_tool_result_bytes")
+    if source_state_token is not None and (
+        not isinstance(source_state_token, str)
+        or re.fullmatch(r"[0-9a-f]{16}", source_state_token) is None
+    ):
+        raise DispatchError(
+            "execution_capsule_invalid",
+            "execution capsule source_state_token must be 16 lowercase hexadecimal characters",
+            recovery_action="regenerate the selected campaign execution capsule",
+        )
+    if execution_shape is not None and execution_shape not in {"atomic", "bounded-slice"}:
+        raise DispatchError(
+            "execution_capsule_invalid",
+            "execution capsule execution_shape must be atomic or bounded-slice",
+            recovery_action="regenerate the selected campaign execution capsule",
+        )
+    if estimated_model_turns is not None and (
+        isinstance(estimated_model_turns, bool)
+        or not isinstance(estimated_model_turns, int)
+        or not 1 <= estimated_model_turns <= AUTO_PREPARATION_MAX_ESTIMATED_TURNS
+    ):
+        raise DispatchError(
+            "execution_capsule_invalid",
+            "execution capsule estimated_model_turns is outside the prelaunch budget",
+            recovery_action="reduce the selected campaign to one bounded CAMP",
+        )
+    if estimated_max_tool_result_bytes is not None and (
+        isinstance(estimated_max_tool_result_bytes, bool)
+        or not isinstance(estimated_max_tool_result_bytes, int)
+        or not 1 <= estimated_max_tool_result_bytes <= AUTO_PREPARATION_MAX_ESTIMATED_TOOL_RESULT_BYTES
+    ):
+        raise DispatchError(
+            "execution_capsule_invalid",
+            "execution capsule estimated tool-result size is outside the prelaunch budget",
+            recovery_action="scope commands and context before worker launch",
+        )
     if not isinstance(expected_raw, list) or not 1 <= len(expected_raw) <= 32:
         raise DispatchError(
             "execution_capsule_invalid",
@@ -385,6 +649,10 @@ def _execution_capsule_from_payload(
         expected_paths=expected,
         context_files=context,
         verification_commands=tuple(commands),
+        source_state_token=source_state_token,
+        execution_shape=execution_shape,
+        estimated_model_turns=estimated_model_turns,
+        estimated_max_tool_result_bytes=estimated_max_tool_result_bytes,
     )
 
 
@@ -407,6 +675,13 @@ tools or read any other files. Return the strict structured object requested by 
 If a safe bounded CAMP can be prepared, set status to prepared and:
 - use schema_version 1 and the exact campaign_id {campaign.campaign_id!r};
 - choose one lowercase kebab-case camp ID;
+- honor the campaign's App Server Preparation Contract as stable semantic intent while resolving
+  exact execution details against the supplied current source snapshot;
+- set execution_shape to atomic when the whole request fits, or bounded-slice when the prompt is
+  one coherent independently verifiable slice of a broader campaign;
+- estimate one to {AUTO_PREPARATION_MAX_ESTIMATED_TURNS} model turns and a largest serialized tool
+  result no greater than {AUTO_PREPARATION_MAX_ESTIMATED_TOOL_RESULT_BYTES} bytes; reduce the slice
+  before returning it when either estimate would exceed that prelaunch budget;
 - write a complete worker prompt that permits only the declared mutations, forbids lifecycle,
   deployment, network, and protected-environment work, reserves verification for the orchestrator,
   and requires camp_ready_for_verification after implementation;
@@ -417,6 +692,11 @@ If a safe bounded CAMP can be prepared, set status to prepared and:
   bounded workspace tools and should inspect exact symbols itself instead of receiving whole large
   implementation or test files inline;
 - provide one to eight deterministic shell-free verification commands as direct argv arrays;
+- retain at most {AUTO_PREPARATION_MAX_VERIFICATION_COMMANDS} focused verification commands and at
+  most {AUTO_PREPARATION_MAX_EXPECTED_PATHS} expected mutation paths for automatic execution;
+- keep each verifier quiet or scoped enough to remain below the estimated tool-result size; do not
+  select whole-suite discovery, repository-wide output, or commands whose useful result is an
+  unbounded listing or diff;
 - use platform-local executable paths that do not depend on shell activation;
 - use the exact current Python executable advertised in the preparation context for Python checks;
 - do not assert that the whole Git worktree is clean or exclude only expected_paths from a clean
@@ -427,7 +707,8 @@ If a safe bounded CAMP can be prepared, set status to prepared and:
 If exact mutation paths or safe deterministic verification cannot be established without an owner
 decision, protected action, or broader planning, set status to blocked, explain the limiting
 condition in reason, and return schema_version 1, the exact campaign_id, and empty camp, prompt,
-expected_paths, context_files, and verification_commands. Do not guess or broaden authority.
+expected_paths, context_files, and verification_commands, execution_shape blocked, and zero for
+both estimates. Do not guess or broaden authority.
 """
 
 
@@ -642,6 +923,8 @@ def _normalize_automatic_verification_commands(
             scopes = argv[separator + 1 :] if separator >= 0 else []
             if not scopes or any(scope == "." or scope.startswith(":(") for scope in scopes):
                 continue
+            if "--exit-code" in argv and "--quiet" not in argv:
+                argv[argv.index("--exit-code")] = "--quiet"
         commands.append(tuple(argv))
     if not commands:
         raise DispatchError(
@@ -656,7 +939,83 @@ def _normalize_automatic_verification_commands(
         expected_paths=capsule.expected_paths,
         context_files=capsule.context_files,
         verification_commands=tuple(commands),
+        source_state_token=capsule.source_state_token,
+        execution_shape=capsule.execution_shape,
+        estimated_model_turns=capsule.estimated_model_turns,
+        estimated_max_tool_result_bytes=capsule.estimated_max_tool_result_bytes,
     )
+
+
+def _verification_output_is_broad(command: tuple[str, ...]) -> bool:
+    executable = Path(command[0]).name.lower()
+    lowered = [argument.lower() for argument in command[1:]]
+    if executable in {"git", "git.exe"} and "diff" in lowered and "--quiet" not in lowered:
+        return True
+    if executable in {"python", "python.exe", "python3", "python3.exe"}:
+        if "unittest" in lowered and "discover" in lowered:
+            return True
+    if executable in {"pytest", "pytest.exe"}:
+        positional = [argument for argument in command[1:] if argument and not argument.startswith("-")]
+        if not positional:
+            return True
+    return False
+
+
+def _validate_prelaunch_capsule(
+    workspace: Path,
+    capsule: ExecutionCapsule,
+    *,
+    max_context_bytes: int,
+    automatic: bool,
+) -> None:
+    """Apply deterministic feasibility checks before lifecycle mutation or worker launch."""
+
+    context_bytes = sum((workspace / path).stat().st_size for path in capsule.context_files)
+    if context_bytes > max_context_bytes:
+        raise DispatchError(
+            "automatic_preparation_context_limit" if automatic else "execution_capsule_invalid",
+            f"execution capsule selected {context_bytes} context bytes; limit is {max_context_bytes}",
+            recovery_action="reduce inline context before retrying",
+        )
+    for path in capsule.expected_paths:
+        if path.parts[0] in {".git", "tool_shed"} or path.parts[:2] == ("work", "00-campaigns"):
+            raise DispatchError(
+                "automatic_preparation_unsafe" if automatic else "execution_capsule_invalid",
+                f"execution capsule selected a protected mutation path: {path.as_posix()}",
+                recovery_action="repair the execution boundary before retrying",
+            )
+    if automatic:
+        if capsule.execution_shape not in {"atomic", "bounded-slice"}:
+            raise DispatchError(
+                "automatic_preparation_non_atomic",
+                "automatic CAMP preparation did not declare an atomic or bounded-slice shape",
+                recovery_action="reduce the request to one independently verifiable CAMP",
+            )
+        if capsule.estimated_model_turns is None or capsule.estimated_max_tool_result_bytes is None:
+            raise DispatchError(
+                "automatic_preparation_invalid",
+                "automatic CAMP preparation omitted prelaunch turn or tool-result estimates",
+                recovery_action="repair the App Server planning output contract before retrying",
+            )
+    for command in capsule.verification_commands:
+        executable = command[0]
+        resolved = (
+            Path(executable)
+            if Path(executable).is_absolute()
+            else Path(shutil.which(executable) or "")
+        )
+        if not str(resolved) or not resolved.is_file():
+            raise DispatchError(
+                "automatic_preparation_executable_missing" if automatic else "execution_capsule_invalid",
+                f"verification executable is unavailable: {executable}",
+                recovery_action="select an available platform-local executable before retrying",
+            )
+        if automatic and _verification_output_is_broad(command):
+            raise DispatchError(
+                "automatic_preparation_output_risk",
+                "automatic CAMP preparation selected broad verification output",
+                recovery_action="replace it with a quiet path-scoped deterministic verifier",
+            )
 
 
 def _parse_automatic_preparation(
@@ -713,14 +1072,44 @@ def _parse_automatic_preparation(
             recovery_action="reduce the preparation scope before retrying",
         )
     if payload.get("status") != "prepared":
+        if (
+            payload.get("execution_shape") != "blocked"
+            or payload.get("estimated_model_turns") != 0
+            or payload.get("estimated_max_tool_result_bytes") != 0
+        ):
+            raise DispatchError(
+                "automatic_preparation_invalid",
+                "blocked automatic preparation did not return the bounded empty estimate contract",
+                recovery_action="repair the App Server planning output contract before retrying",
+            )
         raise DispatchError(
             "automatic_preparation_blocked",
             reason or "automatic CAMP preparation could not establish a safe bounded execution",
             recovery_action="resolve the reported campaign preparation condition, then rerun once",
         )
-    capsule_payload = {key: payload[key] for key in CAPSULE_KEYS}
+    capsule_payload = {
+        key: payload[key]
+        for key in (
+            *CAPSULE_REQUIRED_KEYS,
+            "execution_shape",
+            "estimated_model_turns",
+            "estimated_max_tool_result_bytes",
+        )
+    }
     capsule = _execution_capsule_from_payload(workspace, campaign, capsule_payload)
     capsule = _normalize_automatic_verification_commands(capsule)
+    if len(capsule.expected_paths) > AUTO_PREPARATION_MAX_EXPECTED_PATHS:
+        raise DispatchError(
+            "automatic_preparation_non_atomic",
+            "automatic CAMP preparation selected too many mutation paths for one bounded worker",
+            recovery_action="reduce the campaign to one independently verifiable CAMP before retrying",
+        )
+    if len(capsule.verification_commands) > AUTO_PREPARATION_MAX_VERIFICATION_COMMANDS:
+        raise DispatchError(
+            "automatic_preparation_output_risk",
+            "automatic CAMP preparation selected too many verification commands",
+            recovery_action="scope verification to the bounded CAMP before retrying",
+        )
     context_bytes = sum((workspace / path).stat().st_size for path in capsule.context_files)
     if context_bytes > max_context_bytes:
         raise DispatchError(
@@ -743,7 +1132,7 @@ def _parse_automatic_preparation(
 
 
 def _capsule_payload_from_execution(capsule: ExecutionCapsule) -> dict[str, Any]:
-    return {
+    payload: dict[str, Any] = {
         "schema_version": 1,
         "campaign_id": capsule.campaign_id,
         "camp": capsule.camp,
@@ -752,13 +1141,25 @@ def _capsule_payload_from_execution(capsule: ExecutionCapsule) -> dict[str, Any]
         "context_files": [path.as_posix() for path in capsule.context_files],
         "verification_commands": [list(command) for command in capsule.verification_commands],
     }
+    for key, value in (
+        ("source_state_token", capsule.source_state_token),
+        ("execution_shape", capsule.execution_shape),
+        ("estimated_model_turns", capsule.estimated_model_turns),
+        ("estimated_max_tool_result_bytes", capsule.estimated_max_tool_result_bytes),
+    ):
+        if value is not None:
+            payload[key] = value
+    return payload
 
 
 def _persist_automatic_capsule(
     workspace: Path,
     campaign: campaign_queue.Campaign,
     capsule: ExecutionCapsule,
+    *,
+    replace_existing: bool = False,
 ) -> campaign_queue.Campaign:
+    capsule = _source_bound_capsule(workspace, campaign, capsule)
     payload = _capsule_payload_from_execution(capsule)
     section = (
         CAPSULE_HEADING
@@ -766,7 +1167,12 @@ def _persist_automatic_capsule(
         + json.dumps(payload, indent=2, sort_keys=True)
         + "\n```"
     )
-    campaign_queue.attach_app_server_capsule(
+    writer = (
+        campaign_queue.replace_app_server_capsule
+        if replace_existing
+        else campaign_queue.attach_app_server_capsule
+    )
+    writer(
         workspace,
         campaign.campaign_id,
         section,
@@ -774,7 +1180,13 @@ def _persist_automatic_capsule(
         project_binding=binding_token(workspace, operation="campaign-queue"),
     )
     persisted = campaign_queue.load_all(workspace)[campaign.campaign_id]
-    parse_execution_capsule(workspace, persisted)
+    reloaded = parse_execution_capsule(workspace, persisted)
+    if _capsule_source_is_stale(workspace, persisted, reloaded):
+        raise DispatchError(
+            "automatic_preparation_stale",
+            "persisted automatic capsule did not retain its source-state binding",
+            recovery_action="inspect the guarded capsule transaction before retrying",
+        )
     return persisted
 
 
@@ -952,14 +1364,29 @@ def dispatch_next(
     execution_config = AppServerFeatureConfig.load(config_path)
     execution_policy = ModelPolicy.load(policy_path)
     automatic_context_bytes = _automatic_context_budget(execution_config)
+    _preparation_contract(campaign)
     capsule_headings = sum(
         line.strip() == CAPSULE_HEADING for line in campaign.body.splitlines()
     )
+    replace_existing_capsule = False
+    requires_preparation = capsule_headings == 0
     if capsule_headings != 0:
         capsule = parse_execution_capsule(root, campaign)
+        replace_existing_capsule = _capsule_source_is_stale(root, campaign, capsule)
+        if replace_existing_capsule and campaign.status != "queued":
+            raise DispatchError(
+                "execution_capsule_stale_after_start",
+                "a working campaign's source-bound capsule changed after execution may have started",
+                recovery_action="reconcile the workspace and mutation journal; do not replay the worker",
+                mutation_state="unknown",
+            )
+        requires_preparation = replace_existing_capsule
     preparation: dict[str, Any] = {
-        "mode": "embedded",
-        "persisted": True,
+        "mode": "automatic-refresh" if replace_existing_capsule else "embedded",
+        "persisted": not replace_existing_capsule,
+        "source_state": "stale" if replace_existing_capsule else (
+            "bound" if capsule_headings and capsule.source_state_token is not None else "legacy-unbound"
+        ),
         "model": None,
         "reasoning": None,
         "tokens": flatten_token_usage(None),
@@ -983,7 +1410,7 @@ def dispatch_next(
             recovery_action="rerun the same Tool Shed command without --app-server",
         )
     preflight = _app_server_host_preflight(selection, timeout=timeout)
-    if capsule_headings == 0:
+    if requires_preparation:
         planning_selection = select_command(
             "plan",
             app_server_requested=app_server_requested,
@@ -1029,9 +1456,16 @@ def dispatch_next(
             preparation_result,
             max_context_bytes=automatic_context_bytes,
         )
+        _validate_prelaunch_capsule(
+            root,
+            capsule,
+            max_context_bytes=automatic_context_bytes,
+            automatic=True,
+        )
         preparation = {
-            "mode": "automatic",
+            "mode": "automatic-refresh" if replace_existing_capsule else "automatic",
             "persisted": False,
+            "source_state": "stale" if replace_existing_capsule else "new",
             "model": preparation_result.actual_model,
             "reasoning": preparation_result.reasoning,
             "context_files": len(capsule.context_files),
@@ -1043,12 +1477,28 @@ def dispatch_next(
             "model_turns": preparation_result.model_turns,
             "duration_seconds": preparation_result.duration_seconds,
             "reason": preparation_reason,
+            "execution_shape": capsule.execution_shape,
+            "estimated_model_turns": capsule.estimated_model_turns,
+            "estimated_max_tool_result_bytes": capsule.estimated_max_tool_result_bytes,
         }
+    else:
+        _validate_prelaunch_capsule(
+            root,
+            capsule,
+            max_context_bytes=automatic_context_bytes,
+            automatic=capsule.source_state_token is not None,
+        )
     if planning_preflight is not None:
         preflight["automatic_preparation"] = planning_preflight
-        campaign = _persist_automatic_capsule(root, campaign, capsule)
+        campaign = _persist_automatic_capsule(
+            root,
+            campaign,
+            capsule,
+            replace_existing=replace_existing_capsule,
+        )
         capsule = parse_execution_capsule(root, campaign)
         preparation["persisted"] = True
+        preparation["source_state"] = "bound"
     campaign_started = False
     if campaign.status == "queued":
         _start_selected_campaign(root, campaign_id)

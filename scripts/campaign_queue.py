@@ -83,6 +83,7 @@ QUEUE_NUMBER_GUIDANCE = (
     "are stable."
 )
 APP_SERVER_CAPSULE_HEADING = "## App Server Execution Capsule"
+APP_SERVER_PREPARATION_HEADING = "## App Server Preparation Contract"
 
 
 class CampaignError(ValueError):
@@ -688,6 +689,80 @@ def attach_app_server_capsule(
     return item.path
 
 
+def replace_app_server_capsule(
+    workspace: Path,
+    campaign_id: str,
+    capsule_section: str,
+    *,
+    expect: str,
+    project_binding: str,
+) -> Path:
+    """Replace one stale generated capsule through the guarded transaction."""
+
+    require_project_binding(
+        workspace,
+        project_binding,
+        operation="campaign-queue",
+    )
+    require_token(workspace, expect)
+    require_valid(workspace)
+    campaigns = load_all(workspace)
+    resolved_id = resolve_campaign_reference(campaign_id, campaigns)
+    item = campaigns[resolved_id]
+    if item.status not in {"queued", "working"}:
+        raise CampaignError("only a queued or working campaign can receive an App Server capsule")
+    normalized = capsule_section.strip()
+    if not normalized.startswith(APP_SERVER_CAPSULE_HEADING + "\n"):
+        raise CampaignError("generated capsule section has an invalid heading")
+    text = item.path.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    headings = [
+        index for index, line in enumerate(lines)
+        if line.strip() == APP_SERVER_CAPSULE_HEADING
+    ]
+    if len(headings) != 1:
+        raise CampaignError("campaign must contain exactly one App Server Execution Capsule")
+    start = headings[0]
+    end = next(
+        (
+            index for index in range(start + 1, len(lines))
+            if lines[index].startswith("## ")
+        ),
+        len(lines),
+    )
+    replacement = normalized.splitlines()
+    rewritten = "\n".join([*lines[:start], *replacement, *lines[end:]]).rstrip() + "\n"
+    rewritten = set_campaign_header(rewritten, "Updated", date.today().isoformat())
+    apply_transaction(workspace, {item.path: rewritten})
+    return item.path
+
+
+def app_server_preparation_contract(
+    campaign_id: str,
+    outcome: str,
+    gate: str,
+) -> str:
+    """Render stable semantic intent while leaving exact execution details late-bound."""
+
+    payload = {
+        "schema_version": 1,
+        "campaign_id": campaign_id,
+        "objective": outcome,
+        "completion_evidence": gate,
+        "execution_shape": "single-bounded-camp",
+        "exact_resolution": "dispatch-time",
+        "source_freshness": "required",
+        "inline_assets": "metadata-only",
+        "verification": "orchestrator-exactly-once",
+    }
+    return (
+        APP_SERVER_PREPARATION_HEADING
+        + "\n\n```json\n"
+        + json.dumps(payload, indent=2, sort_keys=True)
+        + "\n```"
+    )
+
+
 def _validate_graph(campaigns: dict[str, Campaign]) -> list[str]:
     findings: list[str] = []
     visiting: set[str] = set()
@@ -904,7 +979,19 @@ def _campaign_text(
         "Completion Evidence": "none",
         "Disposition": "none",
     }
-    campaign = Campaign(Path(), title, fields, "## Request\n\nAdd detailed execution context here.\n\n## Completion Check\n\n" + gate + "\n")
+    preparation = app_server_preparation_contract(campaign_id, outcome, gate)
+    campaign = Campaign(
+        Path(),
+        title,
+        fields,
+        (
+            "## Request\n\nAdd detailed execution context here.\n\n"
+            + preparation
+            + "\n\n## Completion Check\n\n"
+            + gate
+            + "\n"
+        ),
+    )
     return render_campaign(campaign)
 
 

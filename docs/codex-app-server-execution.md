@@ -91,17 +91,26 @@ is `--app-server` on the qualified `ts:` commands above.
 `python3 <shed>/scripts/app_server_dispatch.py --workspace . next --app-server --json` directly and
 never wraps it in `codex exec` or another agent. The dispatcher performs the same navigation and
 readiness selection as ordinary `ts: next` and reuses an existing strict execution capsule. When a
-ready campaign has no capsule, the same dispatcher assembles a deterministic focused snapshot from
-the campaign, project instructions, Git state, relevant file inventory, and bounded source
-excerpts. The qualified read-only planning role receives only that isolated snapshot, has no tool
-access, and returns strict structured preparation. The dispatcher deterministically validates exact
-paths, focused context, and shell-free verification. It completes CAMP qualification and host
-preflight before spending planning tokens, then completes planning host preflight. Automatic
-context files may total at most the smaller of the configured inline limit and 64,000 actual bytes;
-the inventory exposes actual sizes and an over-budget result fails before persistence. It then
-persists the capsule through the guarded campaign transaction, and continues to the existing
-bounded Terra/medium `camp-run` in the same invocation. Invalid, unsafe, ambiguous, or over-budget
-preparation stops before workspace or lifecycle mutation. A selected discussion,
+new campaign is created, Tool Shed records one compact `## App Server Preparation Contract` with
+stable semantic intent: objective, completion evidence, one bounded CAMP shape, dispatch-time exact
+resolution, required source freshness, metadata-only inline asset handling, and orchestrator-owned
+exactly-once verification. It intentionally does not guess exact paths or commands early.
+
+When a ready campaign has no capsule, or its automatically persisted capsule no longer matches its
+source-state token, the dispatcher assembles a deterministic focused snapshot from the campaign,
+project instructions, Git state, relevant file inventory, and bounded source excerpts. The
+qualified read-only planning role receives only that isolated snapshot, has no tool access, and
+returns strict structured preparation. The dispatcher deterministically validates exact paths,
+focused context, installed executables, quiet scoped verification, expected turn and tool-result
+headroom, and an atomic or independently verifiable bounded slice. It completes CAMP qualification
+and host preflight before spending planning tokens, then completes planning host preflight.
+Automatic context files may total at most the smaller of the configured inline limit and 64,000
+actual bytes; automatic preparation is further limited to eight expected paths, four verification
+commands, three estimated worker turns, and a 12,288-byte estimated largest tool result. Unsafe or
+oversized work must be reduced before the result is accepted. The dispatcher persists the
+source-bound capsule through the guarded campaign transaction, reloads it, and continues to the
+existing bounded Terra/medium `camp-run` in the same invocation. Invalid, unsafe, ambiguous, stale,
+or over-budget preparation stops before workspace or lifecycle mutation. A selected discussion,
 decision, blocker, external gate, GUI-native action, or unsupported role remains on its natural
 route. Compatibility failure remains fail-closed, the unflagged GUI route stays available, and the
 selector is not retained for later commands.
@@ -129,15 +138,23 @@ The selected campaign's executable contract is explicit and reviewable:
   "prompt": "Make only the declared bounded change.",
   "expected_paths": ["src/example.py"],
   "context_files": ["src/example.py"],
-  "verification_commands": [["python3", "-m", "unittest", "tests.test_example"]]
+  "verification_commands": [["python3", "-m", "unittest", "tests.test_example"]],
+  "execution_shape": "atomic",
+  "estimated_model_turns": 2,
+  "estimated_max_tool_result_bytes": 4096,
+  "source_state_token": "0123456789abcdef"
 }
 ```
 ````
 
 Paths use repository-relative POSIX notation and may not traverse symlinks. Verification commands
-are direct JSON argv arrays; shell executables are rejected. Capsule validation, App Server startup,
-ChatGPT authentication, model-list network access, and exact CAMP qualification all complete before
-the dispatcher starts a queued campaign or permits workspace mutation.
+are direct JSON argv arrays; shell executables and unavailable verification executables are
+rejected. The source-state token covers the campaign request and preparation contract, Git HEAD,
+the capsule boundary, and exact expected/context file states. A changed bound input regenerates the
+automatic capsule before launch. Legacy manually authored capsules remain readable without a token,
+but all newly automatic capsules are source-bound. Capsule validation, App Server startup, ChatGPT
+authentication, model-list network access, and exact CAMP qualification all complete before the
+dispatcher starts a queued campaign or permits workspace mutation.
 
 When a workspace supplies explicit `--config`, `--policy`, and `--qualifications` files, the
 dispatcher uses the selected config and policy for both authorization and the resulting bounded

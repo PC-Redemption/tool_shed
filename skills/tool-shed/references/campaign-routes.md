@@ -421,8 +421,11 @@ python3 <shed>/scripts/app_server_dispatch.py --workspace . next --app-server --
 Do not launch `codex exec`, another Codex conversation, or an agent wrapper around this command.
 The dispatcher reuses ordinary `next` selection unchanged; `next` remains an invocation-scoped
 forwarding preference, not an App Server role. Reuse a selected CAMP's single valid
-`## App Server Execution Capsule` section when present. When a ready campaign has no capsule,
-assemble a deterministic focused snapshot from the campaign, project instructions, Git state,
+`## App Server Execution Capsule` section when present. New campaign creation and roadmap
+materialization record one compact `## App Server Preparation Contract` containing stable semantic
+intent while reserving exact paths, commands, executables, and budgets for dispatch-time
+resolution. When a ready campaign has no capsule, or when an automatically persisted capsule is
+stale, assemble a deterministic focused snapshot from the campaign, project instructions, Git state,
 relevant file inventory, and bounded source excerpts. Give only that isolated snapshot to the
 existing qualified read-only App Server planning role, with no tool access, to return a strict
 structured schema-version-1 capsule with matching campaign/CAMP IDs, prompt, repository-relative
@@ -435,7 +438,14 @@ authentication, network/model catalog access, and both role qualifications befor
 lifecycle mutation. Persist valid preparation through the
 guarded campaign transaction, reload and revalidate it, then continue in the same invocation: start
 the queued campaign when needed and call the existing bounded `camp-run` path once. Existing valid
-capsules skip planning. Unsafe, indeterminate, invalid, or over-budget preparation fails closed
+capsules skip planning. Automatically persisted capsules must bind campaign intent and their exact
+path, context, and verification boundary to current source state; stale automatic capsules are
+replaced through the guarded campaign transaction before execution. Before persistence or worker
+launch, require an atomic or independently verifiable bounded slice, available platform-local
+executables, quiet scoped verification, no more than eight expected paths and four verification
+commands, at most three estimated worker turns, and at most 12,288 bytes for the estimated largest
+tool result. Unsafe or oversized work must be reduced before acceptance. Unsafe, indeterminate,
+invalid, or over-budget preparation fails closed
 before mutation. The CAMP path retains `gpt-5.6-terra` with `medium` reasoning; preparation uses the
 centralized planning policy. Emit compact separate preparation and execution usage, journal,
 verification, and recovery fields. The deterministic dispatcher uses zero model tokens and reports

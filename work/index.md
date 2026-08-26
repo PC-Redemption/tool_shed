@@ -11,6 +11,7 @@ Updated: 2026-08-26
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
 | [work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md](work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md) | campaign | abandoned | 2026-08-24 | none | - |
 | [work/00-campaigns/abandoned/061-publish-and-synchronize-direct-app-server-dispatch.md](work/00-campaigns/abandoned/061-publish-and-synchronize-direct-app-server-dispatch.md) | campaign | abandoned | 2026-08-25 | none | - |
+| [work/00-campaigns/active/071-make-app-server-collateral-correct-before-worker-launch.md](work/00-campaigns/active/071-make-app-server-collateral-correct-before-worker-launch.md) | campaign | queued | 2026-08-26 | execute when selected from the active campaign queue | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -120,12 +121,13 @@ Updated: 2026-08-26
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/maps/map-disposable-completion-watchers-and-hosted-notifications.md](work/maps/map-disposable-completion-watchers-and-hosted-notifications.md) | project-map | deferred | 2026-08-18 | preserve the completed local watcher and wait for a concrete external/non-App-Server notification need before revisiting hosted work | - |
-| [work/maps/map-low-token-cross-platform-campaign-execution.md](work/maps/map-low-token-cross-platform-campaign-execution.md) | project-map | active | 2026-08-26 | obtain separate owner authorization to publish and synchronize the Linux-proven bounded App Server release | - |
+| [work/maps/map-low-token-cross-platform-campaign-execution.md](work/maps/map-low-token-cross-platform-campaign-execution.md) | project-map | active | 2026-08-26 | approve Roadmap Revision 3 for first-pass App Server collateral preparation, then derive its first corrective milestone | - |
 | [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | complete | 2026-08-20 | none | - |
 | [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
 | [work/roadmaps/roadmap-completion-watcher-program-r2.md](work/roadmaps/roadmap-completion-watcher-program-r2.md) | program-roadmap | approved | 2026-08-20 | derive campaigns for milestone M1-CONTRACT | none |
 | [work/roadmaps/roadmap-completion-watcher-program.md](work/roadmaps/roadmap-completion-watcher-program.md) | program-roadmap | superseded | 2026-08-20 | none | work/roadmaps/roadmap-completion-watcher-program-r2.md |
-| [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r2.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r2.md) | program-roadmap | executing | 2026-08-26 | execute the first ready roadmap campaign through ts: next | none |
+| [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r2.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r2.md) | program-roadmap | superseded | 2026-08-26 | none | work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r3.md |
+| [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r3.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r3.md) | program-roadmap | executing | 2026-08-26 | execute the first ready roadmap campaign through ts: next | none |
 | [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution.md) | program-roadmap | superseded | 2026-08-26 | none | work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r2.md |
 | [work/spikes/spike-completion-watcher-protocol-and-failure-model.md](work/spikes/spike-completion-watcher-protocol-and-failure-model.md) | spike | complete | 2026-08-18 | none | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
 | [work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md](work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md) | spike | complete | 2026-08-09 | none | work/maps/map-tool-shed-evolution.md |
@@ -157,6 +159,6 @@ Updated: 2026-08-26
 
 ## Summary
 
-- Total artifacts: 140
-- Active artifacts: 1
+- Total artifacts: 142
+- Active artifacts: 2
 - Completed/decided artifacts: 123
