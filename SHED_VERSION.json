@@ -147,10 +147,32 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
   "notes": "Harden Windows App Server verification and automatic campaign preparation",
-  "release_commit": null,
-  "release_qualification": null,
+  "release_commit": "5d00db4141d116162b78eb5316114ee145289922",
+  "release_qualification": {
+    "attested_at": "2026-08-26T11:03:41Z",
+    "client_smoke": {
+      "path": "scripts/validate_snapshot_client.py",
+      "sha256": "d740896c470e02ba526ed08a6d2a8b40865764e67951583e6f8a97db65402766"
+    },
+    "full_validator": {
+      "path": "scripts/validate_tool_shed.py",
+      "sha256": "8fc34912f27434fefea4870607350a6543c3293666e4efd96d55b320739c42d6"
+    },
+    "required_ci": [
+      {
+        "path": ".github/workflows/validate.yml",
+        "sha256": "b62203b7c1c21f03dc77e42d714db6b0d742550c3524a4dc33d67c5c283cc54e"
+      },
+      {
+        "path": ".github/workflows/release.yml",
+        "sha256": "74ee83963f0c20eef755bcae7f51c0caaa35fe3ce2f7001cbcfcf381911d0a45"
+      }
+    ],
+    "schema_version": 1,
+    "subject_commit": "5d00db4141d116162b78eb5316114ee145289922"
+  },
   "release_tag": "v0.29.9",
-  "released_at": null,
+  "released_at": "2026-08-26T11:03:41Z",
   "shed_version": "0.29.9",
   "updated_at": "2026-08-26",
   "updater_mutation_paths": [
