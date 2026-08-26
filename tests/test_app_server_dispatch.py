@@ -292,7 +292,7 @@ class AppServerDispatchTests(unittest.TestCase):
         self.assertIn("Automatic capsule context budget: 1234 bytes total", context)
         self.assertIn(Path(sys.executable).as_posix(), context)
         self.assertIn("do not assert that the whole Git worktree is clean", prompt)
-        self.assertIn("src/proof.py (10 bytes;", context)
+        self.assertIn(f"src/proof.py ({source.stat().st_size} bytes;", context)
 
     def test_automatic_preparation_normalizes_python_and_drops_broad_git_diff(self) -> None:
         path = self.add_campaign("dispatch-proof", with_capsule=False)

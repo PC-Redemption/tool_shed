@@ -1,9 +1,9 @@
 # Publish, Synchronize, and Upgrade the App Server Repair
 
-Status: working
+Status: complete
 Type: campaign
 Updated: 2026-08-26
-Next Action: execute the campaign completion gate
+Next Action: none
 Campaign ID: publish-synchronize-and-upgrade-app-server-repair
 Campaign Number: 070
 Outcome: Publish the verified Windows App Server preparation and verifier repair as Tool Shed v0.29.9, synchronize the maintainer skill, and upgrade Core's disconnected snapshot without application deployment.
@@ -14,8 +14,10 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: The unchanged candidate passes full validation; v0.29.9 content/provenance commits, annotated tag, canonical manifest, workflow, and GitHub Release agree; the Linux installed skill exact-diffs clean; Core uses a verified v0.29.9 snapshot and matching Windows skill with reconciled campaign/work state; no Campaign 013 replay or Bactron deployment occurs.
-Completion Evidence: none
-Disposition: none
+Completion Evidence: work/evidence/evidence-tool-shed-v0-29-9-release-sync-core-upgrade.md
+Completion Date: 2026-08-26
+Completion Order: 64
+Disposition: completed
 
 ## Request
 

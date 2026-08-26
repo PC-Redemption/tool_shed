@@ -4,6 +4,7 @@ Updated: 2026-08-26
 
 Newest completion first.
 
+- 2026-08-26 — [Publish, Synchronize, and Upgrade the App Server Repair](completed/070-publish-synchronize-and-upgrade-app-server-repair.md) — Publish the verified Windows App Server preparation and verifier repair as Tool Shed v0.29.9, synchronize the maintainer skill, and upgrade Core's disconnected snapshot without application deployment. — evidence: work/evidence/evidence-tool-shed-v0-29-9-release-sync-core-upgrade.md
 - 2026-08-26 — [Requalify the realistic low-token owner loop](completed/069-requalify-realistic-low-token-owner-loop.md) — Replace fixture-only adoption guidance with a concise operating contract grounded in realistic Linux and Windows evidence. — evidence: work/evidence/evidence-realistic-low-token-owner-readoption.md
 - 2026-08-26 — [Repair and re-prove the Windows App Server campaign path](completed/068-repair-and-reprove-windows-app-server-campaign-path.md) — Make realistic Core App Server execution use the shared budget and reliable built-in deterministic verification transport. — evidence: work/evidence/evidence-windows-realistic-app-server-budget-v0-29-8.md
 - 2026-08-26 — [Publish and synchronize the bounded App Server release](completed/067-publish-and-synchronize-bounded-app-server-release.md) — Make the Linux-proven bounded CAMP contract available to fresh maintainer sessions through the verified release path. — evidence: work/evidence/evidence-tool-shed-v0-29-8-release-and-maintainer-sync.md
