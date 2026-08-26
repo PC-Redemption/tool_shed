@@ -718,11 +718,18 @@ both estimates. Do not guess or broaden authority.
 
 def _preparation_keywords(campaign: campaign_queue.Campaign) -> tuple[str, ...]:
     text = "\n".join((campaign.title, campaign.outcome, campaign.body)).lower()
-    words = {
+    base_words = {
         word
         for word in re.findall(r"[a-z][a-z0-9_-]{3,}", text)
         if word not in PREPARATION_STOPWORDS and not word.isdigit()
     }
+    words = set(base_words)
+    for word in base_words:
+        parts = [part for part in re.split(r"[-_]", word) if len(part) >= 4]
+        words.update(parts)
+        if len(parts) > 1:
+            words.add("_".join(parts))
+            words.add("-".join(parts))
     return tuple(sorted(words, key=lambda word: (-len(word), word))[:80])
 
 
@@ -818,8 +825,7 @@ def _automatic_preparation_context(
         if (
             pure.is_absolute()
             or any(part in {"", ".", ".."} for part in pure.parts)
-            or pure.parts[0] in {".git", "tool_shed"}
-            or pure.parts[:3] == ("work", "evidence", "generated")
+            or pure.parts[0] in {".git", "tool_shed", "work"}
         ):
             continue
         relative = Path(*pure.parts)
@@ -876,7 +882,11 @@ def _automatic_preparation_context(
         inventory_bytes += size
     sections.extend(["", "## Bounded relevant file excerpts", ""])
     excerpt_targets: list[Path] = []
-    for relative in [*sorted(referenced), *sorted(preferred), *(path for score, path in candidates if score > 0)]:
+    for relative in [
+        *sorted(referenced),
+        *(path for score, path in candidates if score > 0 and path not in preferred),
+        *sorted(preferred),
+    ]:
         if relative not in excerpt_targets:
             excerpt_targets.append(relative)
         if len(excerpt_targets) >= 14:
@@ -891,7 +901,7 @@ def _automatic_preparation_context(
         block = f"### {relative.as_posix()}\n\n```text\n{excerpt}\n```\n"
         size = len(block.encode("utf-8"))
         if total + size > 90_000:
-            break
+            continue
         sections.append(block)
         total += size
     return "\n".join(sections).rstrip() + "\n"

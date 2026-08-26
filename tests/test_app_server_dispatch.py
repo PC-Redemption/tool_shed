@@ -523,6 +523,34 @@ class AppServerDispatchTests(unittest.TestCase):
         self.assertIn("first\n  completed file change as the verification handoff", prompt)
         self.assertIn(f"src/proof.py ({source.stat().st_size} bytes;", context)
 
+    def test_generic_provider_portability_campaign_excerpts_code_before_routing_docs(self) -> None:
+        path = self.add_campaign("dispatch-proof", with_capsule=False)
+        text = path.read_text(encoding="utf-8").replace(
+            "Prove deterministic dispatch.",
+            "Select one useful provider-portability code and focused-test improvement.",
+        )
+        path.write_text(text, encoding="utf-8")
+        source = self.workspace / "scripts" / "check_provider_adapters.py"
+        source.parent.mkdir()
+        source.write_text("def check_provider_adapters():\n    return True\n", encoding="utf-8")
+        test = self.workspace / "tests" / "test_provider_adapters.py"
+        test.parent.mkdir()
+        test.write_text("def test_provider_adapters():\n    assert True\n", encoding="utf-8")
+        readme = self.workspace / "README.md"
+        readme.write_text("routing guidance\n", encoding="utf-8")
+
+        context = _automatic_preparation_context(
+            self.workspace,
+            campaign_queue.parse_campaign(path),
+            max_context_bytes=64_000,
+        )
+
+        source_heading = context.index("### scripts/check_provider_adapters.py")
+        test_heading = context.index("### tests/test_provider_adapters.py")
+        readme_heading = context.index("### README.md")
+        self.assertLess(source_heading, readme_heading)
+        self.assertLess(test_heading, readme_heading)
+
     def test_automatic_preparation_normalizes_python_and_drops_broad_git_diff(self) -> None:
         path = self.add_campaign("dispatch-proof", with_capsule=False)
         campaign = campaign_queue.parse_campaign(path)
