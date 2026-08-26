@@ -10,14 +10,14 @@
     "adapters/codex-app-server-config.json": "d79964bc2371a39d50b7bcad534af133564e55bbf491baf4f3031b36e01b7e49",
     "adapters/codex-app-server-qualifications.json": "995ccd3bea135448b316045ea240c10d272f4c7e2ff65085111e0380cef947c1",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "147a15aab03a88ad36567e06171acd412d486497f9dba1e44daea26618914120",
+    "adapters/codex-skill-releases.json": "7192280ed6eb7e511a36bb17afd1b0d6c24bfc4ae4ef781cbf970f8502845405",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "95069c265c5384c7e62e91be7cad996eb1ce4c13f43ca57f5051c0487e2f9c02",
     "docs/codex-app-server-alpha-requalification-2026-08-24.md": "be240e9b4b63db13689c69c9fec9a870627fc39a85d5176ee4c6ce6ad256721c",
     "docs/codex-app-server-camp-token-baseline-2026-08-20.md": "5148859c74dc0b79a7f3dd1b86b8085f03091a3268bf95dfe769337fe3fdccc9",
     "docs/codex-app-server-camp-token-optimization-2026-08-20.md": "7c28ad01af86288141bf94b6f9b9d048ed69424075c762d44d421f82330b0235",
-    "docs/codex-app-server-execution.md": "82c7473e788e758a4373a3486e94fda7993d99d7e365d3c2904f5bf828824384",
-    "docs/codex-app-server-maintainer-note.md": "7c40d67042fd4c652c47bd890055cc165fce55d9a00346a3673ddac6e2788db6",
+    "docs/codex-app-server-execution.md": "84193b854e5054593c9f5ecb5576cefcb3749528a711e7973acd85432d8647ae",
+    "docs/codex-app-server-maintainer-note.md": "54454aa1ebe00cbeb802615795397cd397ebaa57cff75f0570e5111968d8da46",
     "docs/codex-app-server-qualification-2026-08-20.md": "d4d70d0a51bb6be1ed69ce45ce63124b16f4d1acca35e9072d926b4d43b79c31",
     "docs/codex-app-server-requalification-2026-08-21.md": "9aacfac50f3debb8ccff2b3b06d33f6b52c6354e7df5b7bc9c5f2114f85663b4",
     "docs/codex-app-server-write-qualification-2026-08-20.md": "db297ad88feb73f46a46178ae92304445afc2fb2447c2543d3bec84609af3923",
@@ -47,7 +47,7 @@
     "schemas/completion-watcher/v1/watch-descriptor.schema.json": "e6b54939fb06111b7a9f687ceb9be281a9e8dc389bdc28a72d9ee3078eb5fe4f",
     "schemas/completion-watcher/v1/watch-record.schema.json": "7455db4c2e7a271ec8efbd7b0828143a141dcd1daa55d25540132ab0b53a5b1d",
     "scripts/app_server_control.py": "0eca268c61639d2920b72ed2578758cc2a3a33a6121ab720f48fc225e3e123d3",
-    "scripts/app_server_dispatch.py": "6c3641d26502f0c6dd930966413ec8647fd9dc8fde43c9ebbfd5cb86062cc005",
+    "scripts/app_server_dispatch.py": "a3b6deceaeda9859a292f4af37a87fff74688de801b841f1b22acc65389db52e",
     "scripts/build_docs_site.py": "eb7436a456c87ab2bc20914b0a0442b034d2a48c17b290846924033c94e1aa0c",
     "scripts/campaign_queue.py": "113c51fbb17a49f7afb2de5530418694b6a30627136117176511d76ed926047c",
     "scripts/check_provider_adapters.py": "acbf0c355a00f380cd1b2c201992be51f77a3bb857c1b5d569c1badc8a114051",
@@ -60,7 +60,7 @@
     "scripts/codex_camp_execution.py": "b4262ab572b4e0bf2cfc74acc575b10a21700a4c50e269fc43182dde2ec6a0a7",
     "scripts/codex_cli_resolver.py": "8188226dfef2d8fef0cb19905eb168f49ce3e0227ee0197d58c069601ed4ebed",
     "scripts/codex_execution.py": "ae2ad477d87627f1123c46ea23a12d83f7271b3b450497c6335025720cd27663",
-    "scripts/codex_orchestration.py": "5346acb6b50c23b0e80d774ccf44dbd76387f16e76909cb311d4677b1282b15b",
+    "scripts/codex_orchestration.py": "ec7223daf8fc17ddc0a5956a0c6607849136965fdbbb1cb457293bf098f21661",
     "scripts/codex_qualification_cache.py": "7726bf573a96af6ca468536e6283e87788760b0045a9c36690e64bc68623b69a",
     "scripts/codex_skill_sync.py": "78cf6c2d6605854c429cc54e63eb60b7fa7e81e47dcae9fc87c60b5f93d564a8",
     "scripts/complete_workpackage.py": "5de264d68998db84c898da83dbfa09682003c3119913b7941f1414dbac7f4d6c",
@@ -146,34 +146,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
-  "notes": "Bound live App Server CAMP usage",
-  "release_commit": "038e2f4c624b1795932a30892edb12bd325c1bd9",
-  "release_qualification": {
-    "attested_at": "2026-08-26T10:17:23Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "d740896c470e02ba526ed08a6d2a8b40865764e67951583e6f8a97db65402766"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "8fc34912f27434fefea4870607350a6543c3293666e4efd96d55b320739c42d6"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "b62203b7c1c21f03dc77e42d714db6b0d742550c3524a4dc33d67c5c283cc54e"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "74ee83963f0c20eef755bcae7f51c0caaa35fe3ce2f7001cbcfcf381911d0a45"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "038e2f4c624b1795932a30892edb12bd325c1bd9"
-  },
-  "release_tag": "v0.29.8",
-  "released_at": "2026-08-26T10:17:23Z",
-  "shed_version": "0.29.8",
+  "notes": "Harden Windows App Server verification and automatic campaign preparation",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.29.9",
+  "released_at": null,
+  "shed_version": "0.29.9",
   "updated_at": "2026-08-26",
   "updater_mutation_paths": [
     {
