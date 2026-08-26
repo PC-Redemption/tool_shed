@@ -418,6 +418,9 @@ If a safe bounded CAMP can be prepared, set status to prepared and:
   implementation or test files inline;
 - provide one to eight deterministic shell-free verification commands as direct argv arrays;
 - use platform-local executable paths that do not depend on shell activation;
+- use the exact current Python executable advertised in the preparation context for Python checks;
+- do not assert that the whole Git worktree is clean or exclude only expected_paths from a clean
+  diff check because the dispatcher persists the capsule and lifecycle state before execution;
 - exclude work/00-campaigns, Tool Shed snapshot machinery, Git metadata, deployment, production,
   credentials, generated outputs not owned by the worker, and unrelated cleanup.
 
@@ -560,6 +563,8 @@ def _automatic_preparation_context(
         "",
         f"Platform: {sys.platform}",
         f"Workspace: {workspace}",
+        f"Current Python executable for verification: {Path(sys.executable).as_posix()}",
+        "Dispatcher-owned capsule and lifecycle edits will be pre-existing Git changes during verification.",
         "",
         "## Selected campaign",
         "",
@@ -605,6 +610,53 @@ def _automatic_preparation_context(
         sections.append(block)
         total += size
     return "\n".join(sections).rstrip() + "\n"
+
+
+def _normalize_automatic_verification_commands(
+    capsule: ExecutionCapsule,
+) -> ExecutionCapsule:
+    """Make planner-selected verification executable and Git scope deterministic."""
+
+    commands: list[tuple[str, ...]] = []
+    python_names = {
+        "py",
+        "py.exe",
+        "python",
+        "python.exe",
+        "python3",
+        "python3.exe",
+    }
+    for command in capsule.verification_commands:
+        argv = list(command)
+        executable_name = Path(argv[0]).name.lower()
+        if executable_name in python_names:
+            if executable_name in {"py", "py.exe"} and len(argv) > 1:
+                if re.fullmatch(r"-\d+(?:\.\d+)?", argv[1]):
+                    del argv[1]
+            argv[0] = Path(sys.executable).as_posix()
+        lowered = [argument.lower() for argument in argv]
+        if executable_name in {"git", "git.exe"} and "diff" in lowered and (
+            "--exit-code" in lowered or "--quiet" in lowered
+        ):
+            separator = argv.index("--") if "--" in argv else -1
+            scopes = argv[separator + 1 :] if separator >= 0 else []
+            if not scopes or any(scope == "." or scope.startswith(":(") for scope in scopes):
+                continue
+        commands.append(tuple(argv))
+    if not commands:
+        raise DispatchError(
+            "automatic_preparation_invalid",
+            "automatic CAMP preparation did not retain a scoped deterministic verification command",
+            recovery_action="repair the automatic verification boundary before retrying",
+        )
+    return ExecutionCapsule(
+        campaign_id=capsule.campaign_id,
+        camp=capsule.camp,
+        prompt=capsule.prompt,
+        expected_paths=capsule.expected_paths,
+        context_files=capsule.context_files,
+        verification_commands=tuple(commands),
+    )
 
 
 def _parse_automatic_preparation(
@@ -668,6 +720,7 @@ def _parse_automatic_preparation(
         )
     capsule_payload = {key: payload[key] for key in CAPSULE_KEYS}
     capsule = _execution_capsule_from_payload(workspace, campaign, capsule_payload)
+    capsule = _normalize_automatic_verification_commands(capsule)
     context_bytes = sum((workspace / path).stat().st_size for path in capsule.context_files)
     if context_bytes > max_context_bytes:
         raise DispatchError(

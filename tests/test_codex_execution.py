@@ -630,6 +630,9 @@ class CodexExecutionTests(unittest.TestCase):
             run.call_args.args[0],
         )
         self.assertEqual("1", run.call_args.kwargs["env"]["PYTHONDONTWRITEBYTECODE"])
+        self.assertEqual("1", run.call_args.kwargs["env"]["PYTHONUTF8"])
+        self.assertEqual("utf-8", run.call_args.kwargs["encoding"])
+        self.assertEqual("replace", run.call_args.kwargs["errors"])
 
     def test_failed_deterministic_verification_requires_reconciliation(self) -> None:
         repository = self.root / "failed-camp-repo"

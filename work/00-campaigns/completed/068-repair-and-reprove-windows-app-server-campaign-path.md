@@ -1,9 +1,9 @@
 # Repair and re-prove the Windows App Server campaign path
 
-Status: working
+Status: complete
 Type: campaign
 Updated: 2026-08-26
-Next Action: execute the campaign completion gate
+Next Action: none
 Campaign ID: repair-and-reprove-windows-app-server-campaign-path
 Campaign Number: 068
 Outcome: Make realistic Core App Server execution use the shared budget and reliable built-in deterministic verification transport.
@@ -14,8 +14,10 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: G8-WINDOWS-REALISTIC-BOUNDED passes with normal verifier transport and a representative verified Core CAMP within every shared default.
-Completion Evidence: none
-Disposition: none
+Completion Evidence: work/evidence/evidence-windows-realistic-app-server-budget-v0-29-8.md
+Completion Date: 2026-08-26
+Completion Order: 62
+Disposition: completed
 Roadmap: low-token-cross-platform-campaign-execution
 Roadmap Revision: 2
 Milestone: M8-WINDOWS-REALISTIC-REPROOF

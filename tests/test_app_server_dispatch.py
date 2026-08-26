@@ -290,7 +290,40 @@ class AppServerDispatchTests(unittest.TestCase):
 
         self.assertIn("no greater than 1234 bytes", prompt)
         self.assertIn("Automatic capsule context budget: 1234 bytes total", context)
+        self.assertIn(Path(sys.executable).as_posix(), context)
+        self.assertIn("do not assert that the whole Git worktree is clean", prompt)
         self.assertIn("src/proof.py (10 bytes;", context)
+
+    def test_automatic_preparation_normalizes_python_and_drops_broad_git_diff(self) -> None:
+        path = self.add_campaign("dispatch-proof", with_capsule=False)
+        campaign = campaign_queue.parse_campaign(path)
+        prepared = {
+            "status": "prepared",
+            "reason": "bounded proof",
+            "schema_version": 1,
+            "campaign_id": "dispatch-proof",
+            "camp": "create-proof",
+            "prompt": "Create proof.txt and return camp_ready_for_verification.",
+            "expected_paths": ["proof.txt"],
+            "context_files": [],
+            "verification_commands": [
+                ["py.exe", "-3.11", "-c", "assert True"],
+                ["git.exe", "diff", "--exit-code", "--", ".", ":(exclude)proof.txt"],
+            ],
+        }
+        result = SimpleNamespace(
+            status="completed",
+            text=json.dumps(prepared),
+            context_warning=None,
+            mutation_events=(),
+        )
+
+        capsule, _ = _parse_automatic_preparation(self.workspace, campaign, result)
+
+        self.assertEqual(
+            ((Path(sys.executable).as_posix(), "-c", "assert True"),),
+            capsule.verification_commands,
+        )
 
     def test_automatic_preparation_rejects_oversized_inline_context(self) -> None:
         path = self.add_campaign("dispatch-proof", with_capsule=False)

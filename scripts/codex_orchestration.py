@@ -753,6 +753,7 @@ def execute_deterministic_verification(
         )
     environment = dict(os.environ)
     environment["PYTHONDONTWRITEBYTECODE"] = "1"
+    environment["PYTHONUTF8"] = "1"
     try:
         completed = subprocess.run(
             [
@@ -768,6 +769,8 @@ def execute_deterministic_verification(
             env=environment,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=timeout,
             check=False,
         )
