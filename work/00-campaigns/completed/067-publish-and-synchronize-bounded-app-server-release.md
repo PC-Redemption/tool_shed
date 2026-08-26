@@ -1,9 +1,9 @@
 # Publish and synchronize the bounded App Server release
 
-Status: working
+Status: complete
 Type: campaign
 Updated: 2026-08-26
-Next Action: execute the campaign completion gate
+Next Action: none
 Campaign ID: publish-and-synchronize-bounded-app-server-release
 Campaign Number: 067
 Outcome: Make the Linux-proven bounded CAMP contract available to fresh maintainer sessions through the verified release path.
@@ -14,8 +14,10 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: G7-CORRECTIVE-RELEASE-USABLE passes with one full validator, verified public provenance, exact installed-skill parity, and a fresh-session policy smoke.
-Completion Evidence: none
-Disposition: none
+Completion Evidence: work/evidence/evidence-tool-shed-v0-29-8-release-and-maintainer-sync.md
+Completion Date: 2026-08-26
+Completion Order: 61
+Disposition: completed
 Roadmap: low-token-cross-platform-campaign-execution
 Roadmap Revision: 2
 Milestone: M7-CORRECTIVE-RELEASE

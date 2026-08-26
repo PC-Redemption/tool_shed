@@ -11,7 +11,7 @@ Updated: 2026-08-26
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
 | [work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md](work/00-campaigns/abandoned/048-auto-dirty-qualify-newer-codex-app-server-versions.md) | campaign | abandoned | 2026-08-24 | none | - |
 | [work/00-campaigns/abandoned/061-publish-and-synchronize-direct-app-server-dispatch.md](work/00-campaigns/abandoned/061-publish-and-synchronize-direct-app-server-dispatch.md) | campaign | abandoned | 2026-08-25 | none | - |
-| [work/00-campaigns/active/067-publish-and-synchronize-bounded-app-server-release.md](work/00-campaigns/active/067-publish-and-synchronize-bounded-app-server-release.md) | campaign | queued | 2026-08-26 | execute when selected from the active campaign queue | - |
+| [work/00-campaigns/active/068-repair-and-reprove-windows-app-server-campaign-path.md](work/00-campaigns/active/068-repair-and-reprove-windows-app-server-campaign-path.md) | campaign | queued | 2026-08-26 | execute when selected from the active campaign queue | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -73,6 +73,7 @@ Updated: 2026-08-26
 | [work/00-campaigns/completed/064-route-windows-verification-through-console-sandbox.md](work/00-campaigns/completed/064-route-windows-verification-through-console-sandbox.md) | campaign | complete | 2026-08-25 | none | - |
 | [work/00-campaigns/completed/065-adopt-low-token-app-server-campaign-loop.md](work/00-campaigns/completed/065-adopt-low-token-app-server-campaign-loop.md) | campaign | complete | 2026-08-25 | none | - |
 | [work/00-campaigns/completed/066-bound-realistic-app-server-campaign-growth.md](work/00-campaigns/completed/066-bound-realistic-app-server-campaign-growth.md) | campaign | complete | 2026-08-26 | none | - |
+| [work/00-campaigns/completed/067-publish-and-synchronize-bounded-app-server-release.md](work/00-campaigns/completed/067-publish-and-synchronize-bounded-app-server-release.md) | campaign | complete | 2026-08-26 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -106,6 +107,7 @@ Updated: 2026-08-26
 | [work/evidence/evidence-tool-shed-v0-28-0-maintainer-skill-sync.md](work/evidence/evidence-tool-shed-v0-28-0-maintainer-skill-sync.md) | evidence | complete | 2026-08-25 | derive the M3 native Linux installed-use campaign; stop before the Bactron Core snapshot consent gate | - |
 | [work/evidence/evidence-tool-shed-v0-28-0-release.md](work/evidence/evidence-tool-shed-v0-28-0-release.md) | evidence | complete | 2026-08-25 | use the synchronized release for the M3 native Linux installed-use proof | - |
 | [work/evidence/evidence-tool-shed-v0-29-1-release-and-skill-sync.md](work/evidence/evidence-tool-shed-v0-29-1-release-and-skill-sync.md) | evidence | complete | 2026-08-25 | return to Campaign 059 for the authorized Bactron Core Windows proof | - |
+| [work/evidence/evidence-tool-shed-v0-29-8-release-and-maintainer-sync.md](work/evidence/evidence-tool-shed-v0-29-8-release-and-maintainer-sync.md) | evidence | complete | 2026-08-26 | complete Campaign 067 and derive the M8 Core snapshot campaign without upgrading Core | - |
 | [work/evidence/evidence-w1-dev-smb-access.md](work/evidence/evidence-w1-dev-smb-access.md) | evidence | complete | 2026-08-24 | none | - |
 | [work/evidence/evidence-windows-console-sandbox-verification-v0-29-4.md](work/evidence/evidence-windows-console-sandbox-verification-v0-29-4.md) | - | - | - | - | - |
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |
@@ -150,6 +152,6 @@ Updated: 2026-08-26
 
 ## Summary
 
-- Total artifacts: 133
+- Total artifacts: 135
 - Active artifacts: 2
-- Completed/decided artifacts: 115
+- Completed/decided artifacts: 117
