@@ -58,11 +58,42 @@ different-clone tokens fail even when work content is identical. An outside-root
 | `ts: help all` | Alias for the complete local command reference, with both public help and `/ref/` links. Read-only. |
 | `ts: help <topic-or-command>` | Explain the named workflow locally with examples and retain the public root help link. Read-only. |
 | `ts: discuss <topic>` | Explore the outcome, constraints, assumptions, unknowns, and smallest useful next route without modifying workspace artifacts. |
+| `ts: brainstorm` | List active Idea Briefs under `work/ideas/` without mutation. |
+| `ts: brainstorm <idea>` | Create or resume one durable pre-PRM Idea Brief, updating its current synthesis and useful dated exploration notes. |
+| `ts: bs <idea>` | Exact alias for `ts: brainstorm <idea>`. |
 | `ts: build focus areas` | Inspect existing workspace sources and propose a project-specific focus-area catalog and active-campaign assignments. Requires explicit approval before writing. |
 | `ts: develop roadmap` | Read project evidence and clarify an opt-in Program Roadmap without mutation. |
 | `ts: overview` | Combine maps, approved roadmaps, gates, focus areas, campaign state, and drift. Read-only. |
 
 `discussion: <topic>` is also accepted as an informal, read-only discussion signal.
+
+## Brainstorm And Idea Briefs
+
+Brainstorming is Tool Shed's durable pre-PRM Discovery Cycle:
+
+```text
+Idea → Brainstorm / Discovery → PRM (Plan → Roadmap → Milestone)
+```
+
+`brainstorm` and `bs` are equivalent. Unlike `ts: discuss`, the brainstorm route authorizes
+creating or updating exactly one tracked `work/ideas/idea-*.md` Idea Brief. Before creating a new
+one, compare active brief titles and current syntheses; resume one clear material match and ask one
+concise choice if several match. A bare `ts: brainstorm` only lists active briefs.
+
+Each turn keeps `Current Synthesis` concise and appends only useful dated context to `Exploration
+Log`. Capture possibilities, tradeoffs, constraints, non-goals, reminders, assumptions, open
+questions, and decisions without requiring every section to be complete. Supported statuses are
+`exploring`, `ready-for-prm`, `promoted`, and `parked`. Idea Briefs appear in the work index but are
+excluded from campaign reconciliation.
+
+Use `ts: brainstorm idea <idea-id-or-path>` or its `ts: bs` equivalent to explicitly resume one
+brief. Use `ts: prm idea <idea-id-or-path>` to carry it forward; keep it ready-for-PRM until
+approved project-map direction captures it, then preserve it as promoted provenance with
+`Produces:` pointing to that map.
+
+Brainstorming does not authorize a project map, roadmap, campaign, source change, deployment, or
+publication. Promotion does not bypass any PRM approval or authority boundary. Brainstorming is
+GUI-native; `--app-server` is not supported for `brainstorm` or `bs`.
 
 ## Execution Endpoints
 
@@ -113,6 +144,20 @@ standard definitions above. See [workspace work-level customization](work-level-
 The Tool Shed workflow is the operator path through direction, execution, evidence, and review.
 Five nested control cycles govern how that workflow repeats and returns control. Completing an
 inner cycle returns control to its owner; it does not imply that the outer outcome is complete.
+
+KISS means **minimum sufficient complexity**. Choose the smallest complete solution that satisfies
+the current outcome, safety boundaries, and proven constraints. Reuse existing mechanisms and add
+complexity only when a current requirement, concrete risk, or observed failure justifies it. This
+guides planning, roadmaps, milestones, implementation, testing, and recovery without adding a new
+required field or approval gate.
+
+`PRM` means **Plan → Roadmap → Milestone**, the complete outer Tool Shed coordination lifecycle
+after an outcome is understood well enough to pursue. An optional Brainstorm / Discovery Cycle
+precedes PRM for durable multi-session exploration. The Plan Cycle settles intent and project-map direction; the Roadmap Cycle owns the Program Roadmap
+and is the human-facing name for the Program Cycle; and the Milestone Cycle runs evidence-gated
+milestone waves and is the human-facing name for the Milestone Wave Cycle. PRM contains the Queue,
+Campaign, and Evidence cycles and preserves their existing machine-facing Cycle State Capsule names.
+It completes only when the intended outcome and all applicable gates pass.
 
 | Cycle | Repeating transition | Complete when | Control returns to |
 | --- | --- | --- | --- |
@@ -260,6 +305,8 @@ rolling-wave campaign planning:
 
 | Prompt | Usage |
 | --- | --- |
+| `ts: prm <outcome>` | Carry an outcome through the full Plan → Roadmap → Milestone lifecycle, continuing every safe authorized transition until applicable gates pass or genuine owner intervention is required. This does not bypass exact approvals or grant release, deployment, or protected-target authority. |
+| `ts: prm idea <idea-id-or-path>` | Carry one selected Idea Brief into PRM, preserving visible unknowns and promoting the brief only after approved project-map direction captures it. Later approval and authority boundaries remain separate. |
 | `ts: develop roadmap` | Read and classify project evidence. Greenfield projects establish and approve the initial map first. No writes. |
 | `ts: propose roadmap` | Capture an exact proposed roadmap revision from a fresh source-state token. Creates no campaigns. |
 | `ts: approve roadmap <token>` | Approve exactly one unchanged proposal; preserve any prior approved revision as superseded. |

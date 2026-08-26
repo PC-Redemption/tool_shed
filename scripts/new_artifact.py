@@ -11,6 +11,8 @@ from work_tree import ensure_work_tree
 
 
 ARTIFACTS = {
+    "idea": ("templates/idea-brief.md", "work/ideas", "idea"),
+    "idea-brief": ("templates/idea-brief.md", "work/ideas", "idea"),
     "checklist": ("templates/checklist.md", "work/checklists", "checklist"),
     "ticket": ("templates/ticket.md", "work/tickets", "ticket"),
     "map": ("templates/project-map.md", "work/maps", "map"),

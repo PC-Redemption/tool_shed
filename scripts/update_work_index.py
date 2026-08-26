@@ -50,7 +50,9 @@ class Artifact:
         return self.fields.get("Type", "")
 
     def is_active(self) -> bool:
-        return self.status().lower() in {"active", "blocked", "proposed", "queued", "working"}
+        return self.status().lower() in {
+            "active", "blocked", "exploring", "proposed", "queued", "ready-for-prm", "working"
+        }
 
     def parent_or_truth(self) -> str:
         return (
@@ -170,7 +172,7 @@ def render(artifacts: list[Artifact]) -> str:
     completed = [
         item
         for item in artifacts
-        if item.status().lower() in {"complete", "completed", "done", "decided", "accepted"}
+        if item.status().lower() in {"complete", "completed", "done", "decided", "accepted", "promoted"}
     ]
 
     lines.extend(
@@ -198,7 +200,7 @@ def render_json(artifacts: list[Artifact]) -> str:
     completed = [
         item
         for item in artifacts
-        if item.status().lower() in {"complete", "completed", "done", "decided", "accepted"}
+        if item.status().lower() in {"complete", "completed", "done", "decided", "accepted", "promoted"}
     ]
     payload = {
         "schema_version": 1,

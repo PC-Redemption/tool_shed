@@ -210,6 +210,8 @@ def smoke_temp_workspace() -> None:
         if any(fragment not in portable_text for fragment in campaign_contract):
             raise SystemExit("portable skill did not retain the complete owner campaign contract")
         roadmap_contract = (
+            "`PRM` means **Plan → Roadmap → Milestone**",
+            "`ts: prm <outcome>`",
             "ts: develop roadmap",
             "ts: approve roadmap <token>",
             "ts: approve campaign plan <token>",
@@ -218,6 +220,25 @@ def smoke_temp_workspace() -> None:
         )
         if any(fragment not in portable_text for fragment in roadmap_contract):
             raise SystemExit("portable skill did not retain the complete Program Roadmap contract")
+        kiss_contract = (
+            "KISS: Minimum Sufficient Complexity",
+            "smallest complete solution",
+            "current requirement, concrete risk, or observed failure",
+            "does not add a required field, form, checklist, or approval gate",
+        )
+        if any(fragment not in portable_text for fragment in kiss_contract):
+            raise SystemExit("portable skill did not retain the complete KISS contract")
+        brainstorm_contract = (
+            "Brainstorm And Idea Brief Route",
+            "`ts: brainstorm <idea>`",
+            "`ts: bs <idea>`",
+            "work/ideas/idea-*.md",
+            "`ts: prm idea <idea-id-or-path>`",
+            "outside campaign reconciliation",
+            "Brainstorming is GUI-native",
+        )
+        if any(fragment not in portable_text for fragment in brainstorm_contract):
+            raise SystemExit("portable skill did not retain the complete Brainstorm / Idea Brief contract")
         provider_paths = {
             "claude-code": "CLAUDE.md",
             "gemini-cli": "GEMINI.md",
@@ -236,6 +257,26 @@ def smoke_temp_workspace() -> None:
             "campaign continuity does not upgrade Direct",
             "ts:ask` does not turn a bounded Direct request",
         )
+        generated_prm_contract = (
+            "`PRM` means Plan → Roadmap → Milestone",
+            "`ts: prm <outcome>`",
+            "PRM is not blanket authority",
+        )
+        generated_kiss_contract = (
+            "KISS as minimum sufficient complexity",
+            "smallest complete solution",
+            "current requirement, concrete risk, or observed failure",
+            "does not create a required field, checklist, or approval gate",
+        )
+        generated_brainstorm_contract = (
+            "Brainstorm / Idea Brief route",
+            "`ts: brainstorm <idea>`",
+            "`ts: bs <idea>`",
+            "work/ideas/idea-*.md",
+            "`ts: prm idea <idea-id-or-path>`",
+            "excluded from campaign reconciliation",
+            "Brainstorming is GUI-native",
+        )
         for provider_id, relative in provider_paths.items():
             guidance = workspace / relative
             guidance_text = guidance.read_text(encoding="utf-8") if guidance.is_file() else ""
@@ -243,6 +284,9 @@ def smoke_temp_workspace() -> None:
                 "BEGIN TOOL SHED ROUTING GUIDANCE" not in guidance_text
                 or any(fragment not in guidance_text for fragment in generated_direct_contract)
                 or any(fragment not in guidance_text for fragment in generated_work_level_contract)
+                or any(fragment not in guidance_text for fragment in generated_prm_contract)
+                or any(fragment not in guidance_text for fragment in generated_kiss_contract)
+                or any(fragment not in guidance_text for fragment in generated_brainstorm_contract)
             ):
                 raise SystemExit(f"installer did not create {provider_id} adapter guidance")
         inbox_result = subprocess.run(
@@ -264,6 +308,18 @@ def smoke_temp_workspace() -> None:
                 sys.executable,
                 str(ROOT / "scripts" / "onboard_existing_project.py"),
                 "Validate Project",
+                "--workspace",
+                str(workspace),
+                "--shed",
+                str(ROOT),
+            ]
+        )
+        run(
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "new_artifact.py"),
+                "idea",
+                "Validate Discovery",
                 "--workspace",
                 str(workspace),
                 "--shed",
@@ -326,6 +382,7 @@ def smoke_temp_workspace() -> None:
         payload = json.loads((workspace / "work" / "index.json").read_text(encoding="utf-8"))
         paths = {item["path"] for item in payload["artifacts"]}
         required = {
+            "work/ideas/idea-validate-discovery.md",
             "work/maps/map-validate-project.md",
             "work/inventories/inventory-validate-project-surfaces.md",
             "work/wp/completed/wp-finish-me.md",

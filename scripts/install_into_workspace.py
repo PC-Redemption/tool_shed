@@ -100,6 +100,21 @@ DISCUSSION_GUIDANCE = f"""{DISCUSSION_GUIDANCE_START}
 {DISCUSSION_GUIDANCE_END}
 """
 
+BRAINSTORM_GUIDANCE_START = "<!-- BEGIN TOOL SHED BRAINSTORM GUIDANCE -->"
+BRAINSTORM_GUIDANCE_END = "<!-- END TOOL SHED BRAINSTORM GUIDANCE -->"
+BRAINSTORM_GUIDANCE = f"""{BRAINSTORM_GUIDANCE_START}
+## Tool Shed Brainstorm / Idea Brief route
+
+- Treat `ts: brainstorm <idea>` as the durable pre-PRM Discovery Cycle and `ts: bs <idea>` as its exact alias. A bare form lists active Idea Briefs without mutation.
+- The route authorizes creating or updating one tracked `work/ideas/idea-*.md` Idea Brief, not a project map, roadmap, campaign, product change, deployment, or publication.
+- Before creating, compare existing Idea Brief titles and current syntheses. Resume one clear material match, create with `python3 <shed>/scripts/new_artifact.py idea \"Title\" --workspace <workspace>` when none matches, and ask one concise choice if multiple briefs plausibly match.
+- Keep a concise current synthesis above useful dated exploration notes. Preserve possibilities, tradeoffs, constraints, non-goals, reminders, assumptions, open questions, owner notes, and decisions without requiring every section to be complete.
+- Use `exploring`, `ready-for-prm`, `promoted`, or `parked` status. Idea Briefs are indexed but excluded from campaign reconciliation.
+- Treat `ts: prm idea <idea-id-or-path>` as PRM sourced from that brief. Keep it `ready-for-prm` until approved project-map direction captures it, then set `promoted` and name that map in `Produces:`. Promotion preserves provenance and does not bypass any approval or authority boundary.
+- Brainstorming is GUI-native; reject `--app-server` rather than switching execution backends.
+{BRAINSTORM_GUIDANCE_END}
+"""
+
 HELP_GUIDANCE_START = "<!-- BEGIN TOOL SHED HELP GUIDANCE -->"
 HELP_GUIDANCE_END = "<!-- END TOOL SHED HELP GUIDANCE -->"
 HELP_GUIDANCE = f"""{HELP_GUIDANCE_START}
@@ -118,6 +133,9 @@ COORDINATION_GUIDANCE_END = "<!-- END TOOL SHED COORDINATION GUIDANCE -->"
 COORDINATION_GUIDANCE = f"""{COORDINATION_GUIDANCE_START}
 ## Tool Shed minimum sufficient coordination
 
+- Apply KISS as minimum sufficient complexity: choose the smallest complete solution that satisfies the current outcome, safety boundaries, and proven constraints.
+- Reuse existing mechanisms. Add artifacts, abstractions, dependencies, layers, compatibility scope, tests, or future-proofing only when a current requirement, concrete risk, or observed failure justifies them; then add the smallest bounded amount and reevaluate.
+- KISS does not waive correctness, safety, credible verification, or authority, and it does not create a required field, checklist, or approval gate.
 - Start at the lowest adequate level: Direct, Guided, Coordinated, or Deep.
 - Default a clear, reversible, single-repository bug fix or enhancement to Direct, including when it arrives through `ts:ask`.
 - For Direct work, orient to the named target once, implement the focused change, and run focused, proportionate verification.
@@ -248,6 +266,11 @@ ROADMAP_GUIDANCE_END = "<!-- END TOOL SHED PROGRAM ROADMAP GUIDANCE -->"
 ROADMAP_GUIDANCE = f"""{ROADMAP_GUIDANCE_START}
 ## Tool Shed Program Roadmaps
 
+- `PRM` means Plan → Roadmap → Milestone: the complete outer Tool Shed coordination lifecycle from understood intent and settled project direction, through an approved Program Roadmap, to successive evidence-gated milestone waves. An optional Brainstorm / Discovery Cycle precedes PRM when an idea needs durable multi-session exploration. Treat `ts: prm <outcome>` as a request to continue that full lifecycle through every safe, already-authorized transition until the outcome and applicable gates pass or genuine owner intervention is required.
+- Treat `ts: prm idea <idea-id-or-path>` as PRM sourced from one selected `work/ideas/idea-*.md` brief. Preserve its unknowns and provenance; mark it promoted with the approved project map in `Produces:` only after that map captures its direction.
+- Apply KISS through PRM: plan the smallest valuable outcome, use the fewest necessary milestones and evidence gates, and make each milestone the smallest independently useful, verifiable slice.
+- The PRM Plan Cycle settles intent and project-map direction; its Roadmap Cycle is the human-facing name for the existing Program Cycle; and its Milestone Cycle is the human-facing name for the existing Milestone Wave Cycle. PRM contains rather than replaces the Queue, Campaign, and Evidence cycles, and stable machine-facing cycle-state names remain unchanged.
+- PRM is not blanket authority and never silently approves a project map, roadmap, or campaign plan; publishes or deploys; or crosses protected, credential, destructive, or external-target boundaries. An empty queue or completed inner artifact does not complete PRM; the intended outcome and applicable gates must pass.
 - Treat `ts: develop roadmap`, `ts: propose roadmap`, `ts: approve roadmap <token>`, `ts: derive campaigns for milestone <id>`, `ts: approve campaign plan <token>`, `ts: roadmap status`, `ts: review roadmap`, and `ts: overview` as the opt-in Program Roadmap lifecycle between project maps and campaigns.
 - Keep development, review, campaign derivation, status, and overview read-only. A roadmap proposal may create only a proposed `work/roadmaps/` revision; it cannot approve intent or create campaigns.
 - Require an approved initial project map for greenfield adoption. Existing or upgraded projects may use an active map and must preserve and classify all owner-authored work as completed, active, remaining, superseded, excluded, or uncertain from evidence.
@@ -262,6 +285,7 @@ GUIDANCE_BLOCKS = (
     (DOCTOR_GUIDANCE_START, DOCTOR_GUIDANCE_END, DOCTOR_GUIDANCE),
     (IDENTITY_GUIDANCE_START, IDENTITY_GUIDANCE_END, IDENTITY_GUIDANCE),
     (DISCUSSION_GUIDANCE_START, DISCUSSION_GUIDANCE_END, DISCUSSION_GUIDANCE),
+    (BRAINSTORM_GUIDANCE_START, BRAINSTORM_GUIDANCE_END, BRAINSTORM_GUIDANCE),
     (HELP_GUIDANCE_START, HELP_GUIDANCE_END, HELP_GUIDANCE),
     (COORDINATION_GUIDANCE_START, COORDINATION_GUIDANCE_END, COORDINATION_GUIDANCE),
     (GUIDANCE_START, GUIDANCE_END, GUIDANCE),

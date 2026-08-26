@@ -7,12 +7,14 @@ only a generated deployment copy.
 ## Information Architecture
 
 - `/` explains the flexible human/AI development process and sends operators to the right entry path.
-- `/guide/` is the ordered operating surface. Its new-project and existing-project entries join a
-  shared Project Map → Program Roadmap → campaign generation → queue → execution → evidence loop.
+- `/guide/` is the ordered operating surface. Its new-project path can begin with the optional
+  Brainstorm / Idea Brief Discovery Cycle before joining the shared Project Map → Program Roadmap
+  → campaign generation → queue → execution → evidence loop.
 - `/help/` and its direct-loadable topic paths explain individual Tool Shed concepts in depth.
   `/help/workflow-cycles/` is the canonical public explanation of the overall workflow and its
-  nested Program, Milestone Wave, Queue, Campaign, and Evidence cycles; contextual pages link back
-  to it instead of making Campaigns own the whole model.
+  Plan → Roadmap → Milestone (PRM) outer lifecycle plus nested Program, Milestone Wave, Queue,
+  Campaign, and Evidence cycles; contextual pages link back to it instead of making Campaigns own
+  the whole model.
 - `/ref/` is a dense, generated command table with stable group and command anchors.
 
 Page fragments live under `site/pages/`, shared styling and copy-control behavior live under `site/assets/`, and the

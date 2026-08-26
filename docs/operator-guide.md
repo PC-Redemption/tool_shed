@@ -63,6 +63,36 @@ read-only entry signal. The agent explores the outcome, motivation, constraints,
 unknowns, and credible options, then recommends the smallest useful next route. It does not create
 or modify an artifact unless the same request explicitly asks to capture or plan.
 
+## Preserve Discovery With Brainstorming
+
+Use brainstorming when the idea is still evolving and needs to survive across sessions:
+
+```text
+ts: brainstorm reduce campaign token usage across Windows and Linux
+ts: bs idea reduce-campaign-token-usage
+```
+
+`brainstorm` and `bs` are exact aliases. The route creates or resumes one tracked Idea Brief under
+`work/ideas/`. A bare `ts: brainstorm` lists active briefs without mutation. Each brainstorming
+turn refreshes the concise `Current Synthesis` and appends only useful dated context to the
+`Exploration Log`, preserving alternatives, tradeoffs, constraints, non-goals, reminders, open
+questions, assumptions, owner notes, and decisions.
+
+An Idea Brief moves through `exploring`, `ready-for-prm`, `promoted`, or `parked`. It appears in the
+work index but stays outside campaign reconciliation, so discovery cannot create a Dangler
+Resolution campaign. Brainstorming authorizes only the selected brief; it does not authorize a
+project map, roadmap, campaign, source change, deployment, or publication.
+
+When ready, start the formal lifecycle from the brief:
+
+```text
+ts: prm idea reduce-campaign-token-usage
+```
+
+Tool Shed uses the current synthesis and visible unknowns as PRM input. The brief remains
+`ready-for-prm` until approved project-map direction captures it, then changes to `promoted` and
+names that map in `Produces:`. All later PRM approvals and authority boundaries remain intact.
+
 ## Choose The Minimum Coordination Level
 
 - Direct: clear, reversible, single-step work; no artifact.
@@ -315,6 +345,26 @@ states the exact question or approval, and explains what resumes afterward. A va
 The Tool Shed workflow is the operator path from intent through direction, execution, evidence,
 and review. Tool Shed uses five nested control cycles underneath that workflow to decide what
 repeats, what counts as complete, and where control returns:
+
+Apply KISS as **minimum sufficient complexity** throughout that path. Choose the smallest complete
+solution that meets the current outcome, safety boundaries, and proven constraints. Plan the
+smallest valuable outcome, use the fewest necessary milestones and gates, build the smallest useful
+slice, and run the smallest credible checks. Add complexity only when a current requirement,
+concrete risk, or observed failure justifies it. KISS does not waive correctness, safety,
+verification, or authority, and it creates no new required form or gate.
+
+`PRM` means **Plan → Roadmap → Milestone**. It is the full outer coordination lifecycle after an
+outcome is understood well enough to pursue. An optional Brainstorm / Discovery Cycle precedes it
+when an idea needs durable multi-session exploration. The Plan Cycle turns the selected outcome and
+evidence into settled project-map direction; the Roadmap Cycle develops and
+executes the approved Program Roadmap; and each Milestone Cycle derives, approves, runs, and
+evaluates one evidence-gated milestone wave. `ts: prm <outcome>` requests end-to-end continuation
+through those cycles until the outcome and gates pass or real owner intervention is required.
+
+Roadmap Cycle and Milestone Cycle are the human-facing PRM names for the existing Program Cycle and
+Milestone Wave Cycle. Their stable machine-facing names remain unchanged. PRM contains the Queue,
+Campaign, and Evidence cycles below; it does not auto-approve intent or grant release, deployment,
+credential, destructive, protected-target, or other new authority.
 
 ```text
 Program Cycle

@@ -964,6 +964,11 @@ for raw in sys.stdin:
         self.assertIn("workspace-local reads", skill_bundle)
         self.assertIn("ts: commands", commands)
         self.assertIn("ts: build focus areas", commands)
+        for content in (guide, commands, skill_bundle, readme):
+            self.assertIn("ts: brainstorm", content)
+            self.assertIn("ts: bs", content)
+            self.assertIn("ts: prm idea", content)
+            self.assertIn("Idea Brief", content)
         self.assertIn("ts: develop roadmap", commands)
         self.assertIn("ts: approve campaign plan <token>", guide)
         self.assertIn("program_roadmap.py", skill_bundle)
@@ -3501,6 +3506,55 @@ Active workpackage: `work/wp/active/wp-demo.md`.
             )
             payload = json.loads((workspace / "work" / "index.json").read_text(encoding="utf-8"))
             self.assertEqual(payload["artifacts"][0]["path"], "work/checklists/checklist-runtime-closeout.md")
+
+    def test_idea_brief_is_indexed_active_and_excluded_from_campaign_reconciliation(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+
+            run_script(
+                "scripts/new_artifact.py",
+                "idea",
+                "Lower Token Campaigns",
+                "--workspace",
+                str(workspace),
+                "--shed",
+                str(ROOT),
+            )
+
+            artifact = workspace / "work" / "ideas" / "idea-lower-token-campaigns.md"
+            text = artifact.read_text(encoding="utf-8")
+            self.assertIn("# Idea Brief: Lower Token Campaigns", text)
+            self.assertIn("Status: exploring", text)
+            self.assertIn("Type: idea-brief", text)
+            self.assertIn("## Current Synthesis", text)
+            self.assertIn("## Exploration Log", text)
+            payload = json.loads((workspace / "work" / "index.json").read_text(encoding="utf-8"))
+            entry = next(item for item in payload["artifacts"] if item["path"] == "work/ideas/idea-lower-token-campaigns.md")
+            self.assertEqual(entry["type"], "idea-brief")
+            self.assertEqual(payload["summary"]["active_artifacts"], 1)
+
+            review = run_script(
+                "scripts/review_work_state.py", "--workspace", str(workspace), "--strict"
+            )
+            self.assertIn("Work state is reconciled.", review.stdout)
+            reconciliation = json.loads(
+                run_script(
+                    "scripts/reconcile_campaign_queue.py", "--workspace", str(workspace),
+                    "--dry-run", "--json",
+                ).stdout
+            )
+            exclusions = {
+                item["path"]: item["reason"]
+                for item in reconciliation["whole_work"]["exclusions"]
+            }
+            self.assertEqual(
+                exclusions["work/ideas/idea-lower-token-campaigns.md"],
+                "pre-prm-discovery",
+            )
+            self.assertFalse(any(
+                "idea-lower-token-campaigns.md" in item.get("paths", [])
+                for item in reconciliation["whole_work"]["findings"]
+            ))
 
     def test_new_artifact_creates_deep_research_spike_and_indexes_it(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

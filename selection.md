@@ -13,6 +13,13 @@ explicit catalog refresh and concrete recommendation are wanted.
 
 ## Decision Tree
 
+Use an Idea Brief when:
+
+- an idea needs to survive across conversations before formal planning
+- possibilities, tradeoffs, reminders, constraints, and open questions are still accumulating
+- the owner wants a durable synthesis that can later become PRM input
+- exploration is not yet approval to create a project map, roadmap, campaigns, or product changes
+
 Use a checklist when:
 
 - the work is bounded
@@ -106,6 +113,7 @@ Use a decision matrix when:
 
 ## Fast Rule
 
+- Idea Brief for durable pre-PRM brainstorming.
 - Checklist for bounded execution.
 - Ticket for specific behavior change.
 - Project map for visual coordination across moving parts.
@@ -139,6 +147,8 @@ Use `existing-projects.md` for the Level 2 onboarding runbook. Use `existing-pro
 
 Use the smallest artifact that fits the immediate work, then connect it to nearby artifacts with plain Markdown links.
 
+- Idea Briefs preserve evolving discovery before PRM and link to the approved project-map direction
+  they eventually produce.
 - Project maps coordinate multiple workstreams and show the current ground task.
 - Program Roadmaps turn an approved project map into stable phases, milestones, gates, and
   candidate campaigns while keeping strategic and campaign-plan approvals separate.

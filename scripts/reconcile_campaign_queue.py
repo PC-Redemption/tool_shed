@@ -27,11 +27,11 @@ REPAIRABLE_FINDINGS = (
     "focus-area ",
 )
 
-ACTIVE_ARTIFACT_STATUSES = {"active", "blocked", "proposed", "queued", "working"}
-TERMINAL_ARTIFACT_STATUSES = {"accepted", "abandoned", "complete", "completed", "decided", "done", "superseded"}
+ACTIVE_ARTIFACT_STATUSES = {"active", "blocked", "exploring", "proposed", "queued", "ready-for-prm", "working"}
+TERMINAL_ARTIFACT_STATUSES = {"accepted", "abandoned", "complete", "completed", "decided", "done", "promoted", "superseded"}
 SUPPORTED_ARTIFACT_TYPES = {
     "adr", "campaign", "checklist", "decision-matrix", "evidence", "incident",
-    "focus-area-catalog", "inventory", "project-map", "runbook", "spike", "ticket",
+    "focus-area-catalog", "idea-brief", "inventory", "project-map", "runbook", "spike", "ticket",
     "workpackage", "program-roadmap",
 }
 PLACEHOLDER_VALUES = {"", "-", "...", "none", "work/...", "work/maps/..."}
@@ -159,6 +159,9 @@ def discover_whole_work(
 
     for artifact in artifacts:
         path = artifact.path.as_posix()
+        if artifact.kind() == "idea-brief":
+            exclusions.append({"path": path, "reason": "pre-prm-discovery"})
+            continue
         if path == campaign_queue.FOCUS_AREA_CATALOG.as_posix():
             exclusions.append({"path": path, "reason": "focus-area-catalog"})
             continue

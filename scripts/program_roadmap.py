@@ -442,15 +442,15 @@ def validate_all(workspace: Path) -> list[str]:
 
 def _artifact_classification(status: str, kind: str) -> str:
     normalized = status.strip().lower()
-    if normalized in {"complete", "completed", "done", "decided", "accepted"}:
+    if normalized in {"complete", "completed", "done", "decided", "accepted", "promoted"}:
         return "completed"
-    if normalized in {"working", "blocked", "active", "proposed"}:
+    if normalized in {"working", "blocked", "active", "exploring", "proposed"}:
         return "active"
-    if normalized in {"queued", "deferred"}:
+    if normalized in {"queued", "deferred", "ready-for-prm"}:
         return "remaining"
     if normalized in {"superseded", "abandoned"}:
         return "superseded"
-    if normalized == "excluded" or kind == "focus-area-catalog":
+    if normalized in {"excluded", "parked"} or kind == "focus-area-catalog":
         return "excluded"
     return "uncertain"
 

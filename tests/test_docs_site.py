@@ -105,6 +105,9 @@ class DocumentationSiteTests(unittest.TestCase):
             for command in commands:
                 self.assertIn(command.syntax.replace("<", "&lt;").replace(">", "&gt;"), reference)
             for command in (
+                "ts: brainstorm <idea>",
+                "ts: bs <idea>",
+                "ts: prm idea <idea-id-or-path>",
                 "ts: plan <request> --app-server",
                 "ts: verify <request> --app-server",
                 "ts: camp run <camp> --app-server",
@@ -117,8 +120,8 @@ class DocumentationSiteTests(unittest.TestCase):
         prompts = (
             "ts: version",
             "ts: doctor",
-            "ts: discuss <project idea>",
-            "ts: map the active workstreams",
+            "ts: brainstorm <project idea>",
+            "ts: prm idea <idea-id-or-path>",
             "ts: fulltsupgrade",
             "ts: onboard this existing project",
             "ts: build focus areas",
@@ -212,6 +215,12 @@ class DocumentationSiteTests(unittest.TestCase):
             roadmap_help = (public / "help" / "roadmaps" / "index.html").read_text(
                 encoding="utf-8"
             )
+            planning_help = (public / "help" / "planning" / "index.html").read_text(
+                encoding="utf-8"
+            )
+            ideas_help = (public / "help" / "ideas" / "index.html").read_text(
+                encoding="utf-8"
+            )
             review_help = (public / "help" / "review" / "index.html").read_text(
                 encoding="utf-8"
             )
@@ -220,6 +229,8 @@ class DocumentationSiteTests(unittest.TestCase):
                 encoding="utf-8"
             )
             for detail in (
+                "PRM means Plan → Roadmap → Milestone",
+                "ts: prm &lt;outcome&gt;",
                 "Program → Milestone Wave → Queue → Campaign → Evidence",
                 "Work origin:",
                 "Empty is not complete",
@@ -230,6 +241,16 @@ class DocumentationSiteTests(unittest.TestCase):
                 self.assertIn(cycle, guide)
             for contextual_page in (campaign_help, roadmap_help, review_help):
                 self.assertIn('href="/help/workflow-cycles/"', contextual_page)
+            self.assertIn("PRM means Plan → Roadmap → Milestone", roadmap_help)
+            self.assertIn("Brainstorm → Plan → Roadmap → Milestone", guide)
+            self.assertIn("KISS means minimum sufficient complexity", planning_help)
+            self.assertIn("smallest complete solution", planning_help)
+            self.assertIn("ts: brainstorm", ideas_help)
+            self.assertIn("ts: bs idea", ideas_help)
+            self.assertIn("One living Idea Brief", ideas_help)
+            self.assertIn("cannot create campaign-reconciliation danglers", ideas_help)
+            self.assertIn("Idea → Brainstorm / Discovery → PRM", workflow_help)
+            self.assertIn("ts: prm idea &lt;id-or-path&gt;", workflow_help)
             self.assertNotIn('id="cycles"', campaign_help)
             self.assertIn("higher-level cycle owns the transition", queue_guide)
             self.assertIn("higher-level approvals remain separate", queue_guide)
@@ -258,6 +279,10 @@ class DocumentationSiteTests(unittest.TestCase):
             for cycle in ("Program", "Milestone Wave", "Queue", "Campaign", "Evidence"):
                 self.assertIn(cycle, overview)
             self.assertIn("Five cycles. One adaptive system.", overview)
+            self.assertIn("PRM means Plan → Roadmap → Milestone", overview)
+            self.assertIn("KISS means minimum sufficient complexity", overview)
+            self.assertIn("Brainstorm precedes PRM", overview)
+            self.assertIn("ts: bs", overview)
             self.assertIn("Work moves inward", overview)
             self.assertIn("Evidence returns outward", overview)
             self.assertIn('href="/help/workflow-cycles/"', overview)

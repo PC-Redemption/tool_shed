@@ -37,8 +37,8 @@ Load only the route reference needed for the request:
 | --- | --- |
 | `ts: identity` or `ts: use <project-alias-or-path>` | this file only |
 | discussion or campaign discovery | this file only |
-| artifact selection, creation, completion, onboarding, or reconciliation | `references/artifact-workflows.md` |
-| `ts:work1` through `ts:work5`, aliases, `ts:check`, `ts:ship`, `ts: doctor`, campaign execution, owner campaign queues, Program Roadmaps, `ts: overview`, `ts: build focus areas`, explicit App Server controls, `ts: help`, `ts: commands`, or `ts:ask` | `references/campaign-routes.md` |
+| `ts: brainstorm`, `ts: bs`, artifact selection, creation, completion, onboarding, or reconciliation | `references/artifact-workflows.md` |
+| `ts:work1` through `ts:work5`, aliases, `ts:check`, `ts:ship`, `ts: prm <outcome>`, `ts: doctor`, campaign execution, owner campaign queues, Program Roadmaps, `ts: overview`, `ts: build focus areas`, explicit App Server controls, `ts: help`, `ts: commands`, or `ts:ask` | `references/campaign-routes.md` |
 | `ts: fulltsupgrade`, version, update, snapshot, or provider-specific reasoning maintenance | `references/maintenance-routes.md` |
 
 Read a referenced file completely when its route applies. Do not load unrelated route references.
@@ -73,6 +73,34 @@ During discussion:
 
 A compact campaign seed may contain: outcome, why it matters, known constraints, assumptions,
 unknowns, decisions already made, and next route.
+
+## Brainstorm And Idea Brief Route
+
+Treat `ts: brainstorm <idea>` as the durable pre-PRM Discovery Cycle and `ts: bs <idea>` as its
+exact alias. Unlike read-only `ts: discuss`, this route authorizes creating or updating one tracked
+Idea Brief under `work/ideas/`; it does not authorize a project map, roadmap, campaign, product
+change, deployment, or publication.
+
+Before creating a brief, compare the request with existing `work/ideas/idea-*.md` titles and current
+syntheses. Resume one clear material match, create one brief when none matches, and ask one concise
+choice before writing when multiple briefs plausibly match. Create a new brief with
+`python3 <shed>/scripts/new_artifact.py idea "Title" --workspace <workspace>`. A bare
+`ts: brainstorm` or `ts: bs` lists active Idea Briefs without mutation.
+
+During each brainstorming turn:
+
+1. Explore possibilities, tradeoffs, constraints, non-goals, reminders, assumptions, unknowns, and
+   decisions conversationally.
+2. Update the concise `Current Synthesis` so the next session does not need the full transcript.
+3. Append only useful dated context to `Exploration Log`; preserve prior owner notes and decisions.
+4. Keep status `exploring` until the owner chooses PRM, then use `ready-for-prm`. Use `parked` only
+   for an explicit owner choice.
+
+Idea Briefs are indexed durable discovery but remain outside campaign reconciliation. Treat
+`ts: prm idea <idea-id-or-path>` as a request to use that brief as the PRM source. Preserve visible
+unknowns and provenance. Mark it `promoted` and set `Produces:` only after approved project-map
+direction captures it. Promotion does not bypass project-map, roadmap, campaign-plan, release,
+deployment, or other authority boundaries. Brainstorming is GUI-native and does not use App Server.
 
 ## Minimum Sufficient Coordination
 
@@ -111,6 +139,18 @@ select ceremony merely because a task sounds important.
 For continuation, preserve only a compact state capsule: desired outcome, current limiting
 condition, relevant decisions, latest evidence, authority boundary, and next action.
 
+## KISS: Minimum Sufficient Complexity
+
+Choose the smallest complete solution that satisfies the current outcome, safety boundaries, and
+proven constraints. Reuse existing mechanisms. Do not add artifacts, abstractions, dependencies,
+layers, compatibility scope, tests, or future-proofing unless a current requirement, concrete risk,
+or observed failure justifies them. When complexity is necessary, add the smallest bounded amount
+and reevaluate.
+
+KISS does not mean skipping correctness, safety, or credible verification. It means keeping only
+the complexity that those needs can justify. Do not create a required KISS field, checklist, or
+approval gate.
+
 ## Reasoning Preflight
 
 Before substantial routed implementation, debugging, research, planning, or validation, perform
@@ -144,9 +184,14 @@ repository-boundary, or product questions; `existing-projects.md` for onboarding
 ## Core Rules
 
 - Choose the smallest artifact that fits the immediate work.
+- Apply KISS as minimum sufficient complexity across planning, roadmaps, milestones, execution,
+  testing, and recovery.
 - Keep project artifacts under root `work/`, never inside the workspace-local shed.
+- Keep durable pre-PRM Idea Briefs under `work/ideas/`; `brainstorm` and `bs` are equivalent routes.
 - Keep owner-facing campaign lifecycle state under first-sorted `work/00-campaigns/`; keep `work/01-q&a/ask.txt` as transient intake.
 - Keep opt-in strategic sequencing under `work/roadmaps/`; roadmap approval and campaign-plan approval are separate exact-token boundaries.
+- Use `PRM` to mean the complete Plan → Roadmap → Milestone outer lifecycle; it does not bypass
+  project-map, roadmap, campaign-plan, release, deployment, or other authority boundaries.
 - Keep settled current truth in project docs or README files.
 - Treat completed work artifacts as history, not canonical truth.
 - Keep the workspace-local shed a disconnected, one-way snapshot; never develop inside it or push

@@ -131,6 +131,30 @@ For nontrivial work:
 Command success alone is not outcome success. Adaptation does not broaden authority. Skip explicit
 loop ceremony for simple answers and known single-step reversible work.
 
+## KISS: Minimum Sufficient Complexity
+
+Choose the smallest complete solution that satisfies the current outcome, safety boundaries, and
+proven constraints. Reuse existing mechanisms. Do not add artifacts, abstractions, dependencies,
+layers, compatibility scope, tests, or future-proofing unless a current requirement, concrete risk,
+or observed failure justifies them. When complexity is necessary, add the smallest bounded amount
+and reevaluate.
+
+Apply KISS throughout PRM and campaign execution:
+
+- Plan for the smallest valuable outcome and make non-goals explicit.
+- Use the fewest roadmap milestones and evidence gates needed to reach and prove that outcome.
+- Make each milestone the smallest independently useful, verifiable slice.
+- Reuse existing mechanisms before introducing abstractions, subsystems, or dependencies.
+- Run the smallest credible checks for the changed behavior; expand only for demonstrated risk,
+  failure, or a required release boundary.
+- Recover by fixing the observed failure, rerunning the failed check, and then running one focused
+  smoke check before broadening the investigation.
+
+At a transition, ask: Does this directly advance the current outcome? What can be removed or
+deferred without sacrificing completeness or safety? What evidence justifies each additional
+layer, artifact, or check? KISS does not waive correctness, safety, verification, or authority, and
+it does not add a required field, form, checklist, or approval gate.
+
 ## Workspace Doctor Route
 
 Treat `ts: doctor` as a request to run the workspace-local `scripts/doctor.py --workspace .`.
@@ -269,6 +293,42 @@ priority decision; abandonment preserves disposition history.
 
 Program Roadmaps are an opt-in layer from project-map strategy to bounded campaigns. Use
 `python3 <shed>/scripts/program_roadmap.py --workspace <workspace>` for deterministic operations.
+
+### PRM: the full outer lifecycle
+
+`PRM` means **Plan → Roadmap → Milestone**. It names Tool Shed's complete outer coordination
+lifecycle from understood intent to evidence-gated delivery. An optional Brainstorm / Discovery
+Cycle may precede it when an idea needs durable multi-session exploration:
+
+`Idea → Brainstorm / Discovery → PRM (Plan → Roadmap → Milestone)`
+
+- The **Plan Cycle** explores intent, constraints, and current evidence until the desired outcome
+  and project direction are clear enough to settle in a project map.
+- The **Roadmap Cycle** develops, proposes, approves, executes, reviews, and when evidence requires
+  it revises the Program Roadmap. This is the human-facing name for the existing Program Cycle.
+- The **Milestone Cycle** derives and exactly approves one milestone's campaign plan, materializes
+  and runs its queue, evaluates its evidence gate, and returns control to the roadmap. This is the
+  human-facing name for the existing Milestone Wave Cycle.
+
+Treat `ts: prm <outcome>` as an explicit request to carry that outcome through the full PRM
+lifecycle and continue through every safe, already-authorized transition until the intended
+outcome and applicable gates pass or genuine owner intervention is required. PRM contains the
+existing Queue, Campaign, and Evidence cycles; it does not replace them. Preserve the stable
+machine-facing `program` and `milestone_wave` Cycle State Capsule names for compatibility.
+
+Treat `ts: prm idea <idea-id-or-path>` as the same PRM route with one selected
+`work/ideas/idea-*.md` Idea Brief as its durable discovery source. Read its current synthesis,
+constraints, tradeoffs, open questions, decisions, and exploration history. Preserve unknowns
+rather than fabricating certainty. Keep the brief `ready-for-prm` during the Plan Cycle; after an
+approved project map captures its direction, set it to `promoted`, name that map in `Produces:`,
+and preserve the brief as provenance. That status update does not approve later roadmap or
+campaign-plan gates.
+
+PRM is coordination, not blanket authority. The request does not silently approve a project map,
+roadmap proposal, or campaign plan; publish or deploy; cross a protected boundary; or authorize
+credentials, destructive recovery, or an unknown external target. A full PRM is complete only when
+the intended outcome and every applicable evidence gate pass—not when a plan, roadmap, milestone,
+campaign, or empty queue merely exists.
 
 - `ts: develop roadmap`: run `develop`; inspect canonical docs, maps, focus areas, queues, and all
   supported `work/**/*.md` evidence. Classify existing work as completed, active, remaining,
@@ -463,11 +523,11 @@ route as the available unflagged command; do not silently switch backends. This 
 persists state, changes the global default from off, enables implicit App Server use, or enables API
 fallback.
 
-`ts: discuss` is always GUI-native. Reject `ts: discuss ... --app-server` with the selector's clear
-`discussion_is_gui_native` explanation; do not start App Server. Explicit App Server selection for
-any unqualified role is likewise rejected. Program/CAMP derivation, architecture, implementation,
-testing, build, deployment, deterministic execution, escalation, and other write roles do not
-become qualified through the option.
+`ts: discuss`, `ts: brainstorm`, and `ts: bs` are always GUI-native. Reject their use with
+`--app-server` using `discussion_is_gui_native` or `brainstorm_is_gui_native` as applicable; do not start App Server. Explicit App Server
+selection for any unqualified role is likewise rejected. Program/CAMP derivation, architecture,
+implementation, testing, build, deployment, deterministic execution, escalation, and other write
+roles do not become qualified through the option.
 
 Treat `ts: appserver status` as the read-only user status route:
 

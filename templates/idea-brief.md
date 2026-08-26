@@ -1,0 +1,54 @@
+# Idea Brief: {{ title }}
+
+Status: exploring
+Type: idea-brief
+Updated: {{ date }}
+Next Action: continue brainstorming or promote this brief with `ts: prm idea <idea-id-or-path>`
+Produces:
+
+## Current Synthesis
+
+### Idea
+
+What possibility, problem, frustration, or desired change are we exploring?
+
+### Why It Matters
+
+Why is this worth pursuing now?
+
+### Desired Outcome
+
+What should become true if this idea succeeds?
+
+## Constraints And Non-Goals
+
+- Known constraint:
+- Explicit non-goal:
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| ... | ... | ... | ... |
+
+## Open Questions
+
+- ...
+
+## Decisions
+
+- ...
+
+## Don't Forget
+
+- ...
+
+## Exploration Log
+
+### {{ date }}
+
+- Idea Brief created.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

@@ -6,6 +6,7 @@ from campaign_queue import ensure_tree as ensure_campaign_tree
 
 
 WORK_DIRS = [
+    "work/ideas",
     "work/maps",
     "work/roadmaps",
     "work/wp/active",
@@ -48,6 +49,15 @@ Use `work/index.md` as the first orientation surface after README/docs. Use `wor
 - Use `python3 tool_shed/scripts/campaign_queue.py --workspace . status` to get the current project-bound stale-write token before a lifecycle mutation; pass the matching `--project-binding` too.
 - Use `python3 tool_shed/scripts/reconcile_campaign_queue.py --workspace . --json` to inspect queue drift and whole-work coverage while automatically creating or refreshing one Dangler Resolution campaign as the first queued work; add `--dry-run` for read-only inspection, and require an exact approved manifest plus the reported whole-work token for every other write.
 
+## Ideas And Brainstorming
+
+- Keep durable pre-PRM Idea Briefs under `work/ideas/`.
+- `ts: brainstorm <idea>` and its exact alias `ts: bs <idea>` create or resume one living Idea Brief.
+- Keep a concise current synthesis above dated exploration notes; preserve reminders, alternatives,
+  tradeoffs, constraints, open questions, and decisions without forcing every section to be complete.
+- Idea Briefs remain outside campaign reconciliation. Use `ts: prm idea <idea-id-or-path>` to carry
+  a selected brief into PRM; promotion does not bypass project-map, roadmap, or campaign-plan approval.
+
 ## Program Roadmaps
 
 - Keep opt-in Program Roadmaps under `work/roadmaps/` between project maps and campaigns.
@@ -57,6 +67,7 @@ Use `work/index.md` as the first orientation surface after README/docs. Use `wor
 
 ## Active
 
+- Idea Briefs: `work/ideas/`
 - Project maps: `work/maps/`
 - Workpackages: `work/wp/active/`
 - Tickets: `work/tickets/`

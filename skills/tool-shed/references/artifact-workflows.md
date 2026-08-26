@@ -6,6 +6,7 @@ Read this reference for artifact selection, creation, onboarding, completion, or
 
 Use `<shed>/selection.md` as authority:
 
+- Idea Brief: durable multi-session discovery before PRM;
 - checklist: bounded known steps;
 - ticket: specific behavior change with compact acceptance criteria;
 - project map: visual coordination across moving parts;
@@ -24,6 +25,7 @@ Prefer the shed scripts:
 
 ```bash
 python3 <shed>/scripts/install_into_workspace.py <workspace> --provider <provider-id>
+python3 <shed>/scripts/new_artifact.py idea "Title" --workspace <workspace>
 python3 <shed>/scripts/new_artifact.py <kind> "Title" --workspace <workspace>
 python3 <shed>/scripts/complete_workpackage.py work/wp/active/wp-example.md --workspace <workspace>
 python3 <shed>/scripts/update_work_index.py --workspace <workspace>
@@ -33,6 +35,11 @@ python3 <shed>/scripts/review_work_state.py --workspace <workspace>
 
 Use templates only when a required script is absent. Preserve naming and locations from
 `conventions.md`. Every active non-map artifact needs a concrete parent or project map.
+
+Idea Briefs are the deliberate exception to the parent rule because they precede project-map and
+PRM direction. Keep them under `work/ideas/`, indexed but excluded from campaign reconciliation.
+Use `exploring`, `ready-for-prm`, `promoted`, or `parked` status. A promoted brief names the
+approved project-map direction in `Produces:`.
 
 ## Existing Projects
 

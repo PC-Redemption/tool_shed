@@ -33,6 +33,7 @@ provider surface and observed capability level described in `docs/provider-adapt
 `work/` contains project-specific generated artifacts:
 
 - owner-facing campaign queues and lifecycle requests under first-sorted `work/00-campaigns/`
+- durable pre-PRM Idea Briefs under `work/ideas/`
 - project maps
 - opt-in Program Roadmaps under `work/roadmaps/`
 - active and completed workpackages
@@ -124,6 +125,25 @@ approved candidates. It never rewrites Git history.
   one
 - the repository ignores it because durable project truth belongs in docs and durable work belongs
   under `work/`
+
+## Brainstorm / Idea Brief Discovery Cycle
+
+`ts: brainstorm <idea>` starts or resumes durable discovery, and `ts: bs <idea>` is its exact alias.
+Unlike read-only `ts: discuss`, brainstorming writes one tracked `work/ideas/idea-*.md` Idea Brief.
+A brief keeps a concise current synthesis above dated exploration notes so intent, alternatives,
+tradeoffs, constraints, non-goals, reminders, open questions, and decisions survive across sessions.
+
+Use these statuses:
+
+- `exploring`: discovery is still evolving;
+- `ready-for-prm`: the owner chose to carry the current synthesis into PRM;
+- `promoted`: approved project-map direction captured the idea and `Produces:` names that map;
+- `parked`: the owner intentionally set the idea aside.
+
+Idea Briefs are indexed but excluded from campaign reconciliation because discovery is not queued
+execution. `ts: prm idea <idea-id-or-path>` selects one brief as the PRM source. Keep it
+`ready-for-prm` until approved project-map direction captures it; promotion does not approve a
+roadmap, campaign plan, product change, release, or deployment. Preserve the brief as provenance.
 
 ## Owner Campaign Lifecycle
 

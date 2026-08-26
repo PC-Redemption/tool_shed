@@ -82,6 +82,7 @@ project/
       abandoned/
     01-q&a/
       ask.txt
+    ideas/
     README.md
     index.md
     index.json
@@ -290,6 +291,7 @@ ts: identity
 ts: use <project-alias-or-path>
 ts: doctor
 ts: build focus areas
+ts: prm <outcome>
 ts: appserver status
 ts: plan <request> --app-server
 ts: verify <request> --app-server
@@ -445,6 +447,18 @@ content, the agent reports a conflict instead of merging them. It preserves both
 inspection; `work/01-q&a/ask.txt` is the canonical inbox. The selected request retains its natural
 coordination level, so a bounded Direct request does not become a heavyweight campaign.
 
+For ideas that need to survive more than one conversation, use `ts: brainstorm <idea>` or its exact
+alias `ts: bs <idea>`. Tool Shed creates or resumes one tracked Idea Brief under `work/ideas/`,
+keeps a concise current synthesis above useful dated exploration notes, and preserves possibilities,
+tradeoffs, constraints, non-goals, reminders, open questions, and decisions. A bare `ts: brainstorm`
+lists active briefs without changing them. Brainstorming is durable discovery, not authorization to
+plan, build, queue, deploy, or publish.
+
+When the idea is coherent enough to pursue, `ts: prm idea <idea-id-or-path>` uses it as the durable
+source for PRM. The brief remains `ready-for-prm` until approved project-map direction captures it,
+then becomes `promoted` and names that map in `Produces:`. Idea Briefs remain visible in the work
+index and outside campaign reconciliation, so unfinished discovery does not create queue danglers.
+
 The installer also creates a first-sorted `work/00-campaigns/` owner control surface. Its
 `active-queue.md` shows last completed plus accessible readiness cards for working, ready, waiting,
 blocked, dependencies, focus areas, and detour/return state;
@@ -470,12 +484,29 @@ uncertain history stays uncertain, approved revisions are preserved when superse
 completion evidence rolls up to stable milestones and gates. Installation and upgrade create only
 the compatible empty directory—they never ingest or approve planning implicitly.
 
-The operating model is nested: Program Cycle → Milestone Wave Cycle → Queue Cycle → Campaign
-Cycle → Evidence Loop. Each inner completion returns control to its owner; an empty queue does not
-mean the milestone or program is done. `ts: overview`, `ts: status`, and `ts: next` share one Cycle
-State Capsule that identifies the owning cycle and exact safe transition, including pending exact
-plan approval, milestone derivation or gate review, roadmap review/completion, and the absence of a
-higher-level driver. The capsule never approves or materializes work.
+`PRM` means Plan → Roadmap → Milestone: the full outer Tool Shed coordination lifecycle after an
+outcome is understood well enough to pursue. An optional Brainstorm / Discovery Cycle precedes PRM
+when an idea needs durable multi-session exploration. The Plan
+Cycle settles intent and project-map direction, the Roadmap Cycle owns the Program Roadmap, and the
+Milestone Cycle runs successive evidence-gated milestone waves. `ts: prm <outcome>` asks Tool Shed
+to continue through those outer cycles until the outcome and applicable gates pass or genuine owner
+intervention is required. It does not bypass exact approvals, release or deployment authority, or
+protected boundaries.
+
+KISS means minimum sufficient complexity: choose the smallest complete solution that satisfies the
+current outcome, safety boundaries, and proven constraints. Reuse existing mechanisms, and add
+artifacts, abstractions, dependencies, layers, compatibility scope, tests, or future-proofing only
+when a current requirement, concrete risk, or observed failure justifies them. KISS applies across
+PRM, execution, verification, and recovery; it does not waive correctness, safety, or authority.
+
+Inside PRM, the compatible operating model remains nested: Program Cycle → Milestone Wave Cycle →
+Queue Cycle → Campaign Cycle → Evidence Loop. Roadmap Cycle and Milestone Cycle are the human-facing
+PRM names for Program Cycle and Milestone Wave Cycle; the stable machine-facing names remain
+unchanged. Each inner completion returns control to its owner; an empty queue does not mean the
+milestone, roadmap, or PRM outcome is done. `ts: overview`, `ts: status`, and `ts: next` share one
+Cycle State Capsule that identifies the owning cycle and exact safe transition, including pending
+exact plan approval, milestone derivation or gate review, roadmap review/completion, and the absence
+of a higher-level driver. The capsule never approves or materializes work.
 
 Work origin is independently computed as `direct`, `owner-originated`, `roadmap-derived`, or
 `detour`. It remains separate from Direct/Guided/Coordinated/Deep coordination, the work1–work5
@@ -570,6 +601,7 @@ python3 tool_shed/scripts/install_into_workspace.py .
 Create a new artifact:
 
 ```bash
+python3 tool_shed/scripts/new_artifact.py idea "Lower-token campaign execution" --workspace .
 python3 tool_shed/scripts/new_artifact.py checklist "Root docs cleanup" --workspace .
 python3 tool_shed/scripts/new_artifact.py project-map "Plugin migration" --workspace .
 python3 tool_shed/scripts/new_artifact.py wp "Plugin migration" --workspace .
