@@ -3,7 +3,7 @@
 Status: active
 Type: project-map
 Updated: 2026-08-26
-Next Action: replace Campaigns 080-081 after adding deterministic expected-path starting states, then rerun fresh Linux proofs
+Next Action: obtain separate owner authorization before executing Campaign 084 publication and installed-skill synchronization
 Campaign: standalone
 Campaign Reason: source coordination surface for the approved, executing Program Roadmap
 
@@ -183,15 +183,19 @@ It does not revise M4's outcome or grant Core mutation authority.
   command-free worker that its expected new test path was absent and authorized for creation. The
   worker again stopped safely without mutation. Tool Shed now injects deterministic starting states
   for every expected path; fresh replacements belong to Revision 7.
+- Revision 7 Campaigns 082 and 083 both passed on their first worker attempt. Each used one model
+  turn, exactly one `fileChange`, zero worker commands, an acknowledged first-file-change control
+  stop, expected-path-only mutation, and Tool Shed-owned exactly-once verification. Together with
+  Campaign 072, G11-LINUX-FIRST-PASS-RELIABLE is passed.
 - Open measurement: report raw input, cached input, output, weighted usage, model turns, elapsed
   time, and owner interactions separately; do not claim a GUI token comparison that the GUI cannot
   expose.
 
 Ground:
 
-- Current next action: preserve Campaign 080 as failed no-replay evidence, supersede its dependent
-  Campaign 081, approve Roadmap Revision 7 with the same semantic outcomes behind the new expected-
-  path state contract, and continue the Linux first-pass gate. Do not publish or upgrade Core yet.
+- Current next action: Campaign 084 is materialized and blocked at the retained owner-consent
+  boundary. Obtain separate authorization before publishing or synchronizing the installed skill;
+  do not upgrade Core yet.
 - Owner/context: human owner and Codex in `/home/jon/docker/tool_shed`; native Windows proof occurs
   through a normally launched Codex GUI on the work PC in `E:\dev\bactron-core`.
 - Verification: focused changed-path tests plus one real dogfood run during development; one full
@@ -204,12 +208,12 @@ Ground:
 | --- | --- | --- | --- | --- |
 | Existing Tool Shed control plane | complete | current Tool Shed source and `work/` lifecycle | completed foundation and evolution work | preserve; do not redesign |
 | App Server shared execution core | Linux-proven | `scripts/codex_orchestration.py` and Campaign 066 evidence | Campaigns 040-066 | preserve the live ceilings through release |
-| Lean qualification policy | active | approved roadmap gates | Campaign 066 realistic Linux evidence | run one full validator only at the authorized release boundary |
+| Lean qualification policy | release-boundary blocked | approved roadmap gates | G11 Linux first-pass evidence | after separate consent, run one full validator on unchanged release inputs |
 | Minimum usable release | complete | milestone `M2-MINIMUM-RELEASE`, v0.28.0 evidence, and v0.29.1 dispatcher release evidence | successful maintained-workspace dogfood and direct Linux proof | preserve v0.29.1 and the synchronized maintainer skill |
 | Installed native Linux | complete | milestone `M3-LINUX-INSTALLED` plus Campaign 060 direct-dispatch evidence | verified release | preserve the direct one-call proof |
 | Installed native Windows | transport proven, realistic efficiency failed | Campaign 019 Core result and regression evidence | current v0.29.7 snapshot | wait for Linux bound and separately authorized corrective release |
-| First-pass App Server collateral | corrective work required | Roadmap Revision 3 | Core Campaigns 018-021 field results | define early semantic intent, validate exact late-bound collateral, and split before worker launch |
-| Owner operating loop | reopened | corrective roadmap revision | transport and ceilings proven; first-pass preparation not proven | prove Linux first-pass reliability, then separately release and adopt in Core |
+| First-pass App Server collateral | Linux-proven | Roadmap Revision 7 and Campaigns 071, 077, 082, 083 | Core Campaigns 018-021 field results | preserve the first-pass contract through the authorized release |
+| Owner operating loop | awaiting distribution | Campaign 084 | G11 passed | separately authorize release and synchronization, then separately adopt in Core |
 
 ## Dependency Notes
 
@@ -260,6 +264,10 @@ You are here:
   abandoned without replay. Prompt-only mutation-first control was insufficient. Focused evidence
   now proves a client-enforced command-free worker and first-file-change handoff; Revision 5 owns
   that gate and the fresh replacement proofs.
+- Revision 7 closed the Linux reliability gate: Campaign 082 passed the code/test shape and Campaign
+  083 passed the asset-aware shape on their first workers with no worker shell or replay. Campaign
+  084 now represents the separately authorized publication and installed-skill synchronization
+  boundary.
 
 Do next:
 
@@ -275,10 +283,10 @@ Do next:
 - [x] After separate consent, publish and synchronize the corrective Tool Shed release.
 - [x] After separate publication and Core-upgrade consent, repair Windows verifier transport and
       prove the realistic Windows path within the same bound.
-- [ ] Define a campaign-level App Server preparation contract and source-freshness rule.
-- [ ] Validate predicted context, executable, verification, tool-output, turn, and atomicity limits
+- [x] Define a campaign-level App Server preparation contract and source-freshness rule.
+- [x] Validate predicted context, executable, verification, tool-output, turn, and atomicity limits
       before capsule persistence or worker launch; automatically repair or split unsafe work.
-- [ ] Prove first-pass behavior on Linux across representative documentation, code/test, and
+- [x] Prove first-pass behavior on Linux across representative documentation, code/test, and
       asset-or-binary-aware campaign shapes with no manual capsule repair, replay, or reconciliation.
 - [ ] After separate consent, publish and synchronize the proven correction.
 - [ ] After separate Core-upgrade and Windows-operation consent, run one ordinary Core campaign on

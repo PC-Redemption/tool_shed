@@ -20,10 +20,17 @@ DEFAULT_OUTPUT = ROOT / "build" / "ts.rookaro.com"
 PUBLIC_SOURCE = "https://github.com/PC-Redemption/tool_shed/blob/main/docs/commands.md"
 
 
-def asset_revision() -> str:
+def asset_revision(assets: Path | None = None) -> str:
+    assets = SITE / "assets" if assets is None else assets
     digest = hashlib.sha256()
-    for name in ("site.css", "site.js"):
-        digest.update((SITE / "assets" / name).read_bytes())
+    for path in sorted((path for path in assets.iterdir() if path.is_file()), key=lambda path: path.name):
+        name = path.name.encode("utf-8")
+        content = path.read_bytes()
+        digest.update(b"file\0")
+        digest.update(len(name).to_bytes(8, "big"))
+        digest.update(name)
+        digest.update(len(content).to_bytes(8, "big"))
+        digest.update(content)
     return digest.hexdigest()[:12]
 
 

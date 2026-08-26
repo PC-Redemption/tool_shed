@@ -19,8 +19,7 @@ Updated: 2026-08-26
 | [work/00-campaigns/abandoned/079-prove-command-free-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/abandoned/079-prove-command-free-first-pass-asset-aware-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
 | [work/00-campaigns/abandoned/080-prove-specified-command-free-first-pass-code-test-campaign-on-linux.md](work/00-campaigns/abandoned/080-prove-specified-command-free-first-pass-code-test-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
 | [work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
-| [work/00-campaigns/active/082-prove-path-state-command-free-first-pass-code-test-campaign-on-linux.md](work/00-campaigns/active/082-prove-path-state-command-free-first-pass-code-test-campaign-on-linux.md) | campaign | queued | 2026-08-26 | execute when selected from the active campaign queue | - |
-| [work/00-campaigns/active/083-prove-path-state-command-free-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/active/083-prove-path-state-command-free-first-pass-asset-aware-campaign-on-linux.md) | campaign | queued | 2026-08-26 | execute when selected from the active campaign queue | - |
+| [work/00-campaigns/active/084-publish-and-synchronize-first-pass-app-server-preparation.md](work/00-campaigns/active/084-publish-and-synchronize-first-pass-app-server-preparation.md) | campaign | queued | 2026-08-26 | execute when selected from the active campaign queue | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -89,6 +88,8 @@ Updated: 2026-08-26
 | [work/00-campaigns/completed/071-make-app-server-collateral-correct-before-worker-launch.md](work/00-campaigns/completed/071-make-app-server-collateral-correct-before-worker-launch.md) | campaign | complete | 2026-08-26 | none | - |
 | [work/00-campaigns/completed/072-prove-first-pass-documentation-campaign-on-linux.md](work/00-campaigns/completed/072-prove-first-pass-documentation-campaign-on-linux.md) | campaign | complete | 2026-08-26 | none | - |
 | [work/00-campaigns/completed/077-establish-deterministic-app-server-worker-handoff.md](work/00-campaigns/completed/077-establish-deterministic-app-server-worker-handoff.md) | campaign | complete | 2026-08-26 | none | - |
+| [work/00-campaigns/completed/082-prove-path-state-command-free-first-pass-code-test-campaign-on-linux.md](work/00-campaigns/completed/082-prove-path-state-command-free-first-pass-code-test-campaign-on-linux.md) | campaign | complete | 2026-08-26 | none | - |
+| [work/00-campaigns/completed/083-prove-path-state-command-free-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/completed/083-prove-path-state-command-free-first-pass-asset-aware-campaign-on-linux.md) | campaign | complete | 2026-08-26 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -113,6 +114,8 @@ Updated: 2026-08-26
 | [work/evidence/evidence-linux-command-free-code-proof-underspecified.md](work/evidence/evidence-linux-command-free-code-proof-underspecified.md) | evidence | verified | 2026-08-26 | - | - |
 | [work/evidence/evidence-linux-first-pass-code-proof-interruption.md](work/evidence/evidence-linux-first-pass-code-proof-interruption.md) | evidence | complete | 2026-08-26 | replace the failed code/test and dependent asset-aware proofs in Roadmap Revision 4 | - |
 | [work/evidence/evidence-linux-first-pass-code-proof-turn-limit.md](work/evidence/evidence-linux-first-pass-code-proof-turn-limit.md) | evidence | complete | 2026-08-26 | replace Campaign 075 after enforcing mutation-first worker execution | - |
+| [work/evidence/evidence-linux-path-state-command-free-asset-proof.md](work/evidence/evidence-linux-path-state-command-free-asset-proof.md) | evidence | verified | 2026-08-26 | - | - |
+| [work/evidence/evidence-linux-path-state-command-free-code-proof.md](work/evidence/evidence-linux-path-state-command-free-code-proof.md) | evidence | verified | 2026-08-26 | - | - |
 | [work/evidence/evidence-linux-specified-code-proof-missing-path-state.md](work/evidence/evidence-linux-specified-code-proof-missing-path-state.md) | evidence | verified | 2026-08-26 | - | - |
 | [work/evidence/evidence-low-token-app-server-owner-adoption.md](work/evidence/evidence-low-token-app-server-owner-adoption.md) | - | - | - | - | - |
 | [work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md](work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md) | evidence | complete | 2026-08-20 | none | - |
@@ -139,7 +142,7 @@ Updated: 2026-08-26
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/maps/map-disposable-completion-watchers-and-hosted-notifications.md](work/maps/map-disposable-completion-watchers-and-hosted-notifications.md) | project-map | deferred | 2026-08-18 | preserve the completed local watcher and wait for a concrete external/non-App-Server notification need before revisiting hosted work | - |
-| [work/maps/map-low-token-cross-platform-campaign-execution.md](work/maps/map-low-token-cross-platform-campaign-execution.md) | project-map | active | 2026-08-26 | replace Campaigns 080-081 after adding deterministic expected-path starting states, then rerun fresh Linux proofs | - |
+| [work/maps/map-low-token-cross-platform-campaign-execution.md](work/maps/map-low-token-cross-platform-campaign-execution.md) | project-map | active | 2026-08-26 | obtain separate owner authorization before executing Campaign 084 publication and installed-skill synchronization | - |
 | [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | complete | 2026-08-20 | none | - |
 | [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
 | [work/roadmaps/roadmap-completion-watcher-program-r2.md](work/roadmaps/roadmap-completion-watcher-program-r2.md) | program-roadmap | approved | 2026-08-20 | derive campaigns for milestone M1-CONTRACT | none |
@@ -181,6 +184,6 @@ Updated: 2026-08-26
 
 ## Summary
 
-- Total artifacts: 164
-- Active artifacts: 3
-- Completed/decided artifacts: 129
+- Total artifacts: 167
+- Active artifacts: 2
+- Completed/decided artifacts: 131

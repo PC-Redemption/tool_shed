@@ -18,6 +18,56 @@ SPEC.loader.exec_module(SITE_BUILDER)
 
 
 class DocumentationSiteTests(unittest.TestCase):
+    def test_asset_revision_is_independent_of_asset_creation_order(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            first = root / "first"
+            second = root / "second"
+            first.mkdir()
+            second.mkdir()
+            (first / "alpha.css").write_bytes(b"alpha")
+            (first / "beta.js").write_bytes(b"beta")
+            (second / "beta.js").write_bytes(b"beta")
+            (second / "alpha.css").write_bytes(b"alpha")
+
+            self.assertEqual(SITE_BUILDER.asset_revision(first), SITE_BUILDER.asset_revision(second))
+
+    def test_asset_revision_changes_for_content_or_filename_changes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            assets = Path(temporary) / "assets"
+            assets.mkdir()
+            asset = assets / "site.css"
+            asset.write_bytes(b"first")
+            original = SITE_BUILDER.asset_revision(assets)
+
+            asset.write_bytes(b"second")
+            changed_content = SITE_BUILDER.asset_revision(assets)
+            asset.rename(assets / "renamed.css")
+            renamed = SITE_BUILDER.asset_revision(assets)
+
+            self.assertNotEqual(original, changed_content)
+            self.assertNotEqual(changed_content, renamed)
+
+    def test_asset_revision_ignores_directories_and_nested_files(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            assets = Path(temporary) / "assets"
+            assets.mkdir()
+            (assets / "site.css").write_bytes(b"visible")
+            expected = SITE_BUILDER.asset_revision(assets)
+            nested = assets / "nested"
+            nested.mkdir()
+            (nested / "ignored.js").write_bytes(b"ignored")
+
+            self.assertEqual(expected, SITE_BUILDER.asset_revision(assets))
+
+    def test_asset_revision_is_a_twelve_character_lowercase_hex_value(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            assets = Path(temporary) / "assets"
+            assets.mkdir()
+            (assets / "site.css").write_bytes(b"content")
+
+            self.assertRegex(SITE_BUILDER.asset_revision(assets), r"^[0-9a-f]{12}$")
+
     def test_build_produces_direct_loadable_pages_and_complete_reference(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             public, commands = SITE_BUILDER.build(Path(temporary) / "bundle")
