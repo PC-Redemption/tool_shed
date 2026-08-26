@@ -1,9 +1,9 @@
 # Prove command-free first-pass asset-aware preparation on Linux
 
-Status: queued
+Status: abandoned
 Type: campaign
 Updated: 2026-08-26
-Next Action: execute when selected from the active campaign queue
+Next Action: none
 Campaign ID: prove-command-free-first-pass-asset-aware-campaign-on-linux
 Campaign Number: 079
 Outcome: A fresh asset-aware campaign completes or is reduced before worker launch using metadata-only asset context and the command-free first-file-change handoff.
@@ -15,7 +15,7 @@ Detour For: none
 Return To: none
 Completion Gate: G11-LINUX-FIRST-PASS-RELIABLE passes across documentation plus command-free code/test and asset-aware task shapes.
 Completion Evidence: none
-Disposition: none
+Disposition: Dependent proof cannot run after Campaign 078 exposed an underspecified semantic request; preserve it without execution.; replacement: prove-specified-command-free-first-pass-asset-aware-campaign-on-linux
 Roadmap: low-token-cross-platform-campaign-execution
 Roadmap Revision: 5
 Milestone: M11-LINUX-FIRST-PASS-PROOF

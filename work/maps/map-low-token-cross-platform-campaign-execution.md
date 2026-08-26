@@ -3,7 +3,7 @@
 Status: active
 Type: project-map
 Updated: 2026-08-26
-Next Action: approve Roadmap Revision 5, complete its deterministic worker-handoff gate, then execute fresh Linux code/test and asset-aware proofs
+Next Action: replace underspecified Campaigns 078-079 with semantic-outcome Linux proofs in Roadmap Revision 6
 Campaign: standalone
 Campaign Reason: source coordination surface for the approved, executing Program Roadmap
 
@@ -174,15 +174,20 @@ It does not revise M4's outcome or grant Core mutation authority.
   allowlist. The repaired protocol therefore makes read-only preparation the complete inspection
   phase, interrupts any write-worker command request, treats the first completed file change as the
   verification handoff, and runs the reserved verifier without another model request.
+- Campaign 078 proved that this worker protocol fails safely, but its generic request asked
+  automatic preparation to invent useful product intent. Preparation invented a provider executable
+  integration point absent from its complete source context; the one-turn command-free worker
+  correctly returned unknown without mutation. Replacement proofs must state a real semantic defect
+  and leave only exact collateral resolution to dispatch.
 - Open measurement: report raw input, cached input, output, weighted usage, model turns, elapsed
   time, and owner interactions separately; do not claim a GUI token comparison that the GUI cannot
   expose.
 
 Ground:
 
-- Current next action: approve Roadmap Revision 5, complete the deterministic worker-handoff gate,
-  materialize fresh code/test and asset-aware proofs, and continue the Linux first-pass gate. Do
-  not publish or upgrade Core yet.
+- Current next action: preserve Campaign 078 as failed no-replay evidence, supersede its dependent
+  Campaign 079, approve Roadmap Revision 6 with explicit semantic code/test and asset-aware outcomes,
+  and continue the Linux first-pass gate. Do not publish or upgrade Core yet.
 - Owner/context: human owner and Codex in `/home/jon/docker/tool_shed`; native Windows proof occurs
   through a normally launched Codex GUI on the work PC in `E:\dev\bactron-core`.
 - Verification: focused changed-path tests plus one real dogfood run during development; one full

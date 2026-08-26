@@ -1,18 +1,18 @@
 # Program Roadmap: Low-token cross-platform campaign execution
 
-Status: superseded
+Status: executing
 Type: program-roadmap
 Updated: 2026-08-26
-Next Action: none
+Next Action: execute the first ready roadmap campaign through ts: next
 Roadmap ID: low-token-cross-platform-campaign-execution
-Revision: 5
+Revision: 6
 Source Project Map: work/maps/map-low-token-cross-platform-campaign-execution.md
-Source State Token: 40f3236a69696a83
-Proposal Token: 3efac651ea968073
+Source State Token: b5942cd41b9d27b2
+Proposal Token: 64d5c402339bfa02
 Approved: 2026-08-26
 Current Milestone: M1-MAINTAINER-DOGFOOD
-Supersedes: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r4.md
-Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r6.md
+Supersedes: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r5.md
+Superseded By: none
 
 ## Roadmap Definition
 
@@ -88,6 +88,26 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "path": "work/00-campaigns/abandoned/076-prove-repaired-first-pass-asset-aware-campaign-on-linux.md",
       "phase": null,
       "state_token": "e8743b2710ae570b"
+    },
+    {
+      "classification": "superseded",
+      "conflicts": [],
+      "evidence": "Type campaign; Status abandoned",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/abandoned/078-prove-command-free-first-pass-code-test-campaign-on-linux.md",
+      "phase": null,
+      "state_token": "9f668efbf22c89d1"
+    },
+    {
+      "classification": "superseded",
+      "conflicts": [],
+      "evidence": "Type campaign; Status abandoned",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/abandoned/079-prove-command-free-first-pass-asset-aware-campaign-on-linux.md",
+      "phase": null,
+      "state_token": "df7954a947f72ac8"
     },
     {
       "classification": "completed",
@@ -760,6 +780,16 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "state_token": "e03027221accddfe"
     },
     {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/00-campaigns/completed/077-establish-deterministic-app-server-worker-handoff.md",
+      "phase": null,
+      "state_token": "c416959d0f4ff974"
+    },
+    {
       "classification": "remaining",
       "conflicts": [],
       "evidence": "Type campaign; Status deferred",
@@ -972,6 +1002,18 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "path": "work/evidence/evidence-human-planning-mechanism-evaluation.md",
       "phase": null,
       "state_token": "81fffad766f53803"
+    },
+    {
+      "classification": "uncertain",
+      "conflicts": [
+        "ambiguous lifecycle evidence"
+      ],
+      "evidence": "Type evidence; Status verified",
+      "mapping_state": "unmapped",
+      "milestone": null,
+      "path": "work/evidence/evidence-linux-command-free-code-proof-underspecified.md",
+      "phase": null,
+      "state_token": "2942f4f101d9f24b"
     },
     {
       "classification": "completed",
@@ -1257,7 +1299,7 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "milestone": null,
       "path": "work/maps/map-low-token-cross-platform-campaign-execution.md",
       "phase": null,
-      "state_token": "d1a1f32338a1531a"
+      "state_token": "662112add453d546"
     },
     {
       "classification": "completed",
@@ -1747,7 +1789,7 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "completion_gate": "G12-FIRST-PASS-RELEASE-USABLE passes with one full validator, verified provenance, exact installed-skill parity, and a fresh-session smoke.",
       "decision": "separate owner publication and synchronization authorization required",
       "depends_on": [
-        "prove-command-free-first-pass-asset-aware-campaign-on-linux"
+        "prove-specified-command-free-first-pass-asset-aware-campaign-on-linux"
       ],
       "milestone": "M12-FIRST-PASS-DISTRIBUTION",
       "outcome": "Make the Linux-proven first-pass preparation contract available to new maintainer sessions through a verified release.",
@@ -1804,44 +1846,44 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
       "unlocks_gate": "G10B-DETERMINISTIC-WORKER-HANDOFF"
     },
     {
-      "campaign_id": "prove-command-free-first-pass-code-test-campaign-on-linux",
-      "completion_gate": "The command-free code/test proof contributes passing evidence to G11 with one file-change handoff, no worker shell, and exactly-once verification.",
+      "campaign_id": "prove-specified-command-free-first-pass-code-test-campaign-on-linux",
+      "completion_gate": "The specified code/test proof contributes passing evidence to G11 with one file-change handoff, no worker shell, and exactly-once verification.",
       "decision": "none",
       "depends_on": [
         "prove-first-pass-documentation-campaign-on-linux",
         "establish-deterministic-app-server-worker-handoff"
       ],
       "milestone": "M11-LINUX-FIRST-PASS-PROOF",
-      "outcome": "A fresh bounded code-and-test campaign completes from one App Server command through the command-free first-file-change handoff.",
+      "outcome": "Provider adapter instruction paths are validated identically on Linux and Windows, and the fix completes through the command-free first-file-change handoff.",
       "primary_focus_areas": [
         "provider-portability"
       ],
-      "request": "Select one small useful code-and-focused-test improvement in the maintained Tool Shed workspace. Start it through ts: next --app-server with no manually authored capsule. Automatic preparation must provide complete bounded source context, exact expected paths, and a quiet verifier. The write worker must issue no commandExecution; its first completed fileChange must be interrupted into Tool Shed-owned exactly-once verification without a final model handoff request. Capture source binding, preparation and execution usage, turns, control stop, journal, and verification. Complete only if the first worker verifies within default budgets and changes only declared paths. Do not replay Campaigns 073 or 075, publish, synchronize skills, upgrade clients, or run the full suite.",
+      "request": "Harden the existing provider adapter safe-relative-path validation so manifest instruction paths remain repository-relative on both Linux and Windows. The current helper uses host Path semantics and can accept root-like dot paths or Windows-style backslash traversal when running on Linux. Preserve valid POSIX repository-relative paths, reject empty or dot/root paths, reject parent traversal with either slash style, reject POSIX absolute paths, Windows drive-absolute paths, UNC paths, and backslash-containing manifest paths, and add focused standard-library unittest coverage that calls the production validation behavior. Start through ts: next --app-server with no manually authored capsule. Automatic preparation must resolve exact paths, complete bounded context, and a quiet verifier. The write worker must issue no commandExecution; its first completed fileChange must hand off directly to Tool Shed-owned exactly-once verification. Capture source binding, usage, turns, control stop, journal, and verification. Complete only if the first worker verifies within default budgets and changes only declared paths. Do not replay Campaigns 073, 075, or 078, publish, synchronize skills, upgrade clients, or run the full suite.",
       "supporting_focus_areas": [
         "campaign-lifecycle",
         "workspace-safety"
       ],
-      "title": "Prove command-free first-pass code and test preparation on Linux",
+      "title": "Prove specified command-free provider path validation on Linux",
       "unlocks_gate": "none"
     },
     {
-      "campaign_id": "prove-command-free-first-pass-asset-aware-campaign-on-linux",
-      "completion_gate": "G11-LINUX-FIRST-PASS-RELIABLE passes across documentation plus command-free code/test and asset-aware task shapes.",
+      "campaign_id": "prove-specified-command-free-first-pass-asset-aware-campaign-on-linux",
+      "completion_gate": "G11-LINUX-FIRST-PASS-RELIABLE passes across documentation plus specified command-free code/test and asset-aware task shapes.",
       "decision": "none",
       "depends_on": [
-        "prove-command-free-first-pass-code-test-campaign-on-linux"
+        "prove-specified-command-free-first-pass-code-test-campaign-on-linux"
       ],
       "milestone": "M11-LINUX-FIRST-PASS-PROOF",
-      "outcome": "A fresh asset-aware campaign completes or is reduced before worker launch using metadata-only asset context and the command-free first-file-change handoff.",
+      "outcome": "Documentation asset cache revisions cover every direct site asset deterministically, and the asset-aware fix completes through the command-free first-file-change handoff.",
       "primary_focus_areas": [
         "provider-portability"
       ],
-      "request": "Select a bounded useful Tool Shed task whose context includes binary or generated assets but whose authorized mutation is a small exact path set. Start it through ts: next --app-server with no manually authored capsule. Preparation must exclude binary payloads and generated evidence from inline context, provide complete bounded text context, retain asset metadata only, and choose a quiet verifier. The write worker must issue no commandExecution; its first completed fileChange must hand off directly to Tool Shed-owned exactly-once verification. Capture source binding, usage, turns, control stop, journal, and verification. Complete only on first-worker verification or correct pre-worker reduction. Do not replay Campaigns 074 or 076, publish, synchronize skills, upgrade clients, or run the full suite.",
+      "request": "Harden the documentation site's asset_revision behavior so its cache revision is derived deterministically from every regular file directly under site/assets, not only the two currently hard-coded asset names. Hash stable relative filenames as well as bytes so rename-only changes alter the revision; ignore directories and keep output at the existing 12 hexadecimal characters. Add focused tests using a temporary asset directory and the production function to prove stable ordering, content changes, rename-only changes, and directory exclusion. Start through ts: next --app-server with no manually authored capsule. Automatic preparation must use metadata-only inventory for site assets, exclude binary or generated payloads from inline context, supply complete bounded text source/test context, and choose a quiet verifier. The write worker must issue no commandExecution; its first completed fileChange must hand off directly to Tool Shed-owned exactly-once verification. Capture source binding, usage, turns, control stop, journal, and verification. Complete only on first-worker verification or correct pre-worker reduction. Do not replay Campaigns 074, 076, or 079, publish, synchronize skills, upgrade clients, or run the full suite.",
       "supporting_focus_areas": [
         "workspace-safety",
         "campaign-lifecycle"
       ],
-      "title": "Prove command-free first-pass asset-aware preparation on Linux",
+      "title": "Prove specified command-free documentation asset revision on Linux",
       "unlocks_gate": "G11-LINUX-FIRST-PASS-RELIABLE"
     }
   ],
@@ -1869,7 +1911,8 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
     "Preserve failed and dependent campaigns as abandoned history; use fresh campaign IDs for replacement first-pass evidence instead of replaying them.",
     "Treat read-only automatic preparation as the complete repository-inspection phase for a write-capable CAMP worker.",
     "Because App Server exposes interruption but no per-turn built-in-tool allowlist, interrupt any write-worker commandExecution event and require a fresh source-complete preparation before another worker launch.",
-    "Treat the first completed worker fileChange as the deterministic verification handoff, interrupt the worker, journal actual paths, and run the reserved verifier without another model request."
+    "Treat the first completed worker fileChange as the deterministic verification handoff, interrupt the worker, journal actual paths, and run the reserved verifier without another model request.",
+    "A campaign supplies the semantic product outcome; automatic App Server preparation resolves exact paths, context, commands, and budgets but does not invent unspecified useful product behavior."
   ],
   "desired_outcome": "One Tool Shed command completes ordinary representative campaigns on native Linux and Windows through the lowest adequate qualified model, with correct source-fresh first-pass collateral, proactive usage bounds, deterministic focused work, truthful journals, compact recovery, and materially lower token use than GUI-managed or repeatedly repaired App Server execution.",
   "gates": [
@@ -2268,11 +2311,11 @@ Superseded By: work/roadmaps/roadmap-low-token-cross-platform-campaign-execution
     "Which conservative command and context heuristics best detect likely oversized tool output without rejecting ordinary focused verification.",
     "Whether a non-atomic campaign should be represented as one generated bounded CAMP slice or as an explicit pre-mutation split result while preserving one-command continuation.",
     "Which small useful maintained-workspace edits will provide the clearest documentation, code/test, and asset-aware Linux proof shapes.",
-    "Whether the command-free first-file-change handoff completes the fresh code/test and asset-aware Linux proofs within the current default input budget."
+    "Whether the specified provider-path and documentation-asset outcomes complete through the command-free first-file-change handoff within the current default input budget."
   ]
 }
 ```
 
 ## Revision History
 
-- Revision 5: superseded on 2026-08-26.
+- Revision 6: executing on 2026-08-26.
