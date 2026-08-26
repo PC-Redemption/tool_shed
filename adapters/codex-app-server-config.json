@@ -71,7 +71,10 @@
     "timeout_seconds": 120
   },
   "write_execution": {
-    "qualified_codex_cli_version": "0.149.0",
+    "qualified_codex_cli_versions": [
+      "0.149.0",
+      "0.149.0-alpha.4.3"
+    ],
     "approval_policy": "never",
     "network_access": false,
     "exclude_slash_tmp": true,

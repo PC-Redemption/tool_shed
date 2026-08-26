@@ -197,9 +197,9 @@
     },
     {
       "codex_version": "0.149.0-alpha.4.3",
-      "qualified_at": "2026-08-24",
+      "qualified_at": "2026-08-25",
       "status": "qualified_with_blockers",
-      "operating_mode": "read_only_explicit_opt_in",
+      "operating_mode": "maintenance_watch_with_explicit_camp_opt_in",
       "transport": "stdio",
       "authentication": {
         "chatgpt": true,
@@ -220,22 +220,61 @@
           "model": "gpt-5.6-terra",
           "reasoning": "medium",
           "sandbox": "workspace-write",
-          "qualified": false,
-          "scope": "not qualified; no reviewed disposable workspace-write harness"
+          "qualified": true,
+          "scope": "one explicitly bounded CAMP step with exact path allowlist and Git mutation journal"
         }
       },
       "read_only": true,
       "cancellation_safe": false,
       "cancellation_observation": {
-        "observed_at": "2026-08-24",
-        "interrupt_response": "no active turn",
+        "observed_at": "2026-08-25",
         "reconciled_status": "interrupted",
         "tool_shed_classification": "cancelled",
-        "assessment": "Cancellation was not acknowledged, but immediate thread reconciliation produced a safe cancelled result."
+        "assessment": "The acknowledgement race remains, but terminal reconciliation produced a safe journal and preserved the read-only resume boundary."
       },
       "gui_approval_bridge": false,
       "restricted_read_consistent": false,
-      "workspace_writing": false,
+      "workspace_writing": true,
+      "workspace_write_qualification": {
+        "scope": "camp_execution only; explicit opt-in; exact workspace root and path allowlist; Git required",
+        "executable_sha256": "21f44f04e70d41d011268863d5109f5d7fc2862c14f390083e39ca3398b5ca47",
+        "approval_policy": "never",
+        "network_access": false,
+        "exclude_slash_tmp": true,
+        "exclude_tmpdir_env_var": true,
+        "permission_expansion": false,
+        "automatic_retry_after_mutation": false,
+        "automatic_lifecycle_transition": false,
+        "deployment_qualified": false,
+        "disposable_harness": {
+          "qualified": true,
+          "duration_seconds": 50.125,
+          "schema_default_tmp_write_observed": true
+        },
+        "minimal_terra_write": {
+          "status": "completed",
+          "input_tokens": 92313,
+          "cached_input_tokens": 70656,
+          "output_tokens": 806,
+          "model_turns": 5,
+          "tool_calls": 4,
+          "journal_safe": true,
+          "focused_test_passed": true
+        },
+        "approval_denial": {
+          "request_observed": true,
+          "decision": "decline",
+          "target_created": false
+        },
+        "interrupt_and_resume": {
+          "turn_status": "interrupted",
+          "partial_write_detected": true,
+          "post_interrupt_write_absent": true,
+          "journal_safe": true,
+          "read_only_resume_preserved_boundary": true,
+          "global_cancellation_promoted": false
+        }
+      },
       "production_supported": false,
       "estimated_harness_input_tokens_per_operation": 18800,
       "tiny_smoke_input_tokens": {
@@ -247,11 +286,11 @@
         "cancellation acknowledgement race",
         "GUI approval bridge unavailable",
         "restricted-read permissionProfile protocol mismatch",
-        "CAMP workspace writing not qualified",
         "fixed App Server harness cost remains material for tiny operations",
         "App Server experimental and unsupported for production"
       ],
-      "evidence": "docs/codex-app-server-alpha-requalification-2026-08-24.md"
+      "evidence": "docs/codex-app-server-alpha-requalification-2026-08-24.md",
+      "workspace_write_evidence": "docs/codex-app-server-write-qualification-alpha-2026-08-25.md"
     },
     {
       "codex_version": "0.149.0",

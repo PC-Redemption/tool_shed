@@ -7,6 +7,10 @@ planning and verification roles. CAMP workspace writing is not qualified because
 disposable workspace-write harness was run for this exact executable. The global default and API
 fallback remain off, and unknown Codex versions remain fail-closed.
 
+This document records the 2026-08-24 read-only result. A separately reviewed 2026-08-25 harness
+subsequently qualified one exact executable digest for bounded CAMP writing; see
+[`codex-app-server-write-qualification-alpha-2026-08-25.md`](codex-app-server-write-qualification-alpha-2026-08-25.md).
+
 This is an exact, version-specific qualification. It does not treat the alpha as semantically
 equivalent to stable `0.149.0`, establish an open-ended minimum version, or inherit the stable
 build's workspace-write qualification.

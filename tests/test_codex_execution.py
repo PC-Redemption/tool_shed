@@ -794,7 +794,10 @@ class CodexExecutionTests(unittest.TestCase):
             config.qualified_codex_versions,
             ("0.149.0", "0.149.0-alpha.4.3"),
         )
-        self.assertEqual(config.qualified_write_codex_versions, ("0.149.0",))
+        self.assertEqual(
+            config.qualified_write_codex_versions,
+            ("0.149.0", "0.149.0-alpha.4.3"),
+        )
         self.assertEqual(config.minimum_dirty_read_codex_version, "0.146.0")
         self.assertIsNone(config.compatibility_warning(str(self.fake)))
         os.environ["FAKE_CODEX_VERSION"] = "0.200.0"
@@ -1232,7 +1235,7 @@ class CodexExecutionTests(unittest.TestCase):
         finally:
             os.environ.pop("FAKE_CODEX_VERSION", None)
 
-    def test_user_command_control_allows_alpha_reads_but_blocks_alpha_camp(self) -> None:
+    def test_user_command_control_pins_alpha_camp_to_reviewed_executable(self) -> None:
         os.environ["FAKE_CODEX_VERSION"] = "0.149.0-alpha.4.3"
         try:
             planning = select_command(
@@ -1251,7 +1254,7 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertTrue(planning.allowed)
         self.assertEqual(planning.reason, "explicit_qualified_opt_in")
         self.assertFalse(camp.allowed)
-        self.assertEqual(camp.reason, "role_not_qualified")
+        self.assertEqual(camp.reason, "codex_executable_hash_mismatch")
         self.assertEqual(camp.qualification_state, "write-not-qualified")
         self.assertEqual(status["compatibility"], "qualified_with_blockers")
         self.assertNotIn("camp_execution", status["enabled_roles"])

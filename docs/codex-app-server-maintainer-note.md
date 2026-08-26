@@ -90,9 +90,12 @@ The current reviewed versions are Codex CLI 0.149.0 and 0.149.0-alpha.4.3. Stabl
 explicit planning, verification, and CAMP roles with blockers after its smoke and disposable write
 qualification; see
 [`codex-app-server-requalification-2026-08-21.md`](codex-app-server-requalification-2026-08-21.md).
-The extension-bundled alpha is qualified only for explicit read-only planning and verification;
-see
-[`codex-app-server-alpha-requalification-2026-08-24.md`](codex-app-server-alpha-requalification-2026-08-24.md).
+The extension-bundled alpha retains explicit read-only planning and verification and is also
+qualified for explicit CAMP execution only when the resolved executable matches the reviewed
+SHA-256 identity. See
+[`codex-app-server-alpha-requalification-2026-08-24.md`](codex-app-server-alpha-requalification-2026-08-24.md)
+and
+[`codex-app-server-write-qualification-alpha-2026-08-25.md`](codex-app-server-write-qualification-alpha-2026-08-25.md).
 
 Dirty qualification queries `permissionProfile/list`, selects the allowed built-in `:read-only`
 profile, and sends `permissions` without the mutually exclusive `sandbox` or `sandboxPolicy`

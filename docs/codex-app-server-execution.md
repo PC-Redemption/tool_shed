@@ -139,9 +139,10 @@ the dispatcher starts a queued campaign or permits workspace mutation.
 
 When a workspace supplies explicit `--config`, `--policy`, and `--qualifications` files, the
 dispatcher uses the selected config and policy for both authorization and the resulting bounded
-execution. A project-scoped workspace-write qualification may additionally pin
+execution. A workspace-write qualification may additionally pin
 `workspace_write_qualification.executable_sha256`; selection and status then require the resolved
-GUI executable to match that digest as well as the recorded version.
+GUI executable to match that digest as well as the recorded version. This applies equally to
+canonical and project-scoped reviewed records.
 
 The selector reuses the centralized config, model policy, qualification registry, and installed
 Codex version check. Exact records remain authoritative for known versions and all CAMP writing.
