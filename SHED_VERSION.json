@@ -5,23 +5,23 @@
     ".gitattributes": "d60f352d0db1404c70afb4bb8b2ca3fd1c610572aa40720e8a0b7baa7885418c",
     ".github/workflows/release.yml": "74ee83963f0c20eef755bcae7f51c0caaa35fe3ce2f7001cbcfcf381911d0a45",
     ".github/workflows/validate.yml": "b62203b7c1c21f03dc77e42d714db6b0d742550c3524a4dc33d67c5c283cc54e",
-    "README.md": "9db9b630bebe40903c51dd3d6fa4bacadbe3968da115f157b2ccc23926467327",
+    "README.md": "5c6cade5cf3252a6e5d00ea40db4ff6bc0990424fe6ed24a409c72bd975840d1",
     "adapters/codex-app-server-benchmarks.json": "20ef4ef6d7e3964e01791ea2623e16091a5c5bd85ddae84179952ba31872dbe3",
     "adapters/codex-app-server-config.json": "9ee82433d20abdef7567bd65d6ddbcf0d1d816a92296f3ecd84d836dfb4cb7ed",
     "adapters/codex-app-server-qualifications.json": "35c2052487e2e292ec38c78ea8c2146b9abd064ba0fa5486eb9854a8b25b2ef4",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "53e4b9a356bccc12bf16668e9d7b4a586f899f09d9624a4baa5c67144a14cb70",
+    "adapters/codex-skill-releases.json": "03888d3af237857c9bb927c72a17fafec34410eaa063024d8039ff041290adf8",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "95069c265c5384c7e62e91be7cad996eb1ce4c13f43ca57f5051c0487e2f9c02",
     "docs/codex-app-server-alpha-requalification-2026-08-24.md": "80789afbdcfb878257547934fd6ca7358fd56f79f16b081a4fc61e888579b962",
     "docs/codex-app-server-camp-token-baseline-2026-08-20.md": "5148859c74dc0b79a7f3dd1b86b8085f03091a3268bf95dfe769337fe3fdccc9",
     "docs/codex-app-server-camp-token-optimization-2026-08-20.md": "7c28ad01af86288141bf94b6f9b9d048ed69424075c762d44d421f82330b0235",
-    "docs/codex-app-server-execution.md": "00641a0e9013848f1ecf896e9e86399fe5bd4be62ef3263deeef48855c09c365",
+    "docs/codex-app-server-execution.md": "611eddabf5bd6a782cd9a5abffd0843f7b5acabb5d2abb068e346b9e5e60604e",
     "docs/codex-app-server-maintainer-note.md": "607d79f5613f1f92300def5b01e8ae2baca744703888c0ef370d17767d4a738c",
     "docs/codex-app-server-qualification-2026-08-20.md": "d4d70d0a51bb6be1ed69ce45ce63124b16f4d1acca35e9072d926b4d43b79c31",
     "docs/codex-app-server-requalification-2026-08-21.md": "9aacfac50f3debb8ccff2b3b06d33f6b52c6354e7df5b7bc9c5f2114f85663b4",
     "docs/codex-app-server-write-qualification-2026-08-20.md": "db297ad88feb73f46a46178ae92304445afc2fb2447c2543d3bec84609af3923",
-    "docs/commands.md": "558adefde8fd157b276e25ffa0ff7ed538c358735be43e20eebcb4be07e65e55",
+    "docs/commands.md": "f43ee9f0e845306aaa20a04cc3ccbf279731cb87e6d628f37203189fc28e26e9",
     "docs/completion-watcher-hosted-api-contract.md": "95d6915bbfa0f9e81bea2e6aaecbf8cdb1165b9aeb38a6f7a6d80b95b2ece983",
     "docs/completion-watcher-hosted-datastore.md": "5f06d3db3e92a428d5762d27f3ebef5aa05519234c412e469883a34fe5772f5f",
     "docs/completion-watcher-hosted-notification-worker.md": "d5c240a648e2c5aa22d855b6b0a3f8f4f42389bfffe66caadb03ab20ec0aaa60",
@@ -31,7 +31,7 @@
     "docs/documentation-site.md": "848de0bb06a3da3f54d03799a0522389281a29d7e1344dd7142780f6ef04231a",
     "docs/fleet-snapshot-updates.md": "4016143af0bd7eec601ebc3782fc7ca9e036eee96517b6397b34e0809f5b7cb3",
     "docs/install-or-update-snapshot.md": "607783b7782c122849f0f3af9354af43bae20ccf94ebabf8331c537d45c11dda",
-    "docs/operator-guide.md": "c268b3d71405774731c8b1d4513c48e50cfd24fe15f97053b382e953cff0de1d",
+    "docs/operator-guide.md": "c1439277eb21b2dd3813d09c2aec25e343de3866a4d1baa89140ad5d4a082223",
     "docs/provider-adapters.md": "edf50dc13fd15cb6415904981ca3dea56fd73aad32a473429ef34d1b56cea25b",
     "docs/releasing.md": "8c7d1ad0291935a64ab6f813ce98c0424dfb8455fb675e3a219ce79c39978313",
     "docs/work-level-customization.md": "d110b51c461b3edc73ee2682269641d3bdb97ce76d4ae53eae10341e77aa8a70",
@@ -46,7 +46,7 @@
     "schemas/completion-watcher/v1/watch-descriptor.schema.json": "e6b54939fb06111b7a9f687ceb9be281a9e8dc389bdc28a72d9ee3078eb5fe4f",
     "schemas/completion-watcher/v1/watch-record.schema.json": "7455db4c2e7a271ec8efbd7b0828143a141dcd1daa55d25540132ab0b53a5b1d",
     "scripts/app_server_control.py": "0eca268c61639d2920b72ed2578758cc2a3a33a6121ab720f48fc225e3e123d3",
-    "scripts/app_server_dispatch.py": "d94add75f0a8c6646fa0fb93f90a58e77e7d93dc8c6f8d7d9c57fa2f5895c747",
+    "scripts/app_server_dispatch.py": "b6f355cf31ae47afb9f50e9c748958ecc598acf446fef06f04543e0750128f2f",
     "scripts/build_docs_site.py": "eb7436a456c87ab2bc20914b0a0442b034d2a48c17b290846924033c94e1aa0c",
     "scripts/campaign_queue.py": "113c51fbb17a49f7afb2de5530418694b6a30627136117176511d76ed926047c",
     "scripts/check_provider_adapters.py": "acbf0c355a00f380cd1b2c201992be51f77a3bb857c1b5d569c1badc8a114051",
@@ -122,7 +122,7 @@
     "skills/tool-shed/SKILL.md": "0cbd0fd69e2f3fcedf48fef99fdcf4c8d759e252fd50ecaae80c859a37cfbbba",
     "skills/tool-shed/agents/openai.yaml": "5b39ceb5df84a19a82f6c406bc80c5e8c88ea236211c6c618d80c37dc7301a23",
     "skills/tool-shed/references/artifact-workflows.md": "00b6125af4981828f475bbb6edd4c56f1c0733f168bfff8394c9b4954cb96931",
-    "skills/tool-shed/references/campaign-routes.md": "b77887c876b7a4a056b9b553a9698d58880354a228c6d0a33e2aaf1ce71eac3a",
+    "skills/tool-shed/references/campaign-routes.md": "1bba6488a18eadc2149d393f28be3ae5b015cf219b8091e2eb8d49d206ec6e8a",
     "skills/tool-shed/references/maintenance-routes.md": "4a5b05d130f1fb7081e647f3bd8198ba62fd97fc774babf797479376b08b0219",
     "templates/active-campaign-queue.md": "c3035949566b873937924207bca052254d3d3a531437bc4d6b4326c13711c836",
     "templates/adr.md": "45e0c25ff6e6ef20fc071ea1dedef03f93a058afae9b40c934026a9f9772a268",
@@ -145,34 +145,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
-  "notes": "Automatically prepare unprepared ready campaigns through deterministic read-only App Server planning and continue bounded CAMP execution in one command.",
-  "release_commit": "894f47e8a907c4966b39cfdec4379ddc3670fc3f",
-  "release_qualification": {
-    "attested_at": "2026-08-26T01:30:00Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "d740896c470e02ba526ed08a6d2a8b40865764e67951583e6f8a97db65402766"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "8fc34912f27434fefea4870607350a6543c3293666e4efd96d55b320739c42d6"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "b62203b7c1c21f03dc77e42d714db6b0d742550c3524a4dc33d67c5c283cc54e"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "74ee83963f0c20eef755bcae7f51c0caaa35fe3ce2f7001cbcfcf381911d0a45"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "894f47e8a907c4966b39cfdec4379ddc3670fc3f"
-  },
-  "release_tag": "v0.29.6",
-  "released_at": "2026-08-26T01:30:00Z",
-  "shed_version": "0.29.6",
+  "notes": "Bound automatic App Server preparation context and preflight CAMP before spending planning tokens.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.29.7",
+  "released_at": null,
+  "shed_version": "0.29.7",
   "updated_at": "2026-08-25",
   "updater_mutation_paths": [
     {

@@ -549,7 +549,10 @@ focused snapshot from the campaign, project instructions, Git state, relevant fi
 bounded source excerpts. One isolated read-only App Server planning turn receives only that
 snapshot, without tools, and returns a structured capsule declaring the matching IDs, prompt,
 relative allowed paths, focused context, and shell-free verification argv. The dispatcher validates
-the result, preflights both planning and CAMP execution, persists the capsule through the guarded
+the CAMP role before spending planning tokens, exposes actual inventory sizes to planning, limits
+automatic inline context to the smaller of 64,000 bytes and the configured inline limit, and
+rejects an over-budget result before persistence. It then preflights planning and validates the
+result, persists the capsule through the guarded
 campaign transaction, and continues with the existing Terra/medium runner in the same invocation.
 Unsafe, ambiguous, invalid, or over-budget preparation stops before mutation. Discussion, owner
 decisions, blocked work, external gates, and unsupported actions remain on their natural route.

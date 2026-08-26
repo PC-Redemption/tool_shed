@@ -75,6 +75,7 @@ CAPSULE_KEYS = {
     "verification_commands",
 }
 AUTO_PREPARATION_KEYS = {"status", "reason", *CAPSULE_KEYS}
+AUTO_PREPARATION_MAX_CONTEXT_BYTES = 64_000
 AUTO_PREPARATION_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
@@ -387,7 +388,16 @@ def _execution_capsule_from_payload(
     )
 
 
-def _automatic_preparation_prompt(campaign: campaign_queue.Campaign) -> str:
+def _automatic_context_budget(config: AppServerFeatureConfig) -> int:
+    """Keep automatically selected inline context small even when clients allow more."""
+    return min(config.max_inline_bytes, AUTO_PREPARATION_MAX_CONTEXT_BYTES)
+
+
+def _automatic_preparation_prompt(
+    campaign: campaign_queue.Campaign,
+    *,
+    max_context_bytes: int,
+) -> str:
     return f"""Prepare exactly one bounded implementation CAMP for campaign {campaign.campaign_id!r}.
 
 Use only the supplied deterministic campaign, instruction, Git-status, relevant-file inventory,
@@ -401,7 +411,11 @@ If a safe bounded CAMP can be prepared, set status to prepared and:
   deployment, network, and protected-environment work, reserves verification for the orchestrator,
   and requires camp_ready_for_verification after implementation;
 - declare every worker-owned mutation in expected_paths as unique repository-relative POSIX paths;
-- declare only existing regular UTF-8 context files needed by the worker;
+- declare only existing regular UTF-8 context files needed by the worker, with their combined
+  actual file sizes no greater than {max_context_bytes} bytes;
+- prefer no context_files, or only small immutable instructions and contracts; the CAMP worker has
+  bounded workspace tools and should inspect exact symbols itself instead of receiving whole large
+  implementation or test files inline;
 - provide one to eight deterministic shell-free verification commands as direct argv arrays;
 - use platform-local executable paths that do not depend on shell activation;
 - exclude work/00-campaigns, Tool Shed snapshot machinery, Git metadata, deployment, production,
@@ -482,6 +496,8 @@ def _bounded_excerpt(path: Path, keywords: tuple[str, ...]) -> str | None:
 def _automatic_preparation_context(
     workspace: Path,
     campaign: campaign_queue.Campaign,
+    *,
+    max_context_bytes: int,
 ) -> str:
     completed = subprocess.run(
         [
@@ -555,10 +571,14 @@ def _automatic_preparation_context(
         "",
         "## Relevant repository file inventory",
         "",
+        f"Automatic capsule context budget: {max_context_bytes} bytes total.",
+        "File sizes below are actual bytes; context_files must stay within that combined budget.",
+        "",
     ]
     inventory_bytes = 0
     for score, relative in candidates[:500]:
-        line = f"- {relative.as_posix()} (relevance {score})"
+        file_bytes = (workspace / relative).stat().st_size
+        line = f"- {relative.as_posix()} ({file_bytes} bytes; relevance {score})"
         size = len((line + "\n").encode("utf-8"))
         if inventory_bytes + size > 24_000:
             break
@@ -591,6 +611,8 @@ def _parse_automatic_preparation(
     workspace: Path,
     campaign: campaign_queue.Campaign,
     result: Any,
+    *,
+    max_context_bytes: int = AUTO_PREPARATION_MAX_CONTEXT_BYTES,
 ) -> tuple[ExecutionCapsule, str]:
     if result is None or result.status != "completed":
         raise DispatchError(
@@ -646,6 +668,16 @@ def _parse_automatic_preparation(
         )
     capsule_payload = {key: payload[key] for key in CAPSULE_KEYS}
     capsule = _execution_capsule_from_payload(workspace, campaign, capsule_payload)
+    context_bytes = sum((workspace / path).stat().st_size for path in capsule.context_files)
+    if context_bytes > max_context_bytes:
+        raise DispatchError(
+            "automatic_preparation_context_limit",
+            (
+                "automatic CAMP preparation selected "
+                f"{context_bytes} context bytes; limit is {max_context_bytes}"
+            ),
+            recovery_action="select fewer or smaller context files before retrying",
+        )
     forbidden_roots = {".git", "tool_shed"}
     for path in capsule.expected_paths:
         if path.parts[0] in forbidden_roots or path.parts[:2] == ("work", "00-campaigns"):
@@ -858,9 +890,12 @@ def dispatch_next(
     campaign = campaigns[campaign_id]
     execution_config = AppServerFeatureConfig.load(config_path)
     execution_policy = ModelPolicy.load(policy_path)
+    automatic_context_bytes = _automatic_context_budget(execution_config)
     capsule_headings = sum(
         line.strip() == CAPSULE_HEADING for line in campaign.body.splitlines()
     )
+    if capsule_headings != 0:
+        capsule = parse_execution_capsule(root, campaign)
     preparation: dict[str, Any] = {
         "mode": "embedded",
         "persisted": True,
@@ -871,6 +906,22 @@ def dispatch_next(
         "duration_seconds": 0.0,
     }
     planning_preflight: dict[str, Any] | None = None
+    selection = select_command(
+        "camp-run",
+        app_server_requested=app_server_requested,
+        codex=codex,
+        config_path=config_path,
+        policy_path=policy_path,
+        qualifications_path=qualifications_path,
+        qualification_cache_path=qualification_cache_path,
+    )
+    if not selection.allowed or not app_server_requested:
+        raise DispatchError(
+            selection.reason,
+            "App Server CAMP selection was not allowed",
+            recovery_action="rerun the same Tool Shed command without --app-server",
+        )
+    preflight = _app_server_host_preflight(selection, timeout=timeout)
     if capsule_headings == 0:
         planning_selection = select_command(
             "plan",
@@ -892,10 +943,17 @@ def dispatch_next(
             timeout=timeout,
         )
         _, preparation_result = execute_preparation_if_enabled(
-            _automatic_preparation_prompt(campaign),
+            _automatic_preparation_prompt(
+                campaign,
+                max_context_bytes=automatic_context_bytes,
+            ),
             cwd=root,
             campaign=campaign_id,
-            preparation_context=_automatic_preparation_context(root, campaign),
+            preparation_context=_automatic_preparation_context(
+                root,
+                campaign,
+                max_context_bytes=automatic_context_bytes,
+            ),
             output_schema=AUTO_PREPARATION_SCHEMA,
             enable_override=True,
             config=execution_config,
@@ -908,35 +966,23 @@ def dispatch_next(
             root,
             campaign,
             preparation_result,
+            max_context_bytes=automatic_context_bytes,
         )
         preparation = {
             "mode": "automatic",
             "persisted": False,
             "model": preparation_result.actual_model,
             "reasoning": preparation_result.reasoning,
+            "context_files": len(capsule.context_files),
+            "context_bytes": sum(
+                (root / path).stat().st_size for path in capsule.context_files
+            ),
+            "context_limit_bytes": automatic_context_bytes,
             "tokens": flatten_token_usage(preparation_result.token_usage),
             "model_turns": preparation_result.model_turns,
             "duration_seconds": preparation_result.duration_seconds,
             "reason": preparation_reason,
         }
-    else:
-        capsule = parse_execution_capsule(root, campaign)
-    selection = select_command(
-        "camp-run",
-        app_server_requested=app_server_requested,
-        codex=codex,
-        config_path=config_path,
-        policy_path=policy_path,
-        qualifications_path=qualifications_path,
-        qualification_cache_path=qualification_cache_path,
-    )
-    if not selection.allowed or not app_server_requested:
-        raise DispatchError(
-            selection.reason,
-            "App Server CAMP selection was not allowed",
-            recovery_action="rerun the same Tool Shed command without --app-server",
-        )
-    preflight = _app_server_host_preflight(selection, timeout=timeout)
     if planning_preflight is not None:
         preflight["automatic_preparation"] = planning_preflight
         campaign = _persist_automatic_capsule(root, campaign, capsule)

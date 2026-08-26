@@ -315,7 +315,9 @@ reused. When the selected ready campaign has no capsule, one read-only App Serve
 receives a deterministic focused snapshot assembled from the campaign, project instructions, Git
 state, relevant file inventory, and bounded source excerpts. It returns strict structured
 preparation, which the dispatcher validates and persists through the guarded campaign transaction
-before continuing in the same invocation.
+before continuing in the same invocation. CAMP qualification and host preflight happen before that
+planning turn. Automatically selected inline context is limited to the smaller of the configured
+limit and 64,000 bytes; over-budget results fail before persistence or lifecycle mutation.
 Unsafe or indeterminate preparation stops before mutation. CAMP execution reuses the existing
 Terra/medium runner. `next` itself is not an App Server role.
 Unflagged commands remain in the GUI and `ts: discuss` is always GUI-native. Read-only planning and

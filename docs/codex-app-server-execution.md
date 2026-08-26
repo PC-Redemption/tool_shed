@@ -93,7 +93,10 @@ ready campaign has no capsule, the same dispatcher assembles a deterministic foc
 the campaign, project instructions, Git state, relevant file inventory, and bounded source
 excerpts. The qualified read-only planning role receives only that isolated snapshot, has no tool
 access, and returns strict structured preparation. The dispatcher deterministically validates exact
-paths, focused context, and shell-free verification, completes planning and CAMP host preflight,
+paths, focused context, and shell-free verification. It completes CAMP qualification and host
+preflight before spending planning tokens, then completes planning host preflight. Automatic
+context files may total at most the smaller of the configured inline limit and 64,000 actual bytes;
+the inventory exposes actual sizes and an over-budget result fails before persistence. It then
 persists the capsule through the guarded campaign transaction, and continues to the existing
 bounded Terra/medium `camp-run` in the same invocation. Invalid, unsafe, ambiguous, or over-budget
 preparation stops before workspace or lifecycle mutation. A selected discussion,

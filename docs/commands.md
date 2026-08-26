@@ -356,7 +356,7 @@ want one of the three qualified roles to use the existing App Server integration
 | `ts: plan <request> --app-server` | App Server planning with `gpt-5.6-sol` / `high` |
 | `ts: verify <request> --app-server` | App Server verification with `gpt-5.6-terra` / `low` |
 | `ts: camp run <camp> --app-server` | Existing bounded App Server CAMP path with `gpt-5.6-terra` / `medium` |
-| `ts: next --app-server` | Invoke one deterministic dispatcher that reuses normal `next` selection, automatically prepares an unprepared ready campaign through read-only App Server planning, and continues to the existing Terra/medium CAMP path; never launch a nested Codex agent. |
+| `ts: next --app-server` | Invoke one deterministic dispatcher that reuses normal `next` selection, preflights CAMP before planning, automatically prepares an unprepared ready campaign with at most 64,000 bytes of inline context through read-only App Server planning, and continues to the existing Terra/medium CAMP path; never launch a nested Codex agent. |
 | `ts: appserver status` | Read-only default, compatibility, and qualified-role status |
 
 Without the option, `ts: plan`, `ts: verify`, and `ts: camp run` use the normal GUI path and report
@@ -381,7 +381,8 @@ allowlists, focused context, and shell-free verification argv. If that capsule i
 invocation assembles a deterministic focused snapshot from the campaign, project instructions, Git
 state, relevant file inventory, and bounded source excerpts. Read-only App Server planning receives
 only that isolated snapshot, without tools, and returns strict structured preparation. The
-dispatcher validates it, completes host and qualification preflight, and persists it through the
+dispatcher preflights CAMP before the planning turn, validates the returned context against the
+smaller of 64,000 bytes and the configured inline limit, and persists it through the
 guarded campaign transaction before continuing to the existing `camp-run` safety path. Unsafe,
 ambiguous, invalid, or over-budget preparation stops before mutation. Existing valid capsules skip
 planning. Discussion, decisions, blocked work, external gates, and unsupported roles remain on

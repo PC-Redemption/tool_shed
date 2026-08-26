@@ -421,9 +421,12 @@ relevant file inventory, and bounded source excerpts. Give only that isolated sn
 existing qualified read-only App Server planning role, with no tool access, to return a strict
 structured schema-version-1 capsule with matching campaign/CAMP IDs, prompt, repository-relative
 expected paths and context files, and shell-free deterministic verification argv arrays. Validate
-the planning result, context budget, protected-path exclusions, selected executables, writable
-Codex state, managed ChatGPT authentication, network/model catalog access, and both role
-qualifications before any workspace or lifecycle mutation. Persist valid preparation through the
+the CAMP role and host before spending planning tokens. Include actual file byte sizes and the
+automatic context budget in the planning snapshot; the combined context_files size must not exceed
+the smaller of 64,000 bytes and the configured inline limit. Validate the planning result, context
+budget, protected-path exclusions, selected executables, writable Codex state, managed ChatGPT
+authentication, network/model catalog access, and both role qualifications before any workspace or
+lifecycle mutation. Persist valid preparation through the
 guarded campaign transaction, reload and revalidate it, then continue in the same invocation: start
 the queued campaign when needed and call the existing bounded `camp-run` path once. Existing valid
 capsules skip planning. Unsafe, indeterminate, invalid, or over-budget preparation fails closed
