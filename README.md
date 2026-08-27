@@ -424,7 +424,7 @@ ordering, failure, safety, installation, and upgrade contract.
 
 `ts:ship <goal>` is the end-to-end delivery route: plan, implement, validate, build, deploy, and
 verify the requested workspace goal. It continues through all applicable stages while preserving
-normal safety, approval, credential, and protected-environment boundaries.
+normal safety, authority-envelope, credential, and protected-environment boundaries.
 
 Stages are applicable only when the outcome includes them, repository policy mandates them, or
 concrete risk or observed failure justifies them. Merely mentioning or discussing `ts:ship` does not
@@ -434,10 +434,19 @@ Before an already-authorized consequential stage, the agent identifies at most t
 plan could fail and adds proportionate prevention, detection, verification, or rollback. Routine
 reversible work skips this check.
 
-Tool Shed does not require repeated confirmation for reversible, in-scope steps already clearly
-authorized by the operator. One request may authorize multiple named operations; new confirmation
-is reserved for material scope expansion, protected environments, destructive or irreversible
-actions, unknown deployment targets, external publication, or other genuinely new authority.
+Tool Shed supports a persistent project-bound autonomy preference: `ts: autonomy 0` through
+`ts: autonomy 5`, with exact numeric `ts: approve <level>` as an alias. The cumulative levels are
+Observe, Plan, Build, Checkpoint, Collaborate, and Deliver. Work1-work5 still defines the requested
+endpoint; autonomy controls interruptions within it.
+
+Tool Shed does not require repeated confirmation for covered faithful actions. Project-map and
+roadmap acceptance, campaign materialization, queue transitions, execution, evidence gates, and
+completion continue automatically when the outcome and scope, endpoint, known target, autonomy,
+and provider policy all cover them. Tokens remain internal state-consistency controls. Interruption
+is reserved for material scope expansion, meaningful unresolved decisions, protected environments,
+destructive or irreversible actions, credentials, unknown targets, purchases or legal commitments,
+cross-workspace operations, or other genuinely new authority, with impact and rollback explained
+inline.
 
 For nontrivial work, Tool Shed uses an evidence-response loop: keep the desired outcome and current
 limiting condition visible, take a material action, compare actual with expected state, and update
@@ -461,7 +470,7 @@ lists active briefs without changing them. Brainstorming is durable discovery, n
 plan, build, queue, deploy, or publish.
 
 When the idea is coherent enough to pursue, `ts: prm idea <idea-id-or-path>` uses it as the durable
-source for PRM. The brief remains `ready-for-prm` until approved project-map direction captures it,
+source for PRM. The brief remains `ready-for-prm` until settled project-map direction captures it,
 then becomes `promoted` and names that map in `Produces:`. Idea Briefs remain visible in the work
 index and outside campaign reconciliation, so unfinished discovery does not create queue danglers.
 
@@ -484,8 +493,8 @@ legacy campaign layout. The release declares `work/00-campaigns` in its backed-u
 migration preserves owner extensions and rolls the complete campaign tree back on failure.
 
 For far-reaching projects, opt into `work/roadmaps/` between a project map and the campaign queue.
-`ts: develop roadmap` and `ts: overview` are read-only; roadmap proposal/approval and derived
-campaign-plan approval use separate exact state tokens. Existing work is classified from evidence,
+`ts: develop roadmap` and `ts: overview` are read-only; roadmap and derived campaign-plan mutations
+use separate exact state tokens as internal consistency controls. Existing work is classified from evidence,
 uncertain history stays uncertain, approved revisions are preserved when superseded, and campaign
 completion evidence rolls up to stable milestones and gates. Installation and upgrade create only
 the compatible empty directory—they never ingest or approve planning implicitly.
@@ -496,8 +505,8 @@ when an idea needs durable multi-session exploration. The Plan
 Cycle settles intent and project-map direction, the Roadmap Cycle owns the Program Roadmap, and the
 Milestone Cycle runs successive evidence-gated milestone waves. `ts: prm <outcome>` asks Tool Shed
 to continue through those outer cycles until the outcome and applicable gates pass or genuine owner
-intervention is required. It does not bypass exact approvals, release or deployment authority, or
-protected boundaries.
+intervention is required. It automatically advances covered faithful transitions but does not
+grant release beyond the requested endpoint or bypass protected boundaries.
 
 KISS means minimum sufficient complexity: choose the smallest complete solution that satisfies the
 current outcome, safety boundaries, and proven constraints. Reuse existing mechanisms, and add
@@ -510,9 +519,10 @@ Queue Cycle → Campaign Cycle → Evidence Loop. Roadmap Cycle and Milestone Cy
 PRM names for Program Cycle and Milestone Wave Cycle; the stable machine-facing names remain
 unchanged. Each inner completion returns control to its owner; an empty queue does not mean the
 milestone, roadmap, or PRM outcome is done. `ts: overview`, `ts: status`, and `ts: next` share one
-Cycle State Capsule that identifies the owning cycle and exact safe transition, including pending
-exact plan approval, milestone derivation or gate review, roadmap review/completion, and the absence
-of a higher-level driver. The capsule never approves or materializes work.
+Cycle State Capsule that identifies the owning cycle and exact safe transition, including campaign
+plan authority evaluation, milestone derivation or gate work, roadmap review/completion, and the
+absence of a higher-level driver. The agent applies covered transitions with fresh internal tokens;
+the capsule never invents a material decision or expands authority.
 
 Work origin is independently computed as `direct`, `owner-originated`, `roadmap-derived`, or
 `detour`. It remains separate from Direct/Guided/Coordinated/Deep coordination, the work1–work5
@@ -535,23 +545,24 @@ completion gate, stop with completed/remaining IDs and a precise resume point, e
 additions, and do not expand deployment, release, production, destructive, credential, or other
 consequential authority.
 `campaign_queue.py migrate-preview` reports legacy candidates but never moves or rewrites them;
-this includes legacy `Focus areas: ...` outcome prose. Projects may approve their own
+this includes legacy `Focus areas: ...` outcome prose. Projects may settle their own
 evidence-backed catalog at `work/focus-areas.md`; once approved, active campaigns use known
 primary/supporting IDs and cards display their names. Applying any migration requires a separate
-exact approved manifest.
+exact current manifest and authority-envelope evaluation.
 
 Use `ts: build focus areas` to inspect existing source, documentation, tests, integrations,
 runtime and delivery boundaries, and durable work history. The agent first presents an exact
-evidence-backed catalog and active-campaign assignment proposal without writing. Only explicit
-owner approval of that proposal authorizes creation or refresh of the approved catalog and its
-assignments.
+evidence-backed catalog and active-campaign assignment proposal. Planning autonomy may apply a
+faithful reversible result automatically; material ownership, responsibility, split, merge, or
+priority choices require an owner decision.
 `reconcile_campaign_queue.py` reports queue drift, whole-`work/` campaign coverage and exclusions,
 unresolved clusters, lifecycle mismatches, and a reasoned execution order. Its default route
 automatically creates or refreshes one Dangler Resolution campaign as the first queued work while
 preserving any working campaign; `--dry-run` is read-only. Unresolved artifacts can declare
 `Campaign: <id>`, `Campaign: standalone`, or `Campaign: excluded` with a reason. Other writes
-require an exact approved manifest and a stale-write token covering the scanned work surface; it
-never silently resolves semantic decisions, and terminal operations preserve lifecycle history.
+require an exact current manifest, a stale-write token covering the scanned work surface, and
+authority-envelope evaluation; it never silently resolves semantic decisions, and terminal
+operations preserve lifecycle history.
 
 ## Planned Completion Watchers
 

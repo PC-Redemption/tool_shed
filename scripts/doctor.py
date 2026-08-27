@@ -372,14 +372,14 @@ def inspect(workspace: Path) -> dict[str, Any]:
         findings.append(_finding(
             "CAMPAIGN_RECONCILIATION_DECISION", "owner-decision-required",
             f"Whole-work reconciliation requires owner action ({reconciliation_count} compact finding(s)).",
-            "Run `ts: reconcile campaigns`; apply semantic changes only from an exact approved manifest and fresh state token.",
+            "Run `ts: reconcile campaigns`; apply semantic changes only from an exact current manifest, fresh state token, and resolved authority envelope.",
             count=max(1, reconciliation_count),
         ))
     elif reconciliation["changes_required"]:
         findings.append(_finding(
             "CAMPAIGN_PROJECTION_STALE", "error",
             "Campaign queue projections differ from canonical campaign artifacts.",
-            "Run `ts: reconcile campaigns`; approve the exact repair manifest before applying it.",
+            "Run `ts: reconcile campaigns`; evaluate and apply the exact repair manifest under the active authority envelope.",
         ))
     unsupported = external_evidence["unsupported_claims"]
     if external_evidence["unsupported_claim_count"]:

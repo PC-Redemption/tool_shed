@@ -1,7 +1,32 @@
 # Tool Shed campaign routes
 
-Read this reference for numbered work levels, `ts:ship`, campaign execution, explicit App Server
-controls, `ts: help`, `ts: commands`, and `ts:ask`.
+Read this reference for numbered work levels, persistent autonomy, `ts:ship`, campaign execution,
+explicit App Server controls, `ts: help`, `ts: commands`, and `ts:ask`.
+
+## Persistent Autonomy Route
+
+Treat `ts: autonomy <0-5>` as the canonical command and an exact numeric `ts: approve <0-5>` as its
+compatibility alias. Before the preference mutation, verify project identity for operation
+`autonomy-preference`, surface the project capsule, then run:
+
+```bash
+python3 <shed>/scripts/autonomy_control.py --workspace <workspace> set <level> --json
+```
+
+Use `status` for `ts: autonomy status` and `reset` for `ts: autonomy reset`. The setting persists
+per verified project until changed or reset. A clearly stated one-command or current-run override
+applies only to that authority envelope and does not rewrite the stored level.
+
+Before prompting for approval during routed work, classify the contemplated action and run
+`autonomy_control.py evaluate`. Continue immediately when it returns `outcome: continue`; obtain
+and pass any fresh deterministic state tokens internally. When it returns an interrupt, present its
+action, reason, impact, blast radius, rollback, and recommendation. Do not replace that explanation
+with an artifact link or token challenge.
+
+Autonomy and work endpoints are independent. Level 5 cannot turn work1 into a push or release, and
+a work5 request pauses before actions above the active autonomy level. Missing or invalid preference
+state fails to level 0. Tool Shed autonomy cannot waive provider-native permissions, protected
+environments, credentials, project identity, or the hard boundaries defined in the portable skill.
 
 ## Numbered Work Levels
 
@@ -174,8 +199,8 @@ sanitized `work/evidence/`, incident, runbook, or spike record is
 `work/index.json`, and only after campaign source validates, the operator supplies the exact
 current doctor state token, and the session supplies the `doctor-repair` project binding. It does
 not change lifecycle state, choose semantic truth, rewrite owner-authored artifacts, fabricate
-evidence, or apply campaign reconciliation. Queue repairs continue to require their exact approved
-manifest and fresh reconciliation token.
+evidence, or apply campaign reconciliation. Queue repairs continue only from an exact current
+manifest, fresh reconciliation token, and resolved authority envelope.
 
 ## Campaign Continuity
 
@@ -185,7 +210,8 @@ not the campaign itself.
 - Keep working while the next action is reversible, in scope, and already authorized.
 - Preserve the selected coordination level while continuing. Campaign continuity does not upgrade
   Direct work to Guided, Coordinated, or Deep and does not make inapplicable lifecycle stages apply.
-- A progress summary, artifact update, phase boundary, or useful review point is not an approval gate.
+- A progress summary, artifact update, phase boundary, useful review point, fresh token, or evidence
+  gate is not a human approval gate by itself.
 - Pause only for requested review, a material unresolved decision, contradictory evidence, new
   authority, or a protected, destructive, irreversible, or not-yet-authorized external action.
 - When review is required, identify the exact file or result and section, the precise decision or
@@ -205,7 +231,8 @@ origin without a new required header: no queue record is `direct`, Roadmap trace
 state; do not reuse `Campaign: standalone` as an origin.
 
 When bare `next` has no ready campaign, report the owning cycle and exact safe transition in this
-order: pending Dangler Resolution; an exact current campaign-plan manifest awaiting approval; an
+order: pending Dangler Resolution; an exact current campaign-plan manifest awaiting authority
+evaluation; an
 incomplete materialized milestone or evidence gate; a derivable next milestone; roadmap drift
 requiring review; fully completed roadmap; or no higher-level driver. Never turn the capsule into
 implicit approval, materialization, lifecycle mutation, roadmap revision, protected action, or
@@ -218,9 +245,9 @@ release authority.
 
 Queue entries are accessible cards with icon-plus-text `WORKING`, `READY`, `WAITING`, `BLOCKED`, or
 `COMPLETE` states. Use the shared dependency-and-decision readiness calculation for status, `next`,
-rendering, and reconciliation. If `work/focus-areas.md` is owner-approved, display catalog names and
+rendering, and reconciliation. If `work/focus-areas.md` has `Status: approved`, display catalog names and
 require every ordinary active campaign to have a known primary ID; supporting IDs are optional.
-Never hard-code or silently approve a focus taxonomy.
+Never hard-code a focus taxonomy or silently resolve a material taxonomy decision.
 
 Keep `work/01-q&a/ask.txt` as transient intake. Accepting an inbox request may create a durable
 campaign, but never moves, clears, or rewrites the inbox without explicit operator authorization.
@@ -260,11 +287,12 @@ target capsule, and pass its `--project-binding` together with the fresh project
   `standalone`, and `excluded` associations, unresolved clusters, and the proposed execution
   order. When unclassified unresolved artifacts exist, automatically create or refresh exactly one
   Dangler Resolution campaign as the first queued work while preserving any working campaign.
-  `--dry-run` never writes. Apply any other operation only from an exact approved JSON manifest
-  with `--apply --expect TOKEN --manifest PATH`; the token covers the complete scanned work
-  surface. Never apply proposed order or ambiguous lifecycle decisions implicitly. Manifest delete
-  semantics transition campaigns to completed, deferred, or abandoned history instead of removing
-  them.
+  `--dry-run` never writes. Apply any other operation only from an exact current JSON manifest with
+  `--apply --expect TOKEN --manifest PATH`; the token covers the complete scanned work surface.
+  Apply an unambiguous, reversible, in-envelope manifest automatically at the required autonomy
+  level. Never apply ambiguous priority, ownership, or lifecycle decisions implicitly. Manifest
+  delete semantics transition campaigns to completed, deferred, or abandoned history instead of
+  removing them.
 - `ts: defer <campaign>`: require a reason and reactivation condition, then run `defer` with the
   current state token.
 - `ts: abandon <campaign>`: require a disposition and replacement when applicable, then run
@@ -306,9 +334,10 @@ Cycle may precede it when an idea needs durable multi-session exploration:
   and project direction are clear enough to settle in a project map.
 - The **Roadmap Cycle** develops, proposes, approves, executes, reviews, and when evidence requires
   it revises the Program Roadmap. This is the human-facing name for the existing Program Cycle.
-- The **Milestone Cycle** derives and exactly approves one milestone's campaign plan, materializes
-  and runs its queue, evaluates its evidence gate, and returns control to the roadmap. This is the
-  human-facing name for the existing Milestone Wave Cycle.
+- The **Milestone Cycle** derives one milestone's exact campaign plan, validates its fresh tokens,
+  materializes and runs its queue under the active authority envelope, evaluates its evidence gate,
+  and returns control to the roadmap. Human input occurs only for a genuine decision or authority
+  boundary. This is the human-facing name for the existing Milestone Wave Cycle.
 
 Treat `ts: prm <outcome>` as an explicit request to carry that outcome through the full PRM
 lifecycle and continue through every safe, already-authorized transition until the intended
@@ -321,29 +350,36 @@ Treat `ts: prm idea <idea-id-or-path>` as the same PRM route with one selected
 constraints, tradeoffs, open questions, decisions, and exploration history. Preserve unknowns
 rather than fabricating certainty. Keep the brief `ready-for-prm` during the Plan Cycle; after an
 approved project map captures its direction, set it to `promoted`, name that map in `Produces:`,
-and preserve the brief as provenance. That status update does not approve later roadmap or
-campaign-plan gates.
+and preserve the brief as provenance. That status update does not independently expand the active
+authority envelope.
 
-PRM is coordination, not blanket authority. The request does not silently approve a project map,
-roadmap proposal, or campaign plan; publish or deploy; cross a protected boundary; or authorize
-credentials, destructive recovery, or an unknown external target. A full PRM is complete only when
-the intended outcome and every applicable evidence gate pass—not when a plan, roadmap, milestone,
-campaign, or empty queue merely exists.
+PRM is coordination, not blanket authority. It automatically accepts faithful derived maps,
+roadmaps, campaign plans, materialization, and lifecycle transitions only when the active authority
+envelope covers them. It does not publish or deploy beyond the requested endpoint, cross a
+protected boundary, or authorize credentials, destructive recovery, or an unknown external target.
+A full PRM is complete only when the intended outcome and every applicable evidence gate pass—not
+when a plan, roadmap, milestone, campaign, or empty queue merely exists.
 
 - `ts: develop roadmap`: run `develop`; inspect canonical docs, maps, focus areas, queues, and all
   supported `work/**/*.md` evidence. Classify existing work as completed, active, remaining,
-  superseded, excluded, or uncertain. This is read-only. Greenfield projects must establish and
-  exactly approve their initial project map first.
+  superseded, excluded, or uncertain. This is read-only. Greenfield projects must establish their
+  initial project map first; accept it automatically at level 1 or higher when it is a faithful,
+  reversible expression of the stated direction.
 - `ts: propose roadmap`: capture an exact `tool-shed-roadmap-proposal` manifest and run `propose`
-  with its fresh source-state token. This may create only a `proposed` roadmap revision. It does
-  not approve the roadmap or create campaigns.
-- `ts: approve roadmap <token>`: run `approve` only for the exact proposal token and unchanged
-  source-state token. Preserve the preceding approved revision as `superseded`.
+  with its fresh source-state token. This creates a `proposed` roadmap revision. When the proposal
+  is a faithful in-envelope derivation and level 1 or higher covers planning state, immediately run
+  `approve` with its fresh internal tokens; otherwise present the material decision or manual route.
+- `ts: approve roadmap <token>`: preserve this explicit level-0 compatibility route. Run `approve`
+  only for the exact proposal token and unchanged source-state token, and preserve the preceding
+  approved revision as `superseded`.
 - `ts: derive campaigns for milestone <id>`: run `derive`. Return the exact read-only campaign
   manifest with roadmap and queue tokens; do not modify the queue.
-- `ts: approve campaign plan <token>`: run `apply-campaign-plan` for the exact current manifest.
-  Preserve a working campaign, reject stale inputs and dependency cycles, and materialize only the
-  approved milestone candidates. Creation does not authorize campaign execution.
+- `ts: approve campaign plan <token>`: preserve this explicit level-0 compatibility route. Run
+  `apply-campaign-plan` for the exact current manifest. At level 3 or higher, automatically apply an
+  unambiguous in-envelope plan with its fresh internal token, preserve a working campaign, reject
+  stale inputs and dependency cycles, and materialize only its milestone candidates. When the same
+  outcome and requested endpoint already authorize execution, continue into the ready campaign
+  without inventing a separate start approval.
 - `ts: roadmap status` and `ts: review roadmap`: report computed milestone and gate progress,
   completion evidence, source drift, and revision state without changing approved intent.
 - `ts: overview`: run `overview` and combine project maps, current approved roadmaps, milestone and
@@ -357,12 +393,12 @@ materializes campaigns implicitly. Standalone project maps and queues remain val
 Use `migrate-preview` to inspect Markdown requests and actionable inbox lines in canonical
 `work/01-q&a/` or pre-installer legacy `work/q&a/`. It also previews legacy outcome focus phrases;
 only fully matched values from an approved catalog produce suggested `set_focus_areas` operations.
-It never writes. Campaign or focus-area conversion requires a separate exact approved manifest and
-is not implied by preview, installation, update, or `ts:ask`.
+It never writes. Campaign or focus-area conversion requires a separate exact current manifest and
+authority-envelope evaluation; it is not implied by preview, installation, update, or `ts:ask`.
 
 ## Focus Area Discovery Route
 
-Treat `ts: build focus areas` as a two-stage, project-specific discovery and approval route:
+Treat `ts: build focus areas` as a project-specific discovery and authority-envelope route:
 
 1. Inspect existing project evidence: README and architecture documentation, source modules and
    build targets, tests and fixtures, integrations, runtime/service/hardware boundaries,
@@ -375,11 +411,11 @@ Treat `ts: build focus areas` as a two-stage, project-specific discovery and app
    inclusions, exclusions, cited workspace paths, uncertainty, coverage gaps, and proposed primary
    and supporting assignments for every active campaign. Do not create, refresh, approve, or assign
    anything yet.
-4. Request explicit owner approval for that exact catalog and assignment set. Identify the precise
-   proposal under review and state that approval will write the catalog, apply assignments, refresh
-   indexes, and validate the work state. A request to discover, build, or refresh areas is not by
-   itself approval of the proposal.
-5. After explicit approval, write `work/focus-areas.md` as `Status: approved`, apply the approved
+4. Classify whether the exact catalog and assignment set are faithful, reversible consequences of
+   settled project evidence or contain a material ownership, responsibility, split, merge, or
+   priority decision. Apply the former automatically when level 1 covers planning state; present
+   the latter as a self-contained decision with alternatives and consequences.
+5. After authority resolution, write `work/focus-areas.md` as `Status: approved`, apply the exact
    active-campaign assignments, refresh `work/index.md` and `work/index.json`, then run campaign
    validation, stale-path checks, and the read-only work-state review. Preserve unrelated work and
    reject stale state or a catalog/assignment mismatch instead of partially accepting it.

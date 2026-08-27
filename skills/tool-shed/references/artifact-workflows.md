@@ -57,9 +57,10 @@ available. Stable facts go to project docs; unresolved work, risks, and uncertai
 Onboarding also creates `work/focus-areas.md` as a proposed catalog. Discover project-specific
 areas from docs, code/build targets, integrations, runtime or hardware, tests/fixtures,
 qualification, deployment/release/regulatory/supply workflows, and existing work. Record evidence,
-inclusions, exclusions, overlaps, gaps, and uncertainty; owner approval is required before ordinary
-queue rendering consumes the catalog. Approval and complete active-campaign assignment should be
-one exact reconciliation transaction.
+inclusions, exclusions, overlaps, gaps, and uncertainty. A faithful reversible catalog may apply
+under planning autonomy; material ownership, responsibility, split, merge, or priority choices
+remain owner decisions. Apply the catalog and complete active-campaign assignments in one exact
+reconciliation transaction after the authority envelope is resolved.
 
 ## Evidence And Verification
 

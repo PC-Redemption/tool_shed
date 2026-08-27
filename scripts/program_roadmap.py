@@ -1014,8 +1014,10 @@ def cycle_state_capsule(
         capsule["dimensions"]["cycle_state"] = "queue"
         capsule["next_transition"] = {
             "command": "ts: status",
-            "requires_exact_approval": True,
-            "reason": "active campaigns are blocked, awaiting decisions, or dependency-constrained",
+            "requires_exact_approval": False,
+            "authority_action": "material-decision",
+            "automatic_when_covered": False,
+            "reason": "active campaigns are blocked, awaiting decisions, or dependency-constrained; present the concrete decision or dependency rather than requesting generic approval",
         }
         return capsule
 
@@ -1037,8 +1039,10 @@ def cycle_state_capsule(
         capsule["dimensions"]["cycle_state"] = "program"
         capsule["next_transition"] = {
             "command": f"ts: approve roadmap {roadmap.fields.get('Proposal Token', '<token>')}",
-            "requires_exact_approval": True,
-            "reason": "the Program Roadmap proposal awaits exact owner approval",
+            "requires_exact_approval": False,
+            "authority_action": "roadmap-accept",
+            "automatic_when_covered": True,
+            "reason": "accept a faithful roadmap automatically when planning state is covered; otherwise present the unresolved material decision",
         }
         return capsule
 
@@ -1060,8 +1064,10 @@ def cycle_state_capsule(
         if milestone["status"] == "active":
             capsule["next_transition"] = {
                 "command": "ts: roadmap status",
-                "requires_exact_approval": True,
-                "reason": "the materialized milestone or its evidence gate is incomplete with no ready campaign",
+                "requires_exact_approval": False,
+                "authority_action": "campaign-transition",
+                "automatic_when_covered": True,
+                "reason": "the materialized milestone or its evidence gate is incomplete; continue covered evidence and lifecycle work without generic approval",
             }
             return capsule
         expected_plan = derive(workspace, roadmap.roadmap_id, milestone_id)
@@ -1070,8 +1076,10 @@ def cycle_state_capsule(
             capsule["milestone_wave_cycle"]["state"] = "awaiting-plan-approval"
             capsule["next_transition"] = {
                 "command": f"ts: approve campaign plan {pending['manifest_token']}",
-                "requires_exact_approval": True,
-                "reason": f"the exact campaign plan at {pending['path']} awaits owner approval",
+                "requires_exact_approval": False,
+                "authority_action": "campaign-materialize",
+                "automatic_when_covered": True,
+                "reason": f"apply the exact campaign plan at {pending['path']} automatically when checkpoint autonomy covers the faithful transition",
             }
         else:
             capsule["milestone_wave_cycle"]["state"] = "derivable"
@@ -1091,8 +1099,10 @@ def cycle_state_capsule(
         capsule["dimensions"]["cycle_state"] = "milestone-wave"
         capsule["next_transition"] = {
             "command": "ts: roadmap status",
-            "requires_exact_approval": True,
-            "reason": f"milestones are complete but gate evidence remains incomplete: {', '.join(waiting_gates)}",
+            "requires_exact_approval": False,
+            "authority_action": "campaign-transition",
+            "automatic_when_covered": True,
+            "reason": f"milestones are complete but gate evidence remains incomplete: {', '.join(waiting_gates)}; gather or evaluate evidence rather than requesting approval",
         }
         return capsule
     if state["source_drift_actionable"]:
@@ -1136,6 +1146,7 @@ def render_cycle_state(capsule: dict[str, Any]) -> str:
             f"Work Origin: {capsule['dimensions']['work_origin']}",
             f"Owning Cycle: {capsule['owning_cycle']}",
             f"Next Transition: {capsule['next_transition']['command']}",
+            f"Authority Action: {capsule['next_transition'].get('authority_action', 'none')}",
             f"Reason: {capsule['next_transition']['reason']}",
         ]
     )

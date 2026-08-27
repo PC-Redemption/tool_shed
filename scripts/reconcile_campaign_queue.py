@@ -1125,7 +1125,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--apply",
         action="store_true",
-        help="Apply only operations from an exact approved reconciliation manifest.",
+        help="Apply only operations from an exact current reconciliation manifest after authority evaluation.",
     )
     parser.add_argument(
         "--expect",
@@ -1133,7 +1133,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--manifest",
-        help="Exact approved JSON manifest; required with --apply.",
+        help="Exact current JSON manifest; required with --apply.",
     )
     parser.add_argument(
         "--project-binding",

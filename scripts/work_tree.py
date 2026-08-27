@@ -42,12 +42,14 @@ Use `work/index.md` as the first orientation surface after README/docs. Use `wor
 - Read `work/00-campaigns/active-queue.md` for the owner-facing execution order.
 - Durable campaign requests move through `active/`, `completed/`, `deferred/`, and `abandoned/`.
 - Keep the optional project-specific focus catalog at `work/focus-areas.md`; approve it only after
-  evidence-backed discovery, then map every active campaign to a known primary area.
-- Use `ts: build focus areas` to inspect existing project sources and present an exact catalog and
-  campaign-assignment proposal; it writes only after explicit owner approval.
+  evidence-backed discovery and authority resolution, then map every active campaign to a known
+  primary area.
+- Use `ts: build focus areas` to inspect existing project sources and produce an exact catalog and
+  campaign-assignment proposal; apply faithful reversible results under planning autonomy and ask
+  only for material ownership or responsibility decisions.
 - Keep `work/01-q&a/ask.txt` as transient intake; it is not the durable queue.
 - Use `python3 tool_shed/scripts/campaign_queue.py --workspace . status` to get the current project-bound stale-write token before a lifecycle mutation; pass the matching `--project-binding` too.
-- Use `python3 tool_shed/scripts/reconcile_campaign_queue.py --workspace . --json` to inspect queue drift and whole-work coverage while automatically creating or refreshing one Dangler Resolution campaign as the first queued work; add `--dry-run` for read-only inspection, and require an exact approved manifest plus the reported whole-work token for every other write.
+- Use `python3 tool_shed/scripts/reconcile_campaign_queue.py --workspace . --json` to inspect queue drift and whole-work coverage while automatically creating or refreshing one Dangler Resolution campaign as the first queued work; add `--dry-run` for read-only inspection, and require an exact current manifest plus the reported whole-work token for every other write. Apply unambiguous covered operations automatically; never infer material ordering or disposition decisions.
 
 ## Ideas And Brainstorming
 
@@ -56,13 +58,14 @@ Use `work/index.md` as the first orientation surface after README/docs. Use `wor
 - Keep a concise current synthesis above dated exploration notes; preserve reminders, alternatives,
   tradeoffs, constraints, open questions, and decisions without forcing every section to be complete.
 - Idea Briefs remain outside campaign reconciliation. Use `ts: prm idea <idea-id-or-path>` to carry
-  a selected brief into PRM; promotion does not bypass project-map, roadmap, or campaign-plan approval.
+  a selected brief into PRM; promotion does not independently expand the authority envelope.
 
 ## Program Roadmaps
 
 - Keep opt-in Program Roadmaps under `work/roadmaps/` between project maps and campaigns.
 - Use `program_roadmap.py develop` and `overview` for read-only discovery.
-- Roadmap approval and campaign-plan approval are separate exact-token mutations.
+- Roadmap and campaign-plan mutations retain separate exact state tokens as internal concurrency
+  controls; covered faithful transitions do not require separate human approvals.
 - Installation and upgrade preserve existing work and never create or approve a roadmap implicitly.
 
 ## Active

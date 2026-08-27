@@ -1464,7 +1464,7 @@ def migration_preview(workspace: Path) -> dict[str, object]:
             "unresolved_values": unresolved,
             "outcome_before": item.outcome,
             "outcome_after": outcome_after,
-            "requires_owner_review": True,
+            "requires_authority_evaluation": True,
         }
         if catalog and catalog.status == "approved" and matched and not unresolved:
             operation = {
@@ -1487,7 +1487,8 @@ def migration_preview(workspace: Path) -> dict[str, object]:
         "inbox_entries": [entry for source in inbox_sources for entry in source["entries"]],
         "target_root": "work/00-campaigns/active",
         "writes_performed": False,
-        "requires_exact_approved_manifest_to_apply": True,
+        "requires_current_manifest_to_apply": True,
+        "authority_evaluation_required": True,
         "focus_area_migration": {
             "catalog_path": FOCUS_AREA_CATALOG.as_posix(),
             "catalog_status": catalog.status if catalog else "missing",
@@ -1499,7 +1500,7 @@ def migration_preview(workspace: Path) -> dict[str, object]:
                 "operations": focus_operations,
             },
             "writes_performed": False,
-            "requires_owner_review": True,
+            "requires_authority_evaluation": True,
         },
     }
 

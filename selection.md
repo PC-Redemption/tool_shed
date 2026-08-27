@@ -50,7 +50,8 @@ Use a workpackage when:
 Use a Program Roadmap when:
 
 - an approved project map spans multiple milestones or dependent campaigns
-- strategy, gates, and rolling-wave sequencing must be approved separately from execution
+- strategy, gates, and rolling-wave sequencing must remain explicit and state-token guarded while
+  covered faithful transitions may advance automatically under the active authority envelope
 - the project needs whole-program progress and drift without generating a complete backlog
 
 Use an ADR when:
@@ -150,8 +151,8 @@ Use the smallest artifact that fits the immediate work, then connect it to nearb
 - Idea Briefs preserve evolving discovery before PRM and link to the approved project-map direction
   they eventually produce.
 - Project maps coordinate multiple workstreams and show the current ground task.
-- Program Roadmaps turn an approved project map into stable phases, milestones, gates, and
-  candidate campaigns while keeping strategic and campaign-plan approvals separate.
+- Program Roadmaps turn settled project direction into stable phases, milestones, gates, and
+  candidate campaigns while keeping state consistency separate from human authority decisions.
 - Workpackages deliver larger slices and may reference tickets, checklists, spikes, ADRs, runbooks, inventories, and decision matrices.
 - Tickets define specific behavior changes inside or near a workpackage.
 - Checklists carry bounded known steps, including task lists extracted from a workpackage.

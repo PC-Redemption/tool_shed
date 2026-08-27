@@ -215,11 +215,24 @@ def smoke_temp_workspace() -> None:
             "ts: develop roadmap",
             "ts: approve roadmap <token>",
             "ts: approve campaign plan <token>",
-            "roadmap approval and campaign-plan approval are separate exact-token boundaries",
+            "fresh internal tokens",
+            "without inventing a separate start approval",
             "never ingests existing work",
         )
         if any(fragment not in portable_text for fragment in roadmap_contract):
             raise SystemExit("portable skill did not retain the complete Program Roadmap contract")
+        autonomy_contract = (
+            "Persistent Autonomy And Authority Envelope",
+            "ts: autonomy <0-5>",
+            "exact numeric `ts: approve <0-5>`",
+            "0 Observe",
+            "5 Deliver",
+            "state tokens internally",
+            "impact, blast radius, rollback",
+            "fails safely to level 0",
+        )
+        if any(fragment not in portable_text for fragment in autonomy_contract):
+            raise SystemExit("portable skill did not retain the complete autonomy authority-envelope contract")
         kiss_contract = (
             "KISS: Minimum Sufficient Complexity",
             "smallest complete solution",
@@ -272,6 +285,14 @@ def smoke_temp_workspace() -> None:
             "`ts: prm <outcome>`",
             "PRM is not blanket authority",
         )
+        generated_autonomy_contract = (
+            "Tool Shed persistent autonomy and authority envelope",
+            "ts: autonomy <0-5>",
+            "ts: approve <0-5>",
+            "internal concurrency controls",
+            "impact, blast radius, rollback",
+            "fails safely to level 0",
+        )
         generated_kiss_contract = (
             "KISS as minimum sufficient complexity",
             "smallest complete solution",
@@ -303,6 +324,7 @@ def smoke_temp_workspace() -> None:
                 or any(fragment not in guidance_text for fragment in generated_direct_contract)
                 or any(fragment not in guidance_text for fragment in generated_work_level_contract)
                 or any(fragment not in guidance_text for fragment in generated_prm_contract)
+                or any(fragment not in guidance_text for fragment in generated_autonomy_contract)
                 or any(fragment not in guidance_text for fragment in generated_kiss_contract)
                 or any(fragment not in guidance_text for fragment in generated_brainstorm_contract)
                 or any(fragment not in guidance_text for fragment in generated_app_server_contract)

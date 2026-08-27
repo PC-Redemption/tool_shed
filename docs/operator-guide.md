@@ -90,8 +90,9 @@ ts: prm idea reduce-campaign-token-usage
 ```
 
 Tool Shed uses the current synthesis and visible unknowns as PRM input. The brief remains
-`ready-for-prm` until approved project-map direction captures it, then changes to `promoted` and
-names that map in `Produces:`. All later PRM approvals and authority boundaries remain intact.
+`ready-for-prm` until settled project-map direction captures it, then changes to `promoted` and
+names that map in `Produces:`. Later faithful transitions advance when the authority envelope
+covers them; genuine authority boundaries remain intact.
 
 ## Choose The Minimum Coordination Level
 
@@ -190,7 +191,8 @@ observation when currency matters.
 Repair is deliberately narrow. `ts: doctor --repair` can regenerate stale deterministic work
 indexes only after campaign source validates and exact doctor state/project-binding tokens are
 provided. It never changes campaign lifecycle state, selects semantic truth, rewrites owner
-artifacts, fabricates evidence, or applies reconciliation without its separate approved manifest.
+artifacts, fabricates evidence, or applies reconciliation outside its separately evaluated exact
+manifest.
 
 To fully upgrade an existing Tool Shed installation with one short command, type:
 
@@ -291,8 +293,8 @@ or discussing `ts:ship` is not an end-to-end delivery request. When verification
 focused tests, the agent states the concrete reason.
 
 The route authorizes the normal workspace changes and deployment actions needed for the stated
-goal, but it does not override safety rules, protected-environment controls, required approvals,
-or credential and authorization boundaries. The agent explains any inapplicable stage. If it cannot
+goal, but it does not override safety rules, protected-environment controls, provider policy, or
+credential and authorization boundaries. The agent explains any inapplicable stage. If it cannot
 safely deploy, it completes every safe preceding stage and reports the exact blocker.
 
 The agent does not request repeated confirmation for reversible, in-scope steps that the operator
@@ -340,6 +342,27 @@ When review is genuinely required, the agent points to the exact file or result 
 states the exact question or approval, and explains what resumes afterward. A vague request to
 "review this" or "let me know" is not a valid handoff.
 
+## Set Persistent Autonomy
+
+Use `ts: autonomy 0` through `ts: autonomy 5` to choose how far covered actions continue without a
+Tool Shed interruption. Exact numeric `ts: approve <level>` is an alias. Use `ts: autonomy status`
+to inspect the current project-bound preference and `ts: autonomy reset` to return to level 0.
+
+The cumulative levels are Observe, Plan, Build, Checkpoint, Collaborate, and Deliver. They do not
+replace work1-work5: the work level says where the requested work stops, while autonomy says which
+in-scope actions may proceed without another prompt. Level 5 cannot turn work1 into a release.
+
+The agent evaluates outcome and scope, endpoint, known target, autonomy, and provider policy before
+asking. Covered project-map and roadmap acceptance, campaign materialization, lifecycle
+transitions, execution, evidence gates, and completion continue automatically. Tokens remain fresh
+state-consistency checks handled internally.
+
+A legitimate interrupt is event-driven: new scope or authority, a meaningful unresolved decision,
+an unknown or mismatched target, credentials, cross-workspace or account work, financial or legal
+commitments, broad destructive or irreversible action, or provider-native protection. The prompt
+states the action, reason, impact, blast radius, rollback, and recommendation inline so opening an
+artifact is optional rather than required for informed consent.
+
 ## Follow The Nested Cycles
 
 The Tool Shed workflow is the operator path from intent through direction, execution, evidence,
@@ -356,15 +379,16 @@ verification, or authority, and it creates no new required form or gate.
 `PRM` means **Plan → Roadmap → Milestone**. It is the full outer coordination lifecycle after an
 outcome is understood well enough to pursue. An optional Brainstorm / Discovery Cycle precedes it
 when an idea needs durable multi-session exploration. The Plan Cycle turns the selected outcome and
-evidence into settled project-map direction; the Roadmap Cycle develops and
-executes the approved Program Roadmap; and each Milestone Cycle derives, approves, runs, and
-evaluates one evidence-gated milestone wave. `ts: prm <outcome>` requests end-to-end continuation
-through those cycles until the outcome and gates pass or real owner intervention is required.
+evidence into settled project-map direction; the Roadmap Cycle develops and executes the current
+Program Roadmap; and each Milestone Cycle derives, materializes, runs, and evaluates one
+evidence-gated milestone wave. `ts: prm <outcome>` requests end-to-end continuation through those
+cycles until the outcome and gates pass or real owner intervention is required.
 
 Roadmap Cycle and Milestone Cycle are the human-facing PRM names for the existing Program Cycle and
 Milestone Wave Cycle. Their stable machine-facing names remain unchanged. PRM contains the Queue,
-Campaign, and Evidence cycles below; it does not auto-approve intent or grant release, deployment,
-credential, destructive, protected-target, or other new authority.
+Campaign, and Evidence cycles below. It automatically advances faithful transitions covered by the
+active authority envelope; it does not grant release beyond the endpoint or authorize credential,
+destructive, unknown-target, protected-target, or other new authority.
 
 ```text
 Program Cycle
@@ -380,10 +404,11 @@ Program Cycle
   control returns to the queue.
 - The Queue Cycle selects and runs ready campaigns until none remains; an empty queue returns
   control upward and never proves the milestone or program complete.
-- The Milestone Wave Cycle derives a plan, obtains exact approval, materializes campaigns, runs
-  the queue, and evaluates its gate; control returns to the Program Cycle.
-- The Program Cycle executes approved milestone waves, reviews drift, and revises only through
-  exact proposal/approval; it ends when the intended outcome and every applicable gate complete.
+- The Milestone Wave Cycle derives an exact plan, resolves the authority envelope, materializes
+  campaigns, runs the queue, and evaluates its gate; control returns to the Program Cycle.
+- The Program Cycle executes settled milestone waves, reviews drift, and uses exact tokens for
+  revisions without turning those tokens into mandatory human prompts; it ends when the intended
+  outcome and every applicable gate complete.
 
 Work origin is separate: `direct` has no queue record, `owner-originated` was deliberately added,
 `roadmap-derived` carries Roadmap/Revision/Milestone/Gate traceability, and `detour` carries
@@ -393,10 +418,10 @@ structure; work1–work5 describes the endpoint; cycle state says which loop own
 
 `ts: overview`, `ts: status`, and `ts: next` render one shared Cycle State Capsule in human and
 JSON output. With no ready campaign, it checks Dangler Resolution, a persisted exact campaign plan
-awaiting approval, incomplete milestone/gate state, a derivable milestone, roadmap drift, completed
-program state, then the absence of any higher-level driver. The reported transition is guidance,
-not authority: plan approval, materialization, lifecycle, protected-environment, and release
-boundaries stay unchanged.
+awaiting authority evaluation, incomplete milestone/gate state, a derivable milestone, roadmap
+drift, completed program state, then the absence of any higher-level driver. Covered faithful
+materialization and lifecycle transitions continue automatically; material decisions,
+protected-environment actions, and release beyond the requested endpoint remain boundaries.
 
 ## Owner Campaign Queue
 
@@ -463,8 +488,8 @@ same dependency-and-decision calculation, so the visual state cannot silently di
 selection. Dependency rows show each prerequisite's current state.
 
 Projects can keep an evidence-backed focus catalog at `work/focus-areas.md`. Existing repositories
-remain valid without one. Onboarding creates a proposed catalog, and owner approval changes it to
-`Status: approved`; Tool Shed never invents or approves a generic taxonomy. Once approved, every
+remain valid without one. Onboarding creates a proposed catalog, and authority resolution changes
+it to `Status: approved`; Tool Shed never invents a generic taxonomy. Once approved, every
 ordinary active campaign must name at least one known `Primary Focus Areas` ID and may name
 `Supporting Focus Areas`. Queue cards display the catalog names.
 
@@ -479,18 +504,19 @@ and fixtures, integrations, runtime/service/hardware boundaries, qualification a
 workflows, and durable work history. It avoids raw generated evidence, dependencies, caches, and
 build output unless a concise versioned summary is the only durable evidence.
 
-The first response is an exact, read-only proposal: stable IDs, names, purpose, inclusions,
-exclusions, evidence paths, uncertainty, coverage gaps, and primary/supporting assignments for all
-active campaigns. Review that proposal explicitly. The discovery request alone does not authorize
-a write. After approval, the agent writes the approved catalog and assignments, refreshes indexes,
-and validates campaign state, stale paths, and work state. Existing stable IDs and accepted
-boundaries remain unchanged unless the proposal cites evidence and names the change.
+The proposal contains stable IDs, names, purpose, inclusions, exclusions, evidence paths,
+uncertainty, coverage gaps, and primary/supporting assignments for all active campaigns. A faithful
+reversible proposal may apply automatically under planning autonomy. Material ownership,
+responsibility, split, merge, or priority choices require a self-contained owner decision. After
+authority resolution, the agent writes the catalog and assignments, refreshes indexes, and
+validates campaign state, stale paths, and work state. Existing stable IDs and accepted boundaries
+remain unchanged unless the proposal cites evidence and names the change.
 
 Refresh the catalog when an enduring responsibility boundary changes: a new or retired product,
 service, repository, external application, hardware/runtime boundary, qualification regime,
 release/regulatory/supply workflow, or a repeated campaign that does not fit the approved areas.
-Return edits to `Status: proposed`, record new evidence and uncertainty, and require owner approval
-before the revised catalog governs assignments.
+Return edits to `Status: proposed`, record new evidence and uncertainty, and resolve the active
+authority envelope before the revised catalog governs assignments.
 
 `reconcile_campaign_queue.py` automatically creates or refreshes one Dangler Resolution campaign
 for unclassified unresolved artifacts and places it first among queued work without interrupting a
@@ -498,9 +524,10 @@ working campaign. `--dry-run` preserves read-only inspection. The report separat
 repairable projection drift from whole-`work/` coverage findings, stalled lifecycle decisions, and
 a proposed execution order. Unresolved artifacts declare `Campaign: <id>`, `Campaign: standalone`,
 or `Campaign: excluded`; the latter two require `Campaign Reason`. All other writes require an
-exact approved JSON manifest plus `--apply --expect TOKEN --manifest PATH`. Reprioritization and
-ambiguous semantic decisions remain owner-controlled, and terminal manifest operations preserve
-completed, deferred, or abandoned history.
+exact current JSON manifest plus `--apply --expect TOKEN --manifest PATH` and authority-envelope
+evaluation. Covered unambiguous repairs continue automatically; reprioritization and ambiguous
+semantic decisions remain owner-controlled, and terminal manifest operations preserve completed,
+deferred, or abandoned history.
 
 Use `python3 tool_shed/scripts/campaign_queue.py --workspace . migrate-preview --json` to inspect
 Markdown requests under `work/01-q&a/` or legacy `work/q&a/`, actionable inbox lines, and legacy
@@ -517,21 +544,23 @@ Use a Program Roadmap only when the project spans multiple dependent milestones 
 It is an opt-in layer; standalone maps and campaign queues remain valid.
 
 1. Run `ts: develop roadmap`. The read-only report classifies populated work as completed, active,
-   remaining, superseded, excluded, or uncertain. For a greenfield project, approve the initial
-   project map with its exact map token first.
+   remaining, superseded, excluded, or uncertain. For a greenfield project, settle the initial
+   project-map direction first; planning autonomy may accept a faithful map automatically.
 2. Run `ts: propose roadmap` to capture an exact revision under `work/roadmaps/`. Confirm its
    phases, stable milestone/gate IDs, decisions, dependencies, authority boundaries, and candidate
    campaigns. This does not create campaigns.
-3. Run `ts: approve roadmap <token>` only for the exact unchanged proposal and source state.
+3. Resolve the roadmap transition. Level 1 or higher accepts a faithful unchanged proposal with
+   fresh internal tokens; `ts: approve roadmap <token>` remains the manual level-0 route.
 4. Run `ts: derive campaigns for milestone M1` to preview one rolling-wave campaign manifest.
-5. Run `ts: approve campaign plan <token>` to materialize exactly that manifest. The campaigns are
-   queued with roadmap traceability but are not started.
+5. Resolve campaign materialization. Level 3 or higher applies an unambiguous exact manifest with
+   fresh internal tokens and continues into execution when the same requested endpoint covers it;
+   `ts: approve campaign plan <token>` remains the manual level-0 route.
 6. Use `ts: roadmap status`, `ts: review roadmap`, and `ts: overview` for computed evidence rollup
    and drift. Contradictory evidence leads to a proposed revision; approved intent is never silently
    rewritten.
 
 Installation and upgrade preserve every owner-authored artifact and create only the empty roadmap
-topology. They do not perform roadmap ingestion or approval.
+topology. They do not ingest or advance existing work merely because the preference exists.
 
 ## Q&A Inbox
 

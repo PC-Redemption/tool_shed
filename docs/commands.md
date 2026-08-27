@@ -49,6 +49,28 @@ from that same target. Tokens hash the project ID and resolved root, so foreign-
 different-clone tokens fail even when work content is identical. An outside-root path produces
 `WORKSPACE_MISMATCH`; a path mention or read-only inspection never implies a switch.
 
+## Persistent Autonomy
+
+| Prompt | Usage |
+| --- | --- |
+| `ts: autonomy <0-5>` | Persist the cumulative autonomy level for the verified current project. |
+| `ts: approve <0-5>` | Exact numeric compatibility alias for `ts: autonomy <0-5>`. |
+| `ts: autonomy status` | Show the current project, level, covered categories, preference source, and hard boundaries. Read-only. |
+| `ts: autonomy reset` | Remove the current project's preference and fail safely to level 0. |
+| `ts: autonomy <level> for this run` | Apply a clearly scoped non-persistent override to the current authority envelope. |
+
+The levels are cumulative: `0 Observe`, `1 Plan`, `2 Build`, `3 Checkpoint`, `4 Collaborate`, and
+`5 Deliver`. They control interruptions, not task scope or the requested work1-work5 endpoint.
+Effective authority is the intersection of outcome and scope, endpoint, known target, autonomy
+level, and provider policy.
+
+Covered faithful actions continue automatically, including applicable planning acceptance,
+campaign materialization, queue transitions, execution, evidence gates, and completion. Fresh
+tokens remain internal concurrency controls. Tool Shed interrupts only for new authority, a
+material unresolved decision, an unknown target, broad destructive or irreversible action,
+credentials, cross-workspace or account work, financial/legal commitments, or provider-native
+protection. Every interrupt explains impact, blast radius, rollback, and recommendation inline.
+
 ## Help And Discovery
 
 | Prompt | Usage |
@@ -61,7 +83,7 @@ different-clone tokens fail even when work content is identical. An outside-root
 | `ts: brainstorm` | List active Idea Briefs under `work/ideas/` without mutation. |
 | `ts: brainstorm <idea>` | Create or resume one durable pre-PRM Idea Brief, updating its current synthesis and useful dated exploration notes. |
 | `ts: bs <idea>` | Exact alias for `ts: brainstorm <idea>`. |
-| `ts: build focus areas` | Inspect existing workspace sources and propose a project-specific focus-area catalog and active-campaign assignments. Requires explicit approval before writing. |
+| `ts: build focus areas` | Inspect existing workspace sources and produce a project-specific focus-area catalog and active-campaign assignments. Faithful reversible results may apply under planning autonomy; material responsibility choices require a decision. |
 | `ts: develop roadmap` | Read project evidence and clarify an opt-in Program Roadmap without mutation. |
 | `ts: overview` | Combine maps, approved roadmaps, gates, focus areas, campaign state, and drift. Read-only. |
 
@@ -88,11 +110,11 @@ excluded from campaign reconciliation.
 
 Use `ts: brainstorm idea <idea-id-or-path>` or its `ts: bs` equivalent to explicitly resume one
 brief. Use `ts: prm idea <idea-id-or-path>` to carry it forward; keep it ready-for-PRM until
-approved project-map direction captures it, then preserve it as promoted provenance with
+settled project-map direction captures it, then preserve it as promoted provenance with
 `Produces:` pointing to that map.
 
 Brainstorming does not authorize a project map, roadmap, campaign, source change, deployment, or
-publication. Promotion does not bypass any PRM approval or authority boundary. Brainstorming is
+publication. Promotion does not independently expand the authority envelope. Brainstorming is
 GUI-native; `--app-server` is not supported for `brainstorm` or `bs`.
 
 ## Execution Endpoints
@@ -161,8 +183,8 @@ It completes only when the intended outcome and all applicable gates pass.
 
 | Cycle | Repeating transition | Complete when | Control returns to |
 | --- | --- | --- | --- |
-| Program Cycle | Approve roadmap → execute milestone waves → review drift/revise | Intended program outcome and all applicable gates pass | Owner/program review |
-| Milestone Wave Cycle | Derive plan → exact approval → materialize → run queue → evaluate gate | Milestone campaigns and evidence gate pass | Program Cycle |
+| Program Cycle | Settle roadmap → execute milestone waves → review drift/revise | Intended program outcome and all applicable gates pass | Owner/program review |
+| Milestone Wave Cycle | Derive exact plan → resolve authority → materialize → run queue → evaluate gate | Milestone campaigns and evidence gate pass | Program Cycle |
 | Queue Cycle | Select ready campaign → run campaign cycle → repeat | No ready campaign remains | Milestone Wave Cycle, Program Cycle, or owner |
 | Campaign Cycle | Start → execute → verify gate → complete or block | Completion gate passes with evidence and lifecycle record completes | Queue Cycle |
 | Evidence Loop | Observe → act → verify → adapt | Actual state matches expected state or a real blocker is proven | Current Campaign Cycle |
@@ -184,9 +206,10 @@ These four dimensions remain independent:
 A roadmap-derived campaign can still use Direct coordination and stop at work1. `ts: overview`,
 `ts: status`, and `ts: next` expose the same JSON and human-readable Cycle State Capsule. When no
 campaign is ready, `next` rolls control upward and reports the owning cycle plus one safe command:
-Dangler Resolution, exact persisted campaign-plan approval, incomplete milestone/gate review,
-next-milestone derivation, roadmap drift review, completed program, or an owner choice between
-direct work and `ts: add`. It never approves, materializes, starts, or revises implicitly.
+Dangler Resolution, exact persisted campaign-plan authority evaluation, incomplete milestone/gate
+work, next-milestone derivation, roadmap drift review, completed program, or an owner choice between
+direct work and `ts: add`. Covered faithful transitions advance with fresh internal tokens; it
+never infers a material decision or expands the active envelope.
 
 ## Owner Campaign Queue
 
@@ -282,11 +305,12 @@ python3 tool_shed/scripts/reconcile_campaign_queue.py --workspace . --dry-run --
   | jq '.reconciliation_manifest' > /tmp/campaign-reconciliation.json
 ```
 
-Automatic mutation is limited to creating or refreshing Dangler Resolution. After reviewing any
-other `reconciliation_manifest` operations, save the exact approved manifest and pass `--apply
---expect TOKEN --manifest PATH`. The token covers the complete scanned work surface.
+Automatic mutation always includes creating or refreshing Dangler Resolution. For other
+`reconciliation_manifest` operations, save the exact current manifest and pass `--apply --expect
+TOKEN --manifest PATH` after authority-envelope evaluation. The token covers the complete scanned
+work surface; unambiguous reversible operations may continue automatically when covered.
 Generated projection repairs preserve the current valid relative order and never apply the
-separately reported execution-order proposal. Approved manifest operations can create campaigns,
+separately reported execution-order proposal. Authorized manifest operations can create campaigns,
 set explicit associations or focus areas, or transition campaigns; terminal transitions preserve
 lifecycle history instead of deleting files. `migrate-preview` can suggest exact
 `set_focus_areas` operations for fully matched legacy `Focus areas: ...` outcome prose, but it
@@ -300,18 +324,18 @@ python3 tool_shed/scripts/reconcile_campaign_queue.py --workspace . \
 
 ## Program Roadmaps
 
-Use this optional lifecycle when a project map needs approved phases, milestones, gates, and
-rolling-wave campaign planning:
+Use this optional lifecycle when a project map needs explicit state-token-guarded phases,
+milestones, gates, and rolling-wave campaign planning:
 
 | Prompt | Usage |
 | --- | --- |
-| `ts: prm <outcome>` | Carry an outcome through the full Plan → Roadmap → Milestone lifecycle, continuing every safe authorized transition until applicable gates pass or genuine owner intervention is required. This does not bypass exact approvals or grant release, deployment, or protected-target authority. |
-| `ts: prm idea <idea-id-or-path>` | Carry one selected Idea Brief into PRM, preserving visible unknowns and promoting the brief only after approved project-map direction captures it. Later approval and authority boundaries remain separate. |
-| `ts: develop roadmap` | Read and classify project evidence. Greenfield projects establish and approve the initial map first. No writes. |
+| `ts: prm <outcome>` | Carry an outcome through the full Plan → Roadmap → Milestone lifecycle, continuing every covered transition until applicable gates pass or genuine owner intervention is required. This does not grant release beyond the endpoint or bypass protected-target authority. |
+| `ts: prm idea <idea-id-or-path>` | Carry one selected Idea Brief into PRM, preserving visible unknowns and promoting the brief after settled project-map direction captures it. Later actions remain bounded by the same authority envelope. |
+| `ts: develop roadmap` | Read and classify project evidence. Greenfield projects establish initial map direction first. No writes. |
 | `ts: propose roadmap` | Capture an exact proposed roadmap revision from a fresh source-state token. Creates no campaigns. |
-| `ts: approve roadmap <token>` | Approve exactly one unchanged proposal; preserve any prior approved revision as superseded. |
+| `ts: approve roadmap <token>` | Manual level-0 compatibility route for one unchanged proposal; covered faithful proposals are accepted automatically with internal tokens. |
 | `ts: derive campaigns for milestone <id>` | Preview an exact dependency-aware campaign manifest for one milestone. No writes. |
-| `ts: approve campaign plan <token>` | Materialize only the exact current manifest. Does not start campaign execution. |
+| `ts: approve campaign plan <token>` | Manual level-0 compatibility route for one exact manifest; at level 3, covered plans materialize automatically and continue into execution when the endpoint authorizes it. |
 | `ts: roadmap status` | Compute milestone and gate progress from linked campaign evidence. No writes. |
 | `ts: review roadmap` | Report assumptions, source drift, blockers, and revision needs. No writes. |
 | `ts: overview` | Show whole-project strategic and execution state together. No writes. |
@@ -327,11 +351,12 @@ python3 tool_shed/scripts/program_roadmap.py --workspace . apply-campaign-plan -
 python3 tool_shed/scripts/program_roadmap.py --workspace . overview --json
 ```
 
-Roadmap and campaign-plan approval are separate authority boundaries. Every mutation rejects stale
-source, roadmap, or queue state. Existing standalone maps and queues remain supported. When an
+Roadmap and campaign-plan mutations retain separate exact tokens, but those are state-consistency
+controls rather than universal human approval gates. Every mutation rejects stale source, roadmap,
+or queue state. Existing standalone maps and queues remain supported. When an
 operator explicitly persists an exact derived plan under `work/roadmaps/campaign-plans/*.json`,
 the shared Cycle State Capsule recognizes it only while its roadmap, queue, and manifest token
-remain current; otherwise it reports derivation rather than inventing pending approval state.
+remain current; otherwise it reports derivation rather than inventing pending authority.
 
 ## Q&A Inbox
 

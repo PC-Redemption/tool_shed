@@ -260,7 +260,7 @@ class CycleStateTests(unittest.TestCase):
                 "independent-request-dimension",
             )
 
-    def test_empty_queue_reports_derivation_exact_plan_approval_and_completed_program(self) -> None:
+    def test_empty_queue_reports_derivation_authority_evaluation_and_completed_program(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             workspace = Path(temporary)
             self.install(workspace)
@@ -294,7 +294,12 @@ class CycleStateTests(unittest.TestCase):
                 pending["next_transition"]["command"],
                 f"ts: approve campaign plan {plan['manifest_token']}",
             )
-            self.assertTrue(pending["next_transition"]["requires_exact_approval"])
+            self.assertFalse(pending["next_transition"]["requires_exact_approval"])
+            self.assertEqual(
+                pending["next_transition"]["authority_action"],
+                "campaign-materialize",
+            )
+            self.assertTrue(pending["next_transition"]["automatic_when_covered"])
 
             deferred = self.campaign_record(
                 workspace,

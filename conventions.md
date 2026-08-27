@@ -142,8 +142,9 @@ Use these statuses:
 
 Idea Briefs are indexed but excluded from campaign reconciliation because discovery is not queued
 execution. `ts: prm idea <idea-id-or-path>` selects one brief as the PRM source. Keep it
-`ready-for-prm` until approved project-map direction captures it; promotion does not approve a
-roadmap, campaign plan, product change, release, or deployment. Preserve the brief as provenance.
+`ready-for-prm` until settled project-map direction captures it. Promotion does not expand the
+active authority envelope; later faithful planning and lifecycle transitions may continue
+automatically when that envelope covers them. Preserve the brief as provenance.
 
 ## Owner Campaign Lifecycle
 
@@ -173,7 +174,8 @@ reconciliation.
 
 Refresh the catalog after durable product, repository, integration, runtime/hardware,
 qualification, release/regulatory/supply, or responsibility-boundary changes, or when repeated work
-does not fit existing areas. Revisions return to proposed status and require renewed owner approval.
+does not fit existing areas. Revisions return to proposed status; faithful reversible updates may
+advance under planning autonomy, while material boundary choices require an owner decision.
 
 Every lifecycle mutation uses `scripts/campaign_queue.py`, requires the current state token, and
 updates requests and both queue projections through a recoverable transaction. Manual or stale
@@ -203,8 +205,10 @@ Roadmaps remain file-, script-, and Git-based. A proposal records stable phases,
 evidence gates, decisions, dependencies, authority boundaries, and candidate campaigns.
 
 Development, review, derivation, status, and overview are read-only. Proposal capture creates only
-a proposed revision. Roadmap approval requires the exact proposal and fresh source token;
-campaign-plan approval is a later exact-token mutation. Approved replanning preserves the prior
+a proposed revision. Roadmap and campaign-plan mutations require exact fresh tokens as internal
+state-consistency controls. The active authority envelope determines whether the agent performs
+those faithful transitions automatically or requests a material decision or new authority; an
+artifact boundary is not a human approval gate by itself. Approved replanning preserves the prior
 revision as superseded. Derived campaigns carry roadmap, revision, milestone, and gate traceability,
 while completion evidence is rolled up computationally rather than silently rewriting approved
 intent. Existing standalone maps and queues remain valid and adoption is incremental.
@@ -277,8 +281,11 @@ reconciliation stale-write token hashes the complete scanned Markdown surface. T
 `ts: reconcile campaigns` route authorizes only deterministic creation or refresh of one Dangler
 Resolution campaign as the first queued work while preserving a working campaign. `--dry-run`
 never writes. Associations, semantic dispositions, projection repairs, execution-order changes,
-and lifecycle transitions require an exact approved JSON manifest. Delete semantics transition
-campaigns into completed, deferred, or abandoned history rather than physically deleting requests.
+and lifecycle transitions require an exact current JSON manifest plus authority-envelope
+evaluation. Apply unambiguous reversible operations automatically when covered; preserve ambiguous
+semantic, ownership, priority, and disposition choices for an owner decision. Delete semantics
+transition campaigns into completed, deferred, or abandoned history rather than physically
+deleting requests.
 
 Deep research is a spike mode, not a separate artifact model. It uses `Type: spike` and
 `Research Depth: deep`, so normal indexing, disposition, and `Produces:` rules apply. Tool Shed

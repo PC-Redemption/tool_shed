@@ -255,7 +255,8 @@ class DocumentationSiteTests(unittest.TestCase):
             self.assertIn("ts: prm idea &lt;id-or-path&gt;", workflow_help)
             self.assertNotIn('id="cycles"', campaign_help)
             self.assertIn("higher-level cycle owns the transition", queue_guide)
-            self.assertIn("higher-level approvals remain separate", queue_guide)
+            self.assertIn("No ceremonial phase approval", queue_guide)
+            self.assertIn("active authority envelope", queue_guide)
 
     def test_compact_layout_removes_large_card_minimums(self) -> None:
         css = (ROOT / "site" / "assets" / "site.css").read_text(encoding="utf-8")

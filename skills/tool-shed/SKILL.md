@@ -38,7 +38,7 @@ Load only the route reference needed for the request:
 | `ts: identity` or `ts: use <project-alias-or-path>` | this file only |
 | discussion or campaign discovery | this file only |
 | `ts: brainstorm`, `ts: bs`, artifact selection, creation, completion, onboarding, or reconciliation | `references/artifact-workflows.md` |
-| `ts:work1` through `ts:work5`, aliases, `ts:check`, `ts:ship`, `ts: prm <outcome>`, `ts: doctor`, campaign execution, owner campaign queues, Program Roadmaps, `ts: overview`, `ts: build focus areas`, explicit App Server controls, `ts: help`, `ts: commands`, or `ts:ask` | `references/campaign-routes.md` |
+| `ts:work1` through `ts:work5`, aliases, `ts:check`, `ts:ship`, `ts: prm <outcome>`, `ts: autonomy`, numeric `ts: approve`, `ts: doctor`, campaign execution, owner campaign queues, Program Roadmaps, `ts: overview`, `ts: build focus areas`, explicit App Server controls, `ts: help`, `ts: commands`, or `ts:ask` | `references/campaign-routes.md` |
 | `ts: fulltsupgrade`, version, update, snapshot, or provider-specific reasoning maintenance | `references/maintenance-routes.md` |
 
 Read a referenced file completely when its route applies. Do not load unrelated route references.
@@ -57,6 +57,46 @@ mention or read-only inspection does not authorize switching. `ts: use <project-
 the explicit read-only switch route: verify the target identity, reload that target's instructions
 and Tool Shed skill, and obtain fresh target-bound state. Generic edit and shell tools must not
 bypass the same fence.
+
+## Persistent Autonomy And Authority Envelope
+
+Tool Shed approvals are event-driven exceptions, not lifecycle stages. Before asking the operator
+to approve a routed action, resolve the protected project-bound autonomy preference with
+`python3 <shed>/scripts/autonomy_control.py --workspace <workspace> status --json`, classify the
+action, and evaluate the complete authority envelope:
+
+`explicit outcome and scope ∩ requested work1-work5 endpoint ∩ known target ∩ autonomy level ∩ provider policy`
+
+Autonomy levels are cumulative: `0 Observe`, `1 Plan`, `2 Build`, `3 Checkpoint`, `4 Collaborate`,
+and `5 Deliver`. Treat `ts: autonomy <0-5>` as the canonical persistent-setting route and exact
+numeric `ts: approve <0-5>` as its compatibility alias. Support `status` and `reset`; a clearly
+scoped one-command or current-run override changes only that envelope and not the durable default.
+Persist settings only in protected user-local state keyed to verified project identity.
+
+- Work1-work5 remains the requested endpoint. Autonomy controls interruptions within it and never
+  invents work, broadens scope, raises the endpoint, or resolves an unknown target.
+- When an action is faithful to settled intent, in scope, reversible, and covered by the envelope,
+  continue automatically. This includes covered project-map and roadmap acceptance, campaign-plan
+  application and materialization, queue transitions, campaign execution, evidence gates, and
+  completion. Do not turn an artifact, token, phase boundary, summary, or review point into a human
+  approval gate.
+- Keep proposal, manifest, state, identity, and project-binding tokens. The agent obtains, validates,
+  and passes fresh tokens internally as concurrency controls; never require the operator to copy a
+  token for a covered transition. Preserve exact-token commands for manual level-0 operation and
+  compatibility.
+- Interrupt only when the action is not entailed by the envelope, a meaningful alternative could
+  materially change result or risk, and the choice cannot safely be inferred or cheaply reversed.
+  Ordinary failures trigger bounded diagnosis, repair, and revalidation rather than approval.
+- Material scope expansion, unresolved material decisions, credentials or authentication changes,
+  cross-workspace or account operations, unknown targets, purchases or legal commitments, broad
+  destructive or irreversible actions, and provider-native protected boundaries remain explicit.
+- A legitimate interrupt must state the action, why the envelope does not cover it, impact, blast
+  radius, rollback, and a recommendation inline. Links are supporting detail, not a prerequisite
+  for informed consent.
+
+Missing, malformed, stale, foreign-project, or root-mismatched preference state fails safely to
+level 0. Provider-native permission, sandbox, branch-protection, protected-environment, credential,
+and account controls remain authoritative and cannot be waived by Tool Shed autonomy.
 
 ## Discussion Route
 
@@ -189,9 +229,12 @@ repository-boundary, or product questions; `existing-projects.md` for onboarding
 - Keep project artifacts under root `work/`, never inside the workspace-local shed.
 - Keep durable pre-PRM Idea Briefs under `work/ideas/`; `brainstorm` and `bs` are equivalent routes.
 - Keep owner-facing campaign lifecycle state under first-sorted `work/00-campaigns/`; keep `work/01-q&a/ask.txt` as transient intake.
-- Keep opt-in strategic sequencing under `work/roadmaps/`; roadmap approval and campaign-plan approval are separate exact-token boundaries.
-- Use `PRM` to mean the complete Plan → Roadmap → Milestone outer lifecycle; it does not bypass
-  project-map, roadmap, campaign-plan, release, deployment, or other authority boundaries.
+- Keep opt-in strategic sequencing under `work/roadmaps/`; fresh roadmap and campaign-plan tokens
+  protect state consistency, while the active authority envelope determines whether human input is
+  required.
+- Use `PRM` to mean the complete Plan → Roadmap → Milestone outer lifecycle. Continue covered
+  transitions automatically; PRM does not bypass scope, endpoint, target, provider, or genuine new
+  authority boundaries.
 - Keep settled current truth in project docs or README files.
 - Treat completed work artifacts as history, not canonical truth.
 - Keep the workspace-local shed a disconnected, one-way snapshot; never develop inside it or push

@@ -1036,7 +1036,10 @@ for raw in sys.stdin:
         self.assertIn("work_model: combined", readme)
         self.assertIn("In `split` mode", guide)
         self.assertIn("`ts:check", skill_bundle)
-        self.assertIn("Treat `ts: build focus areas` as a two-stage", skill_bundle)
+        self.assertIn(
+            "Treat `ts: build focus areas` as a project-specific discovery and authority-envelope route",
+            skill_bundle,
+        )
         self.assertIn("<spot|focused|full|release>", skill_bundle)
         self.assertNotIn("abstract/currently advertised tier", skill)
         self.assertIn("### **Reasoning: <model> / <effort>**", guide)
@@ -2660,7 +2663,9 @@ Uncertainty: none
             )
             migration = preview["focus_area_migration"]
             self.assertFalse(migration["writes_performed"])
-            self.assertTrue(migration["requires_owner_review"])
+            self.assertTrue(migration["requires_authority_evaluation"])
+            self.assertTrue(preview["requires_current_manifest_to_apply"])
+            self.assertTrue(preview["authority_evaluation_required"])
             self.assertEqual(migration["candidates"][0]["matched_ids"], ["firmware", "qualification"])
             self.assertEqual(migration["candidates"][0]["outcome_after"], "deliver legacy")
 
@@ -3686,7 +3691,7 @@ Produces:
             self.assertIn("skills/tool-shed/SKILL.md", guidance)
             self.assertLess(len(guidance.encode("utf-8")), 4096)
 
-    def test_build_focus_areas_route_is_portable_and_approval_gated(self) -> None:
+    def test_build_focus_areas_route_uses_authority_envelope(self) -> None:
         skill = (ROOT / "skills" / "tool-shed" / "SKILL.md").read_text(encoding="utf-8")
         route = (
             ROOT / "skills" / "tool-shed" / "references" / "campaign-routes.md"
@@ -3696,11 +3701,10 @@ Produces:
 
         for content in (skill, route, commands, guide):
             self.assertIn("ts: build focus areas", content)
-        self.assertIn("A request to discover, build, or refresh areas is not by", route)
         self.assertIn("Present an exact proposed catalog", route)
         self.assertIn("proposed primary", route)
-        self.assertIn("After explicit approval", route)
-        self.assertIn("Preserve stable IDs", route)
+        self.assertIn("Apply the former automatically", route)
+        self.assertIn("material ownership", route)
         self.assertIn("leave active campaigns unmapped", route)
 
         with tempfile.TemporaryDirectory() as temp:
@@ -3715,13 +3719,13 @@ Produces:
             ):
                 guidance = (workspace / relative).read_text(encoding="utf-8")
                 with self.subTest(provider_guidance=relative):
-                    self.assertIn("`ts: build focus areas` as a two-stage route", guidance)
-                    self.assertIn("A build or refresh request is not approval", guidance)
+                    self.assertIn("`ts: build focus areas` as an evidence-backed", guidance)
+                    self.assertIn("Apply a faithful reversible proposal automatically", guidance)
                     self.assertIn("apply all active-campaign assignments", guidance)
                     self.assertIn("Preserve stable IDs", guidance)
             codex_guidance = (workspace / "AGENTS.md").read_text(encoding="utf-8")
             self.assertIn("skills/tool-shed/SKILL.md", codex_guidance)
-            self.assertNotIn("`ts: build focus areas` as a two-stage route", codex_guidance)
+            self.assertNotIn("`ts: build focus areas` as an evidence-backed", codex_guidance)
 
     def test_installer_supports_all_provider_adapters_idempotently(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

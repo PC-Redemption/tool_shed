@@ -114,8 +114,8 @@ def main() -> int:
     print("- runtime, service, hardware, qualification, release, regulatory, and supply boundaries")
     print()
     print("Next focus-area step:")
-    print("- propose evidence-backed entries in work/focus-areas.md and request owner approval")
-    print("- approve the catalog before campaign conversion, reconciliation, or area assignment")
+    print("- propose evidence-backed entries in work/focus-areas.md and evaluate the authority envelope")
+    print("- apply a faithful reversible catalog when covered; interrupt only for material decisions")
     return 0
 
 

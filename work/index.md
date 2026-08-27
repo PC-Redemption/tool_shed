@@ -21,6 +21,7 @@ Updated: 2026-08-27
 | [work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
 | [work/00-campaigns/active/096-publish-and-synchronize-passive-app-server-dogfooding.md](work/00-campaigns/active/096-publish-and-synchronize-passive-app-server-dogfooding.md) | campaign | blocked | 2026-08-27 | resolve blocker or decision: fresh Codex task must load synchronized v0.30.0 skill and run ts: app-server status | - |
 | [work/00-campaigns/active/097-field-dogfood-passive-app-server-mode.md](work/00-campaigns/active/097-field-dogfood-passive-app-server-mode.md) | campaign | queued | 2026-08-27 | execute when selected from the active campaign queue | - |
+| [work/00-campaigns/active/098-define-and-implement-persistent-autonomy-levels.md](work/00-campaigns/active/098-define-and-implement-persistent-autonomy-levels.md) | campaign | working | 2026-08-27 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -163,11 +164,13 @@ Updated: 2026-08-27
 | [work/evidence/evidence-windows-realistic-app-server-budget-v0-29-8.md](work/evidence/evidence-windows-realistic-app-server-budget-v0-29-8.md) | evidence | complete | 2026-08-26 | publish the post-v0.29.8 verifier/preparation repair and upgrade clients only under separate owner authorization | - |
 | [work/focus-areas.md](work/focus-areas.md) | focus-area-catalog | approved | 2026-08-15 | review when an enduring responsibility boundary changes | - |
 | [work/ideas/idea-passive-app-server-dogfooding-mode.md](work/ideas/idea-passive-app-server-dogfooding-mode.md) | idea-brief | promoted | 2026-08-27 | use the approved project-map direction and Program Roadmap for delivery | - |
+| [work/ideas/idea-persistent-autonomy-levels.md](work/ideas/idea-persistent-autonomy-levels.md) | idea-brief | promoted | 2026-08-27 | use the approved revised project-map direction to propose Program Roadmap revision 2 | - |
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/maps/map-disposable-completion-watchers-and-hosted-notifications.md](work/maps/map-disposable-completion-watchers-and-hosted-notifications.md) | project-map | deferred | 2026-08-18 | preserve the completed local watcher and wait for a concrete external/non-App-Server notification need before revisiting hosted work | - |
 | [work/maps/map-low-token-cross-platform-campaign-execution.md](work/maps/map-low-token-cross-platform-campaign-execution.md) | project-map | complete | 2026-08-26 | use `ts: next --app-server` for ordinary bounded campaigns on the proven Linux and Windows paths | - |
 | [work/maps/map-passive-app-server-dogfooding.md](work/maps/map-passive-app-server-dogfooding.md) | project-map | approved | 2026-08-27 | execute M1 through the approved passive-app-server-dogfooding Program Roadmap | - |
+| [work/maps/map-persistent-autonomy-levels.md](work/maps/map-persistent-autonomy-levels.md) | project-map | approved | 2026-08-27 | develop an exact Program Roadmap proposal | - |
 | [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | complete | 2026-08-20 | none | - |
 | [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
 | [work/roadmaps/roadmap-completion-watcher-program-r2.md](work/roadmaps/roadmap-completion-watcher-program-r2.md) | program-roadmap | approved | 2026-08-20 | derive campaigns for milestone M1-CONTRACT | none |
@@ -180,6 +183,8 @@ Updated: 2026-08-27
 | [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r7.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r7.md) | program-roadmap | complete | 2026-08-26 | none | none |
 | [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution.md) | program-roadmap | superseded | 2026-08-26 | none | work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r2.md |
 | [work/roadmaps/roadmap-passive-app-server-dogfooding.md](work/roadmaps/roadmap-passive-app-server-dogfooding.md) | program-roadmap | executing | 2026-08-27 | execute the first ready roadmap campaign through ts: next | none |
+| [work/roadmaps/roadmap-persistent-autonomy-levels-r2.md](work/roadmaps/roadmap-persistent-autonomy-levels-r2.md) | program-roadmap | executing | 2026-08-27 | execute the first ready roadmap campaign through ts: next | none |
+| [work/roadmaps/roadmap-persistent-autonomy-levels.md](work/roadmaps/roadmap-persistent-autonomy-levels.md) | program-roadmap | superseded | 2026-08-27 | none | work/roadmaps/roadmap-persistent-autonomy-levels-r2.md |
 | [work/spikes/spike-completion-watcher-protocol-and-failure-model.md](work/spikes/spike-completion-watcher-protocol-and-failure-model.md) | spike | complete | 2026-08-18 | none | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
 | [work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md](work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md) | spike | complete | 2026-08-09 | none | work/maps/map-tool-shed-evolution.md |
 | [work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md](work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md) | spike | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
@@ -210,6 +215,6 @@ Updated: 2026-08-27
 
 ## Summary
 
-- Total artifacts: 193
-- Active artifacts: 3
-- Completed/decided artifacts: 146
+- Total artifacts: 198
+- Active artifacts: 4
+- Completed/decided artifacts: 147
