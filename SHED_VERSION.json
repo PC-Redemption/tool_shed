@@ -4,7 +4,7 @@
   "content_hashes": {
     ".gitattributes": "d60f352d0db1404c70afb4bb8b2ca3fd1c610572aa40720e8a0b7baa7885418c",
     ".github/workflows/release.yml": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa",
-    ".github/workflows/validate.yml": "19b5c30220416413f3114e7682309a302e27494932bfbbd74abbe6ce2ec435e1",
+    ".github/workflows/validate.yml": "b9b79681e437ace7eefd680d40590e08a4480aa11d453542b7f94160f6a6498c",
     "README.md": "42d322ce3508dba69e3ba86ec9c5374d236e5329ec542c5dc2440ddedd79f3f0",
     "adapters/codex-app-server-benchmarks.json": "20ef4ef6d7e3964e01791ea2623e16091a5c5bd85ddae84179952ba31872dbe3",
     "adapters/codex-app-server-config.json": "d79964bc2371a39d50b7bcad534af133564e55bbf491baf4f3031b36e01b7e49",
