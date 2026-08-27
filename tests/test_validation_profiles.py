@@ -25,6 +25,27 @@ class ValidationProfileTests(unittest.TestCase):
             validator.select_test_ids("focused", [discovered[0]]),
             [discovered[0]],
         )
+        self.assertEqual(
+            validator.isolation_groups(
+                [
+                    "test_a.Example.test_two",
+                    "test_b.Other.test_one",
+                    "test_a.Example.test_one",
+                ],
+                maximum_size=1,
+            ),
+            [
+                ("test_a.Example.test_one",),
+                ("test_a.Example.test_two",),
+                ("test_b.Other.test_one",),
+            ],
+        )
+        self.assertEqual(
+            validator.isolation_groups(
+                ["test_a.Example.test_two", "test_a.Example.test_one"]
+            ),
+            [("test_a.Example.test_one", "test_a.Example.test_two")],
+        )
 
         focused = validator.profile_step_names("focused", canonical=True)
         full = validator.profile_step_names("full", canonical=True)
@@ -46,17 +67,18 @@ class ValidationProfileTests(unittest.TestCase):
     def test_isolated_runner_collects_every_result_in_stable_order(self) -> None:
         calls: list[str] = []
 
-        def fake_run(test_id: str, state_root: Path) -> validator.TestResult:
+        def fake_run(test_ids: tuple[str, ...], state_root: Path) -> validator.TestResult:
+            test_id = test_ids[0]
             calls.append(test_id)
             return validator.TestResult(test_id, int(test_id == "test_z"), 0.01, "", "")
 
         with tempfile.TemporaryDirectory() as temporary, mock.patch.object(
             validator,
-            "_run_test_case",
+            "_run_test_group",
             side_effect=fake_run,
         ):
-            results = validator.execute_test_cases(
-                ["test_z", "test_a"],
+            results = validator.execute_test_groups(
+                [("test_z",), ("test_a",)],
                 jobs=2,
                 state_root=Path(temporary),
             )
