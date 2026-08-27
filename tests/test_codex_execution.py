@@ -90,6 +90,10 @@ if "app-server" in sys.argv and "--help" in sys.argv:
     print("Run the Codex App Server over stdio.")
     raise SystemExit(0)
 
+if "app-server" in sys.argv and "generate-json-schema" in sys.argv:
+    print("schema generation is not supported by this fake", file=sys.stderr)
+    raise SystemExit(2)
+
 account_type = os.environ.get("FAKE_CODEX_ACCOUNT", "chatgpt")
 turn_count = 0
 thread_count = 0
