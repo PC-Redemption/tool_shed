@@ -1,16 +1,16 @@
 # Publish and synchronize passive App Server dogfooding
 
-Status: working
+Status: blocked
 Type: campaign
 Updated: 2026-08-27
-Next Action: execute the campaign completion gate
+Next Action: resolve blocker or decision: fresh Codex task must load synchronized v0.30.0 skill and run ts: app-server status
 Campaign ID: publish-and-synchronize-passive-app-server-dogfooding
 Campaign Number: 096
 Outcome: A traceable Tool Shed release and synchronized maintainer/client skill make the M1 behavior available for real work.
 Primary Focus Areas: qualification-release
 Supporting Focus Areas: snapshot-delivery, provider-portability
 Depends On: qualify-passive-app-server-dogfooding-core
-Decision: none
+Decision: fresh Codex task must load synchronized v0.30.0 skill and run ts: app-server status
 Detour For: none
 Return To: none
 Completion Gate: Release provenance, tag, manifest, public artifact, exact installed-skill parity, and fresh-session status evidence pass under separate authorization.

@@ -19,7 +19,7 @@ Updated: 2026-08-27
 | [work/00-campaigns/abandoned/079-prove-command-free-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/abandoned/079-prove-command-free-first-pass-asset-aware-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
 | [work/00-campaigns/abandoned/080-prove-specified-command-free-first-pass-code-test-campaign-on-linux.md](work/00-campaigns/abandoned/080-prove-specified-command-free-first-pass-code-test-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
 | [work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
-| [work/00-campaigns/active/096-publish-and-synchronize-passive-app-server-dogfooding.md](work/00-campaigns/active/096-publish-and-synchronize-passive-app-server-dogfooding.md) | campaign | working | 2026-08-27 | execute the campaign completion gate | - |
+| [work/00-campaigns/active/096-publish-and-synchronize-passive-app-server-dogfooding.md](work/00-campaigns/active/096-publish-and-synchronize-passive-app-server-dogfooding.md) | campaign | blocked | 2026-08-27 | resolve blocker or decision: fresh Codex task must load synchronized v0.30.0 skill and run ts: app-server status | - |
 | [work/00-campaigns/active/097-field-dogfood-passive-app-server-mode.md](work/00-campaigns/active/097-field-dogfood-passive-app-server-mode.md) | campaign | queued | 2026-08-27 | execute when selected from the active campaign queue | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
@@ -156,6 +156,7 @@ Updated: 2026-08-27
 | [work/evidence/evidence-tool-shed-v0-29-13-release-and-maintainer-sync.md](work/evidence/evidence-tool-shed-v0-29-13-release-and-maintainer-sync.md) | evidence | verified | 2026-08-26 | - | - |
 | [work/evidence/evidence-tool-shed-v0-29-8-release-and-maintainer-sync.md](work/evidence/evidence-tool-shed-v0-29-8-release-and-maintainer-sync.md) | evidence | complete | 2026-08-26 | complete Campaign 067 and derive the M8 Core snapshot campaign without upgrading Core | - |
 | [work/evidence/evidence-tool-shed-v0-29-9-release-sync-core-upgrade.md](work/evidence/evidence-tool-shed-v0-29-9-release-sync-core-upgrade.md) | evidence | complete | 2026-08-26 | use the released one-command App Server path for the next appropriate Core campaign | - |
+| [work/evidence/evidence-tool-shed-v0-30-0-release-and-maintainer-sync.md](work/evidence/evidence-tool-shed-v0-30-0-release-and-maintainer-sync.md) | evidence | active | 2026-08-27 | in a fresh Codex task run ts: app-server status and append the installed-skill smoke result | work/maps/map-passive-app-server-dogfooding.md |
 | [work/evidence/evidence-w1-dev-smb-access.md](work/evidence/evidence-w1-dev-smb-access.md) | evidence | complete | 2026-08-24 | none | - |
 | [work/evidence/evidence-windows-console-sandbox-verification-v0-29-4.md](work/evidence/evidence-windows-console-sandbox-verification-v0-29-4.md) | - | - | - | - | - |
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |
@@ -209,6 +210,6 @@ Updated: 2026-08-27
 
 ## Summary
 
-- Total artifacts: 192
-- Active artifacts: 2
+- Total artifacts: 193
+- Active artifacts: 3
 - Completed/decided artifacts: 146

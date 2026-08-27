@@ -225,14 +225,14 @@
       "canonical_truth": null,
       "disposition": "none",
       "milestone": "M2-FIELD-ADOPTION",
-      "next_action": "execute the campaign completion gate",
+      "next_action": "resolve blocker or decision: fresh Codex task must load synchronized v0.30.0 skill and run ts: app-server status",
       "parent": null,
       "path": "work/00-campaigns/active/096-publish-and-synchronize-passive-app-server-dogfooding.md",
       "produces": null,
       "project_map": null,
       "roadmap": "passive-app-server-dogfooding",
       "roadmap_revision": "1",
-      "status": "working",
+      "status": "blocked",
       "superseded_by": null,
       "supersedes": null,
       "title": "Publish and synchronize passive App Server dogfooding",
@@ -2653,6 +2653,23 @@
       "updated": "2026-08-26"
     },
     {
+      "campaign": "publish-and-synchronize-passive-app-server-dogfooding",
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": null,
+      "next_action": "in a fresh Codex task run ts: app-server status and append the installed-skill smoke result",
+      "parent": null,
+      "path": "work/evidence/evidence-tool-shed-v0-30-0-release-and-maintainer-sync.md",
+      "produces": null,
+      "project_map": "work/maps/map-passive-app-server-dogfooding.md",
+      "status": "active",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Evidence: Tool Shed v0.30.0 release and maintainer synchronization",
+      "type": "evidence",
+      "updated": "2026-08-27"
+    },
+    {
       "campaign": "establish-secure-smb-access-to-bactron-workspace",
       "campaign_reason": null,
       "canonical_truth": null,
@@ -3450,8 +3467,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 2,
+    "active_artifacts": 3,
     "completed_or_decided_artifacts": 146,
-    "total_artifacts": 192
+    "total_artifacts": 193
   }
 }
