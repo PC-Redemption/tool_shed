@@ -159,7 +159,9 @@ In the Tool Shed repository, `scripts/validate_tool_shed.py` implements the reus
 repository contracts, and `release` adds only the disposable cross-command installation smoke.
 Independent unit cases run in isolated concurrent processes and all failures are reported in stable
 test-ID order. The default CLI profile is `full`; CI and release qualification pass
-`--profile release --max-seconds 60` explicitly.
+`--profile release --max-seconds 60` explicitly. CI partitions unit cases into deterministic
+shards; each case runs once per OS/Python combination, and only shard zero runs the non-unit
+release contracts.
 
 Work3 document changes stay within the requested candidate scope. Preserve unrelated owner
 documentation and historical records, and delete documentation only when the coded change makes it

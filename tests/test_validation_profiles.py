@@ -25,6 +25,15 @@ class ValidationProfileTests(unittest.TestCase):
             validator.select_test_ids("focused", [discovered[0]]),
             [discovered[0]],
         )
+        sharded = [
+            validator.shard_test_ids(discovered, index, 2)
+            for index in range(2)
+        ]
+        self.assertEqual(sharded, [[discovered[0]], [discovered[1]]])
+        self.assertEqual(
+            sorted(test_id for shard in sharded for test_id in shard),
+            discovered,
+        )
         focused = validator.profile_step_names("focused", canonical=True)
         full = validator.profile_step_names("full", canonical=True)
         release = validator.profile_step_names("release", canonical=True)
@@ -33,11 +42,21 @@ class ValidationProfileTests(unittest.TestCase):
         self.assertNotIn("smoke_temp_workspace", focused)
         self.assertNotIn("smoke_temp_workspace", full)
         self.assertEqual(set(release) - set(full), {"smoke_temp_workspace"})
+        self.assertEqual(
+            validator.profile_step_names(
+                "release", canonical=True, primary_shard=False
+            ),
+            ("run_unit_tests",),
+        )
         self.assertEqual(validator.parse_args([]).profile, "full")
         budgeted = validator.parse_args(
             ["--profile", "release", "--max-seconds", "60"]
         )
         self.assertEqual(budgeted.max_seconds, 60.0)
+        sharded_args = validator.parse_args(
+            ["--shard-index", "3", "--shard-count", "4"]
+        )
+        self.assertEqual((sharded_args.shard_index, sharded_args.shard_count), (3, 4))
         validator.enforce_time_budget("release", 59.999, budgeted.max_seconds)
         with self.assertRaisesRegex(SystemExit, "exceeded its 60s budget"):
             validator.enforce_time_budget("release", 60.001, budgeted.max_seconds)

@@ -679,7 +679,8 @@ snapshot's supplied smoke tests); `full` runs every unit behavior once plus curr
 provider, roadmap, stale-path, and work-state contracts; `release` adds one disposable
 cross-command installed-workspace smoke. Unit cases run in isolated concurrent processes, so every
 selected case reports independently without serializing unrelated cases. GitHub Actions runs
-the budgeted `release` profile on pushes and pull requests across Ubuntu and Windows. Tagged
+the budgeted `release` profile on pushes and pull requests across Ubuntu and Windows, partitioning
+unit cases into four deterministic runner shards while one shard owns the non-unit contracts. Tagged
 publication does not repeat those cases: it requires a successful push run for the exact content
 commit before creating the GitHub Release.
 

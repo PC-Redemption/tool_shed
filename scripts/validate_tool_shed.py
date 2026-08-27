@@ -44,6 +44,13 @@ def positive_float(value: str) -> float:
     return parsed
 
 
+def nonnegative_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 0:
+        raise argparse.ArgumentTypeError("must be at least 0")
+    return parsed
+
+
 def default_jobs() -> int:
     return min(8, max(2, os.cpu_count() or 2))
 
@@ -67,7 +74,22 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         type=positive_float,
         help="fail when the complete selected profile exceeds this wall-clock budget",
     )
-    return parser.parse_args(argv)
+    parser.add_argument(
+        "--shard-index",
+        type=nonnegative_int,
+        default=0,
+        help="zero-based deterministic unit-test shard index",
+    )
+    parser.add_argument(
+        "--shard-count",
+        type=positive_int,
+        default=1,
+        help="number of deterministic unit-test shards",
+    )
+    args = parser.parse_args(argv)
+    if args.shard_index >= args.shard_count:
+        parser.error("--shard-index must be less than --shard-count")
+    return args
 
 
 def step(name: str) -> None:
@@ -149,6 +171,10 @@ def select_test_ids(profile: str, discovered: list[str]) -> list[str]:
     return selected or list(discovered)
 
 
+def shard_test_ids(test_ids: list[str], index: int, count: int) -> list[str]:
+    return list(test_ids[index::count])
+
+
 def _run_test_case(test_id: str, state_root: Path) -> TestResult:
     environment = dict(os.environ)
     environment["PYTHONDONTWRITEBYTECODE"] = "1"
@@ -190,10 +216,17 @@ def execute_test_cases(test_ids: list[str], jobs: int, state_root: Path) -> list
     return sorted(results, key=lambda item: item.test_id)
 
 
-def run_unit_tests(profile: str, jobs: int) -> None:
+def run_unit_tests(
+    profile: str,
+    jobs: int,
+    *,
+    shard_index: int = 0,
+    shard_count: int = 1,
+) -> None:
     step(f"unit tests ({profile})")
     discovered = discover_test_ids()
-    selected = select_test_ids(profile, discovered)
+    all_selected = select_test_ids(profile, discovered)
+    selected = shard_test_ids(all_selected, shard_index, shard_count)
     started = time.monotonic()
     with tempfile.TemporaryDirectory(prefix="tool-shed-test-state-") as temporary:
         results = execute_test_cases(selected, jobs, Path(temporary))
@@ -207,7 +240,11 @@ def run_unit_tests(profile: str, jobs: int) -> None:
                 print(failure.stderr.rstrip(), file=sys.stderr)
         raise SystemExit(f"{len(failures)} of {len(results)} isolated unit tests failed")
     elapsed = time.monotonic() - started
-    print(f"{len(results)} tests passed in {elapsed:.3f}s with {jobs} workers.")
+    shard = "" if shard_count == 1 else f" (shard {shard_index + 1}/{shard_count})"
+    print(
+        f"{len(results)} of {len(all_selected)} tests passed in {elapsed:.3f}s "
+        f"with {jobs} workers{shard}."
+    )
 
 
 def check_provider_adapters() -> None:
@@ -405,7 +442,14 @@ def cleanup_caches() -> None:
         shutil.rmtree(path)
 
 
-def profile_step_names(profile: str, *, canonical: bool) -> tuple[str, ...]:
+def profile_step_names(
+    profile: str,
+    *,
+    canonical: bool,
+    primary_shard: bool = True,
+) -> tuple[str, ...]:
+    if not primary_shard:
+        return ("run_unit_tests",)
     names = ["compile_python", "check_shed_manifest", "run_unit_tests"]
     if profile in {"full", "release"}:
         names.append("check_provider_adapters")
@@ -451,9 +495,18 @@ def main(argv: list[str] | None = None) -> int:
             "smoke_temp_workspace": smoke_temp_workspace,
             "sanity_check_markdown": sanity_check_markdown,
         }
-        for name in profile_step_names(args.profile, canonical=canonical):
+        for name in profile_step_names(
+            args.profile,
+            canonical=canonical,
+            primary_shard=args.shard_index == 0,
+        ):
             if name == "run_unit_tests":
-                run_unit_tests(args.profile, args.jobs)
+                run_unit_tests(
+                    args.profile,
+                    args.jobs,
+                    shard_index=args.shard_index,
+                    shard_count=args.shard_count,
+                )
             else:
                 actions[name]()
         if not canonical:
