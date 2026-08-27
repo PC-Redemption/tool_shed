@@ -150,10 +150,32 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
   "notes": "Add persistent autonomy levels, consolidate cross-platform validation profiles, and gate release publication on exact-SHA CI evidence",
-  "release_commit": null,
-  "release_qualification": null,
+  "release_commit": "8dbc9da995750bb40c008911aed756686f7275d7",
+  "release_qualification": {
+    "attested_at": "2026-08-27T16:01:19Z",
+    "client_smoke": {
+      "path": "scripts/validate_snapshot_client.py",
+      "sha256": "d740896c470e02ba526ed08a6d2a8b40865764e67951583e6f8a97db65402766"
+    },
+    "full_validator": {
+      "path": "scripts/validate_tool_shed.py",
+      "sha256": "9de51ffbe1e37768d83c3fb920d5696b320bd7117688fdf5999426611b84828a"
+    },
+    "required_ci": [
+      {
+        "path": ".github/workflows/validate.yml",
+        "sha256": "abb54ae3308bb27f68499e4700e87189d4e99790decba4cbe25ef53ef4faa964"
+      },
+      {
+        "path": ".github/workflows/release.yml",
+        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
+      }
+    ],
+    "schema_version": 1,
+    "subject_commit": "8dbc9da995750bb40c008911aed756686f7275d7"
+  },
   "release_tag": "v0.32.0",
-  "released_at": null,
+  "released_at": "2026-08-27T16:01:19Z",
   "shed_version": "0.32.0",
   "updated_at": "2026-08-27",
   "updater_mutation_paths": [
