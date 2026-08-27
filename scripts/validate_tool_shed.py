@@ -37,6 +37,13 @@ def positive_int(value: str) -> int:
     return parsed
 
 
+def positive_float(value: str) -> float:
+    parsed = float(value)
+    if parsed <= 0:
+        raise argparse.ArgumentTypeError("must be greater than 0")
+    return parsed
+
+
 def default_jobs() -> int:
     return min(8, max(2, os.cpu_count() or 2))
 
@@ -54,6 +61,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         type=positive_int,
         default=default_jobs(),
         help="maximum concurrent isolated unit-test processes",
+    )
+    parser.add_argument(
+        "--max-seconds",
+        type=positive_float,
+        help="fail when the complete selected profile exceeds this wall-clock budget",
     )
     return parser.parse_args(argv)
 
@@ -412,6 +424,14 @@ def profile_step_names(profile: str, *, canonical: bool) -> tuple[str, ...]:
     return tuple(names)
 
 
+def enforce_time_budget(profile: str, elapsed: float, maximum: float | None) -> None:
+    if maximum is not None and elapsed > maximum:
+        raise SystemExit(
+            f"tool_shed {profile} validation exceeded its {maximum:g}s budget: "
+            f"{elapsed:.3f}s"
+        )
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     started = time.monotonic()
@@ -443,9 +463,11 @@ def main(argv: list[str] | None = None) -> int:
         cleanup_caches()
     if before is not None and source_fingerprint() != before:
         raise SystemExit("disconnected snapshot changed during validation")
+    elapsed = time.monotonic() - started
+    enforce_time_budget(args.profile, elapsed, args.max_seconds)
     print(
         f"tool_shed {args.profile} validation passed in "
-        f"{time.monotonic() - started:.3f}s"
+        f"{elapsed:.3f}s"
     )
     return 0
 

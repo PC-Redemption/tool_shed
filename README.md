@@ -679,7 +679,9 @@ snapshot's supplied smoke tests); `full` runs every unit behavior once plus curr
 provider, roadmap, stale-path, and work-state contracts; `release` adds one disposable
 cross-command installed-workspace smoke. Unit cases run in isolated concurrent processes, so every
 selected case reports independently without serializing unrelated cases. GitHub Actions runs
-`full` on pushes and pull requests; tagged publication runs `release`.
+the budgeted `release` profile on pushes and pull requests across Ubuntu and Windows. Tagged
+publication does not repeat those cases: it requires a successful push run for the exact content
+commit before creating the GitHub Release.
 
 The public human/AI process guide and generated command reference are maintained under `site/` and
 published at [ts.rookaro.com](https://ts.rookaro.com). See the

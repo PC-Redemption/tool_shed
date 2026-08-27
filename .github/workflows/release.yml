@@ -6,6 +6,7 @@ on:
       - "v*.*.*"
 
 permissions:
+  actions: read
   contents: write
 
 concurrency:
@@ -30,7 +31,20 @@ jobs:
         run: |
           python3 scripts/check_shed_version.py --shed . --local-only --strict --verification-only
           python3 scripts/update_shed_manifest.py --check
-          python3 scripts/validate_tool_shed.py --profile release
+
+      - name: Verify exact content commit passed cross-platform qualification
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          content_commit=$(jq -r '.release_commit' SHED_VERSION.json)
+          successful_runs=$(gh api --method GET \
+            "repos/$GITHUB_REPOSITORY/actions/workflows/validate.yml/runs" \
+            -f head_sha="$content_commit" \
+            -f event=push \
+            -f status=success \
+            -f per_page=1 \
+            --jq '.total_count')
+          test "$successful_runs" -ge 1
 
       - name: Prepare release metadata
         run: >-

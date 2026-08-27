@@ -35,6 +35,13 @@ class ValidationProfileTests(unittest.TestCase):
         self.assertNotIn("smoke_temp_workspace", full)
         self.assertEqual(set(release) - set(full), {"smoke_temp_workspace"})
         self.assertEqual(validator.parse_args([]).profile, "full")
+        budgeted = validator.parse_args(
+            ["--profile", "release", "--max-seconds", "60"]
+        )
+        self.assertEqual(budgeted.max_seconds, 60.0)
+        validator.enforce_time_budget("release", 59.999, budgeted.max_seconds)
+        with self.assertRaisesRegex(SystemExit, "exceeded its 60s budget"):
+            validator.enforce_time_budget("release", 60.001, budgeted.max_seconds)
 
     def test_isolated_runner_collects_every_result_in_stable_order(self) -> None:
         calls: list[str] = []

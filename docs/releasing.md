@@ -40,9 +40,9 @@ Overrides, unattested releases, and any changed identity run full local validati
    work tree. The write also refreshes `adapters/codex-skill-releases.json` from valid stable tags
    before hashing release content; review and commit that catalog as shipped content.
 
-4. Run `python3 scripts/validate_tool_shed.py --profile release`. Confirm its repository-policy coverage includes
-   tracked `work/`, stale root ignores, documented exceptions, unrelated nested rules, and ignored
-   `/tool_shed/` with tracked `work/`.
+4. Run `python3 scripts/validate_tool_shed.py --profile release --max-seconds 60`. Confirm its
+   repository-policy coverage includes tracked `work/`, stale root ignores, documented exceptions,
+   unrelated nested rules, and ignored `/tool_shed/` with tracked `work/`.
 5. Commit all shipped content, including the manifest with null `release_commit` and `released_at`.
 6. Capture that content commit:
 
@@ -50,7 +50,11 @@ Overrides, unattested releases, and any changed identity run full local validati
    git rev-parse HEAD
    ```
 
-7. Populate provenance without changing the selected version:
+7. Push the frozen content commit on its branch. Wait for the `Validate` push workflow whose
+   `head_sha` exactly equals `CONTENT_COMMIT_SHA`; its complete Ubuntu/Windows and Python 3.11/3.x
+   matrix must succeed. A pull-request run or a successful run for another SHA is insufficient.
+   Stop before provenance or tagging if that exact run is absent, incomplete, skipped, or failed.
+8. Populate provenance without changing the selected version:
 
    ```bash
    python3 scripts/update_shed_manifest.py \
@@ -63,17 +67,26 @@ Overrides, unattested releases, and any changed identity run full local validati
      --notes "Release summary"
    ```
 
-8. Run release qualification again and commit only `SHED_VERSION.json` as the provenance commit.
-9. Tag the provenance commit:
+9. Run the strict local version and manifest checks. The exact content commit was already qualified;
+   do not repeat its unit cases after changing only provenance:
+
+   ```bash
+   python3 scripts/check_shed_version.py --shed . --local-only --strict --verification-only
+   python3 scripts/update_shed_manifest.py --check
+   ```
+
+10. Commit only `SHED_VERSION.json` as the provenance commit.
+11. Tag the provenance commit:
 
    ```bash
    git tag -a vMAJOR.MINOR.PATCH -m "Tool Shed vMAJOR.MINOR.PATCH"
    ```
 
-10. Push the branch and tag. The `Publish GitHub Release` workflow independently repeats full
-    validation, verifies that the checkout is the highest stable tag with exact two-commit
-    provenance, and creates an idempotent, non-draft GitHub Release marked latest.
-11. Verify both publication surfaces. The raw manifest and GitHub Release must report the same tag;
+12. Push the provenance commit and tag. The `Publish GitHub Release` workflow verifies the exact
+    two-commit provenance, requires the successful `Validate` push run for the recorded content
+    commit, and then creates an idempotent, non-draft GitHub Release marked latest without repeating
+    the already-qualified test cases.
+13. Verify both publication surfaces. The raw manifest and GitHub Release must report the same tag;
     a tag-only publication is incomplete:
 
     ```bash

@@ -123,6 +123,9 @@ class ReleasePublicationTests(unittest.TestCase):
         workflow = (ROOT / ".github" / "workflows" / "release.yml").read_text(
             encoding="utf-8"
         )
+        validate_workflow = (ROOT / ".github" / "workflows" / "validate.yml").read_text(
+            encoding="utf-8"
+        )
         runbook = (ROOT / "docs" / "releasing.md").read_text(encoding="utf-8")
         manifest_tool = (ROOT / "scripts" / "update_shed_manifest.py").read_text(
             encoding="utf-8"
@@ -130,8 +133,17 @@ class ReleasePublicationTests(unittest.TestCase):
 
         self.assertIn('"v*.*.*"', workflow)
         self.assertIn("contents: write", workflow)
-        self.assertIn("scripts/validate_tool_shed.py", workflow)
-        self.assertIn("--profile release", workflow)
+        self.assertIn("actions: read", workflow)
+        self.assertNotIn("scripts/validate_tool_shed.py", workflow)
+        self.assertIn(".release_commit", workflow)
+        self.assertIn("actions/workflows/validate.yml/runs", workflow)
+        self.assertIn('head_sha="$content_commit"', workflow)
+        self.assertIn("event=push", workflow)
+        self.assertIn("status=success", workflow)
+        self.assertIn('branches: ["**"]', validate_workflow)
+        self.assertIn("ubuntu-latest", validate_workflow)
+        self.assertIn("windows-latest", validate_workflow)
+        self.assertIn("--profile release --max-seconds 60", validate_workflow)
         self.assertIn("scripts/prepare_github_release.py", workflow)
         self.assertIn("gh release create", workflow)
         self.assertIn("gh release view", workflow)

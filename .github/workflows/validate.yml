@@ -2,6 +2,7 @@ name: Validate
 
 on:
   push:
+    branches: ["**"]
   pull_request:
 
 jobs:
@@ -25,7 +26,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Validate tool_shed
-        run: python scripts/validate_tool_shed.py --profile full
+        run: python scripts/validate_tool_shed.py --profile release --max-seconds 60
 
       - name: Smoke POSIX launcher
         if: runner.os == 'Linux'

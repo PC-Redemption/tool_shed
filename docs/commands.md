@@ -139,6 +139,13 @@ Readable aliases:
 | `ts:push [scope]` | `ts:work4 [scope]` |
 | `ts:ship <goal>` | `ts:work5 <goal>` |
 
+`ts: ship changes since last release` scopes work5 to the intended tracked changes after the
+highest stable semantic-version tag through one frozen content commit. Tool Shed pushes that
+content commit first and waits for the exact-SHA `Validate` push run: the release profile must pass
+within 60 seconds on Ubuntu and Windows with Python 3.11 and current 3.x. Only then may it create
+and push the provenance-only commit and stable tag. Publication verifies the same CI evidence and
+fails closed for a different SHA, pull-request-only run, incomplete matrix, or unsuccessful run.
+
 Validation-only route:
 
 ```text
@@ -151,8 +158,8 @@ In the Tool Shed repository, `scripts/validate_tool_shed.py` implements the reus
 `focused` owns validator-orchestration regressions, `full` owns every unit behavior plus current
 repository contracts, and `release` adds only the disposable cross-command installation smoke.
 Independent unit cases run in isolated concurrent processes and all failures are reported in stable
-test-ID order. The default CLI profile is `full`; release automation passes `--profile release`
-explicitly.
+test-ID order. The default CLI profile is `full`; CI and release qualification pass
+`--profile release --max-seconds 60` explicitly.
 
 Work3 document changes stay within the requested candidate scope. Preserve unrelated owner
 documentation and historical records, and delete documentation only when the coded change makes it

@@ -125,6 +125,24 @@ that coupled endpoint as non-production.
 Treat `ts:ship <goal>` and `ts: ship <goal>` as authorization to plan, implement, validate, build,
 deploy, and verify the workspace goal end to end.
 
+Treat `ts: ship changes since last release` as the same work5 route with its candidate scope bound
+to every intended tracked change after the highest stable semantic-version tag through one frozen
+content commit. Surface the base tag and exact content-commit SHA. Before creating or pushing the
+provenance commit or tag:
+
+1. Push the frozen content commit on its branch.
+2. Require a successful `push` run of `.github/workflows/validate.yml` whose `head_sha` exactly
+   matches that content commit. The workflow must run the release profile on Ubuntu and Windows
+   with Python 3.11 and the current Python 3.x, enforcing the 60-second profile budget.
+3. Only after that exact run succeeds, create and push the provenance-only manifest commit and
+   stable tag. The publication workflow must independently verify the same successful content-SHA
+   run before creating the GitHub Release.
+
+A pull-request run, a run for another SHA, a partial matrix, a skipped or failed job, or local-only
+evidence does not satisfy this gate. Stop before tagging when the exact push run is absent or not
+successful; fix the candidate and repeat from a new frozen content commit rather than waiving the
+gate.
+
 - Inspect workspace guidance and active work before choosing the smallest sufficient plan.
 - Continue through every applicable lifecycle stage. Tests or a build are intermediate evidence.
 - Treat a lifecycle stage as applicable only when the requested outcome includes it, repository
