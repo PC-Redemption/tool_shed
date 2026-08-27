@@ -60,7 +60,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--jobs",
         type=positive_int,
         default=default_jobs(),
-        help="maximum concurrent isolated unit-test batch processes",
+        help="maximum concurrent isolated unit-test processes",
     )
     parser.add_argument(
         "--max-seconds",
@@ -149,35 +149,7 @@ def select_test_ids(profile: str, discovered: list[str]) -> list[str]:
     return selected or list(discovered)
 
 
-def isolation_groups(
-    test_ids: list[str],
-    *,
-    maximum_size: int = 8,
-) -> list[tuple[str, ...]]:
-    """Return stable, class-local batches for subprocess isolation.
-
-    A process per method is prohibitively expensive on spawn-based platforms such
-    as Windows, while a whole large class creates a long serial lane. Bounded
-    class-local batches retain private state, exact unittest failure names, and
-    enough parallelism without hundreds of interpreter startups.
-    """
-    groups: list[tuple[str, ...]] = []
-    current_class: str | None = None
-    current: list[str] = []
-    for test_id in sorted(test_ids):
-        class_id = test_id.rsplit(".", 1)[0]
-        if current and (class_id != current_class or len(current) == maximum_size):
-            groups.append(tuple(current))
-            current = []
-        current_class = class_id
-        current.append(test_id)
-    if current:
-        groups.append(tuple(current))
-    return groups
-
-
-def _run_test_group(test_ids: tuple[str, ...], state_root: Path) -> TestResult:
-    group_id = test_ids[0] if len(test_ids) == 1 else f"{test_ids[0]} (+{len(test_ids) - 1})"
+def _run_test_case(test_id: str, state_root: Path) -> TestResult:
     environment = dict(os.environ)
     environment["PYTHONDONTWRITEBYTECODE"] = "1"
     python_paths = [str(ROOT / "tests"), str(ROOT / "scripts"), str(ROOT)]
@@ -185,11 +157,11 @@ def _run_test_group(test_ids: tuple[str, ...], state_root: Path) -> TestResult:
         python_paths.append(environment["PYTHONPATH"])
     environment["PYTHONPATH"] = os.pathsep.join(python_paths)
     environment["TOOL_SHED_STATE_ROOT"] = str(
-        state_root / hashlib.sha256("\n".join(test_ids).encode("utf-8")).hexdigest()[:16]
+        state_root / hashlib.sha256(test_id.encode("utf-8")).hexdigest()[:16]
     )
     started = time.monotonic()
     result = subprocess.run(
-        [sys.executable, "-m", "unittest", "-q", *test_ids],
+        [sys.executable, "-m", "unittest", "-q", test_id],
         cwd=str(ROOT),
         env=environment,
         text=True,
@@ -198,7 +170,7 @@ def _run_test_group(test_ids: tuple[str, ...], state_root: Path) -> TestResult:
         check=False,
     )
     return TestResult(
-        test_id=group_id,
+        test_id=test_id,
         returncode=result.returncode,
         elapsed_seconds=time.monotonic() - started,
         stdout=result.stdout,
@@ -206,16 +178,12 @@ def _run_test_group(test_ids: tuple[str, ...], state_root: Path) -> TestResult:
     )
 
 
-def execute_test_groups(
-    groups: list[tuple[str, ...]],
-    jobs: int,
-    state_root: Path,
-) -> list[TestResult]:
+def execute_test_cases(test_ids: list[str], jobs: int, state_root: Path) -> list[TestResult]:
     results: list[TestResult] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as executor:
         futures = {
-            executor.submit(_run_test_group, group, state_root): group
-            for group in groups
+            executor.submit(_run_test_case, test_id, state_root): test_id
+            for test_id in test_ids
         }
         for future in concurrent.futures.as_completed(futures):
             results.append(future.result())
@@ -226,10 +194,9 @@ def run_unit_tests(profile: str, jobs: int) -> None:
     step(f"unit tests ({profile})")
     discovered = discover_test_ids()
     selected = select_test_ids(profile, discovered)
-    groups = isolation_groups(selected)
     started = time.monotonic()
     with tempfile.TemporaryDirectory(prefix="tool-shed-test-state-") as temporary:
-        results = execute_test_groups(groups, jobs, Path(temporary))
+        results = execute_test_cases(selected, jobs, Path(temporary))
     failures = [item for item in results if item.returncode]
     if failures:
         for failure in failures:
@@ -238,12 +205,9 @@ def run_unit_tests(profile: str, jobs: int) -> None:
                 print(failure.stdout.rstrip(), file=sys.stderr)
             if failure.stderr:
                 print(failure.stderr.rstrip(), file=sys.stderr)
-        raise SystemExit(f"{len(failures)} of {len(results)} isolated test batches failed")
+        raise SystemExit(f"{len(failures)} of {len(results)} isolated unit tests failed")
     elapsed = time.monotonic() - started
-    print(
-        f"{len(selected)} tests passed in {elapsed:.3f}s across "
-        f"{len(groups)} isolated batches with {jobs} workers."
-    )
+    print(f"{len(results)} tests passed in {elapsed:.3f}s with {jobs} workers.")
 
 
 def check_provider_adapters() -> None:

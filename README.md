@@ -677,9 +677,8 @@ python3 scripts/validate_tool_shed.py --profile full
 Profile ownership is explicit: `focused` checks validator orchestration (or a disconnected
 snapshot's supplied smoke tests); `full` runs every unit behavior once plus current manifest,
 provider, roadmap, stale-path, and work-state contracts; `release` adds one disposable
-cross-command installed-workspace smoke. Bounded class-local test batches run in isolated
-concurrent processes with private state roots; unittest retains the exact failing method without
-paying one interpreter startup per method. GitHub Actions runs
+cross-command installed-workspace smoke. Unit cases run in isolated concurrent processes, so every
+selected case reports independently without serializing unrelated cases. GitHub Actions runs
 the budgeted `release` profile on pushes and pull requests across Ubuntu and Windows. Tagged
 publication does not repeat those cases: it requires a successful push run for the exact content
 commit before creating the GitHub Release.
