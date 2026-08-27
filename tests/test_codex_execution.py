@@ -185,7 +185,7 @@ for raw in sys.stdin:
         if os.environ.get("FAKE_CODEX_EXIT_ON_TURN") == "1":
             sys.exit(7)
         if os.environ.get("FAKE_CODEX_DELAY_TURN") == "1":
-            time.sleep(0.3)
+            time.sleep(2.0)
         if os.environ.get("FAKE_CODEX_INTERRUPT") == "1":
             print(json.dumps({"method": "turn/completed", "params": {"threadId": params["threadId"], "turn": {"id": turn_id, "status": "interrupted", "items": []}}}), flush=True)
             continue
@@ -2105,7 +2105,7 @@ class CodexExecutionTests(unittest.TestCase):
         adapter = CodexExecutionAdapter(
             policy=self.policy,
             codex=str(self.fake),
-            timeout=0.1,
+            timeout=1.0,
             telemetry_path=timeout_telemetry,
         )
         try:
