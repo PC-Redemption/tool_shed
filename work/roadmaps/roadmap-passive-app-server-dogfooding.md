@@ -1,18 +1,18 @@
 # Program Roadmap: Passive App Server dogfooding
 
-Status: executing
+Status: superseded
 Type: program-roadmap
 Updated: 2026-08-27
-Next Action: execute the first ready roadmap campaign through ts: next
+Next Action: none
 Roadmap ID: passive-app-server-dogfooding
 Revision: 1
 Source Project Map: work/maps/map-passive-app-server-dogfooding.md
 Source State Token: b2cbf7fb6d25b7f0
 Proposal Token: 3dd9c41ff5b59a7d
 Approved: 2026-08-27
-Current Milestone: M1-PASSIVE-CORE
+Current Milestone: none
 Supersedes: none
-Superseded By: none
+Superseded By: work/roadmaps/roadmap-operator-trust-camp-runtime-enforcement.md
 
 ## Roadmap Definition
 

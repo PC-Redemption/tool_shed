@@ -1,9 +1,9 @@
 # Publish and synchronize passive App Server dogfooding
 
-Status: blocked
+Status: abandoned
 Type: campaign
 Updated: 2026-08-27
-Next Action: resolve blocker or decision: fresh Codex task must load synchronized v0.30.0 skill and run ts: app-server status
+Next Action: none
 Campaign ID: publish-and-synchronize-passive-app-server-dogfooding
 Campaign Number: 096
 Outcome: A traceable Tool Shed release and synchronized maintainer/client skill make the M1 behavior available for real work.
@@ -15,7 +15,7 @@ Detour For: none
 Return To: none
 Completion Gate: Release provenance, tag, manifest, public artifact, exact installed-skill parity, and fresh-session status evidence pass under separate authorization.
 Completion Evidence: none
-Disposition: none
+Disposition: Superseded by the completed operator-trust CAMP program and unpublished 0.33.0 candidate. The v0.30 release/synchronization evidence is preserved, but its remaining fresh-session qualification smoke no longer proves the current contract and should not block the queue.; replacement: qualify-and-document-operator-trust-camp-boundaries
 Roadmap: passive-app-server-dogfooding
 Roadmap Revision: 1
 Milestone: M2-FIELD-ADOPTION

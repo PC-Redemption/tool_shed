@@ -1,9 +1,10 @@
 # Project Map: Passive App Server Dogfooding
 
-Status: approved
+Status: superseded
 Type: project-map
 Updated: 2026-08-27
-Next Action: execute M1 through the approved passive-app-server-dogfooding Program Roadmap
+Next Action: none
+Superseded By: work/maps/map-operator-trust-camp-runtime-enforcement.md
 Campaign: standalone
 Campaign Reason: this approved map coordinates multiple roadmap-derived campaigns and is not owned by one execution campaign
 

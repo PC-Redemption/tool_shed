@@ -1,9 +1,9 @@
 # Evidence: Tool Shed v0.30.0 release and maintainer synchronization
 
-Status: active
+Status: complete
 Type: evidence
 Updated: 2026-08-27
-Next Action: in a fresh Codex task run ts: app-server status and append the installed-skill smoke result
+Next Action: none
 Project Map: work/maps/map-passive-app-server-dogfooding.md
 Campaign: publish-and-synchronize-passive-app-server-dogfooding
 
@@ -51,9 +51,9 @@ planning (`gpt-5.6-sol`/high), verification (`gpt-5.6-terra`/low), and CAMP exec
 (`gpt-5.6-terra`/medium). API fallback remains disabled. The new user-local preference is absent,
 so its fail-safe effective state is OFF and the current execution default is GUI.
 
-The installed skill bytes cannot be reloaded inside the Codex task that performed synchronization.
-Campaign completion therefore still requires one fresh Codex task to run `ts: app-server status`
-and confirm the installed v0.30.0 command contract before passive mode is enabled.
+The planned fresh-session v0.30.0 smoke was retired when the operator-trust runtime program
+superseded the qualification-era contract. The completed release and synchronization facts above
+remain historical evidence; they are not evidence for the current unpublished v0.33.0 candidate.
 
 ## Boundary
 

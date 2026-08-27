@@ -3,7 +3,7 @@
 Status: promoted
 Type: idea-brief
 Updated: 2026-08-27
-Next Action: use the approved project-map direction and Program Roadmap for delivery
+Next Action: none; superseded by operator-trust CAMP runtime enforcement
 Produces: work/maps/map-passive-app-server-dogfooding.md
 
 ## Current Synthesis
