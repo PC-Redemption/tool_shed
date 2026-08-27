@@ -15,7 +15,9 @@ from pathlib import Path
 from typing import Any, Callable, Iterator, Mapping
 
 
-PREFERENCE_SCHEMA_VERSION = 1
+PREFERENCE_SCHEMA_VERSION = 2
+LEGACY_PREFERENCE_SCHEMA_VERSION = 1
+OPERATOR_RUNTIME_TRUST = "operator-runtime"
 EVENT_SCHEMA_VERSION = 1
 LOCK_TIMEOUT_SECONDS = 10.0
 STALE_LOCK_SECONDS = 30.0
@@ -105,7 +107,10 @@ class PreferenceState:
     enabled: bool
     source: str
     path: str
+    trust_policy: str
+    operator_trust: bool
     updated_at: str | None = None
+    consented_at: str | None = None
     warning: str | None = None
 
     def as_dict(self) -> dict[str, Any]:
@@ -136,11 +141,25 @@ class AppServerPreferenceStore:
             payload = json.loads(raw)
         except json.JSONDecodeError:
             return self._default("malformed-preference")
-        if not isinstance(payload, dict) or payload.get("schema_version") != PREFERENCE_SCHEMA_VERSION:
+        if not isinstance(payload, dict):
+            return self._default("malformed-preference")
+        schema_version = payload.get("schema_version")
+        if schema_version == LEGACY_PREFERENCE_SCHEMA_VERSION:
+            return self._legacy_status(payload)
+        if schema_version != PREFERENCE_SCHEMA_VERSION:
             return self._default("unsupported-preference-schema")
         mode = payload.get("mode")
         updated_at = payload.get("updated_at")
-        if mode not in {"on", "off"} or not isinstance(updated_at, str):
+        trust_policy = payload.get("trust_policy")
+        consented_at = payload.get("consented_at")
+        expected_trust = OPERATOR_RUNTIME_TRUST if mode == "on" else "off"
+        if (
+            mode not in {"on", "off"}
+            or not isinstance(updated_at, str)
+            or trust_policy != expected_trust
+            or (mode == "on" and not isinstance(consented_at, str))
+            or (mode == "off" and consented_at is not None)
+        ):
             return self._default("malformed-preference")
         return PreferenceState(
             schema_version=PREFERENCE_SCHEMA_VERSION,
@@ -148,7 +167,28 @@ class AppServerPreferenceStore:
             enabled=mode == "on",
             source="user-local-preference",
             path=str(self.path),
+            trust_policy=str(trust_policy),
+            operator_trust=mode == "on",
             updated_at=updated_at,
+            consented_at=consented_at,
+        )
+
+    def _legacy_status(self, payload: dict[str, Any]) -> PreferenceState:
+        mode = payload.get("mode")
+        updated_at = payload.get("updated_at")
+        if mode not in {"on", "off"} or not isinstance(updated_at, str):
+            return self._default("malformed-preference")
+        enabled = mode == "on"
+        return PreferenceState(
+            schema_version=LEGACY_PREFERENCE_SCHEMA_VERSION,
+            mode=str(mode).upper(),
+            enabled=enabled,
+            source="legacy-user-local-preference",
+            path=str(self.path),
+            trust_policy="legacy-read-only" if enabled else "off",
+            operator_trust=False,
+            updated_at=updated_at,
+            warning="legacy-on-camp-trust-not-confirmed" if enabled else None,
         )
 
     def set(self, enabled: bool) -> PreferenceState:
@@ -156,8 +196,11 @@ class AppServerPreferenceStore:
         payload = {
             "schema_version": PREFERENCE_SCHEMA_VERSION,
             "mode": "on" if enabled else "off",
+            "trust_policy": OPERATOR_RUNTIME_TRUST if enabled else "off",
             "updated_at": datetime.fromtimestamp(epoch, tz=UTC).isoformat(),
         }
+        if enabled:
+            payload["consented_at"] = payload["updated_at"]
         with self._locked():
             self._atomic_write(payload)
         return self.status()
@@ -169,6 +212,8 @@ class AppServerPreferenceStore:
             enabled=False,
             source="default-off",
             path=str(self.path),
+            trust_policy="off",
+            operator_trust=False,
             warning=warning,
         )
 

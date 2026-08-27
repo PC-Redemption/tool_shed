@@ -85,6 +85,73 @@ class AppServerControlError(ValueError):
     pass
 
 
+REPOSITORY_POLICY_FILE = ".tool-shed-policy.json"
+
+
+def _repository_policy_path(explicit: Path | None, workspace: Path | None) -> Path | None:
+    if explicit is not None:
+        return explicit.expanduser().resolve()
+    current = (workspace or Path.cwd()).expanduser().resolve()
+    for candidate in (current, *current.parents):
+        policy = candidate / REPOSITORY_POLICY_FILE
+        if policy.is_file():
+            return policy
+        if (candidate / ".git").exists():
+            break
+    return None
+
+
+def repository_certification_policy(
+    *,
+    policy_path: Path | None = None,
+    workspace: Path | None = None,
+) -> dict[str, Any]:
+    """Load the optional repository-level exact-certification policy."""
+
+    resolved = _repository_policy_path(policy_path, workspace)
+    default = {
+        "mode": "operator-runtime",
+        "strict": False,
+        "source": "default",
+        "path": str(resolved) if resolved else None,
+        "reason": None,
+    }
+    if resolved is None:
+        return default
+    try:
+        payload = json.loads(resolved.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise AppServerControlError(
+            f"cannot load repository App Server policy {resolved}: {error}"
+        ) from error
+    if not isinstance(payload, dict) or payload.get("schema_version") != 1:
+        raise AppServerControlError(
+            f"repository App Server policy {resolved} must use schema_version 1"
+        )
+    app_server = payload.get("app_server")
+    if app_server is None:
+        return {**default, "source": "repository-default"}
+    if not isinstance(app_server, dict):
+        raise AppServerControlError("repository app_server policy must be an object")
+    mode = app_server.get("certification_mode", "operator-runtime")
+    if mode not in {"operator-runtime", "strict-certified"}:
+        raise AppServerControlError(
+            "repository app_server.certification_mode must be operator-runtime or strict-certified"
+        )
+    reason = app_server.get("reason")
+    if mode == "strict-certified" and (not isinstance(reason, str) or not reason.strip()):
+        raise AppServerControlError(
+            "strict-certified repository App Server policy requires a non-empty reason"
+        )
+    return {
+        "mode": mode,
+        "strict": mode == "strict-certified",
+        "source": "repository-policy",
+        "path": str(resolved),
+        "reason": reason.strip() if isinstance(reason, str) and reason.strip() else None,
+    }
+
+
 @dataclass(frozen=True)
 class CommandSelection:
     schema_version: int
@@ -113,6 +180,15 @@ class CommandSelection:
     codex_inventory: tuple[dict[str, Any], ...]
     api_fallback: bool
     orchestrator_subcommand: str
+    trust_policy: str
+    trust_source: str
+    operator_trust: bool
+    runtime_readiness: str
+    observed_safety: str
+    certification_mode: str
+    certification_state: str
+    certification_required: bool
+    certification_warning: str | None
     strict_request: bool = False
     preference_mode: str = "OFF"
     preference_source: str = "default-off"
@@ -141,6 +217,8 @@ def select_role(
     qualifications_path: Path = DEFAULT_QUALIFICATIONS,
     qualification_cache_path: Path | None = None,
     preference_path: Path | None = None,
+    repository_policy_path: Path | None = None,
+    workspace: Path | None = None,
     force_requalification: bool = False,
 ) -> CommandSelection:
     """Resolve one command without executing either backend."""
@@ -148,6 +226,11 @@ def select_role(
     if app_server_requested and gui_requested:
         raise AppServerControlError("--app-server and --gui are mutually exclusive")
     preference = AppServerPreferenceStore(preference_path).status()
+    certification_policy = repository_certification_policy(
+        policy_path=repository_policy_path,
+        workspace=workspace,
+    )
+    operator_runtime = bool(preference.operator_trust and not certification_policy["strict"])
     persisted_request = preference.enabled and not app_server_requested and not gui_requested
     effective_app_server = app_server_requested or persisted_request
     config = AppServerFeatureConfig.load(config_path)
@@ -171,6 +254,19 @@ def select_role(
         "minimum_dirty_read_codex": config.minimum_dirty_read_codex_version,
         "api_fallback": api_fallback,
         "orchestrator_subcommand": orchestrator_subcommand,
+        "trust_policy": (
+            "strict-certified" if certification_policy["strict"] else preference.trust_policy
+        ),
+        "trust_source": (
+            "repository-policy" if certification_policy["strict"] else preference.source
+        ),
+        "operator_trust": operator_runtime,
+        "runtime_readiness": "not-checked",
+        "observed_safety": "clear",
+        "certification_mode": certification_policy["mode"],
+        "certification_state": "not-checked",
+        "certification_required": bool(certification_policy["strict"]),
+        "certification_warning": None,
         "strict_request": app_server_requested,
         "preference_mode": preference.mode,
         "preference_source": preference.source,
@@ -262,7 +358,14 @@ def select_role(
             codex_inventory=(),
         )
 
-    records = load_qualifications(qualifications_path)
+    certification_warning: str | None = None
+    try:
+        records = load_qualifications(qualifications_path)
+    except CompatibilityError as error:
+        if not operator_runtime:
+            raise
+        records = []
+        certification_warning = f"registry-unavailable:{type(error).__name__}"
     resolution = resolve_codex_cli(
         codex, records, config.minimum_dirty_read_codex_version
     )
@@ -270,6 +373,13 @@ def select_role(
     # back to an independent bare-`codex` lookup.
     installed = resolution.version
     record = qualification_for_version(records, installed)
+    certification_state = (
+        "exact-certified"
+        if record and record.get("status") in {"qualified", "qualified_with_blockers"}
+        else "explicitly-unqualified"
+        if record and record.get("status") == "unqualified"
+        else "not-certified"
+    )
     dirty_qualification: dict[str, Any] | None = None
     cache_summary: dict[str, Any] = {
         "status": "not-applicable",
@@ -292,6 +402,7 @@ def select_role(
     version_matches = installed in config.qualified_codex_versions
     dirty_read_allowed = bool(
         role in {"planning", "verification"}
+        and not operator_runtime
         and record is None
         and resolution.app_server_available
         and resolution.executable is not None
@@ -415,10 +526,34 @@ def select_role(
         role != "camp_execution"
         or write_executable_identity_matches(record, resolution.executable)
     )
-    if role == "camp_execution" and resolution.app_server_available and not camp_write_qualified:
+    if (
+        role == "camp_execution"
+        and resolution.app_server_available
+        and not camp_write_qualified
+        and not operator_runtime
+    ):
         qualification_state = "write-not-qualified"
     compatible = compatibility in {"qualified", "qualified_with_blockers"}
-    if not resolution.app_server_available:
+    if (
+        operator_runtime
+        and record is not None
+        and record.get("status") == "unqualified"
+    ):
+        reason = "codex_version_denylisted"
+        qualification_mode = "operator_runtime"
+        qualification_state = "denylisted"
+        compatibility = "denylisted_unsafe_behavior"
+        common["observed_safety"] = "denylisted"
+    elif operator_runtime and resolution.app_server_available:
+        reason = (
+            "explicit_operator_runtime_trust"
+            if app_server_requested
+            else "persistent_operator_runtime_trust"
+        )
+        qualification_mode = "operator_runtime"
+        qualification_state = "certification-telemetry-only"
+        compatibility = "runtime_candidate"
+    elif not resolution.app_server_available:
         reason = "codex_app_server_unavailable"
         qualification_state = (
             "unsafe-blocked"
@@ -453,11 +588,22 @@ def select_role(
             else "persistent_qualified_preference"
         )
     allowed = reason in {
+        "explicit_operator_runtime_trust",
+        "persistent_operator_runtime_trust",
         "explicit_qualified_opt_in",
         "explicit_dirty_qualified_opt_in",
         "persistent_qualified_preference",
         "persistent_dirty_qualified_preference",
     }
+    common.update(
+        {
+            "runtime_readiness": (
+                "startup-probed" if resolution.app_server_available else "blocked"
+            ),
+            "certification_state": certification_state,
+            "certification_warning": certification_warning,
+        }
+    )
     return CommandSelection(
         **common,
         execution="App Server" if allowed else "GUI",
@@ -488,6 +634,8 @@ def select_command(
     qualifications_path: Path = DEFAULT_QUALIFICATIONS,
     qualification_cache_path: Path | None = None,
     preference_path: Path | None = None,
+    repository_policy_path: Path | None = None,
+    workspace: Path | None = None,
     force_requalification: bool = False,
 ) -> CommandSelection:
     try:
@@ -508,6 +656,8 @@ def select_command(
         qualifications_path=qualifications_path,
         qualification_cache_path=qualification_cache_path,
         preference_path=preference_path,
+        repository_policy_path=repository_policy_path,
+        workspace=workspace,
         force_requalification=force_requalification,
     )
     if selection.opt_in == "persistent" and not selection.allowed:
@@ -531,16 +681,27 @@ def control_status(
     qualification_cache_path: Path | None = None,
     preference_path: Path | None = None,
     event_path: Path | None = None,
+    repository_policy_path: Path | None = None,
+    workspace: Path | None = None,
 ) -> dict[str, Any]:
+    preference = AppServerPreferenceStore(preference_path).status()
+    certification_policy = repository_certification_policy(
+        policy_path=repository_policy_path,
+        workspace=workspace,
+    )
+    operator_trust = bool(
+        preference.operator_trust and not certification_policy["strict"]
+    )
     report = status_report(
         codex=codex,
         config_path=config_path,
         policy_path=policy_path,
         qualifications_path=qualifications_path,
         qualification_cache_path=qualification_cache_path,
+        operator_trust=operator_trust,
+        strict_certification=bool(certification_policy["strict"]),
     )
     policy = ModelPolicy.load(policy_path)
-    preference = AppServerPreferenceStore(preference_path).status()
     report.update(
         {
             "global_default": "ON" if report["global_default"] == "enabled" else "OFF",
@@ -548,6 +709,18 @@ def control_status(
             "session_control_supported": True,
             "session_note": "Persistent user-local preference; --gui overrides it once.",
             "preference": preference.as_dict(),
+            "trust_policy": (
+                "strict-certified"
+                if certification_policy["strict"]
+                else preference.trust_policy
+            ),
+            "trust_source": (
+                "repository-policy"
+                if certification_policy["strict"]
+                else preference.source
+            ),
+            "operator_trust": operator_trust,
+            "certification_policy": certification_policy,
             "event_log_path": str(
                 (event_path or default_app_server_event_path()).expanduser().resolve()
             ),
@@ -566,14 +739,18 @@ def preference_control(action: str, *, preference_path: Path | None = None) -> d
         raise AppServerControlError(f"unknown preference action: {action}")
     state = AppServerPreferenceStore(preference_path).set(action == "on")
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "accepted": True,
         "requested": action.upper(),
         "session_opt_in": state.mode,
         "session_control_supported": True,
         "persistent_changes": True,
         "preference": state.as_dict(),
-        "reason": "user-local App Server preference updated",
+        "reason": (
+            "operator-runtime trust recorded for supported local App Server roles"
+            if action == "on"
+            else "user-local App Server preference disabled"
+        ),
         "next_action": "use --gui on any one eligible command to override this preference",
     }
 
@@ -595,8 +772,10 @@ def format_selection(selection: CommandSelection) -> str:
                 f"API fallback: {'enabled' if selection.api_fallback else 'disabled'}",
                 f"Opt-in: {selection.opt_in}",
                 f"Reason: {selection.reason}",
-                f"Qualification: {selection.qualification_mode}",
-                f"Qualification state: {selection.qualification_state}",
+                f"Trust policy: {selection.trust_policy}",
+                f"Runtime readiness: {selection.runtime_readiness}",
+                f"Observed safety: {selection.observed_safety}",
+                f"Certification: {selection.certification_state}",
                 f"Executable: {selection.codex_executable or 'not detected'}",
                 f"Discovery: {selection.codex_discovery or 'not found'}",
                 f"Qualification cache: {selection.qualification_cache.get('status')} "
@@ -625,8 +804,10 @@ def format_selection(selection: CommandSelection) -> str:
                 f"Installed Codex: {selection.installed_codex or 'not detected'}",
                 f"Executable: {selection.codex_executable or 'not detected'}",
                 f"Discovery: {selection.codex_discovery or 'not found'}",
-                f"Qualified Codex: {selection.qualified_codex}",
-                f"Minimum dirty-read Codex: {selection.minimum_dirty_read_codex}",
+                f"Trust policy: {selection.trust_policy}",
+                f"Runtime readiness: {selection.runtime_readiness}",
+                f"Observed safety: {selection.observed_safety}",
+                f"Certification: {selection.certification_state}",
                 f"Qualification state: {selection.qualification_state}",
                 f"Compatibility: {selection.compatibility}",
                 f"Qualification cache: {selection.qualification_cache.get('status')} "
@@ -647,6 +828,8 @@ def format_control_status(report: dict[str, Any]) -> str:
         f"Persistent preference: {report['session_opt_in']}",
         f"Preference path: {report['preference']['path']}",
         f"Preference source: {report['preference']['source']}",
+        f"Trust policy: {report['trust_policy']}",
+        f"Operator trust: {'ACTIVE' if report['operator_trust'] else 'INACTIVE'}",
         f"Fallback event log: {report['event_log_path']}",
         "",
         f"Codex CLI: {report.get('codex_cli', 'NOT FOUND')}",
@@ -654,13 +837,14 @@ def format_control_status(report: dict[str, Any]) -> str:
         f"Executable: {report.get('codex_executable') or 'not detected'}",
         f"App Server: {'AVAILABLE' if report.get('app_server_available') else 'UNAVAILABLE'}",
         f"Installed Codex: {report.get('installed_codex') or 'not detected'}",
-        f"Qualified Codex: {report['qualified_codex']}",
-        f"Minimum dirty-read Codex: {report['minimum_dirty_read_codex']}",
-        f"Qualification state: {report['qualification_state']}",
-        f"Write qualification: {report['write_qualification_state']}",
+        f"Runtime readiness: {report['runtime_readiness']}",
+        f"Observed safety: {report['observed_safety']}",
+        f"Certification required: {'yes' if report['certification_required'] else 'no'}",
+        f"Certification state: {report['certification_state']}",
+        f"Certified-version telemetry: {report['qualified_codex']}",
         f"Compatibility: {str(report['compatibility']).replace('_', ' ')}",
         "",
-        "Qualified roles:",
+        "Eligible roles:",
     ]
     for role in ("planning", "verification", "camp_execution"):
         selected = roles.get(role)
@@ -700,6 +884,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--qualifications", type=Path, default=DEFAULT_QUALIFICATIONS)
     parser.add_argument("--qualification-cache", type=Path, default=None)
     parser.add_argument("--preference", type=Path, default=None)
+    parser.add_argument("--repository-policy", type=Path, default=None)
     parser.add_argument("--events", type=Path, default=None)
     subparsers = parser.add_subparsers(dest="operation", required=True)
 
@@ -740,6 +925,7 @@ def main() -> int:
                 qualifications_path=args.qualifications,
                 qualification_cache_path=args.qualification_cache,
                 preference_path=args.preference,
+                repository_policy_path=args.repository_policy,
                 force_requalification=args.requalify,
             )
             record_app_server_event_best_effort(
@@ -771,6 +957,7 @@ def main() -> int:
                 qualification_cache_path=args.qualification_cache,
                 preference_path=args.preference,
                 event_path=args.events,
+                repository_policy_path=args.repository_policy,
             )
             print(
                 json.dumps(report, indent=2, sort_keys=True)

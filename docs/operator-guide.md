@@ -643,30 +643,25 @@ Unsafe, ambiguous, invalid, or over-budget preparation stops before mutation. Di
 decisions, blocked work, external gates, and unsupported actions remain on their natural route.
 `next` does not become an App Server role; it only forwards the resolved execution preference.
 
-The selector uses exact reviewed qualification for known versions. For an unseen planning or
-verification executable at or above `0.146.0`, including prereleases and versions beyond `0.150.0`,
-it runs a bounded dirty read qualification and continues the same explicit request only if that
-qualification passes. The dirty harness proves ChatGPT authentication, required models and
-reasoning, isolated read-only turns, fail-closed approvals, unchanged disposable workspace state,
-and active-turn cancellation. It negotiates the named `:read-only` permission profile when the
-runtime exposes it and otherwise validates the legacy read-only sandbox. Fatal and unknown outcomes
-remain blocked; safe non-fatal blockers are reported separately. Passing summaries and reviewed
-unsafe denials are cached in `$CODEX_HOME/tool-shed/dirty-read-qualifications.json` (or the
-equivalent `~/.codex` path), never inside canonical or installed Tool Shed trees. The cache contains
-hashes and sanitized check names, not prompts, responses, credentials, secrets, or telemetry. Its
-identity binds the exact binary, version, generated protocol schema or runtime-probe fingerprint,
-Tool Shed qualification policy, model policy, and platform. Successes expire after the configured
-TTL. Reviewed unsafe denials persist until that identity changes; add `--requalify` to the explicit
-request to deliberately rerun them. Transient authentication, network, service, and model-catalog
-failures are never cached, so the next explicit request retries. Status reports whether its decision
-came from live evidence or the cache and explains misses and invalidation. CAMP writing never
-inherits this result and still requires an exact reviewed write record. Rerun without `--app-server`
-to use GUI fallback. `ts: discuss` always remains GUI-native, and `ts: discuss ... --app-server` is rejected
-with an explanation.
+Fresh schema-v2 `ts: app-server on` consent selects operator-runtime trust for every supported local
+role, including bounded CAMP. Unknown and newly updated Codex versions run normally: version,
+executable hash, dirty-read cache, and positive qualification records are telemetry or optional
+strict-certification evidence, not normal permission gates. The actual operation checks startup,
+ChatGPT authentication, live model availability, and its requested sandbox. CAMP then uses the
+existing clean-Git, exact-path, mutation-journal, budget, deterministic-verification,
+reconciliation, and no-replay controls.
 
-`ts: app-server on|off` persists only the mode and timestamp under Codex home. `appserver` is an
-exact alias. `--gui` overrides an enabled preference once; explicit `--app-server` remains strict.
-The repository App Server default and API fallback remain off.
+Only an exact reviewed qualification-registry record with `status: unqualified` and evidence denies
+a version in normal mode; a fixed or newer version runs normally. The disposable harness remains
+available for regression investigation, release qualification, and optional strict mode. A
+repository `.tool-shed-policy.json` may explicitly select `strict-certified` with a reason. Rerun
+without `--app-server` to use GUI fallback. `ts: discuss` always remains GUI-native, and `ts:
+discuss ... --app-server` is rejected with an explanation.
+
+`ts: app-server on|off` persists only the schema-versioned mode, trust policy, consent time, and
+update time under Codex home. `appserver` is an exact alias. Legacy schema-v1 `on` remains read-only
+until the operator runs `on` again. `--gui` overrides an enabled preference once; explicit
+`--app-server` remains strict. The repository App Server default and API fallback remain off.
 
 In persistent mode, a failure before possible mutation records a compact event and immediately
 continues the same action in the current GUI. If a worker may have changed files, Tool Shed first
@@ -679,10 +674,9 @@ App Server commands use one centralized Codex resolver. A supported explicit ove
 authoritative. Without one, it inventories `PATH`, bounded trusted platform locations, and OpenAI
 VS Code extension bundles, then selects the highest semantically eligible version at or above
 `0.146.0`; source priority breaks only equal-version ties. It reports every candidate and the
-selected path, source, App Server availability, qualification state, and actually usable roles.
-Status and selection distinguish `exact-qualified`, `dirty-qualifying`, `dirty-qualified`,
-`transient-fallback`, `unsafe-blocked`, `below-minimum`, and `write-not-qualified`; discovery alone
-is not qualification. The same resolver serves status, selection, smoke, startup, version
+selected path, source, App Server availability, and supported roles. Status separates operator
+trust, startup readiness, observed safety, and optional certification. The same resolver serves
+status, selection, smoke, startup, version
 detection, qualification, reasoning refresh, and install/upgrade readiness. It does not install or
 copy Codex, alter permanent `PATH`, search arbitrary disk locations, persist user paths, or enable
 an API fallback. If Codex is unavailable, only explicit App Server work is unavailable; normal GUI

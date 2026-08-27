@@ -458,7 +458,7 @@ unflagged commands prefer App Server. Resolve execution in this order: standalon
 standalone `--app-server`, persisted preference, then the committed GUI default. Do not interpret
 examples, quoted text, or a mere mention as a control request.
 
-| Prompt | Qualified role | Model / reasoning | Orchestrator path |
+| Prompt | Supported role | Model / reasoning | Orchestrator path |
 | --- | --- | --- | --- |
 | `ts: plan <request> --app-server` | planning | `gpt-5.6-sol` / `high` | read-only `run` |
 | `ts: verify <request> --app-server` | verification | `gpt-5.6-terra` / `low` | read-only `run` |
@@ -480,26 +480,19 @@ Add `--app-server` for a strict request or `--gui` for the one-command override.
 execution banner. Continue to App Server only when `allowed` is true. An explicit App Server request
 fails closed; a persisted request that cannot select App Server records a sanitized event, reports
 the reason, and continues the same action immediately in the current GUI without asking or stopping.
-CAMP execution requires the exact
-installed Codex version to have a current `qualified` or `qualified_with_blockers` write record,
-the role to be qualified, and the recorded model/reasoning pair to match centralized policy.
-Planning and verification may instead use an unseen version whose numeric release core is at least
-`0.146.0`: the selector must automatically run the bounded dirty read qualification and continue
-the original explicit request in the same invocation only when it returns `qualified` or
-`qualified_with_blockers`. Versions below the floor and fatal or unknown dirty outcomes fail closed.
-Never transfer a dirty read result to CAMP or another workspace-writing role.
+Fresh schema-v2 `ts: app-server on` consent selects `operator-runtime` trust for every supported
+local role, including CAMP. In that mode, version and executable hash are telemetry, and missing
+positive qualification or dirty-read evidence never blocks admission. The actual App Server
+operation supplies the runtime handshake through startup, ChatGPT authentication, live model
+selection, requested sandbox, and the existing role-specific path. Do not add a second preflight.
 
-Dirty-read selection may reuse only the protected user-local cache at
-`$CODEX_HOME/tool-shed/dirty-read-qualifications.json` (or `~/.codex/tool-shed/...`). Never place
-that cache in canonical or installed Tool Shed content. The identity must match the exact executable
-hash and path, Codex version, generated protocol-schema hash or sanitized runtime-probe fingerprint,
-Tool Shed qualification-policy hash, model-policy hash, and platform. Treat malformed, partial,
-foreign-platform, stale, or mismatched success entries as misses. Cache only sanitized qualified
-summaries and reviewed unsafe denials—never prompts, responses, credentials, secrets, telemetry, or
-transient authentication, network, service, or model-catalog failures. Success entries use the
-configured TTL. Unsafe denials remain authoritative until their identity changes or the user adds
-`--requalify` to the explicit App Server request. Writes must remain atomic, inter-process safe, and
-mode `0600` where supported. Surface cache source and invalidation reason in selection/status.
+An exact qualification-registry record with `status: unqualified` and a non-empty reviewed evidence
+reference is the only normal-mode version denial. It blocks only that exact version; a different
+fixed or newer version runs normally. The dirty-read cache and disposable harness remain advisory
+diagnostic, reproduction, release-qualification, or optional strict-mode tools. They never grant or
+deny operator-runtime access. A repository `.tool-shed-policy.json` may explicitly select
+`app_server.certification_mode: strict-certified` with a reason; only that optional mode requires
+matching certification evidence.
 
 For allowed planning and verification, call the existing `codex_orchestration.py
 --enable-app-server run` path with the selected role, a focused read-only prompt, the workspace,
@@ -596,19 +589,21 @@ exact compatibility alias:
 python3 <shed>/scripts/app_server_control.py status
 ```
 
-It reports the repository default, persistent preference and path, the complete bounded candidate inventory, selected
-executable and source, installed and qualified Codex versions, executable-specific qualification
-and write states, only actually usable roles, current GUI default, GUI-native discussion, and
-disabled API fallback from centralized policy and qualification data. A supplied override is
-authoritative; otherwise the highest semantically eligible candidate at or above `0.146.0` wins,
-with source priority used only for equal-version ties.
+It reports the repository default, persistent preference and path, trust policy/source, startup
+readiness, observed safety, optional certification state, the complete bounded candidate inventory,
+selected executable and source, supported roles, current GUI default, GUI-native discussion, and
+disabled API fallback. Version and executable hash are diagnostic evidence in normal mode. A
+supplied override is authoritative; otherwise the highest semantically eligible candidate at or
+above `0.146.0` wins, with source priority used only for equal-version ties.
 
 For `ts: app-server on|off` (or the exact `appserver` alias), run
 `app_server_control.py preference on|off`. Store only the schema-versioned mode and timestamp at
 `$CODEX_HOME/tool-shed/app-server-preference.json` (or `~/.codex/tool-shed/...`), never in a
 canonical workspace or installed snapshot. Writes must be atomic, inter-process safe, and mode
 `0600` under a mode-`0700` parent where supported. Missing, malformed, unsupported, or unreadable
-state fails safely to off and is surfaced by status. This route never changes
+state fails safely to off and is surfaced by status. A new `on` writes schema v2 with
+`trust_policy: operator-runtime` and a consent timestamp. Legacy schema-v1 `on` stays enabled for
+read roles but does not authorize CAMP until the operator runs `on` again. This route never changes
 `codex_app_server_enabled`, enables API-key fallback, expands permissions, or grants release,
 deployment, push, credential, or external-mutation authority.
 

@@ -185,6 +185,13 @@ def load_qualifications(path: Path = DEFAULT_QUALIFICATIONS) -> list[dict[str, A
         versions.add(version)
         if record.get("status") not in {"qualified", "qualified_with_blockers", "unqualified"}:
             raise CompatibilityError(f"invalid App Server qualification status for Codex {version}")
+        if record.get("status") == "unqualified" and (
+            not isinstance(record.get("evidence"), str)
+            or not str(record.get("evidence")).strip()
+        ):
+            raise CompatibilityError(
+                f"unqualified Codex {version} requires reviewed evidence"
+            )
         normalized.append(dict(record))
     return normalized
 
@@ -325,10 +332,19 @@ def status_report(
     policy_path: Path = DEFAULT_POLICY,
     qualifications_path: Path = DEFAULT_QUALIFICATIONS,
     qualification_cache_path: Path | None = None,
+    operator_trust: bool = False,
+    strict_certification: bool = False,
 ) -> dict[str, Any]:
     config = AppServerFeatureConfig.load(config_path)
     policy = ModelPolicy.load(policy_path)
-    records = load_qualifications(qualifications_path)
+    certification_warning: str | None = None
+    try:
+        records = load_qualifications(qualifications_path)
+    except CompatibilityError as error:
+        if not operator_trust or strict_certification:
+            raise
+        records = []
+        certification_warning = f"registry-unavailable:{type(error).__name__}"
     resolution = resolve_codex_cli(
         codex, records, config.minimum_dirty_read_codex_version
     )
@@ -340,6 +356,13 @@ def status_report(
     configured_versions = config.qualified_codex_versions
     configured_qualified = ", ".join(configured_versions)
     qualification_state = _status_qualification_state(resolution, record)
+    certification_state = (
+        "exact-certified"
+        if record and record.get("status") in {"qualified", "qualified_with_blockers"}
+        else "explicitly-unqualified"
+        if record and record.get("status") == "unqualified"
+        else "not-certified"
+    )
     cache_status: dict[str, Any] = {
         "status": "not-applicable",
         "source": "user-local-cache",
@@ -347,7 +370,8 @@ def status_report(
         "record": None,
     }
     if (
-        record is None
+        not operator_trust
+        and record is None
         and resolution.app_server_available
         and resolution.executable is not None
         and installed is not None
@@ -379,7 +403,14 @@ def status_report(
                 "invalidation_reason": type(error).__name__,
                 "record": None,
             }
-    if record:
+    denylisted = bool(record and record.get("status") == "unqualified")
+    if operator_trust and not strict_certification and denylisted:
+        blockers = ["selected Codex version is explicitly denylisted by reviewed evidence"]
+    elif operator_trust and not strict_certification:
+        blockers = [] if resolution.app_server_available else [
+            resolution.error or "selected Codex App Server startup probe failed"
+        ]
+    elif record:
         blockers = list(record.get("known_blockers") or [])
     elif qualification_state == "dirty-qualified":
         blockers = list((cache_status.get("record") or {}).get("safe_blockers") or [])
@@ -418,21 +449,42 @@ def status_report(
         dirty_usable = bool(
             qualification_state == "dirty-qualified" and config.role_enabled(role)
         )
-        if resolution.app_server_available and (exact_usable or dirty_usable):
+        operator_usable = bool(
+            operator_trust
+            and not strict_certification
+            and not denylisted
+            and config.role_enabled(role)
+        )
+        if resolution.app_server_available and (operator_usable or exact_usable or dirty_usable):
             enabled_roles[role] = {
                 "model": selected.model,
                 "reasoning": selected.reasoning,
-                "qualification": qualification_state,
+                **(
+                    {
+                        "admission": "operator-runtime",
+                        "certification": certification_state,
+                    }
+                    if operator_usable
+                    else {"qualification": qualification_state}
+                ),
             }
     camp_enabled = bool(
         resolution.app_server_available
-        and _recorded_role_usable(
-            role="camp_execution",
-            record=record,
-            config=config,
-            policy=policy,
-            installed=installed,
-            executable=resolution.executable,
+        and (
+            (
+                operator_trust
+                and not strict_certification
+                and not denylisted
+                and config.role_enabled("camp_execution")
+            )
+            or _recorded_role_usable(
+                role="camp_execution",
+                record=record,
+                config=config,
+                policy=policy,
+                installed=installed,
+                executable=resolution.executable,
+            )
         )
     )
     if camp_enabled:
@@ -441,7 +493,14 @@ def status_report(
             "reasoning": camp_execution.reasoning,
             "sandbox": "workspace-write",
             "scope": "explicit paths with Git mutation journal",
-            "qualification": "exact-qualified",
+            **(
+                {
+                    "admission": "operator-runtime",
+                    "certification": certification_state,
+                }
+                if operator_trust and not strict_certification
+                else {"qualification": "exact-qualified"}
+            ),
         }
     disabled = ["implementation", "testing", "build", "deployment"]
     if not camp_enabled:
@@ -459,13 +518,30 @@ def status_report(
         ),
         "qualification_state": qualification_state,
         "write_qualification_state": (
-            "exact-qualified" if camp_enabled else "write-not-qualified"
+            "exact-qualified"
+            if camp_enabled
+            and certification_state == "exact-certified"
+            and not operator_trust
+            else "write-not-qualified"
         ),
         "compatibility": (
-            "dirty_qualified"
+            "denylisted_unsafe_behavior"
+            if operator_trust and not strict_certification and denylisted
+            else
+            "runtime_candidate"
+            if operator_trust and not strict_certification and resolution.app_server_available
+            else "dirty_qualified"
             if qualification_state == "dirty-qualified"
             else _compatibility_for_resolution(resolution, record)
         ),
+        "runtime_readiness": (
+            "startup-probed" if resolution.app_server_available else "blocked"
+        ),
+        "observed_safety": "denylisted" if denylisted else "clear",
+        "operator_trust": operator_trust and not strict_certification,
+        "certification_required": strict_certification,
+        "certification_state": certification_state,
+        "certification_warning": certification_warning,
         "version_warning": (
             None
             if (

@@ -2,17 +2,17 @@
 
 Status: maintenance/watch; feature-flagged read-only and bounded CAMP integration; default off
 
-Tool Shed can route selected read-only lifecycle roles through the locally installed Codex App
-Server while retaining the current Codex GUI conversation as the default and fallback execution
-surface. One explicitly bounded workspace-writing CAMP step is also qualified through the dedicated
-`camp-run` path; broader writing is not enabled.
+Tool Shed can route selected local lifecycle roles through the resolved Codex App Server while
+retaining the current Codex GUI conversation as the default and fallback execution surface. Fresh
+schema-v2 operator trust includes one explicitly bounded workspace-writing CAMP step through the
+dedicated `camp-run` path; broader writing is not enabled.
 
-The current qualified implementation targets Codex CLI 0.149.0 and App Server v2 over local stdio
-JSONL. The
+The reviewed baseline targets Codex CLI 0.149.0 and App Server v2 over local stdio JSONL, but normal
+operator-runtime access is not restricted to that version. The
 [official App Server documentation](https://developers.openai.com/codex/app-server) describes the
 handshake, thread and turn lifecycle, token events, and server-initiated approvals. It also labels
 the App Server command experimental and unsupported for production workloads. This integration
-therefore remains opt-in even though its read-only path is qualified.
+therefore remains opt-in.
 
 For the short operational handoff, read the
 [App Server maintainer note](codex-app-server-maintainer-note.md). Further engineering is
@@ -42,8 +42,9 @@ The current requalification evidence is in
 machine record is
 `adapters/codex-app-server-qualifications.json`. It records authentication, routing, read-only,
 cancellation, approval, restricted-read, bounded workspace-writing, support-status,
-harness-baseline, and savings evidence explicitly. A new Codex version has no inherited
-qualification. The write evidence is in
+harness-baseline, and savings evidence explicitly. A new Codex version does not inherit this
+certification, but it runs normally under operator-runtime trust unless its exact version has an
+evidence-backed `unqualified` record. The write evidence is in
 [the 2026-08-20 write qualification](codex-app-server-write-qualification-2026-08-20.md).
 
 ## Routing Boundary
@@ -61,7 +62,7 @@ ts: camp run <camp>                          -> current GUI path
 ts: camp run <camp> --app-server             -> App Server / Terra / medium through camp-run
 ts: next                                     -> normal selection and current GUI path
 ts: next --app-server                        -> one deterministic normal-next dispatch, no nested Codex agent
-unqualified roles or incompatible Codex      -> blocked; GUI remains available without the flag
+unsupported role, failed runtime, or denylist -> blocked; GUI remains available without the flag
 ```
 
 The committed defaults are:
@@ -83,7 +84,7 @@ allowed_sandboxes         = read-only and workspace-write
 workspace_write_enabled   = false
 ```
 
-`--enable-app-server` is an invocation-scoped override for qualification; it does not modify the
+`--enable-app-server` is an invocation-scoped backend request; it does not modify the
 default-off configuration. It is an internal orchestration flag. The user-facing Tool Shed option
 is `--app-server` on the qualified `ts:` commands above.
 
@@ -99,11 +100,12 @@ exactly-once verification. It intentionally does not guess exact paths or comman
 When a ready campaign has no capsule, or its automatically persisted capsule no longer matches its
 source-state token, the dispatcher assembles a deterministic focused snapshot from the campaign,
 project instructions, Git state, relevant file inventory, and bounded source excerpts. The
-qualified read-only planning role receives only that isolated snapshot, has no tool access, and
+supported read-only planning role receives only that isolated snapshot, has no tool access, and
 returns strict structured preparation. The dispatcher deterministically validates exact paths,
 focused context, installed executables, quiet scoped verification, expected turn and tool-result
-headroom, and an atomic or independently verifiable bounded slice. It completes CAMP qualification
-and host preflight before spending planning tokens, then completes planning host preflight.
+headroom, and an atomic or independently verifiable bounded slice. It performs the existing
+preparation checks before spending planning tokens; the real role operation performs the runtime
+handshake.
 Automatic context files may total at most the smaller of the configured inline limit and 64,000
 actual bytes; automatic preparation is further limited to eight expected paths, four verification
 commands, three estimated worker turns, and a 12,288-byte estimated largest tool result. Unsafe or
@@ -152,36 +154,34 @@ are direct JSON argv arrays; shell executables and unavailable verification exec
 rejected. The source-state token covers the campaign request and preparation contract, Git HEAD,
 the capsule boundary, and exact expected/context file states. A changed bound input regenerates the
 automatic capsule before launch. Legacy manually authored capsules remain readable without a token,
-but all newly automatic capsules are source-bound. Capsule validation, App Server startup, ChatGPT
-authentication, model-list network access, and exact CAMP qualification all complete before the
-dispatcher starts a queued campaign or permits workspace mutation.
+but all newly automatic capsules are source-bound. Capsule validation and the actual operation's
+App Server startup, ChatGPT authentication, live model selection, and requested sandbox complete
+before the dispatcher permits workspace mutation.
 
 When a workspace supplies explicit `--config`, `--policy`, and `--qualifications` files, the
 dispatcher uses the selected config and policy for both authorization and the resulting bounded
-execution. A workspace-write qualification may additionally pin
-`workspace_write_qualification.executable_sha256`; selection and status then require the resolved
-GUI executable to match that digest as well as the recorded version. This applies equally to
-canonical and project-scoped reviewed records.
+execution. In normal operator-runtime mode, a workspace-write qualification and its optional
+`workspace_write_qualification.executable_sha256` are diagnostic evidence rather than positive
+authorization gates. Explicit repository `strict-certified` mode may still require both.
 
 The selector reuses the centralized config, model policy, qualification registry, and installed
-Codex version check. Exact records remain authoritative for known versions and all CAMP writing.
-For planning and verification, an unseen executable with a numeric release core of `0.146.0` or
-newer runs the dirty read harness automatically, with no upper cutoff. The original explicit
-request continues in the same invocation only after a qualified result. The existing GUI remains
-available by rerunning without `--app-server`; the control never switches to API execution.
+Codex version check. Fresh schema-v2 `ts: app-server on` consent selects operator-runtime trust for
+all supported local roles, including CAMP. Unknown and newly updated versions run without a
+positive exact record or hash certificate. An exact record with `status: unqualified` and reviewed
+evidence denies only that version. The existing GUI remains available by rerunning without
+`--app-server`; the control never switches to API execution.
 
-Dirty read summaries are stored in a protected user-local cache at
+Historical dirty-read summaries remain stored in a protected user-local cache at
 `$CODEX_HOME/tool-shed/dirty-read-qualifications.json`, falling back to the matching `~/.codex`
 location. The path is rejected if it is inside canonical or installed Tool Shed content. Records
 contain only the executable path and hash, version, protocol fingerprint, qualification-policy
 hash, model-policy hash, platform, sanitized outcome and blocker names, and timestamps—never
 prompts, responses, credentials, secrets, or telemetry. Writes use an inter-process lock, atomic
 replacement, and mode `0600` where supported. Malformed, partial, foreign-platform, stale, or
-mismatched successes are ignored safely. Reviewed unsafe denials do not expire on the success TTL;
-they remain authoritative until a relevant fingerprint changes or `select ... --requalify` is
-used. Transient authentication, network, service, and model-catalog failures remain GUI fallbacks
-and are not cached, so later explicit requests retry. Status exposes cache source and invalidation
-reason without exposing probe content.
+mismatched successes are ignored safely. In operator-runtime mode the cache is advisory and never
+grants or denies access. The disposable harness and cache remain useful for diagnostics, regression
+reproduction, release qualification, and optional strict certification. Status may expose cache
+source and invalidation reason without exposing probe content.
 
 ## Codex Executable Readiness
 
@@ -194,10 +194,10 @@ breaks only equal-version ties, so an older `PATH` executable cannot mask a newe
 `status`, selection, compatibility smoke, App Server startup, version detection, qualification,
 reasoning-catalog refresh, and installation and upgrade readiness reporting all use that same
 resolver and report its inventory, selected path, source, version, App Server availability,
-qualification state, and executable-specific usable roles. Status and selection distinguish
-`exact-qualified`, `dirty-qualifying`, `dirty-qualified`, `transient-fallback`, `unsafe-blocked`,
-`below-minimum`, and `write-not-qualified`. A missing or unsupported CLI blocks strict explicit App
-Server execution. A persisted preference can be overridden once with `--gui`, and there is no API fallback.
+qualification telemetry, and executable-specific supported roles. Status separately reports trust
+policy/source, startup readiness, observed safety, and optional certification. A missing or
+unsupported CLI blocks strict explicit App Server execution. A persisted preference can be
+overridden once with `--gui`, and there is no API fallback.
 
 Trusted discovery is deliberately bounded. Tool Shed does not search arbitrary disk locations,
 install or copy Codex, modify permanent `PATH`, persist discovered user paths in tracked files, or
@@ -373,10 +373,9 @@ repository `AGENTS.md` adds a comparatively small amount.
 Qualification uses a documented estimate of 18,800 input tokens per measured operation and reports
 `avoidable_input_tokens = max(actual_input_tokens - 18,800, 0)`. This is comparative analysis, not
 billing attribution. The estimate, exact reviewed versions, and `0.146.0` dirty-read floor are
-stored in `adapters/codex-app-server-config.json`. An unseen eligible read-only request
-automatically reruns the protocol, authentication, routing, read-only/approval, cancellation,
-unchanged-workspace, and token-baseline checks. Workspace-write remains a separate exact-version
-qualification.
+stored in `adapters/codex-app-server-config.json`. These harness measurements remain available for
+diagnosis, release qualification, regression reproduction, and optional strict-certified mode;
+normal operator-runtime admission does not rerun them merely because the Codex version changed.
 
 Thread reuse did not reduce input-token count: the second tiny turn rose from 19,007 to 19,033,
 while cached input remained 9,984. Reuse can improve cache composition, but it accumulates history.

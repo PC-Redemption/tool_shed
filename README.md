@@ -312,31 +312,30 @@ boundary. See the [Tool Shed operator guide](docs/operator-guide.md) for workflo
 examples.
 
 The protected user-local App Server preference makes eligible unflagged commands prefer the
-qualified backend; `appserver` is an alias for `app-server`. `--gui` overrides it once, while the
-four `--app-server` forms remain strict, per-command probes.
+currently resolved backend; `appserver` is an alias for `app-server`. A fresh `ts: app-server on`
+is the operator's trust signal for supported local roles, including bounded CAMP writes. `--gui`
+overrides it once, while the four `--app-server` forms remain strict, per-command requests.
 `ts: next --app-server` runs one deterministic `app_server_dispatch.py` command directly—never a
 nested `codex exec`—to perform ordinary `next` selection. An existing strict execution capsule is
 reused. When the selected ready campaign has no capsule, one read-only App Server planning turn
 receives a deterministic focused snapshot assembled from the campaign, project instructions, Git
 state, relevant file inventory, and bounded source excerpts. It returns strict structured
 preparation, which the dispatcher validates and persists through the guarded campaign transaction
-before continuing in the same invocation. CAMP qualification and host preflight happen before that
-planning turn. Automatically selected inline context is limited to the smaller of the configured
+before continuing in the same invocation. Existing capsule and containment checks happen before
+that planning turn; the actual App Server operation performs the runtime handshake. Automatically
+selected inline context is limited to the smaller of the configured
 limit and 64,000 bytes; over-budget results fail before persistence or lifecycle mutation.
 Unsafe or indeterminate preparation stops before mutation. CAMP execution reuses the existing
 Terra/medium runner. `next` itself is not an App Server role.
-Unflagged eligible commands follow the preference and `ts: discuss` is always GUI-native. Read-only planning and
-verification use a minimum Codex version of `0.146.0` with no upper cutoff: an unseen eligible
-version runs a bounded dirty qualification and continues the original explicit request immediately
-only when that qualification passes. Sanitized results are cached outside Tool Shed under the
-user's Codex state so the same executable and policies do not repeat the harness. Transient
-authentication, network, service, or model-catalog failures are never cached and remain retryable;
-reviewed unsafe denials remain authoritative until their fingerprint changes or the operator uses
-explicit requalification. Versions below the floor, unsafe or unknown qualification outcomes, and
-unqualified roles fail closed. CAMP writing remains
-version-specific and requires a separate reviewed write harness. The committed global App Server
-default remains off. `ts: app-server on|off` stores only a private schema-versioned mode and
-timestamp under Codex home, never in the repository or an installed Tool Shed snapshot.
+Unflagged eligible commands follow the preference and `ts: discuss` is always GUI-native. In normal
+operator-runtime mode, unknown and newly updated Codex versions may use every supported local role.
+Version, executable path/hash, the qualification registry, disposable harness, and dirty-read cache
+remain diagnostic or optional strict-certification evidence, not positive admission gates. The one
+version denial is an exact reviewed registry record with `status: unqualified` and evidence; it
+does not block a different fixed or newer version. The committed global App Server default remains
+off. `ts: app-server on|off` stores a private schema-versioned mode, operator-trust policy, and
+timestamp under Codex home, never in the repository or an installed Tool Shed snapshot. Legacy
+schema-v1 `on` remains read-only until the operator runs `on` again.
 In persistent mode, pre-mutation failures record a sanitized event and continue the same action in
 GUI immediately. Possible mutation requires journal/Git reconciliation before GUI continuation and
 is never replayed. Event logging under Codex home is best-effort and contains no request content.
@@ -349,8 +348,8 @@ cannot mask a newer eligible bundle. On Linux, bundles are limited to desktop, I
 remote-server Insiders extension roots and the x86_64, aarch64, and arm64 Codex payloads. It
 validates `--version` and App Server support separately, so status can report
 the complete candidate inventory, selected path and source, executable-specific enabled roles,
-and exact-qualified, dirty-qualifying, below-minimum, transient-fallback, unsafe-blocked, and
-write-not-qualified states. The same resolver is used by status,
+and separate operator-trust, runtime-readiness, observed-safety, and optional-certification states.
+The same resolver is used by status,
 selection, smoke, startup, version detection, qualification, reasoning refresh, and installation
 and upgrade readiness checks. It never installs Codex, changes permanent `PATH`, searches arbitrary
 locations, or enables API fallback; missing Codex only makes explicit App Server execution unavailable.

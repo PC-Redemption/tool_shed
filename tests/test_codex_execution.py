@@ -713,7 +713,7 @@ class CodexExecutionTests(unittest.TestCase):
         )
         self.assertNotIn("output", json.dumps(finding))
 
-    def test_camp_execution_uses_focused_capsule_and_deterministic_verification(self) -> None:
+    def test_unknown_version_operator_trust_completes_bounded_verified_camp(self) -> None:
         repository = self.root / "camp-repo"
         repository.mkdir()
         subprocess.run(["git", "init", "-q", str(repository)], check=True)
@@ -731,8 +731,20 @@ class CodexExecutionTests(unittest.TestCase):
         subprocess.run(
             ["git", "-C", str(repository), "commit", "-qm", "baseline"], check=True
         )
+        preference_path = self.root / "end-to-end-app-server-preference.json"
+        AppServerPreferenceStore(preference_path).set(True)
+        os.environ["FAKE_CODEX_VERSION"] = "0.200.0"
         os.environ["FAKE_CODEX_CAMP_TARGET"] = str(target)
         try:
+            selected = select_command(
+                "camp-run",
+                app_server_requested=False,
+                codex=str(self.fake),
+                preference_path=preference_path,
+            )
+            self.assertTrue(selected.allowed)
+            self.assertEqual("persistent_operator_runtime_trust", selected.reason)
+            self.assertEqual("not-certified", selected.certification_state)
             with patch("scripts.codex_orchestration.sys.platform", "linux"):
                 payload = execute_camp_if_enabled(
                     "Change the supplied target from before to after.",
@@ -750,10 +762,11 @@ class CodexExecutionTests(unittest.TestCase):
                         ROOT / "adapters" / "codex-app-server-config.json"
                     ),
                     policy=self.policy,
-                    codex=str(self.fake),
+                    codex=selected.codex_executable,
                     telemetry_path=self.root / "camp-telemetry.jsonl",
                 )
         finally:
+            os.environ.pop("FAKE_CODEX_VERSION", None)
             os.environ.pop("FAKE_CODEX_CAMP_TARGET", None)
         self.assertEqual(target.read_text(encoding="utf-8"), "after\n")
         self.assertGreater(payload["camp_duration_seconds"], 0)
@@ -1293,7 +1306,7 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertIn("Installed Codex: 0.145.9", blocked_banner)
         self.assertIn(f"Executable: {self.fake}", blocked_banner)
         self.assertIn("Qualification state: below-minimum", blocked_banner)
-        self.assertIn("Qualified Codex: 0.149.0", blocked_banner)
+        self.assertIn("Certification: not-certified", blocked_banner)
 
     def test_unseen_newer_codex_dirty_qualifies_and_continues_read_request(self) -> None:
         os.environ["FAKE_CODEX_VERSION"] = "0.200.0-alpha.7"
@@ -1451,6 +1464,158 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertEqual(selected.reason, "codex_version_not_qualified")
         self.assertEqual(selected.qualification_mode, "none")
         self.assertEqual(selected.qualification_state, "write-not-qualified")
+
+    def test_fresh_operator_trust_allows_unseen_camp_without_certification(self) -> None:
+        preference_path = self.root / "app-server-preference.json"
+        AppServerPreferenceStore(preference_path).set(True)
+        os.environ["FAKE_CODEX_VERSION"] = "0.200.0"
+        try:
+            with patch(
+                "scripts.app_server_control.dirty_read_qualification_report"
+            ) as dirty_qualify:
+                selected = select_command(
+                    "camp-run",
+                    app_server_requested=False,
+                    codex=str(self.fake),
+                    preference_path=preference_path,
+                )
+        finally:
+            os.environ.pop("FAKE_CODEX_VERSION", None)
+        dirty_qualify.assert_not_called()
+        self.assertTrue(selected.allowed)
+        self.assertEqual("App Server", selected.execution)
+        self.assertEqual("persistent_operator_runtime_trust", selected.reason)
+        self.assertEqual("operator-runtime", selected.trust_policy)
+        self.assertEqual("startup-probed", selected.runtime_readiness)
+        self.assertEqual("clear", selected.observed_safety)
+        self.assertEqual("not-certified", selected.certification_state)
+        self.assertFalse(selected.certification_required)
+
+    def test_legacy_on_does_not_broaden_unseen_camp_write_access(self) -> None:
+        preference_path = self.root / "app-server-preference.json"
+        preference_path.write_text(
+            json.dumps(
+                {"schema_version": 1, "mode": "on", "updated_at": "legacy"}
+            ),
+            encoding="utf-8",
+        )
+        os.environ["FAKE_CODEX_VERSION"] = "0.200.0"
+        try:
+            selected = select_command(
+                "camp-run",
+                app_server_requested=False,
+                codex=str(self.fake),
+                preference_path=preference_path,
+            )
+        finally:
+            os.environ.pop("FAKE_CODEX_VERSION", None)
+        self.assertTrue(selected.allowed)
+        self.assertEqual("GUI", selected.execution)
+        self.assertTrue(selected.fallback_used)
+        self.assertEqual("codex_version_not_qualified", selected.fallback_reason)
+        self.assertEqual("legacy-read-only", selected.trust_policy)
+        self.assertFalse(selected.operator_trust)
+
+    def test_repository_strict_mode_retains_exact_camp_certification_gate(self) -> None:
+        preference_path = self.root / "app-server-preference.json"
+        AppServerPreferenceStore(preference_path).set(True)
+        repository_policy = self.root / ".tool-shed-policy.json"
+        repository_policy.write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "app_server": {
+                        "certification_mode": "strict-certified",
+                        "reason": "regulated local workspace",
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        os.environ["FAKE_CODEX_VERSION"] = "0.200.0"
+        try:
+            selected = select_command(
+                "camp-run",
+                app_server_requested=True,
+                codex=str(self.fake),
+                preference_path=preference_path,
+                repository_policy_path=repository_policy,
+            )
+        finally:
+            os.environ.pop("FAKE_CODEX_VERSION", None)
+        self.assertFalse(selected.allowed)
+        self.assertEqual("codex_version_not_qualified", selected.reason)
+        self.assertEqual("strict-certified", selected.trust_policy)
+        self.assertTrue(selected.certification_required)
+
+    def test_operator_runtime_admission_survives_unavailable_registry_telemetry(self) -> None:
+        preference_path = self.root / "app-server-preference.json"
+        AppServerPreferenceStore(preference_path).set(True)
+        broken_registry = self.root / "broken-qualifications.json"
+        broken_registry.write_text("not json\n", encoding="utf-8")
+        os.environ["FAKE_CODEX_VERSION"] = "0.200.0"
+        try:
+            selected = select_command(
+                "camp-run",
+                app_server_requested=False,
+                codex=str(self.fake),
+                preference_path=preference_path,
+                qualifications_path=broken_registry,
+            )
+        finally:
+            os.environ.pop("FAKE_CODEX_VERSION", None)
+        self.assertTrue(selected.allowed)
+        self.assertEqual("not-certified", selected.certification_state)
+        self.assertEqual(
+            "registry-unavailable:CompatibilityError",
+            selected.certification_warning,
+        )
+
+    def test_reviewed_unqualified_record_is_the_only_normal_mode_version_denial(self) -> None:
+        preference_path = self.root / "app-server-preference.json"
+        AppServerPreferenceStore(preference_path).set(True)
+        registry = self.root / "denylisted-qualifications.json"
+        registry.write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "records": [
+                        {
+                            "codex_version": "0.200.0",
+                            "status": "unqualified",
+                            "evidence": "work/evidence/reproducible-unsafe-write.md",
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        os.environ["FAKE_CODEX_VERSION"] = "0.200.0"
+        try:
+            denied = select_command(
+                "camp-run",
+                app_server_requested=False,
+                codex=str(self.fake),
+                preference_path=preference_path,
+                qualifications_path=registry,
+            )
+            os.environ["FAKE_CODEX_VERSION"] = "0.200.1"
+            fixed = select_command(
+                "camp-run",
+                app_server_requested=False,
+                codex=str(self.fake),
+                preference_path=preference_path,
+                qualifications_path=registry,
+            )
+        finally:
+            os.environ.pop("FAKE_CODEX_VERSION", None)
+        self.assertEqual("GUI", denied.execution)
+        self.assertTrue(denied.fallback_used)
+        self.assertEqual("codex_version_denylisted", denied.fallback_reason)
+        self.assertEqual("denylisted", denied.observed_safety)
+        self.assertTrue(fixed.allowed)
+        self.assertEqual("App Server", fixed.execution)
+        self.assertEqual("persistent_operator_runtime_trust", fixed.reason)
 
     def test_dirty_selection_distinguishes_transient_fallback_and_unsafe_block(self) -> None:
         os.environ["FAKE_CODEX_VERSION"] = "0.200.0"
@@ -1688,6 +1853,24 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertEqual("codex_executable_hash_mismatch", selected.reason)
         self.assertEqual("write-not-qualified", selected.qualification_state)
 
+        preference_path = self.root / "operator-runtime-preference.json"
+        AppServerPreferenceStore(preference_path).set(True)
+        os.environ["FAKE_CODEX_VERSION"] = "0.149.0-alpha.4.3"
+        try:
+            operator_runtime = select_command(
+                "camp-run",
+                app_server_requested=False,
+                codex=str(self.fake),
+                config_path=config_path,
+                qualifications_path=qualifications_path,
+                preference_path=preference_path,
+            )
+        finally:
+            os.environ.pop("FAKE_CODEX_VERSION", None)
+        self.assertTrue(operator_runtime.allowed)
+        self.assertEqual("persistent_operator_runtime_trust", operator_runtime.reason)
+        self.assertEqual("exact-certified", operator_runtime.certification_state)
+
         qualification_payload = json.loads(
             qualifications_path.read_text(encoding="utf-8")
         )
@@ -1732,15 +1915,26 @@ class CodexExecutionTests(unittest.TestCase):
         enabled = preference_control("on", preference_path=preference_path)
         self.assertTrue(enabled["accepted"])
         self.assertEqual(enabled["session_opt_in"], "ON")
+        self.assertEqual("operator-runtime", enabled["preference"]["trust_policy"])
         self.assertTrue(enabled["persistent_changes"])
         if os.name == "posix":
             self.assertEqual(0o600, preference_path.stat().st_mode & 0o777)
             self.assertEqual(0o700, preference_path.parent.stat().st_mode & 0o777)
         self.assertEqual(
             "ON",
-            control_status(codex=str(self.fake), preference_path=preference_path)[
-                "session_opt_in"
-            ],
+            (
+                enabled_status := control_status(
+                    codex=str(self.fake), preference_path=preference_path
+                )
+            )["session_opt_in"],
+        )
+        self.assertTrue(enabled_status["operator_trust"])
+        self.assertEqual("operator-runtime", enabled_status["trust_policy"])
+        self.assertEqual("startup-probed", enabled_status["runtime_readiness"])
+        self.assertEqual("clear", enabled_status["observed_safety"])
+        self.assertEqual(
+            "operator-runtime",
+            enabled_status["enabled_roles"]["camp_execution"]["admission"],
         )
         disabled = session_control("off", preference_path=preference_path)
         self.assertEqual(disabled["session_opt_in"], "OFF")
@@ -1758,7 +1952,7 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertTrue(persistent.allowed)
         self.assertEqual("App Server", persistent.execution)
         self.assertEqual("persistent", persistent.opt_in)
-        self.assertEqual("persistent_qualified_preference", persistent.reason)
+        self.assertEqual("persistent_operator_runtime_trust", persistent.reason)
         self.assertFalse(persistent.strict_request)
 
         gui = select_command(
@@ -1779,7 +1973,7 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertTrue(discussion.allowed)
         self.assertEqual((discussion.execution, discussion.reason), ("GUI", "discussion_is_gui_native"))
 
-    def test_persistent_qualification_failure_falls_back_but_explicit_stays_strict(self) -> None:
+    def test_fresh_operator_trust_accepts_unknown_version_for_passive_and_explicit(self) -> None:
         preference_path = self.root / "app-server-preference.json"
         AppServerPreferenceStore(preference_path).set(True)
         os.environ["FAKE_CODEX_VERSION"] = "0.145.9"
@@ -1799,11 +1993,11 @@ class CodexExecutionTests(unittest.TestCase):
         finally:
             os.environ.pop("FAKE_CODEX_VERSION", None)
         self.assertTrue(passive.allowed)
-        self.assertEqual("GUI", passive.execution)
-        self.assertTrue(passive.fallback_used)
-        self.assertEqual("codex_below_minimum_dirty_read_version", passive.fallback_reason)
-        self.assertIn("continue the same request immediately", format_selection(passive))
-        self.assertFalse(strict.allowed)
+        self.assertEqual("App Server", passive.execution)
+        self.assertEqual("persistent_operator_runtime_trust", passive.reason)
+        self.assertTrue(strict.allowed)
+        self.assertEqual("App Server", strict.execution)
+        self.assertEqual("explicit_operator_runtime_trust", strict.reason)
         self.assertFalse(strict.fallback_used)
 
     def test_user_command_control_cli_reports_banners_and_fail_closed_exits(self) -> None:

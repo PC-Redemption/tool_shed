@@ -10,8 +10,7 @@ model unless the operator intentionally selects Sol for difficult direct GUI wor
 
 ## Daily owner contract
 
-For one ready campaign in a qualified Linux or Windows workspace, use the normal Codex GUI and
-send:
+For one ready campaign in a Linux or Windows workspace, use the normal Codex GUI and send:
 
 ```text
 ts: next --app-server
@@ -55,15 +54,15 @@ executable, removes redundant broad diff assertions, and decodes Windows sandbox
 That repair is not in v0.29.8: publication, skill synchronization, and client snapshot upgrades
 remain separate owner-authorized work.
 
-Linux execution is proven with qualified local Codex. Windows execution and verification must run
+Linux execution is proven with the reviewed local Codex baseline. Windows execution and verification must run
 in the logged-in GUI console; an SSH service session cannot reach the GUI sandbox runner pipe,
 though it may trigger an interactive console task. API-key fallback, globally enabled App Server,
-unqualified workspace writing, macOS, deployment, and production workloads are not supported by
-this contract. The outer GUI token count is not exposed. Weighted usage is a comparative proxy,
+macOS, deployment, and production workloads are not supported by this contract. The outer GUI token
+count is not exposed. Weighted usage is a comparative proxy,
 not price or ChatGPT allowance.
 
-Explicit read-only planning (`gpt-5.6-sol` / high), verification (`gpt-5.6-terra` / low), and one
-explicitly scoped `camp_execution` step (`gpt-5.6-terra` / medium) are qualified. CAMP writing must
+Read-only planning (`gpt-5.6-sol` / high), verification (`gpt-5.6-terra` / low), and one explicitly
+scoped `camp_execution` step (`gpt-5.6-terra` / medium) are supported. CAMP writing must
 use `camp-run`, exact declared paths, the hardened workspace-write sandbox, and a Git mutation
 journal. It remains opt-in. The representative CAMP used 241,524 input tokens and did not establish
 savings in the original qualification; Campaign 040 subsequently reduced the same fixture to
@@ -93,14 +92,13 @@ The user-facing opt-ins are `ts: plan <request> --app-server`, `ts: verify <requ
 --app-server`, `ts: camp run <camp> --app-server`, and `ts: next --app-server`; the last invokes
 `app_server_dispatch.py` directly, with no nested `codex exec`, to perform normal next-action
 selection, validate the campaign execution capsule and host preflight, and forward only to an
-already-qualified role rather than making `next` a role. `ts: app-server status` reports the exact
-local preference, compatibility, and routing state; `appserver` is an alias. Eligible unflagged
-forms follow the protected user-local preference. `--gui` overrides it once, while explicit
-`--app-server` stays strict. Exact reviewed
-records remain authoritative for CAMP. For planning and verification, an unseen executable whose
-numeric release core is at least `0.146.0` is dirty-qualified automatically with no upper cutoff;
-the selector continues the original request only after the bounded read-only harness passes.
-Versions below the floor and fatal or unknown outcomes fail closed.
+supported role rather than making `next` a role. `ts: app-server status` reports operator trust,
+runtime readiness, observed safety, optional certification, and routing; `appserver` is an alias.
+Eligible unflagged forms follow the protected user-local preference. Fresh schema-v2 `on` consent
+trusts the resolved CLI for supported local roles, including bounded CAMP. `--gui` overrides it
+once, while explicit `--app-server` stays strict. Missing positive qualification and executable-hash
+certification do not block operator-runtime mode. An exact evidence-backed `unqualified` record is
+the only version denial, and it does not block a fixed or newer version.
 
 Persistent-mode failures before possible mutation hand the same action straight back to GUI. A
 possible mutation requires mutation-journal and Git reconciliation before GUI continuation and is
@@ -111,12 +109,11 @@ All Codex consumers use one resolver. A supported explicit override remains auth
 Otherwise the resolver inventories `PATH`, bounded trusted platform locations, and OpenAI VS Code
 extension bundles, then selects the highest semantically eligible CLI at or above `0.146.0`;
 source priority breaks equal-version ties only. It reports every candidate plus the selected path,
-source, App Server availability, qualification state, write posture, and actually usable roles.
+source, App Server availability, trust/readiness/safety/certification dimensions, and supported roles.
 The resolver also backs install/upgrade readiness, reasoning refresh, smoke, startup,
 version detection, and qualification. It neither installs Codex nor changes permanent `PATH`,
-persists user paths, searches arbitrary locations, or enables API fallback. Discovery alone does
-not qualify a version; automatic dirty read qualification is a bounded live safety harness whose
-sanitized result may be reused from protected user-local state.
+persists user paths, searches arbitrary locations, or enables API fallback. Qualification and
+dirty-read results remain diagnostic or optional strict-mode evidence in operator-runtime mode.
 Missing Codex therefore leaves normal GUI Tool Shed work available.
 
 Linux extension discovery is bounded to the desktop, Insiders, remote-server, and remote-server
@@ -131,7 +128,7 @@ GUI-triggered `--app-server` operation, smoke, startup, version detection, and q
 use that same executable identity. Do not claim this gate has passed until those field results are
 recorded.
 
-After a Codex update, run:
+For diagnostics or optional strict certification after a Codex update, run:
 
 ```bash
 python3 scripts/codex_app_server_compatibility.py status
@@ -139,16 +136,12 @@ python3 scripts/codex_app_server_compatibility.py smoke --cwd .
 python3 scripts/codex_app_server_write_qualification.py --help
 ```
 
-Record durable reviewed results in `adapters/codex-app-server-qualifications.json`. Read-only
-planning and verification do not require a new record for every eligible version: the explicit
-selector automatically dirty-qualifies unseen versions at or above `0.146.0` without persisting a
-registry change. It caches only sanitized pass summaries and reviewed unsafe denials outside Tool
-Shed, keyed by executable, version, protocol, qualification policy, model policy, and platform.
-Success records expire; unsafe records require a fingerprint change or explicit `--requalify`.
-Transient infrastructure, authentication, and catalog failures are never cached. Cache writes are
-locked, atomic, and permission-restricted, and status reports cache source and invalidation reason.
-Never inherit workspace-write qualification. After a version change, run and
-review the disposable write harness separately before retaining CAMP qualification. Resume broader
+Record durable reviewed results in `adapters/codex-app-server-qualifications.json`. Positive records
+and executable hashes certify strict mode but do not gate normal operator-runtime access. To deny a
+version, record its exact version with `status: unqualified` and a non-empty reviewed evidence
+reference; remove or correct that record after a fix. The dirty-read cache remains advisory and its
+writes remain locked, atomic, and permission-restricted. The disposable write harness remains for
+release qualification and regression investigation, not every version update. Resume broader
 engineering only for a concrete CLI, support-status, cancellation, restricted-read, approval,
 token-efficiency, or production-contract change.
 

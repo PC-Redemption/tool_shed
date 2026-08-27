@@ -446,23 +446,22 @@ strict one-command App Server request:
 | `ts: verify <request> --app-server` | App Server verification with `gpt-5.6-terra` / `low` |
 | `ts: camp run <camp> --app-server` | Existing bounded App Server CAMP path with `gpt-5.6-terra` / `medium` |
 | `ts: next --app-server` | Invoke one deterministic dispatcher that reuses normal `next` selection, preflights CAMP before planning, automatically prepares an unprepared ready campaign with at most 64,000 bytes of inline context through read-only App Server planning, and continues to the existing Terra/medium CAMP path; never launch a nested Codex agent. |
-| `ts: app-server on` | Persistently prefer App Server for eligible commands. `appserver` is an alias. |
+| `ts: app-server on` | Persistently trust the resolved App Server for supported local roles, including bounded CAMP. `appserver` is an alias. |
 | `ts: app-server off` | Restore the normal GUI default. |
-| `ts: app-server status` | Read-only preference, compatibility, and qualified-role status. |
+| `ts: app-server status` | Read-only operator-trust, runtime-readiness, observed-safety, and optional-certification status. |
 
 With the preference off, unflagged `ts: plan`, `ts: verify`, `ts: camp run`, and executable `ts:
 next` use the GUI and report `Execution: GUI`. With it on, those routes prefer App Server; `--gui`
-overrides it once without changing stored state. For planning and verification, the selector accepts exact reviewed records or an
-unseen Codex version whose numeric release core is at least `0.146.0`. An unseen eligible executable
-runs the bounded dirty read qualification in the same invocation; a passing result continues the
-original request without updating the repository registry. A sanitized user-local cache reuses a
-result only when the executable hash, Codex version, protocol fingerprint, qualification policy,
-model policy, and platform still match. Successes expire normally; reviewed unsafe denials persist
-until a relevant fingerprint changes or `--requalify` is supplied on the explicit App Server
-request. Transient authentication, network, service, and model-catalog failures are not cached.
-Prereleases use their numeric release core, and there is no upper cutoff. Versions below the floor
-and fatal or unknown qualification results are blocked with a clear GUI fallback. CAMP execution still requires an exact reviewed
-workspace-write record and separate write harness. There is no API fallback.
+overrides it once without changing stored state. Fresh schema-v2 `on` consent selects
+operator-runtime trust, so an unknown or newly updated Codex version may use every supported local
+role without a positive qualification record or executable-hash certificate. The actual operation
+checks App Server startup, ChatGPT authentication, the live model, and requested sandbox while the
+existing CAMP runner retains its clean-Git, exact-path, journal, budget, verification,
+reconciliation, and no-replay controls. An exact reviewed registry record with `status:
+unqualified` and evidence denies only that recorded version; a fixed or newer version runs
+normally. The dirty-read cache and disposable harness are advisory or optional strict-certification
+tools. A repository policy may explicitly select `strict-certified`; normal mode does not. There is
+no API fallback.
 
 `next` is not a new App Server role. The flagged and unflagged forms select the same next action.
 When execution resolves to App Server, the GUI immediately runs
@@ -494,11 +493,13 @@ lifecycle advance.
 `ts: discuss` is always GUI-native. `ts: discuss ... --app-server` is rejected instead of silently
 changing execution surfaces.
 
-`ts: app-server on|off` stores only a schema-versioned mode and timestamp in
+`ts: app-server on|off` stores only a schema-versioned mode, trust policy, consent time, and update
+time in
 `$CODEX_HOME/tool-shed/app-server-preference.json` (or the equivalent `~/.codex` path), outside
 repositories and installed Tool Shed snapshots. Writes are locked, atomic, and private where the
-platform supports modes. Missing or invalid state fails safely to off. The committed global setting
-remains `codex_app_server_enabled = false`.
+platform supports modes. Missing or invalid state fails safely to off. Legacy schema-v1 `on` stays
+enabled for read roles but requires one new `on` command before CAMP trust is granted. The committed
+global setting remains `codex_app_server_enabled = false`.
 
 Passive attempts, successes, fallbacks, and reconciliation handoffs append sanitized operational
 events to `$CODEX_HOME/tool-shed/app-server-events.jsonl`. Events exclude prompts, responses, raw
@@ -508,13 +509,10 @@ and never delays or blocks GUI fallback.
 Every App Server path uses one bounded Codex resolver. A supported explicit override is
 authoritative. Otherwise it inventories `PATH`, trusted platform locations, and OpenAI VS Code
 extension bundles, then selects the highest semantically eligible version at or above `0.146.0`;
-source priority resolves only equal-version ties. Status reports the full inventory and only roles
-usable by the selected executable. Status and selection distinguish `exact-qualified`,
-`dirty-qualifying`, `dirty-qualified`, `transient-fallback`, `unsafe-blocked`, `below-minimum`, and
-`write-not-qualified`. Status, selection,
-smoke, startup, version detection, qualification, reasoning refresh, and install/upgrade readiness
-share that result. Discovery alone does not qualify a version; eligible unseen read-only requests
-must pass the live dirty harness. Tool Shed never installs Codex, changes
+source priority resolves only equal-version ties. Status reports the full inventory and separates
+trust policy/source, startup readiness, observed safety, and optional certification. Status,
+selection, smoke, startup, version detection, qualification, reasoning refresh, and
+install/upgrade readiness share the resolver result. Tool Shed never installs Codex, changes
 permanent `PATH`, searches arbitrary locations, persists a user path, or falls back to an API.
 When Codex is unavailable, normal unflagged GUI use remains available.
 

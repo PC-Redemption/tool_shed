@@ -12,6 +12,7 @@ from scripts.app_server_user_state import (
     AppServerUserStateError,
     default_app_server_preference_path,
     record_app_server_event_best_effort,
+    PREFERENCE_SCHEMA_VERSION,
 )
 
 
@@ -49,10 +50,44 @@ class AppServerUserStateTests(unittest.TestCase):
         store = AppServerPreferenceStore(self.path, now=lambda: 10.0)
         enabled = store.set(True)
         self.assertTrue(enabled.enabled)
+        self.assertEqual(PREFERENCE_SCHEMA_VERSION, enabled.schema_version)
+        self.assertTrue(enabled.operator_trust)
+        self.assertEqual("operator-runtime", enabled.trust_policy)
+        self.assertEqual(enabled.updated_at, enabled.consented_at)
         self.assertEqual("ON", AppServerPreferenceStore(self.path).status().mode)
         self.assertFalse(self.path.with_suffix(self.path.suffix + ".lock").exists())
         self.assertEqual([], list(self.path.parent.glob("*.tmp")))
         self.assertEqual("OFF", store.set(False).mode)
+
+    def test_legacy_on_remains_enabled_without_operator_runtime_trust(self) -> None:
+        self.path.parent.mkdir(parents=True)
+        self.path.write_text(
+            json.dumps(
+                {"schema_version": 1, "mode": "on", "updated_at": "legacy"}
+            ),
+            encoding="utf-8",
+        )
+        state = AppServerPreferenceStore(self.path).status()
+        self.assertTrue(state.enabled)
+        self.assertFalse(state.operator_trust)
+        self.assertEqual("legacy-read-only", state.trust_policy)
+        self.assertEqual("legacy-on-camp-trust-not-confirmed", state.warning)
+
+    def test_schema_two_rejects_on_without_explicit_trust_consent(self) -> None:
+        self.path.parent.mkdir(parents=True)
+        self.path.write_text(
+            json.dumps(
+                {
+                    "schema_version": 2,
+                    "mode": "on",
+                    "updated_at": "now",
+                }
+            ),
+            encoding="utf-8",
+        )
+        state = AppServerPreferenceStore(self.path).status()
+        self.assertFalse(state.enabled)
+        self.assertEqual("malformed-preference", state.warning)
 
     def test_repository_local_preference_is_rejected(self) -> None:
         repository_path = Path(__file__).resolve().parents[1] / "app-server-preference.json"

@@ -1607,6 +1607,7 @@ def dispatch_next(
         qualifications_path=qualifications_path,
         qualification_cache_path=qualification_cache_path,
         preference_path=preference_path,
+        workspace=root,
     )
     if not selection.allowed or getattr(selection, "execution", "App Server") != "App Server":
         raise DispatchError(
@@ -1630,6 +1631,7 @@ def dispatch_next(
             qualifications_path=qualifications_path,
             qualification_cache_path=qualification_cache_path,
             preference_path=preference_path,
+            workspace=root,
         )
         if (
             not planning_selection.allowed

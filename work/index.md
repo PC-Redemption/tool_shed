@@ -105,6 +105,9 @@ Updated: 2026-08-27
 | [work/00-campaigns/completed/095-resolve-unclassified-work-2.md](work/00-campaigns/completed/095-resolve-unclassified-work-2.md) | campaign | complete | 2026-08-27 | none | - |
 | [work/00-campaigns/completed/098-define-and-implement-persistent-autonomy-levels.md](work/00-campaigns/completed/098-define-and-implement-persistent-autonomy-levels.md) | campaign | complete | 2026-08-27 | none | - |
 | [work/00-campaigns/completed/099-consolidate-validation-profiles-and-contracts.md](work/00-campaigns/completed/099-consolidate-validation-profiles-and-contracts.md) | campaign | complete | 2026-08-27 | none | - |
+| [work/00-campaigns/completed/100-replace-camp-version-gate-with-operator-runtime-trust.md](work/00-campaigns/completed/100-replace-camp-version-gate-with-operator-runtime-trust.md) | campaign | complete | 2026-08-27 | none | - |
+| [work/00-campaigns/completed/101-enforce-live-camp-readiness-and-safety-quarantine.md](work/00-campaigns/completed/101-enforce-live-camp-readiness-and-safety-quarantine.md) | campaign | complete | 2026-08-27 | none | - |
+| [work/00-campaigns/completed/102-qualify-and-document-operator-trust-camp-boundaries.md](work/00-campaigns/completed/102-qualify-and-document-operator-trust-camp-boundaries.md) | campaign | complete | 2026-08-27 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -139,6 +142,7 @@ Updated: 2026-08-27
 | [work/evidence/evidence-low-token-app-server-owner-adoption.md](work/evidence/evidence-low-token-app-server-owner-adoption.md) | - | - | - | - | - |
 | [work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md](work/evidence/evidence-mainline-app-server-integration-and-hosted-watcher-reduction.md) | evidence | complete | 2026-08-20 | none | - |
 | [work/evidence/evidence-native-linux-installed-app-server-workflow.md](work/evidence/evidence-native-linux-installed-app-server-workflow.md) | evidence | complete | 2026-08-25 | use Campaign 060 to eliminate the nested wrapper and prove direct Linux dispatch before returning to the Windows consent gate | - |
+| [work/evidence/evidence-operator-trust-camp-runtime-enforcement.md](work/evidence/evidence-operator-trust-camp-runtime-enforcement.md) | evidence | verified | 2026-08-27 | none | - |
 | [work/evidence/evidence-passive-app-server-dogfooding-core.md](work/evidence/evidence-passive-app-server-dogfooding-core.md) | evidence | verified | 2026-08-27 | none | - |
 | [work/evidence/evidence-project-scoped-app-server-dispatch-v0-29-2.md](work/evidence/evidence-project-scoped-app-server-dispatch-v0-29-2.md) | - | complete | - | - | - |
 | [work/evidence/evidence-realistic-core-app-server-token-regression.md](work/evidence/evidence-realistic-core-app-server-token-regression.md) | evidence | complete | 2026-08-26 | none | - |
@@ -164,12 +168,14 @@ Updated: 2026-08-27
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |
 | [work/evidence/evidence-windows-realistic-app-server-budget-v0-29-8.md](work/evidence/evidence-windows-realistic-app-server-budget-v0-29-8.md) | evidence | complete | 2026-08-26 | publish the post-v0.29.8 verifier/preparation repair and upgrade clients only under separate owner authorization | - |
 | [work/focus-areas.md](work/focus-areas.md) | focus-area-catalog | approved | 2026-08-15 | review when an enduring responsibility boundary changes | - |
+| [work/ideas/idea-operator-trust-runtime-enforcement-for-camp.md](work/ideas/idea-operator-trust-runtime-enforcement-for-camp.md) | idea-brief | promoted | 2026-08-27 | use the approved project-map direction and Program Roadmap for delivery | - |
 | [work/ideas/idea-passive-app-server-dogfooding-mode.md](work/ideas/idea-passive-app-server-dogfooding-mode.md) | idea-brief | promoted | 2026-08-27 | use the approved project-map direction and Program Roadmap for delivery | - |
 | [work/ideas/idea-persistent-autonomy-levels.md](work/ideas/idea-persistent-autonomy-levels.md) | idea-brief | promoted | 2026-08-27 | use the approved revised project-map direction to propose Program Roadmap revision 2 | - |
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/maps/map-disposable-completion-watchers-and-hosted-notifications.md](work/maps/map-disposable-completion-watchers-and-hosted-notifications.md) | project-map | deferred | 2026-08-18 | preserve the completed local watcher and wait for a concrete external/non-App-Server notification need before revisiting hosted work | - |
 | [work/maps/map-low-token-cross-platform-campaign-execution.md](work/maps/map-low-token-cross-platform-campaign-execution.md) | project-map | complete | 2026-08-26 | use `ts: next --app-server` for ordinary bounded campaigns on the proven Linux and Windows paths | - |
+| [work/maps/map-operator-trust-camp-runtime-enforcement.md](work/maps/map-operator-trust-camp-runtime-enforcement.md) | project-map | approved | 2026-08-27 | develop an exact Program Roadmap proposal | - |
 | [work/maps/map-passive-app-server-dogfooding.md](work/maps/map-passive-app-server-dogfooding.md) | project-map | approved | 2026-08-27 | execute M1 through the approved passive-app-server-dogfooding Program Roadmap | - |
 | [work/maps/map-persistent-autonomy-levels.md](work/maps/map-persistent-autonomy-levels.md) | project-map | approved | 2026-08-27 | develop an exact Program Roadmap proposal | - |
 | [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | complete | 2026-08-20 | none | - |
@@ -184,6 +190,7 @@ Updated: 2026-08-27
 | [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r6.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r6.md) | program-roadmap | superseded | 2026-08-26 | none | work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r7.md |
 | [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r7.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r7.md) | program-roadmap | complete | 2026-08-26 | none | none |
 | [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution.md) | program-roadmap | superseded | 2026-08-26 | none | work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r2.md |
+| [work/roadmaps/roadmap-operator-trust-camp-runtime-enforcement.md](work/roadmaps/roadmap-operator-trust-camp-runtime-enforcement.md) | program-roadmap | complete | 2026-08-27 | none | none |
 | [work/roadmaps/roadmap-passive-app-server-dogfooding.md](work/roadmaps/roadmap-passive-app-server-dogfooding.md) | program-roadmap | executing | 2026-08-27 | execute the first ready roadmap campaign through ts: next | none |
 | [work/roadmaps/roadmap-persistent-autonomy-levels-r2.md](work/roadmaps/roadmap-persistent-autonomy-levels-r2.md) | program-roadmap | executing | 2026-08-27 | execute the first ready roadmap campaign through ts: next | none |
 | [work/roadmaps/roadmap-persistent-autonomy-levels.md](work/roadmaps/roadmap-persistent-autonomy-levels.md) | program-roadmap | superseded | 2026-08-27 | none | work/roadmaps/roadmap-persistent-autonomy-levels-r2.md |
@@ -219,6 +226,6 @@ Updated: 2026-08-27
 
 ## Summary
 
-- Total artifacts: 202
+- Total artifacts: 209
 - Active artifacts: 3
-- Completed/decided artifacts: 150
+- Completed/decided artifacts: 155
