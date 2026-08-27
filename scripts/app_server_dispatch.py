@@ -39,6 +39,10 @@ try:
     from scripts.codex_execution import DEFAULT_POLICY
     from scripts.codex_app_server_compatibility import DEFAULT_QUALIFICATIONS
     from scripts.project_identity import binding_token, require_project_binding
+    from scripts.app_server_user_state import (
+        AppServerPreferenceStore,
+        record_app_server_event_best_effort,
+    )
 except ModuleNotFoundError:  # Direct execution: python scripts/app_server_dispatch.py
     import campaign_queue  # type: ignore[no-redef]
     from app_server_control import select_command  # type: ignore[no-redef]
@@ -64,6 +68,10 @@ except ModuleNotFoundError:  # Direct execution: python scripts/app_server_dispa
     from project_identity import (  # type: ignore[no-redef]
         binding_token,
         require_project_binding,
+    )
+    from app_server_user_state import (  # type: ignore[no-redef]
+        AppServerPreferenceStore,
+        record_app_server_event_best_effort,
     )
 
 
@@ -1533,11 +1541,13 @@ def dispatch_next(
     workspace: Path,
     *,
     app_server_requested: bool,
+    gui_requested: bool = False,
     codex: str | None = None,
     config_path: Path = DEFAULT_CONFIG,
     policy_path: Path = DEFAULT_POLICY,
     qualifications_path: Path = DEFAULT_QUALIFICATIONS,
     qualification_cache_path: Path | None = None,
+    preference_path: Path | None = None,
     timeout: float = 300.0,
     telemetry_path: Path | None = None,
 ) -> dict[str, Any]:
@@ -1590,32 +1600,43 @@ def dispatch_next(
     selection = select_command(
         "camp-run",
         app_server_requested=app_server_requested,
+        gui_requested=gui_requested,
         codex=codex,
         config_path=config_path,
         policy_path=policy_path,
         qualifications_path=qualifications_path,
         qualification_cache_path=qualification_cache_path,
+        preference_path=preference_path,
     )
-    if not selection.allowed or not app_server_requested:
+    if not selection.allowed or getattr(selection, "execution", "App Server") != "App Server":
         raise DispatchError(
-            selection.reason,
+            getattr(selection, "fallback_reason", None) or selection.reason,
             "App Server CAMP selection was not allowed",
-            recovery_action="rerun the same Tool Shed command without --app-server",
+            recovery_action=(
+                "rerun the same Tool Shed command with --gui"
+                if not getattr(selection, "strict_request", app_server_requested)
+                else "rerun the same Tool Shed command without --app-server or with --gui"
+            ),
         )
     preflight = _app_server_host_preflight(selection, timeout=timeout)
     if requires_preparation:
         planning_selection = select_command(
             "plan",
             app_server_requested=app_server_requested,
+            gui_requested=gui_requested,
             codex=codex,
             config_path=config_path,
             policy_path=policy_path,
             qualifications_path=qualifications_path,
             qualification_cache_path=qualification_cache_path,
+            preference_path=preference_path,
         )
-        if not planning_selection.allowed or not app_server_requested:
+        if (
+            not planning_selection.allowed
+            or getattr(planning_selection, "execution", "App Server") != "App Server"
+        ):
             raise DispatchError(
-                planning_selection.reason,
+                getattr(planning_selection, "fallback_reason", None) or planning_selection.reason,
                 "automatic App Server CAMP preparation was not allowed",
                 recovery_action="rerun the same Tool Shed command without --app-server",
             )
@@ -1744,50 +1765,148 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--policy", type=Path, default=DEFAULT_POLICY)
     parser.add_argument("--qualifications", type=Path, default=DEFAULT_QUALIFICATIONS)
     parser.add_argument("--qualification-cache", type=Path, default=None)
+    parser.add_argument("--preference", type=Path, default=None)
+    parser.add_argument("--events", type=Path, default=None)
     parser.add_argument("--timeout", type=float, default=300.0)
     parser.add_argument("--telemetry", type=Path, default=None)
     commands = parser.add_subparsers(dest="command", required=True)
     next_command = commands.add_parser("next")
-    next_command.add_argument("--app-server", action="store_true")
+    execution = next_command.add_mutually_exclusive_group()
+    execution.add_argument("--app-server", action="store_true")
+    execution.add_argument("--gui", action="store_true")
     next_command.add_argument("--json", action="store_true")
     return parser
 
 
+def _gui_handoff_payload(
+    *,
+    category: str,
+    mutation_state: str,
+    prior: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    reconciliation = mutation_state != "none"
+    payload: dict[str, Any] = {
+        "schema_version": 1,
+        "status": "gui_reconciliation_required" if reconciliation else "gui_fallback",
+        "execution": "GUI",
+        "fallback": {
+            "automatic": True,
+            "category": category,
+            "mutation_state": mutation_state,
+            "continue_same_action": True,
+            "action": (
+                "reconcile workspace and mutation journal, then continue in GUI without replay"
+                if reconciliation
+                else "continue the same action immediately in GUI"
+            ),
+            "replay_app_server": False,
+        },
+    }
+    if prior:
+        journal = prior.get("journal") if isinstance(prior.get("journal"), dict) else {}
+        payload["reconciliation"] = {
+            "journal_final_state": journal.get("final_state"),
+            "journal_safe": journal.get("safe"),
+            "changed_path_count": sum(
+                len(journal.get(field) or [])
+                for field in ("files_created", "files_modified", "files_deleted")
+            ),
+            "verification_passed": journal.get("verification_passed"),
+        }
+    return payload
+
+
 def main() -> int:
     args = build_parser().parse_args()
+    preference = AppServerPreferenceStore(args.preference).status()
+    record_app_server_event_best_effort(
+        path=args.events,
+        command="next",
+        outcome="attempted",
+        category="dispatch",
+        mutation_state="none",
+        backend="app_server",
+        preference_mode=preference.mode,
+        strict_request=args.app_server,
+    )
     try:
         payload = dispatch_next(
             args.workspace,
             app_server_requested=args.app_server,
+            gui_requested=args.gui,
             codex=args.codex,
             config_path=args.config,
             policy_path=args.policy,
             qualifications_path=args.qualifications,
             qualification_cache_path=args.qualification_cache,
+            preference_path=args.preference,
             timeout=args.timeout,
             telemetry_path=args.telemetry,
         )
     except (DispatchError, campaign_queue.CampaignError, OSError) as error:
         if isinstance(error, DispatchError):
-            payload = {
-                "schema_version": 1,
-                "status": "blocked",
-                "category": error.category,
-                "mutation_state": error.mutation_state,
-                "recovery_action": error.recovery_action,
-                "error": str(error),
-            }
+            category = error.category
+            mutation_state = error.mutation_state
         else:
-            payload = {
-                "schema_version": 1,
-                "status": "blocked",
-                "category": "dispatch_preflight_failed",
-                "mutation_state": "none",
-                "recovery_action": "repair the reported workspace state before retrying",
-                "error": str(error),
-            }
+            category = "dispatch_preflight_failed"
+            mutation_state = "none"
+        record_app_server_event_best_effort(
+            path=args.events,
+            command="next",
+            outcome="failed" if args.app_server else "gui_fallback",
+            category=category,
+            mutation_state=mutation_state,
+            backend="gui" if not args.app_server else "app_server",
+            preference_mode=preference.mode,
+            strict_request=args.app_server,
+        )
+        if not args.app_server:
+            payload = _gui_handoff_payload(
+                category=category,
+                mutation_state=mutation_state,
+            )
+            print(json.dumps(payload, indent=2, sort_keys=True))
+            return 0
+        payload = {
+            "schema_version": 1,
+            "status": "blocked",
+            "category": category,
+            "mutation_state": mutation_state,
+            "recovery_action": error.recovery_action if isinstance(error, DispatchError) else "repair the reported workspace state before retrying",
+            "error": str(error),
+        }
         print(json.dumps(payload, indent=2, sort_keys=True), file=sys.stderr)
         return 2
+    if payload["status"] != "completed" and not args.app_server:
+        final_state = str((payload.get("journal") or {}).get("final_state") or "stopped")
+        category = f"app_server_{final_state}"
+        record_app_server_event_best_effort(
+            path=args.events,
+            command="next",
+            outcome="gui_reconciliation",
+            category=category,
+            mutation_state="possible",
+            backend="gui",
+            preference_mode=preference.mode,
+            strict_request=False,
+        )
+        payload = _gui_handoff_payload(
+            category=category,
+            mutation_state="possible",
+            prior=payload,
+        )
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        return 0
+    record_app_server_event_best_effort(
+        path=args.events,
+        command="next",
+        outcome="completed" if payload["status"] == "completed" else "stopped",
+        category=str(payload["status"]),
+        mutation_state="verified" if payload["status"] == "completed" else "possible",
+        backend="app_server",
+        preference_mode=preference.mode,
+        strict_request=args.app_server,
+    )
     print(json.dumps(payload, indent=2, sort_keys=True))
     return 0 if payload["status"] == "completed" else 2
 

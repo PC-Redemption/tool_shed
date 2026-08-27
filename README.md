@@ -292,7 +292,8 @@ ts: use <project-alias-or-path>
 ts: doctor
 ts: build focus areas
 ts: prm <outcome>
-ts: appserver status
+ts: app-server on
+ts: app-server status
 ts: plan <request> --app-server
 ts: verify <request> --app-server
 ts: camp run <camp> --app-server
@@ -310,7 +311,9 @@ See the [AI command reference](docs/commands.md) for every defined route, alias,
 boundary. See the [Tool Shed operator guide](docs/operator-guide.md) for workflow explanations and
 examples.
 
-The four `--app-server` forms are explicit, per-command opt-ins for qualified real-world testing.
+The protected user-local App Server preference makes eligible unflagged commands prefer the
+qualified backend; `appserver` is an alias for `app-server`. `--gui` overrides it once, while the
+four `--app-server` forms remain strict, per-command probes.
 `ts: next --app-server` runs one deterministic `app_server_dispatch.py` command directly—never a
 nested `codex exec`—to perform ordinary `next` selection. An existing strict execution capsule is
 reused. When the selected ready campaign has no capsule, one read-only App Server planning turn
@@ -322,7 +325,7 @@ planning turn. Automatically selected inline context is limited to the smaller o
 limit and 64,000 bytes; over-budget results fail before persistence or lifecycle mutation.
 Unsafe or indeterminate preparation stops before mutation. CAMP execution reuses the existing
 Terra/medium runner. `next` itself is not an App Server role.
-Unflagged commands remain in the GUI and `ts: discuss` is always GUI-native. Read-only planning and
+Unflagged eligible commands follow the preference and `ts: discuss` is always GUI-native. Read-only planning and
 verification use a minimum Codex version of `0.146.0` with no upper cutoff: an unseen eligible
 version runs a bounded dirty qualification and continues the original explicit request immediately
 only when that qualification passes. Sanitized results are cached outside Tool Shed under the
@@ -332,8 +335,11 @@ reviewed unsafe denials remain authoritative until their fingerprint changes or 
 explicit requalification. Versions below the floor, unsafe or unknown qualification outcomes, and
 unqualified roles fail closed. CAMP writing remains
 version-specific and requires a separate reviewed write harness. The committed global App Server
-default remains off. `ts: appserver on|off` is intentionally unavailable because the skill surface
-has no reliable session-scoped state store; use the explicit option on each test command.
+default remains off. `ts: app-server on|off` stores only a private schema-versioned mode and
+timestamp under Codex home, never in the repository or an installed Tool Shed snapshot.
+In persistent mode, pre-mutation failures record a sanitized event and continue the same action in
+GUI immediately. Possible mutation requires journal/Git reconciliation before GUI continuation and
+is never replayed. Event logging under Codex home is best-effort and contains no request content.
 
 App Server tooling resolves Codex through one bounded resolver. A supplied override remains
 authoritative. Without one, the resolver inventories `PATH`, trusted platform locations, and

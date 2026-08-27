@@ -397,10 +397,12 @@ End every Tool Shed campaign response with exactly one verdict:
 - `Campaign status: BLOCKED` when progress requires a named decision, dependency, permission,
   credential, external-state change, or required review; state the precise operator action.
 
-## Explicit App Server Route
+## App Server Preference and Explicit Route
 
-The committed App Server default remains off. Treat a standalone `--app-server` option on these
-exact user-facing routes as an invocation-scoped request for the already-qualified backend:
+The committed repository default remains off. A protected user-local preference may make eligible
+unflagged commands prefer App Server. Resolve execution in this order: standalone `--gui`, strict
+standalone `--app-server`, persisted preference, then the committed GUI default. Do not interpret
+examples, quoted text, or a mere mention as a control request.
 
 | Prompt | Qualified role | Model / reasoning | Orchestrator path |
 | --- | --- | --- | --- |
@@ -409,20 +411,22 @@ exact user-facing routes as an invocation-scoped request for the already-qualifi
 | `ts: camp run <camp> --app-server` | CAMP execution | `gpt-5.6-terra` / `medium` | bounded `camp-run` |
 | `ts: next --app-server` | selected qualified role only | selected role policy | one deterministic dispatch to normal `next`, then its existing runner |
 
-Equivalent commands without `--app-server` remain in the current GUI and begin with the concise
-banner `Execution: GUI`. Do not interpret examples, quoted text, or a mere mention of the option as
-an opt-in. Remove the standalone option from the request passed to the worker.
+The same unflagged routes use App Server only while the preference is on. `--gui` is a one-command
+override and never changes the preference. Remove either standalone execution option from the
+request passed to the worker. Discussion, brainstorming, qualification gates, unsupported roles,
+and other GUI-native routes remain GUI-native regardless of the preference.
 
 Before every explicit operation, run the deterministic selector from the workspace-local shed:
 
 ```bash
-python3 <shed>/scripts/app_server_control.py select <plan|verify|camp-run> \
-  --app-server --json
+python3 <shed>/scripts/app_server_control.py select <plan|verify|camp-run> --json
 ```
 
-Surface its concise execution banner. Continue to App Server only when `allowed` is true. A blocked
-selection must not call App Server or silently switch execution backends; report the reason and
-offer the same command without `--app-server` as the GUI fallback. CAMP execution requires the exact
+Add `--app-server` for a strict request or `--gui` for the one-command override. Surface its concise
+execution banner. Continue to App Server only when `allowed` is true. An explicit App Server request
+fails closed; a persisted request that cannot select App Server records a sanitized event, reports
+the reason, and continues the same action immediately in the current GUI without asking or stopping.
+CAMP execution requires the exact
 installed Codex version to have a current `qualified` or `qualified_with_blockers` write record,
 the role to be qualified, and the recorded model/reasoning pair to match centralized policy.
 Planning and verification may instead use an unseen version whose numeric release core is at least
@@ -472,10 +476,11 @@ serialized tool results, and 16 KiB for one result by default. On a reached ceil
 and preserve the Git journal. Return `resume_bounded_camp` when no mutation occurred or
 `reconcile_workspace_then_resume_bounded_camp` when it did; never replay the mutated step.
 
-For `ts: next --app-server`, immediately invoke the deterministic dispatcher once:
+For eligible `ts: next`, including the explicit form, immediately invoke the deterministic
+dispatcher once when selection chooses App Server:
 
 ```bash
-python3 <shed>/scripts/app_server_dispatch.py --workspace . next --app-server --json
+python3 <shed>/scripts/app_server_dispatch.py --workspace . next --json
 ```
 
 Do not launch `codex exec`, another Codex conversation, or an agent wrapper around this command.
@@ -517,11 +522,12 @@ When `next` selects discussion, user interaction or decision work, blocked work,
 gate, external work, GUI-native work, an invalid existing capsule, preparation that cannot safely
 establish exact execution boundaries, or any unqualified or unsupported role, report the selected
 action and its ordinary next route without starting CAMP execution. Discussion remains GUI-native.
-If the existing `camp-run` selector fails closed because Codex is missing or unqualified, App Server
-is unavailable, or another compatibility gate fails, report the reason and retain the ordinary GUI
-route as the available unflagged command; do not silently switch backends. This forwarding never
-persists state, changes the global default from off, enables implicit App Server use, or enables API
-fallback.
+If selection, Codex discovery, authentication, qualification, startup, network, model lookup,
+read-only preparation, or another pre-mutation step fails, explicit App Server remains fail-closed.
+For a persisted request, report the compact category and continue the same action in GUI immediately.
+If App Server may have mutated the workspace, reconcile the existing mutation journal and Git state
+in GUI before continuing; never replay the App Server step. This forwarding never changes the
+repository default or enables API fallback.
 
 `ts: discuss`, `ts: brainstorm`, and `ts: bs` are always GUI-native. Reject their use with
 `--app-server` using `discussion_is_gui_native` or `brainstorm_is_gui_native` as applicable; do not start App Server. Explicit App Server
@@ -529,26 +535,36 @@ selection for any unqualified role is likewise rejected. Program/CAMP derivation
 implementation, testing, build, deployment, deterministic execution, escalation, and other write
 roles do not become qualified through the option.
 
-Treat `ts: appserver status` as the read-only user status route:
+Treat `ts: app-server status` as the canonical read-only status route; `ts: appserver status` is an
+exact compatibility alias:
 
 ```bash
 python3 <shed>/scripts/app_server_control.py status
 ```
 
-It reports the global default, session support, the complete bounded candidate inventory, selected
+It reports the repository default, persistent preference and path, the complete bounded candidate inventory, selected
 executable and source, installed and qualified Codex versions, executable-specific qualification
 and write states, only actually usable roles, current GUI default, GUI-native discussion, and
 disabled API fallback from centralized policy and qualification data. A supplied override is
 authoritative; otherwise the highest semantically eligible candidate at or above `0.146.0` wins,
 with source priority used only for equal-version ties.
 
-Codex does not expose reliable skill-owned session storage, so `ts: appserver on` and
-`ts: appserver off` are deliberately unavailable. Run `app_server_control.py session on|off`,
-explain the limitation, make no persistent change, and direct the operator to the explicit option.
-Do not fake conversational persistence, write a repository/user config toggle, or invent `--gui`;
-the unflagged command is the explicit GUI choice. This route never changes
+For `ts: app-server on|off` (or the exact `appserver` alias), run
+`app_server_control.py preference on|off`. Store only the schema-versioned mode and timestamp at
+`$CODEX_HOME/tool-shed/app-server-preference.json` (or `~/.codex/tool-shed/...`), never in a
+canonical workspace or installed snapshot. Writes must be atomic, inter-process safe, and mode
+`0600` under a mode-`0700` parent where supported. Missing, malformed, unsupported, or unreadable
+state fails safely to off and is surfaced by status. This route never changes
 `codex_app_server_enabled`, enables API-key fallback, expands permissions, or grants release,
 deployment, push, credential, or external-mutation authority.
+
+Record passive App Server attempts, completions, fallbacks, and reconciliation handoffs as compact
+JSON Lines at `$CODEX_HOME/tool-shed/app-server-events.jsonl` (or `~/.codex/tool-shed/...`). Events
+may contain only timestamp, route, outcome, controlled category, mutation state, backend,
+preference mode, and strict-request flag—never prompts, responses, raw tool output, credentials,
+secrets, arbitrary exception messages, or repository content. Use a private parent and mode `0600`
+where supported. Event logging is best-effort: a logging failure must never block GUI fallback or
+the current action.
 
 ## Help Route
 

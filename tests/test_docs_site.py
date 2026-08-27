@@ -112,7 +112,9 @@ class DocumentationSiteTests(unittest.TestCase):
                 "ts: verify <request> --app-server",
                 "ts: camp run <camp> --app-server",
                 "ts: next --app-server",
-                "ts: appserver status",
+                "ts: app-server on",
+                "ts: app-server off",
+                "ts: app-server status",
             ):
                 self.assertIn(html.escape(command), reference)
 

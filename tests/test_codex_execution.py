@@ -22,10 +22,12 @@ from scripts.app_server_control import (
     control_status,
     format_control_status,
     format_selection,
+    preference_control,
     select_command,
     select_role,
     session_control,
 )
+from scripts.app_server_user_state import AppServerPreferenceStore
 from scripts.codex_app_server_compatibility import (
     codex_version_at_least,
     codex_version_core,
@@ -1709,11 +1711,12 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertTrue(matching.allowed)
         self.assertEqual("explicit_qualified_opt_in", matching.reason)
 
-    def test_user_command_status_and_session_control_are_explicit_only(self) -> None:
-        report = control_status(codex=str(self.fake))
+    def test_user_command_status_and_persistent_control(self) -> None:
+        preference_path = self.root / "app-server-preference.json"
+        report = control_status(codex=str(self.fake), preference_path=preference_path)
         self.assertEqual(report["global_default"], "OFF")
         self.assertEqual(report["session_opt_in"], "OFF")
-        self.assertFalse(report["session_control_supported"])
+        self.assertTrue(report["session_control_supported"])
         self.assertEqual(report["current_execution_default"], "GUI")
         self.assertEqual(report["discussion_execution"], "GUI-native")
         self.assertFalse(report["api_fallback"])
@@ -1726,14 +1729,81 @@ class CodexExecutionTests(unittest.TestCase):
             ("gpt-5.6-sol", "high"),
         )
         self.assertIn("App Server global default: OFF", format_control_status(report))
-        for action in ("on", "off"):
-            with self.subTest(action=action):
-                session = session_control(action)
-                self.assertFalse(session["accepted"])
-                self.assertEqual(session["session_opt_in"], "OFF")
-                self.assertFalse(session["session_control_supported"])
-                self.assertFalse(session["persistent_changes"])
-                self.assertIn("--app-server", session["next_action"])
+        enabled = preference_control("on", preference_path=preference_path)
+        self.assertTrue(enabled["accepted"])
+        self.assertEqual(enabled["session_opt_in"], "ON")
+        self.assertTrue(enabled["persistent_changes"])
+        self.assertEqual(0o600, preference_path.stat().st_mode & 0o777)
+        self.assertEqual(0o700, preference_path.parent.stat().st_mode & 0o777)
+        self.assertEqual(
+            "ON",
+            control_status(codex=str(self.fake), preference_path=preference_path)[
+                "session_opt_in"
+            ],
+        )
+        disabled = session_control("off", preference_path=preference_path)
+        self.assertEqual(disabled["session_opt_in"], "OFF")
+
+    def test_persistent_preference_precedence_and_gui_native_routes(self) -> None:
+        preference_path = self.root / "app-server-preference.json"
+        AppServerPreferenceStore(preference_path).set(True)
+
+        persistent = select_command(
+            "plan",
+            app_server_requested=False,
+            codex=str(self.fake),
+            preference_path=preference_path,
+        )
+        self.assertTrue(persistent.allowed)
+        self.assertEqual("App Server", persistent.execution)
+        self.assertEqual("persistent", persistent.opt_in)
+        self.assertEqual("persistent_qualified_preference", persistent.reason)
+        self.assertFalse(persistent.strict_request)
+
+        gui = select_command(
+            "plan",
+            app_server_requested=False,
+            gui_requested=True,
+            codex=str(self.fake),
+            preference_path=preference_path,
+        )
+        self.assertEqual((gui.execution, gui.reason), ("GUI", "explicit_gui"))
+
+        discussion = select_command(
+            "discuss",
+            app_server_requested=False,
+            codex=str(self.fake),
+            preference_path=preference_path,
+        )
+        self.assertTrue(discussion.allowed)
+        self.assertEqual((discussion.execution, discussion.reason), ("GUI", "discussion_is_gui_native"))
+
+    def test_persistent_qualification_failure_falls_back_but_explicit_stays_strict(self) -> None:
+        preference_path = self.root / "app-server-preference.json"
+        AppServerPreferenceStore(preference_path).set(True)
+        os.environ["FAKE_CODEX_VERSION"] = "0.145.9"
+        try:
+            passive = select_command(
+                "verify",
+                app_server_requested=False,
+                codex=str(self.fake),
+                preference_path=preference_path,
+            )
+            strict = select_command(
+                "verify",
+                app_server_requested=True,
+                codex=str(self.fake),
+                preference_path=preference_path,
+            )
+        finally:
+            os.environ.pop("FAKE_CODEX_VERSION", None)
+        self.assertTrue(passive.allowed)
+        self.assertEqual("GUI", passive.execution)
+        self.assertTrue(passive.fallback_used)
+        self.assertEqual("codex_below_minimum_dirty_read_version", passive.fallback_reason)
+        self.assertIn("continue the same request immediately", format_selection(passive))
+        self.assertFalse(strict.allowed)
+        self.assertFalse(strict.fallback_used)
 
     def test_user_command_control_cli_reports_banners_and_fail_closed_exits(self) -> None:
         base = [
@@ -1763,14 +1833,15 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertEqual(discussion.returncode, 2)
         self.assertIn("discussion_is_gui_native", discussion.stdout)
 
+        preference_path = self.root / "cli-preference.json"
         session = subprocess.run(
-            [*base, "session", "on", "--json"],
+            [*base, "--preference", str(preference_path), "preference", "on", "--json"],
             check=False,
             capture_output=True,
             text=True,
         )
-        self.assertEqual(session.returncode, 2)
-        self.assertFalse(json.loads(session.stdout)["persistent_changes"])
+        self.assertEqual(session.returncode, 0)
+        self.assertTrue(json.loads(session.stdout)["persistent_changes"])
 
     def test_thread_resume_restart_and_stale_thread_classification(self) -> None:
         telemetry = self.root / "telemetry.jsonl"

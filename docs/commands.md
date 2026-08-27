@@ -393,10 +393,11 @@ These optional routes apply only to Codex:
 
 Ordinary Tool Shed requests do not refresh or require this catalog.
 
-## Codex App Server Explicit Opt-In
+## Codex App Server Persistent Preference
 
-Normal Tool Shed execution remains in the Codex GUI. Add `--app-server` only when you intentionally
-want one of the three qualified roles to use the existing App Server integration:
+The repository default remains GUI. Turn on a protected user-local preference once to make eligible
+unflagged commands prefer App Server, use `--gui` for one GUI action, or use `--app-server` for a
+strict one-command App Server request:
 
 | Prompt | Selected execution |
 | --- | --- |
@@ -404,10 +405,13 @@ want one of the three qualified roles to use the existing App Server integration
 | `ts: verify <request> --app-server` | App Server verification with `gpt-5.6-terra` / `low` |
 | `ts: camp run <camp> --app-server` | Existing bounded App Server CAMP path with `gpt-5.6-terra` / `medium` |
 | `ts: next --app-server` | Invoke one deterministic dispatcher that reuses normal `next` selection, preflights CAMP before planning, automatically prepares an unprepared ready campaign with at most 64,000 bytes of inline context through read-only App Server planning, and continues to the existing Terra/medium CAMP path; never launch a nested Codex agent. |
-| `ts: appserver status` | Read-only default, compatibility, and qualified-role status |
+| `ts: app-server on` | Persistently prefer App Server for eligible commands. `appserver` is an alias. |
+| `ts: app-server off` | Restore the normal GUI default. |
+| `ts: app-server status` | Read-only preference, compatibility, and qualified-role status. |
 
-Without the option, `ts: plan`, `ts: verify`, and `ts: camp run` use the normal GUI path and report
-`Execution: GUI`. For planning and verification, the selector accepts exact reviewed records or an
+With the preference off, unflagged `ts: plan`, `ts: verify`, `ts: camp run`, and executable `ts:
+next` use the GUI and report `Execution: GUI`. With it on, those routes prefer App Server; `--gui`
+overrides it once without changing stored state. For planning and verification, the selector accepts exact reviewed records or an
 unseen Codex version whose numeric release core is at least `0.146.0`. An unseen eligible executable
 runs the bounded dirty read qualification in the same invocation; a passing result continues the
 original request without updating the repository registry. A sanitized user-local cache reuses a
@@ -420,8 +424,9 @@ and fatal or unknown qualification results are blocked with a clear GUI fallback
 workspace-write record and separate write harness. There is no API fallback.
 
 `next` is not a new App Server role. The flagged and unflagged forms select the same next action.
-The GUI immediately runs
-`python3 <shed>/scripts/app_server_dispatch.py --workspace . next --app-server --json` once; it does
+When execution resolves to App Server, the GUI immediately runs
+`python3 <shed>/scripts/app_server_dispatch.py --workspace . next --json` once, adding
+`--app-server` only for an explicit strict request; it does
 not wrap that command in `codex exec` or another agent. Executable CAMP work uses a strict
 campaign-local JSON execution capsule with the matching campaign/CAMP IDs, prompt, relative path
 allowlists, focused context, and shell-free verification argv. If that capsule is absent, the same
@@ -433,7 +438,10 @@ smaller of 64,000 bytes and the configured inline limit, and persists it through
 guarded campaign transaction before continuing to the existing `camp-run` safety path. Unsafe,
 ambiguous, invalid, or over-budget preparation stops before mutation. Existing valid capsules skip
 planning. Discussion, decisions, blocked work, external gates, and unsupported roles remain on
-their ordinary route. The option never persists beyond the invocation.
+their ordinary route. Explicit `--app-server` remains strict. A persisted selection that cannot
+qualify reports a compact category and continues the same action immediately in GUI. Pre-mutation
+failures switch directly; possible mutations require GUI reconciliation from the existing journal
+and Git state, never replay.
 
 The CAMP worker reports `step_ready_for_verification` or `camp_ready_for_verification` after bounded
 implementation. App Server `turn/completed` is only a terminal protocol event. The controller runs
@@ -445,11 +453,16 @@ lifecycle advance.
 `ts: discuss` is always GUI-native. `ts: discuss ... --app-server` is rejected instead of silently
 changing execution surfaces.
 
-`ts: appserver on` and `ts: appserver off` are intentionally unavailable because Codex does not
-expose reliable skill-owned session storage. They make no persistent change and direct the user to
-the per-command option. The unflagged form is the GUI override; Tool Shed does not add a redundant
-`--gui` option while session mode is unavailable. The committed global setting remains
-`codex_app_server_enabled = false`.
+`ts: app-server on|off` stores only a schema-versioned mode and timestamp in
+`$CODEX_HOME/tool-shed/app-server-preference.json` (or the equivalent `~/.codex` path), outside
+repositories and installed Tool Shed snapshots. Writes are locked, atomic, and private where the
+platform supports modes. Missing or invalid state fails safely to off. The committed global setting
+remains `codex_app_server_enabled = false`.
+
+Passive attempts, successes, fallbacks, and reconciliation handoffs append sanitized operational
+events to `$CODEX_HOME/tool-shed/app-server-events.jsonl`. Events exclude prompts, responses, raw
+tool output, credentials, secrets, exception text, and repository content. Logging is best-effort
+and never delays or blocks GUI fallback.
 
 Every App Server path uses one bounded Codex resolver. A supported explicit override is
 authoritative. Otherwise it inventories `PATH`, trusted platform locations, and OpenAI VS Code

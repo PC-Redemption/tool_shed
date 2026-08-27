@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import json
+import io
 import subprocess
 import tempfile
 import unittest
 import sys
+from contextlib import redirect_stdout
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -16,6 +18,7 @@ from scripts import campaign_queue
 from scripts.app_server_dispatch import (
     AUTO_PREPARATION_MAX_SNAPSHOT_BYTES,
     DispatchError,
+    _gui_handoff_payload,
     _automatic_preparation_context,
     _automatic_preparation_prompt,
     _capsule_source_is_stale,
@@ -28,6 +31,7 @@ from scripts.app_server_dispatch import (
     _validate_prelaunch_capsule,
     _verification_output_is_broad,
     dispatch_next,
+    main as dispatch_main,
     parse_execution_capsule,
 )
 from scripts.project_identity import binding_token, ensure_project_identity
@@ -62,6 +66,7 @@ The proof is verified.
 class AppServerDispatchTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
+        self.user_state_temporary = tempfile.TemporaryDirectory()
         self.workspace = Path(self.temporary.name).resolve()
         subprocess.run(
             ["git", "init", "-q", "-b", "main", str(self.workspace)],
@@ -72,6 +77,7 @@ class AppServerDispatchTests(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.temporary.cleanup()
+        self.user_state_temporary.cleanup()
 
     def add_campaign(
         self,
@@ -184,6 +190,94 @@ class AppServerDispatchTests(unittest.TestCase):
         self.assertEqual("working", campaign_queue.load_all(self.workspace)["dispatch-proof"].status)
         execute.assert_called_once()
         self.assertEqual("/qualified/codex", execute.call_args.kwargs["codex"])
+
+    def test_dispatch_accepts_a_persisted_selection_without_explicit_flag(self) -> None:
+        self.add_campaign("dispatch-proof")
+        selection = SimpleNamespace(
+            allowed=True,
+            execution="App Server",
+            strict_request=False,
+            reason="persistent_qualified_preference",
+            codex_executable="/qualified/codex",
+            installed_codex="0.149.0",
+            qualification_state="exact-qualified",
+            role="CAMP execution",
+            model="gpt-5.6-terra",
+            reasoning="medium",
+            api_fallback=False,
+        )
+        with (
+            patch("scripts.app_server_dispatch.select_command", return_value=selection) as select,
+            patch("scripts.app_server_dispatch._app_server_host_preflight", return_value={}),
+            patch(
+                "scripts.app_server_dispatch.execute_camp_if_enabled",
+                return_value=self.execution_result(),
+            ),
+        ):
+            result = dispatch_next(self.workspace, app_server_requested=False)
+
+        self.assertEqual("dispatch-proof", result["campaign"]["campaign_id"])
+        self.assertFalse(select.call_args.kwargs["app_server_requested"])
+
+    def test_passive_cli_failure_returns_immediate_gui_handoff_and_logs(self) -> None:
+        state_root = Path(self.user_state_temporary.name)
+        preference = state_root / "app-server-preference.json"
+        events = state_root / "app-server-events.jsonl"
+        from scripts.app_server_user_state import AppServerPreferenceStore
+
+        AppServerPreferenceStore(preference).set(True)
+        stdout = io.StringIO()
+        argv = [
+            "app_server_dispatch.py",
+            "--workspace",
+            str(self.workspace),
+            "--preference",
+            str(preference),
+            "--events",
+            str(events),
+            "next",
+            "--json",
+        ]
+        with (
+            patch.object(sys, "argv", argv),
+            patch(
+                "scripts.app_server_dispatch.dispatch_next",
+                side_effect=DispatchError(
+                    "app_server_network_unavailable",
+                    "sanitized",
+                    recovery_action="continue",
+                ),
+            ),
+            redirect_stdout(stdout),
+        ):
+            result = dispatch_main()
+
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual(0, result)
+        self.assertEqual("gui_fallback", payload["status"])
+        self.assertTrue(payload["fallback"]["continue_same_action"])
+        self.assertFalse(payload["fallback"]["replay_app_server"])
+        records = [json.loads(line) for line in events.read_text(encoding="utf-8").splitlines()]
+        self.assertEqual(["attempted", "gui_fallback"], [item["outcome"] for item in records])
+
+    def test_possible_mutation_requires_gui_reconciliation_without_replay(self) -> None:
+        payload = _gui_handoff_payload(
+            category="app_server_execution_failed",
+            mutation_state="unknown",
+            prior={
+                "journal": {
+                    "final_state": "safe_unverified",
+                    "safe": True,
+                    "files_created": ["a"],
+                    "files_modified": ["b"],
+                    "files_deleted": [],
+                    "verification_passed": False,
+                }
+            },
+        )
+        self.assertEqual("gui_reconciliation_required", payload["status"])
+        self.assertEqual(2, payload["reconciliation"]["changed_path_count"])
+        self.assertFalse(payload["fallback"]["replay_app_server"])
 
     def test_missing_capsule_is_prepared_persisted_and_executed_once(self) -> None:
         path = self.add_campaign("dispatch-proof", with_capsule=False)

@@ -93,14 +93,19 @@ The user-facing opt-ins are `ts: plan <request> --app-server`, `ts: verify <requ
 --app-server`, `ts: camp run <camp> --app-server`, and `ts: next --app-server`; the last invokes
 `app_server_dispatch.py` directly, with no nested `codex exec`, to perform normal next-action
 selection, validate the campaign execution capsule and host preflight, and forward only to an
-already-qualified role rather than making `next` a role. `ts: appserver status` reports the exact
-local compatibility and routing state. The unflagged forms use the GUI. Session-wide on/off is
-deliberately unavailable because the Codex skill surface has no reliable skill-owned session
-storage, and no `--gui` alias is needed while the unflagged form is authoritative. Exact reviewed
+already-qualified role rather than making `next` a role. `ts: app-server status` reports the exact
+local preference, compatibility, and routing state; `appserver` is an alias. Eligible unflagged
+forms follow the protected user-local preference. `--gui` overrides it once, while explicit
+`--app-server` stays strict. Exact reviewed
 records remain authoritative for CAMP. For planning and verification, an unseen executable whose
 numeric release core is at least `0.146.0` is dirty-qualified automatically with no upper cutoff;
 the selector continues the original request only after the bounded read-only harness passes.
 Versions below the floor and fatal or unknown outcomes fail closed.
+
+Persistent-mode failures before possible mutation hand the same action straight back to GUI. A
+possible mutation requires mutation-journal and Git reconciliation before GUI continuation and is
+never replayed. The append-only user-local operational log is sanitized and best-effort; logging
+failure cannot block fallback.
 
 All Codex consumers use one resolver. A supported explicit override remains authoritative.
 Otherwise the resolver inventories `PATH`, bounded trusted platform locations, and OpenAI VS Code

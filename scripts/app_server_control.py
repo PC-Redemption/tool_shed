@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Resolve Tool Shed's explicit, default-off Codex App Server command controls."""
+"""Resolve Tool Shed's explicit and user-persisted Codex App Server controls."""
 
 from __future__ import annotations
 
 import argparse
 import json
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -31,6 +31,12 @@ try:
         DEFAULT_CONFIG,
         AppServerFeatureConfig,
         FeatureConfigError,
+    )
+    from scripts.app_server_user_state import (
+        AppServerPreferenceStore,
+        AppServerUserStateError,
+        default_app_server_event_path,
+        record_app_server_event_best_effort,
     )
 except ModuleNotFoundError:  # Direct execution: python scripts/app_server_control.py
     from codex_app_server_compatibility import (  # type: ignore[no-redef]
@@ -58,6 +64,12 @@ except ModuleNotFoundError:  # Direct execution: python scripts/app_server_contr
         DEFAULT_CONFIG,
         AppServerFeatureConfig,
         FeatureConfigError,
+    )
+    from app_server_user_state import (  # type: ignore[no-redef]
+        AppServerPreferenceStore,
+        AppServerUserStateError,
+        default_app_server_event_path,
+        record_app_server_event_best_effort,
     )
 
 
@@ -101,6 +113,13 @@ class CommandSelection:
     codex_inventory: tuple[dict[str, Any], ...]
     api_fallback: bool
     orchestrator_subcommand: str
+    strict_request: bool = False
+    preference_mode: str = "OFF"
+    preference_source: str = "default-off"
+    preference_path: str | None = None
+    preference_warning: str | None = None
+    fallback_used: bool = False
+    fallback_reason: str | None = None
 
 
 def _global_default(config: AppServerFeatureConfig) -> str:
@@ -115,24 +134,36 @@ def select_role(
     sandbox: str,
     orchestrator_subcommand: str,
     app_server_requested: bool,
+    gui_requested: bool = False,
     codex: str | None = None,
     config_path: Path = DEFAULT_CONFIG,
     policy_path: Path = DEFAULT_POLICY,
     qualifications_path: Path = DEFAULT_QUALIFICATIONS,
     qualification_cache_path: Path | None = None,
+    preference_path: Path | None = None,
     force_requalification: bool = False,
 ) -> CommandSelection:
     """Resolve one command without executing either backend."""
 
+    if app_server_requested and gui_requested:
+        raise AppServerControlError("--app-server and --gui are mutually exclusive")
+    preference = AppServerPreferenceStore(preference_path).status()
+    persisted_request = preference.enabled and not app_server_requested and not gui_requested
+    effective_app_server = app_server_requested or persisted_request
     config = AppServerFeatureConfig.load(config_path)
     policy = ModelPolicy.load(policy_path)
     api_fallback = bool(policy.payload["authentication"]["allow_api_key_fallback"])
     common: dict[str, Any] = {
         "schema_version": 1,
         "command": command,
-        "requested_execution": "App Server" if app_server_requested else "GUI",
+        "requested_execution": "App Server" if effective_app_server else "GUI",
         "role": display_role,
-        "opt_in": "explicit" if app_server_requested else "default",
+        "opt_in": (
+            "explicit" if app_server_requested
+            else "persistent" if persisted_request
+            else "explicit-gui" if gui_requested
+            else "default"
+        ),
         "fallback_available": True,
         "global_default": _global_default(config),
         "session_opt_in": "OFF",
@@ -140,15 +171,20 @@ def select_role(
         "minimum_dirty_read_codex": config.minimum_dirty_read_codex_version,
         "api_fallback": api_fallback,
         "orchestrator_subcommand": orchestrator_subcommand,
+        "strict_request": app_server_requested,
+        "preference_mode": preference.mode,
+        "preference_source": preference.source,
+        "preference_path": preference.path,
+        "preference_warning": preference.warning,
     }
-    if not app_server_requested:
+    if not effective_app_server:
         return CommandSelection(
             **common,
             execution="GUI",
             model=None,
             reasoning=None,
             allowed=True,
-            reason="default_gui",
+            reason="explicit_gui" if gui_requested else "default_gui",
             installed_codex=None,
             codex_executable=None,
             codex_discovery=None,
@@ -160,6 +196,28 @@ def select_role(
             codex_inventory=(),
         )
     if role == "discussion":
+        if not app_server_requested:
+            return CommandSelection(
+                **{
+                    **common,
+                    "requested_execution": "GUI",
+                    "opt_in": "persistent-bypass" if persisted_request else common["opt_in"],
+                },
+                execution="GUI",
+                model=None,
+                reasoning=None,
+                allowed=True,
+                reason="discussion_is_gui_native",
+                installed_codex=None,
+                codex_executable=None,
+                codex_discovery=None,
+                compatibility=None,
+                qualification_mode="not_applicable",
+                qualification_state="not-applicable",
+                dirty_qualification=None,
+                qualification_cache={"status": "not-applicable", "source": "none"},
+                codex_inventory=(),
+            )
         return CommandSelection(
             **common,
             execution="GUI",
@@ -383,10 +441,23 @@ def select_role(
     elif not policy_matches:
         reason = "qualification_policy_mismatch"
     elif qualification_mode == "dirty_read":
-        reason = "explicit_dirty_qualified_opt_in"
+        reason = (
+            "explicit_dirty_qualified_opt_in"
+            if app_server_requested
+            else "persistent_dirty_qualified_preference"
+        )
     else:
-        reason = "explicit_qualified_opt_in"
-    allowed = reason in {"explicit_qualified_opt_in", "explicit_dirty_qualified_opt_in"}
+        reason = (
+            "explicit_qualified_opt_in"
+            if app_server_requested
+            else "persistent_qualified_preference"
+        )
+    allowed = reason in {
+        "explicit_qualified_opt_in",
+        "explicit_dirty_qualified_opt_in",
+        "persistent_qualified_preference",
+        "persistent_dirty_qualified_preference",
+    }
     return CommandSelection(
         **common,
         execution="App Server" if allowed else "GUI",
@@ -410,31 +481,45 @@ def select_command(
     command: str,
     *,
     app_server_requested: bool,
+    gui_requested: bool = False,
     codex: str | None = None,
     config_path: Path = DEFAULT_CONFIG,
     policy_path: Path = DEFAULT_POLICY,
     qualifications_path: Path = DEFAULT_QUALIFICATIONS,
     qualification_cache_path: Path | None = None,
+    preference_path: Path | None = None,
     force_requalification: bool = False,
 ) -> CommandSelection:
     try:
         role, display_role, sandbox, orchestrator = COMMAND_ROUTES[command]
     except KeyError as error:
         raise AppServerControlError(f"unknown Tool Shed command route: {command}") from error
-    return select_role(
+    selection = select_role(
         role,
         command=command,
         display_role=display_role,
         sandbox=sandbox,
         orchestrator_subcommand=orchestrator,
         app_server_requested=app_server_requested,
+        gui_requested=gui_requested,
         codex=codex,
         config_path=config_path,
         policy_path=policy_path,
         qualifications_path=qualifications_path,
         qualification_cache_path=qualification_cache_path,
+        preference_path=preference_path,
         force_requalification=force_requalification,
     )
+    if selection.opt_in == "persistent" and not selection.allowed:
+        return replace(
+            selection,
+            allowed=True,
+            execution="GUI",
+            reason="persistent_gui_fallback",
+            fallback_used=True,
+            fallback_reason=selection.reason,
+        )
+    return selection
 
 
 def control_status(
@@ -444,6 +529,8 @@ def control_status(
     policy_path: Path = DEFAULT_POLICY,
     qualifications_path: Path = DEFAULT_QUALIFICATIONS,
     qualification_cache_path: Path | None = None,
+    preference_path: Path | None = None,
+    event_path: Path | None = None,
 ) -> dict[str, Any]:
     report = status_report(
         codex=codex,
@@ -453,16 +540,18 @@ def control_status(
         qualification_cache_path=qualification_cache_path,
     )
     policy = ModelPolicy.load(policy_path)
+    preference = AppServerPreferenceStore(preference_path).status()
     report.update(
         {
             "global_default": "ON" if report["global_default"] == "enabled" else "OFF",
-            "session_opt_in": "OFF",
-            "session_control_supported": False,
-            "session_note": (
-                "Codex does not expose reliable skill-owned session storage; use --app-server "
-                "on each qualified command."
+            "session_opt_in": preference.mode,
+            "session_control_supported": True,
+            "session_note": "Persistent user-local preference; --gui overrides it once.",
+            "preference": preference.as_dict(),
+            "event_log_path": str(
+                (event_path or default_app_server_event_path()).expanduser().resolve()
             ),
-            "current_execution_default": "GUI",
+            "current_execution_default": "App Server" if preference.enabled else "GUI",
             "discussion_execution": "GUI-native",
             "api_fallback": bool(
                 policy.payload["authentication"]["allow_api_key_fallback"]
@@ -472,19 +561,27 @@ def control_status(
     return report
 
 
-def session_control(action: str) -> dict[str, Any]:
+def preference_control(action: str, *, preference_path: Path | None = None) -> dict[str, Any]:
     if action not in {"on", "off"}:
-        raise AppServerControlError(f"unknown session action: {action}")
+        raise AppServerControlError(f"unknown preference action: {action}")
+    state = AppServerPreferenceStore(preference_path).set(action == "on")
     return {
         "schema_version": 1,
-        "accepted": False,
+        "accepted": True,
         "requested": action.upper(),
-        "session_opt_in": "OFF",
-        "session_control_supported": False,
-        "persistent_changes": False,
-        "reason": "reliable skill-owned Codex-session storage is unavailable",
-        "next_action": "use --app-server on each qualified plan, verify, or camp run command",
+        "session_opt_in": state.mode,
+        "session_control_supported": True,
+        "persistent_changes": True,
+        "preference": state.as_dict(),
+        "reason": "user-local App Server preference updated",
+        "next_action": "use --gui on any one eligible command to override this preference",
     }
+
+
+def session_control(action: str, *, preference_path: Path | None = None) -> dict[str, Any]:
+    """Compatibility alias for the former session-control entrypoint."""
+
+    return preference_control(action, preference_path=preference_path)
 
 
 def format_selection(selection: CommandSelection) -> str:
@@ -496,7 +593,7 @@ def format_selection(selection: CommandSelection) -> str:
                 f"Model: {selection.model}",
                 f"Reasoning: {selection.reasoning}",
                 f"API fallback: {'enabled' if selection.api_fallback else 'disabled'}",
-                "Opt-in: explicit",
+                f"Opt-in: {selection.opt_in}",
                 f"Reason: {selection.reason}",
                 f"Qualification: {selection.qualification_mode}",
                 f"Qualification state: {selection.qualification_state}",
@@ -507,6 +604,15 @@ def format_selection(selection: CommandSelection) -> str:
             ]
         )
     if selection.allowed:
+        if selection.fallback_used:
+            return "\n".join(
+                [
+                    "Execution: GUI",
+                    "App Server preference fallback: ACTIVE",
+                    f"Reason: {selection.fallback_reason}",
+                    "Action: continue the same request immediately in GUI",
+                ]
+            )
         return "Execution: GUI"
     lines = [
         "Execution: GUI",
@@ -527,7 +633,10 @@ def format_selection(selection: CommandSelection) -> str:
                 f"({selection.qualification_cache.get('decision_source')})",
             ]
         )
-    lines.append("Fallback: rerun the command without --app-server")
+    if selection.strict_request:
+        lines.append("Fallback: rerun the command without --app-server or use --gui")
+    else:
+        lines.append("Fallback: GUI will be used automatically when safe")
     return "\n".join(lines)
 
 
@@ -535,9 +644,10 @@ def format_control_status(report: dict[str, Any]) -> str:
     roles = report["enabled_roles"]
     lines = [
         f"App Server global default: {report['global_default']}",
-        f"Session opt-in: {report['session_opt_in']}",
-        "Session controls: unavailable; explicit per-command only",
-        f"Session note: {report['session_note']}",
+        f"Persistent preference: {report['session_opt_in']}",
+        f"Preference path: {report['preference']['path']}",
+        f"Preference source: {report['preference']['source']}",
+        f"Fallback event log: {report['event_log_path']}",
         "",
         f"Codex CLI: {report.get('codex_cli', 'NOT FOUND')}",
         f"Discovery: {report.get('codex_discovery', 'not found')}",
@@ -589,20 +699,28 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--policy", type=Path, default=DEFAULT_POLICY)
     parser.add_argument("--qualifications", type=Path, default=DEFAULT_QUALIFICATIONS)
     parser.add_argument("--qualification-cache", type=Path, default=None)
+    parser.add_argument("--preference", type=Path, default=None)
+    parser.add_argument("--events", type=Path, default=None)
     subparsers = parser.add_subparsers(dest="operation", required=True)
 
     select = subparsers.add_parser("select", help="Resolve one user-facing Tool Shed command.")
     select.add_argument("command", choices=tuple(COMMAND_ROUTES))
-    select.add_argument("--app-server", action="store_true")
+    execution = select.add_mutually_exclusive_group()
+    execution.add_argument("--app-server", action="store_true")
+    execution.add_argument("--gui", action="store_true")
     select.add_argument("--json", action="store_true")
     select.add_argument("--requalify", action="store_true")
 
     status = subparsers.add_parser("status", help="Show user-facing App Server control status.")
     status.add_argument("--json", action="store_true")
 
-    session = subparsers.add_parser(
-        "session", help="Explain why session on/off is unavailable without reliable session storage."
+    preference = subparsers.add_parser(
+        "preference", help="Persistently enable or disable passive App Server use."
     )
+    preference.add_argument("action", choices=("on", "off"))
+    preference.add_argument("--json", action="store_true")
+
+    session = subparsers.add_parser("session", help="Compatibility alias for preference.")
     session.add_argument("action", choices=("on", "off"))
     session.add_argument("--json", action="store_true")
     return parser.parse_args()
@@ -615,12 +733,28 @@ def main() -> int:
             selection = select_command(
                 args.command,
                 app_server_requested=args.app_server,
+                gui_requested=args.gui,
                 codex=args.codex,
                 config_path=args.config,
                 policy_path=args.policy,
                 qualifications_path=args.qualifications,
                 qualification_cache_path=args.qualification_cache,
+                preference_path=args.preference,
                 force_requalification=args.requalify,
+            )
+            record_app_server_event_best_effort(
+                path=args.events,
+                command=args.command,
+                outcome=(
+                    "gui_fallback" if selection.fallback_used
+                    else "selected" if selection.execution == "App Server"
+                    else "gui"
+                ),
+                category=selection.fallback_reason or selection.reason,
+                mutation_state="none",
+                backend="app_server" if selection.execution == "App Server" else "gui",
+                preference_mode=selection.preference_mode,
+                strict_request=selection.strict_request,
             )
             print(
                 json.dumps(asdict(selection), indent=2, sort_keys=True)
@@ -635,6 +769,8 @@ def main() -> int:
                 policy_path=args.policy,
                 qualifications_path=args.qualifications,
                 qualification_cache_path=args.qualification_cache,
+                preference_path=args.preference,
+                event_path=args.events,
             )
             print(
                 json.dumps(report, indent=2, sort_keys=True)
@@ -642,7 +778,17 @@ def main() -> int:
                 else format_control_status(report)
             )
             return 0
-        report = session_control(args.action)
+        report = preference_control(args.action, preference_path=args.preference)
+        record_app_server_event_best_effort(
+            path=args.events,
+            command="preference",
+            outcome="updated",
+            category=f"preference_{args.action}",
+            mutation_state="none",
+            backend="control",
+            preference_mode=report["session_opt_in"],
+            strict_request=False,
+        )
         print(
             json.dumps(report, indent=2, sort_keys=True)
             if args.json
@@ -654,13 +800,24 @@ def main() -> int:
                 ]
             )
         )
-        return 2
+        return 0
     except (
         AppServerControlError,
         CompatibilityError,
         FeatureConfigError,
         ModelPolicyError,
+        AppServerUserStateError,
     ) as error:
+        record_app_server_event_best_effort(
+            path=getattr(args, "events", None),
+            command=getattr(args, "command", args.operation),
+            outcome="failed",
+            category=type(error).__name__,
+            mutation_state="none",
+            backend="none",
+            preference_mode="UNKNOWN",
+            strict_request=bool(getattr(args, "app_server", False)),
+        )
         print(json.dumps({"error": str(error)}, indent=2), file=__import__("sys").stderr)
         return 1
 

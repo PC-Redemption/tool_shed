@@ -239,6 +239,16 @@ def smoke_temp_workspace() -> None:
         )
         if any(fragment not in portable_text for fragment in brainstorm_contract):
             raise SystemExit("portable skill did not retain the complete Brainstorm / Idea Brief contract")
+        app_server_contract = (
+            "ts: app-server on|off",
+            "standalone `--gui`",
+            "continues the same action immediately",
+            "never replay the App Server step",
+            "app-server-events.jsonl",
+            "logging failure must never block GUI fallback",
+        )
+        if any(fragment not in portable_text for fragment in app_server_contract):
+            raise SystemExit("portable skill did not retain the passive App Server contract")
         provider_paths = {
             "claude-code": "CLAUDE.md",
             "gemini-cli": "GEMINI.md",
@@ -277,6 +287,14 @@ def smoke_temp_workspace() -> None:
             "excluded from campaign reconciliation",
             "Brainstorming is GUI-native",
         )
+        generated_app_server_contract = (
+            "ts: app-server on|off",
+            "one-command `--gui`",
+            "continue the same action immediately in GUI",
+            "never replay the App Server step",
+            "Logging failure never blocks fallback",
+            "Explicit `--app-server` remains fail-closed",
+        )
         for provider_id, relative in provider_paths.items():
             guidance = workspace / relative
             guidance_text = guidance.read_text(encoding="utf-8") if guidance.is_file() else ""
@@ -287,6 +305,7 @@ def smoke_temp_workspace() -> None:
                 or any(fragment not in guidance_text for fragment in generated_prm_contract)
                 or any(fragment not in guidance_text for fragment in generated_kiss_contract)
                 or any(fragment not in guidance_text for fragment in generated_brainstorm_contract)
+                or any(fragment not in guidance_text for fragment in generated_app_server_contract)
             ):
                 raise SystemExit(f"installer did not create {provider_id} adapter guidance")
         inbox_result = subprocess.run(

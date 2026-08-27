@@ -25,7 +25,7 @@ class NextAppServerForwardingContractTests(unittest.TestCase):
 
     def test_eligible_camp_forwards_to_existing_terra_medium_path(self):
         self.assertIn(
-            "app_server_dispatch.py --workspace . next --app-server --json", self.route
+            "app_server_dispatch.py --workspace . next --json", self.route
         )
         self.assertIn("existing bounded `camp-run` path", self.route)
         self.assertIn("`gpt-5.6-terra` with `medium` reasoning", self.route)
@@ -40,9 +40,9 @@ class NextAppServerForwardingContractTests(unittest.TestCase):
         self.assertIn("without starting CAMP execution", self.flat_route)
         self.assertIn("Discussion remains GUI-native", self.route)
         self.assertIn("fails closed", self.route)
-        self.assertIn("do not silently switch backends", self.route)
-        self.assertIn("never\npersists state, changes the global default from off", self.route)
-        self.assertIn("or enables API\nfallback", self.route)
+        self.assertIn("explicit App Server remains fail-closed", self.route)
+        self.assertIn("This forwarding never changes the repository default", self.flat_route)
+        self.assertIn("or enables API fallback", self.route)
 
     def test_installer_and_user_docs_publish_the_same_forwarding_contract(self):
         paths = (
@@ -61,7 +61,7 @@ class NextAppServerForwardingContractTests(unittest.TestCase):
         self.assertIn("normal `next` navigation", installer)
         self.assertIn("Do not make `next` a role", installer)
         self.assertIn("bounded Terra/medium `camp-run` path", installer)
-        self.assertIn("persist the preference", installer)
+        self.assertIn("protected user-local preference", installer)
         self.assertIn("add API fallback", installer)
 
 

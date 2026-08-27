@@ -78,6 +78,7 @@ SECTION_ANCHORS = {
     "Version And Update Status": ("maintenance", "Maintenance and continuity", "/help/maintenance/"),
     "Codex Reasoning Maintenance": ("maintenance", "Maintenance and continuity", "/help/maintenance/"),
     "Codex App Server Explicit Opt-In": ("execution", "Execution", "/help/execution/"),
+    "Codex App Server Persistent Preference": ("execution", "Execution", "/help/execution/"),
     "Artifact And Workspace Requests": ("planning", "Planning and roadmaps", "/help/planning/"),
 }
 

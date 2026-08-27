@@ -560,23 +560,25 @@ state.
 
 ## Common Use Cases
 
-### Explicitly test the qualified App Server path
+### Passively dogfood the qualified App Server path
 
-Normal Tool Shed work stays in the current Codex GUI. For deliberate real-world qualification,
-opt into one qualified operation at a time:
+Enable the user-local preference once, then let eligible work select App Server without repetitive
+typing. Keep the explicit form for strict probes and use `--gui` for a one-action override:
 
 ```text
 ts: plan <request> --app-server
 ts: verify <request> --app-server
 ts: camp run <camp> --app-server
 ts: next --app-server
-ts: appserver status
+ts: app-server on
+ts: app-server status
+ts: verify <request> --gui
 ```
 
-The execution banner identifies App Server, role, model, reasoning, and explicit opt-in. Planning
+The execution banner identifies App Server, role, model, reasoning, and preference source. Planning
 uses Sol/high, verification uses Terra/low, and CAMP execution reuses the optimized bounded
-Terra/medium `camp-run` path. The same commands without the option show `Execution: GUI` and remain
-in the normal GUI path.
+Terra/medium `camp-run` path. Unflagged eligible commands prefer App Server only while the mode is
+on. Discussion and brainstorming remain GUI-native.
 
 For an App Server CAMP, `turn/completed` confirms only that the protocol turn ended. The worker
 returns `step_ready_for_verification` or `camp_ready_for_verification` after its bounded edits, then
@@ -610,7 +612,7 @@ result, persists the capsule through the guarded
 campaign transaction, and continues with the existing Terra/medium runner in the same invocation.
 Unsafe, ambiguous, invalid, or over-budget preparation stops before mutation. Discussion, owner
 decisions, blocked work, external gates, and unsupported actions remain on their natural route.
-The preference applies only to that invocation; `next` does not become an App Server role.
+`next` does not become an App Server role; it only forwards the resolved execution preference.
 
 The selector uses exact reviewed qualification for known versions. For an unseen planning or
 verification executable at or above `0.146.0`, including prereleases and versions beyond `0.150.0`,
@@ -633,10 +635,16 @@ inherits this result and still requires an exact reviewed write record. Rerun wi
 to use GUI fallback. `ts: discuss` always remains GUI-native, and `ts: discuss ... --app-server` is rejected
 with an explanation.
 
-Session-scoped `ts: appserver on|off` is not implemented: the current Codex skill surface has no
-reliable skill-owned per-session state store. Those commands explain the limitation and do not
-change user or repository configuration. Use the explicit option on each test command. The global
-App Server default and API fallback remain off.
+`ts: app-server on|off` persists only the mode and timestamp under Codex home. `appserver` is an
+exact alias. `--gui` overrides an enabled preference once; explicit `--app-server` remains strict.
+The repository App Server default and API fallback remain off.
+
+In persistent mode, a failure before possible mutation records a compact event and immediately
+continues the same action in the current GUI. If a worker may have changed files, Tool Shed first
+reconciles the existing mutation journal and Git state, then continues in GUI without replaying the
+App Server step. Sanitized events live at `$CODEX_HOME/tool-shed/app-server-events.jsonl`; they do
+not contain prompts, responses, raw tool output, credentials, secrets, or repository content.
+Logging failure never blocks the fallback.
 
 App Server commands use one centralized Codex resolver. A supported explicit override remains
 authoritative. Without one, it inventories `PATH`, bounded trusted platform locations, and OpenAI

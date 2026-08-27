@@ -196,8 +196,8 @@ reasoning-catalog refresh, and installation and upgrade readiness reporting all 
 resolver and report its inventory, selected path, source, version, App Server availability,
 qualification state, and executable-specific usable roles. Status and selection distinguish
 `exact-qualified`, `dirty-qualifying`, `dirty-qualified`, `transient-fallback`, `unsafe-blocked`,
-`below-minimum`, and `write-not-qualified`. A missing or unsupported CLI blocks only explicit App Server execution:
-unflagged Tool Shed requests remain in the GUI, and there is no API fallback.
+`below-minimum`, and `write-not-qualified`. A missing or unsupported CLI blocks strict explicit App
+Server execution. A persisted preference can be overridden once with `--gui`, and there is no API fallback.
 
 Trusted discovery is deliberately bounded. Tool Shed does not search arbitrary disk locations,
 install or copy Codex, modify permanent `PATH`, persist discovered user paths in tracked files, or
@@ -219,10 +219,12 @@ then record the same executable identity. Do not mark this release gate passed u
 evidence exists.
 
 `ts: discuss ... --app-server` is rejected because discussion is intentionally GUI-native.
-Session-scoped `ts: appserver on|off` is not implemented because the Codex skill surface does not
-provide reliable skill-owned session storage. The corresponding helper command reports that
-limitation without writing configuration. With no session mode, the unflagged command is the GUI
-choice and no separate `--gui` option is introduced.
+`ts: app-server on|off` persists the user-local preference under Codex home; `appserver` is its
+exact alias. `--gui` overrides the preference for one command. The repository default remains off.
+Pre-mutation failures in persistent mode continue the same action immediately in GUI. If mutation
+is possible, reconcile the existing mutation journal and Git state first and never replay the App
+Server step. Sanitized operational events are appended best-effort under Codex home without prompts,
+responses, raw tool output, credentials, exception text, or repository content.
 
 Show the selected backend without starting App Server:
 
