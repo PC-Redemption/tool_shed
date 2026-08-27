@@ -131,6 +131,7 @@ class ReleasePublicationTests(unittest.TestCase):
         self.assertIn('"v*.*.*"', workflow)
         self.assertIn("contents: write", workflow)
         self.assertIn("scripts/validate_tool_shed.py", workflow)
+        self.assertIn("--profile release", workflow)
         self.assertIn("scripts/prepare_github_release.py", workflow)
         self.assertIn("gh release create", workflow)
         self.assertIn("gh release view", workflow)

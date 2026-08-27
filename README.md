@@ -668,19 +668,24 @@ command output, or per-file hashes. Profiling cannot prove undocumented Codex ha
 See `docs/workspace-performance-profiling.md` for the comparison protocol and the separate approval
 boundaries for profiling, report collection, snapshot updates, and cleanup.
 
-Run the full repository validation:
+Run the full development validation (the default profile):
 
 ```bash
-python3 scripts/validate_tool_shed.py
+python3 scripts/validate_tool_shed.py --profile full
 ```
 
-GitHub Actions runs the same validation on push and pull requests.
+Profile ownership is explicit: `focused` checks validator orchestration (or a disconnected
+snapshot's supplied smoke tests); `full` runs every unit behavior once plus current manifest,
+provider, roadmap, stale-path, and work-state contracts; `release` adds one disposable
+cross-command installed-workspace smoke. Unit cases run in isolated concurrent processes, so every
+selected case reports independently without serializing unrelated cases. GitHub Actions runs
+`full` on pushes and pull requests; tagged publication runs `release`.
 
 The public human/AI process guide and generated command reference are maintained under `site/` and
 published at [ts.rookaro.com](https://ts.rookaro.com). See the
 [documentation site maintainer guide](docs/documentation-site.md) for generation, preview,
 deployment, routing, verification, and command-propagation procedures.
-The same command is safe in a disconnected snapshot: canonical `work/` indexing and reconciliation
+The profiles are safe in a disconnected snapshot: canonical `work/` indexing and reconciliation
 steps are skipped, the snapshot source fingerprint must remain unchanged, and embedded `.git/` or
 `work/` content is refused.
 

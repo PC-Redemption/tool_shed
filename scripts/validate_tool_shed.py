@@ -1,16 +1,61 @@
 from __future__ import annotations
 
+import argparse
+import concurrent.futures
 import hashlib
 import json
+import os
 import py_compile
 import shutil
 import subprocess
 import sys
 import tempfile
+import time
+import unittest
+from dataclasses import dataclass
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+PROFILES = ("focused", "full", "release")
+FOCUSED_TEST_MODULES = frozenset({"test_validation_profiles"})
+
+
+@dataclass(frozen=True)
+class TestResult:
+    test_id: str
+    returncode: int
+    elapsed_seconds: float
+    stdout: str
+    stderr: str
+
+
+def positive_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 1:
+        raise argparse.ArgumentTypeError("must be at least 1")
+    return parsed
+
+
+def default_jobs() -> int:
+    return min(8, max(2, os.cpu_count() or 2))
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--profile",
+        choices=PROFILES,
+        default="full",
+        help="focused validator regression, full development validation, or release qualification",
+    )
+    parser.add_argument(
+        "--jobs",
+        type=positive_int,
+        default=default_jobs(),
+        help="maximum concurrent isolated unit-test processes",
+    )
+    return parser.parse_args(argv)
 
 
 def step(name: str) -> None:
@@ -56,9 +101,101 @@ def check_shed_manifest() -> None:
     run([sys.executable, "scripts/update_shed_manifest.py", "--check"])
 
 
-def run_unit_tests() -> None:
-    step("unit tests")
-    run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"])
+def _flatten_tests(suite: unittest.TestSuite) -> list[unittest.TestCase]:
+    tests: list[unittest.TestCase] = []
+    for item in suite:
+        if isinstance(item, unittest.TestSuite):
+            tests.extend(_flatten_tests(item))
+        else:
+            tests.append(item)
+    return tests
+
+
+def discover_test_ids() -> list[str]:
+    for path in (ROOT, ROOT / "scripts", ROOT / "tests"):
+        value = str(path)
+        if value not in sys.path:
+            sys.path.insert(0, value)
+    suite = unittest.defaultTestLoader.discover(
+        str(ROOT / "tests"),
+        top_level_dir=str(ROOT / "tests"),
+    )
+    return sorted(test.id() for test in _flatten_tests(suite))
+
+
+def select_test_ids(profile: str, discovered: list[str]) -> list[str]:
+    if profile != "focused":
+        return list(discovered)
+    selected = [
+        test_id
+        for test_id in discovered
+        if test_id.split(".", 1)[0] in FOCUSED_TEST_MODULES
+    ]
+    # A disconnected snapshot may ship its own small smoke module instead of
+    # the canonical validator tests. Run that module rather than silently
+    # declaring an empty focused profile.
+    return selected or list(discovered)
+
+
+def _run_test_case(test_id: str, state_root: Path) -> TestResult:
+    environment = dict(os.environ)
+    environment["PYTHONDONTWRITEBYTECODE"] = "1"
+    python_paths = [str(ROOT / "tests"), str(ROOT / "scripts"), str(ROOT)]
+    if environment.get("PYTHONPATH"):
+        python_paths.append(environment["PYTHONPATH"])
+    environment["PYTHONPATH"] = os.pathsep.join(python_paths)
+    environment["TOOL_SHED_STATE_ROOT"] = str(
+        state_root / hashlib.sha256(test_id.encode("utf-8")).hexdigest()[:16]
+    )
+    started = time.monotonic()
+    result = subprocess.run(
+        [sys.executable, "-m", "unittest", "-q", test_id],
+        cwd=str(ROOT),
+        env=environment,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    return TestResult(
+        test_id=test_id,
+        returncode=result.returncode,
+        elapsed_seconds=time.monotonic() - started,
+        stdout=result.stdout,
+        stderr=result.stderr,
+    )
+
+
+def execute_test_cases(test_ids: list[str], jobs: int, state_root: Path) -> list[TestResult]:
+    results: list[TestResult] = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as executor:
+        futures = {
+            executor.submit(_run_test_case, test_id, state_root): test_id
+            for test_id in test_ids
+        }
+        for future in concurrent.futures.as_completed(futures):
+            results.append(future.result())
+    return sorted(results, key=lambda item: item.test_id)
+
+
+def run_unit_tests(profile: str, jobs: int) -> None:
+    step(f"unit tests ({profile})")
+    discovered = discover_test_ids()
+    selected = select_test_ids(profile, discovered)
+    started = time.monotonic()
+    with tempfile.TemporaryDirectory(prefix="tool-shed-test-state-") as temporary:
+        results = execute_test_cases(selected, jobs, Path(temporary))
+    failures = [item for item in results if item.returncode]
+    if failures:
+        for failure in failures:
+            print(f"-- {failure.test_id} ({failure.elapsed_seconds:.3f}s) --", file=sys.stderr)
+            if failure.stdout:
+                print(failure.stdout.rstrip(), file=sys.stderr)
+            if failure.stderr:
+                print(failure.stderr.rstrip(), file=sys.stderr)
+        raise SystemExit(f"{len(failures)} of {len(results)} isolated unit tests failed")
+    elapsed = time.monotonic() - started
+    print(f"{len(results)} tests passed in {elapsed:.3f}s with {jobs} workers.")
 
 
 def check_provider_adapters() -> None:
@@ -113,223 +250,6 @@ def smoke_temp_workspace() -> None:
             raise SystemExit("installer did not create the stable project identity")
         if not (workspace / "work" / "roadmaps").is_dir():
             raise SystemExit("installer did not create the opt-in Program Roadmap directory")
-        agents_text = (workspace / "AGENTS.md").read_text(encoding="utf-8")
-        if agents_text.count("BEGIN TOOL SHED ROUTING GUIDANCE") != 1:
-            raise SystemExit("installer did not create one compact Codex routing block")
-        if any(
-            marker in agents_text
-            for marker in (
-                "BEGIN TOOL SHED GENERATED EVIDENCE GUIDANCE",
-                "BEGIN TOOL SHED WORKSPACE IDENTITY GUIDANCE",
-                "BEGIN TOOL SHED OWNER CAMPAIGN GUIDANCE",
-            )
-        ):
-            raise SystemExit("installer left expanded Tool Shed policy in Codex AGENTS.md")
-        if any(
-            fragment not in agents_text
-            for fragment in (
-                "Activate Tool Shed only",
-                "Do not activate Tool Shed merely because",
-                "TOOL_SHED_SKILL_MISMATCH",
-                "skills/tool-shed/SKILL.md",
-            )
-        ) or len(agents_text.encode("utf-8")) > 4096:
-            raise SystemExit("installer did not create compact conditional Codex routing")
-        portable_text = " ".join(
-            "\n".join(
-                (
-                    (ROOT / "skills" / "tool-shed" / "SKILL.md").read_text(encoding="utf-8"),
-                    (
-                        ROOT / "skills" / "tool-shed" / "references" / "campaign-routes.md"
-                    ).read_text(encoding="utf-8"),
-                )
-            ).split()
-        )
-        for fragment, label in (
-            ("ts:ship <goal>", "ship"),
-            ("Do not ask for repeated confirmation for reversible, in-scope steps", "authority"),
-            ("Command success alone is not outcome success", "evidence-response"),
-            ("at most three credible failure modes", "prospective-failure"),
-            ("ts: discuss <topic>", "discussion"),
-            ("Direct, Guided, Coordinated, and Deep", "coordination"),
-        ):
-            if fragment not in portable_text:
-                raise SystemExit(f"portable skill is missing the Tool Shed {label} contract")
-        identity_contract = (
-            "BEGIN TOOL SHED WORKSPACE IDENTITY GUIDANCE",
-            "WORKSPACE_MISMATCH",
-            "ts: use <project-alias-or-path>",
-            "Generic edit and shell tools",
-        )
-        if any(fragment not in portable_text for fragment in identity_contract[1:]):
-            raise SystemExit("portable skill did not retain the workspace identity boundary")
-        doctor_contract = (
-            "BEGIN TOOL SHED DOCTOR GUIDANCE",
-            "ts: doctor",
-            "scripts/doctor.py",
-            "external or runtime truth",
-            "doctor-repair",
-        )
-        if any(fragment not in portable_text for fragment in doctor_contract[1:]):
-            raise SystemExit("portable skill did not retain the workspace doctor guidance")
-        work_level_contract = (
-            "ts:work1` through `ts:work5",
-            "`ts:work` for `work2`",
-            "work/tool-shed.yaml",
-            "work_model: combined",
-            "work_model: split",
-            "work_level_config.py",
-            "run_default: false",
-            "stop on the first failure",
-            "automatically deploys production",
-        )
-        if any(fragment not in portable_text for fragment in work_level_contract):
-            raise SystemExit("portable skill did not retain the complete Tool Shed work-level contract")
-        direct_contract = (
-            "Resolve the named repository and target once",
-            "Implement the focused change",
-            "Campaign continuity keeps Direct work moving",
-            "ts:ask` does not turn a bounded Direct request",
-            "wording that merely appears near or discusses `ts:ship`",
-        )
-        if any(fragment not in portable_text for fragment in direct_contract):
-            raise SystemExit("portable skill did not retain the complete Tool Shed Direct-route contract")
-        campaign_contract = (
-            "work/00-campaigns/",
-            "work/01-q&a/ask.txt` as transient intake",
-            "Cycle State Capsule",
-            "cycles are Program → Milestone Wave → Queue → Campaign → Evidence",
-            "Roadmap traceability is `roadmap-derived`",
-            "`camp` is shorthand for `campaign`",
-            "`que N` means the campaign",
-            "`ts: unblock <campaign>`",
-            "`ts: reconcile campaigns`",
-            "current state token",
-            "`--dry-run` never writes",
-        )
-        if any(fragment not in portable_text for fragment in campaign_contract):
-            raise SystemExit("portable skill did not retain the complete owner campaign contract")
-        roadmap_contract = (
-            "`PRM` means **Plan → Roadmap → Milestone**",
-            "`ts: prm <outcome>`",
-            "ts: develop roadmap",
-            "ts: approve roadmap <token>",
-            "ts: approve campaign plan <token>",
-            "fresh internal tokens",
-            "without inventing a separate start approval",
-            "never ingests existing work",
-        )
-        if any(fragment not in portable_text for fragment in roadmap_contract):
-            raise SystemExit("portable skill did not retain the complete Program Roadmap contract")
-        autonomy_contract = (
-            "Persistent Autonomy And Authority Envelope",
-            "ts: autonomy <0-5>",
-            "exact numeric `ts: approve <0-5>`",
-            "0 Observe",
-            "5 Deliver",
-            "state tokens internally",
-            "impact, blast radius, rollback",
-            "fails safely to level 0",
-        )
-        if any(fragment not in portable_text for fragment in autonomy_contract):
-            raise SystemExit("portable skill did not retain the complete autonomy authority-envelope contract")
-        kiss_contract = (
-            "KISS: Minimum Sufficient Complexity",
-            "smallest complete solution",
-            "current requirement, concrete risk, or observed failure",
-            "does not add a required field, form, checklist, or approval gate",
-        )
-        if any(fragment not in portable_text for fragment in kiss_contract):
-            raise SystemExit("portable skill did not retain the complete KISS contract")
-        brainstorm_contract = (
-            "Brainstorm And Idea Brief Route",
-            "`ts: brainstorm <idea>`",
-            "`ts: bs <idea>`",
-            "work/ideas/idea-*.md",
-            "`ts: prm idea <idea-id-or-path>`",
-            "outside campaign reconciliation",
-            "Brainstorming is GUI-native",
-        )
-        if any(fragment not in portable_text for fragment in brainstorm_contract):
-            raise SystemExit("portable skill did not retain the complete Brainstorm / Idea Brief contract")
-        app_server_contract = (
-            "ts: app-server on|off",
-            "standalone `--gui`",
-            "continues the same action immediately",
-            "never replay the App Server step",
-            "app-server-events.jsonl",
-            "logging failure must never block GUI fallback",
-        )
-        if any(fragment not in portable_text for fragment in app_server_contract):
-            raise SystemExit("portable skill did not retain the passive App Server contract")
-        provider_paths = {
-            "claude-code": "CLAUDE.md",
-            "gemini-cli": "GEMINI.md",
-            "github-copilot": ".github/copilot-instructions.md",
-            "cursor": ".cursor/rules/tool-shed.mdc",
-        }
-        generated_work_level_contract = (
-            "ts:work1` through `ts:work5",
-            "`ts:work` = `work2`",
-            "work/tool-shed.yaml",
-            "run_default: false",
-        )
-        generated_direct_contract = (
-            "single-repository bug fix or enhancement to Direct",
-            "orient to the named target once",
-            "campaign continuity does not upgrade Direct",
-            "ts:ask` does not turn a bounded Direct request",
-        )
-        generated_prm_contract = (
-            "`PRM` means Plan → Roadmap → Milestone",
-            "`ts: prm <outcome>`",
-            "PRM is not blanket authority",
-        )
-        generated_autonomy_contract = (
-            "Tool Shed persistent autonomy and authority envelope",
-            "ts: autonomy <0-5>",
-            "ts: approve <0-5>",
-            "internal concurrency controls",
-            "impact, blast radius, rollback",
-            "fails safely to level 0",
-        )
-        generated_kiss_contract = (
-            "KISS as minimum sufficient complexity",
-            "smallest complete solution",
-            "current requirement, concrete risk, or observed failure",
-            "does not create a required field, checklist, or approval gate",
-        )
-        generated_brainstorm_contract = (
-            "Brainstorm / Idea Brief route",
-            "`ts: brainstorm <idea>`",
-            "`ts: bs <idea>`",
-            "work/ideas/idea-*.md",
-            "`ts: prm idea <idea-id-or-path>`",
-            "excluded from campaign reconciliation",
-            "Brainstorming is GUI-native",
-        )
-        generated_app_server_contract = (
-            "ts: app-server on|off",
-            "one-command `--gui`",
-            "continue the same action immediately in GUI",
-            "never replay the App Server step",
-            "Logging failure never blocks fallback",
-            "Explicit `--app-server` remains fail-closed",
-        )
-        for provider_id, relative in provider_paths.items():
-            guidance = workspace / relative
-            guidance_text = guidance.read_text(encoding="utf-8") if guidance.is_file() else ""
-            if (
-                "BEGIN TOOL SHED ROUTING GUIDANCE" not in guidance_text
-                or any(fragment not in guidance_text for fragment in generated_direct_contract)
-                or any(fragment not in guidance_text for fragment in generated_work_level_contract)
-                or any(fragment not in guidance_text for fragment in generated_prm_contract)
-                or any(fragment not in guidance_text for fragment in generated_autonomy_contract)
-                or any(fragment not in guidance_text for fragment in generated_kiss_contract)
-                or any(fragment not in guidance_text for fragment in generated_brainstorm_contract)
-                or any(fragment not in guidance_text for fragment in generated_app_server_contract)
-            ):
-                raise SystemExit(f"installer did not create {provider_id} adapter guidance")
         inbox_result = subprocess.run(
             [
                 sys.executable,
@@ -473,31 +393,60 @@ def cleanup_caches() -> None:
         shutil.rmtree(path)
 
 
-def main() -> int:
+def profile_step_names(profile: str, *, canonical: bool) -> tuple[str, ...]:
+    names = ["compile_python", "check_shed_manifest", "run_unit_tests"]
+    if profile in {"full", "release"}:
+        names.append("check_provider_adapters")
+        if canonical:
+            names.extend(
+                (
+                    "regenerate_indexes",
+                    "check_stale_paths",
+                    "review_work_state",
+                    "validate_program_roadmaps",
+                )
+            )
+        if profile == "release":
+            names.append("smoke_temp_workspace")
+        names.append("sanity_check_markdown")
+    return tuple(names)
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(argv)
+    started = time.monotonic()
     canonical = is_canonical_checkout()
     before = source_fingerprint() if not canonical else None
     if not canonical and ((ROOT / ".git").exists() or (ROOT / "work").exists()):
         raise SystemExit("disconnected snapshot contains forbidden .git or work content")
     try:
-        compile_python()
-        check_shed_manifest()
-        run_unit_tests()
-        check_provider_adapters()
-        if canonical:
-            regenerate_indexes()
-            check_stale_paths()
-            review_work_state()
-            validate_program_roadmaps()
-        else:
+        actions = {
+            "compile_python": compile_python,
+            "check_shed_manifest": check_shed_manifest,
+            "check_provider_adapters": check_provider_adapters,
+            "regenerate_indexes": regenerate_indexes,
+            "check_stale_paths": check_stale_paths,
+            "review_work_state": review_work_state,
+            "validate_program_roadmaps": validate_program_roadmaps,
+            "smoke_temp_workspace": smoke_temp_workspace,
+            "sanity_check_markdown": sanity_check_markdown,
+        }
+        for name in profile_step_names(args.profile, canonical=canonical):
+            if name == "run_unit_tests":
+                run_unit_tests(args.profile, args.jobs)
+            else:
+                actions[name]()
+        if not canonical:
             step("canonical workspace state")
             print("Skipped for disconnected snapshot; no snapshot-local work/ was created.")
-        smoke_temp_workspace()
-        sanity_check_markdown()
     finally:
         cleanup_caches()
     if before is not None and source_fingerprint() != before:
         raise SystemExit("disconnected snapshot changed during validation")
-    print("tool_shed validation passed")
+    print(
+        f"tool_shed {args.profile} validation passed in "
+        f"{time.monotonic() - started:.3f}s"
+    )
     return 0
 
 

@@ -25,7 +25,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Validate tool_shed
-        run: python scripts/validate_tool_shed.py
+        run: python scripts/validate_tool_shed.py --profile full
 
       - name: Smoke POSIX launcher
         if: runner.os == 'Linux'

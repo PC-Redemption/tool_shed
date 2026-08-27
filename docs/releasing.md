@@ -40,7 +40,7 @@ Overrides, unattested releases, and any changed identity run full local validati
    work tree. The write also refreshes `adapters/codex-skill-releases.json` from valid stable tags
    before hashing release content; review and commit that catalog as shipped content.
 
-4. Run `python3 scripts/validate_tool_shed.py`. Confirm its repository-policy coverage includes
+4. Run `python3 scripts/validate_tool_shed.py --profile release`. Confirm its repository-policy coverage includes
    tracked `work/`, stale root ignores, documented exceptions, unrelated nested rules, and ignored
    `/tool_shed/` with tracked `work/`.
 5. Commit all shipped content, including the manifest with null `release_commit` and `released_at`.
@@ -63,7 +63,7 @@ Overrides, unattested releases, and any changed identity run full local validati
      --notes "Release summary"
    ```
 
-8. Run full validation again and commit only `SHED_VERSION.json` as the provenance commit.
+8. Run release qualification again and commit only `SHED_VERSION.json` as the provenance commit.
 9. Tag the provenance commit:
 
    ```bash

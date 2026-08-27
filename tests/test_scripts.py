@@ -845,6 +845,8 @@ for raw in sys.stdin:
 
             result = run_script(
                 str(snapshot / "scripts" / "validate_tool_shed.py"),
+                "--profile",
+                "focused",
                 cwd=snapshot,
                 check=False,
             )
@@ -3484,11 +3486,6 @@ Active workpackage: `work/wp/active/wp-demo.md`.
             self.assertIn("notes.md:1", result.stdout)
             self.assertNotIn("nested.md", result.stdout)
 
-    def test_check_stale_paths_passes_current_repo(self) -> None:
-        result = run_script("scripts/check_stale_paths.py", "--workspace", str(ROOT))
-        self.assertEqual(result.returncode, 0)
-        self.assertIn("No stale work paths found.", result.stdout)
-
     def test_new_artifact_refreshes_indexes(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)
@@ -3929,10 +3926,10 @@ Produces:
             with self.assertRaisesRegex(OSError, "unexpected symlink failure"):
                 self.create_symlink_or_skip(Path("link"), Path("target"))
 
-    def test_provider_adapter_conformance_script(self) -> None:
-        result = run_script("scripts/check_provider_adapters.py", "--json")
-        payload = json.loads(result.stdout)
-        providers = {item["provider"]: item for item in payload["providers"]}
+    def test_provider_manifest_declares_expected_qualification_levels(self) -> None:
+        providers = json.loads(
+            (ROOT / "adapters" / "providers.json").read_text(encoding="utf-8")
+        )["providers"]
         self.assertEqual(
             set(providers),
             {"codex", "claude-code", "gemini-cli", "github-copilot", "cursor"},
@@ -3940,7 +3937,6 @@ Produces:
         self.assertEqual(providers["codex"]["qualified_level"], 5)
         for provider_id in {"claude-code", "gemini-cli", "github-copilot", "cursor"}:
             self.assertEqual(providers[provider_id]["qualified_level"], 2)
-            self.assertTrue(providers[provider_id]["owner_content_preserved"])
 
     def test_installer_migrates_existing_ask_inbox(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -3958,38 +3954,43 @@ Produces:
             self.assertIn("Migrated 1 legacy Q&A file(s)", result.stdout)
             self.assertIn("Preserved existing Tool Shed Q&A inbox", second.stdout)
 
-    def test_installer_replaces_stale_evidence_response_guidance_idempotently(self) -> None:
-        with tempfile.TemporaryDirectory() as temp:
-            workspace = Path(temp)
-            self.init_repository(workspace)
-            agents = workspace / "AGENTS.md"
-            agents.write_text(
-                """# Owner guidance
+    def test_installer_replaces_stale_legacy_guidance_idempotently(self) -> None:
+        cases = (
+            ("EVIDENCE RESPONSE", "stale loop guidance"),
+            ("Q&A", "stale canonical-only guidance"),
+        )
+        for marker, stale_text in cases:
+            with self.subTest(marker=marker), tempfile.TemporaryDirectory() as temp:
+                workspace = Path(temp)
+                self.init_repository(workspace)
+                agents = workspace / "AGENTS.md"
+                agents.write_text(
+                    f"""# Owner guidance
 
-<!-- BEGIN TOOL SHED EVIDENCE RESPONSE GUIDANCE -->
-stale loop guidance
-<!-- END TOOL SHED EVIDENCE RESPONSE GUIDANCE -->
+<!-- BEGIN TOOL SHED {marker} GUIDANCE -->
+{stale_text}
+<!-- END TOOL SHED {marker} GUIDANCE -->
 
 # Owner footer
 """,
-                encoding="utf-8",
-            )
+                    encoding="utf-8",
+                )
 
-            first = run_script("scripts/install_into_workspace.py", str(workspace))
-            after_first = agents.read_text(encoding="utf-8")
-            second = run_script("scripts/install_into_workspace.py", str(workspace))
-            after_second = agents.read_text(encoding="utf-8")
+                first = run_script("scripts/install_into_workspace.py", str(workspace))
+                after_first = agents.read_text(encoding="utf-8")
+                second = run_script("scripts/install_into_workspace.py", str(workspace))
+                after_second = agents.read_text(encoding="utf-8")
 
-            self.assertIn("Provider guidance (codex): updated", first.stdout)
-            self.assertNotIn("stale loop guidance", after_first)
-            self.assertIn("Activate Tool Shed only", after_first)
-            self.assertIn("# Owner guidance", after_first)
-            self.assertIn("# Owner footer", after_first)
-            self.assertEqual(after_first.count("BEGIN TOOL SHED EVIDENCE RESPONSE GUIDANCE"), 0)
-            self.assertEqual(after_first.count("END TOOL SHED EVIDENCE RESPONSE GUIDANCE"), 0)
-            self.assertEqual(after_first.count("BEGIN TOOL SHED ROUTING GUIDANCE"), 1)
-            self.assertEqual(after_second, after_first)
-            self.assertNotIn("Provider guidance (codex): updated", second.stdout)
+                self.assertIn("Provider guidance (codex): updated", first.stdout)
+                self.assertNotIn(stale_text, after_first)
+                self.assertIn("Activate Tool Shed only", after_first)
+                self.assertIn("# Owner guidance", after_first)
+                self.assertIn("# Owner footer", after_first)
+                self.assertEqual(after_first.count(f"BEGIN TOOL SHED {marker} GUIDANCE"), 0)
+                self.assertEqual(after_first.count(f"END TOOL SHED {marker} GUIDANCE"), 0)
+                self.assertEqual(after_first.count("BEGIN TOOL SHED ROUTING GUIDANCE"), 1)
+                self.assertEqual(after_second, after_first)
+                self.assertNotIn("Provider guidance (codex): updated", second.stdout)
 
     def test_installer_migrates_root_legacy_inbox_and_removes_old_folder(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -5867,39 +5868,6 @@ old Tool Shed guidance
             )
             self.assertFalse(canonical.parent.exists())
             self.assertFalse(fallback.parent.exists())
-
-    def test_installer_replaces_stale_q_and_a_guidance_idempotently(self) -> None:
-        with tempfile.TemporaryDirectory() as temp:
-            workspace = Path(temp)
-            self.init_repository(workspace)
-            agents = workspace / "AGENTS.md"
-            agents.write_text(
-                """# Owner guidance
-
-<!-- BEGIN TOOL SHED Q&A GUIDANCE -->
-stale canonical-only guidance
-<!-- END TOOL SHED Q&A GUIDANCE -->
-
-# Owner footer
-""",
-                encoding="utf-8",
-            )
-
-            first = run_script("scripts/install_into_workspace.py", str(workspace))
-            after_first = agents.read_text(encoding="utf-8")
-            second = run_script("scripts/install_into_workspace.py", str(workspace))
-            after_second = agents.read_text(encoding="utf-8")
-
-            self.assertIn("Provider guidance (codex): updated", first.stdout)
-            self.assertNotIn("stale canonical-only guidance", after_first)
-            self.assertIn("Activate Tool Shed only", after_first)
-            self.assertIn("# Owner guidance", after_first)
-            self.assertIn("# Owner footer", after_first)
-            self.assertEqual(after_first.count("BEGIN TOOL SHED Q&A GUIDANCE"), 0)
-            self.assertEqual(after_first.count("END TOOL SHED Q&A GUIDANCE"), 0)
-            self.assertEqual(after_first.count("BEGIN TOOL SHED ROUTING GUIDANCE"), 1)
-            self.assertEqual(after_second, after_first)
-            self.assertNotIn("Provider guidance (codex): updated", second.stdout)
 
     def test_installer_warns_before_existing_generated_outputs_become_ignored(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

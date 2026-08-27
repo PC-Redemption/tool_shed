@@ -4,7 +4,7 @@ Updated: 2026-08-27
 
 ## Owner State
 
-- Last completed: define-and-implement-persistent-autonomy-levels — Define and implement persistent authority-envelope levels
+- Last completed: consolidate-validation-profiles-and-contracts — Consolidate validation profiles and contracts
 - Working now: none
 - Next: none
 - Blocker or decision needed: publish-and-synchronize-passive-app-server-dogfooding — Publish and synchronize passive App Server dogfooding; field-dogfood-passive-app-server-mode — Field-dogfood passive App Server mode in product work

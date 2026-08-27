@@ -162,7 +162,8 @@ Select and verify the release:
       --updater-protocol <current-protocol> passes.
     - the release qualification attestation matches the exact release commit and shipped validator
       and CI-workflow hashes, then `scripts/validate_snapshot_client.py` passes; or, for an
-      overridden, unattested, or changed identity, `scripts/validate_tool_shed.py` passes.
+      overridden, unattested, or changed identity,
+      `scripts/validate_tool_shed.py --profile full` passes.
     - When Codex is selected, compare the user-level skill against the selected skill and the exact
       skill hashes recorded by stable release manifests. Report drift even when synchronization was
       not requested. If synchronization was requested and the target is modified, unmanaged, or

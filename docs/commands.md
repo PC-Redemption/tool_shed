@@ -147,6 +147,13 @@ ts:check <spot|focused|full|release>
 
 This validates only. It does not implement, commit, push, deploy, or release.
 
+In the Tool Shed repository, `scripts/validate_tool_shed.py` implements the reusable profiles.
+`focused` owns validator-orchestration regressions, `full` owns every unit behavior plus current
+repository contracts, and `release` adds only the disposable cross-command installation smoke.
+Independent unit cases run in isolated concurrent processes and all failures are reported in stable
+test-ID order. The default CLI profile is `full`; release automation passes `--profile release`
+explicitly.
+
 Work3 document changes stay within the requested candidate scope. Preserve unrelated owner
 documentation and historical records, and delete documentation only when the coded change makes it
 obsolete.

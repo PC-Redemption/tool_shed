@@ -21,7 +21,6 @@ Updated: 2026-08-27
 | [work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
 | [work/00-campaigns/active/096-publish-and-synchronize-passive-app-server-dogfooding.md](work/00-campaigns/active/096-publish-and-synchronize-passive-app-server-dogfooding.md) | campaign | blocked | 2026-08-27 | resolve blocker or decision: fresh Codex task must load synchronized v0.30.0 skill and run ts: app-server status | - |
 | [work/00-campaigns/active/097-field-dogfood-passive-app-server-mode.md](work/00-campaigns/active/097-field-dogfood-passive-app-server-mode.md) | campaign | queued | 2026-08-27 | execute when selected from the active campaign queue | - |
-| [work/00-campaigns/active/098-define-and-implement-persistent-autonomy-levels.md](work/00-campaigns/active/098-define-and-implement-persistent-autonomy-levels.md) | campaign | working | 2026-08-27 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -104,6 +103,8 @@ Updated: 2026-08-27
 | [work/00-campaigns/completed/093-implement-safe-app-server-gui-fallback.md](work/00-campaigns/completed/093-implement-safe-app-server-gui-fallback.md) | campaign | complete | 2026-08-27 | none | - |
 | [work/00-campaigns/completed/094-qualify-passive-app-server-dogfooding-core.md](work/00-campaigns/completed/094-qualify-passive-app-server-dogfooding-core.md) | campaign | complete | 2026-08-27 | none | - |
 | [work/00-campaigns/completed/095-resolve-unclassified-work-2.md](work/00-campaigns/completed/095-resolve-unclassified-work-2.md) | campaign | complete | 2026-08-27 | none | - |
+| [work/00-campaigns/completed/098-define-and-implement-persistent-autonomy-levels.md](work/00-campaigns/completed/098-define-and-implement-persistent-autonomy-levels.md) | campaign | complete | 2026-08-27 | none | - |
+| [work/00-campaigns/completed/099-consolidate-validation-profiles-and-contracts.md](work/00-campaigns/completed/099-consolidate-validation-profiles-and-contracts.md) | campaign | complete | 2026-08-27 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -173,6 +174,7 @@ Updated: 2026-08-27
 | [work/maps/map-persistent-autonomy-levels.md](work/maps/map-persistent-autonomy-levels.md) | project-map | approved | 2026-08-27 | develop an exact Program Roadmap proposal | - |
 | [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | complete | 2026-08-20 | none | - |
 | [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
+| [work/maps/map-validation-consolidation.md](work/maps/map-validation-consolidation.md) | project-map | complete | 2026-08-27 | none; the work1 outcome is complete | - |
 | [work/roadmaps/roadmap-completion-watcher-program-r2.md](work/roadmaps/roadmap-completion-watcher-program-r2.md) | program-roadmap | approved | 2026-08-20 | derive campaigns for milestone M1-CONTRACT | none |
 | [work/roadmaps/roadmap-completion-watcher-program.md](work/roadmaps/roadmap-completion-watcher-program.md) | program-roadmap | superseded | 2026-08-20 | none | work/roadmaps/roadmap-completion-watcher-program-r2.md |
 | [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r2.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r2.md) | program-roadmap | superseded | 2026-08-26 | none | work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r3.md |
@@ -185,6 +187,8 @@ Updated: 2026-08-27
 | [work/roadmaps/roadmap-passive-app-server-dogfooding.md](work/roadmaps/roadmap-passive-app-server-dogfooding.md) | program-roadmap | executing | 2026-08-27 | execute the first ready roadmap campaign through ts: next | none |
 | [work/roadmaps/roadmap-persistent-autonomy-levels-r2.md](work/roadmaps/roadmap-persistent-autonomy-levels-r2.md) | program-roadmap | executing | 2026-08-27 | execute the first ready roadmap campaign through ts: next | none |
 | [work/roadmaps/roadmap-persistent-autonomy-levels.md](work/roadmaps/roadmap-persistent-autonomy-levels.md) | program-roadmap | superseded | 2026-08-27 | none | work/roadmaps/roadmap-persistent-autonomy-levels-r2.md |
+| [work/roadmaps/roadmap-validation-consolidation-r2.md](work/roadmaps/roadmap-validation-consolidation-r2.md) | program-roadmap | executing | 2026-08-27 | execute the first ready roadmap campaign through ts: next | none |
+| [work/roadmaps/roadmap-validation-consolidation.md](work/roadmaps/roadmap-validation-consolidation.md) | program-roadmap | superseded | 2026-08-27 | none | work/roadmaps/roadmap-validation-consolidation-r2.md |
 | [work/spikes/spike-completion-watcher-protocol-and-failure-model.md](work/spikes/spike-completion-watcher-protocol-and-failure-model.md) | spike | complete | 2026-08-18 | none | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
 | [work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md](work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md) | spike | complete | 2026-08-09 | none | work/maps/map-tool-shed-evolution.md |
 | [work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md](work/spikes/spike-workspace-performance-profiling-and-fleet-measurement.md) | spike | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
@@ -215,6 +219,6 @@ Updated: 2026-08-27
 
 ## Summary
 
-- Total artifacts: 198
-- Active artifacts: 4
-- Completed/decided artifacts: 147
+- Total artifacts: 202
+- Active artifacts: 3
+- Completed/decided artifacts: 150

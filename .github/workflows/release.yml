@@ -30,7 +30,7 @@ jobs:
         run: |
           python3 scripts/check_shed_version.py --shed . --local-only --strict --verification-only
           python3 scripts/update_shed_manifest.py --check
-          python3 scripts/validate_tool_shed.py
+          python3 scripts/validate_tool_shed.py --profile release
 
       - name: Prepare release metadata
         run: >-
