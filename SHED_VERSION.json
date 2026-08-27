@@ -149,10 +149,32 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 3,
   "notes": "Add passive App Server dogfooding with persistent preference and safe GUI fallback",
-  "release_commit": null,
-  "release_qualification": null,
+  "release_commit": "a13de638837415002ee0741cae8ffffe7e22b3b2",
+  "release_qualification": {
+    "attested_at": "2026-08-27T12:08:37Z",
+    "client_smoke": {
+      "path": "scripts/validate_snapshot_client.py",
+      "sha256": "d740896c470e02ba526ed08a6d2a8b40865764e67951583e6f8a97db65402766"
+    },
+    "full_validator": {
+      "path": "scripts/validate_tool_shed.py",
+      "sha256": "111a11523adc5b995269ac751a9a1a351efe00be7a695ef070990ff6c09e7622"
+    },
+    "required_ci": [
+      {
+        "path": ".github/workflows/validate.yml",
+        "sha256": "b62203b7c1c21f03dc77e42d714db6b0d742550c3524a4dc33d67c5c283cc54e"
+      },
+      {
+        "path": ".github/workflows/release.yml",
+        "sha256": "74ee83963f0c20eef755bcae7f51c0caaa35fe3ce2f7001cbcfcf381911d0a45"
+      }
+    ],
+    "schema_version": 1,
+    "subject_commit": "a13de638837415002ee0741cae8ffffe7e22b3b2"
+  },
   "release_tag": "v0.30.0",
-  "released_at": null,
+  "released_at": "2026-08-27T12:08:37Z",
   "shed_version": "0.30.0",
   "updated_at": "2026-08-27",
   "updater_mutation_paths": [
