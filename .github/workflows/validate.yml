@@ -12,7 +12,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         python-version: ["3.11", "3.x"]
-        shard: [0, 1, 2, 3, 4]
+        shard: [0, 1, 2, 3, 4, 5, 6]
         include:
           - os: ubuntu-latest
             test-jobs: 8
@@ -32,7 +32,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Validate tool_shed
-        run: python scripts/validate_tool_shed.py --profile release --max-seconds 60 --jobs ${{ matrix.test-jobs }} --shard-index ${{ matrix.shard }} --shard-count 5
+        run: python scripts/validate_tool_shed.py --profile release --max-seconds 60 --jobs ${{ matrix.test-jobs }} --shard-index ${{ matrix.shard }} --shard-count 7
 
       - name: Smoke POSIX launcher
         if: runner.os == 'Linux'

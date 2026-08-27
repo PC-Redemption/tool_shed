@@ -438,8 +438,12 @@ def sanity_check_markdown() -> None:
 
 
 def cleanup_caches() -> None:
-    for path in ROOT.rglob("__pycache__"):
-        shutil.rmtree(path)
+    for path in (
+        ROOT / "__pycache__",
+        ROOT / "scripts" / "__pycache__",
+        ROOT / "tests" / "__pycache__",
+    ):
+        shutil.rmtree(path, ignore_errors=True)
 
 
 def profile_step_names(
