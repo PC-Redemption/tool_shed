@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -93,7 +94,8 @@ class AppServerUserStateTests(unittest.TestCase):
         )
         self.assertNotIn("prompt", event)
         self.assertNotIn("output", event)
-        self.assertEqual(0o600, events.stat().st_mode & 0o777)
+        if os.name == "posix":
+            self.assertEqual(0o600, events.stat().st_mode & 0o777)
 
     def test_event_failure_is_best_effort(self) -> None:
         self.assertFalse(

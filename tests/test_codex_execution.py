@@ -1733,8 +1733,9 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertTrue(enabled["accepted"])
         self.assertEqual(enabled["session_opt_in"], "ON")
         self.assertTrue(enabled["persistent_changes"])
-        self.assertEqual(0o600, preference_path.stat().st_mode & 0o777)
-        self.assertEqual(0o700, preference_path.parent.stat().st_mode & 0o777)
+        if os.name == "posix":
+            self.assertEqual(0o600, preference_path.stat().st_mode & 0o777)
+            self.assertEqual(0o700, preference_path.parent.stat().st_mode & 0o777)
         self.assertEqual(
             "ON",
             control_status(codex=str(self.fake), preference_path=preference_path)[
