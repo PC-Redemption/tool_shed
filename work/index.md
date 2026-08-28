@@ -21,7 +21,6 @@ Updated: 2026-08-28
 | [work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
 | [work/00-campaigns/abandoned/096-publish-and-synchronize-passive-app-server-dogfooding.md](work/00-campaigns/abandoned/096-publish-and-synchronize-passive-app-server-dogfooding.md) | campaign | abandoned | 2026-08-27 | none | - |
 | [work/00-campaigns/abandoned/097-field-dogfood-passive-app-server-mode.md](work/00-campaigns/abandoned/097-field-dogfood-passive-app-server-mode.md) | campaign | abandoned | 2026-08-27 | none | - |
-| [work/00-campaigns/active/107-publish-hybrid-state-release-and-sync-maintainer-skill.md](work/00-campaigns/active/107-publish-hybrid-state-release-and-sync-maintainer-skill.md) | campaign | working | 2026-08-28 | execute the campaign completion gate | - |
 | [work/00-campaigns/active/108-qualify-disconnected-hybrid-production-canary.md](work/00-campaigns/active/108-qualify-disconnected-hybrid-production-canary.md) | campaign | queued | 2026-08-28 | execute when selected from the active campaign queue | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
@@ -114,6 +113,7 @@ Updated: 2026-08-28
 | [work/00-campaigns/completed/104-implement-minimum-sqlite-operational-substrate.md](work/00-campaigns/completed/104-implement-minimum-sqlite-operational-substrate.md) | campaign | complete | 2026-08-28 | none | - |
 | [work/00-campaigns/completed/105-implement-and-qualify-hpt2-closed-loop-vertical-slice.md](work/00-campaigns/completed/105-implement-and-qualify-hpt2-closed-loop-vertical-slice.md) | campaign | complete | 2026-08-28 | none | - |
 | [work/00-campaigns/completed/106-rehearse-and-convert-maintainer-to-hybrid-state.md](work/00-campaigns/completed/106-rehearse-and-convert-maintainer-to-hybrid-state.md) | campaign | complete | 2026-08-28 | none | - |
+| [work/00-campaigns/completed/107-publish-hybrid-state-release-and-sync-maintainer-skill.md](work/00-campaigns/completed/107-publish-hybrid-state-release-and-sync-maintainer-skill.md) | campaign | complete | 2026-08-28 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -175,6 +175,7 @@ Updated: 2026-08-28
 | [work/evidence/evidence-tool-shed-v0-29-8-release-and-maintainer-sync.md](work/evidence/evidence-tool-shed-v0-29-8-release-and-maintainer-sync.md) | evidence | complete | 2026-08-26 | complete Campaign 067 and derive the M8 Core snapshot campaign without upgrading Core | - |
 | [work/evidence/evidence-tool-shed-v0-29-9-release-sync-core-upgrade.md](work/evidence/evidence-tool-shed-v0-29-9-release-sync-core-upgrade.md) | evidence | complete | 2026-08-26 | use the released one-command App Server path for the next appropriate Core campaign | - |
 | [work/evidence/evidence-tool-shed-v0-30-0-release-and-maintainer-sync.md](work/evidence/evidence-tool-shed-v0-30-0-release-and-maintainer-sync.md) | evidence | complete | 2026-08-27 | none | work/maps/map-passive-app-server-dogfooding.md |
+| [work/evidence/evidence-tool-shed-v0-34-0-release-and-maintainer-sync.md](work/evidence/evidence-tool-shed-v0-34-0-release-and-maintainer-sync.md) | evidence | complete | 2026-08-28 | - | - |
 | [work/evidence/evidence-w1-dev-smb-access.md](work/evidence/evidence-w1-dev-smb-access.md) | evidence | complete | 2026-08-24 | none | - |
 | [work/evidence/evidence-windows-console-sandbox-verification-v0-29-4.md](work/evidence/evidence-windows-console-sandbox-verification-v0-29-4.md) | - | - | - | - | - |
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |
@@ -244,6 +245,6 @@ Updated: 2026-08-28
 
 ## Summary
 
-- Total artifacts: 227
-- Active artifacts: 3
-- Completed/decided artifacts: 161
+- Total artifacts: 228
+- Active artifacts: 2
+- Completed/decided artifacts: 163
