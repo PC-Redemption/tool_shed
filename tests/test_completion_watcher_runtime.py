@@ -110,22 +110,27 @@ class CompletionWatcherRuntimeTests(unittest.TestCase):
         descriptor = self._descriptor("123e4567-e89b-42d3-a456-426614174200")
         occurred = cw._utcnow()
 
-        first = cw._upsert_terminal_event(
-            paths,
-            descriptor,
-            terminal_class="SATISFIED",
-            reason_code="TARGET_SUCCEEDED",
-            occurred_at=occurred,
-            detail="done",
-        )
-        second = cw._upsert_terminal_event(
-            paths,
-            descriptor,
-            terminal_class="SATISFIED",
-            reason_code="TARGET_SUCCEEDED",
-            occurred_at=occurred,
-            detail="done",
-        )
+        with mock.patch.object(
+            cw,
+            "_utcnow",
+            side_effect=[occurred, occurred + timedelta(seconds=1)],
+        ):
+            first = cw._upsert_terminal_event(
+                paths,
+                descriptor,
+                terminal_class="SATISFIED",
+                reason_code="TARGET_SUCCEEDED",
+                occurred_at=occurred,
+                detail="done",
+            )
+            second = cw._upsert_terminal_event(
+                paths,
+                descriptor,
+                terminal_class="SATISFIED",
+                reason_code="TARGET_SUCCEEDED",
+                occurred_at=occurred,
+                detail="done",
+            )
         self.assertEqual(first, second)
         event_id = cw.terminal_event_id(descriptor["watch_id"])
         event_path = paths.outbox_pending_dir / f"{event_id}.json"

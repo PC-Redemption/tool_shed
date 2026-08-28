@@ -197,8 +197,8 @@ class HybridStateTests(unittest.TestCase):
         self.assertEqual(unmanaged["classification"], "UNMANAGED_REVIEW")
         self.assertTrue(unmanaged["unmanaged_write_detected"])
 
-        other = Path(tempfile.mkdtemp(dir=self.workspace.parent))
-        try:
+        with tempfile.TemporaryDirectory(dir=self.workspace.parent) as other_name:
+            other = Path(other_name)
             self.prepare_workspace(other, str(uuid.uuid4()))
             hybrid_state.initialize(other, project_binding=project_binding(other))
             with contextlib.closing(sqlite3.connect(other / ".tool-shed/state.sqlite3")) as connection:
@@ -207,8 +207,6 @@ class HybridStateTests(unittest.TestCase):
             invalid = hybrid_state.audit(other)
             self.assertEqual(invalid["classification"], "INVALID")
             self.assertIn("schema or accounting-trigger digest changed", invalid["findings"])
-        finally:
-            shutil.rmtree(other)
 
     def test_corrupt_database_is_refused_without_mutation(self) -> None:
         self.initialize()
@@ -329,16 +327,14 @@ class HybridStateTests(unittest.TestCase):
         self.assertFalse(denied["allowed"])
         self.assertTrue(allowed["allowed"])
 
-        other = Path(tempfile.mkdtemp(dir=self.workspace.parent))
-        try:
+        with tempfile.TemporaryDirectory(dir=self.workspace.parent) as other_name:
+            other = Path(other_name)
             self.prepare_workspace(other, self.project_id)
             (other / ".tool-shed").mkdir()
             shutil.copy2(database, other / ".tool-shed/state.sqlite3")
             foreign = hybrid_state.audit(other)
             self.assertEqual(foreign["classification"], "INVALID")
             self.assertIn("database worktree lineage does not match this workspace", foreign["findings"])
-        finally:
-            shutil.rmtree(other)
 
     def test_protocol4_preflight_and_post_install_preserve_live_hybrid_state(self) -> None:
         self.initialize()

@@ -963,7 +963,12 @@ def _upsert_terminal_event(
         candidate = directory / f"{event_id}.json"
         if candidate.exists():
             existing = _read_json(candidate)
-            if existing != event:
+            # Enqueue time is transport metadata, not terminal-event identity.
+            # A retry may cross a clock-second boundary while representing the
+            # same terminal observation.
+            comparable_existing = {key: value for key, value in existing.items() if key != "enqueued_at"}
+            comparable_event = {key: value for key, value in event.items() if key != "enqueued_at"}
+            if comparable_existing != comparable_event:
                 raise ValueError("conflicting terminal payload for watch")
             return candidate
     target = paths.outbox_pending_dir / f"{event_id}.json"

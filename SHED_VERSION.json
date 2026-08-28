@@ -74,7 +74,7 @@
     "scripts/codex_qualification_cache.py": "7726bf573a96af6ca468536e6283e87788760b0045a9c36690e64bc68623b69a",
     "scripts/codex_skill_sync.py": "78cf6c2d6605854c429cc54e63eb60b7fa7e81e47dcae9fc87c60b5f93d564a8",
     "scripts/complete_workpackage.py": "5de264d68998db84c898da83dbfa09682003c3119913b7941f1414dbac7f4d6c",
-    "scripts/completion_watcher.py": "f029cb2981f6a88f858b7e076c7ad2ee3fedd95933f5f4ae387add6b409abfb5",
+    "scripts/completion_watcher.py": "0264c153365b6e5ed0af17c52198fd04bf324fe0fc504bf2934a604afb599e6e",
     "scripts/doctor.py": "bcffcf28a82482814f2b78fc009c0ab3b93aaa7c8ce339b19c0a887384272a78",
     "scripts/hybrid_state.py": "7b11921a0579534a8e9c4070d80d5e1ae348ed6cd3de17907df3189cf23525fa",
     "scripts/hybrid_state_schema.py": "cec17e40de30a77d38a91ed1d2fcffa06a573bf13e91361b3ca18135c525d508",
