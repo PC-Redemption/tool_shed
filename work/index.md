@@ -143,6 +143,7 @@ Updated: 2026-08-28
 | [work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md](work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md) | validation-evidence | passed | 2026-08-28 | - | - |
 | [work/evidence/evidence-hybrid-sqlite-hpt2-parity.md](work/evidence/evidence-hybrid-sqlite-hpt2-parity.md) | - | passed | - | - | - |
 | [work/evidence/evidence-hybrid-sqlite-maintainer-conversion.md](work/evidence/evidence-hybrid-sqlite-maintainer-conversion.md) | - | passed | - | - | - |
+| [work/evidence/evidence-hybrid-sqlite-release-prerequisites.md](work/evidence/evidence-hybrid-sqlite-release-prerequisites.md) | evidence | passed | 2026-08-28 | publish and verify Tool Shed 0.34.0, then append release evidence without closing the client-canary gate | - |
 | [work/evidence/evidence-hybrid-sqlite-substrate.md](work/evidence/evidence-hybrid-sqlite-substrate.md) | - | passed | - | - | - |
 | [work/evidence/evidence-linux-command-free-code-proof-underspecified.md](work/evidence/evidence-linux-command-free-code-proof-underspecified.md) | evidence | verified | 2026-08-26 | - | - |
 | [work/evidence/evidence-linux-first-pass-code-proof-interruption.md](work/evidence/evidence-linux-first-pass-code-proof-interruption.md) | evidence | complete | 2026-08-26 | replace the failed code/test and dependent asset-aware proofs in Roadmap Revision 4 | - |
@@ -243,6 +244,6 @@ Updated: 2026-08-28
 
 ## Summary
 
-- Total artifacts: 226
+- Total artifacts: 227
 - Active artifacts: 3
 - Completed/decided artifacts: 161

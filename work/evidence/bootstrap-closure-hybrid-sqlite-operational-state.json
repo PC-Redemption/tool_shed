@@ -2,9 +2,9 @@
   "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
   "baseline": {
     "created_at": "2026-08-28T16:26:19Z",
-    "source_commit": "d9fb8d76a9fb2f387537ab61712a8b7f91024d89",
-    "source_digest": "c32e25043318cffbc55f0694d28e57f6d19f0d93e855f512ea2d542b5b557a78",
-    "updated_at": "2026-08-28T18:37:52Z"
+    "source_commit": "3436c131c209aa59c732cb8cd5da615a3131fb42",
+    "source_digest": "d3b6fc9bc14f5ae6aa057d7278db259e4c8f3f91a65339d92dd3232480881e96",
+    "updated_at": "2026-08-28T18:39:16Z"
   },
   "bindings": [
     {
@@ -35,7 +35,7 @@
     {
       "path": "scripts/bootstrap_closure.py",
       "role": "bootstrap-tool",
-      "sha256": "92fd7a9e733159baa2937f3b9216b28fe39d3fee42b4f242c506bb1484f814fe"
+      "sha256": "b20588d067571ad49d4cddcc661257481507713e50887fc5dd406df658a77d6c"
     },
     {
       "path": "schemas/bootstrap-closure/v1/manifest.schema.json",
@@ -45,7 +45,7 @@
     {
       "path": "tests/test_bootstrap_closure.py",
       "role": "closure-tests",
-      "sha256": "01fa23cfbc4b231acf2513ac9558cd5811f19325a871df38f6a4f5d397a69a58"
+      "sha256": "1f63f16e2495f1273d881eb23d34ae9fac4bc6899463495e7d231abaa0e4bfbd"
     },
     {
       "path": "scripts/validate_tool_shed.py",
@@ -208,6 +208,29 @@
       "source_commit": "d9fb8d76a9fb2f387537ab61712a8b7f91024d89",
       "summary": "Preassign import identities for the reconciliation records themselves",
       "supersedes": []
+    },
+    {
+      "authorization": "Owner-approved Campaign 107 release sequence and evidence-response correction on 2026-08-28",
+      "decision_ids": [
+        "DEC-HYBRID-012"
+      ],
+      "evidence_to_rerun": [
+        "EVID-G1-BOOTSTRAP",
+        "EVID-G4-CANARY",
+        "EVID-G4-RELEASE"
+      ],
+      "id": "CHG-HYBRID-008",
+      "rationale": "Staged publication must not require post-release canary evidence before the release exists. The verifier now distinguishes truthful future pending evidence from stale, failed, uncovered, or terminal-gate omissions while the declared G1-G3 publication gate remains blocking.",
+      "recorded_at": "2026-08-28T18:38:33Z",
+      "requirement_ids": [
+        "REQ-HYBRID-001",
+        "REQ-HYBRID-010",
+        "REQ-HYBRID-011",
+        "REQ-HYBRID-012"
+      ],
+      "source_commit": "3436c131c209aa59c732cb8cd5da615a3131fb42",
+      "summary": "Allow covered pending rerun evidence only behind an explicitly open future gate",
+      "supersedes": []
     }
   ],
   "decisions": [
@@ -301,7 +324,8 @@
       "covers_change_ids": [
         "CHG-HYBRID-001",
         "CHG-HYBRID-002",
-        "CHG-HYBRID-005"
+        "CHG-HYBRID-005",
+        "CHG-HYBRID-008"
       ],
       "gate": "G1-DESIGN-FROZEN",
       "id": "EVID-G1-BOOTSTRAP",
@@ -328,11 +352,11 @@
         },
         {
           "path": "work/evidence/evidence-hybrid-sqlite-release-prerequisites.md",
-          "sha256": "a85d70f9af238996c9f4fc5ac9b8388faf0e666ea635da0aa57058af52905120"
+          "sha256": "ea3331df1896e68c00d9fec5fd3c80bc4fb0cb627e9cbd835aba5983fe04b684"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T18:37:51Z"
+      "verified_at": "2026-08-28T18:38:47Z"
     },
     {
       "covers_change_ids": [
@@ -353,11 +377,11 @@
         },
         {
           "path": "work/evidence/evidence-hybrid-sqlite-release-prerequisites.md",
-          "sha256": "a85d70f9af238996c9f4fc5ac9b8388faf0e666ea635da0aa57058af52905120"
+          "sha256": "ea3331df1896e68c00d9fec5fd3c80bc4fb0cb627e9cbd835aba5983fe04b684"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T18:37:51Z"
+      "verified_at": "2026-08-28T18:39:15Z"
     },
     {
       "covers_change_ids": [
@@ -376,11 +400,11 @@
         },
         {
           "path": "work/evidence/evidence-hybrid-sqlite-release-prerequisites.md",
-          "sha256": "a85d70f9af238996c9f4fc5ac9b8388faf0e666ea635da0aa57058af52905120"
+          "sha256": "ea3331df1896e68c00d9fec5fd3c80bc4fb0cb627e9cbd835aba5983fe04b684"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T18:37:51Z"
+      "verified_at": "2026-08-28T18:39:15Z"
     },
     {
       "covers_change_ids": [
@@ -399,11 +423,11 @@
         },
         {
           "path": "work/evidence/evidence-hybrid-sqlite-release-prerequisites.md",
-          "sha256": "a85d70f9af238996c9f4fc5ac9b8388faf0e666ea635da0aa57058af52905120"
+          "sha256": "ea3331df1896e68c00d9fec5fd3c80bc4fb0cb627e9cbd835aba5983fe04b684"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T18:37:51Z"
+      "verified_at": "2026-08-28T18:39:15Z"
     },
     {
       "covers_change_ids": [
@@ -456,11 +480,11 @@
         },
         {
           "path": "work/evidence/evidence-hybrid-sqlite-release-prerequisites.md",
-          "sha256": "a85d70f9af238996c9f4fc5ac9b8388faf0e666ea635da0aa57058af52905120"
+          "sha256": "ea3331df1896e68c00d9fec5fd3c80bc4fb0cb627e9cbd835aba5983fe04b684"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T18:37:51Z"
+      "verified_at": "2026-08-28T18:39:16Z"
     },
     {
       "covers_change_ids": [
@@ -484,7 +508,7 @@
         },
         {
           "path": "schemas/hybrid-state/v1/hpt2-assigned-ids.json",
-          "sha256": "5e0f60ab0b5a54124d5263d846ed72c8446008cf61bf77a6ef3eafea1b8e4382"
+          "sha256": "64247303d6693c2fd44c8d2efe466fb7dc5a01072f5e134e0b2a3a8285da545b"
         },
         {
           "path": "tests/test_outcome_reconciliation.py",
@@ -496,11 +520,11 @@
         },
         {
           "path": "work/evidence/evidence-hybrid-sqlite-release-prerequisites.md",
-          "sha256": "a85d70f9af238996c9f4fc5ac9b8388faf0e666ea635da0aa57058af52905120"
+          "sha256": "ea3331df1896e68c00d9fec5fd3c80bc4fb0cb627e9cbd835aba5983fe04b684"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T18:37:52Z"
+      "verified_at": "2026-08-28T18:39:16Z"
     },
     {
       "covers_change_ids": [
@@ -531,11 +555,11 @@
         },
         {
           "path": "work/evidence/evidence-hybrid-sqlite-release-prerequisites.md",
-          "sha256": "a85d70f9af238996c9f4fc5ac9b8388faf0e666ea635da0aa57058af52905120"
+          "sha256": "ea3331df1896e68c00d9fec5fd3c80bc4fb0cb627e9cbd835aba5983fe04b684"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T18:37:52Z"
+      "verified_at": "2026-08-28T18:39:16Z"
     },
     {
       "covers_change_ids": [
@@ -574,15 +598,16 @@
         },
         {
           "path": "work/evidence/evidence-hybrid-sqlite-release-prerequisites.md",
-          "sha256": "a85d70f9af238996c9f4fc5ac9b8388faf0e666ea635da0aa57058af52905120"
+          "sha256": "ea3331df1896e68c00d9fec5fd3c80bc4fb0cb627e9cbd835aba5983fe04b684"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T18:37:52Z"
+      "verified_at": "2026-08-28T18:39:16Z"
     },
     {
       "covers_change_ids": [
-        "CHG-HYBRID-005"
+        "CHG-HYBRID-005",
+        "CHG-HYBRID-008"
       ],
       "gate": "G4-RELEASE-CANARY-PROVEN",
       "id": "EVID-G4-RELEASE",
@@ -609,7 +634,7 @@
         },
         {
           "path": "work/evidence/evidence-hybrid-sqlite-release-prerequisites.md",
-          "sha256": "a85d70f9af238996c9f4fc5ac9b8388faf0e666ea635da0aa57058af52905120"
+          "sha256": "ea3331df1896e68c00d9fec5fd3c80bc4fb0cb627e9cbd835aba5983fe04b684"
         }
       ],
       "status": "pending",
@@ -617,7 +642,8 @@
     },
     {
       "covers_change_ids": [
-        "CHG-HYBRID-005"
+        "CHG-HYBRID-005",
+        "CHG-HYBRID-008"
       ],
       "gate": "G4-RELEASE-CANARY-PROVEN",
       "id": "EVID-G4-CANARY",
@@ -628,7 +654,7 @@
         },
         {
           "path": "work/evidence/evidence-hybrid-sqlite-release-prerequisites.md",
-          "sha256": "a85d70f9af238996c9f4fc5ac9b8388faf0e666ea635da0aa57058af52905120"
+          "sha256": "ea3331df1896e68c00d9fec5fd3c80bc4fb0cb627e9cbd835aba5983fe04b684"
         }
       ],
       "status": "pending",
@@ -867,7 +893,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "6e7401eb08d6f4f3",
+  "state_token": "4fe58b0c87beb17b",
   "upgrade_targets": [
     {
       "id": "UPG-HYBRID-MAINTAINER",

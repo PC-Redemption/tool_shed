@@ -2476,6 +2476,23 @@
       "updated": null
     },
     {
+      "campaign": "publish-hybrid-state-release-and-sync-maintainer-skill",
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": null,
+      "next_action": "publish and verify Tool Shed 0.34.0, then append release evidence without closing the client-canary gate",
+      "parent": null,
+      "path": "work/evidence/evidence-hybrid-sqlite-release-prerequisites.md",
+      "produces": null,
+      "project_map": null,
+      "status": "passed",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Hybrid SQLite release-prerequisite qualification",
+      "type": "evidence",
+      "updated": "2026-08-28"
+    },
+    {
       "campaign": "104-implement-minimum-sqlite-operational-substrate",
       "campaign_reason": null,
       "canonical_truth": null,
@@ -4106,6 +4123,6 @@
   "summary": {
     "active_artifacts": 3,
     "completed_or_decided_artifacts": 161,
-    "total_artifacts": 226
+    "total_artifacts": 227
   }
 }
