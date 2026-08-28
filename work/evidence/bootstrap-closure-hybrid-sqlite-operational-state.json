@@ -2,9 +2,9 @@
   "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
   "baseline": {
     "created_at": "2026-08-28T16:26:19Z",
-    "source_commit": "43da1fc98e32353ed1f46c0e9a919205f27533be",
+    "source_commit": "b7d63f7768b8f461f7f500debdc5e6fc10d21001",
     "source_digest": "c32e25043318cffbc55f0694d28e57f6d19f0d93e855f512ea2d542b5b557a78",
-    "updated_at": "2026-08-28T18:29:35Z"
+    "updated_at": "2026-08-28T18:31:40Z"
   },
   "bindings": [
     {
@@ -171,6 +171,24 @@
       ],
       "source_commit": "43da1fc98e32353ed1f46c0e9a919205f27533be",
       "summary": "Implement updater protocol 4 and stage controlled publication before the released-client canary",
+      "supersedes": []
+    },
+    {
+      "authorization": "Campaign 107 evidence-response loop under the owner-approved 0.34.0 release",
+      "decision_ids": [
+        "DEC-HYBRID-003"
+      ],
+      "evidence_to_rerun": [
+        "EVID-G2-HPT2-PARITY"
+      ],
+      "id": "CHG-HYBRID-006",
+      "rationale": "The first full closed-loop rerun correctly refused CHG-HYBRID-005 because every imported historical change requires a preassigned UUIDv4. Adding the missing durable mapping preserves deterministic bootstrap-to-SQLite parity.",
+      "recorded_at": "2026-08-28T18:31:40Z",
+      "requirement_ids": [
+        "REQ-HYBRID-008"
+      ],
+      "source_commit": "b7d63f7768b8f461f7f500debdc5e6fc10d21001",
+      "summary": "Assign the durable HPT2 import identity for the protocol 4 reconciliation change",
       "supersedes": []
     }
   ],
@@ -435,8 +453,8 @@
           "sha256": "d3fd3b184becd3bd10a2991a52ead0dde88b528b109dc021a6fd41123af95369"
         }
       ],
-      "status": "passed",
-      "verified_at": "2026-08-28T17:47:21Z"
+      "status": "stale",
+      "verified_at": null
     },
     {
       "covers_change_ids": [],
@@ -765,7 +783,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "f6cbc2ce277fbec0",
+  "state_token": "29cde9b0bf9126d5",
   "upgrade_targets": [
     {
       "id": "UPG-HYBRID-MAINTAINER",
