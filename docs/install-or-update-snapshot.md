@@ -82,6 +82,11 @@ database parity, validates each bootstrap manifest structurally, and rejects an 
 verdict. A workspace without hybrid state remains file-authoritative and no database is created.
 Protocol 3 and older refuse a protocol-4 release before backup or workspace mutation.
 
+Every shipped Python CLI disables bytecode writes before importing Tool Shed modules. Normal
+operation therefore cannot create `__pycache__/`, `.pyc`, or `.pyo` files inside a disconnected
+snapshot; strict integrity continues to reject those runtime artifacts if another process creates
+them.
+
 Provider guidance is auto-detected from existing marked instruction files. If none exists, Codex is
 the backward-compatible default. Override or install multiple adapters with:
 

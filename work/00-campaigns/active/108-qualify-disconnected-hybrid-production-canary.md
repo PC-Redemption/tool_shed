@@ -1,16 +1,16 @@
 # Qualify a disconnected hybrid production canary
 
-Status: queued
+Status: working
 Type: campaign
 Updated: 2026-08-28
-Next Action: execute when selected from the active campaign queue
+Next Action: execute the campaign completion gate
 Campaign ID: qualify-disconnected-hybrid-production-canary
 Campaign Number: 108
 Outcome: One production-shaped disconnected Tool Shed client with local Git but no project GitHub remote or authenticated gh proves install/upgrade, checkpoint, backup, restore, reconciliation, safe downgrade behavior, and rollback before broad rollout.
 Primary Focus Areas: snapshot-delivery
 Supporting Focus Areas: qualification-release, workspace-safety, artifact-workflows
 Depends On: publish-hybrid-state-release-and-sync-maintainer-skill
-Decision: Separate owner authorization and an exact known client target are required before external workspace mutation.
+Decision: none
 Detour For: none
 Return To: none
 Completion Gate: The released external updater backs up and migrates the declared file/database/skill surface, validates reconstruction and closed-loop state, handles old-updater refusal, operates without gh authentication or a project remote, restores from external backup, downgrades through verified reverse export or refuses safely, and completes the required soak with no unresolved finding; G4 passes.
@@ -24,6 +24,13 @@ Unlocks Gate: G4-RELEASE-CANARY-PROVEN
 ## Request
 
 After the release and only under separate explicit client-mutation authority, upgrade one disposable or low-risk disconnected client through the normal released updater. Verify no-GitHub project operation, DB/checkpoint lineage, closure, context efficiency, backup/restore, rollback, and downgrade behavior. Record compact durable evidence and stop before broad fleet rollout.
+
+## Approved Canary Boundary
+
+Use one disposable synthetic client created from Tool Shed-owned fixture content in a secure
+temporary directory. The client must have local Git, no project remote, and isolated unauthenticated
+GitHub CLI state. Do not inspect, copy, or mutate another project workspace. Retain only compact
+sanitized evidence in this repository after qualification.
 
 ## App Server Preparation Contract
 

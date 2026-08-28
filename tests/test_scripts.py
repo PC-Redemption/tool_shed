@@ -826,6 +826,49 @@ for raw in sys.stdin:
                 ],
             )
 
+    def test_all_python_cli_entrypoints_suppress_snapshot_bytecode(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            snapshot = Path(temp) / "tool_shed"
+
+            def ignore(_directory: str, names: list[str]) -> set[str]:
+                ignored = {name for name in names if name in {".git", "work", "__pycache__"}}
+                ignored.update(name for name in names if name.endswith((".pyc", ".pyo")))
+                return ignored
+
+            shutil.copytree(ROOT, snapshot, ignore=ignore)
+            environment = dict(os.environ)
+            environment.pop("PYTHONDONTWRITEBYTECODE", None)
+            environment.pop("PYTHONPYCACHEPREFIX", None)
+            entrypoints = [
+                path
+                for path in sorted((snapshot / "scripts").glob("*.py"))
+                if 'if __name__ == "__main__"' in path.read_text(encoding="utf-8")
+                and path.name != "validate_snapshot_client.py"
+            ]
+
+            for entrypoint in entrypoints:
+                result = subprocess.run(
+                    [sys.executable, str(entrypoint), "--help"],
+                    cwd=snapshot,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    check=False,
+                    env=environment,
+                )
+                self.assertEqual(
+                    result.returncode,
+                    0,
+                    f"{entrypoint.name}: {result.stdout}{result.stderr}",
+                )
+
+            runtime_artifacts = [
+                path.relative_to(snapshot).as_posix()
+                for path in snapshot.rglob("*")
+                if path.name == "__pycache__" or path.suffix in {".pyc", ".pyo"}
+            ]
+            self.assertEqual(runtime_artifacts, [])
+
     def test_disconnected_snapshot_validator_is_nonmutating(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
