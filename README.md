@@ -237,6 +237,13 @@ commands or test IDs, outcomes, and relative raw-artifact locations. The install
 existing `.gitignore` and provider-native instruction content and appends or refreshes only marked
 Tool Shed rules.
 
+For a large authority or migration initiative whose target runtime does not exist yet, use
+`scripts/bootstrap_closure.py` with a tracked `bootstrap-closure-*.json` manifest. It binds the
+accepted requirements, design decisions, material changes, evidence, migration inventory, upgrade
+targets, and exact verdicts to project identity, source hashes, and guarded state tokens. Full
+validation checks these manifests for structural and source consistency; release validation fails
+closed until every manifest's declared release gate is complete.
+
 Before a long campaign, run:
 
 ```bash
@@ -675,7 +682,7 @@ python3 scripts/validate_tool_shed.py --profile full
 
 Profile ownership is explicit: `focused` checks validator orchestration (or a disconnected
 snapshot's supplied smoke tests); `full` runs every unit behavior once plus current manifest,
-provider, roadmap, stale-path, and work-state contracts; `release` adds one disposable
+provider, roadmap, bootstrap-closure, stale-path, and work-state contracts; `release` adds one disposable
 cross-command installed-workspace smoke. Unit cases run in isolated concurrent processes, so every
 selected case reports independently without serializing unrelated cases. GitHub Actions runs
 the budgeted `release` profile on pushes and pull requests across Ubuntu and Windows, partitioning

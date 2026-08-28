@@ -273,6 +273,24 @@ def validate_program_roadmaps() -> None:
     run([sys.executable, "scripts/program_roadmap.py", "--workspace", ".", "validate"])
 
 
+def validate_bootstrap_closures(*, require_final: bool = False) -> None:
+    step("bootstrap outcome closure")
+    manifests = sorted((ROOT / "work" / "evidence").glob("bootstrap-closure-*.json"))
+    for manifest in manifests:
+        arguments = [
+            sys.executable,
+            "scripts/bootstrap_closure.py",
+            "--workspace",
+            ".",
+            "verify",
+            "--manifest",
+            manifest.relative_to(ROOT).as_posix(),
+        ]
+        if require_final:
+            arguments.append("--require-final")
+        run(arguments)
+
+
 def smoke_temp_workspace() -> None:
     step("temp workspace smoke")
     with tempfile.TemporaryDirectory(prefix="tool-shed-validate-") as temp:
@@ -464,6 +482,7 @@ def profile_step_names(
                     "check_stale_paths",
                     "review_work_state",
                     "validate_program_roadmaps",
+                    "validate_bootstrap_closures",
                 )
             )
         if profile == "release":
@@ -496,6 +515,9 @@ def main(argv: list[str] | None = None) -> int:
             "check_stale_paths": check_stale_paths,
             "review_work_state": review_work_state,
             "validate_program_roadmaps": validate_program_roadmaps,
+            "validate_bootstrap_closures": lambda: validate_bootstrap_closures(
+                require_final=args.profile == "release"
+            ),
             "smoke_temp_workspace": smoke_temp_workspace,
             "sanity_check_markdown": sanity_check_markdown,
         }

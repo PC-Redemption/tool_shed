@@ -1856,6 +1856,27 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
+      "disposition": "completed",
+      "milestone": "M1-BOOTSTRAP-DESIGN-FROZEN",
+      "next_action": "none",
+      "parent": null,
+      "path": "work/00-campaigns/completed/103-establish-hybrid-bootstrap-closure-and-design-contract.md",
+      "produces": null,
+      "project_map": null,
+      "roadmap": "hybrid-sqlite-operational-state",
+      "roadmap_revision": "1",
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Establish hybrid bootstrap closure and design contract",
+      "type": "campaign",
+      "unlocks_gate": "G1-DESIGN-FROZEN",
+      "updated": "2026-08-28"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
       "disposition": "Replaced as the executable entrypoint by a full Program Roadmap proposal with staged milestones, evidence gates, and separately approved roadmap-derived campaigns.",
       "next_action": "reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign.",
       "parent": null,
@@ -2280,6 +2301,23 @@
       "title": "Evidence: Human planning mechanism evaluation",
       "type": "evidence",
       "updated": "2026-08-09"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": null,
+      "next_action": null,
+      "parent": null,
+      "path": "work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md",
+      "produces": null,
+      "project_map": null,
+      "status": "passed",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Evidence: Hybrid SQLite G1 Design Frozen",
+      "type": "validation-evidence",
+      "updated": "2026-08-28"
     },
     {
       "campaign": "prove-command-free-first-pass-code-test-campaign-on-linux",
@@ -2928,6 +2966,40 @@
       "updated": "2026-08-27"
     },
     {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": null,
+      "next_action": "use the approved project map and Program Roadmap for staged delivery",
+      "parent": null,
+      "path": "work/ideas/idea-sqlite-backed-tool-shed-operational-state.md",
+      "produces": "work/maps/map-hybrid-sqlite-operational-state.md",
+      "project_map": null,
+      "status": "promoted",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Idea Brief: SQLite-Backed Tool Shed Operational State",
+      "type": "idea-brief",
+      "updated": "2026-08-28"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": null,
+      "next_action": "continue brainstorming or promote this brief with `ts: prm idea <idea-id-or-path>`",
+      "parent": null,
+      "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
+      "produces": null,
+      "project_map": null,
+      "status": "exploring",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Idea Brief: Universal Closed-Loop Outcome Reconciliation",
+      "type": "idea-brief",
+      "updated": "2026-08-28"
+    },
+    {
       "campaign": "file-codex-desktop-robustness-issue",
       "campaign_reason": null,
       "canonical_truth": null,
@@ -2977,6 +3049,23 @@
       "title": "Project Map: Disposable completion watchers and hosted notifications",
       "type": "project-map",
       "updated": "2026-08-18"
+    },
+    {
+      "campaign": "standalone",
+      "campaign_reason": "this map coordinates roadmap-derived milestones and is not owned by one execution campaign",
+      "canonical_truth": null,
+      "disposition": null,
+      "next_action": "follow the approved Program Roadmap beginning with its bootstrap/design milestone",
+      "parent": null,
+      "path": "work/maps/map-hybrid-sqlite-operational-state.md",
+      "produces": null,
+      "project_map": null,
+      "status": "approved",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Project Map: Hybrid SQLite Operational State",
+      "type": "project-map",
+      "updated": "2026-08-28"
     },
     {
       "campaign": "standalone",
@@ -3138,6 +3227,27 @@
       "title": "Program Roadmap: Disposable completion watchers and hosted notifications",
       "type": "program-roadmap",
       "updated": "2026-08-20"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": null,
+      "next_action": "execute the first ready roadmap campaign through ts: next",
+      "parent": null,
+      "path": "work/roadmaps/roadmap-hybrid-sqlite-operational-state.md",
+      "produces": null,
+      "project_map": null,
+      "revision": "1",
+      "roadmap_id": "hybrid-sqlite-operational-state",
+      "source_project_map": "work/maps/map-hybrid-sqlite-operational-state.md",
+      "source_state_token": "981bd6568d9a9e4b",
+      "status": "executing",
+      "superseded_by": "none",
+      "supersedes": "none",
+      "title": "Program Roadmap: Hybrid SQLite Operational State",
+      "type": "program-roadmap",
+      "updated": "2026-08-28"
     },
     {
       "campaign": null,
@@ -3771,7 +3881,7 @@
     }
   ],
   "description": "Generated from tool_shed artifact headers. Use as navigation, not canonical truth.",
-  "generated_at": "2026-08-27",
+  "generated_at": "2026-08-28",
   "reading_order": [
     "Read project README/docs for current truth.",
     "Read active maps and active work artifacts from this index.",
@@ -3779,8 +3889,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 0,
-    "completed_or_decided_artifacts": 156,
-    "total_artifacts": 209
+    "active_artifacts": 1,
+    "completed_or_decided_artifacts": 158,
+    "total_artifacts": 215
   }
 }

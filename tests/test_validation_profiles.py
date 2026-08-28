@@ -41,6 +41,8 @@ class ValidationProfileTests(unittest.TestCase):
             self.assertEqual(len(steps), len(set(steps)))
         self.assertNotIn("smoke_temp_workspace", focused)
         self.assertNotIn("smoke_temp_workspace", full)
+        self.assertIn("validate_bootstrap_closures", full)
+        self.assertIn("validate_bootstrap_closures", release)
         self.assertEqual(set(release) - set(full), {"smoke_temp_workspace"})
         self.assertEqual(
             validator.profile_step_names(
@@ -60,6 +62,24 @@ class ValidationProfileTests(unittest.TestCase):
         validator.enforce_time_budget("release", 59.999, budgeted.max_seconds)
         with self.assertRaisesRegex(SystemExit, "exceeded its 60s budget"):
             validator.enforce_time_budget("release", 60.001, budgeted.max_seconds)
+
+    def test_bootstrap_closure_validation_uses_final_gate_only_for_release(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence = root / "work" / "evidence"
+            evidence.mkdir(parents=True)
+            manifest = evidence / "bootstrap-closure-fixture.json"
+            manifest.write_text("{}\n", encoding="utf-8")
+            with mock.patch.object(validator, "ROOT", root), mock.patch.object(
+                validator, "step"
+            ), mock.patch.object(validator, "run") as run:
+                validator.validate_bootstrap_closures(require_final=False)
+                development = run.call_args.args[0]
+                self.assertNotIn("--require-final", development)
+                run.reset_mock()
+                validator.validate_bootstrap_closures(require_final=True)
+                release = run.call_args.args[0]
+                self.assertIn("--require-final", release)
 
     def test_isolated_runner_collects_every_result_in_stable_order(self) -> None:
         calls: list[str] = []

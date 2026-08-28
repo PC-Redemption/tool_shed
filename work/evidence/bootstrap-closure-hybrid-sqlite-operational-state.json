@@ -1,0 +1,656 @@
+{
+  "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
+  "baseline": {
+    "created_at": "2026-08-28T16:26:19Z",
+    "source_commit": "823ef35db06569a50e8096dfa54233ee455ab2fc",
+    "source_digest": "cc62dae2f4b225fb9eaf21ea67ffd925f85f337cbb9f741bf39d2f6ba1310ea2",
+    "updated_at": "2026-08-28T16:31:43Z"
+  },
+  "bindings": [
+    {
+      "path": "work/ideas/idea-sqlite-backed-tool-shed-operational-state.md",
+      "role": "idea",
+      "sha256": "db1707b6cce8fa902f6a493c33530ec7443c429b53167c369019243b2b4a6730"
+    },
+    {
+      "path": "work/maps/map-hybrid-sqlite-operational-state.md",
+      "role": "project-map",
+      "sha256": "e74202d878f93d08d81a3fc261a1a96f84088f8f427596f85233da185ecc5b22"
+    },
+    {
+      "path": "work/roadmaps/roadmap-hybrid-sqlite-operational-state.md",
+      "role": "program-roadmap",
+      "sha256": "58b329a0ccab858aa0c5a6ba23f8eabbe119a278c9c3877a9da3867d30b98573"
+    },
+    {
+      "path": "docs/hybrid-sqlite-state-v1-contract.md",
+      "role": "authority-contract",
+      "sha256": "67c4003c8b9ce76b6e556b8d7a2f3c40e3983de09b5d7093c9caccd2edf8aaf5"
+    },
+    {
+      "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
+      "role": "closed-loop-idea",
+      "sha256": "d3fd3b184becd3bd10a2991a52ead0dde88b528b109dc021a6fd41123af95369"
+    },
+    {
+      "path": "scripts/bootstrap_closure.py",
+      "role": "bootstrap-tool",
+      "sha256": "53907625a79e291e71d950e401fb96668bd1c09adbb134cbe9a82b532cdfa690"
+    },
+    {
+      "path": "schemas/bootstrap-closure/v1/manifest.schema.json",
+      "role": "manifest-schema",
+      "sha256": "2dc3cd1929d8b3f209e38ef789effac6a22a9e49a5ad288391a516e8aa79c817"
+    },
+    {
+      "path": "tests/test_bootstrap_closure.py",
+      "role": "closure-tests",
+      "sha256": "4d9c8b0b8c62f36cf78cd41ba1996ddd088ebb88734e05ea4648b2569f61c064"
+    },
+    {
+      "path": "scripts/validate_tool_shed.py",
+      "role": "release-validator",
+      "sha256": "eb6e5fa153d351804e83ab718d6e7c06e6f17a9bbe1461543bae726c1cae82b8"
+    },
+    {
+      "path": "work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md",
+      "role": "g1-evidence",
+      "sha256": "c32e9a94c238f73a833ab446de8248413fc0b2e3ee94003e2868f9d1b55870ff"
+    }
+  ],
+  "changes": [
+    {
+      "authorization": "Campaign 103 completion gate and owner-approved closed-loop requirement",
+      "decision_ids": [],
+      "evidence_to_rerun": [
+        "EVID-G1-BOOTSTRAP"
+      ],
+      "id": "CHG-HYBRID-001",
+      "rationale": "Final campaign audit found that an empty affected-state and rerun list could record a nominal change without enforcing reconciliation.",
+      "recorded_at": "2026-08-28T16:30:49Z",
+      "requirement_ids": [
+        "REQ-HYBRID-001"
+      ],
+      "source_commit": "823ef35db06569a50e8096dfa54233ee455ab2fc",
+      "summary": "Require every material change to identify affected state and evidence reruns",
+      "supersedes": []
+    },
+    {
+      "authorization": "Campaign 103 completion gate and evidence accuracy requirement",
+      "decision_ids": [],
+      "evidence_to_rerun": [
+        "EVID-G1-BOOTSTRAP"
+      ],
+      "id": "CHG-HYBRID-002",
+      "rationale": "The durable evidence must identify the actual final rerun rather than retain the pre-hardening timestamp.",
+      "recorded_at": "2026-08-28T16:31:31Z",
+      "requirement_ids": [
+        "REQ-HYBRID-001"
+      ],
+      "source_commit": "823ef35db06569a50e8096dfa54233ee455ab2fc",
+      "summary": "Correct the G1 evidence timestamp after the hardened focused rerun",
+      "supersedes": []
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-HYBRID-001",
+      "rationale": "Per-worktree state prevents database sharing from becoming an implicit branch or merge mechanism.",
+      "status": "settled",
+      "summary": "Use one ignored SQLite database per verified Git worktree at .tool-shed/state.sqlite3."
+    },
+    {
+      "id": "DEC-HYBRID-002",
+      "rationale": "This gives every field one authority and limits the first conversion to the minimum proving workload.",
+      "status": "settled",
+      "summary": "Keep imported source, product truth, general Markdown bodies, and excluded lifecycle domains file-authoritative in phase one."
+    },
+    {
+      "id": "DEC-HYBRID-003",
+      "rationale": "Stable normalized values remain portable across paths, platforms, worktrees, and rebuilds.",
+      "status": "settled",
+      "summary": "Use lowercase UUIDv4 public IDs, UTC whole-second timestamps, and lowercase SHA-256 digests."
+    },
+    {
+      "id": "DEC-HYBRID-004",
+      "rationale": "Explicit fields and authority prevent implementation convenience from silently expanding phase-one scope.",
+      "status": "settled",
+      "summary": "Freeze SQLite schema version 1 to the explicit metadata, graph, closed-loop, migration, export, and checkpoint fields in the contract."
+    },
+    {
+      "id": "DEC-HYBRID-005",
+      "rationale": "Supported scripts remain the normal interface while bypass writes are detectable and require exact reconciliation.",
+      "status": "settled",
+      "summary": "Use triggers and managed-operation accounting to classify direct SQL and fail closed on unjournaled or invalid state."
+    },
+    {
+      "id": "DEC-HYBRID-006",
+      "rationale": "Git receives a portable logical recovery surface without tracking the frequently changing SQLite binary.",
+      "status": "settled",
+      "summary": "Use one canonical tracked state-v1 JSON checkpoint with digest-bound deterministic ordering and shadow rebuild verification."
+    },
+    {
+      "id": "DEC-HYBRID-007",
+      "rationale": "This preserves durable review points without commit spam from ordinary managed access.",
+      "status": "settled",
+      "summary": "Checkpoint at semantic boundaries or after 100 revisions or 24 hours, not on every database access."
+    },
+    {
+      "id": "DEC-HYBRID-008",
+      "rationale": "Path order, timestamps, and live database reuse cannot safely decide competing intent or verdicts.",
+      "status": "settled",
+      "summary": "Merge checkpoints by stable IDs and explicit independent fields; semantic conflicts require reconciliation."
+    },
+    {
+      "id": "DEC-HYBRID-009",
+      "rationale": "Verified rollback material and non-destructive promotion are required for the no-data-loss promise.",
+      "status": "settled",
+      "summary": "Retain the newest three verified SQLite backups and require shadow migration plus semantic comparison before promotion."
+    },
+    {
+      "id": "DEC-HYBRID-010",
+      "rationale": "Protocol 3 does not inventory, back up, migrate, verify, or restore live database state.",
+      "status": "settled",
+      "summary": "Reserve updater protocol 4 for database-aware releases and require older updaters to refuse before mutation."
+    },
+    {
+      "id": "DEC-HYBRID-011",
+      "rationale": "An in-place down migration could lose database-authoritative changes after cutover.",
+      "status": "settled",
+      "summary": "Allow downgrade only through a verified reverse export; otherwise refuse and name the blocking state."
+    },
+    {
+      "id": "DEC-HYBRID-012",
+      "rationale": "The dual-role maintainer does not use the disconnected snapshot updater against itself.",
+      "status": "settled",
+      "summary": "Rehearse externally, convert the canonical maintainer first, publish second, synchronize the installed skill separately, and canary one client last."
+    },
+    {
+      "id": "DEC-HYBRID-013",
+      "rationale": "Plausible reconstruction would weaken the closed-loop audit by inventing original intent or delivery evidence.",
+      "status": "settled",
+      "summary": "Preserve missing HPT2 history as unknown and block satisfaction until it is obtained or explicitly dispositioned."
+    },
+    {
+      "id": "DEC-HYBRID-014",
+      "rationale": "Token savings are an evidence-based outcome, not an assumption caused by choosing SQLite.",
+      "status": "settled",
+      "summary": "Qualify small, exact maintainer, and large fixtures at 70 percent median context reduction and at most 5 percent explained fallback with full semantic parity."
+    }
+  ],
+  "evidence": [
+    {
+      "covers_change_ids": [
+        "CHG-HYBRID-001",
+        "CHG-HYBRID-002"
+      ],
+      "gate": "G1-DESIGN-FROZEN",
+      "id": "EVID-G1-BOOTSTRAP",
+      "references": [
+        {
+          "path": "scripts/bootstrap_closure.py",
+          "sha256": "53907625a79e291e71d950e401fb96668bd1c09adbb134cbe9a82b532cdfa690"
+        },
+        {
+          "path": "schemas/bootstrap-closure/v1/manifest.schema.json",
+          "sha256": "2dc3cd1929d8b3f209e38ef789effac6a22a9e49a5ad288391a516e8aa79c817"
+        },
+        {
+          "path": "tests/test_bootstrap_closure.py",
+          "sha256": "4d9c8b0b8c62f36cf78cd41ba1996ddd088ebb88734e05ea4648b2569f61c064"
+        },
+        {
+          "path": "scripts/validate_tool_shed.py",
+          "sha256": "eb6e5fa153d351804e83ab718d6e7c06e6f17a9bbe1461543bae726c1cae82b8"
+        },
+        {
+          "path": "work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md",
+          "sha256": "c32e9a94c238f73a833ab446de8248413fc0b2e3ee94003e2868f9d1b55870ff"
+        }
+      ],
+      "status": "passed",
+      "verified_at": "2026-08-28T16:31:43Z"
+    },
+    {
+      "covers_change_ids": [],
+      "gate": "G1-DESIGN-FROZEN",
+      "id": "EVID-G1-CONTRACT",
+      "references": [
+        {
+          "path": "docs/hybrid-sqlite-state-v1-contract.md",
+          "sha256": "67c4003c8b9ce76b6e556b8d7a2f3c40e3983de09b5d7093c9caccd2edf8aaf5"
+        },
+        {
+          "path": "work/roadmaps/roadmap-hybrid-sqlite-operational-state.md",
+          "sha256": "58b329a0ccab858aa0c5a6ba23f8eabbe119a278c9c3877a9da3867d30b98573"
+        }
+      ],
+      "status": "passed",
+      "verified_at": "2026-08-28T16:23:56Z"
+    },
+    {
+      "covers_change_ids": [],
+      "gate": "G1-DESIGN-FROZEN",
+      "id": "EVID-G1-HPT2-INVENTORY",
+      "references": [
+        {
+          "path": "docs/hybrid-sqlite-state-v1-contract.md",
+          "sha256": "67c4003c8b9ce76b6e556b8d7a2f3c40e3983de09b5d7093c9caccd2edf8aaf5"
+        },
+        {
+          "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
+          "sha256": "d3fd3b184becd3bd10a2991a52ead0dde88b528b109dc021a6fd41123af95369"
+        }
+      ],
+      "status": "passed",
+      "verified_at": "2026-08-28T16:23:56Z"
+    },
+    {
+      "covers_change_ids": [],
+      "gate": "G1-DESIGN-FROZEN",
+      "id": "EVID-G1-EFFICIENCY-CONTRACT",
+      "references": [
+        {
+          "path": "docs/hybrid-sqlite-state-v1-contract.md",
+          "sha256": "67c4003c8b9ce76b6e556b8d7a2f3c40e3983de09b5d7093c9caccd2edf8aaf5"
+        },
+        {
+          "path": "work/ideas/idea-sqlite-backed-tool-shed-operational-state.md",
+          "sha256": "db1707b6cce8fa902f6a493c33530ec7443c429b53167c369019243b2b4a6730"
+        }
+      ],
+      "status": "passed",
+      "verified_at": "2026-08-28T16:23:56Z"
+    },
+    {
+      "covers_change_ids": [],
+      "gate": "G2-SUBSTRATE-LOOP-PROVEN",
+      "id": "EVID-G2-SUBSTRATE",
+      "references": [
+        {
+          "path": "docs/hybrid-sqlite-state-v1-contract.md",
+          "sha256": "67c4003c8b9ce76b6e556b8d7a2f3c40e3983de09b5d7093c9caccd2edf8aaf5"
+        }
+      ],
+      "status": "pending",
+      "verified_at": null
+    },
+    {
+      "covers_change_ids": [],
+      "gate": "G2-SUBSTRATE-LOOP-PROVEN",
+      "id": "EVID-G2-HPT2-PARITY",
+      "references": [
+        {
+          "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
+          "sha256": "d3fd3b184becd3bd10a2991a52ead0dde88b528b109dc021a6fd41123af95369"
+        }
+      ],
+      "status": "pending",
+      "verified_at": null
+    },
+    {
+      "covers_change_ids": [],
+      "gate": "G2-SUBSTRATE-LOOP-PROVEN",
+      "id": "EVID-G2-EFFICIENCY",
+      "references": [
+        {
+          "path": "work/roadmaps/roadmap-hybrid-sqlite-operational-state.md",
+          "sha256": "58b329a0ccab858aa0c5a6ba23f8eabbe119a278c9c3877a9da3867d30b98573"
+        }
+      ],
+      "status": "pending",
+      "verified_at": null
+    },
+    {
+      "covers_change_ids": [],
+      "gate": "G3-MAINTAINER-CONVERSION-PROVEN",
+      "id": "EVID-G3-MAINTAINER",
+      "references": [
+        {
+          "path": "work/roadmaps/roadmap-hybrid-sqlite-operational-state.md",
+          "sha256": "58b329a0ccab858aa0c5a6ba23f8eabbe119a278c9c3877a9da3867d30b98573"
+        }
+      ],
+      "status": "pending",
+      "verified_at": null
+    },
+    {
+      "covers_change_ids": [],
+      "gate": "G4-RELEASE-CANARY-PROVEN",
+      "id": "EVID-G4-RELEASE",
+      "references": [
+        {
+          "path": "docs/releasing.md",
+          "sha256": "a60ab06560bc69debf82f2c2bd4720686e73b0001886948443a9ca0ebbc79d00"
+        }
+      ],
+      "status": "pending",
+      "verified_at": null
+    },
+    {
+      "covers_change_ids": [],
+      "gate": "G4-RELEASE-CANARY-PROVEN",
+      "id": "EVID-G4-CANARY",
+      "references": [
+        {
+          "path": "docs/install-or-update-snapshot.md",
+          "sha256": "e4bb630fa9fd6afde41e1adfe0b53fb2645e663d0b10a41b86f21d5e70759d49"
+        }
+      ],
+      "status": "pending",
+      "verified_at": null
+    }
+  ],
+  "initiative": {
+    "id": "hybrid-sqlite-operational-state",
+    "status": "active",
+    "title": "Hybrid SQLite Operational State"
+  },
+  "kind": "tool-shed-bootstrap-closure",
+  "migration_items": [
+    {
+      "id": "MIG-HYBRID-001",
+      "milestone": "M2-SUBSTRATE-HPT2-PROVEN",
+      "status": "planned",
+      "summary": "Implement the schema, managed access layer, checkpoint, backup, and rebuild substrate without changing file authority."
+    },
+    {
+      "id": "MIG-HYBRID-002",
+      "milestone": "M2-SUBSTRATE-HPT2-PROVEN",
+      "status": "planned",
+      "summary": "Import HPT2 and the bootstrap closure record and prove requirement, change, evidence, and verdict parity."
+    },
+    {
+      "id": "MIG-HYBRID-003",
+      "milestone": "M3-MAINTAINER-HYBRID-PROVEN",
+      "status": "planned",
+      "summary": "Create and verify the assigned-ID and complete loss-accounting inventory for maintainer conversion."
+    },
+    {
+      "id": "MIG-HYBRID-004",
+      "milestone": "M3-MAINTAINER-HYBRID-PROVEN",
+      "status": "planned",
+      "summary": "Rehearse the exact conversion in a disposable clone and retain a verified external rollback surface."
+    },
+    {
+      "id": "MIG-HYBRID-005",
+      "milestone": "M3-MAINTAINER-HYBRID-PROVEN",
+      "status": "planned",
+      "summary": "Convert the live maintainer through shadow import, parity, no-write validation, and soak while retaining all original files."
+    },
+    {
+      "id": "MIG-HYBRID-006",
+      "milestone": "M4-RELEASE-CANARY-PROVEN",
+      "status": "planned",
+      "summary": "Prove reverse export or explicit safe downgrade refusal before database-authoritative release qualification."
+    }
+  ],
+  "project": {
+    "project_id": "817b6358-b2f5-48fd-bb66-bd80f936faca"
+  },
+  "release_gate": {
+    "mode": "blocking",
+    "required_scopes": [
+      "G1-DESIGN-FROZEN",
+      "G2-SUBSTRATE-LOOP-PROVEN",
+      "G3-MAINTAINER-CONVERSION-PROVEN",
+      "G4-RELEASE-CANARY-PROVEN",
+      "initiative"
+    ]
+  },
+  "requirements": [
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G1-DESIGN-FROZEN",
+      "evidence_ids": [
+        "EVID-G1-BOOTSTRAP"
+      ],
+      "id": "REQ-HYBRID-001",
+      "milestone": "M1-BOOTSTRAP-DESIGN-FROZEN",
+      "origin": {
+        "path": "work/ideas/idea-sqlite-backed-tool-shed-operational-state.md",
+        "section": "Bootstrap Closed-Loop Enforcement"
+      },
+      "summary": "An independent bootstrap ledger and verifier govern the initiative before SQLite reconciliation can certify itself."
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G1-DESIGN-FROZEN",
+      "evidence_ids": [
+        "EVID-G1-CONTRACT"
+      ],
+      "id": "REQ-HYBRID-002",
+      "milestone": "M1-BOOTSTRAP-DESIGN-FROZEN",
+      "origin": {
+        "path": "work/ideas/idea-sqlite-backed-tool-shed-operational-state.md",
+        "section": "Approved Phase-One Boundary"
+      },
+      "summary": "Every phase-one entity and field has one explicit editable authority and version-1 schema contract."
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G1-DESIGN-FROZEN",
+      "evidence_ids": [
+        "EVID-G1-CONTRACT"
+      ],
+      "id": "REQ-HYBRID-003",
+      "milestone": "M1-BOOTSTRAP-DESIGN-FROZEN",
+      "origin": {
+        "path": "work/ideas/idea-sqlite-backed-tool-shed-operational-state.md",
+        "section": "Portable Collaboration And Worktree Contract"
+      },
+      "summary": "Checkpoint, event, per-worktree, merge, rebuild, and clone behavior is deterministic and fail-closed."
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G1-DESIGN-FROZEN",
+      "evidence_ids": [
+        "EVID-G1-CONTRACT"
+      ],
+      "id": "REQ-HYBRID-004",
+      "milestone": "M1-BOOTSTRAP-DESIGN-FROZEN",
+      "origin": {
+        "path": "work/ideas/idea-sqlite-backed-tool-shed-operational-state.md",
+        "section": "No-Data-Loss Conversion Protocol"
+      },
+      "summary": "Migration, updater, backup, rollback, downgrade, and maintainer-first rollout contracts preserve all existing data."
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G1-DESIGN-FROZEN",
+      "evidence_ids": [
+        "EVID-G1-HPT2-INVENTORY"
+      ],
+      "id": "REQ-HYBRID-005",
+      "milestone": "M1-BOOTSTRAP-DESIGN-FROZEN",
+      "origin": {
+        "path": "work/ideas/idea-sqlite-backed-tool-shed-operational-state.md",
+        "section": "Bootstrap Closed-Loop Enforcement"
+      },
+      "summary": "The HPT2 evidence inventory records available and missing history without inventing facts."
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G1-DESIGN-FROZEN",
+      "evidence_ids": [
+        "EVID-G1-EFFICIENCY-CONTRACT"
+      ],
+      "id": "REQ-HYBRID-006",
+      "milestone": "M1-BOOTSTRAP-DESIGN-FROZEN",
+      "origin": {
+        "path": "work/ideas/idea-sqlite-backed-tool-shed-operational-state.md",
+        "section": "Token And Context Efficiency Qualification"
+      },
+      "summary": "Small, maintainer, and large fixtures measure at least 70 percent median context reduction with semantic parity and at most 5 percent explained fallback."
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G2-SUBSTRATE-LOOP-PROVEN",
+      "evidence_ids": [
+        "EVID-G2-SUBSTRATE"
+      ],
+      "id": "REQ-HYBRID-007",
+      "milestone": "M2-SUBSTRATE-HPT2-PROVEN",
+      "origin": {
+        "path": "work/ideas/idea-sqlite-backed-tool-shed-operational-state.md",
+        "section": "Approved Phase-One Boundary"
+      },
+      "summary": "The minimum SQLite substrate proves identity, provenance, guarded writes, direct-SQL detection, portability, and recovery without broadening authority."
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G2-SUBSTRATE-LOOP-PROVEN",
+      "evidence_ids": [
+        "EVID-G2-HPT2-PARITY",
+        "EVID-G2-EFFICIENCY"
+      ],
+      "id": "REQ-HYBRID-008",
+      "milestone": "M2-SUBSTRATE-HPT2-PROVEN",
+      "origin": {
+        "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
+        "section": "Current Synthesis"
+      },
+      "summary": "The HPT2 vertical slice reconciles origin, accepted changes, product evidence, exceptions, and final verdict and reproduces the bootstrap result."
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G3-MAINTAINER-CONVERSION-PROVEN",
+      "evidence_ids": [
+        "EVID-G3-MAINTAINER"
+      ],
+      "id": "REQ-HYBRID-009",
+      "milestone": "M3-MAINTAINER-HYBRID-PROVEN",
+      "origin": {
+        "path": "work/ideas/idea-sqlite-backed-tool-shed-operational-state.md",
+        "section": "Maintainer-First Upgrade And Rollout"
+      },
+      "summary": "Disposable rehearsal and live maintainer conversion preserve every file and prove parity, recovery, rollback, and soak."
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G4-RELEASE-CANARY-PROVEN",
+      "evidence_ids": [
+        "EVID-G4-RELEASE"
+      ],
+      "id": "REQ-HYBRID-010",
+      "milestone": "M4-RELEASE-CANARY-PROVEN",
+      "origin": {
+        "path": "work/ideas/idea-sqlite-backed-tool-shed-operational-state.md",
+        "section": "Maintainer-First Upgrade And Rollout"
+      },
+      "summary": "The first database-aware release uses updater protocol 4, qualifies supported platforms, and synchronizes the installed maintainer skill only after publication."
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G4-RELEASE-CANARY-PROVEN",
+      "evidence_ids": [
+        "EVID-G4-CANARY"
+      ],
+      "id": "REQ-HYBRID-011",
+      "milestone": "M4-RELEASE-CANARY-PROVEN",
+      "origin": {
+        "path": "work/ideas/idea-sqlite-backed-tool-shed-operational-state.md",
+        "section": "Maintainer-First Upgrade And Rollout"
+      },
+      "summary": "One disconnected client canary proves upgrade, rebuild, reconciliation, backup, restore, rollback, and safe downgrade without requiring GitHub."
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G4-RELEASE-CANARY-PROVEN",
+      "evidence_ids": [
+        "EVID-G4-CANARY"
+      ],
+      "id": "REQ-HYBRID-012",
+      "milestone": "M4-RELEASE-CANARY-PROVEN",
+      "origin": {
+        "path": "work/ideas/idea-sqlite-backed-tool-shed-operational-state.md",
+        "section": "Incremental Adoption"
+      },
+      "summary": "Original files remain retained through the first release and soak; retirement requires a later separately authorized migration."
+    }
+  ],
+  "schema_version": 1,
+  "state_token": "6c1d75417d63c114",
+  "upgrade_targets": [
+    {
+      "id": "UPG-HYBRID-MAINTAINER",
+      "kind": "maintainer-workspace",
+      "milestone": "M3-MAINTAINER-HYBRID-PROVEN",
+      "minimum_updater_protocol": 4,
+      "status": "planned",
+      "summary": "Convert the canonical maintainer through its dedicated non-snapshot path."
+    },
+    {
+      "id": "UPG-HYBRID-SKILL",
+      "kind": "installed-codex-skill",
+      "milestone": "M4-RELEASE-CANARY-PROVEN",
+      "minimum_updater_protocol": 4,
+      "status": "planned",
+      "summary": "Synchronize the separately installed Codex skill only from the verified published release."
+    },
+    {
+      "id": "UPG-HYBRID-CLIENT",
+      "kind": "disconnected-workspace",
+      "milestone": "M4-RELEASE-CANARY-PROVEN",
+      "minimum_updater_protocol": 4,
+      "status": "planned",
+      "summary": "Upgrade one production-shaped disconnected client with the released external updater."
+    }
+  ],
+  "verdicts": [
+    {
+      "authorized_by": "Owner-approved Program Roadmap and Campaign 103",
+      "disposition": "satisfied",
+      "evidence_ids": [
+        "EVID-G1-BOOTSTRAP",
+        "EVID-G1-CONTRACT",
+        "EVID-G1-HPT2-INVENTORY",
+        "EVID-G1-EFFICIENCY-CONTRACT"
+      ],
+      "scope": "G1-DESIGN-FROZEN",
+      "summary": "The independent bootstrap surface and version-1 design contract are frozen with exact G1 evidence."
+    },
+    {
+      "authorized_by": "Approved Program Roadmap",
+      "disposition": "open",
+      "evidence_ids": [
+        "EVID-G2-SUBSTRATE",
+        "EVID-G2-HPT2-PARITY",
+        "EVID-G2-EFFICIENCY"
+      ],
+      "scope": "G2-SUBSTRATE-LOOP-PROVEN",
+      "summary": "The minimum SQLite substrate and HPT2 parity implementation have not begun."
+    },
+    {
+      "authorized_by": "Approved Program Roadmap",
+      "disposition": "open",
+      "evidence_ids": [
+        "EVID-G3-MAINTAINER"
+      ],
+      "scope": "G3-MAINTAINER-CONVERSION-PROVEN",
+      "summary": "The disposable rehearsal and live maintainer conversion remain future guarded work."
+    },
+    {
+      "authorized_by": "Approved Program Roadmap",
+      "disposition": "open",
+      "evidence_ids": [
+        "EVID-G4-RELEASE",
+        "EVID-G4-CANARY"
+      ],
+      "scope": "G4-RELEASE-CANARY-PROVEN",
+      "summary": "Release, installed-skill synchronization, and disconnected client canary require later evidence and authority."
+    },
+    {
+      "authorized_by": "Approved Program Roadmap",
+      "disposition": "open",
+      "evidence_ids": [
+        "EVID-G1-BOOTSTRAP",
+        "EVID-G1-CONTRACT",
+        "EVID-G1-HPT2-INVENTORY",
+        "EVID-G1-EFFICIENCY-CONTRACT"
+      ],
+      "scope": "initiative",
+      "summary": "G1 is satisfied; G2 through G4 remain required before the Hybrid SQLite initiative is complete or release-ready."
+    }
+  ]
+}

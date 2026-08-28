@@ -163,6 +163,27 @@ test-ID order. The default CLI profile is `full`; CI and release qualification p
 shards; each case runs once per OS/Python combination, and only shard zero runs the non-unit
 release contracts.
 
+Large authority or migration initiatives that predate their target runtime use an independent
+bootstrap closure manifest under `work/evidence/`. The guarded interface is:
+
+```text
+python3 scripts/bootstrap_closure.py --workspace . baseline \
+  --manifest work/evidence/bootstrap-closure-<initiative>.json \
+  --project-binding <bootstrap-closure-binding>
+python3 scripts/bootstrap_closure.py --workspace . record-change ... --expect <state-token>
+python3 scripts/bootstrap_closure.py --workspace . record-evidence ... --expect <state-token>
+python3 scripts/bootstrap_closure.py --workspace . record-verdict ... --expect <state-token>
+python3 scripts/bootstrap_closure.py --workspace . verify \
+  --manifest work/evidence/bootstrap-closure-<initiative>.json
+python3 scripts/bootstrap_closure.py --workspace . report \
+  --manifest work/evidence/bootstrap-closure-<initiative>.json
+```
+
+Mutating commands require the current project binding; post-baseline changes also require the
+current manifest state token. `full` validates every tracked bootstrap manifest structurally.
+`release` additionally requires all declared release-gate scopes, evidence, migration items, and
+upgrade targets to be terminal. Direct edits are detectable and cannot silently qualify a release.
+
 Work3 document changes stay within the requested candidate scope. Preserve unrelated owner
 documentation and historical records, and delete documentation only when the coded change makes it
 obsolete.

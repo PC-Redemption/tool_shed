@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-bootstrap-closure",
+  "initiative": {
+    "id": "replace-with-initiative-id",
+    "title": "Replace with initiative title",
+    "status": "active"
+  },
+  "project": {
+    "project_id": "populated-by-baseline"
+  },
+  "bindings": [
+    {"role": "idea", "path": "work/ideas/idea-example.md", "sha256": "populated-by-baseline"},
+    {"role": "project-map", "path": "work/maps/map-example.md", "sha256": "populated-by-baseline"},
+    {"role": "program-roadmap", "path": "work/roadmaps/roadmap-example.md", "sha256": "populated-by-baseline"},
+    {"role": "authority-contract", "path": "docs/example-contract.md", "sha256": "populated-by-baseline"}
+  ],
+  "authority_contract": "docs/example-contract.md",
+  "requirements": [
+    {
+      "id": "REQ-EXAMPLE-001",
+      "summary": "Replace with one accepted outcome requirement",
+      "origin": {"path": "work/ideas/idea-example.md", "section": "Desired Outcome"},
+      "milestone": "M1-EXAMPLE",
+      "evidence_gate": "G1-EXAMPLE",
+      "disposition": "accepted",
+      "evidence_ids": ["EVID-EXAMPLE-001"]
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-EXAMPLE-001",
+      "summary": "Replace with a settled design decision",
+      "status": "settled",
+      "rationale": "Explain why this exact choice is accepted."
+    }
+  ],
+  "changes": [],
+  "evidence": [
+    {
+      "id": "EVID-EXAMPLE-001",
+      "gate": "G1-EXAMPLE",
+      "status": "pending",
+      "references": [{"path": "docs/example-contract.md", "sha256": "populated-by-baseline"}],
+      "covers_change_ids": [],
+      "verified_at": null
+    }
+  ],
+  "migration_items": [
+    {"id": "MIG-EXAMPLE-001", "summary": "Replace with a migration obligation", "milestone": "M2-EXAMPLE", "status": "planned"}
+  ],
+  "upgrade_targets": [
+    {
+      "id": "UPG-EXAMPLE-001",
+      "summary": "Replace with an upgrade target",
+      "milestone": "M3-EXAMPLE",
+      "status": "planned",
+      "kind": "workspace",
+      "minimum_updater_protocol": 1
+    }
+  ],
+  "verdicts": [
+    {
+      "scope": "initiative",
+      "disposition": "open",
+      "summary": "The initiative has not reached its final outcome gate.",
+      "evidence_ids": [],
+      "authorized_by": "approved Program Roadmap"
+    }
+  ],
+  "release_gate": {"mode": "blocking", "required_scopes": ["initiative"]},
+  "baseline": {},
+  "state_token": ""
+}

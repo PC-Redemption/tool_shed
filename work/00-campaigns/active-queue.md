@@ -1,10 +1,10 @@
 # Active Campaign Queue
 
-Updated: 2026-08-27
+Updated: 2026-08-28
 
 ## Owner State
 
-- Last completed: qualify-and-document-operator-trust-camp-boundaries — Qualify and document operator-trust CAMP boundaries
+- Last completed: establish-hybrid-bootstrap-closure-and-design-contract — Establish hybrid bootstrap closure and design contract
 - Working now: none
 - Next: none
 - Blocker or decision needed: none

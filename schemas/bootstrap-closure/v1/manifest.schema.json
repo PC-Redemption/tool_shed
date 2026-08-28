@@ -1,0 +1,264 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ts.rookaro.com/schemas/bootstrap-closure/v1/manifest.schema.json",
+  "title": "Tool Shed bootstrap closure manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "initiative",
+    "project",
+    "bindings",
+    "authority_contract",
+    "requirements",
+    "decisions",
+    "changes",
+    "evidence",
+    "migration_items",
+    "upgrade_targets",
+    "verdicts",
+    "release_gate",
+    "baseline",
+    "state_token"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "kind": {"const": "tool-shed-bootstrap-closure"},
+    "initiative": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "status"],
+      "properties": {
+        "id": {"$ref": "#/$defs/kebab_id"},
+        "title": {"$ref": "#/$defs/nonempty"},
+        "status": {"enum": ["active", "complete", "superseded", "parked"]}
+      }
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_id"],
+      "properties": {
+        "project_id": {"type": "string", "format": "uuid"}
+      }
+    },
+    "bindings": {
+      "type": "array",
+      "minItems": 4,
+      "items": {"$ref": "#/$defs/binding"}
+    },
+    "authority_contract": {"$ref": "#/$defs/path"},
+    "requirements": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/requirement"}
+    },
+    "decisions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/decision"}
+    },
+    "changes": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/change"}
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/evidence"}
+    },
+    "migration_items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/planned_item"}
+    },
+    "upgrade_targets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "summary", "milestone", "status", "kind", "minimum_updater_protocol"],
+        "properties": {
+          "id": {"$ref": "#/$defs/stable_id"},
+          "summary": {"$ref": "#/$defs/nonempty"},
+          "milestone": {"$ref": "#/$defs/nonempty"},
+          "status": {"enum": ["planned", "active", "complete", "blocked", "not-applicable"]},
+          "kind": {"$ref": "#/$defs/nonempty"},
+          "minimum_updater_protocol": {"type": "integer", "minimum": 1}
+        }
+      }
+    },
+    "verdicts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/verdict"}
+    },
+    "release_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "required_scopes"],
+      "properties": {
+        "mode": {"const": "blocking"},
+        "required_scopes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/nonempty"}
+        }
+      }
+    },
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["created_at", "updated_at", "source_commit", "source_digest"],
+      "properties": {
+        "created_at": {"type": "string", "format": "date-time"},
+        "updated_at": {"type": "string", "format": "date-time"},
+        "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "source_digest": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "state_token": {"type": "string", "pattern": "^[0-9a-f]{16}$"}
+  },
+  "$defs": {
+    "nonempty": {"type": "string", "minLength": 1},
+    "stable_id": {"type": "string", "pattern": "^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+$"},
+    "kebab_id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "string_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "path", "sha256"],
+      "properties": {
+        "role": {"$ref": "#/$defs/nonempty"},
+        "path": {"$ref": "#/$defs/path"},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "origin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "section"],
+      "properties": {
+        "path": {"$ref": "#/$defs/path"},
+        "section": {"$ref": "#/$defs/nonempty"}
+      }
+    },
+    "requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "summary", "origin", "milestone", "evidence_gate", "disposition", "evidence_ids"],
+      "properties": {
+        "id": {"$ref": "#/$defs/stable_id"},
+        "summary": {"$ref": "#/$defs/nonempty"},
+        "origin": {"$ref": "#/$defs/origin"},
+        "milestone": {"$ref": "#/$defs/nonempty"},
+        "evidence_gate": {"$ref": "#/$defs/nonempty"},
+        "disposition": {"enum": ["accepted", "rejected", "superseded", "not-applicable"]},
+        "evidence_ids": {"$ref": "#/$defs/string_ids"}
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "summary", "status", "rationale"],
+      "properties": {
+        "id": {"$ref": "#/$defs/stable_id"},
+        "summary": {"$ref": "#/$defs/nonempty"},
+        "status": {"enum": ["settled", "superseded"]},
+        "rationale": {"$ref": "#/$defs/nonempty"}
+      }
+    },
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "anyOf": [
+        {"properties": {"requirement_ids": {"minItems": 1}}},
+        {"properties": {"decision_ids": {"minItems": 1}}}
+      ],
+      "required": [
+        "id", "recorded_at", "summary", "rationale", "authorization", "requirement_ids",
+        "decision_ids", "supersedes", "evidence_to_rerun", "source_commit"
+      ],
+      "properties": {
+        "id": {"$ref": "#/$defs/stable_id"},
+        "recorded_at": {"type": "string", "format": "date-time"},
+        "summary": {"$ref": "#/$defs/nonempty"},
+        "rationale": {"$ref": "#/$defs/nonempty"},
+        "authorization": {"$ref": "#/$defs/nonempty"},
+        "requirement_ids": {"$ref": "#/$defs/string_ids"},
+        "decision_ids": {"$ref": "#/$defs/string_ids"},
+        "supersedes": {"$ref": "#/$defs/string_ids"},
+        "evidence_to_rerun": {
+          "allOf": [
+            {"$ref": "#/$defs/string_ids"},
+            {"minItems": 1}
+          ]
+        },
+        "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+      }
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"$ref": "#/$defs/path"},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "gate", "status", "references", "covers_change_ids", "verified_at"],
+      "properties": {
+        "id": {"$ref": "#/$defs/stable_id"},
+        "gate": {"$ref": "#/$defs/nonempty"},
+        "status": {"enum": ["pending", "passed", "failed", "stale", "not-applicable"]},
+        "references": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/reference"}},
+        "covers_change_ids": {"$ref": "#/$defs/string_ids"},
+        "verified_at": {"type": ["string", "null"], "format": "date-time"}
+      }
+    },
+    "planned_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "summary", "milestone", "status"],
+      "properties": {
+        "id": {"$ref": "#/$defs/stable_id"},
+        "summary": {"$ref": "#/$defs/nonempty"},
+        "milestone": {"$ref": "#/$defs/nonempty"},
+        "status": {"enum": ["planned", "active", "complete", "blocked", "not-applicable"]}
+      }
+    },
+    "verdict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope", "disposition", "summary", "evidence_ids", "authorized_by"],
+      "properties": {
+        "scope": {"$ref": "#/$defs/nonempty"},
+        "disposition": {
+          "enum": [
+            "open", "satisfied", "satisfied-with-approved-change", "partial", "failed",
+            "rejected", "superseded", "parked", "not-applicable"
+          ]
+        },
+        "summary": {"$ref": "#/$defs/nonempty"},
+        "evidence_ids": {"$ref": "#/$defs/string_ids"},
+        "authorized_by": {"$ref": "#/$defs/nonempty"}
+      }
+    }
+  }
+}

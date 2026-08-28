@@ -42,7 +42,10 @@ Overrides, unattested releases, and any changed identity run full local validati
 
 4. Run `python3 scripts/validate_tool_shed.py --profile release --max-seconds 60`. Confirm its
    repository-policy coverage includes tracked `work/`, stale root ignores, documented exceptions,
-   unrelated nested rules, and ignored `/tool_shed/` with tracked `work/`.
+   unrelated nested rules, and ignored `/tool_shed/` with tracked `work/`. Release qualification
+   also verifies every tracked `work/evidence/bootstrap-closure-*.json` manifest with
+   `--require-final`; an open gate, pending evidence, incomplete migration item, or incomplete
+   upgrade target blocks the release instead of being waived by campaign completion.
 5. Commit all shipped content, including the manifest with null `release_commit` and `released_at`.
 6. Capture that content commit:
 

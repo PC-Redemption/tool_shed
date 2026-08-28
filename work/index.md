@@ -2,7 +2,7 @@
 
 Generated from artifact headers. `work/index.json` contains the same navigation data for automation. Do not put durable project truth only here; keep current truth in docs or README files.
 
-Updated: 2026-08-27
+Updated: 2026-08-28
 
 ## Orientation
 
@@ -108,6 +108,7 @@ Updated: 2026-08-27
 | [work/00-campaigns/completed/100-replace-camp-version-gate-with-operator-runtime-trust.md](work/00-campaigns/completed/100-replace-camp-version-gate-with-operator-runtime-trust.md) | campaign | complete | 2026-08-27 | none | - |
 | [work/00-campaigns/completed/101-enforce-live-camp-readiness-and-safety-quarantine.md](work/00-campaigns/completed/101-enforce-live-camp-readiness-and-safety-quarantine.md) | campaign | complete | 2026-08-27 | none | - |
 | [work/00-campaigns/completed/102-qualify-and-document-operator-trust-camp-boundaries.md](work/00-campaigns/completed/102-qualify-and-document-operator-trust-camp-boundaries.md) | campaign | complete | 2026-08-27 | none | - |
+| [work/00-campaigns/completed/103-establish-hybrid-bootstrap-closure-and-design-contract.md](work/00-campaigns/completed/103-establish-hybrid-bootstrap-closure-and-design-contract.md) | campaign | complete | 2026-08-28 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -133,6 +134,7 @@ Updated: 2026-08-27
 | [work/evidence/evidence-direct-linux-app-server-dispatch.md](work/evidence/evidence-direct-linux-app-server-dispatch.md) | evidence | complete | 2026-08-25 | return to the Campaign 059 Windows and Bactron Core consent boundary | - |
 | [work/evidence/evidence-file-change-handoff-and-robust-doc-verification.md](work/evidence/evidence-file-change-handoff-and-robust-doc-verification.md) | evidence | verified | 2026-08-26 | - | - |
 | [work/evidence/evidence-human-planning-mechanism-evaluation.md](work/evidence/evidence-human-planning-mechanism-evaluation.md) | evidence | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
+| [work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md](work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md) | validation-evidence | passed | 2026-08-28 | - | - |
 | [work/evidence/evidence-linux-command-free-code-proof-underspecified.md](work/evidence/evidence-linux-command-free-code-proof-underspecified.md) | evidence | verified | 2026-08-26 | - | - |
 | [work/evidence/evidence-linux-first-pass-code-proof-interruption.md](work/evidence/evidence-linux-first-pass-code-proof-interruption.md) | evidence | complete | 2026-08-26 | replace the failed code/test and dependent asset-aware proofs in Roadmap Revision 4 | - |
 | [work/evidence/evidence-linux-first-pass-code-proof-turn-limit.md](work/evidence/evidence-linux-first-pass-code-proof-turn-limit.md) | evidence | complete | 2026-08-26 | replace Campaign 075 after enforcing mutation-first worker execution | - |
@@ -171,9 +173,12 @@ Updated: 2026-08-27
 | [work/ideas/idea-operator-trust-runtime-enforcement-for-camp.md](work/ideas/idea-operator-trust-runtime-enforcement-for-camp.md) | idea-brief | promoted | 2026-08-27 | use the approved project-map direction and Program Roadmap for delivery | - |
 | [work/ideas/idea-passive-app-server-dogfooding-mode.md](work/ideas/idea-passive-app-server-dogfooding-mode.md) | idea-brief | promoted | 2026-08-27 | none; superseded by operator-trust CAMP runtime enforcement | - |
 | [work/ideas/idea-persistent-autonomy-levels.md](work/ideas/idea-persistent-autonomy-levels.md) | idea-brief | promoted | 2026-08-27 | use the approved revised project-map direction to propose Program Roadmap revision 2 | - |
+| [work/ideas/idea-sqlite-backed-tool-shed-operational-state.md](work/ideas/idea-sqlite-backed-tool-shed-operational-state.md) | idea-brief | promoted | 2026-08-28 | use the approved project map and Program Roadmap for staged delivery | - |
+| [work/ideas/idea-universal-closed-loop-outcome-reconciliation.md](work/ideas/idea-universal-closed-loop-outcome-reconciliation.md) | idea-brief | exploring | 2026-08-28 | continue brainstorming or promote this brief with `ts: prm idea <idea-id-or-path>` | - |
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/maps/map-disposable-completion-watchers-and-hosted-notifications.md](work/maps/map-disposable-completion-watchers-and-hosted-notifications.md) | project-map | deferred | 2026-08-18 | preserve the completed local watcher and wait for a concrete external/non-App-Server notification need before revisiting hosted work | - |
+| [work/maps/map-hybrid-sqlite-operational-state.md](work/maps/map-hybrid-sqlite-operational-state.md) | project-map | approved | 2026-08-28 | follow the approved Program Roadmap beginning with its bootstrap/design milestone | - |
 | [work/maps/map-low-token-cross-platform-campaign-execution.md](work/maps/map-low-token-cross-platform-campaign-execution.md) | project-map | complete | 2026-08-26 | use `ts: next --app-server` for ordinary bounded campaigns on the proven Linux and Windows paths | - |
 | [work/maps/map-operator-trust-camp-runtime-enforcement.md](work/maps/map-operator-trust-camp-runtime-enforcement.md) | project-map | approved | 2026-08-27 | develop an exact Program Roadmap proposal | - |
 | [work/maps/map-passive-app-server-dogfooding.md](work/maps/map-passive-app-server-dogfooding.md) | project-map | superseded | 2026-08-27 | none | work/maps/map-operator-trust-camp-runtime-enforcement.md |
@@ -183,6 +188,7 @@ Updated: 2026-08-27
 | [work/maps/map-validation-consolidation.md](work/maps/map-validation-consolidation.md) | project-map | complete | 2026-08-27 | none; the work1 outcome is complete | - |
 | [work/roadmaps/roadmap-completion-watcher-program-r2.md](work/roadmaps/roadmap-completion-watcher-program-r2.md) | program-roadmap | approved | 2026-08-20 | derive campaigns for milestone M1-CONTRACT | none |
 | [work/roadmaps/roadmap-completion-watcher-program.md](work/roadmaps/roadmap-completion-watcher-program.md) | program-roadmap | superseded | 2026-08-20 | none | work/roadmaps/roadmap-completion-watcher-program-r2.md |
+| [work/roadmaps/roadmap-hybrid-sqlite-operational-state.md](work/roadmaps/roadmap-hybrid-sqlite-operational-state.md) | program-roadmap | executing | 2026-08-28 | execute the first ready roadmap campaign through ts: next | none |
 | [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r2.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r2.md) | program-roadmap | superseded | 2026-08-26 | none | work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r3.md |
 | [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r3.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r3.md) | program-roadmap | superseded | 2026-08-26 | none | work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r4.md |
 | [work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r4.md](work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r4.md) | program-roadmap | superseded | 2026-08-26 | none | work/roadmaps/roadmap-low-token-cross-platform-campaign-execution-r5.md |
@@ -226,6 +232,6 @@ Updated: 2026-08-27
 
 ## Summary
 
-- Total artifacts: 209
-- Active artifacts: 0
-- Completed/decided artifacts: 156
+- Total artifacts: 215
+- Active artifacts: 1
+- Completed/decided artifacts: 158

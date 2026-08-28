@@ -1,0 +1,228 @@
+# Idea Brief: Universal Closed-Loop Outcome Reconciliation
+
+Status: exploring
+Type: idea-brief
+Updated: 2026-08-28
+Next Action: continue brainstorming or promote this brief with `ts: prm idea <idea-id-or-path>`
+Produces:
+
+## Current Synthesis
+
+### Idea
+
+Make closed-loop outcome reconciliation a universal Tool Shed lifecycle invariant. Every durable
+work entry point—brainstorm/Idea Brief, project map, Program Roadmap, milestone, campaign,
+workpackage, ticket, checklist, spike, or tracked direct work—opens an outcome loop. The loop closes
+only when current product truth and applicable target evidence have been compared with the accepted
+intent, material development changes have been accounted for, and every difference has an explicit
+disposition.
+
+Artifact completion and outcome realization must be separate. A campaign may finish its bounded
+execution with a partial, failed, narrowed, rejected, or superseded result while its owning
+milestone, roadmap, map, or idea remains open. Terminal children do not imply a satisfied parent.
+The result must propagate upward until the entry-point outcome is reconciled.
+
+### Why It Matters
+
+Tool Shed can currently complete every campaign and empty the queue without proving that the
+originating outcome became true in the product. Idea Briefs stop at promotion, campaign
+reconciliation focuses on coverage and queue consistency, and roadmap rollups emphasize derived
+campaign gates. Material requirement and scope changes made during development may survive in
+history without one final comparison against the origin and current product.
+
+This makes "complete" ambiguous: it can describe a finished activity, a passed local gate, or a
+fully realized product outcome. Operators need a trustworthy answer to a different question:
+"Did we deliver the accepted outcome, including approved changes, in the intended product and
+environment?"
+
+### Desired Outcome
+
+Tool Shed reports lifecycle state, outcome verdict, and reconciliation state independently at every
+level. Starting at any durable entry point creates or inherits a stable origin and closure
+contract. Execution records material changes and evidence. Terminal results propagate upward.
+Empty queues expose the next open owning loop instead of implying completion. A loop closes only as
+one explicit disposition: satisfied, satisfied with an approved change, partial, failed, rejected,
+superseded, parked, or not applicable.
+
+The system can audit current and historical work, prepare exact reconciliation proposals, validate
+them, apply guarded updates, and produce human and JSON reports. Coordinated work may use a durable
+reconciliation record; small direct work may keep a compact inline closure capsule without new
+ceremony.
+
+Implementation should use the minimum SQLite hybrid foundation described in
+`work/ideas/idea-sqlite-backed-tool-shed-operational-state.md` rather than first building a large
+file-backed reconciliation engine. Closed-loop semantics still lead the design: define the minimum
+closure vocabulary before the schema is finalized, then make one end-to-end reconciliation loop the
+first feature and qualification case for the new storage substrate.
+
+## Core Model
+
+Keep three dimensions independent:
+
+1. **Lifecycle:** proposed, queued, working, blocked, or terminal.
+2. **Outcome verdict:** satisfied, satisfied-with-approved-change, partial, failed, rejected,
+   superseded, parked, or not-applicable.
+3. **Reconciliation:** open, reconciliation-required, or reconciled.
+
+Every loop should eventually account for:
+
+- origin and accepted outcome;
+- accepted revisions and material development changes;
+- delivered product truth;
+- target verification appropriate to the requested endpoint;
+- deviations and residual work;
+- final disposition and upward propagation.
+
+Material changes are changes to outcome, scope, acceptance, supported boundary, product-facing
+behavior, target, authority, or safety—not ordinary implementation details that preserve the same
+accepted result.
+
+## Candidate Tooling Direction
+
+Prefer one entry-point-neutral `scripts/outcome_reconciliation.py` engine over separate tools for
+ideas, roadmaps, milestones, and campaigns. Candidate subcommands:
+
+- `audit`: read-only discovery of open, terminal-unreconciled, inconsistent, or historically
+  unmapped loops;
+- `prepare`: assemble an exact proposed reconciliation manifest without guessing semantic
+  verdicts;
+- `validate`: verify identities, graph relationships, evidence references, product-truth links,
+  outcome coverage, change dispositions, and propagation;
+- `apply`: perform only exact state-token- and project-binding-guarded reconciliation updates in a
+  recoverable transaction;
+- `report`: render concise operator and structured JSON results, including historical `--as-of`
+  views;
+- `backfill-plan` and `backfill-apply`: reconstruct explicit historical relationships while
+  preserving completed artifacts and refusing ambiguous inferred history.
+
+Integrate the engine with existing surfaces instead of replacing them:
+
+- campaign completion records the local outcome verdict and parent impact;
+- Program Roadmap review and completion require milestone outcome reconciliation;
+- work-state review reports missing origins, verdicts, product truth, evidence, change dispositions,
+  and result propagation;
+- doctor includes outcome-loop health separately from repository and campaign integrity;
+- index, overview, and next expose open owning loops after campaign queues empty.
+
+Back the engine with a minimal SQLite substrate that owns immutable loop and artifact identities,
+typed relationships, revisions, material-change events, evidence references, outcome verdicts,
+reconciliation state, and transactional history. Keep imported and owner-authored files, canonical
+product truth, compact Codex/operator capsules, small evidence manifests, and deterministic exports
+as files under an explicit authority contract. A state digest should bind every generated capsule
+or report to the database revision it represents.
+
+For historical backfill, prefer guarded import and overlay records rather than rewriting completed
+artifacts. The first vertical slice should reconstruct and reconcile one real historical cycle—HPT2
+is the candidate qualification case—from its originating intent through accepted development
+changes to current product evidence and a final upward-propagated verdict.
+
+## Constraints And Non-Goals
+
+- Apply to all durable Tool Shed work without forcing every request through brainstorm, PRM, or a
+  campaign.
+- Preserve minimum sufficient coordination: direct work must not gain mandatory artifacts merely
+  to satisfy the loop.
+- Compare against current product truth; completed work artifacts are history and cannot alone
+  prove the current result.
+- Require only endpoint-appropriate evidence. A source commit does not prove deployment, and a
+  test does not prove target qualification.
+- Preserve original intent and revision history. Do not rewrite old artifacts to make history look
+  cleaner.
+- Deterministic tools may discover and validate facts but must not invent semantic verdicts,
+  approvals, or historical relationships.
+- Material scope or acceptance changes remain explicit decisions under the authority envelope.
+- Use SQLite as an embedded local substrate, not a server. The demonstrated limitations are
+  path-coupled identity, cross-artifact integrity, atomic graph updates, historical queries, and
+  excessive generated context.
+- Do not require the complete SQLite migration before delivering the first loop. Implement only the
+  identity, relationship, revision/event, transaction, evidence-reference, export, and recovery
+  capabilities the vertical slice requires.
+- Do not migrate or delete legacy files merely to make the initial reconciliation model uniform.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Universal outcome loop with nested local reconciliation | One meaning of closure across every entry point; partial results propagate honestly | Requires lifecycle semantics and existing tools to change together | Owner-selected concept |
+| Idea-Brief-only realization review | Smallest initial change | Misses roadmap-, milestone-, campaign-, and direct-entry work | Rejected as too narrow |
+| Treat all terminal children as parent completion | Simple computation | Confuses finished activity with achieved outcome and hides failed/narrowed results | Rejected |
+| One outcome-reconciliation engine with subcommands | Reuses graph, tokens, reports, and historical logic across artifacts | A central script could become large without modular internals | Recommended candidate |
+| Minimal SQLite substrate with closed loop as first consumer | Stable identities, graph integrity, transactions, and historical queries are available from the first vertical slice | Requires storage and outcome semantics to be co-designed and qualified together | Revised recommended implementation direction |
+| Build a complete file-backed engine before SQLite | Avoids an early storage change | Creates likely migration and duplicated-transaction work | Not recommended |
+| Separate reconciliation tool per artifact type | Local ownership and smaller scripts | Duplicated semantics, drift, and inconsistent closure rules | Not recommended |
+| Rewrite historical artifacts during backfill | Makes headers look uniform | Corrupts provenance and invents apparent historical knowledge | Reject; use overlays |
+| Require a reconciliation artifact for every action | Uniform durable records | Violates KISS and burdens direct work | Reject; allow inline closure capsules |
+
+## Open Questions
+
+- What is the minimum universal closure contract that every durable entry point must declare or
+  inherit?
+- What minimum identity, relationship, revision, event, and evidence-reference contract must be
+  settled before the SQLite schema can support the first loop?
+- How should legacy file paths map to immutable database identities without renaming or moving the
+  files?
+- Which material-change classes can be inferred mechanically, and which must always be authored?
+- What exact conditions distinguish `satisfied-with-approved-change`, `partial`, `failed`, and
+  `superseded`?
+- Should a Program Roadmap use `outcome-open` as a lifecycle status or retain its lifecycle status
+  and expose reconciliation as a separate field only?
+- How should tracked direct work persist a closure capsule when no work artifact is justified?
+- Which evidence adapters are required initially: file, Git, test, build, release, deployment,
+  qualification, and manual review?
+- How should historical `--as-of` reporting combine Git state with later reconciliation overlays
+  without implying that later knowledge existed at the historical time?
+- What exact operations may `apply` perform automatically, and which semantic dispositions require
+  an explicit owner decision even at high autonomy?
+
+## Decisions
+
+- Closed-loop outcome reconciliation should apply to all durable Tool Shed work regardless of entry
+  point, including brainstorm, roadmap, milestone, and campaign routes.
+- The design discussion and resulting artifact concern Tool Shed only; external owner-work systems
+  and their artifacts are out of scope.
+- Campaign completion and an empty queue are insufficient evidence that the owning product outcome
+  is complete.
+- Specific tooling is required to audit, update, historically backfill, and report reconciliation
+  results.
+- Define the minimum closed-loop vocabulary first, then implement the minimum SQLite hybrid
+  substrate as the first code dependency.
+- Make closed-loop reconciliation the first feature and qualification case for that substrate; do
+  not finish a broad database migration before proving one complete loop.
+- Use HPT2 as the candidate historical vertical slice because it exposed the original missing-loop
+  problem.
+
+## Don't Forget
+
+- A loop can close without shipping when the explicit disposition is rejected, parked,
+  superseded, failed, or not applicable.
+- Reconciliation is a comparison and disposition mechanism, not an automatic approval gate.
+- Child completion must propagate its result, not just its terminal state.
+- Empty campaign queues must reveal the next open owning loop.
+- Historical uncertainty must remain visible; never convert a plausible inference into invented
+  fact.
+- The final comparison must include development-time changes and current product truth.
+- The database is enabling machinery, not the definition of reconciliation correctness.
+- A successful SQLite transaction does not prove an outcome; target evidence and explicit
+  disposition still close the loop.
+
+## Exploration Log
+
+### 2026-08-28
+
+- Idea Brief created from the discussion prompted by a completed campaign cycle that did not visibly
+  reconcile the originating idea through development changes to implemented product truth.
+- The owner broadened the concept from Idea Brief realization to a universal closed-loop invariant
+  for every Tool Shed entry point, including `bs`, roadmap, milestone, campaign, and direct work.
+- Discussion separated lifecycle state, outcome verdict, and reconciliation state; established
+  nested upward propagation; and rejected empty queues or terminal children as sufficient parent
+  completion.
+- Candidate tooling direction centers on one outcome-reconciliation engine for audit, prepare,
+  validate, apply, report, and historical backfill, integrated with campaign, roadmap, work-state,
+  doctor, index, overview, and next surfaces.
+- Sequencing was revised after considering the relational and historical needs of reconciliation:
+  settle the minimum outcome vocabulary, implement the minimum SQLite hybrid substrate, and use an
+  HPT2 end-to-end reconciliation as its first feature and qualification case.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

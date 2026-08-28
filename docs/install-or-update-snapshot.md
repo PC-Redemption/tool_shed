@@ -74,6 +74,11 @@ the target's stale in-snapshot updater is not a bootstrap authority. Releases de
 stop before snapshot mutation with the supported external-updater command. The current protocol 3
 updater supplies its protocol explicitly and adds transactional work-tree convergence.
 
+The frozen Hybrid SQLite state contract reserves protocol 4 for the first database-aware release.
+That number is a future compatibility boundary, not a claim that the current protocol 3 updater can
+move SQLite authority. Until protocol 4 is implemented, qualified, and declared by a release,
+existing file-authority installs and upgrades continue to use protocol 3.
+
 Provider guidance is auto-detected from existing marked instruction files. If none exists, Codex is
 the backward-compatible default. Override or install multiple adapters with:
 
