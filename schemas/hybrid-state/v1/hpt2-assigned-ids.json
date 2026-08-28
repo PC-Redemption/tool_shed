@@ -1,0 +1,89 @@
+{
+  "ids": {
+    "artifact": {
+      "bootstrap-manifest": "65538b72-8a77-4c4d-ba7c-693137779b07",
+      "closed-loop-idea": "44345c08-9155-4acc-9a0d-235779ef79f3",
+      "contract": "c3f2052c-2011-4f6a-b79c-3ff01bc6e10b",
+      "hpt2-missing-origin": "e4a585a9-cfe0-453b-8cae-04b62df704c3",
+      "hybrid-idea": "ce87f685-72e2-4c65-a85c-14ac54ef4b79",
+      "product-test": "797b1434-d24e-42bd-a9b7-54f52e8bd74c",
+      "product-tool": "e14b547c-2656-4042-9f82-1763f70341a5"
+    },
+    "change": {
+      "CHG-HYBRID-001": "7025d84c-3951-4463-8288-5a6dea0f6148",
+      "CHG-HYBRID-002": "0481939b-27e3-4d60-a77a-a4f6da19d93d",
+      "CHG-HYBRID-003": "6eeabb55-d4db-45ea-8979-941364225fb8",
+      "HPT2-CHANGE-SQLITE-SEQUENCE": "936dddee-e4b1-4419-8256-7b1749f7ea48",
+      "HPT2-CHANGE-UNIVERSAL": "9a20fa8d-2363-4c32-953e-5de328782215"
+    },
+    "cycle": {
+      "bootstrap": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+      "hpt2": "45aec1ed-289c-4d3f-a640-406341ab717e"
+    },
+    "evidence": {
+      "EVID-G1-BOOTSTRAP": "4589df08-a227-4546-a1de-5e7e5bfdb518",
+      "EVID-G1-CONTRACT": "2750765c-272c-4ba3-b6d5-29fd68d9c6a3",
+      "EVID-G1-EFFICIENCY-CONTRACT": "51028153-badc-4984-9d8e-6910c21921c4",
+      "EVID-G1-HPT2-INVENTORY": "98186ec0-5b15-44e3-a004-cc99858e15cf",
+      "EVID-G2-EFFICIENCY": "98c62f23-a8d4-4089-8bae-c41fc0353f04",
+      "EVID-G2-HPT2-PARITY": "28b13ea5-9819-4c20-b1ab-273b5e7ec44e",
+      "EVID-G2-SUBSTRATE": "acf0d9c2-bd2a-4f13-8b43-caae9c7e9af1",
+      "EVID-G3-MAINTAINER": "ca0c6c33-6bbd-47b0-bf0a-4a25dc5b920e",
+      "EVID-G4-CANARY": "441c3672-463f-4ee5-bc87-5a7817ddf5f8",
+      "EVID-G4-RELEASE": "68c7329e-0f9a-4aa0-ba44-424e2c67a583",
+      "HPT2-EVID-CONTRACT": "efc194da-12fb-4a87-922a-bd9067ab59ea",
+      "HPT2-EVID-TEST": "f5187371-f5b8-405e-979e-22e5c4689c59",
+      "HPT2-EVID-TOOL": "0a04dd62-55be-4375-8cb6-dbe6dbcaee1c"
+    },
+    "reconciliation": {
+      "bootstrap": "11236dfc-7540-4ebe-be25-762e4a452117",
+      "hpt2": "247a3083-ad61-4ee6-b855-e8d11cc70f34"
+    },
+    "relationship": {
+      "hpt2-origin": "2369b70c-2530-403d-becd-7ec816e63dd5",
+      "hpt2-product-contract": "a6af77a0-5a10-4e9e-adce-ddfb938e2e70",
+      "hpt2-product-test": "f2df8d7d-29e3-45d7-b6cb-64d30ab4c1f7",
+      "hpt2-product-tool": "1a17a285-6aeb-407f-8db8-4bb2b7229c83"
+    },
+    "requirement": {
+      "HPT2-OUTCOME": "f77c1565-ea17-4ad6-b5cf-7adb7c95a260",
+      "REQ-HYBRID-001": "441e1b1f-7d9e-4f49-b516-ba598114a808",
+      "REQ-HYBRID-002": "8e75a464-6f46-4e61-bd94-5373db06cb6f",
+      "REQ-HYBRID-003": "cd38d115-87f2-4699-8499-cb9a6538a3bf",
+      "REQ-HYBRID-004": "46c871d0-0cf7-4d29-b2bc-f27b72655b93",
+      "REQ-HYBRID-005": "e41aef98-0b33-4522-8bf8-04dbb410ffa6",
+      "REQ-HYBRID-006": "17acfc38-fe58-44d9-8672-df55ae42364c",
+      "REQ-HYBRID-007": "7c2587c4-42be-465f-a8c7-da7664d39f94",
+      "REQ-HYBRID-008": "ed3bcc58-e277-49e8-bfe7-703a193aa89f",
+      "REQ-HYBRID-009": "96d54f17-ebe0-4a4b-a501-0dc41f388432",
+      "REQ-HYBRID-010": "3baa3138-6305-4e73-b3e9-65368668707d",
+      "REQ-HYBRID-011": "79541e0f-bfc4-42b0-949b-5e70693ea48e",
+      "REQ-HYBRID-012": "0dc8cac1-55af-4ed2-a5f0-cb9136b2cc3b"
+    },
+    "verdict": {
+      "G1-DESIGN-FROZEN": "94c6dd49-6837-4947-9a49-a9637bc872ff",
+      "G2-SUBSTRATE-LOOP-PROVEN": "edefbe6c-eeeb-498a-830a-af2341505333",
+      "G3-MAINTAINER-CONVERSION-PROVEN": "cda82228-febf-4b9c-8abd-f036a79bf43f",
+      "G4-RELEASE-CANARY-PROVEN": "c2d6e364-fbdf-47bc-ac4d-3e6526dc474c",
+      "hpt2": "d6a748ff-e743-4b69-a0db-51cb11b4ebc8",
+      "initiative": "c0844a90-f569-4c59-a98f-3b520f61a4e0"
+    },
+    "verification": {
+      "EVID-G1-BOOTSTRAP": "da165d5e-8a4c-444a-91c0-41566012c599",
+      "EVID-G1-CONTRACT": "e63597dd-dbf1-4700-a87c-2d603b956af5",
+      "EVID-G1-EFFICIENCY-CONTRACT": "5414d8a4-326b-489d-b1b9-ab68f6acaa24",
+      "EVID-G1-HPT2-INVENTORY": "5d176b05-9883-4e0b-a29f-a404de703268",
+      "EVID-G2-EFFICIENCY": "c12ed040-ee4e-4940-91ba-578ccb449b12",
+      "EVID-G2-HPT2-PARITY": "33c44d47-0bdb-4822-8496-d193402241cc",
+      "EVID-G2-SUBSTRATE": "3e4012f6-b1a7-4d7e-8a2d-791383f72bce",
+      "EVID-G3-MAINTAINER": "3fd73784-cc0c-40ab-b87a-7691b9a45bda",
+      "EVID-G4-CANARY": "4e215995-1aa8-4e6b-baa2-78fc8b150cac",
+      "EVID-G4-RELEASE": "acc357fd-039b-4848-96ab-61bd99d16ae9",
+      "HPT2-EVID-CONTRACT": "06eeffb0-9412-4211-ab64-4ea48462f8c5",
+      "HPT2-EVID-TEST": "ab54ed59-3d95-40c2-8319-ce492ecc618a",
+      "HPT2-EVID-TOOL": "2ce34e7f-165e-4691-94bc-2f96aefc6e18"
+    }
+  },
+  "kind": "tool-shed-hpt2-assigned-ids",
+  "schema_version": 1
+}

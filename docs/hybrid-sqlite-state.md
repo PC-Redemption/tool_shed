@@ -92,7 +92,7 @@ and records the matching ledger entries.
 Rebuild validates the checkpoint digest and project, creates a new shadow database without firing
 accounting triggers during load, restores portable rows, establishes local worktree lineage,
 recreates the frozen triggers, checks foreign keys and integrity, compares the semantic digest, and
-compares every portable ledger row, and only then promotes the requested new database. It never
+compares every portable ledger row. Only then does it promote the requested new database. It never
 overwrites an existing database.
 
 Rolling backups use SQLite's backup API and reproduce the live audit classification. The newest
@@ -110,3 +110,7 @@ Current updater protocol 3 preserves but does not migrate ignored hybrid runtime
 database-aware release requires protocol 4, complete bootstrap closure, maintainer rehearsal and
 conversion evidence, supported-platform release qualification, and separate client-canary
 authorization.
+
+The HPT2 shadow qualification and its explicit `partial`/`reconciled` historical disposition are
+documented in [`outcome-reconciliation.md`](outcome-reconciliation.md). Passing that vertical slice
+does not itself authorize the later live maintainer conversion.

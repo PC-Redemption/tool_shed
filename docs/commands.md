@@ -202,6 +202,23 @@ The database remains ignored, local, and `shadow` until a separately qualified c
 commands do not authorize maintainer cutover, release, installed-skill synchronization, or client
 upgrade. See [Hybrid SQLite operational state](hybrid-sqlite-state.md).
 
+The HPT2 closed-loop qualification surface is:
+
+```text
+python3 scripts/outcome_reconciliation.py --workspace . apply --project-binding <binding>
+python3 scripts/outcome_reconciliation.py --workspace . mutate --project-binding <binding>
+python3 scripts/outcome_reconciliation.py --workspace . report \
+  --backend <file|hybrid> --operation <operation>
+python3 scripts/outcome_reconciliation.py --workspace . qualify
+python3 scripts/outcome_reconciliation.py --workspace . benchmark
+```
+
+The two mutations require a fresh `hybrid-state` binding and remain limited to a disposable shadow
+workspace before maintainer conversion. Read-only qualification compares the exact bootstrap
+requirement/change/evidence/verdict projection and eight file-first/hybrid operation results. HPT2
+is correctly `partial` and `reconciled`: missing original history stays residual and blocks a
+`satisfied` verdict. See [Outcome reconciliation vertical slice](outcome-reconciliation.md).
+
 Work3 document changes stay within the requested candidate scope. Preserve unrelated owner
 documentation and historical records, and delete documentation only when the coded change makes it
 obsolete.

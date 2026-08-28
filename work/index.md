@@ -21,8 +21,7 @@ Updated: 2026-08-28
 | [work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
 | [work/00-campaigns/abandoned/096-publish-and-synchronize-passive-app-server-dogfooding.md](work/00-campaigns/abandoned/096-publish-and-synchronize-passive-app-server-dogfooding.md) | campaign | abandoned | 2026-08-27 | none | - |
 | [work/00-campaigns/abandoned/097-field-dogfood-passive-app-server-mode.md](work/00-campaigns/abandoned/097-field-dogfood-passive-app-server-mode.md) | campaign | abandoned | 2026-08-27 | none | - |
-| [work/00-campaigns/active/104-implement-minimum-sqlite-operational-substrate.md](work/00-campaigns/active/104-implement-minimum-sqlite-operational-substrate.md) | campaign | working | 2026-08-28 | execute the campaign completion gate | - |
-| [work/00-campaigns/active/105-implement-and-qualify-hpt2-closed-loop-vertical-slice.md](work/00-campaigns/active/105-implement-and-qualify-hpt2-closed-loop-vertical-slice.md) | campaign | queued | 2026-08-28 | execute when selected from the active campaign queue | - |
+| [work/00-campaigns/active/105-implement-and-qualify-hpt2-closed-loop-vertical-slice.md](work/00-campaigns/active/105-implement-and-qualify-hpt2-closed-loop-vertical-slice.md) | campaign | working | 2026-08-28 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -111,6 +110,7 @@ Updated: 2026-08-28
 | [work/00-campaigns/completed/101-enforce-live-camp-readiness-and-safety-quarantine.md](work/00-campaigns/completed/101-enforce-live-camp-readiness-and-safety-quarantine.md) | campaign | complete | 2026-08-27 | none | - |
 | [work/00-campaigns/completed/102-qualify-and-document-operator-trust-camp-boundaries.md](work/00-campaigns/completed/102-qualify-and-document-operator-trust-camp-boundaries.md) | campaign | complete | 2026-08-27 | none | - |
 | [work/00-campaigns/completed/103-establish-hybrid-bootstrap-closure-and-design-contract.md](work/00-campaigns/completed/103-establish-hybrid-bootstrap-closure-and-design-contract.md) | campaign | complete | 2026-08-28 | none | - |
+| [work/00-campaigns/completed/104-implement-minimum-sqlite-operational-substrate.md](work/00-campaigns/completed/104-implement-minimum-sqlite-operational-substrate.md) | campaign | complete | 2026-08-28 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -136,7 +136,9 @@ Updated: 2026-08-28
 | [work/evidence/evidence-direct-linux-app-server-dispatch.md](work/evidence/evidence-direct-linux-app-server-dispatch.md) | evidence | complete | 2026-08-25 | return to the Campaign 059 Windows and Bactron Core consent boundary | - |
 | [work/evidence/evidence-file-change-handoff-and-robust-doc-verification.md](work/evidence/evidence-file-change-handoff-and-robust-doc-verification.md) | evidence | verified | 2026-08-26 | - | - |
 | [work/evidence/evidence-human-planning-mechanism-evaluation.md](work/evidence/evidence-human-planning-mechanism-evaluation.md) | evidence | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
+| [work/evidence/evidence-hybrid-sqlite-efficiency.md](work/evidence/evidence-hybrid-sqlite-efficiency.md) | - | passed | - | - | - |
 | [work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md](work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md) | validation-evidence | passed | 2026-08-28 | - | - |
+| [work/evidence/evidence-hybrid-sqlite-hpt2-parity.md](work/evidence/evidence-hybrid-sqlite-hpt2-parity.md) | - | passed | - | - | - |
 | [work/evidence/evidence-hybrid-sqlite-substrate.md](work/evidence/evidence-hybrid-sqlite-substrate.md) | - | passed | - | - | - |
 | [work/evidence/evidence-linux-command-free-code-proof-underspecified.md](work/evidence/evidence-linux-command-free-code-proof-underspecified.md) | evidence | verified | 2026-08-26 | - | - |
 | [work/evidence/evidence-linux-first-pass-code-proof-interruption.md](work/evidence/evidence-linux-first-pass-code-proof-interruption.md) | evidence | complete | 2026-08-26 | replace the failed code/test and dependent asset-aware proofs in Roadmap Revision 4 | - |
@@ -235,6 +237,6 @@ Updated: 2026-08-28
 
 ## Summary
 
-- Total artifacts: 218
-- Active artifacts: 3
-- Completed/decided artifacts: 158
+- Total artifacts: 220
+- Active artifacts: 2
+- Completed/decided artifacts: 159

@@ -1,9 +1,9 @@
 # Implement and qualify the HPT2 closed-loop vertical slice
 
-Status: working
+Status: complete
 Type: campaign
 Updated: 2026-08-28
-Next Action: execute the campaign completion gate
+Next Action: none
 Campaign ID: implement-and-qualify-hpt2-closed-loop-vertical-slice
 Campaign Number: 105
 Outcome: HPT2 is imported without invented history and produces a complete idea-to-product reconciliation whose requirement, material-change, evidence, exception, and verdict results match the independent bootstrap record.
@@ -14,8 +14,10 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: HPT2 source accounting, outcome contract, material changes, product evidence, exceptions, and final verdict reconcile end to end; database import reproduces the bootstrap result in a fresh clone; byte and semantic parity, query/capsule correctness, 70% median context reduction, and 5% fallback limits pass; G2 evidence is complete.
-Completion Evidence: none
-Disposition: none
+Completion Evidence: G2-SUBSTRATE-LOOP-PROVEN satisfied under bootstrap closure token 5e182e3a50587add: HPT2 is terminal/partial/reconciled with four unavailable historical surfaces preserved as residual work; exact bootstrap and eight file-first/hybrid operation results match across disposable and fresh workspaces; checkpoint rebuild parity passes; 24 efficiency runs achieve 99.975% median context reduction, 0% fallback, and full semantic/evidence parity; focused qualification passed 26/26 and the final Tool Shed full profile passed 338/338 tests plus all repository contracts; no live DB, conversion, deployment, release, skill sync, or client mutation occurred.
+Completion Date: 2026-08-28
+Completion Order: 89
+Disposition: completed
 Roadmap: hybrid-sqlite-operational-state
 Roadmap Revision: 1
 Milestone: M2-SUBSTRATE-HPT2-PROVEN
