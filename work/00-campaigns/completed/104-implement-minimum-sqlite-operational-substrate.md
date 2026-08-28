@@ -14,7 +14,7 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: Focused and full tests prove schema creation and migration, foreign keys, revision/trigger accounting, managed and unmanaged writes, project/worktree lineage, deterministic checkpoint/export, fresh rebuild, corruption detection, backup, interruption recovery, and legacy writer refusal while campaigns, roadmaps, general bodies, and legacy retirement remain file-owned.
-Completion Evidence: EVID-G2-SUBSTRATE passed under bootstrap closure token f0f0f772d0c3866b: seven disposable-repository substrate scenarios and installer/docs focus passed 21/21; Tool Shed full profile passed 333/333 tests and all repository, provider, roadmap, and closure contracts; CHG-HYBRID-003 reconciles exact checkpoint/export ledger recovery; the 23-page/73-command site build passed; no live database, authority conversion, deployment, release, skill synchronization, or client mutation occurred.
+Completion Evidence: EVID-G2-SUBSTRATE passed under bootstrap closure token f0f0f772d0c3866b: seven disposable-repository substrate scenarios and installer/docs focus passed 21/21; Tool Shed full profile passed 333/333 tests and all repository, provider, roadmap, and closure contracts; CHG-HYBRID-003 reconciles exact checkpoint/export ledger recovery; the 23-page/73-command site build passed; no live database, authority conversion, deployment, release, skill synchronization, or client mutation occurred. Historical claim audit: work/evidence/evidence-historical-campaign-external-claims-backfill.md
 Completion Date: 2026-08-28
 Completion Order: 88
 Disposition: completed

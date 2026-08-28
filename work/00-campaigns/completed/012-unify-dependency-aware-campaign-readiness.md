@@ -12,7 +12,7 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: Regression tests prove active-queue Markdown, status --json, and next --json agree for dependency-blocked and independently ready queues; stale projections fail validation; focused and full Tool Shed validation pass.
-Completion Evidence: Focused readiness suite: 4 passed; full Tool Shed validator: 108 tests, provider conformance, smoke, indexes, stale paths, and work-state review passed; work2 deployment/browser stages inapplicable because no target or UI is configured.
+Completion Evidence: Focused readiness suite: 4 passed; full Tool Shed validator: 108 tests, provider conformance, smoke, indexes, stale paths, and work-state review passed; work2 deployment/browser stages inapplicable because no target or UI is configured. Historical claim audit: work/evidence/evidence-historical-campaign-external-claims-backfill.md
 Completion Date: 2026-08-15
 Completion Order: 11
 Disposition: completed

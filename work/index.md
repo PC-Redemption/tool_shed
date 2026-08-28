@@ -145,6 +145,7 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 | [work/evidence/evidence-core-v0-29-13-first-pass-owner-ready.md](work/evidence/evidence-core-v0-29-13-first-pass-owner-ready.md) | evidence | verified | 2026-08-26 | - | - |
 | [work/evidence/evidence-direct-linux-app-server-dispatch.md](work/evidence/evidence-direct-linux-app-server-dispatch.md) | evidence | complete | 2026-08-25 | return to the Campaign 059 Windows and Bactron Core consent boundary | - |
 | [work/evidence/evidence-file-change-handoff-and-robust-doc-verification.md](work/evidence/evidence-file-change-handoff-and-robust-doc-verification.md) | evidence | verified | 2026-08-26 | - | - |
+| [work/evidence/evidence-historical-campaign-external-claims-backfill.md](work/evidence/evidence-historical-campaign-external-claims-backfill.md) | evidence | qualified | 2026-08-28 | - | - |
 | [work/evidence/evidence-human-planning-mechanism-evaluation.md](work/evidence/evidence-human-planning-mechanism-evaluation.md) | evidence | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/evidence/evidence-hybrid-sqlite-disconnected-production-canary.md](work/evidence/evidence-hybrid-sqlite-disconnected-production-canary.md) | evidence | passed | 2026-08-28 | - | - |
 | [work/evidence/evidence-hybrid-sqlite-efficiency.md](work/evidence/evidence-hybrid-sqlite-efficiency.md) | - | passed | - | - | - |
@@ -261,6 +262,6 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 
 ## Summary
 
-- Total artifacts: 242
+- Total artifacts: 243
 - Active artifacts: 0
 - Completed/decided artifacts: 173

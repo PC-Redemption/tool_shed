@@ -14,7 +14,7 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: Focused profile passes; full is under 45 seconds; release is under 60 seconds; preserved scenarios and safety contracts pass; CLI and operator documentation describe profile ownership.
-Completion Evidence: Focused profile passed in 0.617s; full passed all 314 discovered cases plus manifest, provider, roadmap, stale-path, and work-state contracts in 11.369s; release passed the same cases plus the unique disposable installed-workspace smoke in 12.093s. Failures are isolated per case and reported in stable test-ID order.
+Completion Evidence: Focused profile passed in 0.617s; full passed all 314 discovered cases plus manifest, provider, roadmap, stale-path, and work-state contracts in 11.369s; release passed the same cases plus the unique disposable installed-workspace smoke in 12.093s. Failures are isolated per case and reported in stable test-ID order. Historical claim audit: work/evidence/evidence-historical-campaign-external-claims-backfill.md
 Completion Date: 2026-08-27
 Completion Order: 83
 Disposition: completed

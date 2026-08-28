@@ -14,7 +14,7 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: The bootstrap tool and tracked baseline fail on missing or stale requirements, material changes, evidence, upgrade targets, or verdicts; the exact entity/field authority, checkpoint/event, schema/trigger, per-worktree, merge/rebuild, migration, updater, backup, rollback, downgrade, HPT2 inventory, and token-fixture decisions are documented and G1 evidence is complete.
-Completion Evidence: G1-DESIGN-FROZEN passed: bootstrap closure token 6c1d75417d63c114 validates 12 accepted requirements, two reconciled development changes, four passing G1 evidence records, exact v1 authority/design decisions, and explicit open G2-G4 release gates; Tool Shed full profile passed 326/326 tests and all repository contracts; final bootstrap/profile focus passed 7/7 tests; documentation site passed 13 focused tests and a 23-page/73-command build check.
+Completion Evidence: G1-DESIGN-FROZEN passed: bootstrap closure token 6c1d75417d63c114 validates 12 accepted requirements, two reconciled development changes, four passing G1 evidence records, exact v1 authority/design decisions, and explicit open G2-G4 release gates; Tool Shed full profile passed 326/326 tests and all repository contracts; final bootstrap/profile focus passed 7/7 tests; documentation site passed 13 focused tests and a 23-page/73-command build check. Historical claim audit: work/evidence/evidence-historical-campaign-external-claims-backfill.md
 Completion Date: 2026-08-28
 Completion Order: 87
 Disposition: completed

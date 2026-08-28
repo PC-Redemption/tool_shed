@@ -14,7 +14,7 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: Preference migration, policy precedence, selector and status tests prove legacy on does not silently broaden writes, fresh on enables operator-runtime policy, normal admission ignores missing exact identity certification, and explicit repository strict mode retains certification requirements.
-Completion Evidence: Schema-v2 consent migration, operator-runtime selector/status separation, legacy non-broadening, strict repository certification, registry/hash telemetry behavior, and 95 focused App Server tests passed.
+Completion Evidence: Schema-v2 consent migration, operator-runtime selector/status separation, legacy non-broadening, strict repository certification, registry/hash telemetry behavior, and 95 focused App Server tests passed. Historical claim audit: work/evidence/evidence-historical-campaign-external-claims-backfill.md
 Completion Date: 2026-08-27
 Completion Order: 84
 Disposition: completed

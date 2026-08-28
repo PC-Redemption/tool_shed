@@ -2500,6 +2500,23 @@
       "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
+      "next_action": null,
+      "parent": null,
+      "path": "work/evidence/evidence-historical-campaign-external-claims-backfill.md",
+      "produces": null,
+      "project_map": null,
+      "status": "qualified",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Historical Campaign External-Claim Evidence Backfill",
+      "type": "evidence",
+      "updated": "2026-08-28"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": null,
       "next_action": "none",
       "parent": "work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md",
       "path": "work/evidence/evidence-human-planning-mechanism-evaluation.md",
@@ -4419,6 +4436,6 @@
   "summary": {
     "active_artifacts": 0,
     "completed_or_decided_artifacts": 173,
-    "total_artifacts": 242
+    "total_artifacts": 243
   }
 }
