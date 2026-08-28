@@ -73,3 +73,12 @@ The initiative root must remain open. G4 owns recovery, ambiguous backfill, dire
 backup/rollback, context, upgrade, and cross-platform qualification. G5 owns exact release CI and
 provenance, maintainer skill synchronization, disconnected-client canary, final child propagation,
 and root transition.
+
+## Final Lifecycle Projection Reconciliation
+
+After G4, G5, and the initiative root became satisfied/reconciled, the whole-work campaign audit
+identified one remaining file-authoritative projection error: the approved project map still
+showed proposed work, a next action, and unchecked navigation. `CHG-CLOSED-009` records the
+owner-authorized correction. The map is now `complete`, all five workstreams and navigation items
+are terminal, and `reconcile_campaign_queue.py --dry-run` reports no findings, no changes required,
+and no owner action required. The focused bootstrap and doctor suites pass 11/11.

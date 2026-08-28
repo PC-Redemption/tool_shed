@@ -23,7 +23,6 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 | [work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
 | [work/00-campaigns/abandoned/096-publish-and-synchronize-passive-app-server-dogfooding.md](work/00-campaigns/abandoned/096-publish-and-synchronize-passive-app-server-dogfooding.md) | campaign | abandoned | 2026-08-27 | none | - |
 | [work/00-campaigns/abandoned/097-field-dogfood-passive-app-server-mode.md](work/00-campaigns/abandoned/097-field-dogfood-passive-app-server-mode.md) | campaign | abandoned | 2026-08-27 | none | - |
-| [work/00-campaigns/active/113-release-and-canary-universal-closed-loop-reconciliation.md](work/00-campaigns/active/113-release-and-canary-universal-closed-loop-reconciliation.md) | campaign | working | 2026-08-28 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -121,6 +120,7 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 | [work/00-campaigns/completed/110-implement-generic-outcome-reconciliation-engine.md](work/00-campaigns/completed/110-implement-generic-outcome-reconciliation-engine.md) | campaign | complete | 2026-08-28 | none | - |
 | [work/00-campaigns/completed/111-integrate-closed-loop-owning-state-across-tool-shed.md](work/00-campaigns/completed/111-integrate-closed-loop-owning-state-across-tool-shed.md) | campaign | complete | 2026-08-28 | none | - |
 | [work/00-campaigns/completed/112-qualify-universal-reconciliation-backfill-and-recovery.md](work/00-campaigns/completed/112-qualify-universal-reconciliation-backfill-and-recovery.md) | campaign | complete | 2026-08-28 | none | - |
+| [work/00-campaigns/completed/113-release-and-canary-universal-closed-loop-reconciliation.md](work/00-campaigns/completed/113-release-and-canary-universal-closed-loop-reconciliation.md) | campaign | complete | 2026-08-28 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -188,6 +188,8 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 | [work/evidence/evidence-universal-closed-loop-g2-engine.md](work/evidence/evidence-universal-closed-loop-g2-engine.md) | - | passed | - | - | - |
 | [work/evidence/evidence-universal-closed-loop-g3-integration.md](work/evidence/evidence-universal-closed-loop-g3-integration.md) | - | passed | - | - | - |
 | [work/evidence/evidence-universal-closed-loop-g4-recovery.md](work/evidence/evidence-universal-closed-loop-g4-recovery.md) | - | passed | - | - | - |
+| [work/evidence/evidence-universal-closed-loop-g5-canary.md](work/evidence/evidence-universal-closed-loop-g5-canary.md) | - | passed | - | - | - |
+| [work/evidence/evidence-universal-closed-loop-g5-release.md](work/evidence/evidence-universal-closed-loop-g5-release.md) | - | passed | - | - | - |
 | [work/evidence/evidence-w1-dev-smb-access.md](work/evidence/evidence-w1-dev-smb-access.md) | evidence | complete | 2026-08-24 | none | - |
 | [work/evidence/evidence-windows-console-sandbox-verification-v0-29-4.md](work/evidence/evidence-windows-console-sandbox-verification-v0-29-4.md) | - | - | - | - | - |
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |
@@ -208,7 +210,7 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 | [work/maps/map-persistent-autonomy-levels.md](work/maps/map-persistent-autonomy-levels.md) | project-map | approved | 2026-08-27 | develop an exact Program Roadmap proposal | - |
 | [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | complete | 2026-08-20 | none | - |
 | [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
-| [work/maps/map-universal-closed-loop-outcome-reconciliation.md](work/maps/map-universal-closed-loop-outcome-reconciliation.md) | project-map | approved | 2026-08-28 | develop an exact Program Roadmap proposal | - |
+| [work/maps/map-universal-closed-loop-outcome-reconciliation.md](work/maps/map-universal-closed-loop-outcome-reconciliation.md) | project-map | complete | 2026-08-28 | none | - |
 | [work/maps/map-validation-consolidation.md](work/maps/map-validation-consolidation.md) | project-map | complete | 2026-08-27 | none; the work1 outcome is complete | - |
 | [work/roadmaps/roadmap-completion-watcher-program-r2.md](work/roadmaps/roadmap-completion-watcher-program-r2.md) | program-roadmap | approved | 2026-08-20 | derive campaigns for milestone M1-CONTRACT | none |
 | [work/roadmaps/roadmap-completion-watcher-program.md](work/roadmaps/roadmap-completion-watcher-program.md) | program-roadmap | superseded | 2026-08-20 | none | work/roadmaps/roadmap-completion-watcher-program-r2.md |
@@ -226,7 +228,7 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 | [work/roadmaps/roadmap-passive-app-server-dogfooding.md](work/roadmaps/roadmap-passive-app-server-dogfooding.md) | program-roadmap | superseded | 2026-08-27 | none | work/roadmaps/roadmap-operator-trust-camp-runtime-enforcement.md |
 | [work/roadmaps/roadmap-persistent-autonomy-levels-r2.md](work/roadmaps/roadmap-persistent-autonomy-levels-r2.md) | program-roadmap | executing | 2026-08-27 | execute the first ready roadmap campaign through ts: next | none |
 | [work/roadmaps/roadmap-persistent-autonomy-levels.md](work/roadmaps/roadmap-persistent-autonomy-levels.md) | program-roadmap | superseded | 2026-08-27 | none | work/roadmaps/roadmap-persistent-autonomy-levels-r2.md |
-| [work/roadmaps/roadmap-universal-closed-loop-outcome-reconciliation.md](work/roadmaps/roadmap-universal-closed-loop-outcome-reconciliation.md) | program-roadmap | executing | 2026-08-28 | execute the first ready roadmap campaign through ts: next | none |
+| [work/roadmaps/roadmap-universal-closed-loop-outcome-reconciliation.md](work/roadmaps/roadmap-universal-closed-loop-outcome-reconciliation.md) | program-roadmap | complete | 2026-08-28 | none | none |
 | [work/roadmaps/roadmap-validation-consolidation-r2.md](work/roadmaps/roadmap-validation-consolidation-r2.md) | program-roadmap | executing | 2026-08-27 | execute the first ready roadmap campaign through ts: next | none |
 | [work/roadmaps/roadmap-validation-consolidation.md](work/roadmaps/roadmap-validation-consolidation.md) | program-roadmap | superseded | 2026-08-27 | none | work/roadmaps/roadmap-validation-consolidation-r2.md |
 | [work/spikes/spike-completion-watcher-protocol-and-failure-model.md](work/spikes/spike-completion-watcher-protocol-and-failure-model.md) | spike | complete | 2026-08-18 | none | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -259,6 +261,6 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 
 ## Summary
 
-- Total artifacts: 240
-- Active artifacts: 1
-- Completed/decided artifacts: 170
+- Total artifacts: 242
+- Active artifacts: 0
+- Completed/decided artifacts: 173

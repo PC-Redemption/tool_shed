@@ -1,9 +1,9 @@
 # Project Map: Universal Closed-Loop Outcome Reconciliation
 
-Status: approved
+Status: complete
 Type: project-map
 Updated: 2026-08-28
-Next Action: develop an exact Program Roadmap proposal
+Next Action: none
 Source Idea: work/ideas/idea-universal-closed-loop-outcome-reconciliation.md
 Campaign: freeze-universal-closed-loop-contract-and-bootstrap
 
@@ -62,7 +62,7 @@ flowchart TD
 
 Ground:
 
-- Current next action: approve this map and derive the smallest evidence-gated roadmap.
+- Current next action: none; the mapped program is released, canary-qualified, and reconciled.
 - Owner/context: Tool Shed maintainer workspace only; no Marshal or unrelated project artifacts.
 - Verification: independent bootstrap ledger, focused unit/integration tests, file/SQLite parity,
   checkpoint rebuild, historical ambiguity fixtures, full Tool Shed validation, exact push CI,
@@ -72,11 +72,11 @@ Ground:
 
 | Workstream | Status | Lead Artifact | Depends On | Next Action |
 | --- | --- | --- | --- | --- |
-| Independent closure and semantic contract | proposed | this map and a bootstrap closure manifest | released hybrid substrate | freeze the universal vocabulary, invariants, and evidence gates |
-| Generic outcome-reconciliation engine | proposed | `scripts/outcome_reconciliation.py` | semantic contract | replace HPT2-only command shape with entry-point-neutral guarded operations while retaining compatibility |
-| Lifecycle and operator integration | proposed | campaign/roadmap/doctor/index scripts and docs | generic engine | expose open owning loops and prevent false completion without moving narrative authority |
-| Backfill, recovery, and efficiency | proposed | checkpoint/export and qualification evidence | engine and integration | prove deterministic import, ambiguous-history refusal, rebuild, rollback, and compact context |
-| Release and disconnected canary | proposed | Program Roadmap release milestone | all prior gates | publish, synchronize, upgrade, and reconcile one synthetic client end to end |
+| Independent closure and semantic contract | complete | this map and a bootstrap closure manifest | released hybrid substrate | none |
+| Generic outcome-reconciliation engine | complete | `scripts/outcome_reconciliation.py` | semantic contract | none |
+| Lifecycle and operator integration | complete | campaign/roadmap/doctor/index scripts and docs | generic engine | none |
+| Backfill, recovery, and efficiency | complete | checkpoint/export and qualification evidence | engine and integration | none |
+| Release and disconnected canary | complete | Program Roadmap release milestone | all prior gates | none |
 
 ## Dependency Notes
 
@@ -95,16 +95,17 @@ Ground:
 
 You are here:
 
-- The released hybrid substrate and HPT2 partial/reconciled slice are proven; the universal Idea
-  Brief is selected for PRM and this project-map direction is ready for approval.
+- The universal closed-loop program is complete: Tool Shed v0.35.0 is published, the maintainer
+  skill is synchronized, a zero-remote synthetic client passed upgrade and reconciliation, and the
+  originating Idea is satisfied and reconciled.
 
 Do next:
 
-- [ ] Approve this project map with a fresh project-bound token.
-- [ ] Establish the independent bootstrap closure baseline.
-- [ ] Develop, propose, and approve the Program Roadmap.
-- [ ] Execute one milestone wave at a time through its evidence gate.
-- [ ] Reconcile the originating Idea Brief, released product, target canary, and final initiative
+- [x] Approve this project map with a fresh project-bound token.
+- [x] Establish the independent bootstrap closure baseline.
+- [x] Develop, propose, and approve the Program Roadmap.
+- [x] Execute one milestone wave at a time through its evidence gate.
+- [x] Reconcile the originating Idea Brief, released product, target canary, and final initiative
       verdict before declaring the PRM complete.
 
 Avoid for now:
