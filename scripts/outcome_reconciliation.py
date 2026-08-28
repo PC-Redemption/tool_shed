@@ -200,6 +200,7 @@ def apply_hpt2(
     bootstrap_path: Path = DEFAULT_BOOTSTRAP,
     ids_path: Path = DEFAULT_IDS,
 ) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
     source, bootstrap, ids = load_sources(workspace, bootstrap_path, ids_path)
     projection = bootstrap_projection(bootstrap)
     source_relative = source.relative_to(workspace).as_posix()
@@ -481,6 +482,7 @@ def sync_bootstrap(
     bootstrap_path: Path = DEFAULT_BOOTSTRAP,
     ids_path: Path = DEFAULT_IDS,
 ) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
     source, bootstrap, ids = load_sources(workspace, bootstrap_path, ids_path)
     projection = bootstrap_projection(bootstrap)
     required = {

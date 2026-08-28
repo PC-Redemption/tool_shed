@@ -315,6 +315,7 @@ def audit_connection(workspace: Path, connection: sqlite3.Connection) -> dict[st
 
 
 def audit(workspace: Path, path: Path | None = None) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
     target = path or database_path(workspace)
     if not target.is_file():
         raise HybridStateError(f"state database does not exist: {target.relative_to(workspace)}")
@@ -345,6 +346,7 @@ def initialize(
     target: Path | None = None,
     storage_mode: str = "shadow",
 ) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
     require_project_binding(workspace, project_binding, operation=OPERATION)
     ensure_runtime_ignored(workspace)
     destination = require_path_within(workspace, target or database_path(workspace))
@@ -418,6 +420,7 @@ def managed_write(
     expected_writes: int | None = None,
     path: Path | None = None,
 ) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
     require_project_binding(workspace, project_binding, operation=OPERATION)
     target = path or database_path(workspace)
     with WorkspaceLock(lock_path(workspace)), contextlib.closing(connect(target)) as connection:
@@ -508,6 +511,7 @@ def import_files(
     actor: str = "tool-shed",
     assigned_ids: dict[str, dict[str, str]] | None = None,
 ) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
     records: list[dict[str, Any]] = []
     for supplied in paths:
         path = require_path_within(workspace, supplied if supplied.is_absolute() else workspace / supplied)
@@ -615,6 +619,7 @@ def import_files(
 
 
 def load_assigned_file_ids(workspace: Path, supplied: Path) -> dict[str, dict[str, str]]:
+    workspace = resolved_workspace(workspace)
     path = require_path_within(workspace, supplied if supplied.is_absolute() else workspace / supplied)
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
@@ -647,6 +652,7 @@ def activate_hybrid_mode(
     project_binding: str,
     expected_checkpoint_digest: str,
 ) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
     if not re.fullmatch(r"[0-9a-f]{64}", expected_checkpoint_digest):
         raise HybridStateError("cutover requires a 64-character checkpoint digest")
 
@@ -678,6 +684,7 @@ def add_relationship(
     to_artifact_id: str,
     provenance: str,
 ) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
     relationship_id = random_uuid()
 
     def apply(connection: sqlite3.Connection, revision: int) -> dict[str, str]:
@@ -705,6 +712,7 @@ def add_relationship(
 
 
 def verified_backup(workspace: Path, *, project_binding: str) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
     require_project_binding(workspace, project_binding, operation=OPERATION)
     source = database_path(workspace)
     backup_root = require_path_within(workspace, workspace / BACKUP_RELATIVE)
@@ -745,6 +753,7 @@ def verified_backup(workspace: Path, *, project_binding: str) -> dict[str, Any]:
 
 
 def source_tree_digest(workspace: Path, *, exclude: Path | None = None) -> str:
+    workspace = resolved_workspace(workspace)
     raw = subprocess.run(
         ["git", "ls-files", "-co", "--exclude-standard", "-z"],
         cwd=workspace,
@@ -783,6 +792,7 @@ def write_checkpoint(
     project_binding: str,
     output: Path | None = None,
 ) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
     require_project_binding(workspace, project_binding, operation=OPERATION)
     target = require_path_within(workspace, output or checkpoint_path(workspace))
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -864,6 +874,7 @@ def write_checkpoint(
 
 
 def load_checkpoint(workspace: Path, path: Path) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
     source = require_path_within(workspace, path if path.is_absolute() else workspace / path)
     try:
         payload = json.loads(source.read_text(encoding="utf-8"))
@@ -900,6 +911,7 @@ def rebuild_from_checkpoint(
     checkpoint: Path,
     output: Path,
 ) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
     require_project_binding(workspace, project_binding, operation=OPERATION)
     ensure_runtime_ignored(workspace)
     payload = load_checkpoint(workspace, checkpoint)
@@ -1013,6 +1025,7 @@ def rebuild_from_checkpoint(
 
 
 def legacy_write_check(workspace: Path, field: str, path: Path | None = None) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
     target = path or database_path(workspace)
     with contextlib.closing(connect(target)) as connection:
         entrance = audit_connection(workspace, connection)
