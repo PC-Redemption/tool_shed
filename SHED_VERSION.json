@@ -51,7 +51,7 @@
     "schemas/completion-watcher/v1/watch-descriptor.schema.json": "e6b54939fb06111b7a9f687ceb9be281a9e8dc389bdc28a72d9ee3078eb5fe4f",
     "schemas/completion-watcher/v1/watch-record.schema.json": "7455db4c2e7a271ec8efbd7b0828143a141dcd1daa55d25540132ab0b53a5b1d",
     "schemas/hybrid-state/v1/checkpoint.schema.json": "c92f8910f815fb3f46f6d51ba7e7fc8752f3d9878a1b5a212198503a2d7dafff",
-    "schemas/hybrid-state/v1/hpt2-assigned-ids.json": "55a9b5fec1fe612a41db0c7416880c99b7032cd3a7c35634bd8133509620d5fe",
+    "schemas/hybrid-state/v1/hpt2-assigned-ids.json": "42614b2d496b71acb58efb1f24e301f1edb0d9251485734aeb51d57ff71d8e1a",
     "schemas/hybrid-state/v1/maintainer-assigned-ids.json": "033651f1d422cdf99d70da3d3ef9495d0e5feaa0dd1d7cb1fb6f9311a4551f63",
     "scripts/app_server_control.py": "a3a3fc1db23bf0a3c5d8ecac00937ee47bee06de4deaaed26769f5961695facf",
     "scripts/app_server_dispatch.py": "7989d4a6b0ce42a591be3cf6293ef8570567679158277dfef110df87a95c04f7",

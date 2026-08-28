@@ -2,9 +2,9 @@
   "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
   "baseline": {
     "created_at": "2026-08-28T16:26:19Z",
-    "source_commit": "ec994ec8b457894ec0a9ca8d01dc477e85b1016c",
-    "source_digest": "1138aa47122132b998f973a0b7066c5587c85f7acf01c72b8d83783da5eac21d",
-    "updated_at": "2026-08-28T17:52:18Z"
+    "source_commit": "43da1fc98e32353ed1f46c0e9a919205f27533be",
+    "source_digest": "c32e25043318cffbc55f0694d28e57f6d19f0d93e855f512ea2d542b5b557a78",
+    "updated_at": "2026-08-28T18:29:35Z"
   },
   "bindings": [
     {
@@ -25,7 +25,7 @@
     {
       "path": "docs/hybrid-sqlite-state-v1-contract.md",
       "role": "authority-contract",
-      "sha256": "42f3aecb2ad5417c8884ca6b4cab3c868ee7ee7128a298eff13b6166badc9357"
+      "sha256": "dccbaf8abae2d3b544a5477bac569a3a1bd35f2e66aa2dc0faed09a89e6c1f58"
     },
     {
       "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
@@ -35,17 +35,17 @@
     {
       "path": "scripts/bootstrap_closure.py",
       "role": "bootstrap-tool",
-      "sha256": "53907625a79e291e71d950e401fb96668bd1c09adbb134cbe9a82b532cdfa690"
+      "sha256": "92fd7a9e733159baa2937f3b9216b28fe39d3fee42b4f242c506bb1484f814fe"
     },
     {
       "path": "schemas/bootstrap-closure/v1/manifest.schema.json",
       "role": "manifest-schema",
-      "sha256": "2dc3cd1929d8b3f209e38ef789effac6a22a9e49a5ad288391a516e8aa79c817"
+      "sha256": "94165062efb8430a8bdec39b18c3ed476c27f165900eb2283ce3633905bc668a"
     },
     {
       "path": "tests/test_bootstrap_closure.py",
       "role": "closure-tests",
-      "sha256": "4d9c8b0b8c62f36cf78cd41ba1996ddd088ebb88734e05ea4648b2569f61c064"
+      "sha256": "01fa23cfbc4b231acf2513ac9558cd5811f19325a871df38f6a4f5d397a69a58"
     },
     {
       "path": "scripts/validate_tool_shed.py",
@@ -135,6 +135,42 @@
       ],
       "source_commit": "b34f5b36cf80a331a46385eb8c6208c052f6c5c4",
       "summary": "Bind maintainer conversion to fixed source IDs and an externally rehearsed cutover",
+      "supersedes": []
+    },
+    {
+      "authorization": "Owner-approved Campaign 107 release 0.34.0 on 2026-08-28 and approved Program Roadmap sequence",
+      "decision_ids": [
+        "DEC-HYBRID-006",
+        "DEC-HYBRID-009",
+        "DEC-HYBRID-010",
+        "DEC-HYBRID-012"
+      ],
+      "evidence_to_rerun": [
+        "EVID-G1-BOOTSTRAP",
+        "EVID-G1-CONTRACT",
+        "EVID-G1-EFFICIENCY-CONTRACT",
+        "EVID-G1-HPT2-INVENTORY",
+        "EVID-G2-EFFICIENCY",
+        "EVID-G2-SUBSTRATE",
+        "EVID-G3-MAINTAINER",
+        "EVID-G4-CANARY",
+        "EVID-G4-RELEASE"
+      ],
+      "id": "CHG-HYBRID-005",
+      "rationale": "Release qualification exposed a circular dependency: the canary consumes the published release while the bootstrap release gate required the canary before publication. Protocol 4 was also still reserved rather than implemented. The guarded change implements the database-protection lifecycle and makes publication require completed G1-G3 scopes and milestones while preserving G4 and the initiative as open until released-client evidence is reconciled.",
+      "recorded_at": "2026-08-28T18:29:35Z",
+      "requirement_ids": [
+        "REQ-HYBRID-001",
+        "REQ-HYBRID-004",
+        "REQ-HYBRID-006",
+        "REQ-HYBRID-007",
+        "REQ-HYBRID-009",
+        "REQ-HYBRID-010",
+        "REQ-HYBRID-011",
+        "REQ-HYBRID-012"
+      ],
+      "source_commit": "43da1fc98e32353ed1f46c0e9a919205f27533be",
+      "summary": "Implement updater protocol 4 and stage controlled publication before the released-client canary",
       "supersedes": []
     }
   ],
@@ -254,8 +290,8 @@
           "sha256": "c32e9a94c238f73a833ab446de8248413fc0b2e3ee94003e2868f9d1b55870ff"
         }
       ],
-      "status": "passed",
-      "verified_at": "2026-08-28T16:31:43Z"
+      "status": "stale",
+      "verified_at": null
     },
     {
       "covers_change_ids": [
@@ -274,8 +310,8 @@
           "sha256": "c32e9a94c238f73a833ab446de8248413fc0b2e3ee94003e2868f9d1b55870ff"
         }
       ],
-      "status": "passed",
-      "verified_at": "2026-08-28T17:52:18Z"
+      "status": "stale",
+      "verified_at": null
     },
     {
       "covers_change_ids": [
@@ -293,8 +329,8 @@
           "sha256": "d3fd3b184becd3bd10a2991a52ead0dde88b528b109dc021a6fd41123af95369"
         }
       ],
-      "status": "passed",
-      "verified_at": "2026-08-28T17:34:43Z"
+      "status": "stale",
+      "verified_at": null
     },
     {
       "covers_change_ids": [
@@ -312,8 +348,8 @@
           "sha256": "db1707b6cce8fa902f6a493c33530ec7443c429b53167c369019243b2b4a6730"
         }
       ],
-      "status": "passed",
-      "verified_at": "2026-08-28T17:34:50Z"
+      "status": "stale",
+      "verified_at": null
     },
     {
       "covers_change_ids": [
@@ -364,8 +400,8 @@
           "sha256": "22d386467da0e6765ef19779ed763834128be937ecad2a7a3382373e5e9e0b44"
         }
       ],
-      "status": "passed",
-      "verified_at": "2026-08-28T17:43:34Z"
+      "status": "stale",
+      "verified_at": null
     },
     {
       "covers_change_ids": [
@@ -428,8 +464,8 @@
           "sha256": "42f3aecb2ad5417c8884ca6b4cab3c868ee7ee7128a298eff13b6166badc9357"
         }
       ],
-      "status": "passed",
-      "verified_at": "2026-08-28T17:47:27Z"
+      "status": "stale",
+      "verified_at": null
     },
     {
       "covers_change_ids": [
@@ -467,8 +503,8 @@
           "sha256": "608f65dfa4f5fc0f567bed7916f33703c8dc6c696e2de792dc4e6cee3b3bb42c"
         }
       ],
-      "status": "passed",
-      "verified_at": "2026-08-28T17:48:40Z"
+      "status": "stale",
+      "verified_at": null
     },
     {
       "covers_change_ids": [],
@@ -480,7 +516,7 @@
           "sha256": "a60ab06560bc69debf82f2c2bd4720686e73b0001886948443a9ca0ebbc79d00"
         }
       ],
-      "status": "pending",
+      "status": "stale",
       "verified_at": null
     },
     {
@@ -493,7 +529,7 @@
           "sha256": "e4bb630fa9fd6afde41e1adfe0b53fb2645e663d0b10a41b86f21d5e70759d49"
         }
       ],
-      "status": "pending",
+      "status": "stale",
       "verified_at": null
     }
   ],
@@ -507,31 +543,31 @@
     {
       "id": "MIG-HYBRID-001",
       "milestone": "M2-SUBSTRATE-HPT2-PROVEN",
-      "status": "planned",
+      "status": "complete",
       "summary": "Implement the schema, managed access layer, checkpoint, backup, and rebuild substrate without changing file authority."
     },
     {
       "id": "MIG-HYBRID-002",
       "milestone": "M2-SUBSTRATE-HPT2-PROVEN",
-      "status": "planned",
+      "status": "complete",
       "summary": "Import HPT2 and the bootstrap closure record and prove requirement, change, evidence, and verdict parity."
     },
     {
       "id": "MIG-HYBRID-003",
       "milestone": "M3-MAINTAINER-HYBRID-PROVEN",
-      "status": "planned",
+      "status": "complete",
       "summary": "Create and verify the assigned-ID and complete loss-accounting inventory for maintainer conversion."
     },
     {
       "id": "MIG-HYBRID-004",
       "milestone": "M3-MAINTAINER-HYBRID-PROVEN",
-      "status": "planned",
+      "status": "complete",
       "summary": "Rehearse the exact conversion in a disposable clone and retain a verified external rollback surface."
     },
     {
       "id": "MIG-HYBRID-005",
       "milestone": "M3-MAINTAINER-HYBRID-PROVEN",
-      "status": "planned",
+      "status": "complete",
       "summary": "Convert the live maintainer through shadow import, parity, no-write validation, and soak while retaining all original files."
     },
     {
@@ -546,12 +582,15 @@
   },
   "release_gate": {
     "mode": "blocking",
+    "required_milestones": [
+      "M1-BOOTSTRAP-DESIGN-FROZEN",
+      "M2-SUBSTRATE-HPT2-PROVEN",
+      "M3-MAINTAINER-HYBRID-PROVEN"
+    ],
     "required_scopes": [
       "G1-DESIGN-FROZEN",
       "G2-SUBSTRATE-LOOP-PROVEN",
-      "G3-MAINTAINER-CONVERSION-PROVEN",
-      "G4-RELEASE-CANARY-PROVEN",
-      "initiative"
+      "G3-MAINTAINER-CONVERSION-PROVEN"
     ]
   },
   "requirements": [
@@ -726,14 +765,14 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "dc3d93cfe8098f3c",
+  "state_token": "f6cbc2ce277fbec0",
   "upgrade_targets": [
     {
       "id": "UPG-HYBRID-MAINTAINER",
       "kind": "maintainer-workspace",
       "milestone": "M3-MAINTAINER-HYBRID-PROVEN",
       "minimum_updater_protocol": 4,
-      "status": "planned",
+      "status": "complete",
       "summary": "Convert the canonical maintainer through its dedicated non-snapshot path."
     },
     {
