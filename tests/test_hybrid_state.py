@@ -196,6 +196,40 @@ class HybridStateTests(unittest.TestCase):
         unmanaged = hybrid_state.audit(self.workspace)
         self.assertEqual(unmanaged["classification"], "UNMANAGED_REVIEW")
         self.assertTrue(unmanaged["unmanaged_write_detected"])
+        with self.assertRaisesRegex(hybrid_state.HybridStateError, "domain digest is stale"):
+            hybrid_state.reconcile_unmanaged(
+                self.workspace,
+                project_binding=self.binding,
+                expected_revision=unmanaged["current_revision"],
+                expected_domain_digest="0" * 64,
+                authorization_ref="fixture approval",
+                summary="Accept the bounded fixture mutation.",
+            )
+        reconciled = hybrid_state.reconcile_unmanaged(
+            self.workspace,
+            project_binding=self.binding,
+            expected_revision=unmanaged["current_revision"],
+            expected_domain_digest=unmanaged["domain_digest"],
+            authorization_ref="fixture approval",
+            summary="Accept the bounded fixture mutation.",
+        )
+        self.assertTrue(reconciled["checkpoint_required"])
+        self.assertEqual(reconciled["audit"]["classification"], "VALID_DIRTY")
+        checkpoint = hybrid_state.write_checkpoint(
+            self.workspace, project_binding=self.binding
+        )
+        rebuilt = hybrid_state.rebuild_from_checkpoint(
+            self.workspace,
+            project_binding=self.binding,
+            checkpoint=Path(checkpoint["path"]),
+            output=Path(".tool-shed/reconciled-direct.sqlite3"),
+        )
+        self.assertEqual(rebuilt["domain_digest"], hybrid_state.audit(self.workspace)["domain_digest"])
+        with contextlib.closing(hybrid_state.connect(self.workspace / ".tool-shed/reconciled-direct.sqlite3", writable=False)) as connection:
+            event = connection.execute(
+                "SELECT payload_json FROM event WHERE kind = 'unmanaged-reconciled'"
+            ).fetchone()
+        self.assertIn("fixture approval", event["payload_json"])
 
         with tempfile.TemporaryDirectory(dir=self.workspace.parent) as other_name:
             other = Path(other_name)

@@ -847,11 +847,28 @@ def roadmap_payload(workspace: Path, roadmap: Roadmap) -> dict[str, Any]:
     )
     current_source = source_state_token(workspace, roadmap.roadmap_id)
     source_drift = roadmap.fields.get("Source State Token") != current_source
-    program_complete = (
+    lifecycle_program_complete = (
         bool(progress["milestones"])
         and all(item["status"] == "complete" for item in progress["milestones"].values())
         and all(item["status"] == "passed" for item in progress["gates"].values())
     )
+    import outcome_loop
+
+    outcome_state = outcome_loop.owning_outcome_capsule(
+        workspace, origin_paths=[roadmap.path.relative_to(workspace).as_posix()]
+    )
+    owning = outcome_state.get("governing_loop")
+    outcome_complete = (
+        not outcome_state["governed"]
+        or (
+            owning is not None
+            and
+            owning.get("lifecycle") == "terminal"
+            and owning.get("outcome_verdict") in {"satisfied", "satisfied-with-approved-change"}
+            and owning.get("reconciliation") == "reconciled"
+        )
+    )
+    program_complete = lifecycle_program_complete and outcome_complete
     return {
         "roadmap_id": roadmap.roadmap_id,
         "revision": roadmap.revision,
@@ -863,6 +880,8 @@ def roadmap_payload(workspace: Path, roadmap: Roadmap) -> dict[str, Any]:
         "current_source_state_token": current_source,
         "source_drift": source_drift,
         "source_drift_actionable": source_drift and not program_complete,
+        "lifecycle_program_complete": lifecycle_program_complete,
+        "outcome_state": outcome_state,
         "program_complete": program_complete,
         "computed_current_milestone": computed_current,
         **progress,
@@ -985,6 +1004,23 @@ def cycle_state_capsule(
             "reason": "no active queue item or approved Program Roadmap owns the next transition",
         },
     }
+    # Import lazily: outcome state is a read-only adjunct and never becomes lifecycle authority.
+    import outcome_loop
+
+    outcome_paths: list[str] = []
+    if selected:
+        outcome_paths.append(selected.path.relative_to(workspace).as_posix())
+        roadmap_id = selected.fields.get("Roadmap", "none")
+        if roadmap_id != "none":
+            matching = [
+                item.path.relative_to(workspace).as_posix()
+                for item in load_roadmaps(workspace)
+                if item.roadmap_id == roadmap_id
+            ]
+            outcome_paths.extend(matching)
+    capsule["outcome_state"] = outcome_loop.owning_outcome_capsule(
+        workspace, origin_paths=outcome_paths
+    )
     if working:
         capsule["owning_cycle"] = "campaign"
         capsule["dimensions"]["cycle_state"] = "campaign"
@@ -1147,6 +1183,14 @@ def render_cycle_state(capsule: dict[str, Any]) -> str:
             f"Queue Cycle: {capsule['queue_cycle']['state']}",
             f"Campaign Cycle: {campaign['campaign_id'] or 'none'} / {campaign['state']}",
             f"Evidence Loop: {capsule['evidence_loop']['state']}",
+            "Outcome: "
+            + (
+                f"{capsule['outcome_state']['nearest_open_owning_loop']['outcome_verdict']} / "
+                f"{capsule['outcome_state']['nearest_open_owning_loop']['reconciliation']} "
+                f"({capsule['outcome_state']['nearest_open_owning_loop']['origin_path']})"
+                if capsule.get("outcome_state", {}).get("nearest_open_owning_loop")
+                else "not governed or no open owning loop"
+            ),
             f"Work Origin: {capsule['dimensions']['work_origin']}",
             f"Owning Cycle: {capsule['owning_cycle']}",
             f"Next Transition: {capsule['next_transition']['command']}",

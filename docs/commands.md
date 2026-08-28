@@ -200,6 +200,9 @@ python3 scripts/hybrid_state.py --workspace . backup --project-binding <binding>
 python3 scripts/hybrid_state.py --workspace . checkpoint --project-binding <binding>
 python3 scripts/hybrid_state.py --workspace . rebuild --project-binding <binding> \
   --checkpoint <checkpoint> --output <new-database>
+python3 scripts/hybrid_state.py --workspace . reconcile-unmanaged --project-binding <binding> \
+  --expect-revision <revision> --expect-domain-digest <sha256> \
+  --authorization <reference> --summary <bounded-change-summary>
 python3 scripts/hybrid_state.py --workspace . legacy-check --field <authority-field>
 ```
 
@@ -207,7 +210,55 @@ The database remains ignored, local, and `shadow` until a separately qualified c
 commands do not authorize maintainer cutover, release, installed-skill synchronization, or client
 upgrade. See [Hybrid SQLite operational state](hybrid-sqlite-state.md).
 
-The HPT2 closed-loop qualification surface is:
+`reconcile-unmanaged` is the only acceptance route for detected direct SQL. It requires the exact
+audited revision and domain digest plus explicit authorization, journals the disposition, and
+leaves a tracked checkpoint mandatory. Stale or changed state fails before acceptance; rejection
+uses verified backup/checkpoint restore instead of this route.
+
+The generic closed-loop outcome surface is:
+
+```text
+python3 scripts/outcome_reconciliation.py --workspace . audit
+python3 scripts/outcome_reconciliation.py --workspace . prepare --source <source.json>
+python3 scripts/outcome_reconciliation.py --workspace . validate --manifest <manifest.json>
+python3 scripts/outcome_reconciliation.py --workspace . apply --manifest <manifest.json> \
+  --expect <manifest-token> --project-binding <binding>
+python3 scripts/outcome_reconciliation.py --workspace . report --cycle <cycle-uuid> [--as-of <revision>]
+python3 scripts/outcome_reconciliation.py --workspace . backfill-plan --source <source.json>
+python3 scripts/outcome_reconciliation.py --workspace . backfill-apply --manifest <manifest.json> \
+  --expect <manifest-token> --project-binding <binding>
+python3 scripts/outcome_reconciliation.py --workspace . campaign-result-plan \
+  --campaign <completed-campaign.md> --product-truth <path> --evidence <path> \
+  --disposition satisfied --authorization <reference>
+python3 scripts/outcome_reconciliation.py --workspace . direct-plan \
+  --origin-summary <summary> --accepted-outcome <outcome> \
+  --product-truth <path> --evidence <path> --disposition satisfied \
+  --authorization <reference> [--parent-cycle <cycle-uuid>]
+python3 scripts/outcome_reconciliation.py --workspace . transition-plan \
+  --cycle <cycle-uuid> --lifecycle terminal --disposition satisfied \
+  --reconciliation reconciled --summary <summary> --authorization <reference> \
+  --supporting-cycle <propagated-cycle-uuid>
+python3 scripts/outcome_reconciliation.py --workspace . transition-apply \
+  --manifest <transition.json> --expect <transition-token> --project-binding <binding>
+```
+
+`prepare`, `validate`, `audit`, `report`, and `backfill-plan` are read-only. A prepared manifest is
+bound to the project, current revision, domain digest, file hashes, immutable UUIDv4 identities,
+and an exact approval token. Apply routes refuse stale state, foreign identity, graph cycles,
+missing evidence, missing result propagation, ambiguous history, or token drift. Historical
+backfill is an overlay and never rewrites its source artifact. See the
+[universal closed-loop contract](universal-closed-loop-outcome-reconciliation.md).
+
+Campaign lifecycle completion and outcome reconciliation are intentionally separate transactions.
+After guarded campaign completion, `campaign-result-plan` prepares the terminal local result and
+its upward propagation; generic `apply` records it. If apply fails, `audit` leaves the terminal
+campaign visibly unreconciled for recovery. `direct-plan` stores a compact SQLite origin capsule
+and does not require a planning artifact.
+`transition-plan` refuses a satisfied parent unless every named supporting cycle is terminal,
+reconciled, satisfactory, and explicitly propagated to that parent. `transition-apply` appends the
+new verdict and comparison revision instead of rewriting historical decisions.
+
+The preserved HPT2 compatibility and qualification surface is:
 
 ```text
 python3 scripts/outcome_reconciliation.py --workspace . apply --project-binding <binding>

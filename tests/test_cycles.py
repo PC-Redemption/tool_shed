@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -11,7 +12,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import campaign_queue  # noqa: E402
+import hybrid_state  # noqa: E402
+import outcome_loop  # noqa: E402
 import program_roadmap  # noqa: E402
+from project_identity import binding_token  # noqa: E402
 from tests.test_scripts import run_script  # noqa: E402
 
 
@@ -326,6 +330,69 @@ class CycleStateTests(unittest.TestCase):
             self.assertEqual(complete["owning_cycle"], "program")
             self.assertEqual(complete["next_transition"]["command"], "none")
             self.assertIn("all roadmap milestones", complete["next_transition"]["reason"])
+
+    def test_governed_roadmap_cannot_complete_while_root_outcome_is_open(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary)
+            subprocess.run(["git", "init", "--quiet", str(workspace)], check=True)
+            self.install(workspace)
+            self.campaign_record(
+                workspace, number="001", campaign_id="finish-m1", milestone="M1", unlocks_gate="G1"
+            )
+            self.campaign_record(
+                workspace, number="002", campaign_id="finish-m2", milestone="M2", unlocks_gate="G2"
+            )
+            roadmap = self.write_roadmap(workspace)
+            ungoverned = program_roadmap.roadmap_payload(workspace, roadmap)
+            self.assertTrue(ungoverned["lifecycle_program_complete"])
+            self.assertTrue(ungoverned["program_complete"])
+
+            binding = binding_token(workspace, operation="hybrid-state")
+            (workspace / ".gitignore").write_text("/.tool-shed/\n", encoding="utf-8")
+            hybrid_state.initialize(workspace, project_binding=binding)
+            origin = workspace / "work/ideas/idea-governed-demo.md"
+            origin.parent.mkdir(parents=True, exist_ok=True)
+            origin.write_text("# Governed demo\n", encoding="utf-8")
+            source = {
+                "schema_version": 1,
+                "kind": outcome_loop.SOURCE_KIND,
+                "project_id": json.loads(
+                    (workspace / "work/tool-shed-project.json").read_text(encoding="utf-8")
+                )["project_id"],
+                "authorization_ref": "fixture approved roadmap",
+                "ambiguities": [],
+                "cycle": {
+                    "kind": "idea",
+                    "origin": {"path": "work/ideas/idea-governed-demo.md"},
+                    "accepted_outcome": "The governed roadmap outcome is reconciled.",
+                    "lifecycle_state": "working"
+                },
+                "product_truth": [{"key": "roadmap", "path": roadmap.path.relative_to(workspace).as_posix()}],
+                "requirements": [],
+                "changes": [],
+                "evidence": [],
+                "verifications": [],
+                "relationships": [],
+                "verdict": {"scope": "initiative", "disposition": "open", "summary": "Outcome remains open."},
+                "reconciliation": {"state": "open", "residual_work": ["final reconciliation"]}
+            }
+            source_path = workspace / ".tool-shed/governed-source.json"
+            source_path.write_text(json.dumps(source, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            manifest = outcome_loop.prepare(workspace, source_path)
+            outcome_loop.apply_manifest(
+                workspace,
+                manifest,
+                expected_token=manifest["manifest_token"],
+                project_binding=binding,
+            )
+            governed = program_roadmap.roadmap_payload(workspace, roadmap)
+            self.assertTrue(governed["lifecycle_program_complete"])
+            self.assertFalse(governed["program_complete"])
+            self.assertTrue(governed["outcome_state"]["governed"])
+            self.assertEqual(
+                governed["outcome_state"]["nearest_open_owning_loop"]["cycle_id"],
+                manifest["cycle"]["id"],
+            )
 
 
 if __name__ == "__main__":

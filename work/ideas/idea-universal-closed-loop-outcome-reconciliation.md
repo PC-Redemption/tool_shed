@@ -1,10 +1,10 @@
 # Idea Brief: Universal Closed-Loop Outcome Reconciliation
 
-Status: exploring
+Status: promoted
 Type: idea-brief
 Updated: 2026-08-28
-Next Action: continue brainstorming or promote this brief with `ts: prm idea <idea-id-or-path>`
-Produces:
+Next Action: use the approved project-map direction and Program Roadmap for delivery
+Produces: work/maps/map-universal-closed-loop-outcome-reconciliation.md
 
 ## Current Synthesis
 

@@ -487,6 +487,88 @@ def managed_write(
         }
 
 
+def reconcile_unmanaged(
+    workspace: Path,
+    *,
+    project_binding: str,
+    expected_revision: int,
+    expected_domain_digest: str,
+    authorization_ref: str,
+    summary: str,
+    path: Path | None = None,
+) -> dict[str, Any]:
+    """Explicitly accept exact detected direct-SQL state before checkpointing it."""
+    workspace = resolved_workspace(workspace)
+    require_project_binding(workspace, project_binding, operation=OPERATION)
+    if len(expected_domain_digest) != 64 or not re.fullmatch(r"[0-9a-f]{64}", expected_domain_digest):
+        raise HybridStateError("expected domain digest must be lowercase SHA-256")
+    if not authorization_ref.strip() or not summary.strip():
+        raise HybridStateError("unmanaged reconciliation requires authorization and summary")
+    target = require_path_within(workspace, path or database_path(workspace))
+    with WorkspaceLock(lock_path(workspace)), contextlib.closing(connect(target)) as connection:
+        entrance = audit_connection(workspace, connection)
+        if entrance["classification"] != "UNMANAGED_REVIEW":
+            raise HybridStateError(
+                f"unmanaged reconciliation requires UNMANAGED_REVIEW, found {entrance['classification']}"
+            )
+        if entrance["current_revision"] != expected_revision:
+            raise HybridStateError("unmanaged reconciliation expected_revision is stale")
+        if entrance["domain_digest"] != expected_domain_digest:
+            raise HybridStateError("unmanaged reconciliation domain digest is stale")
+        operation_id = random_uuid()
+        revision = expected_revision + 1
+        stamp = now()
+        try:
+            connection.execute("BEGIN IMMEDIATE")
+            connection.execute(
+                "INSERT INTO managed_operation VALUES (?, ?, 'reconcile-unmanaged-sql', ?, ?, ?, 0, 0, 'complete')",
+                (operation_id, revision, authorization_ref, stamp, stamp),
+            )
+            connection.execute(
+                "INSERT INTO event VALUES (?, ?, ?, 'unmanaged-reconciled', 'workspace', ?, ?, ?)",
+                (
+                    random_uuid(), revision, operation_id,
+                    str(meta_row(connection)["workspace_id"]),
+                    json.dumps(
+                        {
+                            "authorization_ref": authorization_ref,
+                            "summary": summary,
+                            "accepted_domain_digest": expected_domain_digest,
+                            "unmanaged_revision": expected_revision,
+                            "checkpoint_required": True,
+                        },
+                        sort_keys=True,
+                    ),
+                    stamp,
+                ),
+            )
+            connection.execute(
+                "UPDATE state_meta SET current_revision = ?, last_verified_revision = ?, "
+                "source_digest = ?, unmanaged_write_detected = 0, dirty = 1, checkpoint_pending = 1 "
+                "WHERE id = 1",
+                (revision, revision, expected_domain_digest),
+            )
+            connection.commit()
+        except BaseException:
+            connection.rollback()
+            raise
+        result = audit_connection(workspace, connection)
+        if result["classification"] not in {"VALID_DIRTY", "CHECKPOINT_DUE"}:
+            raise HybridStateError(
+                f"unmanaged reconciliation left unexpected state: {result['classification']}"
+            )
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "kind": "tool-shed-unmanaged-state-reconciliation",
+            "operation_id": operation_id,
+            "revision": revision,
+            "accepted_domain_digest": expected_domain_digest,
+            "checkpoint_required": True,
+            "audit": result,
+            "writes_performed": True,
+        }
+
+
 def tracked_state(workspace: Path, relative: str) -> str:
     tracked = subprocess.run(
         ["git", "ls-files", "--error-unmatch", "--", relative],
@@ -1090,6 +1172,15 @@ def build_parser() -> argparse.ArgumentParser:
     rebuild_parser.add_argument("--checkpoint", required=True)
     rebuild_parser.add_argument("--output", required=True)
 
+    reconcile_parser = commands.add_parser(
+        "reconcile-unmanaged", help="accept exact detected direct-SQL state for checkpointing"
+    )
+    reconcile_parser.add_argument("--project-binding", required=True)
+    reconcile_parser.add_argument("--expect-revision", required=True, type=int)
+    reconcile_parser.add_argument("--expect-domain-digest", required=True)
+    reconcile_parser.add_argument("--authorization", required=True)
+    reconcile_parser.add_argument("--summary", required=True)
+
     legacy_parser = commands.add_parser("legacy-check", help="check whether a legacy file writer owns one field")
     legacy_parser.add_argument("--field", required=True)
     legacy_parser.add_argument("--database")
@@ -1153,6 +1244,15 @@ def main(argv: Sequence[str] | None = None) -> int:
                 project_binding=args.project_binding,
                 checkpoint=Path(args.checkpoint),
                 output=Path(args.output),
+            )
+        elif args.command == "reconcile-unmanaged":
+            result = reconcile_unmanaged(
+                workspace,
+                project_binding=args.project_binding,
+                expected_revision=args.expect_revision,
+                expected_domain_digest=args.expect_domain_digest,
+                authorization_ref=args.authorization,
+                summary=args.summary,
             )
         else:
             supplied = Path(args.database) if args.database else None

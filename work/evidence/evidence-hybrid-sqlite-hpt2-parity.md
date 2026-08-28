@@ -58,3 +58,10 @@ The tests prove:
 Every database used by this evidence was inside a disposable Git workspace. The canonical
 maintainer has no live `.tool-shed/state.sqlite3`, and no file authority, campaign/roadmap authority,
 deployment, release, installed skill, or client was changed.
+# 2026-08-28 Universal G4 parity refresh
+
+After `CHG-HYBRID-016` added the exact authorized direct-SQL reconciliation route, the bootstrap
+projection was synchronized at revisions 45-46. The read-only HPT2 qualifier then reported
+`bootstrap_parity: true`, `operation_parity: true`, and parity for all eight operations. HPT2
+remains truthfully partial because its unavailable original history is not reconstructed or
+invented.

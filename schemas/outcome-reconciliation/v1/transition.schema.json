@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tool-shed.local/schemas/outcome-reconciliation/v1/transition.schema.json",
+  "title": "Tool Shed outcome transition manifest v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "project_id",
+    "expected_revision",
+    "expected_domain_digest",
+    "cycle_id",
+    "origin_artifact_id",
+    "lifecycle_state",
+    "closed_at",
+    "verdict",
+    "reconciliation",
+    "supporting_cycle_ids",
+    "manifest_token"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "kind": {"const": "tool-shed-outcome-transition-manifest"},
+    "project_id": {"type": "string", "format": "uuid"},
+    "expected_revision": {"type": "integer", "minimum": 0},
+    "expected_domain_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "prepared_at": {"type": "string"},
+    "cycle_id": {"type": "string", "format": "uuid"},
+    "origin_artifact_id": {"type": "string", "format": "uuid"},
+    "lifecycle_state": {"const": "terminal"},
+    "closed_at": {"type": "string"},
+    "verdict": {"type": "object"},
+    "reconciliation": {"type": "object"},
+    "supporting_cycle_ids": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "format": "uuid"}
+    },
+    "manifest_token": {"type": "string", "pattern": "^[0-9a-f]{16}$"}
+  },
+  "additionalProperties": false
+}

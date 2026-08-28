@@ -6,6 +6,8 @@ Updated: 2026-08-28
 
 ## Orientation
 
+Lifecycle status in this index is file-authoritative. Outcome verdict and reconciliation are independent SQLite state after Hybrid cutover; query `scripts/outcome_reconciliation.py audit` or use `ts: status`, `ts: next`, and `ts: overview` for the current owning outcome.
+
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
 | [work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md](work/00-campaigns/abandoned/019-guarded-fleet-snapshot-update.md) | campaign | abandoned | 2026-08-17 | none | - |
@@ -21,6 +23,7 @@ Updated: 2026-08-28
 | [work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
 | [work/00-campaigns/abandoned/096-publish-and-synchronize-passive-app-server-dogfooding.md](work/00-campaigns/abandoned/096-publish-and-synchronize-passive-app-server-dogfooding.md) | campaign | abandoned | 2026-08-27 | none | - |
 | [work/00-campaigns/abandoned/097-field-dogfood-passive-app-server-mode.md](work/00-campaigns/abandoned/097-field-dogfood-passive-app-server-mode.md) | campaign | abandoned | 2026-08-27 | none | - |
+| [work/00-campaigns/active/112-qualify-universal-reconciliation-backfill-and-recovery.md](work/00-campaigns/active/112-qualify-universal-reconciliation-backfill-and-recovery.md) | campaign | working | 2026-08-28 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -114,6 +117,9 @@ Updated: 2026-08-28
 | [work/00-campaigns/completed/106-rehearse-and-convert-maintainer-to-hybrid-state.md](work/00-campaigns/completed/106-rehearse-and-convert-maintainer-to-hybrid-state.md) | campaign | complete | 2026-08-28 | none | - |
 | [work/00-campaigns/completed/107-publish-hybrid-state-release-and-sync-maintainer-skill.md](work/00-campaigns/completed/107-publish-hybrid-state-release-and-sync-maintainer-skill.md) | campaign | complete | 2026-08-28 | none | - |
 | [work/00-campaigns/completed/108-qualify-disconnected-hybrid-production-canary.md](work/00-campaigns/completed/108-qualify-disconnected-hybrid-production-canary.md) | campaign | complete | 2026-08-28 | none | - |
+| [work/00-campaigns/completed/109-freeze-universal-closed-loop-contract-and-bootstrap.md](work/00-campaigns/completed/109-freeze-universal-closed-loop-contract-and-bootstrap.md) | campaign | complete | 2026-08-28 | none | - |
+| [work/00-campaigns/completed/110-implement-generic-outcome-reconciliation-engine.md](work/00-campaigns/completed/110-implement-generic-outcome-reconciliation-engine.md) | campaign | complete | 2026-08-28 | none | - |
+| [work/00-campaigns/completed/111-integrate-closed-loop-owning-state-across-tool-shed.md](work/00-campaigns/completed/111-integrate-closed-loop-owning-state-across-tool-shed.md) | campaign | complete | 2026-08-28 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -177,6 +183,10 @@ Updated: 2026-08-28
 | [work/evidence/evidence-tool-shed-v0-29-9-release-sync-core-upgrade.md](work/evidence/evidence-tool-shed-v0-29-9-release-sync-core-upgrade.md) | evidence | complete | 2026-08-26 | use the released one-command App Server path for the next appropriate Core campaign | - |
 | [work/evidence/evidence-tool-shed-v0-30-0-release-and-maintainer-sync.md](work/evidence/evidence-tool-shed-v0-30-0-release-and-maintainer-sync.md) | evidence | complete | 2026-08-27 | none | work/maps/map-passive-app-server-dogfooding.md |
 | [work/evidence/evidence-tool-shed-v0-34-0-release-and-maintainer-sync.md](work/evidence/evidence-tool-shed-v0-34-0-release-and-maintainer-sync.md) | evidence | complete | 2026-08-28 | - | - |
+| [work/evidence/evidence-universal-closed-loop-g1-contract.md](work/evidence/evidence-universal-closed-loop-g1-contract.md) | evidence | passed | 2026-08-28 | - | - |
+| [work/evidence/evidence-universal-closed-loop-g2-engine.md](work/evidence/evidence-universal-closed-loop-g2-engine.md) | - | passed | - | - | - |
+| [work/evidence/evidence-universal-closed-loop-g3-integration.md](work/evidence/evidence-universal-closed-loop-g3-integration.md) | - | passed | - | - | - |
+| [work/evidence/evidence-universal-closed-loop-g4-recovery.md](work/evidence/evidence-universal-closed-loop-g4-recovery.md) | - | passed (local candidate); gate remains open for exact-candidate CI | - | - | - |
 | [work/evidence/evidence-w1-dev-smb-access.md](work/evidence/evidence-w1-dev-smb-access.md) | evidence | complete | 2026-08-24 | none | - |
 | [work/evidence/evidence-windows-console-sandbox-verification-v0-29-4.md](work/evidence/evidence-windows-console-sandbox-verification-v0-29-4.md) | - | - | - | - | - |
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |
@@ -186,7 +196,7 @@ Updated: 2026-08-28
 | [work/ideas/idea-passive-app-server-dogfooding-mode.md](work/ideas/idea-passive-app-server-dogfooding-mode.md) | idea-brief | promoted | 2026-08-27 | none; superseded by operator-trust CAMP runtime enforcement | - |
 | [work/ideas/idea-persistent-autonomy-levels.md](work/ideas/idea-persistent-autonomy-levels.md) | idea-brief | promoted | 2026-08-27 | use the approved revised project-map direction to propose Program Roadmap revision 2 | - |
 | [work/ideas/idea-sqlite-backed-tool-shed-operational-state.md](work/ideas/idea-sqlite-backed-tool-shed-operational-state.md) | idea-brief | promoted | 2026-08-28 | use the approved project map and Program Roadmap for staged delivery | - |
-| [work/ideas/idea-universal-closed-loop-outcome-reconciliation.md](work/ideas/idea-universal-closed-loop-outcome-reconciliation.md) | idea-brief | exploring | 2026-08-28 | continue brainstorming or promote this brief with `ts: prm idea <idea-id-or-path>` | - |
+| [work/ideas/idea-universal-closed-loop-outcome-reconciliation.md](work/ideas/idea-universal-closed-loop-outcome-reconciliation.md) | idea-brief | promoted | 2026-08-28 | use the approved project-map direction and Program Roadmap for delivery | - |
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
 | [work/maps/map-disposable-completion-watchers-and-hosted-notifications.md](work/maps/map-disposable-completion-watchers-and-hosted-notifications.md) | project-map | deferred | 2026-08-18 | preserve the completed local watcher and wait for a concrete external/non-App-Server notification need before revisiting hosted work | - |
@@ -197,6 +207,7 @@ Updated: 2026-08-28
 | [work/maps/map-persistent-autonomy-levels.md](work/maps/map-persistent-autonomy-levels.md) | project-map | approved | 2026-08-27 | develop an exact Program Roadmap proposal | - |
 | [work/maps/map-tool-shed-evolution.md](work/maps/map-tool-shed-evolution.md) | project-map | complete | 2026-08-20 | none | - |
 | [work/maps/map-tool-shed-foundation.md](work/maps/map-tool-shed-foundation.md) | project-map | complete | 2026-07-05 | none | - |
+| [work/maps/map-universal-closed-loop-outcome-reconciliation.md](work/maps/map-universal-closed-loop-outcome-reconciliation.md) | project-map | approved | 2026-08-28 | develop an exact Program Roadmap proposal | - |
 | [work/maps/map-validation-consolidation.md](work/maps/map-validation-consolidation.md) | project-map | complete | 2026-08-27 | none; the work1 outcome is complete | - |
 | [work/roadmaps/roadmap-completion-watcher-program-r2.md](work/roadmaps/roadmap-completion-watcher-program-r2.md) | program-roadmap | approved | 2026-08-20 | derive campaigns for milestone M1-CONTRACT | none |
 | [work/roadmaps/roadmap-completion-watcher-program.md](work/roadmaps/roadmap-completion-watcher-program.md) | program-roadmap | superseded | 2026-08-20 | none | work/roadmaps/roadmap-completion-watcher-program-r2.md |
@@ -214,6 +225,7 @@ Updated: 2026-08-28
 | [work/roadmaps/roadmap-passive-app-server-dogfooding.md](work/roadmaps/roadmap-passive-app-server-dogfooding.md) | program-roadmap | superseded | 2026-08-27 | none | work/roadmaps/roadmap-operator-trust-camp-runtime-enforcement.md |
 | [work/roadmaps/roadmap-persistent-autonomy-levels-r2.md](work/roadmaps/roadmap-persistent-autonomy-levels-r2.md) | program-roadmap | executing | 2026-08-27 | execute the first ready roadmap campaign through ts: next | none |
 | [work/roadmaps/roadmap-persistent-autonomy-levels.md](work/roadmaps/roadmap-persistent-autonomy-levels.md) | program-roadmap | superseded | 2026-08-27 | none | work/roadmaps/roadmap-persistent-autonomy-levels-r2.md |
+| [work/roadmaps/roadmap-universal-closed-loop-outcome-reconciliation.md](work/roadmaps/roadmap-universal-closed-loop-outcome-reconciliation.md) | program-roadmap | executing | 2026-08-28 | execute the first ready roadmap campaign through ts: next | none |
 | [work/roadmaps/roadmap-validation-consolidation-r2.md](work/roadmaps/roadmap-validation-consolidation-r2.md) | program-roadmap | executing | 2026-08-27 | execute the first ready roadmap campaign through ts: next | none |
 | [work/roadmaps/roadmap-validation-consolidation.md](work/roadmaps/roadmap-validation-consolidation.md) | program-roadmap | superseded | 2026-08-27 | none | work/roadmaps/roadmap-validation-consolidation-r2.md |
 | [work/spikes/spike-completion-watcher-protocol-and-failure-model.md](work/spikes/spike-completion-watcher-protocol-and-failure-model.md) | spike | complete | 2026-08-18 | none | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -246,6 +258,6 @@ Updated: 2026-08-28
 
 ## Summary
 
-- Total artifacts: 229
+- Total artifacts: 239
 - Active artifacts: 1
-- Completed/decided artifacts: 165
+- Completed/decided artifacts: 169

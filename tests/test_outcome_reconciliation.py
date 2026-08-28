@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import hashlib
+import contextlib
+import io
 import json
 import shutil
 import subprocess
@@ -17,6 +19,7 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 import hybrid_state
+import outcome_loop
 import outcome_reconciliation
 
 
@@ -81,6 +84,94 @@ class OutcomeReconciliationTests(unittest.TestCase):
         return outcome_reconciliation.apply_hpt2(
             self.workspace, project_binding=self.binding
         )
+
+    def generic_source(self, *, mode: str = "current", ambiguities: list[str] | None = None) -> Path:
+        (self.workspace / "origin.md").write_text("# Accepted origin\n", encoding="utf-8")
+        (self.workspace / "product.py").write_text("RESULT = 'qualified'\n", encoding="utf-8")
+        parent_id = json.loads(
+            (self.workspace / outcome_reconciliation.DEFAULT_IDS).read_text(encoding="utf-8")
+        )["ids"]["artifact"]["closed-loop-idea"]
+        source = {
+            "schema_version": 1,
+            "kind": outcome_loop.SOURCE_KIND,
+            "mode": mode,
+            "project_id": self.project_id,
+            "authorization_ref": "fixture approval",
+            "ambiguities": ambiguities or [],
+            "cycle": {
+                "kind": "idea",
+                "origin": {"path": "origin.md", "type": "markdown"},
+                "accepted_outcome": "Deliver and prove the qualified result.",
+                "lifecycle_state": "terminal",
+                "opened_at": "2026-08-28T18:00:00Z",
+                "closed_at": "2026-08-28T19:00:00Z"
+            },
+            "product_truth": [{"key": "product", "path": "product.py", "type": "python"}],
+            "requirements": [{
+                "key": "qualified-result",
+                "accepted_outcome": "The result is qualified.",
+                "disposition": "accepted",
+                "milestone_key": "M1",
+                "evidence_gate_key": "G1"
+            }],
+            "changes": [{
+                "key": "authorized-change",
+                "requirement_key": "qualified-result",
+                "summary": "Use the qualified implementation.",
+                "rationale": "It satisfies the accepted outcome.",
+                "authorization_ref": "fixture approval",
+                "evidence_rerun": ["focused-test"]
+            }],
+            "evidence": [{
+                "key": "focused-test",
+                "kind": "test",
+                "reference": "product.py",
+                "target_identity": "fixture-product"
+            }],
+            "verifications": [{
+                "key": "focused-test-result",
+                "evidence_key": "focused-test",
+                "requirement_key": "qualified-result",
+                "status": "passed",
+                "command_or_test_id": "python-product-test",
+                "verified_at": "2026-08-28T19:00:00Z"
+            }],
+            "relationships": [
+                {
+                    "key": "product-evidence",
+                    "from_artifact_key": "origin",
+                    "to_artifact_key": "product",
+                    "relation_type": "evidenced-by"
+                },
+                {
+                    "key": "parent",
+                    "from_artifact_key": "origin",
+                    "to_artifact_id": parent_id,
+                    "relation_type": "outcome-parent"
+                },
+                {
+                    "key": "propagation",
+                    "from_artifact_key": "origin",
+                    "to_artifact_id": parent_id,
+                    "relation_type": "outcome-result-propagated"
+                }
+            ],
+            "verdict": {
+                "scope": "initiative",
+                "disposition": "satisfied",
+                "summary": "Accepted outcome and current product truth agree.",
+                "authorization_ref": "fixture approval",
+                "decided_at": "2026-08-28T19:00:00Z"
+            },
+            "reconciliation": {
+                "state": "reconciled",
+                "compared_at": "2026-08-28T19:00:00Z",
+                "residual_work": []
+            }
+        }
+        path = self.workspace / "source.json"
+        path.write_text(json.dumps(source, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        return path
 
     def test_hpt2_import_preserves_unknown_history_and_bootstrap_parity(self) -> None:
         source_bytes = {
@@ -196,6 +287,368 @@ class OutcomeReconciliationTests(unittest.TestCase):
             outcome_reconciliation.ReconciliationError, "belongs to another"
         ):
             outcome_reconciliation.load_sources(self.workspace)
+
+    def test_generic_prepare_validate_apply_audit_report_and_as_of(self) -> None:
+        imported = self.apply_slice()
+        manifest = outcome_loop.prepare(self.workspace, self.generic_source())
+        validation = outcome_loop.validate_manifest(self.workspace, manifest)
+        self.assertTrue(validation["valid"])
+        self.assertTrue(validation["applicable"])
+        applied = outcome_loop.apply_manifest(
+            self.workspace,
+            manifest,
+            expected_token=manifest["manifest_token"],
+            project_binding=self.binding,
+        )
+        self.assertEqual(applied["result"]["verdict"], "satisfied")
+        self.assertGreater(applied["revision"], imported["revision"])
+        audit = outcome_loop.audit_loops(self.workspace)
+        self.assertEqual(audit["unpropagated"], [])
+        report = outcome_loop.report_cycle(self.workspace, manifest["cycle"]["id"])
+        self.assertEqual(report["verdict"]["disposition"], "satisfied")
+        self.assertEqual(len(report["requirements"]), 1)
+        before = outcome_loop.report_cycle(
+            self.workspace, manifest["cycle"]["id"], as_of=applied["revision"] - 1
+        )
+        self.assertIsNone(before["verdict"])
+        self.assertIsNone(before["cycle"])
+        self.assertEqual(before["later_overlays"][0]["origin_revision"], applied["revision"])
+
+    def test_generic_apply_refuses_stale_token_and_state(self) -> None:
+        self.apply_slice()
+        manifest = outcome_loop.prepare(self.workspace, self.generic_source())
+        with self.assertRaisesRegex(outcome_loop.OutcomeLoopError, "approved manifest token"):
+            outcome_loop.apply_manifest(
+                self.workspace,
+                manifest,
+                expected_token="0" * 16,
+                project_binding=self.binding,
+            )
+        outcome_reconciliation.apply_bounded_mutation(
+            self.workspace, project_binding=self.binding
+        )
+        validation = outcome_loop.validate_manifest(self.workspace, manifest)
+        self.assertFalse(validation["valid"])
+        self.assertIn("manifest expected_revision is stale", validation["errors"])
+
+    def test_historical_backfill_preserves_and_refuses_ambiguity(self) -> None:
+        self.apply_slice()
+        manifest = outcome_loop.prepare(
+            self.workspace,
+            self.generic_source(mode="historical-overlay", ambiguities=["acceptance record missing"]),
+            mode="historical-overlay",
+        )
+        validation = outcome_loop.validate_manifest(self.workspace, manifest)
+        self.assertTrue(validation["valid"])
+        self.assertFalse(validation["applicable"])
+        with self.assertRaisesRegex(outcome_loop.OutcomeLoopError, "unresolved ambiguities"):
+            outcome_loop.apply_manifest(
+                self.workspace,
+                manifest,
+                expected_token=manifest["manifest_token"],
+                project_binding=self.binding,
+                backfill=True,
+            )
+
+    def test_terminal_child_requires_explicit_result_propagation(self) -> None:
+        self.apply_slice()
+        manifest = outcome_loop.prepare(self.workspace, self.generic_source())
+        manifest["relationships"] = [
+            item for item in manifest["relationships"]
+            if item["relation_type"] != "outcome-result-propagated"
+        ]
+        manifest["manifest_token"] = outcome_loop.token(manifest)
+        validation = outcome_loop.validate_manifest(self.workspace, manifest)
+        self.assertFalse(validation["valid"])
+        self.assertIn(
+            "terminal reconciled child lacks outcome-result-propagated relationship",
+            validation["errors"],
+        )
+
+    def test_all_supported_entry_classes_prepare_and_validate(self) -> None:
+        self.apply_slice()
+        source_path = self.generic_source()
+        for entry_class in sorted(outcome_loop.SUPPORTED_ORIGIN_KINDS):
+            source = json.loads(source_path.read_text(encoding="utf-8"))
+            source["cycle"]["kind"] = entry_class
+            source_path.write_text(json.dumps(source, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            manifest = outcome_loop.prepare(self.workspace, source_path)
+            self.assertTrue(
+                outcome_loop.validate_manifest(self.workspace, manifest)["valid"], entry_class
+            )
+
+    def test_generic_checkpoint_rebuild_preserves_domain_and_cycle_report(self) -> None:
+        self.apply_slice()
+        manifest = outcome_loop.prepare(self.workspace, self.generic_source())
+        outcome_loop.apply_manifest(
+            self.workspace,
+            manifest,
+            expected_token=manifest["manifest_token"],
+            project_binding=self.binding,
+        )
+        expected_report = outcome_loop.report_cycle(self.workspace, manifest["cycle"]["id"])
+        checkpoint = hybrid_state.write_checkpoint(self.workspace, project_binding=self.binding)
+        rebuilt = hybrid_state.rebuild_from_checkpoint(
+            self.workspace,
+            project_binding=self.binding,
+            checkpoint=Path(checkpoint["path"]),
+            output=Path(".tool-shed/generic-rebuilt.sqlite3"),
+        )
+        self.assertEqual(rebuilt["domain_digest"], hybrid_state.audit(self.workspace)["domain_digest"])
+        connection = hybrid_state.connect(self.workspace / ".tool-shed/generic-rebuilt.sqlite3", writable=False)
+        try:
+            row = connection.execute(
+                "SELECT accepted_outcome FROM cycle WHERE id = ?", (manifest["cycle"]["id"],)
+            ).fetchone()
+        finally:
+            connection.close()
+        self.assertEqual(row["accepted_outcome"], expected_report["cycle"]["accepted_outcome"])
+
+    def test_unambiguous_historical_backfill_applies_exact_manifest(self) -> None:
+        self.apply_slice()
+        manifest = outcome_loop.prepare(
+            self.workspace, self.generic_source(mode="historical-overlay"), mode="historical-overlay"
+        )
+        applied = outcome_loop.apply_manifest(
+            self.workspace,
+            manifest,
+            expected_token=manifest["manifest_token"],
+            project_binding=self.binding,
+            backfill=True,
+        )
+        self.assertEqual(applied["result"]["mode"], "historical-overlay")
+
+    def test_generic_foreign_project_identity_fails_closed(self) -> None:
+        self.apply_slice()
+        manifest = outcome_loop.prepare(self.workspace, self.generic_source())
+        manifest["project_id"] = str(uuid.uuid4())
+        manifest["manifest_token"] = outcome_loop.token(manifest)
+        validation = outcome_loop.validate_manifest(self.workspace, manifest)
+        self.assertFalse(validation["valid"])
+        self.assertIn("manifest belongs to another Tool Shed project", validation["errors"])
+
+    def test_outcome_parent_graph_cycle_fails_closed(self) -> None:
+        self.apply_slice()
+        manifest = outcome_loop.prepare(self.workspace, self.generic_source())
+        origin = manifest["cycle"]["origin_artifact_id"]
+        product = next(item["id"] for item in manifest["artifacts"] if item["key"] == "product")
+        manifest["relationships"].extend(
+            [
+                {
+                    "key": "cycle-forward",
+                    "id": str(uuid.uuid4()),
+                    "from_artifact_id": origin,
+                    "relation_type": "outcome-parent",
+                    "to_artifact_id": product,
+                    "provenance": "fixture"
+                },
+                {
+                    "key": "cycle-forward-result",
+                    "id": str(uuid.uuid4()),
+                    "from_artifact_id": origin,
+                    "relation_type": "outcome-result-propagated",
+                    "to_artifact_id": product,
+                    "provenance": "fixture"
+                },
+                {
+                    "key": "cycle-reverse",
+                    "id": str(uuid.uuid4()),
+                    "from_artifact_id": product,
+                    "relation_type": "outcome-parent",
+                    "to_artifact_id": origin,
+                    "provenance": "fixture"
+                },
+                {
+                    "key": "cycle-reverse-result",
+                    "id": str(uuid.uuid4()),
+                    "from_artifact_id": product,
+                    "relation_type": "outcome-result-propagated",
+                    "to_artifact_id": origin,
+                    "provenance": "fixture"
+                }
+            ]
+        )
+        manifest["manifest_token"] = outcome_loop.token(manifest)
+        validation = outcome_loop.validate_manifest(self.workspace, manifest)
+        self.assertFalse(validation["valid"])
+        self.assertIn("outcome-parent graph contains a cycle", validation["errors"])
+
+    def test_generic_cli_routes_execute_end_to_end(self) -> None:
+        self.apply_slice()
+        source = self.generic_source()
+
+        def invoke(arguments: list[str]) -> tuple[int, dict[str, object]]:
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                code = outcome_reconciliation.main(["--workspace", str(self.workspace), *arguments])
+            return code, json.loads(output.getvalue())
+
+        code, manifest = invoke(["prepare", "--source", str(source)])
+        self.assertEqual(code, 0)
+        manifest_path = self.workspace / "manifest.json"
+        manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        self.assertEqual(invoke(["validate", "--manifest", str(manifest_path)])[0], 0)
+        code, applied = invoke([
+            "apply", "--manifest", str(manifest_path), "--expect", manifest["manifest_token"],
+            "--project-binding", self.binding
+        ])
+        self.assertEqual(code, 0)
+        self.assertEqual(applied["result"]["cycle_id"], manifest["cycle"]["id"])
+        self.assertEqual(invoke(["report", "--cycle", manifest["cycle"]["id"]])[0], 0)
+        self.assertEqual(invoke(["audit"])[1]["finding_count"], 0)
+
+        code, overlay = invoke(["backfill-plan", "--source", str(source)])
+        self.assertEqual(code, 0)
+        overlay_path = self.workspace / "overlay.json"
+        overlay_path.write_text(json.dumps(overlay, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        code, result = invoke([
+            "backfill-apply", "--manifest", str(overlay_path), "--expect", overlay["manifest_token"],
+            "--project-binding", self.binding
+        ])
+        self.assertEqual(code, 0)
+        self.assertEqual(result["result"]["mode"], "historical-overlay")
+
+    def test_campaign_result_plan_records_terminal_local_outcome(self) -> None:
+        self.apply_slice()
+        self.generic_source()
+        campaign = self.workspace / "work/00-campaigns/completed/999-fixture-campaign.md"
+        campaign.parent.mkdir(parents=True, exist_ok=True)
+        campaign.write_text(
+            "# Fixture campaign\n\n"
+            "Status: complete\nType: campaign\nUpdated: 2026-08-28\nNext Action: none\n"
+            "Campaign ID: fixture-campaign\nOutcome: Deliver the qualified result.\n"
+            "Completion Gate: Focused evidence passes.\nCompletion Evidence: product.py passed.\n"
+            "Completion Date: 2026-08-28\nDisposition: completed\n"
+            "Milestone: M1\nUnlocks Gate: G1\n",
+            encoding="utf-8",
+        )
+        manifest = outcome_loop.plan_campaign_result(
+            self.workspace,
+            campaign,
+            product_truth=["product.py"],
+            evidence_paths=["product.py"],
+            disposition="satisfied",
+            authorization_ref="fixture completion approval",
+        )
+        self.assertTrue(outcome_loop.validate_manifest(self.workspace, manifest)["valid"])
+        applied = outcome_loop.apply_manifest(
+            self.workspace,
+            manifest,
+            expected_token=manifest["manifest_token"],
+            project_binding=self.binding,
+        )
+        report = outcome_loop.report_cycle(self.workspace, applied["result"]["cycle_id"])
+        self.assertEqual(report["cycle"]["kind"], "campaign")
+        self.assertEqual(report["verdict"]["disposition"], "satisfied")
+
+    def test_direct_plan_needs_no_planning_artifact(self) -> None:
+        self.apply_slice()
+        self.generic_source()
+        manifest = outcome_loop.plan_direct_result(
+            self.workspace,
+            origin_summary="Apply one bounded durable correction.",
+            accepted_outcome="The correction is present and verified.",
+            product_truth=["product.py"],
+            evidence_paths=["product.py"],
+            disposition="satisfied",
+            authorization_ref="fixture direct-work approval",
+        )
+        self.assertEqual(manifest["mode"], "direct")
+        origin = next(item for item in manifest["artifacts"] if item["key"] == "origin")
+        self.assertEqual(origin["authority_mode"], "sqlite")
+        self.assertTrue(origin["path"].startswith("sqlite/outcome-capsules/"))
+        applied = outcome_loop.apply_manifest(
+            self.workspace,
+            manifest,
+            expected_token=manifest["manifest_token"],
+            project_binding=self.binding,
+        )
+        self.assertEqual(applied["result"]["mode"], "direct")
+
+    def test_global_owning_capsule_reveals_open_root(self) -> None:
+        self.apply_slice()
+        source_path = self.generic_source()
+        source = json.loads(source_path.read_text(encoding="utf-8"))
+        source["cycle"]["lifecycle_state"] = "working"
+        source["cycle"]["closed_at"] = None
+        source["verdict"] = {"scope": "initiative", "disposition": "open", "summary": "Work remains."}
+        source["reconciliation"] = {"state": "open", "residual_work": ["finish work"]}
+        source_path.write_text(json.dumps(source, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        manifest = outcome_loop.prepare(self.workspace, source_path)
+        outcome_loop.apply_manifest(
+            self.workspace,
+            manifest,
+            expected_token=manifest["manifest_token"],
+            project_binding=self.binding,
+        )
+        capsule = outcome_loop.owning_outcome_capsule(self.workspace)
+        self.assertTrue(capsule["governed"])
+        self.assertEqual(
+            capsule["nearest_open_owning_loop"]["cycle_id"], manifest["cycle"]["id"]
+        )
+
+    def test_root_transition_requires_and_consumes_propagated_child_result(self) -> None:
+        self.apply_slice()
+        source_path = self.generic_source()
+        source = json.loads(source_path.read_text(encoding="utf-8"))
+        source["cycle"]["kind"] = "idea"
+        source["cycle"]["lifecycle_state"] = "working"
+        source["cycle"]["closed_at"] = None
+        source["relationships"] = [source["relationships"][0]]
+        source["verdict"] = {"scope": "initiative", "disposition": "open", "summary": "Work remains."}
+        source["reconciliation"] = {"state": "open", "residual_work": ["child result"]}
+        source_path.write_text(json.dumps(source, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        root = outcome_loop.prepare(self.workspace, source_path)
+        outcome_loop.apply_manifest(
+            self.workspace, root, expected_token=root["manifest_token"], project_binding=self.binding
+        )
+
+        source = json.loads(self.generic_source().read_text(encoding="utf-8"))
+        root_origin = root["cycle"]["origin_artifact_id"]
+        (self.workspace / "campaign.md").write_text("# Completed campaign\n", encoding="utf-8")
+        source["cycle"]["origin"] = {"path": "campaign.md", "type": "campaign"}
+        source["cycle"]["kind"] = "campaign"
+        source["relationships"] = [
+            source["relationships"][0],
+            {
+                "key": "parent",
+                "from_artifact_key": "origin",
+                "to_artifact_id": root_origin,
+                "relation_type": "outcome-parent"
+            },
+            {
+                "key": "propagated",
+                "from_artifact_key": "origin",
+                "to_artifact_id": root_origin,
+                "relation_type": "outcome-result-propagated"
+            }
+        ]
+        source_path.write_text(json.dumps(source, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        child = outcome_loop.prepare(self.workspace, source_path)
+        outcome_loop.apply_manifest(
+            self.workspace, child, expected_token=child["manifest_token"], project_binding=self.binding
+        )
+        transition = outcome_loop.prepare_transition(
+            self.workspace,
+            root["cycle"]["id"],
+            lifecycle_state="terminal",
+            disposition="satisfied",
+            reconciliation_state="reconciled",
+            summary="All accepted results propagated.",
+            authorization_ref="fixture final approval",
+            supporting_cycle_ids=[child["cycle"]["id"]],
+        )
+        applied = outcome_loop.apply_transition(
+            self.workspace,
+            transition,
+            expected_token=transition["manifest_token"],
+            project_binding=self.binding,
+        )
+        self.assertEqual(applied["actual_writes"], 3)
+        report = outcome_loop.report_cycle(self.workspace, root["cycle"]["id"])
+        self.assertEqual(report["cycle"]["lifecycle_state"], "terminal")
+        self.assertEqual(report["verdict"]["disposition"], "satisfied")
+        self.assertEqual(report["reconciliation"]["state"], "reconciled")
 
 
 if __name__ == "__main__":

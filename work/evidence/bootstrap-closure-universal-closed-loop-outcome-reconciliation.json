@@ -1,0 +1,708 @@
+{
+  "authority_contract": "docs/universal-closed-loop-outcome-reconciliation.md",
+  "baseline": {
+    "created_at": "1970-01-01T00:00:00Z",
+    "source_commit": "af8c4560f8a8087e7116854a0291e443b1d7d874",
+    "source_digest": "3ed5d1b921ee71fd19d7b84300b23f6bf6b32209b6608dc56b56b3de9e187b95",
+    "updated_at": "2026-08-28T21:30:51Z"
+  },
+  "bindings": [
+    {
+      "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
+      "role": "idea",
+      "sha256": "961786b737bdb679e449584f056033492f4cc351a120a34fe904c0735659bdae"
+    },
+    {
+      "path": "work/maps/map-universal-closed-loop-outcome-reconciliation.md",
+      "role": "project-map",
+      "sha256": "aa14a1fc80c2376006d536f9a52812db23f8bfa41c331495fefc7c11d97a42b2"
+    },
+    {
+      "path": "work/roadmaps/roadmap-universal-closed-loop-outcome-reconciliation.md",
+      "role": "program-roadmap",
+      "sha256": "5709e69cb3e29c3b984daaa9ee2a265ac496a4ef5412e2240bbdbf6618aada94"
+    },
+    {
+      "path": "docs/universal-closed-loop-outcome-reconciliation.md",
+      "role": "authority-contract",
+      "sha256": "bf92f40ad840676dfff2c89b677fb265b2e60e9f30a5b7efd994d6e0f35e150f"
+    },
+    {
+      "path": "scripts/bootstrap_closure.py",
+      "role": "bootstrap-tool",
+      "sha256": "4bca8c8ede481e48bdac3f8e24a05c19d7801d03426f208c7aebd2339f6d9c42"
+    },
+    {
+      "path": "scripts/outcome_reconciliation.py",
+      "role": "existing-vertical-slice",
+      "sha256": "27dc703c80f773a1da8a52a55ea458ab48cb7fdfe9a83309bca27671450b5496"
+    }
+  ],
+  "changes": [
+    {
+      "authorization": "Owner-approved Universal Closed-Loop Program Roadmap; Campaign 110",
+      "decision_ids": [
+        "DEC-CLOSED-002",
+        "DEC-CLOSED-003",
+        "DEC-CLOSED-004",
+        "DEC-CLOSED-005"
+      ],
+      "evidence_to_rerun": [
+        "EVID-CLOSED-G2-ENGINE"
+      ],
+      "id": "CHG-CLOSED-001",
+      "rationale": "Campaign 110 requires one entry-point-neutral guarded engine before lifecycle surfaces can consume closure state.",
+      "recorded_at": "2026-08-28T20:48:02Z",
+      "requirement_ids": [
+        "REQ-CLOSED-004",
+        "REQ-CLOSED-005",
+        "REQ-CLOSED-006"
+      ],
+      "source_commit": "af8c4560f8a8087e7116854a0291e443b1d7d874",
+      "summary": "Implement the schema-v1 generic reconciliation manifest engine and preserve HPT2 compatibility",
+      "supersedes": []
+    },
+    {
+      "authorization": "Owner-approved Universal Closed-Loop Program Roadmap; Campaign 111",
+      "decision_ids": [
+        "DEC-CLOSED-001",
+        "DEC-CLOSED-002",
+        "DEC-CLOSED-004",
+        "DEC-CLOSED-006",
+        "DEC-CLOSED-007"
+      ],
+      "evidence_to_rerun": [
+        "EVID-CLOSED-G3-INTEGRATION"
+      ],
+      "id": "CHG-CLOSED-002",
+      "rationale": "G3 requires terminal activity to remain distinct from reconciled outcomes and for the nearest open owning loop to remain visible without moving file lifecycle authority.",
+      "recorded_at": "2026-08-28T21:10:17Z",
+      "requirement_ids": [
+        "REQ-CLOSED-007",
+        "REQ-CLOSED-008",
+        "REQ-CLOSED-009"
+      ],
+      "source_commit": "af8c4560f8a8087e7116854a0291e443b1d7d874",
+      "summary": "Integrate independent outcome state, result propagation, direct capsules, and guarded root transitions across Tool Shed lifecycle and orientation surfaces",
+      "supersedes": []
+    },
+    {
+      "authorization": "Owner-authorized end-to-end Universal Closed-Loop PRM G4 qualification on 2026-08-28",
+      "decision_ids": [
+        "DEC-CLOSED-003",
+        "DEC-CLOSED-005",
+        "DEC-CLOSED-007"
+      ],
+      "evidence_to_rerun": [
+        "EVID-CLOSED-G4-RECOVERY"
+      ],
+      "id": "CHG-CLOSED-003",
+      "rationale": "G4 qualification found that direct-SQL detection alone left no governed route to retain a deliberately reviewed mutation. The substrate and rehearsal now bind acceptance to the exact review state, revision, digest, project, authorization, and checkpoint, while recovery tests prove backup, rebuild, interruption rollback, ambiguity refusal, and historical queries.",
+      "recorded_at": "2026-08-28T21:22:07Z",
+      "requirement_ids": [
+        "REQ-CLOSED-010",
+        "REQ-CLOSED-011"
+      ],
+      "source_commit": "af8c4560f8a8087e7116854a0291e443b1d7d874",
+      "summary": "Prove exact direct-SQL acceptance and deterministic recovery",
+      "supersedes": []
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-CLOSED-001",
+      "rationale": "Activity completion and outcome realization answer different questions and must remain independently reportable.",
+      "status": "settled",
+      "summary": "Keep lifecycle, outcome verdict, and reconciliation as independent dimensions"
+    },
+    {
+      "id": "DEC-CLOSED-002",
+      "rationale": "A central vocabulary and graph prevent entry-point-specific tools from drifting into incompatible meanings of completion.",
+      "status": "settled",
+      "summary": "Use one entry-point-neutral reconciliation engine"
+    },
+    {
+      "id": "DEC-CLOSED-003",
+      "rationale": "The released hybrid substrate already provides the minimum structured tables, recovery ledger, and checkpoint needed by the universal slice.",
+      "status": "settled",
+      "summary": "Use schema-version-1 hybrid state before proposing schema expansion"
+    },
+    {
+      "id": "DEC-CLOSED-004",
+      "rationale": "Owner-authored narrative benefits from Git review and flexible Markdown, while mutable relational closure state benefits from guarded SQLite transactions.",
+      "status": "settled",
+      "summary": "Preserve the current file and SQLite authority split without dual writes"
+    },
+    {
+      "id": "DEC-CLOSED-005",
+      "rationale": "Later knowledge must not make historical records appear more complete than they were at the time.",
+      "status": "settled",
+      "summary": "Backfill through dated overlays and preserve historical ambiguity"
+    },
+    {
+      "id": "DEC-CLOSED-006",
+      "rationale": "Minimum sufficient coordination requires direct work to remain light while still allowing durable product changes to close explicitly.",
+      "status": "settled",
+      "summary": "Allow compact direct-work closure capsules instead of mandatory artifacts"
+    },
+    {
+      "id": "DEC-CLOSED-007",
+      "rationale": "A feature cannot safely be the sole authority that declares its own correctness during implementation.",
+      "status": "settled",
+      "summary": "Keep an independent file and Git bootstrap closure through final release proof"
+    },
+    {
+      "id": "DEC-CLOSED-008",
+      "rationale": "The released-client canary consumes publication, so publication must be gated by G1 through G4 while G5 and the initiative remain open until the canary reconciles.",
+      "status": "settled",
+      "summary": "Stage publication before the final disconnected-client gate"
+    }
+  ],
+  "evidence": [
+    {
+      "covers_change_ids": [],
+      "gate": "G1-CONTRACT-BOOTSTRAP-FROZEN",
+      "id": "EVID-CLOSED-G1-CONTRACT",
+      "references": [
+        {
+          "path": "work/evidence/evidence-universal-closed-loop-g1-contract.md",
+          "sha256": "97c3270b82e86c9f8c95e6f692dfab56cae20e71cb96984e8d23f367a906c883"
+        },
+        {
+          "path": "docs/universal-closed-loop-outcome-reconciliation.md",
+          "sha256": "bf92f40ad840676dfff2c89b677fb265b2e60e9f30a5b7efd994d6e0f35e150f"
+        },
+        {
+          "path": "work/maps/map-universal-closed-loop-outcome-reconciliation.md",
+          "sha256": "aa14a1fc80c2376006d536f9a52812db23f8bfa41c331495fefc7c11d97a42b2"
+        },
+        {
+          "path": "work/roadmaps/roadmap-universal-closed-loop-outcome-reconciliation.md",
+          "sha256": "5709e69cb3e29c3b984daaa9ee2a265ac496a4ef5412e2240bbdbf6618aada94"
+        },
+        {
+          "path": "scripts/bootstrap_closure.py",
+          "sha256": "4bca8c8ede481e48bdac3f8e24a05c19d7801d03426f208c7aebd2339f6d9c42"
+        },
+        {
+          "path": "tests/test_bootstrap_closure.py",
+          "sha256": "53e6776043ce85e87ec96e087ecce9c2e80e95cc1f429d8599fa5ee4641edac7"
+        }
+      ],
+      "status": "passed",
+      "verified_at": "2026-08-28T21:12:57Z"
+    },
+    {
+      "covers_change_ids": [
+        "CHG-CLOSED-001"
+      ],
+      "gate": "G2-GENERIC-ENGINE-PROVEN",
+      "id": "EVID-CLOSED-G2-ENGINE",
+      "references": [
+        {
+          "path": "work/evidence/evidence-universal-closed-loop-g2-engine.md",
+          "sha256": "c9d9856323274cc442e2fb3aa71f14e1ca425ed67c97bb5c774532fb4e33a818"
+        },
+        {
+          "path": "scripts/outcome_loop.py",
+          "sha256": "370a41b101463a751e586bfb72e7ccfe70bff413c4ea6b28a252fa3494cf1f5f"
+        },
+        {
+          "path": "scripts/outcome_reconciliation.py",
+          "sha256": "27dc703c80f773a1da8a52a55ea458ab48cb7fdfe9a83309bca27671450b5496"
+        },
+        {
+          "path": "schemas/outcome-reconciliation/v1/source.schema.json",
+          "sha256": "025515720e206c9c957232fee9e7b22c649d60bf782eada4c6b979d5c0c13de2"
+        },
+        {
+          "path": "schemas/outcome-reconciliation/v1/manifest.schema.json",
+          "sha256": "481a7eff9ad46e1ad230da9c6d51d13594b01ad7855bcce1b3a9afba15e69cb7"
+        },
+        {
+          "path": "schemas/outcome-reconciliation/v1/transition.schema.json",
+          "sha256": "1764a578b13f2d89e561258c1445c07e16af00eb7008bf422151945b27170d6c"
+        },
+        {
+          "path": "tests/test_outcome_reconciliation.py",
+          "sha256": "7f0ad83c8742582484b9780384f9c2f4394f6c9e03855bea81d888cc8c1bbdd6"
+        },
+        {
+          "path": "docs/universal-closed-loop-outcome-reconciliation.md",
+          "sha256": "bf92f40ad840676dfff2c89b677fb265b2e60e9f30a5b7efd994d6e0f35e150f"
+        },
+        {
+          "path": "docs/commands.md",
+          "sha256": "f8805e11458a6912311222759f5243483b5583a236663713ffebcd9e77d9dcb3"
+        },
+        {
+          "path": "docs/outcome-reconciliation.md",
+          "sha256": "02550e7deb96eb600abdbd52cd732168ae34100d2da1182705d2585e90feedbb"
+        },
+        {
+          "path": "README.md",
+          "sha256": "b12d7b2d63420b6e3fdaaca9d11d1a249efe540663fdb1d3e3398b57a23296ac"
+        }
+      ],
+      "status": "passed",
+      "verified_at": "2026-08-28T21:28:09Z"
+    },
+    {
+      "covers_change_ids": [
+        "CHG-CLOSED-002"
+      ],
+      "gate": "G3-LIFECYCLE-INTEGRATION-PROVEN",
+      "id": "EVID-CLOSED-G3-INTEGRATION",
+      "references": [
+        {
+          "path": "work/evidence/evidence-universal-closed-loop-g3-integration.md",
+          "sha256": "53d5002df162e2aaddc9199903887913e7c00f0bca8ab1c98aef7b7420b93de1"
+        },
+        {
+          "path": "scripts/outcome_loop.py",
+          "sha256": "370a41b101463a751e586bfb72e7ccfe70bff413c4ea6b28a252fa3494cf1f5f"
+        },
+        {
+          "path": "scripts/outcome_reconciliation.py",
+          "sha256": "27dc703c80f773a1da8a52a55ea458ab48cb7fdfe9a83309bca27671450b5496"
+        },
+        {
+          "path": "scripts/program_roadmap.py",
+          "sha256": "f4c8576703aee9f9913214cc5afd816436793d8f585f54ec5de2df725563cdfd"
+        },
+        {
+          "path": "scripts/campaign_queue.py",
+          "sha256": "d903458647faf1454ca6e1d8ca1356b6a99b60da2fa9d707ff79f611b05f7122"
+        },
+        {
+          "path": "scripts/doctor.py",
+          "sha256": "bd1fa50753fdfaf1ccd190851eb18605819962f0463ab1e0c5507f2352563cf0"
+        },
+        {
+          "path": "scripts/review_work_state.py",
+          "sha256": "a99d6dad719d40f627ae2e6e02e2dbf36fc79b32a40202e1743cf87a37549a95"
+        },
+        {
+          "path": "scripts/update_work_index.py",
+          "sha256": "14839e13af13b09103ec2e8a9b204c1ba1e390d05fe42e75a0d24295da7d6c66"
+        },
+        {
+          "path": "schemas/outcome-reconciliation/v1/transition.schema.json",
+          "sha256": "1764a578b13f2d89e561258c1445c07e16af00eb7008bf422151945b27170d6c"
+        },
+        {
+          "path": "tests/test_outcome_reconciliation.py",
+          "sha256": "7f0ad83c8742582484b9780384f9c2f4394f6c9e03855bea81d888cc8c1bbdd6"
+        },
+        {
+          "path": "tests/test_cycles.py",
+          "sha256": "6ca296a16e16cc03ceb693dfff964a496619872eae5ba17b2fe701a24fd6abe4"
+        },
+        {
+          "path": "tests/test_scripts.py",
+          "sha256": "ef76e7b29c4fc6e69e247080a548d1db3c205db50999bf29ec026938824886e5"
+        },
+        {
+          "path": "skills/tool-shed/SKILL.md",
+          "sha256": "9a1435dd67f56a77afbc96478ddf1567b59ad5f3eb486fe05b5924d226dcf1cb"
+        },
+        {
+          "path": "skills/tool-shed/references/campaign-routes.md",
+          "sha256": "69eb19fd1f91e9a5103a2df360e4edf073c490c766b41488cc9ae081c3107a1d"
+        },
+        {
+          "path": "docs/commands.md",
+          "sha256": "f8805e11458a6912311222759f5243483b5583a236663713ffebcd9e77d9dcb3"
+        }
+      ],
+      "status": "passed",
+      "verified_at": "2026-08-28T21:28:16Z"
+    },
+    {
+      "covers_change_ids": [
+        "CHG-CLOSED-003"
+      ],
+      "gate": "G4-RECOVERY-BACKFILL-PROVEN",
+      "id": "EVID-CLOSED-G4-RECOVERY",
+      "references": [
+        {
+          "path": "work/evidence/evidence-universal-closed-loop-g4-recovery.md",
+          "sha256": "b8f0bd4e83e17b984cf2de98f975e7e1ad2054709b33f1b5d869dcdf32ad4d8b"
+        },
+        {
+          "path": "scripts/outcome_loop.py",
+          "sha256": "370a41b101463a751e586bfb72e7ccfe70bff413c4ea6b28a252fa3494cf1f5f"
+        },
+        {
+          "path": "scripts/outcome_reconciliation.py",
+          "sha256": "27dc703c80f773a1da8a52a55ea458ab48cb7fdfe9a83309bca27671450b5496"
+        },
+        {
+          "path": "scripts/hybrid_state.py",
+          "sha256": "65b7aa10424c833666b2fcb8275bd04fc76faf5cfd90c0bd2fe03fc39a08ee73"
+        },
+        {
+          "path": "scripts/maintainer_hybrid_conversion.py",
+          "sha256": "1090daee442522f8ab0895de97251260414b5128531af7d7db45da7dfbf763ea"
+        },
+        {
+          "path": "tests/test_outcome_reconciliation.py",
+          "sha256": "7f0ad83c8742582484b9780384f9c2f4394f6c9e03855bea81d888cc8c1bbdd6"
+        },
+        {
+          "path": "tests/test_hybrid_state.py",
+          "sha256": "6789aab6bbb83a6028ecfb80af302f104b5135fe01967bc9a80b495ec1025adf"
+        },
+        {
+          "path": "tests/test_maintainer_hybrid_conversion.py",
+          "sha256": "22d386467da0e6765ef19779ed763834128be937ecad2a7a3382373e5e9e0b44"
+        },
+        {
+          "path": "tests/test_update_snapshot_protocol4.py",
+          "sha256": "6ccc4d39ee27d449e20e046bad7d413d83262c00080b06d378523304adb0b9ed"
+        },
+        {
+          "path": "docs/universal-closed-loop-outcome-reconciliation.md",
+          "sha256": "bf92f40ad840676dfff2c89b677fb265b2e60e9f30a5b7efd994d6e0f35e150f"
+        },
+        {
+          "path": "docs/hybrid-sqlite-state.md",
+          "sha256": "10e8e15f411eef422d1c7532f89234297a213292e7f023032858c16eb81689ac"
+        },
+        {
+          "path": "work/evidence/evidence-hybrid-sqlite-substrate.md",
+          "sha256": "76b9750c907de00bdf37fdf86e61e225db18cbf50bc0d1aaf58cc8300f5751ce"
+        },
+        {
+          "path": "work/evidence/evidence-hybrid-sqlite-maintainer-conversion.md",
+          "sha256": "77139b360c2f29228b7255abfc0cb4ed87af4a5975687a04c4ae6753f9a0834b"
+        }
+      ],
+      "status": "passed",
+      "verified_at": "2026-08-28T21:30:51Z"
+    },
+    {
+      "covers_change_ids": [],
+      "gate": "G5-RELEASE-CANARY-PROVEN",
+      "id": "EVID-CLOSED-G5-RELEASE",
+      "references": [
+        {
+          "path": "docs/universal-closed-loop-outcome-reconciliation.md",
+          "sha256": "bf92f40ad840676dfff2c89b677fb265b2e60e9f30a5b7efd994d6e0f35e150f"
+        }
+      ],
+      "status": "pending",
+      "verified_at": null
+    },
+    {
+      "covers_change_ids": [],
+      "gate": "G5-RELEASE-CANARY-PROVEN",
+      "id": "EVID-CLOSED-G5-CANARY",
+      "references": [
+        {
+          "path": "docs/universal-closed-loop-outcome-reconciliation.md",
+          "sha256": "bf92f40ad840676dfff2c89b677fb265b2e60e9f30a5b7efd994d6e0f35e150f"
+        }
+      ],
+      "status": "pending",
+      "verified_at": null
+    }
+  ],
+  "initiative": {
+    "id": "universal-closed-loop-outcome-reconciliation",
+    "status": "active",
+    "title": "Universal Closed-Loop Outcome Reconciliation"
+  },
+  "kind": "tool-shed-bootstrap-closure",
+  "migration_items": [
+    {
+      "id": "MIG-CLOSED-HPT2-COMPATIBILITY",
+      "milestone": "M2-GENERIC-ENGINE-PROVEN",
+      "status": "planned",
+      "summary": "Preserve HPT2 apply, sync, mutate, parity, benchmark, and assigned-ID behavior behind the generic engine"
+    },
+    {
+      "id": "MIG-CLOSED-LIFECYCLE-PROJECTIONS",
+      "milestone": "M3-LIFECYCLE-INTEGRATION-PROVEN",
+      "status": "planned",
+      "summary": "Add result and owning-loop projections to file-authoritative lifecycle and orientation surfaces without dual writes"
+    },
+    {
+      "id": "MIG-CLOSED-HISTORICAL-OVERLAYS",
+      "milestone": "M4-RECOVERY-BACKFILL-PROVEN",
+      "status": "planned",
+      "summary": "Qualify deterministic historical overlay planning, refusal, apply, checkpoint rebuild, and rollback"
+    }
+  ],
+  "project": {
+    "project_id": "817b6358-b2f5-48fd-bb66-bd80f936faca"
+  },
+  "release_gate": {
+    "mode": "blocking",
+    "required_milestones": [
+      "M1-CONTRACT-BOOTSTRAP-FROZEN",
+      "M2-GENERIC-ENGINE-PROVEN",
+      "M3-LIFECYCLE-INTEGRATION-PROVEN",
+      "M4-RECOVERY-BACKFILL-PROVEN"
+    ],
+    "required_scopes": [
+      "G1-CONTRACT-BOOTSTRAP-FROZEN",
+      "G2-GENERIC-ENGINE-PROVEN",
+      "G3-LIFECYCLE-INTEGRATION-PROVEN",
+      "G4-RECOVERY-BACKFILL-PROVEN"
+    ]
+  },
+  "requirements": [
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G1-CONTRACT-BOOTSTRAP-FROZEN",
+      "evidence_ids": [
+        "EVID-CLOSED-G1-CONTRACT"
+      ],
+      "id": "REQ-CLOSED-001",
+      "milestone": "M1-CONTRACT-BOOTSTRAP-FROZEN",
+      "origin": {
+        "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
+        "section": "Desired Outcome"
+      },
+      "summary": "Apply one closed-loop contract to every durable Tool Shed entry point"
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G1-CONTRACT-BOOTSTRAP-FROZEN",
+      "evidence_ids": [
+        "EVID-CLOSED-G1-CONTRACT"
+      ],
+      "id": "REQ-CLOSED-002",
+      "milestone": "M1-CONTRACT-BOOTSTRAP-FROZEN",
+      "origin": {
+        "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
+        "section": "Core Model"
+      },
+      "summary": "Report lifecycle, outcome verdict, and reconciliation independently"
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G1-CONTRACT-BOOTSTRAP-FROZEN",
+      "evidence_ids": [
+        "EVID-CLOSED-G1-CONTRACT"
+      ],
+      "id": "REQ-CLOSED-003",
+      "milestone": "M1-CONTRACT-BOOTSTRAP-FROZEN",
+      "origin": {
+        "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
+        "section": "Core Model"
+      },
+      "summary": "Account for accepted requirements and every material development change"
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G2-GENERIC-ENGINE-PROVEN",
+      "evidence_ids": [
+        "EVID-CLOSED-G2-ENGINE"
+      ],
+      "id": "REQ-CLOSED-004",
+      "milestone": "M2-GENERIC-ENGINE-PROVEN",
+      "origin": {
+        "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
+        "section": "Candidate Tooling Direction"
+      },
+      "summary": "Provide generic audit, prepare, validate, apply, report, and historical backfill operations"
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G2-GENERIC-ENGINE-PROVEN",
+      "evidence_ids": [
+        "EVID-CLOSED-G2-ENGINE"
+      ],
+      "id": "REQ-CLOSED-005",
+      "milestone": "M2-GENERIC-ENGINE-PROVEN",
+      "origin": {
+        "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
+        "section": "Constraints And Non-Goals"
+      },
+      "summary": "Refuse invented verdicts, relationships, authorization, product truth, and historical facts"
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G2-GENERIC-ENGINE-PROVEN",
+      "evidence_ids": [
+        "EVID-CLOSED-G2-ENGINE"
+      ],
+      "id": "REQ-CLOSED-006",
+      "milestone": "M2-GENERIC-ENGINE-PROVEN",
+      "origin": {
+        "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
+        "section": "Candidate Tooling Direction"
+      },
+      "summary": "Use immutable identities, typed relationships, managed revisions, and exact guarded manifests"
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G3-LIFECYCLE-INTEGRATION-PROVEN",
+      "evidence_ids": [
+        "EVID-CLOSED-G3-INTEGRATION"
+      ],
+      "id": "REQ-CLOSED-007",
+      "milestone": "M3-LIFECYCLE-INTEGRATION-PROVEN",
+      "origin": {
+        "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
+        "section": "Desired Outcome"
+      },
+      "summary": "Propagate terminal child results upward and reveal the next open owning loop"
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G3-LIFECYCLE-INTEGRATION-PROVEN",
+      "evidence_ids": [
+        "EVID-CLOSED-G3-INTEGRATION"
+      ],
+      "id": "REQ-CLOSED-008",
+      "milestone": "M3-LIFECYCLE-INTEGRATION-PROVEN",
+      "origin": {
+        "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
+        "section": "Constraints And Non-Goals"
+      },
+      "summary": "Preserve minimum sufficient coordination with compact direct-work closure capsules"
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G3-LIFECYCLE-INTEGRATION-PROVEN",
+      "evidence_ids": [
+        "EVID-CLOSED-G3-INTEGRATION"
+      ],
+      "id": "REQ-CLOSED-009",
+      "milestone": "M3-LIFECYCLE-INTEGRATION-PROVEN",
+      "origin": {
+        "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
+        "section": "Candidate Tooling Direction"
+      },
+      "summary": "Integrate campaign, roadmap, work-state, doctor, index, overview, and next surfaces"
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G4-RECOVERY-BACKFILL-PROVEN",
+      "evidence_ids": [
+        "EVID-CLOSED-G4-RECOVERY"
+      ],
+      "id": "REQ-CLOSED-010",
+      "milestone": "M4-RECOVERY-BACKFILL-PROVEN",
+      "origin": {
+        "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
+        "section": "Constraints And Non-Goals"
+      },
+      "summary": "Preserve source bytes and historical uncertainty through overlays, rebuild, backup, and rollback"
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G4-RECOVERY-BACKFILL-PROVEN",
+      "evidence_ids": [
+        "EVID-CLOSED-G4-RECOVERY"
+      ],
+      "id": "REQ-CLOSED-011",
+      "milestone": "M4-RECOVERY-BACKFILL-PROVEN",
+      "origin": {
+        "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
+        "section": "Candidate Tooling Direction"
+      },
+      "summary": "Retain deterministic checkpoint recovery and materially lower compact-query context"
+    },
+    {
+      "disposition": "accepted",
+      "evidence_gate": "G5-RELEASE-CANARY-PROVEN",
+      "evidence_ids": [
+        "EVID-CLOSED-G5-RELEASE",
+        "EVID-CLOSED-G5-CANARY"
+      ],
+      "id": "REQ-CLOSED-012",
+      "milestone": "M5-RELEASE-CANARY-PROVEN",
+      "origin": {
+        "path": "work/maps/map-universal-closed-loop-outcome-reconciliation.md",
+        "section": "Purpose"
+      },
+      "summary": "Prove the released feature on a disconnected synthetic client from new idea origin to satisfied product verdict"
+    }
+  ],
+  "schema_version": 1,
+  "state_token": "c352dfcc7dbeb71f",
+  "upgrade_targets": [
+    {
+      "id": "UPG-CLOSED-MAINTAINER",
+      "kind": "canonical-maintainer-and-installed-skill",
+      "milestone": "M5-RELEASE-CANARY-PROVEN",
+      "minimum_updater_protocol": 4,
+      "status": "planned",
+      "summary": "Publish the exact candidate and separately synchronize the maintainer Codex skill"
+    },
+    {
+      "id": "UPG-CLOSED-SYNTHETIC-CLIENT",
+      "kind": "zero-remote-synthetic-client",
+      "milestone": "M5-RELEASE-CANARY-PROVEN",
+      "minimum_updater_protocol": 4,
+      "status": "planned",
+      "summary": "Upgrade and qualify one isolated released client without GitHub project dependencies"
+    }
+  ],
+  "verdicts": [
+    {
+      "authorized_by": "Campaign 109 completion gate under the owner-approved Universal Closed-Loop Program Roadmap",
+      "disposition": "satisfied",
+      "evidence_ids": [
+        "EVID-CLOSED-G1-CONTRACT"
+      ],
+      "scope": "G1-CONTRACT-BOOTSTRAP-FROZEN",
+      "summary": "The independent contract and bootstrap ledger bind all accepted requirements, decisions, authority boundaries, staged release rules, evidence gates, and the still-open implementation work; focused and full validation pass."
+    },
+    {
+      "authorized_by": "Campaign 110 completion gate under the owner-approved Universal Closed-Loop Program Roadmap",
+      "disposition": "satisfied",
+      "evidence_ids": [
+        "EVID-CLOSED-G2-ENGINE"
+      ],
+      "scope": "G2-GENERIC-ENGINE-PROVEN",
+      "summary": "The entry-point-neutral schema-v1 engine passed exact manifest, ambiguity, stale-state, identity, graph, evidence, as-of, backfill, HPT2 compatibility, and checkpoint-rebuild qualification; lifecycle integration remains explicitly deferred to G3."
+    },
+    {
+      "authorized_by": "Campaign 111 completion gate under the owner-approved Universal Closed-Loop Program Roadmap",
+      "disposition": "satisfied",
+      "evidence_ids": [
+        "EVID-CLOSED-G3-INTEGRATION"
+      ],
+      "scope": "G3-LIFECYCLE-INTEGRATION-PROVEN",
+      "summary": "Lifecycle and closure authority remain separate; campaign, roadmap, work-state, doctor, index, overview, next, help, and skill surfaces expose the nearest open owning outcome; campaign and direct result capsules, propagation, and guarded root-transition tests pass."
+    },
+    {
+      "authorized_by": "Owner-approved Universal Closed-Loop Program Roadmap",
+      "disposition": "open",
+      "evidence_ids": [
+        "EVID-CLOSED-G4-RECOVERY"
+      ],
+      "scope": "G4-RECOVERY-BACKFILL-PROVEN",
+      "summary": "Recovery, backfill, efficiency, and cross-platform evidence remain required."
+    },
+    {
+      "authorized_by": "Owner-approved Universal Closed-Loop Program Roadmap",
+      "disposition": "open",
+      "evidence_ids": [
+        "EVID-CLOSED-G5-RELEASE",
+        "EVID-CLOSED-G5-CANARY"
+      ],
+      "scope": "G5-RELEASE-CANARY-PROVEN",
+      "summary": "Published release and disconnected-client evidence remain required."
+    },
+    {
+      "authorized_by": "Owner-approved Universal Closed-Loop Program Roadmap",
+      "disposition": "open",
+      "evidence_ids": [
+        "EVID-CLOSED-G1-CONTRACT",
+        "EVID-CLOSED-G2-ENGINE",
+        "EVID-CLOSED-G3-INTEGRATION",
+        "EVID-CLOSED-G4-RECOVERY",
+        "EVID-CLOSED-G5-RELEASE",
+        "EVID-CLOSED-G5-CANARY"
+      ],
+      "scope": "initiative",
+      "summary": "All five gates and the final origin-to-product comparison remain required."
+    }
+  ]
+}

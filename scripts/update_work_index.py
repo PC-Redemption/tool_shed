@@ -148,6 +148,8 @@ def render(artifacts: list[Artifact]) -> str:
         "",
         "## Orientation",
         "",
+        "Lifecycle status in this index is file-authoritative. Outcome verdict and reconciliation are independent SQLite state after Hybrid cutover; query `scripts/outcome_reconciliation.py audit` or use `ts: status`, `ts: next`, and `ts: overview` for the current owning outcome.",
+        "",
         "| Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |",
         "| --- | --- | --- | --- | --- | --- |",
     ]
@@ -210,6 +212,13 @@ def render_json(artifacts: list[Artifact]) -> str:
         "schema_version": 1,
         "generated_at": date.today().isoformat(),
         "description": "Generated from tool_shed artifact headers. Use as navigation, not canonical truth.",
+        "outcome_reconciliation": {
+            "lifecycle_authority": "files",
+            "outcome_authority_after_hybrid_cutover": "sqlite",
+            "dimensions": ["lifecycle", "outcome_verdict", "reconciliation"],
+            "current_state_query": "python3 scripts/outcome_reconciliation.py --workspace . audit",
+            "orientation_surfaces": ["ts: status", "ts: next", "ts: overview"]
+        },
         "reading_order": [
             "Read project README/docs for current truth.",
             "Read active maps and active work artifacts from this index.",

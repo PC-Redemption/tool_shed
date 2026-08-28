@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Import, query, and qualify Tool Shed's first closed-loop outcome slice."""
+"""Manage generic Tool Shed outcome loops and the preserved HPT2 compatibility slice."""
 
 from __future__ import annotations
 
@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Any, Sequence
 
 import hybrid_state
+import outcome_loop
 from project_identity import (
     ProjectIdentityError,
     load_project_identity,
@@ -941,15 +942,68 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--bootstrap", default=DEFAULT_BOOTSTRAP.as_posix())
     parser.add_argument("--ids", default=DEFAULT_IDS.as_posix())
     commands = parser.add_subparsers(dest="command", required=True)
+    commands.add_parser("audit")
+    prepare_parser = commands.add_parser("prepare")
+    prepare_parser.add_argument("--source", required=True)
+    validate_parser = commands.add_parser("validate")
+    validate_parser.add_argument("--manifest", required=True)
+    campaign_result_parser = commands.add_parser("campaign-result-plan")
+    campaign_result_parser.add_argument("--campaign", required=True)
+    campaign_result_parser.add_argument("--product-truth", action="append", required=True)
+    campaign_result_parser.add_argument("--evidence", action="append", required=True)
+    campaign_result_parser.add_argument(
+        "--disposition",
+        choices=("satisfied", "satisfied-with-approved-change"),
+        required=True,
+    )
+    campaign_result_parser.add_argument("--authorization", required=True)
+    campaign_result_parser.add_argument("--residual", action="append", default=[])
+    campaign_result_parser.add_argument("--historical", action="store_true")
+    direct_parser = commands.add_parser("direct-plan")
+    direct_parser.add_argument("--origin-summary", required=True)
+    direct_parser.add_argument("--accepted-outcome", required=True)
+    direct_parser.add_argument("--product-truth", action="append", required=True)
+    direct_parser.add_argument("--evidence", action="append", required=True)
+    direct_parser.add_argument(
+        "--disposition", choices=sorted(outcome_loop.VERDICT_DISPOSITIONS - {"open"}), required=True
+    )
+    direct_parser.add_argument("--authorization", required=True)
+    direct_parser.add_argument("--parent-cycle")
+    direct_parser.add_argument("--residual", action="append", default=[])
+    transition_plan = commands.add_parser("transition-plan")
+    transition_plan.add_argument("--cycle", required=True)
+    transition_plan.add_argument("--lifecycle", choices=("terminal",), required=True)
+    transition_plan.add_argument(
+        "--disposition", choices=sorted(outcome_loop.VERDICT_DISPOSITIONS - {"open"}), required=True
+    )
+    transition_plan.add_argument("--reconciliation", choices=("reconciled",), required=True)
+    transition_plan.add_argument("--summary", required=True)
+    transition_plan.add_argument("--authorization", required=True)
+    transition_plan.add_argument("--supporting-cycle", action="append", required=True)
+    transition_plan.add_argument("--residual", action="append", default=[])
+    transition_apply = commands.add_parser("transition-apply")
+    transition_apply.add_argument("--manifest", required=True)
+    transition_apply.add_argument("--expect", required=True)
+    transition_apply.add_argument("--project-binding", required=True)
     apply_parser = commands.add_parser("apply")
     apply_parser.add_argument("--project-binding", required=True)
+    apply_parser.add_argument("--manifest")
+    apply_parser.add_argument("--expect")
     sync_parser = commands.add_parser("sync")
     sync_parser.add_argument("--project-binding", required=True)
     mutate_parser = commands.add_parser("mutate")
     mutate_parser.add_argument("--project-binding", required=True)
     report_parser = commands.add_parser("report")
-    report_parser.add_argument("--backend", choices=("file", "hybrid"), required=True)
-    report_parser.add_argument("--operation", choices=OPERATIONS, required=True)
+    report_parser.add_argument("--backend", choices=("file", "hybrid"))
+    report_parser.add_argument("--operation", choices=OPERATIONS)
+    report_parser.add_argument("--cycle")
+    report_parser.add_argument("--as-of", type=int)
+    backfill_plan_parser = commands.add_parser("backfill-plan")
+    backfill_plan_parser.add_argument("--source", required=True)
+    backfill_apply_parser = commands.add_parser("backfill-apply")
+    backfill_apply_parser.add_argument("--manifest", required=True)
+    backfill_apply_parser.add_argument("--expect", required=True)
+    backfill_apply_parser.add_argument("--project-binding", required=True)
     commands.add_parser("qualify")
     commands.add_parser("benchmark")
     return parser
@@ -961,13 +1015,78 @@ def main(argv: Sequence[str] | None = None) -> int:
         workspace = resolved_workspace(Path(args.workspace))
         bootstrap_path = Path(args.bootstrap)
         ids_path = Path(args.ids)
-        if args.command == "apply":
-            result = apply_hpt2(
+        if args.command == "audit":
+            result = outcome_loop.audit_loops(workspace)
+        elif args.command in {"prepare", "backfill-plan"}:
+            result = outcome_loop.prepare(
                 workspace,
-                project_binding=args.project_binding,
-                bootstrap_path=bootstrap_path,
-                ids_path=ids_path,
+                Path(args.source),
+                mode="historical-overlay" if args.command == "backfill-plan" else None,
             )
+        elif args.command == "validate":
+            _, manifest = load_json(workspace, Path(args.manifest), label="reconciliation manifest")
+            result = outcome_loop.validate_manifest(workspace, manifest)
+        elif args.command == "campaign-result-plan":
+            result = outcome_loop.plan_campaign_result(
+                workspace,
+                Path(args.campaign),
+                product_truth=args.product_truth,
+                evidence_paths=args.evidence,
+                disposition=args.disposition,
+                authorization_ref=args.authorization,
+                residual_work=args.residual,
+                historical=args.historical,
+            )
+        elif args.command == "direct-plan":
+            result = outcome_loop.plan_direct_result(
+                workspace,
+                origin_summary=args.origin_summary,
+                accepted_outcome=args.accepted_outcome,
+                product_truth=args.product_truth,
+                evidence_paths=args.evidence,
+                disposition=args.disposition,
+                authorization_ref=args.authorization,
+                parent_cycle_id=args.parent_cycle,
+                residual_work=args.residual,
+            )
+        elif args.command == "transition-plan":
+            result = outcome_loop.prepare_transition(
+                workspace,
+                args.cycle,
+                lifecycle_state=args.lifecycle,
+                disposition=args.disposition,
+                reconciliation_state=args.reconciliation,
+                summary=args.summary,
+                authorization_ref=args.authorization,
+                supporting_cycle_ids=args.supporting_cycle,
+                residual_work=args.residual,
+            )
+        elif args.command == "transition-apply":
+            _, manifest = load_json(workspace, Path(args.manifest), label="outcome transition")
+            result = outcome_loop.apply_transition(
+                workspace,
+                manifest,
+                expected_token=args.expect,
+                project_binding=args.project_binding,
+            )
+        elif args.command == "apply":
+            if args.manifest:
+                if not args.expect:
+                    raise ReconciliationError("generic apply requires --expect MANIFEST_TOKEN")
+                _, manifest = load_json(workspace, Path(args.manifest), label="reconciliation manifest")
+                result = outcome_loop.apply_manifest(
+                    workspace,
+                    manifest,
+                    expected_token=args.expect,
+                    project_binding=args.project_binding,
+                )
+            else:
+                result = apply_hpt2(
+                    workspace,
+                    project_binding=args.project_binding,
+                    bootstrap_path=bootstrap_path,
+                    ids_path=ids_path,
+                )
         elif args.command == "sync":
             result = sync_bootstrap(
                 workspace,
@@ -980,16 +1099,34 @@ def main(argv: Sequence[str] | None = None) -> int:
                 workspace, project_binding=args.project_binding, ids_path=ids_path
             )
         elif args.command == "report":
-            _, bootstrap, ids = load_sources(workspace, bootstrap_path, ids_path)
-            state = file_state(bootstrap, mutation_applied=True) if args.backend == "file" else hybrid_state_view(workspace, ids)
-            result = {
-                "schema_version": 1,
-                "kind": "tool-shed-outcome-reconciliation-report",
-                "backend": args.backend,
-                "operation": args.operation,
-                "result": operation_result(state, args.operation),
-                "writes_performed": False,
-            }
+            if args.cycle:
+                if args.backend or args.operation:
+                    raise ReconciliationError("generic report cannot combine --cycle with compatibility options")
+                result = outcome_loop.report_cycle(workspace, args.cycle, as_of=args.as_of)
+            else:
+                if not args.backend or not args.operation or args.as_of is not None:
+                    raise ReconciliationError(
+                        "report requires --cycle, or both --backend and --operation"
+                    )
+                _, bootstrap, ids = load_sources(workspace, bootstrap_path, ids_path)
+                state = file_state(bootstrap, mutation_applied=True) if args.backend == "file" else hybrid_state_view(workspace, ids)
+                result = {
+                    "schema_version": 1,
+                    "kind": "tool-shed-outcome-reconciliation-report",
+                    "backend": args.backend,
+                    "operation": args.operation,
+                    "result": operation_result(state, args.operation),
+                    "writes_performed": False,
+                }
+        elif args.command == "backfill-apply":
+            _, manifest = load_json(workspace, Path(args.manifest), label="reconciliation manifest")
+            result = outcome_loop.apply_manifest(
+                workspace,
+                manifest,
+                expected_token=args.expect,
+                project_binding=args.project_binding,
+                backfill=True,
+            )
         elif args.command == "qualify":
             result = qualify_parity(workspace, bootstrap_path=bootstrap_path, ids_path=ids_path)
         else:
@@ -998,11 +1135,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(json.dumps(result, indent=2, sort_keys=True))
         if args.command == "qualify" and not result["valid"]:
             return 1
+        if args.command == "validate" and not result["valid"]:
+            return 1
         if args.command == "benchmark" and not result["passed"]:
             return 1
         return 0
     except (
         ReconciliationError,
+        outcome_loop.OutcomeLoopError,
         hybrid_state.HybridStateError,
         ProjectIdentityError,
         sqlite3.DatabaseError,

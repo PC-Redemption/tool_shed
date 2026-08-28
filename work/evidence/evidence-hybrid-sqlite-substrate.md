@@ -66,3 +66,19 @@ before Campaign 104 completion.
 No `.tool-shed/state.sqlite3` was created in this maintainer worktree. All database mutation and
 recovery tests used disposable Git repositories. No deployment, publication, release, installed
 skill synchronization, client upgrade, or live authority conversion occurred.
+
+## Universal Closed-Loop G4 Requalification
+
+The separately authorized Universal Closed-Loop initiative exposed one additional recovery case:
+a detected direct-SQL mutation might be deliberately retained after exact operator review rather
+than discarded. `CHG-HYBRID-016` adds that bounded route without weakening detection. Acceptance
+requires the expected project binding, `UNMANAGED_REVIEW` classification, exact current revision,
+exact semantic digest, non-empty authorization reference, and summary. It appends an
+`unmanaged-reconciled` event, clears the unmanaged marker, leaves the database checkpoint-due, and
+cannot return to `CLEAN` until a new deterministic tracked checkpoint is written.
+
+On 2026-08-28 the focused Hybrid, maintainer-conversion, updater-protocol-4, and outcome suites
+passed 33 of 33 tests. The direct-SQL test separately proved stale-digest refusal, authorized
+acceptance, event provenance, checkpoint generation, and a fresh rebuild with the exact accepted
+domain digest. A verified live backup and revision-44 checkpoint then rebuilt cleanly with domain
+digest `92e9a708fcbb060ceee58078efbbb740582713aca79e20a627251b142b724ea6`.

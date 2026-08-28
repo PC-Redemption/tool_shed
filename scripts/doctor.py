@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Any
 
 import campaign_queue
+import outcome_loop
 import check_shed_version
 import check_stale_paths
 import check_work_tree
@@ -289,6 +290,18 @@ def inspect(workspace: Path) -> dict[str, Any]:
     topology = check_work_tree.inspect_work_tree(root)
     campaign_status = campaign_queue.status_payload(root)
     reconciliation = reconcile_campaign_queue.inspect_queue(root, stalled_days=30)
+    outcome_reconciliation = (
+        outcome_loop.audit_loops(root)
+        if (root / ".tool-shed" / "state.sqlite3").is_file()
+        else {
+            "available": False,
+            "open": [],
+            "terminal_unreconciled": [],
+            "invalid": [],
+            "unpropagated": [],
+            "finding_count": 0,
+        }
+    )
     indexes = index_state(root)
     stale_paths = check_stale_paths.scan(root)
     work_findings = review_work_state.review(root, stale_days=30, today=date.today())
@@ -385,6 +398,18 @@ def inspect(workspace: Path) -> dict[str, Any]:
             "Campaign queue projections differ from canonical campaign artifacts.",
             "Run `ts: reconcile campaigns`; evaluate and apply the exact repair manifest under the active authority envelope.",
         ))
+    outcome_failures = (
+        len(outcome_reconciliation["terminal_unreconciled"])
+        + len(outcome_reconciliation["invalid"])
+        + len(outcome_reconciliation["unpropagated"])
+    )
+    if outcome_failures:
+        findings.append(_finding(
+            "OUTCOME_RECONCILIATION_REQUIRED", "error",
+            f"Closed-loop outcome state has {outcome_failures} unreconciled, invalid, or unpropagated result(s).",
+            "Run `python3 scripts/outcome_reconciliation.py --workspace . audit`; prepare and apply an exact guarded reconciliation manifest without rewriting file-owned lifecycle state.",
+            count=outcome_failures,
+        ))
     unsupported = external_evidence["unsupported_claims"]
     if external_evidence["unsupported_claim_count"]:
         findings.append(_finding(
@@ -436,6 +461,7 @@ def inspect(workspace: Path) -> dict[str, Any]:
             "whole_work_finding_count": len(reconciliation["whole_work"]["findings"]),
             "coverage": reconciliation["coverage"],
         },
+        "outcome_reconciliation": outcome_reconciliation,
         "external_evidence": external_evidence,
     }
     report = {

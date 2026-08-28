@@ -1,11 +1,14 @@
 # Outcome Reconciliation Vertical Slice
 
-Status: HPT2 qualification candidate
+Status: qualified HPT2 compatibility slice
 Schema version: 1
 
-`scripts/outcome_reconciliation.py` is Tool Shed's first database-backed closed-loop consumer. It
-proves the minimum universal vocabulary on the Hybrid SQLite substrate without moving campaign,
-roadmap, milestone, general Markdown, or product-document authority.
+`scripts/outcome_reconciliation.py` began as Tool Shed's first database-backed closed-loop
+consumer. Its HPT2 routes remain the qualified compatibility slice described here; the generic
+manifest interface and authority rules are defined by
+[`universal-closed-loop-outcome-reconciliation.md`](universal-closed-loop-outcome-reconciliation.md).
+Neither interface moves campaign, roadmap, milestone, general Markdown, or product-document
+authority.
 
 ## HPT2 Disposition
 

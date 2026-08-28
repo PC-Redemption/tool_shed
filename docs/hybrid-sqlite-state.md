@@ -93,6 +93,12 @@ silently accepted. Removing or changing an accounting trigger changes the frozen
 fails closed. The triggers are an accounting mechanism, not a security boundary against a caller
 with arbitrary database access.
 
+After audit, `reconcile-unmanaged` may accept only the exact observed revision and domain digest
+with an explicit authorization reference and bounded semantic summary. It journals the later
+disposition without pretending the original direct write was managed, clears the review condition,
+and leaves a logical checkpoint mandatory. A stale digest fails before acceptance. If the direct
+state is rejected, restore or rebuild from a verified backup/checkpoint instead.
+
 ## Checkpoint, Rebuild, And Backup
 
 Checkpoint JSON uses canonical ordering, two-space indentation, a complete portable table set, an

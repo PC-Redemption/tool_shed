@@ -497,6 +497,17 @@ def perform_conversion(workspace: Path, *, rehearsal: bool) -> dict[str, Any]:
         direct = hybrid_state.audit(workspace, rebuilt)
         if direct["classification"] != "UNMANAGED_REVIEW":
             raise ConversionError("direct SQL rehearsal did not enter UNMANAGED_REVIEW")
+        reconciled_direct = hybrid_state.reconcile_unmanaged(
+            workspace,
+            project_binding=binding,
+            expected_revision=direct["current_revision"],
+            expected_domain_digest=direct["domain_digest"],
+            authorization_ref="maintainer conversion rehearsal",
+            summary="Accept the bounded direct-SQL rehearsal mutation before disposable rebuild.",
+            path=rebuilt,
+        )
+        if reconciled_direct["audit"]["classification"] != "VALID_DIRTY":
+            raise ConversionError("direct SQL rehearsal did not reconcile into managed review state")
         rebuilt.unlink()
         recovered = hybrid_state.rebuild_from_checkpoint(
             workspace,
@@ -527,6 +538,7 @@ def perform_conversion(workspace: Path, *, rehearsal: bool) -> dict[str, Any]:
             raise ConversionError("interruption rehearsal did not roll back completely")
         rehearsal_checks = {
             "direct_sql_classification": direct["classification"],
+            "direct_sql_reconciled_classification": reconciled_direct["audit"]["classification"],
             "direct_sql_rebuild_digest": recovered["domain_digest"],
             "interruption_classification": interruption_audit["classification"],
         }

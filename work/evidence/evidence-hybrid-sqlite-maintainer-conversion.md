@@ -76,3 +76,17 @@ Roadmap validation, and bootstrap-closure validation. After live cutover and tra
 creation, the same complete profile passed again with 341 of 341 tests and every listed repository
 contract. The later bootstrap-to-hybrid sync path also passed its focused reconciliation test before
 G3 closure.
+
+## Universal Closed-Loop G4 Requalification
+
+`CHG-HYBRID-016` strengthens the conversion rehearsal's direct-SQL branch. A disposable rebuilt
+database must now enter `UNMANAGED_REVIEW`; the controller accepts it only against the exact project,
+revision, semantic digest, and explicit rehearsal authorization; the accepted database must become
+`VALID_DIRTY`; and the subsequent checkpoint rebuild must restore the pre-experiment clean domain.
+This proves both governed retention and governed discard while leaving the canonical maintainer
+database untouched by the disposable mutation.
+
+On 2026-08-28 the focused Hybrid, maintainer-conversion, updater-protocol-4, and outcome suites
+passed 33 of 33 tests, including the strengthened rehearsal. A new source-complete external archive
+and two-run disposable rehearsal are required again after the exact G4 candidate is committed,
+because the controller correctly refuses to archive a dirty source tree.

@@ -248,6 +248,11 @@ origin without a new required header: no queue record is `direct`, Roadmap trace
 `owner-originated`. Keep origin independent from coordination, work1–work5 endpoint, and cycle
 state; do not reuse `Campaign: standalone` as an origin.
 
+The capsule also includes an independent `outcome_state` projection when Hybrid SQLite is active.
+Keep file lifecycle, SQLite outcome verdict, and SQLite reconciliation distinct. Surface the local
+cycle and nearest open owning loop; an empty queue, terminal campaign, or passed roadmap gate must
+not hide an open, failed, partial, unreconciled, or unpropagated owning outcome.
+
 When bare `next` has no ready campaign, report the owning cycle and exact safe transition in this
 order: pending Dangler Resolution; an exact current campaign-plan manifest awaiting authority
 evaluation; an
@@ -276,8 +281,9 @@ mutations:
 Before any mutation, run `project_identity.py identity --operation campaign-queue`, surface the
 target capsule, and pass its `--project-binding` together with the fresh project-bound state token.
 
-- `ts: queue` and `ts: status`: run `status`, report the compact owner capsule, findings, and any
-  pending or active Dangler Resolution campaign for unclassified unresolved work.
+- `ts: queue` and `ts: status`: run `status`, report the compact owner capsule, independent outcome
+  state and nearest open owning loop, findings, and any pending or active Dangler Resolution
+  campaign for unclassified unresolved work.
 - `ts: completed`: run `completed` and summarize recent verified outcomes.
 - `ts: next`: run bare `next`, surface pending Dangler Resolution work, then preserve the existing
   single-campaign behavior: resume the working campaign or execute the first ready campaign under
@@ -316,7 +322,12 @@ target capsule, and pass its `--project-binding` together with the fresh project
 - `ts: abandon <campaign>`: require a disposition and replacement when applicable, then run
   `abandon` with the current state token.
 - Campaign completion: require the request's explicit completion gate and applicable verification,
-  then run `complete --gate-passed --evidence ...` with the current state token.
+  then run `complete --gate-passed --evidence ...` with the current state token. This terminates the
+  file-owned campaign lifecycle only. When Hybrid outcome authority is active and the result is
+  durable, immediately run `outcome_reconciliation.py campaign-result-plan` with explicit current
+  product truth, evidence, disposition, and authorization, inspect the exact token, and apply it
+  through the guarded generic route. If that second transaction fails, report the campaign as
+  terminal-unreconciled and recover from `audit`; never silently claim the owning outcome complete.
 
 In owner-queue requests, `camp` is shorthand for `campaign`. `que N` means the campaign at the
 mutable 1-based position N in the current ordered queue. A heading such as `1. (004) Title`
@@ -375,8 +386,9 @@ PRM is coordination, not blanket authority. It automatically accepts faithful de
 roadmaps, campaign plans, materialization, and lifecycle transitions only when the active authority
 envelope covers them. It does not publish or deploy beyond the requested endpoint, cross a
 protected boundary, or authorize credentials, destructive recovery, or an unknown external target.
-A full PRM is complete only when the intended outcome and every applicable evidence gate pass—not
-when a plan, roadmap, milestone, campaign, or empty queue merely exists.
+A full PRM is complete only when the intended outcome and every applicable evidence gate pass and
+the governed root outcome is satisfied (or satisfied-with-approved-change), reconciled, and fully
+propagated—not when a plan, roadmap, milestone, campaign, or empty queue merely exists.
 
 - `ts: develop roadmap`: run `develop`; inspect canonical docs, maps, focus areas, queues, and all
   supported `work/**/*.md` evidence. Classify existing work as completed, active, remaining,
@@ -401,7 +413,8 @@ when a plan, roadmap, milestone, campaign, or empty queue merely exists.
 - `ts: roadmap status` and `ts: review roadmap`: report computed milestone and gate progress,
   completion evidence, source drift, and revision state without changing approved intent.
 - `ts: overview`: run `overview` and combine project maps, current approved roadmaps, milestone and
-  gate state, focus areas, campaign readiness, strategic/execution recommendations, and drift.
+  gate state, focus areas, campaign readiness, independent outcome/reconciliation state, the nearest
+  open owning loop, strategic/execution recommendations, and drift.
 
 Roadmap milestones, gates, and revisions use stable IDs. Campaign requests derived from a roadmap
 must carry `Roadmap`, `Roadmap Revision`, `Milestone`, and `Unlocks Gate`. Installation or upgrade

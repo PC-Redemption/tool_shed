@@ -13,6 +13,7 @@ from pathlib import Path
 
 from repository_policy import POLICY_FILE, format_bytes, inspect_snapshot_ignore, inspect_work_ignore
 from update_work_index import Artifact, discover_artifacts
+import outcome_loop
 
 
 ACTIVE_STATUSES = {"active", "blocked", "exploring", "proposed", "queued", "ready-for-prm", "working"}
@@ -197,6 +198,24 @@ def review(workspace: Path, *, stale_days: int, today: date) -> list[Finding]:
                     Finding("PLAN_DRIFT", "warning", source, f"active artifact references finished artifact: {target}")
                 )
 
+    database = workspace / ".tool-shed" / "state.sqlite3"
+    if database.is_file():
+        outcome = outcome_loop.audit_loops(workspace)
+        for key, code in (
+            ("terminal_unreconciled", "TERMINAL_OUTCOME_UNRECONCILED"),
+            ("invalid", "OUTCOME_STATE_INVALID"),
+            ("unpropagated", "OUTCOME_RESULT_UNPROPAGATED"),
+        ):
+            for cycle_id in outcome[key]:
+                findings.append(
+                    Finding(
+                        code,
+                        "error",
+                        ".tool-shed/state.sqlite3",
+                        f"outcome cycle requires reconciliation: {cycle_id}",
+                    )
+                )
+
     return sorted(set(findings), key=lambda item: (item.severity, item.code, item.path, item.message))
 
 
@@ -217,6 +236,11 @@ def main() -> int:
     workspace = Path(args.workspace).expanduser().resolve()
     today = datetime.strptime(args.today, "%Y-%m-%d").date() if args.today else date.today()
     findings = review(workspace, stale_days=args.stale_days, today=today)
+    outcome_state = (
+        outcome_loop.owning_outcome_capsule(workspace)
+        if (workspace / ".tool-shed" / "state.sqlite3").is_file()
+        else {"available": False, "governed": False, "nearest_open_owning_loop": None}
+    )
     if args.json:
         print(
             json.dumps(
@@ -230,6 +254,7 @@ def main() -> int:
                         "errors": sum(item.severity == "error" for item in findings),
                         "warnings": sum(item.severity == "warning" for item in findings),
                     },
+                    "outcome_state": outcome_state,
                 },
                 indent=2,
                 sort_keys=True,
@@ -241,6 +266,12 @@ def main() -> int:
         print(f"{len(findings)} work-state finding(s).")
     else:
         print("Work state is reconciled.")
+        owning = outcome_state.get("nearest_open_owning_loop")
+        if owning:
+            print(
+                "Open owning outcome: "
+                f"{owning['outcome_verdict']} / {owning['reconciliation']} — {owning['origin_path']}"
+            )
     return 1 if args.strict and findings else 0
 
 

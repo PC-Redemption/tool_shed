@@ -136,7 +136,8 @@ During each brainstorming turn:
 4. Keep status `exploring` until the owner chooses PRM, then use `ready-for-prm`. Use `parked` only
    for an explicit owner choice.
 
-Idea Briefs are indexed durable discovery but remain outside campaign reconciliation. Treat
+Idea Briefs are indexed durable discovery and remain outside campaign-queue reconciliation, but a
+promoted brief may be the immutable origin of a governed SQLite outcome loop. Treat
 `ts: prm idea <idea-id-or-path>` as a request to use that brief as the PRM source. Preserve visible
 unknowns and provenance. Mark it `promoted` and set `Produces:` only after approved project-map
 direction captures it. Promotion does not bypass project-map, roadmap, campaign-plan, release,
@@ -145,6 +146,11 @@ deployment, or other authority boundaries. Brainstorming is GUI-native and does 
 ## Minimum Sufficient Coordination
 
 Start at the lowest adequate level and escalate only from evidence:
+
+For bounded direct work with a durable product result, do not require a map, roadmap, or campaign.
+When Hybrid outcome authority is active, use the compact `direct-plan` plus exact generic `apply`
+route with explicit product truth, evidence, disposition, authorization, and optional parent cycle.
+Ordinary conversation and work with no durable project effect opens no outcome loop.
 
 | Level | Typical shape | Default behavior |
 | --- | --- | --- |

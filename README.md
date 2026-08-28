@@ -251,11 +251,13 @@ and writes digest-bound checkpoints that rebuild into a fresh database. Imported
 byte-authoritative and broad campaign/roadmap/Markdown authority does not move. See
 [`docs/hybrid-sqlite-state.md`](docs/hybrid-sqlite-state.md) for operations and rollout boundaries.
 
-The first consumer is `scripts/outcome_reconciliation.py`. It imports the independent bootstrap
-ledger, preserves HPT2's unavailable origin as explicit unknown history, records a reconciled
-`partial` verdict, compares eight file-first and hybrid query/mutation capsules, and qualifies the
-small, maintainer, and 2,500-record efficiency fixtures. See
-[`docs/outcome-reconciliation.md`](docs/outcome-reconciliation.md).
+The first consumer is `scripts/outcome_reconciliation.py`. Its generic, project-bound manifest
+flow audits, prepares, validates, applies, reports, and historically backfills durable outcome
+loops without changing file-owned campaign, roadmap, or Markdown lifecycle state. The preserved
+HPT2 commands remain a compatibility slice: they retain unavailable history explicitly, record a
+reconciled `partial` verdict, and qualify file-first/hybrid parity. See
+[`docs/outcome-reconciliation.md`](docs/outcome-reconciliation.md) and the
+[`universal closed-loop contract`](docs/universal-closed-loop-outcome-reconciliation.md).
 
 Before a long campaign, run:
 

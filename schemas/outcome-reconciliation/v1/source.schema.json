@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tool-shed.local/schemas/outcome-reconciliation/v1/source.schema.json",
+  "title": "Tool Shed outcome reconciliation source v1",
+  "type": "object",
+  "required": ["schema_version", "kind", "cycle", "verdict", "reconciliation"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "kind": {"const": "tool-shed-outcome-reconciliation-source"},
+    "mode": {"enum": ["current", "historical-overlay", "direct"]},
+    "project_id": {"type": "string", "format": "uuid"},
+    "authorization_ref": {"type": "string"},
+    "ambiguities": {"type": "array"},
+    "cycle": {"type": "object"},
+    "product_truth": {"type": "array", "items": {"type": "object"}},
+    "requirements": {"type": "array", "items": {"type": "object"}},
+    "changes": {"type": "array", "items": {"type": "object"}},
+    "evidence": {"type": "array", "items": {"type": "object"}},
+    "verifications": {"type": "array", "items": {"type": "object"}},
+    "relationships": {"type": "array", "items": {"type": "object"}},
+    "verdict": {"type": "object"},
+    "reconciliation": {"type": "object"}
+  },
+  "additionalProperties": false
+}
