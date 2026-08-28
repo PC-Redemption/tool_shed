@@ -181,8 +181,11 @@ python3 scripts/bootstrap_closure.py --workspace . report \
 
 Mutating commands require the current project binding; post-baseline changes also require the
 current manifest state token. `full` validates every tracked bootstrap manifest structurally.
-`release` additionally requires all declared release-gate scopes, evidence, migration items, and
-upgrade targets to be terminal. Direct edits are detectable and cannot silently qualify a release.
+`release` additionally requires all declared release-gate scopes and their evidence, plus every
+migration item and upgrade target in the gate's declared milestones, to be terminal. A staged
+controlled release may leave later canary scopes open only when the manifest names the pre-release
+scopes and milestones explicitly; the initiative remains open until later evidence is reconciled.
+Direct edits are detectable and cannot silently qualify a release.
 
 The Hybrid SQLite phase-one substrate uses a separate project-bound interface:
 

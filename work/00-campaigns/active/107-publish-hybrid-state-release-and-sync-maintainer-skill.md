@@ -1,16 +1,16 @@
 # Publish the hybrid-state release and synchronize the maintainer skill
 
-Status: queued
+Status: working
 Type: campaign
 Updated: 2026-08-28
-Next Action: execute when selected from the active campaign queue
+Next Action: execute the campaign completion gate
 Campaign ID: publish-hybrid-state-release-and-sync-maintainer-skill
 Campaign Number: 107
 Outcome: The unchanged maintainer-proven candidate is published with verified provenance and the separately installed Codex skill exactly matches the released canonical skill in a fresh session.
 Primary Focus Areas: qualification-release
 Supporting Focus Areas: snapshot-delivery, provider-portability
 Depends On: rehearse-and-convert-maintainer-to-hybrid-state
-Decision: Separate owner authorization is required before push, publication, release, or installed-skill synchronization.
+Decision: none
 Detour For: none
 Return To: none
 Completion Gate: The exact content commit passes the release profile on Windows and POSIX; the new minimum updater protocol and old-updater refusal are qualified; the two-commit provenance, tag, and GitHub Release are verified; the installed maintainer skill is backed up, replaced, validated, exact-diff equal, and smoke-tested.

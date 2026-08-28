@@ -223,6 +223,74 @@ class BootstrapClosureTests(unittest.TestCase):
         )
         self.assertTrue(json.loads(final.stdout)["release_ready"])
 
+    def test_staged_release_gate_does_not_claim_later_initiative_completion(self) -> None:
+        payload = self.draft()
+        payload["release_gate"] = {
+            "mode": "blocking",
+            "required_scopes": ["G1-FIXTURE"],
+            "required_milestones": ["M1-FIXTURE"],
+        }
+        self.manifest.write_text(
+            json.dumps(payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        self.baseline()
+
+        final = self.run_cli(
+            "verify",
+            "--manifest",
+            str(self.manifest.relative_to(self.workspace)),
+            "--require-final",
+        )
+        result = json.loads(final.stdout)
+        self.assertTrue(result["release_ready"])
+        self.assertEqual(result["verdicts"]["initiative"], "open")
+
+    def test_guarded_change_can_reconcile_release_stage_and_completion_items(self) -> None:
+        payload = self.draft()
+        payload["migration_items"][0]["status"] = "planned"
+        payload["upgrade_targets"][0]["status"] = "planned"
+        self.manifest.write_text(
+            json.dumps(payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        baseline = self.baseline()
+        changed = self.run_cli(
+            "record-change",
+            "--manifest",
+            str(self.manifest.relative_to(self.workspace)),
+            "--expect",
+            str(baseline["state_token"]),
+            "--project-binding",
+            project_binding(self.workspace),
+            "--change-id",
+            "CHG-FIXTURE-001",
+            "--summary",
+            "Reconcile the controlled publication stage",
+            "--rationale",
+            "The canary consumes the published release.",
+            "--authorization",
+            "fixture approval",
+            "--requirement",
+            "REQ-FIXTURE-001",
+            "--rerun-evidence",
+            "EVID-FIXTURE-001",
+            "--release-scope",
+            "G1-FIXTURE",
+            "--release-milestone",
+            "M1-FIXTURE",
+            "--complete-migration",
+            "MIG-FIXTURE-001",
+            "--complete-upgrade-target",
+            "UPG-FIXTURE-001",
+        )
+        self.assertTrue(json.loads(changed.stdout)["state_token"])
+        reconciled = json.loads(self.manifest.read_text(encoding="utf-8"))
+        self.assertEqual(reconciled["release_gate"]["required_scopes"], ["G1-FIXTURE"])
+        self.assertEqual(reconciled["release_gate"]["required_milestones"], ["M1-FIXTURE"])
+        self.assertEqual(reconciled["migration_items"][0]["status"], "complete")
+        self.assertEqual(reconciled["upgrade_targets"][0]["status"], "complete")
+
     def test_stale_binding_and_missing_required_records_fail(self) -> None:
         self.baseline()
         (self.workspace / "docs" / "fixture-contract.md").write_text("changed\n", encoding="utf-8")

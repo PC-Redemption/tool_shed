@@ -68,7 +68,11 @@
       "authorized_by": "approved Program Roadmap"
     }
   ],
-  "release_gate": {"mode": "blocking", "required_scopes": ["initiative"]},
+  "release_gate": {
+    "mode": "blocking",
+    "required_scopes": ["initiative"],
+    "required_milestones": ["M3-EXAMPLE"]
+  },
   "baseline": {},
   "state_token": ""
 }

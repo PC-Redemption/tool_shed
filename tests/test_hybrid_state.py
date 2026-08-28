@@ -19,6 +19,7 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 import hybrid_state
+import update_snapshot
 
 
 def project_binding(workspace: Path) -> str:
@@ -338,6 +339,30 @@ class HybridStateTests(unittest.TestCase):
             self.assertIn("database worktree lineage does not match this workspace", foreign["findings"])
         finally:
             shutil.rmtree(other)
+
+    def test_protocol4_preflight_and_post_install_preserve_live_hybrid_state(self) -> None:
+        self.initialize()
+        self.import_pair()
+        hybrid_state.write_checkpoint(self.workspace, project_binding=self.binding)
+        before = hybrid_state.audit(self.workspace)
+
+        protected = update_snapshot.protocol4_hybrid_preflight(
+            self.workspace,
+            ROOT,
+            timeout=30,
+        )
+        verified = update_snapshot.protocol4_hybrid_post_install(
+            self.workspace,
+            ROOT,
+            protected,
+            timeout=30,
+        )
+
+        self.assertEqual(protected["database"], "present")
+        self.assertTrue((self.workspace / protected["backup"]["backup"]).is_file())
+        self.assertEqual(protected["shadow_rebuild"]["domain_digest"], before["domain_digest"])
+        self.assertTrue(verified["preserved"])
+        self.assertEqual(verified["audit"]["domain_digest"], before["domain_digest"])
 
 
 if __name__ == "__main__":

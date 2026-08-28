@@ -611,6 +611,8 @@ Released manifests declare `minimum_updater_protocol`. A release whose lifecycle
 updater's protocol refuses that updater before workspace mutation and directs the operator to run a
 current released updater from outside the workspace. Protocol 3 adds transactional work-tree
 convergence and verified rollback coverage for the workspace structure changed by migration.
+Protocol 4 adds workspace-locked hybrid-state audit, WAL checkpoint, verified SQLite backup,
+checkpoint shadow rebuild, post-install state parity, bootstrap validation, and a doctor check.
 
 Tool Shed performs a zero-I/O reasoning preflight before substantial routed work. When current
 context establishes a usable picker pair, it recommends it as a bold level-three header using

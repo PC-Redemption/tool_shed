@@ -106,6 +106,12 @@
           "minItems": 1,
           "uniqueItems": true,
           "items": {"$ref": "#/$defs/nonempty"}
+        },
+        "required_milestones": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/nonempty"}
         }
       }
     },

@@ -118,10 +118,12 @@ future refusal boundary: when a database is explicitly converted to `hybrid`, fi
 artifact IDs, relationships, revisions, evidence references, verdicts, and reconciliation are no
 longer writable through legacy file routes.
 
-Current updater protocol 3 preserves but does not migrate ignored hybrid runtime state. The first
-database-aware release requires protocol 4, complete bootstrap closure, maintainer rehearsal and
-conversion evidence, supported-platform release qualification, and separate client-canary
-authorization.
+Updater protocol 4 protects ignored hybrid runtime state with a lock, WAL checkpoint, verified
+SQLite backup, checkpoint shadow rebuild, and post-install audit parity. It also runs structural
+bootstrap and doctor checks. The first database-aware release requires the explicit G1-G3 staged
+bootstrap release gate, maintainer rehearsal and conversion evidence, and supported-platform
+release qualification. G4 and the initiative remain open until the separately authorized client
+canary is reconciled; protocol 3 and older refuse this release before mutation.
 
 The HPT2 shadow qualification and its explicit `partial`/`reconciled` historical disposition are
 documented in [`outcome-reconciliation.md`](outcome-reconciliation.md). Passing that vertical slice

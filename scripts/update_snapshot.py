@@ -53,7 +53,7 @@ from snapshot_upgrade_state import (
 
 
 DEFAULT_REPOSITORY = "https://github.com/PC-Redemption/tool_shed.git"
-UPDATER_PROTOCOL = 3
+UPDATER_PROTOCOL = 4
 DEFAULT_NETWORK_TIMEOUT_SECONDS = 120.0
 DEFAULT_VALIDATION_TIMEOUT_SECONDS = 900.0
 STABLE_TAG = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
@@ -130,6 +130,183 @@ def minimum_updater_protocol(manifest: dict[str, Any]) -> int:
     if not isinstance(value, int) or isinstance(value, bool) or value < 1:
         raise UpdateError("manifest minimum_updater_protocol must be a positive integer")
     return value
+
+
+def require_supported_updater_protocol(
+    manifest: dict[str, Any],
+    *,
+    supported_protocol: int = UPDATER_PROTOCOL,
+) -> int:
+    required_protocol = minimum_updater_protocol(manifest)
+    if required_protocol > supported_protocol:
+        raise UpdateError(
+            f"release requires updater protocol {required_protocol}, but this updater supports "
+            f"protocol {supported_protocol}; obtain a newer released Tool Shed updater"
+        )
+    return required_protocol
+
+
+def _protocol4_hybrid_command(
+    snapshot: Path,
+    workspace: Path,
+    *arguments: str,
+    timeout: float,
+) -> dict[str, Any]:
+    command = snapshot / "scripts" / "hybrid_state.py"
+    if not command.is_file():
+        raise UpdateError("updater protocol 4 release is missing scripts/hybrid_state.py")
+    result = run(
+        [sys.executable, "-B", str(command), "--workspace", str(workspace), *arguments],
+        cwd=workspace,
+        timeout=timeout,
+        timeout_option="--validation-timeout",
+    )
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError as error:
+        raise UpdateError("hybrid-state command returned invalid JSON") from error
+    if not isinstance(payload, dict):
+        raise UpdateError("hybrid-state command returned a non-object result")
+    return payload
+
+
+def protocol4_hybrid_audit(
+    workspace: Path,
+    snapshot: Path,
+    *,
+    timeout: float,
+    database: str | None = None,
+) -> dict[str, Any]:
+    arguments = ["audit"]
+    if database is not None:
+        arguments.extend(("--database", database))
+    result = _protocol4_hybrid_command(snapshot, workspace, *arguments, timeout=timeout)
+    if result.get("classification") != "CLEAN":
+        raise UpdateError(
+            "protocol 4 requires CLEAN hybrid state before snapshot mutation; observed "
+            + str(result.get("classification") or "unknown")
+        )
+    return result
+
+
+def protocol4_hybrid_preflight(
+    workspace: Path,
+    snapshot: Path,
+    *,
+    timeout: float,
+) -> dict[str, Any]:
+    database = workspace / ".tool-shed" / "state.sqlite3"
+    if not database.exists():
+        return {
+            "database": "absent",
+            "backup": None,
+            "shadow_rebuild": None,
+            "writes_performed": False,
+        }
+    if is_filesystem_link(database) or not database.is_file():
+        raise UpdateError("hybrid state database must be a regular non-link file")
+    for suffix in ("-wal", "-shm"):
+        companion = Path(str(database) + suffix)
+        if is_filesystem_link(companion):
+            raise UpdateError(f"hybrid SQLite companion must not be a link: {companion}")
+    audit = protocol4_hybrid_audit(workspace, snapshot, timeout=timeout)
+    binding = binding_token(workspace, operation="hybrid-state")
+    backup = _protocol4_hybrid_command(
+        snapshot,
+        workspace,
+        "backup",
+        "--project-binding",
+        binding,
+        timeout=timeout,
+    )
+    backup_relative = backup.get("backup")
+    if not isinstance(backup_relative, str) or not backup_relative:
+        raise UpdateError("protocol 4 hybrid backup did not report a path")
+    backup_audit = protocol4_hybrid_audit(
+        workspace,
+        snapshot,
+        timeout=timeout,
+        database=backup_relative,
+    )
+    if backup_audit.get("domain_digest") != audit.get("domain_digest"):
+        raise UpdateError("protocol 4 hybrid backup changed the domain digest")
+    checkpoint = workspace / "work" / "state" / "checkpoints" / "state-v1.json"
+    if not checkpoint.is_file():
+        raise UpdateError("protocol 4 hybrid state requires the tracked state-v1 checkpoint")
+    shadow_relative = f".tool-shed/state.protocol4-{os.urandom(8).hex()}.sqlite3"
+    shadow = workspace / shadow_relative
+    try:
+        rebuilt = _protocol4_hybrid_command(
+            snapshot,
+            workspace,
+            "rebuild",
+            "--project-binding",
+            binding,
+            "--checkpoint",
+            checkpoint.relative_to(workspace).as_posix(),
+            "--output",
+            shadow_relative,
+            timeout=timeout,
+        )
+        if rebuilt.get("domain_digest") != audit.get("domain_digest"):
+            raise UpdateError("protocol 4 shadow rebuild changed the domain digest")
+    finally:
+        for candidate in (shadow, Path(str(shadow) + "-wal"), Path(str(shadow) + "-shm")):
+            candidate.unlink(missing_ok=True)
+    return {
+        "database": "present",
+        "audit": audit,
+        "backup": backup,
+        "backup_audit": backup_audit,
+        "shadow_rebuild": rebuilt,
+        "writes_performed": True,
+    }
+
+
+def protocol4_hybrid_post_install(
+    workspace: Path,
+    snapshot: Path,
+    before: dict[str, Any],
+    *,
+    timeout: float,
+) -> dict[str, Any]:
+    database = workspace / ".tool-shed" / "state.sqlite3"
+    if before.get("database") == "absent":
+        if database.exists() or is_filesystem_link(database):
+            raise UpdateError("protocol 4 snapshot update unexpectedly created hybrid state")
+        return {"database": "absent", "preserved": True}
+    if not database.is_file() or is_filesystem_link(database):
+        raise UpdateError("protocol 4 snapshot update lost the hybrid state database")
+    after = protocol4_hybrid_audit(workspace, snapshot, timeout=timeout)
+    prior = before.get("audit")
+    if not isinstance(prior, dict):
+        raise UpdateError("protocol 4 preflight audit is missing")
+    compared = (
+        "project_id",
+        "storage_mode",
+        "current_revision",
+        "last_checkpoint_revision",
+        "domain_digest",
+        "schema_trigger_digest",
+    )
+    changed = [field for field in compared if prior.get(field) != after.get(field)]
+    if changed:
+        raise UpdateError(
+            "protocol 4 snapshot update changed hybrid state: " + ", ".join(changed)
+        )
+    backup = before.get("backup")
+    if not isinstance(backup, dict):
+        raise UpdateError("protocol 4 preflight backup is missing")
+    relative = backup.get("backup")
+    digest = backup.get("sha256")
+    if (
+        not isinstance(relative, str)
+        or not isinstance(digest, str)
+        or not (workspace / relative).is_file()
+        or hashlib.sha256((workspace / relative).read_bytes()).hexdigest() != digest
+    ):
+        raise UpdateError("protocol 4 verified hybrid backup is missing or changed")
+    return {"database": "present", "preserved": True, "audit": after, "backup": backup}
 
 
 def version_check_command(script: str, shed: str, protocol: int, *, snapshot: bool) -> list[str]:
@@ -386,12 +563,7 @@ def clone_release(
         raise UpdateError("manifest release_tag does not match selected release tag")
     if not manifest.get("released_at"):
         raise UpdateError("release manifest has no release timestamp")
-    required_protocol = minimum_updater_protocol(manifest)
-    if required_protocol > UPDATER_PROTOCOL:
-        raise UpdateError(
-            f"release requires updater protocol {required_protocol}, but this updater supports "
-            f"protocol {UPDATER_PROTOCOL}; obtain a newer released Tool Shed updater"
-        )
+    required_protocol = require_supported_updater_protocol(manifest)
     tag_commit = git(destination, "rev-parse", f"{selected}^{{commit}}")
     content_commit = git(destination, "rev-parse", f"{tag_commit}^")
     if manifest.get("release_commit") != content_commit:
@@ -1086,6 +1258,7 @@ def post_install_checks(
     provider_paths: dict[str, str],
     protocol: int,
     validation_timeout: float,
+    hybrid_runtime_before: dict[str, Any] | None = None,
 ) -> dict[str, object]:
     if is_filesystem_link(target) or not target.is_dir():
         raise UpdateError("installed snapshot is not a real directory")
@@ -1190,6 +1363,59 @@ def post_install_checks(
                 timeout_option="--validation-timeout",
             )
             results[script] = result.stdout.strip()
+    if protocol >= 4:
+        if hybrid_runtime_before is None:
+            raise UpdateError("protocol 4 post-install checks have no hybrid preflight result")
+        results["hybrid_state"] = protocol4_hybrid_post_install(
+            workspace,
+            target,
+            hybrid_runtime_before,
+            timeout=validation_timeout,
+        )
+        closure_tool = target / "scripts" / "bootstrap_closure.py"
+        if not closure_tool.is_file():
+            raise UpdateError("updater protocol 4 release is missing scripts/bootstrap_closure.py")
+        closure_results: list[dict[str, object]] = []
+        for manifest in sorted((workspace / "work" / "evidence").glob("bootstrap-closure-*.json")):
+            verified = run(
+                [
+                    sys.executable,
+                    "-B",
+                    str(closure_tool),
+                    "--workspace",
+                    str(workspace),
+                    "--json",
+                    "verify",
+                    "--manifest",
+                    manifest.relative_to(workspace).as_posix(),
+                ],
+                cwd=workspace,
+                timeout=validation_timeout,
+                timeout_option="--validation-timeout",
+            )
+            closure_results.append(json.loads(verified.stdout))
+        results["bootstrap_closures"] = closure_results
+        doctor = target / "scripts" / "doctor.py"
+        if not doctor.is_file():
+            raise UpdateError("updater protocol 4 release is missing scripts/doctor.py")
+        doctor_result = run(
+            [sys.executable, "-B", str(doctor), "--workspace", str(workspace), "--json"],
+            cwd=workspace,
+            timeout=validation_timeout,
+            timeout_option="--validation-timeout",
+        )
+        doctor_payload = json.loads(doctor_result.stdout)
+        if doctor_payload.get("verdict") == "INVALID":
+            codes = [
+                str(item.get("code"))
+                for item in doctor_payload.get("findings", [])
+                if isinstance(item, dict) and item.get("code")
+            ]
+            raise UpdateError(
+                "protocol 4 post-install doctor reported INVALID"
+                + (": " + ", ".join(codes) if codes else "")
+            )
+        results["doctor"] = doctor_payload
     if "check_work_tree.py" in results:
         convergence = json.loads(results["check_work_tree.py"])
         if not convergence.get("converged"):
@@ -1695,6 +1921,7 @@ def main() -> int:
     instruction_files_before: dict[str, bytes | None] = {}
     snapshot_before: dict[str, str] = {}
     current_skill_backup: Path | None = None
+    hybrid_runtime_before: dict[str, Any] | None = None
     installed = False
     payload: dict[str, Any] = {
         "workspace": str(workspace),
@@ -1902,6 +2129,15 @@ def main() -> int:
                 declared_mutation_paths = []
             if not isinstance(declared_mutation_paths, list):
                 raise UpdateError("updater_mutation_paths must be a list")
+            if selected_protocol >= 4:
+                payload["stage"] = "hybrid-state-preflight"
+                recorder.phase("hybrid-state-preflight")
+                hybrid_runtime_before = protocol4_hybrid_preflight(
+                    workspace,
+                    staged,
+                    timeout=args.validation_timeout,
+                )
+                payload["hybrid_state_preflight"] = hybrid_runtime_before
             payload["stage"] = "backup"
             recorder.phase("backup")
             backup_scope = build_backup_scope(
@@ -1966,6 +2202,7 @@ def main() -> int:
                     provider_paths,
                     selected_protocol,
                     args.validation_timeout,
+                    hybrid_runtime_before,
                 )
                 if backup_scope is None:
                     raise UpdateError("post-install verification has no declared backup scope")
@@ -2045,6 +2282,13 @@ def main() -> int:
                             )
                     if retired is not None and retired.exists():
                         shutil.rmtree(retired)
+                    if selected_protocol >= 4 and hybrid_runtime_before is not None:
+                        payload["hybrid_state_rollback_verification"] = protocol4_hybrid_post_install(
+                            workspace,
+                            clone,
+                            hybrid_runtime_before,
+                            timeout=args.validation_timeout,
+                        )
                 except Exception as error:
                     rollback_errors.append(f"workspace: {error}")
                 if rollback_errors:

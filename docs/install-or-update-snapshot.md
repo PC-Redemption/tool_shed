@@ -71,13 +71,16 @@ Use the updater from a current released checkout outside the target project. Thi
 older installed snapshot predates newer upgrade safeguards. The updater selects the remote release;
 the target's stale in-snapshot updater is not a bootstrap authority. Releases declare a
 `minimum_updater_protocol`; releases requiring a newer protocol cause legacy updater validation to
-stop before snapshot mutation with the supported external-updater command. The current protocol 3
-updater supplies its protocol explicitly and adds transactional work-tree convergence.
+stop before snapshot mutation with the supported external-updater command. The current protocol 4
+updater supplies its protocol explicitly, retains transactional work-tree convergence, and adds
+database-aware preflight and post-install validation.
 
-The frozen Hybrid SQLite state contract reserves protocol 4 for the first database-aware release.
-That number is a future compatibility boundary, not a claim that the current protocol 3 updater can
-move SQLite authority. Until protocol 4 is implemented, qualified, and declared by a release,
-existing file-authority installs and upgrades continue to use protocol 3.
+The Hybrid SQLite state contract assigns protocol 4 to the first database-aware release. Before
+snapshot mutation it locks the workspace, audits CLEAN state, checkpoints WAL, creates a verified
+SQLite backup, and proves a disposable checkpoint rebuild. After installation it requires exact
+database parity, validates each bootstrap manifest structurally, and rejects an INVALID doctor
+verdict. A workspace without hybrid state remains file-authoritative and no database is created.
+Protocol 3 and older refuse a protocol-4 release before backup or workspace mutation.
 
 Provider guidance is auto-detected from existing marked instruction files. If none exists, Codex is
 the backward-compatible default. Override or install multiple adapters with:

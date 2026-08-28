@@ -42,7 +42,7 @@ TRACKED_GLOBS = (
 )
 VERSION = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
 COMMIT = re.compile(r"^[0-9a-f]{7,40}$")
-CURRENT_UPDATER_PROTOCOL = 3
+CURRENT_UPDATER_PROTOCOL = 4
 RELEASE_TAG = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
 TREE_DIGEST = re.compile(r"^[0-9a-f]{64}$")
 QUALIFICATION_PATHS = (

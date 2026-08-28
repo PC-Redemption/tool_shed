@@ -509,7 +509,12 @@ def validate_manifest(
         findings.append("bootstrap closure release_gate must be an object")
         release_gate = {}
     else:
-        check_exact_keys(release_gate, {"mode", "required_scopes"}, "release_gate", findings)
+        check_exact_keys(
+            release_gate,
+            {"mode", "required_scopes", "required_milestones"},
+            "release_gate",
+            findings,
+        )
     if release_gate.get("mode") != "blocking":
         findings.append("bootstrap closure release_gate mode must be blocking")
     required_scopes = release_gate.get("required_scopes")
@@ -519,6 +524,28 @@ def validate_manifest(
     missing_scopes = sorted(set(required_scopes) - set(scopes))
     if missing_scopes:
         findings.append("release_gate references unknown verdict scopes: " + ", ".join(missing_scopes))
+    known_milestones = {
+        str(item.get("milestone"))
+        for key in ("requirements", "migration_items", "upgrade_targets")
+        for item in collections[key]
+        if nonempty(item.get("milestone"))
+    }
+    required_milestones = release_gate.get("required_milestones")
+    if required_milestones is None:
+        # Schema-v1 manifests created before staged release gates remain fail-closed.
+        required_milestones = sorted(known_milestones)
+    elif (
+        not isinstance(required_milestones, list)
+        or not required_milestones
+        or not all(isinstance(value, str) and value for value in required_milestones)
+    ):
+        findings.append("release_gate required_milestones must be a non-empty string list")
+        required_milestones = []
+    missing_milestones = sorted(set(required_milestones) - known_milestones)
+    if missing_milestones:
+        findings.append(
+            "release_gate references unknown milestones: " + ", ".join(missing_milestones)
+        )
 
     baseline = payload.get("baseline")
     if not isinstance(baseline, dict):
@@ -554,14 +581,24 @@ def validate_manifest(
         for scope in required_scopes:
             if verdict_by_scope.get(str(scope), {}).get("disposition") not in TERMINAL_VERDICTS:
                 findings.append(f"release gate scope {scope} is not terminal")
+        release_evidence_gates = set(required_scopes)
+        require_all_evidence = "initiative" in release_evidence_gates
         for item in requirements:
-            if item.get("disposition") != "accepted":
+            if (
+                item.get("disposition") != "accepted"
+                or (
+                    not require_all_evidence
+                    and item.get("evidence_gate") not in release_evidence_gates
+                )
+            ):
                 continue
             for evidence_id in item.get("evidence_ids", []):
                 if evidence_by_id.get(str(evidence_id), {}).get("status") not in {"passed", "not-applicable"}:
                     findings.append(f"release gate requirement {item.get('id')} lacks passing evidence {evidence_id}")
         for key in ("migration_items", "upgrade_targets"):
             for item in collections[key]:
+                if item.get("milestone") not in required_milestones:
+                    continue
                 if item.get("status") not in {"complete", "not-applicable"}:
                     findings.append(f"release gate {key[:-1]} {item.get('id')} is not complete")
     return sorted(set(findings))
@@ -661,6 +698,43 @@ def record_change_command(workspace: Path, path: Path, args: argparse.Namespace)
     missing_superseded = sorted(set(args.supersedes) - known_changes)
     if missing_superseded:
         raise ClosureError("record-change supersedes unknown changes: " + ", ".join(missing_superseded))
+    release_gate = payload.get("release_gate")
+    if not isinstance(release_gate, dict):
+        raise ClosureError("bootstrap closure release_gate must be an object")
+    if bool(args.release_scope) != bool(args.release_milestone):
+        raise ClosureError(
+            "record-change release-stage updates require both --release-scope and --release-milestone"
+        )
+    if args.release_scope:
+        known_scopes = {item.get("scope") for item in require_objects(payload, "verdicts")}
+        missing = sorted(set(args.release_scope) - known_scopes)
+        if missing:
+            raise ClosureError("record-change references unknown release scopes: " + ", ".join(missing))
+        known_milestones = {
+            item.get("milestone")
+            for key in ("requirements", "migration_items", "upgrade_targets")
+            for item in require_objects(payload, key)
+        }
+        missing = sorted(set(args.release_milestone) - known_milestones)
+        if missing:
+            raise ClosureError(
+                "record-change references unknown release milestones: " + ", ".join(missing)
+            )
+        release_gate["required_scopes"] = list(dict.fromkeys(args.release_scope))
+        release_gate["required_milestones"] = list(dict.fromkeys(args.release_milestone))
+    for key, selected, label in (
+        ("migration_items", args.complete_migration, "migration"),
+        ("upgrade_targets", args.complete_upgrade_target, "upgrade target"),
+    ):
+        records = require_objects(payload, key)
+        by_id = {item.get("id"): item for item in records}
+        missing = sorted(set(selected) - set(by_id))
+        if missing:
+            raise ClosureError(
+                f"record-change references unknown {label} IDs: " + ", ".join(missing)
+            )
+        for item_id in selected:
+            by_id[item_id]["status"] = "complete"
     changes.append(
         {
             "id": args.change_id,
@@ -829,6 +903,10 @@ def build_parser() -> argparse.ArgumentParser:
     change.add_argument("--decision", action="append", default=[])
     change.add_argument("--supersedes", action="append", default=[])
     change.add_argument("--rerun-evidence", action="append", default=[])
+    change.add_argument("--release-scope", action="append", default=[])
+    change.add_argument("--release-milestone", action="append", default=[])
+    change.add_argument("--complete-migration", action="append", default=[])
+    change.add_argument("--complete-upgrade-target", action="append", default=[])
 
     evidence = subparsers.add_parser("record-evidence", help="record or replace one evidence result")
     evidence.add_argument("--manifest", required=True)

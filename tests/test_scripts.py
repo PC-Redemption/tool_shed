@@ -163,10 +163,13 @@ class ScriptTests(unittest.TestCase):
             for name in (
                 "codex_cli_resolver.py",
                 "codex_skill_sync.py",
+                "bootstrap_closure.py",
                 "campaign_queue.py",
                 "check_stale_paths.py",
                 "check_work_tree.py",
                 "doctor.py",
+                "hybrid_state.py",
+                "hybrid_state_schema.py",
                 "install_into_workspace.py",
                 "provider_adapters.py",
                 "program_roadmap.py",
@@ -226,10 +229,13 @@ class ScriptTests(unittest.TestCase):
                 for name in (
                     "codex_cli_resolver.py",
                     "codex_skill_sync.py",
+                    "bootstrap_closure.py",
                     "campaign_queue.py",
                     "check_stale_paths.py",
                     "check_work_tree.py",
                     "doctor.py",
+                    "hybrid_state.py",
+                    "hybrid_state_schema.py",
                     "install_into_workspace.py",
                     "provider_adapters.py",
                     "program_roadmap.py",
@@ -626,7 +632,7 @@ for raw in sys.stdin:
         )
 
         self.assertEqual(manifest["manifest_schema_version"], 2)
-        self.assertEqual(manifest["minimum_updater_protocol"], 3)
+        self.assertEqual(manifest["minimum_updater_protocol"], 4)
         self.assertEqual(manifest["release_tag"], f"v{manifest['shed_version']}")
         self.assertIn("release_commit", manifest)
         self.assertIn("released_at", manifest)
@@ -917,7 +923,7 @@ for raw in sys.stdin:
             release = self.create_test_release(
                 root,
                 version="9.9.0",
-                minimum_updater_protocol=4,
+                minimum_updater_protocol=5,
             )
             workspace = self.create_update_workspace(root, version="9.8.0")
 
@@ -934,8 +940,8 @@ for raw in sys.stdin:
             payload = json.loads(result.stdout)
 
             self.assertNotEqual(result.returncode, 0)
-            self.assertIn("requires updater protocol 4", payload["error"])
-            self.assertIn("supports protocol 3", payload["error"])
+            self.assertIn("requires updater protocol 5", payload["error"])
+            self.assertIn("supports protocol 4", payload["error"])
             self.assertTrue((workspace / "tool_shed" / "old-marker.txt").is_file())
             self.assertFalse(list(workspace.glob("tool_shed.backup-*.tar")))
 
@@ -4256,6 +4262,42 @@ work_levels:
                 "work/evidence/generated",
             )
 
+    def test_protocol4_update_without_database_preserves_file_authority(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(
+                root,
+                include_provider_adapter=True,
+                minimum_updater_protocol=4,
+            )
+            workspace = self.create_update_workspace(root)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+            subprocess.run(["git", "add", "work"], cwd=workspace, check=True)
+            subprocess.run(
+                ["git", "commit", "-q", "-m", "Initialize Tool Shed work"],
+                cwd=workspace,
+                check=True,
+            )
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--json",
+                cwd=workspace,
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertEqual(result.returncode, 0, payload)
+            self.assertEqual(payload["state"], "installed")
+            self.assertEqual(payload["hybrid_state_preflight"]["database"], "absent")
+            self.assertEqual(payload["post_install"]["hybrid_state"]["database"], "absent")
+            self.assertTrue(payload["post_install"]["hybrid_state"]["preserved"])
+            self.assertFalse((workspace / ".tool-shed" / "state.sqlite3").exists())
+
     def test_snapshot_upgrade_standardizes_legacy_campaign_files_and_preserves_content(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -5709,7 +5751,7 @@ old Tool Shed guidance
                 report["updater"]["shed_version"],
                 json.loads((ROOT / "SHED_VERSION.json").read_text(encoding="utf-8"))["shed_version"],
             )
-            self.assertEqual(report["updater"]["protocol"], 3)
+            self.assertEqual(report["updater"]["protocol"], 4)
             self.assertEqual((workspace / "tool_shed" / "old-marker.txt").read_bytes(), original)
             self.assertFalse(list(workspace.glob("tool_shed.backup-*.tar")))
 

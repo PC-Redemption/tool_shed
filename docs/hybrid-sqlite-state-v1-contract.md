@@ -248,8 +248,10 @@ current released updater outside the stale client. Protocol 4 separately invento
 - the separately installed Codex skill when explicitly selected.
 
 The updater acquires the workspace lock, checkpoints WAL with `TRUNCATE`, builds and validates a
-shadow database, promotes atomically, regenerates projections, runs bootstrap/database closure and
-doctor checks, and restores the declared surface on failure.
+checkpoint shadow database, regenerates projections, runs bootstrap/database closure and doctor
+checks, and restores the declared surface on failure. When the selected release has no schema
+migration, the validated shadow is discarded and the byte authority remains the existing live
+database; future migrations must promote only a validated shadow atomically.
 
 Before writers reopen, rollback restores the verified file archive and database backup and proves
 their fingerprints. After any database-authoritative write, downgrade or rollback is allowed only
@@ -348,14 +350,19 @@ python3 scripts/bootstrap_closure.py --workspace . record-verdict ...
 ```
 
 `verify` and `report` are read-only. `verify --gate G1-DESIGN-FROZEN` checks a specific evidence
-gate. `verify --require-final` enforces release readiness and fails while an accepted requirement,
-migration item, upgrade target, required verdict, material-change evidence rerun, binding, or
-evidence reference is missing, pending, failed, stale, or unsupported.
+gate. `verify --require-final` enforces the manifest's declared release stage: every required scope
+must be terminal, its accepted evidence must pass, and every migration item and upgrade target in a
+declared release milestone must be complete or not applicable. Older manifests without an explicit
+milestone list remain fail-closed across all milestones. A controlled release may declare G1-G3 as
+its publication stage while G4 and the initiative remain visibly open for the released client
+canary; final closed-loop completion still requires their later evidence and terminal verdicts.
 
 The full development validator invokes structural bootstrap verification. The release profile
-invokes final verification. A database-aware updater must invoke final verification before
-promotion. The database-backed HPT2 implementation must import the exact manifest token, records,
-and ordering and reproduce the same report before bootstrap authority can retire.
+invokes final verification for the manifest's declared publication stage. A database-aware updater
+rechecks structural closure and runtime/database parity after installation; it does not convert a
+later canary into pre-publication evidence. The database-backed HPT2 implementation must import the
+exact manifest token, records, and ordering and reproduce the same report before bootstrap
+authority can retire.
 
 ## Settled Decisions And Deferred Implementation
 

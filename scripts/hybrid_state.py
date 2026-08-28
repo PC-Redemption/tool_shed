@@ -714,6 +714,7 @@ def verified_backup(workspace: Path, *, project_binding: str) -> dict[str, Any]:
         destination = backup_root / f"{Path(name).stem}-{sequence}.sqlite3"
         sequence += 1
     with WorkspaceLock(lock_path(workspace)), contextlib.closing(connect(source)) as live:
+        live.execute("PRAGMA wal_checkpoint(TRUNCATE)")
         entrance = audit_connection(workspace, live)
         if entrance["classification"] in {"INVALID", "UNJOURNALED"}:
             raise HybridStateError(f"backup refused from {entrance['classification']}")

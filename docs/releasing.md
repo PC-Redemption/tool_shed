@@ -16,6 +16,9 @@ Protocol 2 adds transactional provider guidance and strict disconnected-snapshot
 Protocol 3 adds transactional work-tree convergence, affected-workspace rollback coverage, and an
 explicit structural verification step. Do not lower this field to preserve compatibility with an
 updater that cannot satisfy the release lifecycle.
+Protocol 4 adds a workspace-locked hybrid-state entrance audit, WAL checkpoint, verified SQLite
+backup, checkpoint shadow rebuild, post-install state-parity check, bootstrap verification, and
+doctor check. Protocol 3 and older refuse a protocol-4 release before workspace mutation.
 
 Published provenance also records `release_qualification`: the exact content commit, full
 validator hash, focused client-smoke hash, and hashes of both comprehensive CI workflows. The
@@ -44,8 +47,11 @@ Overrides, unattested releases, and any changed identity run full local validati
    repository-policy coverage includes tracked `work/`, stale root ignores, documented exceptions,
    unrelated nested rules, and ignored `/tool_shed/` with tracked `work/`. Release qualification
    also verifies every tracked `work/evidence/bootstrap-closure-*.json` manifest with
-   `--require-final`; an open gate, pending evidence, incomplete migration item, or incomplete
-   upgrade target blocks the release instead of being waived by campaign completion.
+   `--require-final`; an open declared release-gate scope, pending evidence attached to those
+   scopes, or incomplete migration/upgrade item in a declared release milestone blocks the release
+   instead of being waived by campaign completion. Later milestones may remain open only when the
+   manifest explicitly stages them after the controlled release; the initiative stays open until
+   their evidence is reconciled.
 5. Commit all shipped content, including the manifest with null `release_commit` and `released_at`.
 6. Capture that content commit:
 
