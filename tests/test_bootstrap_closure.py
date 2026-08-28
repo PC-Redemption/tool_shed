@@ -227,6 +227,47 @@ class BootstrapClosureTests(unittest.TestCase):
         )
         self.assertTrue(json.loads(final.stdout)["release_ready"])
 
+    def test_manifest_state_token_is_portable_across_checkout_paths(self) -> None:
+        payload = self.draft()
+        original = bootstrap_closure.manifest_token(self.workspace, payload)
+        with tempfile.TemporaryDirectory() as alternate_name:
+            alternate = Path(alternate_name)
+            identity = alternate / "work" / "tool-shed-project.json"
+            identity.parent.mkdir(parents=True)
+            identity.write_text(
+                (self.workspace / "work" / "tool-shed-project.json").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            self.assertEqual(bootstrap_closure.manifest_token(alternate, payload), original)
+
+    def test_guarded_write_migrates_legacy_path_bound_state_token(self) -> None:
+        self.baseline()
+        payload = json.loads(self.manifest.read_text(encoding="utf-8"))
+        legacy = bootstrap_closure.legacy_manifest_token(self.workspace, payload)
+        payload["state_token"] = legacy
+        self.manifest.write_text(
+            json.dumps(payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        changed = self.run_cli(
+            "record-verdict",
+            "--manifest",
+            str(self.manifest.relative_to(self.workspace)),
+            "--expect",
+            legacy,
+            "--project-binding",
+            project_binding(self.workspace),
+            "--scope",
+            "initiative",
+            "--disposition",
+            "open",
+            "--summary",
+            "The fixture remains open.",
+            "--authorization",
+            "fixture",
+        )
+        self.assertNotEqual(json.loads(changed.stdout)["state_token"], legacy)
+
     def test_staged_release_gate_does_not_claim_later_initiative_completion(self) -> None:
         payload = self.draft()
         payload["release_gate"] = {

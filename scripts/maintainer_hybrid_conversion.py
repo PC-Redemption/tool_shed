@@ -170,6 +170,7 @@ def build_inventory(workspace: Path, assignments_path: Path = ASSIGNED_IDS) -> d
 
 
 def require_external_path(workspace: Path, supplied: Path) -> Path:
+    workspace = workspace.expanduser().resolve()
     target = supplied.expanduser().resolve()
     try:
         target.relative_to(workspace)

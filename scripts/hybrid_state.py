@@ -323,7 +323,9 @@ def audit(workspace: Path, path: Path | None = None) -> dict[str, Any]:
 
 
 def _atomic_promote(source: Path, destination: Path) -> None:
-    with source.open("rb") as handle:
+    # Windows rejects fsync on a read-only file descriptor.  Open the completed
+    # SQLite shadow read/write so the durability barrier is portable.
+    with source.open("r+b") as handle:
         os.fsync(handle.fileno())
     os.replace(source, destination)
     try:

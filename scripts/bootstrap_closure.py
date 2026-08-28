@@ -137,6 +137,18 @@ def token_payload(payload: dict[str, Any]) -> dict[str, Any]:
 
 def manifest_token(workspace: Path, payload: dict[str, Any]) -> str:
     digest = sha256_bytes(canonical_bytes(token_payload(payload)))
+    project_id = load_project_identity(workspace)["project_id"]
+    material = ("tool-shed-bootstrap-closure-state-v1", project_id, digest)
+    token = hashlib.sha256()
+    for value in material:
+        token.update(value.encode("utf-8"))
+        token.update(b"\0")
+    return token.hexdigest()[:16]
+
+
+def legacy_manifest_token(workspace: Path, payload: dict[str, Any]) -> str:
+    """Return the path-bound token emitted before portable checkout support."""
+    digest = sha256_bytes(canonical_bytes(token_payload(payload)))
     return bind_state_token(workspace, "bootstrap-closure", digest)
 
 
@@ -679,10 +691,14 @@ def baseline_command(workspace: Path, path: Path, project_binding: str | None) -
 
 def require_current(workspace: Path, payload: dict[str, Any], expected: str | None) -> None:
     current = manifest_token(workspace, payload)
-    if payload.get("state_token") != current:
+    recorded = payload.get("state_token")
+    accepted = {current, legacy_manifest_token(workspace, payload)}
+    if recorded not in accepted:
         raise ClosureError("bootstrap closure manifest has a stale or invalid state_token")
-    if expected != current:
-        raise ClosureError(f"stale bootstrap closure state: expected {expected or 'missing'}, current {current}")
+    if expected != recorded:
+        raise ClosureError(
+            f"stale bootstrap closure state: expected {expected or 'missing'}, current {recorded}"
+        )
 
 
 def record_change_command(workspace: Path, path: Path, args: argparse.Namespace) -> dict[str, Any]:

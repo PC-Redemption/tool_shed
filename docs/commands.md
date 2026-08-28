@@ -180,7 +180,9 @@ python3 scripts/bootstrap_closure.py --workspace . report \
 ```
 
 Mutating commands require the current project binding; post-baseline changes also require the
-current manifest state token. `full` validates every tracked bootstrap manifest structurally.
+current manifest state token. The manifest token is bound to the project identity and manifest
+content, but not to an absolute checkout path, so the same tracked ledger verifies in CI and fresh
+clones. `full` validates every tracked bootstrap manifest structurally.
 `release` additionally requires all declared release-gate scopes and their evidence, plus every
 migration item and upgrade target in the gate's declared milestones, to be terminal. A staged
 controlled release may leave later canary scopes open only when the manifest names the pre-release
