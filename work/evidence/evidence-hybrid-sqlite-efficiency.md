@@ -3,7 +3,7 @@
 Status: passed
 Evidence ID: EVID-G2-EFFICIENCY
 Gate: G2-SUBSTRATE-LOOP-PROVEN
-Campaign: 105-implement-and-qualify-hpt2-closed-loop-vertical-slice
+Campaign: implement-and-qualify-hpt2-closed-loop-vertical-slice
 Date: 2026-08-28
 
 ## Measurement Contract

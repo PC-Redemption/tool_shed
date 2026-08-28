@@ -3,7 +3,7 @@
 Status: passed
 Evidence ID: EVID-G2-SUBSTRATE
 Gate: G2-SUBSTRATE-LOOP-PROVEN
-Campaign: 104-implement-minimum-sqlite-operational-substrate
+Campaign: implement-minimum-sqlite-operational-substrate
 Target: canonical Tool Shed worktree, local work3 candidate
 Candidate version: 0.34.0
 Date: 2026-08-28

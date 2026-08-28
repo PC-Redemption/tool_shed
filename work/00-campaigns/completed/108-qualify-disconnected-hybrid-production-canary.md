@@ -1,9 +1,9 @@
 # Qualify a disconnected hybrid production canary
 
-Status: working
+Status: complete
 Type: campaign
 Updated: 2026-08-28
-Next Action: execute the campaign completion gate
+Next Action: none
 Campaign ID: qualify-disconnected-hybrid-production-canary
 Campaign Number: 108
 Outcome: One production-shaped disconnected Tool Shed client with local Git but no project GitHub remote or authenticated gh proves install/upgrade, checkpoint, backup, restore, reconciliation, safe downgrade behavior, and rollback before broad rollout.
@@ -14,8 +14,10 @@ Decision: none
 Detour For: none
 Return To: none
 Completion Gate: The released external updater backs up and migrates the declared file/database/skill surface, validates reconstruction and closed-loop state, handles old-updater refusal, operates without gh authentication or a project remote, restores from external backup, downgrades through verified reverse export or refuses safely, and completes the required soak with no unresolved finding; G4 passes.
-Completion Evidence: none
-Disposition: none
+Completion Evidence: EVID-G4-CANARY passed under bootstrap closure token 3c9c7b90b911c4bd: published v0.34.2 upgraded the zero-remote unauthenticated synthetic hybrid client through protocol 4; live, backup, checkpoint, and rebuild parity matched; rollback restored; downgrade refused without mutation; isolated skill synchronization matched; strict snapshot integrity stayed bytecode-free; and three soak rounds ended HEALTHY with zero findings.
+Completion Date: 2026-08-28
+Completion Order: 92
+Disposition: completed
 Roadmap: hybrid-sqlite-operational-state
 Roadmap Revision: 3
 Milestone: M4-RELEASE-CANARY-PROVEN

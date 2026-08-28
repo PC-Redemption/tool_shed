@@ -3,7 +3,7 @@
 Status: passed
 Evidence ID: EVID-G3-MAINTAINER
 Gate: G3-MAINTAINER-CONVERSION-PROVEN
-Campaign: 106-rehearse-and-convert-maintainer-to-hybrid-state
+Campaign: rehearse-and-convert-maintainer-to-hybrid-state
 Target: canonical Tool Shed maintainer, local work3 candidate
 Candidate version: 0.34.0
 Date: 2026-08-28

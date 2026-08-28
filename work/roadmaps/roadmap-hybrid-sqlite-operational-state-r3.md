@@ -1,18 +1,27 @@
 # Program Roadmap: Hybrid SQLite Operational State
 
-Status: executing
+Status: complete
 Type: program-roadmap
 Updated: 2026-08-28
-Next Action: execute the first ready roadmap campaign through ts: next
+Next Action: none
 Roadmap ID: hybrid-sqlite-operational-state
 Revision: 3
 Source Project Map: work/maps/map-hybrid-sqlite-operational-state.md
 Source State Token: d32a7f8756a7b1f7
 Proposal Token: f9661f7264e82aa5
 Approved: 2026-08-28
-Current Milestone: M1-BOOTSTRAP-DESIGN-FROZEN
+Current Milestone: none
 Supersedes: work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md
 Superseded By: none
+
+## Completion Reconciliation
+
+All four milestones and gates are complete. Bootstrap closure token `121c5ab49f20471c` reconciles
+the original twelve requirements, fourteen material development changes, ten passing evidence
+records, satisfied G1-G4 verdicts, and the satisfied initiative verdict. The released disconnected
+client canary is recorded in
+`work/evidence/evidence-hybrid-sqlite-disconnected-production-canary.md`; original source files
+remain retained, and any later authority expansion or retirement is separate work.
 
 ## Roadmap Definition
 

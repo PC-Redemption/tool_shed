@@ -3,7 +3,7 @@
 Status: passed
 Type: evidence
 Updated: 2026-08-28
-Next Action: publish and verify Tool Shed 0.34.0, then append release evidence without closing the client-canary gate
+Next Action: none
 Campaign: publish-hybrid-state-release-and-sync-maintainer-skill
 
 ## Scope
