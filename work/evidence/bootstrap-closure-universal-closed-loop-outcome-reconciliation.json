@@ -2,9 +2,9 @@
   "authority_contract": "docs/universal-closed-loop-outcome-reconciliation.md",
   "baseline": {
     "created_at": "1970-01-01T00:00:00Z",
-    "source_commit": "150ef1670ab9c0df81f3029cac072e7434e9ed43",
+    "source_commit": "01cfa367dbf992b985f6ccdea44dac489b6b5a07",
     "source_digest": "3ed5d1b921ee71fd19d7b84300b23f6bf6b32209b6608dc56b56b3de9e187b95",
-    "updated_at": "2026-08-28T21:35:36Z"
+    "updated_at": "2026-08-28T21:41:27Z"
   },
   "bindings": [
     {
@@ -126,6 +126,25 @@
       ],
       "source_commit": "150ef1670ab9c0df81f3029cac072e7434e9ed43",
       "summary": "Reconcile staged release validation with the completed G4 migration boundary",
+      "supersedes": []
+    },
+    {
+      "authorization": "Owner-authorized end-to-end Universal Closed-Loop PRM CI evidence-response loop on 2026-08-28",
+      "decision_ids": [
+        "DEC-CLOSED-007"
+      ],
+      "evidence_to_rerun": [
+        "EVID-CLOSED-G4-RECOVERY"
+      ],
+      "id": "CHG-CLOSED-005",
+      "rationale": "The reconciled release matrix proved that the 41-entrypoint bytecode test was behaviorally successful but serialized process startup exceeded the Windows shard budget. Running the independent --help probes with a bounded eight-worker pool preserves every assertion and nonmutation check while removing platform process-startup serialization.",
+      "recorded_at": "2026-08-28T21:41:05Z",
+      "requirement_ids": [
+        "REQ-CLOSED-010",
+        "REQ-CLOSED-012"
+      ],
+      "source_commit": "01cfa367dbf992b985f6ccdea44dac489b6b5a07",
+      "summary": "Parallelize the cross-platform CLI bytecode smoke",
       "supersedes": []
     }
   ],
@@ -321,7 +340,7 @@
         },
         {
           "path": "tests/test_scripts.py",
-          "sha256": "ef76e7b29c4fc6e69e247080a548d1db3c205db50999bf29ec026938824886e5"
+          "sha256": "e661bc56b2c5bcb97d0ad2de2759b92013c13e6d63cd8736d957a1460e5f6e95"
         },
         {
           "path": "skills/tool-shed/SKILL.md",
@@ -337,19 +356,20 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T21:28:16Z"
+      "verified_at": "2026-08-28T21:41:19Z"
     },
     {
       "covers_change_ids": [
         "CHG-CLOSED-003",
-        "CHG-CLOSED-004"
+        "CHG-CLOSED-004",
+        "CHG-CLOSED-005"
       ],
       "gate": "G4-RECOVERY-BACKFILL-PROVEN",
       "id": "EVID-CLOSED-G4-RECOVERY",
       "references": [
         {
           "path": "work/evidence/evidence-universal-closed-loop-g4-recovery.md",
-          "sha256": "dbfd47aa4a353187f6065f5373da903d77023c48587ced18dbe179f021dead5b"
+          "sha256": "a0377bc0df892a519c4cc3d4d664821c87b862dca3c88be214b7fbb39a56297e"
         },
         {
           "path": "scripts/outcome_loop.py",
@@ -384,6 +404,10 @@
           "sha256": "6ccc4d39ee27d449e20e046bad7d413d83262c00080b06d378523304adb0b9ed"
         },
         {
+          "path": "tests/test_scripts.py",
+          "sha256": "e661bc56b2c5bcb97d0ad2de2759b92013c13e6d63cd8736d957a1460e5f6e95"
+        },
+        {
           "path": "docs/universal-closed-loop-outcome-reconciliation.md",
           "sha256": "bf92f40ad840676dfff2c89b677fb265b2e60e9f30a5b7efd994d6e0f35e150f"
         },
@@ -401,7 +425,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T21:35:30Z"
+      "verified_at": "2026-08-28T21:41:27Z"
     },
     {
       "covers_change_ids": [],
@@ -646,7 +670,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "52723d4cd89540c7",
+  "state_token": "253e1889dd48c866",
   "upgrade_targets": [
     {
       "id": "UPG-CLOSED-MAINTAINER",

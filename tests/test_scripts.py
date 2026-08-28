@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import concurrent.futures
 import hashlib
 import importlib.util
 import json
@@ -856,8 +857,8 @@ for raw in sys.stdin:
                 if 'if __name__ == "__main__"' in path.read_text(encoding="utf-8")
             ]
 
-            for entrypoint in entrypoints:
-                result = subprocess.run(
+            def run_help(entrypoint: Path) -> tuple[Path, subprocess.CompletedProcess[str]]:
+                return entrypoint, subprocess.run(
                     [sys.executable, str(entrypoint), "--help"],
                     cwd=snapshot,
                     text=True,
@@ -866,6 +867,13 @@ for raw in sys.stdin:
                     check=False,
                     env=environment,
                 )
+
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=min(8, len(entrypoints))
+            ) as executor:
+                results = list(executor.map(run_help, entrypoints))
+
+            for entrypoint, result in results:
                 self.assertEqual(
                     result.returncode,
                     0,

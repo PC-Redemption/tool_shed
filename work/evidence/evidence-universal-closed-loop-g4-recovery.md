@@ -83,3 +83,11 @@ state; one Windows shard passed its 52 behavioral tests but exceeded the 60-seco
 at 71.032 seconds. `CHG-CLOSED-004` records the now-complete migration boundary and terminal G4
 state so the exact reconciliation rerun can prove the release profile. A clean rerun, including the
 slow Windows shard, remains mandatory before publication.
+
+The reconciled run `33213400441` cleared every staged-release gate and 27 of 28 jobs. Its sole
+failure was again Windows/Python 3.11 shard 7/7: all selected tests completed successfully, but the
+41-entrypoint bytecode smoke serialized Windows process startup and pushed aggregate validation to
+94 seconds. `CHG-CLOSED-005` retains every `--help` exit-code and nonmutation assertion while using
+a bounded eight-worker pool for those independent probes. Locally, the focused smoke fell from
+2.152 to 0.539 seconds and the entire 52-test shard passed in 4.099 seconds against the unchanged
+60-second release budget. The exact cross-platform rerun remains mandatory.
