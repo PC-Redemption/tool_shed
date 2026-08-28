@@ -443,15 +443,6 @@ def validate_manifest(
         if item.get("status") in {"passed", "failed", "not-applicable"} and not nonempty(item.get("verified_at")):
             findings.append(f"{label} terminal status needs verified_at")
 
-    for change in collections["changes"]:
-        change_id = change.get("id")
-        if not isinstance(change_id, str):
-            continue
-        for evidence_id in change.get("evidence_to_rerun", []):
-            record = evidence_by_id.get(str(evidence_id), {})
-            if record.get("status") not in {"passed", "not-applicable"} or change_id not in record.get("covers_change_ids", []):
-                findings.append(f"change {change_id} still requires evidence {evidence_id} to be rerun")
-
     for key in ("migration_items", "upgrade_targets"):
         allowed = {"id", "summary", "milestone", "status"}
         if key == "upgrade_targets":
@@ -503,6 +494,29 @@ def validate_manifest(
         findings.append("bootstrap closure repeats verdict scopes: " + ", ".join(repeated_scopes))
     if "initiative" not in verdict_by_scope:
         findings.append("bootstrap closure needs an initiative verdict")
+
+    for change in collections["changes"]:
+        change_id = change.get("id")
+        if not isinstance(change_id, str):
+            continue
+        for evidence_id in change.get("evidence_to_rerun", []):
+            record = evidence_by_id.get(str(evidence_id), {})
+            status = record.get("status")
+            covered = change_id in record.get("covers_change_ids", [])
+            evidence_gate = record.get("gate")
+            gate_disposition = verdict_by_scope.get(str(evidence_gate), {}).get("disposition")
+            pending_future_gate = (
+                status == "pending"
+                and covered
+                and gate_disposition in VERDICTS - TERMINAL_VERDICTS
+            )
+            if (
+                status not in {"passed", "not-applicable"}
+                or not covered
+            ) and not pending_future_gate:
+                findings.append(
+                    f"change {change_id} still requires evidence {evidence_id} to be rerun"
+                )
 
     release_gate = payload.get("release_gate")
     if not isinstance(release_gate, dict):

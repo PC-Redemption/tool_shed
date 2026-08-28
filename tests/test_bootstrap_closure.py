@@ -12,6 +12,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "bootstrap_closure.py"
+if str(ROOT / "scripts") not in sys.path:
+    sys.path.insert(0, str(ROOT / "scripts"))
+
+import bootstrap_closure
 
 
 def project_binding(workspace: Path) -> str:
@@ -290,6 +294,92 @@ class BootstrapClosureTests(unittest.TestCase):
         self.assertEqual(reconciled["release_gate"]["required_milestones"], ["M1-FIXTURE"])
         self.assertEqual(reconciled["migration_items"][0]["status"], "complete")
         self.assertEqual(reconciled["upgrade_targets"][0]["status"], "complete")
+
+    def test_pending_change_evidence_is_valid_only_behind_an_open_future_gate(self) -> None:
+        payload = self.draft()
+        payload["requirements"].append(
+            {
+                "id": "REQ-FIXTURE-002",
+                "summary": "Prove the released canary",
+                "origin": {"path": "work/ideas/idea-fixture.md", "section": "Desired outcome"},
+                "milestone": "M2-FIXTURE",
+                "evidence_gate": "G2-FIXTURE",
+                "disposition": "accepted",
+                "evidence_ids": ["EVID-FIXTURE-002"],
+            }
+        )
+        payload["changes"].append(
+            {
+                "id": "CHG-FIXTURE-001",
+                "recorded_at": "2026-08-28T00:00:00Z",
+                "summary": "Stage publication before the canary",
+                "rationale": "The canary consumes the published release.",
+                "authorization": "fixture approval",
+                "requirement_ids": ["REQ-FIXTURE-002"],
+                "decision_ids": [],
+                "supersedes": [],
+                "evidence_to_rerun": ["EVID-FIXTURE-002"],
+                "source_commit": "0" * 40,
+            }
+        )
+        payload["evidence"].append(
+            {
+                "id": "EVID-FIXTURE-002",
+                "gate": "G2-FIXTURE",
+                "status": "pending",
+                "references": [{"path": "docs/fixture-contract.md", "sha256": "pending"}],
+                "covers_change_ids": ["CHG-FIXTURE-001"],
+                "verified_at": None,
+            }
+        )
+        payload["verdicts"].insert(
+            -1,
+            {
+                "scope": "G2-FIXTURE",
+                "disposition": "open",
+                "summary": "The released canary remains pending.",
+                "evidence_ids": ["EVID-FIXTURE-002"],
+                "authorized_by": "fixture",
+            },
+        )
+        payload["release_gate"] = {
+            "mode": "blocking",
+            "required_scopes": ["G1-FIXTURE"],
+            "required_milestones": ["M1-FIXTURE"],
+        }
+        self.manifest.write_text(
+            json.dumps(payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        self.baseline()
+        staged = self.run_cli(
+            "verify",
+            "--manifest",
+            str(self.manifest.relative_to(self.workspace)),
+            "--require-final",
+        )
+        self.assertTrue(json.loads(staged.stdout)["release_ready"])
+
+        manifest = json.loads(self.manifest.read_text(encoding="utf-8"))
+        next(item for item in manifest["verdicts"] if item["scope"] == "G2-FIXTURE")[
+            "disposition"
+        ] = "satisfied"
+        manifest["baseline"]["source_digest"] = bootstrap_closure.source_digest(manifest)
+        manifest["state_token"] = bootstrap_closure.manifest_token(self.workspace, manifest)
+        self.manifest.write_text(
+            json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        failed = self.run_cli(
+            "verify",
+            "--manifest",
+            str(self.manifest.relative_to(self.workspace)),
+            check=False,
+        )
+        self.assertIn(
+            "change CHG-FIXTURE-001 still requires evidence EVID-FIXTURE-002 to be rerun",
+            failed.stdout,
+        )
 
     def test_stale_binding_and_missing_required_records_fail(self) -> None:
         self.baseline()
