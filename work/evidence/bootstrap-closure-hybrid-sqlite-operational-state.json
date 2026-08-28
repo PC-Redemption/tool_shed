@@ -2,9 +2,9 @@
   "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
   "baseline": {
     "created_at": "2026-08-28T16:26:19Z",
-    "source_commit": "e464425c4d4f8e63711fffbe1b1118b42021d1c3",
+    "source_commit": "730a1549314b07e61e206d1b7f2b2c70ae6827cc",
     "source_digest": "1138aa47122132b998f973a0b7066c5587c85f7acf01c72b8d83783da5eac21d",
-    "updated_at": "2026-08-28T17:47:34Z"
+    "updated_at": "2026-08-28T17:48:40Z"
   },
   "bindings": [
     {
@@ -443,10 +443,6 @@
           "sha256": "870f4ebf8a3928ebe7baecd32317038a99e728b59bf239d0884acb63cc3f05d9"
         },
         {
-          "path": "work/state/checkpoints/state-v1.json",
-          "sha256": "000431fd4db30b81732784182f089e6d24ea7d7dd10fbb018221b7112b97eff5"
-        },
-        {
           "path": "scripts/maintainer_hybrid_conversion.py",
           "sha256": "385773d10ffae4236fc1afecf687f262b36184b60a1b6860762351d87f0f4079"
         },
@@ -472,7 +468,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T17:47:34Z"
+      "verified_at": "2026-08-28T17:48:40Z"
     },
     {
       "covers_change_ids": [],
@@ -730,7 +726,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "92b0f87feb5c2722",
+  "state_token": "840d37699b767de2",
   "upgrade_targets": [
     {
       "id": "UPG-HYBRID-MAINTAINER",
