@@ -55,9 +55,26 @@ Before and after SHA-256 values were identical for both the live database
 (`3857872a44197c8cb0fc97ece1a8cf0ad842f798b479bc8c72822f0f2212e5d3`) and tracked checkpoint
 (`0dede4448f8471bcfd168eaf1d2a49aa0f68883b10e84c84f95826cc9c185d1e`).
 
+## Exact-Candidate Disposable Maintainer Rehearsal
+
+Commit `010b626b7fc609b1179506f9ac73743583486e91` was checked out into a detached,
+database-free worktree. The controller archived all 451 tracked files with zero ignored or
+untracked files. The external archive has SHA-256
+`972cd2d80f4f150f7a0754171e3aa3fde6cffa4121216ecad6bd93f626041372` and inventory digest
+`b156a08d1facad20c1fc9e05465f3598d927cb4f0bf98063a489edadeaefe368`.
+
+Two isolated restores produced deterministic source fingerprint
+`6df5d9d432de673dd56ed12714c99ee688f7d2a447cd7da048ce541d8804302d`, semantic digest
+`0ea4f0f5b5571aa09cfe91be5d141d2f84dc98219c9428f6a4deb48cb790b113`, and rehearsal token
+`3a202d878fb3e0895fe008f699fc976ab5293f0d7da70077327ba87ed46a7f09`.
+Each run restored all 451 files, passed file/SQLite and eight-operation HPT2 parity, created and
+rebuilt both shadow and hybrid checkpoints, verified its backup, rejected foreign lineage,
+classified direct SQL as `UNMANAGED_REVIEW`, reconciled it to `VALID_DIRTY`, rebuilt the clean
+checkpoint, and rolled a simulated interrupted transaction back to `CLEAN`.
+
 ## Remaining G4 Completion Work
 
-The complete 367-test suite and repository validators must pass after the final release-manifest
-refresh. The exact candidate must then be committed and pushed, a fresh source-complete external
-archive must pass two disposable maintainer rehearsals, and the exact GitHub CI matrix must pass.
-Only then may this evidence become `passed` and G4 receive a satisfied verdict.
+The complete 367-test suite and full repository profile passed after the final release-manifest
+refresh. The fresh source-complete external archive and two disposable maintainer rehearsals also
+passed. The resulting evidence update must now be committed and pushed, and that exact GitHub CI
+matrix must pass. Only then may G4 receive a satisfied verdict.
