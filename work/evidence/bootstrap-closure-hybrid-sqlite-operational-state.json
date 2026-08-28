@@ -2,9 +2,9 @@
   "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
   "baseline": {
     "created_at": "2026-08-28T16:26:19Z",
-    "source_commit": "e62812c97c83902f2701b8e905a5e8c1cba366bd",
+    "source_commit": "dfaec63c69e3cb5ce8bac2c1545c22f4632f1615",
     "source_digest": "33676dccc9f9c61e0f6809b1d040d12e2d1eb794e70a55348d5c2674230bd8ea",
-    "updated_at": "2026-08-28T18:48:43Z"
+    "updated_at": "2026-08-28T18:53:59Z"
   },
   "bindings": [
     {
@@ -251,6 +251,26 @@
       "source_commit": "e62812c97c83902f2701b8e905a5e8c1cba366bd",
       "summary": "Correct cross-checkout and Windows release qualification",
       "supersedes": []
+    },
+    {
+      "authorization": "Owner-approved Campaign 107 release execution and failed exact-candidate CI evidence",
+      "decision_ids": [],
+      "evidence_to_rerun": [
+        "EVID-G2-HPT2-PARITY",
+        "EVID-G2-SUBSTRATE",
+        "EVID-G4-RELEASE"
+      ],
+      "id": "CHG-HYBRID-010",
+      "rationale": "The second exact-candidate CI run proved that Windows can present one temporary workspace through short and long path spellings; every direct hybrid API boundary must canonicalize the root before containment and relative-path operations.",
+      "recorded_at": "2026-08-28T18:53:14Z",
+      "requirement_ids": [
+        "REQ-HYBRID-007",
+        "REQ-HYBRID-008",
+        "REQ-HYBRID-010"
+      ],
+      "source_commit": "dfaec63c69e3cb5ce8bac2c1545c22f4632f1615",
+      "summary": "Normalize hybrid API workspace paths on Windows",
+      "supersedes": []
     }
   ],
   "decisions": [
@@ -455,7 +475,8 @@
         "CHG-HYBRID-003",
         "CHG-HYBRID-004",
         "CHG-HYBRID-005",
-        "CHG-HYBRID-009"
+        "CHG-HYBRID-009",
+        "CHG-HYBRID-010"
       ],
       "gate": "G2-SUBSTRATE-LOOP-PROVEN",
       "id": "EVID-G2-SUBSTRATE",
@@ -474,7 +495,7 @@
         },
         {
           "path": "scripts/hybrid_state.py",
-          "sha256": "cff720c0e37de68809eba641643a5d33d7e75d9ec2bf48a9f7695897310691dd"
+          "sha256": "7b11921a0579534a8e9c4070d80d5e1ae348ed6cd3de17907df3189cf23525fa"
         },
         {
           "path": "scripts/hybrid_state_schema.py",
@@ -506,13 +527,14 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T18:48:06Z"
+      "verified_at": "2026-08-28T18:53:22Z"
     },
     {
       "covers_change_ids": [
         "CHG-HYBRID-006",
         "CHG-HYBRID-007",
-        "CHG-HYBRID-009"
+        "CHG-HYBRID-009",
+        "CHG-HYBRID-010"
       ],
       "gate": "G2-SUBSTRATE-LOOP-PROVEN",
       "id": "EVID-G2-HPT2-PARITY",
@@ -527,11 +549,11 @@
         },
         {
           "path": "scripts/outcome_reconciliation.py",
-          "sha256": "f0fd94d6bba6aca200f086a2788d568d2039abde727c1872d69eeada581c9acc"
+          "sha256": "34ae56b21a28a25f76ba1c6ed176580d48da755dc05247e07cca259c4f374840"
         },
         {
           "path": "schemas/hybrid-state/v1/hpt2-assigned-ids.json",
-          "sha256": "bf9fd938b94cb83b7ac64063c7730175dafaf34dfeed9f1d14675c40652a84f2"
+          "sha256": "3237eafda54367dd6e24c8312aa04337ae2015680c9496faf38efe3e6f6727fe"
         },
         {
           "path": "tests/test_outcome_reconciliation.py",
@@ -547,11 +569,12 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T18:48:36Z"
+      "verified_at": "2026-08-28T18:53:29Z"
     },
     {
       "covers_change_ids": [
-        "CHG-HYBRID-005"
+        "CHG-HYBRID-005",
+        "CHG-HYBRID-010"
       ],
       "gate": "G2-SUBSTRATE-LOOP-PROVEN",
       "id": "EVID-G2-EFFICIENCY",
@@ -566,7 +589,7 @@
         },
         {
           "path": "scripts/outcome_reconciliation.py",
-          "sha256": "f0fd94d6bba6aca200f086a2788d568d2039abde727c1872d69eeada581c9acc"
+          "sha256": "34ae56b21a28a25f76ba1c6ed176580d48da755dc05247e07cca259c4f374840"
         },
         {
           "path": "tests/test_outcome_reconciliation.py",
@@ -582,12 +605,13 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T18:39:16Z"
+      "verified_at": "2026-08-28T18:53:51Z"
     },
     {
       "covers_change_ids": [
         "CHG-HYBRID-005",
-        "CHG-HYBRID-009"
+        "CHG-HYBRID-009",
+        "CHG-HYBRID-010"
       ],
       "gate": "G3-MAINTAINER-CONVERSION-PROVEN",
       "id": "EVID-G3-MAINTAINER",
@@ -602,7 +626,7 @@
         },
         {
           "path": "scripts/outcome_reconciliation.py",
-          "sha256": "f0fd94d6bba6aca200f086a2788d568d2039abde727c1872d69eeada581c9acc"
+          "sha256": "34ae56b21a28a25f76ba1c6ed176580d48da755dc05247e07cca259c4f374840"
         },
         {
           "path": "schemas/hybrid-state/v1/maintainer-assigned-ids.json",
@@ -626,13 +650,14 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T18:48:43Z"
+      "verified_at": "2026-08-28T18:53:59Z"
     },
     {
       "covers_change_ids": [
         "CHG-HYBRID-005",
         "CHG-HYBRID-008",
-        "CHG-HYBRID-009"
+        "CHG-HYBRID-009",
+        "CHG-HYBRID-010"
       ],
       "gate": "G4-RELEASE-CANARY-PROVEN",
       "id": "EVID-G4-RELEASE",
@@ -918,7 +943,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "c5038efc2ae1f6c5",
+  "state_token": "2371e035a81158ed",
   "upgrade_targets": [
     {
       "id": "UPG-HYBRID-MAINTAINER",
