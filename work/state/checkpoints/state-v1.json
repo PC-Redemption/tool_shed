@@ -1,0 +1,3322 @@
+{
+  "envelope": {
+    "checkpoint_ledger_id": "7fd04020-2c9f-4b12-a58a-948f4bc84015",
+    "checkpoint_path": "work/state/checkpoints/state-v1.json",
+    "created_at": "2026-08-28T17:38:31Z",
+    "database_revision": 4,
+    "digest": "a9c3557a9a904b0878e7191b588660d040a54d0840233fa340a419881f07f1ca",
+    "export_ledger_id": "8bda8864-5e72-4b42-a2ba-e9b63362adaa",
+    "format_version": 1,
+    "previous_checkpoint_digest": "760543c6311792c8c5e062c1361ce27edd4e3f52af5d95d62d2cfe550775a3d9",
+    "project_id": "817b6358-b2f5-48fd-bb66-bd80f936faca",
+    "schema_version": 1,
+    "source_commit": "3aaacdf20c8c2112e4d372bbd6e69f16d3eb13df",
+    "source_tree_digest": "e57739e5f274fd8fa4075af9fa71e16f56ecaaab92c1c12969cb280e91da3e4a",
+    "storage_mode": "hybrid",
+    "workspace_id": "017d41a6-36e8-5dc9-a8c2-07094c936854"
+  },
+  "kind": "tool-shed-hybrid-state-checkpoint",
+  "schema_version": 1,
+  "tables": {
+    "artifact": [
+      {
+        "authority_mode": "file",
+        "content_sha256": "6b139175fbc9043ba56292f95808ae9761a5c0d231d0372525660129dfa44ffe",
+        "created_at": "2026-08-28T17:38:30Z",
+        "current_path": "work/evidence/evidence-hybrid-sqlite-hpt2-parity.md",
+        "display_number": null,
+        "id": "0ac49981-63a7-4814-bd8e-61622837cbf4",
+        "lifecycle_state": "imported",
+        "type": "markdown",
+        "updated_at": "2026-08-28T17:38:30Z"
+      },
+      {
+        "authority_mode": "file",
+        "content_sha256": "4e5b2c109728fe67b62d183e803522cc89d7e760bd0e37c45c98e8fb9ad9da56",
+        "created_at": "2026-08-28T17:38:30Z",
+        "current_path": "tests/test_hybrid_state.py",
+        "display_number": null,
+        "id": "10c34ae2-cc0c-4cfb-b45d-078faa2f8a27",
+        "lifecycle_state": "imported",
+        "type": "file",
+        "updated_at": "2026-08-28T17:38:30Z"
+      },
+      {
+        "authority_mode": "file",
+        "content_sha256": "d945c9aeb7cd5771d4525d5be575efde219bb85c86eec4fa7609fa24f294bae0",
+        "created_at": "2026-08-28T17:38:30Z",
+        "current_path": "docs/outcome-reconciliation.md",
+        "display_number": null,
+        "id": "40178b41-630f-4b67-a4cb-b243b240af3d",
+        "lifecycle_state": "imported",
+        "type": "markdown",
+        "updated_at": "2026-08-28T17:38:30Z"
+      },
+      {
+        "authority_mode": "file",
+        "content_sha256": "d3fd3b184becd3bd10a2991a52ead0dde88b528b109dc021a6fd41123af95369",
+        "created_at": "2026-08-28T17:38:29Z",
+        "current_path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
+        "display_number": null,
+        "id": "44345c08-9155-4acc-9a0d-235779ef79f3",
+        "lifecycle_state": "imported",
+        "type": "markdown",
+        "updated_at": "2026-08-28T17:38:29Z"
+      },
+      {
+        "authority_mode": "file",
+        "content_sha256": "95ea52ba317548f48da88b8c73377d853560d9630997e0edf7fd40ea0b600ac5",
+        "created_at": "2026-08-28T17:38:30Z",
+        "current_path": "scripts/hybrid_state.py",
+        "display_number": null,
+        "id": "4a82cb8a-7413-4d89-94ec-607f68cfda29",
+        "lifecycle_state": "imported",
+        "type": "file",
+        "updated_at": "2026-08-28T17:38:30Z"
+      },
+      {
+        "authority_mode": "file",
+        "content_sha256": "e74202d878f93d08d81a3fc261a1a96f84088f8f427596f85233da185ecc5b22",
+        "created_at": "2026-08-28T17:38:30Z",
+        "current_path": "work/maps/map-hybrid-sqlite-operational-state.md",
+        "display_number": null,
+        "id": "4fd02196-30f5-41e4-82d9-90ae2cdb5c20",
+        "lifecycle_state": "imported",
+        "type": "markdown",
+        "updated_at": "2026-08-28T17:38:30Z"
+      },
+      {
+        "authority_mode": "file",
+        "content_sha256": "22668208bc174ce455101620f93635a2ef70ec3a171700bcb05f612098e775bc",
+        "created_at": "2026-08-28T17:38:29Z",
+        "current_path": "work/evidence/bootstrap-closure-hybrid-sqlite-operational-state.json",
+        "display_number": null,
+        "id": "65538b72-8a77-4c4d-ba7c-693137779b07",
+        "lifecycle_state": "imported",
+        "type": "json",
+        "updated_at": "2026-08-28T17:38:29Z"
+      },
+      {
+        "authority_mode": "file",
+        "content_sha256": "fb1bb04ce88633359e7e33c75e3cb2bef1ad645a9a064e5afa360d5cc05fb3fc",
+        "created_at": "2026-08-28T17:38:30Z",
+        "current_path": "work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md",
+        "display_number": null,
+        "id": "6ea83b0e-b398-4e42-955a-465f630b7ca7",
+        "lifecycle_state": "imported",
+        "type": "markdown",
+        "updated_at": "2026-08-28T17:38:30Z"
+      },
+      {
+        "authority_mode": "file",
+        "content_sha256": "03b4becb0d8401c949053543685733983096c63737d63922d4715383ff315769",
+        "created_at": "2026-08-28T17:38:29Z",
+        "current_path": "tests/test_outcome_reconciliation.py",
+        "display_number": null,
+        "id": "797b1434-d24e-42bd-a9b7-54f52e8bd74c",
+        "lifecycle_state": "imported",
+        "type": "python",
+        "updated_at": "2026-08-28T17:38:29Z"
+      },
+      {
+        "authority_mode": "file",
+        "content_sha256": "3ac9a5dcb674a8354ff6da9ddc39da29ebf338d1b517ef233aaeb9f11329fbcd",
+        "created_at": "2026-08-28T17:38:30Z",
+        "current_path": "work/evidence/evidence-hybrid-sqlite-efficiency.md",
+        "display_number": null,
+        "id": "9fb86c04-8e14-4da0-9ff5-d07fa7627a22",
+        "lifecycle_state": "imported",
+        "type": "markdown",
+        "updated_at": "2026-08-28T17:38:30Z"
+      },
+      {
+        "authority_mode": "file",
+        "content_sha256": "d8a400c395de17a38a44b9076dc4ee27e849d04d012953770e574b9f77298989",
+        "created_at": "2026-08-28T17:38:30Z",
+        "current_path": "work/evidence/evidence-hybrid-sqlite-substrate.md",
+        "display_number": null,
+        "id": "b16ee9b0-770c-492f-831f-417c6b8f0d8b",
+        "lifecycle_state": "imported",
+        "type": "markdown",
+        "updated_at": "2026-08-28T17:38:30Z"
+      },
+      {
+        "authority_mode": "file",
+        "content_sha256": "661d33554046819a81cc250c6ad488ff2c8dcbbfbb66d10d3fb953b7622dd291",
+        "created_at": "2026-08-28T17:38:30Z",
+        "current_path": "docs/hybrid-sqlite-state.md",
+        "display_number": null,
+        "id": "bb506b8c-5f68-48c7-993b-b9d59487b1b8",
+        "lifecycle_state": "imported",
+        "type": "markdown",
+        "updated_at": "2026-08-28T17:38:30Z"
+      },
+      {
+        "authority_mode": "file",
+        "content_sha256": "033651f1d422cdf99d70da3d3ef9495d0e5feaa0dd1d7cb1fb6f9311a4551f63",
+        "created_at": "2026-08-28T17:38:30Z",
+        "current_path": "schemas/hybrid-state/v1/maintainer-assigned-ids.json",
+        "display_number": null,
+        "id": "c194a517-01d8-458e-b3b4-8ba62ab94072",
+        "lifecycle_state": "imported",
+        "type": "json",
+        "updated_at": "2026-08-28T17:38:30Z"
+      },
+      {
+        "authority_mode": "file",
+        "content_sha256": "42f3aecb2ad5417c8884ca6b4cab3c868ee7ee7128a298eff13b6166badc9357",
+        "created_at": "2026-08-28T17:38:29Z",
+        "current_path": "docs/hybrid-sqlite-state-v1-contract.md",
+        "display_number": null,
+        "id": "c3f2052c-2011-4f6a-b79c-3ff01bc6e10b",
+        "lifecycle_state": "imported",
+        "type": "markdown",
+        "updated_at": "2026-08-28T17:38:29Z"
+      },
+      {
+        "authority_mode": "file",
+        "content_sha256": "db1707b6cce8fa902f6a493c33530ec7443c429b53167c369019243b2b4a6730",
+        "created_at": "2026-08-28T17:38:29Z",
+        "current_path": "work/ideas/idea-sqlite-backed-tool-shed-operational-state.md",
+        "display_number": null,
+        "id": "ce87f685-72e2-4c65-a85c-14ac54ef4b79",
+        "lifecycle_state": "imported",
+        "type": "markdown",
+        "updated_at": "2026-08-28T17:38:29Z"
+      },
+      {
+        "authority_mode": "file",
+        "content_sha256": "c92f8910f815fb3f46f6d51ba7e7fc8752f3d9878a1b5a212198503a2d7dafff",
+        "created_at": "2026-08-28T17:38:30Z",
+        "current_path": "schemas/hybrid-state/v1/checkpoint.schema.json",
+        "display_number": null,
+        "id": "d0377b75-880a-4572-af9d-dfb8bb0736d3",
+        "lifecycle_state": "imported",
+        "type": "json",
+        "updated_at": "2026-08-28T17:38:30Z"
+      },
+      {
+        "authority_mode": "file",
+        "content_sha256": "c32e9a94c238f73a833ab446de8248413fc0b2e3ee94003e2868f9d1b55870ff",
+        "created_at": "2026-08-28T17:38:30Z",
+        "current_path": "work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md",
+        "display_number": null,
+        "id": "e0efdf4f-2f91-4a57-a0a9-6f16133f6802",
+        "lifecycle_state": "imported",
+        "type": "markdown",
+        "updated_at": "2026-08-28T17:38:30Z"
+      },
+      {
+        "authority_mode": "file",
+        "content_sha256": "8961efa7df6ef2988f39321b02b7128aa576fb3216afa4aad6aa989a7a5d5842",
+        "created_at": "2026-08-28T17:38:29Z",
+        "current_path": "scripts/outcome_reconciliation.py",
+        "display_number": null,
+        "id": "e14b547c-2656-4042-9f82-1763f70341a5",
+        "lifecycle_state": "imported",
+        "type": "python",
+        "updated_at": "2026-08-28T17:38:29Z"
+      },
+      {
+        "authority_mode": "file",
+        "content_sha256": "1ea654bb6b8a2d42a4d0962c4e592bbe75b8557cdd40b2ab9a996504967dfaa7",
+        "created_at": "2026-08-28T17:38:30Z",
+        "current_path": "schemas/hybrid-state/v1/hpt2-assigned-ids.json",
+        "display_number": null,
+        "id": "e408b57a-e95a-4cf5-926c-99528a1e2e3f",
+        "lifecycle_state": "imported",
+        "type": "json",
+        "updated_at": "2026-08-28T17:38:30Z"
+      },
+      {
+        "authority_mode": "file",
+        "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "created_at": "2026-08-28T17:38:29Z",
+        "current_path": "unavailable/hpt2-original-source",
+        "display_number": null,
+        "id": "e4a585a9-cfe0-453b-8cae-04b62df704c3",
+        "lifecycle_state": "unknown",
+        "type": "missing-source",
+        "updated_at": "2026-08-28T17:38:29Z"
+      },
+      {
+        "authority_mode": "file",
+        "content_sha256": "cec17e40de30a77d38a91ed1d2fcffa06a573bf13e91361b3ca18135c525d508",
+        "created_at": "2026-08-28T17:38:30Z",
+        "current_path": "scripts/hybrid_state_schema.py",
+        "display_number": null,
+        "id": "eb192a17-6a1c-4088-9c2a-f46688c4c18d",
+        "lifecycle_state": "imported",
+        "type": "file",
+        "updated_at": "2026-08-28T17:38:30Z"
+      }
+    ],
+    "checkpoint_ledger": [
+      {
+        "created_at": "2026-08-28T17:38:30Z",
+        "digest": "760543c6311792c8c5e062c1361ce27edd4e3f52af5d95d62d2cfe550775a3d9",
+        "id": "c5d014d9-a587-432a-8839-2bc70b84463b",
+        "path": "work/state/checkpoints/state-v1.json",
+        "revision": 3,
+        "source_commit": "3aaacdf20c8c2112e4d372bbd6e69f16d3eb13df",
+        "status": "complete"
+      }
+    ],
+    "cycle": [
+      {
+        "accepted_outcome": "Reconcile HPT2 from accepted intent through current product truth without inventing missing history.",
+        "closed_at": "2026-08-28T17:38:29Z",
+        "id": "45aec1ed-289c-4d3f-a640-406341ab717e",
+        "kind": "historical-qualification",
+        "lifecycle_state": "terminal",
+        "opened_at": "2026-08-28T17:38:29Z",
+        "origin_artifact_id": "e4a585a9-cfe0-453b-8cae-04b62df704c3"
+      },
+      {
+        "accepted_outcome": "{\"digest\":\"db0e4b29c7267ea7dcde9480d4ab0b3668b99b885026d4fc2f9cce76cf1d6f30\",\"state_token\":\"ca7da0f7be4d2361\"}",
+        "closed_at": "2026-08-28T17:38:29Z",
+        "id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "kind": "bootstrap-closure",
+        "lifecycle_state": "terminal",
+        "opened_at": "2026-08-28T17:38:29Z",
+        "origin_artifact_id": "65538b72-8a77-4c4d-ba7c-693137779b07"
+      }
+    ],
+    "event": [
+      {
+        "entity_id": "dd9e75bf-1b3f-4e38-b649-3267864086be",
+        "entity_type": "import_record",
+        "id": "02981969-1ace-49b2-beda-4dfadfaad853",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "ed3bcc58-e277-49e8-bfe7-703a193aa89f",
+        "entity_type": "requirement",
+        "id": "03690c88-2a6e-46c4-9b4d-382905d82ca3",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "9fb86c04-8e14-4da0-9ff5-d07fa7627a22",
+        "entity_type": "artifact",
+        "id": "04495ebe-8039-4f7f-b3a6-0ac61ba0f1dd",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "79541e0f-bfc4-42b0-949b-5e70693ea48e",
+        "entity_type": "requirement",
+        "id": "0458bd88-84b3-46ed-8478-540b985f5684",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "efc194da-12fb-4a87-922a-bd9067ab59ea",
+        "entity_type": "evidence_reference",
+        "id": "07daae83-4608-4865-873c-c271768ae8a3",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "0a04dd62-55be-4375-8cb6-dbe6dbcaee1c",
+        "entity_type": "evidence_reference",
+        "id": "09d43167-f95c-4148-ae37-1adf5941dcc4",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "5414d8a4-326b-489d-b1b9-ab68f6acaa24",
+        "entity_type": "verification_result",
+        "id": "0d26cb0a-73c4-42ec-ac12-55c18ea94d38",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "b9f9ef8f-a4ed-4723-b2da-0bc660ee61e4",
+        "entity_type": "import_record",
+        "id": "0e776dbb-62a7-45a0-a133-84da5ff2f9d6",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "28b13ea5-9819-4c20-b1ab-273b5e7ec44e",
+        "entity_type": "evidence_reference",
+        "id": "0ef39ab9-3e2b-4f6e-995c-ac0290720429",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "ca0c6c33-6bbd-47b0-bf0a-4a25dc5b920e",
+        "entity_type": "evidence_reference",
+        "id": "10c02b7d-aa43-40aa-b39e-85f7b3472698",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "9bfab977-f049-44c4-ac88-36eab75cdafc",
+        "entity_type": "import_record",
+        "id": "12220a72-f376-4560-8d05-3f30d3e0a996",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "e63597dd-dbf1-4700-a87c-2d603b956af5",
+        "entity_type": "verification_result",
+        "id": "13977560-d258-45a5-adcd-8830d4c9135b",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "4e215995-1aa8-4e6b-baa2-78fc8b150cac",
+        "entity_type": "verification_result",
+        "id": "14d208fa-aae1-4511-b055-f53ff4811398",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "2750765c-272c-4ba3-b6d5-29fd68d9c6a3",
+        "entity_type": "evidence_reference",
+        "id": "17adb5cc-62c5-4712-b165-ffd65f483662",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "e408b57a-e95a-4cf5-926c-99528a1e2e3f",
+        "entity_type": "artifact",
+        "id": "1db36567-f72c-4fc3-9ccd-0263f4e033f0",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "17acfc38-fe58-44d9-8672-df55ae42364c",
+        "entity_type": "requirement",
+        "id": "218f89ff-b3d9-4012-b522-524abc00e103",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "45aec1ed-289c-4d3f-a640-406341ab717e",
+        "entity_type": "cycle",
+        "id": "227458ec-0cf0-4a3f-ba18-aaea2f7e7cb9",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"cycle\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "936dddee-e4b1-4419-8256-7b1749f7ea48",
+        "entity_type": "material_change",
+        "id": "231ebd43-da74-4607-a8f3-2f0df18b392f",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"material_change\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "acc357fd-039b-4848-96ab-61bd99d16ae9",
+        "entity_type": "verification_result",
+        "id": "2cdc0ff4-efa1-4f5e-a19b-9b3bddb526b2",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "0ac49981-63a7-4814-bd8e-61622837cbf4",
+        "entity_type": "artifact",
+        "id": "2d6e5f77-c6cd-4338-93d3-2a484548c7fd",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "2369b70c-2530-403d-becd-7ec816e63dd5",
+        "entity_type": "relationship",
+        "id": "2db1b3c0-f29c-4e55-97c0-6a725e5c4503",
+        "kind": "structural-insert",
+        "operation_id": "82355f80-28a5-4cbf-9f8d-9af901669447",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 2
+      },
+      {
+        "entity_id": "bb506b8c-5f68-48c7-993b-b9d59487b1b8",
+        "entity_type": "artifact",
+        "id": "32b3d693-c392-49b5-9e4e-fc6362bc6500",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "46c871d0-0cf7-4d29-b2bc-f27b72655b93",
+        "entity_type": "requirement",
+        "id": "32bba8a2-02c8-4cc9-9905-ca13db0b0993",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "96d54f17-ebe0-4a4b-a501-0dc41f388432",
+        "entity_type": "requirement",
+        "id": "37622400-e579-4fe6-b7ff-1ef1a96d5b4c",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "c194a517-01d8-458e-b3b4-8ba62ab94072",
+        "entity_type": "artifact",
+        "id": "3984d5ed-2dd5-45cb-87f3-a27e1123c0dc",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "e09d10e7-09a2-49ee-bd59-71dae83fcce8",
+        "entity_type": "import_record",
+        "id": "3bacb967-0225-40a1-9621-d4ffd2166b78",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "3e4012f6-b1a7-4d7e-8a2d-791383f72bce",
+        "entity_type": "verification_result",
+        "id": "3f84bf7f-8ec6-4152-8ca4-28a1d1c53fd0",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "10c34ae2-cc0c-4cfb-b45d-078faa2f8a27",
+        "entity_type": "artifact",
+        "id": "42ac3406-9508-4da0-8365-781babc6891a",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "7025d84c-3951-4463-8288-5a6dea0f6148",
+        "entity_type": "material_change",
+        "id": "4564d319-dc33-4f23-845e-ad774fe3fcac",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"material_change\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "44345c08-9155-4acc-9a0d-235779ef79f3",
+        "entity_type": "artifact",
+        "id": "513bad7d-db6b-4ddb-9cdc-152539a57689",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "f77c1565-ea17-4ad6-b5cf-7adb7c95a260",
+        "entity_type": "requirement",
+        "id": "56381de6-70d1-4524-8fc7-f442e7eba63f",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "042b1b2d-b57a-4efb-870d-6ef355b1c6ff",
+        "entity_type": "import_record",
+        "id": "57d4f97c-5244-4569-b832-8104b89f8227",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "0dc8cac1-55af-4ed2-a5f0-cb9136b2cc3b",
+        "entity_type": "requirement",
+        "id": "57f89cca-2c35-4a7b-af20-955739ee3d6b",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "a8d15321-6662-4ec4-878d-98756dab7347",
+        "entity_type": "import_record",
+        "id": "5b236e0a-9129-4a30-8080-a2b37a52e745",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "98c62f23-a8d4-4089-8bae-c41fc0353f04",
+        "entity_type": "evidence_reference",
+        "id": "5b4b6374-2155-40a6-ad13-12ad3af01aa9",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "acf0d9c2-bd2a-4f13-8b43-caae9c7e9af1",
+        "entity_type": "evidence_reference",
+        "id": "694149ea-85ef-41de-a5ad-9f55885bcd59",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "0e228975-0897-408c-86a2-fea234ccafd2",
+        "entity_type": "import_record",
+        "id": "69fbf86e-7ea6-4b98-b58b-cac916a94f63",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "edefbe6c-eeeb-498a-830a-af2341505333",
+        "entity_type": "outcome_verdict",
+        "id": "6a301a49-3a17-458d-a2ae-7afa9ffd5da4",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"outcome_verdict\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "68c7329e-0f9a-4aa0-ba44-424e2c67a583",
+        "entity_type": "evidence_reference",
+        "id": "6adb0af8-3cf6-4239-a0c6-bcc5fb13e509",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "441e1b1f-7d9e-4f49-b516-ba598114a808",
+        "entity_type": "requirement",
+        "id": "6b0e6dbb-fb71-4da8-85b0-a5b78b544d39",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "67238d0a-a119-444c-acae-aae0eec511c2",
+        "entity_type": "import_record",
+        "id": "6c4e2b4d-e62b-4ac9-b14c-57e112cc7d43",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "5d176b05-9883-4e0b-a29f-a404de703268",
+        "entity_type": "verification_result",
+        "id": "6d4944a8-d920-4809-946c-2608245ab486",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "40178b41-630f-4b67-a4cb-b243b240af3d",
+        "entity_type": "artifact",
+        "id": "6fc8d3ef-d9b1-4dbd-8ded-ca246ea682bb",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "2ce34e7f-165e-4691-94bc-2f96aefc6e18",
+        "entity_type": "verification_result",
+        "id": "703d7d6a-06bb-46ba-a513-9b1709a3c7e5",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "e6499fad-e436-4eb1-b5b8-df9699c97b1c",
+        "entity_type": "import_record",
+        "id": "71e0c7c4-c991-4a2b-b5e6-fc66fa8170e5",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "f5187371-f5b8-405e-979e-22e5c4689c59",
+        "entity_type": "evidence_reference",
+        "id": "73cb0191-67c8-48fd-ad7f-dab5f1dfc69c",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "441c3672-463f-4ee5-bc87-5a7817ddf5f8",
+        "entity_type": "evidence_reference",
+        "id": "79290f79-7395-4ea2-bce1-ed029dc3c52a",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "4a82cb8a-7413-4d89-94ec-607f68cfda29",
+        "entity_type": "artifact",
+        "id": "7a6e2557-db45-4b34-b8fc-18a3624e1fde",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "f2df8d7d-29e3-45d7-b6cb-64d30ab4c1f7",
+        "entity_type": "relationship",
+        "id": "7b1d92b3-e62e-4b1d-9b3b-79bf0a603d0d",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "c12ed040-ee4e-4940-91ba-578ccb449b12",
+        "entity_type": "verification_result",
+        "id": "7bf4a1d7-7ada-476d-9f79-bb464c5a83cd",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "c0844a90-f569-4c59-a98f-3b520f61a4e0",
+        "entity_type": "outcome_verdict",
+        "id": "7de4acb9-041b-44d5-a585-1a2a4153935c",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"outcome_verdict\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "11236dfc-7540-4ebe-be25-762e4a452117",
+        "entity_type": "reconciliation",
+        "id": "7e901967-6358-4408-9bed-89923da19484",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"reconciliation\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "6ea83b0e-b398-4e42-955a-465f630b7ca7",
+        "entity_type": "artifact",
+        "id": "80e2c6ab-12db-43f8-8d7a-8ab2e24bc07e",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "d0377b75-880a-4572-af9d-dfb8bb0736d3",
+        "entity_type": "artifact",
+        "id": "823ffe87-2434-496a-a703-d182ed671504",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "e0efdf4f-2f91-4a57-a0a9-6f16133f6802",
+        "entity_type": "artifact",
+        "id": "840f040a-b71a-47c3-a956-141c5d0bbbca",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "3baa3138-6305-4e73-b3e9-65368668707d",
+        "entity_type": "requirement",
+        "id": "88ab1cfa-346c-44ac-adb3-3221e96b0d87",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "6eeabb55-d4db-45ea-8979-941364225fb8",
+        "entity_type": "material_change",
+        "id": "8a1bca18-c451-4089-a156-e1c486b75bc8",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"material_change\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "7c2587c4-42be-465f-a8c7-da7664d39f94",
+        "entity_type": "requirement",
+        "id": "8b54e770-1b67-4fdb-b36a-315a6509af2a",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "4589df08-a227-4546-a1de-5e7e5bfdb518",
+        "entity_type": "evidence_reference",
+        "id": "8c898aa3-869b-44b5-aff1-7c55d5c4f2aa",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "94c6dd49-6837-4947-9a49-a9637bc872ff",
+        "entity_type": "outcome_verdict",
+        "id": "8d97f231-4807-4507-94f2-c7681ba602e8",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"outcome_verdict\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "65538b72-8a77-4c4d-ba7c-693137779b07",
+        "entity_type": "artifact",
+        "id": "8ffc6923-99e4-4684-b7a7-3fa64753e52e",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "9503cb7f-0032-4001-a2e8-fb01e7cda712",
+        "entity_type": "import_record",
+        "id": "9030587e-02bd-45bb-afcd-7d1ff9807a58",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "e4a585a9-cfe0-453b-8cae-04b62df704c3",
+        "entity_type": "import_record",
+        "id": "9317f2a0-6d1a-4d46-b49d-4b9356341c9c",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "c2d6e364-fbdf-47bc-ac4d-3e6526dc474c",
+        "entity_type": "outcome_verdict",
+        "id": "995994a8-c484-4506-9eb2-370a17425a3e",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"outcome_verdict\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "dbc2baa8-0b1d-4fda-a24a-c7f09eb5e136",
+        "entity_type": "import_record",
+        "id": "9c419fc0-f4dd-4a2c-8063-44f5859f504f",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "51028153-badc-4984-9d8e-6910c21921c4",
+        "entity_type": "evidence_reference",
+        "id": "9e273fc4-6642-4c55-b0d2-e859a7339175",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "98186ec0-5b15-44e3-a004-cc99858e15cf",
+        "entity_type": "evidence_reference",
+        "id": "9e82bf40-0006-442a-889e-f17e6688f143",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "eb192a17-6a1c-4088-9c2a-f46688c4c18d",
+        "entity_type": "artifact",
+        "id": "a047f83d-0be0-4a47-9c3b-35fb2e3d6a96",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "e4a585a9-cfe0-453b-8cae-04b62df704c3",
+        "entity_type": "artifact",
+        "id": "a0fd90e5-1477-40ed-8525-78550b5d8cf3",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "ce87f685-72e2-4c65-a85c-14ac54ef4b79",
+        "entity_type": "artifact",
+        "id": "a17d7c7e-77b8-4aab-8059-a30a2273bbf5",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "e14b547c-2656-4042-9f82-1763f70341a5",
+        "entity_type": "artifact",
+        "id": "a236197f-52cc-4777-9aa0-d415f3bf4fe6",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "1d0e0d2f-0824-45aa-908d-5235d1fef3b3",
+        "entity_type": "import_record",
+        "id": "a9fc1878-f6da-4e29-ba97-500960c857e7",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "d6a748ff-e743-4b69-a0db-51cb11b4ebc8",
+        "entity_type": "outcome_verdict",
+        "id": "aaf53762-3e5d-4cf1-a0de-5691cda13d1a",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"outcome_verdict\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "cd38d115-87f2-4699-8499-cb9a6538a3bf",
+        "entity_type": "requirement",
+        "id": "ae9e1f2a-4789-41df-90f1-4e12b0f19588",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "c3f2052c-2011-4f6a-b79c-3ff01bc6e10b",
+        "entity_type": "artifact",
+        "id": "b0494a1d-aa45-4380-a20f-97ef0002976c",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "247a3083-ad61-4ee6-b855-e8d11cc70f34",
+        "entity_type": "reconciliation",
+        "id": "b20bd701-b38b-4c8f-943b-9adb103c803b",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"reconciliation\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "40d03ed1-7383-4696-a5fc-bbbdd232414e",
+        "entity_type": "import_record",
+        "id": "b391910f-f0e8-49c2-a3ae-83234b9d90dd",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "33c44d47-0bdb-4822-8496-d193402241cc",
+        "entity_type": "verification_result",
+        "id": "b69d3f79-7a2e-47f5-bc42-d34065747c0c",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "entity_type": "cycle",
+        "id": "ba72a2e4-4283-4dbc-a146-c4c2537f9b2f",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"cycle\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "1ecf184b-b332-4d85-ad86-cb3aad883ba5",
+        "entity_type": "import_record",
+        "id": "bf962697-710e-4cb8-bc71-9ee6772cbb39",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "da165d5e-8a4c-444a-91c0-41566012c599",
+        "entity_type": "verification_result",
+        "id": "c14cebc4-61ec-4fbc-b27f-42969e8fbbfb",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "3fd73784-cc0c-40ab-b87a-7691b9a45bda",
+        "entity_type": "verification_result",
+        "id": "c266e275-0327-4d96-b329-c28abf286533",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "88174e41-72bc-4c22-9670-0262badb1af8",
+        "entity_type": "material_change",
+        "id": "c2682f21-75c7-4f16-a72f-a07d35e698c7",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"material_change\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "8e75a464-6f46-4e61-bd94-5373db06cb6f",
+        "entity_type": "requirement",
+        "id": "c2e03ed9-c478-4762-a934-b9b602825b47",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "7cf21c4f-5737-4845-9091-71bc791b620e",
+        "entity_type": "import_record",
+        "id": "c35364e0-d41e-4369-b57d-c96749aca556",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "06eeffb0-9412-4211-ab64-4ea48462f8c5",
+        "entity_type": "verification_result",
+        "id": "c856d73f-25b9-4038-9a39-f1efd709e782",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "a6af77a0-5a10-4e9e-adce-ddfb938e2e70",
+        "entity_type": "relationship",
+        "id": "c9a32f5d-4ee4-4f42-94d2-e748fdb04440",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "ab54ed59-3d95-40c2-8319-ce492ecc618a",
+        "entity_type": "verification_result",
+        "id": "d0b02156-5926-4d1c-b7c2-9ebd11d57d77",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "f357c85e-75b3-4ecf-b0c9-c3b5903c6bb3",
+        "entity_type": "import_record",
+        "id": "d24c9fe7-5ec2-41c9-89d2-68d9b75f26c0",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "9001dfd1-8785-42f0-8672-4e1e7e3e2257",
+        "entity_type": "import_record",
+        "id": "d30a2aff-b5cf-44ea-9f1f-f741cd76f86f",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "797b1434-d24e-42bd-a9b7-54f52e8bd74c",
+        "entity_type": "artifact",
+        "id": "d41e856b-7d54-445d-b112-6fa550227b59",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "5734513c-0d63-4437-89c4-01dd4fe011c9",
+        "entity_type": "import_record",
+        "id": "d7e80f7c-5dc7-4795-b471-b70f9013fd41",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "7ae3bd82-5175-4613-8ecc-272dad18f0bf",
+        "entity_type": "import_record",
+        "id": "da402bfc-ba56-41a4-8eaa-a191ffbb6f23",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "4fd02196-30f5-41e4-82d9-90ae2cdb5c20",
+        "entity_type": "artifact",
+        "id": "dcc3b1bf-bb78-4935-a1db-e2fff201e217",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "1a17a285-6aeb-407f-8db8-4bb2b7229c83",
+        "entity_type": "relationship",
+        "id": "e850bffe-50bf-449b-928e-95fd3dc50177",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "0481939b-27e3-4d60-a77a-a4f6da19d93d",
+        "entity_type": "material_change",
+        "id": "ea7a7727-f946-461c-a089-1852c6b17020",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"material_change\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "e41aef98-0b33-4522-8bf8-04dbb410ffa6",
+        "entity_type": "requirement",
+        "id": "ec358365-29a7-4383-8f7e-eef720ec8faa",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "b16ee9b0-770c-492f-831f-417c6b8f0d8b",
+        "entity_type": "artifact",
+        "id": "ed3e0253-918a-42a6-b6ee-96f0f04167a3",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      },
+      {
+        "entity_id": "9a20fa8d-2363-4c32-953e-5de328782215",
+        "entity_type": "material_change",
+        "id": "f94182d0-9612-4c66-bf11-a9bf9e24d8eb",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"material_change\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "cda82228-febf-4b9c-8abd-f036a79bf43f",
+        "entity_type": "outcome_verdict",
+        "id": "f9c64fb0-bf31-4791-bdab-c1a040867f49",
+        "kind": "structural-insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"outcome_verdict\"}",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1
+      },
+      {
+        "entity_id": "6d6645cd-8d5f-4935-aa04-58e1418d88de",
+        "entity_type": "import_record",
+        "id": "fed55fc9-c42c-4782-a898-8aa1391eaf74",
+        "kind": "structural-insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3
+      }
+    ],
+    "evidence_reference": [
+      {
+        "collected_at": "2026-08-28T17:38:29Z",
+        "cycle_id": "45aec1ed-289c-4d3f-a640-406341ab717e",
+        "id": "0a04dd62-55be-4375-8cb6-dbe6dbcaee1c",
+        "kind": "product-truth",
+        "reference": "scripts/outcome_reconciliation.py",
+        "sha256": "8961efa7df6ef2988f39321b02b7128aa576fb3216afa4aad6aa989a7a5d5842",
+        "target_identity": "HPT2-EVID-TOOL"
+      },
+      {
+        "collected_at": "2026-08-28T17:38:29Z",
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "id": "2750765c-272c-4ba3-b6d5-29fd68d9c6a3",
+        "kind": "bootstrap-record",
+        "reference": "work/evidence/bootstrap-closure-hybrid-sqlite-operational-state.json",
+        "sha256": null,
+        "target_identity": "EVID-G1-CONTRACT"
+      },
+      {
+        "collected_at": "2026-08-28T17:38:29Z",
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "id": "28b13ea5-9819-4c20-b1ab-273b5e7ec44e",
+        "kind": "bootstrap-record",
+        "reference": "work/evidence/bootstrap-closure-hybrid-sqlite-operational-state.json",
+        "sha256": null,
+        "target_identity": "EVID-G2-HPT2-PARITY"
+      },
+      {
+        "collected_at": "2026-08-28T17:38:29Z",
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "id": "441c3672-463f-4ee5-bc87-5a7817ddf5f8",
+        "kind": "bootstrap-record",
+        "reference": "work/evidence/bootstrap-closure-hybrid-sqlite-operational-state.json",
+        "sha256": null,
+        "target_identity": "EVID-G4-CANARY"
+      },
+      {
+        "collected_at": "2026-08-28T17:38:29Z",
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "id": "4589df08-a227-4546-a1de-5e7e5bfdb518",
+        "kind": "bootstrap-record",
+        "reference": "work/evidence/bootstrap-closure-hybrid-sqlite-operational-state.json",
+        "sha256": null,
+        "target_identity": "EVID-G1-BOOTSTRAP"
+      },
+      {
+        "collected_at": "2026-08-28T17:38:29Z",
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "id": "51028153-badc-4984-9d8e-6910c21921c4",
+        "kind": "bootstrap-record",
+        "reference": "work/evidence/bootstrap-closure-hybrid-sqlite-operational-state.json",
+        "sha256": null,
+        "target_identity": "EVID-G1-EFFICIENCY-CONTRACT"
+      },
+      {
+        "collected_at": "2026-08-28T17:38:29Z",
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "id": "68c7329e-0f9a-4aa0-ba44-424e2c67a583",
+        "kind": "bootstrap-record",
+        "reference": "work/evidence/bootstrap-closure-hybrid-sqlite-operational-state.json",
+        "sha256": null,
+        "target_identity": "EVID-G4-RELEASE"
+      },
+      {
+        "collected_at": "2026-08-28T17:38:29Z",
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "id": "98186ec0-5b15-44e3-a004-cc99858e15cf",
+        "kind": "bootstrap-record",
+        "reference": "work/evidence/bootstrap-closure-hybrid-sqlite-operational-state.json",
+        "sha256": null,
+        "target_identity": "EVID-G1-HPT2-INVENTORY"
+      },
+      {
+        "collected_at": "2026-08-28T17:38:29Z",
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "id": "98c62f23-a8d4-4089-8bae-c41fc0353f04",
+        "kind": "bootstrap-record",
+        "reference": "work/evidence/bootstrap-closure-hybrid-sqlite-operational-state.json",
+        "sha256": null,
+        "target_identity": "EVID-G2-EFFICIENCY"
+      },
+      {
+        "collected_at": "2026-08-28T17:38:29Z",
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "id": "acf0d9c2-bd2a-4f13-8b43-caae9c7e9af1",
+        "kind": "bootstrap-record",
+        "reference": "work/evidence/bootstrap-closure-hybrid-sqlite-operational-state.json",
+        "sha256": null,
+        "target_identity": "EVID-G2-SUBSTRATE"
+      },
+      {
+        "collected_at": "2026-08-28T17:38:29Z",
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "id": "ca0c6c33-6bbd-47b0-bf0a-4a25dc5b920e",
+        "kind": "bootstrap-record",
+        "reference": "work/evidence/bootstrap-closure-hybrid-sqlite-operational-state.json",
+        "sha256": null,
+        "target_identity": "EVID-G3-MAINTAINER"
+      },
+      {
+        "collected_at": "2026-08-28T17:38:29Z",
+        "cycle_id": "45aec1ed-289c-4d3f-a640-406341ab717e",
+        "id": "efc194da-12fb-4a87-922a-bd9067ab59ea",
+        "kind": "product-truth",
+        "reference": "docs/hybrid-sqlite-state-v1-contract.md",
+        "sha256": "42f3aecb2ad5417c8884ca6b4cab3c868ee7ee7128a298eff13b6166badc9357",
+        "target_identity": "HPT2-EVID-CONTRACT"
+      },
+      {
+        "collected_at": "2026-08-28T17:38:29Z",
+        "cycle_id": "45aec1ed-289c-4d3f-a640-406341ab717e",
+        "id": "f5187371-f5b8-405e-979e-22e5c4689c59",
+        "kind": "product-truth",
+        "reference": "tests/test_outcome_reconciliation.py",
+        "sha256": "03b4becb0d8401c949053543685733983096c63737d63922d4715383ff315769",
+        "target_identity": "HPT2-EVID-TEST"
+      }
+    ],
+    "export_ledger": [
+      {
+        "created_at": "2026-08-28T17:38:30Z",
+        "digest": "760543c6311792c8c5e062c1361ce27edd4e3f52af5d95d62d2cfe550775a3d9",
+        "format_version": 1,
+        "id": "e22537dc-4402-4fca-87e5-0806790f1b2d",
+        "path": "work/state/checkpoints/state-v1.json",
+        "revision": 3,
+        "status": "complete"
+      }
+    ],
+    "import_record": [
+      {
+        "artifact_id": "4a82cb8a-7413-4d89-94ec-607f68cfda29",
+        "id": "042b1b2d-b57a-4efb-870d-6ef355b1c6ff",
+        "imported_at": "2026-08-28T17:38:30Z",
+        "parse_status": "unsupported",
+        "parser_version": "phase-one-v1",
+        "provenance": "retained-source-file",
+        "source_path": "scripts/hybrid_state.py",
+        "source_sha256": "95ea52ba317548f48da88b8c73377d853560d9630997e0edf7fd40ea0b600ac5",
+        "tracked_state": "tracked",
+        "unresolved_json": "{\"reason\": \"unsupported file type\"}"
+      },
+      {
+        "artifact_id": "797b1434-d24e-42bd-a9b7-54f52e8bd74c",
+        "id": "0e228975-0897-408c-86a2-fea234ccafd2",
+        "imported_at": "2026-08-28T17:38:30Z",
+        "parse_status": "unsupported",
+        "parser_version": "phase-one-v1",
+        "provenance": "retained-source-file",
+        "source_path": "tests/test_outcome_reconciliation.py",
+        "source_sha256": "03b4becb0d8401c949053543685733983096c63737d63922d4715383ff315769",
+        "tracked_state": "tracked",
+        "unresolved_json": "{\"reason\": \"unsupported file type\"}"
+      },
+      {
+        "artifact_id": "65538b72-8a77-4c4d-ba7c-693137779b07",
+        "id": "1d0e0d2f-0824-45aa-908d-5235d1fef3b3",
+        "imported_at": "2026-08-28T17:38:30Z",
+        "parse_status": "parsed",
+        "parser_version": "phase-one-v1",
+        "provenance": "retained-source-file",
+        "source_path": "work/evidence/bootstrap-closure-hybrid-sqlite-operational-state.json",
+        "source_sha256": "22668208bc174ce455101620f93635a2ef70ec3a171700bcb05f612098e775bc",
+        "tracked_state": "tracked",
+        "unresolved_json": "{}"
+      },
+      {
+        "artifact_id": "e408b57a-e95a-4cf5-926c-99528a1e2e3f",
+        "id": "1ecf184b-b332-4d85-ad86-cb3aad883ba5",
+        "imported_at": "2026-08-28T17:38:30Z",
+        "parse_status": "parsed",
+        "parser_version": "phase-one-v1",
+        "provenance": "retained-source-file",
+        "source_path": "schemas/hybrid-state/v1/hpt2-assigned-ids.json",
+        "source_sha256": "1ea654bb6b8a2d42a4d0962c4e592bbe75b8557cdd40b2ab9a996504967dfaa7",
+        "tracked_state": "tracked",
+        "unresolved_json": "{}"
+      },
+      {
+        "artifact_id": "4fd02196-30f5-41e4-82d9-90ae2cdb5c20",
+        "id": "40d03ed1-7383-4696-a5fc-bbbdd232414e",
+        "imported_at": "2026-08-28T17:38:30Z",
+        "parse_status": "parsed",
+        "parser_version": "phase-one-v1",
+        "provenance": "retained-source-file",
+        "source_path": "work/maps/map-hybrid-sqlite-operational-state.md",
+        "source_sha256": "e74202d878f93d08d81a3fc261a1a96f84088f8f427596f85233da185ecc5b22",
+        "tracked_state": "tracked",
+        "unresolved_json": "{}"
+      },
+      {
+        "artifact_id": "eb192a17-6a1c-4088-9c2a-f46688c4c18d",
+        "id": "5734513c-0d63-4437-89c4-01dd4fe011c9",
+        "imported_at": "2026-08-28T17:38:30Z",
+        "parse_status": "unsupported",
+        "parser_version": "phase-one-v1",
+        "provenance": "retained-source-file",
+        "source_path": "scripts/hybrid_state_schema.py",
+        "source_sha256": "cec17e40de30a77d38a91ed1d2fcffa06a573bf13e91361b3ca18135c525d508",
+        "tracked_state": "tracked",
+        "unresolved_json": "{\"reason\": \"unsupported file type\"}"
+      },
+      {
+        "artifact_id": "c3f2052c-2011-4f6a-b79c-3ff01bc6e10b",
+        "id": "67238d0a-a119-444c-acae-aae0eec511c2",
+        "imported_at": "2026-08-28T17:38:30Z",
+        "parse_status": "parsed",
+        "parser_version": "phase-one-v1",
+        "provenance": "retained-source-file",
+        "source_path": "docs/hybrid-sqlite-state-v1-contract.md",
+        "source_sha256": "42f3aecb2ad5417c8884ca6b4cab3c868ee7ee7128a298eff13b6166badc9357",
+        "tracked_state": "tracked",
+        "unresolved_json": "{}"
+      },
+      {
+        "artifact_id": "9fb86c04-8e14-4da0-9ff5-d07fa7627a22",
+        "id": "6d6645cd-8d5f-4935-aa04-58e1418d88de",
+        "imported_at": "2026-08-28T17:38:30Z",
+        "parse_status": "parsed",
+        "parser_version": "phase-one-v1",
+        "provenance": "retained-source-file",
+        "source_path": "work/evidence/evidence-hybrid-sqlite-efficiency.md",
+        "source_sha256": "3ac9a5dcb674a8354ff6da9ddc39da29ebf338d1b517ef233aaeb9f11329fbcd",
+        "tracked_state": "tracked",
+        "unresolved_json": "{}"
+      },
+      {
+        "artifact_id": "0ac49981-63a7-4814-bd8e-61622837cbf4",
+        "id": "7ae3bd82-5175-4613-8ecc-272dad18f0bf",
+        "imported_at": "2026-08-28T17:38:30Z",
+        "parse_status": "parsed",
+        "parser_version": "phase-one-v1",
+        "provenance": "retained-source-file",
+        "source_path": "work/evidence/evidence-hybrid-sqlite-hpt2-parity.md",
+        "source_sha256": "6b139175fbc9043ba56292f95808ae9761a5c0d231d0372525660129dfa44ffe",
+        "tracked_state": "tracked",
+        "unresolved_json": "{}"
+      },
+      {
+        "artifact_id": "e14b547c-2656-4042-9f82-1763f70341a5",
+        "id": "7cf21c4f-5737-4845-9091-71bc791b620e",
+        "imported_at": "2026-08-28T17:38:30Z",
+        "parse_status": "unsupported",
+        "parser_version": "phase-one-v1",
+        "provenance": "retained-source-file",
+        "source_path": "scripts/outcome_reconciliation.py",
+        "source_sha256": "8961efa7df6ef2988f39321b02b7128aa576fb3216afa4aad6aa989a7a5d5842",
+        "tracked_state": "tracked",
+        "unresolved_json": "{\"reason\": \"unsupported file type\"}"
+      },
+      {
+        "artifact_id": "40178b41-630f-4b67-a4cb-b243b240af3d",
+        "id": "9001dfd1-8785-42f0-8672-4e1e7e3e2257",
+        "imported_at": "2026-08-28T17:38:30Z",
+        "parse_status": "parsed",
+        "parser_version": "phase-one-v1",
+        "provenance": "retained-source-file",
+        "source_path": "docs/outcome-reconciliation.md",
+        "source_sha256": "d945c9aeb7cd5771d4525d5be575efde219bb85c86eec4fa7609fa24f294bae0",
+        "tracked_state": "tracked",
+        "unresolved_json": "{}"
+      },
+      {
+        "artifact_id": "ce87f685-72e2-4c65-a85c-14ac54ef4b79",
+        "id": "9503cb7f-0032-4001-a2e8-fb01e7cda712",
+        "imported_at": "2026-08-28T17:38:30Z",
+        "parse_status": "parsed",
+        "parser_version": "phase-one-v1",
+        "provenance": "retained-source-file",
+        "source_path": "work/ideas/idea-sqlite-backed-tool-shed-operational-state.md",
+        "source_sha256": "db1707b6cce8fa902f6a493c33530ec7443c429b53167c369019243b2b4a6730",
+        "tracked_state": "tracked",
+        "unresolved_json": "{}"
+      },
+      {
+        "artifact_id": "6ea83b0e-b398-4e42-955a-465f630b7ca7",
+        "id": "9bfab977-f049-44c4-ac88-36eab75cdafc",
+        "imported_at": "2026-08-28T17:38:30Z",
+        "parse_status": "parsed",
+        "parser_version": "phase-one-v1",
+        "provenance": "retained-source-file",
+        "source_path": "work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md",
+        "source_sha256": "fb1bb04ce88633359e7e33c75e3cb2bef1ad645a9a064e5afa360d5cc05fb3fc",
+        "tracked_state": "tracked",
+        "unresolved_json": "{}"
+      },
+      {
+        "artifact_id": "44345c08-9155-4acc-9a0d-235779ef79f3",
+        "id": "a8d15321-6662-4ec4-878d-98756dab7347",
+        "imported_at": "2026-08-28T17:38:30Z",
+        "parse_status": "parsed",
+        "parser_version": "phase-one-v1",
+        "provenance": "retained-source-file",
+        "source_path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
+        "source_sha256": "d3fd3b184becd3bd10a2991a52ead0dde88b528b109dc021a6fd41123af95369",
+        "tracked_state": "tracked",
+        "unresolved_json": "{}"
+      },
+      {
+        "artifact_id": "10c34ae2-cc0c-4cfb-b45d-078faa2f8a27",
+        "id": "b9f9ef8f-a4ed-4723-b2da-0bc660ee61e4",
+        "imported_at": "2026-08-28T17:38:30Z",
+        "parse_status": "unsupported",
+        "parser_version": "phase-one-v1",
+        "provenance": "retained-source-file",
+        "source_path": "tests/test_hybrid_state.py",
+        "source_sha256": "4e5b2c109728fe67b62d183e803522cc89d7e760bd0e37c45c98e8fb9ad9da56",
+        "tracked_state": "tracked",
+        "unresolved_json": "{\"reason\": \"unsupported file type\"}"
+      },
+      {
+        "artifact_id": "c194a517-01d8-458e-b3b4-8ba62ab94072",
+        "id": "dbc2baa8-0b1d-4fda-a24a-c7f09eb5e136",
+        "imported_at": "2026-08-28T17:38:30Z",
+        "parse_status": "parsed",
+        "parser_version": "phase-one-v1",
+        "provenance": "retained-source-file",
+        "source_path": "schemas/hybrid-state/v1/maintainer-assigned-ids.json",
+        "source_sha256": "033651f1d422cdf99d70da3d3ef9495d0e5feaa0dd1d7cb1fb6f9311a4551f63",
+        "tracked_state": "tracked",
+        "unresolved_json": "{}"
+      },
+      {
+        "artifact_id": "d0377b75-880a-4572-af9d-dfb8bb0736d3",
+        "id": "dd9e75bf-1b3f-4e38-b649-3267864086be",
+        "imported_at": "2026-08-28T17:38:30Z",
+        "parse_status": "parsed",
+        "parser_version": "phase-one-v1",
+        "provenance": "retained-source-file",
+        "source_path": "schemas/hybrid-state/v1/checkpoint.schema.json",
+        "source_sha256": "c92f8910f815fb3f46f6d51ba7e7fc8752f3d9878a1b5a212198503a2d7dafff",
+        "tracked_state": "tracked",
+        "unresolved_json": "{}"
+      },
+      {
+        "artifact_id": "b16ee9b0-770c-492f-831f-417c6b8f0d8b",
+        "id": "e09d10e7-09a2-49ee-bd59-71dae83fcce8",
+        "imported_at": "2026-08-28T17:38:30Z",
+        "parse_status": "parsed",
+        "parser_version": "phase-one-v1",
+        "provenance": "retained-source-file",
+        "source_path": "work/evidence/evidence-hybrid-sqlite-substrate.md",
+        "source_sha256": "d8a400c395de17a38a44b9076dc4ee27e849d04d012953770e574b9f77298989",
+        "tracked_state": "tracked",
+        "unresolved_json": "{}"
+      },
+      {
+        "artifact_id": "e4a585a9-cfe0-453b-8cae-04b62df704c3",
+        "id": "e4a585a9-cfe0-453b-8cae-04b62df704c3",
+        "imported_at": "2026-08-28T17:38:29Z",
+        "parse_status": "unresolved",
+        "parser_version": "phase-one-v1",
+        "provenance": "operator-report-without-retained-source",
+        "source_path": "unavailable/hpt2-original-source",
+        "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tracked_state": "unknown",
+        "unresolved_json": "{\"inference_forbidden\":true,\"missing\":[\"original HPT2 Idea Brief or source request\",\"accepted HPT2 development-change ledger\",\"original HPT2 campaign and milestone history\",\"HPT2 product commit and target qualification bundle\"]}"
+      },
+      {
+        "artifact_id": "e0efdf4f-2f91-4a57-a0a9-6f16133f6802",
+        "id": "e6499fad-e436-4eb1-b5b8-df9699c97b1c",
+        "imported_at": "2026-08-28T17:38:30Z",
+        "parse_status": "parsed",
+        "parser_version": "phase-one-v1",
+        "provenance": "retained-source-file",
+        "source_path": "work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md",
+        "source_sha256": "c32e9a94c238f73a833ab446de8248413fc0b2e3ee94003e2868f9d1b55870ff",
+        "tracked_state": "tracked",
+        "unresolved_json": "{}"
+      },
+      {
+        "artifact_id": "bb506b8c-5f68-48c7-993b-b9d59487b1b8",
+        "id": "f357c85e-75b3-4ecf-b0c9-c3b5903c6bb3",
+        "imported_at": "2026-08-28T17:38:30Z",
+        "parse_status": "parsed",
+        "parser_version": "phase-one-v1",
+        "provenance": "retained-source-file",
+        "source_path": "docs/hybrid-sqlite-state.md",
+        "source_sha256": "661d33554046819a81cc250c6ad488ff2c8dcbbfbb66d10d3fb953b7622dd291",
+        "tracked_state": "tracked",
+        "unresolved_json": "{}"
+      }
+    ],
+    "managed_operation": [
+      {
+        "actor": "maintainer-conversion",
+        "actual_writes": 34,
+        "command": "import-files",
+        "committed_at": "2026-08-28T17:38:30Z",
+        "expected_writes": null,
+        "id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "revision": 3,
+        "started_at": "2026-08-28T17:38:30Z",
+        "status": "complete"
+      },
+      {
+        "actor": "maintainer-conversion",
+        "actual_writes": 0,
+        "command": "activate-hybrid-mode",
+        "committed_at": "2026-08-28T17:38:31Z",
+        "expected_writes": 0,
+        "id": "2aa27e1a-45de-4069-b7db-b9a26c36549b",
+        "revision": 4,
+        "started_at": "2026-08-28T17:38:31Z",
+        "status": "complete"
+      },
+      {
+        "actor": "outcome-reconciliation",
+        "actual_writes": 66,
+        "command": "import-hpt2-closed-loop",
+        "committed_at": "2026-08-28T17:38:29Z",
+        "expected_writes": null,
+        "id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "revision": 1,
+        "started_at": "2026-08-28T17:38:29Z",
+        "status": "complete"
+      },
+      {
+        "actor": "outcome-reconciliation",
+        "actual_writes": 1,
+        "command": "link-hpt2-origin-report",
+        "committed_at": "2026-08-28T17:38:30Z",
+        "expected_writes": 1,
+        "id": "82355f80-28a5-4cbf-9f8d-9af901669447",
+        "revision": 2,
+        "started_at": "2026-08-28T17:38:30Z",
+        "status": "complete"
+      }
+    ],
+    "material_change": [
+      {
+        "authorization_ref": "Campaign 103 completion gate and evidence accuracy requirement",
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "decision_id": null,
+        "evidence_rerun_json": "{\"authorization\":\"Campaign 103 completion gate and evidence accuracy requirement\",\"decision_ids\":[],\"evidence_to_rerun\":[\"EVID-G1-BOOTSTRAP\"],\"id\":\"CHG-HYBRID-002\",\"rationale\":\"The durable evidence must identify the actual final rerun rather than retain the pre-hardening timestamp.\",\"recorded_at\":\"2026-08-28T16:31:31Z\",\"requirement_ids\":[\"REQ-HYBRID-001\"],\"source_commit\":\"823ef35db06569a50e8096dfa54233ee455ab2fc\",\"summary\":\"Correct the G1 evidence timestamp after the hardened focused rerun\",\"supersedes\":[]}",
+        "id": "0481939b-27e3-4d60-a77a-a4f6da19d93d",
+        "rationale": "The durable evidence must identify the actual final rerun rather than retain the pre-hardening timestamp.",
+        "recorded_revision": 1,
+        "requirement_id": "441e1b1f-7d9e-4f49-b516-ba598114a808",
+        "summary": "Correct the G1 evidence timestamp after the hardened focused rerun",
+        "supersedes_change_id": null
+      },
+      {
+        "authorization_ref": "User-approved end-to-end Campaign 104 execution on 2026-08-28",
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "decision_id": "DEC-HYBRID-003",
+        "evidence_rerun_json": "{\"authorization\":\"User-approved end-to-end Campaign 104 execution on 2026-08-28\",\"decision_ids\":[\"DEC-HYBRID-003\",\"DEC-HYBRID-006\"],\"evidence_to_rerun\":[\"EVID-G1-CONTRACT\",\"EVID-G2-SUBSTRATE\"],\"id\":\"CHG-HYBRID-003\",\"rationale\":\"Implementation qualification found that rebuilding the current checkpoint otherwise generated a different checkpoint-ledger identity and omitted the corresponding export-ledger row. Adding the canonical checkpoint path and two UUIDv4 ledger IDs to the digest-bound envelope preserves schema-v1 authority while making fresh logical recovery exact.\",\"recorded_at\":\"2026-08-28T16:57:09Z\",\"requirement_ids\":[\"REQ-HYBRID-003\",\"REQ-HYBRID-007\"],\"source_commit\":\"582b250f7a401201db5aa653fe7b80d1a08c889f\",\"summary\":\"Preallocate and checkpoint the newest recovery-ledger identities\",\"supersedes\":[]}",
+        "id": "6eeabb55-d4db-45ea-8979-941364225fb8",
+        "rationale": "Implementation qualification found that rebuilding the current checkpoint otherwise generated a different checkpoint-ledger identity and omitted the corresponding export-ledger row. Adding the canonical checkpoint path and two UUIDv4 ledger IDs to the digest-bound envelope preserves schema-v1 authority while making fresh logical recovery exact.",
+        "recorded_revision": 1,
+        "requirement_id": "cd38d115-87f2-4699-8499-cb9a6538a3bf",
+        "summary": "Preallocate and checkpoint the newest recovery-ledger identities",
+        "supersedes_change_id": null
+      },
+      {
+        "authorization_ref": "Campaign 103 completion gate and owner-approved closed-loop requirement",
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "decision_id": null,
+        "evidence_rerun_json": "{\"authorization\":\"Campaign 103 completion gate and owner-approved closed-loop requirement\",\"decision_ids\":[],\"evidence_to_rerun\":[\"EVID-G1-BOOTSTRAP\"],\"id\":\"CHG-HYBRID-001\",\"rationale\":\"Final campaign audit found that an empty affected-state and rerun list could record a nominal change without enforcing reconciliation.\",\"recorded_at\":\"2026-08-28T16:30:49Z\",\"requirement_ids\":[\"REQ-HYBRID-001\"],\"source_commit\":\"823ef35db06569a50e8096dfa54233ee455ab2fc\",\"summary\":\"Require every material change to identify affected state and evidence reruns\",\"supersedes\":[]}",
+        "id": "7025d84c-3951-4463-8288-5a6dea0f6148",
+        "rationale": "Final campaign audit found that an empty affected-state and rerun list could record a nominal change without enforcing reconciliation.",
+        "recorded_revision": 1,
+        "requirement_id": "441e1b1f-7d9e-4f49-b516-ba598114a808",
+        "summary": "Require every material change to identify affected state and evidence reruns",
+        "supersedes_change_id": null
+      },
+      {
+        "authorization_ref": "Owner-directed end-to-end Campaign 106 execution on 2026-08-28",
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "decision_id": "DEC-HYBRID-003",
+        "evidence_rerun_json": "{\"authorization\":\"Owner-directed end-to-end Campaign 106 execution on 2026-08-28\",\"decision_ids\":[\"DEC-HYBRID-003\",\"DEC-HYBRID-006\",\"DEC-HYBRID-009\",\"DEC-HYBRID-012\"],\"evidence_to_rerun\":[\"EVID-G1-CONTRACT\",\"EVID-G2-SUBSTRATE\"],\"id\":\"CHG-HYBRID-004\",\"rationale\":\"M3 implementation turns the frozen no-data-loss sequence into an executable controller. Fixed first-import IDs, exact tracked/untracked/ignored inventory, an external byte-verified archive, two disposable semantic rehearsals, SQLite backup, direct-SQL and interruption recovery, worktree-lineage refusal, guarded storage-mode activation, checkpoint rebuild, legacy-writer refusal, and soak evidence prevent live cutover from relying on informal operator steps.\",\"recorded_at\":\"2026-08-28T17:34:17Z\",\"requirement_ids\":[\"REQ-HYBRID-003\",\"REQ-HYBRID-004\",\"REQ-HYBRID-007\",\"REQ-HYBRID-009\"],\"source_commit\":\"b34f5b36cf80a331a46385eb8c6208c052f6c5c4\",\"summary\":\"Bind maintainer conversion to fixed source IDs and an externally rehearsed cutover\",\"supersedes\":[]}",
+        "id": "88174e41-72bc-4c22-9670-0262badb1af8",
+        "rationale": "M3 implementation turns the frozen no-data-loss sequence into an executable controller. Fixed first-import IDs, exact tracked/untracked/ignored inventory, an external byte-verified archive, two disposable semantic rehearsals, SQLite backup, direct-SQL and interruption recovery, worktree-lineage refusal, guarded storage-mode activation, checkpoint rebuild, legacy-writer refusal, and soak evidence prevent live cutover from relying on informal operator steps.",
+        "recorded_revision": 1,
+        "requirement_id": "cd38d115-87f2-4699-8499-cb9a6538a3bf",
+        "summary": "Bind maintainer conversion to fixed source IDs and an externally rehearsed cutover",
+        "supersedes_change_id": null
+      },
+      {
+        "authorization_ref": "Owner discussion on 2026-08-28",
+        "cycle_id": "45aec1ed-289c-4d3f-a640-406341ab717e",
+        "decision_id": null,
+        "evidence_rerun_json": "{\"authorization\":\"Owner discussion on 2026-08-28\",\"id\":\"HPT2-CHANGE-SQLITE-SEQUENCE\",\"summary\":\"Implement the minimum Hybrid SQLite substrate before the first closed-loop vertical slice.\"}",
+        "id": "936dddee-e4b1-4419-8256-7b1749f7ea48",
+        "rationale": "Owner-directed change preserved from the 2026-08-28 discussion.",
+        "recorded_revision": 1,
+        "requirement_id": "f77c1565-ea17-4ad6-b5cf-7adb7c95a260",
+        "summary": "Implement the minimum Hybrid SQLite substrate before the first closed-loop vertical slice.",
+        "supersedes_change_id": null
+      },
+      {
+        "authorization_ref": "Owner discussion on 2026-08-28",
+        "cycle_id": "45aec1ed-289c-4d3f-a640-406341ab717e",
+        "decision_id": null,
+        "evidence_rerun_json": "{\"authorization\":\"Owner discussion on 2026-08-28\",\"id\":\"HPT2-CHANGE-UNIVERSAL\",\"summary\":\"Broaden closed-loop reconciliation from one Idea Brief to every durable Tool Shed entry point.\"}",
+        "id": "9a20fa8d-2363-4c32-953e-5de328782215",
+        "rationale": "Owner-directed change preserved from the 2026-08-28 discussion.",
+        "recorded_revision": 1,
+        "requirement_id": "f77c1565-ea17-4ad6-b5cf-7adb7c95a260",
+        "summary": "Broaden closed-loop reconciliation from one Idea Brief to every durable Tool Shed entry point.",
+        "supersedes_change_id": null
+      }
+    ],
+    "migration_ledger": [
+      {
+        "backup_ref": null,
+        "completed_at": "2026-08-28T17:38:29Z",
+        "from_schema": 0,
+        "id": "c803f995-6374-45a1-bc8f-4a875f410e92",
+        "migration_digest": "068f28b59793ca9e86ae5516b5cff248a6a91e9dde615f70c3699b80f6e2196a",
+        "source_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "started_at": "2026-08-28T17:38:29Z",
+        "status": "complete",
+        "to_schema": 1
+      }
+    ],
+    "outcome_verdict": [
+      {
+        "authorization_ref": "Owner-approved Program Roadmap and Campaign 103",
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "decided_at": "2026-08-28T17:38:29Z",
+        "decided_revision": 1,
+        "disposition": "satisfied",
+        "id": "94c6dd49-6837-4947-9a49-a9637bc872ff",
+        "scope": "G1-DESIGN-FROZEN",
+        "summary": "{\"authorized_by\":\"Owner-approved Program Roadmap and Campaign 103\",\"disposition\":\"satisfied\",\"evidence_ids\":[\"EVID-G1-BOOTSTRAP\",\"EVID-G1-CONTRACT\",\"EVID-G1-HPT2-INVENTORY\",\"EVID-G1-EFFICIENCY-CONTRACT\"],\"scope\":\"G1-DESIGN-FROZEN\",\"summary\":\"The independent bootstrap surface and version-1 design contract are frozen with exact G1 evidence.\"}"
+      },
+      {
+        "authorization_ref": "Approved Program Roadmap",
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "decided_at": "2026-08-28T17:38:29Z",
+        "decided_revision": 1,
+        "disposition": "open",
+        "id": "c0844a90-f569-4c59-a98f-3b520f61a4e0",
+        "scope": "initiative",
+        "summary": "{\"authorized_by\":\"Approved Program Roadmap\",\"disposition\":\"open\",\"evidence_ids\":[\"EVID-G1-BOOTSTRAP\",\"EVID-G1-CONTRACT\",\"EVID-G1-HPT2-INVENTORY\",\"EVID-G1-EFFICIENCY-CONTRACT\"],\"scope\":\"initiative\",\"summary\":\"G1 is satisfied; G2 through G4 remain required before the Hybrid SQLite initiative is complete or release-ready.\"}"
+      },
+      {
+        "authorization_ref": "Approved Program Roadmap",
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "decided_at": "2026-08-28T17:38:29Z",
+        "decided_revision": 1,
+        "disposition": "open",
+        "id": "c2d6e364-fbdf-47bc-ac4d-3e6526dc474c",
+        "scope": "G4-RELEASE-CANARY-PROVEN",
+        "summary": "{\"authorized_by\":\"Approved Program Roadmap\",\"disposition\":\"open\",\"evidence_ids\":[\"EVID-G4-RELEASE\",\"EVID-G4-CANARY\"],\"scope\":\"G4-RELEASE-CANARY-PROVEN\",\"summary\":\"Release, installed-skill synchronization, and disconnected client canary require later evidence and authority.\"}"
+      },
+      {
+        "authorization_ref": "Approved Program Roadmap",
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "decided_at": "2026-08-28T17:38:29Z",
+        "decided_revision": 1,
+        "disposition": "open",
+        "id": "cda82228-febf-4b9c-8abd-f036a79bf43f",
+        "scope": "G3-MAINTAINER-CONVERSION-PROVEN",
+        "summary": "{\"authorized_by\":\"Approved Program Roadmap\",\"disposition\":\"open\",\"evidence_ids\":[\"EVID-G3-MAINTAINER\"],\"scope\":\"G3-MAINTAINER-CONVERSION-PROVEN\",\"summary\":\"The disposable rehearsal and live maintainer conversion remain future guarded work.\"}"
+      },
+      {
+        "authorization_ref": "Frozen HPT2 evidence-inventory contract",
+        "cycle_id": "45aec1ed-289c-4d3f-a640-406341ab717e",
+        "decided_at": "2026-08-28T17:38:29Z",
+        "decided_revision": 1,
+        "disposition": "partial",
+        "id": "d6a748ff-e743-4b69-a0db-51cb11b4ebc8",
+        "scope": "hpt2",
+        "summary": "Current closed-loop machinery is evidenced, but the original HPT2 intent and delivery history are unavailable."
+      },
+      {
+        "authorization_ref": "Owner-approved Program Roadmap and end-to-end Campaign 105 execution",
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "decided_at": "2026-08-28T17:38:29Z",
+        "decided_revision": 1,
+        "disposition": "satisfied",
+        "id": "edefbe6c-eeeb-498a-830a-af2341505333",
+        "scope": "G2-SUBSTRATE-LOOP-PROVEN",
+        "summary": "{\"authorized_by\":\"Owner-approved Program Roadmap and end-to-end Campaign 105 execution\",\"disposition\":\"satisfied\",\"evidence_ids\":[\"EVID-G2-EFFICIENCY\",\"EVID-G2-HPT2-PARITY\",\"EVID-G2-SUBSTRATE\"],\"scope\":\"G2-SUBSTRATE-LOOP-PROVEN\",\"summary\":\"The phase-one SQLite substrate, exact bootstrap import, HPT2 partial/reconciled closed loop, fresh-workspace and checkpoint recovery parity, eight operation capsules, and 24-run efficiency suite satisfy G2 without broadening live authority.\"}"
+      }
+    ],
+    "reconciliation": [
+      {
+        "compared_at": "2026-08-28T17:38:29Z",
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "id": "11236dfc-7540-4ebe-be25-762e4a452117",
+        "origin_revision": 1,
+        "product_truth_ref": "bootstrap:ca7da0f7be4d2361:db0e4b29c7267ea7dcde9480d4ab0b3668b99b885026d4fc2f9cce76cf1d6f30",
+        "residual_work_json": "[]",
+        "state": "reconciled",
+        "verdict_id": "c0844a90-f569-4c59-a98f-3b520f61a4e0"
+      },
+      {
+        "compared_at": "2026-08-28T17:38:29Z",
+        "cycle_id": "45aec1ed-289c-4d3f-a640-406341ab717e",
+        "id": "247a3083-ad61-4ee6-b855-e8d11cc70f34",
+        "origin_revision": 1,
+        "product_truth_ref": "[\"docs/hybrid-sqlite-state-v1-contract.md\",\"scripts/outcome_reconciliation.py\",\"tests/test_outcome_reconciliation.py\"]",
+        "residual_work_json": "[\"original HPT2 Idea Brief or source request\",\"accepted HPT2 development-change ledger\",\"original HPT2 campaign and milestone history\",\"HPT2 product commit and target qualification bundle\"]",
+        "state": "reconciled",
+        "verdict_id": "d6a748ff-e743-4b69-a0db-51cb11b4ebc8"
+      }
+    ],
+    "relationship": [
+      {
+        "created_revision": 1,
+        "from_artifact_id": "e4a585a9-cfe0-453b-8cae-04b62df704c3",
+        "id": "1a17a285-6aeb-407f-8db8-4bb2b7229c83",
+        "provenance": "HPT2-M2",
+        "relation_type": "evidenced-by",
+        "retired_revision": null,
+        "to_artifact_id": "e14b547c-2656-4042-9f82-1763f70341a5"
+      },
+      {
+        "created_revision": 2,
+        "from_artifact_id": "e4a585a9-cfe0-453b-8cae-04b62df704c3",
+        "id": "2369b70c-2530-403d-becd-7ec816e63dd5",
+        "provenance": "operator-discussion",
+        "relation_type": "reported-by",
+        "retired_revision": null,
+        "to_artifact_id": "44345c08-9155-4acc-9a0d-235779ef79f3"
+      },
+      {
+        "created_revision": 1,
+        "from_artifact_id": "e4a585a9-cfe0-453b-8cae-04b62df704c3",
+        "id": "a6af77a0-5a10-4e9e-adce-ddfb938e2e70",
+        "provenance": "HPT2-M2",
+        "relation_type": "evidenced-by",
+        "retired_revision": null,
+        "to_artifact_id": "c3f2052c-2011-4f6a-b79c-3ff01bc6e10b"
+      },
+      {
+        "created_revision": 1,
+        "from_artifact_id": "e4a585a9-cfe0-453b-8cae-04b62df704c3",
+        "id": "f2df8d7d-29e3-45d7-b6cb-64d30ab4c1f7",
+        "provenance": "HPT2-M2",
+        "relation_type": "evidenced-by",
+        "retired_revision": null,
+        "to_artifact_id": "797b1434-d24e-42bd-a9b7-54f52e8bd74c"
+      }
+    ],
+    "requirement": [
+      {
+        "accepted_outcome": "{\"disposition\":\"accepted\",\"evidence_gate\":\"G4-RELEASE-CANARY-PROVEN\",\"evidence_ids\":[\"EVID-G4-CANARY\"],\"id\":\"REQ-HYBRID-012\",\"milestone\":\"M4-RELEASE-CANARY-PROVEN\",\"origin\":{\"path\":\"work/ideas/idea-sqlite-backed-tool-shed-operational-state.md\",\"section\":\"Incremental Adoption\"},\"summary\":\"Original files remain retained through the first release and soak; retirement requires a later separately authorized migration.\"}",
+        "accepted_revision": 1,
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "disposition": "accepted",
+        "evidence_gate_key": "G4-RELEASE-CANARY-PROVEN",
+        "id": "0dc8cac1-55af-4ed2-a5f0-cb9136b2cc3b",
+        "milestone_key": "M4-RELEASE-CANARY-PROVEN",
+        "origin_artifact_id": "65538b72-8a77-4c4d-ba7c-693137779b07"
+      },
+      {
+        "accepted_outcome": "{\"disposition\":\"accepted\",\"evidence_gate\":\"G1-DESIGN-FROZEN\",\"evidence_ids\":[\"EVID-G1-EFFICIENCY-CONTRACT\"],\"id\":\"REQ-HYBRID-006\",\"milestone\":\"M1-BOOTSTRAP-DESIGN-FROZEN\",\"origin\":{\"path\":\"work/ideas/idea-sqlite-backed-tool-shed-operational-state.md\",\"section\":\"Token And Context Efficiency Qualification\"},\"summary\":\"Small, maintainer, and large fixtures measure at least 70 percent median context reduction with semantic parity and at most 5 percent explained fallback.\"}",
+        "accepted_revision": 1,
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "disposition": "accepted",
+        "evidence_gate_key": "G1-DESIGN-FROZEN",
+        "id": "17acfc38-fe58-44d9-8672-df55ae42364c",
+        "milestone_key": "M1-BOOTSTRAP-DESIGN-FROZEN",
+        "origin_artifact_id": "65538b72-8a77-4c4d-ba7c-693137779b07"
+      },
+      {
+        "accepted_outcome": "{\"disposition\":\"accepted\",\"evidence_gate\":\"G4-RELEASE-CANARY-PROVEN\",\"evidence_ids\":[\"EVID-G4-RELEASE\"],\"id\":\"REQ-HYBRID-010\",\"milestone\":\"M4-RELEASE-CANARY-PROVEN\",\"origin\":{\"path\":\"work/ideas/idea-sqlite-backed-tool-shed-operational-state.md\",\"section\":\"Maintainer-First Upgrade And Rollout\"},\"summary\":\"The first database-aware release uses updater protocol 4, qualifies supported platforms, and synchronizes the installed maintainer skill only after publication.\"}",
+        "accepted_revision": 1,
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "disposition": "accepted",
+        "evidence_gate_key": "G4-RELEASE-CANARY-PROVEN",
+        "id": "3baa3138-6305-4e73-b3e9-65368668707d",
+        "milestone_key": "M4-RELEASE-CANARY-PROVEN",
+        "origin_artifact_id": "65538b72-8a77-4c4d-ba7c-693137779b07"
+      },
+      {
+        "accepted_outcome": "{\"disposition\":\"accepted\",\"evidence_gate\":\"G1-DESIGN-FROZEN\",\"evidence_ids\":[\"EVID-G1-BOOTSTRAP\"],\"id\":\"REQ-HYBRID-001\",\"milestone\":\"M1-BOOTSTRAP-DESIGN-FROZEN\",\"origin\":{\"path\":\"work/ideas/idea-sqlite-backed-tool-shed-operational-state.md\",\"section\":\"Bootstrap Closed-Loop Enforcement\"},\"summary\":\"An independent bootstrap ledger and verifier govern the initiative before SQLite reconciliation can certify itself.\"}",
+        "accepted_revision": 1,
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "disposition": "accepted",
+        "evidence_gate_key": "G1-DESIGN-FROZEN",
+        "id": "441e1b1f-7d9e-4f49-b516-ba598114a808",
+        "milestone_key": "M1-BOOTSTRAP-DESIGN-FROZEN",
+        "origin_artifact_id": "65538b72-8a77-4c4d-ba7c-693137779b07"
+      },
+      {
+        "accepted_outcome": "{\"disposition\":\"accepted\",\"evidence_gate\":\"G1-DESIGN-FROZEN\",\"evidence_ids\":[\"EVID-G1-CONTRACT\"],\"id\":\"REQ-HYBRID-004\",\"milestone\":\"M1-BOOTSTRAP-DESIGN-FROZEN\",\"origin\":{\"path\":\"work/ideas/idea-sqlite-backed-tool-shed-operational-state.md\",\"section\":\"No-Data-Loss Conversion Protocol\"},\"summary\":\"Migration, updater, backup, rollback, downgrade, and maintainer-first rollout contracts preserve all existing data.\"}",
+        "accepted_revision": 1,
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "disposition": "accepted",
+        "evidence_gate_key": "G1-DESIGN-FROZEN",
+        "id": "46c871d0-0cf7-4d29-b2bc-f27b72655b93",
+        "milestone_key": "M1-BOOTSTRAP-DESIGN-FROZEN",
+        "origin_artifact_id": "65538b72-8a77-4c4d-ba7c-693137779b07"
+      },
+      {
+        "accepted_outcome": "{\"disposition\":\"accepted\",\"evidence_gate\":\"G4-RELEASE-CANARY-PROVEN\",\"evidence_ids\":[\"EVID-G4-CANARY\"],\"id\":\"REQ-HYBRID-011\",\"milestone\":\"M4-RELEASE-CANARY-PROVEN\",\"origin\":{\"path\":\"work/ideas/idea-sqlite-backed-tool-shed-operational-state.md\",\"section\":\"Maintainer-First Upgrade And Rollout\"},\"summary\":\"One disconnected client canary proves upgrade, rebuild, reconciliation, backup, restore, rollback, and safe downgrade without requiring GitHub.\"}",
+        "accepted_revision": 1,
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "disposition": "accepted",
+        "evidence_gate_key": "G4-RELEASE-CANARY-PROVEN",
+        "id": "79541e0f-bfc4-42b0-949b-5e70693ea48e",
+        "milestone_key": "M4-RELEASE-CANARY-PROVEN",
+        "origin_artifact_id": "65538b72-8a77-4c4d-ba7c-693137779b07"
+      },
+      {
+        "accepted_outcome": "{\"disposition\":\"accepted\",\"evidence_gate\":\"G2-SUBSTRATE-LOOP-PROVEN\",\"evidence_ids\":[\"EVID-G2-SUBSTRATE\"],\"id\":\"REQ-HYBRID-007\",\"milestone\":\"M2-SUBSTRATE-HPT2-PROVEN\",\"origin\":{\"path\":\"work/ideas/idea-sqlite-backed-tool-shed-operational-state.md\",\"section\":\"Approved Phase-One Boundary\"},\"summary\":\"The minimum SQLite substrate proves identity, provenance, guarded writes, direct-SQL detection, portability, and recovery without broadening authority.\"}",
+        "accepted_revision": 1,
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "disposition": "accepted",
+        "evidence_gate_key": "G2-SUBSTRATE-LOOP-PROVEN",
+        "id": "7c2587c4-42be-465f-a8c7-da7664d39f94",
+        "milestone_key": "M2-SUBSTRATE-HPT2-PROVEN",
+        "origin_artifact_id": "65538b72-8a77-4c4d-ba7c-693137779b07"
+      },
+      {
+        "accepted_outcome": "{\"disposition\":\"accepted\",\"evidence_gate\":\"G1-DESIGN-FROZEN\",\"evidence_ids\":[\"EVID-G1-CONTRACT\"],\"id\":\"REQ-HYBRID-002\",\"milestone\":\"M1-BOOTSTRAP-DESIGN-FROZEN\",\"origin\":{\"path\":\"work/ideas/idea-sqlite-backed-tool-shed-operational-state.md\",\"section\":\"Approved Phase-One Boundary\"},\"summary\":\"Every phase-one entity and field has one explicit editable authority and version-1 schema contract.\"}",
+        "accepted_revision": 1,
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "disposition": "accepted",
+        "evidence_gate_key": "G1-DESIGN-FROZEN",
+        "id": "8e75a464-6f46-4e61-bd94-5373db06cb6f",
+        "milestone_key": "M1-BOOTSTRAP-DESIGN-FROZEN",
+        "origin_artifact_id": "65538b72-8a77-4c4d-ba7c-693137779b07"
+      },
+      {
+        "accepted_outcome": "{\"disposition\":\"accepted\",\"evidence_gate\":\"G3-MAINTAINER-CONVERSION-PROVEN\",\"evidence_ids\":[\"EVID-G3-MAINTAINER\"],\"id\":\"REQ-HYBRID-009\",\"milestone\":\"M3-MAINTAINER-HYBRID-PROVEN\",\"origin\":{\"path\":\"work/ideas/idea-sqlite-backed-tool-shed-operational-state.md\",\"section\":\"Maintainer-First Upgrade And Rollout\"},\"summary\":\"Disposable rehearsal and live maintainer conversion preserve every file and prove parity, recovery, rollback, and soak.\"}",
+        "accepted_revision": 1,
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "disposition": "accepted",
+        "evidence_gate_key": "G3-MAINTAINER-CONVERSION-PROVEN",
+        "id": "96d54f17-ebe0-4a4b-a501-0dc41f388432",
+        "milestone_key": "M3-MAINTAINER-HYBRID-PROVEN",
+        "origin_artifact_id": "65538b72-8a77-4c4d-ba7c-693137779b07"
+      },
+      {
+        "accepted_outcome": "{\"disposition\":\"accepted\",\"evidence_gate\":\"G1-DESIGN-FROZEN\",\"evidence_ids\":[\"EVID-G1-CONTRACT\"],\"id\":\"REQ-HYBRID-003\",\"milestone\":\"M1-BOOTSTRAP-DESIGN-FROZEN\",\"origin\":{\"path\":\"work/ideas/idea-sqlite-backed-tool-shed-operational-state.md\",\"section\":\"Portable Collaboration And Worktree Contract\"},\"summary\":\"Checkpoint, event, per-worktree, merge, rebuild, and clone behavior is deterministic and fail-closed.\"}",
+        "accepted_revision": 1,
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "disposition": "accepted",
+        "evidence_gate_key": "G1-DESIGN-FROZEN",
+        "id": "cd38d115-87f2-4699-8499-cb9a6538a3bf",
+        "milestone_key": "M1-BOOTSTRAP-DESIGN-FROZEN",
+        "origin_artifact_id": "65538b72-8a77-4c4d-ba7c-693137779b07"
+      },
+      {
+        "accepted_outcome": "{\"disposition\":\"accepted\",\"evidence_gate\":\"G1-DESIGN-FROZEN\",\"evidence_ids\":[\"EVID-G1-HPT2-INVENTORY\"],\"id\":\"REQ-HYBRID-005\",\"milestone\":\"M1-BOOTSTRAP-DESIGN-FROZEN\",\"origin\":{\"path\":\"work/ideas/idea-sqlite-backed-tool-shed-operational-state.md\",\"section\":\"Bootstrap Closed-Loop Enforcement\"},\"summary\":\"The HPT2 evidence inventory records available and missing history without inventing facts.\"}",
+        "accepted_revision": 1,
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "disposition": "accepted",
+        "evidence_gate_key": "G1-DESIGN-FROZEN",
+        "id": "e41aef98-0b33-4522-8bf8-04dbb410ffa6",
+        "milestone_key": "M1-BOOTSTRAP-DESIGN-FROZEN",
+        "origin_artifact_id": "65538b72-8a77-4c4d-ba7c-693137779b07"
+      },
+      {
+        "accepted_outcome": "{\"disposition\":\"accepted\",\"evidence_gate\":\"G2-SUBSTRATE-LOOP-PROVEN\",\"evidence_ids\":[\"EVID-G2-HPT2-PARITY\",\"EVID-G2-EFFICIENCY\"],\"id\":\"REQ-HYBRID-008\",\"milestone\":\"M2-SUBSTRATE-HPT2-PROVEN\",\"origin\":{\"path\":\"work/ideas/idea-universal-closed-loop-outcome-reconciliation.md\",\"section\":\"Current Synthesis\"},\"summary\":\"The HPT2 vertical slice reconciles origin, accepted changes, product evidence, exceptions, and final verdict and reproduces the bootstrap result.\"}",
+        "accepted_revision": 1,
+        "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "disposition": "accepted",
+        "evidence_gate_key": "G2-SUBSTRATE-LOOP-PROVEN",
+        "id": "ed3bcc58-e277-49e8-bfe7-703a193aa89f",
+        "milestone_key": "M2-SUBSTRATE-HPT2-PROVEN",
+        "origin_artifact_id": "65538b72-8a77-4c4d-ba7c-693137779b07"
+      },
+      {
+        "accepted_outcome": "Reconcile HPT2 from accepted intent through current product truth without inventing missing history.",
+        "accepted_revision": 1,
+        "cycle_id": "45aec1ed-289c-4d3f-a640-406341ab717e",
+        "disposition": "accepted",
+        "evidence_gate_key": "G2-SUBSTRATE-LOOP-PROVEN",
+        "id": "f77c1565-ea17-4ad6-b5cf-7adb7c95a260",
+        "milestone_key": "M2-SUBSTRATE-HPT2-PROVEN",
+        "origin_artifact_id": "e4a585a9-cfe0-453b-8cae-04b62df704c3"
+      }
+    ],
+    "structural_change": [
+      {
+        "id": "05bffe9a-ea60-4075-acf6-f4ac6fc53a58",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "a16bcdf45578a9058b5e1e7e0a7daec548ed3b7e364eeb28780ff8117e5a2ea3",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "f77c1565-ea17-4ad6-b5cf-7adb7c95a260",
+        "table_name": "requirement"
+      },
+      {
+        "id": "062be0b2-ab46-4d06-8074-ba1066548919",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "dabc3b7b118a369c9bcf30f0df0dc78ff676b1be23a63e15f52b0cac307a4f53",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "4e215995-1aa8-4e6b-baa2-78fc8b150cac",
+        "table_name": "verification_result"
+      },
+      {
+        "id": "06ffdcd0-ed2d-47e4-9419-e60c4e6b0bc1",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "b194fb1658e9c7f9e187c9e6767c79b0cdb3e2e60a9b5609e37f59770c729c60",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "dbc2baa8-0b1d-4fda-a24a-c7f09eb5e136",
+        "table_name": "import_record"
+      },
+      {
+        "id": "0925e5ae-d4ff-457e-8478-8696463ef999",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "424c4d759e92e1b531985a6af5ec3b88ba0f8388511b14a71622110b057b766f",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "9a20fa8d-2363-4c32-953e-5de328782215",
+        "table_name": "material_change"
+      },
+      {
+        "id": "0cf227e9-1f19-4f6e-b14a-13c569650985",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "5af741ee3b2b0c4d322bb4b6033a671f3d71ca9ad9894c759a591ac3feb5b03a",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "1a17a285-6aeb-407f-8db8-4bb2b7229c83",
+        "table_name": "relationship"
+      },
+      {
+        "id": "1006b151-4b57-4e30-8fe4-32c7af572381",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "64c3502599adbdc87a533d0bddb897b5fec72b2db567b8e7a27309ee6700c226",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "10c34ae2-cc0c-4cfb-b45d-078faa2f8a27",
+        "table_name": "artifact"
+      },
+      {
+        "id": "11266ee6-ec89-4c31-9126-99765881d513",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "960307196b938d39904a7611280c8497a58bb64607b3a0b1e22e5e61d2f9f91b",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "c12ed040-ee4e-4940-91ba-578ccb449b12",
+        "table_name": "verification_result"
+      },
+      {
+        "id": "11568fc5-ec8e-4a6b-b965-12b8b0d5cd0c",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "c5a9f7f8623f41d3ba340696274917cfc19b5bc56151a9b786690ce03a65227a",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "45aec1ed-289c-4d3f-a640-406341ab717e",
+        "table_name": "cycle"
+      },
+      {
+        "id": "139edbf5-f127-450c-a02c-38426e5a5fbd",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "75e880213b75a4cfc9efc7efdec9faf3d65f831b54eb353d6e465dbcedfd91b4",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "46c871d0-0cf7-4d29-b2bc-f27b72655b93",
+        "table_name": "requirement"
+      },
+      {
+        "id": "14d7d896-b4cb-4170-b353-cdc5e0d2957c",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "80f897bf5ccd5502b549bbeb9dc173b7019bc63b03d54d58f520e6a6266d11f1",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "cda82228-febf-4b9c-8abd-f036a79bf43f",
+        "table_name": "outcome_verdict"
+      },
+      {
+        "id": "18925e92-504d-4aa6-b655-d255667fef9e",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "58671d5838d1f242702cf907439d3691ba3861524a61ad0d7477ddbcfce30467",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "b9f9ef8f-a4ed-4723-b2da-0bc660ee61e4",
+        "table_name": "import_record"
+      },
+      {
+        "id": "19371338-cf66-4588-9c8d-2ba8c41cfce1",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "645baab6c8f7aec24d026645035ca6617cbc46099605e6480d28abc2e80a4690",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "d0377b75-880a-4572-af9d-dfb8bb0736d3",
+        "table_name": "artifact"
+      },
+      {
+        "id": "19736397-c034-4bfb-a6b8-735f63d7d6b1",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "e7bb9d029a16425c7a341d856ea5f5e8ae35f3e1c39c15089f307ecc9f3e2d34",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "9bfab977-f049-44c4-ac88-36eab75cdafc",
+        "table_name": "import_record"
+      },
+      {
+        "id": "19b07e1f-d963-469a-95de-614a34d5c242",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "b9c8ae9ae2cd3eb2b5431975b70336157b770d00eaa6a151e820d6fe3bb99f9b",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "3fd73784-cc0c-40ab-b87a-7691b9a45bda",
+        "table_name": "verification_result"
+      },
+      {
+        "id": "1e6b31cb-c560-41b8-a91d-68dece8a347f",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "b5743cfc7bf5d63b627a11bff1f3e817a4aa400d9647f4c9dc24a5c026339fde",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "0ac49981-63a7-4814-bd8e-61622837cbf4",
+        "table_name": "artifact"
+      },
+      {
+        "id": "1ee2b04c-7720-4149-a127-8bad2b1d4e94",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "36d377bd33e0543177bc9324ac15bc5d9d2eae96fe0d4d5e7947f76b8f629d74",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "9001dfd1-8785-42f0-8672-4e1e7e3e2257",
+        "table_name": "import_record"
+      },
+      {
+        "id": "203fa0be-04cc-4b35-92d6-085389414568",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "96c5c740c512e09fdb34c75b9549e9cae46f8c464cf5792528bd503f6730eda3",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "ed3bcc58-e277-49e8-bfe7-703a193aa89f",
+        "table_name": "requirement"
+      },
+      {
+        "id": "264c80bc-ec50-4be3-8ed7-8d4c3aef7d27",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "9df879edf61b6e5a4d9bb2cb7ad5037d413ea41cabfe7635cb1952530bb6693a",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "d6a748ff-e743-4b69-a0db-51cb11b4ebc8",
+        "table_name": "outcome_verdict"
+      },
+      {
+        "id": "28995aaf-0fcc-4f81-aa5a-63516b7b3e42",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "554fdc5fd31a4e1dff28f8c325285bf7f4a37a7e6b77e1f92a32ed26587ef246",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "44345c08-9155-4acc-9a0d-235779ef79f3",
+        "table_name": "artifact"
+      },
+      {
+        "id": "3209a3ec-9d9b-4d5b-8616-0efa02ef70bb",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "2a928bed0ec08c1c12c8e381930e562c2ae55beb373096097fa8893f9ad47f83",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "cd38d115-87f2-4699-8499-cb9a6538a3bf",
+        "table_name": "requirement"
+      },
+      {
+        "id": "32746da4-75bb-48da-8e0a-0af3504c0c33",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "fc0ba4b10435da0f82a95d8defe50234402e0f8539c5668551d3ddc919f92f94",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "40d03ed1-7383-4696-a5fc-bbbdd232414e",
+        "table_name": "import_record"
+      },
+      {
+        "id": "3526755c-5305-47df-a536-32df9b4703b6",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "475b8e5c3d8877b0e241cc61142b9b16791c86fec40f0a14cdfa1d6bbaac8c89",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "5414d8a4-326b-489d-b1b9-ab68f6acaa24",
+        "table_name": "verification_result"
+      },
+      {
+        "id": "3955de1c-f2d5-4aa9-ba6b-3ef115e9f1ad",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "7ff1e24b6536172773dbb3381e6643216675ccf2239cdeccd805f57f04c111a7",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "edefbe6c-eeeb-498a-830a-af2341505333",
+        "table_name": "outcome_verdict"
+      },
+      {
+        "id": "3aaf83cf-d808-492a-a048-080398587551",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "4f335ca1280df461dca9f7da75fd3dafe722d485ca094081cd87fb9080462db1",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "c2d6e364-fbdf-47bc-ac4d-3e6526dc474c",
+        "table_name": "outcome_verdict"
+      },
+      {
+        "id": "3b9d08cd-e7c5-4eaf-a877-f1d338a95be3",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "c0cc6dee86251240f0b26cb32c67316405e6a12f16b3851ff381c984e4b9bc9d",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "8e75a464-6f46-4e61-bd94-5373db06cb6f",
+        "table_name": "requirement"
+      },
+      {
+        "id": "3d5fbf0b-fce0-423a-8f58-ab88e7897b67",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "0e2207f2ca91bf828e7273a0be961c6721d719f2e6dbd47d97c80363e7571081",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "33c44d47-0bdb-4822-8496-d193402241cc",
+        "table_name": "verification_result"
+      },
+      {
+        "id": "437df1ab-d0c1-4d34-b026-c9bbe933f6ef",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "3281f6d0d08b308324440a3dfd8656c888c19c5874a95557da88fbcbec9c5c25",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "0481939b-27e3-4d60-a77a-a4f6da19d93d",
+        "table_name": "material_change"
+      },
+      {
+        "id": "4c5cddbb-46a9-4692-8a9a-45676be3ad40",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "bacd0d2492990cfcf8b5825d2c9770fa5a64b86e29b56026463d2a34b9b0cf48",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "06eeffb0-9412-4211-ab64-4ea48462f8c5",
+        "table_name": "verification_result"
+      },
+      {
+        "id": "4fb1da5c-6651-4f18-a9a4-3a1e30ee293c",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "bde5c0469573376462087c5b5fcafeb94bda8618db1a75b4ef3b86d9180f1264",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "40178b41-630f-4b67-a4cb-b243b240af3d",
+        "table_name": "artifact"
+      },
+      {
+        "id": "50bee038-88db-4ddb-952f-17d5815e9553",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "c01509c080ef84ba7accc6f8bf39b86a66ea42f231c57376e84d671fbb7a0627",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "e4a585a9-cfe0-453b-8cae-04b62df704c3",
+        "table_name": "artifact"
+      },
+      {
+        "id": "51bb0d81-d651-4cbd-bcdd-15c71595ba69",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "7e53d59ef51c67fed2bb2de81f1758a90b4537cd4c6525551b796233017b1504",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "ab54ed59-3d95-40c2-8319-ce492ecc618a",
+        "table_name": "verification_result"
+      },
+      {
+        "id": "52189240-85fc-42c7-b998-edca1d9adcf7",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "b297078fe582535be1f911c047c706187765a708f0f95b903c7446c0f6e991da",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "0e228975-0897-408c-86a2-fea234ccafd2",
+        "table_name": "import_record"
+      },
+      {
+        "id": "52ddeaeb-964d-4607-90ff-0e721d13bdbf",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "fd597d22d23a5d4585194b3afb34d5a861c54d4211d3d1c8765f8be0b75c64f0",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "7ae3bd82-5175-4613-8ecc-272dad18f0bf",
+        "table_name": "import_record"
+      },
+      {
+        "id": "53a58674-5b28-4092-bde5-14c6c74d0610",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "b0ea77c52996b8126b56033c66df444f45e65cd96ba45cef15a58e4dc86bf072",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "e0efdf4f-2f91-4a57-a0a9-6f16133f6802",
+        "table_name": "artifact"
+      },
+      {
+        "id": "56c549a0-c6c7-4577-aa0e-8021ffd92a23",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "1186f09abf192f2400b4971edd2cf6843deba12d03c7563986a9e74449fd8f9a",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "e14b547c-2656-4042-9f82-1763f70341a5",
+        "table_name": "artifact"
+      },
+      {
+        "id": "5b0feba1-0a2c-4518-9e42-d89794a577bf",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "07be6caee1a4905fafea20e12d164a65a7f1b697e2171d4ab8e182e1413acc25",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "11236dfc-7540-4ebe-be25-762e4a452117",
+        "table_name": "reconciliation"
+      },
+      {
+        "id": "5b563779-0190-41ff-9764-664103ac6041",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "18b73dfe94eba1665f7ee9a077a105d1756a84014de3dc72a1ec7ff971676b90",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "4a82cb8a-7413-4d89-94ec-607f68cfda29",
+        "table_name": "artifact"
+      },
+      {
+        "id": "5cade6d4-b61a-4007-a60b-56ba7a45ee9a",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "6c4ba2c9320a89b1f8ffa88742c0939c23320a01c1bd6013d9b1545de8c76d9f",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "94c6dd49-6837-4947-9a49-a9637bc872ff",
+        "table_name": "outcome_verdict"
+      },
+      {
+        "id": "5cd97d96-100a-416e-9195-df4eb3015f24",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "28e19e9a1c410e27de3d0a5cc5b94d3cf7da1329dbfaf2cf7ad0ae6f9bd426db",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "936dddee-e4b1-4419-8256-7b1749f7ea48",
+        "table_name": "material_change"
+      },
+      {
+        "id": "5ec907d7-2582-4085-a915-b0ce3b7f3d16",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "9aff34b78640a00630433cc7eebab39090f1eef7163412f49e88c32e96de3677",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "67238d0a-a119-444c-acae-aae0eec511c2",
+        "table_name": "import_record"
+      },
+      {
+        "id": "5f1ee7d7-d860-4b9d-85e0-059ee926437d",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "c6e3bf10d7f3d9bf8460ff0ecbe8cd03cf2bdab11c729f1b08721eda6f506f21",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "e408b57a-e95a-4cf5-926c-99528a1e2e3f",
+        "table_name": "artifact"
+      },
+      {
+        "id": "60d7d54c-2250-4eef-8923-36b7658feb9f",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "ab4f482e10244eb66abc60aa1b7844ea5c26fd3f665018f3fd3f6080c5816806",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "98c62f23-a8d4-4089-8bae-c41fc0353f04",
+        "table_name": "evidence_reference"
+      },
+      {
+        "id": "63336fa6-485f-4cef-9fa4-c4108bd71bda",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "2ecc0254ed7e81e6e3d305527f223a63f8ae526ed4fc8295badc0316b25a15ac",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "2ce34e7f-165e-4691-94bc-2f96aefc6e18",
+        "table_name": "verification_result"
+      },
+      {
+        "id": "664fea76-a0c7-4efb-9280-43ceae3cba26",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "24f05265672603b7218bb0af9a005681e17934f3e5e4e666b3d8710ced116dbc",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "7c2587c4-42be-465f-a8c7-da7664d39f94",
+        "table_name": "requirement"
+      },
+      {
+        "id": "67ddf0b1-b8e8-48b3-845e-a7a92d17ff1e",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "6921131a6afb618a943e6f295e1a3a9fa3e58426f1517acfc7124042397b489f",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "a8d15321-6662-4ec4-878d-98756dab7347",
+        "table_name": "import_record"
+      },
+      {
+        "id": "67f2fefd-4c54-4768-9889-f9a0d7b10639",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "d604b4e619dac80b966c45892a97621d6fc008e1921e2284dbe06f947ca9ae37",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "3e4012f6-b1a7-4d7e-8a2d-791383f72bce",
+        "table_name": "verification_result"
+      },
+      {
+        "id": "69f75154-02ce-4730-9695-39521c49c364",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "b9b9a09e4d21c6c1cf2e19dce03a5fa614fce8a21201c1fdbae84eec36ab7a0c",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "f5187371-f5b8-405e-979e-22e5c4689c59",
+        "table_name": "evidence_reference"
+      },
+      {
+        "id": "6a5c6e1b-5387-40e9-a5c1-8fcc80daa48f",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "154d51f6cea6d8922a486ac5982739ba0833b1e2d4c263c23021499629a8650a",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "efc194da-12fb-4a87-922a-bd9067ab59ea",
+        "table_name": "evidence_reference"
+      },
+      {
+        "id": "6e25d974-3f02-4ab5-88b0-32e6ae0abff5",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "ecd8235202b9d66103c48025ac4b04e7746ed91590215515e750eee2e8ac91f2",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "042b1b2d-b57a-4efb-870d-6ef355b1c6ff",
+        "table_name": "import_record"
+      },
+      {
+        "id": "74299fbb-8012-41ca-99c1-9db3c10736bf",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "3073f23062b86ae6e30cbc65839703b09d2b2bcd130b5faa7d1043f45de38637",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "51028153-badc-4984-9d8e-6910c21921c4",
+        "table_name": "evidence_reference"
+      },
+      {
+        "id": "7673703a-114b-4ec0-8039-25fb1b27d857",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "b32ec8257e8e51cdddedbb830e1fe9601843e1f74e48fb1363cb5995956e9c55",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "b16ee9b0-770c-492f-831f-417c6b8f0d8b",
+        "table_name": "artifact"
+      },
+      {
+        "id": "79386603-b01c-4dd5-85a7-b7345c12c03f",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "5c6932327074ee5c14921bfc5da25896eee3db1bf37196d3a79d13bced398a6c",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "247a3083-ad61-4ee6-b855-e8d11cc70f34",
+        "table_name": "reconciliation"
+      },
+      {
+        "id": "7b1439aa-0bfe-4c37-bee8-c38a266d9919",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "3405ef2809d2b5e93ce23d868f34dd4c9bb2e9978ffc3b0447b9eb8f065e93c8",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "6d6645cd-8d5f-4935-aa04-58e1418d88de",
+        "table_name": "import_record"
+      },
+      {
+        "id": "7bffe2e2-2663-4ddf-93bc-50f5712e8c4c",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "e2c15cc8abbd6372c81d8c547593397ae9bffa27913dc7ba9fa0ad7191e61d7f",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "a6af77a0-5a10-4e9e-adce-ddfb938e2e70",
+        "table_name": "relationship"
+      },
+      {
+        "id": "80d977a7-f233-4e41-87ea-210712c193a4",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "dbfb2b0c30c65c12fc8b2dd4971f8d19ae40c594193af1491c2fc4336180b6cc",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "441c3672-463f-4ee5-bc87-5a7817ddf5f8",
+        "table_name": "evidence_reference"
+      },
+      {
+        "id": "8212f6f5-c40f-4394-b84c-c335414636e6",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "f3d12fe1514622586ace95eec8b6137974f6250e068393afc7ffeadd65f0e910",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "3baa3138-6305-4e73-b3e9-65368668707d",
+        "table_name": "requirement"
+      },
+      {
+        "id": "88d425f2-6651-4cb2-aea9-9e6935f3649f",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "38f3400df1b05a17db7b0a71be70e3dd1abc219318561fc72144d3ca42f62ec2",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "797b1434-d24e-42bd-a9b7-54f52e8bd74c",
+        "table_name": "artifact"
+      },
+      {
+        "id": "8ac8b08b-fb2c-41ad-be16-aca8d5964e36",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "55f852ce2be41e64acba6d68c005341ec98f8aa01206ff8192e22853681429bf",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "9503cb7f-0032-4001-a2e8-fb01e7cda712",
+        "table_name": "import_record"
+      },
+      {
+        "id": "8e075137-a892-401a-adee-590f87190c93",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "e90060bc85f42a73e7079a674ccd4afde2c18038aafd8e5b8645d87bbfce3f82",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "98186ec0-5b15-44e3-a004-cc99858e15cf",
+        "table_name": "evidence_reference"
+      },
+      {
+        "id": "907ac219-1f4a-4198-b0bd-6ce6d6154ec2",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "949f87bef2932227116605743cf19930f6747e05ff3d1ce3486a86c3d1890c9d",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "dd9e75bf-1b3f-4e38-b649-3267864086be",
+        "table_name": "import_record"
+      },
+      {
+        "id": "96ba7652-79f5-4a13-b724-8538b1da7ff2",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "1df1bfc3fe843b7558b2547492b85a50e18ec257821eb96f828eaa14f3f72cab",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "0a04dd62-55be-4375-8cb6-dbe6dbcaee1c",
+        "table_name": "evidence_reference"
+      },
+      {
+        "id": "99d401bf-b74b-49f2-a463-51a3438e64a1",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "5ae05a781fc872c4e9ce63078fbca586f837c73085d7811e5064b7bb8486cafa",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "e63597dd-dbf1-4700-a87c-2d603b956af5",
+        "table_name": "verification_result"
+      },
+      {
+        "id": "9d51fbff-2ae2-4803-a4e4-58530c8512ed",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "82355f80-28a5-4cbf-9f8d-9af901669447",
+        "payload_digest": "2441eb1c2884f263318e4dc09349b4bf1f768251d1f3f68b09046f708930bf79",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 2,
+        "row_id": "2369b70c-2530-403d-becd-7ec816e63dd5",
+        "table_name": "relationship"
+      },
+      {
+        "id": "9e58033b-ff25-45cd-9d80-a526c79987ff",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "fe05ea0dc2a2c8fb42d946e44cfdb44a09745a47547265c635b4193c0a2ea896",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "441e1b1f-7d9e-4f49-b516-ba598114a808",
+        "table_name": "requirement"
+      },
+      {
+        "id": "a60265a6-3145-499f-8774-97e555cc805e",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "05f935051b1d22de8e57fb8cefd8d741dbd2a5e3d63973771ff61b0939f1fdbf",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "e6499fad-e436-4eb1-b5b8-df9699c97b1c",
+        "table_name": "import_record"
+      },
+      {
+        "id": "a6791abe-0f12-49f5-8bdf-31a506d6303a",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "13a88ea2591fb0be7a1be6d8daf9fdc0927e7bdb7ed6a9f4e188d2d3aabecf54",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "f357c85e-75b3-4ecf-b0c9-c3b5903c6bb3",
+        "table_name": "import_record"
+      },
+      {
+        "id": "a804231c-0e47-4838-bd67-7c13bce8a286",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "c05b15c9fefb888197a4fd5ba7186bfa17b21f7031c41f1e594e118dc54fb68a",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "ca0c6c33-6bbd-47b0-bf0a-4a25dc5b920e",
+        "table_name": "evidence_reference"
+      },
+      {
+        "id": "a8984f37-6c41-4701-a534-5e220dc896ea",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "2a82e58ad79f2b822727d2ee703d5d776bbaff8f949dc0d46853a9462f91a3f1",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "0dc8cac1-55af-4ed2-a5f0-cb9136b2cc3b",
+        "table_name": "requirement"
+      },
+      {
+        "id": "a8e0e443-6e63-4ce6-9f5c-a420f5e9fc48",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "29e10eef3209fd7ba5911768006b01da5b7b635427fbeaac43f11bc5bbab0c9b",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "2750765c-272c-4ba3-b6d5-29fd68d9c6a3",
+        "table_name": "evidence_reference"
+      },
+      {
+        "id": "ab70bb96-54e1-460d-951c-c7bd2e685793",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "d11f9b4e7d9227d5ee8ae1a36da2ac328ce3ed445b54b9f8964c229b9a184194",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "1ecf184b-b332-4d85-ad86-cb3aad883ba5",
+        "table_name": "import_record"
+      },
+      {
+        "id": "abb2bf4b-5a03-4309-af67-0db96414b775",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "5a02e23ce448de57c58077c099869973b7f32e8f99ebc88afd3687d67bcf0fb6",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "5734513c-0d63-4437-89c4-01dd4fe011c9",
+        "table_name": "import_record"
+      },
+      {
+        "id": "afd65776-3891-438c-bf98-b416aa7f3a01",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "3cc86cada607ae3857ee8f0069e98c8cbdc0a2e873f8f58f1b262161cdc1369e",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "96d54f17-ebe0-4a4b-a501-0dc41f388432",
+        "table_name": "requirement"
+      },
+      {
+        "id": "b1af5022-cc8f-4501-845d-1d16f25aa106",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "7f578095790afc1359cfadabd1057eb99b2420134e650916341773f0c00b1768",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
+        "table_name": "cycle"
+      },
+      {
+        "id": "b5858fd5-2895-474a-98b4-1ef3e30acf33",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "b6018d992e8164802b818b20eca01a045a9f19c4d8e95466ca6f5f4bc3b76e31",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "4589df08-a227-4546-a1de-5e7e5bfdb518",
+        "table_name": "evidence_reference"
+      },
+      {
+        "id": "bad5242d-c37c-4187-bc24-1007f95f7060",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "004bbf79b1d202f49dd7c230ffaa3222d6d97e1e3d7d69b746d3e7de5e448306",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "6eeabb55-d4db-45ea-8979-941364225fb8",
+        "table_name": "material_change"
+      },
+      {
+        "id": "bddcde02-7b3e-401f-9f9f-ca22356ebecc",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "ee9581201ee0c27d73088be5bc8cc9647068ca676684e7322af3e4164f30407b",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "ce87f685-72e2-4c65-a85c-14ac54ef4b79",
+        "table_name": "artifact"
+      },
+      {
+        "id": "be289d17-b887-4a55-92d7-41149205a213",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "9132444c374656c9c2d0b2c50337198d81f08b50d6237069f6a4f8955b5b652f",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "65538b72-8a77-4c4d-ba7c-693137779b07",
+        "table_name": "artifact"
+      },
+      {
+        "id": "c4726284-81b9-43e4-a341-e132f8ea4a13",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "f312b6dd4bc18802aa11f76db01c176314414a881b0ffe0bedf48d60e075efdb",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "68c7329e-0f9a-4aa0-ba44-424e2c67a583",
+        "table_name": "evidence_reference"
+      },
+      {
+        "id": "c6221370-d8b1-406b-9c18-431172208b2c",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "c6f5af1b2e69e53c7de6a5479d8727513181e1e85854298611e657861fe976f6",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "7025d84c-3951-4463-8288-5a6dea0f6148",
+        "table_name": "material_change"
+      },
+      {
+        "id": "c7ce0226-84a5-4f03-886e-336ebbe2bdb8",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "fa6cd3e546c1c06be765eeaf8e3c0edb0d21342f7fc6ff51c64830e617c49439",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "acf0d9c2-bd2a-4f13-8b43-caae9c7e9af1",
+        "table_name": "evidence_reference"
+      },
+      {
+        "id": "c846802e-86fa-4551-98c4-1eef0292b69f",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "f17eed99019930648ebf40114080cd95ea50764f005e7de67689002f5af778be",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "eb192a17-6a1c-4088-9c2a-f46688c4c18d",
+        "table_name": "artifact"
+      },
+      {
+        "id": "c938a2cb-1f4b-4882-98e8-a788da15e713",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "1dfaac8f26b549652df30369a64f9ebad617ce8efe7bbcbb660cde4b4dd6830a",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "1d0e0d2f-0824-45aa-908d-5235d1fef3b3",
+        "table_name": "import_record"
+      },
+      {
+        "id": "cb829eff-d5f7-43b5-ac8f-0ae7332e15ef",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "50e1262905265c7daeb72ad13f5842ed9d00ff7e1010f64e3d9489c9684e8bdf",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "c0844a90-f569-4c59-a98f-3b520f61a4e0",
+        "table_name": "outcome_verdict"
+      },
+      {
+        "id": "cc2674a6-f0c6-489a-8dc4-3c3d4381699b",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "bae964c4b4486b4defc96c272ca1169dc03c65cfa6f709e820d6f3b6128ba0dd",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "e41aef98-0b33-4522-8bf8-04dbb410ffa6",
+        "table_name": "requirement"
+      },
+      {
+        "id": "cf684655-3577-40f7-9c63-50b5197007bd",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "db8b8758baf97decd048d9babf80ecab4d2abcbd40465d40860c647f29a7eaf6",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "bb506b8c-5f68-48c7-993b-b9d59487b1b8",
+        "table_name": "artifact"
+      },
+      {
+        "id": "d0995c56-1634-4bbf-96c7-389d6ec8d7a4",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "6038ad4611ae1c1ca9bfc877edb5a5daeeed68dc045b62b5a298f8773f5bc202",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "88174e41-72bc-4c22-9670-0262badb1af8",
+        "table_name": "material_change"
+      },
+      {
+        "id": "d18e8bdf-cbac-498c-891f-6fb0545d64a0",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "4e4e80d808c1097eec4f56ebcce7aaea3131338921bcbedac7794be3bde7e552",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "79541e0f-bfc4-42b0-949b-5e70693ea48e",
+        "table_name": "requirement"
+      },
+      {
+        "id": "d4733961-227e-4a57-9802-204b7e1f51bf",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "33644de2d4d13ac07dbc68d83e88020dd682b280104db39e49b2059a67a83aa8",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "7cf21c4f-5737-4845-9091-71bc791b620e",
+        "table_name": "import_record"
+      },
+      {
+        "id": "d8506f9d-6242-4983-ba1b-c417a214e9c2",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "4dd547fed291ea4ffec54b3ee047669a13a2718016f106b463dfaa06cc3f8edc",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "e09d10e7-09a2-49ee-bd59-71dae83fcce8",
+        "table_name": "import_record"
+      },
+      {
+        "id": "db46af5a-ad7b-4834-a6ca-9769c322c879",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "7bda69708810ccfe178631e2622e94eac7b64c2c55a587dbb5b0848889ee1fa5",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "28b13ea5-9819-4c20-b1ab-273b5e7ec44e",
+        "table_name": "evidence_reference"
+      },
+      {
+        "id": "dc04718c-5f57-403f-8da0-5af0459ed190",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "63c32fc668e5912f9514510915dec2b6dee392ac8d5b3c313b0f70392112e8b8",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "6ea83b0e-b398-4e42-955a-465f630b7ca7",
+        "table_name": "artifact"
+      },
+      {
+        "id": "dfee2013-67f7-40df-8eb7-30ea1c9608b8",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "a9fc1cf9aa00e28d2ffd25e7029baa3b6f2245411c83f31afe7dc64612e4f8bf",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "9fb86c04-8e14-4da0-9ff5-d07fa7627a22",
+        "table_name": "artifact"
+      },
+      {
+        "id": "e06e08de-a441-4160-9fc4-07c3868ec0c8",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "f1dc0154898d74cc5f741341ec6688157ae74284f0ceead7b15714018a5ea3f0",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "5d176b05-9883-4e0b-a29f-a404de703268",
+        "table_name": "verification_result"
+      },
+      {
+        "id": "e49ce758-0716-43a6-8a67-992aea657412",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "e01d3d13f06b22fc09b6b52e7631328fd9cf05a78d9037e4ed9c54d883b7d4e1",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "acc357fd-039b-4848-96ab-61bd99d16ae9",
+        "table_name": "verification_result"
+      },
+      {
+        "id": "ea7b0762-2a9f-4fd6-a402-1ce293e94144",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "99b7e0009c1be03c90f63d8ec18f25eafcf3644bf797c999a6bb91e077ec004e",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "4fd02196-30f5-41e4-82d9-90ae2cdb5c20",
+        "table_name": "artifact"
+      },
+      {
+        "id": "ea7c04b6-2a18-4d57-971d-250889b25145",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "c19b8525b1228ce90e2820d9d6e8c72f90b69baf7aaa613d66bdf0a3d8c729a3",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "e4a585a9-cfe0-453b-8cae-04b62df704c3",
+        "table_name": "import_record"
+      },
+      {
+        "id": "f1d4028c-7d0d-45bd-8868-0e7f1f402740",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0f2a6483-fddd-41e2-aca9-d36288b5fb4b",
+        "payload_digest": "45886ab447ad7a9f1ecb9f9b3d3713012de136cb1d9b3ed116f514e57809108f",
+        "recorded_at": "2026-08-28T17:38:30Z",
+        "revision": 3,
+        "row_id": "c194a517-01d8-458e-b3b4-8ba62ab94072",
+        "table_name": "artifact"
+      },
+      {
+        "id": "f24a1ee0-a9b9-4b76-b51a-c8b570ff653e",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "fc26be62caeec9d91ac6c1dd33bf7e489dc334bbfe2f30d7ffdc9da5bc2f4cae",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "17acfc38-fe58-44d9-8672-df55ae42364c",
+        "table_name": "requirement"
+      },
+      {
+        "id": "fae5d4cc-7d62-4e42-94e3-ca3b78520ca6",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "21e4e1083b2289fc8be8f56b992a1ee1e6feb024c6c0b6aed3728c8c76cd5ad4",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "f2df8d7d-29e3-45d7-b6cb-64d30ab4c1f7",
+        "table_name": "relationship"
+      },
+      {
+        "id": "fc1937a6-5f59-492c-88da-6bc930a4227c",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "d497f7c1e727a9f9e70983fa5d6858d598f12e39e0815a05725e70e7abc91410",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "c3f2052c-2011-4f6a-b79c-3ff01bc6e10b",
+        "table_name": "artifact"
+      },
+      {
+        "id": "fdac55fc-9788-48f9-8091-279c7bfe7e5e",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5ef1f9c1-9f40-4d21-99cd-6e28c1925488",
+        "payload_digest": "16bd016cd40a487e8cf5913e1b0405636a70cd8cb5bf6d98d7019e526ede0584",
+        "recorded_at": "2026-08-28T17:38:29Z",
+        "revision": 1,
+        "row_id": "da165d5e-8a4c-444a-91c0-41566012c599",
+        "table_name": "verification_result"
+      }
+    ],
+    "verification_result": [
+      {
+        "command_or_test_id": "HPT2-EVID-CONTRACT",
+        "details_json": "{\"id\":\"HPT2-EVID-CONTRACT\",\"path\":\"docs/hybrid-sqlite-state-v1-contract.md\",\"status\":\"passed\"}",
+        "evidence_id": "efc194da-12fb-4a87-922a-bd9067ab59ea",
+        "id": "06eeffb0-9412-4211-ab64-4ea48462f8c5",
+        "requirement_id": "f77c1565-ea17-4ad6-b5cf-7adb7c95a260",
+        "source_revision": 1,
+        "status": "passed",
+        "verified_at": "2026-08-28T17:38:29Z"
+      },
+      {
+        "command_or_test_id": "HPT2-EVID-TOOL",
+        "details_json": "{\"id\":\"HPT2-EVID-TOOL\",\"path\":\"scripts/outcome_reconciliation.py\",\"status\":\"passed\"}",
+        "evidence_id": "0a04dd62-55be-4375-8cb6-dbe6dbcaee1c",
+        "id": "2ce34e7f-165e-4691-94bc-2f96aefc6e18",
+        "requirement_id": "f77c1565-ea17-4ad6-b5cf-7adb7c95a260",
+        "source_revision": 1,
+        "status": "passed",
+        "verified_at": "2026-08-28T17:38:29Z"
+      },
+      {
+        "command_or_test_id": "EVID-G2-HPT2-PARITY",
+        "details_json": "{\"covers_change_ids\":[\"CHG-HYBRID-004\"],\"gate\":\"G2-SUBSTRATE-LOOP-PROVEN\",\"id\":\"EVID-G2-HPT2-PARITY\",\"references\":[{\"path\":\"work/evidence/evidence-hybrid-sqlite-hpt2-parity.md\",\"sha256\":\"6b139175fbc9043ba56292f95808ae9761a5c0d231d0372525660129dfa44ffe\"},{\"path\":\"docs/outcome-reconciliation.md\",\"sha256\":\"d945c9aeb7cd5771d4525d5be575efde219bb85c86eec4fa7609fa24f294bae0\"},{\"path\":\"scripts/outcome_reconciliation.py\",\"sha256\":\"8961efa7df6ef2988f39321b02b7128aa576fb3216afa4aad6aa989a7a5d5842\"},{\"path\":\"schemas/hybrid-state/v1/hpt2-assigned-ids.json\",\"sha256\":\"1ea654bb6b8a2d42a4d0962c4e592bbe75b8557cdd40b2ab9a996504967dfaa7\"},{\"path\":\"tests/test_outcome_reconciliation.py\",\"sha256\":\"03b4becb0d8401c949053543685733983096c63737d63922d4715383ff315769\"},{\"path\":\"work/ideas/idea-universal-closed-loop-outcome-reconciliation.md\",\"sha256\":\"d3fd3b184becd3bd10a2991a52ead0dde88b528b109dc021a6fd41123af95369\"}],\"status\":\"passed\",\"verified_at\":\"2026-08-28T17:35:48Z\"}",
+        "evidence_id": "28b13ea5-9819-4c20-b1ab-273b5e7ec44e",
+        "id": "33c44d47-0bdb-4822-8496-d193402241cc",
+        "requirement_id": null,
+        "source_revision": 1,
+        "status": "passed",
+        "verified_at": "2026-08-28T17:35:48Z"
+      },
+      {
+        "command_or_test_id": "EVID-G2-SUBSTRATE",
+        "details_json": "{\"covers_change_ids\":[\"CHG-HYBRID-003\",\"CHG-HYBRID-004\"],\"gate\":\"G2-SUBSTRATE-LOOP-PROVEN\",\"id\":\"EVID-G2-SUBSTRATE\",\"references\":[{\"path\":\"work/evidence/evidence-hybrid-sqlite-substrate.md\",\"sha256\":\"d8a400c395de17a38a44b9076dc4ee27e849d04d012953770e574b9f77298989\"},{\"path\":\"docs/hybrid-sqlite-state-v1-contract.md\",\"sha256\":\"42f3aecb2ad5417c8884ca6b4cab3c868ee7ee7128a298eff13b6166badc9357\"},{\"path\":\"docs/hybrid-sqlite-state.md\",\"sha256\":\"661d33554046819a81cc250c6ad488ff2c8dcbbfbb66d10d3fb953b7622dd291\"},{\"path\":\"scripts/hybrid_state.py\",\"sha256\":\"95ea52ba317548f48da88b8c73377d853560d9630997e0edf7fd40ea0b600ac5\"},{\"path\":\"scripts/hybrid_state_schema.py\",\"sha256\":\"cec17e40de30a77d38a91ed1d2fcffa06a573bf13e91361b3ca18135c525d508\"},{\"path\":\"scripts/maintainer_hybrid_conversion.py\",\"sha256\":\"385773d10ffae4236fc1afecf687f262b36184b60a1b6860762351d87f0f4079\"},{\"path\":\"schemas/hybrid-state/v1/checkpoint.schema.json\",\"sha256\":\"c92f8910f815fb3f46f6d51ba7e7fc8752f3d9878a1b5a212198503a2d7dafff\"},{\"path\":\"schemas/hybrid-state/v1/maintainer-assigned-ids.json\",\"sha256\":\"033651f1d422cdf99d70da3d3ef9495d0e5feaa0dd1d7cb1fb6f9311a4551f63\"},{\"path\":\"tests/test_hybrid_state.py\",\"sha256\":\"4e5b2c109728fe67b62d183e803522cc89d7e760bd0e37c45c98e8fb9ad9da56\"},{\"path\":\"tests/test_maintainer_hybrid_conversion.py\",\"sha256\":\"22d386467da0e6765ef19779ed763834128be937ecad2a7a3382373e5e9e0b44\"}],\"status\":\"passed\",\"verified_at\":\"2026-08-28T17:37:10Z\"}",
+        "evidence_id": "acf0d9c2-bd2a-4f13-8b43-caae9c7e9af1",
+        "id": "3e4012f6-b1a7-4d7e-8a2d-791383f72bce",
+        "requirement_id": null,
+        "source_revision": 1,
+        "status": "passed",
+        "verified_at": "2026-08-28T17:37:10Z"
+      },
+      {
+        "command_or_test_id": "EVID-G3-MAINTAINER",
+        "details_json": "{\"covers_change_ids\":[],\"gate\":\"G3-MAINTAINER-CONVERSION-PROVEN\",\"id\":\"EVID-G3-MAINTAINER\",\"references\":[{\"path\":\"work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md\",\"sha256\":\"fb1bb04ce88633359e7e33c75e3cb2bef1ad645a9a064e5afa360d5cc05fb3fc\"}],\"status\":\"pending\",\"verified_at\":null}",
+        "evidence_id": "ca0c6c33-6bbd-47b0-bf0a-4a25dc5b920e",
+        "id": "3fd73784-cc0c-40ab-b87a-7691b9a45bda",
+        "requirement_id": null,
+        "source_revision": 1,
+        "status": "pending",
+        "verified_at": "2026-08-28T17:38:29Z"
+      },
+      {
+        "command_or_test_id": "EVID-G4-CANARY",
+        "details_json": "{\"covers_change_ids\":[],\"gate\":\"G4-RELEASE-CANARY-PROVEN\",\"id\":\"EVID-G4-CANARY\",\"references\":[{\"path\":\"docs/install-or-update-snapshot.md\",\"sha256\":\"e4bb630fa9fd6afde41e1adfe0b53fb2645e663d0b10a41b86f21d5e70759d49\"}],\"status\":\"pending\",\"verified_at\":null}",
+        "evidence_id": "441c3672-463f-4ee5-bc87-5a7817ddf5f8",
+        "id": "4e215995-1aa8-4e6b-baa2-78fc8b150cac",
+        "requirement_id": null,
+        "source_revision": 1,
+        "status": "pending",
+        "verified_at": "2026-08-28T17:38:29Z"
+      },
+      {
+        "command_or_test_id": "EVID-G1-EFFICIENCY-CONTRACT",
+        "details_json": "{\"covers_change_ids\":[\"CHG-HYBRID-003\"],\"gate\":\"G1-DESIGN-FROZEN\",\"id\":\"EVID-G1-EFFICIENCY-CONTRACT\",\"references\":[{\"path\":\"docs/hybrid-sqlite-state-v1-contract.md\",\"sha256\":\"42f3aecb2ad5417c8884ca6b4cab3c868ee7ee7128a298eff13b6166badc9357\"},{\"path\":\"work/ideas/idea-sqlite-backed-tool-shed-operational-state.md\",\"sha256\":\"db1707b6cce8fa902f6a493c33530ec7443c429b53167c369019243b2b4a6730\"}],\"status\":\"passed\",\"verified_at\":\"2026-08-28T17:34:50Z\"}",
+        "evidence_id": "51028153-badc-4984-9d8e-6910c21921c4",
+        "id": "5414d8a4-326b-489d-b1b9-ab68f6acaa24",
+        "requirement_id": null,
+        "source_revision": 1,
+        "status": "passed",
+        "verified_at": "2026-08-28T17:34:50Z"
+      },
+      {
+        "command_or_test_id": "EVID-G1-HPT2-INVENTORY",
+        "details_json": "{\"covers_change_ids\":[\"CHG-HYBRID-003\"],\"gate\":\"G1-DESIGN-FROZEN\",\"id\":\"EVID-G1-HPT2-INVENTORY\",\"references\":[{\"path\":\"docs/hybrid-sqlite-state-v1-contract.md\",\"sha256\":\"42f3aecb2ad5417c8884ca6b4cab3c868ee7ee7128a298eff13b6166badc9357\"},{\"path\":\"work/ideas/idea-universal-closed-loop-outcome-reconciliation.md\",\"sha256\":\"d3fd3b184becd3bd10a2991a52ead0dde88b528b109dc021a6fd41123af95369\"}],\"status\":\"passed\",\"verified_at\":\"2026-08-28T17:34:43Z\"}",
+        "evidence_id": "98186ec0-5b15-44e3-a004-cc99858e15cf",
+        "id": "5d176b05-9883-4e0b-a29f-a404de703268",
+        "requirement_id": null,
+        "source_revision": 1,
+        "status": "passed",
+        "verified_at": "2026-08-28T17:34:43Z"
+      },
+      {
+        "command_or_test_id": "HPT2-EVID-TEST",
+        "details_json": "{\"id\":\"HPT2-EVID-TEST\",\"path\":\"tests/test_outcome_reconciliation.py\",\"status\":\"passed\"}",
+        "evidence_id": "f5187371-f5b8-405e-979e-22e5c4689c59",
+        "id": "ab54ed59-3d95-40c2-8319-ce492ecc618a",
+        "requirement_id": "f77c1565-ea17-4ad6-b5cf-7adb7c95a260",
+        "source_revision": 1,
+        "status": "passed",
+        "verified_at": "2026-08-28T17:38:29Z"
+      },
+      {
+        "command_or_test_id": "EVID-G4-RELEASE",
+        "details_json": "{\"covers_change_ids\":[],\"gate\":\"G4-RELEASE-CANARY-PROVEN\",\"id\":\"EVID-G4-RELEASE\",\"references\":[{\"path\":\"docs/releasing.md\",\"sha256\":\"a60ab06560bc69debf82f2c2bd4720686e73b0001886948443a9ca0ebbc79d00\"}],\"status\":\"pending\",\"verified_at\":null}",
+        "evidence_id": "68c7329e-0f9a-4aa0-ba44-424e2c67a583",
+        "id": "acc357fd-039b-4848-96ab-61bd99d16ae9",
+        "requirement_id": null,
+        "source_revision": 1,
+        "status": "pending",
+        "verified_at": "2026-08-28T17:38:29Z"
+      },
+      {
+        "command_or_test_id": "EVID-G2-EFFICIENCY",
+        "details_json": "{\"covers_change_ids\":[],\"gate\":\"G2-SUBSTRATE-LOOP-PROVEN\",\"id\":\"EVID-G2-EFFICIENCY\",\"references\":[{\"path\":\"work/evidence/evidence-hybrid-sqlite-efficiency.md\",\"sha256\":\"3ac9a5dcb674a8354ff6da9ddc39da29ebf338d1b517ef233aaeb9f11329fbcd\"},{\"path\":\"docs/outcome-reconciliation.md\",\"sha256\":\"d945c9aeb7cd5771d4525d5be575efde219bb85c86eec4fa7609fa24f294bae0\"},{\"path\":\"scripts/outcome_reconciliation.py\",\"sha256\":\"8961efa7df6ef2988f39321b02b7128aa576fb3216afa4aad6aa989a7a5d5842\"},{\"path\":\"tests/test_outcome_reconciliation.py\",\"sha256\":\"03b4becb0d8401c949053543685733983096c63737d63922d4715383ff315769\"},{\"path\":\"docs/hybrid-sqlite-state-v1-contract.md\",\"sha256\":\"42f3aecb2ad5417c8884ca6b4cab3c868ee7ee7128a298eff13b6166badc9357\"}],\"status\":\"passed\",\"verified_at\":\"2026-08-28T17:34:57Z\"}",
+        "evidence_id": "98c62f23-a8d4-4089-8bae-c41fc0353f04",
+        "id": "c12ed040-ee4e-4940-91ba-578ccb449b12",
+        "requirement_id": null,
+        "source_revision": 1,
+        "status": "passed",
+        "verified_at": "2026-08-28T17:34:57Z"
+      },
+      {
+        "command_or_test_id": "EVID-G1-BOOTSTRAP",
+        "details_json": "{\"covers_change_ids\":[\"CHG-HYBRID-001\",\"CHG-HYBRID-002\"],\"gate\":\"G1-DESIGN-FROZEN\",\"id\":\"EVID-G1-BOOTSTRAP\",\"references\":[{\"path\":\"scripts/bootstrap_closure.py\",\"sha256\":\"53907625a79e291e71d950e401fb96668bd1c09adbb134cbe9a82b532cdfa690\"},{\"path\":\"schemas/bootstrap-closure/v1/manifest.schema.json\",\"sha256\":\"2dc3cd1929d8b3f209e38ef789effac6a22a9e49a5ad288391a516e8aa79c817\"},{\"path\":\"tests/test_bootstrap_closure.py\",\"sha256\":\"4d9c8b0b8c62f36cf78cd41ba1996ddd088ebb88734e05ea4648b2569f61c064\"},{\"path\":\"scripts/validate_tool_shed.py\",\"sha256\":\"eb6e5fa153d351804e83ab718d6e7c06e6f17a9bbe1461543bae726c1cae82b8\"},{\"path\":\"work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md\",\"sha256\":\"c32e9a94c238f73a833ab446de8248413fc0b2e3ee94003e2868f9d1b55870ff\"}],\"status\":\"passed\",\"verified_at\":\"2026-08-28T16:31:43Z\"}",
+        "evidence_id": "4589df08-a227-4546-a1de-5e7e5bfdb518",
+        "id": "da165d5e-8a4c-444a-91c0-41566012c599",
+        "requirement_id": null,
+        "source_revision": 1,
+        "status": "passed",
+        "verified_at": "2026-08-28T16:31:43Z"
+      },
+      {
+        "command_or_test_id": "EVID-G1-CONTRACT",
+        "details_json": "{\"covers_change_ids\":[\"CHG-HYBRID-003\",\"CHG-HYBRID-004\"],\"gate\":\"G1-DESIGN-FROZEN\",\"id\":\"EVID-G1-CONTRACT\",\"references\":[{\"path\":\"docs/hybrid-sqlite-state-v1-contract.md\",\"sha256\":\"42f3aecb2ad5417c8884ca6b4cab3c868ee7ee7128a298eff13b6166badc9357\"},{\"path\":\"work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md\",\"sha256\":\"fb1bb04ce88633359e7e33c75e3cb2bef1ad645a9a064e5afa360d5cc05fb3fc\"}],\"status\":\"passed\",\"verified_at\":\"2026-08-28T17:34:29Z\"}",
+        "evidence_id": "2750765c-272c-4ba3-b6d5-29fd68d9c6a3",
+        "id": "e63597dd-dbf1-4700-a87c-2d603b956af5",
+        "requirement_id": null,
+        "source_revision": 1,
+        "status": "passed",
+        "verified_at": "2026-08-28T17:34:29Z"
+      }
+    ],
+    "workspace": [
+      {
+        "created_at": "2026-08-28T17:38:29Z",
+        "id": "017d41a6-36e8-5dc9-a8c2-07094c936854",
+        "name": "tool_shed",
+        "project_id": "817b6358-b2f5-48fd-bb66-bd80f936faca"
+      }
+    ]
+  }
+}

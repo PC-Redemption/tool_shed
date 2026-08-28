@@ -73,6 +73,8 @@ The maintainer conversion uses
 `schemas/hybrid-state/v1/maintainer-assigned-ids.json` so every selected retained source artifact
 and its first import reuse the same UUIDv4 in both disposable rehearsals and the live conversion.
 An assigned ID that conflicts with existing state fails the entire managed transaction.
+Later bootstrap evidence and verdict transitions use `outcome_reconciliation.py sync`; they are
+managed revisions followed by parity verification and a new portable checkpoint, never ad hoc SQL.
 
 ## Entrance Audit
 

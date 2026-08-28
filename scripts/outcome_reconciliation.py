@@ -474,6 +474,155 @@ def apply_hpt2(
     )
 
 
+def sync_bootstrap(
+    workspace: Path,
+    *,
+    project_binding: str,
+    bootstrap_path: Path = DEFAULT_BOOTSTRAP,
+    ids_path: Path = DEFAULT_IDS,
+) -> dict[str, Any]:
+    source, bootstrap, ids = load_sources(workspace, bootstrap_path, ids_path)
+    projection = bootstrap_projection(bootstrap)
+    required = {
+        "requirement": [item["id"] for item in projection["requirements"]],
+        "change": [item["id"] for item in projection["changes"]],
+        "evidence": [item["id"] for item in projection["evidence"]],
+        "verification": [item["id"] for item in projection["evidence"]],
+        "verdict": [item["scope"] for item in projection["verdicts"]],
+    }
+    for group, keys in required.items():
+        missing = [key for key in keys if key not in ids.get(group, {})]
+        if missing:
+            raise ReconciliationError(f"assigned-ID manifest lacks {group}: " + ", ".join(missing))
+
+    assigned_files = hybrid_state.load_assigned_file_ids(
+        workspace, Path("schemas/hybrid-state/v1/maintainer-assigned-ids.json")
+    )
+    imported = hybrid_state.import_files(
+        workspace,
+        [source.relative_to(workspace)],
+        project_binding=project_binding,
+        actor="bootstrap-reconciliation",
+        assigned_ids=assigned_files,
+    )
+
+    def write(connection: sqlite3.Connection, revision: int) -> dict[str, Any]:
+        bootstrap_cycle = connection.execute(
+            "SELECT id FROM cycle WHERE id = ?", (ids["cycle"]["bootstrap"],)
+        ).fetchone()
+        if bootstrap_cycle is None:
+            raise ReconciliationError("bootstrap sync requires an existing imported closure cycle")
+        connection.execute(
+            "UPDATE cycle SET accepted_outcome = ?, lifecycle_state = 'terminal' WHERE id = ?",
+            (
+                canonical_json(
+                    {"state_token": projection["state_token"], "digest": digest(projection)}
+                ),
+                ids["cycle"]["bootstrap"],
+            ),
+        )
+        for item in projection["requirements"]:
+            connection.execute(
+                "UPDATE requirement SET accepted_outcome = ?, disposition = ?, milestone_key = ?, "
+                "evidence_gate_key = ? WHERE id = ?",
+                (
+                    canonical_json(item),
+                    item["disposition"],
+                    item["milestone"],
+                    item["evidence_gate"],
+                    ids["requirement"][item["id"]],
+                ),
+            )
+        inserted_changes = 0
+        for item in projection["changes"]:
+            change_id = ids["change"][item["id"]]
+            existing = connection.execute(
+                "SELECT id FROM material_change WHERE id = ?", (change_id,)
+            ).fetchone()
+            requirement_id = next(iter(item.get("requirement_ids", [])), None)
+            decisions = item.get("decision_ids", [])
+            if existing is None:
+                connection.execute(
+                    "INSERT INTO material_change VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, ?)",
+                    (
+                        change_id,
+                        ids["cycle"]["bootstrap"],
+                        ids["requirement"].get(requirement_id),
+                        next(iter(decisions), None),
+                        item["summary"],
+                        item["rationale"],
+                        item["authorization"],
+                        canonical_json(item),
+                        revision,
+                    ),
+                )
+                inserted_changes += 1
+            else:
+                connection.execute(
+                    "UPDATE material_change SET summary = ?, rationale = ?, authorization_ref = ?, "
+                    "evidence_rerun_json = ? WHERE id = ?",
+                    (
+                        item["summary"],
+                        item["rationale"],
+                        item["authorization"],
+                        canonical_json(item),
+                        change_id,
+                    ),
+                )
+        for item in projection["evidence"]:
+            connection.execute(
+                "UPDATE verification_result SET status = ?, command_or_test_id = ?, details_json = ? "
+                "WHERE id = ?",
+                (
+                    item["status"],
+                    item["id"],
+                    canonical_json(item),
+                    ids["verification"][item["id"]],
+                ),
+            )
+        for item in projection["verdicts"]:
+            connection.execute(
+                "UPDATE outcome_verdict SET disposition = ?, summary = ?, authorization_ref = ? WHERE id = ?",
+                (
+                    item["disposition"],
+                    canonical_json(item),
+                    item["authorized_by"],
+                    ids["verdict"][item["scope"]],
+                ),
+            )
+        connection.execute(
+            "UPDATE reconciliation SET product_truth_ref = ?, state = 'reconciled', "
+            "compared_at = ?, residual_work_json = '[]' WHERE id = ?",
+            (
+                f"bootstrap:{projection['state_token']}:{digest(projection)}",
+                hybrid_state.now(),
+                ids["reconciliation"]["bootstrap"],
+            ),
+        )
+        return {
+            "bootstrap_state_token": projection["state_token"],
+            "inserted_changes": inserted_changes,
+            "requirements": len(projection["requirements"]),
+            "evidence": len(projection["evidence"]),
+            "verdicts": len(projection["verdicts"]),
+        }
+
+    synchronized = hybrid_state.managed_write(
+        workspace,
+        project_binding=project_binding,
+        command="sync-bootstrap-closure",
+        actor="bootstrap-reconciliation",
+        callback=write,
+    )
+    return {
+        "schema_version": 1,
+        "kind": "tool-shed-bootstrap-hybrid-sync",
+        "import": imported,
+        "sync": synchronized,
+        "writes_performed": True,
+    }
+
+
 def apply_bounded_mutation(
     workspace: Path,
     *,
@@ -754,6 +903,8 @@ def build_parser() -> argparse.ArgumentParser:
     commands = parser.add_subparsers(dest="command", required=True)
     apply_parser = commands.add_parser("apply")
     apply_parser.add_argument("--project-binding", required=True)
+    sync_parser = commands.add_parser("sync")
+    sync_parser.add_argument("--project-binding", required=True)
     mutate_parser = commands.add_parser("mutate")
     mutate_parser.add_argument("--project-binding", required=True)
     report_parser = commands.add_parser("report")
@@ -772,6 +923,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         ids_path = Path(args.ids)
         if args.command == "apply":
             result = apply_hpt2(
+                workspace,
+                project_binding=args.project_binding,
+                bootstrap_path=bootstrap_path,
+                ids_path=ids_path,
+            )
+        elif args.command == "sync":
+            result = sync_bootstrap(
                 workspace,
                 project_binding=args.project_binding,
                 bootstrap_path=bootstrap_path,

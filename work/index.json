@@ -2417,6 +2417,23 @@
       "updated": null
     },
     {
+      "campaign": "106-rehearse-and-convert-maintainer-to-hybrid-state",
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": null,
+      "next_action": null,
+      "parent": null,
+      "path": "work/evidence/evidence-hybrid-sqlite-maintainer-conversion.md",
+      "produces": null,
+      "project_map": null,
+      "status": "passed",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Hybrid SQLite Maintainer Conversion Evidence",
+      "type": null,
+      "updated": null
+    },
+    {
       "campaign": "104-implement-minimum-sqlite-operational-substrate",
       "campaign_reason": null,
       "canonical_truth": null,
@@ -4026,6 +4043,6 @@
   "summary": {
     "active_artifacts": 2,
     "completed_or_decided_artifacts": 160,
-    "total_artifacts": 222
+    "total_artifacts": 223
   }
 }

@@ -67,6 +67,22 @@ python3 scripts/outcome_reconciliation.py --workspace . qualify
 python3 scripts/outcome_reconciliation.py --workspace . benchmark
 ```
 
+After a later bootstrap evidence or verdict transition, reconcile the retained manifest into the
+existing hybrid database through the guarded sync route instead of issuing direct SQL:
+
+```bash
+python3 scripts/outcome_reconciliation.py --workspace . sync \
+  --project-binding <hybrid-state-binding>
+python3 scripts/outcome_reconciliation.py --workspace . qualify
+python3 scripts/hybrid_state.py --workspace . checkpoint \
+  --project-binding <hybrid-state-binding>
+```
+
+`sync` reimports the changed bootstrap source bytes, preserves its assigned artifact identity,
+updates the existing requirements, evidence results, verdicts, and reconciliation projection in
+one managed revision, and inserts only newly assigned material changes. The parity check must pass
+before the new projection is checkpointed.
+
 `apply` and `mutate` are guarded writes. `report`, `qualify`, and `benchmark` are read-only.
 `qualify` exits nonzero on any bootstrap or operation mismatch. `benchmark` exits nonzero below the
 frozen 70% median context-reduction threshold, above the 5% explained-fallback ceiling, or when

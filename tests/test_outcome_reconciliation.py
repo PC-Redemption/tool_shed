@@ -65,6 +65,7 @@ class OutcomeReconciliationTests(unittest.TestCase):
         sources = {
             outcome_reconciliation.DEFAULT_BOOTSTRAP,
             outcome_reconciliation.DEFAULT_IDS,
+            Path("schemas/hybrid-state/v1/maintainer-assigned-ids.json"),
             *(Path(value) for value in outcome_reconciliation.PRODUCT_PATHS.values()),
         }
         for relative in sources:
@@ -131,6 +132,33 @@ class OutcomeReconciliationTests(unittest.TestCase):
         self.assertTrue(second["valid"])
         self.assertEqual(first["bootstrap_projection_digest"], second["bootstrap_projection_digest"])
         self.assertEqual(first["operations"], second["operations"])
+
+    def test_bootstrap_sync_reconciles_later_evidence_and_verdicts(self) -> None:
+        self.apply_slice()
+        outcome_reconciliation.apply_bounded_mutation(self.workspace, project_binding=self.binding)
+        path = self.workspace / outcome_reconciliation.DEFAULT_BOOTSTRAP
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        evidence = next(item for item in payload["evidence"] if item["id"] == "EVID-G3-MAINTAINER")
+        evidence["status"] = "passed"
+        evidence["verified_at"] = "2026-08-28T18:00:00Z"
+        verdict = next(
+            item for item in payload["verdicts"]
+            if item["scope"] == "G3-MAINTAINER-CONVERSION-PROVEN"
+        )
+        verdict["disposition"] = "satisfied"
+        verdict["summary"] = "Fixture maintainer conversion passed."
+        payload["state_token"] = "fixture-post-cutover-token"
+        path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        synchronized = outcome_reconciliation.sync_bootstrap(
+            self.workspace,
+            project_binding=self.binding,
+        )
+        self.assertEqual(
+            synchronized["sync"]["result"]["bootstrap_state_token"],
+            payload["state_token"],
+        )
+        self.assertTrue(outcome_reconciliation.qualify_parity(self.workspace)["valid"])
+        self.assertEqual(hybrid_state.audit(self.workspace)["classification"], "VALID_DIRTY")
 
     def test_all_file_first_and_hybrid_capsules_match(self) -> None:
         self.apply_slice()

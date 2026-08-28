@@ -2,9 +2,9 @@
   "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
   "baseline": {
     "created_at": "2026-08-28T16:26:19Z",
-    "source_commit": "b34f5b36cf80a331a46385eb8c6208c052f6c5c4",
+    "source_commit": "3aaacdf20c8c2112e4d372bbd6e69f16d3eb13df",
     "source_digest": "1138aa47122132b998f973a0b7066c5587c85f7acf01c72b8d83783da5eac21d",
-    "updated_at": "2026-08-28T17:37:10Z"
+    "updated_at": "2026-08-28T17:44:25Z"
   },
   "bindings": [
     {
@@ -333,7 +333,7 @@
         },
         {
           "path": "docs/hybrid-sqlite-state.md",
-          "sha256": "661d33554046819a81cc250c6ad488ff2c8dcbbfbb66d10d3fb953b7622dd291"
+          "sha256": "48dcebbcfb1ebd943c9c8fbabbe3a37ef672e53867923748c1e49b9d2b69b9ec"
         },
         {
           "path": "scripts/hybrid_state.py",
@@ -365,7 +365,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T17:37:10Z"
+      "verified_at": "2026-08-28T17:43:34Z"
     },
     {
       "covers_change_ids": [
@@ -380,11 +380,11 @@
         },
         {
           "path": "docs/outcome-reconciliation.md",
-          "sha256": "d945c9aeb7cd5771d4525d5be575efde219bb85c86eec4fa7609fa24f294bae0"
+          "sha256": "dadd23eec720677612de93a3023273df74d5ce8645eda0c8e2ef53aa272c6617"
         },
         {
           "path": "scripts/outcome_reconciliation.py",
-          "sha256": "8961efa7df6ef2988f39321b02b7128aa576fb3216afa4aad6aa989a7a5d5842"
+          "sha256": "485984ff95ba0f355fea75a2114a286f25e1adb73101be3ab51dfbf61707b2b3"
         },
         {
           "path": "schemas/hybrid-state/v1/hpt2-assigned-ids.json",
@@ -392,7 +392,7 @@
         },
         {
           "path": "tests/test_outcome_reconciliation.py",
-          "sha256": "03b4becb0d8401c949053543685733983096c63737d63922d4715383ff315769"
+          "sha256": "608f65dfa4f5fc0f567bed7916f33703c8dc6c696e2de792dc4e6cee3b3bb42c"
         },
         {
           "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
@@ -400,7 +400,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T17:35:48Z"
+      "verified_at": "2026-08-28T17:43:40Z"
     },
     {
       "covers_change_ids": [],
@@ -413,15 +413,15 @@
         },
         {
           "path": "docs/outcome-reconciliation.md",
-          "sha256": "d945c9aeb7cd5771d4525d5be575efde219bb85c86eec4fa7609fa24f294bae0"
+          "sha256": "dadd23eec720677612de93a3023273df74d5ce8645eda0c8e2ef53aa272c6617"
         },
         {
           "path": "scripts/outcome_reconciliation.py",
-          "sha256": "8961efa7df6ef2988f39321b02b7128aa576fb3216afa4aad6aa989a7a5d5842"
+          "sha256": "485984ff95ba0f355fea75a2114a286f25e1adb73101be3ab51dfbf61707b2b3"
         },
         {
           "path": "tests/test_outcome_reconciliation.py",
-          "sha256": "03b4becb0d8401c949053543685733983096c63737d63922d4715383ff315769"
+          "sha256": "608f65dfa4f5fc0f567bed7916f33703c8dc6c696e2de792dc4e6cee3b3bb42c"
         },
         {
           "path": "docs/hybrid-sqlite-state-v1-contract.md",
@@ -429,20 +429,50 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T17:34:57Z"
+      "verified_at": "2026-08-28T17:43:45Z"
     },
     {
-      "covers_change_ids": [],
+      "covers_change_ids": [
+        "CHG-HYBRID-004"
+      ],
       "gate": "G3-MAINTAINER-CONVERSION-PROVEN",
       "id": "EVID-G3-MAINTAINER",
       "references": [
         {
-          "path": "work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md",
-          "sha256": "fb1bb04ce88633359e7e33c75e3cb2bef1ad645a9a064e5afa360d5cc05fb3fc"
+          "path": "work/evidence/evidence-hybrid-sqlite-maintainer-conversion.md",
+          "sha256": "870f4ebf8a3928ebe7baecd32317038a99e728b59bf239d0884acb63cc3f05d9"
+        },
+        {
+          "path": "work/state/checkpoints/state-v1.json",
+          "sha256": "000431fd4db30b81732784182f089e6d24ea7d7dd10fbb018221b7112b97eff5"
+        },
+        {
+          "path": "scripts/maintainer_hybrid_conversion.py",
+          "sha256": "385773d10ffae4236fc1afecf687f262b36184b60a1b6860762351d87f0f4079"
+        },
+        {
+          "path": "scripts/outcome_reconciliation.py",
+          "sha256": "485984ff95ba0f355fea75a2114a286f25e1adb73101be3ab51dfbf61707b2b3"
+        },
+        {
+          "path": "schemas/hybrid-state/v1/maintainer-assigned-ids.json",
+          "sha256": "033651f1d422cdf99d70da3d3ef9495d0e5feaa0dd1d7cb1fb6f9311a4551f63"
+        },
+        {
+          "path": "docs/hybrid-sqlite-state.md",
+          "sha256": "48dcebbcfb1ebd943c9c8fbabbe3a37ef672e53867923748c1e49b9d2b69b9ec"
+        },
+        {
+          "path": "tests/test_maintainer_hybrid_conversion.py",
+          "sha256": "22d386467da0e6765ef19779ed763834128be937ecad2a7a3382373e5e9e0b44"
+        },
+        {
+          "path": "tests/test_outcome_reconciliation.py",
+          "sha256": "608f65dfa4f5fc0f567bed7916f33703c8dc6c696e2de792dc4e6cee3b3bb42c"
         }
       ],
-      "status": "pending",
-      "verified_at": null
+      "status": "passed",
+      "verified_at": "2026-08-28T17:44:17Z"
     },
     {
       "covers_change_ids": [],
@@ -700,7 +730,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "ca7da0f7be4d2361",
+  "state_token": "739e51a800d4a3cd",
   "upgrade_targets": [
     {
       "id": "UPG-HYBRID-MAINTAINER",
@@ -752,13 +782,13 @@
       "summary": "The phase-one SQLite substrate, exact bootstrap import, HPT2 partial/reconciled closed loop, fresh-workspace and checkpoint recovery parity, eight operation capsules, and 24-run efficiency suite satisfy G2 without broadening live authority."
     },
     {
-      "authorized_by": "Approved Program Roadmap",
-      "disposition": "open",
+      "authorized_by": "Owner-approved end-to-end Campaign 106 execution under the project-bound level-5 work3 envelope",
+      "disposition": "satisfied",
       "evidence_ids": [
         "EVID-G3-MAINTAINER"
       ],
       "scope": "G3-MAINTAINER-CONVERSION-PROVEN",
-      "summary": "The disposable rehearsal and live maintainer conversion remain future guarded work."
+      "summary": "The exact commit and external archive passed two deterministic disposable rehearsals; canonical cutover preserved all source files, reused 20 assigned imports, verified shadow and hybrid rebuilds, retained rollback, refused foreign worktree lineage and legacy SQLite-owned writes, reproduced HPT2 parity, passed 342 full-profile tests, and remained CLEAN through the recorded soak."
     },
     {
       "authorized_by": "Approved Program Roadmap",

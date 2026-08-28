@@ -140,6 +140,7 @@ Updated: 2026-08-28
 | [work/evidence/evidence-hybrid-sqlite-efficiency.md](work/evidence/evidence-hybrid-sqlite-efficiency.md) | - | passed | - | - | - |
 | [work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md](work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md) | validation-evidence | passed | 2026-08-28 | - | - |
 | [work/evidence/evidence-hybrid-sqlite-hpt2-parity.md](work/evidence/evidence-hybrid-sqlite-hpt2-parity.md) | - | passed | - | - | - |
+| [work/evidence/evidence-hybrid-sqlite-maintainer-conversion.md](work/evidence/evidence-hybrid-sqlite-maintainer-conversion.md) | - | passed | - | - | - |
 | [work/evidence/evidence-hybrid-sqlite-substrate.md](work/evidence/evidence-hybrid-sqlite-substrate.md) | - | passed | - | - | - |
 | [work/evidence/evidence-linux-command-free-code-proof-underspecified.md](work/evidence/evidence-linux-command-free-code-proof-underspecified.md) | evidence | verified | 2026-08-26 | - | - |
 | [work/evidence/evidence-linux-first-pass-code-proof-interruption.md](work/evidence/evidence-linux-first-pass-code-proof-interruption.md) | evidence | complete | 2026-08-26 | replace the failed code/test and dependent asset-aware proofs in Roadmap Revision 4 | - |
@@ -239,6 +240,6 @@ Updated: 2026-08-28
 
 ## Summary
 
-- Total artifacts: 222
+- Total artifacts: 223
 - Active artifacts: 2
 - Completed/decided artifacts: 160
