@@ -570,26 +570,58 @@ def sync_bootstrap(
                     ),
                 )
         for item in projection["evidence"]:
-            connection.execute(
-                "UPDATE verification_result SET status = ?, command_or_test_id = ?, details_json = ? "
-                "WHERE id = ?",
-                (
-                    item["status"],
-                    item["id"],
-                    canonical_json(item),
-                    ids["verification"][item["id"]],
-                ),
-            )
+            verification_id = ids["verification"][item["id"]]
+            existing = connection.execute(
+                "SELECT id FROM verification_result WHERE id = ?", (verification_id,)
+            ).fetchone()
+            if existing is None:
+                connection.execute(
+                    "INSERT INTO verification_result VALUES (?, ?, NULL, ?, ?, ?, ?, ?)",
+                    (
+                        verification_id,
+                        ids["evidence"][item["id"]],
+                        item["status"],
+                        item["id"],
+                        revision,
+                        item.get("verified_at") or hybrid_state.now(),
+                        canonical_json(item),
+                    ),
+                )
+            else:
+                connection.execute(
+                    "UPDATE verification_result SET status = ?, command_or_test_id = ?, details_json = ? "
+                    "WHERE id = ?",
+                    (
+                        item["status"],
+                        item["id"],
+                        canonical_json(item),
+                        verification_id,
+                    ),
+                )
         for item in projection["verdicts"]:
-            connection.execute(
-                "UPDATE outcome_verdict SET disposition = ?, summary = ?, authorization_ref = ? WHERE id = ?",
-                (
-                    item["disposition"],
-                    canonical_json(item),
-                    item["authorized_by"],
-                    ids["verdict"][item["scope"]],
-                ),
-            )
+            verdict_id = ids["verdict"][item["scope"]]
+            existing = connection.execute(
+                "SELECT id FROM outcome_verdict WHERE id = ?", (verdict_id,)
+            ).fetchone()
+            if existing is None:
+                connection.execute(
+                    "INSERT INTO outcome_verdict VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        verdict_id,
+                        ids["cycle"]["bootstrap"],
+                        item["scope"],
+                        item["disposition"],
+                        canonical_json(item),
+                        item["authorized_by"],
+                        revision,
+                        hybrid_state.now(),
+                    ),
+                )
+            else:
+                connection.execute(
+                    "UPDATE outcome_verdict SET disposition = ?, summary = ? WHERE id = ?",
+                    (item["disposition"], canonical_json(item), verdict_id),
+                )
         connection.execute(
             "UPDATE reconciliation SET product_truth_ref = ?, state = 'reconciled', "
             "compared_at = ?, residual_work_json = '[]' WHERE id = ?",
@@ -669,21 +701,23 @@ def bootstrap_projection_from_db(connection: sqlite3.Connection, ids: dict[str, 
             (ids["cycle"]["bootstrap"],),
         )
     ]
-    evidence = [
-        json.loads(row[0])
-        for row in connection.execute(
-            "SELECT details_json FROM verification_result vr JOIN evidence_reference er "
-            "ON er.id = vr.evidence_id WHERE er.cycle_id = ? ORDER BY er.id",
-            (ids["cycle"]["bootstrap"],),
-        )
-    ]
-    verdicts = [
-        json.loads(row[0])
-        for row in connection.execute(
-            "SELECT summary FROM outcome_verdict WHERE cycle_id = ? ORDER BY id",
-            (ids["cycle"]["bootstrap"],),
-        )
-    ]
+    evidence_by_id: dict[str, tuple[int, dict[str, Any]]] = {}
+    for row in connection.execute(
+        "SELECT er.id, vr.source_revision, vr.details_json FROM verification_result vr "
+        "JOIN evidence_reference er ON er.id = vr.evidence_id WHERE er.cycle_id = ? "
+        "ORDER BY vr.source_revision, vr.id",
+        (ids["cycle"]["bootstrap"],),
+    ):
+        evidence_by_id[str(row[0])] = (int(row[1]), json.loads(row[2]))
+    evidence = [item[1] for item in evidence_by_id.values()]
+    verdict_by_scope: dict[str, tuple[int, dict[str, Any]]] = {}
+    for row in connection.execute(
+        "SELECT scope, decided_revision, summary FROM outcome_verdict WHERE cycle_id = ? "
+        "ORDER BY decided_revision, id",
+        (ids["cycle"]["bootstrap"],),
+    ):
+        verdict_by_scope[str(row[0])] = (int(row[1]), json.loads(row[2]))
+    verdicts = [item[1] for item in verdict_by_scope.values()]
     product = connection.execute(
         "SELECT product_truth_ref FROM reconciliation WHERE id = ?",
         (ids["reconciliation"]["bootstrap"],),

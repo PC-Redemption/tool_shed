@@ -64,7 +64,8 @@
     "verdict": {
       "G1-DESIGN-FROZEN": "94c6dd49-6837-4947-9a49-a9637bc872ff",
       "G2-SUBSTRATE-LOOP-PROVEN": "edefbe6c-eeeb-498a-830a-af2341505333",
-      "G3-MAINTAINER-CONVERSION-PROVEN": "cda82228-febf-4b9c-8abd-f036a79bf43f",
+      "G3-MAINTAINER-CONVERSION-PROVEN": "42375ea5-d94f-4d98-9a27-c8958755de74",
+      "G3-MAINTAINER-CONVERSION-PROVEN@initial": "cda82228-febf-4b9c-8abd-f036a79bf43f",
       "G4-RELEASE-CANARY-PROVEN": "c2d6e364-fbdf-47bc-ac4d-3e6526dc474c",
       "hpt2": "d6a748ff-e743-4b69-a0db-51cb11b4ebc8",
       "initiative": "c0844a90-f569-4c59-a98f-3b520f61a4e0"
@@ -77,7 +78,8 @@
       "EVID-G2-EFFICIENCY": "c12ed040-ee4e-4940-91ba-578ccb449b12",
       "EVID-G2-HPT2-PARITY": "33c44d47-0bdb-4822-8496-d193402241cc",
       "EVID-G2-SUBSTRATE": "3e4012f6-b1a7-4d7e-8a2d-791383f72bce",
-      "EVID-G3-MAINTAINER": "3fd73784-cc0c-40ab-b87a-7691b9a45bda",
+      "EVID-G3-MAINTAINER": "d5a6ff0a-5fb3-4737-aab6-e81a424e0677",
+      "EVID-G3-MAINTAINER@initial": "3fd73784-cc0c-40ab-b87a-7691b9a45bda",
       "EVID-G4-CANARY": "4e215995-1aa8-4e6b-baa2-78fc8b150cac",
       "EVID-G4-RELEASE": "acc357fd-039b-4848-96ab-61bd99d16ae9",
       "HPT2-EVID-CONTRACT": "06eeffb0-9412-4211-ab64-4ea48462f8c5",

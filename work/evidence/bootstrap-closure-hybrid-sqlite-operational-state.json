@@ -2,9 +2,9 @@
   "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
   "baseline": {
     "created_at": "2026-08-28T16:26:19Z",
-    "source_commit": "3aaacdf20c8c2112e4d372bbd6e69f16d3eb13df",
+    "source_commit": "e464425c4d4f8e63711fffbe1b1118b42021d1c3",
     "source_digest": "1138aa47122132b998f973a0b7066c5587c85f7acf01c72b8d83783da5eac21d",
-    "updated_at": "2026-08-28T17:44:25Z"
+    "updated_at": "2026-08-28T17:47:34Z"
   },
   "bindings": [
     {
@@ -384,11 +384,11 @@
         },
         {
           "path": "scripts/outcome_reconciliation.py",
-          "sha256": "485984ff95ba0f355fea75a2114a286f25e1adb73101be3ab51dfbf61707b2b3"
+          "sha256": "f0fd94d6bba6aca200f086a2788d568d2039abde727c1872d69eeada581c9acc"
         },
         {
           "path": "schemas/hybrid-state/v1/hpt2-assigned-ids.json",
-          "sha256": "1ea654bb6b8a2d42a4d0962c4e592bbe75b8557cdd40b2ab9a996504967dfaa7"
+          "sha256": "55a9b5fec1fe612a41db0c7416880c99b7032cd3a7c35634bd8133509620d5fe"
         },
         {
           "path": "tests/test_outcome_reconciliation.py",
@@ -400,7 +400,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T17:43:40Z"
+      "verified_at": "2026-08-28T17:47:21Z"
     },
     {
       "covers_change_ids": [],
@@ -417,7 +417,7 @@
         },
         {
           "path": "scripts/outcome_reconciliation.py",
-          "sha256": "485984ff95ba0f355fea75a2114a286f25e1adb73101be3ab51dfbf61707b2b3"
+          "sha256": "f0fd94d6bba6aca200f086a2788d568d2039abde727c1872d69eeada581c9acc"
         },
         {
           "path": "tests/test_outcome_reconciliation.py",
@@ -429,7 +429,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T17:43:45Z"
+      "verified_at": "2026-08-28T17:47:27Z"
     },
     {
       "covers_change_ids": [
@@ -452,7 +452,7 @@
         },
         {
           "path": "scripts/outcome_reconciliation.py",
-          "sha256": "485984ff95ba0f355fea75a2114a286f25e1adb73101be3ab51dfbf61707b2b3"
+          "sha256": "f0fd94d6bba6aca200f086a2788d568d2039abde727c1872d69eeada581c9acc"
         },
         {
           "path": "schemas/hybrid-state/v1/maintainer-assigned-ids.json",
@@ -472,7 +472,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T17:44:17Z"
+      "verified_at": "2026-08-28T17:47:34Z"
     },
     {
       "covers_change_ids": [],
@@ -730,7 +730,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "739e51a800d4a3cd",
+  "state_token": "92b0f87feb5c2722",
   "upgrade_targets": [
     {
       "id": "UPG-HYBRID-MAINTAINER",
