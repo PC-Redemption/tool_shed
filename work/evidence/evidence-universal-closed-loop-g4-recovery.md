@@ -76,5 +76,10 @@ checkpoint, and rolled a simulated interrupted transaction back to `CLEAN`.
 
 The complete 367-test suite and full repository profile passed after the final release-manifest
 refresh. The fresh source-complete external archive and two disposable maintainer rehearsals also
-passed. The resulting evidence update must now be committed and pushed, and that exact GitHub CI
-matrix must pass. Only then may G4 receive a satisfied verdict.
+passed. GitHub run `33213018163` then exercised commit `150ef1670ab9c0df81f3029cac072e7434e9ed43`
+across the 28-job Windows/POSIX matrix. Twenty-four jobs passed. The three shard-zero jobs reached
+the release-profile bootstrap check and correctly refused the intentionally open G4/migration
+state; one Windows shard passed its 52 behavioral tests but exceeded the 60-second aggregate budget
+at 71.032 seconds. `CHG-CLOSED-004` records the now-complete migration boundary and terminal G4
+state so the exact reconciliation rerun can prove the release profile. A clean rerun, including the
+slow Windows shard, remains mandatory before publication.

@@ -23,7 +23,7 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 | [work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
 | [work/00-campaigns/abandoned/096-publish-and-synchronize-passive-app-server-dogfooding.md](work/00-campaigns/abandoned/096-publish-and-synchronize-passive-app-server-dogfooding.md) | campaign | abandoned | 2026-08-27 | none | - |
 | [work/00-campaigns/abandoned/097-field-dogfood-passive-app-server-mode.md](work/00-campaigns/abandoned/097-field-dogfood-passive-app-server-mode.md) | campaign | abandoned | 2026-08-27 | none | - |
-| [work/00-campaigns/active/112-qualify-universal-reconciliation-backfill-and-recovery.md](work/00-campaigns/active/112-qualify-universal-reconciliation-backfill-and-recovery.md) | campaign | working | 2026-08-28 | execute the campaign completion gate | - |
+| [work/00-campaigns/active/113-release-and-canary-universal-closed-loop-reconciliation.md](work/00-campaigns/active/113-release-and-canary-universal-closed-loop-reconciliation.md) | campaign | working | 2026-08-28 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -120,6 +120,7 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 | [work/00-campaigns/completed/109-freeze-universal-closed-loop-contract-and-bootstrap.md](work/00-campaigns/completed/109-freeze-universal-closed-loop-contract-and-bootstrap.md) | campaign | complete | 2026-08-28 | none | - |
 | [work/00-campaigns/completed/110-implement-generic-outcome-reconciliation-engine.md](work/00-campaigns/completed/110-implement-generic-outcome-reconciliation-engine.md) | campaign | complete | 2026-08-28 | none | - |
 | [work/00-campaigns/completed/111-integrate-closed-loop-owning-state-across-tool-shed.md](work/00-campaigns/completed/111-integrate-closed-loop-owning-state-across-tool-shed.md) | campaign | complete | 2026-08-28 | none | - |
+| [work/00-campaigns/completed/112-qualify-universal-reconciliation-backfill-and-recovery.md](work/00-campaigns/completed/112-qualify-universal-reconciliation-backfill-and-recovery.md) | campaign | complete | 2026-08-28 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -258,6 +259,6 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 
 ## Summary
 
-- Total artifacts: 239
+- Total artifacts: 240
 - Active artifacts: 1
-- Completed/decided artifacts: 169
+- Completed/decided artifacts: 170

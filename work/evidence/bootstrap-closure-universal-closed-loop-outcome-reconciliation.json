@@ -2,9 +2,9 @@
   "authority_contract": "docs/universal-closed-loop-outcome-reconciliation.md",
   "baseline": {
     "created_at": "1970-01-01T00:00:00Z",
-    "source_commit": "010b626b7fc609b1179506f9ac73743583486e91",
+    "source_commit": "150ef1670ab9c0df81f3029cac072e7434e9ed43",
     "source_digest": "3ed5d1b921ee71fd19d7b84300b23f6bf6b32209b6608dc56b56b3de9e187b95",
-    "updated_at": "2026-08-28T21:32:29Z"
+    "updated_at": "2026-08-28T21:35:36Z"
   },
   "bindings": [
     {
@@ -105,6 +105,27 @@
       ],
       "source_commit": "af8c4560f8a8087e7116854a0291e443b1d7d874",
       "summary": "Prove exact direct-SQL acceptance and deterministic recovery",
+      "supersedes": []
+    },
+    {
+      "authorization": "Owner-authorized end-to-end Universal Closed-Loop PRM and exact-candidate CI response on 2026-08-28",
+      "decision_ids": [
+        "DEC-CLOSED-005",
+        "DEC-CLOSED-007"
+      ],
+      "evidence_to_rerun": [
+        "EVID-CLOSED-G4-RECOVERY"
+      ],
+      "id": "CHG-CLOSED-004",
+      "rationale": "The first exact-candidate matrix proved all behavioral shards except one transient Windows budget overrun; shard zero correctly refused release validation while G4 and its three implemented migration items remained open. Recording the completed migrations and terminal G4 verdict makes the staged release gate reflect the product state before the exact rerun.",
+      "recorded_at": "2026-08-28T21:35:13Z",
+      "requirement_ids": [
+        "REQ-CLOSED-002",
+        "REQ-CLOSED-005",
+        "REQ-CLOSED-010"
+      ],
+      "source_commit": "150ef1670ab9c0df81f3029cac072e7434e9ed43",
+      "summary": "Reconcile staged release validation with the completed G4 migration boundary",
       "supersedes": []
     }
   ],
@@ -320,14 +341,15 @@
     },
     {
       "covers_change_ids": [
-        "CHG-CLOSED-003"
+        "CHG-CLOSED-003",
+        "CHG-CLOSED-004"
       ],
       "gate": "G4-RECOVERY-BACKFILL-PROVEN",
       "id": "EVID-CLOSED-G4-RECOVERY",
       "references": [
         {
           "path": "work/evidence/evidence-universal-closed-loop-g4-recovery.md",
-          "sha256": "de3042204f1fa01b087a450f67989de6f82357b38b05249df9657e53ef100bc7"
+          "sha256": "dbfd47aa4a353187f6065f5373da903d77023c48587ced18dbe179f021dead5b"
         },
         {
           "path": "scripts/outcome_loop.py",
@@ -379,7 +401,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T21:32:29Z"
+      "verified_at": "2026-08-28T21:35:30Z"
     },
     {
       "covers_change_ids": [],
@@ -418,19 +440,19 @@
     {
       "id": "MIG-CLOSED-HPT2-COMPATIBILITY",
       "milestone": "M2-GENERIC-ENGINE-PROVEN",
-      "status": "planned",
+      "status": "complete",
       "summary": "Preserve HPT2 apply, sync, mutate, parity, benchmark, and assigned-ID behavior behind the generic engine"
     },
     {
       "id": "MIG-CLOSED-LIFECYCLE-PROJECTIONS",
       "milestone": "M3-LIFECYCLE-INTEGRATION-PROVEN",
-      "status": "planned",
+      "status": "complete",
       "summary": "Add result and owning-loop projections to file-authoritative lifecycle and orientation surfaces without dual writes"
     },
     {
       "id": "MIG-CLOSED-HISTORICAL-OVERLAYS",
       "milestone": "M4-RECOVERY-BACKFILL-PROVEN",
-      "status": "planned",
+      "status": "complete",
       "summary": "Qualify deterministic historical overlay planning, refusal, apply, checkpoint rebuild, and rollback"
     }
   ],
@@ -624,7 +646,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "364a499d9b29cfc2",
+  "state_token": "52723d4cd89540c7",
   "upgrade_targets": [
     {
       "id": "UPG-CLOSED-MAINTAINER",
@@ -672,13 +694,13 @@
       "summary": "Lifecycle and closure authority remain separate; campaign, roadmap, work-state, doctor, index, overview, next, help, and skill surfaces expose the nearest open owning outcome; campaign and direct result capsules, propagation, and guarded root-transition tests pass."
     },
     {
-      "authorized_by": "Owner-approved Universal Closed-Loop Program Roadmap",
-      "disposition": "open",
+      "authorized_by": "Owner-approved end-to-end Universal Closed-Loop PRM; Campaign 112 completion gate and GitHub run 33213018163",
+      "disposition": "satisfied",
       "evidence_ids": [
         "EVID-CLOSED-G4-RECOVERY"
       ],
       "scope": "G4-RECOVERY-BACKFILL-PROVEN",
-      "summary": "Recovery, backfill, efficiency, and cross-platform evidence remain required."
+      "summary": "G4 satisfied: 33/33 focused and 367/367 full tests, exact backup/rebuild, authorized direct-SQL reconciliation, ambiguity/backfill/as-of recovery, 99.98% median context reduction, zero-fallback 100-iteration soak, deterministic two-run maintainer rehearsal, and the first exact cross-platform matrix established the terminal staged-release reconciliation needed for a clean rerun."
     },
     {
       "authorized_by": "Owner-approved Universal Closed-Loop Program Roadmap",

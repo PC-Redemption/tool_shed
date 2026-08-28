@@ -266,10 +266,10 @@
       "campaign_reason": null,
       "canonical_truth": null,
       "disposition": "none",
-      "milestone": "M4-RECOVERY-BACKFILL-PROVEN",
+      "milestone": "M5-RELEASE-CANARY-PROVEN",
       "next_action": "execute the campaign completion gate",
       "parent": null,
-      "path": "work/00-campaigns/active/112-qualify-universal-reconciliation-backfill-and-recovery.md",
+      "path": "work/00-campaigns/active/113-release-and-canary-universal-closed-loop-reconciliation.md",
       "produces": null,
       "project_map": null,
       "roadmap": "universal-closed-loop-outcome-reconciliation",
@@ -277,9 +277,9 @@
       "status": "working",
       "superseded_by": null,
       "supersedes": null,
-      "title": "Qualify universal reconciliation backfill and recovery",
+      "title": "Release and canary universal closed-loop reconciliation",
       "type": "campaign",
-      "unlocks_gate": "G4-RECOVERY-BACKFILL-PROVEN",
+      "unlocks_gate": "G5-RELEASE-CANARY-PROVEN",
       "updated": "2026-08-28"
     },
     {
@@ -2060,6 +2060,27 @@
       "title": "Integrate closed-loop owning state across Tool Shed",
       "type": "campaign",
       "unlocks_gate": "G3-LIFECYCLE-INTEGRATION-PROVEN",
+      "updated": "2026-08-28"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": "completed",
+      "milestone": "M4-RECOVERY-BACKFILL-PROVEN",
+      "next_action": "none",
+      "parent": null,
+      "path": "work/00-campaigns/completed/112-qualify-universal-reconciliation-backfill-and-recovery.md",
+      "produces": null,
+      "project_map": null,
+      "roadmap": "universal-closed-loop-outcome-reconciliation",
+      "roadmap_revision": "1",
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Qualify universal reconciliation backfill and recovery",
+      "type": "campaign",
+      "unlocks_gate": "G4-RECOVERY-BACKFILL-PROVEN",
       "updated": "2026-08-28"
     },
     {
@@ -4363,7 +4384,7 @@
   "schema_version": 1,
   "summary": {
     "active_artifacts": 1,
-    "completed_or_decided_artifacts": 169,
-    "total_artifacts": 239
+    "completed_or_decided_artifacts": 170,
+    "total_artifacts": 240
   }
 }
