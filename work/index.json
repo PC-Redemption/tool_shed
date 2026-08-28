@@ -3435,9 +3435,9 @@
     {
       "campaign": null,
       "campaign_reason": null,
-      "canonical_truth": null,
+      "canonical_truth": "docs/universal-closed-loop-outcome-reconciliation.md",
       "disposition": null,
-      "next_action": "use the approved project-map direction and Program Roadmap for delivery",
+      "next_action": "none; the governed outcome loop is terminal, satisfied, reconciled, and fully propagated",
       "parent": null,
       "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
       "produces": "work/maps/map-universal-closed-loop-outcome-reconciliation.md",

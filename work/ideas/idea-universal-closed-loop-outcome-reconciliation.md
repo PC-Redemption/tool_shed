@@ -3,8 +3,31 @@
 Status: promoted
 Type: idea-brief
 Updated: 2026-08-28
-Next Action: use the approved project-map direction and Program Roadmap for delivery
+Next Action: none; the governed outcome loop is terminal, satisfied, reconciled, and fully propagated
 Produces: work/maps/map-universal-closed-loop-outcome-reconciliation.md
+Canonical Truth: docs/universal-closed-loop-outcome-reconciliation.md
+
+## Outcome Closure
+
+The Idea Brief intentionally remains `Status: promoted`: that file lifecycle value records that its
+direction was captured by the approved project map. The separate governed outcome loop records
+delivery and is complete.
+
+- Outcome loop: `a5499a4c-9c56-41c1-8266-6f675cb47032`
+- Closed: `2026-08-28T22:14:54Z` at Hybrid revision 53
+- Lifecycle / verdict / reconciliation: `terminal` / `satisfied` / `reconciled`
+- Accepted scope: all 12 requirements and nine material development changes reconciled
+- Propagation: all five campaign results propagated to the initiative
+- Product truth: `docs/universal-closed-loop-outcome-reconciliation.md` and
+  `scripts/outcome_loop.py`
+- Delivery proof: Tool Shed v0.35.0 plus
+  `work/evidence/evidence-universal-closed-loop-g5-release.md` and
+  `work/evidence/evidence-universal-closed-loop-g5-canary.md`
+- Residual work: none
+
+Recheck with `python3 scripts/outcome_reconciliation.py --workspace . --json report --cycle
+a5499a4c-9c56-41c1-8266-6f675cb47032`. The report is the authoritative outcome projection; this
+section makes that result visible to a reader who opens only the originating Idea Brief.
 
 ## Current Synthesis
 
