@@ -2,9 +2,9 @@
   "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
   "baseline": {
     "created_at": "2026-08-28T16:26:19Z",
-    "source_commit": "730a1549314b07e61e206d1b7f2b2c70ae6827cc",
+    "source_commit": "ec994ec8b457894ec0a9ca8d01dc477e85b1016c",
     "source_digest": "1138aa47122132b998f973a0b7066c5587c85f7acf01c72b8d83783da5eac21d",
-    "updated_at": "2026-08-28T17:48:40Z"
+    "updated_at": "2026-08-28T17:52:18Z"
   },
   "bindings": [
     {
@@ -270,12 +270,12 @@
           "sha256": "42f3aecb2ad5417c8884ca6b4cab3c868ee7ee7128a298eff13b6166badc9357"
         },
         {
-          "path": "work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md",
-          "sha256": "fb1bb04ce88633359e7e33c75e3cb2bef1ad645a9a064e5afa360d5cc05fb3fc"
+          "path": "work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md",
+          "sha256": "c32e9a94c238f73a833ab446de8248413fc0b2e3ee94003e2868f9d1b55870ff"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T17:34:29Z"
+      "verified_at": "2026-08-28T17:52:18Z"
     },
     {
       "covers_change_ids": [
@@ -726,7 +726,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "840d37699b767de2",
+  "state_token": "dc3d93cfe8098f3c",
   "upgrade_targets": [
     {
       "id": "UPG-HYBRID-MAINTAINER",

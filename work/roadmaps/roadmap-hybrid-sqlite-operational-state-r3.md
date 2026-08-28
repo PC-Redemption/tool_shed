@@ -1,18 +1,18 @@
 # Program Roadmap: Hybrid SQLite Operational State
 
-Status: superseded
+Status: executing
 Type: program-roadmap
 Updated: 2026-08-28
-Next Action: none
+Next Action: execute the first ready roadmap campaign through ts: next
 Roadmap ID: hybrid-sqlite-operational-state
-Revision: 2
+Revision: 3
 Source Project Map: work/maps/map-hybrid-sqlite-operational-state.md
-Source State Token: 73354cf7c5d81b3d
-Proposal Token: 164f34fcf9d1d22d
+Source State Token: d32a7f8756a7b1f7
+Proposal Token: f9661f7264e82aa5
 Approved: 2026-08-28
 Current Milestone: M1-BOOTSTRAP-DESIGN-FROZEN
-Supersedes: work/roadmaps/roadmap-hybrid-sqlite-operational-state.md
-Superseded By: work/roadmaps/roadmap-hybrid-sqlite-operational-state-r3.md
+Supersedes: work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md
+Superseded By: none
 
 ## Roadmap Definition
 
@@ -1050,6 +1050,16 @@ Superseded By: work/roadmaps/roadmap-hybrid-sqlite-operational-state-r3.md
       "state_token": "e9d9676b93ece3c8"
     },
     {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "mapped",
+      "milestone": "M3-MAINTAINER-HYBRID-PROVEN",
+      "path": "work/00-campaigns/completed/106-rehearse-and-convert-maintainer-to-hybrid-state.md",
+      "phase": "P3-MAINTAINER-CONVERSION",
+      "state_token": "1aaab7e576051dff"
+    },
+    {
       "classification": "remaining",
       "conflicts": [],
       "evidence": "Type campaign; Status deferred",
@@ -1340,6 +1350,16 @@ Superseded By: work/roadmaps/roadmap-hybrid-sqlite-operational-state-r3.md
       "path": "work/evidence/evidence-hybrid-sqlite-hpt2-parity.md",
       "phase": "P2-SUBSTRATE-LOOP",
       "state_token": "1baa94be8d1ee4b9"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type unknown; Status passed",
+      "mapping_state": "mapped",
+      "milestone": "M3-MAINTAINER-HYBRID-PROVEN",
+      "path": "work/evidence/evidence-hybrid-sqlite-maintainer-conversion.md",
+      "phase": "P3-MAINTAINER-CONVERSION",
+      "state_token": "09a61d5f0c161166"
     },
     {
       "classification": "completed",
@@ -1812,9 +1832,9 @@ Superseded By: work/roadmaps/roadmap-hybrid-sqlite-operational-state-r3.md
       "conflicts": [],
       "evidence": "Type project-map; Status approved",
       "mapping_state": "mapped",
-      "milestone": "M3-MAINTAINER-HYBRID-PROVEN",
+      "milestone": "M4-RELEASE-CANARY-PROVEN",
       "path": "work/maps/map-hybrid-sqlite-operational-state.md",
-      "phase": "P3-MAINTAINER-CONVERSION",
+      "phase": "P4-RELEASE-CANARY",
       "state_token": "291df5e7273a14d9"
     },
     {
@@ -2249,7 +2269,10 @@ Superseded By: work/roadmaps/roadmap-hybrid-sqlite-operational-state-r3.md
     "Do not make GitHub or gh a production runtime dependency.",
     "Schema version 1, deterministic checkpoint serialization, trigger accounting, protocol 4, reverse-export downgrade rules, HPT2 inventory treatment, and efficiency fixtures are settled by the G1 contract and verified bootstrap baseline.",
     "HPT2 qualifies the closed-loop mechanism as lifecycle terminal and reconciled with a truthful partial verdict; the absent original HPT2 idea, accepted-change ledger, target-product manifest, and acceptance record remain explicit historical exceptions rather than invented satisfied evidence.",
-    "The M2 substrate and HPT2 fixture achieved semantic parity, zero unexplained fallback, and 99.975 percent median supplied-context reduction without activating live database authority."
+    "The M2 substrate and HPT2 fixture achieved semantic parity, zero unexplained fallback, and 99.975 percent median supplied-context reduction without activating live database authority.",
+    "M3 uses external archive SHA-256 08b8cb0aa4c1e2739c37ada2a77dc11763e39cf23f1d98edd122d229dc65e2b9, retained through the first hybrid release and completed disconnected-client canary, and records a 5.04-second local functional soak; M4 owns any longer release or canary soak.",
+    "Bootstrap evidence and verdict transitions append immutable verification/verdict identities, synchronize through guarded managed revisions, and checkpoint only after file/database parity; mutable checkpoints are not direct bootstrap evidence references.",
+    "The canonical maintainer is now hybrid and CLEAN at schema version 1, with all original files retained and campaign, roadmap, milestone, and general Markdown authority still file-owned."
   ],
   "desired_outcome": "Tool Shed uses a portable hybrid SQLite/file authority model for minimum operational state and one fully executed closed-loop reconciliation with a truthful partial product verdict, immutable IDs, guarded transactions, deterministic checkpoints, exact recovery, materially lower state context, and a maintainer-first upgrade path that preserves all existing data.",
   "gates": [
@@ -2358,12 +2381,11 @@ Superseded By: work/roadmaps/roadmap-hybrid-sqlite-operational-state-r3.md
     }
   ],
   "unknowns": [
-    "M3 must record the exact sanitized external-archive identity, retention disposition, and soak observation window in durable evidence before live cutover.",
-    "M4 requires a separately authorized release version and exact disconnected client canary target before external mutation."
+    "M4 requires a separately authorized release version and exact disconnected client canary target before publication or external mutation."
   ]
 }
 ```
 
 ## Revision History
 
-- Revision 2: superseded on 2026-08-28.
+- Revision 3: executing on 2026-08-28.
