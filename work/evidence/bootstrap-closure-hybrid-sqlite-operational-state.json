@@ -2,9 +2,9 @@
   "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
   "baseline": {
     "created_at": "2026-08-28T16:26:19Z",
-    "source_commit": "dfaec63c69e3cb5ce8bac2c1545c22f4632f1615",
+    "source_commit": "85dad7d809ffea78639d29ee8122b5d854f0441b",
     "source_digest": "33676dccc9f9c61e0f6809b1d040d12e2d1eb794e70a55348d5c2674230bd8ea",
-    "updated_at": "2026-08-28T18:53:59Z"
+    "updated_at": "2026-08-28T18:58:13Z"
   },
   "bindings": [
     {
@@ -271,6 +271,24 @@
       "source_commit": "dfaec63c69e3cb5ce8bac2c1545c22f4632f1615",
       "summary": "Normalize hybrid API workspace paths on Windows",
       "supersedes": []
+    },
+    {
+      "authorization": "Owner-approved Campaign 107 release execution and failed exact-candidate CI evidence",
+      "decision_ids": [],
+      "evidence_to_rerun": [
+        "EVID-G2-SUBSTRATE",
+        "EVID-G4-RELEASE"
+      ],
+      "id": "CHG-HYBRID-011",
+      "rationale": "The third exact-candidate CI run reached the full hybrid suite and exposed a clock-bound idempotency comparison plus Windows read-only Git fixture cleanup; neither may make release qualification nondeterministic.",
+      "recorded_at": "2026-08-28T18:57:59Z",
+      "requirement_ids": [
+        "REQ-HYBRID-007",
+        "REQ-HYBRID-010"
+      ],
+      "source_commit": "85dad7d809ffea78639d29ee8122b5d854f0441b",
+      "summary": "Stabilize release-matrix idempotency and Windows cleanup",
+      "supersedes": []
     }
   ],
   "decisions": [
@@ -476,7 +494,8 @@
         "CHG-HYBRID-004",
         "CHG-HYBRID-005",
         "CHG-HYBRID-009",
-        "CHG-HYBRID-010"
+        "CHG-HYBRID-010",
+        "CHG-HYBRID-011"
       ],
       "gate": "G2-SUBSTRATE-LOOP-PROVEN",
       "id": "EVID-G2-SUBSTRATE",
@@ -515,7 +534,7 @@
         },
         {
           "path": "tests/test_hybrid_state.py",
-          "sha256": "3157ebc79283ed6a948f0fc513c286677b9dd78752087082fb188d2d7d56ebad"
+          "sha256": "90c9cd4dda986b4ad593af6a72fb00987a7f7889bb9847b19cf27e11839d14e0"
         },
         {
           "path": "tests/test_maintainer_hybrid_conversion.py",
@@ -527,7 +546,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T18:53:22Z"
+      "verified_at": "2026-08-28T18:58:07Z"
     },
     {
       "covers_change_ids": [
@@ -657,7 +676,8 @@
         "CHG-HYBRID-005",
         "CHG-HYBRID-008",
         "CHG-HYBRID-009",
-        "CHG-HYBRID-010"
+        "CHG-HYBRID-010",
+        "CHG-HYBRID-011"
       ],
       "gate": "G4-RELEASE-CANARY-PROVEN",
       "id": "EVID-G4-RELEASE",
@@ -943,7 +963,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "2371e035a81158ed",
+  "state_token": "1c4909f5104532f8",
   "upgrade_targets": [
     {
       "id": "UPG-HYBRID-MAINTAINER",
