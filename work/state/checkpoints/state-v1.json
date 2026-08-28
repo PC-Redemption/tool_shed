@@ -1,17 +1,17 @@
 {
   "envelope": {
-    "checkpoint_ledger_id": "a31401df-373f-469a-8fff-0a6479f6ca5e",
+    "checkpoint_ledger_id": "8a58dbcf-65bf-4ec0-a6bb-c7331d079efe",
     "checkpoint_path": "work/state/checkpoints/state-v1.json",
-    "created_at": "2026-08-28T17:48:50Z",
+    "created_at": "2026-08-28T17:50:13Z",
     "database_revision": 10,
-    "digest": "8b025e953ba852877d4278ea45b4e1be509b56d1ebe9f58d954d8f28f50cba20",
-    "export_ledger_id": "0663da99-9764-4f2c-b82f-6f39209b9873",
+    "digest": "125f369839af572897380b04859143e671d1152e6d63fef6bde87e0e30ecfcda",
+    "export_ledger_id": "aa5a58d9-7653-4081-9b45-9c5f8b072073",
     "format_version": 1,
-    "previous_checkpoint_digest": "9cf681a07d0ab2ba467526ffd24af05dfbed0dad1d3ccf2d50633adc8e19ae3f",
+    "previous_checkpoint_digest": "8b025e953ba852877d4278ea45b4e1be509b56d1ebe9f58d954d8f28f50cba20",
     "project_id": "817b6358-b2f5-48fd-bb66-bd80f936faca",
     "schema_version": 1,
-    "source_commit": "730a1549314b07e61e206d1b7f2b2c70ae6827cc",
-    "source_tree_digest": "a9f092df71a59906c2f84ef82f5101f8d521b35911b97199320bed4d538b0983",
+    "source_commit": "e9f2f8568ed20d6221325f06a6ae3b8c8ad50945",
+    "source_tree_digest": "3291adc9667512e3116ca274ba7faeaaf329b38ed0e3cf24fb31f96d273457b1",
     "storage_mode": "hybrid",
     "workspace_id": "017d41a6-36e8-5dc9-a8c2-07094c936854"
   },
@@ -268,6 +268,15 @@
         "path": "work/state/checkpoints/state-v1.json",
         "revision": 4,
         "source_commit": "3aaacdf20c8c2112e4d372bbd6e69f16d3eb13df",
+        "status": "complete"
+      },
+      {
+        "created_at": "2026-08-28T17:48:50Z",
+        "digest": "8b025e953ba852877d4278ea45b4e1be509b56d1ebe9f58d954d8f28f50cba20",
+        "id": "a31401df-373f-469a-8fff-0a6479f6ca5e",
+        "path": "work/state/checkpoints/state-v1.json",
+        "revision": 10,
+        "source_commit": "730a1549314b07e61e206d1b7f2b2c70ae6827cc",
         "status": "complete"
       },
       {
@@ -2192,6 +2201,15 @@
       }
     ],
     "export_ledger": [
+      {
+        "created_at": "2026-08-28T17:48:50Z",
+        "digest": "8b025e953ba852877d4278ea45b4e1be509b56d1ebe9f58d954d8f28f50cba20",
+        "format_version": 1,
+        "id": "0663da99-9764-4f2c-b82f-6f39209b9873",
+        "path": "work/state/checkpoints/state-v1.json",
+        "revision": 10,
+        "status": "complete"
+      },
       {
         "created_at": "2026-08-28T17:38:31Z",
         "digest": "a9c3557a9a904b0878e7191b588660d040a54d0840233fa340a419881f07f1ca",
