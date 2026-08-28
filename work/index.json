@@ -265,27 +265,6 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
-      "disposition": "none",
-      "milestone": "M3-MAINTAINER-HYBRID-PROVEN",
-      "next_action": "execute the campaign completion gate",
-      "parent": null,
-      "path": "work/00-campaigns/active/106-rehearse-and-convert-maintainer-to-hybrid-state.md",
-      "produces": null,
-      "project_map": null,
-      "roadmap": "hybrid-sqlite-operational-state",
-      "roadmap_revision": "2",
-      "status": "working",
-      "superseded_by": null,
-      "supersedes": null,
-      "title": "Rehearse and convert the maintainer to hybrid state",
-      "type": "campaign",
-      "unlocks_gate": "G3-MAINTAINER-CONVERSION-PROVEN",
-      "updated": "2026-08-28"
-    },
-    {
-      "campaign": null,
-      "campaign_reason": null,
-      "canonical_truth": null,
       "disposition": "completed",
       "next_action": "none",
       "parent": null,
@@ -1934,6 +1913,27 @@
       "title": "Implement and qualify the HPT2 closed-loop vertical slice",
       "type": "campaign",
       "unlocks_gate": "G2-SUBSTRATE-LOOP-PROVEN",
+      "updated": "2026-08-28"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": "completed",
+      "milestone": "M3-MAINTAINER-HYBRID-PROVEN",
+      "next_action": "none",
+      "parent": null,
+      "path": "work/00-campaigns/completed/106-rehearse-and-convert-maintainer-to-hybrid-state.md",
+      "produces": null,
+      "project_map": null,
+      "roadmap": "hybrid-sqlite-operational-state",
+      "roadmap_revision": "2",
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Rehearse and convert the maintainer to hybrid state",
+      "type": "campaign",
+      "unlocks_gate": "G3-MAINTAINER-CONVERSION-PROVEN",
       "updated": "2026-08-28"
     },
     {
@@ -4041,8 +4041,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 2,
-    "completed_or_decided_artifacts": 160,
+    "active_artifacts": 1,
+    "completed_or_decided_artifacts": 161,
     "total_artifacts": 223
   }
 }

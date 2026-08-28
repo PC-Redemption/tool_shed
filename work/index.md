@@ -21,7 +21,6 @@ Updated: 2026-08-28
 | [work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
 | [work/00-campaigns/abandoned/096-publish-and-synchronize-passive-app-server-dogfooding.md](work/00-campaigns/abandoned/096-publish-and-synchronize-passive-app-server-dogfooding.md) | campaign | abandoned | 2026-08-27 | none | - |
 | [work/00-campaigns/abandoned/097-field-dogfood-passive-app-server-mode.md](work/00-campaigns/abandoned/097-field-dogfood-passive-app-server-mode.md) | campaign | abandoned | 2026-08-27 | none | - |
-| [work/00-campaigns/active/106-rehearse-and-convert-maintainer-to-hybrid-state.md](work/00-campaigns/active/106-rehearse-and-convert-maintainer-to-hybrid-state.md) | campaign | working | 2026-08-28 | execute the campaign completion gate | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -112,6 +111,7 @@ Updated: 2026-08-28
 | [work/00-campaigns/completed/103-establish-hybrid-bootstrap-closure-and-design-contract.md](work/00-campaigns/completed/103-establish-hybrid-bootstrap-closure-and-design-contract.md) | campaign | complete | 2026-08-28 | none | - |
 | [work/00-campaigns/completed/104-implement-minimum-sqlite-operational-substrate.md](work/00-campaigns/completed/104-implement-minimum-sqlite-operational-substrate.md) | campaign | complete | 2026-08-28 | none | - |
 | [work/00-campaigns/completed/105-implement-and-qualify-hpt2-closed-loop-vertical-slice.md](work/00-campaigns/completed/105-implement-and-qualify-hpt2-closed-loop-vertical-slice.md) | campaign | complete | 2026-08-28 | none | - |
+| [work/00-campaigns/completed/106-rehearse-and-convert-maintainer-to-hybrid-state.md](work/00-campaigns/completed/106-rehearse-and-convert-maintainer-to-hybrid-state.md) | campaign | complete | 2026-08-28 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -241,5 +241,5 @@ Updated: 2026-08-28
 ## Summary
 
 - Total artifacts: 223
-- Active artifacts: 2
-- Completed/decided artifacts: 160
+- Active artifacts: 1
+- Completed/decided artifacts: 161
