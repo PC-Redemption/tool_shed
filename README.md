@@ -244,6 +244,13 @@ targets, and exact verdicts to project identity, source hashes, and guarded stat
 validation checks these manifests for structural and source consistency; release validation fails
 closed until every manifest's declared release gate is complete.
 
+The phase-one Hybrid SQLite substrate is available through `scripts/hybrid_state.py`. It creates an
+ignored, per-worktree shadow database; records immutable IDs, imports, typed relationships,
+revisions, structural changes, events, and recovery ledgers; audits managed and direct-SQL changes;
+and writes digest-bound checkpoints that rebuild into a fresh database. Imported files remain
+byte-authoritative and broad campaign/roadmap/Markdown authority does not move. See
+[`docs/hybrid-sqlite-state.md`](docs/hybrid-sqlite-state.md) for operations and rollout boundaries.
+
 Before a long campaign, run:
 
 ```bash

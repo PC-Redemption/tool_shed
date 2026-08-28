@@ -184,6 +184,24 @@ current manifest state token. `full` validates every tracked bootstrap manifest 
 `release` additionally requires all declared release-gate scopes, evidence, migration items, and
 upgrade targets to be terminal. Direct edits are detectable and cannot silently qualify a release.
 
+The Hybrid SQLite phase-one substrate uses a separate project-bound interface:
+
+```text
+python3 scripts/hybrid_state.py --workspace . init --project-binding <binding>
+python3 scripts/hybrid_state.py --workspace . audit
+python3 scripts/hybrid_state.py --workspace . import --project-binding <binding> --path <source>
+python3 scripts/hybrid_state.py --workspace . relate --project-binding <binding> ...
+python3 scripts/hybrid_state.py --workspace . backup --project-binding <binding>
+python3 scripts/hybrid_state.py --workspace . checkpoint --project-binding <binding>
+python3 scripts/hybrid_state.py --workspace . rebuild --project-binding <binding> \
+  --checkpoint <checkpoint> --output <new-database>
+python3 scripts/hybrid_state.py --workspace . legacy-check --field <authority-field>
+```
+
+The database remains ignored, local, and `shadow` until a separately qualified conversion. These
+commands do not authorize maintainer cutover, release, installed-skill synchronization, or client
+upgrade. See [Hybrid SQLite operational state](hybrid-sqlite-state.md).
+
 Work3 document changes stay within the requested candidate scope. Preserve unrelated owner
 documentation and historical records, and delete documentation only when the coded change makes it
 obsolete.

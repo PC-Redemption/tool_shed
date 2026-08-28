@@ -191,7 +191,10 @@ Canonical serialization is UTF-8, LF, two-space indented JSON with lexicographic
 keys. Entity arrays sort by entity type and immutable ID; event and ledger arrays sort by revision
 then ID. Timestamps use the value rules above. The envelope records format version, project ID,
 schema version, database revision, source commit, source-tree digest, previous checkpoint digest,
-and a SHA-256 digest calculated over the document with only the digest field omitted.
+the canonical checkpoint path, preallocated UUIDv4 checkpoint/export ledger IDs, and a SHA-256
+digest calculated over the document with only the digest field omitted. The preallocated IDs let a
+fresh rebuild reproduce the newest ledger rows exactly without deriving a public ID from content or
+creating a new identity during recovery.
 
 The generator writes a temporary file, reparses it, rebuilds a shadow database, runs integrity and
 foreign-key checks, compares the semantic digest, and atomically replaces the tracked checkpoint.

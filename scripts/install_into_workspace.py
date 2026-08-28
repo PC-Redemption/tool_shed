@@ -24,6 +24,7 @@ from workspace_preflight import inspect
 
 
 IGNORE_ENTRIES = (
+    "/.tool-shed/",
     "/tool_shed/",
     "/tool_shed.backup-*.tar",
     "/work/01-q&a/ask.txt",

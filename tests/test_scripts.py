@@ -3656,6 +3656,7 @@ Produces:
 
             gitignore = (workspace / ".gitignore").read_text(encoding="utf-8")
             self.assertTrue(gitignore.startswith(original))
+            self.assertEqual(gitignore.count("/.tool-shed/"), 1)
             self.assertEqual(gitignore.count("/tool_shed/"), 1)
             self.assertEqual(gitignore.count("/tool_shed.backup-*.tar"), 1)
             self.assertEqual(gitignore.splitlines().count("/work/01-q&a/ask.txt"), 1)

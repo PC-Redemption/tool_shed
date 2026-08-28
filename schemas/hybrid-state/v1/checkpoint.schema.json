@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ts.rookaro.com/schemas/hybrid-state/v1/checkpoint.schema.json",
+  "title": "Tool Shed Hybrid State Checkpoint v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "envelope", "tables"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "kind": {"const": "tool-shed-hybrid-state-checkpoint"},
+    "envelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format_version",
+        "project_id",
+        "workspace_id",
+        "storage_mode",
+        "schema_version",
+        "database_revision",
+        "source_commit",
+        "source_tree_digest",
+        "previous_checkpoint_digest",
+        "checkpoint_path",
+        "checkpoint_ledger_id",
+        "export_ledger_id",
+        "created_at",
+        "digest"
+      ],
+      "properties": {
+        "format_version": {"const": 1},
+        "project_id": {"type": "string", "format": "uuid"},
+        "workspace_id": {"type": "string", "format": "uuid"},
+        "storage_mode": {"enum": ["file", "shadow", "hybrid"]},
+        "schema_version": {"const": 1},
+        "database_revision": {"type": "integer", "minimum": 0},
+        "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "source_tree_digest": {"$ref": "#/$defs/sha256"},
+        "previous_checkpoint_digest": {
+          "anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]
+        },
+        "checkpoint_path": {"type": "string", "minLength": 1},
+        "checkpoint_ledger_id": {"type": "string", "format": "uuid"},
+        "export_ledger_id": {"type": "string", "format": "uuid"},
+        "created_at": {"type": "string", "format": "date-time"},
+        "digest": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "tables": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "workspace",
+        "managed_operation",
+        "structural_change",
+        "event",
+        "cycle",
+        "artifact",
+        "import_record",
+        "relationship",
+        "requirement",
+        "material_change",
+        "evidence_reference",
+        "verification_result",
+        "outcome_verdict",
+        "reconciliation",
+        "migration_ledger",
+        "export_ledger",
+        "checkpoint_ledger"
+      ],
+      "properties": {
+        "workspace": {"$ref": "#/$defs/rows"},
+        "managed_operation": {"$ref": "#/$defs/rows"},
+        "structural_change": {"$ref": "#/$defs/rows"},
+        "event": {"$ref": "#/$defs/rows"},
+        "cycle": {"$ref": "#/$defs/rows"},
+        "artifact": {"$ref": "#/$defs/rows"},
+        "import_record": {"$ref": "#/$defs/rows"},
+        "relationship": {"$ref": "#/$defs/rows"},
+        "requirement": {"$ref": "#/$defs/rows"},
+        "material_change": {"$ref": "#/$defs/rows"},
+        "evidence_reference": {"$ref": "#/$defs/rows"},
+        "verification_result": {"$ref": "#/$defs/rows"},
+        "outcome_verdict": {"$ref": "#/$defs/rows"},
+        "reconciliation": {"$ref": "#/$defs/rows"},
+        "migration_ledger": {"$ref": "#/$defs/rows"},
+        "export_ledger": {"$ref": "#/$defs/rows"},
+        "checkpoint_ledger": {"$ref": "#/$defs/rows"}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "rows": {
+      "type": "array",
+      "items": {"type": "object"}
+    }
+  }
+}

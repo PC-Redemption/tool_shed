@@ -2,9 +2,9 @@
   "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
   "baseline": {
     "created_at": "2026-08-28T16:26:19Z",
-    "source_commit": "823ef35db06569a50e8096dfa54233ee455ab2fc",
-    "source_digest": "cc62dae2f4b225fb9eaf21ea67ffd925f85f337cbb9f741bf39d2f6ba1310ea2",
-    "updated_at": "2026-08-28T16:31:43Z"
+    "source_commit": "582b250f7a401201db5aa653fe7b80d1a08c889f",
+    "source_digest": "d6ef45c0e3fa23dbabee77b5d0dba4b7d22adcd4b6dabcfff2442c320a7ba1bb",
+    "updated_at": "2026-08-28T16:59:46Z"
   },
   "bindings": [
     {
@@ -25,7 +25,7 @@
     {
       "path": "docs/hybrid-sqlite-state-v1-contract.md",
       "role": "authority-contract",
-      "sha256": "67c4003c8b9ce76b6e556b8d7a2f3c40e3983de09b5d7093c9caccd2edf8aaf5"
+      "sha256": "9687551969afc65542457ca0bbee7ac4b44ffc59a9487fdeeaf04b991374a6cb"
     },
     {
       "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
@@ -89,6 +89,27 @@
       ],
       "source_commit": "823ef35db06569a50e8096dfa54233ee455ab2fc",
       "summary": "Correct the G1 evidence timestamp after the hardened focused rerun",
+      "supersedes": []
+    },
+    {
+      "authorization": "User-approved end-to-end Campaign 104 execution on 2026-08-28",
+      "decision_ids": [
+        "DEC-HYBRID-003",
+        "DEC-HYBRID-006"
+      ],
+      "evidence_to_rerun": [
+        "EVID-G1-CONTRACT",
+        "EVID-G2-SUBSTRATE"
+      ],
+      "id": "CHG-HYBRID-003",
+      "rationale": "Implementation qualification found that rebuilding the current checkpoint otherwise generated a different checkpoint-ledger identity and omitted the corresponding export-ledger row. Adding the canonical checkpoint path and two UUIDv4 ledger IDs to the digest-bound envelope preserves schema-v1 authority while making fresh logical recovery exact.",
+      "recorded_at": "2026-08-28T16:57:09Z",
+      "requirement_ids": [
+        "REQ-HYBRID-003",
+        "REQ-HYBRID-007"
+      ],
+      "source_commit": "582b250f7a401201db5aa653fe7b80d1a08c889f",
+      "summary": "Preallocate and checkpoint the newest recovery-ledger identities",
       "supersedes": []
     }
   ],
@@ -212,13 +233,15 @@
       "verified_at": "2026-08-28T16:31:43Z"
     },
     {
-      "covers_change_ids": [],
+      "covers_change_ids": [
+        "CHG-HYBRID-003"
+      ],
       "gate": "G1-DESIGN-FROZEN",
       "id": "EVID-G1-CONTRACT",
       "references": [
         {
           "path": "docs/hybrid-sqlite-state-v1-contract.md",
-          "sha256": "67c4003c8b9ce76b6e556b8d7a2f3c40e3983de09b5d7093c9caccd2edf8aaf5"
+          "sha256": "9687551969afc65542457ca0bbee7ac4b44ffc59a9487fdeeaf04b991374a6cb"
         },
         {
           "path": "work/roadmaps/roadmap-hybrid-sqlite-operational-state.md",
@@ -226,16 +249,18 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T16:23:56Z"
+      "verified_at": "2026-08-28T16:59:30Z"
     },
     {
-      "covers_change_ids": [],
+      "covers_change_ids": [
+        "CHG-HYBRID-003"
+      ],
       "gate": "G1-DESIGN-FROZEN",
       "id": "EVID-G1-HPT2-INVENTORY",
       "references": [
         {
           "path": "docs/hybrid-sqlite-state-v1-contract.md",
-          "sha256": "67c4003c8b9ce76b6e556b8d7a2f3c40e3983de09b5d7093c9caccd2edf8aaf5"
+          "sha256": "9687551969afc65542457ca0bbee7ac4b44ffc59a9487fdeeaf04b991374a6cb"
         },
         {
           "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
@@ -243,16 +268,18 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T16:23:56Z"
+      "verified_at": "2026-08-28T16:59:35Z"
     },
     {
-      "covers_change_ids": [],
+      "covers_change_ids": [
+        "CHG-HYBRID-003"
+      ],
       "gate": "G1-DESIGN-FROZEN",
       "id": "EVID-G1-EFFICIENCY-CONTRACT",
       "references": [
         {
           "path": "docs/hybrid-sqlite-state-v1-contract.md",
-          "sha256": "67c4003c8b9ce76b6e556b8d7a2f3c40e3983de09b5d7093c9caccd2edf8aaf5"
+          "sha256": "9687551969afc65542457ca0bbee7ac4b44ffc59a9487fdeeaf04b991374a6cb"
         },
         {
           "path": "work/ideas/idea-sqlite-backed-tool-shed-operational-state.md",
@@ -260,20 +287,46 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T16:23:56Z"
+      "verified_at": "2026-08-28T16:59:40Z"
     },
     {
-      "covers_change_ids": [],
+      "covers_change_ids": [
+        "CHG-HYBRID-003"
+      ],
       "gate": "G2-SUBSTRATE-LOOP-PROVEN",
       "id": "EVID-G2-SUBSTRATE",
       "references": [
         {
+          "path": "work/evidence/evidence-hybrid-sqlite-substrate.md",
+          "sha256": "d8a400c395de17a38a44b9076dc4ee27e849d04d012953770e574b9f77298989"
+        },
+        {
           "path": "docs/hybrid-sqlite-state-v1-contract.md",
-          "sha256": "67c4003c8b9ce76b6e556b8d7a2f3c40e3983de09b5d7093c9caccd2edf8aaf5"
+          "sha256": "9687551969afc65542457ca0bbee7ac4b44ffc59a9487fdeeaf04b991374a6cb"
+        },
+        {
+          "path": "docs/hybrid-sqlite-state.md",
+          "sha256": "68305c13d53913e2e97378308bb7cb4d07468799878bd34d5c37e0f1780ae814"
+        },
+        {
+          "path": "scripts/hybrid_state.py",
+          "sha256": "d5c7b6664a08b521fd3288e6ec770e84c42cc24231349b8bff4cece119941a21"
+        },
+        {
+          "path": "scripts/hybrid_state_schema.py",
+          "sha256": "cec17e40de30a77d38a91ed1d2fcffa06a573bf13e91361b3ca18135c525d508"
+        },
+        {
+          "path": "schemas/hybrid-state/v1/checkpoint.schema.json",
+          "sha256": "c92f8910f815fb3f46f6d51ba7e7fc8752f3d9878a1b5a212198503a2d7dafff"
+        },
+        {
+          "path": "tests/test_hybrid_state.py",
+          "sha256": "b67295b673e13c61196c7233c32b0ca80c98513afcbf0edca5e660e12ff80a7e"
         }
       ],
-      "status": "pending",
-      "verified_at": null
+      "status": "passed",
+      "verified_at": "2026-08-28T16:59:46Z"
     },
     {
       "covers_change_ids": [],
@@ -570,7 +623,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "6c1d75417d63c114",
+  "state_token": "f0f0f772d0c3866b",
   "upgrade_targets": [
     {
       "id": "UPG-HYBRID-MAINTAINER",
