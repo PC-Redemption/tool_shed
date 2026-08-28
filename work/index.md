@@ -187,7 +187,7 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 | [work/evidence/evidence-universal-closed-loop-g1-contract.md](work/evidence/evidence-universal-closed-loop-g1-contract.md) | evidence | passed | 2026-08-28 | - | - |
 | [work/evidence/evidence-universal-closed-loop-g2-engine.md](work/evidence/evidence-universal-closed-loop-g2-engine.md) | - | passed | - | - | - |
 | [work/evidence/evidence-universal-closed-loop-g3-integration.md](work/evidence/evidence-universal-closed-loop-g3-integration.md) | - | passed | - | - | - |
-| [work/evidence/evidence-universal-closed-loop-g4-recovery.md](work/evidence/evidence-universal-closed-loop-g4-recovery.md) | - | passed (local candidate); gate remains open for exact-candidate CI | - | - | - |
+| [work/evidence/evidence-universal-closed-loop-g4-recovery.md](work/evidence/evidence-universal-closed-loop-g4-recovery.md) | - | passed | - | - | - |
 | [work/evidence/evidence-w1-dev-smb-access.md](work/evidence/evidence-w1-dev-smb-access.md) | evidence | complete | 2026-08-24 | none | - |
 | [work/evidence/evidence-windows-console-sandbox-verification-v0-29-4.md](work/evidence/evidence-windows-console-sandbox-verification-v0-29-4.md) | - | - | - | - | - |
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |

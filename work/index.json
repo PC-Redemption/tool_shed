@@ -3221,7 +3221,7 @@
       "path": "work/evidence/evidence-universal-closed-loop-g4-recovery.md",
       "produces": null,
       "project_map": null,
-      "status": "passed (local candidate); gate remains open for exact-candidate CI",
+      "status": "passed",
       "superseded_by": null,
       "supersedes": null,
       "title": "Universal Closed-Loop G4 Recovery And Backfill Evidence",

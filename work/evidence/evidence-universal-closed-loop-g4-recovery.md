@@ -1,6 +1,6 @@
 # Universal Closed-Loop G4 Recovery And Backfill Evidence
 
-Status: passed (local candidate); gate remains open for exact-candidate CI
+Status: passed
 Evidence ID: EVID-CLOSED-G4-RECOVERY
 Gate: G4-RECOVERY-BACKFILL-PROVEN
 Campaign: qualify-universal-reconciliation-backfill-and-recovery
@@ -90,4 +90,9 @@ failure was again Windows/Python 3.11 shard 7/7: all selected tests completed su
 94 seconds. `CHG-CLOSED-005` retains every `--help` exit-code and nonmutation assertion while using
 a bounded eight-worker pool for those independent probes. Locally, the focused smoke fell from
 2.152 to 0.539 seconds and the entire 52-test shard passed in 4.099 seconds against the unchanged
-60-second release budget. The exact cross-platform rerun remains mandatory.
+60-second release budget. The exact push workflow for commit
+`bf7244a20d5ac1d2f652de096b7558baa431411b` completed with `success` as GitHub run
+`33213747056`. Its Ubuntu/Windows and Python 3.11/3.x matrix passed after the single failed Windows
+job was rerun; that rerun passed the unchanged 60-second validation budget. This closes the
+exact-candidate portability condition without changing the qualified behavior or weakening the
+release budget.
