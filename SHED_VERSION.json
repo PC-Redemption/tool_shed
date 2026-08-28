@@ -10,7 +10,7 @@
     "adapters/codex-app-server-config.json": "d79964bc2371a39d50b7bcad534af133564e55bbf491baf4f3031b36e01b7e49",
     "adapters/codex-app-server-qualifications.json": "995ccd3bea135448b316045ea240c10d272f4c7e2ff65085111e0380cef947c1",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "8740a4e32669926329bf29a359b0d382eb4892761fa433d91f4f1f54445d055f",
+    "adapters/codex-skill-releases.json": "ce16434d40fde2a532c3756a29da62e07346b6cfb0a833b66c57e10d374183bd",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "a16e9afbc2733b2c01b113df3f3a07fda1630b80b5a97476896123ee03bc22d2",
     "docs/codex-app-server-alpha-requalification-2026-08-24.md": "be240e9b4b63db13689c69c9fec9a870627fc39a85d5176ee4c6ce6ad256721c",
@@ -51,7 +51,7 @@
     "schemas/completion-watcher/v1/watch-descriptor.schema.json": "e6b54939fb06111b7a9f687ceb9be281a9e8dc389bdc28a72d9ee3078eb5fe4f",
     "schemas/completion-watcher/v1/watch-record.schema.json": "7455db4c2e7a271ec8efbd7b0828143a141dcd1daa55d25540132ab0b53a5b1d",
     "schemas/hybrid-state/v1/checkpoint.schema.json": "c92f8910f815fb3f46f6d51ba7e7fc8752f3d9878a1b5a212198503a2d7dafff",
-    "schemas/hybrid-state/v1/hpt2-assigned-ids.json": "fdef3bdcee68f5d66181f4f8570b1d44cab4b52367ef129f2c6e0db2a0bb9dfe",
+    "schemas/hybrid-state/v1/hpt2-assigned-ids.json": "07f68e07faa8abc11dc069e7119fff4a408d18f0dc343cf7f3f55f17a6aac4ae",
     "schemas/hybrid-state/v1/maintainer-assigned-ids.json": "033651f1d422cdf99d70da3d3ef9495d0e5feaa0dd1d7cb1fb6f9311a4551f63",
     "scripts/app_server_control.py": "5e46eb5869f7d4fb91f1875e662f8d29e01a3251aeb46daf30c0c44ad6838210",
     "scripts/app_server_dispatch.py": "7989d4a6b0ce42a591be3cf6293ef8570567679158277dfef110df87a95c04f7",
@@ -102,8 +102,8 @@
     "scripts/update_shed_manifest.py": "cfa6a8692d8529ec4352df5d05610f0422a4a6a0d98caae315755372e142d752",
     "scripts/update_snapshot.py": "e13c411ebad44d30616054cae5b02c9ff45b167426d43090ca021d31d6af8d18",
     "scripts/update_work_index.py": "4c5430a8422ddf2aa444653c2d2aaa8680b93e3331d277391b9858139617086e",
-    "scripts/validate_snapshot_client.py": "6dc494f91e02ef3203f20eff243321fa6b5e6ce72ffac8146af58fc4d584045b",
-    "scripts/validate_tool_shed.py": "b504ac71c8545610518fe131ccd7933ca8a8b3dba86778d9e39f9e1572c91a64",
+    "scripts/validate_snapshot_client.py": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f",
+    "scripts/validate_tool_shed.py": "e281c353dd828d5639f9ac0e4112bc39cf1082aee84af800d9af4a774375d6d9",
     "scripts/work_level_config.py": "d482693c0f4deb547e90855cff7d3d5d5d320cbb2bdae7c8c5a3159d476743ae",
     "scripts/work_tree.py": "84245e2d6441556ffd417ec884bdb4cdd727520cb3d10e2fdcfd5459c773eb8e",
     "scripts/workspace_preflight.py": "d9482b21dc552c9ce73ee1395d23ea6bdd3646fcf3cd904b51937f47d3bab271",
@@ -162,34 +162,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Prevent installed Python CLI execution from generating snapshot bytecode; preserve strict disconnected-client integrity.",
-  "release_commit": "b3fb3663384b10119ab6bccc6b1236dce88cae4c",
-  "release_qualification": {
-    "attested_at": "2026-08-28T19:45:21Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "6dc494f91e02ef3203f20eff243321fa6b5e6ce72ffac8146af58fc4d584045b"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "b504ac71c8545610518fe131ccd7933ca8a8b3dba86778d9e39f9e1572c91a64"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "abb54ae3308bb27f68499e4700e87189d4e99790decba4cbe25ef53ef4faa964"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "b3fb3663384b10119ab6bccc6b1236dce88cae4c"
-  },
-  "release_tag": "v0.34.1",
-  "released_at": "2026-08-28T19:45:21Z",
-  "shed_version": "0.34.1",
+  "notes": "Keep installed CLI execution and validator compilation bytecode-free; preserve strict disconnected-client integrity.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.34.2",
+  "released_at": null,
+  "shed_version": "0.34.2",
   "updated_at": "2026-08-28",
   "updater_mutation_paths": [
     {

@@ -2,9 +2,9 @@
   "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
   "baseline": {
     "created_at": "2026-08-28T16:26:19Z",
-    "source_commit": "700bfa8af3ceb5e7d92be97dc9c9a942e9098afe",
-    "source_digest": "cf8d1770e3a839c8c1cfb2de17c6460cca2d6c7201c80bcce462efa70b71bfb5",
-    "updated_at": "2026-08-28T19:42:54Z"
+    "source_commit": "04d7c61cd928b2dbb0a88b77ea0aebce0a9c762e",
+    "source_digest": "0378e47f9c88a768ae19cfd6c95217b5ea6b6b7fcad9ff7070d122787e989f8b",
+    "updated_at": "2026-08-28T19:50:06Z"
   },
   "bindings": [
     {
@@ -50,7 +50,7 @@
     {
       "path": "scripts/validate_tool_shed.py",
       "role": "release-validator",
-      "sha256": "b504ac71c8545610518fe131ccd7933ca8a8b3dba86778d9e39f9e1572c91a64"
+      "sha256": "e281c353dd828d5639f9ac0e4112bc39cf1082aee84af800d9af4a774375d6d9"
     },
     {
       "path": "work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md",
@@ -334,6 +334,28 @@
       "source_commit": "700bfa8af3ceb5e7d92be97dc9c9a942e9098afe",
       "summary": "Prevent installed CLI bytecode from invalidating strict snapshots",
       "supersedes": []
+    },
+    {
+      "authorization": "Owner-approved end-to-end Campaign 108 disconnected hybrid production canary evidence-response loop on 2026-08-28",
+      "decision_ids": [
+        "DEC-HYBRID-012"
+      ],
+      "evidence_to_rerun": [
+        "EVID-G1-BOOTSTRAP",
+        "EVID-G4-CANARY",
+        "EVID-G4-RELEASE"
+      ],
+      "id": "CHG-HYBRID-014",
+      "rationale": "The repaired client canary proved that explicit py_compile calls bypass import-time bytecode suppression and created tracked-snapshot cache artifacts after a successful smoke. Both validators now compile to external temporary destinations, and tests remove inherited bytecode environment controls so nonmutation is proved directly.",
+      "recorded_at": "2026-08-28T19:48:50Z",
+      "requirement_ids": [
+        "REQ-HYBRID-001",
+        "REQ-HYBRID-010",
+        "REQ-HYBRID-011"
+      ],
+      "source_commit": "04d7c61cd928b2dbb0a88b77ea0aebce0a9c762e",
+      "summary": "Compile validator targets outside disconnected snapshots",
+      "supersedes": []
     }
   ],
   "decisions": [
@@ -430,7 +452,8 @@
         "CHG-HYBRID-005",
         "CHG-HYBRID-008",
         "CHG-HYBRID-009",
-        "CHG-HYBRID-013"
+        "CHG-HYBRID-013",
+        "CHG-HYBRID-014"
       ],
       "gate": "G1-DESIGN-FROZEN",
       "id": "EVID-G1-BOOTSTRAP",
@@ -449,7 +472,7 @@
         },
         {
           "path": "scripts/validate_tool_shed.py",
-          "sha256": "b504ac71c8545610518fe131ccd7933ca8a8b3dba86778d9e39f9e1572c91a64"
+          "sha256": "e281c353dd828d5639f9ac0e4112bc39cf1082aee84af800d9af4a774375d6d9"
         },
         {
           "path": "work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md",
@@ -461,7 +484,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T19:42:54Z"
+      "verified_at": "2026-08-28T19:49:49Z"
     },
     {
       "covers_change_ids": [
@@ -601,7 +624,8 @@
         "CHG-HYBRID-007",
         "CHG-HYBRID-009",
         "CHG-HYBRID-010",
-        "CHG-HYBRID-013"
+        "CHG-HYBRID-013",
+        "CHG-HYBRID-014"
       ],
       "gate": "G2-SUBSTRATE-LOOP-PROVEN",
       "id": "EVID-G2-HPT2-PARITY",
@@ -620,7 +644,7 @@
         },
         {
           "path": "schemas/hybrid-state/v1/hpt2-assigned-ids.json",
-          "sha256": "fdef3bdcee68f5d66181f4f8570b1d44cab4b52367ef129f2c6e0db2a0bb9dfe"
+          "sha256": "07f68e07faa8abc11dc069e7119fff4a408d18f0dc343cf7f3f55f17a6aac4ae"
         },
         {
           "path": "tests/test_outcome_reconciliation.py",
@@ -636,7 +660,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T19:42:54Z"
+      "verified_at": "2026-08-28T19:50:06Z"
     },
     {
       "covers_change_ids": [
@@ -729,14 +753,15 @@
         "CHG-HYBRID-010",
         "CHG-HYBRID-011",
         "CHG-HYBRID-012",
-        "CHG-HYBRID-013"
+        "CHG-HYBRID-013",
+        "CHG-HYBRID-014"
       ],
       "gate": "G4-RELEASE-CANARY-PROVEN",
       "id": "EVID-G4-RELEASE",
       "references": [
         {
           "path": "SHED_VERSION.json",
-          "sha256": "ae2f7d28b927c3a7c958c5c7c841816415acb9e98f88e8b2ea3c81905c347444"
+          "sha256": "5c92de892c70d4b3a7c9bc26872df85f09f9838771a6a34eac0c8820cb11e006"
         },
         {
           "path": "docs/releasing.md",
@@ -756,7 +781,7 @@
         },
         {
           "path": "tests/test_scripts.py",
-          "sha256": "aa9add3cfc668b7e015549c8a9ce3fcb8ef5cd8479f5e3be6f564ba84a9c6c36"
+          "sha256": "aeee35dce81fdab80bf4d09c48082736aeafe5f4c96b82b835ab3e0ebc1c8bd0"
         },
         {
           "path": "work/evidence/evidence-hybrid-sqlite-release-prerequisites.md",
@@ -774,7 +799,8 @@
       "covers_change_ids": [
         "CHG-HYBRID-005",
         "CHG-HYBRID-008",
-        "CHG-HYBRID-013"
+        "CHG-HYBRID-013",
+        "CHG-HYBRID-014"
       ],
       "gate": "G4-RELEASE-CANARY-PROVEN",
       "id": "EVID-G4-CANARY",
@@ -1024,7 +1050,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "d1e49868b0b31a28",
+  "state_token": "23e40d7fe3af3bc2",
   "upgrade_targets": [
     {
       "id": "UPG-HYBRID-MAINTAINER",

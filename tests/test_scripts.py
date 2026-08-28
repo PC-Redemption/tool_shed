@@ -836,6 +836,15 @@ for raw in sys.stdin:
                 return ignored
 
             shutil.copytree(ROOT, snapshot, ignore=ignore)
+            manifest_path = snapshot / "SHED_VERSION.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest["release_commit"] = "0" * 40
+            manifest["released_at"] = "2026-01-01T00:00:00Z"
+            manifest["release_qualification"] = None
+            manifest_path.write_text(
+                json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
             environment = dict(os.environ)
             environment.pop("PYTHONDONTWRITEBYTECODE", None)
             environment.pop("PYTHONPYCACHEPREFIX", None)
@@ -843,7 +852,6 @@ for raw in sys.stdin:
                 path
                 for path in sorted((snapshot / "scripts").glob("*.py"))
                 if 'if __name__ == "__main__"' in path.read_text(encoding="utf-8")
-                and path.name != "validate_snapshot_client.py"
             ]
 
             for entrypoint in entrypoints:
@@ -892,12 +900,16 @@ for raw in sys.stdin:
                 if path.is_file()
             }
 
+            environment = dict(os.environ)
+            environment.pop("PYTHONDONTWRITEBYTECODE", None)
+            environment.pop("PYTHONPYCACHEPREFIX", None)
             result = run_script(
                 str(snapshot / "scripts" / "validate_tool_shed.py"),
                 "--profile",
                 "focused",
                 cwd=snapshot,
                 check=False,
+                env=environment,
             )
             after = {
                 path.relative_to(snapshot).as_posix(): path.read_bytes()

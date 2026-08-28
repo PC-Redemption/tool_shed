@@ -130,8 +130,15 @@ def source_fingerprint() -> dict[str, str]:
 
 def compile_python() -> None:
     step("compile python")
-    for path in sorted((ROOT / "scripts").glob("*.py")) + sorted((ROOT / "tests").glob("*.py")):
-        py_compile.compile(str(path), doraise=True)
+    paths = sorted((ROOT / "scripts").glob("*.py")) + sorted((ROOT / "tests").glob("*.py"))
+    with tempfile.TemporaryDirectory(prefix="tool-shed-compile-") as temporary:
+        compile_root = Path(temporary)
+        for index, path in enumerate(paths):
+            py_compile.compile(
+                str(path),
+                cfile=str(compile_root / f"{index}.pyc"),
+                doraise=True,
+            )
 
 
 def check_shed_manifest() -> None:

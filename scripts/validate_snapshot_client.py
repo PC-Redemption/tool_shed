@@ -44,8 +44,14 @@ def main() -> int:
     manifest = json.loads((ROOT / "SHED_VERSION.json").read_text(encoding="utf-8"))
     if not manifest.get("release_commit") or not manifest.get("released_at"):
         raise SystemExit("client smoke requires published release provenance")
-    for name in CRITICAL_SCRIPTS:
-        py_compile.compile(str(ROOT / "scripts" / name), doraise=True)
+    with tempfile.TemporaryDirectory(prefix="tool-shed-client-compile-") as temporary:
+        compile_root = Path(temporary)
+        for index, name in enumerate(CRITICAL_SCRIPTS):
+            py_compile.compile(
+                str(ROOT / "scripts" / name),
+                cfile=str(compile_root / f"{index}.pyc"),
+                doraise=True,
+            )
 
     run(
         [
