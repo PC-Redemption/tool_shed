@@ -1,0 +1,107 @@
+{
+  "kind": "tool-shed-maintainer-assigned-ids",
+  "project_id": "817b6358-b2f5-48fd-bb66-bd80f936faca",
+  "schema_version": 1,
+  "sources": [
+    {
+      "artifact_id": "65538b72-8a77-4c4d-ba7c-693137779b07",
+      "import_id": "1d0e0d2f-0824-45aa-908d-5235d1fef3b3",
+      "path": "work/evidence/bootstrap-closure-hybrid-sqlite-operational-state.json"
+    },
+    {
+      "artifact_id": "c3f2052c-2011-4f6a-b79c-3ff01bc6e10b",
+      "import_id": "67238d0a-a119-444c-acae-aae0eec511c2",
+      "path": "docs/hybrid-sqlite-state-v1-contract.md"
+    },
+    {
+      "artifact_id": "44345c08-9155-4acc-9a0d-235779ef79f3",
+      "import_id": "a8d15321-6662-4ec4-878d-98756dab7347",
+      "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md"
+    },
+    {
+      "artifact_id": "ce87f685-72e2-4c65-a85c-14ac54ef4b79",
+      "import_id": "9503cb7f-0032-4001-a2e8-fb01e7cda712",
+      "path": "work/ideas/idea-sqlite-backed-tool-shed-operational-state.md"
+    },
+    {
+      "artifact_id": "e14b547c-2656-4042-9f82-1763f70341a5",
+      "import_id": "7cf21c4f-5737-4845-9091-71bc791b620e",
+      "path": "scripts/outcome_reconciliation.py"
+    },
+    {
+      "artifact_id": "797b1434-d24e-42bd-a9b7-54f52e8bd74c",
+      "import_id": "0e228975-0897-408c-86a2-fea234ccafd2",
+      "path": "tests/test_outcome_reconciliation.py"
+    },
+    {
+      "artifact_id": "bb506b8c-5f68-48c7-993b-b9d59487b1b8",
+      "import_id": "f357c85e-75b3-4ecf-b0c9-c3b5903c6bb3",
+      "path": "docs/hybrid-sqlite-state.md"
+    },
+    {
+      "artifact_id": "40178b41-630f-4b67-a4cb-b243b240af3d",
+      "import_id": "9001dfd1-8785-42f0-8672-4e1e7e3e2257",
+      "path": "docs/outcome-reconciliation.md"
+    },
+    {
+      "artifact_id": "4a82cb8a-7413-4d89-94ec-607f68cfda29",
+      "import_id": "042b1b2d-b57a-4efb-870d-6ef355b1c6ff",
+      "path": "scripts/hybrid_state.py"
+    },
+    {
+      "artifact_id": "eb192a17-6a1c-4088-9c2a-f46688c4c18d",
+      "import_id": "5734513c-0d63-4437-89c4-01dd4fe011c9",
+      "path": "scripts/hybrid_state_schema.py"
+    },
+    {
+      "artifact_id": "10c34ae2-cc0c-4cfb-b45d-078faa2f8a27",
+      "import_id": "b9f9ef8f-a4ed-4723-b2da-0bc660ee61e4",
+      "path": "tests/test_hybrid_state.py"
+    },
+    {
+      "artifact_id": "d0377b75-880a-4572-af9d-dfb8bb0736d3",
+      "import_id": "dd9e75bf-1b3f-4e38-b649-3267864086be",
+      "path": "schemas/hybrid-state/v1/checkpoint.schema.json"
+    },
+    {
+      "artifact_id": "e408b57a-e95a-4cf5-926c-99528a1e2e3f",
+      "import_id": "1ecf184b-b332-4d85-ad86-cb3aad883ba5",
+      "path": "schemas/hybrid-state/v1/hpt2-assigned-ids.json"
+    },
+    {
+      "artifact_id": "c194a517-01d8-458e-b3b4-8ba62ab94072",
+      "import_id": "dbc2baa8-0b1d-4fda-a24a-c7f09eb5e136",
+      "path": "schemas/hybrid-state/v1/maintainer-assigned-ids.json"
+    },
+    {
+      "artifact_id": "4fd02196-30f5-41e4-82d9-90ae2cdb5c20",
+      "import_id": "40d03ed1-7383-4696-a5fc-bbbdd232414e",
+      "path": "work/maps/map-hybrid-sqlite-operational-state.md"
+    },
+    {
+      "artifact_id": "6ea83b0e-b398-4e42-955a-465f630b7ca7",
+      "import_id": "9bfab977-f049-44c4-ac88-36eab75cdafc",
+      "path": "work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md"
+    },
+    {
+      "artifact_id": "9fb86c04-8e14-4da0-9ff5-d07fa7627a22",
+      "import_id": "6d6645cd-8d5f-4935-aa04-58e1418d88de",
+      "path": "work/evidence/evidence-hybrid-sqlite-efficiency.md"
+    },
+    {
+      "artifact_id": "e0efdf4f-2f91-4a57-a0a9-6f16133f6802",
+      "import_id": "e6499fad-e436-4eb1-b5b8-df9699c97b1c",
+      "path": "work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md"
+    },
+    {
+      "artifact_id": "0ac49981-63a7-4814-bd8e-61622837cbf4",
+      "import_id": "7ae3bd82-5175-4613-8ecc-272dad18f0bf",
+      "path": "work/evidence/evidence-hybrid-sqlite-hpt2-parity.md"
+    },
+    {
+      "artifact_id": "b16ee9b0-770c-492f-831f-417c6b8f0d8b",
+      "import_id": "e09d10e7-09a2-49ee-bd59-71dae83fcce8",
+      "path": "work/evidence/evidence-hybrid-sqlite-substrate.md"
+    }
+  ]
+}

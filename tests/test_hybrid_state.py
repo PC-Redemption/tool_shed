@@ -139,6 +139,48 @@ class HybridStateTests(unittest.TestCase):
         for path, content in originals.items():
             self.assertEqual((self.workspace / path).read_bytes(), content)
 
+    def test_assigned_import_ids_and_guarded_hybrid_cutover(self) -> None:
+        self.initialize()
+        assignments = {
+            "work/ideas/idea-one.md": {
+                "artifact_id": str(uuid.uuid4()),
+                "import_id": str(uuid.uuid4()),
+            },
+            "work/maps/map-two.md": {
+                "artifact_id": str(uuid.uuid4()),
+                "import_id": str(uuid.uuid4()),
+            },
+        }
+        imported = hybrid_state.import_files(
+            self.workspace,
+            [Path(item) for item in assignments],
+            project_binding=self.binding,
+            assigned_ids=assignments,
+        )
+        self.assertEqual(
+            {item["artifact_id"] for item in imported["result"]},
+            {item["artifact_id"] for item in assignments.values()},
+        )
+        checkpoint = hybrid_state.write_checkpoint(
+            self.workspace,
+            project_binding=self.binding,
+        )
+        cutover = hybrid_state.activate_hybrid_mode(
+            self.workspace,
+            project_binding=self.binding,
+            expected_checkpoint_digest=checkpoint["digest"],
+        )
+        self.assertEqual(cutover["result"]["to"], "hybrid")
+        self.assertEqual(hybrid_state.audit(self.workspace)["storage_mode"], "hybrid")
+        self.assertFalse(hybrid_state.legacy_write_check(self.workspace, "artifact.id")["allowed"])
+        self.assertTrue(hybrid_state.legacy_write_check(self.workspace, "docs.body")["allowed"])
+        with self.assertRaisesRegex(hybrid_state.HybridStateError, "requires shadow mode"):
+            hybrid_state.activate_hybrid_mode(
+                self.workspace,
+                project_binding=self.binding,
+                expected_checkpoint_digest=checkpoint["digest"],
+            )
+
     def test_unmanaged_write_and_schema_bypass_are_detected(self) -> None:
         self.initialize()
         imported = self.import_pair()

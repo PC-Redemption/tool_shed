@@ -1,18 +1,18 @@
 # Program Roadmap: Hybrid SQLite Operational State
 
-Status: superseded
+Status: executing
 Type: program-roadmap
 Updated: 2026-08-28
-Next Action: none
+Next Action: execute the first ready roadmap campaign through ts: next
 Roadmap ID: hybrid-sqlite-operational-state
-Revision: 1
+Revision: 2
 Source Project Map: work/maps/map-hybrid-sqlite-operational-state.md
-Source State Token: 981bd6568d9a9e4b
-Proposal Token: d9c7a9c466390aa8
+Source State Token: 73354cf7c5d81b3d
+Proposal Token: 164f34fcf9d1d22d
 Approved: 2026-08-28
 Current Milestone: M1-BOOTSTRAP-DESIGN-FROZEN
-Supersedes: none
-Superseded By: work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md
+Supersedes: work/roadmaps/roadmap-hybrid-sqlite-operational-state.md
+Superseded By: none
 
 ## Roadmap Definition
 
@@ -1020,6 +1020,36 @@ Superseded By: work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md
       "state_token": "900dd45a8e3735df"
     },
     {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "mapped",
+      "milestone": "M1-BOOTSTRAP-DESIGN-FROZEN",
+      "path": "work/00-campaigns/completed/103-establish-hybrid-bootstrap-closure-and-design-contract.md",
+      "phase": "P1-BOOTSTRAP-DESIGN",
+      "state_token": "d19ce7f116546456"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "mapped",
+      "milestone": "M2-SUBSTRATE-HPT2-PROVEN",
+      "path": "work/00-campaigns/completed/104-implement-minimum-sqlite-operational-substrate.md",
+      "phase": "P2-SUBSTRATE-LOOP",
+      "state_token": "3ad32c790595ed6b"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type campaign; Status complete",
+      "mapping_state": "mapped",
+      "milestone": "M2-SUBSTRATE-HPT2-PROVEN",
+      "path": "work/00-campaigns/completed/105-implement-and-qualify-hpt2-closed-loop-vertical-slice.md",
+      "phase": "P2-SUBSTRATE-LOOP",
+      "state_token": "e9d9676b93ece3c8"
+    },
+    {
       "classification": "remaining",
       "conflicts": [],
       "evidence": "Type campaign; Status deferred",
@@ -1280,6 +1310,46 @@ Superseded By: work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md
       "path": "work/evidence/evidence-human-planning-mechanism-evaluation.md",
       "phase": null,
       "state_token": "81fffad766f53803"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type unknown; Status passed",
+      "mapping_state": "mapped",
+      "milestone": "M2-SUBSTRATE-HPT2-PROVEN",
+      "path": "work/evidence/evidence-hybrid-sqlite-efficiency.md",
+      "phase": "P2-SUBSTRATE-LOOP",
+      "state_token": "02e30be7bf3519f7"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type validation-evidence; Status passed",
+      "mapping_state": "mapped",
+      "milestone": "M1-BOOTSTRAP-DESIGN-FROZEN",
+      "path": "work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md",
+      "phase": "P1-BOOTSTRAP-DESIGN",
+      "state_token": "49586dc8107d1f5a"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type unknown; Status passed",
+      "mapping_state": "mapped",
+      "milestone": "M2-SUBSTRATE-HPT2-PROVEN",
+      "path": "work/evidence/evidence-hybrid-sqlite-hpt2-parity.md",
+      "phase": "P2-SUBSTRATE-LOOP",
+      "state_token": "1baa94be8d1ee4b9"
+    },
+    {
+      "classification": "completed",
+      "conflicts": [],
+      "evidence": "Type unknown; Status passed",
+      "mapping_state": "mapped",
+      "milestone": "M2-SUBSTRATE-HPT2-PROVEN",
+      "path": "work/evidence/evidence-hybrid-sqlite-substrate.md",
+      "phase": "P2-SUBSTRATE-LOOP",
+      "state_token": "b7ef0f14b9a8be32"
     },
     {
       "classification": "uncertain",
@@ -1690,8 +1760,8 @@ Superseded By: work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md
     {
       "classification": "completed",
       "conflicts": [],
-      "evidence": "Promoted source Idea Brief; direction captured by the approved hybrid project map and M1 design contract",
-      "mapping_state": "planned",
+      "evidence": "Type idea-brief; Status promoted",
+      "mapping_state": "mapped",
       "milestone": "M1-BOOTSTRAP-DESIGN-FROZEN",
       "path": "work/ideas/idea-sqlite-backed-tool-shed-operational-state.md",
       "phase": "P1-BOOTSTRAP-DESIGN",
@@ -1700,8 +1770,8 @@ Superseded By: work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md
     {
       "classification": "active",
       "conflicts": [],
-      "evidence": "Exploring closed-loop Idea Brief; its HPT2 origin-to-product reconciliation is the M2 vertical slice",
-      "mapping_state": "planned",
+      "evidence": "Type idea-brief; Status exploring",
+      "mapping_state": "mapped",
       "milestone": "M2-SUBSTRATE-HPT2-PROVEN",
       "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
       "phase": "P2-SUBSTRATE-LOOP",
@@ -1740,11 +1810,11 @@ Superseded By: work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md
     {
       "classification": "active",
       "conflicts": [],
-      "evidence": "Approved source project map; defines the staged hybrid authority, qualification, rollout, and safety sequence",
-      "mapping_state": "planned",
-      "milestone": "M1-BOOTSTRAP-DESIGN-FROZEN",
+      "evidence": "Type project-map; Status approved",
+      "mapping_state": "mapped",
+      "milestone": "M3-MAINTAINER-HYBRID-PROVEN",
       "path": "work/maps/map-hybrid-sqlite-operational-state.md",
-      "phase": "P1-BOOTSTRAP-DESIGN",
+      "phase": "P3-MAINTAINER-CONVERSION",
       "state_token": "291df5e7273a14d9"
     },
     {
@@ -2083,13 +2153,13 @@ Superseded By: work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md
     },
     {
       "campaign_id": "implement-and-qualify-hpt2-closed-loop-vertical-slice",
-      "completion_gate": "HPT2 source accounting, outcome contract, material changes, product evidence, exceptions, and final verdict reconcile end to end; database import reproduces the bootstrap result in a fresh clone; byte and semantic parity, query/capsule correctness, 70% median context reduction, and 5% fallback limits pass; G2 evidence is complete.",
+      "completion_gate": "HPT2 source accounting, outcome contract, material changes, product evidence, explicit historical exceptions, and truthful final verdict reconcile end to end; database import reproduces the bootstrap result in a fresh clone; byte and semantic parity, query/capsule correctness, 70% median context reduction, and 5% fallback limits pass; G2 evidence is complete.",
       "decision": "none",
       "depends_on": [
         "implement-minimum-sqlite-operational-substrate"
       ],
       "milestone": "M2-SUBSTRATE-HPT2-PROVEN",
-      "outcome": "HPT2 is imported without invented history and produces a complete idea-to-product reconciliation whose requirement, material-change, evidence, exception, and verdict results match the independent bootstrap record.",
+      "outcome": "HPT2 is imported without invented history and produces a terminal, reconciled origin-to-product report whose truthful partial verdict, material changes, evidence, exceptions, and requirement accounting match the independent bootstrap record.",
       "primary_focus_areas": [
         "campaign-lifecycle"
       ],
@@ -2176,9 +2246,12 @@ Superseded By: work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md
     "Use HPT2 as the first historical closed-loop qualification workload.",
     "Require at least 70% median supplied-context or estimated-input-token reduction, semantic and evidence parity, and no more than 5% explained full-scan fallback for clean steady-state state-heavy operations before expanding database authority.",
     "Rehearse the maintainer conversion in a disposable clone, make the live maintainer the first authoritative hybrid workspace, publish and synchronize only after qualification, then require one disconnected client canary.",
-    "Do not make GitHub or gh a production runtime dependency."
+    "Do not make GitHub or gh a production runtime dependency.",
+    "Schema version 1, deterministic checkpoint serialization, trigger accounting, protocol 4, reverse-export downgrade rules, HPT2 inventory treatment, and efficiency fixtures are settled by the G1 contract and verified bootstrap baseline.",
+    "HPT2 qualifies the closed-loop mechanism as lifecycle terminal and reconciled with a truthful partial verdict; the absent original HPT2 idea, accepted-change ledger, target-product manifest, and acceptance record remain explicit historical exceptions rather than invented satisfied evidence.",
+    "The M2 substrate and HPT2 fixture achieved semantic parity, zero unexplained fallback, and 99.975 percent median supplied-context reduction without activating live database authority."
   ],
-  "desired_outcome": "Tool Shed uses a portable hybrid SQLite/file authority model for minimum operational state and one complete closed-loop outcome, with immutable IDs, guarded transactions, deterministic checkpoints, exact recovery, materially lower state context, and a maintainer-first upgrade path that preserves all existing data.",
+  "desired_outcome": "Tool Shed uses a portable hybrid SQLite/file authority model for minimum operational state and one fully executed closed-loop reconciliation with a truthful partial product verdict, immutable IDs, guarded transactions, deterministic checkpoints, exact recovery, materially lower state context, and a maintainer-first upgrade path that preserves all existing data.",
   "gates": [
     {
       "evidence_required": true,
@@ -2235,7 +2308,7 @@ Superseded By: work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md
         "M1-BOOTSTRAP-DESIGN-FROZEN"
       ],
       "id": "M2-SUBSTRATE-HPT2-PROVEN",
-      "outcome": "The minimum SQLite substrate and HPT2 closed-loop vertical slice reproduce the bootstrap requirement/change/evidence/verdict history, preserve byte and semantic fidelity, rebuild from tracked portable state, and meet the approved context-efficiency contract.",
+      "outcome": "The minimum SQLite substrate and HPT2 closed-loop vertical slice reproduce the bootstrap requirement/change/evidence/exception/verdict history, truthfully preserve the partial historical verdict, rebuild from tracked portable state, and meet the approved context-efficiency contract.",
       "phase": "P2-SUBSTRATE-LOOP"
     },
     {
@@ -2285,17 +2358,12 @@ Superseded By: work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md
     }
   ],
   "unknowns": [
-    "Exact entity and field authority contract for schema version 1.",
-    "Exact deterministic checkpoint/event serialization and semantic merge-conflict policy.",
-    "Bootstrap closure manifest serialization and the transition point to database authority.",
-    "SQLite journaling, concurrency, trigger attribution, structural change payload, and schema-digest details across supported platforms.",
-    "New minimum updater protocol version, backup retention, soak duration, and downgrade compatibility window.",
-    "Exact HPT2 evidence inventory and handling for incomplete or ambiguous historical records.",
-    "Representative small, typical, and large fixtures and the documented token-estimation method when provider counts are unavailable."
+    "M3 must record the exact sanitized external-archive identity, retention disposition, and soak observation window in durable evidence before live cutover.",
+    "M4 requires a separately authorized release version and exact disconnected client canary target before external mutation."
   ]
 }
 ```
 
 ## Revision History
 
-- Revision 1: superseded on 2026-08-28.
+- Revision 2: executing on 2026-08-28.

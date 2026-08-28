@@ -2,9 +2,9 @@
   "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
   "baseline": {
     "created_at": "2026-08-28T16:26:19Z",
-    "source_commit": "17d43401def97d7fa928de42e5edccf9372d1842",
-    "source_digest": "d6ef45c0e3fa23dbabee77b5d0dba4b7d22adcd4b6dabcfff2442c320a7ba1bb",
-    "updated_at": "2026-08-28T17:12:43Z"
+    "source_commit": "b34f5b36cf80a331a46385eb8c6208c052f6c5c4",
+    "source_digest": "1138aa47122132b998f973a0b7066c5587c85f7acf01c72b8d83783da5eac21d",
+    "updated_at": "2026-08-28T17:37:10Z"
   },
   "bindings": [
     {
@@ -20,12 +20,12 @@
     {
       "path": "work/roadmaps/roadmap-hybrid-sqlite-operational-state.md",
       "role": "program-roadmap",
-      "sha256": "58b329a0ccab858aa0c5a6ba23f8eabbe119a278c9c3877a9da3867d30b98573"
+      "sha256": "29d0b2e8f5f932b944984860997cdb1bf250af54961686a58a4eaf7bf97f4f62"
     },
     {
       "path": "docs/hybrid-sqlite-state-v1-contract.md",
       "role": "authority-contract",
-      "sha256": "9687551969afc65542457ca0bbee7ac4b44ffc59a9487fdeeaf04b991374a6cb"
+      "sha256": "42f3aecb2ad5417c8884ca6b4cab3c868ee7ee7128a298eff13b6166badc9357"
     },
     {
       "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
@@ -110,6 +110,31 @@
       ],
       "source_commit": "582b250f7a401201db5aa653fe7b80d1a08c889f",
       "summary": "Preallocate and checkpoint the newest recovery-ledger identities",
+      "supersedes": []
+    },
+    {
+      "authorization": "Owner-directed end-to-end Campaign 106 execution on 2026-08-28",
+      "decision_ids": [
+        "DEC-HYBRID-003",
+        "DEC-HYBRID-006",
+        "DEC-HYBRID-009",
+        "DEC-HYBRID-012"
+      ],
+      "evidence_to_rerun": [
+        "EVID-G1-CONTRACT",
+        "EVID-G2-SUBSTRATE"
+      ],
+      "id": "CHG-HYBRID-004",
+      "rationale": "M3 implementation turns the frozen no-data-loss sequence into an executable controller. Fixed first-import IDs, exact tracked/untracked/ignored inventory, an external byte-verified archive, two disposable semantic rehearsals, SQLite backup, direct-SQL and interruption recovery, worktree-lineage refusal, guarded storage-mode activation, checkpoint rebuild, legacy-writer refusal, and soak evidence prevent live cutover from relying on informal operator steps.",
+      "recorded_at": "2026-08-28T17:34:17Z",
+      "requirement_ids": [
+        "REQ-HYBRID-003",
+        "REQ-HYBRID-004",
+        "REQ-HYBRID-007",
+        "REQ-HYBRID-009"
+      ],
+      "source_commit": "b34f5b36cf80a331a46385eb8c6208c052f6c5c4",
+      "summary": "Bind maintainer conversion to fixed source IDs and an externally rehearsed cutover",
       "supersedes": []
     }
   ],
@@ -234,22 +259,23 @@
     },
     {
       "covers_change_ids": [
-        "CHG-HYBRID-003"
+        "CHG-HYBRID-003",
+        "CHG-HYBRID-004"
       ],
       "gate": "G1-DESIGN-FROZEN",
       "id": "EVID-G1-CONTRACT",
       "references": [
         {
           "path": "docs/hybrid-sqlite-state-v1-contract.md",
-          "sha256": "9687551969afc65542457ca0bbee7ac4b44ffc59a9487fdeeaf04b991374a6cb"
+          "sha256": "42f3aecb2ad5417c8884ca6b4cab3c868ee7ee7128a298eff13b6166badc9357"
         },
         {
-          "path": "work/roadmaps/roadmap-hybrid-sqlite-operational-state.md",
-          "sha256": "58b329a0ccab858aa0c5a6ba23f8eabbe119a278c9c3877a9da3867d30b98573"
+          "path": "work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md",
+          "sha256": "fb1bb04ce88633359e7e33c75e3cb2bef1ad645a9a064e5afa360d5cc05fb3fc"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T16:59:30Z"
+      "verified_at": "2026-08-28T17:34:29Z"
     },
     {
       "covers_change_ids": [
@@ -260,7 +286,7 @@
       "references": [
         {
           "path": "docs/hybrid-sqlite-state-v1-contract.md",
-          "sha256": "9687551969afc65542457ca0bbee7ac4b44ffc59a9487fdeeaf04b991374a6cb"
+          "sha256": "42f3aecb2ad5417c8884ca6b4cab3c868ee7ee7128a298eff13b6166badc9357"
         },
         {
           "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
@@ -268,7 +294,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T16:59:35Z"
+      "verified_at": "2026-08-28T17:34:43Z"
     },
     {
       "covers_change_ids": [
@@ -279,7 +305,7 @@
       "references": [
         {
           "path": "docs/hybrid-sqlite-state-v1-contract.md",
-          "sha256": "9687551969afc65542457ca0bbee7ac4b44ffc59a9487fdeeaf04b991374a6cb"
+          "sha256": "42f3aecb2ad5417c8884ca6b4cab3c868ee7ee7128a298eff13b6166badc9357"
         },
         {
           "path": "work/ideas/idea-sqlite-backed-tool-shed-operational-state.md",
@@ -287,11 +313,12 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T16:59:40Z"
+      "verified_at": "2026-08-28T17:34:50Z"
     },
     {
       "covers_change_ids": [
-        "CHG-HYBRID-003"
+        "CHG-HYBRID-003",
+        "CHG-HYBRID-004"
       ],
       "gate": "G2-SUBSTRATE-LOOP-PROVEN",
       "id": "EVID-G2-SUBSTRATE",
@@ -302,34 +329,48 @@
         },
         {
           "path": "docs/hybrid-sqlite-state-v1-contract.md",
-          "sha256": "9687551969afc65542457ca0bbee7ac4b44ffc59a9487fdeeaf04b991374a6cb"
+          "sha256": "42f3aecb2ad5417c8884ca6b4cab3c868ee7ee7128a298eff13b6166badc9357"
         },
         {
           "path": "docs/hybrid-sqlite-state.md",
-          "sha256": "6aaf1e7739a4da20b54862bef422b42a19fe21af514b4b0b04553714aad440ae"
+          "sha256": "661d33554046819a81cc250c6ad488ff2c8dcbbfbb66d10d3fb953b7622dd291"
         },
         {
           "path": "scripts/hybrid_state.py",
-          "sha256": "d5c7b6664a08b521fd3288e6ec770e84c42cc24231349b8bff4cece119941a21"
+          "sha256": "95ea52ba317548f48da88b8c73377d853560d9630997e0edf7fd40ea0b600ac5"
         },
         {
           "path": "scripts/hybrid_state_schema.py",
           "sha256": "cec17e40de30a77d38a91ed1d2fcffa06a573bf13e91361b3ca18135c525d508"
         },
         {
+          "path": "scripts/maintainer_hybrid_conversion.py",
+          "sha256": "385773d10ffae4236fc1afecf687f262b36184b60a1b6860762351d87f0f4079"
+        },
+        {
           "path": "schemas/hybrid-state/v1/checkpoint.schema.json",
           "sha256": "c92f8910f815fb3f46f6d51ba7e7fc8752f3d9878a1b5a212198503a2d7dafff"
         },
         {
+          "path": "schemas/hybrid-state/v1/maintainer-assigned-ids.json",
+          "sha256": "033651f1d422cdf99d70da3d3ef9495d0e5feaa0dd1d7cb1fb6f9311a4551f63"
+        },
+        {
           "path": "tests/test_hybrid_state.py",
-          "sha256": "b67295b673e13c61196c7233c32b0ca80c98513afcbf0edca5e660e12ff80a7e"
+          "sha256": "4e5b2c109728fe67b62d183e803522cc89d7e760bd0e37c45c98e8fb9ad9da56"
+        },
+        {
+          "path": "tests/test_maintainer_hybrid_conversion.py",
+          "sha256": "22d386467da0e6765ef19779ed763834128be937ecad2a7a3382373e5e9e0b44"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T17:12:37Z"
+      "verified_at": "2026-08-28T17:37:10Z"
     },
     {
-      "covers_change_ids": [],
+      "covers_change_ids": [
+        "CHG-HYBRID-004"
+      ],
       "gate": "G2-SUBSTRATE-LOOP-PROVEN",
       "id": "EVID-G2-HPT2-PARITY",
       "references": [
@@ -347,7 +388,7 @@
         },
         {
           "path": "schemas/hybrid-state/v1/hpt2-assigned-ids.json",
-          "sha256": "28b817091f74cd86a032b66812785bb44d7f4f78609116e0f9313f3c49084f29"
+          "sha256": "1ea654bb6b8a2d42a4d0962c4e592bbe75b8557cdd40b2ab9a996504967dfaa7"
         },
         {
           "path": "tests/test_outcome_reconciliation.py",
@@ -359,7 +400,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T17:12:11Z"
+      "verified_at": "2026-08-28T17:35:48Z"
     },
     {
       "covers_change_ids": [],
@@ -384,11 +425,11 @@
         },
         {
           "path": "docs/hybrid-sqlite-state-v1-contract.md",
-          "sha256": "9687551969afc65542457ca0bbee7ac4b44ffc59a9487fdeeaf04b991374a6cb"
+          "sha256": "42f3aecb2ad5417c8884ca6b4cab3c868ee7ee7128a298eff13b6166badc9357"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T17:12:17Z"
+      "verified_at": "2026-08-28T17:34:57Z"
     },
     {
       "covers_change_ids": [],
@@ -396,8 +437,8 @@
       "id": "EVID-G3-MAINTAINER",
       "references": [
         {
-          "path": "work/roadmaps/roadmap-hybrid-sqlite-operational-state.md",
-          "sha256": "58b329a0ccab858aa0c5a6ba23f8eabbe119a278c9c3877a9da3867d30b98573"
+          "path": "work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md",
+          "sha256": "fb1bb04ce88633359e7e33c75e3cb2bef1ad645a9a064e5afa360d5cc05fb3fc"
         }
       ],
       "status": "pending",
@@ -659,7 +700,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "5e182e3a50587add",
+  "state_token": "ca7da0f7be4d2361",
   "upgrade_targets": [
     {
       "id": "UPG-HYBRID-MAINTAINER",

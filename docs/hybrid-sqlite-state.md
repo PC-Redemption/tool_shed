@@ -1,6 +1,6 @@
 # Hybrid SQLite Operational State
 
-Status: phase-one substrate candidate
+Status: maintainer-conversion candidate
 Schema version: 1
 
 Tool Shed's phase-one hybrid state is a guarded, local SQLite substrate. It does not replace
@@ -37,7 +37,9 @@ python3 scripts/hybrid_state.py --workspace . init \
   --project-binding <hybrid-state-binding>
 python3 scripts/hybrid_state.py --workspace . audit
 python3 scripts/hybrid_state.py --workspace . import \
-  --project-binding <hybrid-state-binding> --path work/ideas/example.md
+  --project-binding <hybrid-state-binding> \
+  --assigned-ids schemas/hybrid-state/v1/maintainer-assigned-ids.json \
+  --path work/ideas/example.md
 python3 scripts/hybrid_state.py --workspace . relate \
   --project-binding <hybrid-state-binding> \
   --from-artifact <uuid> --relation produces --to-artifact <uuid> \
@@ -46,6 +48,9 @@ python3 scripts/hybrid_state.py --workspace . backup \
   --project-binding <hybrid-state-binding>
 python3 scripts/hybrid_state.py --workspace . checkpoint \
   --project-binding <hybrid-state-binding>
+python3 scripts/hybrid_state.py --workspace . cutover \
+  --project-binding <hybrid-state-binding> \
+  --expect-checkpoint <verified-shadow-checkpoint-digest>
 python3 scripts/hybrid_state.py --workspace . rebuild \
   --project-binding <hybrid-state-binding> \
   --checkpoint work/state/checkpoints/state-v1.json \
@@ -63,6 +68,11 @@ unresolved details without rewriting the source file. `relate` adds a typed immu
 run inside one managed operation with one allocated revision and database-triggered structural and
 event accounting. New public IDs are canonical UUIDv4 values. Database triggers also refuse changes
 to accepted identity, source-hash, relationship-endpoint, and historical-revision fields.
+
+The maintainer conversion uses
+`schemas/hybrid-state/v1/maintainer-assigned-ids.json` so every selected retained source artifact
+and its first import reuse the same UUIDv4 in both disposable rehearsals and the live conversion.
+An assigned ID that conflicts with existing state fails the entire managed transaction.
 
 ## Entrance Audit
 
@@ -114,3 +124,40 @@ authorization.
 The HPT2 shadow qualification and its explicit `partial`/`reconciled` historical disposition are
 documented in [`outcome-reconciliation.md`](outcome-reconciliation.md). Passing that vertical slice
 does not itself authorize the later live maintainer conversion.
+
+## Dedicated Maintainer Conversion
+
+The canonical maintainer never runs the disconnected-snapshot updater against itself. Its dedicated
+controller is `scripts/maintainer_hybrid_conversion.py`. The controller requires a clean exact
+source commit, inventories tracked, untracked, and ignored files, writes a byte-verified archive
+outside the repository, and refuses to raw-copy an existing SQLite database. SQLite backups use
+the substrate backup API.
+
+The guarded sequence is:
+
+```bash
+python3 scripts/maintainer_hybrid_conversion.py --workspace . archive \
+  --output <external>/maintainer-pre-cutover.tar.gz
+python3 scripts/maintainer_hybrid_conversion.py --workspace . rehearse \
+  --archive <external>/maintainer-pre-cutover.tar.gz --runs 2 \
+  --report <external>/maintainer-rehearsal.json
+python3 scripts/project_identity.py --workspace . identity \
+  --operation hybrid-state --json
+python3 scripts/maintainer_hybrid_conversion.py --workspace . cutover \
+  --archive <external>/maintainer-pre-cutover.tar.gz \
+  --rehearsal-report <external>/maintainer-rehearsal.json \
+  --project-binding <hybrid-state-binding> \
+  --report <external>/maintainer-cutover.json
+python3 scripts/maintainer_hybrid_conversion.py --workspace . soak \
+  --minimum-seconds 5 --report <external>/maintainer-soak.json
+```
+
+Each rehearsal restores the exact external archive into independent clones, imports the fixed IDs,
+reproduces HPT2 parity, checkpoints and rebuilds both shadow and hybrid modes, verifies the SQLite
+backup, simulates interruption and direct SQL, restores the external archive, and proves that a
+database copied into a foreign clone fails worktree-lineage audit. Live cutover is allowed only
+when both rehearsal semantic digests match the same archive and source commit. It preserves the
+assigned retained-source fingerprint across the no-write window, creates and verifies a pre-cutover
+SQLite backup, activates hybrid authority from the exact clean shadow checkpoint, writes the tracked
+portable checkpoint, rebuilds it, and verifies legacy-writer refusal. Publication, installed-skill
+synchronization, disconnected-client mutation, and legacy-file retirement remain outside this step.

@@ -9,6 +9,7 @@ import copy
 import hashlib
 import json
 import os
+import re
 import socket
 import sqlite3
 import subprocess
@@ -503,6 +504,7 @@ def import_files(
     *,
     project_binding: str,
     actor: str = "tool-shed",
+    assigned_ids: dict[str, dict[str, str]] | None = None,
 ) -> dict[str, Any]:
     records: list[dict[str, Any]] = []
     for supplied in paths:
@@ -516,8 +518,23 @@ def import_files(
                 "path": relative,
                 "sha256": digest,
                 "tracked_state": tracked_state(workspace, relative),
+                "assigned": (assigned_ids or {}).get(relative),
             }
         )
+
+    for record in records:
+        assigned = record["assigned"]
+        if assigned is None:
+            continue
+        if set(assigned) != {"artifact_id", "import_id"}:
+            raise HybridStateError(f"assigned IDs for {record['path']} must name artifact_id and import_id")
+        for key in ("artifact_id", "import_id"):
+            try:
+                parsed = uuid.UUID(str(assigned[key]))
+            except ValueError as error:
+                raise HybridStateError(f"assigned {key} for {record['path']} is not a UUID") from error
+            if parsed.version != 4 or str(parsed) != assigned[key]:
+                raise HybridStateError(f"assigned {key} for {record['path']} is not canonical UUIDv4")
 
     def apply(connection: sqlite3.Connection, revision: int) -> list[dict[str, str]]:
         stamp = now()
@@ -529,13 +546,15 @@ def import_files(
                 "SELECT id, content_sha256 FROM artifact WHERE current_path = ?", (record["path"],)
             ).fetchone()
             if existing is None:
-                artifact_id = random_uuid()
+                artifact_id = record["assigned"]["artifact_id"] if record["assigned"] else random_uuid()
                 connection.execute(
                     "INSERT INTO artifact VALUES (?, ?, NULL, ?, 'file', 'imported', ?, ?, ?)",
                     (artifact_id, artifact_type, record["path"], record["sha256"], stamp, stamp),
                 )
             else:
                 artifact_id = str(existing["id"])
+                if record["assigned"] and artifact_id != record["assigned"]["artifact_id"]:
+                    raise HybridStateError(f"assigned artifact ID conflicts with existing {record['path']}")
             if existing is not None and existing["content_sha256"] != record["sha256"]:
                 connection.execute(
                     "UPDATE artifact SET content_sha256 = ?, updated_at = ? WHERE id = ?",
@@ -546,10 +565,20 @@ def import_files(
                 (artifact_id, record["sha256"]),
             ).fetchone()
             if prior_import is None:
+                import_count = int(
+                    connection.execute(
+                        "SELECT COUNT(*) FROM import_record WHERE artifact_id = ?", (artifact_id,)
+                    ).fetchone()[0]
+                )
+                import_id = (
+                    record["assigned"]["import_id"]
+                    if record["assigned"] and import_count == 0
+                    else random_uuid()
+                )
                 connection.execute(
                     "INSERT INTO import_record VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     (
-                        random_uuid(),
+                        import_id,
                         artifact_id,
                         record["path"],
                         record["sha256"],
@@ -561,6 +590,16 @@ def import_files(
                         stamp,
                     ),
                 )
+            elif (
+                record["assigned"]
+                and str(prior_import["id"]) != record["assigned"]["import_id"]
+                and int(
+                    connection.execute(
+                        "SELECT COUNT(*) FROM import_record WHERE artifact_id = ?", (artifact_id,)
+                    ).fetchone()[0]
+                ) == 1
+            ):
+                raise HybridStateError(f"assigned import ID conflicts with existing {record['path']}")
             results.append({"artifact_id": artifact_id, "path": record["path"], "sha256": record["sha256"]})
         return results
 
@@ -570,6 +609,61 @@ def import_files(
         command="import-files",
         actor=actor,
         callback=apply,
+    )
+
+
+def load_assigned_file_ids(workspace: Path, supplied: Path) -> dict[str, dict[str, str]]:
+    path = require_path_within(workspace, supplied if supplied.is_absolute() else workspace / supplied)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise HybridStateError(f"cannot load assigned-ID manifest: {error}") from error
+    identity = load_project_identity(workspace)
+    if (
+        payload.get("schema_version") != 1
+        or payload.get("kind") != "tool-shed-maintainer-assigned-ids"
+        or payload.get("project_id") != identity["project_id"]
+    ):
+        raise HybridStateError("assigned-ID manifest does not match this project or schema")
+    sources = payload.get("sources")
+    if not isinstance(sources, list) or not all(isinstance(item, dict) for item in sources):
+        raise HybridStateError("assigned-ID manifest needs a sources list")
+    result: dict[str, dict[str, str]] = {}
+    for item in sources:
+        relative = item.get("path")
+        artifact_id = item.get("artifact_id")
+        import_id = item.get("import_id")
+        if not isinstance(relative, str) or not relative or relative in result:
+            raise HybridStateError("assigned-ID manifest paths must be unique non-empty strings")
+        result[relative] = {"artifact_id": str(artifact_id), "import_id": str(import_id)}
+    return result
+
+
+def activate_hybrid_mode(
+    workspace: Path,
+    *,
+    project_binding: str,
+    expected_checkpoint_digest: str,
+) -> dict[str, Any]:
+    if not re.fullmatch(r"[0-9a-f]{64}", expected_checkpoint_digest):
+        raise HybridStateError("cutover requires a 64-character checkpoint digest")
+
+    def apply(connection: sqlite3.Connection, revision: int) -> dict[str, str]:
+        meta = meta_row(connection)
+        if meta["storage_mode"] != "shadow":
+            raise HybridStateError(f"cutover requires shadow mode, found {meta['storage_mode']}")
+        if meta["checkpoint_digest"] != expected_checkpoint_digest:
+            raise HybridStateError("cutover checkpoint digest does not match the exact verified checkpoint")
+        connection.execute("UPDATE state_meta SET storage_mode = 'hybrid' WHERE id = 1")
+        return {"from": "shadow", "to": "hybrid", "checkpoint_digest": expected_checkpoint_digest}
+
+    return managed_write(
+        workspace,
+        project_binding=project_binding,
+        command="activate-hybrid-mode",
+        actor="maintainer-conversion",
+        callback=apply,
+        expected_writes=0,
     )
 
 
@@ -951,6 +1045,7 @@ def build_parser() -> argparse.ArgumentParser:
     import_parser.add_argument("--project-binding", required=True)
     import_parser.add_argument("--path", action="append", required=True)
     import_parser.add_argument("--actor", default="tool-shed")
+    import_parser.add_argument("--assigned-ids")
 
     relationship_parser = commands.add_parser("relate", help="add one typed artifact relationship")
     relationship_parser.add_argument("--project-binding", required=True)
@@ -965,6 +1060,10 @@ def build_parser() -> argparse.ArgumentParser:
     checkpoint_parser = commands.add_parser("checkpoint", help="write a deterministic tracked logical checkpoint")
     checkpoint_parser.add_argument("--project-binding", required=True)
     checkpoint_parser.add_argument("--output")
+
+    cutover_parser = commands.add_parser("cutover", help="activate hybrid authority from an exact clean shadow checkpoint")
+    cutover_parser.add_argument("--project-binding", required=True)
+    cutover_parser.add_argument("--expect-checkpoint", required=True)
 
     rebuild_parser = commands.add_parser("rebuild", help="rebuild a new database from a logical checkpoint")
     rebuild_parser.add_argument("--project-binding", required=True)
@@ -992,11 +1091,17 @@ def main(argv: Sequence[str] | None = None) -> int:
             supplied = Path(args.database) if args.database else None
             result = audit(workspace, (workspace / supplied) if supplied and not supplied.is_absolute() else supplied)
         elif args.command == "import":
+            assignments = (
+                load_assigned_file_ids(workspace, Path(args.assigned_ids))
+                if args.assigned_ids
+                else None
+            )
             result = import_files(
                 workspace,
                 [Path(value) for value in args.path],
                 project_binding=args.project_binding,
                 actor=args.actor,
+                assigned_ids=assignments,
             )
         elif args.command == "relate":
             result = add_relationship(
@@ -1015,6 +1120,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                 workspace,
                 project_binding=args.project_binding,
                 output=(workspace / output) if output and not output.is_absolute() else output,
+            )
+        elif args.command == "cutover":
+            result = activate_hybrid_mode(
+                workspace,
+                project_binding=args.project_binding,
+                expected_checkpoint_digest=args.expect_checkpoint,
             )
         elif args.command == "rebuild":
             result = rebuild_from_checkpoint(

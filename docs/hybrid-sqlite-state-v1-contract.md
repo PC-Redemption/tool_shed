@@ -277,6 +277,14 @@ reused across rehearsals. Every source byte and every semantic field is accounte
 Unknown content becomes an unresolved import record. All original files remain unchanged through
 the first hybrid release and soak; retirement is a later independently reviewed migration.
 
+The phase-one maintainer assignment authority is
+`schemas/hybrid-state/v1/maintainer-assigned-ids.json`. It binds selected retained-source paths to
+their artifact UUIDv4 and first-import UUIDv4. The dedicated controller inventories every tracked,
+untracked, and ignored file even when only selected sources enter SQLite. The external archive is
+outside the repository and byte-verifies every inventory member. Once a live database exists, it is
+never copied into that archive; the SQLite backup API and portable checkpoint are the database
+recovery surfaces.
+
 Legacy file-authority writers read the storage-mode marker before mutation and refuse a field whose
 authority moved to SQLite. During shadow qualification, files remain the only writer and SQLite is
 reimported for comparison. Two writable authorities for one field are forbidden.
