@@ -178,10 +178,32 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
   "notes": "Correct protocol-4 clean installation while preserving strict Doctor and campaign-dirt fences.",
-  "release_commit": null,
-  "release_qualification": null,
+  "release_commit": "526e286c3a2868468659df3e084ad90895cc0a6b",
+  "release_qualification": {
+    "attested_at": "2026-08-29T02:17:42Z",
+    "client_smoke": {
+      "path": "scripts/validate_snapshot_client.py",
+      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
+    },
+    "full_validator": {
+      "path": "scripts/validate_tool_shed.py",
+      "sha256": "a8ec0a24a6b23b0150767be9686ce29f4004c55fb07b45a438ade5400143647b"
+    },
+    "required_ci": [
+      {
+        "path": ".github/workflows/validate.yml",
+        "sha256": "2aef28bae106f03d192e969d0f9aecbd5b720690a212773aaf9d48a401fcfa69"
+      },
+      {
+        "path": ".github/workflows/release.yml",
+        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
+      }
+    ],
+    "schema_version": 1,
+    "subject_commit": "526e286c3a2868468659df3e084ad90895cc0a6b"
+  },
   "release_tag": "v0.36.1",
-  "released_at": null,
+  "released_at": "2026-08-29T02:17:42Z",
   "shed_version": "0.36.1",
   "updated_at": "2026-08-28",
   "updater_mutation_paths": [
