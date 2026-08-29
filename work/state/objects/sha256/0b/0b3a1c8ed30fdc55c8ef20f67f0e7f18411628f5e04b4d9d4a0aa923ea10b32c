@@ -1,0 +1,9 @@
+# Evidence Summary: IDEA-0009 M1 Historical Boundary Qualification
+
+Status: complete
+Type: evidence-summary
+Updated: 2026-08-29
+Next Action: none
+Parent: CAMP-0123
+
+Baseline commit `02703bf` and database/checkpoint revision 437 were preserved. Commit `a72662f` adds the explicit frozen HPT2 compatibility fixture, rejects live bootstrap inputs, leaves the fixed-ID registry unchanged for generic cycles, rejects mutation of terminal bootstrap ledgers, and proves append-only corrections preserve original provenance. Focused tests and the 399-test release profile passed.

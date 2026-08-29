@@ -1,0 +1,43 @@
+# Campaign: Stabilize Performance Fixtures and Change-Aware CI
+
+Status: complete
+Type: campaign
+Updated: 2026-08-29
+Next Action: none
+Campaign ID: stabilize-performance-fixtures-and-change-aware-ci
+Campaign Number: 125
+Outcome: Make blocking performance qualification deterministic and route CI to the minimum sufficient profile while retaining explicit and scheduled full coverage.
+Roadmap: immutable-historical-qualification-and-completed-ledger-isolation
+Roadmap Document: PRM-0024
+Roadmap Revision: 1
+Milestone: M3-STABLE-PERFORMANCE-CI
+Unlocks Gate: G5-STABLE-PERFORMANCE-AND-CI-POLICY
+Depends On: CAMP-0124
+Decision: none
+Primary Focus Areas: qualification-release
+Supporting Focus Areas: workspace-safety, provider-portability
+Completion Gate: a frozen production-shaped benchmark and relative regression rule pass repeatably, live timing is advisory with a runaway ceiling, change classes select documented profiles, overrides work, and scheduled full cross-platform coverage remains.
+
+## Scope
+
+- Reuse the current timing advisory and hard ceiling from the frozen baseline.
+- Add the smallest production-shaped frozen validation corpus.
+- Compare deterministic measurements to a checked-in baseline with a simple relative tolerance.
+- Declare CI path classes and an explicit full-validation override.
+- Retain scheduled full Linux and Windows validation to detect routing gaps.
+
+## Non-Goals
+
+- No new CI orchestration service.
+- No absolute blocking limit derived from the live maintainer workspace.
+- No weakening of functional failure handling.
+
+## App Server Preparation Contract
+
+The operator preference is off. Execute this campaign in the current GUI workflow.
+
+## Completion
+
+Completion Date: 2026-08-29
+Disposition: completed
+Completion Evidence: implementation commit `a72662f`; EVD-0075; frozen corpus digest `00393488b1d3b459812ff4c441825ac1d1fc38993b12d75348404e46d60eaa0e`; candidate/reference ratio remained at the checked-in baseline; path-policy tests proved focused, full, override, and scheduled routing.

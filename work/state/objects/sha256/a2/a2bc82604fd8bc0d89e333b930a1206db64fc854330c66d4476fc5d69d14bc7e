@@ -1,0 +1,11 @@
+# Evidence Summary: IDEA-0009 Work2 Deployment Checkpoint
+
+Status: working
+Type: evidence-summary
+Updated: 2026-08-29
+Next Action: complete release-only G6 proof under work5
+Parent: CAMP-0126
+
+Tool Shed 0.38.0 is an unpublished local candidate at commit `a72662f`. The 399-test release profile passed locally in 20.298 seconds. The documentation bundle passed 13 focused tests and a 23-page, 74-command site check; the live site was backed up at `/home/jon/docker/ts.rookaro.com.backup-20260829T155227Z`, deployed, and verified healthy through container, host-local, public HTTPS, route-header, representative page, asset, apex, and unrelated-host checks.
+
+Residual: push, exact-SHA GitHub Linux/Windows CI, release provenance and publication, installed-skill synchronization after release, disconnected released-client upgrade and rollback, final strict Doctor, and terminal upward reconciliation.

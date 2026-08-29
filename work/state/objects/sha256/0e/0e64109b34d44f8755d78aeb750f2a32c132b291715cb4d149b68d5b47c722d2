@@ -1,0 +1,9 @@
+# Evidence Summary: IDEA-0009 M2 Generic Identity and Read-Only Validation
+
+Status: complete
+Type: evidence-summary
+Updated: 2026-08-29
+Next Action: none
+Parent: CAMP-0124
+
+Generic outcome creation was proven without any byte change to `hpt2-assigned-ids.json`. Validation now renders lifecycle projections only in an isolated temporary directory, compares them with current views, and reports the exact repair command on mismatch. The 399-test release run preserved Git status, database revision and domain digest, tracked checkpoint hash, and lifecycle-view tree hash.

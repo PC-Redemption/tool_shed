@@ -1,0 +1,9 @@
+# Evidence Summary: IDEA-0009 M3 Stable Performance and CI Policy
+
+Status: complete
+Type: evidence-summary
+Updated: 2026-08-29
+Next Action: none
+Parent: CAMP-0125
+
+The frozen production-shaped corpus reproduced digest `00393488b1d3b459812ff4c441825ac1d1fc38993b12d75348404e46d60eaa0e` and the candidate/reference median remained effectively at the checked-in 1.16 baseline. CI path-policy tests proved one focused job for documentation/state collateral, the full 32-job matrix for product-risk changes, fail-safe full routing, manual override, and weekly full-matrix coverage. Live timing remains advisory with generous runaway ceilings.
