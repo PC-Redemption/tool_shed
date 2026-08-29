@@ -180,10 +180,32 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
   "notes": "Add adaptive, revision-bound pre-PRM Idea readiness review with two deliberate triggers and lossless gate transfer.",
-  "release_commit": null,
-  "release_qualification": null,
+  "release_commit": "a14f205f149c8924c3299c94068f070da08ddd8c",
+  "release_qualification": {
+    "attested_at": "2026-08-29T13:50:23Z",
+    "client_smoke": {
+      "path": "scripts/validate_snapshot_client.py",
+      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
+    },
+    "full_validator": {
+      "path": "scripts/validate_tool_shed.py",
+      "sha256": "cb883cfacb31a041484ade59e31b4ccf88fd54eb64b262baba073b6d6b4e6004"
+    },
+    "required_ci": [
+      {
+        "path": ".github/workflows/validate.yml",
+        "sha256": "2aef28bae106f03d192e969d0f9aecbd5b720690a212773aaf9d48a401fcfa69"
+      },
+      {
+        "path": ".github/workflows/release.yml",
+        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
+      }
+    ],
+    "schema_version": 1,
+    "subject_commit": "a14f205f149c8924c3299c94068f070da08ddd8c"
+  },
   "release_tag": "v0.37.0",
-  "released_at": null,
+  "released_at": "2026-08-29T13:50:23Z",
   "shed_version": "0.37.0",
   "updated_at": "2026-08-29",
   "updater_mutation_paths": [
