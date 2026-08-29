@@ -2,9 +2,9 @@
   "authority_contract": "docs/universal-closed-loop-outcome-reconciliation.md",
   "baseline": {
     "created_at": "1970-01-01T00:00:00Z",
-    "source_commit": "5e8d18cb0700ed0baeb4d661cd42454e9aae22f8",
+    "source_commit": "84d86143b22259e55b3d866c8e825fb64711f48a",
     "source_digest": "59df8e7786b34be488d51171bfedaf66caa16b20694e70b29e05f9cedbc62a04",
-    "updated_at": "2026-08-29T02:43:45Z"
+    "updated_at": "2026-08-29T03:04:24Z"
   },
   "bindings": [
     {
@@ -259,6 +259,31 @@
       "source_commit": "2fc4065b66dc81d02a17f24b27901c36e59dd928",
       "summary": "Route database-owned collateral through universal closure and maintainer-safe recovery",
       "supersedes": []
+    },
+    {
+      "authorization": "Owner-directed database-owned collateral PRM end-to-end implementation and evidence-response loop on 2026-08-28",
+      "decision_ids": [
+        "DEC-CLOSED-001",
+        "DEC-CLOSED-002",
+        "DEC-CLOSED-004"
+      ],
+      "evidence_to_rerun": [
+        "EVID-CLOSED-G2-ENGINE",
+        "EVID-CLOSED-G3-INTEGRATION",
+        "EVID-CLOSED-G5-RELEASE"
+      ],
+      "id": "CHG-CLOSED-011",
+      "rationale": "Final closed-loop reconciliation exposed that Doctor still read retained campaign and index files after schema-2 cutover. Routing those surfaces through the managed document store preserves independent lifecycle and outcome truth, prevents a completed database campaign from being reopened by retained recovery files, and leaves legacy file-authoritative workspaces unchanged.",
+      "recorded_at": "2026-08-29T03:03:12Z",
+      "requirement_ids": [
+        "REQ-CLOSED-002",
+        "REQ-CLOSED-003",
+        "REQ-CLOSED-007",
+        "REQ-CLOSED-009"
+      ],
+      "source_commit": "84d86143b22259e55b3d866c8e825fb64711f48a",
+      "summary": "Make Doctor consume schema-2 database lifecycle authority",
+      "supersedes": []
     }
   ],
   "decisions": [
@@ -351,7 +376,8 @@
     },
     {
       "covers_change_ids": [
-        "CHG-CLOSED-001"
+        "CHG-CLOSED-001",
+        "CHG-CLOSED-011"
       ],
       "gate": "G2-GENERIC-ENGINE-PROVEN",
       "id": "EVID-CLOSED-G2-ENGINE",
@@ -390,7 +416,7 @@
         },
         {
           "path": "docs/commands.md",
-          "sha256": "3be4eadf3f26de995b31ffe4e74073178c3523f925c9df405e75c237f489ae97"
+          "sha256": "581a9e2092e0ee8d397e25134a6438f0d287910fb8537dd9a45cfbeff7a2210e"
         },
         {
           "path": "docs/outcome-reconciliation.md",
@@ -402,13 +428,14 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T02:43:34Z"
+      "verified_at": "2026-08-29T03:03:21Z"
     },
     {
       "covers_change_ids": [
         "CHG-CLOSED-002",
         "CHG-CLOSED-009",
-        "CHG-CLOSED-010"
+        "CHG-CLOSED-010",
+        "CHG-CLOSED-011"
       ],
       "gate": "G3-LIFECYCLE-INTEGRATION-PROVEN",
       "id": "EVID-CLOSED-G3-INTEGRATION",
@@ -443,7 +470,7 @@
         },
         {
           "path": "scripts/doctor.py",
-          "sha256": "bd1fa50753fdfaf1ccd190851eb18605819962f0463ab1e0c5507f2352563cf0"
+          "sha256": "75380bcd14c605d8970374cc23dbb6a121385bbe5464702c41e8dc9de912a645"
         },
         {
           "path": "scripts/review_work_state.py",
@@ -471,7 +498,7 @@
         },
         {
           "path": "tests/test_doctor.py",
-          "sha256": "89eba4b8adb8334d0a4b27271fc8dd8561ebf8638f0e70060b3415cc84afc676"
+          "sha256": "02ec40384da0f577ab8e4fb496e073bc4eb70cebb0f56421160612146ee3d323"
         },
         {
           "path": "skills/tool-shed/SKILL.md",
@@ -483,11 +510,11 @@
         },
         {
           "path": "docs/commands.md",
-          "sha256": "3be4eadf3f26de995b31ffe4e74073178c3523f925c9df405e75c237f489ae97"
+          "sha256": "581a9e2092e0ee8d397e25134a6438f0d287910fb8537dd9a45cfbeff7a2210e"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T02:43:45Z"
+      "verified_at": "2026-08-29T03:04:24Z"
     },
     {
       "covers_change_ids": [
@@ -564,7 +591,8 @@
         "CHG-CLOSED-006",
         "CHG-CLOSED-007",
         "CHG-CLOSED-008",
-        "CHG-CLOSED-010"
+        "CHG-CLOSED-010",
+        "CHG-CLOSED-011"
       ],
       "gate": "G5-RELEASE-CANARY-PROVEN",
       "id": "EVID-CLOSED-G5-RELEASE",
@@ -615,7 +643,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T02:31:04Z"
+      "verified_at": "2026-08-29T03:03:21Z"
     },
     {
       "covers_change_ids": [
@@ -890,7 +918,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "bfb42fe32ac1bf10",
+  "state_token": "b1f9653648e32798",
   "upgrade_targets": [
     {
       "id": "UPG-CLOSED-MAINTAINER",

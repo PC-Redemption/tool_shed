@@ -25,6 +25,7 @@ import outcome_loop
 import check_shed_version
 import check_stale_paths
 import check_work_tree
+import document_store
 import reconcile_campaign_queue
 import review_work_state
 import update_work_index
@@ -219,6 +220,54 @@ def index_state(workspace: Path) -> dict[str, Any]:
     }
 
 
+def database_document_state(workspace: Path) -> dict[str, Any] | None:
+    """Return schema-2 document authority state, or None for file-authoritative workspaces."""
+    database = workspace / ".tool-shed" / "state.sqlite3"
+    if not database.is_file():
+        return None
+    audit = document_store.audit(workspace, database=database)
+    if audit.get("hybrid_schema") != 2:
+        return None
+    documents = document_store.list_documents(workspace, limit=500, database=database)
+    campaigns = document_store.list_documents(
+        workspace, document_type="campaign", limit=500, database=database
+    )["documents"]
+    return {
+        "audit": audit,
+        "documents": documents,
+        "campaigns": {
+            "valid": audit["classification"] in {"CLEAN", "VALID_DIRTY", "CHECKPOINT_DUE"},
+            "finding_count": len(audit["findings"]),
+            "findings": list(audit["findings"]),
+            "working": [item["visible_id"] for item in campaigns if item["lifecycle"] == "working"],
+            "blocked": [item["visible_id"] for item in campaigns if item["lifecycle"] == "blocked"],
+            "decisions_needed": [],
+            "authority": "sqlite",
+        },
+        "indexes": {
+            "fresh": True,
+            "artifact_count": documents["count"],
+            "stale_paths": [],
+            "applicable": False,
+            "authority": "sqlite",
+            "reason": "retained work/index projections are not authoritative after schema-2 cutover",
+        },
+        "reconciliation": {
+            "changes_required": False,
+            "owner_action_required": False,
+            "validation_findings": [],
+            "whole_work": {"findings": []},
+            "order_change_proposed": False,
+            "coverage": {
+                "artifacts_scanned": documents["count"],
+                "database_owned": documents["count"],
+                "retained_sources_authoritative": 0,
+            },
+            "authority": "sqlite",
+        },
+    }
+
+
 def external_evidence_state(workspace: Path) -> dict[str, Any]:
     unsupported: list[dict[str, Any]] = []
     campaigns = campaign_queue.load_all(workspace)
@@ -288,8 +337,17 @@ def inspect(workspace: Path) -> dict[str, Any]:
     version = version_state(shed, installed_snapshot=shed != root)
     repository, preflight_findings, metrics, profile = workspace_preflight.inspect(root)
     topology = check_work_tree.inspect_work_tree(root)
-    campaign_status = campaign_queue.status_payload(root)
-    reconciliation = reconcile_campaign_queue.inspect_queue(root, stalled_days=30)
+    database_documents = database_document_state(root)
+    campaign_status = (
+        database_documents["campaigns"]
+        if database_documents
+        else campaign_queue.status_payload(root)
+    )
+    reconciliation = (
+        database_documents["reconciliation"]
+        if database_documents
+        else reconcile_campaign_queue.inspect_queue(root, stalled_days=30)
+    )
     outcome_reconciliation = (
         outcome_loop.audit_loops(root)
         if (root / ".tool-shed" / "state.sqlite3").is_file()
@@ -302,11 +360,21 @@ def inspect(workspace: Path) -> dict[str, Any]:
             "finding_count": 0,
         }
     )
-    indexes = index_state(root)
+    indexes = database_documents["indexes"] if database_documents else index_state(root)
     stale_paths = check_stale_paths.scan(root)
     work_findings = review_work_state.review(root, stale_days=30, today=date.today())
     external_evidence = external_evidence_state(root)
     findings: list[Finding] = []
+
+    if database_documents and database_documents["audit"]["classification"] not in {
+        "CLEAN", "VALID_DIRTY", "CHECKPOINT_DUE"
+    }:
+        findings.append(_finding(
+            "DOCUMENT_AUTHORITY_INVALID", "error",
+            "Database-owned document authority failed its integrity audit.",
+            "Run `python3 scripts/document_store.py --workspace . --json audit`; recover from the latest verified schema-2 checkpoint before further writes.",
+            count=max(1, len(database_documents["audit"]["findings"])),
+        ))
 
     if repository is None or repository.resolve() != root:
         findings.append(_finding(
@@ -446,6 +514,7 @@ def inspect(workspace: Path) -> dict[str, Any]:
             "working": campaign_status["working"],
             "blocked": campaign_status["blocked"],
             "decisions_needed": campaign_status["decisions_needed"],
+            "authority": campaign_status.get("authority", "file"),
         },
         "indexes": {key: value for key, value in indexes.items() if not key.startswith("expected_")},
         "stale_paths": {"finding_count": len(stale_paths)},
@@ -462,6 +531,7 @@ def inspect(workspace: Path) -> dict[str, Any]:
             "coverage": reconciliation["coverage"],
         },
         "outcome_reconciliation": outcome_reconciliation,
+        "document_authority": database_documents["audit"] if database_documents else {"available": False},
         "external_evidence": external_evidence,
     }
     report = {

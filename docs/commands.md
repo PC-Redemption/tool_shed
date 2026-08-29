@@ -537,6 +537,11 @@ python3 tool_shed/scripts/doctor.py --workspace . --json --strict
 avoid raw generated-evidence diffs. A repair requires the report's exact `state_token` and the
 binding returned by `project_identity.py identity --operation doctor-repair`.
 
+After a schema-2 document-authority cutover, Doctor reads campaign lifecycle and whole-work
+authority from SQLite. Retained campaign, queue, and `work/index` files remain recovery sources or
+projections and cannot reopen completed database-owned work. Doctor reports the document audit and
+continues to use file-based campaign and index checks in workspaces that have not cut over.
+
 `ts: fulltsupgrade` is the concise full-authorization exception for the current installation. It
 does not authorize publishing a release, rewriting history, forcing over modified or unmanaged
 state, deleting unknown recovery material, or updating other workspaces or fleet targets.

@@ -2,9 +2,9 @@
   "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
   "baseline": {
     "created_at": "2026-08-28T16:26:19Z",
-    "source_commit": "5e8d18cb0700ed0baeb4d661cd42454e9aae22f8",
+    "source_commit": "84d86143b22259e55b3d866c8e825fb64711f48a",
     "source_digest": "59b136000a93f64586208192799deb87efdf087f0d71857a08fa7b9120ad0af2",
-    "updated_at": "2026-08-29T02:43:13Z"
+    "updated_at": "2026-08-29T03:01:08Z"
   },
   "bindings": [
     {
@@ -525,6 +525,30 @@
       "source_commit": "5e8d18cb0700ed0baeb4d661cd42454e9aae22f8",
       "summary": "Publish database-owned collateral guidance to the operator documentation site",
       "supersedes": []
+    },
+    {
+      "authorization": "Owner-directed database-owned collateral PRM end-to-end implementation and evidence-response loop on 2026-08-28",
+      "decision_ids": [
+        "DEC-HYBRID-010",
+        "DEC-HYBRID-012"
+      ],
+      "evidence_to_rerun": [
+        "EVID-G2-HPT2-PARITY",
+        "EVID-G4-CANARY",
+        "EVID-G4-RELEASE"
+      ],
+      "id": "CHG-HYBRID-023",
+      "rationale": "Final PRM reconciliation proved the database campaign and outcome loops terminal while Doctor still interpreted retained pre-cutover campaign and index projections as live authority. Schema-2 Doctor now audits the managed document store and derives campaign and reconciliation status from SQLite, while file-authoritative workspaces retain their original checks.",
+      "recorded_at": "2026-08-29T03:00:30Z",
+      "requirement_ids": [
+        "REQ-HYBRID-002",
+        "REQ-HYBRID-004",
+        "REQ-HYBRID-010",
+        "REQ-HYBRID-012"
+      ],
+      "source_commit": "84d86143b22259e55b3d866c8e825fb64711f48a",
+      "summary": "Route Doctor through database authority after schema-2 cutover",
+      "supersedes": []
     }
   ],
   "decisions": [
@@ -806,7 +830,8 @@
         "CHG-HYBRID-019",
         "CHG-HYBRID-020",
         "CHG-HYBRID-021",
-        "CHG-HYBRID-022"
+        "CHG-HYBRID-022",
+        "CHG-HYBRID-023"
       ],
       "gate": "G2-SUBSTRATE-LOOP-PROVEN",
       "id": "EVID-G2-HPT2-PARITY",
@@ -825,7 +850,7 @@
         },
         {
           "path": "schemas/hybrid-state/v1/hpt2-assigned-ids.json",
-          "sha256": "1bf6649f59a09488f2931b031e8bef81fb3decacd608013e9cc3343b4422756a"
+          "sha256": "be6f6125183f568717706e4e61d42a92cc09771e56b33ec433935d01819baf80"
         },
         {
           "path": "tests/test_outcome_reconciliation.py",
@@ -841,7 +866,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T02:42:54Z"
+      "verified_at": "2026-08-29T03:01:07Z"
     },
     {
       "covers_change_ids": [
@@ -942,7 +967,8 @@
         "CHG-HYBRID-019",
         "CHG-HYBRID-020",
         "CHG-HYBRID-021",
-        "CHG-HYBRID-022"
+        "CHG-HYBRID-022",
+        "CHG-HYBRID-023"
       ],
       "gate": "G4-RELEASE-CANARY-PROVEN",
       "id": "EVID-G4-RELEASE",
@@ -977,7 +1003,7 @@
         },
         {
           "path": "docs/commands.md",
-          "sha256": "3be4eadf3f26de995b31ffe4e74073178c3523f925c9df405e75c237f489ae97"
+          "sha256": "581a9e2092e0ee8d397e25134a6438f0d287910fb8537dd9a45cfbeff7a2210e"
         },
         {
           "path": "scripts/build_docs_site.py",
@@ -1013,7 +1039,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T02:43:13Z"
+      "verified_at": "2026-08-29T03:01:08Z"
     },
     {
       "covers_change_ids": [
@@ -1023,7 +1049,8 @@
         "CHG-HYBRID-014",
         "CHG-HYBRID-020",
         "CHG-HYBRID-021",
-        "CHG-HYBRID-022"
+        "CHG-HYBRID-022",
+        "CHG-HYBRID-023"
       ],
       "gate": "G4-RELEASE-CANARY-PROVEN",
       "id": "EVID-G4-CANARY",
@@ -1042,7 +1069,7 @@
         },
         {
           "path": "docs/commands.md",
-          "sha256": "3be4eadf3f26de995b31ffe4e74073178c3523f925c9df405e75c237f489ae97"
+          "sha256": "581a9e2092e0ee8d397e25134a6438f0d287910fb8537dd9a45cfbeff7a2210e"
         },
         {
           "path": "site/pages/help/maintenance.html",
@@ -1074,7 +1101,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T02:43:02Z"
+      "verified_at": "2026-08-29T03:01:08Z"
     }
   ],
   "initiative": {
@@ -1309,7 +1336,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "7195fe8b665521dc",
+  "state_token": "b4e64872a1f59c2f",
   "upgrade_targets": [
     {
       "id": "UPG-HYBRID-MAINTAINER",

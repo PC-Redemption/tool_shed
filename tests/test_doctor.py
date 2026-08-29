@@ -14,6 +14,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import doctor  # noqa: E402
+import document_conversion  # noqa: E402
+import document_store  # noqa: E402
+import hybrid_state  # noqa: E402
 
 
 def run(
@@ -187,6 +190,72 @@ class DoctorTests(unittest.TestCase):
             )
             report = doctor.external_evidence_state(workspace)
             self.assertEqual(report["unsupported_claim_count"], 0)
+
+    def test_schema2_doctor_uses_database_lifecycle_not_retained_campaign_and_indexes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary)
+            self.install_workspace(workspace)
+            self.campaign_command(
+                workspace,
+                "add",
+                "retained-working",
+                "Retained working campaign",
+                "--outcome",
+                "prove database authority",
+                "--completion-gate",
+                "database lifecycle wins",
+            )
+            self.campaign_command(workspace, "start", "retained-working")
+            run(
+                str(workspace / "tool_shed" / "scripts" / "update_work_index.py"),
+                "--workspace",
+                str(workspace),
+                "--no-preflight",
+            )
+            git(workspace, "add", ".")
+            git(workspace, "commit", "-q", "-m", "Checkpoint retained working source")
+
+            identity = json.loads((workspace / "work/tool-shed-project.json").read_text(encoding="utf-8"))
+            binding = hashlib.sha256(
+                b"tool-shed-binding-v1\0"
+                + identity["project_id"].encode()
+                + b"\0"
+                + str(workspace.resolve()).encode()
+                + b"\0hybrid-state\0"
+            ).hexdigest()[:24]
+            database = workspace / ".tool-shed/state.sqlite3"
+            hybrid_state.initialize(workspace, project_binding=binding, target=database)
+            document_store.migrate(workspace, project_binding=binding, database=database)
+            plan = document_conversion.build_plan(workspace, database=database)
+            document_conversion.apply_plan(
+                workspace,
+                project_binding=binding,
+                manifest=plan,
+                database=database,
+                actor="fixture",
+            )
+            campaign = document_store.list_documents(
+                workspace, document_type="campaign", database=database
+            )["documents"][0]
+            document_store.set_lifecycle(
+                workspace,
+                project_binding=binding,
+                identity=campaign["visible_id"],
+                lifecycle="completed",
+                expected_revision=campaign["document_revision"],
+                actor="fixture",
+                reason="database lifecycle is current",
+                database=database,
+            )
+
+            report = doctor.inspect(workspace)
+            codes = {item["code"] for item in report["findings"]}
+            self.assertEqual(report["checks"]["campaigns"]["authority"], "sqlite")
+            self.assertEqual(report["checks"]["campaigns"]["working"], [])
+            self.assertFalse(report["checks"]["indexes"]["applicable"])
+            self.assertEqual(report["checks"]["reconciliation"]["whole_work_finding_count"], 0)
+            self.assertNotIn("WORK_INDEX_STALE", codes)
+            self.assertNotIn("CAMPAIGN_RECONCILIATION_DECISION", codes)
 
 
 if __name__ == "__main__":

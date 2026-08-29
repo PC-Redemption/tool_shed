@@ -1,0 +1,147 @@
+# Project Map: Database-Owned Work Collateral and Lifecycle Views
+
+Status: complete
+Type: project-map
+Updated: 2026-08-28
+Next Action: none; the approved roadmap result is reconciled to the source idea
+Source Idea: work/ideas/idea-database-owned-work-collateral-and-lifecycle-views.md
+Campaign: standalone
+Campaign Reason: this map coordinates roadmap-derived milestones and is not owned by one execution campaign
+Completion Evidence: EVD-0069; project-map cycle 2f2b1911-aef7-4f56-a8f0-ea2137d665b1 is terminal/reconciled with disposition satisfied-with-approved-change
+Disposition: completed
+
+## Purpose
+
+Move Tool Shed-generated work collateral from path-bound Markdown authority into the existing
+embedded SQLite authority without losing content, identity, relationships, history, recovery, or
+Codex's efficient file-shaped workflow. Give operators a concise lifecycle-organized tree while
+making every generated view disposable and every durable relationship ID-based.
+
+## Visual Map
+
+```mermaid
+flowchart TD
+  A[Existing Hybrid SQLite foundation] --> B[Document authority and stable IDs]
+  B --> C[Managed query, render, and edit interface]
+  C --> D[Lifecycle-organized generated views]
+  B --> E[No-loss conversion and compatibility]
+  C --> E
+  D --> E
+  E --> F[Maintainer-first upgrade qualification]
+  F --> G[Production/client migration]
+  G --> H[Legacy file-authority retirement gate]
+  I[Universal closed-loop reconciliation] --> B
+  I --> E
+  I --> F
+  I --> G
+  I --> H
+```
+
+## Zoom Levels
+
+30,000 ft:
+
+- Overall outcome: all Tool Shed-generated work documents are immutable-ID, versioned SQLite
+  records; lifecycle and titles can change without breaking relationships or causing path rewrite
+  storms.
+- Success shape: operators see compact lifecycle views, Codex works through bounded deterministic
+  Markdown/JSON interfaces, conversion loses nothing, installs require neither GitHub nor a
+  database server, and the originating outcome closes against qualified product truth.
+
+10,000 ft:
+
+- Major workstreams: authority contract and schema; document commands and patch workflow;
+  generated lifecycle views; no-loss conversion and compatibility; checkpoint/rebuild/upgrade;
+  maintainer-first and production qualification.
+- Key dependencies: released Hybrid SQLite operational state, Universal Closed-Loop outcome
+  reconciliation, current file-authoritative collateral, installer/updater protocol, and retained
+  portable recovery artifacts.
+
+1,000 ft:
+
+- Active workpackages: none; delivery should be derived from an approved Program Roadmap.
+- Active tickets: none.
+- Open decisions: exact generated-document class inventory and ID namespaces; view representation;
+  structured-body round-trip rules; snapshot/checkpoint representation; legacy compatibility and
+  retention windows; old/new schema handoff behavior.
+
+Ground:
+
+- Current next action: approve this map, then develop a Program Roadmap with explicit migration,
+  rollback, rebuild, upgrade, canary, and final-retirement gates.
+- Owner/context: Tool Shed maintainer workspace only; do not include Marshal or unrelated project
+  artifacts.
+- Verification: schema and command tests; full-body and metadata round trips; relationship parity;
+  deterministic views; interruption and rollback fixtures; checkpoint rebuild; maintainer upgrade;
+  clean production install and disconnected-client canary; final closed-loop reconciliation.
+
+## Workstreams
+
+| Workstream | Status | Lead Artifact | Depends On | Next Action |
+| --- | --- | --- | --- | --- |
+| Authority contract, document model, and visible IDs | planned | this map and future roadmap definition | Hybrid SQLite and closed-loop contracts | settle class inventory, namespaces, schema, revisions, and authority boundaries |
+| Managed Codex/operator document interface | planned | future roadmap milestone | document authority contract | specify list, show, search, context, related, history, render, diff, edit, import, and export commands |
+| Lifecycle-organized generated views | planned | future roadmap milestone | managed read/render interface | choose one portable projection format and prove views are disposable |
+| No-loss conversion and compatibility | planned | future roadmap milestone | schema, commands, and views | inventory and import retained files with byte, semantic, relationship, and history parity |
+| Checkpoint, rebuild, and upgrade safety | planned | future roadmap milestone | conversion protocol | qualify governed snapshots, rollback, schema fencing, and deterministic rebuild |
+| Maintainer-first and production rollout | planned | future roadmap milestone | all preceding evidence gates | upgrade this dual-role maintainer first, then qualify clean and existing production clients |
+| Legacy authority retirement and outcome closure | planned | future roadmap milestone | rollout evidence and retention decision | reconcile the originating idea before any approved cleanup of retained source collateral |
+
+## Dependency Notes
+
+- The existing SQLite substrate is the required foundation; MongoDB, a server process, hosted
+  authentication, and background-daemon dependencies are out of scope.
+- Database authority covers Tool Shed-generated work collateral, its structured lifecycle state,
+  body content, revisions, relationships, and reconciliation data. Source code, tests, canonical
+  product documentation, imported owner material, selected external evidence, provider
+  instructions, and portable recovery artifacts remain file-owned under an explicit contract.
+- Generated lifecycle paths are presentation only. They cannot become artifact identity,
+  relationship targets, or a second writable authority.
+- Ordinary Codex work must not require SQL. Managed commands must provide compact bounded context
+  and revision-fenced temporary Markdown editing projections with transactional apply.
+- Conversion is additive and reversible until parity, backup, rollback, rebuild, upgrade, and
+  client qualification gates pass. Retiring original collateral is a separate retention decision.
+- The live database remains untracked. Git checkpoints must be deterministic, reviewable, and
+  policy-driven rather than emitted for every read or routine write; GitHub is optional.
+- Terminal child work, an empty queue, a database transaction, or a release does not by itself
+  satisfy the outcome. Universal closed-loop reconciliation must propagate verified results to
+  this map and the source Idea Brief.
+
+## Current Navigation
+
+You are here:
+
+- The owner has settled and promoted the Idea Brief direction; this approved map and its approved
+  Program Roadmap capture the faithful PRM boundary before implementation.
+
+Do next:
+
+- [x] Approve this project map with a fresh project-bound state token.
+- [x] Develop, propose, and approve a Program Roadmap that resolves the open design decisions and
+      sequences the migration behind evidence gates.
+- [ ] Derive and execute only the approved milestone wave, preserving rollback at every authority
+      transition.
+- [ ] Upgrade and qualify the dual-role maintainer before treating the production updater as safe.
+- [ ] Reconcile the source Idea Brief, product, upgrade targets, retained collateral, and residual
+      work before declaring the program complete.
+
+Avoid for now:
+
+- Implementing a second database or a file/database dual-write authority.
+- Deleting or moving canonical collateral before the retirement gate.
+- Tracking the live SQLite database or creating a Git commit for every access.
+- Requiring GitHub, direct SQL, symlinks, or a daemon for normal production use.
+- Treating generated views as the final authority or durable link surface.
+- Starting implementation or release solely because this map is approved.
+
+## Related Artifacts
+
+- Work index: work/index.md
+- Source Idea Brief: work/ideas/idea-database-owned-work-collateral-and-lifecycle-views.md
+- Approved Program Roadmap: work/roadmaps/roadmap-database-owned-work-collateral-and-lifecycle-views.md
+- Hybrid project map: work/maps/map-hybrid-sqlite-operational-state.md
+- Universal closed-loop map: work/maps/map-universal-closed-loop-outcome-reconciliation.md
+- Hybrid authority contract: docs/hybrid-sqlite-state-v1-contract.md
+- Outcome reconciliation contract: docs/outcome-reconciliation.md
+- Current hybrid state tooling: scripts/hybrid_state.py
+- Current outcome tooling: scripts/outcome_reconciliation.py
