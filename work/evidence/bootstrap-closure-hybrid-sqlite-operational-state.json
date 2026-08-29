@@ -2,9 +2,9 @@
   "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
   "baseline": {
     "created_at": "2026-08-28T16:26:19Z",
-    "source_commit": "eb6856e9a29f4deb410a0ddcf06dfdc1c3ae202c",
+    "source_commit": "e90e02b66879d40e92a6e8d2f0b7931ce4a4659d",
     "source_digest": "59b136000a93f64586208192799deb87efdf087f0d71857a08fa7b9120ad0af2",
-    "updated_at": "2026-08-29T02:11:35Z"
+    "updated_at": "2026-08-29T02:30:23Z"
   },
   "bindings": [
     {
@@ -480,6 +480,29 @@
       "source_commit": "eb6856e9a29f4deb410a0ddcf06dfdc1c3ae202c",
       "summary": "Bound post-install Doctor disposition to exact updater-created campaign projections",
       "supersedes": []
+    },
+    {
+      "authorization": "Owner-directed database-owned collateral PRM end-to-end implementation and no-stop release canary on 2026-08-28",
+      "decision_ids": [
+        "DEC-HYBRID-010",
+        "DEC-HYBRID-012"
+      ],
+      "evidence_to_rerun": [
+        "EVID-G2-HPT2-PARITY",
+        "EVID-G4-CANARY",
+        "EVID-G4-RELEASE"
+      ],
+      "id": "CHG-HYBRID-021",
+      "rationale": "The production-shaped v0.36.0 schema-2 client canary proved that comparing its full database domain to a schema-1 checkpoint falsely rejects legitimate database-owned documents. Protocol 4 now verifies the retained schema-1 recovery checkpoint independently and requires the schema-2 checkpoint plus content objects to reproduce the current full domain digest before replacement; either recovery failure still stops without mutation.",
+      "recorded_at": "2026-08-29T02:27:26Z",
+      "requirement_ids": [
+        "REQ-HYBRID-009",
+        "REQ-HYBRID-010",
+        "REQ-HYBRID-011"
+      ],
+      "source_commit": "e90e02b66879d40e92a6e8d2f0b7931ce4a4659d",
+      "summary": "Match protocol-4 recovery rebuilds to the live database schema",
+      "supersedes": []
     }
   ],
   "decisions": [
@@ -759,7 +782,8 @@
         "CHG-HYBRID-017",
         "CHG-HYBRID-018",
         "CHG-HYBRID-019",
-        "CHG-HYBRID-020"
+        "CHG-HYBRID-020",
+        "CHG-HYBRID-021"
       ],
       "gate": "G2-SUBSTRATE-LOOP-PROVEN",
       "id": "EVID-G2-HPT2-PARITY",
@@ -778,7 +802,7 @@
         },
         {
           "path": "schemas/hybrid-state/v1/hpt2-assigned-ids.json",
-          "sha256": "e0e46373b6de1cf32fd5f39229b86914f6a9d58017af0c0a14cb989d33e339dd"
+          "sha256": "7e3af3548d64d3f8cfabe1d49f472892a552d57462f44b0114e4e47eab75be13"
         },
         {
           "path": "tests/test_outcome_reconciliation.py",
@@ -794,7 +818,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T02:11:35Z"
+      "verified_at": "2026-08-29T02:29:52Z"
     },
     {
       "covers_change_ids": [
@@ -893,7 +917,8 @@
         "CHG-HYBRID-015",
         "CHG-HYBRID-016",
         "CHG-HYBRID-019",
-        "CHG-HYBRID-020"
+        "CHG-HYBRID-020",
+        "CHG-HYBRID-021"
       ],
       "gate": "G4-RELEASE-CANARY-PROVEN",
       "id": "EVID-G4-RELEASE",
@@ -904,7 +929,7 @@
         },
         {
           "path": "scripts/update_snapshot.py",
-          "sha256": "dcfe47bc9576f39d729f6d9d212618904ce2e220ebc219b8b0ba6935d91dce6e"
+          "sha256": "b6d3b94f42377d5297a32cde439e81f5789a280904eae04f85306b530c9da920"
         },
         {
           "path": "scripts/update_shed_manifest.py",
@@ -924,7 +949,7 @@
         },
         {
           "path": "tests/test_update_snapshot_protocol4.py",
-          "sha256": "0e44c8ed3b168b31c0cc7abd1d234fd12746a07c9f54dda57dd4beab6ca47932"
+          "sha256": "c141147b427174eea373345ae7330319df7ead7fc324b00d4a57779e8305c9b1"
         },
         {
           "path": "work/evidence/evidence-hybrid-sqlite-disconnected-production-canary.md",
@@ -936,7 +961,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T02:11:35Z"
+      "verified_at": "2026-08-29T02:30:23Z"
     },
     {
       "covers_change_ids": [
@@ -944,22 +969,23 @@
         "CHG-HYBRID-008",
         "CHG-HYBRID-013",
         "CHG-HYBRID-014",
-        "CHG-HYBRID-020"
+        "CHG-HYBRID-020",
+        "CHG-HYBRID-021"
       ],
       "gate": "G4-RELEASE-CANARY-PROVEN",
       "id": "EVID-G4-CANARY",
       "references": [
         {
           "path": "docs/install-or-update-snapshot.md",
-          "sha256": "c03137b418cebe2c9b27e31876e9e568cd4ff21aebaeb2973cd9a08f89a7bca0"
+          "sha256": "9360812938bce8ba2e145a991ceaa9e79003a7c754784a3864621cce8f3abb99"
         },
         {
           "path": "scripts/update_snapshot.py",
-          "sha256": "dcfe47bc9576f39d729f6d9d212618904ce2e220ebc219b8b0ba6935d91dce6e"
+          "sha256": "b6d3b94f42377d5297a32cde439e81f5789a280904eae04f85306b530c9da920"
         },
         {
           "path": "tests/test_update_snapshot_protocol4.py",
-          "sha256": "0e44c8ed3b168b31c0cc7abd1d234fd12746a07c9f54dda57dd4beab6ca47932"
+          "sha256": "c141147b427174eea373345ae7330319df7ead7fc324b00d4a57779e8305c9b1"
         },
         {
           "path": "work/evidence/evidence-hybrid-sqlite-disconnected-production-canary.md",
@@ -967,7 +993,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T02:11:35Z"
+      "verified_at": "2026-08-29T02:30:03Z"
     }
   ],
   "initiative": {
@@ -1202,7 +1228,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "81cb2a2d967745a0",
+  "state_token": "9ce0678a49f97bfd",
   "upgrade_targets": [
     {
       "id": "UPG-HYBRID-MAINTAINER",

@@ -10,7 +10,7 @@
     "adapters/codex-app-server-config.json": "d79964bc2371a39d50b7bcad534af133564e55bbf491baf4f3031b36e01b7e49",
     "adapters/codex-app-server-qualifications.json": "995ccd3bea135448b316045ea240c10d272f4c7e2ff65085111e0380cef947c1",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "db278b4eb83fffc34b94eee5f637ed08ac91b0ce4f0f31bc73e89a0039857e21",
+    "adapters/codex-skill-releases.json": "f281ccc0149800b64a60188a31328a5977b51c891e2d58cb3a63df797db6502d",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "a16e9afbc2733b2c01b113df3f3a07fda1630b80b5a97476896123ee03bc22d2",
     "docs/codex-app-server-alpha-requalification-2026-08-24.md": "be240e9b4b63db13689c69c9fec9a870627fc39a85d5176ee4c6ce6ad256721c",
@@ -36,7 +36,7 @@
     "docs/fleet-snapshot-updates.md": "4016143af0bd7eec601ebc3782fc7ca9e036eee96517b6397b34e0809f5b7cb3",
     "docs/hybrid-sqlite-state-v1-contract.md": "dccbaf8abae2d3b544a5477bac569a3a1bd35f2e66aa2dc0faed09a89e6c1f58",
     "docs/hybrid-sqlite-state.md": "10e8e15f411eef422d1c7532f89234297a213292e7f023032858c16eb81689ac",
-    "docs/install-or-update-snapshot.md": "c03137b418cebe2c9b27e31876e9e568cd4ff21aebaeb2973cd9a08f89a7bca0",
+    "docs/install-or-update-snapshot.md": "9360812938bce8ba2e145a991ceaa9e79003a7c754784a3864621cce8f3abb99",
     "docs/operator-guide.md": "6ddc41d2df00fa861e344328a4d24b919231ad364389c9ba7dad342350731bfb",
     "docs/outcome-reconciliation.md": "02550e7deb96eb600abdbd52cd732168ae34100d2da1182705d2585e90feedbb",
     "docs/provider-adapters.md": "edf50dc13fd15cb6415904981ca3dea56fd73aad32a473429ef34d1b56cea25b",
@@ -58,7 +58,7 @@
     "schemas/document-store/v1/conversion-manifest.schema.json": "1c940c60e4e25f2e9f82b1914b5156e7239c7bfa343af4c1ab8c13903e86de79",
     "schemas/document-store/v1/maintainer-assigned-ids.json": "a93e9b9d92d7a3fe180635b246974f3e8e5739c564ae48d902e3db19bba069a4",
     "schemas/hybrid-state/v1/checkpoint.schema.json": "c92f8910f815fb3f46f6d51ba7e7fc8752f3d9878a1b5a212198503a2d7dafff",
-    "schemas/hybrid-state/v1/hpt2-assigned-ids.json": "e0e46373b6de1cf32fd5f39229b86914f6a9d58017af0c0a14cb989d33e339dd",
+    "schemas/hybrid-state/v1/hpt2-assigned-ids.json": "7e3af3548d64d3f8cfabe1d49f472892a552d57462f44b0114e4e47eab75be13",
     "schemas/hybrid-state/v1/maintainer-assigned-ids.json": "033651f1d422cdf99d70da3d3ef9495d0e5feaa0dd1d7cb1fb6f9311a4551f63",
     "schemas/outcome-reconciliation/v1/manifest.schema.json": "481a7eff9ad46e1ad230da9c6d51d13594b01ad7855bcce1b3a9afba15e69cb7",
     "schemas/outcome-reconciliation/v1/source.schema.json": "025515720e206c9c957232fee9e7b22c649d60bf782eada4c6b979d5c0c13de2",
@@ -115,7 +115,7 @@
     "scripts/update-tool-shed.ps1": "271d8970201341f66595b902de0c1e03ace41203ef113b81eed5464b2a75591d",
     "scripts/update-tool-shed.sh": "51740376eca2cbe2eba8590333f55bfa7cf7bd6b720b27176a127a0e44223fdb",
     "scripts/update_shed_manifest.py": "cfa6a8692d8529ec4352df5d05610f0422a4a6a0d98caae315755372e142d752",
-    "scripts/update_snapshot.py": "dcfe47bc9576f39d729f6d9d212618904ce2e220ebc219b8b0ba6935d91dce6e",
+    "scripts/update_snapshot.py": "b6d3b94f42377d5297a32cde439e81f5789a280904eae04f85306b530c9da920",
     "scripts/update_work_index.py": "14839e13af13b09103ec2e8a9b204c1ba1e390d05fe42e75a0d24295da7d6c66",
     "scripts/validate_snapshot_client.py": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f",
     "scripts/validate_tool_shed.py": "a8ec0a24a6b23b0150767be9686ce29f4004c55fb07b45a438ade5400143647b",
@@ -177,34 +177,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Correct protocol-4 clean installation while preserving strict Doctor and campaign-dirt fences.",
-  "release_commit": "526e286c3a2868468659df3e084ad90895cc0a6b",
-  "release_qualification": {
-    "attested_at": "2026-08-29T02:17:42Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "a8ec0a24a6b23b0150767be9686ce29f4004c55fb07b45a438ade5400143647b"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "2aef28bae106f03d192e969d0f9aecbd5b720690a212773aaf9d48a401fcfa69"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "526e286c3a2868468659df3e084ad90895cc0a6b"
-  },
-  "release_tag": "v0.36.1",
-  "released_at": "2026-08-29T02:17:42Z",
-  "shed_version": "0.36.1",
+  "notes": "Preserve schema-2 database-owned documents through protocol-4 snapshot upgrades.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.36.2",
+  "released_at": null,
+  "shed_version": "0.36.2",
   "updated_at": "2026-08-28",
   "updater_mutation_paths": [
     {

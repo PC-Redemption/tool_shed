@@ -77,9 +77,13 @@ database-aware preflight and post-install validation.
 
 The Hybrid SQLite state contract assigns protocol 4 to the first database-aware release. Before
 snapshot mutation it locks the workspace, audits CLEAN state, checkpoints WAL, creates a verified
-SQLite backup, and proves a disposable checkpoint rebuild. After installation it requires exact
-database parity, validates each bootstrap manifest structurally, and rejects an INVALID doctor
-verdict. The sole bounded exception is a Doctor result containing only `DIRTY_CAMPAIGN_STATE`
+SQLite backup, and proves disposable recovery rebuilds. A schema-1 database must reproduce its
+tracked `state-v1` checkpoint exactly. A schema-2 database must retain and successfully rebuild the
+schema-1 recovery checkpoint, then reproduce its current full domain digest from the tracked
+`state-v2` checkpoint and content objects. A missing, invalid, or mismatched checkpoint fails before
+snapshot replacement. After installation the updater requires exact database parity, validates
+each bootstrap manifest structurally, and rejects an INVALID doctor verdict. The sole bounded
+exception is a Doctor result containing only `DIRTY_CAMPAIGN_STATE`
 when every dirty campaign path was clean at transaction entrance, was created by the updater, and
 is one of the exact declared queue/convergence mutation paths; the transaction records that
 disposition and still rejects pre-existing or unexpected campaign dirt. A workspace without

@@ -2,9 +2,9 @@
   "authority_contract": "docs/universal-closed-loop-outcome-reconciliation.md",
   "baseline": {
     "created_at": "1970-01-01T00:00:00Z",
-    "source_commit": "eb6856e9a29f4deb410a0ddcf06dfdc1c3ae202c",
+    "source_commit": "e90e02b66879d40e92a6e8d2f0b7931ce4a4659d",
     "source_digest": "59df8e7786b34be488d51171bfedaf66caa16b20694e70b29e05f9cedbc62a04",
-    "updated_at": "2026-08-29T02:11:45Z"
+    "updated_at": "2026-08-29T02:31:04Z"
   },
   "bindings": [
     {
@@ -533,7 +533,7 @@
         },
         {
           "path": "tests/test_update_snapshot_protocol4.py",
-          "sha256": "0e44c8ed3b168b31c0cc7abd1d234fd12746a07c9f54dda57dd4beab6ca47932"
+          "sha256": "c141147b427174eea373345ae7330319df7ead7fc324b00d4a57779e8305c9b1"
         },
         {
           "path": "tests/test_scripts.py",
@@ -557,7 +557,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T02:11:45Z"
+      "verified_at": "2026-08-29T02:30:46Z"
     },
     {
       "covers_change_ids": [
@@ -603,7 +603,7 @@
         },
         {
           "path": "tests/test_update_snapshot_protocol4.py",
-          "sha256": "0e44c8ed3b168b31c0cc7abd1d234fd12746a07c9f54dda57dd4beab6ca47932"
+          "sha256": "c141147b427174eea373345ae7330319df7ead7fc324b00d4a57779e8305c9b1"
         },
         {
           "path": ".github/workflows/validate.yml",
@@ -611,11 +611,11 @@
         },
         {
           "path": "docs/install-or-update-snapshot.md",
-          "sha256": "c03137b418cebe2c9b27e31876e9e568cd4ff21aebaeb2973cd9a08f89a7bca0"
+          "sha256": "9360812938bce8ba2e145a991ceaa9e79003a7c754784a3864621cce8f3abb99"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T02:11:35Z"
+      "verified_at": "2026-08-29T02:31:04Z"
     },
     {
       "covers_change_ids": [
@@ -641,7 +641,7 @@
         },
         {
           "path": "scripts/update_snapshot.py",
-          "sha256": "dcfe47bc9576f39d729f6d9d212618904ce2e220ebc219b8b0ba6935d91dce6e"
+          "sha256": "b6d3b94f42377d5297a32cde439e81f5789a280904eae04f85306b530c9da920"
         },
         {
           "path": "scripts/document_store.py",
@@ -669,15 +669,15 @@
         },
         {
           "path": "docs/install-or-update-snapshot.md",
-          "sha256": "c03137b418cebe2c9b27e31876e9e568cd4ff21aebaeb2973cd9a08f89a7bca0"
+          "sha256": "9360812938bce8ba2e145a991ceaa9e79003a7c754784a3864621cce8f3abb99"
         },
         {
           "path": "tests/test_update_snapshot_protocol4.py",
-          "sha256": "0e44c8ed3b168b31c0cc7abd1d234fd12746a07c9f54dda57dd4beab6ca47932"
+          "sha256": "c141147b427174eea373345ae7330319df7ead7fc324b00d4a57779e8305c9b1"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T02:11:35Z"
+      "verified_at": "2026-08-29T02:30:56Z"
     }
   ],
   "initiative": {
@@ -890,7 +890,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "986cc6e5dcbecddd",
+  "state_token": "19f39f7a048b80f9",
   "upgrade_targets": [
     {
       "id": "UPG-CLOSED-MAINTAINER",

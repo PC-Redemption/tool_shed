@@ -174,6 +174,30 @@ def _protocol4_hybrid_command(
     return payload
 
 
+def _protocol4_document_command(
+    snapshot: Path,
+    workspace: Path,
+    *arguments: str,
+    timeout: float,
+) -> dict[str, Any]:
+    command = snapshot / "scripts" / "document_store.py"
+    if not command.is_file():
+        raise UpdateError("updater protocol 4 schema-2 recovery is missing scripts/document_store.py")
+    result = run(
+        [sys.executable, "-B", str(command), "--workspace", str(workspace), *arguments],
+        cwd=workspace,
+        timeout=timeout,
+        timeout_option="--validation-timeout",
+    )
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError as error:
+        raise UpdateError("document-store command returned invalid JSON") from error
+    if not isinstance(payload, dict):
+        raise UpdateError("document-store command returned a non-object result")
+    return payload
+
+
 def protocol4_hybrid_audit(
     workspace: Path,
     snapshot: Path,
@@ -237,10 +261,11 @@ def protocol4_hybrid_preflight(
     checkpoint = workspace / "work" / "state" / "checkpoints" / "state-v1.json"
     if not checkpoint.is_file():
         raise UpdateError("protocol 4 hybrid state requires the tracked state-v1 checkpoint")
-    shadow_relative = f".tool-shed/state.protocol4-{os.urandom(8).hex()}.sqlite3"
-    shadow = workspace / shadow_relative
+    legacy_shadow_relative = f".tool-shed/state.protocol4-v1-{os.urandom(8).hex()}.sqlite3"
+    legacy_shadow = workspace / legacy_shadow_relative
+    current_shadow: Path | None = None
     try:
-        rebuilt = _protocol4_hybrid_command(
+        legacy_rebuilt = _protocol4_hybrid_command(
             snapshot,
             workspace,
             "rebuild",
@@ -249,20 +274,51 @@ def protocol4_hybrid_preflight(
             "--checkpoint",
             checkpoint.relative_to(workspace).as_posix(),
             "--output",
-            shadow_relative,
+            legacy_shadow_relative,
             timeout=timeout,
         )
+        schema_version = audit.get("schema_version")
+        if schema_version == 1:
+            rebuilt = legacy_rebuilt
+        elif schema_version == 2:
+            document_checkpoint = workspace / "work" / "state" / "checkpoints" / "state-v2.json"
+            if not document_checkpoint.is_file():
+                raise UpdateError("protocol 4 schema-2 state requires the tracked state-v2 checkpoint")
+            current_shadow_relative = f".tool-shed/state.protocol4-v2-{os.urandom(8).hex()}.sqlite3"
+            current_shadow = workspace / current_shadow_relative
+            rebuilt = _protocol4_document_command(
+                snapshot,
+                workspace,
+                "rebuild",
+                "--project-binding",
+                binding,
+                "--checkpoint",
+                document_checkpoint.relative_to(workspace).as_posix(),
+                "--output",
+                current_shadow_relative,
+                timeout=timeout,
+            )
+        else:
+            raise UpdateError(f"protocol 4 cannot rebuild unsupported hybrid schema {schema_version}")
         if rebuilt.get("domain_digest") != audit.get("domain_digest"):
-            raise UpdateError("protocol 4 shadow rebuild changed the domain digest")
+            raise UpdateError("protocol 4 current-schema shadow rebuild changed the domain digest")
     finally:
-        for candidate in (shadow, Path(str(shadow) + "-wal"), Path(str(shadow) + "-shm")):
-            candidate.unlink(missing_ok=True)
+        shadows = [legacy_shadow]
+        if current_shadow is not None:
+            shadows.append(current_shadow)
+        for shadow in shadows:
+            for candidate in (shadow, Path(str(shadow) + "-wal"), Path(str(shadow) + "-shm")):
+                candidate.unlink(missing_ok=True)
     return {
         "database": "present",
         "audit": audit,
         "backup": backup,
         "backup_audit": backup_audit,
         "shadow_rebuild": rebuilt,
+        "recovery_rebuilds": {
+            "state_v1": legacy_rebuilt,
+            "state_v2": rebuilt if audit.get("schema_version") == 2 else None,
+        },
         "writes_performed": True,
     }
 
