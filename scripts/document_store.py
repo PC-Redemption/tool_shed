@@ -823,7 +823,10 @@ def rebuild(workspace: Path, *, project_binding: str, checkpoint: Path, output: 
                 row = dict(original)
                 if table == "document_revision":
                     object_path = require_path_within(workspace, workspace / row.pop("body_object"))
-                    body = object_path.read_text(encoding="utf-8")
+                    # Content objects are addressed by their exact UTF-8
+                    # bytes. Text-mode reads translate CRLF on Windows and
+                    # can therefore invalidate an otherwise correct digest.
+                    body = object_path.read_bytes().decode("utf-8")
                     if sha256_text(body) != row["body_sha256"]:
                         raise DocumentStoreError("checkpoint content object hash mismatch")
                     row["body_markdown"] = body

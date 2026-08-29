@@ -2,9 +2,9 @@
   "authority_contract": "docs/universal-closed-loop-outcome-reconciliation.md",
   "baseline": {
     "created_at": "1970-01-01T00:00:00Z",
-    "source_commit": "9dd467c2d5b806290e85e6a59dc8984c46bd8820",
+    "source_commit": "3d8c9300436e9879fd41446fb446edf9452cfccb",
     "source_digest": "59df8e7786b34be488d51171bfedaf66caa16b20694e70b29e05f9cedbc62a04",
-    "updated_at": "2026-08-29T01:43:04Z"
+    "updated_at": "2026-08-29T01:49:36Z"
   },
   "bindings": [
     {
@@ -604,10 +604,14 @@
         {
           "path": "tests/test_update_snapshot_protocol4.py",
           "sha256": "6ccc4d39ee27d449e20e046bad7d413d83262c00080b06d378523304adb0b9ed"
+        },
+        {
+          "path": ".github/workflows/validate.yml",
+          "sha256": "2aef28bae106f03d192e969d0f9aecbd5b720690a212773aaf9d48a401fcfa69"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T01:35:54Z"
+      "verified_at": "2026-08-29T01:49:36Z"
     },
     {
       "covers_change_ids": [
@@ -637,7 +641,7 @@
         },
         {
           "path": "scripts/document_store.py",
-          "sha256": "addc8ff326b24065d00a1f66f5ad08686afbf2e26cee2e056f5553a90f818d8f"
+          "sha256": "e263aba6d2f8b1729d5f10cfdc98903ebb927081df0407737776fa6982caa982"
         },
         {
           "path": "scripts/document_conversion.py",
@@ -661,7 +665,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T01:43:04Z"
+      "verified_at": "2026-08-29T01:49:36Z"
     }
   ],
   "initiative": {
@@ -874,7 +878,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "a19dc210b80ca74e",
+  "state_token": "6125a8314ed1d959",
   "upgrade_targets": [
     {
       "id": "UPG-CLOSED-MAINTAINER",
