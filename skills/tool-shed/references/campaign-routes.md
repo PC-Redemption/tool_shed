@@ -195,8 +195,9 @@ open Ideas merely because a release occurred; only registered cohort ownership i
 
 A pull-request run, a run for another SHA, a partial matrix, a skipped or failed job, or local-only
 evidence does not satisfy this gate. Stop before tagging when the exact push run is absent or not
-successful; fix the candidate and repeat from a new frozen content commit rather than waiving the
-gate.
+successful; fix the candidate and repeat `freeze` from a new clean content commit with the failed
+run URL supplied as `--failure-evidence` rather than waiving the gate or silently rebinding the
+cohort.
 
 - Inspect workspace guidance and active work before choosing the smallest sufficient plan.
 - Continue through every applicable lifecycle stage. Tests or a build are intermediate evidence.

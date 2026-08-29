@@ -16,6 +16,7 @@ import sqlite3
 import subprocess
 import sys
 import uuid
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -126,6 +127,19 @@ def _cohort_evidence(connection: sqlite3.Connection, cycle_id: str, kind: str) -
         "WHERE cycle_id = ? AND kind = ? ORDER BY collected_at, id",
         (cycle_id, kind),
     ).fetchall()
+
+
+def _next_evidence_time(connection: sqlite3.Connection, cycle_id: str, kind: str) -> str:
+    """Return a second-resolution timestamp newer than prior evidence of this kind."""
+    current = hybrid_state.now()
+    previous = connection.execute(
+        "SELECT MAX(collected_at) FROM evidence_reference WHERE cycle_id = ? AND kind = ?",
+        (cycle_id, kind),
+    ).fetchone()[0]
+    if previous is None or current > str(previous):
+        return current
+    previous_time = datetime.fromisoformat(str(previous).replace("Z", "+00:00"))
+    return (previous_time + timedelta(seconds=1)).astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 def _candidate_rows(connection: sqlite3.Connection, cohort_id: str) -> list[dict[str, Any]]:
@@ -552,21 +566,27 @@ def freeze(
     expected: str,
     project_binding: str,
     content_commitish: str,
+    failure_evidence: str | None = None,
 ) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
     snapshot = _require_snapshot(workspace, expected)
     if len(snapshot["active"]) != 1:
         raise ReleaseCohortError("freeze requires exactly one active release cohort")
     cohort = snapshot["active"][0]
-    if cohort["lifecycle_state"] != "working":
-        if cohort["lifecycle_state"] == "frozen" and cohort["content_commit"] == _commit(workspace, content_commitish):
+    content_commit = _commit(workspace, content_commitish)
+    retrying = cohort["lifecycle_state"] == "frozen" and cohort["content_commit"] != content_commit
+    if cohort["lifecycle_state"] != "working" and not retrying:
+        if cohort["lifecycle_state"] == "frozen" and cohort["content_commit"] == content_commit:
             return {"kind": "tool-shed-release-cohort-freeze", "idempotent": True, "status": snapshot, "writes_performed": False}
         raise ReleaseCohortError("release cohort is not in working state")
+    if retrying and not failure_evidence:
+        raise ReleaseCohortError(
+            "rebinding a frozen release cohort requires durable failed-CI evidence"
+        )
     if not cohort["candidates"]:
         raise ReleaseCohortError("cannot freeze an empty release cohort")
     if _git(workspace, "status", "--porcelain", "--untracked-files=normal"):
         raise ReleaseCohortError("tracked worktree must be clean before freezing a release cohort")
-    content_commit = _commit(workspace, content_commitish)
     if content_commit != snapshot["head"]:
         raise ReleaseCohortError("release content commit must equal current HEAD")
     for candidate in cohort["candidates"]:
@@ -578,10 +598,19 @@ def freeze(
     def write(connection: sqlite3.Connection, revision: int) -> dict[str, Any]:
         if hybrid_state.meta_row(connection)["current_revision"] != snapshot["revision"]:
             raise ReleaseCohortError("release cohort revision changed before freeze")
-        connection.execute(
-            "UPDATE cycle SET lifecycle_state = 'frozen' WHERE id = ? AND lifecycle_state = 'working'",
-            (cohort["cycle_id"],),
-        )
+        if not retrying:
+            connection.execute(
+                "UPDATE cycle SET lifecycle_state = 'frozen' WHERE id = ? AND lifecycle_state = 'working'",
+                (cohort["cycle_id"],),
+            )
+        else:
+            connection.execute(
+                "INSERT INTO evidence_reference VALUES (?, ?, 'release-content-rejected', ?, NULL, ?, ?)",
+                (
+                    hybrid_state.random_uuid(), cohort["cycle_id"], failure_evidence,
+                    cohort["cycle_id"], hybrid_state.now(),
+                ),
+            )
         connection.execute(
             "UPDATE artifact SET lifecycle_state = 'frozen', updated_at = ? WHERE id = ?",
             (hybrid_state.now(), cohort["origin_artifact_id"]),
@@ -590,10 +619,15 @@ def freeze(
             "INSERT INTO evidence_reference VALUES (?, ?, 'release-content-commit', ?, NULL, ?, ?)",
             (
                 hybrid_state.random_uuid(), cohort["cycle_id"], f"git:{content_commit}",
-                cohort["cycle_id"], hybrid_state.now(),
+                cohort["cycle_id"],
+                _next_evidence_time(connection, cohort["cycle_id"], "release-content-commit"),
             ),
         )
-        return {"cohort_id": cohort["cycle_id"], "content_commit": content_commit}
+        return {
+            "cohort_id": cohort["cycle_id"],
+            "content_commit": content_commit,
+            "previous_content_commit": cohort["content_commit"] if retrying else None,
+        }
 
     result = hybrid_state.managed_write(
         workspace,
@@ -823,6 +857,7 @@ def build_parser() -> argparse.ArgumentParser:
     freeze_parser.add_argument("--expect", required=True)
     freeze_parser.add_argument("--project-binding", required=True)
     freeze_parser.add_argument("--content-commit", default="HEAD")
+    freeze_parser.add_argument("--failure-evidence")
     release_parser = commands.add_parser(
         "record-release", help="Attach verified production publication evidence to every origin."
     )
@@ -880,6 +915,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 expected=args.expect,
                 project_binding=args.project_binding,
                 content_commitish=args.content_commit,
+                failure_evidence=args.failure_evidence,
             )
         elif args.command == "record-release":
             result = record_release(

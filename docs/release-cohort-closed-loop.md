@@ -65,6 +65,11 @@ python3 scripts/release_cohort.py --workspace . record-release \
   --tag <vMAJOR.MINOR.PATCH> --evidence <durable-reference>
 ```
 
+If exact-SHA CI rejects a frozen content commit, correct the candidate and run `freeze` again with
+the new clean `HEAD` plus `--failure-evidence <failed-run-url>`. The guarded retry preserves the
+rejected commit and failed-run reference, refuses a silent rebind, and keeps publication blocked
+until the replacement content commit passes the ordinary exact-SHA gate.
+
 Reconcile the registered outcome chains from their innermost result to their Idea roots using the
 ordinary outcome-transition interface. Finalization fails closed while any registered owner is
 open, failed, partial without approval, unreconciled, or unpropagated:

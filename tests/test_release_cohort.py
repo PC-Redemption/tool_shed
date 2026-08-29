@@ -122,7 +122,31 @@ class ReleaseCohortTests(unittest.TestCase):
             project_binding=self.binding,
             content_commitish="HEAD",
         )
-        content_commit = frozen["result"]["content_commit"]
+        first_content_commit = frozen["result"]["content_commit"]
+        (self.workspace / "product.txt").write_text("Corrected Work5 candidate\n", encoding="utf-8")
+        subprocess.run(["git", "add", "product.txt"], cwd=self.workspace, check=True)
+        subprocess.run(["git", "commit", "--quiet", "-m", "correct candidate"], cwd=self.workspace, check=True)
+        corrected = release_cohort.status(self.workspace)
+        with self.assertRaisesRegex(
+            release_cohort.ReleaseCohortError, "requires durable failed-CI evidence"
+        ):
+            release_cohort.freeze(
+                self.workspace,
+                expected=corrected["state_token"],
+                project_binding=self.binding,
+                content_commitish="HEAD",
+            )
+        refrozen = release_cohort.freeze(
+            self.workspace,
+            expected=corrected["state_token"],
+            project_binding=self.binding,
+            content_commitish="HEAD",
+            failure_evidence="https://example.invalid/actions/runs/failed",
+        )
+        content_commit = refrozen["result"]["content_commit"]
+        self.assertEqual(refrozen["result"]["previous_content_commit"], first_content_commit)
+        self.assertNotEqual(content_commit, first_content_commit)
+        self.assertEqual(refrozen["status"]["active"][0]["content_commit"], content_commit)
         subprocess.run(["git", "tag", "v1.1.0", content_commit], cwd=self.workspace, check=True)
         tagged = release_cohort.status(self.workspace)
         published = release_cohort.record_release(

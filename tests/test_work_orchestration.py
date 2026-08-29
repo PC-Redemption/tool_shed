@@ -159,6 +159,28 @@ class WorkOrchestrationTests(unittest.TestCase):
             self.assertEqual(owner["run_id"], "recovered")
         self.assertFalse(lock.exists())
 
+    def test_windows_invalid_pid_lock_is_recovered(self) -> None:
+        lock = self.workspace / work_orchestration.LOCK_RELATIVE
+        lock.parent.mkdir(parents=True, exist_ok=True)
+        lock.write_text(
+            json.dumps(
+                {
+                    "run_id": "interrupted",
+                    "pid": 999_999_999,
+                    "hostname": work_orchestration.socket.gethostname(),
+                    "started_at": datetime.now(timezone.utc).isoformat(),
+                }
+            ),
+            encoding="utf-8",
+        )
+        missing_pid = OSError("invalid process identifier")
+        missing_pid.winerror = 87
+        with mock.patch.object(work_orchestration.os, "kill", side_effect=missing_pid):
+            with work_orchestration._exclusive_run(self.workspace, "recovered"):
+                owner = json.loads(lock.read_text(encoding="utf-8"))
+                self.assertEqual(owner["run_id"], "recovered")
+        self.assertFalse(lock.exists())
+
     def test_target_evidence_requires_current_exact_target(self) -> None:
         path = self.workspace / ".tool-shed/evidence/work2.json"
         path.parent.mkdir(parents=True)

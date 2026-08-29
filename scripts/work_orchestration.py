@@ -517,8 +517,13 @@ def _exclusive_run(workspace: Path, run_id: str):
                 os.kill(owner_pid, 0)
             except ProcessLookupError:
                 alive = False
-            except (OSError, PermissionError):
+            except PermissionError:
                 alive = True
+            except OSError as pid_error:
+                # Windows reports a missing PID as ERROR_INVALID_PARAMETER
+                # instead of ProcessLookupError. Other errors remain a
+                # conservative indication that the owner may still exist.
+                alive = getattr(pid_error, "winerror", None) != 87
         if same_host and not alive:
             lock.unlink(missing_ok=True)
             try:
