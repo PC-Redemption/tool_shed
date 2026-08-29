@@ -1,0 +1,61 @@
+# Evidence: Persistent Autonomy Release and Field Adoption
+
+Status: passed
+Type: evidence-summary
+Updated: 2026-08-29
+Evidence ID: EVD-0070
+Roadmap: persistent-autonomy-levels
+Milestone: M2-RELEASE-ADOPTION
+Gate: G2-FIELD-PROVEN
+
+## Result
+
+Persistent project-bound autonomy is released, synchronized, active in the canonical maintainer,
+and field-proven for both covered continuation and genuine authority interrupts. The remaining
+work was historical roadmap reconciliation; no new product implementation was required.
+
+## Release And Installed-Skill Evidence
+
+- Implementation commit `8b3143c67e24f15d6d0e124f7bf6f6502277c0a4` introduced persistent Tool Shed autonomy envelopes.
+- Stable release `v0.33.0` contains that commit. Its qualified release commit is
+  `be16c89e620c99708595866fe02a23440f6cadd1`; exact Validate run `33102503758` passed.
+- Annotated tag target `823ef35db06569a50e8096dfa54233ee455ab2fc` published the non-draft,
+  non-prerelease GitHub release through successful publication run `33102663209`.
+- Current stable Tool Shed `v0.36.4` retains the feature. `check_shed_version.py` reports both local
+  and canonical version `0.36.4` with a verified manifest.
+- `diff -qr skills/tool-shed /home/jon/.codex/skills/tool-shed` is empty, and both installed and
+  canonical `SKILL.md` files have SHA-256
+  `57ea84f3d450949af0ffa093e75117909e07aa6c7d207a9148ee76df20b7e0bf`.
+- This fresh post-release task loaded the installed contract and resolved the protected project
+  preference as level 5 `Deliver` for project `817b6358-b2f5-48fd-bb66-bd80f936faca`.
+
+## Deterministic Authority-Envelope Evidence
+
+- `tests.test_autonomy_control`: 4 of 4 tests passed on 2026-08-29.
+- A settled, in-scope `campaign-materialize` action at work5 and a known target returned
+  `outcome: continue`, `automatic: true`, and kept state tokens internal.
+- A `credentials-auth` action returned `outcome: request_authority` with explicit why, impact,
+  blast radius, rollback state, and recommendation.
+- A material `campaign-transition` decision returned `outcome: request_decision` with bounded
+  lifecycle impact, guarded rollback, and a concrete recommendation.
+
+## Representative Field Continuation And Interrupt
+
+- Under the persisted level-5 envelope, the database-owned work-collateral PRM continued from the
+  operator's end-to-end instruction through implementation, six milestone results, release,
+  installed-skill verification, production documentation deployment, source-idea reconciliation,
+  checkpoint, push, and exact CI without ceremonial Tool Shed approval gates. `PRM-0004`,
+  `MAP-0001`, `IDEA-0001`, and `EVD-0069` are completed; GitHub run `33231377660` passed 32 of 32
+  jobs after an unchanged retry of one transient Windows timing overrun.
+- The earlier Hybrid SQLite roadmap correctly stopped for the material priority choice between
+  `M1-BOOTSTRAP-DESIGN-FROZEN` and the unfinished persistent-autonomy adoption milestone. The owner
+  resolved that decision once; execution then continued without repeated approval. This is the
+  required genuine-boundary field specimen rather than a ceremonial phase or token prompt.
+
+## Gate Reconciliation
+
+`G2-FIELD-PROVEN` is satisfied. Release provenance, installed-skill parity, project-bound status,
+covered automatic continuation, and self-contained interrupt behavior all agree with current
+product and target truth. There is no residual persistent-autonomy product work. The historical
+roadmap, map, and Idea Brief remained nonterminal only because their M2 results were never
+propagated before schema-2 conversion; the current reconciliation closes that lifecycle drift.
