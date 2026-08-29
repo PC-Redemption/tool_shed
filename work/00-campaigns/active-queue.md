@@ -4,7 +4,7 @@ Updated: 2026-08-28
 
 ## Owner State
 
-- Last completed: deliver-managed-document-interface-and-lifecycle-views — Deliver the managed document interface and lifecycle views
+- Last completed: qualify-no-loss-collateral-conversion-and-recovery — Qualify no-loss work-collateral conversion and recovery
 - Working now: none
 - Next: none
 - Blocker or decision needed: none

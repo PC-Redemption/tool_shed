@@ -349,7 +349,8 @@ def show(workspace: Path, identity: str, *, database: Path | None = None) -> dic
     with contextlib.closing(hybrid_state.connect(path, writable=False)) as connection:
         checked = audit_connection(workspace, connection)
         if checked["classification"] in {"INVALID", "UNJOURNALED"}:
-            raise DocumentStoreError(f"read refused from {checked['classification']}")
+            detail = "; ".join(checked["findings"])
+            raise DocumentStoreError(f"read refused from {checked['classification']}: {detail}")
         row = _lookup(connection, identity)
         return {"schema_version": 1, "kind": "tool-shed-document", "artifact_id": row["id"], "visible_id": row["visible_id"], "document_revision": row["current_revision"], "database_revision": checked["current_revision"], "title": row["title"], "lifecycle": row["lifecycle_state"], "metadata": json.loads(row["metadata_json"]), "body_markdown": row["body_markdown"], "body_sha256": row["body_sha256"], "writes_performed": False}
 

@@ -2,9 +2,9 @@
   "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
   "baseline": {
     "created_at": "2026-08-28T16:26:19Z",
-    "source_commit": "01cfa367dbf992b985f6ccdea44dac489b6b5a07",
-    "source_digest": "ebfebad466b4402a6ab406d9990f55a8452032f592d4099969bf01bbe6a72760",
-    "updated_at": "2026-08-28T21:42:04Z"
+    "source_commit": "6fd05f8721eb796bab96f2f64642fd1c9e389fb1",
+    "source_digest": "b9cc6b9335ca400b5996f904b3586f2b8b1e0c16726502bfffcd12e72e3c2678",
+    "updated_at": "2026-08-29T01:00:58Z"
   },
   "bindings": [
     {
@@ -30,7 +30,7 @@
     {
       "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
       "role": "closed-loop-idea",
-      "sha256": "961786b737bdb679e449584f056033492f4cc351a120a34fe904c0735659bdae"
+      "sha256": "4f401c0a624f665df6f7760bc9a3ee5348c6658ac705718ca5e8a2c7de2fec7d"
     },
     {
       "path": "scripts/bootstrap_closure.py",
@@ -397,6 +397,25 @@
       "source_commit": "af8c4560f8a8087e7116854a0291e443b1d7d874",
       "summary": "Add exact authorized reconciliation for detected direct-SQL state",
       "supersedes": []
+    },
+    {
+      "authorization": "Owner-directed end-to-end reconciliation and stale-reference mitigation on 2026-08-28",
+      "decision_ids": [
+        "DEC-HYBRID-003"
+      ],
+      "evidence_to_rerun": [
+        "EVID-G1-HPT2-INVENTORY",
+        "EVID-G2-HPT2-PARITY"
+      ],
+      "id": "CHG-HYBRID-017",
+      "rationale": "The Universal Closed-Loop idea gained its final governed outcome section after the Hybrid initiative closed; the Hybrid ledger must bind the exact terminal consumer bytes without changing the released substrate verdict.",
+      "recorded_at": "2026-08-29T00:59:32Z",
+      "requirement_ids": [
+        "REQ-HYBRID-008"
+      ],
+      "source_commit": "6fd05f8721eb796bab96f2f64642fd1c9e389fb1",
+      "summary": "Refresh Universal Closed-Loop consumer provenance after governed closure",
+      "supersedes": []
     }
   ],
   "decisions": [
@@ -554,7 +573,8 @@
     },
     {
       "covers_change_ids": [
-        "CHG-HYBRID-005"
+        "CHG-HYBRID-005",
+        "CHG-HYBRID-017"
       ],
       "gate": "G1-DESIGN-FROZEN",
       "id": "EVID-G1-HPT2-INVENTORY",
@@ -565,7 +585,7 @@
         },
         {
           "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
-          "sha256": "961786b737bdb679e449584f056033492f4cc351a120a34fe904c0735659bdae"
+          "sha256": "4f401c0a624f665df6f7760bc9a3ee5348c6658ac705718ca5e8a2c7de2fec7d"
         },
         {
           "path": "work/evidence/evidence-hybrid-sqlite-release-prerequisites.md",
@@ -573,7 +593,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T20:34:44Z"
+      "verified_at": "2026-08-29T00:59:40Z"
     },
     {
       "covers_change_ids": [
@@ -669,7 +689,8 @@
         "CHG-HYBRID-013",
         "CHG-HYBRID-014",
         "CHG-HYBRID-015",
-        "CHG-HYBRID-016"
+        "CHG-HYBRID-016",
+        "CHG-HYBRID-017"
       ],
       "gate": "G2-SUBSTRATE-LOOP-PROVEN",
       "id": "EVID-G2-HPT2-PARITY",
@@ -688,7 +709,7 @@
         },
         {
           "path": "schemas/hybrid-state/v1/hpt2-assigned-ids.json",
-          "sha256": "be7f22f7edb3a91bcbf6a86402de1c373803dfb35c0683867afe29e6de177407"
+          "sha256": "6a336cfec22d127f942763f36f362ec12c29b3d8f9ed81a646274581982c92b5"
         },
         {
           "path": "tests/test_outcome_reconciliation.py",
@@ -696,7 +717,7 @@
         },
         {
           "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
-          "sha256": "961786b737bdb679e449584f056033492f4cc351a120a34fe904c0735659bdae"
+          "sha256": "4f401c0a624f665df6f7760bc9a3ee5348c6658ac705718ca5e8a2c7de2fec7d"
         },
         {
           "path": "work/evidence/evidence-hybrid-sqlite-release-prerequisites.md",
@@ -704,7 +725,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T21:26:09Z"
+      "verified_at": "2026-08-29T01:00:58Z"
     },
     {
       "covers_change_ids": [
@@ -1101,7 +1122,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "23456dcb7f605f3a",
+  "state_token": "5a50ab175c37ed2a",
   "upgrade_targets": [
     {
       "id": "UPG-HYBRID-MAINTAINER",
