@@ -1,0 +1,118 @@
+# Program Roadmap: Scripted Tool Shed Work Orchestration and Token Efficiency
+
+Status: approved
+Type: program-roadmap
+Updated: 2026-08-29
+Next Action: derive and materialize M1 when execution is requested
+Roadmap ID: scripted-tool-shed-work-orchestration-and-token-efficiency
+Roadmap Revision: 1
+Source Idea: IDEA-0011
+Source Project Map: MAP-0014
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 3
+Reviewed Body SHA256: b6e99f6972d7cc5208b0236375287bbff9a8782524c4d040d626de724f05794e
+
+## Program Outcome
+
+Tool Shed moves deterministic Work1 and Work2 preparation and closeout into one thin resumable
+runner while keeping semantic reasoning and authority with Codex/operator. The result is
+behaviorally equivalent, failure-safe, portable, measurably reduces remedial interaction and
+context, reports exact provider-measured remedial tokens with coverage plus separate GUI proxies,
+and produces a sanitized per-project aggregate for the later IDEA-0007 dashboard.
+
+## M1-CONTRACT-RESUME-SAFETY — Authority, state, and recovery contract
+
+Status: planned
+Depends on: none
+
+Outcome: Freeze one public orchestration surface, exact phase/state contract, semantic and authority
+boundary, skip classes, interruption/concurrency behavior, and bounded recovery/reporting rules.
+
+Gates:
+
+- `G1-ORCHESTRATION-AUTHORITY-CONTRACT-FROZEN`: the thin runner composes existing commands and cannot
+  choose product behavior, evidence sufficiency, semantic version, deployment scope, or release.
+- `G2-EXACT-RESUME-AND-FAILURE-SAFETY`: project identity, state/input digests, step evidence,
+  mutation boundaries, duplicate runs, stale inputs, interruption, and current external evidence
+  produce deterministic skip/resume/restart behavior without guessing or replay.
+
+Candidate campaign: `freeze-scripted-orchestration-contract-and-resume-safety`.
+
+## M2-WORK1-WORK2-KISS-SLICE — Compositional closeout runner
+
+Status: planned
+Depends on: M1
+
+Outcome: Implement the smallest dry-run/resumable preparation and closeout runner for representative
+Direct Work1 and Work2 paths, preserving independently callable underlying commands and exact
+behavioral equivalence.
+
+Gate:
+
+- `G3-WORK1-WORK2-KISS-SLICE-QUALIFIED`: the slice composes identity/audit, work-level resolution,
+  local view preparation, change-aware validation, outcome application, checkpoint/rebuild proof,
+  Doctor, configured target verification, and endpoint-appropriate Git behavior without adding a
+  second authority or automating semantic work.
+
+Candidate campaign: `implement-and-qualify-work1-work2-closeout-runner`.
+
+## M3-EFFICIENCY-REPORTING — Measured reduction and dashboard producer
+
+Status: planned
+Depends on: M2
+
+Outcome: Establish an honest same-corpus baseline, compact result surfaces, bounded local telemetry,
+and a deterministic sanitized per-project aggregate that IDEA-0007 can ingest later.
+
+Gate:
+
+- `G4-EFFICIENCY-OBSERVABILITY-AND-REPORTING-PROVEN`: deterministic orchestration is below 15 percent
+  of measured execution interactions; known syntax, stale-view, and completed-step replay retries
+  are zero; output/tool-call use materially falls; `remedial_tokens_actual` contains only exposed
+  token deltas with `remedial_token_coverage`; GUI proxies remain separate; and the versioned
+  aggregate excludes prompts, commands, paths, source, and granular activity.
+
+Candidate campaign: `prove-orchestration-efficiency-and-dashboard-aggregate`.
+
+## M4-UPGRADE-RELEASE-RECONCILED — Portable rollout and closed loop
+
+Status: planned
+Depends on: M3
+
+Outcome: Prove fresh install, existing-client and maintainer upgrade, installed-skill synchronization,
+provider-neutral fallback, reporting-schema compatibility/reset, rollback, supported platforms,
+documentation parity, target behavior, release provenance, and final origin-to-product closure.
+
+Gate:
+
+- `G5-PORTABLE-UPGRADE-AND-CLOSED-LOOP-RELEASE`: all accepted requirements and authorized changes
+  survive upgrade/rollback and are reconciled through current product truth and target evidence;
+  IDEA-0011 closes without requiring hosted IDEA-0007 deployment or App Server availability.
+
+Candidate campaign: `qualify-upgrade-release-and-reconcile-scripted-orchestration`.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G1-ORCHESTRATION-AUTHORITY-CONTRACT-FROZEN | M1 / same gate |
+| G2-EXACT-RESUME-AND-FAILURE-SAFETY | M1 / same gate |
+| G3-WORK1-WORK2-KISS-SLICE-QUALIFIED | M2 / same gate |
+| G4-EFFICIENCY-OBSERVABILITY-AND-REPORTING-PROVEN | M3 / same gate |
+| G5-PORTABLE-UPGRADE-AND-CLOSED-LOOP-RELEASE | M4 / same gate |
+
+Transfer count: 5 reviewed gates; 5 mapped gates; 0 dropped.
+
+## Execution Boundary
+
+This promotion accepts the project direction and roadmap only. It grants no source implementation,
+campaign execution, deployment, push, release, credential, destructive, cross-workspace, or hosted
+dashboard authority. A later execution request derives M1 first and remains bounded by its requested
+Work1 through Work5 endpoint and the active authority envelope.
+
+## Deferred Possibilities
+
+- General Work3 through Work5 release automation.
+- Hosted dashboard application, authentication, PostgreSQL storage, and deployment from IDEA-0007.
+- Semantic implementation, diagnosis, mitigation, evidence, or release decisions by script.
+- Exact GUI token accounting until exposed by the provider.

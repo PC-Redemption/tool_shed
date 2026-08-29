@@ -1,0 +1,206 @@
+# Idea Brief: Scripted Tool Shed Work Orchestration and Token Efficiency
+
+Status: exploring
+Type: idea-brief
+Updated: 2026-08-29
+Next Action: continue brainstorming or promote this brief with `ts: prm idea <idea-id-or-path>`
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces:
+
+## Current Synthesis
+
+### Idea
+
+Move deterministic Tool Shed coordination out of Codex turns and into guarded, resumable scripts so
+model tokens are spent on product reasoning, ambiguity, diagnosis, evidence judgment, and material
+decisions. Work1 through Work5 currently define endpoints and `work_level_config.py` resolves
+workspace customization, but Codex still manually sequences much of the routine preparation and
+closeout around those endpoints.
+
+Create one thin work-orchestration surface that composes existing commands rather than replacing
+them. Codex supplies the requested scope, accepted outcome, evidence references, authority envelope,
+and any material decisions. The runner handles deterministic mechanics such as identity/audit
+preflight, work-level resolution, change-aware validation selection, disposable-view regeneration,
+compact audit reporting, documentation build/parity checks, exact outcome application, logical
+checkpoint/rebuild proof, Doctor, configured target verification, and endpoint-appropriate Git
+checkpointing. Each step should be idempotent, state-token guarded, resumable, and independently
+callable.
+
+Add explicit local telemetry that distinguishes `reasoning-required`, `deterministic-script`,
+`recovery-retry`, and `external-wait` phases. Record commands/phase IDs, duration, success,
+retry/failure classification, output bytes, and tool-call counts. Record actual token usage only
+where the provider exposes it, such as qualified App Server operations; use clearly labelled output
+and interaction proxies for GUI-native work rather than inventing token counts.
+
+Make remedial model use a first-class derived metric. A remedial phase is deterministic Tool Shed
+coordination, recovery, or retry that could have been avoided by a settled script or compact
+contract; legitimate product diagnosis and reasoning remain `reasoning-required`. When the
+provider exposes usage, attribute the exact model-turn token delta to the classified phase and
+report `remedial_tokens_actual` plus `remedial_token_coverage`. When usage is unavailable, keep the
+token value `null`/unknown and report the separately labelled remedial tool-call, output-byte,
+duration, and retry proxies. Never blend actual and proxy values into one estimated token total.
+
+### Why It Matters
+
+Recent end-to-end Tool Shed work suggests roughly 40–60% of execution-phase tool interactions can
+be deterministic coordination. In one representative Work2 change, about 15–20 of roughly 40 tool
+invocations were routine sequencing or recovery: identity/audit, view regeneration, manifest
+preparation, validator reruns, outcome recording, checkpoint/rebuild, compact audits, documentation
+parity, health checks, and Git checkpointing. Large success payloads—especially checkpoint object
+lists and full outcome inventories—also consume context without changing the next decision.
+
+Existing App Server telemetry reinforces the measurement gap rather than answering it: 91 recorded
+operations included 33 recovery-control operations and 21 unsuccessful operations, but records do
+not classify remedial work and do not cover GUI-native Codex activity. Without a shared taxonomy and
+workflow journal, Tool Shed cannot prove whether new scripts are actually returning tokens to useful
+reasoning.
+
+### Desired Outcome
+
+For ordinary Tool Shed work, Codex reasons about the requested product change and interprets genuine
+exceptions while one deterministic runner performs routine endpoint preparation and closeout. A
+successful run returns one compact summary with the chosen endpoint, completed/skipped steps,
+validation result, state/checkpoint digest, target evidence, Git state, and exact exception or next
+action. Large details remain available on request or in ignored evidence, not injected into every
+model turn.
+
+Measured deterministic orchestration should fall below 15% of execution interactions, with zero
+retries caused by known command syntax, stale disposable views, or replaying already-completed
+closeout steps. Failures must remain diagnosable: compact-by-default output cannot hide the first
+failing command, classification, relevant bounded stderr, recovery action, or resumable step.
+
+Each project should expose a compact local efficiency rollup and a versioned, sanitized reporting
+snapshot for the hosted Tool Shed dashboard. The dashboard can compare projects using actual
+remedial tokens only when coverage is visible and sufficient; otherwise it displays the portable
+proxy dimensions and an explicit unmeasured/partial state.
+
+## Smallest First Release
+
+- Add a dry-run/resumable closeout runner before attempting to automate implementation itself.
+- Compose current project identity, work-level resolver, validation, document views, outcome,
+  checkpoint/rebuild, Doctor, documentation parity, and Git helpers through stable Python APIs or
+  subprocess contracts.
+- Regenerate ignored/disposable lifecycle views before local validation while preserving CI's
+  mutation-free stale-view check.
+- Select the existing changed-path validation profile and avoid rerunning already-passed phases when
+  their exact inputs have not changed.
+- Add compact success envelopes to checkpoint, outcome-audit, validator, and Doctor aggregation;
+  retain verbose/detail modes for investigation.
+- Record a local ignored workflow journal with phase classification, input/output state tokens,
+  duration, result, retry count, and available usage metrics.
+- Add a deterministic aggregation/report command that emits per-project
+  `remedial_tokens_actual`, measurement coverage, and separately labelled remedial interaction,
+  output, duration, and retry proxies from the local journal.
+- Produce a bounded, versioned dashboard payload containing only aggregate project metrics,
+  measurement window/counter epoch, coverage, and freshness; do not upload prompts, commands,
+  paths, source, or raw diagnostic output.
+- Prove the first release on Direct Work1 and Work2 paths before extending release/push behavior.
+
+## Constraints And Non-Goals
+
+- Scripts may enforce settled policy but must not choose product behavior, resolve semantic
+  ambiguity, invent evidence, declare an outcome satisfied, authorize a material change, or expand
+  deployment/release authority.
+- Work1–Work5 remain stopping points and the authority envelope remains controlling. A runner cannot
+  turn Work2 into push/release or treat autonomy as permission to invent work.
+- Preserve existing commands as independently useful and testable interfaces. Do not create an
+  opaque monolith or a second workflow/state authority.
+- Local SQLite and tracked logical checkpoints retain their current authority roles. The workflow
+  journal is operational telemetry, not project truth.
+- Provider-neutral orchestration cannot require App Server. Provider-exposed tokens enrich metrics
+  when available; GUI-native runs use honest proxies.
+- Dashboard reporting is an optional sanitized projection of local operational telemetry. Network
+  or dashboard failure cannot block Tool Shed work, change local authority, or erase the local
+  measurement record.
+- Deterministic automation should reduce model orchestration, not weaken validation, recovery,
+  concurrency fences, target verification, or closed-loop reconciliation.
+- The first local orchestration slice must define and test the dashboard aggregate payload, but it
+  does not require the hosted dashboard to be deployed before local qualification can complete.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| One compositional Work1–Work5 runner | Removes repeated sequencing and supports consistent resume/summary behavior | Can become an opaque framework if it duplicates existing commands | Selected direction, keep thin |
+| Closeout-only first slice | Captures high-frequency routine work with low semantic risk | Leaves implementation/test interpretation with Codex | Selected KISS boundary |
+| Make the validator repair derived state automatically | Eliminates stale-view rerun loops | CI must remain mutation-free and should detect stale projections | Use explicit local prepare mode or outer runner |
+| Compact success output with verbose failure detail | Reduces context consumption while preserving diagnosis | Poor summaries could hide important evidence | Selected with bounded exception detail |
+| Fully script implementation and mitigation | Could reduce more tool calls | Requires semantic judgment and creates unsafe general automation | Rejected |
+| Use only App Server token telemetry | Provides actual usage where exposed | Misses GUI-native work and confuses provider behavior with Tool Shed phases | Insufficient alone |
+| Manual process guidance only | No new machinery | Preserves current remedial model work and cannot measure improvement | Insufficient |
+
+## Open Questions
+
+- Should the initial interface be `tool_shed_work.py closeout`, an extension of Doctor, or a small
+  library used by provider adapters and explicit CLI commands?
+- Which steps are safe to skip solely from exact input/state digests, and which always need current
+  external target evidence?
+- How should an unpublished version/manifest candidate be prepared without letting the runner choose
+  semantic versioning or rewrite released provenance?
+- Which configured Work2 deployment checks can be represented portably, and which remain
+  workspace-specific `before`/`after` actions?
+- What local retention and privacy limits should apply to workflow telemetry and bounded failure
+  output?
+- What reporting window and counter-epoch rules best support fair per-project dashboard comparison
+  without retaining granular model activity on the hosted service?
+
+## Decisions
+
+- Optimize model use for real reasoning rather than deterministic Tool Shed mechanics.
+- Treat 40–60% scriptable execution interactions as a provisional estimate, not a measured token
+  percentage.
+- Target less than 15% deterministic orchestration interactions and zero known-syntax/derived-view
+  retries after implementation.
+- Build a thin compositional and resumable runner around existing guarded commands.
+- Start with preparation/closeout and compact reporting; do not automate semantic implementation or
+  mitigation decisions.
+- Add honest phase telemetry before claiming token savings. Never infer unavailable GUI token use.
+- Record exact remedial tokens only for measured provider operations, publish measurement coverage,
+  and keep GUI-native proxy metrics separate rather than manufacturing one blended estimate.
+- Export a sanitized per-project aggregate to the hosted dashboard contract while retaining local
+  telemetry as the detailed operational source and keeping the dashboard informational.
+
+## Don't Forget
+
+- A successful command is not proof of the desired outcome; scripts must preserve evidence and
+  target checks rather than merely returning exit code zero.
+- Output compaction is a token feature. Default summaries should not print hundreds of checkpoint
+  objects or every reconciled cycle when only counts and exceptions affect the next action.
+- Resume must use exact project identity, state tokens, input digests, and completed-step evidence;
+  do not guess that a partial run is safe to replay.
+- Failed phases need the exact command ID, bounded diagnostic output, mutation state, rollback or
+  recovery action, and whether resume or restart is safe.
+- Derived local repair and CI validation are different modes: CI should detect drift without
+  silently changing the checkout.
+- Measure wall time and interaction/output reduction as well as provider tokens so benefits remain
+  visible across Codex GUI, App Server, and other qualified providers.
+- A low actual-token total with low measurement coverage is not proof of efficiency. Every local
+  and hosted presentation must place coverage/freshness beside token totals and label missing
+  provider usage as unknown rather than zero.
+
+## Exploration Log
+
+### 2026-08-29
+
+- Idea Brief created from the operator's goal of spending model tokens on real reasoning instead of
+  Tool Shed work that deterministic scripts can perform.
+- Initial audit estimated that 40–60% of execution-phase tool interactions are potentially
+  scriptable, based on a representative Work2 run with approximately 15–20 routine coordination
+  calls among roughly 40 total tool invocations.
+- Discovery identified the largest immediate opportunities as a compositional endpoint/closeout
+  runner, derived-view preparation, change-aware validation, compact output, resumable exact-state
+  steps, and phase telemetry.
+- Existing App Server telemetry was found to cover 91 operations, including 33 recovery-control and
+  21 unsuccessful operations, but it lacks remedial-work classification and omits GUI-native work;
+  it is evidence for instrumentation need, not a trustworthy token-savings baseline.
+- The initial KISS boundary keeps behavior, ambiguity, evidence sufficiency, material-change, and
+  release/deployment authority judgments with Codex/operator while moving settled deterministic
+  mechanics into scripts.
+- Owner required a direct remedial-token metric and per-project web visibility. The brief now
+  assigns exact token deltas only to provider-measured phases, requires coverage plus separate GUI
+  proxies, and defines a sanitized aggregate payload for the hosted dashboard without making the
+  hosted service a local orchestration dependency.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.
