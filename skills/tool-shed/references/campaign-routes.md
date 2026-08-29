@@ -69,6 +69,9 @@ the resulting database revision through the normal schema-2 checkpoint and commi
 the registered product commit remains the Work2 evidence. Repeating an exact registration is
 idempotent. A Work2 candidate is available for local dogfooding immediately and remains
 `awaiting-release`; Work2 evidence is not production evidence.
+For a verified pre-cohort Work2 result whose local outcome is already terminal, guarded
+registration creates one linked `release-extension-of` outcome for the missing production gate;
+never reopen or rewrite the historical verdict.
 
 Read optional project state from root `work/tool-shed.yaml` when present. The minimal supported
 declaration is:

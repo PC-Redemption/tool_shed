@@ -48,6 +48,11 @@ python3 scripts/release_cohort.py --workspace . register \
 For direct work without an existing owner, replace `--origin-cycle` with `--accepted-outcome` and
 `--summary`. Exact repeated registration does not advance the database revision.
 
+When a pre-cohort Work2 result was already given a terminal local verdict, registration does not
+reopen or rewrite it. The guarded command creates one open direct release extension related by
+`release-extension-of`, preserves the original verdict as history, and makes only the missing
+production-release obligation a cohort candidate. Repeating that backfill reuses the extension.
+
 At Work5, freeze the clean combined candidate, publish it through the repository's ordinary
 release route, and record the verified durable publication reference:
 

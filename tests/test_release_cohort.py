@@ -237,6 +237,76 @@ class ReleaseCohortTests(unittest.TestCase):
                 2,
             )
 
+    def test_terminal_pre_cohort_work2_result_gets_one_release_extension(self) -> None:
+        ids: dict[str, str] = {}
+
+        def write(connection, revision):
+            stamp = hybrid_state.now()
+            artifact_id = hybrid_state.random_uuid()
+            cycle_id = hybrid_state.random_uuid()
+            verdict_id = hybrid_state.random_uuid()
+            ids.update(artifact=artifact_id, cycle=cycle_id)
+            connection.execute(
+                "INSERT INTO artifact VALUES (?, 'direct-work', NULL, ?, 'sqlite', 'terminal', ?, ?, ?)",
+                (artifact_id, f"sqlite/outcome-capsules/{artifact_id}", "1" * 64, stamp, stamp),
+            )
+            connection.execute(
+                "INSERT INTO cycle VALUES (?, 'direct-work', ?, ?, 'terminal', ?, ?)",
+                (cycle_id, artifact_id, "Deliver the prior Work2 fix.", stamp, stamp),
+            )
+            connection.execute(
+                "INSERT INTO outcome_verdict VALUES (?, ?, 'fixture', 'satisfied', ?, 'fixture', ?, ?)",
+                (verdict_id, cycle_id, "Work2 checks passed.", revision, stamp),
+            )
+            connection.execute(
+                "INSERT INTO reconciliation VALUES (?, ?, ?, '[]', ?, 'reconciled', ?, '[]')",
+                (hybrid_state.random_uuid(), cycle_id, revision, verdict_id, stamp),
+            )
+
+        hybrid_state.managed_write(
+            self.workspace,
+            project_binding=self.binding,
+            command="create-terminal-work2-origin",
+            actor="fixture",
+            callback=write,
+            expected_writes=4,
+        )
+        initial = release_cohort.status(self.workspace)
+        registered = release_cohort.register(
+            self.workspace,
+            expected=initial["state_token"],
+            project_binding=self.binding,
+            commitish="HEAD",
+            origin_cycles=[ids["cycle"]],
+            accepted_outcome=None,
+            summary=None,
+        )
+        extension = registered["result"]["release_extensions"][0]
+        self.assertEqual(extension["original_cycle_id"], ids["cycle"])
+        self.assertNotEqual(extension["extension_cycle_id"], ids["cycle"])
+        candidate = registered["status"]["active"][0]["candidates"][0]
+        self.assertEqual(candidate["origin_cycle_id"], extension["extension_cycle_id"])
+
+        repeated = release_cohort.register(
+            self.workspace,
+            expected=registered["status"]["state_token"],
+            project_binding=self.binding,
+            commitish="HEAD",
+            origin_cycles=[ids["cycle"]],
+            accepted_outcome=None,
+            summary=None,
+        )
+        self.assertFalse(repeated["writes_performed"])
+        with contextlib.closing(
+            hybrid_state.connect(hybrid_state.database_path(self.workspace), writable=False)
+        ) as connection:
+            self.assertEqual(
+                connection.execute(
+                    "SELECT COUNT(*) FROM relationship WHERE relation_type='release-extension-of'"
+                ).fetchone()[0],
+                1,
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -270,6 +270,21 @@ def _open_chain(connection: sqlite3.Connection, starting_cycle: str) -> list[str
     return selected
 
 
+def _open_release_extension(connection: sqlite3.Connection, original_cycle: str) -> str | None:
+    original = _latest_outcome(connection, original_cycle)
+    rows = connection.execute(
+        "SELECT c.id FROM relationship r JOIN cycle c ON c.origin_artifact_id = r.from_artifact_id "
+        "WHERE r.to_artifact_id = ? AND r.relation_type = 'release-extension-of' "
+        "AND r.retired_revision IS NULL AND c.lifecycle_state <> 'terminal' ORDER BY c.opened_at, c.id",
+        (original["origin_artifact_id"],),
+    ).fetchall()
+    if len(rows) > 1:
+        raise ReleaseCohortError(
+            f"terminal outcome has multiple open release extensions: {original_cycle}"
+        )
+    return str(rows[0]["id"]) if rows else None
+
+
 def _insert_open_cycle(
     connection: sqlite3.Connection,
     revision: int,
@@ -331,7 +346,11 @@ def register(
         ) as connection:
             resolved: list[str] = []
             for cycle_id in dict.fromkeys(origin_cycles):
-                for member in _open_chain(connection, cycle_id):
+                chain = _open_chain(connection, cycle_id)
+                if not chain:
+                    extension = _open_release_extension(connection, cycle_id)
+                    chain = _open_chain(connection, extension) if extension else []
+                for member in chain:
                     if member not in resolved:
                         resolved.append(member)
             requirement_ids = [
@@ -407,12 +426,52 @@ def register(
             supplied = [direct_cycle]
             created_direct = direct_cycle
         resolved: list[str] = []
+        release_extensions: list[dict[str, str]] = []
         for cycle_id in supplied:
             try:
                 uuid.UUID(cycle_id)
             except ValueError as error:
                 raise ReleaseCohortError(f"origin cycle is not a UUID: {cycle_id}") from error
-            for member in _open_chain(connection, cycle_id):
+            chain = _open_chain(connection, cycle_id)
+            if not chain:
+                extension = _open_release_extension(connection, cycle_id)
+                if extension is None:
+                    source = connection.execute(
+                        "SELECT accepted_outcome FROM cycle WHERE id = ?", (cycle_id,)
+                    ).fetchone()
+                    if source is None:
+                        raise ReleaseCohortError(f"origin cycle does not exist: {cycle_id}")
+                    original = _latest_outcome(connection, cycle_id)
+                    extension, extension_artifact = _insert_open_cycle(
+                        connection,
+                        revision,
+                        kind="direct-work",
+                        accepted_outcome=(
+                            "Production-release and reconcile prior Work2 outcome: "
+                            + str(source["accepted_outcome"])
+                        ),
+                        summary=f"Release extension for terminal pre-cohort outcome {cycle_id}.",
+                        path_prefix="outcome-capsules",
+                    )
+                    connection.execute(
+                        "INSERT INTO relationship VALUES (?, ?, 'release-extension-of', ?, ?, ?, NULL)",
+                        (
+                            hybrid_state.random_uuid(), extension_artifact,
+                            original["origin_artifact_id"], "release-cohort-v1", revision,
+                        ),
+                    )
+                    connection.execute(
+                        "INSERT INTO evidence_reference VALUES (?, ?, 'prior-work2-outcome', ?, NULL, ?, ?)",
+                        (
+                            hybrid_state.random_uuid(), extension, f"cycle:{cycle_id}", cycle_id,
+                            hybrid_state.now(),
+                        ),
+                    )
+                    release_extensions.append(
+                        {"original_cycle_id": cycle_id, "extension_cycle_id": extension}
+                    )
+                chain = _open_chain(connection, extension)
+            for member in chain:
                 if member not in resolved:
                     resolved.append(member)
         if not resolved:
@@ -471,6 +530,7 @@ def register(
             "cohort_id": cohort_id,
             "created_cohort": created_cohort,
             "created_direct_cycle": created_direct,
+            "release_extensions": release_extensions,
             "commit": commit,
             "registered": registered,
         }
