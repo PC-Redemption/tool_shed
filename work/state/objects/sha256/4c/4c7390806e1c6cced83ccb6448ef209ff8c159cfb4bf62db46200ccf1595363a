@@ -1,0 +1,274 @@
+# Idea Brief: Hosted Cross-Project Tool Shed Dashboard
+
+Status: exploring
+Type: idea-brief
+Updated: 2026-08-29
+Next Action: continue discovery around server ownership, authentication, payload contract, and deployment boundaries, or promote with `ts: prm idea IDEA-ID`
+Produces:
+
+## Current Synthesis
+
+### Idea
+
+Add an organized web dashboard whose canonical landing page is
+`https://ts.rookaro.com/dashboard/`. It receives sanitized status reports from multiple local Tool
+Shed instances and lets the operator move quickly among projects. Each local instance remains
+authoritative for its own work state; the hosted service is an advisory reporting and presentation
+layer, not a remote controller or replacement work database.
+
+The site should establish one reusable dashboard application shell: a persistent header and
+minimal footer, a left navigation pane for fleet and project selection, and a right content pane
+for the selected scope. Long project pages should be divided into one level of URL-addressable tabs
+so summary and attention information stays visible without forcing the operator through a single
+large document.
+
+Each Tool Shed instance should use one singleton background reporting worker. Local update triggers
+durably enqueue a sanitized event and invoke a lightweight launcher. The launcher starts the worker
+when absent or signals the existing worker to wake immediately. While active, the worker drains the
+outbox, sends changes, and emits a heartbeat every one minute. It declares itself quiescent and
+exits after two hours with no activity and an empty outbox. A periodic safety check recovers missed
+triggers, direct database changes, crashes, and unsent events.
+
+### Why It Matters
+
+VS Code presents only the current workspace and does not give the operator a useful portfolio view
+while several projects are progressing in parallel. The operator needs one surface that exposes
+what needs attention, what is working, what recently completed, what has an open outcome loop, and
+which instances are stale without opening each repository or navigating a large generated file
+tree.
+
+Immediate update triggers make the hosted view responsive, while a short-lived resident worker
+provides heartbeats and retry behavior without requiring every production install to run a
+permanent daemon. Singleton coordination prevents duplicate launch attempts from accumulating
+background processes.
+
+### Desired Outcome
+
+The operator opens `https://ts.rookaro.com/dashboard/` and, after authentication, sees every
+reporting Tool Shed project ordered by operational relevance. Selecting a project changes the
+right pane without losing fleet navigation. Important state remains above the content tabs, and
+each detailed section has a stable URL suitable for refresh, browser history, and direct linking.
+
+Local changes become visible promptly. During an active work session, the server normally receives
+a heartbeat every minute. A duplicate reporter launch wakes or reuses the existing instance worker
+instead of creating another process. Network outages, worker crashes, direct SQLite access, and
+retries do not lose events or create duplicate server state. An idle worker exits cleanly after two
+hours, and the server distinguishes intentional quiescence from an overdue or incompatible client.
+
+## Dashboard Template
+
+### Header
+
+- Tool Shed brand plus an explicit Dashboard marker.
+- Global project search or project switcher.
+- Reporting freshness or connection summary.
+- Authenticated account and sign-out controls.
+- Persistent or sticky positioning where it does not obscure content.
+
+### Left Navigation Pane
+
+- All projects, needs attention, working, recently completed, stale/offline, and open outcome loops.
+- Searchable project list with state counts, pinned projects, and optional collapsible groups or tags.
+- Clear separation between portfolio navigation and the section tabs inside the right pane.
+- Collapsible layout on desktop and a drawer on narrow screens.
+
+### Right Content Pane
+
+- Selected fleet or project title, current state, last report time, and any attention condition.
+- Compact summary cards above the tabs so blocked, stale, or unreconciled state is never hidden.
+- Project tabs: Overview, Current Work, Roadmap & Gates, Outcome Reconciliation, Health, and
+  Activity/History.
+- Fleet tabs may specialize the same content area for Overview, Needs Attention, Working, Recent,
+  and Stale views.
+- One tab level only. Long history uses paging or incremental loading; record details use a drawer
+  or focused detail route rather than nested tabs.
+- Sticky tab and table headers where useful. On narrow screens, tabs scroll horizontally or become
+  an accessible compact selector.
+
+### Footer
+
+- Dashboard/server version, reporting API status, documentation, privacy/retention information,
+  and support or source links.
+- No primary operational controls in the footer.
+
+### Navigation And Accessibility Contract
+
+- Render tabs as stable routes such as `/dashboard/projects/{project-id}/outcomes`, with progressive
+  enhancement rather than JavaScript-only hidden state.
+- Preserve browser back/forward behavior, reload, direct links, focus state, and keyboard operation.
+- Fetch or mount only the active tab's detailed data, while keeping shared summary and attention
+  state visible.
+- Do not use tabs for information that must be compared simultaneously.
+
+## Instance Reporting Contract
+
+### Local Pipeline
+
+1. A relevant Tool Shed mutation records a sanitized reporting event in a durable local outbox.
+2. A lightweight launcher obtains an atomic lock keyed by stable Tool Shed instance identity.
+3. If the worker exists, the launcher signals its local control socket and exits.
+4. Otherwise the launcher starts one detached worker for that instance.
+5. The worker drains queued events immediately, acknowledges successful delivery, and waits for
+   triggers while sending a heartbeat every one minute.
+6. Failed delivery uses bounded exponential backoff with jitter and never creates a launch storm.
+7. After two idle hours with an empty outbox, the worker sends `quiescent` and exits.
+8. A scheduler or equivalent safety mechanism runs a low-cost periodic check to detect missed
+   triggers, direct database changes, stale locks, crashes, and pending events.
+
+### Duplicate And Ordering Protection
+
+- Use an atomic operating-system lock plus a local control socket or platform equivalent; do not
+  trust a PID file alone.
+- Recover stale locks and verify process identity before replacing local coordination state.
+- Give every update an instance-scoped monotonic sequence and idempotency key.
+- Make server ingestion idempotent so retries and out-of-order delivery cannot duplicate or regress
+  reported state.
+- Keep one worker per Tool Shed instance. A global multi-project daemon is not required initially.
+
+### Server Presence States
+
+- `active`: last heartbeat is within two minutes.
+- `delayed`: an active client has missed expected heartbeats for two to five minutes or reports
+  queued delivery retries.
+- `stale`: no expected heartbeat or safety report arrives after five minutes and the instance did
+  not declare quiescence.
+- `quiescent`: the worker intentionally stopped after the two-hour inactivity window.
+- `incompatible`: the client and server cannot safely exchange their protocol versions.
+
+The exact stale presentation may later account for a declared `next_check_at` safety interval so an
+intentionally sleeping installation is not shown as failed.
+
+### Heartbeat Payload
+
+Keep active heartbeats small: stable instance ID, project ID, status, sequence, timestamp, client
+version, and protocol version. Do not resend full project state every minute. Send detailed state
+only when its export revision changes or when the server requests an authorized resynchronization.
+
+## Authority, Privacy, And Reliability Boundaries
+
+- Local SQLite remains authoritative. The hosted dashboard is advisory and read-only in the first
+  release; it cannot mutate campaigns, roadmaps, outcomes, or project files.
+- Send only allowlisted status fields. Do not upload source, prompts, logs, credentials, local
+  absolute paths, full databases, owner-authored document bodies, or raw evidence.
+- Use stable project and instance identities so several installations and projects do not collide.
+- Authenticate outbound HTTPS reports with a revocable instance-specific credential stored outside
+  tracked project state.
+- Network or dashboard failure must never block ordinary Tool Shed work.
+- Bound and compact the local outbox while retaining the newest complete state needed for recovery.
+- Include client/server protocol negotiation, rate limits, retry guidance, retention policy, and
+  observable last-success/last-error state.
+- GitHub and an initialized Git repository are not production runtime requirements.
+
+## Upgrade Contract
+
+- A running worker should finish or safely retain its current delivery, then exit when it detects a
+  newer installed reporter version. The next trigger starts the new version.
+- Pending outbox records must remain readable across supported upgrades, with explicit migrations
+  and rollback evidence for incompatible schema changes.
+- Upgrades must not replace a live worker underneath an unacknowledged delivery without recovery.
+- The server accepts a bounded compatibility window and reports `incompatible` rather than silently
+  misinterpreting an old payload.
+- The maintainer workspace and ordinary installed instances require separate qualification because
+  their upgrade paths differ.
+
+## Constraints And Non-Goals
+
+- Reuse the existing `ts.rookaro.com` branding where practical, but keep public documentation
+  navigation separate from the authenticated dashboard application shell.
+- Use `https://ts.rookaro.com/dashboard/` as the canonical dashboard landing page. A versioned
+  reporting API such as `/api/v1/` may remain separate; exact API deployment topology is still an
+  implementation decision.
+- Do not make the hosted server an authority for local work state.
+- Do not add remote command execution, campaign control, file editing, or server-to-instance
+  mutation in the first release.
+- Do not require an always-running process after the two-hour idle window.
+- Do not equate intentional quiescence with failure.
+- Do not reuse deferred completion-watcher/email scope as if it were this dashboard's approved
+  direction; use that work only as relevant protocol, auth, privacy, and failure-model evidence.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Singleton event-driven worker with two-hour idle timeout | Immediate changes, active heartbeat, bounded resident lifetime | Needs robust locking, wakeup, detachment, and crash recovery | Selected direction |
+| Permanent per-instance daemon | Simplest continuous heartbeat semantics | Persistent installation and supervision burden | Not selected initially |
+| One-shot report on every mutation | Very simple lifecycle | Repeated startup, weak retry coordination, no active heartbeat | Insufficient alone |
+| Scheduled one-shot safety reporter | Recovers missed triggers and sleeping clients | Updates are not immediate by itself | Required backstop |
+| Server polls each installation | Central scheduling | Requires inbound reachability and expands local attack surface | Rejected |
+| Read-only advisory dashboard | Keeps local authority and limits blast radius | Cannot manage work remotely | Required first-release boundary |
+| Remote dashboard control | Could centralize operations | Authentication, authorization, replay, conflict, and safety risk | Explicitly deferred |
+
+## Open Questions
+
+- Which server platform and deployment boundary should host the authenticated dashboard and API at
+  `ts.rookaro.com`?
+- What identity enrollment and credential-revocation flow is simple enough for production installs?
+- Which exact sanitized fields and derived status categories make up reporting API v1?
+- Should the safety check default to 15 or 30 minutes, and how should it run across Linux, macOS,
+  and Windows without making one scheduler mandatory?
+- How should the server group instances that report the same project ID from different machines?
+- What retention window is useful for status history, and what aggregation avoids storing noisy
+  one-minute heartbeat rows indefinitely?
+- What fleet size and heartbeat load must the first deployment support?
+- Which existing completion-watcher protocol and failure-model results can be reused without
+  importing its deferred email scope?
+- What authentication boundary separates the current public documentation site from the dashboard?
+
+## Decisions
+
+- Build one centralized, authenticated, cross-project status dashboard with the canonical landing
+  page `https://ts.rookaro.com/dashboard/`.
+- Keep each local Tool Shed instance authoritative and make the hosted service advisory/read-only
+  for the first release.
+- Establish a reusable header, footer, left navigation pane, and right content pane template.
+- Use one level of URL-addressable content tabs to mitigate long pages.
+- Keep attention state and summary cards visible above the tabs.
+- Use one singleton background reporting worker per Tool Shed instance.
+- Wake and reuse an active worker instead of spawning duplicates.
+- Emit active heartbeats every one minute.
+- Exit after two hours without activity only when the durable outbox is empty, after declaring
+  quiescence.
+- Add a periodic safety check so direct database writes, missed triggers, and crashes converge.
+- Use durable outbox delivery, idempotency keys, monotonic sequence numbers, bounded retry with
+  jitter, and server-side deduplication.
+
+## Don't Forget
+
+- One-minute heartbeats should be tiny presence messages, not full-state uploads.
+- The server should aggregate or compact heartbeat history rather than retain every pulse forever.
+- A successful HTTP response proves ingestion, not that the dashboard reflects correct local
+  outcome truth; reconciliation and projection checks still matter.
+- Duplicate-process prevention and duplicate-message prevention are separate requirements.
+- Direct SQLite access should not corrupt reporting. The next managed trigger or scheduled safety
+  pass must detect and report the resulting state change.
+- The operator's primary workflow is rapidly switching among many concurrently active projects.
+- Dashboard alerts must prioritize actionable state instead of turning every sleeping project into
+  noise.
+
+## Related Existing Work
+
+- `ADR-0001`, `MAP-0002`, `CAMP-0035`, `CAMP-0039`, `CHK-0001`, and `SPK-0001` contain potentially
+  reusable hosted-notification, authentication, privacy, retry, and failure-model evidence.
+- This brief is a new product direction. Those records do not authorize dashboard implementation,
+  email scope, or remote control.
+
+## Exploration Log
+
+### 2026-08-29
+
+- Idea Brief created from the operator's need to monitor several Tool Shed projects from one web
+  dashboard rather than one VS Code workspace at a time.
+- Discussion selected a standard application shell with header, footer, portfolio navigation on the
+  left, project content on the right, and one level of URL-addressable tabs for long-page control.
+- Discussion selected a local-to-hosted reporting boundary in which local SQLite stays authoritative
+  and the first hosted dashboard is advisory/read-only.
+- The reporter design settled on one instance-scoped singleton worker, immediate event-triggered
+  wakeup, durable outbox delivery, one-minute active heartbeats, a two-hour idle exit, and a
+  periodic safety check for missed or unmanaged changes.
+- Existing hosted watcher work was recognized as related evidence but not treated as the same idea
+  or inherited scope.
+- Owner set `https://ts.rookaro.com/dashboard/` as the canonical dashboard landing page.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

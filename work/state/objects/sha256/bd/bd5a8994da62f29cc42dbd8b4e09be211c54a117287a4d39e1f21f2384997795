@@ -1,0 +1,47 @@
+# Campaign: Freeze Adaptive Readiness Contract and Authority
+
+Status: complete
+Type: campaign
+Updated: 2026-08-29
+Next Action: none
+Campaign ID: freeze-adaptive-readiness-contract-and-authority
+Roadmap: adaptive-pre-prm-idea-readiness-review
+Roadmap Document: PRM-0023
+Roadmap Revision: 1
+Milestone: M1-CONTRACT-AUTHORITY-FROZEN
+Unlocks Gate: G1-FAILURE-CONCURRENCY-CONTRACT, G2-STRUCTURED-RESULT-AUTHORITY
+Depends On: none
+Decision: none
+Primary Focus Areas: artifact-workflows
+Supporting Focus Areas: workspace-safety, provider-portability
+Completion Gate: the versioned contract, structured authority, stale-write fence, and distinct unavailable/error/not-ready behavior pass focused qualification
+Completion Evidence: work/evidence/idea-readiness-m1-contract-authority.json; 11 focused tests passed
+
+## Outcome
+
+Freeze and implement the smallest complete pre-PRM readiness substrate: exact trigger and freshness
+semantics, versioned structured result records, current/stale lookup, fail-closed mutation, distinct
+semantic versus operational outcomes, and generated read-only presentation.
+
+## Scope
+
+- Add the approved contract as settled product documentation.
+- Reuse the append-only managed Hybrid event primitive as the structured authority unless evidence
+  proves it insufficient.
+- Add prepare, validate, apply, status, and exact gate-transfer commands.
+- Bind every result to Idea artifact UUID, visible ID, document revision/body hash, and contract
+  version.
+- Reject stale Idea writes and unknown contracts before persistence or promotion reuse.
+- Add focused tests for the M1 failure, concurrency, authority, and projection gates.
+
+## Non-Goals
+
+- Do not add a new database schema or editable Markdown review artifact.
+- Do not integrate natural-language Tool Shed routes until M2.
+- Do not release or synchronize the installed skill until M3.
+
+## App Server Preparation Contract
+
+This campaign is GUI-native implementation under the active PRM. Exact changed paths and
+verification commands are resolved by the current execution surface; no App Server dispatch is
+required.

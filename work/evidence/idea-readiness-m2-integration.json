@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-milestone-evidence",
+  "roadmap": "adaptive-pre-prm-idea-readiness-review",
+  "roadmap_document": "PRM-0023",
+  "milestone": "M2-PRM-INTEGRATION-PROVEN",
+  "campaign": "CAMP-0121",
+  "recorded_at": "2026-08-29T13:37:09Z",
+  "verdict": "passed",
+  "gates": {
+    "G3-LOSSLESS-PRM-GATE-TRANSFER": "passed",
+    "G4-INTERACTION-PORTABILITY": "passed"
+  },
+  "verification": {
+    "command": "python3 -m unittest tests.test_idea_readiness tests.test_document_store tests.test_scripts.ScriptTests.test_operator_help_is_packaged_and_routed",
+    "tests_run": 13,
+    "result": "OK",
+    "proved": [
+      "manual ts: bs review and conditional ts: prm idea are the only semantic review triggers",
+      "ordinary brainstorming and generated views perform no semantic review",
+      "current ready results are revision-bound and reusable while stale and not-ready results require review",
+      "interrupted review resumes only against valid same-Idea history",
+      "missing or dropped PRM gates fail exact transfer validation",
+      "provider-neutral judgment is separated from deterministic validation, storage, and transfer"
+    ]
+  },
+  "sha256": {
+    "scripts/idea_readiness.py": "a55e8fa59a4165f1c86280ae4e4efd3fc7b7c6132774b9d5e32366375585ac0f",
+    "scripts/document_store.py": "a6434831d7940af8c058c6c634e3fa2be2d4b5bcdf9446262d835efb17dd9739",
+    "skills/tool-shed/SKILL.md": "5c6db012589b99afc2f9fd5af3724fa3b6d04f0571f97968055bce13bfea3eef",
+    "skills/tool-shed/references/campaign-routes.md": "75f56ce8b9edfe080129d7c933e7b4a417732f69cbd7ac9ed9e9a8145b5cc6da",
+    "scripts/install_into_workspace.py": "8205eee83f4925607fd5375308a601cdf78e02bc200f97e6c171ecbcf35f4eab",
+    "docs/idea-readiness-review.md": "39256514a373b299f5f8720326680fee68fbff89e4a0a3d48de5240093245f27",
+    "docs/commands.md": "42fb4fbd4dfef1d7cb23785414e4c68edfc242b778771201e5740e1c32f70ee6",
+    "docs/operator-guide.md": "96a2ecf99659809e6585e741724f1f94a7551d985a6772702d0b1e4f65ff8ace",
+    "templates/idea-brief.md": "b4ada9394929fd96ffb6840e59d431f5a4185d4cc7c87ced42f5f509d5389438",
+    "tests/test_idea_readiness.py": "528b91c3de88ecf7f11f58baa1fc2e737c06eb14385408fdf1d7acfef431433b",
+    "tests/test_scripts.py": "19a06bd2447fde04926da19eb6c4cbd535f178801e6978e73d292bf38efa0d63"
+  }
+}

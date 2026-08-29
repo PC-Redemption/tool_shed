@@ -70,6 +70,7 @@ Use brainstorming when the idea is still evolving and needs to survive across se
 ```text
 ts: brainstorm reduce campaign token usage across Windows and Linux
 ts: bs idea reduce-campaign-token-usage
+ts: bs review IDEA-0008
 ```
 
 `brainstorm` and `bs` are exact aliases. The route creates or resumes one tracked Idea Brief under
@@ -83,6 +84,11 @@ work index but stays outside campaign reconciliation, so discovery cannot create
 Resolution campaign. Brainstorming authorizes only the selected brief; it does not authorize a
 project map, roadmap, campaign, source change, deployment, or publication.
 
+The review command is deliberate: ordinary brainstorm turns remain fast and never perform a
+semantic readiness review. A manual `ts: bs review` is one trigger; `ts: prm idea` is the other,
+and only triggers when the brief lacks a current ready result. Tool Shed may show whether a stored
+review is `ABSENT`, `STALE`, `CURRENT-NOT-READY`, or `CURRENT-READY` without rerunning it.
+
 When ready, start the formal lifecycle from the brief:
 
 ```text
@@ -93,6 +99,13 @@ Tool Shed uses the current synthesis and visible unknowns as PRM input. The brie
 `ready-for-prm` until settled project-map direction captures it, then changes to `promoted` and
 names that map in `Produces:`. Later faithful transitions advance when the authority envelope
 covers them; genuine authority boundaries remain intact.
+
+PRM reuses a current ready result. Otherwise it starts a focused readiness dialogue. A semantic
+`NOT-READY` result names only material blockers; after the Idea is updated, the next review resumes
+the prior digest instead of repeating settled questions. Operational `REVIEW-ERROR` or
+`REVIEW-UNAVAILABLE` stops promotion. Every ready-with-gates result is copied exactly into map or
+roadmap metadata and checked for lossless transfer with zero dropped, renamed, missing, or extra
+gates before acceptance.
 
 ## Choose The Minimum Coordination Level
 

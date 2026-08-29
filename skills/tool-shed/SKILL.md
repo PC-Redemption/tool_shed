@@ -136,12 +136,30 @@ During each brainstorming turn:
 4. Keep status `exploring` until the owner chooses PRM, then use `ready-for-prm`. Use `parked` only
    for an explicit owner choice.
 
+Ordinary brainstorming never performs semantic readiness review. The only review entry points are
+explicit `ts: bs review <idea-id-or-path>` and `ts: prm idea <idea-id-or-path>` when the selected
+brief has no current ready result. The manual route performs an evidence-backed semantic judgment,
+then uses `scripts/idea_readiness.py` to prepare, validate, and apply the revision-bound result.
+Status, list, rendering, and ordinary brainstorm turns may only compare stored identity, document
+revision, body hash, and contract version to report freshness.
+
 Idea Briefs are indexed durable discovery and remain outside campaign-queue reconciliation, but a
 promoted brief may be the immutable origin of a governed SQLite outcome loop. Treat
 `ts: prm idea <idea-id-or-path>` as a request to use that brief as the PRM source. Preserve visible
-unknowns and provenance. Mark it `promoted` and set `Produces:` only after approved project-map
-direction captures it. Promotion does not bypass project-map, roadmap, campaign-plan, release,
-deployment, or other authority boundaries. Brainstorming is GUI-native and does not use App Server.
+unknowns and provenance. Before deriving planning state, reuse a `CURRENT-READY` result or run the
+same focused review when the result is absent, stale, or current-not-ready. `NOT-READY` engages the
+operator on only the material blockers while the PRM request remains active; `REVIEW-ERROR` and
+`REVIEW-UNAVAILABLE` fail promotion closed. When resuming, bind the new result to the prior digest
+and do not repeat settled questions. A return to ordinary brainstorming ends that triggered review
+dialogue.
+
+Before accepting a derived project map or roadmap, copy the ready result's digest, reviewed Idea
+artifact ID, revision, body hash, and complete sorted gate-ID set into structured document metadata,
+then run `idea_readiness.py transfer-check`. Missing, extra, renamed, or dropped gates fail closed;
+`READY` transfers an empty gate set. Mark the brief `promoted` and set `Produces:` only after
+approved project-map direction captures it. Promotion does not bypass project-map, roadmap,
+campaign-plan, release, deployment, or other authority boundaries. Brainstorming and readiness
+review are GUI-native and do not use App Server.
 
 ## Minimum Sufficient Coordination
 

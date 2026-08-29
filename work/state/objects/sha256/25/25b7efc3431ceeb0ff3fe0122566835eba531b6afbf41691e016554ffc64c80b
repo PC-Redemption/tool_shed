@@ -1,10 +1,9 @@
-# Idea Brief: {{ title }}
+# Idea Brief: Adaptive Pre-PRM Idea Readiness Review
 
 Status: exploring
 Type: idea-brief
-Updated: {{ date }}
+Updated: 2026-08-29
 Next Action: continue brainstorming or promote this brief with `ts: prm idea <idea-id-or-path>`
-Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
 Produces:
 
 ## Current Synthesis
@@ -46,7 +45,7 @@ What should become true if this idea succeeds?
 
 ## Exploration Log
 
-### {{ date }}
+### 2026-08-29
 
 - Idea Brief created.
 

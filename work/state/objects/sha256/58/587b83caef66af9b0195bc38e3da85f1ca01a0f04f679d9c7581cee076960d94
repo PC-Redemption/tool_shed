@@ -1,0 +1,107 @@
+# Program Roadmap: Adaptive Pre-PRM Idea Readiness Review
+
+Status: approved
+Type: program-roadmap
+Updated: 2026-08-29
+Next Action: derive and execute M2-PRM-INTEGRATION-PROVEN
+Roadmap ID: adaptive-pre-prm-idea-readiness-review
+Revision: 1
+Source Project Map: MAP-0012
+Source Idea: IDEA-0008
+Readiness Result: READY-WITH-PRM-GATES
+Approved: 2026-08-29
+Current Milestone: M2-PRM-INTEGRATION-PROVEN
+Supersedes: none
+Superseded By: none
+
+## Program Outcome
+
+Deliver and release a proportional, revision-bound Idea Brief readiness review that runs only from
+the two accepted triggers, blocks unsafe promotion truthfully, transfers legitimate uncertainty as
+named PRM gates, preserves ordinary brainstorming responsiveness, and closes the originating Idea
+loop against current product and target evidence.
+
+## Milestones And Evidence Gates
+
+### M1-CONTRACT-AUTHORITY-FROZEN — Review contract and structured authority
+
+Status: complete
+Evidence: work/evidence/idea-readiness-m1-contract-authority.json; CAMP-0120
+
+Outcome: Freeze the two-trigger boundary, verdict and error semantics, freshness/version contract,
+stale-write behavior, structured authority, and minimal generated presentation.
+
+Gates:
+
+- `G1-FAILURE-CONCURRENCY-CONTRACT`: `REVIEW-ERROR` and `REVIEW-UNAVAILABLE` are distinct from
+  `NOT-READY`; unavailable review fails promotion closed; an Idea revision changed during review
+  makes the result stale and prevents its write or reuse.
+- `G2-STRUCTURED-RESULT-AUTHORITY`: one managed structured authority is selected by proving reuse of
+  current SQLite primitives or justifying the smallest schema addition; all views are generated and
+  direct SQL is outside the operating contract.
+
+Candidate campaign: `freeze-adaptive-readiness-contract-and-authority`.
+
+### M2-PRM-INTEGRATION-PROVEN — Trigger, transfer, and operator flow
+
+Status: current
+
+Depends on: M1.
+
+Outcome: Implement both entry points and the focused operator dialogue without adding semantic
+review to ordinary brainstorming.
+
+Gates:
+
+- `G3-LOSSLESS-PRM-GATE-TRANSFER`: an exact transfer check proves that every named
+  `READY-WITH-PRM-GATES` item appears in accepted PRM state; promotion fails closed if any item is
+  omitted.
+- `G4-INTERACTION-PORTABILITY`: interrupted dialogue resumes without repeating settled questions;
+  semantic judgment is provider-neutral; ordinary brainstorming performs only bounded freshness
+  comparison and has no semantic-review latency.
+
+Candidate campaign: `integrate-adaptive-readiness-with-brainstorm-and-prm`.
+
+### M3-RELEASE-QUALIFIED-RECONCILED — Compatibility, release, and closed loop
+
+Depends on: M2.
+
+Outcome: Qualify, publish, canary, and reconcile the feature through the maintainer-first upgrade
+path and a disconnected production-shaped client.
+
+Gate:
+
+- `G5-UPGRADE-ADAPTIVE-QUALIFICATION`: versioned contracts and older-client rejection of unknown
+  verdicts/versions pass; simple, moderate, and consequential fixtures prove adaptive scope; both
+  triggers, stale reuse, concurrent change, failure paths, zero ordinary-brainstorm review, and
+  lossless gate transfer pass; release provenance, maintainer synchronization, client canary, and
+  origin-to-product reconciliation account for all accepted requirements and material development
+  changes.
+
+Candidate campaign: `qualify-release-and-reconcile-adaptive-readiness-review`.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate | Roadmap destination |
+| --- | --- |
+| Failure and concurrency behavior | M1 / G1-FAILURE-CONCURRENCY-CONTRACT |
+| Structured result authority | M1 / G2-STRUCTURED-RESULT-AUTHORITY |
+| PRM gate transfer | M2 / G3-LOSSLESS-PRM-GATE-TRANSFER |
+| Interaction and portability | M2 / G4-INTERACTION-PORTABILITY |
+| Upgrade and qualification | M3 / G5-UPGRADE-ADAPTIVE-QUALIFICATION |
+
+Transfer count: 5 reviewed gates; 5 mapped gates; 0 dropped.
+
+## Execution Boundary
+
+This approved roadmap authorizes faithful campaign derivation under the active Tool Shed authority
+envelope. This promotion action does not materialize campaigns, edit source, commit, push, publish,
+deploy, access credentials, or cross a protected environment. Each milestone must return evidence
+to its gates and propagate its reconciled result to the Idea-rooted outcome loop.
+
+## Deferred Possibilities
+
+- Additional manual-route aliases.
+- Readiness reviews for non-Idea-Brief artifacts.
+- Bulk historical review backfill.
+- Any background, scheduled, startup, or per-turn semantic review.

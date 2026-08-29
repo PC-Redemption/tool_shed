@@ -1,0 +1,97 @@
+# Project Map: Adaptive Pre-PRM Idea Readiness Review
+
+Status: approved
+Type: project-map
+Updated: 2026-08-29
+Next Action: execute the approved Program Roadmap one milestone at a time
+Source Idea: IDEA-0008
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 4
+Reviewed Body SHA256: 84cbae7105f935f8a7d004243e99b0bd5ff3962e8bd0c983dd55fb4a189c2d22
+Campaign: none
+
+## Purpose
+
+Make Idea Brief promotion consistently safe without slowing ordinary brainstorming. Tool Shed will
+run one adaptive semantic readiness review only when the operator explicitly requests it or when
+`ts: prm idea` has no fresh ready result. Promotion continues for `READY` and
+`READY-WITH-PRM-GATES`, stops for `NOT-READY`, and carries every named residual gate into PRM.
+
+## Desired Outcome
+
+An operator can brainstorm naturally and promote an idea without remembering a closing checklist.
+The review remains bound to the exact Idea Brief identity, revision, body hash, and review-contract
+version; deterministic tooling owns freshness and routing while the agent supplies evidence-backed
+semantic judgment. Ordinary brainstorming performs only cheap metadata comparison and never runs
+semantic review.
+
+## First Useful Boundary
+
+- Exactly two semantic-review triggers: explicit manual review and PRM promotion without a fresh
+  ready result.
+- Three operator verdicts: `READY`, `READY-WITH-PRM-GATES`, and `NOT-READY`.
+- One structured database authority for review results, with generated read-only presentation.
+- Lossless transfer of named PRM gates.
+- Focused qualification of failure, concurrency, interaction, portability, upgrade, and closed-loop
+  behavior.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Contract and authority | Freeze trigger, freshness, verdict, error, stale-write, storage, and version rules | existing Idea Brief and hybrid document primitives |
+| PRM integration and operator flow | Enforce both triggers, resume interrupted dialogue, and prove lossless gate transfer | contract and authority |
+| Qualification and release | Prove proportional behavior across simple through consequential ideas and reconcile origin to released product | integrated flow |
+
+## Readiness Gate Transfer
+
+The manual review of Idea revision 4 returned `READY-WITH-PRM-GATES`. All five gates are accepted as
+roadmap constraints, not silently resolved:
+
+1. Failure and concurrency behavior must distinguish `REVIEW-ERROR` or `REVIEW-UNAVAILABLE` from
+   `NOT-READY`, fail closed when review cannot run, and reject a stale write if the Idea changes
+   during review.
+2. Structured result authority must reuse existing SQLite primitives where sufficient, otherwise
+   add the smallest dedicated structure, with one writer and generated read-only views.
+3. Gate transfer must prove every named `READY-WITH-PRM-GATES` item enters the accepted map or
+   roadmap and fail promotion if any item is dropped.
+4. Interaction and portability must resume interrupted dialogue, remain provider-neutral, and keep
+   ordinary brainstorming free of semantic review and per-turn latency.
+5. Upgrade and qualification must version the contract, reject unknown verdicts or versions in
+   older clients, test simple/moderate/consequential briefs, prove both triggers and stale handling,
+   and close the origin-to-product outcome loop.
+
+## Constraints
+
+- Reuse schema-2 document and universal closed-loop mechanisms before adding schema or artifacts.
+- Do not create one editable Markdown review document per run.
+- Do not make every open question a blocker or require implementation detail before PRM.
+- Do not allow a generic override to bypass a material `NOT-READY` blocker.
+- Do not bulk-review or rewrite existing Idea Briefs; adopt incrementally at their next trigger.
+- Preserve provider portability and normal disconnected Tool Shed operation.
+
+## Non-Goals
+
+- Background, scheduled, startup, per-write, or per-brainstorm semantic review.
+- Readiness review for non-Idea-Brief artifact classes in the first release.
+- Alias expansion beyond the selected manual route unless later evidence requires it.
+- Bulk historical readiness-result backfill.
+
+## Navigation
+
+Do next:
+
+- Execute M1 to freeze the versioned review and failure contract.
+- Continue through M2 and M3 only after their evidence gates pass.
+- Keep the Idea-rooted outcome loop open until released product truth, target evidence, residuals,
+  and every material development change reconcile.
+
+Avoid for now:
+
+- Materializing or running campaigns as part of this promotion-only action.
+- Treating roadmap approval, passing tests, release, or an empty queue as initiative completion.
+
+## Related Artifacts
+
+- Source Idea Brief: IDEA-0008
+- Program Roadmap: created by this promotion

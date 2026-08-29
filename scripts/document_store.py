@@ -703,6 +703,13 @@ def render_views(workspace: Path, *, output: Path | None = None, database: Path 
             "SELECT d.*, a.type, r.body_markdown FROM document d JOIN artifact a ON a.id=d.id "
             "JOIN document_revision r ON r.document_id=d.id AND r.revision_number=d.current_revision ORDER BY d.lifecycle_state, d.visible_id"
         ))
+        import idea_readiness
+
+        readiness_projections = {
+            row["id"]: idea_readiness.render_projection(connection, row)
+            for row in rows
+            if row["type"] == "idea-brief"
+        }
     counts: dict[str, int] = {}
     for lifecycle in LIFECYCLES:
         directory = temporary / lifecycle
@@ -711,10 +718,14 @@ def render_views(workspace: Path, *, output: Path | None = None, database: Path 
         index_lines = [f"# {lifecycle.title()} Tool Shed Work", "", f"Database revision: {checked['current_revision']}", "", "Generated view — do not edit.", ""]
         for row in selected:
             filename = f"{row['visible_id']}--{_slug(row['title'])}.md"
+            readiness_projection = readiness_projections.get(row["id"], "")
+            body = row["body_markdown"]
+            if readiness_projection:
+                body = body.rstrip() + "\n\n" + readiness_projection + "\n"
             rendered = "\n".join([
                 f"# {row['visible_id']}: {row['title']}", "", "Generated view — do not edit.", "",
                 f"Artifact ID: {row['id']}", f"Type: {row['type']}", f"Lifecycle: {row['lifecycle_state']}",
-                f"Document Revision: {row['current_revision']}", f"Database Revision: {checked['current_revision']}", "", row["body_markdown"],
+                f"Document Revision: {row['current_revision']}", f"Database Revision: {checked['current_revision']}", "", body,
             ])
             (directory / filename).write_text(rendered, encoding="utf-8", newline="\n")
             index_lines.append(f"- {row['visible_id']} — {row['title']} ({row['type']}, r{row['current_revision']})")

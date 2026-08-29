@@ -2,9 +2,9 @@
   "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
   "baseline": {
     "created_at": "2026-08-28T16:26:19Z",
-    "source_commit": "f2395386686bb96aed6554c23771c232d56f6de3",
+    "source_commit": "00ebdd469474128bc4f68a97e4b262228b70f519",
     "source_digest": "fd117f7d8245e6273efb61207c67a0c585477caff9a9e11fb86381d6d8b8a470",
-    "updated_at": "2026-08-29T03:14:24Z"
+    "updated_at": "2026-08-29T13:45:35Z"
   },
   "bindings": [
     {
@@ -569,6 +569,25 @@
       "source_commit": "f2395386686bb96aed6554c23771c232d56f6de3",
       "summary": "Parallelize independent bootstrap-ledger release checks",
       "supersedes": []
+    },
+    {
+      "authorization": "operator authorized PRM-0023 end-to-end execution",
+      "decision_ids": [],
+      "evidence_to_rerun": [
+        "EVID-G4-CANARY",
+        "EVID-G4-RELEASE"
+      ],
+      "id": "CHANGE-ADAPTIVE-IDEA-READINESS-RELEASE",
+      "rationale": "The new feature intentionally changes shared routes, documentation, tests, and document rendering; existing closed-loop and Hybrid guarantees must remain satisfied under the changed product.",
+      "recorded_at": "2026-08-29T13:44:18Z",
+      "requirement_ids": [
+        "REQ-HYBRID-010",
+        "REQ-HYBRID-011",
+        "REQ-HYBRID-012"
+      ],
+      "source_commit": "00ebdd469474128bc4f68a97e4b262228b70f519",
+      "summary": "Add adaptive revision-bound Idea readiness review and generated projection.",
+      "supersedes": []
     }
   ],
   "decisions": [
@@ -837,6 +856,7 @@
     },
     {
       "covers_change_ids": [
+        "CHANGE-ADAPTIVE-IDEA-READINESS-RELEASE",
         "CHG-HYBRID-006",
         "CHG-HYBRID-007",
         "CHG-HYBRID-009",
@@ -871,7 +891,7 @@
         },
         {
           "path": "schemas/hybrid-state/v1/hpt2-assigned-ids.json",
-          "sha256": "f0cefb8bd5c2bb98f5a8bda724ea123bd07f396a2433de490a14044f3068c001"
+          "sha256": "b25cc71127a8fecd0e72e5eaa4928479a514384905fcc8f4c7c30822341691e1"
         },
         {
           "path": "tests/test_outcome_reconciliation.py",
@@ -884,10 +904,14 @@
         {
           "path": "work/evidence/evidence-hybrid-sqlite-release-prerequisites.md",
           "sha256": "7d666557fe3d622a75950b6987f93927b77258d196e7c88f0eb6c58ef9944659"
+        },
+        {
+          "path": "work/evidence/idea-readiness-m2-integration.json",
+          "sha256": "c856fcd4da9a0b19bdb5343218964a6843f82f8291f804443939598546b49df9"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T03:14:24Z"
+      "verified_at": "2026-08-29T13:45:35Z"
     },
     {
       "covers_change_ids": [
@@ -975,6 +999,7 @@
     },
     {
       "covers_change_ids": [
+        "CHANGE-ADAPTIVE-IDEA-READINESS-RELEASE",
         "CHG-HYBRID-005",
         "CHG-HYBRID-008",
         "CHG-HYBRID-009",
@@ -984,7 +1009,6 @@
         "CHG-HYBRID-013",
         "CHG-HYBRID-014",
         "CHG-HYBRID-015",
-        "CHG-HYBRID-016",
         "CHG-HYBRID-019",
         "CHG-HYBRID-020",
         "CHG-HYBRID-021",
@@ -1017,7 +1041,7 @@
         },
         {
           "path": "tests/test_scripts.py",
-          "sha256": "e661bc56b2c5bcb97d0ad2de2759b92013c13e6d63cd8736d957a1460e5f6e95"
+          "sha256": "19a06bd2447fde04926da19eb6c4cbd535f178801e6978e73d292bf38efa0d63"
         },
         {
           "path": "tests/test_update_snapshot_protocol4.py",
@@ -1025,7 +1049,7 @@
         },
         {
           "path": "docs/commands.md",
-          "sha256": "581a9e2092e0ee8d397e25134a6438f0d287910fb8537dd9a45cfbeff7a2210e"
+          "sha256": "42fb4fbd4dfef1d7cb23785414e4c68edfc242b778771201e5740e1c32f70ee6"
         },
         {
           "path": "scripts/build_docs_site.py",
@@ -1037,7 +1061,7 @@
         },
         {
           "path": "site/pages/help/ideas.html",
-          "sha256": "83821110e06aed3c1d44bc5bb955556a2d4b8438e77fcd5e930544b0e804c672"
+          "sha256": "d767229a1080792322e21ec792c2b38ab6c4653a4f9960c53d5dadbfa2562969"
         },
         {
           "path": "site/pages/help/campaigns.html",
@@ -1057,14 +1081,19 @@
         },
         {
           "path": "tests/test_docs_site.py",
-          "sha256": "9baf4fab75014e6961ef0c67fd68fc3045812d0a5cd0bef7d243f5da9cd0139a"
+          "sha256": "e072825e3cfe4dd92950e9f6df0705d673af32db78e784f9d61ce55409f358cf"
+        },
+        {
+          "path": "work/evidence/idea-readiness-m2-integration.json",
+          "sha256": "c856fcd4da9a0b19bdb5343218964a6843f82f8291f804443939598546b49df9"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T03:14:24Z"
+      "verified_at": "2026-08-29T13:44:19Z"
     },
     {
       "covers_change_ids": [
+        "CHANGE-ADAPTIVE-IDEA-READINESS-RELEASE",
         "CHG-HYBRID-005",
         "CHG-HYBRID-008",
         "CHG-HYBRID-013",
@@ -1091,7 +1120,7 @@
         },
         {
           "path": "docs/commands.md",
-          "sha256": "581a9e2092e0ee8d397e25134a6438f0d287910fb8537dd9a45cfbeff7a2210e"
+          "sha256": "42fb4fbd4dfef1d7cb23785414e4c68edfc242b778771201e5740e1c32f70ee6"
         },
         {
           "path": "site/pages/help/maintenance.html",
@@ -1099,7 +1128,7 @@
         },
         {
           "path": "site/pages/help/ideas.html",
-          "sha256": "83821110e06aed3c1d44bc5bb955556a2d4b8438e77fcd5e930544b0e804c672"
+          "sha256": "d767229a1080792322e21ec792c2b38ab6c4653a4f9960c53d5dadbfa2562969"
         },
         {
           "path": "site/pages/help/campaigns.html",
@@ -1119,11 +1148,15 @@
         },
         {
           "path": "tests/test_docs_site.py",
-          "sha256": "9baf4fab75014e6961ef0c67fd68fc3045812d0a5cd0bef7d243f5da9cd0139a"
+          "sha256": "e072825e3cfe4dd92950e9f6df0705d673af32db78e784f9d61ce55409f358cf"
+        },
+        {
+          "path": "work/evidence/idea-readiness-m2-integration.json",
+          "sha256": "c856fcd4da9a0b19bdb5343218964a6843f82f8291f804443939598546b49df9"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T03:01:08Z"
+      "verified_at": "2026-08-29T13:44:19Z"
     }
   ],
   "initiative": {
@@ -1358,7 +1391,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "e9bb27cfe4cd2cb4",
+  "state_token": "a0bc812938046b3f",
   "upgrade_targets": [
     {
       "id": "UPG-HYBRID-MAINTAINER",

@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-milestone-evidence",
+  "roadmap": "PRM-0023",
+  "milestone": "M1-CONTRACT-AUTHORITY-FROZEN",
+  "campaign": "CAMP-0120",
+  "recorded_at": "2026-08-29T13:28:24Z",
+  "command": "python3 -m unittest -v tests.test_idea_readiness tests.test_document_store",
+  "outcome": "passed",
+  "tests_run": 11,
+  "gates": {
+    "G1-FAILURE-CONCURRENCY-CONTRACT": "passed",
+    "G2-STRUCTURED-RESULT-AUTHORITY": "passed"
+  },
+  "observations": [
+    "NOT-READY remains a successful semantic verdict distinct from REVIEW-ERROR and REVIEW-UNAVAILABLE.",
+    "Prepared results are rejected after an Idea revision or body-hash change.",
+    "Unknown verdicts and contract versions fail closed.",
+    "Review results persist as append-only managed events and survive checkpoint rebuild.",
+    "Generated Idea views project latest readiness state without executing semantic review.",
+    "Exact review/Idea/gate metadata is required for a valid project-map or roadmap transfer."
+  ],
+  "source_sha256": {
+    "scripts/idea_readiness.py": "a55e8fa59a4165f1c86280ae4e4efd3fc7b7c6132774b9d5e32366375585ac0f",
+    "scripts/document_store.py": "a6434831d7940af8c058c6c634e3fa2be2d4b5bcdf9446262d835efb17dd9739",
+    "docs/idea-readiness-review.md": "39256514a373b299f5f8720326680fee68fbff89e4a0a3d48de5240093245f27",
+    "tests/test_idea_readiness.py": "71721b9270f8de23f99c209a8bd42252cc49ad6b002fb19fd25f956b07434812"
+  }
+}

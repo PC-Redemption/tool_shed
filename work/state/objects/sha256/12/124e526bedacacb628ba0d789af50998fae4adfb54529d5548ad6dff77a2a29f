@@ -1,0 +1,46 @@
+# Campaign: Integrate Adaptive Readiness with Brainstorm and PRM
+
+Status: working
+Type: campaign
+Updated: 2026-08-29
+Next Action: implement and qualify the two readiness-review entry points
+Campaign ID: integrate-adaptive-readiness-with-brainstorm-and-prm
+Roadmap: adaptive-pre-prm-idea-readiness-review
+Roadmap Document: PRM-0023
+Roadmap Revision: 1
+Milestone: M2-PRM-INTEGRATION-PROVEN
+Unlocks Gate: G3-LOSSLESS-PRM-GATE-TRANSFER, G4-INTERACTION-PORTABILITY
+Depends On: CAMP-0120
+Decision: none
+Primary Focus Areas: artifact-workflows
+Supporting Focus Areas: provider-portability, operator-experience
+Completion Gate: both entry points, exact transfer, resumable dialogue, and zero ordinary-brainstorm semantic review pass focused qualification
+Completion Evidence: pending
+
+## Outcome
+
+Integrate the frozen readiness contract into Tool Shed's operator routes so a manual review runs
+only for `ts: bs review`, PRM reuses a current ready result or triggers review when needed, and
+ordinary brainstorming remains responsive and free of semantic readiness work.
+
+## Scope
+
+- Document the exact two-trigger boundary in the authoritative workspace skill and installed
+  workspace guidance.
+- Define the focused fail-closed operator dialogue for not-ready and operational-failure results.
+- Require revision-bound readiness metadata and exact zero-loss gate transfer before PRM accepts
+  derived map or roadmap state.
+- Preserve prior result digests so interrupted review can resume without repeating settled issues.
+- Add focused tests for route coverage, stale reuse, resume validation, and dropped-gate rejection.
+
+## Non-Goals
+
+- Do not review during ordinary `ts: bs` turns, status, rendering, startup, or background work.
+- Do not add background services, provider-specific judgment, new aliases, or non-Idea reviews.
+- Do not publish or synchronize the installed skill until M3.
+
+## App Server Preparation Contract
+
+This campaign is GUI-native implementation under the active PRM. Semantic judgment remains with
+the current agent; deterministic scripts only validate, bind, store, and transfer its structured
+result.

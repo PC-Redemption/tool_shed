@@ -387,10 +387,29 @@ machine-facing `program` and `milestone_wave` Cycle State Capsule names for comp
 Treat `ts: prm idea <idea-id-or-path>` as the same PRM route with one selected
 `work/ideas/idea-*.md` Idea Brief as its durable discovery source. Read its current synthesis,
 constraints, tradeoffs, open questions, decisions, and exploration history. Preserve unknowns
-rather than fabricating certainty. Keep the brief `ready-for-prm` during the Plan Cycle; after an
-approved project map captures its direction, set it to `promoted`, name that map in `Produces:`,
-and preserve the brief as provenance. That status update does not independently expand the active
-authority envelope.
+rather than fabricating certainty. First run `idea_readiness.py status`. Reuse only
+`CURRENT-READY`; when status is `ABSENT`, `STALE`, or `CURRENT-NOT-READY`, perform the semantic
+readiness review and persist it through `prepare`, `validate`, and `apply`. A `NOT-READY` result is a
+successful review that keeps the original PRM request active while the operator resolves only its
+material blockers. Resume against the prior result digest, preserve settled answers, update the
+Idea when authorized, and rerun until ready or the operator returns to ordinary brainstorming.
+`REVIEW-ERROR` and `REVIEW-UNAVAILABLE` fail promotion closed and are never treated as semantic
+`NOT-READY`.
+
+Before accepting a project map or roadmap, require its metadata to contain
+`readiness_review_digest`, `reviewed_idea_artifact_id`, `reviewed_idea_document_revision`,
+`reviewed_idea_body_sha256`, and the complete sorted `readiness_gate_ids`. Run
+`idea_readiness.py transfer-check --idea <idea> --target <map-or-roadmap>` and refuse acceptance if
+any gate is missing, extra, renamed, or dropped. A plain `READY` result requires an empty gate set.
+Keep the brief `ready-for-prm` during the Plan Cycle; after an approved project map captures its
+direction, set it to `promoted`, name that map in `Produces:`, and preserve the brief as provenance.
+That status update does not independently expand the active authority envelope.
+
+Semantic readiness review has exactly two triggers: explicit
+`ts: bs review <idea-id-or-path>` and this PRM route when no current ready result exists. Ordinary
+brainstorming, listing, status, overview, rendering, startup, and background work must not perform
+semantic review; they may only perform bounded freshness comparison. Judgment is provider-neutral
+and agent-supplied. Deterministic scripts validate, bind, store, and transfer the structured result.
 
 PRM is coordination, not blanket authority. It automatically accepts faithful derived maps,
 roadmaps, campaign plans, materialization, and lifecycle transitions only when the active authority

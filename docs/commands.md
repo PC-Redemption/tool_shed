@@ -83,6 +83,7 @@ protection. Every interrupt explains impact, blast radius, rollback, and recomme
 | `ts: brainstorm` | List active Idea Briefs without mutation, using database authority after schema-2 cutover and `work/ideas/` before cutover. |
 | `ts: brainstorm <idea>` | Create or resume one durable pre-PRM Idea Brief, updating its current synthesis and useful dated exploration notes. |
 | `ts: bs <idea>` | Exact alias for `ts: brainstorm <idea>`. |
+| `ts: bs review <idea-id-or-path>` | Explicitly run the adaptive, revision-bound Idea readiness review. This is the only manual semantic-review trigger. |
 | `ts: build focus areas` | Inspect existing workspace sources and produce a project-specific focus-area catalog and active-campaign assignments. Faithful reversible results may apply under planning autonomy; material responsibility choices require a decision. |
 | `ts: develop roadmap` | Read project evidence and clarify an opt-in Program Roadmap without mutation. |
 | `ts: overview` | Combine maps, approved roadmaps, gates, focus areas, campaign state, and drift. Read-only. |
@@ -104,6 +105,12 @@ tracked `work/ideas/idea-*.md` file. Before creating a new one, compare active b
 current syntheses; resume one clear material match and ask one concise choice if several match. A
 bare `ts: brainstorm` only lists active briefs.
 
+Ordinary brainstorming never runs semantic readiness review. Use
+`ts: bs review <idea-id-or-path>` when you want a manual review. The only other trigger is
+`ts: prm idea <idea-id-or-path>` when no current ready result exists. Read-only surfaces may report
+`ABSENT`, `STALE`, `CURRENT-NOT-READY`, or `CURRENT-READY` by comparing stored metadata, but they do
+not make a new semantic judgment.
+
 Each turn keeps `Current Synthesis` concise and appends only useful dated context to `Exploration
 Log`. Capture possibilities, tradeoffs, constraints, non-goals, reminders, assumptions, open
 questions, and decisions without requiring every section to be complete. Supported statuses are
@@ -115,6 +122,12 @@ Use `ts: brainstorm idea <idea-id-or-path>` or its `ts: bs` equivalent to explic
 brief. Use `ts: prm idea <idea-id-or-path>` to carry it forward; keep it ready-for-PRM until
 settled project-map direction captures it, then preserve it as promoted provenance with
 `Produces:` pointing to that map.
+
+The manual review and PRM-triggered review use the same structured contract. `NOT-READY` reports
+material blockers and keeps a promotion dialogue focused on them; `REVIEW-ERROR` and
+`REVIEW-UNAVAILABLE` fail promotion closed. A later review may resume a prior result digest so
+settled questions are not repeated. A ready result's exact Idea revision/hash and complete gate set
+must pass `idea_readiness.py transfer-check` before Tool Shed accepts derived map or roadmap state.
 
 Brainstorming does not authorize a project map, roadmap, campaign, source change, deployment, or
 publication. Promotion does not independently expand the authority envelope. Brainstorming is

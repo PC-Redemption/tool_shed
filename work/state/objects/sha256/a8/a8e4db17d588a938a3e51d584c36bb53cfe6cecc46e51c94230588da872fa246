@@ -1,0 +1,273 @@
+# Idea Brief: Adaptive Pre-PRM Idea Readiness Review
+
+Status: ready-for-prm
+Type: idea-brief
+Updated: 2026-08-29
+Next Action: capture the reviewed direction in an approved project map
+Produces:
+
+## Current Synthesis
+
+### Idea
+
+Formalize an adaptive readiness review between Tool Shed brainstorming and PRM. Operators currently
+improve an Idea Brief by asking useful but easy-to-forget questions such as “Is this KISS?”, “What
+are we missing?”, and “Is it ready to promote?” The quality of the handoff should not depend on the
+operator remembering the same questions for every idea.
+
+Add an explicit read-only route such as `ts: bs review <idea-id-or-path>`. It examines the current
+Idea Brief and produces one compact verdict:
+
+- `READY`: no material pre-promotion issue remains;
+- `READY-WITH-PRM-GATES`: unresolved items are valid roadmap decisions, experiments, or evidence
+  gates and do not require more brainstorming; or
+- `NOT-READY`: a material ambiguity, contradiction, missing authority, or owner decision would make
+  PRM guess or plan the wrong outcome.
+
+Readiness review has exactly two execution entry points: an explicit operator request for the
+manual review route, and `ts: prm idea <idea-id-or-path>`. Ordinary `ts: bs` turns never run the
+review implicitly. Creating, editing, showing, listing, or resuming an Idea Brief may make a prior
+review stale through a cheap revision comparison, but none of those actions performs semantic
+review or adds review latency to the next brainstorming response.
+
+`ts: prm idea <idea-id-or-path>` must enforce the same review automatically. It may reuse only a
+current ready review—`READY` or `READY-WITH-PRM-GATES`—bound to the exact Idea Brief identity,
+document revision/body hash, and readiness contract version. If no such current ready review
+exists, including when the latest result is `NOT-READY`, PRM runs a new review before creating or
+accepting project-map direction.
+
+When the result is `READY` or `READY-WITH-PRM-GATES`, PRM continues without turning the review into
+an approval ceremony. It carries named PRM gates into the proposed plan and opens the governed
+outcome loop from the reviewed idea revision. When the result is `NOT-READY`, promotion stops and
+Tool Shed engages the operator on the smallest material blocker, with context, consequences,
+credible choices, and a recommendation. An operator response may settle the issue, defer scope, or
+reclassify it as a PRM gate; the brief is updated and the now-stale review is rerun. The system must
+not bypass a real blocker through a generic override or fabricate the missing decision.
+
+### Why It Matters
+
+Brainstorming already preserves possibilities, constraints, open questions, decisions, and a
+current synthesis, but it has no consistent final review. Good results currently depend on
+operator persistence and the particular questions raised in conversation. A lightweight,
+revision-bound review makes promotion quality repeatable while preserving free-form discovery.
+
+This also prevents two opposite failures: promoting an underspecified idea that forces PRM to
+invent intent, and keeping an adequately understood idea in brainstorming because implementation
+details have not yet been decided. Explicit `READY-WITH-PRM-GATES` classification lets PRM own the
+right uncertainties without hiding actual product or authority decisions.
+
+### Desired Outcome
+
+An operator can brainstorm naturally and promote an idea without remembering a manual closing
+question sequence. Tool Shed automatically verifies that the accepted outcome is clear enough for
+PRM, exposes only material blockers, and carries legitimate design and evidence questions forward
+as named gates. Every result is traceable to the exact reviewed Idea Brief revision, becomes stale
+when its inputs change, and supports the idea’s later origin-to-product reconciliation. Normal
+brainstorming remains as responsive as it is without this feature because review runs only when
+explicitly requested or when promotion is invoked.
+
+## Trigger Boundary
+
+Only these actions execute readiness review:
+
+1. The operator explicitly invokes the manual route, such as
+   `ts: bs review <idea-id-or-path>`.
+2. The operator invokes `ts: prm idea <idea-id-or-path>` and no fresh ready review is reusable.
+
+No other route runs it. In particular, ordinary brainstorming, Idea Brief creation or update,
+status/list/show/overview, background maintenance, indexing, rendering generated views, database
+checkpointing, and startup do not perform readiness review. They may report that an existing
+review is current, stale, or absent using exact metadata comparisons only.
+
+If a manual review returns `NOT-READY`, later ordinary brainstorming may resolve its findings and
+make that result stale, but it does not automatically rerun. A new result appears only after
+another explicit manual review or a later PRM promotion attempt. If `NOT-READY` occurs inside an
+active PRM-triggered operator dialogue, Tool Shed may rerun after the operator’s answer because the
+original PRM invocation remains the active review trigger. Choosing to return to ordinary
+brainstorming ends that triggered flow.
+
+## Review Contract
+
+### Minimum Universal Review
+
+Every review checks only the smallest promotion-critical set:
+
+- the desired outcome and why it matters are understandable;
+- the first useful boundary and explicit non-goals are sufficient to prevent obvious scope drift;
+- settled decisions, credible alternatives, and remaining questions do not contradict each other;
+- each unresolved item is classified as a pre-promotion blocker, PRM gate, or deferred possibility;
+- KISS concerns identify unjustified current complexity without demanding a mandatory KISS field;
+- target, ownership, authority, and current/product-truth boundaries are clear enough for planning;
+  and
+- the reviewed origin, accepted requirements, future material-change handling, evidence endpoint,
+  verdict, residuals, and upward reconciliation can enter a governed closed loop.
+
+The review reports only material findings. Absence of optional template sections, prose style, or
+implementation detail is not itself a failure.
+
+### Adaptive Risk Modules
+
+Additional checks activate only from evidence in the brief:
+
+- authentication, secrets, privacy, enrollment, or external data;
+- database authority, conversion, migration, backup, recovery, or data-loss risk;
+- background workers, scheduling, retries, concurrency, or liveness;
+- deployment, production access, release, rollback, or live-service compatibility;
+- cross-platform, disconnected installation, upgrade, or backward compatibility;
+- external services, repositories, accounts, purchases, or protected environments; and
+- preservation of an existing product, API, data contract, or visual presentation.
+
+The review explains why each adaptive module activated. It does not run a universal heavyweight
+checklist against simple ideas.
+
+### Result Shape
+
+A compact human and JSON result should include:
+
+- idea artifact ID, visible ID, document revision, body hash, and review-contract version;
+- verdict, review time, reviewer/actor, and a result digest;
+- promotion blockers with the exact ambiguity and decision owner;
+- PRM gates with the milestone or evidence concern they must constrain;
+- deferred items that cannot silently enter first-release scope;
+- contradictions, duplication, or unjustified complexity worth fixing; and
+- concise recommended brief updates or operator questions.
+
+The result is a review record, not a second editable Idea Brief. The brief remains the narrative
+authority. Tool Shed should reuse existing database operation/event/document primitives before
+adding schema; if a dedicated readiness record is necessary, it must have one structured authority
+and a generated read-only view rather than a competing Markdown file.
+
+## PRM Enforcement Flow
+
+1. Resolve the exact Idea Brief and current database/document revision.
+2. Find the latest ready readiness review for the same artifact ID.
+3. Treat it as current only when its verdict is `READY` or `READY-WITH-PRM-GATES` and its idea
+   revision, body hash, and review-contract version all match.
+4. If no current ready review exists—including an absent, stale, or latest `NOT-READY` result—run
+   the adaptive review synchronously and persist the structured result.
+5. On `READY`, continue normal PRM behavior.
+6. On `READY-WITH-PRM-GATES`, continue and carry every named gate into the proposed project map or
+   roadmap without silently resolving it.
+7. On `NOT-READY`, do not create or accept project-map direction. Engage the operator on one or a
+   small related set of material blockers, starting with the highest-leverage issue.
+8. Apply only the operator’s explicit decisions to the Idea Brief, rerun because the prior review
+   is stale while the original PRM-triggered dialogue remains active, and continue automatically
+   once the result becomes ready. If the operator returns to ordinary brainstorming, stop the
+   review flow and wait for one of the two defined triggers.
+
+Operator engagement is not a generic “approve?” prompt. It states what is missing, why PRM cannot
+safely infer it, the effect of each plausible choice, the recommended choice, and whether the issue
+can instead be deferred or carried as a gate. The operator can also stop, park the idea, or continue
+brainstorming.
+
+## Constraints And Non-Goals
+
+- Keep brainstorming conversational and free-form; do not require the operator to fill a form.
+- Never run readiness review during an ordinary brainstorming turn unless that turn explicitly
+  invokes the manual review route.
+- Do not trigger review from an Idea Brief write, stale transition, list/show/status/overview,
+  generated-view render, checkpoint, startup, background task, or elapsed time.
+- Do not add a required KISS section or treat KISS as an independent approval gate.
+- Do not require every implementation decision before PRM; carry legitimate uncertainty as gates.
+- Do not reuse a review after any Idea Brief content revision or readiness-contract change.
+- Do not let a semantic review claim deterministic certainty. Scripts should validate identity,
+  freshness, result structure, and routing; the agent supplies evidence-backed semantic judgment.
+- Do not invent owner intent, authority, historical facts, evidence, or a default that materially
+  changes the outcome.
+- Do not create a second editable Markdown review artifact for every run.
+- Do not interrupt on warnings, style preferences, or questions that PRM can safely own.
+- Preserve old reviews as history when useful, but expose only the current result in normal status.
+- Support existing Idea Briefs incrementally: their first later promotion attempt runs the review;
+  no bulk rewrite or backfill is required.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Operator manually asks closing questions | No product change | Inconsistent and easy to forget | Current behavior; insufficient |
+| Always run one fixed exhaustive checklist | Predictable coverage | Ceremony, irrelevant questions, and checklist gaming | Rejected |
+| Adaptive semantic review plus deterministic freshness enforcement | Covers material risk while remaining proportional | Requires a clear contract between agent judgment and script enforcement | Selected direction |
+| Review only when explicitly requested | Useful diagnostic without changing PRM | Promotion can still bypass review | Insufficient alone |
+| Automatically review at PRM entry | No forgotten final check; one consistent transition | Must avoid stale reuse and unnecessary interruption | Required |
+| Review after every brainstorming update | Findings always current | Adds latency to the operator’s iterative discovery loop | Rejected |
+| Treat every open question as a blocker | Simple rule | Prevents PRM from owning design and evidence gates | Rejected |
+| Let an operator override `NOT-READY` directly | Fast escape hatch | Can erase the very material ambiguity the review exists to expose | Rejected; operator may resolve, defer, or reclassify the issue explicitly |
+| Store each review as Markdown | Easy to browse | Adds file noise and competing editable state | Not selected |
+| Store a compact structured result with generated view | Freshness and queryability without collateral noise | May require a bounded data-model addition | Preferred, reuse existing primitives first |
+
+## Open Questions
+
+- Should the explicit route be `ts: bs review <idea>`, `ts: review idea <idea>`, or support both as
+  aliases around one contract?
+- Which existing hybrid database primitives can store the structured result without schema growth?
+- Which changes beyond the Idea Brief body—such as linked target or authority changes—must also
+  invalidate a review?
+- Should `READY-WITH-PRM-GATES` require a generated gate-transfer manifest so PRM can prove that no
+  named gate was dropped?
+- How should an interrupted operator dialogue resume without asking already settled questions?
+- What compact review-contract versioning and upgrade behavior prevents older clients from treating
+  an unknown verdict or check as current?
+- Which representative simple, moderate, and consequential Idea Brief fixtures should prove that
+  the adaptive review neither misses material blockers nor adds ceremony to small ideas?
+
+## Decisions
+
+- Add an explicit adaptive, read-only Idea Brief readiness review.
+- Permit exactly two review triggers: an explicit manual review request and a PRM idea promotion
+  attempt that lacks a fresh ready review.
+- Keep ordinary brainstorming review-free; Idea Brief changes invalidate review freshness without
+  executing another review.
+- Use `READY`, `READY-WITH-PRM-GATES`, and `NOT-READY` as the three operator-facing outcomes.
+- Make `ts: prm idea` automatically run the review when no current ready result exists, including
+  when the latest result is `NOT-READY`.
+- Bind review freshness to the exact idea artifact ID, document revision/body hash, and readiness
+  contract version; changed input makes the review stale.
+- Continue automatically for both ready outcomes, carrying named PRM gates forward.
+- When not ready, stop promotion and engage the operator on material blockers rather than asking a
+  generic approval question.
+- During an active review-triggered operator dialogue, rerun after the operator’s Idea Brief change
+  and continue when ready. Outside that active trigger, mark the prior result stale and wait for a
+  new manual review request or PRM promotion attempt.
+- Keep structural/freshness enforcement deterministic and semantic readiness evidence-backed.
+- Apply adaptive risk checks only when the idea activates them.
+- Avoid a new editable Markdown artifact per review; prefer structured database state plus a
+  generated view if existing primitives are insufficient.
+
+## Don't Forget
+
+- “What are we missing?” is the core coverage question; it should not mean “add every conceivable
+  requirement.”
+- A current review is about a specific Idea Brief revision, not merely the same title or path.
+- `READY-WITH-PRM-GATES` is necessary to prevent implementation questions from bloating discovery.
+- A deferred item must remain visible so PRM does not silently pull it into first-release scope.
+- Operator engagement should minimize round trips by grouping only tightly related blockers and
+  offering a recommendation.
+- Promotion review is a quality boundary, not a new lifecycle approval ceremony.
+- Stale detection should be a cheap metadata comparison; semantic review must never become a
+  background or per-turn tax.
+- The readiness review must itself be covered by normal Tool Shed upgrade, compatibility,
+  validation, and closed-loop outcome reconciliation when implemented.
+
+## Exploration Log
+
+### 2026-08-29
+
+- Idea Brief created from the operator’s observation that brainstorming quality currently improves
+  through repeated manual questions such as KISS compliance and “what are we missing?”
+- Discussion distinguished existing free-form brainstorming guidance from the missing formal
+  pre-promotion readiness mechanism.
+- Owner required `ts: prm idea` to run a review automatically when no current ready review exists
+  and to engage the operator when the idea is not ready.
+- Initial synthesis selected a revision-bound adaptive review, three readiness outcomes, automatic
+  PRM enforcement, risk-triggered checks, structured persistence, and focused operator engagement.
+- Owner narrowed execution to exactly two triggers: an explicit manual readiness request and PRM
+  promotion when no fresh ready review exists. Ordinary brainstorming must never run the review or
+  pay its latency; a changed brief becomes stale without automatic rerun.
+- The operator explicitly requested a readiness review of revision 4. The advisory result was
+  `READY-WITH-PRM-GATES`: no promotion blocker remained, KISS passed, and five named gates were
+  retained for failure/concurrency, structured authority, lossless gate transfer,
+  interaction/portability, and upgrade/qualification.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.
