@@ -23,7 +23,7 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 | [work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
 | [work/00-campaigns/abandoned/096-publish-and-synchronize-passive-app-server-dogfooding.md](work/00-campaigns/abandoned/096-publish-and-synchronize-passive-app-server-dogfooding.md) | campaign | abandoned | 2026-08-27 | none | - |
 | [work/00-campaigns/abandoned/097-field-dogfood-passive-app-server-mode.md](work/00-campaigns/abandoned/097-field-dogfood-passive-app-server-mode.md) | campaign | abandoned | 2026-08-27 | none | - |
-| [work/00-campaigns/active/115-prove-database-owned-document-thin-slice.md](work/00-campaigns/active/115-prove-database-owned-document-thin-slice.md) | campaign | queued | 2026-08-28 | execute when selected from the active campaign queue | - |
+| [work/00-campaigns/active/116-deliver-managed-document-interface-and-lifecycle-views.md](work/00-campaigns/active/116-deliver-managed-document-interface-and-lifecycle-views.md) | campaign | queued | 2026-08-28 | execute when selected from the active campaign queue | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -123,6 +123,7 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 | [work/00-campaigns/completed/112-qualify-universal-reconciliation-backfill-and-recovery.md](work/00-campaigns/completed/112-qualify-universal-reconciliation-backfill-and-recovery.md) | campaign | complete | 2026-08-28 | none | - |
 | [work/00-campaigns/completed/113-release-and-canary-universal-closed-loop-reconciliation.md](work/00-campaigns/completed/113-release-and-canary-universal-closed-loop-reconciliation.md) | campaign | complete | 2026-08-28 | none | - |
 | [work/00-campaigns/completed/114-freeze-database-owned-document-authority-contract.md](work/00-campaigns/completed/114-freeze-database-owned-document-authority-contract.md) | campaign | complete | 2026-08-28 | none | - |
+| [work/00-campaigns/completed/115-prove-database-owned-document-thin-slice.md](work/00-campaigns/completed/115-prove-database-owned-document-thin-slice.md) | campaign | complete | 2026-08-28 | none | - |
 | [work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md](work/00-campaigns/deferred/035-add-disposable-completion-watchers-and-hosted-status-reporting.md) | campaign | deferred | 2026-08-18 | reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign. | - |
 | [work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md](work/00-campaigns/deferred/039-build-hosted-watcher-status-and-email-pilot.md) | campaign | deferred | 2026-08-20 | reactivate only when a named external or non-App-Server workload and notification recipient justify a bounded hosted pilot. | - |
 | [work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md](work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md) | adr | accepted | 2026-08-18 | implement the accepted local outbox contract in M2; keep the hosted adapter for M4 | work/maps/map-disposable-completion-watchers-and-hosted-notifications.md |
@@ -147,6 +148,7 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 | [work/evidence/evidence-core-explicit-reference-preparation-bound.md](work/evidence/evidence-core-explicit-reference-preparation-bound.md) | evidence | verified | 2026-08-26 | - | - |
 | [work/evidence/evidence-core-v0-29-13-first-pass-owner-ready.md](work/evidence/evidence-core-v0-29-13-first-pass-owner-ready.md) | evidence | verified | 2026-08-26 | - | - |
 | [work/evidence/evidence-database-owned-collateral-g1-contract.md](work/evidence/evidence-database-owned-collateral-g1-contract.md) | evidence | passed | 2026-08-28 | - | - |
+| [work/evidence/evidence-database-owned-collateral-g2-thin-slice.md](work/evidence/evidence-database-owned-collateral-g2-thin-slice.md) | evidence | passed | 2026-08-28 | - | - |
 | [work/evidence/evidence-direct-linux-app-server-dispatch.md](work/evidence/evidence-direct-linux-app-server-dispatch.md) | evidence | complete | 2026-08-25 | return to the Campaign 059 Windows and Bactron Core consent boundary | - |
 | [work/evidence/evidence-file-change-handoff-and-robust-doc-verification.md](work/evidence/evidence-file-change-handoff-and-robust-doc-verification.md) | evidence | verified | 2026-08-26 | - | - |
 | [work/evidence/evidence-historical-campaign-external-claims-backfill.md](work/evidence/evidence-historical-campaign-external-claims-backfill.md) | evidence | qualified | 2026-08-28 | - | - |
@@ -270,6 +272,6 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 
 ## Summary
 
-- Total artifacts: 251
+- Total artifacts: 253
 - Active artifacts: 1
-- Completed/decided artifacts: 176
+- Completed/decided artifacts: 177

@@ -354,6 +354,110 @@ def show(workspace: Path, identity: str, *, database: Path | None = None) -> dic
         return {"schema_version": 1, "kind": "tool-shed-document", "artifact_id": row["id"], "visible_id": row["visible_id"], "document_revision": row["current_revision"], "database_revision": checked["current_revision"], "title": row["title"], "lifecycle": row["lifecycle_state"], "metadata": json.loads(row["metadata_json"]), "body_markdown": row["body_markdown"], "body_sha256": row["body_sha256"], "writes_performed": False}
 
 
+def list_documents(workspace: Path, *, lifecycle: str | None = None, document_type: str | None = None, limit: int = 100, database: Path | None = None) -> dict[str, Any]:
+    if not 1 <= limit <= 500:
+        raise DocumentStoreError("list limit must be 1..500")
+    workspace = resolved_workspace(workspace)
+    path = require_path_within(workspace, database or hybrid_state.database_path(workspace))
+    clauses, values = [], []
+    if lifecycle:
+        clauses.append("d.lifecycle_state=?"); values.append(lifecycle)
+    if document_type:
+        clauses.append("a.type=?"); values.append(document_type)
+    where = " WHERE " + " AND ".join(clauses) if clauses else ""
+    with contextlib.closing(hybrid_state.connect(path, writable=False)) as connection:
+        checked = audit_connection(workspace, connection)
+        rows = [dict(row) for row in connection.execute(
+            "SELECT d.id AS artifact_id, d.visible_id, a.type, d.title, d.lifecycle_state AS lifecycle, d.current_revision AS document_revision "
+            "FROM document d JOIN artifact a ON a.id=d.id" + where + " ORDER BY d.lifecycle_state, d.visible_id LIMIT ?",
+            (*values, limit),
+        )]
+    return {"schema_version": 1, "kind": "tool-shed-document-list", "database_revision": checked["current_revision"], "documents": rows, "count": len(rows), "writes_performed": False}
+
+
+def search(workspace: Path, query: str, *, limit: int = 20, database: Path | None = None) -> dict[str, Any]:
+    if not query.strip() or not 1 <= limit <= 100:
+        raise DocumentStoreError("search needs a query and limit 1..100")
+    workspace = resolved_workspace(workspace)
+    path = require_path_within(workspace, database or hybrid_state.database_path(workspace))
+    pattern = f"%{query.casefold()}%"
+    with contextlib.closing(hybrid_state.connect(path, writable=False)) as connection:
+        rows = [dict(row) for row in connection.execute(
+            "SELECT d.id AS artifact_id, d.visible_id, a.type, d.title, d.lifecycle_state AS lifecycle, d.current_revision AS document_revision "
+            "FROM document d JOIN artifact a ON a.id=d.id JOIN document_revision r ON r.document_id=d.id AND r.revision_number=d.current_revision "
+            "WHERE lower(d.title) LIKE ? OR lower(r.body_markdown) LIKE ? ORDER BY d.visible_id LIMIT ?",
+            (pattern, pattern, limit),
+        )]
+    return {"schema_version": 1, "kind": "tool-shed-document-search", "query": query, "documents": rows, "count": len(rows), "search_mode": "portable-bounded-fallback", "writes_performed": False}
+
+
+def resolve(workspace: Path, identity: str, *, database: Path | None = None) -> dict[str, Any]:
+    document = show(workspace, identity, database=database)
+    workspace = resolved_workspace(workspace)
+    path = require_path_within(workspace, database or hybrid_state.database_path(workspace))
+    with contextlib.closing(hybrid_state.connect(path, writable=False)) as connection:
+        aliases = [dict(row) for row in connection.execute(
+            "SELECT path, alias_kind, created_revision, retired_revision FROM document_path_alias WHERE document_id=? ORDER BY path",
+            (document["artifact_id"],),
+        )]
+    return {"schema_version": 1, "kind": "tool-shed-document-resolution", "artifact_id": document["artifact_id"], "visible_id": document["visible_id"], "title": document["title"], "lifecycle": document["lifecycle"], "aliases": aliases, "writes_performed": False}
+
+
+def context_capsule(workspace: Path, identity: str, *, byte_budget: int = 16_384, database: Path | None = None) -> dict[str, Any]:
+    if not 512 <= byte_budget <= 1_000_000:
+        raise DocumentStoreError("context byte budget must be 512..1000000")
+    primary = show(workspace, identity, database=database)
+    relation_rows = related(workspace, identity, database=database)["relationships"]
+    candidate_ids = sorted({
+        row["to_visible_id"] if row["from_visible_id"] == primary["visible_id"] else row["from_visible_id"]
+        for row in relation_rows
+    })
+    included = [primary]
+    used = len(canonical_bytes(primary))
+    omitted: list[str] = []
+    for candidate in candidate_ids:
+        document = show(workspace, candidate, database=database)
+        size = len(canonical_bytes(document))
+        if used + size <= byte_budget:
+            included.append(document); used += size
+        else:
+            omitted.append(candidate)
+    return {"schema_version": 1, "kind": "tool-shed-document-context", "requested": primary["visible_id"], "byte_budget": byte_budget, "supplied_bytes": used, "documents": included, "relationships": relation_rows, "omitted_ids": omitted, "budget_exceeded_by_primary": used > byte_budget and len(included) == 1, "writes_performed": False}
+
+
+def create_document(workspace: Path, *, project_binding: str, document_type: str, title: str, body: str, lifecycle: str, metadata: dict[str, Any], actor: str, reason: str, database: Path | None = None) -> dict[str, Any]:
+    if lifecycle not in LIFECYCLES or not title.strip():
+        raise DocumentStoreError("create needs a title and supported lifecycle")
+    namespace = _namespace_for(document_type)
+    body_hash = sha256_text(body)
+
+    def apply(connection: sqlite3.Connection, revision: int) -> dict[str, Any]:
+        number = _allocate(connection, namespace, None)
+        visible = f"{namespace}-{number:04d}"
+        artifact_id, stamp = str(uuid.uuid4()), hybrid_state.now()
+        metadata_json = json.dumps(metadata, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        connection.execute("INSERT INTO artifact VALUES (?, ?, ?, ?, 'sqlite', ?, ?, ?, ?)", (artifact_id, document_type, visible, f"sqlite/documents/{visible}", lifecycle, body_hash, stamp, stamp))
+        connection.execute("INSERT INTO document VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)", (artifact_id, visible, namespace, number, title, lifecycle, metadata_json, body_hash, stamp, stamp))
+        connection.execute("INSERT INTO document_revision VALUES (?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (str(uuid.uuid4()), artifact_id, title, lifecycle, metadata_json, body, body_hash, actor, reason, revision, stamp))
+        return {"artifact_id": artifact_id, "visible_id": visible, "document_revision": 1}
+    return managed_write(workspace, project_binding=project_binding, command="document-create", actor=actor, callback=apply, database=database)
+
+
+def set_lifecycle(workspace: Path, *, project_binding: str, identity: str, lifecycle: str, expected_revision: int, actor: str, reason: str, database: Path | None = None) -> dict[str, Any]:
+    if lifecycle not in LIFECYCLES:
+        raise DocumentStoreError(f"unsupported lifecycle: {lifecycle}")
+    def apply(connection: sqlite3.Connection, revision: int) -> dict[str, Any]:
+        current = _lookup(connection, identity)
+        if int(current["current_revision"]) != expected_revision:
+            raise DocumentStoreError("stale document revision")
+        new_revision, stamp = expected_revision + 1, hybrid_state.now()
+        connection.execute("INSERT INTO document_revision VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (str(uuid.uuid4()), current["id"], new_revision, current["title"], lifecycle, current["metadata_json"], current["body_markdown"], current["body_sha256"], actor, reason, revision, stamp))
+        connection.execute("UPDATE document SET lifecycle_state=?, current_revision=?, updated_at=? WHERE id=?", (lifecycle, new_revision, stamp, current["id"]))
+        connection.execute("UPDATE artifact SET lifecycle_state=?, updated_at=? WHERE id=?", (lifecycle, stamp, current["id"]))
+        return {"artifact_id": current["id"], "visible_id": current["visible_id"], "document_revision": new_revision, "lifecycle": lifecycle}
+    return managed_write(workspace, project_binding=project_binding, command="document-set-lifecycle", actor=actor, callback=apply, database=database)
+
+
 def render_edit(document: dict[str, Any]) -> str:
     return "\n".join([
         "---", EDIT_HEADER, f"artifact_id: {document['artifact_id']}", f"visible_id: {document['visible_id']}",
@@ -466,6 +570,18 @@ def relate(workspace: Path, *, project_binding: str, source: str, relation: str,
     return managed_write(workspace, project_binding=project_binding, command="document-relate", actor=actor, callback=apply, database=database)
 
 
+def unrelate(workspace: Path, *, project_binding: str, relationship_id: str, actor: str, database: Path | None = None) -> dict[str, Any]:
+    def apply(connection: sqlite3.Connection, revision: int) -> dict[str, Any]:
+        row = connection.execute("SELECT retired_revision FROM relationship WHERE id=?", (relationship_id,)).fetchone()
+        if row is None:
+            raise DocumentStoreError("relationship not found")
+        if row[0] is not None:
+            raise DocumentStoreError("relationship is already retired")
+        connection.execute("UPDATE relationship SET retired_revision=? WHERE id=?", (revision, relationship_id))
+        return {"relationship_id": relationship_id, "retired_revision": revision}
+    return managed_write(workspace, project_binding=project_binding, command="document-unrelate", actor=actor, callback=apply, database=database)
+
+
 def related(workspace: Path, identity: str, *, database: Path | None = None) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
     path = require_path_within(workspace, database or hybrid_state.database_path(workspace))
@@ -494,6 +610,51 @@ def open_outcome(workspace: Path, *, project_binding: str, identity: str, accept
         connection.execute("INSERT INTO reconciliation VALUES (?, ?, ?, ?, ?, 'open', ?, '[]')", (reconciliation_id, cycle_id, revision, f"document:{document['id']}", verdict_id, stamp))
         return {"cycle_id": cycle_id, "origin_artifact_id": document["id"], "visible_id": document["visible_id"], "lifecycle": "working", "verdict": "open", "reconciliation": "open"}
     return managed_write(workspace, project_binding=project_binding, command="document-open-outcome", actor=actor, callback=apply, database=database)
+
+
+def _slug(title: str) -> str:
+    value = re.sub(r"[^a-z0-9]+", "-", title.casefold()).strip("-")
+    return value[:80] or "untitled"
+
+
+def render_views(workspace: Path, *, output: Path | None = None, database: Path | None = None) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
+    database_path = require_path_within(workspace, database or hybrid_state.database_path(workspace))
+    target = require_path_within(workspace, output or workspace / ".tool-shed/views/work")
+    temporary = target.with_name(target.name + ".next")
+    if temporary.exists():
+        shutil.rmtree(temporary)
+    temporary.mkdir(parents=True)
+    with contextlib.closing(hybrid_state.connect(database_path, writable=False)) as connection:
+        checked = audit_connection(workspace, connection)
+        if checked["classification"] in {"INVALID", "UNJOURNALED"}:
+            raise DocumentStoreError(f"view render refused from {checked['classification']}")
+        rows = list(connection.execute(
+            "SELECT d.*, a.type, r.body_markdown FROM document d JOIN artifact a ON a.id=d.id "
+            "JOIN document_revision r ON r.document_id=d.id AND r.revision_number=d.current_revision ORDER BY d.lifecycle_state, d.visible_id"
+        ))
+    counts: dict[str, int] = {}
+    for lifecycle in LIFECYCLES:
+        directory = temporary / lifecycle
+        directory.mkdir()
+        selected = [row for row in rows if row["lifecycle_state"] == lifecycle]
+        index_lines = [f"# {lifecycle.title()} Tool Shed Work", "", f"Database revision: {checked['current_revision']}", "", "Generated view — do not edit.", ""]
+        for row in selected:
+            filename = f"{row['visible_id']}--{_slug(row['title'])}.md"
+            rendered = "\n".join([
+                f"# {row['visible_id']}: {row['title']}", "", "Generated view — do not edit.", "",
+                f"Artifact ID: {row['id']}", f"Type: {row['type']}", f"Lifecycle: {row['lifecycle_state']}",
+                f"Document Revision: {row['current_revision']}", f"Database Revision: {checked['current_revision']}", "", row["body_markdown"],
+            ])
+            (directory / filename).write_text(rendered, encoding="utf-8", newline="\n")
+            index_lines.append(f"- {row['visible_id']} — {row['title']} ({row['type']}, r{row['current_revision']})")
+        (directory / "_index.md").write_text("\n".join(index_lines) + "\n", encoding="utf-8", newline="\n")
+        counts[lifecycle] = len(selected)
+    if target.exists():
+        shutil.rmtree(target)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    os.replace(temporary, target)
+    return {"schema_version": 1, "kind": "tool-shed-document-lifecycle-views", "path": target.relative_to(workspace).as_posix(), "database_revision": checked["current_revision"], "counts": counts, "files": sum(counts.values()) + len(LIFECYCLES), "writes_performed": True}
 
 
 def checkpoint_digest(payload: dict[str, Any]) -> str:
@@ -635,13 +796,21 @@ def build_parser() -> argparse.ArgumentParser:
     migrate_parser.add_argument("--project-binding", required=True)
     import_parser = commands.add_parser("import-apply")
     import_parser.add_argument("--project-binding", required=True); import_parser.add_argument("--source", required=True); import_parser.add_argument("--type", required=True); import_parser.add_argument("--lifecycle", default="active"); import_parser.add_argument("--actor", required=True); import_parser.add_argument("--reason", required=True); import_parser.add_argument("--assigned-number", type=int)
+    create_parser = commands.add_parser("create"); create_parser.add_argument("--project-binding", required=True); create_parser.add_argument("--type", required=True); create_parser.add_argument("--title", required=True); create_parser.add_argument("--body", required=True); create_parser.add_argument("--lifecycle", default="active"); create_parser.add_argument("--metadata-json", default="{}"); create_parser.add_argument("--actor", required=True); create_parser.add_argument("--reason", required=True)
+    list_parser = commands.add_parser("list"); list_parser.add_argument("--lifecycle"); list_parser.add_argument("--type"); list_parser.add_argument("--limit", type=int, default=100)
     show_parser = commands.add_parser("show"); show_parser.add_argument("identity")
+    search_parser = commands.add_parser("search"); search_parser.add_argument("query"); search_parser.add_argument("--limit", type=int, default=20)
+    context_parser = commands.add_parser("context"); context_parser.add_argument("identity"); context_parser.add_argument("--byte-budget", type=int, default=16384)
+    resolve_parser = commands.add_parser("resolve"); resolve_parser.add_argument("identity")
     export_parser = commands.add_parser("export-edit"); export_parser.add_argument("identity"); export_parser.add_argument("--output", required=True)
     apply_parser = commands.add_parser("apply-edit"); apply_parser.add_argument("--project-binding", required=True); apply_parser.add_argument("--edit", required=True); apply_parser.add_argument("--actor", required=True); apply_parser.add_argument("--reason", required=True)
+    lifecycle_parser = commands.add_parser("set-lifecycle"); lifecycle_parser.add_argument("identity"); lifecycle_parser.add_argument("--project-binding", required=True); lifecycle_parser.add_argument("--lifecycle", required=True); lifecycle_parser.add_argument("--expect-revision", type=int, required=True); lifecycle_parser.add_argument("--actor", required=True); lifecycle_parser.add_argument("--reason", required=True)
     history_parser = commands.add_parser("history"); history_parser.add_argument("identity")
     diff_parser = commands.add_parser("diff"); diff_parser.add_argument("identity"); diff_parser.add_argument("--from-revision", type=int, required=True); diff_parser.add_argument("--to-revision", type=int, required=True)
     relate_parser = commands.add_parser("relate"); relate_parser.add_argument("--project-binding", required=True); relate_parser.add_argument("--from", dest="source", required=True); relate_parser.add_argument("--relation", required=True); relate_parser.add_argument("--to", dest="target", required=True); relate_parser.add_argument("--actor", required=True)
+    unrelate_parser = commands.add_parser("unrelate"); unrelate_parser.add_argument("--project-binding", required=True); unrelate_parser.add_argument("--relationship", required=True); unrelate_parser.add_argument("--actor", required=True)
     related_parser = commands.add_parser("related"); related_parser.add_argument("identity")
+    views_parser = commands.add_parser("render-views"); views_parser.add_argument("--output")
     checkpoint_parser = commands.add_parser("checkpoint"); checkpoint_parser.add_argument("--project-binding", required=True); checkpoint_parser.add_argument("--output", required=True)
     rebuild_parser = commands.add_parser("rebuild"); rebuild_parser.add_argument("--project-binding", required=True); rebuild_parser.add_argument("--checkpoint", required=True); rebuild_parser.add_argument("--output", required=True)
     return parser
@@ -656,13 +825,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.command == "audit": result = audit(workspace, database)
         elif args.command == "migrate": result = migrate(workspace, project_binding=args.project_binding, database=database)
         elif args.command == "import-apply": result = import_document(workspace, project_binding=args.project_binding, source=Path(args.source), document_type=args.type, lifecycle=args.lifecycle, actor=args.actor, reason=args.reason, assigned_number=args.assigned_number, database=database)
+        elif args.command == "create": result = create_document(workspace, project_binding=args.project_binding, document_type=args.type, title=args.title, body=args.body, lifecycle=args.lifecycle, metadata=json.loads(args.metadata_json), actor=args.actor, reason=args.reason, database=database)
+        elif args.command == "list": result = list_documents(workspace, lifecycle=args.lifecycle, document_type=args.type, limit=args.limit, database=database)
         elif args.command == "show": result = show(workspace, args.identity, database=database)
+        elif args.command == "search": result = search(workspace, args.query, limit=args.limit, database=database)
+        elif args.command == "context": result = context_capsule(workspace, args.identity, byte_budget=args.byte_budget, database=database)
+        elif args.command == "resolve": result = resolve(workspace, args.identity, database=database)
         elif args.command == "export-edit": result = export_edit(workspace, args.identity, Path(args.output), database=database)
         elif args.command == "apply-edit": result = apply_edit(workspace, project_binding=args.project_binding, edit=Path(args.edit), actor=args.actor, reason=args.reason, database=database)
+        elif args.command == "set-lifecycle": result = set_lifecycle(workspace, project_binding=args.project_binding, identity=args.identity, lifecycle=args.lifecycle, expected_revision=args.expect_revision, actor=args.actor, reason=args.reason, database=database)
         elif args.command == "history": result = history(workspace, args.identity, database=database)
         elif args.command == "diff": result = diff_revisions(workspace, args.identity, args.from_revision, args.to_revision, database=database)
         elif args.command == "relate": result = relate(workspace, project_binding=args.project_binding, source=args.source, relation=args.relation, target=args.target, actor=args.actor, database=database)
+        elif args.command == "unrelate": result = unrelate(workspace, project_binding=args.project_binding, relationship_id=args.relationship, actor=args.actor, database=database)
         elif args.command == "related": result = related(workspace, args.identity, database=database)
+        elif args.command == "render-views": result = render_views(workspace, output=Path(args.output) if args.output else None, database=database)
         elif args.command == "checkpoint": result = write_checkpoint(workspace, project_binding=args.project_binding, output=Path(args.output), database=database)
         else: result = rebuild(workspace, project_binding=args.project_binding, checkpoint=Path(args.checkpoint), output=Path(args.output))
         print(json.dumps(result, indent=2, sort_keys=True))

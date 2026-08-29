@@ -129,6 +129,46 @@ class DocumentStoreThinSliceTests(unittest.TestCase):
         self.assertEqual(result["classification"], "UNMANAGED_REVIEW")
         self.assertTrue(result["unmanaged_write_detected"])
 
+    def test_bounded_interface_and_disposable_lifecycle_views(self) -> None:
+        first = document_store.create_document(
+            self.workspace, project_binding=self.binding, document_type="ticket", title="Repair compact context",
+            body="# Repair compact context\n\nUnique search marker alpha.\n", lifecycle="active",
+            metadata={"priority": "high"}, actor="fixture", reason="interface proof", database=self.database,
+        )["result"]
+        second = document_store.create_document(
+            self.workspace, project_binding=self.binding, document_type="checklist", title="Verify compact context",
+            body="# Verify compact context\n\nRelated body beta.\n", lifecycle="working",
+            metadata={}, actor="fixture", reason="interface proof", database=self.database,
+        )["result"]
+        relationship = document_store.relate(
+            self.workspace, project_binding=self.binding, source=first["visible_id"], relation="verified-by",
+            target=second["visible_id"], actor="fixture", database=self.database,
+        )["result"]
+        self.assertEqual(document_store.list_documents(self.workspace, lifecycle="active", database=self.database)["documents"][0]["visible_id"], first["visible_id"])
+        self.assertEqual(document_store.search(self.workspace, "unique search marker", database=self.database)["documents"][0]["visible_id"], first["visible_id"])
+        self.assertEqual(document_store.resolve(self.workspace, first["visible_id"], database=self.database)["artifact_id"], first["artifact_id"])
+        capsule = document_store.context_capsule(self.workspace, first["visible_id"], byte_budget=512, database=self.database)
+        self.assertEqual(capsule["documents"][0]["visible_id"], first["visible_id"])
+        self.assertIn(second["visible_id"], capsule["omitted_ids"])
+        moved = document_store.set_lifecycle(
+            self.workspace, project_binding=self.binding, identity=first["visible_id"], lifecycle="completed",
+            expected_revision=1, actor="fixture", reason="qualified", database=self.database,
+        )["result"]
+        self.assertEqual(moved["document_revision"], 2)
+        rendered = document_store.render_views(self.workspace, database=self.database)
+        view_root = self.workspace / rendered["path"]
+        first_render = sorted((view_root / "completed").glob("TKT-*.md"))[0].read_bytes()
+        self.assertIn(first["visible_id"].encode(), first_render)
+        (view_root / "completed" / "manual-noise.md").write_text("noise", encoding="utf-8")
+        document_store.render_views(self.workspace, database=self.database)
+        self.assertFalse((view_root / "completed" / "manual-noise.md").exists())
+        self.assertEqual(sorted((view_root / "completed").glob("TKT-*.md"))[0].read_bytes(), first_render)
+        document_store.unrelate(
+            self.workspace, project_binding=self.binding, relationship_id=relationship["relationship_id"],
+            actor="fixture", database=self.database,
+        )
+        self.assertEqual(document_store.related(self.workspace, first["visible_id"], database=self.database)["relationships"], [])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -4,7 +4,7 @@ Updated: 2026-08-28
 
 ## Owner State
 
-- Last completed: prove-database-owned-document-thin-slice — Prove a database-owned document thin slice
+- Last completed: deliver-managed-document-interface-and-lifecycle-views — Deliver the managed document interface and lifecycle views
 - Working now: none
 - Next: none
 - Blocker or decision needed: none

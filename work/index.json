@@ -266,10 +266,10 @@
       "campaign_reason": null,
       "canonical_truth": null,
       "disposition": "none",
-      "milestone": "M2-THIN-SLICE-PROVEN",
+      "milestone": "M3-INTERFACE-VIEWS-PROVEN",
       "next_action": "execute when selected from the active campaign queue",
       "parent": null,
-      "path": "work/00-campaigns/active/115-prove-database-owned-document-thin-slice.md",
+      "path": "work/00-campaigns/active/116-deliver-managed-document-interface-and-lifecycle-views.md",
       "produces": null,
       "project_map": null,
       "roadmap": "database-owned-work-collateral-and-lifecycle-views",
@@ -277,9 +277,9 @@
       "status": "queued",
       "superseded_by": null,
       "supersedes": null,
-      "title": "Prove a database-owned document thin slice",
+      "title": "Deliver the managed document interface and lifecycle views",
       "type": "campaign",
-      "unlocks_gate": "G2-THIN-SLICE-PROVEN",
+      "unlocks_gate": "G3-INTERFACE-VIEWS-PROVEN",
       "updated": "2026-08-28"
     },
     {
@@ -2129,6 +2129,27 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
+      "disposition": "completed",
+      "milestone": "M2-THIN-SLICE-PROVEN",
+      "next_action": "none",
+      "parent": null,
+      "path": "work/00-campaigns/completed/115-prove-database-owned-document-thin-slice.md",
+      "produces": null,
+      "project_map": null,
+      "roadmap": "database-owned-work-collateral-and-lifecycle-views",
+      "roadmap_revision": "2",
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Prove a database-owned document thin slice",
+      "type": "campaign",
+      "unlocks_gate": "G2-THIN-SLICE-PROVEN",
+      "updated": "2026-08-28"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
       "disposition": "Replaced as the executable entrypoint by a full Program Roadmap proposal with staged milestones, evidence gates, and separately approved roadmap-derived campaigns.",
       "next_action": "reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign.",
       "parent": null,
@@ -2534,6 +2555,23 @@
       "superseded_by": null,
       "supersedes": null,
       "title": "Evidence: Database-Owned Collateral G1 Contract",
+      "type": "evidence",
+      "updated": "2026-08-28"
+    },
+    {
+      "campaign": "115",
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": null,
+      "next_action": null,
+      "parent": null,
+      "path": "work/evidence/evidence-database-owned-collateral-g2-thin-slice.md",
+      "produces": null,
+      "project_map": null,
+      "status": "passed",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Evidence: Database-Owned Collateral G2 Thin Slice",
       "type": "evidence",
       "updated": "2026-08-28"
     },
@@ -4587,7 +4625,7 @@
   "schema_version": 1,
   "summary": {
     "active_artifacts": 1,
-    "completed_or_decided_artifacts": 176,
-    "total_artifacts": 251
+    "completed_or_decided_artifacts": 177,
+    "total_artifacts": 253
   }
 }
