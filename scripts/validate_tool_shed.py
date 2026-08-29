@@ -74,6 +74,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="maximum concurrent isolated unit-test processes",
     )
     parser.add_argument(
+        "--warn-seconds",
+        type=positive_float,
+        help="warn when the complete selected profile exceeds this wall-clock threshold",
+    )
+    parser.add_argument(
         "--max-seconds",
         type=positive_float,
         help="fail when the complete selected profile exceeds this wall-clock budget",
@@ -524,6 +529,21 @@ def enforce_time_budget(profile: str, elapsed: float, maximum: float | None) -> 
         )
 
 
+def report_time_budget(
+    profile: str,
+    elapsed: float,
+    warning: float | None,
+    maximum: float | None,
+) -> None:
+    if warning is not None and elapsed > warning:
+        print(
+            f"WARNING: tool_shed {profile} validation exceeded its {warning:g}s "
+            f"advisory threshold: {elapsed:.3f}s",
+            file=sys.stderr,
+        )
+    enforce_time_budget(profile, elapsed, maximum)
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     started = time.monotonic()
@@ -551,6 +571,7 @@ def main(argv: list[str] | None = None) -> int:
             canonical=canonical,
             primary_shard=args.shard_index == 0,
         ):
+            phase_started = time.monotonic()
             if name == "run_unit_tests":
                 run_unit_tests(
                     args.profile,
@@ -560,6 +581,10 @@ def main(argv: list[str] | None = None) -> int:
                 )
             else:
                 actions[name]()
+            print(
+                f"phase {name} completed in {time.monotonic() - phase_started:.3f}s",
+                flush=True,
+            )
         if not canonical:
             step("canonical workspace state")
             print("Skipped for disconnected snapshot; no snapshot-local work/ was created.")
@@ -568,7 +593,12 @@ def main(argv: list[str] | None = None) -> int:
     if before is not None and source_fingerprint() != before:
         raise SystemExit("disconnected snapshot changed during validation")
     elapsed = time.monotonic() - started
-    enforce_time_budget(args.profile, elapsed, args.max_seconds)
+    report_time_budget(
+        args.profile,
+        elapsed,
+        args.warn_seconds,
+        args.max_seconds,
+    )
     print(
         f"tool_shed {args.profile} validation passed in "
         f"{elapsed:.3f}s"

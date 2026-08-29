@@ -2,9 +2,9 @@
   "authority_contract": "docs/universal-closed-loop-outcome-reconciliation.md",
   "baseline": {
     "created_at": "1970-01-01T00:00:00Z",
-    "source_commit": "00ebdd469474128bc4f68a97e4b262228b70f519",
+    "source_commit": "6be46617683108d182992709a3cbeaa7283f6c7a",
     "source_digest": "59df8e7786b34be488d51171bfedaf66caa16b20694e70b29e05f9cedbc62a04",
-    "updated_at": "2026-08-29T13:44:18Z"
+    "updated_at": "2026-08-29T14:39:41Z"
   },
   "bindings": [
     {
@@ -333,6 +333,26 @@
       "source_commit": "00ebdd469474128bc4f68a97e4b262228b70f519",
       "summary": "Add adaptive revision-bound Idea readiness review and generated projection.",
       "supersedes": []
+    },
+    {
+      "authorization": "Operator approved the recommended validation timing policy on 2026-08-29.",
+      "decision_ids": [],
+      "evidence_to_rerun": [
+        "EVID-CLOSED-G2-ENGINE",
+        "EVID-CLOSED-G3-INTEGRATION",
+        "EVID-CLOSED-G5-RELEASE"
+      ],
+      "id": "CHG-CLOSED-013",
+      "rationale": "The closed-loop release gate must distinguish functional failure from GitHub-hosted Windows timing variance. Routine validation now warns at 60 seconds, fails at 300 seconds, terminates hung jobs at 10 minutes, and delegates meaningful timing regression detection to a separate three-sample median workflow.",
+      "recorded_at": "2026-08-29T14:39:27Z",
+      "requirement_ids": [
+        "REQ-CLOSED-003",
+        "REQ-CLOSED-009",
+        "REQ-CLOSED-012"
+      ],
+      "source_commit": "6be46617683108d182992709a3cbeaa7283f6c7a",
+      "summary": "Replace timing-sensitive routine validation with advisory timing and scheduled sampling",
+      "supersedes": []
     }
   ],
   "decisions": [
@@ -427,7 +447,8 @@
       "covers_change_ids": [
         "CHANGE-ADAPTIVE-IDEA-READINESS-RELEASE",
         "CHG-CLOSED-001",
-        "CHG-CLOSED-011"
+        "CHG-CLOSED-011",
+        "CHG-CLOSED-013"
       ],
       "gate": "G2-GENERIC-ENGINE-PROVEN",
       "id": "EVID-CLOSED-G2-ENGINE",
@@ -466,7 +487,7 @@
         },
         {
           "path": "docs/commands.md",
-          "sha256": "42fb4fbd4dfef1d7cb23785414e4c68edfc242b778771201e5740e1c32f70ee6"
+          "sha256": "509574318fd4e81590ce3aca221f77cf9c055bf64acc4ea50667ac1793a71190"
         },
         {
           "path": "docs/outcome-reconciliation.md",
@@ -474,7 +495,7 @@
         },
         {
           "path": "README.md",
-          "sha256": "b12d7b2d63420b6e3fdaaca9d11d1a249efe540663fdb1d3e3398b57a23296ac"
+          "sha256": "a03b6005460e7265c9b51e29f1554fb4b5db6faca93b81d5b0aacc349052623f"
         },
         {
           "path": "work/evidence/idea-readiness-m2-integration.json",
@@ -482,7 +503,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T13:44:17Z"
+      "verified_at": "2026-08-29T14:39:40Z"
     },
     {
       "covers_change_ids": [
@@ -490,7 +511,8 @@
         "CHG-CLOSED-002",
         "CHG-CLOSED-009",
         "CHG-CLOSED-010",
-        "CHG-CLOSED-011"
+        "CHG-CLOSED-011",
+        "CHG-CLOSED-013"
       ],
       "gate": "G3-LIFECYCLE-INTEGRATION-PROVEN",
       "id": "EVID-CLOSED-G3-INTEGRATION",
@@ -561,11 +583,11 @@
         },
         {
           "path": "skills/tool-shed/references/campaign-routes.md",
-          "sha256": "75f56ce8b9edfe080129d7c933e7b4a417732f69cbd7ac9ed9e9a8145b5cc6da"
+          "sha256": "0187260a810a3b8f764f0d581df8824b1073efc13994be6e18884374e3944021"
         },
         {
           "path": "docs/commands.md",
-          "sha256": "42fb4fbd4dfef1d7cb23785414e4c68edfc242b778771201e5740e1c32f70ee6"
+          "sha256": "509574318fd4e81590ce3aca221f77cf9c055bf64acc4ea50667ac1793a71190"
         },
         {
           "path": "work/evidence/idea-readiness-m2-integration.json",
@@ -573,7 +595,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T13:44:17Z"
+      "verified_at": "2026-08-29T14:39:41Z"
     },
     {
       "covers_change_ids": [
@@ -658,7 +680,8 @@
         "CHG-CLOSED-008",
         "CHG-CLOSED-010",
         "CHG-CLOSED-011",
-        "CHG-CLOSED-012"
+        "CHG-CLOSED-012",
+        "CHG-CLOSED-013"
       ],
       "gate": "G5-RELEASE-CANARY-PROVEN",
       "id": "EVID-CLOSED-G5-RELEASE",
@@ -673,11 +696,11 @@
         },
         {
           "path": "skills/tool-shed/references/campaign-routes.md",
-          "sha256": "75f56ce8b9edfe080129d7c933e7b4a417732f69cbd7ac9ed9e9a8145b5cc6da"
+          "sha256": "0187260a810a3b8f764f0d581df8824b1073efc13994be6e18884374e3944021"
         },
         {
           "path": "docs/releasing.md",
-          "sha256": "61d3b0590838d106c93c899cdc57fee5ad6acdfb18d23ca2270a90f13f6029ca"
+          "sha256": "3113b25ab5d3a5b50459fdce9639b4a32d148df55059401e3b0539ab9761aa0f"
         },
         {
           "path": "docs/database-owned-work-collateral.md",
@@ -685,7 +708,7 @@
         },
         {
           "path": "scripts/validate_tool_shed.py",
-          "sha256": "cb883cfacb31a041484ade59e31b4ccf88fd54eb64b262baba073b6d6b4e6004"
+          "sha256": "4cfcc9fb36e1ae86869de5091258b571b7a4c55bf8b0cb3ac013cdc2ecf0d971"
         },
         {
           "path": "scripts/validate_snapshot_client.py",
@@ -701,7 +724,7 @@
         },
         {
           "path": ".github/workflows/validate.yml",
-          "sha256": "2aef28bae106f03d192e969d0f9aecbd5b720690a212773aaf9d48a401fcfa69"
+          "sha256": "03533d932f1bc5f1e5df0f16460000f88334cdb6db0ab11b49ecf08f0524b539"
         },
         {
           "path": "docs/install-or-update-snapshot.md",
@@ -710,10 +733,30 @@
         {
           "path": "work/evidence/idea-readiness-m2-integration.json",
           "sha256": "c856fcd4da9a0b19bdb5343218964a6843f82f8291f804443939598546b49df9"
+        },
+        {
+          "path": ".github/workflows/validation-performance.yml",
+          "sha256": "d47a51e456cf6f75794f87317bf1861bb34cbc3e2f4ebac02461bab40045967e"
+        },
+        {
+          "path": "scripts/benchmark_validation.py",
+          "sha256": "31a858a4ccd84fc7c38e611f76b9a13574ae9247fd6feabbf096e7fb82bd65b2"
+        },
+        {
+          "path": "tests/test_validation_profiles.py",
+          "sha256": "4a46f6e487f7f5ed6300d52ccaf2584feaca37ab82f6fc7f1299ae80bea84eaa"
+        },
+        {
+          "path": "tests/test_release_publication.py",
+          "sha256": "2cc6be4713faf93523ffd6f47d6ca049bf61aec6a24aaf1c3b06d31c70b40e7b"
+        },
+        {
+          "path": "README.md",
+          "sha256": "a03b6005460e7265c9b51e29f1554fb4b5db6faca93b81d5b0aacc349052623f"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T13:44:18Z"
+      "verified_at": "2026-08-29T14:39:41Z"
     },
     {
       "covers_change_ids": [
@@ -993,7 +1036,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "14ddb8793a1fa9ec",
+  "state_token": "01b52bda01516831",
   "upgrade_targets": [
     {
       "id": "UPG-CLOSED-MAINTAINER",

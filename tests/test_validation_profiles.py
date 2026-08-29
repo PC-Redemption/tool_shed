@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import io
 import tempfile
 import unittest
+from contextlib import redirect_stderr
 from pathlib import Path
 from unittest import mock
 
+from scripts import benchmark_validation as benchmark
 from scripts import validate_tool_shed as validator
 
 
@@ -52,16 +55,50 @@ class ValidationProfileTests(unittest.TestCase):
         )
         self.assertEqual(validator.parse_args([]).profile, "full")
         budgeted = validator.parse_args(
-            ["--profile", "release", "--max-seconds", "60"]
+            [
+                "--profile",
+                "release",
+                "--warn-seconds",
+                "60",
+                "--max-seconds",
+                "300",
+            ]
         )
-        self.assertEqual(budgeted.max_seconds, 60.0)
+        self.assertEqual(budgeted.warn_seconds, 60.0)
+        self.assertEqual(budgeted.max_seconds, 300.0)
         sharded_args = validator.parse_args(
             ["--shard-index", "3", "--shard-count", "4"]
         )
         self.assertEqual((sharded_args.shard_index, sharded_args.shard_count), (3, 4))
-        validator.enforce_time_budget("release", 59.999, budgeted.max_seconds)
-        with self.assertRaisesRegex(SystemExit, "exceeded its 60s budget"):
-            validator.enforce_time_budget("release", 60.001, budgeted.max_seconds)
+        validator.report_time_budget(
+            "release", 59.999, budgeted.warn_seconds, budgeted.max_seconds
+        )
+        warning = io.StringIO()
+        with redirect_stderr(warning):
+            validator.report_time_budget(
+                "release", 60.001, budgeted.warn_seconds, budgeted.max_seconds
+            )
+        self.assertIn("exceeded its 60s advisory threshold", warning.getvalue())
+        with self.assertRaisesRegex(SystemExit, "exceeded its 300s budget"):
+            validator.report_time_budget(
+                "release", 300.001, budgeted.warn_seconds, budgeted.max_seconds
+            )
+
+    def test_scheduled_benchmark_uses_repeated_primary_shard_median(self) -> None:
+        args = benchmark.parse_args(["--samples", "3", "--jobs", "8"])
+        command = benchmark.validator_command(args)
+        self.assertIn("--warn-seconds", command)
+        self.assertEqual(command[command.index("--max-seconds") + 1], "300")
+        self.assertEqual(command[command.index("--shard-index") + 1], "0")
+        self.assertEqual(command[command.index("--shard-count") + 1], "8")
+
+        warning = io.StringIO()
+        with redirect_stderr(warning):
+            median = benchmark.evaluate_median([59.0, 61.0, 70.0], 60.0, 180.0)
+        self.assertEqual(median, 61.0)
+        self.assertIn("median exceeded its 60s advisory threshold", warning.getvalue())
+        with self.assertRaisesRegex(SystemExit, "exceeded its 180s budget"):
+            benchmark.evaluate_median([179.0, 181.0, 190.0], 60.0, 180.0)
 
     def test_bootstrap_closure_validation_uses_final_gate_only_for_release(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

@@ -2,9 +2,9 @@
   "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
   "baseline": {
     "created_at": "2026-08-28T16:26:19Z",
-    "source_commit": "00ebdd469474128bc4f68a97e4b262228b70f519",
-    "source_digest": "fd117f7d8245e6273efb61207c67a0c585477caff9a9e11fb86381d6d8b8a470",
-    "updated_at": "2026-08-29T13:45:35Z"
+    "source_commit": "6be46617683108d182992709a3cbeaa7283f6c7a",
+    "source_digest": "f97c482d00d0e70e30bc10f4ab07ff6c6ea9dc1e576ba7223c46b09448fb0293",
+    "updated_at": "2026-08-29T14:41:07Z"
   },
   "bindings": [
     {
@@ -50,7 +50,7 @@
     {
       "path": "scripts/validate_tool_shed.py",
       "role": "release-validator",
-      "sha256": "cb883cfacb31a041484ade59e31b4ccf88fd54eb64b262baba073b6d6b4e6004"
+      "sha256": "4cfcc9fb36e1ae86869de5091258b571b7a4c55bf8b0cb3ac013cdc2ecf0d971"
     },
     {
       "path": "work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md",
@@ -588,6 +588,25 @@
       "source_commit": "00ebdd469474128bc4f68a97e4b262228b70f519",
       "summary": "Add adaptive revision-bound Idea readiness review and generated projection.",
       "supersedes": []
+    },
+    {
+      "authorization": "Operator approved the recommended validation timing policy on 2026-08-29.",
+      "decision_ids": [],
+      "evidence_to_rerun": [
+        "EVID-G1-BOOTSTRAP",
+        "EVID-G4-CANARY",
+        "EVID-G4-RELEASE"
+      ],
+      "id": "CHG-HYBRID-025",
+      "rationale": "All functional assertions were repeatedly green while GitHub-hosted Windows wall-clock variance crossed the former 60-second hard boundary. A 60-second advisory, 300-second hard validator ceiling, 10-minute hung-job timeout, and separate three-sample median preserve fail-closed correctness and meaningful regression detection without false-red routine runs.",
+      "recorded_at": "2026-08-29T14:39:06Z",
+      "requirement_ids": [
+        "REQ-HYBRID-001",
+        "REQ-HYBRID-010"
+      ],
+      "source_commit": "6be46617683108d182992709a3cbeaa7283f6c7a",
+      "summary": "Replace timing-sensitive routine validation with advisory timing and scheduled sampling",
+      "supersedes": []
     }
   ],
   "decisions": [
@@ -686,7 +705,8 @@
         "CHG-HYBRID-009",
         "CHG-HYBRID-013",
         "CHG-HYBRID-014",
-        "CHG-HYBRID-019"
+        "CHG-HYBRID-019",
+        "CHG-HYBRID-025"
       ],
       "gate": "G1-DESIGN-FROZEN",
       "id": "EVID-G1-BOOTSTRAP",
@@ -705,7 +725,7 @@
         },
         {
           "path": "scripts/validate_tool_shed.py",
-          "sha256": "cb883cfacb31a041484ade59e31b4ccf88fd54eb64b262baba073b6d6b4e6004"
+          "sha256": "4cfcc9fb36e1ae86869de5091258b571b7a4c55bf8b0cb3ac013cdc2ecf0d971"
         },
         {
           "path": "work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md",
@@ -717,7 +737,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T03:14:24Z"
+      "verified_at": "2026-08-29T14:39:20Z"
     },
     {
       "covers_change_ids": [
@@ -872,7 +892,8 @@
         "CHG-HYBRID-021",
         "CHG-HYBRID-022",
         "CHG-HYBRID-023",
-        "CHG-HYBRID-024"
+        "CHG-HYBRID-024",
+        "CHG-HYBRID-025"
       ],
       "gate": "G2-SUBSTRATE-LOOP-PROVEN",
       "id": "EVID-G2-HPT2-PARITY",
@@ -891,7 +912,7 @@
         },
         {
           "path": "schemas/hybrid-state/v1/hpt2-assigned-ids.json",
-          "sha256": "b25cc71127a8fecd0e72e5eaa4928479a514384905fcc8f4c7c30822341691e1"
+          "sha256": "839d6e5524e518e266e32c97e914d342e3180d4c2224ccabe0c82f8bfdbd2dd5"
         },
         {
           "path": "tests/test_outcome_reconciliation.py",
@@ -911,7 +932,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T13:45:35Z"
+      "verified_at": "2026-08-29T14:41:07Z"
     },
     {
       "covers_change_ids": [
@@ -1014,14 +1035,15 @@
         "CHG-HYBRID-021",
         "CHG-HYBRID-022",
         "CHG-HYBRID-023",
-        "CHG-HYBRID-024"
+        "CHG-HYBRID-024",
+        "CHG-HYBRID-025"
       ],
       "gate": "G4-RELEASE-CANARY-PROVEN",
       "id": "EVID-G4-RELEASE",
       "references": [
         {
           "path": "docs/releasing.md",
-          "sha256": "61d3b0590838d106c93c899cdc57fee5ad6acdfb18d23ca2270a90f13f6029ca"
+          "sha256": "3113b25ab5d3a5b50459fdce9639b4a32d148df55059401e3b0539ab9761aa0f"
         },
         {
           "path": "scripts/update_snapshot.py",
@@ -1037,7 +1059,7 @@
         },
         {
           "path": "scripts/validate_tool_shed.py",
-          "sha256": "cb883cfacb31a041484ade59e31b4ccf88fd54eb64b262baba073b6d6b4e6004"
+          "sha256": "4cfcc9fb36e1ae86869de5091258b571b7a4c55bf8b0cb3ac013cdc2ecf0d971"
         },
         {
           "path": "tests/test_scripts.py",
@@ -1049,7 +1071,7 @@
         },
         {
           "path": "docs/commands.md",
-          "sha256": "42fb4fbd4dfef1d7cb23785414e4c68edfc242b778771201e5740e1c32f70ee6"
+          "sha256": "509574318fd4e81590ce3aca221f77cf9c055bf64acc4ea50667ac1793a71190"
         },
         {
           "path": "scripts/build_docs_site.py",
@@ -1086,10 +1108,26 @@
         {
           "path": "work/evidence/idea-readiness-m2-integration.json",
           "sha256": "c856fcd4da9a0b19bdb5343218964a6843f82f8291f804443939598546b49df9"
+        },
+        {
+          "path": ".github/workflows/validation-performance.yml",
+          "sha256": "d47a51e456cf6f75794f87317bf1861bb34cbc3e2f4ebac02461bab40045967e"
+        },
+        {
+          "path": "scripts/benchmark_validation.py",
+          "sha256": "31a858a4ccd84fc7c38e611f76b9a13574ae9247fd6feabbf096e7fb82bd65b2"
+        },
+        {
+          "path": "tests/test_validation_profiles.py",
+          "sha256": "4a46f6e487f7f5ed6300d52ccaf2584feaca37ab82f6fc7f1299ae80bea84eaa"
+        },
+        {
+          "path": "README.md",
+          "sha256": "a03b6005460e7265c9b51e29f1554fb4b5db6faca93b81d5b0aacc349052623f"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T13:44:19Z"
+      "verified_at": "2026-08-29T14:39:20Z"
     },
     {
       "covers_change_ids": [
@@ -1101,7 +1139,8 @@
         "CHG-HYBRID-020",
         "CHG-HYBRID-021",
         "CHG-HYBRID-022",
-        "CHG-HYBRID-023"
+        "CHG-HYBRID-023",
+        "CHG-HYBRID-025"
       ],
       "gate": "G4-RELEASE-CANARY-PROVEN",
       "id": "EVID-G4-CANARY",
@@ -1120,7 +1159,7 @@
         },
         {
           "path": "docs/commands.md",
-          "sha256": "42fb4fbd4dfef1d7cb23785414e4c68edfc242b778771201e5740e1c32f70ee6"
+          "sha256": "509574318fd4e81590ce3aca221f77cf9c055bf64acc4ea50667ac1793a71190"
         },
         {
           "path": "site/pages/help/maintenance.html",
@@ -1156,7 +1195,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T13:44:19Z"
+      "verified_at": "2026-08-29T14:39:20Z"
     }
   ],
   "initiative": {
@@ -1391,7 +1430,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "a0bc812938046b3f",
+  "state_token": "7ffeaa91d0d84b8d",
   "upgrade_targets": [
     {
       "id": "UPG-HYBRID-MAINTAINER",

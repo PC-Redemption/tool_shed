@@ -126,6 +126,9 @@ class ReleasePublicationTests(unittest.TestCase):
         validate_workflow = (ROOT / ".github" / "workflows" / "validate.yml").read_text(
             encoding="utf-8"
         )
+        performance_workflow = (
+            ROOT / ".github" / "workflows" / "validation-performance.yml"
+        ).read_text(encoding="utf-8")
         runbook = (ROOT / "docs" / "releasing.md").read_text(encoding="utf-8")
         manifest_tool = (ROOT / "scripts" / "update_shed_manifest.py").read_text(
             encoding="utf-8"
@@ -143,7 +146,15 @@ class ReleasePublicationTests(unittest.TestCase):
         self.assertIn('branches: ["**"]', validate_workflow)
         self.assertIn("ubuntu-latest", validate_workflow)
         self.assertIn("windows-latest", validate_workflow)
-        self.assertIn("--profile release --max-seconds 60", validate_workflow)
+        self.assertIn("timeout-minutes: 10", validate_workflow)
+        self.assertIn(
+            "--profile release --warn-seconds 60 --max-seconds 300",
+            validate_workflow,
+        )
+        self.assertIn("schedule:", performance_workflow)
+        self.assertIn("workflow_dispatch:", performance_workflow)
+        self.assertIn("--samples 3", performance_workflow)
+        self.assertIn("--max-median-seconds 180", performance_workflow)
         self.assertIn("scripts/prepare_github_release.py", workflow)
         self.assertIn("gh release create", workflow)
         self.assertIn("gh release view", workflow)

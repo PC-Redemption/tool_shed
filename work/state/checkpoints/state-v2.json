@@ -1,8 +1,8 @@
 {
   "envelope": {
-    "created_at": "2026-08-29T14:10:12Z",
-    "database_revision": 434,
-    "digest": "3c3cd5bfc5b459c27caf70091fcbded08210d28ce5a09302eb123160f9603f5f",
+    "created_at": "2026-08-29T15:20:53Z",
+    "database_revision": 437,
+    "digest": "c5c156ccbf8f9e7bed7ec74b973b3acf771858bcf09ec7d418f658baae1f7c9c",
     "hybrid_schema": 2,
     "objects": [
       "work/state/objects/sha256/00/0082fd1d60de8f37c6d2972dac5637d8c894d2c8f1124c5061aeb74ba0c18b75",
@@ -36,6 +36,7 @@
       "work/state/objects/sha256/1c/1cc83b5462da009a627d67fa3b7d66494c695f1d249ed17d5cc4d46a971ae63e",
       "work/state/objects/sha256/1d/1de3e8e4d08d9595e64acc1d8f396244a4d37efc46f497964625f975be8a63ec",
       "work/state/objects/sha256/1e/1e98c485b3a698f07417571dec41af72c850f7ab51c7a47c216819be3cb01a89",
+      "work/state/objects/sha256/1e/1ede2d53575289b772494b63d6c9bda230e954572cacbe51b5db50466169ce99",
       "work/state/objects/sha256/1f/1f15dc5139cda9d598d3638d9ad5188aee690ba0e010005d4a0eef67b29d55ba",
       "work/state/objects/sha256/1f/1f52e7d1c7c9aa349ab3cb72c1f6950d63bac4d478d9c8edc9bd4b65ad37a003",
       "work/state/objects/sha256/21/21394ec41a391945f39da20c71a318563af8c22ad42dc1bd5a5675c329a3fafc",
@@ -103,6 +104,7 @@
       "work/state/objects/sha256/58/587b83caef66af9b0195bc38e3da85f1ca01a0f04f679d9c7581cee076960d94",
       "work/state/objects/sha256/59/594f993517314ab515280240fc82f9ce1632658e79bf99ff9f5d077f2c1765fb",
       "work/state/objects/sha256/59/59628d1acfc9af72ff8c1bfe1e646deef4405cfcf77339a6ff84b4648397b0ce",
+      "work/state/objects/sha256/59/59e55afe1151d98db72c4a9c9428db70239114b4ba17ec021c7a6f3d25638c6f",
       "work/state/objects/sha256/5a/5a58967d98820eee53200e4defcde20b816b9ed438a1e845dfb3c03873ed698d",
       "work/state/objects/sha256/5a/5acc94dd9de6d51c9660a0fdbd325bb4b837c459d6f8a49d3fe4a65747b256b1",
       "work/state/objects/sha256/5a/5ad6aca753f9658ffa3fc457d9f62b91234002aa79c623afa8501794b9ce22b7",
@@ -1269,6 +1271,17 @@
         "lifecycle_state": "imported",
         "type": "markdown",
         "updated_at": "2026-08-28T17:38:30Z"
+      },
+      {
+        "authority_mode": "sqlite",
+        "content_sha256": "1ede2d53575289b772494b63d6c9bda230e954572cacbe51b5db50466169ce99",
+        "created_at": "2026-08-29T15:13:24Z",
+        "current_path": "sqlite/documents/IDEA-0010",
+        "display_number": "IDEA-0010",
+        "id": "40ea9a3a-ebb8-4138-a591-561d11117d45",
+        "lifecycle_state": "active",
+        "type": "idea-brief",
+        "updated_at": "2026-08-29T15:13:24Z"
       },
       {
         "authority_mode": "sqlite",
@@ -2633,6 +2646,17 @@
         "lifecycle_state": "terminal",
         "type": "campaign-outcome-capsule",
         "updated_at": "2026-08-29T11:03:46Z"
+      },
+      {
+        "authority_mode": "sqlite",
+        "content_sha256": "59e55afe1151d98db72c4a9c9428db70239114b4ba17ec021c7a6f3d25638c6f",
+        "created_at": "2026-08-29T14:56:03Z",
+        "current_path": "sqlite/documents/IDEA-0009",
+        "display_number": "IDEA-0009",
+        "id": "a787bc8b-1558-4475-9985-fd2ff691b1d9",
+        "lifecycle_state": "active",
+        "type": "idea-brief",
+        "updated_at": "2026-08-29T14:56:03Z"
       },
       {
         "authority_mode": "sqlite",
@@ -5623,6 +5647,19 @@
         "visible_id": "PRM-0023"
       },
       {
+        "body_sha256": "1ede2d53575289b772494b63d6c9bda230e954572cacbe51b5db50466169ce99",
+        "created_at": "2026-08-29T15:13:24Z",
+        "current_revision": 1,
+        "display_number": 10,
+        "id": "40ea9a3a-ebb8-4138-a591-561d11117d45",
+        "lifecycle_state": "active",
+        "metadata_json": "{\"brainstorm_origin\":\"durable-opportunity-first-app-server-dogfooding\",\"document_type\":\"idea-brief\",\"related_ideas\":[\"IDEA-0003\",\"IDEA-0002\"]}",
+        "namespace": "IDEA",
+        "title": "Idea Brief: Durable Opportunity-First App Server Dogfooding",
+        "updated_at": "2026-08-29T15:13:24Z",
+        "visible_id": "IDEA-0010"
+      },
+      {
         "body_sha256": "1c508861bb50438d9bfe9e6d2c6a58cf1008806751992d474fc7d87ae3651bb3",
         "created_at": "2026-08-29T01:27:32Z",
         "current_revision": 1,
@@ -6973,6 +7010,19 @@
         "title": "Universal Closed-Loop G3 Lifecycle Integration Evidence",
         "updated_at": "2026-08-29T01:27:40Z",
         "visible_id": "EVD-0061"
+      },
+      {
+        "body_sha256": "59e55afe1151d98db72c4a9c9428db70239114b4ba17ec021c7a6f3d25638c6f",
+        "created_at": "2026-08-29T14:56:03Z",
+        "current_revision": 1,
+        "display_number": 9,
+        "id": "a787bc8b-1558-4475-9985-fd2ff691b1d9",
+        "lifecycle_state": "active",
+        "metadata_json": "{\"brainstorm_origin\":\"recurring-hpt2-fixed-id-and-validation-coupling\",\"document_type\":\"idea-brief\"}",
+        "namespace": "IDEA",
+        "title": "Idea Brief: Immutable Historical Qualification and Completed-Ledger Isolation",
+        "updated_at": "2026-08-29T14:56:03Z",
+        "visible_id": "IDEA-0009"
       },
       {
         "body_sha256": "42f4321b16fc083c9bb52eb9868fbf9c869c278126366dbff011db493630fb13",
@@ -11861,7 +11911,7 @@
       },
       {
         "id": "IDEA",
-        "next_number": 9
+        "next_number": 11
       },
       {
         "id": "INC",
@@ -11955,6 +12005,14 @@
         "document_id": "72ef7534-4940-5c60-9c16-d586c2e1aca0",
         "id": "08d58fde-ad98-4f98-80a8-9839d09262f7",
         "path": "work/00-campaigns/completed/020-test-campaign-id-heading-review.md",
+        "retired_revision": null
+      },
+      {
+        "alias_kind": "preferred-view",
+        "created_revision": 435,
+        "document_id": "a787bc8b-1558-4475-9985-fd2ff691b1d9",
+        "id": "096d08e2-1e7b-4b63-b307-178e0797b8d7",
+        "path": "work/ideas/idea-immutable-historical-qualification-and-completed-ledger-isolation.md",
         "retired_revision": null
       },
       {
@@ -12907,6 +12965,14 @@
         "document_id": "ed53422f-fc83-53b9-9157-a9e51c5a736d",
         "id": "7189ed5d-132a-46c6-becf-51b7569ad1e9",
         "path": "work/00-campaigns/completed/082-prove-path-state-command-free-first-pass-code-test-campaign-on-linux.md",
+        "retired_revision": null
+      },
+      {
+        "alias_kind": "preferred-view",
+        "created_revision": 436,
+        "document_id": "40ea9a3a-ebb8-4138-a591-561d11117d45",
+        "id": "71b7da4f-0cf9-41af-ad42-dbbb450076e5",
+        "path": "work/ideas/idea-durable-opportunity-first-app-server-dogfooding.md",
         "retired_revision": null
       },
       {
@@ -14360,6 +14426,20 @@
         "revision_number": 3,
         "source_revision": 388,
         "title": "Adaptive Pre-PRM Idea Readiness Review"
+      },
+      {
+        "actor": "codex",
+        "body_object": "work/state/objects/sha256/1e/1ede2d53575289b772494b63d6c9bda230e954572cacbe51b5db50466169ce99",
+        "body_sha256": "1ede2d53575289b772494b63d6c9bda230e954572cacbe51b5db50466169ce99",
+        "created_at": "2026-08-29T15:13:24Z",
+        "document_id": "40ea9a3a-ebb8-4138-a591-561d11117d45",
+        "id": "0f3e4756-6de3-4e45-833f-130bb81c2d99",
+        "lifecycle_state": "active",
+        "metadata_json": "{\"brainstorm_origin\":\"durable-opportunity-first-app-server-dogfooding\",\"document_type\":\"idea-brief\",\"related_ideas\":[\"IDEA-0003\",\"IDEA-0002\"]}",
+        "reason": "Capture operator-requested follow-on App Server dogfooding correction as an Idea Brief",
+        "revision_number": 1,
+        "source_revision": 436,
+        "title": "Idea Brief: Durable Opportunity-First App Server Dogfooding"
       },
       {
         "actor": "maintainer-final-cutover",
@@ -16530,6 +16610,20 @@
         "revision_number": 1,
         "source_revision": 162,
         "title": "Qualify passive App Server dogfooding core"
+      },
+      {
+        "actor": "codex",
+        "body_object": "work/state/objects/sha256/59/59e55afe1151d98db72c4a9c9428db70239114b4ba17ec021c7a6f3d25638c6f",
+        "body_sha256": "59e55afe1151d98db72c4a9c9428db70239114b4ba17ec021c7a6f3d25638c6f",
+        "created_at": "2026-08-29T14:56:03Z",
+        "document_id": "a787bc8b-1558-4475-9985-fd2ff691b1d9",
+        "id": "8ce461cc-bf68-4508-ad65-5efbf1784e42",
+        "lifecycle_state": "active",
+        "metadata_json": "{\"brainstorm_origin\":\"recurring-hpt2-fixed-id-and-validation-coupling\",\"document_type\":\"idea-brief\"}",
+        "reason": "Capture operator-requested brainstorming recommendation as a new Idea Brief",
+        "revision_number": 1,
+        "source_revision": 435,
+        "title": "Idea Brief: Immutable Historical Qualification and Completed-Ledger Isolation"
       },
       {
         "actor": "maintainer-final-cutover",
@@ -19024,6 +19118,16 @@
         "revision": 279
       },
       {
+        "entity_id": "a787bc8b-1558-4475-9985-fd2ff691b1d9",
+        "entity_type": "artifact",
+        "id": "06319c78-ff4e-44c2-a9b3-64d291859b52",
+        "kind": "structural-insert",
+        "operation_id": "365770ee-cfa9-4cd8-9002-cd7278832287",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-29T14:56:03Z",
+        "revision": 435
+      },
+      {
         "entity_id": "c0844a90-f569-4c59-a98f-3b520f61a4e0",
         "entity_type": "outcome_verdict",
         "id": "067838f7-cea5-4d90-9605-93224e00b599",
@@ -21464,6 +21568,16 @@
         "revision": 251
       },
       {
+        "entity_id": "40ea9a3a-ebb8-4138-a591-561d11117d45",
+        "entity_type": "document",
+        "id": "1b338027-8257-4c11-a1d6-54a3bafbdf09",
+        "kind": "structural-insert",
+        "operation_id": "1ffd9bd6-aa42-4ee3-a7ef-d59545bab949",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document\"}",
+        "recorded_at": "2026-08-29T15:13:24Z",
+        "revision": 436
+      },
+      {
         "entity_id": "ed3bcc58-e277-49e8-bfe7-703a193aa89f",
         "entity_type": "requirement",
         "id": "1b529840-90c7-4d35-b4df-fb1df7b213a6",
@@ -22532,6 +22646,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"requirement\"}",
         "recorded_at": "2026-08-28T21:42:13Z",
         "revision": 51
+      },
+      {
+        "entity_id": "IDEA",
+        "entity_type": "document_namespace",
+        "id": "23ef2c78-6633-4797-adb1-442acf1e34c3",
+        "kind": "structural-update",
+        "operation_id": "1ffd9bd6-aa42-4ee3-a7ef-d59545bab949",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"document_namespace\"}",
+        "recorded_at": "2026-08-29T15:13:24Z",
+        "revision": 436
       },
       {
         "entity_id": "73cff43a-ef6a-4972-a5f9-01e35cb31509",
@@ -25694,6 +25818,16 @@
         "revision": 330
       },
       {
+        "entity_id": "0f3e4756-6de3-4e45-833f-130bb81c2d99",
+        "entity_type": "document_revision",
+        "id": "3d20ea47-de4d-4ae0-89ae-264245066f2c",
+        "kind": "structural-insert",
+        "operation_id": "1ffd9bd6-aa42-4ee3-a7ef-d59545bab949",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
+        "recorded_at": "2026-08-29T15:13:24Z",
+        "revision": 436
+      },
+      {
         "entity_id": "14b20c29-a934-59bd-b17f-6a7d62707a61",
         "entity_type": "document",
         "id": "3d269950-1aa8-4f29-afcb-08a2a5e7d5f6",
@@ -27382,6 +27516,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
         "recorded_at": "2026-08-29T01:27:36Z",
         "revision": 199
+      },
+      {
+        "entity_id": "8ce461cc-bf68-4508-ad65-5efbf1784e42",
+        "entity_type": "document_revision",
+        "id": "4adb3b23-8a98-4f80-ad19-950fbae9c081",
+        "kind": "structural-insert",
+        "operation_id": "365770ee-cfa9-4cd8-9002-cd7278832287",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
+        "recorded_at": "2026-08-29T14:56:03Z",
+        "revision": 435
       },
       {
         "entity_id": "17acfc38-fe58-44d9-8672-df55ae42364c",
@@ -31494,6 +31638,16 @@
         "revision": 86
       },
       {
+        "entity_id": "a787bc8b-1558-4475-9985-fd2ff691b1d9",
+        "entity_type": "idea-brief",
+        "id": "6cb5fe7b-e96d-4c77-8780-c6d8163622f4",
+        "kind": "idea-readiness-review-v1",
+        "operation_id": "b528d808-4248-4b18-8993-e11a37fb2984",
+        "payload_json": "{\"adaptive_modules\":[{\"id\":\"historical-data-integrity\",\"reason\":\"The idea changes how completed qualification evidence, fixed identities, corrections, and supersession preserve history.\"},{\"id\":\"hybrid-database-authority\",\"reason\":\"Generic outcome identities, terminal-ledger enforcement, checkpoints, and rebuild behavior cross the SQLite authority boundary.\"},{\"id\":\"validation-and-ci\",\"reason\":\"The outcome includes non-mutating validation, stable performance qualification, and change-aware cross-platform CI.\"},{\"id\":\"migration-and-rollback\",\"reason\":\"Existing HPT2 identities and completed ledgers must be frozen and pinned without losing provenance or rollback safety.\"},{\"id\":\"release-and-portability\",\"reason\":\"The change affects the maintainer, installed skill, fresh installs, upgrades, disconnected clients, Linux, and Windows.\"}],\"complexity_findings\":[\"The brief spans historical compatibility, database mutation policy, validation purity, performance measurement, CI routing, and release; PRM must stage these in dependency order rather than one broad implementation campaign.\",\"The current dirty candidate updates the same bootstrap ledgers and HPT2 assignment registry that this idea intends to isolate, so baseline disposition is a prerequisite rather than incidental cleanup.\",\"Database-level immutability may require a schema or trigger change, but PRM should first prove whether managed-command refusal plus validator enforcement is sufficient.\"],\"contradictions\":[],\"deferred_items\":[{\"id\":\"general-historical-fixture-service\",\"summary\":\"A generalized fixture service remains deferred; the first slice uses one explicit compact HPT2 fixture.\"},{\"id\":\"new-database-or-orchestrator\",\"summary\":\"A new database, server, or CI orchestration platform remains deferred unless implementation evidence proves the current SQLite and workflow surfaces insufficient.\"},{\"id\":\"all-fixtures-redesign\",\"summary\":\"Redesigning every existing compatibility or test fixture remains outside the initial outcome.\"}],\"idea\":{\"artifact_id\":\"a787bc8b-1558-4475-9985-fd2ff691b1d9\",\"body_sha256\":\"59e55afe1151d98db72c4a9c9428db70239114b4ba17ec021c7a6f3d25638c6f\",\"document_revision\":1,\"visible_id\":\"IDEA-0009\"},\"kind\":\"tool-shed-idea-readiness-review\",\"prm_gates\":[{\"id\":\"G1-BASELINE-AND-CANDIDATE-BOUNDARY\",\"requirement\":\"Disposition the existing validation-timing candidate, record an exact clean source and database checkpoint baseline, and prove no subsequent planning step mutates historical ledgers merely to establish the starting state.\",\"title\":\"Freeze the implementation baseline\"},{\"id\":\"G2-HPT2-COMPATIBILITY-FIXTURE-FROZEN\",\"requirement\":\"Create a small checked-in canonical HPT2 fixture that preserves every accepted legacy UUID and historical relationship, make compatibility callers select it explicitly, and prove unrelated live records cannot expand it or require another fixed ID.\",\"title\":\"Freeze HPT2 as explicit compatibility evidence\"},{\"id\":\"G3-TERMINAL-LEDGER-IMMUTABILITY\",\"requirement\":\"Define allowed immutable evidence references, reject ordinary mutation of reconciled terminal ledgers, and provide append-only correction and supersession routes that preserve original and later provenance.\",\"title\":\"Enforce immutable completed ledgers\"},{\"id\":\"G4-GENERIC-IDENTITY-AND-READ-ONLY-VALIDATION\",\"requirement\":\"Prove generic managed identity allocation for every new entry point without HPT2 registry growth, and prove functional validation leaves Git status, database revision, checkpoints, and generated views unchanged.\",\"title\":\"Decouple new work and validation from historical state\"},{\"id\":\"G5-STABLE-PERFORMANCE-AND-CI-POLICY\",\"requirement\":\"Freeze a production-shaped benchmark corpus and relative regression policy, keep live timing advisory with only a runaway ceiling, define change-aware CI path classes and overrides, and retain scheduled full cross-platform coverage.\",\"title\":\"Qualify deterministic performance and CI routing\"},{\"id\":\"G6-MIGRATION-UPGRADE-RELEASE-RECONCILED\",\"requirement\":\"Preserve historical reports and IDs through migration, fresh-clone rebuild, maintainer upgrade, installed-skill synchronization, released disconnected-client upgrade, rollback, Linux and Windows validation, strict Doctor, and complete outcome reconciliation.\",\"title\":\"Prove migration, upgrade, rollback, and release\"}],\"promotion_blockers\":[],\"recommended_updates\":[\"Use a checked-in compact canonical HPT2 fixture as the KISS default and require explicit compatibility selection.\",\"Accept commit, release, tracked checkpoint revision, or canonical snapshot evidence only when the chosen reference is immutable and sufficient for the claim; external delivery claims still require endpoint evidence.\",\"Separate the existing timing-policy candidate from the architectural isolation work at the first PRM gate so completed ledgers are not repeatedly refreshed during implementation.\",\"Implement correctness boundaries before performance and CI optimization, then use the stable fixture to qualify those later gates.\",\"Transfer all six named gates losslessly into the project map and Program Roadmap.\"],\"result_digest\":\"a467a22ff8ed7ccd280613f576b750d60833b60ae53e5d69f855fe4e3f22b94f\",\"resumes_result_digest\":null,\"review_contract_version\":1,\"reviewed_at\":\"2026-08-29T15:20:44Z\",\"reviewer\":\"codex\",\"schema_version\":1,\"verdict\":\"READY-WITH-PRM-GATES\"}",
+        "recorded_at": "2026-08-29T15:20:44Z",
+        "revision": 437
+      },
+      {
         "entity_id": "46c871d0-0cf7-4d29-b2bc-f27b72655b93",
         "entity_type": "requirement",
         "id": "6cc09d93-474a-4456-9d18-530d4f1a7174",
@@ -31982,6 +32136,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"verification_result\"}",
         "recorded_at": "2026-08-28T20:33:59Z",
         "revision": 34
+      },
+      {
+        "entity_id": "71b7da4f-0cf9-41af-ad42-dbbb450076e5",
+        "entity_type": "document_path_alias",
+        "id": "7096ff93-5586-48be-aa12-af2284c8eaab",
+        "kind": "structural-insert",
+        "operation_id": "1ffd9bd6-aa42-4ee3-a7ef-d59545bab949",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_path_alias\"}",
+        "recorded_at": "2026-08-29T15:13:24Z",
+        "revision": 436
       },
       {
         "entity_id": "0dd5cdec-034c-4702-abd5-5ef5304cdca2",
@@ -36314,6 +36478,16 @@
         "revision": 322
       },
       {
+        "entity_id": "40ea9a3a-ebb8-4138-a591-561d11117d45",
+        "entity_type": "artifact",
+        "id": "91a38391-1b9f-41d1-8af3-740fb5b04208",
+        "kind": "structural-insert",
+        "operation_id": "1ffd9bd6-aa42-4ee3-a7ef-d59545bab949",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-29T15:13:24Z",
+        "revision": 436
+      },
+      {
         "entity_id": "bd83395d-c9c7-468e-bb9d-b4675c87498a",
         "entity_type": "cycle",
         "id": "91e53f6a-0309-4053-bd11-ab66d93624f7",
@@ -36562,6 +36736,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"document_namespace\"}",
         "recorded_at": "2026-08-29T01:27:41Z",
         "revision": 272
+      },
+      {
+        "entity_id": "IDEA",
+        "entity_type": "document_namespace",
+        "id": "940c59a3-aba9-48a5-a7a7-3bcfb56fcb20",
+        "kind": "structural-update",
+        "operation_id": "365770ee-cfa9-4cd8-9002-cd7278832287",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"document_namespace\"}",
+        "recorded_at": "2026-08-29T14:56:03Z",
+        "revision": 435
       },
       {
         "entity_id": "dd01e587-485d-48d7-b046-9084abb1078f",
@@ -37072,6 +37256,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"outcome_verdict\"}",
         "recorded_at": "2026-08-28T17:47:59Z",
         "revision": 7
+      },
+      {
+        "entity_id": "a787bc8b-1558-4475-9985-fd2ff691b1d9",
+        "entity_type": "document",
+        "id": "994701ca-d983-4fe9-891f-f2120a50f0e6",
+        "kind": "structural-insert",
+        "operation_id": "365770ee-cfa9-4cd8-9002-cd7278832287",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document\"}",
+        "recorded_at": "2026-08-29T14:56:03Z",
+        "revision": 435
       },
       {
         "entity_id": "c2d6e364-fbdf-47bc-ac4d-3e6526dc474c",
@@ -44724,6 +44918,16 @@
         "revision": 169
       },
       {
+        "entity_id": "096d08e2-1e7b-4b63-b307-178e0797b8d7",
+        "entity_type": "document_path_alias",
+        "id": "d441c539-965e-4205-a778-074b2d869fa7",
+        "kind": "structural-insert",
+        "operation_id": "365770ee-cfa9-4cd8-9002-cd7278832287",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_path_alias\"}",
+        "recorded_at": "2026-08-29T14:56:03Z",
+        "revision": 435
+      },
+      {
         "entity_id": "1bf9e770-d21f-4e0a-8fe4-9e58295cf596",
         "entity_type": "document_revision",
         "id": "d462335b-90ab-41ac-b86f-7c5b1f5b52ec",
@@ -51779,6 +51983,17 @@
         "status": "complete"
       },
       {
+        "actor": "codex",
+        "actual_writes": 5,
+        "command": "document-create",
+        "committed_at": "2026-08-29T15:13:24Z",
+        "expected_writes": null,
+        "id": "1ffd9bd6-aa42-4ee3-a7ef-d59545bab949",
+        "revision": 436,
+        "started_at": "2026-08-29T15:13:24Z",
+        "status": "complete"
+      },
+      {
         "actor": "maintainer-final-cutover",
         "actual_writes": 6,
         "command": "document-import",
@@ -52172,6 +52387,17 @@
         "id": "364e0992-1481-453a-8bf0-185b859fc89f",
         "revision": 327,
         "started_at": "2026-08-29T02:52:43Z",
+        "status": "complete"
+      },
+      {
+        "actor": "codex",
+        "actual_writes": 5,
+        "command": "document-create",
+        "committed_at": "2026-08-29T14:56:03Z",
+        "expected_writes": null,
+        "id": "365770ee-cfa9-4cd8-9002-cd7278832287",
+        "revision": 435,
+        "started_at": "2026-08-29T14:56:03Z",
         "status": "complete"
       },
       {
@@ -54548,6 +54774,17 @@
         "id": "b4caca50-0206-4e21-b630-ad67af09ca44",
         "revision": 333,
         "started_at": "2026-08-29T02:55:24Z",
+        "status": "complete"
+      },
+      {
+        "actor": "codex",
+        "actual_writes": 0,
+        "command": "idea-readiness-review-apply",
+        "committed_at": "2026-08-29T15:20:44Z",
+        "expected_writes": null,
+        "id": "b528d808-4248-4b18-8993-e11a37fb2984",
+        "revision": 437,
+        "started_at": "2026-08-29T15:20:44Z",
         "status": "complete"
       },
       {
@@ -61424,6 +61661,17 @@
         "table_name": "artifact"
       },
       {
+        "id": "0e6494b2-f822-4350-bd18-51f3653a72c6",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "1ffd9bd6-aa42-4ee3-a7ef-d59545bab949",
+        "payload_digest": "6e4ae3e7b35916d99696b5c9ae0174c2ac850490b20c2daaf8617ee49889553f",
+        "recorded_at": "2026-08-29T15:13:24Z",
+        "revision": 436,
+        "row_id": "40ea9a3a-ebb8-4138-a591-561d11117d45",
+        "table_name": "document"
+      },
+      {
         "id": "0e6c3fdc-8e62-4bb5-9e67-f6554eab81d1",
         "managed": 1,
         "operation": "insert",
@@ -62334,6 +62582,17 @@
         "recorded_at": "2026-08-29T01:27:35Z",
         "revision": 187,
         "row_id": "ADR",
+        "table_name": "document_namespace"
+      },
+      {
+        "id": "14423b94-ca2d-43e3-8912-111eab37d856",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "365770ee-cfa9-4cd8-9002-cd7278832287",
+        "payload_digest": "d0c7ce1ff4399df99d2d4808ab836db8d0e759de07887e688777dca86f8fdde4",
+        "recorded_at": "2026-08-29T14:56:03Z",
+        "revision": 435,
+        "row_id": "IDEA",
         "table_name": "document_namespace"
       },
       {
@@ -72050,6 +72309,17 @@
         "table_name": "relationship"
       },
       {
+        "id": "59d73fb5-b874-48b6-89b9-eba0c629efe3",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "1ffd9bd6-aa42-4ee3-a7ef-d59545bab949",
+        "payload_digest": "c1ca4e9506304ccb755838ecf50f92740c3402c359cf0f2951537bae3516647f",
+        "recorded_at": "2026-08-29T15:13:24Z",
+        "revision": 436,
+        "row_id": "IDEA",
+        "table_name": "document_namespace"
+      },
+      {
         "id": "5a14c952-3ec9-47d4-95d7-c198b4447d6b",
         "managed": 1,
         "operation": "insert",
@@ -75809,6 +76079,17 @@
         "recorded_at": "2026-08-29T01:27:34Z",
         "revision": 169,
         "row_id": "fe6787bf-b939-4215-89b8-ab170f93dd3f",
+        "table_name": "document_revision"
+      },
+      {
+        "id": "785d7506-b52c-4e74-950c-8e5baddeb53e",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "365770ee-cfa9-4cd8-9002-cd7278832287",
+        "payload_digest": "8ebb45d6e74f7a710d44e45b0aa87245ccdbc96c7bdaf98c930e40896fc54b48",
+        "recorded_at": "2026-08-29T14:56:03Z",
+        "revision": 435,
+        "row_id": "8ce461cc-bf68-4508-ad65-5efbf1784e42",
         "table_name": "document_revision"
       },
       {
@@ -80300,6 +80581,17 @@
         "table_name": "document"
       },
       {
+        "id": "9b70676a-05ff-4fef-8de6-9dfa4879481f",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "1ffd9bd6-aa42-4ee3-a7ef-d59545bab949",
+        "payload_digest": "0e303a9b1695a9854c96f6b644b9ab3f005c186bfd97d4b8bd1af4c7fe5f9aa6",
+        "recorded_at": "2026-08-29T15:13:24Z",
+        "revision": 436,
+        "row_id": "0f3e4756-6de3-4e45-833f-130bb81c2d99",
+        "table_name": "document_revision"
+      },
+      {
         "id": "9b7a5da7-13cc-4450-a623-235d33e50025",
         "managed": 1,
         "operation": "insert",
@@ -80924,6 +81216,17 @@
         "recorded_at": "2026-08-29T01:27:38Z",
         "revision": 231,
         "row_id": "a3d6dd1d-c89f-44cc-a0b9-d698bec5ffbe",
+        "table_name": "document_path_alias"
+      },
+      {
+        "id": "a036e766-4325-435d-b296-765d8e71e7eb",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "1ffd9bd6-aa42-4ee3-a7ef-d59545bab949",
+        "payload_digest": "af648682022406ab934ce3e2099f447fc39bc240d3cb650303cfa76dbef34d95",
+        "recorded_at": "2026-08-29T15:13:24Z",
+        "revision": 436,
+        "row_id": "71b7da4f-0cf9-41af-ad42-dbbb450076e5",
         "table_name": "document_path_alias"
       },
       {
@@ -84678,6 +84981,17 @@
         "table_name": "requirement"
       },
       {
+        "id": "bb70c87d-649a-47ff-981e-a1ca60e4fece",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "365770ee-cfa9-4cd8-9002-cd7278832287",
+        "payload_digest": "25e7131914e820f5a8f45debb782e5dc73c3e180cafc3c3eb9df454d8d20491d",
+        "recorded_at": "2026-08-29T14:56:03Z",
+        "revision": 435,
+        "row_id": "096d08e2-1e7b-4b63-b307-178e0797b8d7",
+        "table_name": "document_path_alias"
+      },
+      {
         "id": "bb75ca1a-5b8b-473b-a277-f650775f5be0",
         "managed": 1,
         "operation": "insert",
@@ -85050,6 +85364,17 @@
         "revision": 281,
         "row_id": "4c86c0dd-b3ef-4ecf-baa9-2c11757e7903",
         "table_name": "document_conversion"
+      },
+      {
+        "id": "bdd19d0b-2b0f-43cc-bb16-3fd5219c0649",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "365770ee-cfa9-4cd8-9002-cd7278832287",
+        "payload_digest": "be3ff372cafc61d65989efc0935caf76f8fbd2650981250ef40da5059382670e",
+        "recorded_at": "2026-08-29T14:56:03Z",
+        "revision": 435,
+        "row_id": "a787bc8b-1558-4475-9985-fd2ff691b1d9",
+        "table_name": "artifact"
       },
       {
         "id": "bddcde02-7b3e-401f-9f9f-ca22356ebecc",
@@ -92818,6 +93143,17 @@
         "table_name": "document_namespace"
       },
       {
+        "id": "f642e9bf-12f4-4712-bd40-f97e5c5eb690",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "1ffd9bd6-aa42-4ee3-a7ef-d59545bab949",
+        "payload_digest": "9ee57dba6b47d2fa298407976a410ecc6e42116063ec9c44f4fb75c272b12336",
+        "recorded_at": "2026-08-29T15:13:24Z",
+        "revision": 436,
+        "row_id": "40ea9a3a-ebb8-4138-a591-561d11117d45",
+        "table_name": "artifact"
+      },
+      {
         "id": "f6562fcd-d30c-4957-b486-5ef7687d05d0",
         "managed": 1,
         "operation": "insert",
@@ -93916,6 +94252,17 @@
         "revision": 1,
         "row_id": "da165d5e-8a4c-444a-91c0-41566012c599",
         "table_name": "verification_result"
+      },
+      {
+        "id": "fdc85c25-b255-48cc-81c9-12dc48e012f6",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "365770ee-cfa9-4cd8-9002-cd7278832287",
+        "payload_digest": "627f3c050cea82dbdc4d15c113e514d29126189801f05f15b392e6e8f1baeecb",
+        "recorded_at": "2026-08-29T14:56:03Z",
+        "revision": 435,
+        "row_id": "a787bc8b-1558-4475-9985-fd2ff691b1d9",
+        "table_name": "document"
       },
       {
         "id": "fdcafee8-f32a-42fb-bf7a-f55ee2fa36fd",

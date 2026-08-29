@@ -158,7 +158,9 @@ Readable aliases:
 `ts: ship changes since last release` scopes work5 to the intended tracked changes after the
 highest stable semantic-version tag through one frozen content commit. Tool Shed pushes that
 content commit first and waits for the exact-SHA `Validate` push run: the release profile must pass
-within 60 seconds on Ubuntu and Windows with Python 3.11 and current 3.x. Only then may it create
+its functional checks within the 300-second hard validator budget on Ubuntu and Windows with Python
+3.11 and current 3.x. Runs exceeding 60 seconds emit advisory performance evidence without becoming
+false functional failures. Only then may it create
 and push the provenance-only commit and stable tag. Publication verifies the same CI evidence and
 fails closed for a different SHA, pull-request-only run, incomplete matrix, or unsuccessful run.
 
@@ -175,9 +177,12 @@ In the Tool Shed repository, `scripts/validate_tool_shed.py` implements the reus
 repository contracts, and `release` adds only the disposable cross-command installation smoke.
 Independent unit cases run in isolated concurrent processes and all failures are reported in stable
 test-ID order. The default CLI profile is `full`; CI and release qualification pass
-`--profile release --max-seconds 60` explicitly. CI partitions unit cases into deterministic
-shards; each case runs once per OS/Python combination, and only shard zero runs the non-unit
-release contracts.
+`--profile release --warn-seconds 60 --max-seconds 300` explicitly, with a 10-minute job timeout
+for hangs. CI partitions unit cases into deterministic shards; each case runs once per OS/Python
+combination, and only shard zero runs the non-unit release contracts. A separate weekly Validation
+Performance workflow runs three current-Python primary-shard samples on each operating system; its
+median warns above 60 seconds and fails above 180 seconds so routine CI remains functional while
+meaningful regressions remain visible.
 
 Large authority or migration initiatives that predate their target runtime use an independent
 bootstrap closure manifest under `work/evidence/`. The guarded interface is:

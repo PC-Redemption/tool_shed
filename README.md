@@ -702,8 +702,11 @@ snapshot's supplied smoke tests); `full` runs every unit behavior once plus curr
 provider, roadmap, bootstrap-closure, stale-path, and work-state contracts; `release` adds one disposable
 cross-command installed-workspace smoke. Unit cases run in isolated concurrent processes, so every
 selected case reports independently without serializing unrelated cases. GitHub Actions runs
-the budgeted `release` profile on pushes and pull requests across Ubuntu and Windows, partitioning
-unit cases into seven deterministic runner shards while one shard owns the non-unit contracts. Tagged
+the `release` profile on pushes and pull requests across Ubuntu and Windows with a 60-second
+advisory threshold, a 300-second hard validator budget, and a 10-minute hung-job timeout. It
+partitions unit cases into eight deterministic runner shards while one shard owns the non-unit
+contracts. A separate weekly workflow measures three primary-shard samples per operating system
+and fails only when their median exceeds 180 seconds. Tagged
 publication does not repeat those cases: it requires a successful push run for the exact content
 commit before creating the GitHub Release.
 

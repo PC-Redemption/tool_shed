@@ -43,7 +43,8 @@ Overrides, unattested releases, and any changed identity run full local validati
    work tree. The write also refreshes `adapters/codex-skill-releases.json` from valid stable tags
    before hashing release content; review and commit that catalog as shipped content.
 
-4. Run `python3 scripts/validate_tool_shed.py --profile release --max-seconds 60`. Confirm its
+4. Run `python3 scripts/validate_tool_shed.py --profile release --warn-seconds 60 --max-seconds 300`.
+   Treat an advisory warning as performance evidence, not a functional failure. Confirm the run's
    repository-policy coverage includes tracked `work/`, stale root ignores, documented exceptions,
    unrelated nested rules, and ignored `/tool_shed/` with tracked `work/`. Release qualification
    also verifies every tracked `work/evidence/bootstrap-closure-*.json` manifest with

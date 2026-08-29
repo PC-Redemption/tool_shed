@@ -4,13 +4,14 @@
   "content_hashes": {
     ".gitattributes": "d60f352d0db1404c70afb4bb8b2ca3fd1c610572aa40720e8a0b7baa7885418c",
     ".github/workflows/release.yml": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa",
-    ".github/workflows/validate.yml": "2aef28bae106f03d192e969d0f9aecbd5b720690a212773aaf9d48a401fcfa69",
-    "README.md": "b12d7b2d63420b6e3fdaaca9d11d1a249efe540663fdb1d3e3398b57a23296ac",
+    ".github/workflows/validate.yml": "03533d932f1bc5f1e5df0f16460000f88334cdb6db0ab11b49ecf08f0524b539",
+    ".github/workflows/validation-performance.yml": "d47a51e456cf6f75794f87317bf1861bb34cbc3e2f4ebac02461bab40045967e",
+    "README.md": "a03b6005460e7265c9b51e29f1554fb4b5db6faca93b81d5b0aacc349052623f",
     "adapters/codex-app-server-benchmarks.json": "20ef4ef6d7e3964e01791ea2623e16091a5c5bd85ddae84179952ba31872dbe3",
     "adapters/codex-app-server-config.json": "d79964bc2371a39d50b7bcad534af133564e55bbf491baf4f3031b36e01b7e49",
     "adapters/codex-app-server-qualifications.json": "995ccd3bea135448b316045ea240c10d272f4c7e2ff65085111e0380cef947c1",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "cb1eb98377656cd6fcb7531317d690f581604928dfb5784772ef97d453325d5d",
+    "adapters/codex-skill-releases.json": "f46730013995e2955212c8f04cefb41cfa270a7fad490a9593516fe891efa1b2",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "a16e9afbc2733b2c01b113df3f3a07fda1630b80b5a97476896123ee03bc22d2",
     "docs/codex-app-server-alpha-requalification-2026-08-24.md": "be240e9b4b63db13689c69c9fec9a870627fc39a85d5176ee4c6ce6ad256721c",
@@ -22,7 +23,7 @@
     "docs/codex-app-server-requalification-2026-08-21.md": "9aacfac50f3debb8ccff2b3b06d33f6b52c6354e7df5b7bc9c5f2114f85663b4",
     "docs/codex-app-server-write-qualification-2026-08-20.md": "db297ad88feb73f46a46178ae92304445afc2fb2447c2543d3bec84609af3923",
     "docs/codex-app-server-write-qualification-alpha-2026-08-25.md": "95d22eeb2b8d80fc884962fe30e93c5b2af4c63063970fb6ab30b55f292d40c8",
-    "docs/commands.md": "42fb4fbd4dfef1d7cb23785414e4c68edfc242b778771201e5740e1c32f70ee6",
+    "docs/commands.md": "509574318fd4e81590ce3aca221f77cf9c055bf64acc4ea50667ac1793a71190",
     "docs/completion-watcher-hosted-api-contract.md": "95d6915bbfa0f9e81bea2e6aaecbf8cdb1165b9aeb38a6f7a6d80b95b2ece983",
     "docs/completion-watcher-hosted-datastore.md": "5f06d3db3e92a428d5762d27f3ebef5aa05519234c412e469883a34fe5772f5f",
     "docs/completion-watcher-hosted-notification-worker.md": "d5c240a648e2c5aa22d855b6b0a3f8f4f42389bfffe66caadb03ab20ec0aaa60",
@@ -41,7 +42,7 @@
     "docs/operator-guide.md": "96a2ecf99659809e6585e741724f1f94a7551d985a6772702d0b1e4f65ff8ace",
     "docs/outcome-reconciliation.md": "02550e7deb96eb600abdbd52cd732168ae34100d2da1182705d2585e90feedbb",
     "docs/provider-adapters.md": "edf50dc13fd15cb6415904981ca3dea56fd73aad32a473429ef34d1b56cea25b",
-    "docs/releasing.md": "61d3b0590838d106c93c899cdc57fee5ad6acdfb18d23ca2270a90f13f6029ca",
+    "docs/releasing.md": "3113b25ab5d3a5b50459fdce9639b4a32d148df55059401e3b0539ab9761aa0f",
     "docs/universal-closed-loop-outcome-reconciliation.md": "bf92f40ad840676dfff2c89b677fb265b2e60e9f30a5b7efd994d6e0f35e150f",
     "docs/work-level-customization.md": "d110b51c461b3edc73ee2682269641d3bdb97ce76d4ae53eae10341e77aa8a70",
     "docs/workspace-performance-profiling.md": "1fff8131a934e4bc6f07bcc9fac0295c37d150d6093f391159322e8b546f9a05",
@@ -59,7 +60,7 @@
     "schemas/document-store/v1/conversion-manifest.schema.json": "1c940c60e4e25f2e9f82b1914b5156e7239c7bfa343af4c1ab8c13903e86de79",
     "schemas/document-store/v1/maintainer-assigned-ids.json": "a93e9b9d92d7a3fe180635b246974f3e8e5739c564ae48d902e3db19bba069a4",
     "schemas/hybrid-state/v1/checkpoint.schema.json": "c92f8910f815fb3f46f6d51ba7e7fc8752f3d9878a1b5a212198503a2d7dafff",
-    "schemas/hybrid-state/v1/hpt2-assigned-ids.json": "b25cc71127a8fecd0e72e5eaa4928479a514384905fcc8f4c7c30822341691e1",
+    "schemas/hybrid-state/v1/hpt2-assigned-ids.json": "839d6e5524e518e266e32c97e914d342e3180d4c2224ccabe0c82f8bfdbd2dd5",
     "schemas/hybrid-state/v1/maintainer-assigned-ids.json": "033651f1d422cdf99d70da3d3ef9495d0e5feaa0dd1d7cb1fb6f9311a4551f63",
     "schemas/outcome-reconciliation/v1/manifest.schema.json": "481a7eff9ad46e1ad230da9c6d51d13594b01ad7855bcce1b3a9afba15e69cb7",
     "schemas/outcome-reconciliation/v1/source.schema.json": "025515720e206c9c957232fee9e7b22c649d60bf782eada4c6b979d5c0c13de2",
@@ -68,6 +69,7 @@
     "scripts/app_server_dispatch.py": "7989d4a6b0ce42a591be3cf6293ef8570567679158277dfef110df87a95c04f7",
     "scripts/app_server_user_state.py": "f8700162bef1a177139649c53fd419a41e9ceabe7cb57639cc06cbae0c97f223",
     "scripts/autonomy_control.py": "fc262a79191a3cb3208393de8db64d20e27205de806b67f2f273fb3d6e2fd859",
+    "scripts/benchmark_validation.py": "31a858a4ccd84fc7c38e611f76b9a13574ae9247fd6feabbf096e7fb82bd65b2",
     "scripts/bootstrap_closure.py": "4bca8c8ede481e48bdac3f8e24a05c19d7801d03426f208c7aebd2339f6d9c42",
     "scripts/build_docs_site.py": "c6fa8e9331028c46e14fc5bc797fdd299dc301900ba1f39ec5a4730f0feeadda",
     "scripts/campaign_queue.py": "93484f5a8bba6b59357a340f292aab1235f97b4f83475d243a0baea764e57fcd",
@@ -120,7 +122,7 @@
     "scripts/update_snapshot.py": "b6d3b94f42377d5297a32cde439e81f5789a280904eae04f85306b530c9da920",
     "scripts/update_work_index.py": "14839e13af13b09103ec2e8a9b204c1ba1e390d05fe42e75a0d24295da7d6c66",
     "scripts/validate_snapshot_client.py": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f",
-    "scripts/validate_tool_shed.py": "cb883cfacb31a041484ade59e31b4ccf88fd54eb64b262baba073b6d6b4e6004",
+    "scripts/validate_tool_shed.py": "4cfcc9fb36e1ae86869de5091258b571b7a4c55bf8b0cb3ac013cdc2ecf0d971",
     "scripts/work_level_config.py": "d482693c0f4deb547e90855cff7d3d5d5d320cbb2bdae7c8c5a3159d476743ae",
     "scripts/work_tree.py": "84245e2d6441556ffd417ec884bdb4cdd727520cb3d10e2fdcfd5459c773eb8e",
     "scripts/workspace_preflight.py": "d9482b21dc552c9ce73ee1395d23ea6bdd3646fcf3cd904b51937f47d3bab271",
@@ -154,7 +156,7 @@
     "skills/tool-shed/SKILL.md": "5c6db012589b99afc2f9fd5af3724fa3b6d04f0571f97968055bce13bfea3eef",
     "skills/tool-shed/agents/openai.yaml": "5b39ceb5df84a19a82f6c406bc80c5e8c88ea236211c6c618d80c37dc7301a23",
     "skills/tool-shed/references/artifact-workflows.md": "cc530ed8fa2549a1a14c665b4f68b351ad2e9f7f70c97386378972def8aa5918",
-    "skills/tool-shed/references/campaign-routes.md": "75f56ce8b9edfe080129d7c933e7b4a417732f69cbd7ac9ed9e9a8145b5cc6da",
+    "skills/tool-shed/references/campaign-routes.md": "0187260a810a3b8f764f0d581df8824b1073efc13994be6e18884374e3944021",
     "skills/tool-shed/references/maintenance-routes.md": "4a5b05d130f1fb7081e647f3bd8198ba62fd97fc774babf797479376b08b0219",
     "templates/active-campaign-queue.md": "c3035949566b873937924207bca052254d3d3a531437bc4d6b4326c13711c836",
     "templates/adr.md": "45e0c25ff6e6ef20fc071ea1dedef03f93a058afae9b40c934026a9f9772a268",
@@ -179,34 +181,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Add adaptive, revision-bound pre-PRM Idea readiness review with two deliberate triggers and lossless gate transfer.",
-  "release_commit": "a14f205f149c8924c3299c94068f070da08ddd8c",
-  "release_qualification": {
-    "attested_at": "2026-08-29T13:50:23Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "cb883cfacb31a041484ade59e31b4ccf88fd54eb64b262baba073b6d6b4e6004"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "2aef28bae106f03d192e969d0f9aecbd5b720690a212773aaf9d48a401fcfa69"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "a14f205f149c8924c3299c94068f070da08ddd8c"
-  },
-  "release_tag": "v0.37.0",
-  "released_at": "2026-08-29T13:50:23Z",
-  "shed_version": "0.37.0",
+  "notes": "Stabilize routine validation timing and add scheduled performance sampling",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.37.1",
+  "released_at": null,
+  "shed_version": "0.37.1",
   "updated_at": "2026-08-29",
   "updater_mutation_paths": [
     {
