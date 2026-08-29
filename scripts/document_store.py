@@ -99,6 +99,9 @@ def audit_connection(workspace: Path, connection: sqlite3.Connection) -> dict[st
     active = int(connection.execute("SELECT count(*) FROM active_operation").fetchone()[0])
     if active:
         findings.append("an incomplete managed operation context remains active")
+    duplicate_relationships = hybrid_state.duplicate_active_relationship_count(connection)
+    if duplicate_relationships:
+        findings.append(f"duplicate active relationship edges: {duplicate_relationships}")
     hard_finding_count = len(findings)
     mismatches = int(connection.execute(
         "SELECT count(*) FROM document d JOIN document_revision r ON r.document_id=d.id AND r.revision_number=d.current_revision "
@@ -216,9 +219,10 @@ def migrate(workspace: Path, *, project_binding: str, database: Path | None = No
 
 
 ManagedCallback = Callable[[sqlite3.Connection, int], Any]
+ExistingCallback = Callable[[sqlite3.Connection], Any | None]
 
 
-def managed_write(workspace: Path, *, project_binding: str, command: str, actor: str, callback: ManagedCallback, database: Path | None = None) -> dict[str, Any]:
+def managed_write(workspace: Path, *, project_binding: str, command: str, actor: str, callback: ManagedCallback, existing: ExistingCallback | None = None, database: Path | None = None) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
     require_project_binding(workspace, project_binding, operation=OPERATION)
     path = require_path_within(workspace, database or hybrid_state.database_path(workspace))
@@ -226,6 +230,18 @@ def managed_write(workspace: Path, *, project_binding: str, command: str, actor:
         entrance = audit_connection(workspace, connection)
         if entrance["classification"] not in {"CLEAN", "VALID_DIRTY"}:
             raise DocumentStoreError(f"managed mutation refused from {entrance['classification']}: {'; '.join(entrance['findings'])}")
+        existing_result = existing(connection) if existing is not None else None
+        if existing_result is not None:
+            return {
+                "schema_version": 1,
+                "kind": "tool-shed-document-operation",
+                "operation_id": None,
+                "revision": entrance["current_revision"],
+                "actual_writes": 0,
+                "result": existing_result,
+                "audit": entrance,
+                "writes_performed": False,
+            }
         operation_id = str(uuid.uuid4())
         stamp = hybrid_state.now()
         try:
@@ -632,12 +648,28 @@ def diff_revisions(workspace: Path, identity: str, left: int, right: int, *, dat
 
 
 def relate(workspace: Path, *, project_binding: str, source: str, relation: str, target: str, actor: str, database: Path | None = None) -> dict[str, Any]:
+    def find_existing(connection: sqlite3.Connection) -> dict[str, Any] | None:
+        left, right = _lookup(connection, source), _lookup(connection, target)
+        existing = hybrid_state.active_relationship(
+            connection, left["id"], relation, right["id"]
+        )
+        if existing is not None:
+            return {
+                "relationship_id": existing["id"],
+                "from": left["visible_id"],
+                "relation": relation,
+                "to": right["visible_id"],
+                "created": False,
+                "idempotent": True,
+            }
+        return None
+
     def apply(connection: sqlite3.Connection, revision: int) -> dict[str, Any]:
         left, right = _lookup(connection, source), _lookup(connection, target)
         relation_id = str(uuid.uuid4())
         connection.execute("INSERT INTO relationship VALUES (?, ?, ?, ?, 'document-store-v1', ?, NULL)", (relation_id, left["id"], relation, right["id"], revision))
-        return {"relationship_id": relation_id, "from": left["visible_id"], "relation": relation, "to": right["visible_id"]}
-    return managed_write(workspace, project_binding=project_binding, command="document-relate", actor=actor, callback=apply, database=database)
+        return {"relationship_id": relation_id, "from": left["visible_id"], "relation": relation, "to": right["visible_id"], "created": True, "idempotent": False}
+    return managed_write(workspace, project_binding=project_binding, command="document-relate", actor=actor, callback=apply, existing=find_existing, database=database)
 
 
 def unrelate(workspace: Path, *, project_binding: str, relationship_id: str, actor: str, database: Path | None = None) -> dict[str, Any]:

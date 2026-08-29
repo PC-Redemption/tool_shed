@@ -592,6 +592,29 @@ class OutcomeReconciliationTests(unittest.TestCase):
         )
         self.assertEqual(applied["result"]["mode"], "direct")
 
+    def test_repeated_outcome_apply_reuses_active_semantic_edges(self) -> None:
+        self.apply_slice()
+        source = self.generic_source()
+        first = outcome_loop.prepare(self.workspace, source)
+        outcome_loop.apply_manifest(
+            self.workspace,
+            first,
+            expected_token=first["manifest_token"],
+            project_binding=self.binding,
+        )
+        with contextlib.closing(hybrid_state.connect(hybrid_state.database_path(self.workspace))) as connection:
+            relationship_count = int(connection.execute("SELECT COUNT(*) FROM relationship").fetchone()[0])
+        second = outcome_loop.prepare(self.workspace, self.generic_source())
+        applied = outcome_loop.apply_manifest(
+            self.workspace,
+            second,
+            expected_token=second["manifest_token"],
+            project_binding=self.binding,
+        )
+        self.assertEqual(len(applied["result"]["reused_relationship_ids"]), 3)
+        with contextlib.closing(hybrid_state.connect(hybrid_state.database_path(self.workspace))) as connection:
+            self.assertEqual(connection.execute("SELECT COUNT(*) FROM relationship").fetchone()[0], relationship_count)
+
     def test_append_only_correction_preserves_terminal_parent_provenance(self) -> None:
         self.apply_slice()
         self.generic_source()

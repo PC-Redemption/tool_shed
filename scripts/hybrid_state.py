@@ -227,6 +227,33 @@ def meta_row(connection: sqlite3.Connection) -> dict[str, Any]:
     return dict(row)
 
 
+def active_relationship(
+    connection: sqlite3.Connection,
+    from_artifact_id: str,
+    relation_type: str,
+    to_artifact_id: str,
+) -> sqlite3.Row | None:
+    """Return the canonical active semantic edge, independent of provenance."""
+    return connection.execute(
+        "SELECT id, provenance, created_revision FROM relationship "
+        "WHERE from_artifact_id = ? AND relation_type = ? AND to_artifact_id = ? "
+        "AND retired_revision IS NULL ORDER BY created_revision, id LIMIT 1",
+        (from_artifact_id, relation_type, to_artifact_id),
+    ).fetchone()
+
+
+def duplicate_active_relationship_count(connection: sqlite3.Connection) -> int:
+    """Count semantic edge triples with more than one active relationship row."""
+    return int(
+        connection.execute(
+            "SELECT COUNT(*) FROM ("
+            "SELECT 1 FROM relationship WHERE retired_revision IS NULL "
+            "GROUP BY from_artifact_id, relation_type, to_artifact_id HAVING COUNT(*) > 1"
+            ")"
+        ).fetchone()[0]
+    )
+
+
 def _parse_timestamp(value: object) -> datetime | None:
     if not isinstance(value, str):
         return None
@@ -284,6 +311,9 @@ def audit_connection(workspace: Path, connection: sqlite3.Connection) -> dict[st
     )
     if mismatched:
         findings.append(f"managed operation write-count mismatches: {mismatched}")
+    duplicate_relationships = duplicate_active_relationship_count(connection)
+    if duplicate_relationships:
+        findings.append(f"duplicate active relationship edges: {duplicate_relationships}")
 
     observed_digest = domain_digest(connection) if not findings else None
     digest_changed = observed_digest is not None and observed_digest != meta.get("source_digest")
@@ -425,6 +455,7 @@ def initialize(
 
 
 ManagedCallback = Callable[[sqlite3.Connection, int], Any]
+ExistingCallback = Callable[[sqlite3.Connection], Any | None]
 
 
 def managed_write(
@@ -435,6 +466,7 @@ def managed_write(
     actor: str,
     callback: ManagedCallback,
     expected_writes: int | None = None,
+    existing: ExistingCallback | None = None,
     path: Path | None = None,
 ) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
@@ -447,6 +479,18 @@ def managed_write(
                 f"managed mutation refused from {entrance['classification']}: "
                 + "; ".join(entrance["findings"])
             )
+        existing_result = existing(connection) if existing is not None else None
+        if existing_result is not None:
+            return {
+                "schema_version": int(connection.execute("PRAGMA user_version").fetchone()[0]),
+                "kind": "tool-shed-hybrid-state-operation",
+                "operation_id": None,
+                "revision": entrance["current_revision"],
+                "actual_writes": 0,
+                "result": existing_result,
+                "audit": entrance,
+                "writes_performed": False,
+            }
         operation_id = random_uuid()
         stamp = now()
         try:
@@ -784,6 +828,17 @@ def add_relationship(
     provenance: str,
 ) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
+    def find_existing(connection: sqlite3.Connection) -> dict[str, Any] | None:
+        existing = active_relationship(
+            connection, from_artifact_id, relation_type, to_artifact_id
+        )
+        if existing is not None:
+            return {
+                "relationship_id": existing["id"],
+                "created": False,
+                "idempotent": True,
+            }
+        return None
     relationship_id = random_uuid()
 
     def apply(connection: sqlite3.Connection, revision: int) -> dict[str, str]:
@@ -798,7 +853,7 @@ def add_relationship(
                 revision,
             ),
         )
-        return {"relationship_id": relationship_id}
+        return {"relationship_id": relationship_id, "created": True, "idempotent": False}
 
     return managed_write(
         workspace,
@@ -807,6 +862,7 @@ def add_relationship(
         actor="tool-shed",
         callback=apply,
         expected_writes=1,
+        existing=find_existing,
     )
 
 

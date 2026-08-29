@@ -93,11 +93,27 @@ class DocumentStoreThinSliceTests(unittest.TestCase):
         with self.assertRaisesRegex(document_store.DocumentStoreError, "stale document revision"):
             document_store.apply_edit(self.workspace, project_binding=self.binding, edit=edit_path, actor="fixture", reason="stale", database=self.database)
 
-        document_store.relate(
+        relationship = document_store.relate(
             self.workspace, project_binding=self.binding, source=idea["visible_id"], relation="produces",
             target=project_map["visible_id"], actor="fixture", database=self.database,
         )
+        relationship_revision = document_store.audit(self.workspace, self.database)["current_revision"]
+        repeated_relationship = document_store.relate(
+            self.workspace, project_binding=self.binding, source=idea["visible_id"], relation="produces",
+            target=project_map["visible_id"], actor="fixture", database=self.database,
+        )
+        self.assertFalse(repeated_relationship["writes_performed"])
+        self.assertTrue(repeated_relationship["result"]["idempotent"])
+        self.assertEqual(
+            repeated_relationship["result"]["relationship_id"],
+            relationship["result"]["relationship_id"],
+        )
+        self.assertEqual(
+            document_store.audit(self.workspace, self.database)["current_revision"],
+            relationship_revision,
+        )
         relations = document_store.related(self.workspace, idea["visible_id"], database=self.database)["relationships"]
+        self.assertEqual(len(relations), 1)
         self.assertEqual(relations[0]["to_visible_id"], "MAP-0001")
         outcome = document_store.open_outcome(
             self.workspace, project_binding=self.binding, identity=idea["visible_id"],
@@ -130,6 +146,31 @@ class DocumentStoreThinSliceTests(unittest.TestCase):
         result = document_store.audit(self.workspace, self.database)
         self.assertEqual(result["classification"], "UNMANAGED_REVIEW")
         self.assertTrue(result["unmanaged_write_detected"])
+
+    def test_audit_rejects_duplicate_active_relationship_edges(self) -> None:
+        first = document_store.create_document(
+            self.workspace, project_binding=self.binding, document_type="ticket", title="First",
+            body="# First\n", lifecycle="active", metadata={}, actor="fixture", reason="audit",
+            database=self.database,
+        )["result"]
+        second = document_store.create_document(
+            self.workspace, project_binding=self.binding, document_type="checklist", title="Second",
+            body="# Second\n", lifecycle="active", metadata={}, actor="fixture", reason="audit",
+            database=self.database,
+        )["result"]
+        document_store.relate(
+            self.workspace, project_binding=self.binding, source=first["visible_id"], relation="verified-by",
+            target=second["visible_id"], actor="fixture", database=self.database,
+        )
+        with contextlib.closing(sqlite3.connect(self.database)) as connection:
+            connection.execute(
+                "INSERT INTO relationship VALUES (?, ?, 'verified-by', ?, 'direct-sql', 3, NULL)",
+                (str(uuid.uuid4()), first["artifact_id"], second["artifact_id"]),
+            )
+            connection.commit()
+        result = document_store.audit(self.workspace, self.database)
+        self.assertEqual(result["classification"], "INVALID")
+        self.assertIn("duplicate active relationship edges: 1", result["findings"])
 
     def test_bounded_interface_and_disposable_lifecycle_views(self) -> None:
         first = document_store.create_document(

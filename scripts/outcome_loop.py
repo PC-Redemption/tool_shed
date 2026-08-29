@@ -7,6 +7,7 @@ import sys as _runtime_sys
 
 _runtime_sys.dont_write_bytecode = True
 
+import contextlib
 import hashlib
 import json
 import sqlite3
@@ -855,6 +856,16 @@ def apply_manifest(
     cycle = manifest["cycle"]
     verdict = manifest["verdict"]
     reconciliation = manifest["reconciliation"]
+    relationship_items = manifest.get("relationships", [])
+    existing_relationships: dict[tuple[str, str, str], str] = {}
+    with contextlib.closing(hybrid_state.connect(hybrid_state.database_path(workspace), writable=False)) as connection:
+        for item in relationship_items:
+            key = (
+                item["from_artifact_id"], item["relation_type"], item["to_artifact_id"]
+            )
+            existing = hybrid_state.active_relationship(connection, *key)
+            if existing is not None:
+                existing_relationships[key] = str(existing["id"])
 
     def write(connection: sqlite3.Connection, revision: int) -> dict[str, Any]:
         meta = hybrid_state.meta_row(connection)
@@ -941,12 +952,19 @@ def apply_manifest(
             ),
         )
         known_artifacts = _artifact_ids(manifest)
-        for item in manifest.get("relationships", []):
+        reused_relationship_ids: list[str] = []
+        for item in relationship_items:
             for artifact_id in (item["from_artifact_id"], item["to_artifact_id"]):
                 if artifact_id not in known_artifacts and not connection.execute(
                     "SELECT 1 FROM artifact WHERE id = ?", (artifact_id,)
                 ).fetchone():
                     raise OutcomeLoopError(f"relationship artifact does not exist: {artifact_id}")
+            key = (
+                item["from_artifact_id"], item["relation_type"], item["to_artifact_id"]
+            )
+            if key in existing_relationships:
+                reused_relationship_ids.append(existing_relationships[key])
+                continue
             connection.execute(
                 "INSERT INTO relationship VALUES (?, ?, ?, ?, ?, ?, NULL)",
                 (
@@ -960,6 +978,7 @@ def apply_manifest(
             "mode": manifest["mode"],
             "verdict": verdict["disposition"],
             "reconciliation": reconciliation["state"],
+            "reused_relationship_ids": reused_relationship_ids,
         }
 
     expected_writes = (
@@ -971,7 +990,8 @@ def apply_manifest(
         + len(manifest.get("verifications", []))
         + 1
         + 1
-        + len(manifest.get("relationships", []))
+        + len(relationship_items)
+        - len(existing_relationships)
     )
     return hybrid_state.managed_write(
         workspace,

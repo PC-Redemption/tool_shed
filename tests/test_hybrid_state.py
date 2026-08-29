@@ -123,6 +123,19 @@ class HybridStateTests(unittest.TestCase):
             provenance="fixture",
         )
         self.assertEqual(related["actual_writes"], 1)
+        revision_before_repeat = related["revision"]
+        repeated = hybrid_state.add_relationship(
+            self.workspace,
+            project_binding=self.binding,
+            from_artifact_id=ids[0],
+            relation_type="produces",
+            to_artifact_id=ids[1],
+            provenance="second-writer",
+        )
+        self.assertFalse(repeated["writes_performed"])
+        self.assertTrue(repeated["result"]["idempotent"])
+        self.assertEqual(repeated["result"]["relationship_id"], related["result"]["relationship_id"])
+        self.assertEqual(repeated["revision"], revision_before_repeat)
         audit = hybrid_state.audit(self.workspace)
         self.assertEqual(audit["classification"], "VALID_DIRTY")
         with contextlib.closing(sqlite3.connect(self.workspace / ".tool-shed/state.sqlite3")) as connection:

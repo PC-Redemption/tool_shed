@@ -90,6 +90,13 @@ not authority. Reads never change the database or create checkpoints.
 stable priority and ID order; it reports omitted IDs rather than silently truncating a document.
 Search uses SQLite FTS when available and a deterministic bounded fallback otherwise.
 
+An active relationship is identified by its semantic triple: source artifact, relation type, and
+target artifact. Provenance records how the edge was established but does not create a second
+semantic edge. Repeating `relate`, the Hybrid relationship writer, or outcome reconciliation reuses
+the existing active relationship without advancing the database revision. Retiring the edge keeps
+its history and permits a later replacement. Audit classifies duplicate active triples as invalid;
+repair retires only redundant rows and never deletes relationship history.
+
 ## Lifecycle Views
 
 The portable view root is `.tool-shed/views/work/`, with children `active`, `working`, `blocked`,

@@ -11,7 +11,7 @@
     "adapters/codex-app-server-config.json": "d79964bc2371a39d50b7bcad534af133564e55bbf491baf4f3031b36e01b7e49",
     "adapters/codex-app-server-qualifications.json": "995ccd3bea135448b316045ea240c10d272f4c7e2ff65085111e0380cef947c1",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "f46730013995e2955212c8f04cefb41cfa270a7fad490a9593516fe891efa1b2",
+    "adapters/codex-skill-releases.json": "de33ed5bfe787f3a70d8258832f815adb184633f2803ddc6b9b8d782cdf790ef",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "a16e9afbc2733b2c01b113df3f3a07fda1630b80b5a97476896123ee03bc22d2",
     "docs/codex-app-server-alpha-requalification-2026-08-24.md": "be240e9b4b63db13689c69c9fec9a870627fc39a85d5176ee4c6ce6ad256721c",
@@ -31,7 +31,7 @@
     "docs/completion-watcher-hosted-status-surface.md": "38bd549f6a20f882fc8490bb4505b6be9d341512650ecd74e97fde2f3fc345c8",
     "docs/completion-watcher-protocol.md": "2fb0057ead6f1524a22a17833b448f419312588858553b0ad68ddf0c873e10bb",
     "docs/database-owned-work-collateral-conversion.md": "ee131fe6e232369c752a1be35e6a0e3c1438e2ee14aef47b50677f1fa5bbd98a",
-    "docs/database-owned-work-collateral-v1-contract.md": "b378dabf401b99e390dac5398ea93a99896f4e071331484684cf866b4b1e1c5d",
+    "docs/database-owned-work-collateral-v1-contract.md": "c077b35ae790c21e018d08c0871b33f251f8f4d565ea0679a2166d0a1f83fc4b",
     "docs/database-owned-work-collateral.md": "bcea9710020c625b40878c5c8bbf3634b808fdef6a77d51640a1a6789ff5b7aa",
     "docs/documentation-site.md": "b4ace74ed8f3db32902ffd573da0ed1f780e7bdbfc053c8503eee913d577f1f5",
     "docs/fleet-snapshot-updates.md": "4016143af0bd7eec601ebc3782fc7ca9e036eee96517b6397b34e0809f5b7cb3",
@@ -93,10 +93,10 @@
     "scripts/doctor.py": "75380bcd14c605d8970374cc23dbb6a121385bbe5464702c41e8dc9de912a645",
     "scripts/document_contract.py": "2b540582141065b7e7c84294142a15ddf01f255a58f844e08abaf9634b30d411",
     "scripts/document_conversion.py": "0295b7c4ed1026acec2d075983d080188abfdf71223d161b9d65f3c5efc31140",
-    "scripts/document_store.py": "a6434831d7940af8c058c6c634e3fa2be2d4b5bcdf9446262d835efb17dd9739",
+    "scripts/document_store.py": "91ae30c026028a78bacda8f3a11e03fd56b22ce36a41340a69827b2dbf3cc451",
     "scripts/document_store_schema.py": "fd40962d15288e5e4d72f124d896f615b54a52db0840f1b1566564a7217842fd",
     "scripts/freeze_hpt2_fixture.py": "abc1e766fb6538a7ebd6354d85cff0a51da4ecf8ac21d53866fe5a10fdca51a7",
-    "scripts/hybrid_state.py": "8e453379284c0aadf911578d2c15605283e0e571947c877428cc46f55a666d9b",
+    "scripts/hybrid_state.py": "1a30cc33bf8bcb33fe16090e8c2eb754734cfe059e896d2fa52b61b1dc0f3208",
     "scripts/hybrid_state_schema.py": "cec17e40de30a77d38a91ed1d2fcffa06a573bf13e91361b3ca18135c525d508",
     "scripts/idea_readiness.py": "d641a244eae4352928a3474a7021b0915c41e0aec674235df00c21f5a4ebeba2",
     "scripts/install_into_workspace.py": "8205eee83f4925607fd5375308a601cdf78e02bc200f97e6c171ecbcf35f4eab",
@@ -105,7 +105,7 @@
     "scripts/migrate_generated_evidence.py": "c160078098ffee910b683108cbe32bd24acec63cbb195ddef85b5ba3a3b0475e",
     "scripts/new_artifact.py": "2b9d2f64550e790d95d43b6cbc2b19bbc2bd5fef1d51402533022e5a8074c1c4",
     "scripts/onboard_existing_project.py": "7c6a9231a5b26d7bf522c249f08c420a65b5d8d4ee44473a7c9c914c9a48febd",
-    "scripts/outcome_loop.py": "370a41b101463a751e586bfb72e7ccfe70bff413c4ea6b28a252fa3494cf1f5f",
+    "scripts/outcome_loop.py": "530a61181a8f9842396f2d4a7a67ff87fdb488e6a9acc25969ae9a8807a45c9f",
     "scripts/outcome_reconciliation.py": "78d4a0da3deb05da3c520fd8dd8d1f6f79a0459255afbd31489f956f00ed051b",
     "scripts/prepare_github_release.py": "9fba4066bab0e780f1964c532687a8be0ce6674afbf8ad91a7142f5d040d35e1",
     "scripts/profile_workspace_performance.py": "51421cce2dbf2f657f7bd193879664008e7a1718a32a9c6aeae26e7102c8e68e",
@@ -184,34 +184,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Freeze historical qualification inputs, enforce immutable completed ledgers, and make validation reproducible and change-aware",
-  "release_commit": "9616d305bf5d29f4d76a876164166c2564e8c0e7",
-  "release_qualification": {
-    "attested_at": "2026-08-29T16:23:48Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "820cf80f37570a8e1d96466d0a7c3f10fa502dc9d70bf36b3e2672c7f9835867"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "2af0c167fbe1ef499b8c4024997378728c3bdeb48bfccdf436259ebb1ce39cbe"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "9616d305bf5d29f4d76a876164166c2564e8c0e7"
-  },
-  "release_tag": "v0.38.0",
-  "released_at": "2026-08-29T16:23:48Z",
-  "shed_version": "0.38.0",
+  "notes": "Prevent and detect duplicate active relationship edges.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.38.1",
+  "released_at": null,
+  "shed_version": "0.38.1",
   "updated_at": "2026-08-29",
   "updater_mutation_paths": [
     {
