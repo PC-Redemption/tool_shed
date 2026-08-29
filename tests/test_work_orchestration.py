@@ -160,6 +160,33 @@ class WorkOrchestrationTests(unittest.TestCase):
         self.assertFalse(lock.exists())
 
     def test_windows_invalid_pid_lock_is_recovered(self) -> None:
+        closed_handles: list[int] = []
+        self.assertFalse(
+            work_orchestration._windows_pid_is_alive(
+                999_999_999,
+                open_process=lambda _access, _inherit, _pid: 0,
+                close_handle=closed_handles.append,
+                get_last_error=lambda: 87,
+            )
+        )
+        self.assertTrue(
+            work_orchestration._windows_pid_is_alive(
+                123,
+                open_process=lambda _access, _inherit, _pid: 42,
+                close_handle=closed_handles.append,
+                get_last_error=lambda: 0,
+            )
+        )
+        self.assertEqual(closed_handles, [42])
+        self.assertTrue(
+            work_orchestration._windows_pid_is_alive(
+                123,
+                open_process=lambda _access, _inherit, _pid: 0,
+                close_handle=closed_handles.append,
+                get_last_error=lambda: 5,
+            )
+        )
+
         lock = self.workspace / work_orchestration.LOCK_RELATIVE
         lock.parent.mkdir(parents=True, exist_ok=True)
         lock.write_text(
@@ -173,9 +200,7 @@ class WorkOrchestrationTests(unittest.TestCase):
             ),
             encoding="utf-8",
         )
-        missing_pid = OSError("invalid process identifier")
-        missing_pid.winerror = 87
-        with mock.patch.object(work_orchestration.os, "kill", side_effect=missing_pid):
+        with mock.patch.object(work_orchestration, "_pid_is_alive", return_value=False):
             with work_orchestration._exclusive_run(self.workspace, "recovered"):
                 owner = json.loads(lock.read_text(encoding="utf-8"))
                 self.assertEqual(owner["run_id"], "recovered")

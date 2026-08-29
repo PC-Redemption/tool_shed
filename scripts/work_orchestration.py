@@ -488,6 +488,47 @@ def _run_phase(
     return PhaseResult(phase_id, "passed", elapsed, len(encoded)), payload
 
 
+def _windows_pid_is_alive(
+    owner_pid: int,
+    *,
+    open_process: Callable[[int, bool, int], object] | None = None,
+    close_handle: Callable[[object], object] | None = None,
+    get_last_error: Callable[[], int] | None = None,
+) -> bool:
+    """Probe a Windows PID without broadcasting a console control event."""
+    if open_process is None or close_handle is None or get_last_error is None:
+        import ctypes
+        from ctypes import wintypes
+
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        kernel32.OpenProcess.restype = wintypes.HANDLE
+        kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+        kernel32.CloseHandle.restype = wintypes.BOOL
+        open_process = kernel32.OpenProcess
+        close_handle = kernel32.CloseHandle
+        get_last_error = ctypes.get_last_error
+    handle = open_process(0x1000, False, owner_pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+    if handle:
+        close_handle(handle)
+        return True
+    # ERROR_INVALID_PARAMETER and ERROR_NOT_FOUND identify a missing PID.
+    # Access denied and unknown failures conservatively retain the lock.
+    return get_last_error() not in {87, 1168}
+
+
+def _pid_is_alive(owner_pid: int) -> bool:
+    if os.name == "nt":
+        return _windows_pid_is_alive(owner_pid)
+    try:
+        os.kill(owner_pid, 0)
+    except ProcessLookupError:
+        return False
+    except (OSError, PermissionError):
+        return True
+    return True
+
+
 @contextlib.contextmanager
 def _exclusive_run(workspace: Path, run_id: str):
     lock = require_path_within(workspace, workspace / LOCK_RELATIVE)
@@ -513,17 +554,7 @@ def _exclusive_run(workspace: Path, run_id: str):
         same_host = owner.get("hostname") == socket.gethostname()
         alive = True
         if same_host and isinstance(owner_pid, int) and owner_pid > 0:
-            try:
-                os.kill(owner_pid, 0)
-            except ProcessLookupError:
-                alive = False
-            except PermissionError:
-                alive = True
-            except OSError as pid_error:
-                # Windows reports a missing PID as ERROR_INVALID_PARAMETER
-                # instead of ProcessLookupError. Other errors remain a
-                # conservative indication that the owner may still exist.
-                alive = getattr(pid_error, "winerror", None) != 87
+            alive = _pid_is_alive(owner_pid)
         if same_host and not alive:
             lock.unlink(missing_ok=True)
             try:

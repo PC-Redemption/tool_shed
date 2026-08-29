@@ -130,7 +130,7 @@
     "scripts/validate_snapshot_client.py": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f",
     "scripts/validate_tool_shed.py": "820cf80f37570a8e1d96466d0a7c3f10fa502dc9d70bf36b3e2672c7f9835867",
     "scripts/work_level_config.py": "d482693c0f4deb547e90855cff7d3d5d5d320cbb2bdae7c8c5a3159d476743ae",
-    "scripts/work_orchestration.py": "9d4dd927ca6205036c417b9ffbe8872659fdb7cda5f2add8cfc0a098991d7ffe",
+    "scripts/work_orchestration.py": "88ab8f1b59de7463b2d4ed500f76b7954d299906596235fb87deb2dceffd7813",
     "scripts/work_tree.py": "84245e2d6441556ffd417ec884bdb4cdd727520cb3d10e2fdcfd5459c773eb8e",
     "scripts/workspace_preflight.py": "d9482b21dc552c9ce73ee1395d23ea6bdd3646fcf3cd904b51937f47d3bab271",
     "selection.md": "b1eda70db9ce64a2ed963e1aa13f02d764f61b1745d40794d6c37b78ca126d86",
