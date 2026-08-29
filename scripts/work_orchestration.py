@@ -11,6 +11,7 @@ import argparse
 import contextlib
 import hashlib
 import json
+import math
 import os
 import socket
 import shutil
@@ -63,6 +64,12 @@ MAX_DIAGNOSTIC_BYTES = 4096
 MAX_JOURNAL_EVENTS = 10_000
 RETENTION_DAYS = 30
 TARGET_EVIDENCE_MAX_AGE = timedelta(hours=2)
+TOKEN_ESTIMATION_METHOD = "proxy-calibration-v1"
+ESTIMATED_BYTES_PER_TOKEN = 4
+ESTIMATED_TOKENS_PER_TOOL_CALL = 96
+ESTIMATED_TOKENS_PER_RETRY = 256
+ESTIMATED_TOKENS_PER_ACTIVE_SECOND = 4
+MAX_DURATION_TOKENS_PER_EVENT = 512
 
 
 class WorkOrchestrationError(RuntimeError):
@@ -963,6 +970,66 @@ def closeout(
     return payload
 
 
+def _estimated_remedial_tokens(
+    remedial: list[dict[str, Any]], measured: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Estimate the full remedial total without relabelling estimates as actual usage."""
+    measured_ids = {id(item) for item in measured}
+    actual = sum(
+        int(item["provider_usage"]["input_tokens"])
+        + int(item["provider_usage"]["output_tokens"])
+        for item in measured
+    )
+    unmeasured = [item for item in remedial if id(item) not in measured_ids]
+
+    def estimate_event(item: dict[str, Any]) -> int:
+        output_tokens = math.ceil(
+            max(0, int(item.get("output_bytes", 0))) / ESTIMATED_BYTES_PER_TOKEN
+        )
+        tool_tokens = max(0, int(item.get("tool_calls", 0))) * ESTIMATED_TOKENS_PER_TOOL_CALL
+        retry_tokens = max(0, int(item.get("retry_count", 0))) * ESTIMATED_TOKENS_PER_RETRY
+        duration_tokens = min(
+            math.ceil(max(0, int(item.get("duration_ms", 0))) / 1000)
+            * ESTIMATED_TOKENS_PER_ACTIVE_SECOND,
+            MAX_DURATION_TOKENS_PER_EVENT,
+        )
+        return output_tokens + tool_tokens + retry_tokens + duration_tokens
+
+    proxy = sum(estimate_event(item) for item in unmeasured)
+    estimated_total = actual + proxy
+    low = actual + math.floor(proxy * 0.65)
+    high = actual + math.ceil(proxy * 1.60)
+    if remedial and not unmeasured:
+        confidence = "high"
+    elif len(unmeasured) >= 5 and any(int(item.get("output_bytes", 0)) for item in unmeasured):
+        confidence = "medium"
+    else:
+        confidence = "low"
+    return {
+        "estimated_total": estimated_total,
+        "range": {"low": low, "high": high},
+        "method": {
+            "id": TOKEN_ESTIMATION_METHOD,
+            "confidence": confidence,
+            "estimated_event_coverage": round(len(remedial) / len(remedial), 6)
+            if remedial
+            else 0.0,
+            "unmeasured_event_count": len(unmeasured),
+            "exact_event_count": len(measured),
+            "calibration_state": "provider-samples-present" if measured else "portable-default",
+            "coefficients": {
+                "output_bytes_per_token": ESTIMATED_BYTES_PER_TOKEN,
+                "tokens_per_tool_call": ESTIMATED_TOKENS_PER_TOOL_CALL,
+                "tokens_per_retry": ESTIMATED_TOKENS_PER_RETRY,
+                "tokens_per_active_second": ESTIMATED_TOKENS_PER_ACTIVE_SECOND,
+                "max_duration_tokens_per_event": MAX_DURATION_TOKENS_PER_EVENT,
+                "low_multiplier": 0.65,
+                "high_multiplier": 1.60,
+            },
+        },
+    }
+
+
 def efficiency_report(
     workspace: Path, *, hours: int = 24, output: Path | None = None
 ) -> dict[str, Any]:
@@ -988,6 +1055,7 @@ def efficiency_report(
         else None
     )
     coverage = len(measured) / len(remedial) if remedial else 0.0
+    estimate = _estimated_remedial_tokens(remedial, measured)
     result_counts = {name: sum(item.get("result") == name for item in events) for name in RESULTS}
     payload = {
         "schema_version": SCHEMA_VERSION,
@@ -1002,6 +1070,9 @@ def efficiency_report(
         "freshness": {"generated_at": _stamp(), "event_count": len(events)},
         "remedial_tokens_actual": actual,
         "remedial_token_coverage": round(coverage, 6),
+        "remedial_tokens_estimated": estimate["estimated_total"],
+        "remedial_tokens_estimate_range": estimate["range"],
+        "remedial_token_estimation": estimate["method"],
         "remedial_proxy": {
             "interactions": len(remedial),
             "tool_calls": sum(int(item.get("tool_calls", 0)) for item in remedial),

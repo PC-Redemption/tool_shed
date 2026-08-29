@@ -108,18 +108,26 @@ most 10,000 events and 30 days. Events classify work as `reasoning-required`,
 retries, and exact state tokens support diagnosis without becoming project truth.
 
 Qualified providers may record exact input and output usage with `record`. GUI-native work omits
-usage; missing tokens remain unknown, never zero or estimated. The aggregate keeps exact measured
-remedial tokens, coverage, and GUI-portable proxies separate:
+exact usage; missing actual tokens remain unknown, never zero. The aggregate keeps exact measured
+remedial tokens and coverage separate from a clearly labelled deterministic estimate and the raw
+GUI-portable proxies:
 
 ```bash
 python3 scripts/work_orchestration.py --workspace . report \
   --hours 24 --output .tool-shed/reports/work-efficiency-v1.json
 ```
 
+`remedial_tokens_estimated` combines exact usage for measured events with a proxy estimate for the
+unmeasured portion. `remedial_tokens_estimate_range` and `remedial_token_estimation` expose its
+uncertainty, method version, coefficients, confidence, exact sample count, and calibration state.
+The `proxy-calibration-v1` heuristic derives the unmeasured portion from output bytes, tool calls,
+active duration, and retries; it backfills existing retained journal events at report time without
+rewriting history. It is directional, not billing-grade, and is never presented as actual usage.
+
 The versioned per-project payload contains only project identity, counter epoch, window,
-freshness, counts, exact covered token totals, and proxies. It excludes prompts, commands, paths,
-source, and diagnostics, so the hosted dashboard can ingest it without receiving granular model
-activity. Dashboard or network failure never blocks local work.
+freshness, counts, exact covered token totals, estimates, and proxies. It excludes prompts,
+commands, paths, source, and diagnostics, so the hosted dashboard can ingest it without receiving
+granular model activity. Dashboard or network failure never blocks local work.
 
 Use guarded `reset-telemetry --confirm-reset` to start a new counter epoch. Reset affects ignored
 operational telemetry only; it does not alter work state, outcome history, or release cohorts.
@@ -134,4 +142,5 @@ command only as an explicit fallback.
 
 The frozen representative baseline lives at
 `tests/fixtures/work-orchestration-baseline-v1.json`. It compares the same Work1 and Work2 corpus,
-reports interactions and output as proxies, and does not claim unavailable provider-token totals.
+reports interactions and output as proxies, and keeps any estimate visibly distinct from unavailable
+provider-token totals.

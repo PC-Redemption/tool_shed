@@ -215,6 +215,13 @@ class WorkOrchestrationTests(unittest.TestCase):
         report = work_orchestration.efficiency_report(self.workspace)
         self.assertEqual(report["remedial_tokens_actual"], 100)
         self.assertEqual(report["remedial_token_coverage"], 0.5)
+        self.assertEqual(report["remedial_tokens_estimated"], 210)
+        self.assertEqual(report["remedial_tokens_estimate_range"], {"low": 171, "high": 276})
+        self.assertEqual(report["remedial_token_estimation"]["confidence"], "low")
+        self.assertEqual(
+            report["remedial_token_estimation"]["calibration_state"],
+            "provider-samples-present",
+        )
         self.assertEqual(report["remedial_proxy"]["interactions"], 2)
         self.assertEqual(report["measurement_state"], "partial")
 
@@ -232,7 +239,32 @@ class WorkOrchestrationTests(unittest.TestCase):
         report = work_orchestration.efficiency_report(self.workspace)
         self.assertIsNone(report["remedial_tokens_actual"])
         self.assertEqual(report["remedial_token_coverage"], 0.0)
+        self.assertEqual(report["remedial_tokens_estimated"], 107)
+        self.assertEqual(report["remedial_tokens_estimate_range"], {"low": 69, "high": 172})
+        self.assertEqual(
+            report["remedial_token_estimation"]["id"], "proxy-calibration-v1"
+        )
         self.assertEqual(report["measurement_state"], "unmeasured")
+
+    def test_estimate_is_deterministic_and_full_measurement_has_high_confidence(self) -> None:
+        work_orchestration.record_event(
+            self.workspace,
+            run_id="measured",
+            phase_id="provider-recovery",
+            classification="recovery-retry",
+            result="passed",
+            duration_ms=100,
+            tool_calls=1,
+            output_bytes=200,
+            retry_count=1,
+            input_tokens=80,
+            output_tokens=20,
+        )
+        report = work_orchestration.efficiency_report(self.workspace)
+        self.assertEqual(report["remedial_tokens_actual"], 100)
+        self.assertEqual(report["remedial_tokens_estimated"], 100)
+        self.assertEqual(report["remedial_tokens_estimate_range"], {"low": 100, "high": 100})
+        self.assertEqual(report["remedial_token_estimation"]["confidence"], "high")
 
     def test_dashboard_aggregate_is_sanitized(self) -> None:
         work_orchestration.record_event(
