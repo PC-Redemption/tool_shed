@@ -227,7 +227,7 @@ Use the same five levels in every workspace:
 | Route | Stop after |
 | --- | --- |
 | `ts:work1 <goal>` | A minimally checked local checkpoint commit; no deployment. |
-| `ts:work2 <goal>` | Deployment to the configured work environment plus focused browser and changed-behavior checks. |
+| `ts:work2 <goal>` | Deployment to the configured work environment plus focused browser and changed-behavior checks, followed by persistent registration of the committed candidate and its owning outcome chain when Hybrid state is active. |
 | `ts:work3 [scope]` | Documentation aligned with the accumulated coded work through scoped create, read, update, or delete operations, followed by full applicable validation/build and a locally frozen candidate. |
 | `ts:work4 [scope]` | The frozen source is pushed without intentional production promotion. |
 | `ts:work5 [scope]` | Production is released or promoted and verified. |
@@ -236,6 +236,12 @@ The levels are cumulative and do not change Direct, Guided, Coordinated, or Deep
 Use `ts:work` as an alias for `work2`, `ts:freeze` for `work3`, `ts:push` for `work4`, and
 `ts:ship` for `work5`. Use `ts:check <spot|focused|full|release>` when validation is wanted without
 implementation, commits, pushes, deployment, or release.
+
+Hybrid Work2 candidates are dogfooded locally without requiring an immediate release. Tool Shed
+accumulates them in one persistent release cohort. An unscoped Work5 selects that cohort, qualifies
+and publishes it once, attaches production evidence to its registered owning outcomes, and closes
+the cohort only after those chains reconcile through their originating Ideas. Unrelated open Ideas
+are never inferred into the release.
 
 At Work3, review the accumulated coded work and create, read, update, or delete project
 documentation as needed so it matches the candidate. Keep those changes within the requested
@@ -443,7 +449,7 @@ Tool Shed places durable owner-facing execution state in the first-sorted
 
 | Route | Result |
 | --- | --- |
-| `ts: status` or `ts: queue` | Show last completed, working now, next, blockers, detours, lifecycle findings, and pending Dangler Resolution work. |
+| `ts: status` or `ts: queue` | Show last completed, working now, next, blockers, detours, lifecycle findings, pending Dangler Resolution work, and any Hybrid Work2 release cohort. |
 | `ts: next` | Resume or execute one campaign using the existing safe readiness behavior. |
 | `ts: next 1,2` or `ts: next que 1,2` | Resolve selected queue positions once, then execute that stable ordered batch sequentially. |
 | `ts: next camp <number-or-id,...>` | Execute exact stable campaign references in the requested order. |

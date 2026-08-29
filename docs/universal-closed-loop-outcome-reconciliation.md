@@ -103,6 +103,12 @@ Evidence is endpoint appropriate:
 A commit does not prove deployment. A test does not prove target qualification. Completed work
 artifacts are historical evidence, not current product truth by themselves.
 
+When implementation stops at Work2, `release_cohort.py` persists the exact commit and every open
+owning cycle as an awaiting-release requirement. Work5 publication evidence is attached to those
+registered owners, and the cohort cannot reconcile until their outcome chains are terminal and
+reconciled. This preserves batching and local dogfooding without guessing release scope from all
+open Ideas.
+
 ## Propagation Rules
 
 Each terminal child propagates its outcome verdict, reconciliation state, residuals, and evidence

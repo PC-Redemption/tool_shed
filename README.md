@@ -259,6 +259,12 @@ reconciled `partial` verdict, and qualify file-first/hybrid parity. See
 [`docs/outcome-reconciliation.md`](docs/outcome-reconciliation.md) and the
 [`universal closed-loop contract`](docs/universal-closed-loop-outcome-reconciliation.md).
 
+Hybrid workspaces also use `scripts/release_cohort.py` to persist which committed Work2 outcomes
+are awaiting production release. Maintainers can dogfood and batch those candidates; Work5 freezes
+one exact content SHA, attaches verified publication evidence to every registered owner, and cannot
+finalize until each recorded chain reconciles through its originating Idea. See
+[`docs/release-cohort-closed-loop.md`](docs/release-cohort-closed-loop.md).
+
 Before a long campaign, run:
 
 ```bash

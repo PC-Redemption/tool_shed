@@ -27,6 +27,7 @@ import check_stale_paths
 import check_work_tree
 import document_store
 import reconcile_campaign_queue
+import release_cohort
 import review_work_state
 import update_work_index
 import workspace_preflight
@@ -360,6 +361,18 @@ def inspect(workspace: Path) -> dict[str, Any]:
             "finding_count": 0,
         }
     )
+    release_cohorts = (
+        release_cohort.status(root)
+        if (root / ".tool-shed" / "state.sqlite3").is_file()
+        else {
+            "available": False,
+            "active": [],
+            "recent_terminal": [],
+            "findings": [],
+            "finding_count": 0,
+            "writes_performed": False,
+        }
+    )
     indexes = database_documents["indexes"] if database_documents else index_state(root)
     stale_paths = check_stale_paths.scan(root)
     work_findings = review_work_state.review(root, stale_days=30, today=date.today())
@@ -478,6 +491,13 @@ def inspect(workspace: Path) -> dict[str, Any]:
             "Run `python3 scripts/outcome_reconciliation.py --workspace . audit`; prepare and apply an exact guarded reconciliation manifest without rewriting file-owned lifecycle state.",
             count=outcome_failures,
         ))
+    if release_cohorts["finding_count"]:
+        findings.append(_finding(
+            "RELEASE_COHORT_INVALID", "error",
+            f"Persistent Work2 release-cohort state has {release_cohorts['finding_count']} finding(s).",
+            "Run `python3 scripts/release_cohort.py --workspace . --json status`; repair ownership or lifecycle state before Work5.",
+            count=release_cohorts["finding_count"],
+        ))
     unsupported = external_evidence["unsupported_claims"]
     if external_evidence["unsupported_claim_count"]:
         findings.append(_finding(
@@ -531,6 +551,7 @@ def inspect(workspace: Path) -> dict[str, Any]:
             "coverage": reconciliation["coverage"],
         },
         "outcome_reconciliation": outcome_reconciliation,
+        "release_cohorts": release_cohorts,
         "document_authority": database_documents["audit"] if database_documents else {"available": False},
         "external_evidence": external_evidence,
     }

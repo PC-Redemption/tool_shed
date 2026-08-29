@@ -141,7 +141,7 @@ complex or grant authority outside the stated goal.
 | Prompt | Stop after |
 | --- | --- |
 | `ts:work1 <goal>` | Implement, run the quickest meaningful check, and create a scoped local checkpoint commit. Do not deploy. |
-| `ts:work2 <goal>` | Perform work1, deploy to the configured work environment, and run focused browser and changed-behavior checks. |
+| `ts:work2 <goal>` | Perform work1, deploy to the configured work environment, run focused browser and changed-behavior checks, and persist the committed candidate with its open owning outcome chain in the Hybrid release cohort. |
 | `ts:work3 [scope]` | Review the accumulated coded work and create, read, update, or delete project documentation as needed so it matches the candidate; then fully validate and build, update the work environment when relevant, and freeze it locally. |
 | `ts:work4 [scope]` | Perform work3, then push without intentionally promoting production. |
 | `ts:work5 [scope]` | Qualify, push, release or promote production, and verify the production target. |
@@ -163,6 +163,20 @@ its functional checks within the 300-second hard validator budget on Ubuntu and 
 false functional failures. Only then may it create
 and push the provenance-only commit and stable tag. Publication verifies the same CI evidence and
 fails closed for a different SHA, pull-request-only run, incomplete matrix, or unsuccessful run.
+
+When Hybrid state has an active release cohort, an unscoped `ts:work5` or `ts:ship` selects that
+entire accumulated cohort. Work2 registrations remain locally usable while awaiting release.
+Work5 freezes their exact combined content SHA, records production evidence against every
+registered owner, and refuses final cohort closure until those specific outcome chains reconcile
+through their originating Ideas. Inspect the deterministic surface with:
+
+```text
+python3 scripts/release_cohort.py --workspace . status
+```
+
+Mutations use `register`, `freeze`, `record-release`, and `finalize` with the fresh reported state
+token and the `hybrid-state` project binding. See
+[`release-cohort-closed-loop.md`](release-cohort-closed-loop.md).
 
 Validation-only route:
 
@@ -388,7 +402,7 @@ state token. Read-only status and validation do not require a mutation binding.
 
 | Prompt | Usage |
 | --- | --- |
-| `ts: status` | Show and validate the active owner capsule and shared Cycle State Capsule, including any pending or active Dangler Resolution campaign. |
+| `ts: status` | Show and validate the active owner capsule and shared Cycle State Capsule, including any pending or active Dangler Resolution campaign and the current Hybrid release cohort. |
 | `ts: queue` | Alias for `ts: status`. |
 | `ts: completed` | Summarize recent verified campaign completions. |
 | `ts: next` | Resume the working campaign or select the first ready campaign; when none is ready, report the owning higher-level cycle and exact safe transition. |

@@ -45,7 +45,7 @@ Treat a leading numbered route as the operator's explicit stopping point for the
 | Route | Required endpoint |
 | --- | --- |
 | `ts:work1 <goal>` | Implement, run the quickest meaningful check, checkpoint only the requested changes in a local commit, leave the worktree clean when unrelated pre-existing changes do not prevent it, and stop without deployment. |
-| `ts:work2 <goal>` | Perform `work1`, deploy to the configured work environment, run focused browser and changed-behavior checks, checkpoint, and stop. |
+| `ts:work2 <goal>` | Perform `work1`, deploy to the configured work environment, run focused browser and changed-behavior checks, register the committed candidate and its open owning outcome chain in the persistent release cohort when Hybrid state is active, checkpoint, and stop. |
 | `ts:work3 [scope]` | Review the accumulated coded work and create, read, update, or delete project documentation as needed so it matches the candidate; then run the repository's full applicable validation and build, update and verify the work environment when relevant, freeze it in a local commit, and stop. |
 | `ts:work4 [scope]` | Perform `work3`, then push the frozen source without intentionally releasing or promoting production. |
 | `ts:work5 [scope]` | Perform release qualification, push, release or promote production, and verify the production target. This is equivalent to an explicit `ts:ship`. |
@@ -59,6 +59,16 @@ push, deploy, or release.
 Work3 documentation alignment is limited to the requested candidate scope. Preserve unrelated
 owner documentation and historical records; delete documentation only when the coded change makes
 it obsolete and the deletion is within the authorized scope.
+
+When Hybrid state is active, Work2 must not leave release ownership implicit. After the candidate
+code commit and changed-behavior checks pass, run `release_cohort.py status`, then guarded
+`register` with the fresh token, Hybrid project binding, exact commit, and nearest open owning
+cycle. Registration expands through every open `outcome-parent` automatically. For work with no
+durable owner, use `--accepted-outcome` and `--summary` to create one direct open origin. Persist
+the resulting database revision through the normal schema-2 checkpoint and commit that checkpoint;
+the registered product commit remains the Work2 evidence. Repeating an exact registration is
+idempotent. A Work2 candidate is available for local dogfooding immediately and remains
+`awaiting-release`; Work2 evidence is not production evidence.
 
 Read optional project state from root `work/tool-shed.yaml` when present. The minimal supported
 declaration is:
@@ -139,6 +149,17 @@ Treat `ts: ship changes since last release` as the same work5 route with its can
 to every intended tracked change after the highest stable semantic-version tag through one frozen
 content commit. Surface the base tag and exact content-commit SHA. Before creating or pushing the
 provenance commit or tag:
+
+When Hybrid state contains an active release cohort, bare `ts:work5` and `ts:ship` with no narrower
+scope default to that complete accumulated cohort. Run `release_cohort.py status` before
+qualification. Refuse an invalid cohort or an explicitly narrowed scope that silently strands a
+registered candidate. After the final tracked content commit is clean, guarded `freeze` binds the
+cohort to that exact SHA. After publication and production verification, guarded `record-release`
+attaches the durable release reference to every registered owning cycle. Reconcile those cycles
+from the innermost result through the originating Idea, then guarded `finalize` closes the cohort
+only when every registered owner is terminal, reconciled, and satisfied (or carries an approved
+change/not-applicable disposition). Checkpoint the post-release database state. Never close all
+open Ideas merely because a release occurred; only registered cohort ownership is in scope.
 
 1. Push the frozen content commit on its branch.
 2. Require a successful `push` run of `.github/workflows/validate.yml` whose `head_sha` exactly
@@ -294,7 +315,9 @@ target capsule, and pass its `--project-binding` together with the fresh project
 
 - `ts: queue` and `ts: status`: run `status`, report the compact owner capsule, independent outcome
   state and nearest open owning loop, findings, and any pending or active Dangler Resolution
-  campaign for unclassified unresolved work.
+  campaign for unclassified unresolved work. When Hybrid state is active, also run
+  `release_cohort.py status` and show the active cohort lifecycle, base tag, candidate count, and
+  next Work2/Work5 transition; pending release is state, while cohort findings are errors.
 - `ts: completed`: run `completed` and summarize recent verified outcomes.
 - `ts: next`: run bare `next`, surface pending Dangler Resolution work, then preserve the existing
   single-campaign behavior: resume the working campaign or execute the first ready campaign under
