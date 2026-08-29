@@ -2,9 +2,9 @@
   "authority_contract": "docs/universal-closed-loop-outcome-reconciliation.md",
   "baseline": {
     "created_at": "1970-01-01T00:00:00Z",
-    "source_commit": "84d86143b22259e55b3d866c8e825fb64711f48a",
+    "source_commit": "f2395386686bb96aed6554c23771c232d56f6de3",
     "source_digest": "59df8e7786b34be488d51171bfedaf66caa16b20694e70b29e05f9cedbc62a04",
-    "updated_at": "2026-08-29T03:04:24Z"
+    "updated_at": "2026-08-29T03:14:24Z"
   },
   "bindings": [
     {
@@ -283,6 +283,27 @@
       ],
       "source_commit": "84d86143b22259e55b3d866c8e825fb64711f48a",
       "summary": "Make Doctor consume schema-2 database lifecycle authority",
+      "supersedes": []
+    },
+    {
+      "authorization": "Owner-authorized end-to-end release evidence-response loop on 2026-08-28",
+      "decision_ids": [
+        "DEC-CLOSED-007",
+        "DEC-CLOSED-008"
+      ],
+      "evidence_to_rerun": [
+        "EVID-CLOSED-G5-RELEASE"
+      ],
+      "id": "CHG-CLOSED-012",
+      "rationale": "The exact v0.36.4 matrix passed every behavioral assertion but repeated Windows shard-zero overruns while verifying two independent final ledgers serially. Concurrent execution preserves fail-closed results, complete output, and the existing 60-second qualification budget.",
+      "recorded_at": "2026-08-29T03:13:32Z",
+      "requirement_ids": [
+        "REQ-CLOSED-003",
+        "REQ-CLOSED-011",
+        "REQ-CLOSED-012"
+      ],
+      "source_commit": "f2395386686bb96aed6554c23771c232d56f6de3",
+      "summary": "Parallelize independent final bootstrap-ledger verification",
       "supersedes": []
     }
   ],
@@ -592,7 +613,8 @@
         "CHG-CLOSED-007",
         "CHG-CLOSED-008",
         "CHG-CLOSED-010",
-        "CHG-CLOSED-011"
+        "CHG-CLOSED-011",
+        "CHG-CLOSED-012"
       ],
       "gate": "G5-RELEASE-CANARY-PROVEN",
       "id": "EVID-CLOSED-G5-RELEASE",
@@ -619,7 +641,7 @@
         },
         {
           "path": "scripts/validate_tool_shed.py",
-          "sha256": "a8ec0a24a6b23b0150767be9686ce29f4004c55fb07b45a438ade5400143647b"
+          "sha256": "cb883cfacb31a041484ade59e31b4ccf88fd54eb64b262baba073b6d6b4e6004"
         },
         {
           "path": "scripts/validate_snapshot_client.py",
@@ -643,7 +665,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T03:03:21Z"
+      "verified_at": "2026-08-29T03:14:24Z"
     },
     {
       "covers_change_ids": [
@@ -918,7 +940,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "b1f9653648e32798",
+  "state_token": "6511effa4c2f48a1",
   "upgrade_targets": [
     {
       "id": "UPG-CLOSED-MAINTAINER",

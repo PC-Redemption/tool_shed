@@ -2,9 +2,9 @@
   "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
   "baseline": {
     "created_at": "2026-08-28T16:26:19Z",
-    "source_commit": "84d86143b22259e55b3d866c8e825fb64711f48a",
-    "source_digest": "59b136000a93f64586208192799deb87efdf087f0d71857a08fa7b9120ad0af2",
-    "updated_at": "2026-08-29T03:01:08Z"
+    "source_commit": "f2395386686bb96aed6554c23771c232d56f6de3",
+    "source_digest": "fd117f7d8245e6273efb61207c67a0c585477caff9a9e11fb86381d6d8b8a470",
+    "updated_at": "2026-08-29T03:14:24Z"
   },
   "bindings": [
     {
@@ -50,7 +50,7 @@
     {
       "path": "scripts/validate_tool_shed.py",
       "role": "release-validator",
-      "sha256": "a8ec0a24a6b23b0150767be9686ce29f4004c55fb07b45a438ade5400143647b"
+      "sha256": "cb883cfacb31a041484ade59e31b4ccf88fd54eb64b262baba073b6d6b4e6004"
     },
     {
       "path": "work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md",
@@ -549,6 +549,26 @@
       "source_commit": "84d86143b22259e55b3d866c8e825fb64711f48a",
       "summary": "Route Doctor through database authority after schema-2 cutover",
       "supersedes": []
+    },
+    {
+      "authorization": "Owner-authorized end-to-end release evidence-response loop on 2026-08-28",
+      "decision_ids": [
+        "DEC-HYBRID-012"
+      ],
+      "evidence_to_rerun": [
+        "EVID-G2-HPT2-PARITY",
+        "EVID-G4-RELEASE"
+      ],
+      "id": "CHG-HYBRID-024",
+      "rationale": "The exact v0.36.4 matrix passed every behavioral assertion but repeated Windows shard-zero overruns while verifying two independent final bootstrap ledgers serially. Running those unchanged fail-closed verifiers concurrently preserves the 60-second release budget and all evidence semantics.",
+      "recorded_at": "2026-08-29T03:13:32Z",
+      "requirement_ids": [
+        "REQ-HYBRID-001",
+        "REQ-HYBRID-010"
+      ],
+      "source_commit": "f2395386686bb96aed6554c23771c232d56f6de3",
+      "summary": "Parallelize independent bootstrap-ledger release checks",
+      "supersedes": []
     }
   ],
   "decisions": [
@@ -666,7 +686,7 @@
         },
         {
           "path": "scripts/validate_tool_shed.py",
-          "sha256": "a8ec0a24a6b23b0150767be9686ce29f4004c55fb07b45a438ade5400143647b"
+          "sha256": "cb883cfacb31a041484ade59e31b4ccf88fd54eb64b262baba073b6d6b4e6004"
         },
         {
           "path": "work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md",
@@ -678,7 +698,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T01:35:03Z"
+      "verified_at": "2026-08-29T03:14:24Z"
     },
     {
       "covers_change_ids": [
@@ -831,7 +851,8 @@
         "CHG-HYBRID-020",
         "CHG-HYBRID-021",
         "CHG-HYBRID-022",
-        "CHG-HYBRID-023"
+        "CHG-HYBRID-023",
+        "CHG-HYBRID-024"
       ],
       "gate": "G2-SUBSTRATE-LOOP-PROVEN",
       "id": "EVID-G2-HPT2-PARITY",
@@ -850,7 +871,7 @@
         },
         {
           "path": "schemas/hybrid-state/v1/hpt2-assigned-ids.json",
-          "sha256": "be6f6125183f568717706e4e61d42a92cc09771e56b33ec433935d01819baf80"
+          "sha256": "f0cefb8bd5c2bb98f5a8bda724ea123bd07f396a2433de490a14044f3068c001"
         },
         {
           "path": "tests/test_outcome_reconciliation.py",
@@ -866,7 +887,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T03:01:07Z"
+      "verified_at": "2026-08-29T03:14:24Z"
     },
     {
       "covers_change_ids": [
@@ -968,7 +989,8 @@
         "CHG-HYBRID-020",
         "CHG-HYBRID-021",
         "CHG-HYBRID-022",
-        "CHG-HYBRID-023"
+        "CHG-HYBRID-023",
+        "CHG-HYBRID-024"
       ],
       "gate": "G4-RELEASE-CANARY-PROVEN",
       "id": "EVID-G4-RELEASE",
@@ -991,7 +1013,7 @@
         },
         {
           "path": "scripts/validate_tool_shed.py",
-          "sha256": "a8ec0a24a6b23b0150767be9686ce29f4004c55fb07b45a438ade5400143647b"
+          "sha256": "cb883cfacb31a041484ade59e31b4ccf88fd54eb64b262baba073b6d6b4e6004"
         },
         {
           "path": "tests/test_scripts.py",
@@ -1039,7 +1061,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T03:01:08Z"
+      "verified_at": "2026-08-29T03:14:24Z"
     },
     {
       "covers_change_ids": [
@@ -1336,7 +1358,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "b4e64872a1f59c2f",
+  "state_token": "e9bb27cfe4cd2cb4",
   "upgrade_targets": [
     {
       "id": "UPG-HYBRID-MAINTAINER",

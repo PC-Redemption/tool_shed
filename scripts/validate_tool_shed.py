@@ -293,6 +293,7 @@ def validate_program_roadmaps() -> None:
 def validate_bootstrap_closures(*, require_final: bool = False) -> None:
     step("bootstrap outcome closure")
     manifests = sorted((ROOT / "work" / "evidence").glob("bootstrap-closure-*.json"))
+    commands: list[list[str]] = []
     for manifest in manifests:
         arguments = [
             sys.executable,
@@ -305,7 +306,14 @@ def validate_bootstrap_closures(*, require_final: bool = False) -> None:
         ]
         if require_final:
             arguments.append("--require-final")
-        run(arguments)
+        commands.append(arguments)
+    if len(commands) == 1:
+        run(commands[0])
+        return
+    with concurrent.futures.ThreadPoolExecutor(max_workers=min(4, len(commands))) as executor:
+        futures = [executor.submit(run, arguments) for arguments in commands]
+        for future in futures:
+            future.result()
 
 
 def smoke_temp_workspace() -> None:
