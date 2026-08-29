@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-document-authority-contract",
+  "hybrid_schema": 2,
+  "generated_types": [
+    {"type": "campaign", "namespace": "CAMP", "authority": "file"}
+  ],
+  "file_owned_classes": ["campaign"],
+  "projection_classes": ["queue"],
+  "commands": {
+    "read": ["show"],
+    "write": ["apply-edit"],
+    "maintenance": ["audit"],
+    "direct_sql_normal_operation": true
+  },
+  "checkpoint": {
+    "live_database_tracked": true,
+    "format": "state-v2-logical-json",
+    "content_objects": "sha256-immutable",
+    "read_creates_checkpoint": true,
+    "git_required": true
+  },
+  "conversion": {
+    "single_writer": false,
+    "retains_original_bytes": false,
+    "idempotent": false,
+    "shadow_first": false,
+    "rollback_export_required": false
+  },
+  "retirement": {
+    "automatic": true,
+    "separate_owner_decision": false,
+    "allowed_before_final_reconciliation": true
+  }
+}

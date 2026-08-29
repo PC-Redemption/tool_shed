@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ts.rookaro.com/schemas/document-store/v1/contract.schema.json",
+  "title": "Tool Shed Database-Owned Work Collateral Contract v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "kind", "hybrid_schema", "generated_types", "file_owned_classes",
+    "projection_classes", "commands", "checkpoint", "conversion", "retirement"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "kind": {"const": "tool-shed-document-authority-contract"},
+    "hybrid_schema": {"const": 2},
+    "generated_types": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["type", "namespace", "authority"],
+        "properties": {
+          "type": {"type": "string", "pattern": "^[a-z][a-z0-9-]+$"},
+          "namespace": {"type": "string", "pattern": "^[A-Z]{2,5}$"},
+          "authority": {"const": "sqlite"}
+        }
+      }
+    },
+    "file_owned_classes": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "projection_classes": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "commands": {
+      "type": "object", "additionalProperties": false,
+      "required": ["read", "write", "maintenance", "direct_sql_normal_operation"],
+      "properties": {
+        "read": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+        "write": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+        "maintenance": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+        "direct_sql_normal_operation": {"const": false}
+      }
+    },
+    "checkpoint": {
+      "type": "object", "additionalProperties": false,
+      "required": ["live_database_tracked", "format", "content_objects", "read_creates_checkpoint", "git_required"],
+      "properties": {
+        "live_database_tracked": {"const": false},
+        "format": {"const": "state-v2-logical-json"},
+        "content_objects": {"const": "sha256-immutable"},
+        "read_creates_checkpoint": {"const": false},
+        "git_required": {"const": false}
+      }
+    },
+    "conversion": {
+      "type": "object", "additionalProperties": false,
+      "required": ["single_writer", "retains_original_bytes", "idempotent", "shadow_first", "rollback_export_required"],
+      "properties": {
+        "single_writer": {"const": true},
+        "retains_original_bytes": {"const": true},
+        "idempotent": {"const": true},
+        "shadow_first": {"const": true},
+        "rollback_export_required": {"const": true}
+      }
+    },
+    "retirement": {
+      "type": "object", "additionalProperties": false,
+      "required": ["automatic", "separate_owner_decision", "allowed_before_final_reconciliation"],
+      "properties": {
+        "automatic": {"const": false},
+        "separate_owner_decision": {"const": true},
+        "allowed_before_final_reconciliation": {"const": false}
+      }
+    }
+  }
+}

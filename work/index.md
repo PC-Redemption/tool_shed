@@ -23,6 +23,7 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 | [work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md](work/00-campaigns/abandoned/081-prove-specified-command-free-first-pass-asset-aware-campaign-on-linux.md) | campaign | abandoned | 2026-08-26 | none | - |
 | [work/00-campaigns/abandoned/096-publish-and-synchronize-passive-app-server-dogfooding.md](work/00-campaigns/abandoned/096-publish-and-synchronize-passive-app-server-dogfooding.md) | campaign | abandoned | 2026-08-27 | none | - |
 | [work/00-campaigns/abandoned/097-field-dogfood-passive-app-server-mode.md](work/00-campaigns/abandoned/097-field-dogfood-passive-app-server-mode.md) | campaign | abandoned | 2026-08-27 | none | - |
+| [work/00-campaigns/active/114-freeze-database-owned-document-authority-contract.md](work/00-campaigns/active/114-freeze-database-owned-document-authority-contract.md) | campaign | queued | 2026-08-28 | execute when selected from the active campaign queue | - |
 | [work/00-campaigns/completed/001-owner-facing-campaign-queues.md](work/00-campaigns/completed/001-owner-facing-campaign-queues.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md](work/00-campaigns/completed/002-restore-blocked-campaign-lifecycle.md) | campaign | complete | 2026-08-17 | none | - |
 | [work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md](work/00-campaigns/completed/003-reconcile-campaign-queue-state-and-order.md) | campaign | complete | 2026-08-17 | none | - |
@@ -217,7 +218,7 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 | [work/maps/map-validation-consolidation.md](work/maps/map-validation-consolidation.md) | project-map | complete | 2026-08-27 | none; the work1 outcome is complete | - |
 | [work/roadmaps/roadmap-completion-watcher-program-r2.md](work/roadmaps/roadmap-completion-watcher-program-r2.md) | program-roadmap | approved | 2026-08-20 | derive campaigns for milestone M1-CONTRACT | none |
 | [work/roadmaps/roadmap-completion-watcher-program.md](work/roadmaps/roadmap-completion-watcher-program.md) | program-roadmap | superseded | 2026-08-20 | none | work/roadmaps/roadmap-completion-watcher-program-r2.md |
-| [work/roadmaps/roadmap-database-owned-work-collateral-and-lifecycle-views-r2.md](work/roadmaps/roadmap-database-owned-work-collateral-and-lifecycle-views-r2.md) | program-roadmap | approved | 2026-08-28 | derive campaigns for milestone M1-CONTRACT-DESIGN-FROZEN | none |
+| [work/roadmaps/roadmap-database-owned-work-collateral-and-lifecycle-views-r2.md](work/roadmaps/roadmap-database-owned-work-collateral-and-lifecycle-views-r2.md) | program-roadmap | executing | 2026-08-28 | execute the first ready roadmap campaign through ts: next | none |
 | [work/roadmaps/roadmap-database-owned-work-collateral-and-lifecycle-views.md](work/roadmaps/roadmap-database-owned-work-collateral-and-lifecycle-views.md) | program-roadmap | superseded | 2026-08-28 | none | work/roadmaps/roadmap-database-owned-work-collateral-and-lifecycle-views-r2.md |
 | [work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md](work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md) | program-roadmap | superseded | 2026-08-28 | none | work/roadmaps/roadmap-hybrid-sqlite-operational-state-r3.md |
 | [work/roadmaps/roadmap-hybrid-sqlite-operational-state-r3.md](work/roadmaps/roadmap-hybrid-sqlite-operational-state-r3.md) | program-roadmap | complete | 2026-08-28 | none | none |
@@ -266,6 +267,6 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 
 ## Summary
 
-- Total artifacts: 247
-- Active artifacts: 0
+- Total artifacts: 248
+- Active artifacts: 1
 - Completed/decided artifacts: 174

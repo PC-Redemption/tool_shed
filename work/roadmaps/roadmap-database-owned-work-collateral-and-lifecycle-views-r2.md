@@ -1,9 +1,9 @@
 # Program Roadmap: Database-Owned Work Collateral and Lifecycle Views
 
-Status: approved
+Status: executing
 Type: program-roadmap
 Updated: 2026-08-28
-Next Action: derive campaigns for milestone M1-CONTRACT-DESIGN-FROZEN
+Next Action: execute the first ready roadmap campaign through ts: next
 Roadmap ID: database-owned-work-collateral-and-lifecycle-views
 Revision: 2
 Source Project Map: work/maps/map-database-owned-work-collateral-and-lifecycle-views.md
@@ -2655,4 +2655,4 @@ Superseded By: none
 
 ## Revision History
 
-- Revision 2: approved on 2026-08-28.
+- Revision 2: executing on 2026-08-28.

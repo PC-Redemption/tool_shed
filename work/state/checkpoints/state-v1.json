@@ -1,17 +1,17 @@
 {
   "envelope": {
-    "checkpoint_ledger_id": "5227af5f-af95-452e-ba20-e7e45de01a70",
+    "checkpoint_ledger_id": "1c7ae291-3327-474e-a14a-06e5aac990fc",
     "checkpoint_path": "work/state/checkpoints/state-v1.json",
-    "created_at": "2026-08-29T00:28:13Z",
-    "database_revision": 62,
-    "digest": "75df01ad5ae87ab5bb44007ffe31254be8bf409bf3fb64a05ac378ccc97de0b4",
-    "export_ledger_id": "2cca17d6-adcc-45d4-b3a6-b8732a6bdecd",
+    "created_at": "2026-08-29T00:37:40Z",
+    "database_revision": 63,
+    "digest": "835eee16ccb863ce2e3611aed85fb6daad88e2be6fe83c8c11e8b7d8f9638e0c",
+    "export_ledger_id": "a2dd87ee-855c-4663-9ef5-160f3a992a2a",
     "format_version": 1,
-    "previous_checkpoint_digest": "c9db9e0df92773d01426c8e82babf4d4c08c24cf0fa5b7812cf2589ed4806691",
+    "previous_checkpoint_digest": "75df01ad5ae87ab5bb44007ffe31254be8bf409bf3fb64a05ac378ccc97de0b4",
     "project_id": "817b6358-b2f5-48fd-bb66-bd80f936faca",
     "schema_version": 1,
-    "source_commit": "a64e169baacda22e9765df096d3775465c172c45",
-    "source_tree_digest": "812853222b65eef07c1ef981d2e7504b72a83d6d77b2e33b691f493371bf9286",
+    "source_commit": "1d90b513820dfb64e20b6d2c22f8b32da89d01b2",
+    "source_tree_digest": "4c0de2c494b83b43c61206760854156d1656284b438513776e3e5a8812fb4615",
     "storage_mode": "hybrid",
     "workspace_id": "017d41a6-36e8-5dc9-a8c2-07094c936854"
   },
@@ -117,6 +117,17 @@
         "lifecycle_state": "approved",
         "type": "program-roadmap",
         "updated_at": "2026-08-29T00:27:27Z"
+      },
+      {
+        "authority_mode": "file",
+        "content_sha256": "3969b419b737e68e2696945969e35655df7250f8563dc263315e5f350111849c",
+        "created_at": "2026-08-29T00:37:14Z",
+        "current_path": "work/00-campaigns/completed/114-freeze-database-owned-document-authority-contract.md",
+        "display_number": null,
+        "id": "39883d9f-c526-4b4a-9f8f-ae7bba605e42",
+        "lifecycle_state": "complete",
+        "type": "campaign",
+        "updated_at": "2026-08-29T00:37:14Z"
       },
       {
         "authority_mode": "file",
@@ -483,6 +494,17 @@
       },
       {
         "authority_mode": "file",
+        "content_sha256": "b656bb3f7c3aaeebf7038cd85086f9a26d492ac25649b4bee3d1a2ac7d383be6",
+        "created_at": "2026-08-29T00:37:14Z",
+        "current_path": "docs/database-owned-work-collateral-v1-contract.md",
+        "display_number": null,
+        "id": "e546f40c-a68c-4f18-8780-4a04b5f5b84d",
+        "lifecycle_state": "active",
+        "type": "markdown",
+        "updated_at": "2026-08-29T00:37:14Z"
+      },
+      {
+        "authority_mode": "file",
         "content_sha256": "cec17e40de30a77d38a91ed1d2fcffa06a573bf13e91361b3ca18135c525d508",
         "created_at": "2026-08-28T17:38:30Z",
         "current_path": "scripts/hybrid_state_schema.py",
@@ -597,6 +619,15 @@
         "path": "work/state/checkpoints/state-v1.json",
         "revision": 34,
         "source_commit": "af8c4560f8a8087e7116854a0291e443b1d7d874",
+        "status": "complete"
+      },
+      {
+        "created_at": "2026-08-29T00:28:13Z",
+        "digest": "75df01ad5ae87ab5bb44007ffe31254be8bf409bf3fb64a05ac378ccc97de0b4",
+        "id": "5227af5f-af95-452e-ba20-e7e45de01a70",
+        "path": "work/state/checkpoints/state-v1.json",
+        "revision": 62,
+        "source_commit": "a64e169baacda22e9765df096d3775465c172c45",
         "status": "complete"
       },
       {
@@ -827,6 +858,15 @@
         "origin_artifact_id": "0fe07ae5-bfd7-429f-be5e-54bd5d2c213f"
       },
       {
+        "accepted_outcome": "Settle and validate every document class, identity, schema, command, projection, checkpoint, compatibility, migration, rollback, retirement, and closed-loop boundary.",
+        "closed_at": "2026-08-28",
+        "id": "7b4d8c78-635f-41b6-8b90-09700cb624fc",
+        "kind": "campaign",
+        "lifecycle_state": "terminal",
+        "opened_at": "2026-08-28",
+        "origin_artifact_id": "39883d9f-c526-4b4a-9f8f-ae7bba605e42"
+      },
+      {
         "accepted_outcome": "{\"digest\":\"8b7f4fbc813d4e624af85af19a228ba379e7f09e9d23fa22956e62ee639dc9ba\",\"state_token\":\"23456dcb7f605f3a\"}",
         "closed_at": "2026-08-28T17:38:29Z",
         "id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
@@ -918,6 +958,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"cycle\"}",
         "recorded_at": "2026-08-28T21:25:28Z",
         "revision": 46
+      },
+      {
+        "entity_id": "7f4e8871-fba0-47b1-b6d0-c6a3d438f3eb",
+        "entity_type": "requirement",
+        "id": "007ca0cc-c564-4333-870a-628f78036c0d",
+        "kind": "structural-insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63
       },
       {
         "entity_id": "9b4ad038-466f-4c21-9193-1db4c42b13d9",
@@ -2338,6 +2388,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"outcome_verdict\"}",
         "recorded_at": "2026-08-28T19:58:55Z",
         "revision": 24
+      },
+      {
+        "entity_id": "69364614-f05c-445f-a0d7-642e7ebce0e6",
+        "entity_type": "verification_result",
+        "id": "257ee37b-a111-4c43-9a6f-5ae861db9717",
+        "kind": "structural-insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63
       },
       {
         "entity_id": "4e215995-1aa8-4e6b-baa2-78fc8b150cac",
@@ -5340,6 +5400,16 @@
         "revision": 39
       },
       {
+        "entity_id": "9e47e1c9-daed-4f7d-b3ac-f010a3b69386",
+        "entity_type": "relationship",
+        "id": "6bdf2103-0306-4c98-b741-7bd131dce9bd",
+        "kind": "structural-insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63
+      },
+      {
         "entity_id": "67238d0a-a119-444c-acae-aae0eec511c2",
         "entity_type": "import_record",
         "id": "6c4e2b4d-e62b-4ac9-b14c-57e112cc7d43",
@@ -5808,6 +5878,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"material_change\"}",
         "recorded_at": "2026-08-28T21:42:13Z",
         "revision": 51
+      },
+      {
+        "entity_id": "54cdd753-407a-442b-9025-bd35ffdb4ace",
+        "entity_type": "outcome_verdict",
+        "id": "743a9972-587b-4538-b713-6ed11806833e",
+        "kind": "structural-insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"outcome_verdict\"}",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63
       },
       {
         "entity_id": "1f16158b-6d02-45b0-a0aa-92c2560e1bdf",
@@ -7090,6 +7170,16 @@
         "revision": 12
       },
       {
+        "entity_id": "ffd9a503-57d9-4dcf-b00c-a83500e62c30",
+        "entity_type": "relationship",
+        "id": "8f0fb0e7-e083-4b6e-8d17-69099941fea4",
+        "kind": "structural-insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63
+      },
+      {
         "entity_id": "7025d84c-3951-4463-8288-5a6dea0f6148",
         "entity_type": "material_change",
         "id": "8f190b1e-2bac-4609-b314-c2a016a9e803",
@@ -7538,6 +7628,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
         "recorded_at": "2026-08-28T18:54:04Z",
         "revision": 17
+      },
+      {
+        "entity_id": "4591ddf3-25a2-435d-83dd-a45eb2dbab84",
+        "entity_type": "relationship",
+        "id": "99b019ca-98db-41fb-9a8e-f3f66cf0e979",
+        "kind": "structural-insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63
       },
       {
         "entity_id": "578861a8-95dd-44cc-bd6a-d529dd1f2a04",
@@ -8570,6 +8670,16 @@
         "revision": 12
       },
       {
+        "entity_id": "e546f40c-a68c-4f18-8780-4a04b5f5b84d",
+        "entity_type": "artifact",
+        "id": "b23e32a9-f5ee-4eaa-9fc6-910a7a6bf6e7",
+        "kind": "structural-insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63
+      },
+      {
         "entity_id": "6eeabb55-d4db-45ea-8979-941364225fb8",
         "entity_type": "material_change",
         "id": "b277e491-0694-43e1-990a-82c183e7b348",
@@ -8868,6 +8978,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
         "recorded_at": "2026-08-28T20:34:50Z",
         "revision": 35
+      },
+      {
+        "entity_id": "6e5d54c9-15b4-43a9-9799-c47244d3d666",
+        "entity_type": "reconciliation",
+        "id": "b9c22f1c-c649-4646-9d9e-c9ede16c15a2",
+        "kind": "structural-insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"reconciliation\"}",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63
       },
       {
         "entity_id": "b8224dc6-62bb-44a8-af7d-98afe2f077bf",
@@ -9628,6 +9748,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
         "recorded_at": "2026-08-28T17:48:15Z",
         "revision": 8
+      },
+      {
+        "entity_id": "c0942db3-83d8-4de8-b44b-5db5ed3245bd",
+        "entity_type": "evidence_reference",
+        "id": "c6be6671-8e4f-4e93-93e3-25b3b86c027d",
+        "kind": "structural-insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63
       },
       {
         "entity_id": "578861a8-95dd-44cc-bd6a-d529dd1f2a04",
@@ -10620,6 +10750,16 @@
         "revision": 24
       },
       {
+        "entity_id": "39883d9f-c526-4b4a-9f8f-ae7bba605e42",
+        "entity_type": "artifact",
+        "id": "e042e8be-6f09-40f0-ae26-82419ad63bf1",
+        "kind": "structural-insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63
+      },
+      {
         "entity_id": "868e6864-183d-43b3-af2d-8a8faa3c467e",
         "entity_type": "requirement",
         "id": "e060d90a-9df3-4d16-a44e-3eda937221cf",
@@ -11178,6 +11318,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
         "recorded_at": "2026-08-28T17:38:30Z",
         "revision": 3
+      },
+      {
+        "entity_id": "7b4d8c78-635f-41b6-8b90-09700cb624fc",
+        "entity_type": "cycle",
+        "id": "ed84d382-cbc4-48b9-b0be-88cf11a480e4",
+        "kind": "structural-insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"cycle\"}",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63
       },
       {
         "entity_id": "c0844a90-f569-4c59-a98f-3b520f61a4e0",
@@ -11938,6 +12088,15 @@
         "target_identity": "qualify-universal-reconciliation-backfill-and-recovery"
       },
       {
+        "collected_at": "2026-08-29T00:37:14Z",
+        "cycle_id": "7b4d8c78-635f-41b6-8b90-09700cb624fc",
+        "id": "c0942db3-83d8-4de8-b44b-5db5ed3245bd",
+        "kind": "campaign-completion",
+        "reference": "work/evidence/evidence-database-owned-collateral-g1-contract.md",
+        "sha256": "9f676940048268913af1bc1d0cfcec097b3d0c3822868297ef7c619019dd0291",
+        "target_identity": "freeze-database-owned-document-authority-contract"
+      },
+      {
         "collected_at": "2026-08-28T17:38:29Z",
         "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
         "id": "ca0c6c33-6bbd-47b0-bf0a-4a25dc5b920e",
@@ -12036,6 +12195,15 @@
         "id": "1b4a92df-b4bc-4ced-bb1c-9aa369b61f24",
         "path": "work/state/checkpoints/state-v1.json",
         "revision": 25,
+        "status": "complete"
+      },
+      {
+        "created_at": "2026-08-29T00:28:13Z",
+        "digest": "75df01ad5ae87ab5bb44007ffe31254be8bf409bf3fb64a05ac378ccc97de0b4",
+        "format_version": 1,
+        "id": "2cca17d6-adcc-45d4-b3a6-b8732a6bdecd",
+        "path": "work/state/checkpoints/state-v1.json",
+        "revision": 62,
         "status": "complete"
       },
       {
@@ -13352,6 +13520,17 @@
         "status": "complete"
       },
       {
+        "actor": "outcome-reconciliation",
+        "actual_writes": 11,
+        "command": "apply-outcome-loop",
+        "committed_at": "2026-08-29T00:37:32Z",
+        "expected_writes": 11,
+        "id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "revision": 63,
+        "started_at": "2026-08-29T00:37:32Z",
+        "status": "complete"
+      },
+      {
         "actor": "bootstrap-reconciliation",
         "actual_writes": 41,
         "command": "sync-bootstrap-closure",
@@ -13855,6 +14034,16 @@
         "summary": "G3 satisfied at bootstrap token 26aba90acbad047a; 33/33 focused and 367/367 full tests passed; independent outcome state is visible across lifecycle/orientation surfaces; campaign/direct result, historical overlay, propagation, governed-roadmap hold-open, and exact root-transition tests passed. Evidence: work/evidence/evidence-universal-closed-loop-g3-integration.md."
       },
       {
+        "authorization_ref": "Owner-directed end-to-end PRM execution on 2026-08-28",
+        "cycle_id": "7b4d8c78-635f-41b6-8b90-09700cb624fc",
+        "decided_at": "2026-08-28",
+        "decided_revision": 63,
+        "disposition": "satisfied",
+        "id": "54cdd753-407a-442b-9025-bd35ffdb4ace",
+        "scope": "freeze-database-owned-document-authority-contract",
+        "summary": "work/evidence/evidence-database-owned-collateral-g1-contract.md"
+      },
+      {
         "authorization_ref": "owner request: promote idea (2026-08-28)",
         "cycle_id": "4b934a81-282d-4765-919d-2e2a70d6447a",
         "decided_at": "2026-08-29T00:27:54Z",
@@ -14067,6 +14256,16 @@
         "verdict_id": "a811936d-06fc-4cf5-87bc-e3cd2912f527"
       },
       {
+        "compared_at": "2026-08-28",
+        "cycle_id": "7b4d8c78-635f-41b6-8b90-09700cb624fc",
+        "id": "6e5d54c9-15b4-43a9-9799-c47244d3d666",
+        "origin_revision": 63,
+        "product_truth_ref": "[\"e546f40c-a68c-4f18-8780-4a04b5f5b84d\"]",
+        "residual_work_json": "[]",
+        "state": "reconciled",
+        "verdict_id": "54cdd753-407a-442b-9025-bd35ffdb4ace"
+      },
+      {
         "compared_at": "2026-08-28T23:34:23Z",
         "cycle_id": "b5008f3b-410a-45ba-9dba-d358e91f4f86",
         "id": "79a46bea-f321-4acd-b42a-fb88ebdf9083",
@@ -14219,6 +14418,15 @@
         "to_artifact_id": "c562503e-3f2f-498e-a556-27aa4f790f6d"
       },
       {
+        "created_revision": 63,
+        "from_artifact_id": "39883d9f-c526-4b4a-9f8f-ae7bba605e42",
+        "id": "4591ddf3-25a2-435d-83dd-a45eb2dbab84",
+        "provenance": "outcome-reconciliation-v1",
+        "relation_type": "outcome-parent",
+        "retired_revision": null,
+        "to_artifact_id": "fdeecdba-5e35-4ae3-adc7-0f3f694985e8"
+      },
+      {
         "created_revision": 44,
         "from_artifact_id": "0fe07ae5-bfd7-429f-be5e-54bd5d2c213f",
         "id": "553d5cae-74a5-40a8-bb54-cb848f5ab6ff",
@@ -14307,6 +14515,15 @@
         "relation_type": "evidenced-by",
         "retired_revision": null,
         "to_artifact_id": "e14b547c-2656-4042-9f82-1763f70341a5"
+      },
+      {
+        "created_revision": 63,
+        "from_artifact_id": "39883d9f-c526-4b4a-9f8f-ae7bba605e42",
+        "id": "9e47e1c9-daed-4f7d-b3ac-f010a3b69386",
+        "provenance": "outcome-reconciliation-v1",
+        "relation_type": "outcome-result-propagated",
+        "retired_revision": null,
+        "to_artifact_id": "fdeecdba-5e35-4ae3-adc7-0f3f694985e8"
       },
       {
         "created_revision": 1,
@@ -14478,6 +14695,15 @@
         "relation_type": "outcome-parent",
         "retired_revision": null,
         "to_artifact_id": "44345c08-9155-4acc-9a0d-235779ef79f3"
+      },
+      {
+        "created_revision": 63,
+        "from_artifact_id": "39883d9f-c526-4b4a-9f8f-ae7bba605e42",
+        "id": "ffd9a503-57d9-4dcf-b00c-a83500e62c30",
+        "provenance": "outcome-reconciliation-v1",
+        "relation_type": "evidenced-by",
+        "retired_revision": null,
+        "to_artifact_id": "e546f40c-a68c-4f18-8780-4a04b5f5b84d"
       }
     ],
     "requirement": [
@@ -14720,6 +14946,16 @@
         "id": "7c2587c4-42be-465f-a8c7-da7664d39f94",
         "milestone_key": "M2-SUBSTRATE-HPT2-PROVEN",
         "origin_artifact_id": "65538b72-8a77-4c4d-ba7c-693137779b07"
+      },
+      {
+        "accepted_outcome": "G1-CONTRACT-DESIGN-FROZEN pass criteria are evidenced and the outcome loop records any approved scope changes.",
+        "accepted_revision": 63,
+        "cycle_id": "7b4d8c78-635f-41b6-8b90-09700cb624fc",
+        "disposition": "accepted",
+        "evidence_gate_key": "G1-CONTRACT-DESIGN-FROZEN",
+        "id": "7f4e8871-fba0-47b1-b6d0-c6a3d438f3eb",
+        "milestone_key": "M1-CONTRACT-DESIGN-FROZEN",
+        "origin_artifact_id": "39883d9f-c526-4b4a-9f8f-ae7bba605e42"
       },
       {
         "accepted_outcome": "Freeze and validate the document-authority, identity, command, projection, checkpoint, compatibility, conversion, rollback, retirement, and closed-loop contract.",
@@ -15459,6 +15695,17 @@
         "table_name": "requirement"
       },
       {
+        "id": "080968f9-74d4-4aa4-ba65-44f9650cf145",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_digest": "e0922dc0c3d2151081c20eaecbd9c6e2f251efe22d3eb5a583672121cf19bc44",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63,
+        "row_id": "69364614-f05c-445f-a0d7-642e7ebce0e6",
+        "table_name": "verification_result"
+      },
+      {
         "id": "0815f62f-a5f5-4155-8ded-a10bc851e472",
         "managed": 1,
         "operation": "update",
@@ -15732,6 +15979,17 @@
         "revision": 52,
         "row_id": "c94dea24-f1b1-4348-a4a6-1b4ce71ce12f",
         "table_name": "reconciliation"
+      },
+      {
+        "id": "0cae5288-0807-4f8c-a692-aca5a9d77e46",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_digest": "3a6c46269a1f3a465c2708969f1c460c109d92829ee90a75bf167ad1845accfb",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63,
+        "row_id": "39883d9f-c526-4b4a-9f8f-ae7bba605e42",
+        "table_name": "artifact"
       },
       {
         "id": "0cc7231a-1222-4782-8aa7-1d8fcb13ae07",
@@ -16315,6 +16573,17 @@
         "revision": 3,
         "row_id": "b9f9ef8f-a4ed-4723-b2da-0bc660ee61e4",
         "table_name": "import_record"
+      },
+      {
+        "id": "19032f67-d26c-4c9a-9bc3-4ad0a9c48ecd",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_digest": "e0674485e12fc6898a3d29091749bd0b4aba992bce3f547bd9a91e8e21373f0b",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63,
+        "row_id": "ffd9a503-57d9-4dcf-b00c-a83500e62c30",
+        "table_name": "relationship"
       },
       {
         "id": "19211dc1-78b1-4a39-aafa-3d386089334b",
@@ -16988,6 +17257,17 @@
         "table_name": "outcome_verdict"
       },
       {
+        "id": "2737b157-425b-4a17-8887-08ccae52b4b9",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_digest": "acb13aee2dd8f71f06f0bc282a650791f3e6f0c97391c28656bdc242ae9af3ab",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63,
+        "row_id": "7f4e8871-fba0-47b1-b6d0-c6a3d438f3eb",
+        "table_name": "requirement"
+      },
+      {
         "id": "2743b008-5906-4d07-af95-a7448b214c74",
         "managed": 1,
         "operation": "update",
@@ -17392,6 +17672,17 @@
         "recorded_at": "2026-08-28T17:48:15Z",
         "revision": 8,
         "row_id": "e14b547c-2656-4042-9f82-1763f70341a5",
+        "table_name": "artifact"
+      },
+      {
+        "id": "2fd9e379-d8f9-42f5-8760-a03438fe6a75",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_digest": "6ef961c1e9c662e9b9a058c0041e09173fb71c87da2744b46e94473b9f42d440",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63,
+        "row_id": "e546f40c-a68c-4f18-8780-4a04b5f5b84d",
         "table_name": "artifact"
       },
       {
@@ -17976,6 +18267,17 @@
         "revision": 32,
         "row_id": "8e75a464-6f46-4e61-bd94-5373db06cb6f",
         "table_name": "requirement"
+      },
+      {
+        "id": "3c5532eb-837a-4439-b7e4-a2ccce12b269",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_digest": "bd655ad8351263fa0b1a064aac384fbd76ab93bd5f987a2578b031854411c92f",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63,
+        "row_id": "4591ddf3-25a2-435d-83dd-a45eb2dbab84",
+        "table_name": "relationship"
       },
       {
         "id": "3c77fd1e-91d5-425e-9e38-9125a05fb79e",
@@ -20783,6 +21085,17 @@
         "table_name": "cycle"
       },
       {
+        "id": "78466718-5d68-4d54-863a-61f5b428e47d",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_digest": "4c8a8b19601e071bf3b951097242a517e648175973d0d7f51faf9a99d9ecfdc3",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63,
+        "row_id": "c0942db3-83d8-4de8-b44b-5db5ed3245bd",
+        "table_name": "evidence_reference"
+      },
+      {
         "id": "78ae93d7-eedc-41e6-9f89-5c20a1592755",
         "managed": 1,
         "operation": "update",
@@ -21210,6 +21523,17 @@
         "revision": 27,
         "row_id": "e41aef98-0b33-4522-8bf8-04dbb410ffa6",
         "table_name": "requirement"
+      },
+      {
+        "id": "811f2508-3d7f-4f40-a57a-b3607305e531",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_digest": "b4207a4b3d80a23d200298a5d682a529c19879aa1884896413d9c4106d009a7c",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63,
+        "row_id": "54cdd753-407a-442b-9025-bd35ffdb4ace",
+        "table_name": "outcome_verdict"
       },
       {
         "id": "813e321c-8414-44dd-9621-5ed463a9a2aa",
@@ -22257,6 +22581,17 @@
         "table_name": "material_change"
       },
       {
+        "id": "985bdbf3-6d09-47de-893e-fc2b6e723f24",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_digest": "8de5de90ceec7448997c5fa10c6da2b351255c289f9839e9a6b579642e875563",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63,
+        "row_id": "6e5d54c9-15b4-43a9-9799-c47244d3d666",
+        "table_name": "reconciliation"
+      },
+      {
         "id": "98886c43-39f0-4d98-a80b-346ca8316d19",
         "managed": 1,
         "operation": "insert",
@@ -22893,6 +23228,17 @@
         "revision": 32,
         "row_id": "b8224dc6-62bb-44a8-af7d-98afe2f077bf",
         "table_name": "material_change"
+      },
+      {
+        "id": "a5e2f83a-1ab4-464c-9e28-738250d9726d",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_digest": "172fbe1a3baa993f584c14c756ff293c829430b2624721336a69d44002f8c63c",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63,
+        "row_id": "7b4d8c78-635f-41b6-8b90-09700cb624fc",
+        "table_name": "cycle"
       },
       {
         "id": "a60265a6-3145-499f-8774-97e555cc805e",
@@ -25887,6 +26233,17 @@
         "table_name": "material_change"
       },
       {
+        "id": "e51cd006-2640-4c6d-bff6-ba5afaa8133e",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "ba9781bc-6222-4c7f-85a5-ea6ca72777b3",
+        "payload_digest": "ffcb3890ec614d5887fd3c250e7bb16255fdfece1c86578e404d0b33e2409a7b",
+        "recorded_at": "2026-08-29T00:37:32Z",
+        "revision": 63,
+        "row_id": "9e47e1c9-daed-4f7d-b3ac-f010a3b69386",
+        "table_name": "relationship"
+      },
+      {
         "id": "e546a956-f161-473c-8283-5c5384e387e8",
         "managed": 1,
         "operation": "update",
@@ -27042,6 +27399,16 @@
         "id": "5fb13316-51ad-4acf-82aa-be9451f254f4",
         "requirement_id": "f3e72d47-7738-4007-9b8f-a936324edf4f",
         "source_revision": 52,
+        "status": "passed",
+        "verified_at": "2026-08-28"
+      },
+      {
+        "command_or_test_id": "G1-CONTRACT-DESIGN-FROZEN pass criteria are evidenced and the outcome loop records any approved scope changes.",
+        "details_json": "{\"completion_evidence\": \"work/evidence/evidence-database-owned-collateral-g1-contract.md\"}",
+        "evidence_id": "c0942db3-83d8-4de8-b44b-5db5ed3245bd",
+        "id": "69364614-f05c-445f-a0d7-642e7ebce0e6",
+        "requirement_id": "7f4e8871-fba0-47b1-b6d0-c6a3d438f3eb",
+        "source_revision": 63,
         "status": "passed",
         "verified_at": "2026-08-28"
       },

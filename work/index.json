@@ -265,6 +265,27 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
+      "disposition": "none",
+      "milestone": "M1-CONTRACT-DESIGN-FROZEN",
+      "next_action": "execute when selected from the active campaign queue",
+      "parent": null,
+      "path": "work/00-campaigns/active/114-freeze-database-owned-document-authority-contract.md",
+      "produces": null,
+      "project_map": null,
+      "roadmap": "database-owned-work-collateral-and-lifecycle-views",
+      "roadmap_revision": "2",
+      "status": "queued",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Freeze the database-owned document authority and conversion contract",
+      "type": "campaign",
+      "unlocks_gate": "G1-CONTRACT-DESIGN-FROZEN",
+      "updated": "2026-08-28"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
       "disposition": "completed",
       "next_action": "none",
       "parent": null,
@@ -3734,7 +3755,7 @@
       "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
-      "next_action": "derive campaigns for milestone M1-CONTRACT-DESIGN-FROZEN",
+      "next_action": "execute the first ready roadmap campaign through ts: next",
       "parent": null,
       "path": "work/roadmaps/roadmap-database-owned-work-collateral-and-lifecycle-views-r2.md",
       "produces": null,
@@ -3743,7 +3764,7 @@
       "roadmap_id": "database-owned-work-collateral-and-lifecycle-views",
       "source_project_map": "work/maps/map-database-owned-work-collateral-and-lifecycle-views.md",
       "source_state_token": "f87f84d4c9565278",
-      "status": "approved",
+      "status": "executing",
       "superseded_by": "none",
       "supersedes": "work/roadmaps/roadmap-database-owned-work-collateral-and-lifecycle-views.md",
       "title": "Program Roadmap: Database-Owned Work Collateral and Lifecycle Views",
@@ -4510,8 +4531,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 0,
+    "active_artifacts": 1,
     "completed_or_decided_artifacts": 174,
-    "total_artifacts": 247
+    "total_artifacts": 248
   }
 }

@@ -4,7 +4,7 @@ Updated: 2026-08-28
 
 ## Owner State
 
-- Last completed: release-and-canary-universal-closed-loop-reconciliation — Release and canary universal closed-loop reconciliation
+- Last completed: freeze-database-owned-document-authority-contract — Freeze the database-owned document authority and conversion contract
 - Working now: none
 - Next: none
 - Blocker or decision needed: none

@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-document-authority-contract",
+  "hybrid_schema": 2,
+  "generated_types": [
+    {"type": "idea-brief", "namespace": "IDEA", "authority": "sqlite"},
+    {"type": "project-map", "namespace": "MAP", "authority": "sqlite"},
+    {"type": "program-roadmap", "namespace": "PRM", "authority": "sqlite"},
+    {"type": "campaign", "namespace": "CAMP", "authority": "sqlite"},
+    {"type": "ticket", "namespace": "TKT", "authority": "sqlite"},
+    {"type": "checklist", "namespace": "CHK", "authority": "sqlite"},
+    {"type": "spike", "namespace": "SPK", "authority": "sqlite"},
+    {"type": "adr", "namespace": "ADR", "authority": "sqlite"},
+    {"type": "decision", "namespace": "DEC", "authority": "sqlite"},
+    {"type": "inventory", "namespace": "INV", "authority": "sqlite"},
+    {"type": "runbook", "namespace": "RUN", "authority": "sqlite"},
+    {"type": "workpackage", "namespace": "WP", "authority": "sqlite"},
+    {"type": "incident", "namespace": "INC", "authority": "sqlite"},
+    {"type": "q-and-a", "namespace": "QNA", "authority": "sqlite"},
+    {"type": "evidence-summary", "namespace": "EVD", "authority": "sqlite"},
+    {"type": "focus-area", "namespace": "FOC", "authority": "sqlite"}
+  ],
+  "file_owned_classes": ["source", "test", "product-doc", "provider-instruction", "imported-owner-material", "raw-evidence", "recovery-artifact"],
+  "projection_classes": ["queue", "index", "lifecycle-view", "status-report", "history-report"],
+  "commands": {
+    "read": ["list", "show", "search", "context", "related", "history", "diff", "resolve", "render-views"],
+    "write": ["create", "export-edit", "apply-edit", "set-lifecycle", "relate", "unrelate", "import-plan", "import-apply", "checkpoint"],
+    "maintenance": ["audit", "migrate", "rebuild", "rollback-export", "qualify-conversion"],
+    "direct_sql_normal_operation": false
+  },
+  "checkpoint": {
+    "live_database_tracked": false,
+    "format": "state-v2-logical-json",
+    "content_objects": "sha256-immutable",
+    "read_creates_checkpoint": false,
+    "git_required": false
+  },
+  "conversion": {
+    "single_writer": true,
+    "retains_original_bytes": true,
+    "idempotent": true,
+    "shadow_first": true,
+    "rollback_export_required": true
+  },
+  "retirement": {
+    "automatic": false,
+    "separate_owner_decision": true,
+    "allowed_before_final_reconciliation": false
+  }
+}
