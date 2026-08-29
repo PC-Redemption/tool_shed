@@ -306,6 +306,49 @@ class WorkOrchestrationTests(unittest.TestCase):
             (self.workspace / work_orchestration.CHECKPOINT_RELATIVE).read_bytes(), before
         )
 
+    def test_checkpoint_commit_includes_only_referenced_content_objects(self) -> None:
+        hybrid_binding = binding_token(self.workspace, operation="hybrid-state")
+        document_store.create_document(
+            self.workspace,
+            project_binding=hybrid_binding,
+            document_type="ticket",
+            title="Checkpoint object",
+            body="# Checkpoint object\n\nDurable body.\n",
+            lifecycle="active",
+            metadata={},
+            actor="fixture",
+            reason="checkpoint commit test",
+        )
+        checkpoint = work_orchestration._logical_checkpoint(
+            self.workspace, project_binding=hybrid_binding
+        )
+        result = work_orchestration._checkpoint_commit(
+            self.workspace, "Checkpoint exact logical state"
+        )
+        self.assertTrue(result["created"])
+        self.assertGreaterEqual(result["path_count"], 2)
+        tracked = subprocess.run(
+            ["git", "show", "--pretty=format:", "--name-only", result["commit"]],
+            cwd=self.workspace,
+            text=True,
+            stdout=subprocess.PIPE,
+            check=True,
+        ).stdout.splitlines()
+        self.assertIn(work_orchestration.CHECKPOINT_RELATIVE.as_posix(), tracked)
+        self.assertTrue(set(tracked) <= {
+            work_orchestration.CHECKPOINT_RELATIVE.as_posix(), *checkpoint["objects"]
+        })
+
+    def test_checkpoint_commit_refuses_unrelated_change(self) -> None:
+        hybrid_binding = binding_token(self.workspace, operation="hybrid-state")
+        work_orchestration._logical_checkpoint(
+            self.workspace, project_binding=hybrid_binding
+        )
+        unrelated = self.workspace / "unrelated.txt"
+        unrelated.write_text("owner work\n", encoding="utf-8")
+        with self.assertRaisesRegex(work_orchestration.WorkOrchestrationError, "unrelated"):
+            work_orchestration._checkpoint_commit(self.workspace, "must refuse")
+
     def test_benchmark_proves_same_corpus_thresholds(self) -> None:
         result = work_orchestration.benchmark(
             ROOT / "tests/fixtures/work-orchestration-baseline-v1.json"

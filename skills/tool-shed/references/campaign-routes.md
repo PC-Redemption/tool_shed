@@ -64,7 +64,8 @@ regeneration, and the existing changed-path validation policy. Codex still imple
 and creates the scoped candidate commit. For Work2, Codex also performs the configured deployment
 and changed-behavior checks, then supplies a current ignored `tool-shed-target-evidence` envelope.
 `closeout` verifies that evidence, registers the candidate and open owner chain, checkpoints and
-rebuild-proves Hybrid state, commits only the exact logical checkpoint, and requires strict Doctor.
+rebuild-proves Hybrid state, commits only the exact logical checkpoint plus its referenced immutable
+content objects, and requires strict Doctor.
 
 Use one stable run ID and `--resume` only after correcting an interruption. The runner skips a
 passed local phase only when its exact input digest matches; identity/audit, strict Doctor, and

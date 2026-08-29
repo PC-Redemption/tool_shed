@@ -24,7 +24,8 @@ Closeout runs:
 2. current target-evidence validation for Work2 (`current-external-evidence`);
 3. Work2 release-cohort registration (`exact-local-digest`);
 4. logical checkpoint and disposable rebuild proof (`exact-local-digest`);
-5. an exact checkpoint-only Git commit (`exact-local-digest`);
+5. an exact logical-checkpoint Git commit, including only its JSON and referenced immutable content
+   objects (`exact-local-digest`);
 6. strict Doctor (`always-run`).
 
 The caller first requests a read-only plan and passes its project-bound state token to the mutation.
@@ -96,7 +97,8 @@ python3 scripts/work_orchestration.py --workspace . closeout work2 \
 ```
 
 The closeout registers the exact product commit and its open parent chain. It may commit only
-`work/state/checkpoints/state-v2.json`; unrelated changes fail closed.
+`work/state/checkpoints/state-v2.json` and immutable content objects referenced by that checkpoint;
+unrelated changes fail closed.
 
 ## Telemetry And Dashboard Aggregate
 

@@ -265,7 +265,7 @@ def build_plan(
                 "refresh disposable views",
                 "checkpoint and rebuild authoritative state",
                 "register an already-committed Work2 candidate",
-                "commit only the exact logical checkpoint",
+                "commit only the exact logical checkpoint and its referenced immutable objects",
             ],
             "script_may_not": [
                 "choose product behavior or semantic version",
@@ -723,21 +723,32 @@ def _candidate_commit(workspace: Path, commitish: str) -> dict[str, Any]:
 
 def _checkpoint_commit(workspace: Path, message: str) -> dict[str, Any]:
     relative = CHECKPOINT_RELATIVE.as_posix()
+    checkpoint = workspace / CHECKPOINT_RELATIVE
+    if not checkpoint.is_file():
+        raise WorkOrchestrationError("logical checkpoint file does not exist")
+    payload = json.loads(checkpoint.read_text(encoding="utf-8"))
+    referenced = set(payload.get("envelope", {}).get("objects", []))
+    allowed = {relative, *referenced}
     status = _git(workspace, "status", "--porcelain=v1", "--untracked-files=all").stdout.splitlines()
-    unrelated = [line for line in status if line[3:] != relative]
+    changed = [line[3:] for line in status]
+    unrelated = [path for path in changed if path not in allowed]
     if unrelated:
         raise WorkOrchestrationError(
             "checkpoint commit refused because unrelated tracked changes remain: "
-            + ", ".join(line[3:] for line in unrelated[:5])
+            + ", ".join(unrelated[:5])
         )
     if not status:
         return {"commit": _git(workspace, "rev-parse", "HEAD").stdout.strip(), "created": False}
-    _git(workspace, "add", "--", relative)
+    _git(workspace, "add", "--", *changed)
     staged = _git(workspace, "diff", "--cached", "--name-only").stdout.splitlines()
-    if staged != [relative]:
-        raise WorkOrchestrationError("checkpoint commit staging escaped the exact checkpoint file")
+    if sorted(staged) != sorted(changed):
+        raise WorkOrchestrationError("checkpoint commit staging escaped the logical checkpoint set")
     _git(workspace, "commit", "-m", message)
-    return {"commit": _git(workspace, "rev-parse", "HEAD").stdout.strip(), "created": True}
+    return {
+        "commit": _git(workspace, "rev-parse", "HEAD").stdout.strip(),
+        "created": True,
+        "path_count": len(changed),
+    }
 
 
 def _logical_checkpoint(workspace: Path, *, project_binding: str) -> dict[str, Any]:
