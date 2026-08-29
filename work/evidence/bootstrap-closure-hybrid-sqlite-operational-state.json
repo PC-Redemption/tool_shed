@@ -2,9 +2,9 @@
   "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
   "baseline": {
     "created_at": "2026-08-28T16:26:19Z",
-    "source_commit": "2fc4065b66dc81d02a17f24b27901c36e59dd928",
+    "source_commit": "eb6856e9a29f4deb410a0ddcf06dfdc1c3ae202c",
     "source_digest": "59b136000a93f64586208192799deb87efdf087f0d71857a08fa7b9120ad0af2",
-    "updated_at": "2026-08-29T01:35:03Z"
+    "updated_at": "2026-08-29T02:11:35Z"
   },
   "bindings": [
     {
@@ -458,6 +458,28 @@
       "source_commit": "2fc4065b66dc81d02a17f24b27901c36e59dd928",
       "summary": "Route release validation through database-owned lifecycle views",
       "supersedes": []
+    },
+    {
+      "authorization": "Owner-directed database-owned collateral PRM end-to-end implementation and no-stop release canary on 2026-08-28",
+      "decision_ids": [
+        "DEC-HYBRID-010",
+        "DEC-HYBRID-012"
+      ],
+      "evidence_to_rerun": [
+        "EVID-G2-HPT2-PARITY",
+        "EVID-G4-CANARY",
+        "EVID-G4-RELEASE"
+      ],
+      "id": "CHG-HYBRID-020",
+      "rationale": "The clean disconnected canary proved that protocol 4 rejected the empty queue projections created by its own installer as dirty campaign state. The updater now records campaign dirt at transaction entrance and accepts an INVALID Doctor result only when DIRTY_CAMPAIGN_STATE is the sole finding and every dirty campaign path is newly created and belongs to the exact declared queue or convergence mutation set; pre-existing, persistent, unexpected, or additional invalid findings still fail and roll back.",
+      "recorded_at": "2026-08-29T02:08:23Z",
+      "requirement_ids": [
+        "REQ-HYBRID-010",
+        "REQ-HYBRID-011"
+      ],
+      "source_commit": "eb6856e9a29f4deb410a0ddcf06dfdc1c3ae202c",
+      "summary": "Bound post-install Doctor disposition to exact updater-created campaign projections",
+      "supersedes": []
     }
   ],
   "decisions": [
@@ -736,7 +758,8 @@
         "CHG-HYBRID-016",
         "CHG-HYBRID-017",
         "CHG-HYBRID-018",
-        "CHG-HYBRID-019"
+        "CHG-HYBRID-019",
+        "CHG-HYBRID-020"
       ],
       "gate": "G2-SUBSTRATE-LOOP-PROVEN",
       "id": "EVID-G2-HPT2-PARITY",
@@ -755,7 +778,7 @@
         },
         {
           "path": "schemas/hybrid-state/v1/hpt2-assigned-ids.json",
-          "sha256": "2f81619ee74073710e60d0b63ff75f3f8bcfc9085e880f1859cc711e6133fb90"
+          "sha256": "e0e46373b6de1cf32fd5f39229b86914f6a9d58017af0c0a14cb989d33e339dd"
         },
         {
           "path": "tests/test_outcome_reconciliation.py",
@@ -771,7 +794,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T01:35:03Z"
+      "verified_at": "2026-08-29T02:11:35Z"
     },
     {
       "covers_change_ids": [
@@ -869,7 +892,8 @@
         "CHG-HYBRID-014",
         "CHG-HYBRID-015",
         "CHG-HYBRID-016",
-        "CHG-HYBRID-019"
+        "CHG-HYBRID-019",
+        "CHG-HYBRID-020"
       ],
       "gate": "G4-RELEASE-CANARY-PROVEN",
       "id": "EVID-G4-RELEASE",
@@ -880,7 +904,7 @@
         },
         {
           "path": "scripts/update_snapshot.py",
-          "sha256": "e13c411ebad44d30616054cae5b02c9ff45b167426d43090ca021d31d6af8d18"
+          "sha256": "dcfe47bc9576f39d729f6d9d212618904ce2e220ebc219b8b0ba6935d91dce6e"
         },
         {
           "path": "scripts/update_shed_manifest.py",
@@ -900,7 +924,7 @@
         },
         {
           "path": "tests/test_update_snapshot_protocol4.py",
-          "sha256": "6ccc4d39ee27d449e20e046bad7d413d83262c00080b06d378523304adb0b9ed"
+          "sha256": "0e44c8ed3b168b31c0cc7abd1d234fd12746a07c9f54dda57dd4beab6ca47932"
         },
         {
           "path": "work/evidence/evidence-hybrid-sqlite-disconnected-production-canary.md",
@@ -912,21 +936,30 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T01:35:03Z"
+      "verified_at": "2026-08-29T02:11:35Z"
     },
     {
       "covers_change_ids": [
         "CHG-HYBRID-005",
         "CHG-HYBRID-008",
         "CHG-HYBRID-013",
-        "CHG-HYBRID-014"
+        "CHG-HYBRID-014",
+        "CHG-HYBRID-020"
       ],
       "gate": "G4-RELEASE-CANARY-PROVEN",
       "id": "EVID-G4-CANARY",
       "references": [
         {
           "path": "docs/install-or-update-snapshot.md",
-          "sha256": "b444e0175e23952bdc7ebcf8282d83ccebaaf30fd8dfe0da45a235075bcf701b"
+          "sha256": "c03137b418cebe2c9b27e31876e9e568cd4ff21aebaeb2973cd9a08f89a7bca0"
+        },
+        {
+          "path": "scripts/update_snapshot.py",
+          "sha256": "dcfe47bc9576f39d729f6d9d212618904ce2e220ebc219b8b0ba6935d91dce6e"
+        },
+        {
+          "path": "tests/test_update_snapshot_protocol4.py",
+          "sha256": "0e44c8ed3b168b31c0cc7abd1d234fd12746a07c9f54dda57dd4beab6ca47932"
         },
         {
           "path": "work/evidence/evidence-hybrid-sqlite-disconnected-production-canary.md",
@@ -934,7 +967,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T19:59:26Z"
+      "verified_at": "2026-08-29T02:11:35Z"
     }
   ],
   "initiative": {
@@ -1169,7 +1202,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "475a9200a97196df",
+  "state_token": "81cb2a2d967745a0",
   "upgrade_targets": [
     {
       "id": "UPG-HYBRID-MAINTAINER",

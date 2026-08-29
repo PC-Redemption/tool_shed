@@ -79,7 +79,11 @@ The Hybrid SQLite state contract assigns protocol 4 to the first database-aware 
 snapshot mutation it locks the workspace, audits CLEAN state, checkpoints WAL, creates a verified
 SQLite backup, and proves a disposable checkpoint rebuild. After installation it requires exact
 database parity, validates each bootstrap manifest structurally, and rejects an INVALID doctor
-verdict. A workspace without hybrid state remains file-authoritative and no database is created.
+verdict. The sole bounded exception is a Doctor result containing only `DIRTY_CAMPAIGN_STATE`
+when every dirty campaign path was clean at transaction entrance, was created by the updater, and
+is one of the exact declared queue/convergence mutation paths; the transaction records that
+disposition and still rejects pre-existing or unexpected campaign dirt. A workspace without
+hybrid state remains file-authoritative and no database is created.
 Protocol 3 and older refuse a protocol-4 release before backup or workspace mutation.
 
 Every shipped Python CLI disables bytecode writes before importing Tool Shed modules. Normal

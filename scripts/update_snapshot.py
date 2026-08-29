@@ -374,6 +374,59 @@ def git(cwd: Path, *args: str, check: bool = True) -> str:
     return run(["git", *args], cwd=cwd, check=check).stdout.strip()
 
 
+def git_dirty_paths(workspace: Path, *, prefix: str | None = None) -> set[str]:
+    """Return exact dirty paths, expanding untracked directories deterministically."""
+    result = run(
+        ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
+        cwd=workspace,
+    )
+    parts = [item for item in result.stdout.split("\0") if item]
+    paths: set[str] = set()
+    index = 0
+    while index < len(parts):
+        raw = parts[index]
+        status = raw[:2]
+        path = raw[3:]
+        if status[0] in {"R", "C"} and index + 1 < len(parts):
+            index += 1
+            path = parts[index]
+        normalized = Path(path).as_posix()
+        if prefix is None or normalized.startswith(prefix):
+            paths.add(normalized)
+        index += 1
+    return paths
+
+
+def qualify_post_install_doctor(
+    doctor: dict[str, object],
+    *,
+    campaign_dirty_before: set[str],
+    campaign_dirty_after: set[str],
+    allowed_campaign_mutations: set[str],
+) -> dict[str, object]:
+    """Disposition only exact updater-created campaign dirt after a valid convergence."""
+    if doctor.get("verdict") != "INVALID":
+        return {"accepted": True, "reason": "doctor-not-invalid", "paths": []}
+    findings = doctor.get("findings")
+    if not isinstance(findings, list):
+        raise UpdateError("protocol 4 post-install doctor returned invalid findings")
+    codes = {
+        str(item.get("code"))
+        for item in findings
+        if isinstance(item, dict) and item.get("code")
+    }
+    persistent = campaign_dirty_before & campaign_dirty_after
+    unexpected = campaign_dirty_after - allowed_campaign_mutations
+    if codes == {"DIRTY_CAMPAIGN_STATE"} and campaign_dirty_after and not persistent and not unexpected:
+        return {
+            "accepted": True,
+            "reason": "exact-updater-created-campaign-projections",
+            "paths": sorted(campaign_dirty_after),
+        }
+    detail = ": " + ", ".join(sorted(codes)) if codes else ""
+    raise UpdateError("protocol 4 post-install doctor reported INVALID" + detail)
+
+
 def fingerprint_tree(root: Path) -> dict[str, str]:
     if not root.exists():
         return {}
@@ -1269,6 +1322,7 @@ def post_install_checks(
     if (target / ".git").exists() or (target / "work").exists():
         raise UpdateError("installed snapshot contains forbidden .git or work content")
     require_ignored(workspace)
+    campaign_dirty_before = git_dirty_paths(workspace, prefix="work/00-campaigns/")
     version_result = run(
         version_check_command(
             str(target / "scripts" / "check_shed_version.py"),
@@ -1309,8 +1363,20 @@ def post_install_checks(
             guidance = guidance_path.read_text(encoding="utf-8")
             if "BEGIN TOOL SHED ROUTING GUIDANCE" not in guidance:
                 raise UpdateError(f"provider guidance is missing portable routing: {guidance_path}")
-    campaign_before = campaign_convergence_report(workspace, target)
+    campaign_before = campaign_convergence_report(workspace, target, include_plan=True)
     campaign_result: dict[str, object] = {"before": campaign_before, "applied": False}
+    allowed_campaign_mutations = {
+        "work/00-campaigns/active-queue.md",
+        "work/00-campaigns/completed-queue.md",
+    }
+    plan = campaign_before.get("plan")
+    if isinstance(plan, dict):
+        for key in ("write_paths", "mutation_paths"):
+            values = plan.get(key)
+            if isinstance(values, list):
+                allowed_campaign_mutations.update(
+                    str(value) for value in values if isinstance(value, str) and value
+                )
     if campaign_before["needed"]:
         state_token = campaign_before.get("state_token")
         if not isinstance(state_token, str) or not state_token:
@@ -1409,16 +1475,13 @@ def post_install_checks(
             timeout_option="--validation-timeout",
         )
         doctor_payload = json.loads(doctor_result.stdout)
-        if doctor_payload.get("verdict") == "INVALID":
-            codes = [
-                str(item.get("code"))
-                for item in doctor_payload.get("findings", [])
-                if isinstance(item, dict) and item.get("code")
-            ]
-            raise UpdateError(
-                "protocol 4 post-install doctor reported INVALID"
-                + (": " + ", ".join(codes) if codes else "")
-            )
+        campaign_dirty_after = git_dirty_paths(workspace, prefix="work/00-campaigns/")
+        results["doctor_disposition"] = qualify_post_install_doctor(
+            doctor_payload,
+            campaign_dirty_before=campaign_dirty_before,
+            campaign_dirty_after=campaign_dirty_after,
+            allowed_campaign_mutations=allowed_campaign_mutations,
+        )
         results["doctor"] = doctor_payload
     if "check_work_tree.py" in results:
         convergence = json.loads(results["check_work_tree.py"])
