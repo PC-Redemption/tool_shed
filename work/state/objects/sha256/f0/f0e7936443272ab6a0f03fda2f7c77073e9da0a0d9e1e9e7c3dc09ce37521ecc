@@ -1,0 +1,41 @@
+# Database-owned work collateral: G6 release, canary, and initiative reconciliation
+
+Status: complete
+Type: evidence-summary
+Updated: 2026-08-28
+Gate: G6-RELEASE-CANARY-RECONCILED
+Disposition: satisfied-with-approved-change
+
+## Result
+
+The database-owned work-collateral outcome is implemented and qualified end to end. SQLite schema 2 owns generated collateral and its revisions, relationships, lifecycle, and outcome state. Immutable visible IDs survive path and title changes. Managed commands provide bounded read, edit, relationship, lifecycle-view, checkpoint, and rebuild operations. Generated lifecycle trees are disposable projections. Retained legacy collateral remains available and is not a second authority.
+
+## Milestone evidence
+
+- G1: `work/evidence/evidence-database-owned-collateral-g1-contract.md` freezes the authority, identity, command, view, checkpoint, conversion, rollback, retirement, and closed-loop boundaries.
+- G2: `work/evidence/evidence-database-owned-collateral-g2-thin-slice.md` proves the database-owned vertical slice.
+- G3: `work/evidence/evidence-database-owned-collateral-g3-interface-views.md` proves managed commands, guarded revision edits, and disposable lifecycle views.
+- G4: `work/evidence/evidence-database-owned-collateral-g4-conversion-recovery.md` proves retained-corpus no-loss conversion, interruption recovery, rollback, checkpoint rebuild, and schema fencing.
+- G5: `work/evidence/evidence-database-owned-collateral-g5-maintainer-upgrade.md` proves the dual-role maintainer conversion, validation, recovery, and staged installed-skill parity.
+- G6: Tool Shed v0.36.4 is published at tag `v0.36.4`. Content commit `466b3865dddb3488c81a34773c1e9d2978d9f68e` passed GitHub Validate run `33230916367`; provenance commit `0eb5d5b1266b3079ddb7d6b4c48c503fabc68746` passed Publish GitHub Release run `33231094005` and produced a non-draft, non-prerelease release.
+
+## Production-shaped canaries and public target
+
+- The clean published updater canary at `/tmp/tool-shed-v0362-published-clean-WSPNyS8P` installed v0.36.2 without GitHub project state, preserved work, converged the declared tree, and returned healthy Doctor output.
+- The existing published updater canary at `/tmp/tool-shed-v0361-existing-PKduyq86/workspace` upgraded a schema-2 workspace from v0.36.1 to v0.36.2. Protocol-4 schema-1 and schema-2 recovery rebuilds passed, the pre/post full-domain digest remained `154e8d243168e82dc1adfad5444d24a0907dc926d295586e9c2c6ecef9a98b16`, and the document body digest remained `c730e188c601afdf0b2ea3b5f0d0df920711961322bb5090800e42196cae3b46`.
+- The v0.36.3 delta changed operator documentation and its site; the v0.36.4 delta makes Doctor consume schema-2 database authority and parallelizes two independent bootstrap verifiers without changing installer, updater, document-store, or recovery implementation. The v0.36.2 clean/existing installer/updater canaries therefore remain applicable. The v0.36.4 matrix reran all 379 product tests, and a focused schema-2 Doctor regression proves that retained active campaign and index files cannot reopen a completed database campaign.
+- On the canonical maintainer, published v0.36.4 Doctor returns `HEALTHY` with zero findings, no working or blocked SQLite campaigns, no open/unreconciled/unpropagated outcome cycles, a clean document authority audit, and retained `work/index` projections explicitly marked non-authoritative.
+- A fresh ephemeral read-only Codex session independently verified local version 0.36.4, tag v0.36.4, content commit `466b3865dddb3488c81a34773c1e9d2978d9f68e`, provenance commit `0eb5d5b1266b3079ddb7d6b4c48c503fabc68746`, no tracked modifications, and exact five-file installed-skill parity. Workspace and installed skill digest: `dd1ac08e6cdb427355c8145d810c013c28c6b1a268be510369f324c2306f34f4`.
+- The exact v0.36.4 site bundle passed its 23-page/73-command structural check and is deployed at `https://ts.rookaro.com`. Required public routes return HTTP 200 with `X-Rookaro-Route: ts.rookaro.com`; the maintenance page states the database-aware protocol-4 recovery contract. The immediately prior deployment is retained at `/home/jon/docker/ts.rookaro.com.backup-20260829T032200Z`, and the original pre-documentation deployment remains at `/home/jon/docker/ts.rookaro.com.backup-20260829T024800Z`.
+
+## Requirement and development-change reconciliation
+
+All nine accepted source-idea requirements are satisfied by the current product and the G1-G6 evidence above: database authority, immutable identity, managed commands, disposable views, exact checkpoint/rebuild, explicit file-owned boundaries, no-loss conversion/rollback, maintainer-first plus production-client qualification, and separate legacy-retirement authority.
+
+The bootstrap ledgers remain independently valid and release-ready. Hybrid SQLite records CHG-HYBRID-001 through CHG-HYBRID-024, 12 requirements, 10 passing evidence records, and satisfied G1-G4 plus initiative verdict at state token `e9bb27cfe4cd2cb4`. Universal closed loop records CHG-CLOSED-001 through CHG-CLOSED-012, 12 requirements, 6 passing evidence records, and satisfied G1-G5 plus initiative verdict at state token `6511effa4c2f48a1`. The material changes include schema-2 document authority, guarded editing and views, checkpoint/content-object recovery, protocol-4 updater handling, schema-2 Doctor authority routing, exact queue-projection disposition, public operator guidance, and the release/canary evidence response. No accepted change is left pending or stale.
+
+## Approved changes and residual work
+
+The final disposition is `satisfied-with-approved-change` because qualification led to patch releases v0.36.1 (bounded Doctor projection handling), v0.36.2 (schema-2-aware updater recovery), v0.36.3 (public operator guidance), and v0.36.4 (schema-2 Doctor authority routing plus bounded release validation). These changes preserve the approved outcome and were rerun through exact-candidate CI and applicable canaries.
+
+No implementation work remains for this outcome. Retained legacy collateral stays available pending a separately authorized retirement decision; that retention is an intentional boundary, not unfinished product work. `media-ops` and all Marshal artifacts are excluded from this Tool Shed outcome.

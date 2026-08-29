@@ -1,8 +1,8 @@
 {
   "envelope": {
-    "created_at": "2026-08-29T02:56:36Z",
-    "database_revision": 340,
-    "digest": "1166617dbde16b94a8ba7ddd763ae2be013438dbb9d449d2860524d2f3b6a050",
+    "created_at": "2026-08-29T03:23:09Z",
+    "database_revision": 341,
+    "digest": "fd70d1af20bfa05f6a1bd72715c24bb03cee3031d5a870bec3e0f79b8c4e2c39",
     "hybrid_schema": 2,
     "objects": [
       "work/state/objects/sha256/00/0082fd1d60de8f37c6d2972dac5637d8c894d2c8f1124c5061aeb74ba0c18b75",
@@ -253,6 +253,7 @@
       "work/state/objects/sha256/ef/efd9e530fcb349d7918f5425f8b139197a61b0c1c2410c83b1b28615f172fb5c",
       "work/state/objects/sha256/f0/f0074675b8621c3291758389e62096678e986022dccac18e5f9226df0aec29b5",
       "work/state/objects/sha256/f0/f073372e298195f912533f2ab4b1faa49694aadb38641d9e3a81d163c4c3fdf6",
+      "work/state/objects/sha256/f0/f0e7936443272ab6a0f03fda2f7c77073e9da0a0d9e1e9e7c3dc09ce37521ecc",
       "work/state/objects/sha256/f2/f21eaed1f4f2e51deea8eee080aca6d84a5b96d15dde1e89aba599e6a323e187",
       "work/state/objects/sha256/f3/f39eabb04ef5af9cd859d34bdb74d09da922c062d9aa17ee073f63f130b9cd6f",
       "work/state/objects/sha256/f3/f3b6990ab56f2600276a11d993244527df18c4f0af6034e59c71382bf48297ad",
@@ -423,14 +424,14 @@
       },
       {
         "authority_mode": "sqlite",
-        "content_sha256": "0b0f29fa0f3ecb8d348ad92d97d6972fafdcf992a5fa800a5048b717c1566311",
+        "content_sha256": "f0e7936443272ab6a0f03fda2f7c77073e9da0a0d9e1e9e7c3dc09ce37521ecc",
         "created_at": "2026-08-29T02:52:43Z",
         "current_path": "sqlite/documents/EVD-0069",
         "display_number": "EVD-0069",
         "id": "0f8e9b58-9009-41c4-9385-d7a2dcf0afe4",
         "lifecycle_state": "completed",
         "type": "evidence-summary",
-        "updated_at": "2026-08-29T02:52:43Z"
+        "updated_at": "2026-08-29T03:22:56Z"
       },
       {
         "authority_mode": "sqlite",
@@ -4150,16 +4151,16 @@
         "visible_id": "EVD-0066"
       },
       {
-        "body_sha256": "0b0f29fa0f3ecb8d348ad92d97d6972fafdcf992a5fa800a5048b717c1566311",
+        "body_sha256": "f0e7936443272ab6a0f03fda2f7c77073e9da0a0d9e1e9e7c3dc09ce37521ecc",
         "created_at": "2026-08-29T02:52:43Z",
-        "current_revision": 1,
+        "current_revision": 2,
         "display_number": 69,
         "id": "0f8e9b58-9009-41c4-9385-d7a2dcf0afe4",
         "lifecycle_state": "completed",
         "metadata_json": "{}",
         "namespace": "EVD",
         "title": "Database-owned work collateral G6 release and reconciliation",
-        "updated_at": "2026-08-29T02:52:43Z",
+        "updated_at": "2026-08-29T03:22:56Z",
         "visible_id": "EVD-0069"
       },
       {
@@ -13166,6 +13167,20 @@
         "revision_number": 1,
         "source_revision": 218,
         "title": "Hybrid SQLite Context-Efficiency Evidence"
+      },
+      {
+        "actor": "codex",
+        "body_object": "work/state/objects/sha256/f0/f0e7936443272ab6a0f03fda2f7c77073e9da0a0d9e1e9e7c3dc09ce37521ecc",
+        "body_sha256": "f0e7936443272ab6a0f03fda2f7c77073e9da0a0d9e1e9e7c3dc09ce37521ecc",
+        "created_at": "2026-08-29T03:22:56Z",
+        "document_id": "0f8e9b58-9009-41c4-9385-d7a2dcf0afe4",
+        "id": "01922cf5-318d-424b-ab34-6d6d81f86632",
+        "lifecycle_state": "completed",
+        "metadata_json": "{}",
+        "reason": "Refresh G6 evidence to final v0.36.4 release, Doctor authority fix, and exact public target",
+        "revision_number": 2,
+        "source_revision": 341,
+        "title": "Database-owned work collateral G6 release and reconciliation"
       },
       {
         "actor": "maintainer-final-cutover",
@@ -27524,6 +27539,16 @@
         "revision": 292
       },
       {
+        "entity_id": "01922cf5-318d-424b-ab34-6d6d81f86632",
+        "entity_type": "document_revision",
+        "id": "61f336a5-4d12-4c57-aa11-5ce145d8f8e8",
+        "kind": "structural-insert",
+        "operation_id": "22ec2837-e265-4dcd-8814-d55916873b4c",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
+        "recorded_at": "2026-08-29T03:22:56Z",
+        "revision": 341
+      },
+      {
         "entity_id": "4e215995-1aa8-4e6b-baa2-78fc8b150cac",
         "entity_type": "verification_result",
         "id": "623c91a3-06c3-49d2-a499-af8b049fdfc6",
@@ -36234,6 +36259,16 @@
         "revision": 63
       },
       {
+        "entity_id": "0f8e9b58-9009-41c4-9385-d7a2dcf0afe4",
+        "entity_type": "document",
+        "id": "b23e4d63-27b4-41da-8607-66f5ec262cf3",
+        "kind": "structural-update",
+        "operation_id": "22ec2837-e265-4dcd-8814-d55916873b4c",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"document\"}",
+        "recorded_at": "2026-08-29T03:22:56Z",
+        "revision": 341
+      },
+      {
         "entity_id": "e9665f64-29ba-4902-99ce-8ce412d44786",
         "entity_type": "document_conversion",
         "id": "b2593bfa-a02a-49de-9b97-3976a43558e7",
@@ -39772,6 +39807,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
         "recorded_at": "2026-08-29T01:27:36Z",
         "revision": 201
+      },
+      {
+        "entity_id": "0f8e9b58-9009-41c4-9385-d7a2dcf0afe4",
+        "entity_type": "artifact",
+        "id": "d0aaf527-3480-4a93-be86-aa38d49711c5",
+        "kind": "structural-update",
+        "operation_id": "22ec2837-e265-4dcd-8814-d55916873b4c",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-29T03:22:56Z",
+        "revision": 341
       },
       {
         "entity_id": "ab54ed59-3d95-40c2-8319-ce492ecc618a",
@@ -46523,6 +46568,17 @@
         "id": "2268c8a9-6f13-4e0f-9cb9-e923db65a2ab",
         "revision": 306,
         "started_at": "2026-08-29T01:27:44Z",
+        "status": "complete"
+      },
+      {
+        "actor": "codex",
+        "actual_writes": 3,
+        "command": "document-apply-edit",
+        "committed_at": "2026-08-29T03:22:56Z",
+        "expected_writes": null,
+        "id": "22ec2837-e265-4dcd-8814-d55916873b4c",
+        "revision": 341,
+        "started_at": "2026-08-29T03:22:56Z",
         "status": "complete"
       },
       {
@@ -55766,6 +55822,17 @@
         "revision": 69,
         "row_id": "d0401711-830d-497e-8da9-663005b86bdc",
         "table_name": "document_revision"
+      },
+      {
+        "id": "203b438d-0bbe-45dc-b2cc-b3eab4b0897a",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "22ec2837-e265-4dcd-8814-d55916873b4c",
+        "payload_digest": "d8dd36f816800e0a036e7059ec12a581ffbcc961e6b92d97baf09d178e1d7c52",
+        "recorded_at": "2026-08-29T03:22:56Z",
+        "revision": 341,
+        "row_id": "0f8e9b58-9009-41c4-9385-d7a2dcf0afe4",
+        "table_name": "document"
       },
       {
         "id": "203fa0be-04cc-4b35-92d6-085389414568",
@@ -68308,6 +68375,17 @@
         "table_name": "document"
       },
       {
+        "id": "8bae015d-669d-49b9-9253-fe36cdc172b9",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "22ec2837-e265-4dcd-8814-d55916873b4c",
+        "payload_digest": "337ee3cc93de7bc1a1813c3a819e79a065e5f86b740c5a20cc4761d3bf7c5abe",
+        "recorded_at": "2026-08-29T03:22:56Z",
+        "revision": 341,
+        "row_id": "01922cf5-318d-424b-ab34-6d6d81f86632",
+        "table_name": "document_revision"
+      },
+      {
         "id": "8bb13b53-54c9-4843-9b22-8180f23d02e9",
         "managed": 1,
         "operation": "update",
@@ -78657,6 +78735,17 @@
         "revision": 38,
         "row_id": "33c44d47-0bdb-4822-8496-d193402241cc",
         "table_name": "verification_result"
+      },
+      {
+        "id": "e114b7f7-7eb9-4eff-8f67-eeb59ead2115",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "22ec2837-e265-4dcd-8814-d55916873b4c",
+        "payload_digest": "f14e1f94e32d01e9e898202c6adef62e5812149ded0264331d524f172ec4f458",
+        "recorded_at": "2026-08-29T03:22:56Z",
+        "revision": 341,
+        "row_id": "0f8e9b58-9009-41c4-9385-d7a2dcf0afe4",
+        "table_name": "artifact"
       },
       {
         "id": "e128aae3-980e-4979-b316-5a7a5cec7896",
