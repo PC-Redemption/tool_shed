@@ -229,6 +229,15 @@ repository-boundary, or product questions; `existing-projects.md` for onboarding
 
 ## Core Rules
 
+- At the first Tool Shed work-artifact read or write, audit `.tool-shed/state.sqlite3` when it
+  exists. When it reports schema 2 with `storage_mode: hybrid`, SQLite owns generated documents:
+  use `scripts/document_store.py` for list/show/search/context/create/edit/lifecycle/relationship
+  operations and rebuild `.tool-shed/views/work/` for browsing. Treat files below `work/` as
+  retained conversion sources, file-owned inputs, or projections according to the document
+  contract; do not mutate a retained generated source through legacy artifact, campaign, roadmap,
+  reconciliation, or index scripts.
+- When the database is absent or remains schema 1, continue using the file-authority routes in this
+  skill. Never infer cutover merely from the presence of SQLite.
 - Choose the smallest artifact that fits the immediate work.
 - Apply KISS as minimum sufficient complexity across planning, roadmaps, milestones, execution,
   testing, and recovery.
@@ -248,8 +257,8 @@ repository-boundary, or product questions; `existing-projects.md` for onboarding
 - Track root `work/` by default. Ignore it only through the documented repository policy exception.
 - Prefer deterministic shed scripts for artifact creation, indexing, completion, reconciliation,
   preflight, and version checks.
-- Do not create a server, database, or tracker until plain files and scripts have demonstrated a
-  concrete limitation.
+- Do not add another server, database, or tracker beyond the workspace's declared authority model
+  without a concrete limitation and an approved contract change.
 - Preserve operator scope, authority, safety rules, credentials, protected environments, and
   unrelated work. A discovered action does not authorize itself.
 - Use provider-native approvals and permissions as enforcement boundaries; instructions guide

@@ -63,9 +63,9 @@ def _header_value(text: str, field: str) -> str | None:
 
 
 def _classification(relative: str, data: bytes) -> tuple[str, str | None, str | None]:
-    if relative in PROJECTION_PATHS or relative.endswith("/index.md") or relative.endswith("-queue.md"):
+    if relative in PROJECTION_PATHS or relative == "work/focus-areas.md" or relative.endswith("/index.md") or relative.endswith("-queue.md"):
         return "projection", None, None
-    if relative.startswith("work/state/") or not relative.endswith(".md"):
+    if relative == "work/README.md" or relative.startswith("work/state/") or not relative.endswith(".md"):
         return "file-owned", None, None
     try:
         text = data.decode("utf-8")
@@ -75,6 +75,8 @@ def _classification(relative: str, data: bytes) -> tuple[str, str | None, str | 
     document_type = TYPE_ALIASES.get(raw_type)
     if document_type:
         return "generated", document_type, None
+    if relative.startswith("work/evidence/"):
+        return "generated", "evidence-summary", None
     return "unresolved", None, "Markdown lacks a recognized generated Type header"
 
 
@@ -285,7 +287,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--workspace", default=".")
     parser.add_argument("--json", action="store_true")
     commands = parser.add_subparsers(dest="command", required=True)
-    inventory = commands.add_parser("inventory"); inventory.add_argument("--database")
+    inventory = commands.add_parser("inventory"); inventory.add_argument("--database"); inventory.add_argument("--output")
     archive = commands.add_parser("archive"); archive.add_argument("--manifest", required=True); archive.add_argument("--output", required=True)
     apply = commands.add_parser("apply"); apply.add_argument("--manifest", required=True); apply.add_argument("--database", required=True); apply.add_argument("--project-binding", required=True); apply.add_argument("--actor", required=True)
     qualify_parser = commands.add_parser("qualify"); qualify_parser.add_argument("--manifest", required=True); qualify_parser.add_argument("--database", required=True)
@@ -299,6 +301,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         workspace = resolved_workspace(Path(args.workspace))
         if args.command == "inventory":
             result = build_plan(workspace, database=(workspace / args.database) if args.database else None)
+            if args.output:
+                output = require_path_within(workspace, workspace / args.output)
+                output.parent.mkdir(parents=True, exist_ok=True)
+                output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         else:
             manifest = load_plan(workspace, Path(args.manifest))
             if args.command == "archive": result = create_archive(workspace, manifest=manifest, destination=Path(args.output))

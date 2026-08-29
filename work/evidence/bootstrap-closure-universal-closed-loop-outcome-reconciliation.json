@@ -2,15 +2,15 @@
   "authority_contract": "docs/universal-closed-loop-outcome-reconciliation.md",
   "baseline": {
     "created_at": "1970-01-01T00:00:00Z",
-    "source_commit": "5206d89ef2064ba1ffbced2629f4f7e952254c88",
-    "source_digest": "5fb005fbdb7049ec64311830388aa46431cefb73d9956285eb53cbf36f7e4acb",
-    "updated_at": "2026-08-28T22:11:01Z"
+    "source_commit": "2fc4065b66dc81d02a17f24b27901c36e59dd928",
+    "source_digest": "59df8e7786b34be488d51171bfedaf66caa16b20694e70b29e05f9cedbc62a04",
+    "updated_at": "2026-08-29T01:35:54Z"
   },
   "bindings": [
     {
       "path": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
       "role": "idea",
-      "sha256": "961786b737bdb679e449584f056033492f4cc351a120a34fe904c0735659bdae"
+      "sha256": "4f401c0a624f665df6f7760bc9a3ee5348c6658ac705718ca5e8a2c7de2fec7d"
     },
     {
       "path": "work/maps/map-universal-closed-loop-outcome-reconciliation.md",
@@ -232,6 +232,33 @@
       "source_commit": "5206d89ef2064ba1ffbced2629f4f7e952254c88",
       "summary": "Finalize the project-map lifecycle after whole-work reconciliation",
       "supersedes": []
+    },
+    {
+      "authorization": "Owner-directed database-owned collateral PRM end-to-end implementation on 2026-08-28",
+      "decision_ids": [
+        "DEC-CLOSED-001",
+        "DEC-CLOSED-003",
+        "DEC-CLOSED-007"
+      ],
+      "evidence_to_rerun": [
+        "EVID-CLOSED-G3-INTEGRATION",
+        "EVID-CLOSED-G4-RECOVERY",
+        "EVID-CLOSED-G5-CANARY",
+        "EVID-CLOSED-G5-RELEASE"
+      ],
+      "id": "CHG-CLOSED-010",
+      "rationale": "The separately approved database-owned-collateral initiative changes generated-document authority, legacy campaign and roadmap entrances, schema-aware backup and restore, and the Tool Shed skill route. Universal closure must bind those changes, preserve independent outcome-cycle propagation, and refresh integration, recovery, canary, and release evidence instead of inheriting its former file-authority assumptions.",
+      "recorded_at": "2026-08-29T01:23:43Z",
+      "requirement_ids": [
+        "REQ-CLOSED-003",
+        "REQ-CLOSED-007",
+        "REQ-CLOSED-009",
+        "REQ-CLOSED-010",
+        "REQ-CLOSED-012"
+      ],
+      "source_commit": "2fc4065b66dc81d02a17f24b27901c36e59dd928",
+      "summary": "Route database-owned collateral through universal closure and maintainer-safe recovery",
+      "supersedes": []
     }
   ],
   "decisions": [
@@ -380,7 +407,8 @@
     {
       "covers_change_ids": [
         "CHG-CLOSED-002",
-        "CHG-CLOSED-009"
+        "CHG-CLOSED-009",
+        "CHG-CLOSED-010"
       ],
       "gate": "G3-LIFECYCLE-INTEGRATION-PROVEN",
       "id": "EVID-CLOSED-G3-INTEGRATION",
@@ -403,11 +431,11 @@
         },
         {
           "path": "scripts/program_roadmap.py",
-          "sha256": "f4c8576703aee9f9913214cc5afd816436793d8f585f54ec5de2df725563cdfd"
+          "sha256": "efd1f6380c14f296262b9e1d7c45c7baaf1e75c8b9830194db681d4c189483b2"
         },
         {
           "path": "scripts/campaign_queue.py",
-          "sha256": "d903458647faf1454ca6e1d8ca1356b6a99b60da2fa9d707ff79f611b05f7122"
+          "sha256": "93484f5a8bba6b59357a340f292aab1235f97b4f83475d243a0baea764e57fcd"
         },
         {
           "path": "scripts/reconcile_campaign_queue.py",
@@ -447,11 +475,11 @@
         },
         {
           "path": "skills/tool-shed/SKILL.md",
-          "sha256": "9a1435dd67f56a77afbc96478ddf1567b59ad5f3eb486fe05b5924d226dcf1cb"
+          "sha256": "57ea84f3d450949af0ffa093e75117909e07aa6c7d207a9148ee76df20b7e0bf"
         },
         {
           "path": "skills/tool-shed/references/campaign-routes.md",
-          "sha256": "69eb19fd1f91e9a5103a2df360e4edf073c490c766b41488cc9ae081c3107a1d"
+          "sha256": "fc52ae9baec1467849c79026f92502d84c6115cdf612f30ae08e243913375063"
         },
         {
           "path": "docs/commands.md",
@@ -459,13 +487,14 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T22:10:48Z"
+      "verified_at": "2026-08-29T01:35:53Z"
     },
     {
       "covers_change_ids": [
         "CHG-CLOSED-003",
         "CHG-CLOSED-004",
-        "CHG-CLOSED-005"
+        "CHG-CLOSED-005",
+        "CHG-CLOSED-010"
       ],
       "gate": "G4-RECOVERY-BACKFILL-PROVEN",
       "id": "EVID-CLOSED-G4-RECOVERY",
@@ -484,7 +513,7 @@
         },
         {
           "path": "scripts/hybrid_state.py",
-          "sha256": "65b7aa10424c833666b2fcb8275bd04fc76faf5cfd90c0bd2fe03fc39a08ee73"
+          "sha256": "8e453379284c0aadf911578d2c15605283e0e571947c877428cc46f55a666d9b"
         },
         {
           "path": "scripts/maintainer_hybrid_conversion.py",
@@ -496,7 +525,7 @@
         },
         {
           "path": "tests/test_hybrid_state.py",
-          "sha256": "6789aab6bbb83a6028ecfb80af302f104b5135fe01967bc9a80b495ec1025adf"
+          "sha256": "7fd7ae82976312eebc2e0b9e3fa3f4aaf66a60f874753fbb0ac6e9e57a4c9f2f"
         },
         {
           "path": "tests/test_maintainer_hybrid_conversion.py",
@@ -528,13 +557,14 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T21:49:14Z"
+      "verified_at": "2026-08-29T01:24:04Z"
     },
     {
       "covers_change_ids": [
         "CHG-CLOSED-006",
         "CHG-CLOSED-007",
-        "CHG-CLOSED-008"
+        "CHG-CLOSED-008",
+        "CHG-CLOSED-010"
       ],
       "gate": "G5-RELEASE-CANARY-PROVEN",
       "id": "EVID-CLOSED-G5-RELEASE",
@@ -544,30 +574,47 @@
           "sha256": "036ce339477c5a4ef74e88b99543eeefddc1b89e212e65c1352dad5a5eebec5d"
         },
         {
-          "path": "SHED_VERSION.json",
-          "sha256": "d62813f78b3910b6bdb44067601f96305086766a71ad37405558b5eda5844d01"
-        },
-        {
           "path": "skills/tool-shed/SKILL.md",
-          "sha256": "9a1435dd67f56a77afbc96478ddf1567b59ad5f3eb486fe05b5924d226dcf1cb"
+          "sha256": "57ea84f3d450949af0ffa093e75117909e07aa6c7d207a9148ee76df20b7e0bf"
         },
         {
-          "path": "work/roadmaps/roadmap-universal-closed-loop-outcome-reconciliation.md",
-          "sha256": "f39eabb04ef5af9cd859d34bdb74d09da922c062d9aa17ee073f63f130b9cd6f"
+          "path": "skills/tool-shed/references/campaign-routes.md",
+          "sha256": "fc52ae9baec1467849c79026f92502d84c6115cdf612f30ae08e243913375063"
         },
         {
-          "path": "work/00-campaigns/completed/113-release-and-canary-universal-closed-loop-reconciliation.md",
-          "sha256": "b647c04d38051bf08861882609053927f91e46033f237ad45ecd17d79a7e85c1"
+          "path": "docs/releasing.md",
+          "sha256": "61d3b0590838d106c93c899cdc57fee5ad6acdfb18d23ca2270a90f13f6029ca"
+        },
+        {
+          "path": "docs/database-owned-work-collateral.md",
+          "sha256": "bcea9710020c625b40878c5c8bbf3634b808fdef6a77d51640a1a6789ff5b7aa"
+        },
+        {
+          "path": "scripts/validate_tool_shed.py",
+          "sha256": "a8ec0a24a6b23b0150767be9686ce29f4004c55fb07b45a438ade5400143647b"
+        },
+        {
+          "path": "scripts/validate_snapshot_client.py",
+          "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
+        },
+        {
+          "path": "tests/test_scripts.py",
+          "sha256": "e661bc56b2c5bcb97d0ad2de2759b92013c13e6d63cd8736d957a1460e5f6e95"
+        },
+        {
+          "path": "tests/test_update_snapshot_protocol4.py",
+          "sha256": "6ccc4d39ee27d449e20e046bad7d413d83262c00080b06d378523304adb0b9ed"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T22:04:11Z"
+      "verified_at": "2026-08-29T01:35:54Z"
     },
     {
       "covers_change_ids": [
         "CHG-CLOSED-006",
         "CHG-CLOSED-007",
-        "CHG-CLOSED-008"
+        "CHG-CLOSED-008",
+        "CHG-CLOSED-010"
       ],
       "gate": "G5-RELEASE-CANARY-PROVEN",
       "id": "EVID-CLOSED-G5-CANARY",
@@ -582,23 +629,39 @@
         },
         {
           "path": "scripts/hybrid_state.py",
-          "sha256": "65b7aa10424c833666b2fcb8275bd04fc76faf5cfd90c0bd2fe03fc39a08ee73"
+          "sha256": "8e453379284c0aadf911578d2c15605283e0e571947c877428cc46f55a666d9b"
         },
         {
           "path": "scripts/update_snapshot.py",
           "sha256": "e13c411ebad44d30616054cae5b02c9ff45b167426d43090ca021d31d6af8d18"
         },
         {
-          "path": "work/roadmaps/roadmap-universal-closed-loop-outcome-reconciliation.md",
-          "sha256": "f39eabb04ef5af9cd859d34bdb74d09da922c062d9aa17ee073f63f130b9cd6f"
+          "path": "scripts/document_store.py",
+          "sha256": "119b895c0016a3313e8ab103263397b6abc560ffe001274e7e6f3f9bd2636800"
         },
         {
-          "path": "work/00-campaigns/completed/113-release-and-canary-universal-closed-loop-reconciliation.md",
-          "sha256": "b647c04d38051bf08861882609053927f91e46033f237ad45ecd17d79a7e85c1"
+          "path": "scripts/document_conversion.py",
+          "sha256": "0295b7c4ed1026acec2d075983d080188abfdf71223d161b9d65f3c5efc31140"
+        },
+        {
+          "path": "tests/test_document_store.py",
+          "sha256": "81f906d5e7972bd7509a58925285e688e165d4fae7a69a196a74f6bfbae7eb5d"
+        },
+        {
+          "path": "tests/test_document_conversion.py",
+          "sha256": "f72b5cae7a62d147487be8dc8e3d6b129c58dc6cea297774bc9091d9bf16f14e"
+        },
+        {
+          "path": "tests/test_hybrid_state.py",
+          "sha256": "7fd7ae82976312eebc2e0b9e3fa3f4aaf66a60f874753fbb0ac6e9e57a4c9f2f"
+        },
+        {
+          "path": "docs/database-owned-work-collateral.md",
+          "sha256": "bcea9710020c625b40878c5c8bbf3634b808fdef6a77d51640a1a6789ff5b7aa"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T22:04:19Z"
+      "verified_at": "2026-08-29T01:35:54Z"
     }
   ],
   "initiative": {
@@ -811,7 +874,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "f9066967f3a4a7ba",
+  "state_token": "9d14df68d88dcaeb",
   "upgrade_targets": [
     {
       "id": "UPG-CLOSED-MAINTAINER",

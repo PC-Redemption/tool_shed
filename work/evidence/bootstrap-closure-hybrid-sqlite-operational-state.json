@@ -2,9 +2,9 @@
   "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
   "baseline": {
     "created_at": "2026-08-28T16:26:19Z",
-    "source_commit": "6fd05f8721eb796bab96f2f64642fd1c9e389fb1",
-    "source_digest": "b9cc6b9335ca400b5996f904b3586f2b8b1e0c16726502bfffcd12e72e3c2678",
-    "updated_at": "2026-08-29T01:00:58Z"
+    "source_commit": "2fc4065b66dc81d02a17f24b27901c36e59dd928",
+    "source_digest": "59b136000a93f64586208192799deb87efdf087f0d71857a08fa7b9120ad0af2",
+    "updated_at": "2026-08-29T01:35:03Z"
   },
   "bindings": [
     {
@@ -50,7 +50,7 @@
     {
       "path": "scripts/validate_tool_shed.py",
       "role": "release-validator",
-      "sha256": "e281c353dd828d5639f9ac0e4112bc39cf1082aee84af800d9af4a774375d6d9"
+      "sha256": "a8ec0a24a6b23b0150767be9686ce29f4004c55fb07b45a438ade5400143647b"
     },
     {
       "path": "work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md",
@@ -416,6 +416,48 @@
       "source_commit": "6fd05f8721eb796bab96f2f64642fd1c9e389fb1",
       "summary": "Refresh Universal Closed-Loop consumer provenance after governed closure",
       "supersedes": []
+    },
+    {
+      "authorization": "Owner-directed database-owned collateral PRM end-to-end implementation on 2026-08-28",
+      "decision_ids": [
+        "DEC-HYBRID-003",
+        "DEC-HYBRID-006"
+      ],
+      "evidence_to_rerun": [
+        "EVID-G2-SUBSTRATE"
+      ],
+      "id": "CHG-HYBRID-018",
+      "rationale": "The database-owned collateral maintainer rehearsal exposed revision spam on idempotent imports and required a guarded schema-aware restore. The fix preserves exact project binding, backup digest, expected live revision, staged parity, and atomic promotion; legacy generated-document file writers now fail closed after schema-2 authority cutover.",
+      "recorded_at": "2026-08-29T01:21:22Z",
+      "requirement_ids": [
+        "REQ-HYBRID-007",
+        "REQ-HYBRID-009"
+      ],
+      "source_commit": "2fc4065b66dc81d02a17f24b27901c36e59dd928",
+      "summary": "Add schema-aware verified restore and database-document cutover fencing",
+      "supersedes": []
+    },
+    {
+      "authorization": "Owner-directed database-owned collateral PRM end-to-end implementation on 2026-08-28",
+      "decision_ids": [
+        "DEC-HYBRID-003",
+        "DEC-HYBRID-006"
+      ],
+      "evidence_to_rerun": [
+        "EVID-G1-BOOTSTRAP",
+        "EVID-G2-HPT2-PARITY",
+        "EVID-G4-RELEASE"
+      ],
+      "id": "CHG-HYBRID-019",
+      "rationale": "After the schema-2 authority cutover, release validation must regenerate ignored lifecycle projections from SQLite and must not rewrite retained work/index files. The final maintainer ID inventory also binds this material validator change before release.",
+      "recorded_at": "2026-08-29T01:34:47Z",
+      "requirement_ids": [
+        "REQ-HYBRID-007",
+        "REQ-HYBRID-009"
+      ],
+      "source_commit": "2fc4065b66dc81d02a17f24b27901c36e59dd928",
+      "summary": "Route release validation through database-owned lifecycle views",
+      "supersedes": []
     }
   ],
   "decisions": [
@@ -513,7 +555,8 @@
         "CHG-HYBRID-008",
         "CHG-HYBRID-009",
         "CHG-HYBRID-013",
-        "CHG-HYBRID-014"
+        "CHG-HYBRID-014",
+        "CHG-HYBRID-019"
       ],
       "gate": "G1-DESIGN-FROZEN",
       "id": "EVID-G1-BOOTSTRAP",
@@ -532,7 +575,7 @@
         },
         {
           "path": "scripts/validate_tool_shed.py",
-          "sha256": "e281c353dd828d5639f9ac0e4112bc39cf1082aee84af800d9af4a774375d6d9"
+          "sha256": "a8ec0a24a6b23b0150767be9686ce29f4004c55fb07b45a438ade5400143647b"
         },
         {
           "path": "work/evidence/evidence-hybrid-sqlite-g1-design-frozen.md",
@@ -544,7 +587,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T20:03:19Z"
+      "verified_at": "2026-08-29T01:35:03Z"
     },
     {
       "covers_change_ids": [
@@ -627,7 +670,8 @@
         "CHG-HYBRID-010",
         "CHG-HYBRID-011",
         "CHG-HYBRID-013",
-        "CHG-HYBRID-016"
+        "CHG-HYBRID-016",
+        "CHG-HYBRID-018"
       ],
       "gate": "G2-SUBSTRATE-LOOP-PROVEN",
       "id": "EVID-G2-SUBSTRATE",
@@ -646,7 +690,7 @@
         },
         {
           "path": "scripts/hybrid_state.py",
-          "sha256": "65b7aa10424c833666b2fcb8275bd04fc76faf5cfd90c0bd2fe03fc39a08ee73"
+          "sha256": "8e453379284c0aadf911578d2c15605283e0e571947c877428cc46f55a666d9b"
         },
         {
           "path": "scripts/hybrid_state_schema.py",
@@ -666,7 +710,7 @@
         },
         {
           "path": "tests/test_hybrid_state.py",
-          "sha256": "6789aab6bbb83a6028ecfb80af302f104b5135fe01967bc9a80b495ec1025adf"
+          "sha256": "7fd7ae82976312eebc2e0b9e3fa3f4aaf66a60f874753fbb0ac6e9e57a4c9f2f"
         },
         {
           "path": "tests/test_maintainer_hybrid_conversion.py",
@@ -678,7 +722,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T21:25:53Z"
+      "verified_at": "2026-08-29T01:21:32Z"
     },
     {
       "covers_change_ids": [
@@ -690,7 +734,9 @@
         "CHG-HYBRID-014",
         "CHG-HYBRID-015",
         "CHG-HYBRID-016",
-        "CHG-HYBRID-017"
+        "CHG-HYBRID-017",
+        "CHG-HYBRID-018",
+        "CHG-HYBRID-019"
       ],
       "gate": "G2-SUBSTRATE-LOOP-PROVEN",
       "id": "EVID-G2-HPT2-PARITY",
@@ -709,7 +755,7 @@
         },
         {
           "path": "schemas/hybrid-state/v1/hpt2-assigned-ids.json",
-          "sha256": "6a336cfec22d127f942763f36f362ec12c29b3d8f9ed81a646274581982c92b5"
+          "sha256": "2f81619ee74073710e60d0b63ff75f3f8bcfc9085e880f1859cc711e6133fb90"
         },
         {
           "path": "tests/test_outcome_reconciliation.py",
@@ -725,7 +771,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T01:00:58Z"
+      "verified_at": "2026-08-29T01:35:03Z"
     },
     {
       "covers_change_ids": [
@@ -822,7 +868,8 @@
         "CHG-HYBRID-013",
         "CHG-HYBRID-014",
         "CHG-HYBRID-015",
-        "CHG-HYBRID-016"
+        "CHG-HYBRID-016",
+        "CHG-HYBRID-019"
       ],
       "gate": "G4-RELEASE-CANARY-PROVEN",
       "id": "EVID-G4-RELEASE",
@@ -845,7 +892,7 @@
         },
         {
           "path": "scripts/validate_tool_shed.py",
-          "sha256": "e281c353dd828d5639f9ac0e4112bc39cf1082aee84af800d9af4a774375d6d9"
+          "sha256": "a8ec0a24a6b23b0150767be9686ce29f4004c55fb07b45a438ade5400143647b"
         },
         {
           "path": "tests/test_scripts.py",
@@ -865,7 +912,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-28T21:42:04Z"
+      "verified_at": "2026-08-29T01:35:03Z"
     },
     {
       "covers_change_ids": [
@@ -1122,7 +1169,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "5a50ab175c37ed2a",
+  "state_token": "475a9200a97196df",
   "upgrade_targets": [
     {
       "id": "UPG-HYBRID-MAINTAINER",

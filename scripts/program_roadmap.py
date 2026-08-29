@@ -1448,6 +1448,14 @@ def main() -> int:
     args = build_parser().parse_args()
     workspace = Path(args.workspace).expanduser().resolve()
     try:
+        try:
+            import document_store
+        except ModuleNotFoundError:
+            document_store = None  # type: ignore[assignment]
+        if args.command != "validate" and document_store is not None and document_store.is_authoritative(workspace):
+            raise RoadmapError(
+                "generated-document authority is SQLite; use document_store.py list/show/context/create/apply-edit/set-lifecycle and render-views"
+            )
         if args.command in {"approve-map", "propose", "approve", "apply-campaign-plan"}:
             require_project_binding(
                 workspace,

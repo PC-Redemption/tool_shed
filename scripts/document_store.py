@@ -147,6 +147,19 @@ def audit(workspace: Path, database: Path | None = None) -> dict[str, Any]:
         return audit_connection(workspace, connection)
 
 
+def is_authoritative(workspace: Path, database: Path | None = None) -> bool:
+    """Return whether generated-document write authority has cut over to schema 2."""
+    workspace = resolved_workspace(workspace)
+    path = require_path_within(workspace, database or hybrid_state.database_path(workspace))
+    if not path.is_file():
+        return False
+    with contextlib.closing(hybrid_state.connect(path, writable=False)) as connection:
+        if int(connection.execute("PRAGMA user_version").fetchone()[0]) != HYBRID_SCHEMA_VERSION:
+            return False
+        meta = hybrid_state.meta_row(connection)
+        return str(meta["storage_mode"]) == "hybrid"
+
+
 def _replace_file(source: Path, destination: Path) -> None:
     with source.open("r+b") as handle:
         os.fsync(handle.fileno())
@@ -269,6 +282,7 @@ def _allocate(connection: sqlite3.Connection, namespace: str, assigned: int | No
 
 def import_document(workspace: Path, *, project_binding: str, source: Path, document_type: str, lifecycle: str, actor: str, reason: str, assigned_number: int | None = None, artifact_id: str | None = None, database: Path | None = None) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
+    require_project_binding(workspace, project_binding, operation=OPERATION)
     path = require_path_within(workspace, source if source.is_absolute() else workspace / source)
     raw = path.read_bytes()
     try:
@@ -279,6 +293,51 @@ def import_document(workspace: Path, *, project_binding: str, source: Path, docu
     title = _parse_title(body, path.stem)
     namespace = _namespace_for(document_type)
     body_hash = hashlib.sha256(raw).hexdigest()
+    database_path = require_path_within(workspace, database or hybrid_state.database_path(workspace))
+
+    # A conversion replay is a read-only success when the exact retained source
+    # was already imported.  Keep this outside managed_write so retries do not
+    # create empty operations or advance the database revision.
+    with contextlib.closing(hybrid_state.connect(database_path, writable=False)) as connection:
+        existing = connection.execute(
+            "SELECT dc.*, a.type AS artifact_type FROM document_conversion dc "
+            "JOIN artifact a ON a.id=dc.artifact_id WHERE dc.source_path=?",
+            (relative,),
+        ).fetchone()
+        if existing:
+            expected_visible = f"{namespace}-{assigned_number:04d}" if assigned_number is not None else None
+            conflicts = []
+            if existing["source_sha256"] != body_hash:
+                conflicts.append("source digest")
+            if existing["artifact_type"] != document_type:
+                conflicts.append("document type")
+            if artifact_id is not None and existing["artifact_id"] != artifact_id:
+                conflicts.append("artifact ID")
+            if expected_visible is not None and existing["visible_id"] != expected_visible:
+                conflicts.append("visible ID")
+            if existing["status"] not in {"verified", "cutover"} or not existing["byte_parity"] or not existing["render_parity"]:
+                conflicts.append("qualification state")
+            if conflicts:
+                raise DocumentStoreError("existing conversion conflicts with replay: " + ", ".join(conflicts))
+            checked = audit_connection(workspace, connection)
+            if checked["classification"] in {"INVALID", "UNJOURNALED"}:
+                raise DocumentStoreError(f"idempotent import refused from {checked['classification']}")
+            return {
+                "schema_version": HYBRID_SCHEMA_VERSION,
+                "kind": "tool-shed-hybrid-state-operation",
+                "operation_id": None,
+                "revision": checked["current_revision"],
+                "actual_writes": 0,
+                "result": {
+                    "artifact_id": existing["artifact_id"],
+                    "visible_id": existing["visible_id"],
+                    "retained_source": relative,
+                    "source_sha256": body_hash,
+                    "idempotent": True,
+                },
+                "audit": checked,
+                "writes_performed": False,
+            }
 
     def apply(connection: sqlite3.Connection, revision: int) -> dict[str, Any]:
         existing_conversion = connection.execute("SELECT * FROM document_conversion WHERE source_path=?", (relative,)).fetchone()
@@ -323,7 +382,7 @@ def import_document(workspace: Path, *, project_binding: str, source: Path, docu
         )
         return {"artifact_id": assigned_artifact, "visible_id": visible, "document_revision": 1, "retained_source": relative, "source_sha256": body_hash, "idempotent": False}
 
-    return managed_write(workspace, project_binding=project_binding, command="document-import", actor=actor, callback=apply, database=database)
+    return managed_write(workspace, project_binding=project_binding, command="document-import", actor=actor, callback=apply, database=database_path)
 
 
 def _lookup(connection: sqlite3.Connection, identity: str) -> sqlite3.Row:
@@ -426,7 +485,7 @@ def context_capsule(workspace: Path, identity: str, *, byte_budget: int = 16_384
     return {"schema_version": 1, "kind": "tool-shed-document-context", "requested": primary["visible_id"], "byte_budget": byte_budget, "supplied_bytes": used, "documents": included, "relationships": relation_rows, "omitted_ids": omitted, "budget_exceeded_by_primary": used > byte_budget and len(included) == 1, "writes_performed": False}
 
 
-def create_document(workspace: Path, *, project_binding: str, document_type: str, title: str, body: str, lifecycle: str, metadata: dict[str, Any], actor: str, reason: str, database: Path | None = None) -> dict[str, Any]:
+def create_document(workspace: Path, *, project_binding: str, document_type: str, title: str, body: str, lifecycle: str, metadata: dict[str, Any], actor: str, reason: str, preferred_path: str | None = None, database: Path | None = None) -> dict[str, Any]:
     if lifecycle not in LIFECYCLES or not title.strip():
         raise DocumentStoreError("create needs a title and supported lifecycle")
     namespace = _namespace_for(document_type)
@@ -440,7 +499,13 @@ def create_document(workspace: Path, *, project_binding: str, document_type: str
         connection.execute("INSERT INTO artifact VALUES (?, ?, ?, ?, 'sqlite', ?, ?, ?, ?)", (artifact_id, document_type, visible, f"sqlite/documents/{visible}", lifecycle, body_hash, stamp, stamp))
         connection.execute("INSERT INTO document VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)", (artifact_id, visible, namespace, number, title, lifecycle, metadata_json, body_hash, stamp, stamp))
         connection.execute("INSERT INTO document_revision VALUES (?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (str(uuid.uuid4()), artifact_id, title, lifecycle, metadata_json, body, body_hash, actor, reason, revision, stamp))
-        return {"artifact_id": artifact_id, "visible_id": visible, "document_revision": 1}
+        if preferred_path:
+            relative = require_path_within(workspace, workspace / preferred_path).relative_to(workspace).as_posix()
+            connection.execute(
+                "INSERT INTO document_path_alias VALUES (?, ?, ?, 'preferred-view', ?, NULL)",
+                (str(uuid.uuid4()), artifact_id, relative, revision),
+            )
+        return {"artifact_id": artifact_id, "visible_id": visible, "document_revision": 1, "preferred_path": preferred_path}
     return managed_write(workspace, project_binding=project_binding, command="document-create", actor=actor, callback=apply, database=database)
 
 
@@ -797,7 +862,7 @@ def build_parser() -> argparse.ArgumentParser:
     migrate_parser.add_argument("--project-binding", required=True)
     import_parser = commands.add_parser("import-apply")
     import_parser.add_argument("--project-binding", required=True); import_parser.add_argument("--source", required=True); import_parser.add_argument("--type", required=True); import_parser.add_argument("--lifecycle", default="active"); import_parser.add_argument("--actor", required=True); import_parser.add_argument("--reason", required=True); import_parser.add_argument("--assigned-number", type=int)
-    create_parser = commands.add_parser("create"); create_parser.add_argument("--project-binding", required=True); create_parser.add_argument("--type", required=True); create_parser.add_argument("--title", required=True); create_parser.add_argument("--body", required=True); create_parser.add_argument("--lifecycle", default="active"); create_parser.add_argument("--metadata-json", default="{}"); create_parser.add_argument("--actor", required=True); create_parser.add_argument("--reason", required=True)
+    create_parser = commands.add_parser("create"); create_parser.add_argument("--project-binding", required=True); create_parser.add_argument("--type", required=True); create_parser.add_argument("--title", required=True); create_body = create_parser.add_mutually_exclusive_group(required=True); create_body.add_argument("--body"); create_body.add_argument("--body-file"); create_parser.add_argument("--lifecycle", default="active"); create_parser.add_argument("--metadata-json", default="{}"); create_parser.add_argument("--preferred-path"); create_parser.add_argument("--actor", required=True); create_parser.add_argument("--reason", required=True)
     list_parser = commands.add_parser("list"); list_parser.add_argument("--lifecycle"); list_parser.add_argument("--type"); list_parser.add_argument("--limit", type=int, default=100)
     show_parser = commands.add_parser("show"); show_parser.add_argument("identity")
     search_parser = commands.add_parser("search"); search_parser.add_argument("query"); search_parser.add_argument("--limit", type=int, default=20)
@@ -826,7 +891,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.command == "audit": result = audit(workspace, database)
         elif args.command == "migrate": result = migrate(workspace, project_binding=args.project_binding, database=database)
         elif args.command == "import-apply": result = import_document(workspace, project_binding=args.project_binding, source=Path(args.source), document_type=args.type, lifecycle=args.lifecycle, actor=args.actor, reason=args.reason, assigned_number=args.assigned_number, database=database)
-        elif args.command == "create": result = create_document(workspace, project_binding=args.project_binding, document_type=args.type, title=args.title, body=args.body, lifecycle=args.lifecycle, metadata=json.loads(args.metadata_json), actor=args.actor, reason=args.reason, database=database)
+        elif args.command == "create":
+            body = args.body if args.body is not None else require_path_within(workspace, workspace / args.body_file).read_text(encoding="utf-8")
+            result = create_document(workspace, project_binding=args.project_binding, document_type=args.type, title=args.title, body=body, lifecycle=args.lifecycle, metadata=json.loads(args.metadata_json), actor=args.actor, reason=args.reason, preferred_path=args.preferred_path, database=database)
         elif args.command == "list": result = list_documents(workspace, lifecycle=args.lifecycle, document_type=args.type, limit=args.limit, database=database)
         elif args.command == "show": result = show(workspace, args.identity, database=database)
         elif args.command == "search": result = search(workspace, args.query, limit=args.limit, database=database)

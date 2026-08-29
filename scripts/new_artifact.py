@@ -13,6 +13,11 @@ from pathlib import Path
 
 from work_tree import ensure_work_tree
 
+try:
+    import document_store
+except ModuleNotFoundError:  # Older partial snapshots retain file authority.
+    document_store = None  # type: ignore[assignment]
+
 
 ARTIFACTS = {
     "idea": ("templates/idea-brief.md", "work/ideas", "idea"),
@@ -36,6 +41,15 @@ ARTIFACTS = {
     "level-2-inventory": ("templates/existing-project-inventory.md", "work/inventories", "inventory"),
     "decision": ("templates/decision-matrix.md", "work/decisions", "decision"),
     "decision-matrix": ("templates/decision-matrix.md", "work/decisions", "decision"),
+}
+
+DATABASE_TYPES = {
+    "idea": "idea-brief", "idea-brief": "idea-brief", "checklist": "checklist", "ticket": "ticket",
+    "map": "project-map", "project-map": "project-map", "coordination-map": "project-map",
+    "wp": "workpackage", "workpackage": "workpackage", "adr": "adr", "runbook": "runbook",
+    "incident": "incident", "spike": "spike", "deep-research": "spike", "deep-research-spike": "spike",
+    "inventory": "inventory", "project-inventory": "inventory", "existing-project-inventory": "inventory",
+    "level-2-inventory": "inventory", "decision": "decision", "decision-matrix": "decision",
 }
 
 
@@ -69,6 +83,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--workspace", default=".", help="Project workspace root. Defaults to current directory.")
     parser.add_argument("--shed", default=None, help="Path to tool_shed. Defaults to this script's parent.")
     parser.add_argument("--force", action="store_true", help="Overwrite an existing artifact.")
+    parser.add_argument("--project-binding", help="Required when generated-document authority is SQLite.")
+    parser.add_argument("--actor", default="tool-shed")
     return parser.parse_args()
 
 
@@ -78,15 +94,39 @@ def main() -> int:
     shed = Path(args.shed).expanduser().resolve() if args.shed else Path(__file__).resolve().parents[1]
     template_path, destination_dir, prefix = ARTIFACTS[args.kind]
 
-    ensure_work_tree(workspace)
     template = (shed / template_path).read_text(encoding="utf-8")
     destination = workspace / destination_dir / f"{prefix}-{slugify(args.title)}.md"
+    rendered = render_template(template, title=args.title)
+
+    if document_store is not None and document_store.is_authoritative(workspace):
+        if not args.project_binding:
+            raise SystemExit("SQLite-authoritative artifact creation requires --project-binding")
+        status = next((line.split(":", 1)[1].strip().casefold() for line in rendered.splitlines()[:45] if line.startswith("Status:")), "active")
+        lifecycle = {"complete": "completed", "promoted": "active", "approved": "active", "proposed": "active"}.get(status, status)
+        if lifecycle not in document_store.LIFECYCLES:
+            lifecycle = "active"
+        result = document_store.create_document(
+            workspace,
+            project_binding=args.project_binding,
+            document_type=DATABASE_TYPES[args.kind],
+            title=args.title,
+            body=rendered,
+            lifecycle=lifecycle,
+            metadata={"document_type": DATABASE_TYPES[args.kind], "logical_path": destination.relative_to(workspace).as_posix()},
+            actor=args.actor,
+            reason="create Tool Shed artifact",
+            preferred_path=destination.relative_to(workspace).as_posix(),
+        )
+        print(result["result"]["visible_id"])
+        return 0
+
+    ensure_work_tree(workspace)
     destination.parent.mkdir(parents=True, exist_ok=True)
 
     if destination.exists() and not args.force:
         raise SystemExit(f"refusing to overwrite existing artifact: {destination}")
 
-    destination.write_text(render_template(template, title=args.title), encoding="utf-8")
+    destination.write_text(rendered, encoding="utf-8")
     refresh_work_index(workspace, shed)
     print(destination)
     return 0

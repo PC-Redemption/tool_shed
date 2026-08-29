@@ -264,9 +264,15 @@ def check_provider_adapters() -> None:
 
 
 def regenerate_indexes() -> None:
-    step("regenerate indexes")
-    run([sys.executable, "scripts/update_work_index.py", "--workspace", "."])
-    run([sys.executable, "-m", "json.tool", "work/index.json"], quiet=True)
+    import document_store
+
+    if document_store.is_authoritative(ROOT):
+        step("regenerate database-owned lifecycle views")
+        run([sys.executable, "scripts/document_store.py", "--workspace", ".", "render-views"])
+    else:
+        step("regenerate indexes")
+        run([sys.executable, "scripts/update_work_index.py", "--workspace", "."])
+        run([sys.executable, "-m", "json.tool", "work/index.json"], quiet=True)
 
 
 def check_stale_paths() -> None:

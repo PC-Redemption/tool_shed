@@ -3,6 +3,16 @@
 Read this reference for numbered work levels, persistent autonomy, `ts:ship`, campaign execution,
 explicit App Server controls, `ts: help`, `ts: commands`, and `ts:ask`.
 
+## Database-authority dispatch
+
+The file-backed campaign and Program Roadmap commands in this reference apply only while generated
+documents remain file-authoritative. When `document_store.py audit` reports Hybrid schema 2 and
+`storage_mode: hybrid`, inspect campaigns and roadmaps with bounded document-store reads, make
+revisions through guarded edit projections, change lifecycle through `set-lifecycle`, and render
+the disposable lifecycle view for operator browsing. Legacy campaign/roadmap commands deliberately
+refuse after cutover so retained sources cannot become a second authority. Preserve outcome-cycle
+IDs and propagate/reconcile results through the managed Hybrid outcome interface.
+
 ## Persistent Autonomy Route
 
 Treat `ts: autonomy <0-5>` as the canonical command and an exact numeric `ts: approve <0-5>` as its

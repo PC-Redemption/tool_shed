@@ -1,0 +1,90 @@
+# Project Map: Validation Consolidation
+
+Status: complete
+Type: project-map
+Updated: 2026-08-27
+Next Action: none; the work1 outcome is complete
+
+## Purpose
+
+Consolidate Tool Shed validation so each behavior and contract is checked once at
+the lowest useful layer. Keep focused, full, and release qualification distinct,
+fast, and failure-isolating without weakening safety coverage.
+
+## Visual Map
+
+```mermaid
+flowchart LR
+  A[Inventory checks and ownership] --> B[Assign lowest useful layer]
+  B --> C[Focused / Full / Release profiles]
+  C --> D[Time and safety qualification]
+  D --> E[work1 local commit]
+```
+
+## Zoom Levels
+
+30,000 ft:
+
+- Overall outcome: one intentional owner for each validation behavior and contract.
+- Success shape: full validation under 45 seconds and release qualification under
+  60 seconds, with preserved safety coverage and isolated failure reporting.
+
+10,000 ft:
+
+- Major workstreams: contract inventory, profile orchestration, duplicate removal,
+  timing qualification, documentation.
+- Key dependencies: the existing unittest scenarios, provider/manifest checks,
+  snapshot-client isolation, and current-workspace state validators.
+
+1,000 ft:
+
+- Active workpackages: none; the PRM-derived campaign is complete.
+- Active tickets: none; the campaign is the execution unit.
+- Open decisions: none required before implementation; test count is secondary to
+  runtime, behavioral ownership, safety, and diagnosability.
+
+Ground:
+
+- Current next action: none; preserve the measured profiles and ownership boundaries.
+- Owner/context: Codex, autonomy level 3, work1 execution only.
+- Verification: focused/full/release profiles, preserved behavior inventory,
+  full under 45 seconds, release under 60 seconds, then a local commit.
+
+## Workstreams
+
+| Workstream | Status | Lead Artifact | Depends On | Next Action |
+| --- | --- | --- | --- | --- |
+| Contract ownership | done | this map | current test/validator inventory | Preserve the lowest-useful-layer assignments |
+| Validation profiles | done | completed Campaign 099 | contract ownership | Use focused/full/release explicitly |
+| Qualification | done | completed Campaign 099 | validation profiles | Preserve timing and failure-isolation evidence |
+
+## Dependency Notes
+
+- Release qualification includes all preserved behavioral scenarios and safety
+  checks; full is the normal comprehensive development profile; focused is the
+  smallest useful regression profile for validator changes.
+- Provider, manifest, roadmap/work-state, and snapshot checks must not be invoked
+  recursively or repeated merely to prove wrapper wiring.
+
+## Current Navigation
+
+You are here:
+
+- M1 and G1 are complete; Campaign 099 records the qualification evidence.
+
+Do next:
+
+- [x] Deliver and qualify M1: Consolidated Qualification through work1.
+
+Avoid for now:
+
+- Do not reduce counts cosmetically, delete distinct failure scenarios, push,
+  release, deploy, or synchronize the installed skill.
+
+## Related Artifacts
+
+- Work index: `work/README.md`
+- Campaign plan: to be derived from the approved roadmap
+- Source validator: `scripts/validate_tool_shed.py`
+- Unit tests: `tests/`
+- CI workflows: `.github/workflows/`

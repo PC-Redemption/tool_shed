@@ -81,11 +81,13 @@ class DocumentConversionTests(unittest.TestCase):
         )
         self.assertTrue(resumed["imported"])
         self.assertTrue(resumed["idempotent"])
+        revision_before_repeat = document_store.audit(self.workspace, self.database)["current_revision"]
         repeated = document_conversion.apply_plan(
             self.workspace, project_binding=self.binding, manifest=plan, database=self.database, actor="fixture",
         )
         self.assertFalse(repeated["imported"])
         self.assertEqual(len(repeated["idempotent"]), 3)
+        self.assertEqual(document_store.audit(self.workspace, self.database)["current_revision"], revision_before_repeat)
         qualification = document_conversion.qualify(self.workspace, manifest=plan, database=self.database)
         self.assertTrue(qualification["passed"], qualification["findings"])
 

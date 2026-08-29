@@ -345,7 +345,18 @@ class HybridStateTests(unittest.TestCase):
 
     def test_backup_retention_lineage_and_legacy_refusal(self) -> None:
         self.initialize()
-        for _ in range(4):
+        first_backup = hybrid_state.verified_backup(self.workspace, project_binding=self.binding)
+        self.import_pair()
+        restored = hybrid_state.restore_verified_backup(
+            self.workspace,
+            project_binding=self.binding,
+            backup=Path(first_backup["backup"]),
+            expected_sha256=first_backup["sha256"],
+            expected_current_revision=1,
+        )
+        self.assertEqual(restored["restored_revision"], 0)
+        self.assertEqual(restored["classification"], "CLEAN")
+        for _ in range(3):
             hybrid_state.verified_backup(self.workspace, project_binding=self.binding)
         backups = list((self.workspace / ".tool-shed/backups").glob("*.sqlite3"))
         self.assertEqual(len(backups), 3)

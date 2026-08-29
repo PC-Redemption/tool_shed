@@ -8,6 +8,11 @@ The schema-2 interface is `scripts/document_store.py`. Every mutating command re
 project-bound `hybrid-state` binding used by the Hybrid substrate. Ordinary work should use these
 commands, never direct SQL.
 
+At cutover, legacy file-backed artifact, campaign, and Program Roadmap writers refuse generated
+document operations. `new_artifact.py` automatically creates a managed database document when the
+workspace is schema 2 and receives `--project-binding`; it does not add another file below `work/`.
+Schema-1 and database-free workspaces retain the established file behavior.
+
 ## Compact reads
 
 ```bash
@@ -41,6 +46,15 @@ The apply step rejects a changed ID, stale revision, malformed metadata, or unkn
 It appends an immutable revision and updates the current document plus artifact state in one
 transaction. Lifecycle changes and relationships use `set-lifecycle`, `relate`, and `unrelate`
 with the same managed-operation fence.
+
+New structured content can be supplied without shell quoting through `create --body-file`:
+
+```bash
+python3 scripts/document_store.py --workspace . create \
+  --project-binding <binding> --type ticket --title "Example" \
+  --body-file .tool-shed/edits/new-ticket.md --preferred-path work/tickets/ticket-example.md \
+  --actor codex --reason "Create accepted work"
+```
 
 ## Disposable views
 

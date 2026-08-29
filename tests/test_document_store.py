@@ -49,7 +49,7 @@ class DocumentStoreThinSliceTests(unittest.TestCase):
         subprocess.run(["git", "add", "."], cwd=self.workspace, check=True)
         subprocess.run(["git", "commit", "--quiet", "-m", "fixture"], cwd=self.workspace, check=True)
         self.binding = binding(self.workspace)
-        self.database = self.workspace / ".tool-shed/thin.sqlite3"
+        self.database = self.workspace / ".tool-shed/state.sqlite3"
         hybrid_state.initialize(self.workspace, project_binding=self.binding, target=self.database)
         document_store.migrate(self.workspace, project_binding=self.binding, database=self.database)
 
@@ -69,11 +69,13 @@ class DocumentStoreThinSliceTests(unittest.TestCase):
         self.assertEqual(idea["visible_id"], "IDEA-0001")
         self.assertEqual(project_map["visible_id"], "MAP-0001")
         self.assertFalse(idea["idempotent"])
+        revision_before_repeat = document_store.audit(self.workspace, self.database)["current_revision"]
         repeated = document_store.import_document(
             self.workspace, project_binding=self.binding, source=Path("work/ideas/idea-one.md"),
             document_type="idea-brief", lifecycle="active", actor="fixture", reason="repeat", database=self.database,
         )["result"]
         self.assertTrue(repeated["idempotent"])
+        self.assertEqual(document_store.audit(self.workspace, self.database)["current_revision"], revision_before_repeat)
 
         edit_path = Path(".tool-shed/idea-edit.md")
         document_store.export_edit(self.workspace, idea["visible_id"], edit_path, database=self.database)
@@ -168,6 +170,31 @@ class DocumentStoreThinSliceTests(unittest.TestCase):
             actor="fixture", database=self.database,
         )
         self.assertEqual(document_store.related(self.workspace, first["visible_id"], database=self.database)["relationships"], [])
+
+    def test_database_aware_creation_and_legacy_writer_fences(self) -> None:
+        with contextlib.closing(sqlite3.connect(self.database)) as connection:
+            connection.execute("UPDATE state_meta SET storage_mode='hybrid' WHERE id=1")
+            connection.commit()
+        created = subprocess.run(
+            [
+                sys.executable, str(ROOT / "scripts/new_artifact.py"), "ticket", "Database Native Ticket",
+                "--workspace", str(self.workspace), "--project-binding", self.binding,
+            ],
+            text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+        self.assertEqual(created.returncode, 0, created.stdout + created.stderr)
+        visible_id = created.stdout.strip()
+        self.assertRegex(visible_id, r"^TKT-[0-9]{4,}$")
+        self.assertEqual(document_store.show(self.workspace, visible_id, database=self.database)["title"], "Database Native Ticket")
+        self.assertFalse((self.workspace / "work/tickets/ticket-database-native-ticket.md").exists())
+
+        for script, command in (("campaign_queue.py", "status"), ("program_roadmap.py", "overview")):
+            fenced = subprocess.run(
+                [sys.executable, str(ROOT / "scripts" / script), "--workspace", str(self.workspace), command, "--json"],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(fenced.returncode, 2)
+            self.assertIn("authority is SQLite", fenced.stderr)
 
 
 if __name__ == "__main__":

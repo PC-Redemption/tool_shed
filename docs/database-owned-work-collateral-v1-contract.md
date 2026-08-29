@@ -154,6 +154,9 @@ authority and legacy writers refuse them. Every original remains byte-identical 
 path and in a verified external archive through this release and soak. `rollback-export` must render
 all post-cutover database changes into a separate recovery tree and prove semantic parity before an
 older file-authority tool may resume. Database backup and checkpoint rebuild are both qualified.
+The database-aware artifact creator switches to managed document creation and accepts the exact
+project binding; campaign and Program Roadmap file commands fail closed until invoked through the
+managed document route. This prevents a retained source from silently becoming a second writer.
 
 This initiative does not delete, move, rewrite, or mark retained originals disposable. Retirement
 requires a separate owner decision after final reconciliation, with retention duration, inbound-link

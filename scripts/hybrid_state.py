@@ -69,7 +69,17 @@ DB_AUTHORITY_FIELDS = {
     "verification-result",
     "outcome-verdict",
     "reconciliation",
+    "document",
+    "document.body",
+    "document.metadata",
+    "document.lifecycle",
 }
+SUPPORTED_SCHEMA_VERSIONS = {1, 2}
+DOCUMENT_DOMAIN_TABLES = (
+    "document_namespace", "document", "document_revision", "document_path_alias", "document_conversion",
+)
+DOCUMENT_PORTABLE_TABLES = DOCUMENT_DOMAIN_TABLES
+DOCUMENT_CHECKPOINT_RELATIVE = Path("work/state/checkpoints/state-v2.json")
 
 
 class HybridStateError(RuntimeError):
@@ -205,7 +215,8 @@ def table_rows(connection: sqlite3.Connection, table: str) -> list[dict[str, Any
 def domain_digest(connection: sqlite3.Connection) -> str:
     # Workspace lineage is deliberately local to one clone/worktree and is not part of the
     # portable semantic digest. Every other accounted domain table must reproduce exactly.
-    tables = (table for table in DOMAIN_TABLES if table != "workspace")
+    present = {str(row[0]) for row in connection.execute("SELECT name FROM sqlite_schema WHERE type='table'")}
+    tables = (table for table in (*DOMAIN_TABLES, *DOCUMENT_DOMAIN_TABLES) if table != "workspace" and table in present)
     return sha256_bytes(canonical_bytes({table: table_rows(connection, table) for table in tables}))
 
 
@@ -237,7 +248,7 @@ def audit_connection(workspace: Path, connection: sqlite3.Connection) -> dict[st
     user_version = int(connection.execute("PRAGMA user_version").fetchone()[0])
     if application_id != APPLICATION_ID:
         findings.append("application identity does not match Tool Shed hybrid state")
-    if user_version != SCHEMA_VERSION:
+    if user_version not in SUPPORTED_SCHEMA_VERSIONS:
         findings.append(f"unsupported schema version: {user_version}")
 
     try:
@@ -245,6 +256,8 @@ def audit_connection(workspace: Path, connection: sqlite3.Connection) -> dict[st
     except (HybridStateError, sqlite3.DatabaseError) as error:
         findings.append(str(error))
         meta = {}
+    if meta and int(meta.get("schema_version", 0)) != user_version:
+        findings.append("state metadata schema version differs from PRAGMA user_version")
     identity = load_project_identity(workspace)
     expected_workspace_id = stable_uuid(identity["project_id"], f"workspace:{workspace.resolve()}")
     if meta.get("project_id") != identity["project_id"]:
@@ -301,7 +314,7 @@ def audit_connection(workspace: Path, connection: sqlite3.Connection) -> dict[st
         else:
             classification = "CLEAN"
     return {
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": user_version,
         "kind": "tool-shed-hybrid-state-audit",
         "database": DATABASE_RELATIVE.as_posix(),
         "classification": classification,
@@ -476,7 +489,7 @@ def managed_write(
         if exit_audit["classification"] not in {"VALID_DIRTY", "CHECKPOINT_DUE"}:
             raise HybridStateError(f"managed mutation left unexpected state: {exit_audit['classification']}")
         return {
-            "schema_version": SCHEMA_VERSION,
+            "schema_version": int(connection.execute("PRAGMA user_version").fetchone()[0]),
             "kind": "tool-shed-hybrid-state-operation",
             "operation_id": operation_id,
             "revision": revision,
@@ -803,17 +816,18 @@ def verified_backup(workspace: Path, *, project_binding: str) -> dict[str, Any]:
     source = database_path(workspace)
     backup_root = require_path_within(workspace, workspace / BACKUP_RELATIVE)
     backup_root.mkdir(parents=True, exist_ok=True)
-    name = datetime.now(timezone.utc).strftime("state-v1-%Y%m%dT%H%M%SZ.sqlite3")
-    destination = backup_root / name
-    sequence = 1
-    while destination.exists():
-        destination = backup_root / f"{Path(name).stem}-{sequence}.sqlite3"
-        sequence += 1
     with WorkspaceLock(lock_path(workspace)), contextlib.closing(connect(source)) as live:
         live.execute("PRAGMA wal_checkpoint(TRUNCATE)")
         entrance = audit_connection(workspace, live)
         if entrance["classification"] in {"INVALID", "UNJOURNALED"}:
             raise HybridStateError(f"backup refused from {entrance['classification']}")
+        database_schema = int(entrance["schema_version"])
+        name = datetime.now(timezone.utc).strftime(f"state-v{database_schema}-%Y%m%dT%H%M%SZ.sqlite3")
+        destination = backup_root / name
+        sequence = 1
+        while destination.exists():
+            destination = backup_root / f"{Path(name).stem}-{sequence}.sqlite3"
+            sequence += 1
         with contextlib.closing(sqlite3.connect(destination)) as backup:
             live.backup(backup)
             backup.commit()
@@ -822,18 +836,93 @@ def verified_backup(workspace: Path, *, project_binding: str) -> dict[str, Any]:
         if copied["classification"] != entrance["classification"]:
             destination.unlink(missing_ok=True)
             raise HybridStateError("backup verification did not reproduce the live classification")
-    backups = sorted(backup_root.glob("state-v1-*.sqlite3"), key=lambda item: item.stat().st_mtime, reverse=True)
+    backups = sorted(backup_root.glob("state-v*.sqlite3"), key=lambda item: item.stat().st_mtime, reverse=True)
     removed: list[str] = []
     for stale in backups[BACKUP_RETENTION:]:
         stale.unlink()
         removed.append(stale.relative_to(workspace).as_posix())
     return {
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": database_schema,
         "kind": "tool-shed-hybrid-state-backup",
         "backup": destination.relative_to(workspace).as_posix(),
         "sha256": file_sha256(destination),
         "classification": copied["classification"],
         "pruned": removed,
+        "writes_performed": True,
+    }
+
+
+def restore_verified_backup(
+    workspace: Path,
+    *,
+    project_binding: str,
+    backup: Path,
+    expected_sha256: str,
+    expected_current_revision: int,
+) -> dict[str, Any]:
+    """Atomically restore an exact verified local backup after guarded checks."""
+    workspace = resolved_workspace(workspace)
+    require_project_binding(workspace, project_binding, operation=OPERATION)
+    backup_root = require_path_within(workspace, workspace / BACKUP_RELATIVE)
+    source = require_path_within(workspace, backup if backup.is_absolute() else workspace / backup)
+    try:
+        source.relative_to(backup_root)
+    except ValueError as error:
+        raise HybridStateError("restore source must be inside .tool-shed/backups") from error
+    if not source.is_file():
+        raise HybridStateError(f"restore backup does not exist: {source.relative_to(workspace)}")
+    observed_sha256 = file_sha256(source)
+    if observed_sha256 != expected_sha256:
+        raise HybridStateError("restore backup SHA-256 differs from the authorized digest")
+
+    destination = database_path(workspace)
+    temporary = require_path_within(workspace, destination.with_name("state.restore-next.sqlite3"))
+    if temporary.exists():
+        raise HybridStateError(f"restore staging path already exists: {temporary.relative_to(workspace)}")
+
+    with WorkspaceLock(lock_path(workspace)):
+        with contextlib.closing(connect(destination)) as live:
+            entrance = audit_connection(workspace, live)
+            if int(entrance["current_revision"]) != expected_current_revision:
+                raise HybridStateError(
+                    f"live revision changed before restore: expected {expected_current_revision}, found {entrance['current_revision']}"
+                )
+            if entrance["classification"] in {"INVALID", "UNJOURNALED"}:
+                raise HybridStateError(f"restore refused over {entrance['classification']} live state")
+            live.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+
+        with contextlib.closing(connect(source, writable=False)) as archived:
+            archived_audit = audit_connection(workspace, archived)
+            if archived_audit["classification"] in {"INVALID", "UNJOURNALED"}:
+                raise HybridStateError(f"restore source is {archived_audit['classification']}")
+            try:
+                with contextlib.closing(sqlite3.connect(temporary)) as staged:
+                    archived.backup(staged)
+                    staged.commit()
+                staged_audit = audit(workspace, temporary)
+                parity_fields = ("schema_version", "current_revision", "domain_digest", "classification")
+                if any(staged_audit[field] != archived_audit[field] for field in parity_fields):
+                    raise HybridStateError("restored staging database failed backup parity")
+                for suffix in ("-wal", "-shm"):
+                    destination.with_name(destination.name + suffix).unlink(missing_ok=True)
+                _atomic_promote(temporary, destination)
+            except BaseException:
+                temporary.unlink(missing_ok=True)
+                raise
+
+    restored = audit(workspace, destination)
+    parity_fields = ("schema_version", "current_revision", "domain_digest", "classification")
+    if any(restored[field] != archived_audit[field] for field in parity_fields):
+        raise HybridStateError("promoted restore failed final parity")
+    return {
+        "schema_version": restored["schema_version"],
+        "kind": "tool-shed-hybrid-state-restore",
+        "backup": source.relative_to(workspace).as_posix(),
+        "backup_sha256": observed_sha256,
+        "replaced_revision": entrance["current_revision"],
+        "restored_revision": restored["current_revision"],
+        "classification": restored["classification"],
+        "domain_digest": restored["domain_digest"],
         "writes_performed": True,
     }
 
@@ -880,9 +969,19 @@ def write_checkpoint(
 ) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
     require_project_binding(workspace, project_binding, operation=OPERATION)
+    database = database_path(workspace)
+    with contextlib.closing(connect(database, writable=False)) as probe:
+        if int(probe.execute("PRAGMA user_version").fetchone()[0]) == 2:
+            from document_store import write_checkpoint as write_document_checkpoint
+            selected = output or workspace / DOCUMENT_CHECKPOINT_RELATIVE
+            return write_document_checkpoint(
+                workspace,
+                project_binding=project_binding,
+                output=selected,
+                database=database,
+            )
     target = require_path_within(workspace, output or checkpoint_path(workspace))
     target.parent.mkdir(parents=True, exist_ok=True)
-    database = database_path(workspace)
     with WorkspaceLock(lock_path(workspace)), contextlib.closing(connect(database)) as connection:
         entrance = audit_connection(workspace, connection)
         if entrance["classification"] not in {"CLEAN", "VALID_DIRTY", "CHECKPOINT_DUE"}:
@@ -1159,6 +1258,12 @@ def build_parser() -> argparse.ArgumentParser:
     backup_parser = commands.add_parser("backup", help="create and verify one rolling SQLite backup")
     backup_parser.add_argument("--project-binding", required=True)
 
+    restore_parser = commands.add_parser("restore", help="restore an exact verified local SQLite backup")
+    restore_parser.add_argument("--project-binding", required=True)
+    restore_parser.add_argument("--backup", required=True)
+    restore_parser.add_argument("--expect-sha256", required=True)
+    restore_parser.add_argument("--expect-current-revision", type=int, required=True)
+
     checkpoint_parser = commands.add_parser("checkpoint", help="write a deterministic tracked logical checkpoint")
     checkpoint_parser.add_argument("--project-binding", required=True)
     checkpoint_parser.add_argument("--output")
@@ -1225,6 +1330,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         elif args.command == "backup":
             result = verified_backup(workspace, project_binding=args.project_binding)
+        elif args.command == "restore":
+            result = restore_verified_backup(
+                workspace,
+                project_binding=args.project_binding,
+                backup=Path(args.backup),
+                expected_sha256=args.expect_sha256,
+                expected_current_revision=args.expect_current_revision,
+            )
         elif args.command == "checkpoint":
             output = Path(args.output) if args.output else None
             result = write_checkpoint(
