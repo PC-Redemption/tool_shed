@@ -1,10 +1,20 @@
 # Idea Brief: Database-Owned Work Collateral and Lifecycle Views
 
-Status: exploring
+Status: promoted
 Type: idea-brief
 Updated: 2026-08-28
-Next Action: continue brainstorming or promote this brief with `ts: prm idea <idea-id-or-path>`
-Produces:
+Next Action: develop the evidence-gated Program Roadmap from the approved project map
+Produces: work/maps/map-database-owned-work-collateral-and-lifecycle-views.md
+
+## Outcome Loop
+
+Promotion opened governed outcome loop `c56b5826-cb19-4321-8aa3-d16a7f3d425d` with this brief as
+its origin. The loop remains `working` / `open` / `open` while roadmap, implementation, migration,
+qualification, release, and final reconciliation remain undone.
+
+Recheck with `python3 scripts/outcome_reconciliation.py --workspace . --json report --cycle
+c56b5826-cb19-4321-8aa3-d16a7f3d425d`. The database report is the authoritative outcome projection;
+this section keeps the owning loop visible from the originating brief.
 
 ## Current Synthesis
 
@@ -173,6 +183,10 @@ portable tracked checkpoints.
 - Codex impact was made an acceptance boundary: compact queries should reduce orientation tokens,
   but deterministic Markdown/JSON rendering and temporary patchable projections must preserve its
   normal read, edit, diff, and verification workflow.
+- The owner chose to promote the settled synthesis into PRM. Promotion is bounded to capturing and
+  approving faithful project-map direction; implementation and release remain later roadmap work.
+- The approved project map now captures the promoted direction and preserves this brief as its
+  provenance source.
 
 Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
 when the owner chooses to promote it, `promoted` after approved project-map direction captures it,

@@ -196,7 +196,7 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |
 | [work/evidence/evidence-windows-realistic-app-server-budget-v0-29-8.md](work/evidence/evidence-windows-realistic-app-server-budget-v0-29-8.md) | evidence | complete | 2026-08-26 | publish the post-v0.29.8 verifier/preparation repair and upgrade clients only under separate owner authorization | - |
 | [work/focus-areas.md](work/focus-areas.md) | focus-area-catalog | approved | 2026-08-15 | review when an enduring responsibility boundary changes | - |
-| [work/ideas/idea-database-owned-work-collateral-and-lifecycle-views.md](work/ideas/idea-database-owned-work-collateral-and-lifecycle-views.md) | idea-brief | exploring | 2026-08-28 | continue brainstorming or promote this brief with `ts: prm idea <idea-id-or-path>` | - |
+| [work/ideas/idea-database-owned-work-collateral-and-lifecycle-views.md](work/ideas/idea-database-owned-work-collateral-and-lifecycle-views.md) | idea-brief | promoted | 2026-08-28 | develop the evidence-gated Program Roadmap from the approved project map | - |
 | [work/ideas/idea-operator-trust-runtime-enforcement-for-camp.md](work/ideas/idea-operator-trust-runtime-enforcement-for-camp.md) | idea-brief | promoted | 2026-08-27 | use the approved project-map direction and Program Roadmap for delivery | - |
 | [work/ideas/idea-passive-app-server-dogfooding-mode.md](work/ideas/idea-passive-app-server-dogfooding-mode.md) | idea-brief | promoted | 2026-08-27 | none; superseded by operator-trust CAMP runtime enforcement | - |
 | [work/ideas/idea-persistent-autonomy-levels.md](work/ideas/idea-persistent-autonomy-levels.md) | idea-brief | promoted | 2026-08-27 | use the approved revised project-map direction to propose Program Roadmap revision 2 | - |
@@ -204,6 +204,7 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 | [work/ideas/idea-universal-closed-loop-outcome-reconciliation.md](work/ideas/idea-universal-closed-loop-outcome-reconciliation.md) | idea-brief | promoted | 2026-08-28 | none; the governed outcome loop is terminal, satisfied, reconciled, and fully propagated | docs/universal-closed-loop-outcome-reconciliation.md |
 | [work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md](work/incidents/incident-codex-desktop-crash-from-tracked-raw-evidence.md) | incident | complete | 2026-08-14 | none | work/maps/map-tool-shed-evolution.md |
 | [work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md](work/inventories/inventory-human-planning-mechanisms-for-tool-shed.md) | inventory | complete | 2026-08-09 | none | work/spikes/spike-evaluate-human-planning-models-for-tool-shed.md |
+| [work/maps/map-database-owned-work-collateral-and-lifecycle-views.md](work/maps/map-database-owned-work-collateral-and-lifecycle-views.md) | project-map | approved | 2026-08-28 | follow the approved Program Roadmap beginning with M1-CONTRACT-DESIGN-FROZEN | - |
 | [work/maps/map-disposable-completion-watchers-and-hosted-notifications.md](work/maps/map-disposable-completion-watchers-and-hosted-notifications.md) | project-map | deferred | 2026-08-18 | preserve the completed local watcher and wait for a concrete external/non-App-Server notification need before revisiting hosted work | - |
 | [work/maps/map-hybrid-sqlite-operational-state.md](work/maps/map-hybrid-sqlite-operational-state.md) | project-map | approved | 2026-08-28 | follow the approved Program Roadmap beginning with its bootstrap/design milestone | - |
 | [work/maps/map-low-token-cross-platform-campaign-execution.md](work/maps/map-low-token-cross-platform-campaign-execution.md) | project-map | complete | 2026-08-26 | use `ts: next --app-server` for ordinary bounded campaigns on the proven Linux and Windows paths | - |
@@ -216,6 +217,8 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 | [work/maps/map-validation-consolidation.md](work/maps/map-validation-consolidation.md) | project-map | complete | 2026-08-27 | none; the work1 outcome is complete | - |
 | [work/roadmaps/roadmap-completion-watcher-program-r2.md](work/roadmaps/roadmap-completion-watcher-program-r2.md) | program-roadmap | approved | 2026-08-20 | derive campaigns for milestone M1-CONTRACT | none |
 | [work/roadmaps/roadmap-completion-watcher-program.md](work/roadmaps/roadmap-completion-watcher-program.md) | program-roadmap | superseded | 2026-08-20 | none | work/roadmaps/roadmap-completion-watcher-program-r2.md |
+| [work/roadmaps/roadmap-database-owned-work-collateral-and-lifecycle-views-r2.md](work/roadmaps/roadmap-database-owned-work-collateral-and-lifecycle-views-r2.md) | program-roadmap | approved | 2026-08-28 | derive campaigns for milestone M1-CONTRACT-DESIGN-FROZEN | none |
+| [work/roadmaps/roadmap-database-owned-work-collateral-and-lifecycle-views.md](work/roadmaps/roadmap-database-owned-work-collateral-and-lifecycle-views.md) | program-roadmap | superseded | 2026-08-28 | none | work/roadmaps/roadmap-database-owned-work-collateral-and-lifecycle-views-r2.md |
 | [work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md](work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md) | program-roadmap | superseded | 2026-08-28 | none | work/roadmaps/roadmap-hybrid-sqlite-operational-state-r3.md |
 | [work/roadmaps/roadmap-hybrid-sqlite-operational-state-r3.md](work/roadmaps/roadmap-hybrid-sqlite-operational-state-r3.md) | program-roadmap | complete | 2026-08-28 | none | none |
 | [work/roadmaps/roadmap-hybrid-sqlite-operational-state.md](work/roadmaps/roadmap-hybrid-sqlite-operational-state.md) | program-roadmap | superseded | 2026-08-28 | none | work/roadmaps/roadmap-hybrid-sqlite-operational-state-r2.md |
@@ -263,6 +266,6 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 
 ## Summary
 
-- Total artifacts: 244
-- Active artifacts: 1
-- Completed/decided artifacts: 173
+- Total artifacts: 247
+- Active artifacts: 0
+- Completed/decided artifacts: 174
