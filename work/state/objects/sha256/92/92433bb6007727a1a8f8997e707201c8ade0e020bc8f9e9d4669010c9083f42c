@@ -1,0 +1,40 @@
+# Evidence Summary: IDEA-0009 Work5 Release and Reconciliation
+
+Status: complete
+Type: evidence-summary
+Updated: 2026-08-29
+Next Action: none
+Parent: CAMP-0126
+
+## Release Identity
+
+- Release: `v0.38.0`
+- Frozen content commit: `9616d305bf5d29f4d76a876164166c2564e8c0e7`
+- Provenance commit/tag target: `07160bf77e42940b5d0c9d871f045bff80746e6e`
+- Published release: https://github.com/PC-Redemption/tool_shed/releases/tag/v0.38.0
+- Release timestamp: `2026-08-29T16:23:48Z`
+
+## Qualification
+
+- Local release profile passed 400/400 tests in 20.227 seconds.
+- Exact content-SHA Validate run passed all 33 jobs across Ubuntu and Windows, Python 3.11 and current Python, eight shards, and platform launchers: https://github.com/PC-Redemption/tool_shed/actions/runs/33262712875
+- The publication workflow independently verified two-commit provenance and exact-SHA qualification: https://github.com/PC-Redemption/tool_shed/actions/runs/33262860529
+- The provenance main-branch run also passed all 33 jobs: https://github.com/PC-Redemption/tool_shed/actions/runs/33262860471
+- A clean-clone canary reconstructed ignored SQLite state and generated views from the tracked checkpoint, validated, and removed the ephemeral runtime state.
+- The Windows failures encountered before the final candidate exposed and permanently covered clean-clone reconstruction and Git-canonical CRLF/LF historical-evidence hashing.
+
+## Upgrade, Rollback, and Client Proof
+
+- The separately installed maintainer skill was staged, validated, and made byte-identical to the published canonical skill. Rollback backup: `/home/jon/.codex/skills/tool-shed.backup-20260829T162514Z`.
+- A disposable v0.37.0 released client with intentionally dirty pre-existing campaign state caused post-install Doctor rejection and automatic verified rollback. Transaction: `c1b51e7608d15a4b27f6ca9a`; report: `/home/jon/.codex/tool-shed/snapshot-upgrade-transactions/c1b51e7608d15a4b27f6ca9a.json`; the restored v0.37.0 snapshot passed strict integrity.
+- A clean disposable v0.37.0 released client upgraded successfully to v0.38.0 through updater protocol 4 using the official attested focused smoke, preserved work, retained verified rollback archive `/tmp/tool-shed-v037-upgrade-clean-Dwo9iM/workspace/tool_shed.backup-20260829T162642Z.tar`, and passed strict disconnected-snapshot integrity. Transaction: `d36680e0533f233d99edc236`.
+
+## Production and Issue Reconciliation
+
+- A fresh 23-page, 74-command documentation build was byte-identical to `/home/jon/docker/ts.rookaro.com`.
+- Container `ts-rookaro-com` was healthy; public `/`, `/guide/`, and `/ref/` returned 200; routing reported `X-Rookaro-Route: ts.rookaro.com`.
+- GitHub issue #48 was closed with v0.38.0 evidence. Issues #47, #46, #44, and the conditional hosted scope of #42 were explicitly retained and updated as separate residual work rather than silently absorbed into this outcome.
+
+## Gate Disposition
+
+`G6-MIGRATION-UPGRADE-RELEASE-RECONCILED` is satisfied. Historical HPT2 identities remain frozen, terminal ledgers are immutable, new identities are generic, validation is read-only and reproducible from a clean clone, performance policy is stable, release and client boundaries are qualified, and the remaining outcome loops may reconcile upward.

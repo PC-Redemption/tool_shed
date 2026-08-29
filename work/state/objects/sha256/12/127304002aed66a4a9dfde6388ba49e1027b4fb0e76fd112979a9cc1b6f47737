@@ -1,0 +1,54 @@
+# Campaign: Qualify Upgrade, Deploy, and Reconcile Historical Isolation
+
+Status: complete
+Type: campaign
+Updated: 2026-08-29
+Next Action: none
+Campaign ID: qualify-upgrade-deploy-and-reconcile-historical-isolation
+Campaign Number: 126
+Outcome: Prove no-loss migration, rebuild, upgrade, rollback, portability, work-environment deployment, and the remaining release/reconciliation boundary.
+Roadmap: immutable-historical-qualification-and-completed-ledger-isolation
+Roadmap Document: PRM-0024
+Roadmap Revision: 1
+Milestone: M4-UPGRADE-RELEASE-RECONCILED
+Unlocks Gate: G6-MIGRATION-UPGRADE-RELEASE-RECONCILED
+Depends On: CAMP-0125
+Decision: none
+Primary Focus Areas: qualification-release
+Supporting Focus Areas: snapshot-delivery, artifact-workflows, provider-portability
+Completion Gate: migration, fresh rebuild, maintainer and installed-skill upgrade, rollback, Linux and Windows behavior, strict Doctor, exact release provenance, disconnected-client proof, and complete upward reconciliation all pass.
+
+## Scope
+
+- Prove checkpoint rebuild and rollback without identity or history loss.
+- Exercise the dual-role maintainer upgrade and installed-skill synchronization procedure safely.
+- Prove a clean disconnected production-shaped install and an existing-client upgrade.
+- Run Linux and Windows validation appropriate to the changed surfaces.
+- Deploy and verify the configured work environment at work2.
+- Reconcile exact release, client, production, and issue evidence through the root outcome.
+
+## Non-Goals
+
+- No retained historical-file deletion.
+- No unrelated client or workspace mutation.
+
+## App Server Preparation Contract
+
+Release and upgrade qualification used the repository's deterministic GUI/native tooling.
+
+## Work2 Checkpoint
+
+Checkpoint Date: 2026-08-29
+Checkpoint Evidence: implementation commit `a72662f`; EVD-0076; 399-test local release profile passed in 20.298 seconds; documentation site deployed with rollback backup `/home/jon/docker/ts.rookaro.com.backup-20260829T155227Z`; container and public route verification passed.
+
+Residual Work: push and exact-SHA GitHub Linux/Windows CI, release provenance and tag, published release, separately installed maintainer-skill synchronization, disconnected released-client upgrade/rollback proof, strict Doctor after final release state, and terminal upward reconciliation.
+
+## Work5 Completion
+
+Completion Date: 2026-08-29
+
+Evidence: EVD-0077; content commit `9616d305bf5d29f4d76a876164166c2564e8c0e7`; provenance commit `07160bf77e42940b5d0c9d871f045bff80746e6e`; published `v0.38.0`; exact-SHA 33-job Validate run `33262712875`; publication run `33262860529`; provenance run `33262860471`.
+
+The clean-clone and cross-platform evidence defects discovered during release were fixed in the frozen candidate and covered by regression tests. The installed maintainer skill is byte-identical to the published skill with a timestamped rollback backup. A dirty released-client canary proved automatic verified rollback, and a clean v0.37.0 client upgraded successfully to v0.38.0 while preserving work and a verified rollback archive. The fresh documentation build is byte-identical to the healthy live production deployment. GitHub issue review closed #48 and retained #47, #46, #44, and #42 as explicit separate residuals.
+
+Gate `G6-MIGRATION-UPGRADE-RELEASE-RECONCILED` is satisfied. Final strict Doctor and upward outcome propagation are the closing transaction, not residual product work.

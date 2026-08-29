@@ -1,0 +1,187 @@
+# Idea Brief: Immutable Historical Qualification and Completed-Ledger Isolation
+
+Status: complete
+Type: idea-brief
+Updated: 2026-08-29
+Next Action: none
+Produces: MAP-0013
+
+## Current Synthesis
+
+### Idea
+
+Make historical qualification records and completed outcome ledgers durable, immutable evidence rather than live compatibility inputs that ordinary Tool Shed changes must continuously rewrite.
+
+HPT2 remains preserved as the historical qualification case that proved the hybrid database and universal closed-loop work. Its accepted identifiers, imported records, and qualified state become a frozen compatibility fixture. New Tool Shed changes must use generic outcome-cycle identity and must not require another HPT2-specific fixed UUID merely because a shared bootstrap manifest or current database state changed.
+
+Completed reconciliation ledgers must bind to immutable evidence such as a commit, release, or canonical snapshot. Later product work creates a new outcome cycle, correction, or superseding record. It must not reopen or re-hash a completed historical ledger as an incidental side effect.
+
+The same isolation principle should make validation reproducible: functional checks are non-mutating, performance gates use a frozen production-shaped fixture, and live-workspace timing remains diagnostic rather than a release blocker.
+
+### Problem
+
+Recent validation repeatedly exposed deterministic fixed-ID failures after unrelated Tool Shed records were added. The HPT2 compatibility importer consumes mutable shared bootstrap state, while its test fixture expects every imported change ID to have a preassigned UUID. Each new shared record therefore makes a completed historical qualification fixture appear incomplete.
+
+This is not evidence that HPT2 work remains unfinished. It is coupling between historical compatibility machinery and live maintainer state. The coupling causes recurring fixture edits, hash refreshes, confusing HPT2 references in unrelated maintainer work, and CI failures that are repaired one entry at a time.
+
+Related friction appears in two other places:
+
+- completed bootstrap ledgers hash-bind files that still change during normal product evolution;
+- wall-clock validation budgets run against a growing live workspace and can fail from runner variance despite full functional success.
+
+Validator paths that render or refresh projections also blur the boundary between checking state and changing state. Full cross-platform matrices then run even for changes whose risk does not justify them.
+
+### Desired Outcome
+
+An ordinary Tool Shed change can add a generic outcome record, update database-owned collateral, or modify product code without changing any HPT2 fixture or completed historical ledger.
+
+The system preserves and can reproduce the original HPT2 qualification result from a small immutable compatibility fixture. Existing HPT2 UUIDs and provenance remain valid. The live database, bootstrap manifest, or later ledger additions cannot silently expand that fixture.
+
+Completed ledgers remain verifiable through pinned immutable evidence. Corrections are append-only and explicit. Validation never modifies authoritative or generated state. Performance policy distinguishes deterministic regression from shared-runner noise. CI selects the minimum sufficient validation profile from the changed surfaces while retaining scheduled and release-level full coverage.
+
+### Proposed Direction
+
+1. Freeze HPT2 compatibility input.
+
+   - Extract the exact qualified HPT2 records, IDs, relationships, and expected hashes into a checked-in canonical fixture.
+   - Preserve all existing UUID assignments and historical provenance.
+   - Make compatibility tests import this fixture explicitly.
+   - Remove the live hybrid bootstrap manifest as the default HPT2 input.
+   - Add a regression test proving that appending an unrelated live ledger record neither changes the fixture nor requests a new HPT2 fixed ID.
+
+2. Isolate completed ledgers.
+
+   - Treat a reconciled terminal ledger as immutable.
+   - Pin its evidence to an immutable commit, release, checkpoint revision, or canonical snapshot.
+   - Reject incidental mutation of completed records.
+   - Provide explicit correction and supersession paths that append provenance without rewriting history.
+   - Validate current product truth in a new generic cycle when material work occurs after closure.
+
+3. Generalize new identity allocation.
+
+   - Allocate IDs for new Tool Shed outcome cycles through the managed database identity mechanism.
+   - Keep legacy fixed-ID registries only for deterministic historical compatibility fixtures.
+   - Fail with a precise compatibility-boundary error if live data is accidentally routed through a frozen importer.
+
+4. Separate functional validation from timing policy.
+
+   - Use a frozen production-shaped benchmark fixture for release-blocking performance comparisons.
+   - Keep live maintainer timing visible as advisory telemetry.
+   - Prefer relative regression checks against a baseline over a fragile absolute wall-clock ceiling.
+   - Permit a generous hard ceiling only as a runaway or deadlock safeguard.
+
+5. Make validation read-only.
+
+   - Validation may construct projections in an isolated temporary location and compare them.
+   - It must not refresh checked-in or database-owned state.
+   - Any mismatch reports the exact managed command that can perform the authorized update.
+
+6. Add change-aware CI routing.
+
+   - Run focused deterministic tests for documentation, state-only, script, and workflow changes.
+   - Run cross-platform and performance suites when affected surfaces, release policy, or an explicit override requires them.
+   - Retain scheduled full validation so routing mistakes are still discovered.
+
+7. Release and synchronization boundary.
+
+   - Qualify migration, fresh-install, upgrade, rollback, and maintainer behavior before release.
+   - Publish the Tool Shed release first.
+   - Synchronize the separately installed maintainer skill only through the documented maintainer route.
+   - Verify at least one disconnected client path when the compatibility or upgrade contract changes.
+
+### Scope
+
+This idea applies to Tool Shed qualification fixtures, outcome and bootstrap ledgers, database-owned lifecycle records, validation behavior, CI selection, performance qualification, release evidence, and maintainer/client synchronization.
+
+It applies regardless of whether new work begins as an Idea Brief, project map, roadmap, milestone, campaign, direct change, release, or upgrade. Entry points share the generic outcome-cycle contract; none should inherit an initiative-specific historical registry.
+
+### Non-Goals
+
+- Delete HPT2 history, rename it as a current Tool Shed initiative, or discard its evidence.
+- Rewrite existing stable UUIDs.
+- Reopen completed initiatives merely to attach later unrelated work.
+- Introduce a new database or server when the current SQLite authority and checkpoint model suffice.
+- Replace universal closed-loop reconciliation.
+- Hide functional failures behind a relaxed timing policy.
+- Automatically implement, promote, release, or synchronize anything through this brainstorming request.
+
+### Migration and Safety
+
+- Audit every consumer of HPT2 fixed IDs, bootstrap manifests, ledger hashes, projection generation, and timing fixtures.
+- Capture a verified database backup and tracked logical checkpoint before migration.
+- Generate the candidate frozen fixture from the currently qualified state and compare record-for-record, relationship-for-relationship, and hash-for-hash.
+- Switch one explicit importer path at a time while retaining a temporary parity check.
+- Preserve legacy aliases and IDs so existing evidence and historical reports continue to resolve.
+- Pin completed ledgers once through an auditable migration; never silently rewrite them on read.
+- Prove that a new generic cycle can be created without touching compatibility fixtures.
+- Run Linux and Windows functional validation, fresh-clone reconstruction, upgrade, rollback, release-profile smoke, and installed-skill synchronization checks.
+- Keep rollback able to restore the pre-migration database and checkpoint without losing post-checkpoint work.
+
+### KISS Guardrails
+
+- Prefer one small canonical HPT2 fixture over a general historical-fixture service.
+- Prefer current SQLite identities and checkpoints over a new schema unless an explicit invariant cannot be represented.
+- Keep compatibility selection explicit at the caller.
+- Keep completed-ledger correction append-only.
+- Use a small stable benchmark corpus and a simple relative threshold.
+- Route CI from declared changed surfaces rather than building a new orchestration platform.
+- Do not expand this idea into a redesign of every existing fixture.
+
+### Acceptance Signals
+
+- Adding an unrelated bootstrap or outcome record does not alter the HPT2 fixture, require a fixed HPT2 UUID, or refresh HPT2 hashes.
+- Existing HPT2 reports reproduce the same historical result and identity graph.
+- A completed ledger cannot be mutated through a normal managed update.
+- Correction and supersession preserve both the original and new provenance.
+- Validation leaves Git status, database revision, and generated views unchanged.
+- Performance qualification is repeatable on the frozen corpus; live timing variance is reported without false functional failure.
+- Change-aware CI executes the documented minimum profile and scheduled full validation catches routing gaps.
+- Fresh install, maintainer upgrade, released-client upgrade, rollback, checkpoint rebuild, and skill synchronization all preserve state and behavior.
+- Strict Doctor and outcome reconciliation remain healthy after the change.
+
+### Open Questions
+
+- Is the canonical HPT2 fixture best stored as a compact checked-in JSON bundle or as a release-generated artifact? The current KISS preference is a small checked-in canonical fixture.
+- Which immutable evidence forms may close a ledger: commit, release, checkpoint revision, canonical snapshot, or an allowed combination?
+- Should completed-ledger immutability be enforced both by database constraints and managed command policy, or can one layer safely own it?
+- What explicit command creates a correction or superseding cycle?
+- What benchmark corpus and relative regression tolerance are stable across supported runners?
+- Which path classes require the full matrix, and which may use focused validation?
+- Should this ship with the current timing-policy patch or as a following minor release? The architectural change suggests a separate minor unless readiness review proves a smaller compatibility-safe slice.
+
+## Decisions
+
+- Treat recurring HPT2 fixed-ID additions as a structural coupling defect, not ongoing HPT2 development.
+- Preserve HPT2 as immutable historical compatibility evidence.
+- Route new Tool Shed work through generic outcome cycles.
+- Make completed ledgers immutable and pin their evidence to immutable references.
+- Make functional validators non-mutating.
+- Base blocking performance qualification on a frozen production-shaped fixture; treat live timing as advisory.
+- Explore change-aware CI while retaining scheduled full coverage.
+- Keep the solution within the existing hybrid SQLite architecture unless implementation evidence requires more.
+
+## Completion Reconciliation
+
+Released `v0.38.0` satisfies the desired outcome. HPT2 compatibility is an explicit frozen fixture; completed bootstrap ledgers verify immutable committed evidence and reject ordinary mutation; new work uses generic identities; validation reconstructs ignored Hybrid runtime state from the tracked checkpoint in clean clones without persistent mutation; performance uses a frozen production-shaped corpus with advisory live timing and a hard runaway ceiling; and CI retains full cross-platform release coverage.
+
+Exact release, upgrade, rollback, maintainer-skill, disconnected-client, production, issue-review, Doctor, and upward-propagation evidence is recorded in EVD-0077 through CAMP-0126, PRM-0024, and MAP-0013. Later improvements such as provenance-only CI reduction remain separate new work and do not reopen this historical outcome.
+
+## Do Not Forget
+
+- Historical compatibility and current product truth are different authority domains.
+- A completed ledger is evidence of what was accepted and proven then; it is not a mutable index of every later change.
+- A fixture is only frozen when its inputs are explicit. A default path to live state defeats the boundary.
+- Relaxing a time budget can reduce false negatives, but it cannot repair a workload whose size changes with repository history.
+- Read-only validation must also avoid hidden view rendering, checkpoint refresh, revision increments, and timestamp churn.
+- Change-aware CI needs an escape hatch and scheduled full runs.
+- Maintainer checkout, installed skill, and disconnected production client remain separate upgrade targets.
+
+## Exploration Log
+
+### 2026-08-29
+
+- Created from repeated validation failures in which unrelated bootstrap additions required new fixed UUID assignments in an HPT2 compatibility fixture.
+- The discussion identified the root issue as historical fixtures and completed ledgers depending on mutable live Tool Shed state.
+- Recommendations were consolidated around a frozen HPT2 fixture, immutable completed-ledger evidence, generic identities for new cycles, non-mutating validation, stable performance fixtures, change-aware CI, and explicit maintainer/client release synchronization.
+
+Keep the synthesis current and append only useful dated exploration notes. Run readiness review only when explicitly requested or when promotion to PRM is requested.

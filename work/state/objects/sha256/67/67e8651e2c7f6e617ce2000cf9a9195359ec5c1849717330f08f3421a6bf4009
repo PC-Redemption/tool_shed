@@ -1,0 +1,134 @@
+# Program Roadmap: Immutable Historical Qualification and Completed-Ledger Isolation
+
+Status: complete
+Type: program-roadmap
+Updated: 2026-08-29
+Next Action: none
+Roadmap ID: immutable-historical-qualification-and-completed-ledger-isolation
+Roadmap Revision: 1
+Source Idea: IDEA-0009
+Source Project Map: MAP-0013
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 1
+Reviewed Body SHA256: 59e55afe1151d98db72c4a9c9428db70239114b4ba17ec021c7a6f3d25638c6f
+
+## Program Outcome
+
+Tool Shed preserves HPT2 and completed ledgers as immutable historical evidence while all new work
+uses generic identities and read-only validation. Performance and CI qualification operate on
+stable declared inputs, and migration, upgrade, rollback, deployment, release, and reconciliation
+prove the boundary without losing history.
+
+## M1-HISTORICAL-BOUNDARY-FROZEN — Baseline, HPT2 fixture, and terminal ledgers
+
+Status: complete
+Evidence: baseline commit `02703bf`; implementation commit `a72662f`; EVD-0073; CAMP-0123 terminal and reconciled
+
+Outcome: Freeze the accepted starting state, isolate HPT2 compatibility from live bootstrap state,
+and enforce append-only historical-ledger behavior.
+
+Gates:
+
+- `G1-BASELINE-AND-CANDIDATE-BOUNDARY`: the existing validation-timing candidate is dispositioned;
+  exact source commit `02703bf`, database revision/checkpoint 437, and passing 388-test release
+  validation form the clean baseline; later planning and validation do not rewrite ledgers merely
+  to establish a starting state.
+- `G2-HPT2-COMPATIBILITY-FIXTURE-FROZEN`: one compact checked-in fixture preserves every accepted
+  HPT2 UUID and relationship, callers select it explicitly, and unrelated live records cannot
+  expand it or request another fixed ID.
+- `G3-TERMINAL-LEDGER-IMMUTABILITY`: ordinary updates to reconciled terminal ledgers fail precisely;
+  explicit append-only correction and supersession retain original and later provenance.
+
+Candidate campaign: `freeze-hpt2-compatibility-and-terminal-ledgers`.
+
+## M2-GENERIC-READ-ONLY-VALIDATION — New identities and non-mutating checks
+
+Status: complete
+Evidence: implementation commit `a72662f`; EVD-0074; CAMP-0124 terminal and reconciled
+
+Depends on: M1.
+
+Outcome: Route every new entry point through generic identity allocation and make validation
+observational rather than state-changing.
+
+Gate:
+
+- `G4-GENERIC-IDENTITY-AND-READ-ONLY-VALIDATION`: new Idea, map, roadmap, milestone, campaign, and
+  direct-work cycles allocate generic managed IDs without HPT2 registry growth; functional
+  validation leaves Git status, SQLite revision, tracked checkpoint, and lifecycle views unchanged.
+
+Candidate campaign: `generalize-outcome-identities-and-make-validation-read-only`.
+
+## M3-STABLE-PERFORMANCE-CI — Deterministic performance and risk-matched routing
+
+Status: complete
+Evidence: implementation commit `a72662f`; EVD-0075; CAMP-0125 terminal and reconciled
+
+Depends on: M2.
+
+Outcome: Qualify performance against a frozen production-shaped corpus and route CI from declared
+changed surfaces while preserving override and scheduled coverage.
+
+Gate:
+
+- `G5-STABLE-PERFORMANCE-AND-CI-POLICY`: the frozen benchmark and relative regression policy are
+  repeatable; live timing is advisory with a runaway ceiling; path classes select the documented
+  minimum profile; explicit overrides and scheduled full cross-platform validation catch routing
+  mistakes.
+
+Candidate campaign: `stabilize-performance-fixtures-and-change-aware-ci`.
+
+## M4-UPGRADE-RELEASE-RECONCILED — Migration, rollout, and closed loop
+
+Status: complete
+Evidence: EVD-0076; EVD-0077; released `v0.38.0`; exact-SHA Linux/Windows CI, installed-skill synchronization, released-client upgrade/rollback, production verification, and upward reconciliation passed
+
+Depends on: M3.
+
+Outcome: Prove no-loss migration and rollback, qualify the maintainer and disconnected-client
+upgrade paths, deploy and verify the configured work environment, then complete release provenance
+and reconcile every accepted requirement and material change.
+
+Gate:
+
+- `G6-MIGRATION-UPGRADE-RELEASE-RECONCILED`: history and IDs survive migration, fresh rebuild,
+  maintainer upgrade, installed-skill synchronization, disconnected-client upgrade, rollback,
+  Linux and Windows validation, strict Doctor, exact release evidence, and full upward propagation.
+  Work5 completed exact release provenance, publication, production verification, client and
+  rollback proof, and closed-loop reconciliation.
+
+Candidate campaign: `qualify-upgrade-deploy-and-reconcile-historical-isolation`.
+
+Work2 checkpoint: source implementation, local 0.38.0 candidate, 399-test release validation,
+checkpoint rebuild coverage, site deployment, rollback backup, and live route verification passed.
+Push, exact-SHA GitHub Linux/Windows CI, release provenance/publication, installed-skill
+synchronization, disconnected released-client upgrade/rollback, final strict Doctor, and terminal
+upward reconciliation remain outside the authorized endpoint.
+
+Work5 completion: content commit `9616d305bf5d29f4d76a876164166c2564e8c0e7` passed the full 33-job matrix; provenance commit `07160bf77e42940b5d0c9d871f045bff80746e6e` published `v0.38.0`; the installed skill synchronized with rollback backup; released-client rollback and successful upgrade canaries passed; the production documentation bundle remained byte-identical and healthy; EVD-0077 captures exact evidence. No G6 residual remains.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G1-BASELINE-AND-CANDIDATE-BOUNDARY | M1 / same gate |
+| G2-HPT2-COMPATIBILITY-FIXTURE-FROZEN | M1 / same gate |
+| G3-TERMINAL-LEDGER-IMMUTABILITY | M1 / same gate |
+| G4-GENERIC-IDENTITY-AND-READ-ONLY-VALIDATION | M2 / same gate |
+| G5-STABLE-PERFORMANCE-AND-CI-POLICY | M3 / same gate |
+| G6-MIGRATION-UPGRADE-RELEASE-RECONCILED | M4 / same gate |
+
+Transfer count: 6 reviewed gates; 6 mapped gates; 0 dropped.
+
+## Execution Boundary
+
+The authorized work5 boundary completed planning, implementation, validation, publication,
+production verification, maintainer-client synchronization, disconnected-client qualification,
+and reconciliation. This completion grants no continuing release, credential, destructive, or
+cross-workspace authority.
+
+## Deferred Possibilities
+
+- A generalized historical-fixture service.
+- A new database, server, or CI orchestration platform.
+- Redesign of fixtures outside the demonstrated coupling.
