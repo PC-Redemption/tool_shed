@@ -41,7 +41,8 @@ class DashboardReporterTests(unittest.TestCase):
     def test_private_connection_state_uses_restrictive_permissions(self) -> None:
         target = self.workspace / "protected/state.json"
         dashboard_reporter._write_private_json(target, {"schema_version": 1, "credential": "secret"})
-        self.assertEqual(stat.S_IMODE(target.stat().st_mode), 0o600)
+        if os.name != "nt":
+            self.assertEqual(stat.S_IMODE(target.stat().st_mode), 0o600)
         self.assertEqual(json.loads(target.read_text(encoding="utf-8"))["credential"], "secret")
 
     def test_worker_lease_is_released_and_two_events_deliver_once(self) -> None:
@@ -108,7 +109,8 @@ class DashboardReporterTests(unittest.TestCase):
         for target in result["targets"]:
             path = Path(target)
             self.assertTrue(path.is_file())
-            self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o600)
+            if os.name != "nt":
+                self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o600)
             self.assertIn(identity["project_id"], path.name)
         with mock.patch.dict(os.environ, {"XDG_CONFIG_HOME": str(config)}), mock.patch.object(
             dashboard_reporter, "require_project_binding"
@@ -124,12 +126,13 @@ class DashboardReporterTests(unittest.TestCase):
 
     def test_report_payload_contains_only_bounded_aggregate_contract(self) -> None:
         database = self.workspace / ".tool-shed/state.sqlite3"
-        with sqlite3.connect(database) as connection:
+        with contextlib.closing(sqlite3.connect(database)) as connection:
             connection.execute("CREATE TABLE cycle (id TEXT, lifecycle_state TEXT)")
             connection.execute("CREATE TABLE reconciliation (id TEXT, cycle_id TEXT, state TEXT, compared_at TEXT)")
             connection.execute("INSERT INTO cycle VALUES ('cycle-1', 'working')")
             connection.execute("INSERT INTO reconciliation VALUES ('recon-old', 'cycle-1', 'reconciliation-required', '2026-08-28T00:00:00Z')")
             connection.execute("INSERT INTO reconciliation VALUES ('recon-1', 'cycle-1', 'open', '2026-08-29T00:00:00Z')")
+            connection.commit()
         connection_state = self.connected()
         efficiency = {
             "counter_epoch": str(uuid.uuid4()),
