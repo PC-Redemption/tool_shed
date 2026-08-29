@@ -36,6 +36,7 @@ class BootstrapClosureTests(unittest.TestCase):
         subprocess.run(["git", "init", "--quiet"], cwd=self.workspace, check=True)
         subprocess.run(["git", "config", "user.name", "Tool Shed Tests"], cwd=self.workspace, check=True)
         subprocess.run(["git", "config", "user.email", "tests@example.invalid"], cwd=self.workspace, check=True)
+        subprocess.run(["git", "config", "core.autocrlf", "true"], cwd=self.workspace, check=True)
         for relative, content in {
             "work/tool-shed-project.json": json.dumps(
                 {"schema_version": 1, "project_id": str(uuid.uuid4()), "project_name": "fixture"},
@@ -50,7 +51,7 @@ class BootstrapClosureTests(unittest.TestCase):
         }.items():
             path = self.workspace / relative
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(content, encoding="utf-8")
+            path.write_text(content, encoding="utf-8", newline="\r\n")
         subprocess.run(["git", "add", "."], cwd=self.workspace, check=True)
         subprocess.run(["git", "commit", "--quiet", "-m", "fixture"], cwd=self.workspace, check=True)
         self.manifest = self.workspace / "work" / "evidence" / "bootstrap-closure-fixture.json"

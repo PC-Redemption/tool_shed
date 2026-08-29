@@ -95,6 +95,33 @@ def file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def committed_content(workspace: Path, relative: str, commit: str) -> bytes | None:
+    result = subprocess.run(
+        ["git", "show", f"{commit}:{relative}"],
+        cwd=workspace,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    )
+    return result.stdout if result.returncode == 0 else None
+
+
+def reference_sha256(workspace: Path, relative: str, path: Path) -> str:
+    """Hash clean tracked content as Git stores it, independent of checkout EOLs."""
+    clean = subprocess.run(
+        ["git", "diff", "--quiet", "HEAD", "--", relative],
+        cwd=workspace,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    )
+    if clean.returncode == 0:
+        content = committed_content(workspace, relative, "HEAD")
+        if content is not None:
+            return sha256_bytes(content)
+    return file_sha256(path)
+
+
 @functools.lru_cache(maxsize=512)
 def committed_file_matches(workspace_text: str, relative: str, expected_sha256: str, preferred_commit: str) -> bool:
     """Prove recorded bytes exist in reachable immutable Git history."""
@@ -114,14 +141,8 @@ def committed_file_matches(workspace_text: str, relative: str, expected_sha256: 
         return False
     commits.extend(value for value in history.stdout.splitlines() if value not in commits)
     for commit in commits:
-        content = subprocess.run(
-            ["git", "show", f"{commit}:{relative}"],
-            cwd=workspace,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-            check=False,
-        )
-        if content.returncode == 0 and sha256_bytes(content.stdout) == expected_sha256:
+        content = committed_content(workspace, relative, commit)
+        if content is not None and sha256_bytes(content) == expected_sha256:
             return True
     return False
 
@@ -145,7 +166,7 @@ def recorded_reference_matches(
     if not isinstance(expected_sha256, str) or not SHA256_RE.fullmatch(expected_sha256):
         return False
     if not terminal_initiative(payload):
-        return file_sha256(path) == expected_sha256
+        return reference_sha256(workspace, relative, path) == expected_sha256
     preferred = str(payload.get("baseline", {}).get("source_commit", ""))
     return committed_file_matches(str(workspace.resolve()), relative, expected_sha256, preferred)
 
@@ -707,7 +728,7 @@ def refresh_bindings(workspace: Path, payload: dict[str, Any]) -> None:
     for binding in require_objects(payload, "bindings"):
         relative, path = relative_file(workspace, binding.get("path"), label="binding path")
         binding["path"] = relative
-        binding["sha256"] = file_sha256(path)
+        binding["sha256"] = reference_sha256(workspace, relative, path)
 
 
 def refresh_evidence_references(workspace: Path, payload: dict[str, Any]) -> None:
@@ -720,7 +741,7 @@ def refresh_evidence_references(workspace: Path, payload: dict[str, Any]) -> Non
                 raise ClosureError(f"evidence {evidence.get('id', 'missing')} reference must be an object")
             relative, path = relative_file(workspace, reference.get("path"), label="evidence reference")
             reference["path"] = relative
-            reference["sha256"] = file_sha256(path)
+            reference["sha256"] = reference_sha256(workspace, relative, path)
 
 
 def finalize(
@@ -894,7 +915,9 @@ def record_evidence_command(workspace: Path, path: Path, args: argparse.Namespac
     references: list[dict[str, str]] = []
     for value in args.reference:
         relative, reference_path = relative_file(workspace, value, label="evidence reference")
-        references.append({"path": relative, "sha256": file_sha256(reference_path)})
+        references.append(
+            {"path": relative, "sha256": reference_sha256(workspace, relative, reference_path)}
+        )
     record.update(
         {
             "status": args.status,

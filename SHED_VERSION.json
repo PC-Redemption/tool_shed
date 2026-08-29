@@ -71,7 +71,7 @@
     "scripts/app_server_user_state.py": "f8700162bef1a177139649c53fd419a41e9ceabe7cb57639cc06cbae0c97f223",
     "scripts/autonomy_control.py": "fc262a79191a3cb3208393de8db64d20e27205de806b67f2f273fb3d6e2fd859",
     "scripts/benchmark_validation.py": "3fcfd9e42e34e5e430c511736aaf51336e0f3b6e7310f565a5f4e6598d39dc0b",
-    "scripts/bootstrap_closure.py": "bb45906a14cc00c3f682f7395738ec67888a581f649c0212c31fed21f4c9e5cc",
+    "scripts/bootstrap_closure.py": "0734a06e3d448a4e55d4d331d8dfe258cf0955698235f1fc1ae29ec8fd14dfac",
     "scripts/build_docs_site.py": "c6fa8e9331028c46e14fc5bc797fdd299dc301900ba1f39ec5a4730f0feeadda",
     "scripts/campaign_queue.py": "93484f5a8bba6b59357a340f292aab1235f97b4f83475d243a0baea764e57fcd",
     "scripts/check_provider_adapters.py": "f48fe55322bfba4924f0c8d39bae31d954b2e950eb3abe5df0e1773ca1217925",
