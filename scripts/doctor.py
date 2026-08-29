@@ -388,6 +388,14 @@ def inspect(workspace: Path) -> dict[str, Any]:
             "Run `python3 scripts/document_store.py --workspace . --json audit`; recover from the latest verified schema-2 checkpoint before further writes.",
             count=max(1, len(database_documents["audit"]["findings"])),
         ))
+    if database_documents and database_documents["audit"].get("semantic_finding_count", 0):
+        findings.append(_finding(
+            "DOCUMENT_SEMANTIC_DRIFT", "warning",
+            "Database-owned document metadata and outcome state have semantic drift.",
+            "Inspect `python3 scripts/document_store.py --workspace . --json audit`; reconcile missing outcomes and apply guarded document lifecycle/type corrections.",
+            paths=[item["visible_id"] for item in database_documents["audit"]["semantic_findings"]],
+            count=database_documents["audit"]["semantic_finding_count"],
+        ))
 
     if repository is None or repository.resolve() != root:
         findings.append(_finding(

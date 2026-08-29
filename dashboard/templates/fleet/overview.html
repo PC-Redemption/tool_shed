@@ -1,0 +1,26 @@
+{% extends "fleet/base.html" %}
+{% block title %}Fleet overview{% endblock %}
+{% block content %}
+<section class="dashboard-heading">
+  <div><p class="eyebrow">Fleet</p><h1>Projects</h1><p>Current advisory state from explicitly enrolled Tool Shed instances.</p></div>
+  <p class="freshness">Reporting state updates independently from local authority.</p>
+</section>
+<section class="summary-grid" aria-label="Fleet summary">
+  <article><strong>{{ counts.projects }}</strong><span>Projects</span></article>
+  <article><strong>{{ counts.attention }}</strong><span>Need attention</span></article>
+  <article><strong>{{ counts.working }}</strong><span>Working</span></article>
+  <article><strong>{{ counts.stale }}</strong><span>Stale / offline</span></article>
+</section>
+<section class="dashboard-panel">
+  <div class="panel-heading"><h2>Operational relevance</h2><span>{{ projects|length }} shown</span></div>
+  <div class="table-scroll"><table>
+    <thead><tr><th>Project</th><th>State</th><th>Instances</th><th>Last report</th><th>Open outcomes</th></tr></thead>
+    <tbody>{% for project in projects %}<tr>
+      <th><a href="{% url 'fleet:project' project.id %}">{{ project.name }}</a></th>
+      <td><span class="state-badge state-{{ project.attention_state }}">{{ project.attention_state }}</span></td>
+      <td>{{ project.instances.count }}</td><td>{{ project.last_seen|default:"Never" }}</td>
+      <td>{% if project.current_state.open_outcome_count == None %}Unknown{% else %}{{ project.current_state.open_outcome_count }}{% endif %}</td>
+    </tr>{% empty %}<tr><td colspan="5">No instances have reported yet.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endblock %}

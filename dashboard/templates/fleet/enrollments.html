@@ -1,0 +1,15 @@
+{% extends "fleet/base.html" %}
+{% block title %}Enrollment requests{% endblock %}
+{% block content %}
+<section class="dashboard-heading"><div><p class="eyebrow">Trust</p><h1>Enrollment requests</h1><p>Approve only the code shown by the local Tool Shed instance you intend to connect.</p></div></section>
+<section class="dashboard-panel">
+  <div class="table-scroll"><table>
+    <thead><tr><th>Code</th><th>Project</th><th>Instance</th><th>Platform</th><th>Expires</th><th>Decision</th></tr></thead>
+    <tbody>{% for enrollment in pending_enrollments %}<tr>
+      <th><code>{{ enrollment.user_code }}</code></th><td>{{ enrollment.project_name }}</td><td>{{ enrollment.instance_external_id }}</td><td>{{ enrollment.platform }}</td><td>{{ enrollment.expires_at }}</td>
+      <td><form class="decision-form" action="{% url 'fleet:enrollment-decision-ui' enrollment.id %}" method="post">{% csrf_token %}<button name="decision" value="approve" type="submit">Approve</button><button class="secondary" name="decision" value="reject" type="submit">Reject</button></form></td>
+    </tr>{% empty %}<tr><td colspan="6">No pending enrollment requests.</td></tr>{% endfor %}</tbody>
+  </table></div>
+  <p class="dashboard-note">Approval never grants remote control. It issues one reporting-only credential after the local instance polls successfully.</p>
+</section>
+{% endblock %}

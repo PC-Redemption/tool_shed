@@ -1,0 +1,8 @@
+.git
+.tool-shed
+build
+work
+tests
+**/__pycache__
+**/*.py[cod]
+*.sqlite3

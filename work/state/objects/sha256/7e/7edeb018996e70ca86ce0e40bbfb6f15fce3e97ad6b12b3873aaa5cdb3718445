@@ -1,0 +1,76 @@
+# Project Map: Hosted Cross-Project Tool Shed Dashboard
+
+Status: active
+Type: project-map
+Updated: 2026-08-29
+Next Action: execute PRM-0027 milestones through Work5 release and reconciliation
+Source Idea: IDEA-0007
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 9
+Reviewed Body SHA256: 0ba13e103f337c6db24904616a42c4d728402daf73b2d3c71ec17cacbfc2a0d8
+Program Roadmap: PRM-0027
+
+## Purpose
+
+Turn the accepted dashboard direction into one production-verified vertical slice while keeping
+local Tool Shed databases authoritative and the hosted service advisory. Preserve the public site's
+existing routes and presentation while adding authenticated fleet, project, App Server, and Work
+Efficiency views backed by a sanitized reporting API.
+
+## Desired Outcome
+
+An authenticated maintainer can use `https://ts.rookaro.com/dashboard/` to navigate reporting
+projects, identify attention and stale state, inspect outcome reconciliation, review App Server
+health and bounded failure groups, and understand remedial-work measurements with explicit
+coverage. Installed Tool Shed clients enroll only after operator approval and report through a
+durable, idempotent, privacy-bounded outbox. The public documentation remains static and compatible,
+the production application and PostgreSQL data are recoverable, and the entire outcome chain closes.
+
+## First Useful Boundary
+
+- One nginx gateway, one Django application, one PostgreSQL database, and one authenticated maintainer.
+- Public static routes remain public and do not depend on the application.
+- Dashboard project tabs are Overview, Current Work, Outcome Reconciliation, and Health.
+- Fleet views include attention, App Server health, and Work Efficiency with explicit coverage.
+- Instance-initiated enrollment issues one revocable opaque reporter token after approval.
+- The local reporter uses a durable outbox, singleton worker, bounded polling, heartbeats, quiescence,
+  retry, deduplication, and a periodic safety pass.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Contracts and trust | Versioned sanitized payloads, auth choice, enrollment, identity, retention, and explicit unknown semantics | current Idea synthesis |
+| Hosted service | Django/PostgreSQL ingestion, fleet/project query model, authenticated routes, and operational health | contracts and trust |
+| Local reporter | Connect flow, protected credentials, durable outbox, singleton worker, heartbeat/quiescence, counters, and safety recovery | reporting contract |
+| Dashboard experience | Compatible shell, responsive fleet navigation, project tabs, App Server and Work Efficiency screens | hosted query model |
+| Production delivery | Migrations, backup/restore, rollback, canary, release provenance, deployment, and closed-loop reconciliation | all workstreams |
+
+## Readiness Gate Transfer
+
+1. `G1-REPORTING-ALLOWLIST-PRIVACY-CONTRACT` freezes the versioned sanitized payload and local-authority boundary.
+2. `G2-HUMAN-AUTH-AND-INSTANCE-ENROLLMENT` freezes human login and explicit instance trust lifecycle.
+3. `G3-FLEET-PLATFORM-AND-REPORTER-OPERATIONS` freezes supported fleet scale, platforms, reporter cadence, and recovery behavior.
+4. `G4-MATERIAL-EVENT-AND-FAILURE-RETENTION` freezes bounded material-event and failure-group retention.
+5. `G5-PUBLIC-PRESENTATION-DASHBOARD-ACCESSIBILITY` preserves public presentation and proves accessible stable dashboard routes.
+6. `G6-PRODUCTION-RECOVERY-RELEASE-RECONCILIATION` proves backup, restore, rollback, production, canary, release, and origin closure.
+
+## Constraints
+
+- Hosted state is advisory and cannot mutate local Tool Shed state.
+- No prompt, response, source, path, command, credential, raw diagnostic, or heartbeat history upload.
+- Human sessions and instance reporter credentials remain separate and revocable.
+- Public documentation remains unauthenticated static content behind the existing nginx gateway.
+- PostgreSQL is the only hosted database; SQLite remains local authority.
+- Changes to the separate Rookaro router remain outside this repository's editable authority.
+
+## Non-Goals
+
+- Remote mitigation, command execution, campaign control, file editing, or automatic repair.
+- Redis, Celery, Kubernetes, brokers, PostgreSQL HA, replicas, multi-region, or a full SPA.
+- Pinned projects, custom groups, advanced filters, detailed roadmap/history browsing, or SSE.
+
+## Related Artifacts
+
+- Source Idea Brief: IDEA-0007
+- Readiness result digest: 8bc5ec01f934e819020cb70ba8d7a2e56e8129a9ca04b19ba707894b00e67605

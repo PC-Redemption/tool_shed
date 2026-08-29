@@ -600,6 +600,33 @@ current platform and matches its stable `TSU-*` issue code, and emits only allow
 updater, stage-duration, validation/cache, error-class, and rollback fields. It never files an
 issue. Review the draft before separately authorizing `gh issue create`.
 
+## Hosted Dashboard Reporting
+
+The optional hosted dashboard receives only a strict versioned aggregate report. Local Tool Shed
+state remains authoritative, writes continue when the service is unavailable, and the hosted
+service has no remote-control surface.
+
+| Prompt | Usage |
+| --- | --- |
+| `ts: dashboard status` | Show enrollment state, server, instance ID, pending outbox count, and whether a credential is present. Never reveal the credential. |
+| `ts: dashboard connect <server>` | Start device enrollment for the verified current project and show the short approval code. |
+| `ts: dashboard connect poll` | Complete an approved enrollment and retain the one-time reporter credential in protected user-local state. |
+| `ts: dashboard disconnect` | Revoke the active reporter credential. |
+| `ts: dashboard report now` | Enqueue and deliver one controlled current-state report. |
+| `ts: dashboard scheduler plan` | Show the platform-specific 15-minute convergence scheduler without changing user state. |
+| `ts: dashboard scheduler install` | Install the project-scoped Linux systemd user timer, macOS LaunchAgent, or Windows scheduled task. |
+| `ts: dashboard scheduler remove` | Disable and remove the verified current project's safety scheduler. |
+
+Managed Tool Shed document writes enqueue a report when the project is connected. A singleton
+worker retries an idempotent SQLite outbox, heartbeats while active, and reports quiescence after
+two idle hours. The 15-minute safety pass compares a local domain digest so direct or missed writes
+eventually converge. Reporter files are private and user-local; payloads reject unknown fields,
+uncontrolled text, source paths, prompts, raw diagnostics, credentials, and secrets.
+
+Enrollment approval and every hosted dashboard page require an authenticated maintainer with TOTP.
+The public documentation and minimal health endpoint remain unauthenticated. See
+[`dashboard.md`](dashboard.md) for setup, privacy, backup, recovery, and operating procedures.
+
 ## Codex Reasoning Maintenance
 
 These optional routes apply only to Codex:

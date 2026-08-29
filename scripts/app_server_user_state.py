@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import re
 import tempfile
@@ -453,6 +454,7 @@ class AppServerEventStore:
             key: Counter() for key in ("source", "event_type", "role", "outcome", "category")
         }
         included = legacy = malformed = 0
+        included_events: list[dict[str, Any]] = []
         try:
             lines = self.path.read_text(encoding="utf-8").splitlines()
         except FileNotFoundError:
@@ -479,10 +481,55 @@ class AppServerEventStore:
             if recorded < cutoff:
                 continue
             included += 1
+            included_events.append(event)
             for key, counter in counters.items():
                 counter[str(event.get(key, "unknown"))] += 1
         outcomes = counters["outcome"]
         types = counters["event_type"]
+        successes = [
+            str(event["recorded_at"])
+            for event in included_events
+            if event.get("outcome") == "completed"
+        ]
+        failures = [
+            event for event in included_events if event.get("outcome") == "failed"
+        ]
+        grouped_failures: dict[tuple[str, str], dict[str, Any]] = {}
+        for event in failures:
+            raw_category = str(event.get("category", "unknown"))
+            lowered = raw_category.lower()
+            category = next(
+                (
+                    candidate
+                    for candidate, markers in (
+                        ("authentication", ("auth", "credential", "login")),
+                        ("startup", ("startup", "executable", "spawn")),
+                        ("model", ("model",)),
+                        ("transport", ("transport", "network", "timeout", "protocol")),
+                        ("qualification", ("qualif", "version", "denylist")),
+                        ("budget", ("budget", "limit")),
+                        ("unsafe-boundary", ("unsafe", "mutation", "boundary", "journal")),
+                    )
+                    if any(marker in lowered for marker in markers)
+                ),
+                "unknown",
+            )
+            role = str(event.get("role", "unknown"))
+            key = (category, raw_category + ":" + role)
+            recorded_at = str(event["recorded_at"])
+            group = grouped_failures.setdefault(
+                key,
+                {
+                    "signature": hashlib.sha256(key[1].encode()).hexdigest()[:32],
+                    "category": category,
+                    "count": 0,
+                    "first_seen": recorded_at,
+                    "last_seen": recorded_at,
+                },
+            )
+            group["count"] += 1
+            group["first_seen"] = min(group["first_seen"], recorded_at)
+            group["last_seen"] = max(group["last_seen"], recorded_at)
         return {
             "schema_version": 1,
             "kind": "tool-shed-app-server-opportunity-report",
@@ -498,6 +545,11 @@ class AppServerEventStore:
             "reconciliations": outcomes["gui_reconciliation"],
             "skipped_opportunities": outcomes["gui"],
             "counts": {key: dict(sorted(counter.items())) for key, counter in counters.items()},
+            "last_success": max(successes) if successes else None,
+            "last_failure": max((str(event["recorded_at"]) for event in failures), default=None),
+            "failure_groups": sorted(
+                grouped_failures.values(), key=lambda item: (-item["count"], item["signature"])
+            )[:20],
             "usage": {
                 "input_tokens": None,
                 "output_tokens": None,

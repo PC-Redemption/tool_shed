@@ -69,6 +69,9 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
 
+      - name: Install dashboard dependencies
+        run: python -m pip install -r requirements-dashboard.txt
+
       - name: Validate tool_shed
         run: python scripts/validate_tool_shed.py --profile ${{ matrix.profile }} --warn-seconds 60 --max-seconds 300 --jobs ${{ matrix.test_jobs }} --shard-index ${{ matrix.shard }} --shard-count ${{ matrix.shard_count }}
 

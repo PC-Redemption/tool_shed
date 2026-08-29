@@ -172,6 +172,44 @@ class DocumentStoreThinSliceTests(unittest.TestCase):
         self.assertEqual(result["classification"], "INVALID")
         self.assertIn("duplicate active relationship edges: 1", result["findings"])
 
+    def test_semantic_audit_reports_promoted_missing_outcome_and_type_drift(self) -> None:
+        idea = document_store.create_document(
+            self.workspace, project_binding=self.binding, document_type="idea-brief", title="Promoted idea",
+            body="# Promoted idea\n\nStatus: promoted\nType: idea-brief\n", lifecycle="active",
+            metadata={"document_type": "idea-brief"}, actor="fixture", reason="semantic audit",
+            database=self.database,
+        )["result"]
+        def introduce_type_drift(connection: sqlite3.Connection, revision: int) -> dict[str, object]:
+            connection.execute("UPDATE artifact SET type='document' WHERE id=?", (idea["artifact_id"],))
+            return {"artifact_id": idea["artifact_id"], "revision": revision}
+
+        document_store.managed_write(
+            self.workspace, project_binding=self.binding, command="fixture-type-drift",
+            actor="fixture", callback=introduce_type_drift, database=self.database,
+        )
+        result = document_store.audit(self.workspace, self.database)
+        self.assertEqual(result["classification"], "VALID_DIRTY")
+        self.assertEqual(
+            {item["code"] for item in result["semantic_findings"]},
+            {"DOCUMENT_TYPE_DRIFT", "PROMOTED_IDEA_MISSING_OUTCOME"},
+        )
+        listed = document_store.list_documents(
+            self.workspace, document_type="idea-brief", database=self.database
+        )["documents"]
+        self.assertEqual(listed[0]["visible_id"], idea["visible_id"])
+        self.assertEqual(listed[0]["type"], "idea-brief")
+        self.assertEqual(listed[0]["stored_type"], "document")
+        corrected = document_store.set_type(
+            self.workspace, project_binding=self.binding, identity=idea["visible_id"],
+            document_type="idea-brief", expected_revision=1, actor="fixture", reason="repair type",
+            database=self.database,
+        )["result"]
+        self.assertFalse(corrected["idempotent"])
+        self.assertNotIn(
+            "DOCUMENT_TYPE_DRIFT",
+            {item["code"] for item in document_store.audit(self.workspace, self.database)["semantic_findings"]},
+        )
+
     def test_bounded_interface_and_disposable_lifecycle_views(self) -> None:
         first = document_store.create_document(
             self.workspace, project_binding=self.binding, document_type="ticket", title="Repair compact context",

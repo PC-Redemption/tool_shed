@@ -1,0 +1,51 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Dashboard{% endblock %} · Tool Shed</title>
+  <link rel="stylesheet" href="/assets/site.css">
+  <link rel="stylesheet" href="{% static 'fleet/dashboard.css' %}">
+  <script src="{% static 'fleet/dashboard.js' %}" defer></script>
+</head>
+<body class="dashboard-body">
+  <header class="dashboard-header">
+    <a class="dashboard-brand" href="/dashboard/">Tool Shed <span>Dashboard</span></a>
+    <form class="dashboard-search" action="/dashboard/" method="get" role="search">
+      <label class="sr-only" for="project-search">Search projects</label>
+      <input id="project-search" name="q" type="search" placeholder="Search projects" value="{{ request.GET.q }}">
+    </form>
+    <div class="dashboard-account">
+      <span>{{ request.user.get_username }}</span>
+      <form action="{% url 'logout' %}" method="post">{% csrf_token %}<button type="submit">Sign out</button></form>
+    </div>
+    <button class="dashboard-nav-toggle" type="button" aria-controls="fleet-nav" aria-expanded="false">Projects</button>
+  </header>
+  <div class="dashboard-layout">
+    <nav class="dashboard-sidebar" id="fleet-nav" aria-label="Fleet navigation">
+      <a href="{% url 'fleet:overview' %}" {% if request.resolver_match.url_name == 'overview' %}aria-current="page"{% endif %}>All projects</a>
+      <a href="{% url 'fleet:enrollments' %}" {% if request.resolver_match.url_name == 'enrollments' %}aria-current="page"{% endif %}>Enrollment requests</a>
+      <a href="{% url 'fleet:overview' %}?state=attention">Needs attention</a>
+      <a href="{% url 'fleet:overview' %}?state=working">Working</a>
+      <a href="{% url 'fleet:overview' %}?state=stale">Stale / offline</a>
+      <hr>
+      <a href="{% url 'fleet:app-server' %}" {% if request.resolver_match.url_name == 'app-server' %}aria-current="page"{% endif %}>App Server</a>
+      <a href="{% url 'fleet:work-efficiency' %}" {% if request.resolver_match.url_name == 'work-efficiency' %}aria-current="page"{% endif %}>Work Efficiency</a>
+      <hr>
+      {% for nav_project in fleet_projects %}
+        <a href="{% url 'fleet:project' nav_project.id %}">{{ nav_project.name }} <span class="state-dot state-{{ nav_project.attention_state }}" aria-label="{{ nav_project.attention_state }}"></span></a>
+      {% empty %}
+        <p class="dashboard-empty">No reporting projects</p>
+      {% endfor %}
+    </nav>
+    <main class="dashboard-content" id="main-content" tabindex="-1">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  <footer class="dashboard-footer">
+    <span>Tool Shed Dashboard · API v1</span>
+    <a href="/help/">Documentation</a>
+    <span>Sanitized advisory reporting; local instances remain authoritative.</span>
+  </footer>
+</body>
+</html>

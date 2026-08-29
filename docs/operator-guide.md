@@ -617,6 +617,24 @@ state.
 
 ## Common Use Cases
 
+### Connect the optional hosted dashboard
+
+The hosted dashboard is an advisory fleet view; the local database remains authoritative. Begin
+device enrollment, approve the matching short-lived code after signing in with password and TOTP,
+then complete the one-time credential exchange:
+
+```text
+ts: dashboard connect https://ts.rookaro.com
+ts: dashboard connect poll
+ts: dashboard scheduler install
+```
+
+Use `ts: dashboard status` to inspect connection and outbox state without revealing the credential.
+Managed writes wake one singleton background worker, and the project-scoped 15-minute safety pass
+converges missed events. Hosted failure never blocks local work. Use `ts: dashboard disconnect` to
+revoke the reporter. Deployment, privacy, MFA, backup, and recovery details are in
+[`dashboard.md`](dashboard.md).
+
 ### Passively dogfood the qualified App Server path
 
 Enable the user-local preference once, then let eligible work select App Server without repetitive

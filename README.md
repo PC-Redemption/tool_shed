@@ -46,8 +46,11 @@ The reusable `tool_shed/` machinery directory is not:
 - a place for app code
 - a replacement for project docs
 
-No server should be required. Start with plain files, Python scripts, and Git. Provider adapters
-add native instruction discovery without changing the portable artifact model.
+No server is required for Tool Shed operation. Start with plain files, Python scripts, and Git.
+Provider adapters add native instruction discovery without changing the portable artifact model.
+An optional [hosted dashboard](docs/dashboard.md) can receive a strict privacy-bounded advisory
+report from explicitly enrolled instances; it never becomes local authority or a remote-control
+surface.
 
 ## AI Provider Support
 

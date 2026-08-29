@@ -1,0 +1,115 @@
+# Program Roadmap: Hosted Cross-Project Tool Shed Dashboard
+
+Status: approved
+Type: program-roadmap
+Updated: 2026-08-29
+Next Action: execute M1 reporting/trust contracts and hosted foundation
+Source Idea: IDEA-0007
+Source Map: MAP-0016
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 9
+Reviewed Body SHA256: 0ba13e103f337c6db24904616a42c4d728402daf73b2d3c71ec17cacbfc2a0d8
+
+## Program Outcome
+
+Deliver a production-verified authenticated dashboard and reporting API at `ts.rookaro.com` plus a
+portable local Tool Shed reporter. The hosted layer remains advisory, every uploaded field is
+explicitly allowlisted, public documentation remains compatible, operations are recoverable, and
+all child outcomes reconcile through MAP-0016 to IDEA-0007.
+
+## Milestone Sequence
+
+| Milestone | Outcome | Readiness Gates | Required Endpoint | Status |
+| --- | --- | --- | --- | --- |
+| M1-CONTRACTS-TRUST-HOSTED-FOUNDATION | Freeze payload/privacy, identity, enrollment, retention, scale, and operating defaults; implement tested Django/PostgreSQL domain and API foundation | G1, G2, G3, G4 | Work2 | ready |
+| M2-LOCAL-REPORTER-DELIVERY | Implement connect, protected credentials, durable outbox, singleton worker, heartbeat/quiescence, safety pass, App Server counters, and Work Efficiency aggregate | G1, G2, G3, G4 | Work2 | waiting on M1 |
+| M3-DASHBOARD-EXPERIENCE-COMPATIBILITY | Implement authenticated fleet/project navigation, project tabs, App Server and Work Efficiency views, plus public-route visual/accessibility compatibility | G1, G4, G5 | Work2 | waiting on M1 and M2 |
+| M4-RECOVERY-CANARY-RELEASE-RECONCILIATION | Prove migrations, backup/restore, rollback, installed-client canary, release provenance, production health, and complete origin closure | G2, G3, G5, G6 | Work5 | waiting on M1-M3 |
+
+## Gate Decisions and Acceptance
+
+### G1 — Reporting allowlist and privacy
+
+- API payloads use an explicit schema-versioned allowlist; unknown fields fail closed.
+- Project and instance identity are separate; local SQLite remains authoritative.
+- Idempotency keys, monotonic sequence numbers, and counter epochs prevent duplicate or misleading joins.
+- Unknown, partial, stale, reset, or incompatible telemetry is represented explicitly.
+- Prompts, responses, source, paths, commands, credentials, raw diagnostics, and heartbeat history are prohibited.
+
+### G2 — Human authentication and instance enrollment
+
+- Production requires configured OIDC or a maintained MFA-capable Django authentication backend;
+  deployment refuses an unconfigured authentication mode.
+- Human sessions and reporter tokens are separate. Pending enrollment is untrusted, expires after
+  ten minutes, is rate/cap bounded, and requires authenticated approval of the matching code.
+- Reporter tokens are opaque 256-bit values, verifier-only server-side, protected user-local on the
+  client, immediately revocable, rotatable, and replaced through re-pairing.
+
+### G3 — Fleet, platform, and reporter operations
+
+- First release qualifies Linux directly and portable locking/scheduling behavior through Linux,
+  macOS, and Windows tests; unsupported scheduler integration remains explicit.
+- The acceptance load is 100 reporting instances and 25 concurrent active reporters without queue loss.
+- The safety pass defaults to every 15 minutes and is configurable within bounded limits.
+- One-second outbox polling, one-minute active heartbeats, and a two-hour empty-outbox idle exit are fixed.
+
+### G4 — Material-event and failure retention
+
+- Material state changes default to 90 days; sanitized App Server failure groups default to 30 days
+  and at most 100 bounded occurrences per group. Both are configurable and deletion is auditable.
+- Current presence and `last_seen` update in place. One-minute heartbeat history is never retained.
+- Work Efficiency windows preserve counter epochs and coverage; missing usage is unknown, never zero.
+
+### G5 — Public presentation and dashboard accessibility
+
+- Existing public routes, headers, footers, typography, colors, spacing, responsive behavior,
+  documentation navigation, and static delivery remain compatibility baselines.
+- Dashboard tabs are stable routes with reload/history/direct-link behavior and keyboard/focus tests.
+- One tab level, a collapsible desktop navigation pane, narrow-screen drawer, and visible attention
+  summaries are required; no full SPA is introduced.
+
+### G6 — Production recovery, release, and reconciliation
+
+- PostgreSQL receives encrypted daily backups with seven daily and four weekly restore points.
+- Acceptance requires a verified restore into an isolated database, RPO at most 24 hours, RTO at
+  most two hours, and independently tested application rollback with backward-compatible migrations.
+- A disconnected installed client must enroll, report, survive retry/restart, and be revocable.
+- Exact-SHA validation, release provenance, production routes/health, public compatibility, and
+  terminal reconciled Campaign → PRM → Map → Idea outcomes are mandatory.
+
+## Campaign Plan
+
+1. `dashboard-contracts-trust-hosted-foundation` delivers M1.
+2. `dashboard-local-reporter-delivery` delivers M2.
+3. `dashboard-experience-and-public-compatibility` delivers M3.
+4. `dashboard-production-recovery-release-and-reconciliation` delivers M4 and Work5 closure.
+
+## Verification Strategy
+
+- Unit and API contract tests cover allowlists, validation, identity, enrollment, authorization,
+  revocation, idempotency, epochs, unknown semantics, retention, and query projections.
+- Reporter tests cover durable outbox recovery, locking, polling, heartbeat, quiescence, retry,
+  safety convergence, and portable scheduler command generation.
+- Browser and static-site tests cover stable routes, access control, keyboard/focus behavior,
+  responsive navigation, and public presentation compatibility.
+- PostgreSQL migration, backup/restore, application rollback, load, installed-client canary,
+  production health, exact-SHA CI, release, and Hybrid outcome reconciliation close Work5.
+
+## Constraints and Deferrals
+
+- No remote work control, diagnostics invocation, mitigation, automatic repair, or raw-log upload.
+- No new identity provider, custom cryptography, Redis, Celery, Kubernetes, broker, HA database,
+  replica, multi-region topology, full SPA, SSE, or heartbeat history.
+- Existing Rookaro router ownership remains external; this repository changes only its known
+  `ts.rookaro.com` deployment target and documents any required route contract.
+
+## Readiness Gate Transfer
+
+- `G1-REPORTING-ALLOWLIST-PRIVACY-CONTRACT`
+- `G2-HUMAN-AUTH-AND-INSTANCE-ENROLLMENT`
+- `G3-FLEET-PLATFORM-AND-REPORTER-OPERATIONS`
+- `G4-MATERIAL-EVENT-AND-FAILURE-RETENTION`
+- `G5-PUBLIC-PRESENTATION-DASHBOARD-ACCESSIBILITY`
+- `G6-PRODUCTION-RECOVERY-RELEASE-RECONCILIATION`
+
+Readiness result digest: 8bc5ec01f934e819020cb70ba8d7a2e56e8129a9ca04b19ba707894b00e67605

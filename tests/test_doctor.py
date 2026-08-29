@@ -257,6 +257,40 @@ class DoctorTests(unittest.TestCase):
             self.assertNotIn("WORK_INDEX_STALE", codes)
             self.assertNotIn("CAMPAIGN_RECONCILIATION_DECISION", codes)
 
+    def test_schema2_doctor_warns_about_semantic_document_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary)
+            self.install_workspace(workspace)
+            identity = json.loads((workspace / "work/tool-shed-project.json").read_text(encoding="utf-8"))
+            binding = hashlib.sha256(
+                b"tool-shed-binding-v1\0"
+                + identity["project_id"].encode()
+                + b"\0"
+                + str(workspace.resolve()).encode()
+                + b"\0hybrid-state\0"
+            ).hexdigest()[:24]
+            database = workspace / ".tool-shed/state.sqlite3"
+            hybrid_state.initialize(workspace, project_binding=binding, target=database)
+            document_store.migrate(workspace, project_binding=binding, database=database)
+            document_store.create_document(
+                workspace,
+                project_binding=binding,
+                document_type="idea-brief",
+                title="Unreconciled promoted idea",
+                body="# Unreconciled promoted idea\n\nStatus: promoted\nType: idea-brief\n",
+                lifecycle="active",
+                metadata={"document_type": "idea-brief"},
+                actor="fixture",
+                reason="semantic Doctor fixture",
+                database=database,
+            )
+
+            report = doctor.inspect(workspace)
+            findings = {item["code"]: item for item in report["findings"]}
+            self.assertIn("DOCUMENT_SEMANTIC_DRIFT", findings)
+            self.assertEqual(findings["DOCUMENT_SEMANTIC_DRIFT"]["classification"], "warning")
+            self.assertEqual(findings["DOCUMENT_SEMANTIC_DRIFT"]["sample_paths"], ("IDEA-0001",))
+
 
 if __name__ == "__main__":
     unittest.main()

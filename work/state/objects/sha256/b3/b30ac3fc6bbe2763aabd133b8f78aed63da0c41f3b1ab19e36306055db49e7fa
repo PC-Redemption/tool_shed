@@ -1,0 +1,28 @@
+# Campaign: Dashboard Experience and Public Compatibility
+
+Status: active
+Type: campaign
+Updated: 2026-08-29
+Next Action: implement authenticated fleet/project pages, App Server and Work Efficiency screens, and public compatibility tests
+Campaign ID: dashboard-experience-and-public-compatibility
+Outcome: Deliver the accessible authenticated dashboard shell and its fleet/project views while preserving the existing public documentation presentation and static routes.
+Roadmap: hosted-cross-project-tool-shed-dashboard
+Roadmap Document: PRM-0027
+Roadmap Revision: 1
+Milestone: M3-DASHBOARD-EXPERIENCE-COMPATIBILITY
+Unlocks Gates: G1-REPORTING-ALLOWLIST-PRIVACY-CONTRACT, G4-MATERIAL-EVENT-AND-FAILURE-RETENTION, G5-PUBLIC-PRESENTATION-DASHBOARD-ACCESSIBILITY
+Depends On: dashboard-contracts-trust-hosted-foundation, dashboard-local-reporter-delivery
+Completion Gate: Authenticated fleet/project navigation, attention summaries, four project tabs, App Server and Work Efficiency drilldowns, stable routes, browser history, keyboard/focus behavior, responsive navigation, and existing public-route visual/static compatibility tests pass.
+
+## Scope
+
+- Reuse the public site's design tokens without introducing a full SPA.
+- Keep summary and attention state visible above one URL-addressable tab level.
+- Add fleet, project, instance, version/platform, and bounded sanitized failure-group views.
+- Display Work Efficiency tokens beside coverage and keep partial/unknown data explicit.
+
+## Safety Boundaries
+
+- Public documentation stays unauthenticated and independent of Django availability.
+- Dashboard is informational; no mitigation button or remote control.
+- Long lists are bounded/paged and detailed data is loaded only for the active route.

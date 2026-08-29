@@ -23,7 +23,9 @@ MANIFEST = ROOT / "SHED_VERSION.json"
 CODEX_SKILL_CATALOG = ROOT / "adapters" / "codex-skill-releases.json"
 TRACKED_ROOT_FILES = (
     ".gitattributes",
+    ".dockerignore",
     "README.md",
+    "requirements-dashboard.txt",
     "selection.md",
     "conventions.md",
     "existing-projects.md",
@@ -33,6 +35,7 @@ TRACKED_GLOBS = (
     "adapters/**/*.json",
     "adapters/**/*.md",
     "docs/*.md",
+    "dashboard/**/*",
     "scripts/*.py",
     "scripts/*.ps1",
     "scripts/*.sh",
@@ -69,7 +72,13 @@ def tracked_paths() -> list[Path]:
     paths = {ROOT / relative for relative in TRACKED_ROOT_FILES}
     for pattern in TRACKED_GLOBS:
         paths.update(ROOT.glob(pattern))
-    return sorted(path for path in paths if path.is_file())
+    return sorted(
+        path
+        for path in paths
+        if path.is_file()
+        and "__pycache__" not in path.parts
+        and path.suffix not in {".pyc", ".pyo"}
+    )
 
 
 def current_hashes(*, overrides: dict[Path, bytes] | None = None) -> dict[str, str]:

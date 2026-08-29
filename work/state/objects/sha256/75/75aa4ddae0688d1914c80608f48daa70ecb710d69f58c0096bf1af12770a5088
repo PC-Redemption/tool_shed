@@ -1,0 +1,748 @@
+# Idea Brief: SQLite-Backed Tool Shed Operational State
+
+Status: completed
+Type: idea-brief
+Updated: 2026-08-29
+Next Action: none; historical outcome is terminal, satisfied, and reconciled
+Produces: work/maps/map-hybrid-sqlite-operational-state.md
+Completion Evidence: work/evidence/evidence-hybrid-sqlite-disconnected-production-canary.md; SHED_VERSION.json
+Outcome Loop: 70cfd97b-80f0-45c1-9200-523046b82a12
+Disposition: satisfied
+
+## Current Synthesis
+
+### Idea
+
+Introduce a hybrid SQLite-backed operational state model for Tool Shed. Store generated,
+relational, and frequently queried work state in a local database while retaining files where they
+are the best interface for the operator, Codex, Git review, import, portability, or recovery.
+
+SQLite is a candidate home for stable cycle and artifact identities, relationships, lifecycle
+state, revisions, milestones, gates, campaigns, material changes, evidence references, outcome
+verdicts, reconciliation state, queue/readiness calculations, generated projections, and historical
+events. The filesystem would retain imported owner/source material, canonical product docs, Tool
+Shed machinery and schemas, compact Codex-efficient cycle capsules, small evidence manifests, and
+deterministic exports needed to inspect or reconstruct the database.
+
+This is a storage-architecture idea, distinct from the universal closed-loop reconciliation idea.
+The reconciliation concept defines what must be accounted for; this idea explores how Tool Shed can
+store, query, transact, migrate, and report that state efficiently and reliably. The ideas remain
+separate for traceability but are deliberately sequenced together: the minimum SQLite substrate is
+implemented first, and closed-loop reconciliation is its first feature and qualification case.
+
+### Why It Matters
+
+Tool Shed's file-first design has demonstrated concrete pressure points. Stable references are tied
+too closely to paths; moving completed artifacts or adding numbers to established filenames creates
+reference maintenance. Generated indexes, queue projections, large roadmaps, and repeated state
+fragments duplicate information. Cross-artifact queries and historical reporting require scanning
+and reparsing many Markdown files, while referential integrity and atomic multi-record updates must
+be recreated in scripts.
+
+The current workspace gives the concern a real scale signal rather than a theoretical one: `work/`
+contains roughly 225 files and 2.7 MB, primarily Markdown, with generated indexes and some roadmaps
+already large enough to consume meaningful agent context. The main opportunity is not saving disk
+space. It is improving identity stability, transaction safety, graph integrity, queryability,
+historical audit, and the amount of context Codex must load for one cycle.
+
+### Desired Outcome
+
+Tool Shed can address work by immutable IDs independent of filenames, update related state in one
+transaction, and answer current or historical questions without reparsing the complete workspace.
+Codex receives a small, purpose-built cycle capsule instead of large generated documents, while the
+operator retains readable source material and useful reports.
+
+The design has one explicit authority contract rather than two competing sources of truth. It is
+portable without a database server, versioned through schema migrations, recoverable after
+corruption or loss, and able to prove that an export or capsule represents the database state from
+which it was generated. Adoption is incremental and reversible: no existing work is deleted until
+round-trip and rebuild evidence demonstrates that the new representation is complete.
+
+The first implementation is intentionally smaller than the full hybrid vision. It supplies only
+the stable identity, relationship, revision/event, transaction, evidence-reference, migration,
+export, and recovery capabilities required to implement and qualify one complete outcome loop.
+Closed-loop reconciliation then becomes the proving workload before additional Tool Shed state is
+moved into database ownership.
+
+Token and context efficiency is a required outcome, not an assumed consequence of using SQLite.
+The hybrid design must demonstrate that representative state-heavy Tool Shed operations load
+materially less context while returning the same or better semantic result, provenance, authority
+boundary, and evidence coverage as the file-first implementation.
+
+## Candidate Architecture
+
+### Storage Boundary
+
+Candidate database-owned state:
+
+- workspace, cycle, artifact, and immutable public IDs;
+- artifact revisions and typed relationships;
+- lifecycle state, dependencies, queue order, readiness, and ownership links;
+- roadmaps, milestones, gates, campaigns, and their stable definitions;
+- requirements, accepted changes, decisions, and reconciliation mappings;
+- evidence references, verification results, outcome verdicts, and closure state;
+- append-only or auditable events needed for historical reporting;
+- generated index, overview, queue, and status projections.
+
+Candidate file-owned surfaces:
+
+- imported and owner-authored source material;
+- README and `docs/` current product truth;
+- Tool Shed skill, templates, scripts, database schema, and migrations;
+- compact, Codex-efficient cycle capsules and operator-readable reports;
+- small versioned evidence manifests and external raw evidence references;
+- deterministic recovery/export material sufficient for the chosen portability promise.
+
+### Authority And Portability
+
+Avoid a design in which Markdown and SQLite are both editable authorities for the same field. A
+promising contract is: SQLite owns operational state; imports are immutable or explicitly ingested;
+capsules and reports are generated projections; a state digest connects every projection to its
+database revision; and deterministic exports provide the agreed recovery and Git-review surface.
+
+A candidate layout is:
+
+```text
+.tool-shed/state.sqlite3          ignored local operational database
+work/imports/                     imported or owner-authored inputs
+work/cycles/<stable-id>.md        compact Codex/operator cycle capsules
+work/evidence/                    small manifests and durable evidence summaries
+work/exports/                     deterministic portable snapshots, if selected
+work/index.md                     generated operator navigation, if still useful
+```
+
+An ignored database avoids Git's poor merge behavior for SQLite binaries, but it is acceptable only
+if the chosen portable records can rebuild it to the promised fidelity. If exact reconstruction is
+not practical, backup and synchronization policy must be designed explicitly rather than implied.
+
+### Managed Access, Direct SQL, And Checkpoint Promotion
+
+Treat the ignored live database like a Git working tree, not like a committed historical record.
+It may contain useful current work that has not yet been validated or promoted. The tracked logical
+checkpoint is the durable, reviewable state that can be restored in another clone. Merely opening
+or querying the database does not create a new semantic revision or checkpoint; a write does.
+
+Official Tool Shed operations should use controlled domain scripts or one shared state-access
+library instead of constructing ad hoc SQL. The design must nevertheless detect and safely contain
+writes that bypass those routes. Every mutable domain table should participate in database-enforced
+revision and dirty-state accounting, preferably through triggers that cannot be omitted by an
+ordinary caller. The database should persist at least:
+
+- `current_revision`;
+- `last_verified_revision`;
+- `last_checkpoint_revision`;
+- `dirty` and `checkpoint_pending` state;
+- an append-only structural change ledger identifying table, row, operation, time, and whether the
+  write was associated with a recognized managed operation;
+- an `unmanaged_write_detected` signal; and
+- a schema/trigger digest capable of detecting disabled, removed, or bypassed accounting.
+
+Every managed script begins with an entrance audit before it performs or relies on a lifecycle
+mutation. The audit verifies project identity and binding, SQLite integrity and foreign keys,
+schema/trigger digest, revision continuity, the change ledger, domain invariants, and checkpoint
+policy. It returns one explicit state:
+
+- `CLEAN`: no unverified or uncheckpointed changes;
+- `VALID_DIRTY`: changes are structurally valid but no checkpoint boundary is due;
+- `CHECKPOINT_DUE`: valid changes reached an explicit promotion boundary;
+- `UNMANAGED_REVIEW`: bypass writes were detected and require exact reconciliation;
+- `INVALID`: integrity or domain invariants fail; or
+- `UNJOURNALED`: state changed without complete revision-ledger evidence.
+
+The next managed access may discover and assess direct SQL changes, but it must not silently bless
+them. It reports the exact affected records and invariants, accepts and checkpoints only changes
+that are unambiguous and covered by current authority, asks for disposition when semantics or
+ownership are unclear, and rejects or restores invalid state. Unexplained revision or schema drift
+blocks automatic lifecycle mutation.
+
+Checkpoint cadence is independent of access cadence. Keep frequent rolling SQLite backups in an
+ignored local recovery area, while generating a tracked deterministic logical checkpoint only at a
+meaningful boundary such as cycle or milestone closure, completed reconciliation, schema migration,
+Tool Shed upgrade or release, an explicit operator request, or a defined size/age threshold. A
+managed command may therefore validate dirty state without producing a Git artifact. Tool Shed may
+write a checkpoint file when policy requires one; normal repository workflow decides when that
+file is committed.
+
+This makes bypass survivable, not harmless. Direct SQL can affect later reads and actions before an
+audit runs. "No harm, no foul" means only that an untracked live-database write does not immediately
+spam Git history; it does not make that write accepted durable truth.
+
+### Portable Collaboration And Worktree Contract
+
+Each Git worktree or clone owns its own ignored live database. A live SQLite file is never shared
+between worktrees, attached to a different branch, or treated as a Git merge surface. Imported
+owner/source files remain authoritative inputs; database projections are read-only outputs; and a
+manual projection edit fails closed until it is either discarded or explicitly re-ingested through
+an allowed import route.
+
+The tracked logical checkpoint/event representation is the collaboration and recovery surface. It
+must be deterministic, canonically ordered, schema-versioned, content-addressed, and bound to the
+project identity, source commit or source-tree digest, database schema, and database revision. The
+exact serialization format remains a PRM decision, but it must support useful Git review and exact
+rebuild without becoming a second editable authority.
+
+On checkout, branch switch, pull, merge, or worktree creation, Tool Shed compares the local database
+lineage with the tracked checkpoint and current source digest. A match may continue. A stale or
+foreign lineage requires rebuild or explicit reconciliation before mutation. Merge reconciliation
+uses stable record and event IDs, reports competing semantic changes, and never resolves a conflict
+through path order, timestamp-only last-write-wins, or silent database reuse.
+
+### Candidate Data Model
+
+Initial entities to explore include `workspace`, `cycle`, `artifact`, `artifact_revision`,
+`relationship`, `requirement`, `material_change`, `decision`, `roadmap`, `milestone`, `gate`,
+`campaign`, `dependency`, `evidence`, `verification`, `outcome_verdict`, `reconciliation`, `event`,
+`import`, and `export`. The model should use foreign keys, explicit schema versions, stable public
+IDs, timestamps with defined semantics, and migrations that are testable in both directions where
+feasible.
+
+### Approved Phase-One Boundary
+
+The first implementation owns only the state needed to prove identity, portability, migration, and
+one complete closed loop:
+
+- workspace, cycle, artifact, and public IDs;
+- an import registry with source paths, hashes, provenance, and unresolved parsing records;
+- typed relationships and material-change links;
+- revisions, structural change records, and events;
+- evidence references and verification results, without absorbing raw evidence;
+- migration, backup, export, rebuild, and checkpoint ledgers; and
+- the minimum requirement, outcome-verdict, and reconciliation records required by the HPT2
+  closed-loop qualification.
+
+Phase one explicitly excludes full campaign authority, roadmap or milestone authority, replacement
+of every generated index or queue, general Markdown body storage, broad historical normalization,
+and retirement of legacy files. Those domains remain file-authoritative until the first vertical
+slice, recovery proof, context/query benchmarks, and soak results justify a later expansion.
+
+## Bootstrap Closed-Loop Enforcement
+
+The hybrid initiative cannot wait for its own closed-loop feature to determine whether it was
+implemented completely. Use a temporary file-, Git-, and script-backed bootstrap closure protocol
+as the independent authority for this program. It is a compatibility implementation of the
+minimum closed-loop vocabulary, not a second long-term tracker.
+
+Before database implementation begins, PRM produces a tracked bootstrap closure manifest bound to
+the approved Idea Brief, project map, roadmap revision, source commit, and stable initiative ID.
+For every accepted requirement it records the origin, intended outcome, evidence gate, current
+disposition, and accountable milestone. During development, every material change receives a
+stable change ID and records what requirement or design decision changed, why, who or what
+authorized it, what superseded text it affects, and which evidence must be rerun. Nothing is erased
+to make the final result resemble the original plan.
+
+A small deterministic tool surface should operate the bootstrap contract, for example:
+
+```text
+bootstrap_closure.py baseline
+bootstrap_closure.py record-change
+bootstrap_closure.py verify
+bootstrap_closure.py report
+```
+
+`verify` fails when a requirement, accepted material change, evidence result, migration item,
+upgrade target, or final verdict is missing, ambiguous, stale, or unsupported. The repository full
+validator, release profile, and database-aware updater must invoke the read-only verification gate.
+The release cannot be qualified while the bootstrap report contains an unresolved item; an explicit
+exception is a recorded disposition with authority and consequence, not a silent waiver.
+
+The bootstrap manifest and report remain tracked, human-readable recovery evidence. After the
+database-backed closed-loop vertical slice exists, it must import the exact bootstrap record and
+reproduce the same requirement coverage, material-change history, evidence mapping, and final
+verdict in a fresh clone. Only after that parity gate may database-backed reconciliation become the
+authority for later initiatives. This makes the hybrid change self-hosting without letting the new
+implementation certify itself before an independent mechanism has qualified it.
+
+## Maintainer-First Upgrade And Rollout
+
+The canonical `/home/jon/docker/tool_shed` checkout is both the maintainer source tree and a Tool
+Shed client, so it must not use the disconnected-snapshot installer or `update_snapshot.py` against
+itself. Source changes arrive through normal Git development in this checkout. Its project state is
+converted separately by the new migration tooling under the no-data-loss protocol.
+
+Use this rollout order:
+
+1. Develop the new schema, bootstrap closure gate, migration tools, updater protocol, and tests in
+   the canonical checkout while its existing file state remains authoritative.
+2. Rehearse the exact maintainer conversion in a disposable clone or staged copy using an assigned-ID
+   manifest, external archive, shadow database, parity checks, fresh-clone rebuild, and rollback.
+   Repeat from a clean source state until the result is deterministic.
+3. Convert the live maintainer workspace as the first authoritative hybrid workspace. Revalidate
+   the exact source token, keep all original files, use a shadow database and no-write validation
+   window, and retain a verified rollback path. The disposable clone is the first rehearsal; the
+   maintainer is the first real upgrade.
+4. Run the complete bootstrap closure reconciliation against the live result, qualify the exact
+   content commit across supported platforms, and publish through the existing two-commit Tool Shed
+   release process.
+5. After publication, synchronize the separately installed Codex skill from the verified canonical
+   release using the maintainer-workspace procedure. Do not deploy an unpublished candidate merely
+   to eliminate expected development drift.
+6. Upgrade one disposable or low-risk disconnected client workspace through the released external
+   updater as the first client canary. Require exact file/database backup, migration, reconstruction,
+   rollback, and post-upgrade closed-loop results before broader rollout.
+7. Expand to other installed workspaces only after the maintainer soak and client canary pass.
+
+This release requires a new updater protocol because the current protocol does not own a live
+database lifecycle. An older updater must refuse before mutation and direct the operator to a
+current released updater outside the stale workspace. The new updater transaction manifest must
+declare the database, WAL/SHM handling, tracked checkpoint/export surfaces, affected legacy files,
+provider guidance, and installed-skill target separately. It uses the SQLite backup API, builds and
+validates a shadow database, promotes it atomically, verifies post-upgrade projections and closure,
+and restores the complete declared surface on failure.
+
+New installations initialize or rebuild their local database only after the released snapshot and
+tracked portable state are verified. Upgrades preserve the existing public project identity and
+assigned artifact IDs. Downgrade is allowed only when a verified reverse export can reproduce the
+older file-authority contract without losing post-cutover changes; otherwise the tool refuses and
+reports the blocking schema or state.
+
+## PRM Decision And Evidence Gates
+
+### Before Implementation
+
+- approve the entity/field authority and edit contract;
+- select the exact deterministic checkpoint/event format;
+- settle database location, per-worktree ownership, branch/rebuild behavior, and backup policy;
+- freeze the phase-one schema and minimum closed-loop vocabulary; and
+- establish the bootstrap closure manifest, change-recording procedure, validator, and release gate.
+
+### Before Maintainer Cutover
+
+- pass byte and semantic parity against the exact maintainer source state;
+- pass fresh-clone rebuild, branch/worktree, concurrency, interrupted-write, and interrupted-migration
+  tests;
+- prove consistent SQLite backup, full rollback, reverse export, and legacy-writer refusal; and
+- rehearse the complete maintainer conversion and rollback in a disposable clone.
+
+### Before Database-Authority Expansion
+
+- reproduce the bootstrap closure result through the database-backed HPT2 vertical slice;
+- pass the approved token/context efficiency suite, including its median reduction target,
+  correctness parity, and full-scan fallback limit;
+- pass query-time, mutation-complexity, and integrity benchmarks;
+- prove checkpoint/export durability across merge, rebuild, and recovery scenarios; and
+- complete the maintainer and client-canary soak without unresolved reconciliation findings.
+
+### Before Release And Broad Rollout
+
+- qualify the new updater protocol, minimum-updater refusal, upgrade, downgrade, backup, and
+  rollback contracts;
+- pass the full Tool Shed release profile on Windows and POSIX with exact content-commit evidence;
+- verify maintainer release, installed Codex skill synchronization, and a disconnected client
+  canary as separate lifecycle targets; and
+- publish operator, provider, recovery, migration, and direct-SQL reconciliation guidance.
+
+## Token And Context Efficiency Qualification
+
+Benchmark file-first and hybrid behavior against the same project commit, work-state fixture,
+request text, provider surface, and expected semantic result. Capture the file-first baseline before
+cutover so the comparison cannot be reconstructed selectively after implementation.
+
+The representative state-heavy suite must include at least:
+
+- orientation and the compact current-state capsule;
+- `status`, `next`, and program overview;
+- dependency, readiness, milestone, and gate lookup;
+- historical change and decision reporting;
+- closed-loop audit and outcome reconciliation; and
+- one bounded state mutation followed by verification and checkpoint-policy evaluation.
+
+For each operation record:
+
+- context bytes actually supplied to the agent and an estimated input-token count;
+- provider-reported token usage when the product surface exposes it, clearly distinguished from
+  estimates;
+- files, database queries, rows, and projection/capsule bytes read;
+- agent/tool round trips and wall-clock duration;
+- whether a complete file scan or oversized projection fallback occurred; and
+- correctness, completeness, provenance, authority-boundary, and evidence parity against the
+  approved expected result.
+
+Do not claim to measure undocumented provider indexing, hidden prompt construction, or internal
+cache behavior. Use stable context-byte measurement and one documented tokenizer or estimation
+method when exact input-token accounting is unavailable. Separate ordinary steady-state operations
+from migration, recovery, corruption diagnosis, and release qualification, which may intentionally
+consume more context.
+
+The phase-one acceptance target is at least a 70% median reduction in supplied context bytes or
+estimated input tokens across the state-heavy suite, with no incorrect lifecycle transition, no
+loss of provenance or evidence, and no unresolved semantic difference from the file-first result.
+In a clean, supported hybrid workspace, full-work-tree fallback may occur in no more than 5% of
+representative steady-state runs. Any fallback must report its reason; silent fallback is a failure.
+
+The database-facing agent contract should return a narrow purpose-built capsule rather than table
+dumps or stored Markdown bodies. A typical capsule contains only the owning cycle, current
+milestone and gate, active requirement/change IDs, unresolved reconciliation items, next authorized
+transition, relevant evidence references, and state revision/digest. Queries may expand from those
+stable IDs when the task genuinely needs detail.
+
+Store raw benchmark captures under ignored generated evidence and keep a small tracked summary with
+fixture identity, commands or operation IDs, measurement method, baseline/candidate revisions,
+results, and evidence hashes. Failure to meet the token/context gate blocks expansion of database
+authority and retirement of file surfaces; it triggers query/capsule refinement or reconsideration
+of the proposed database-owned domain rather than lowering the target silently.
+
+## Incremental Adoption
+
+1. Co-design and freeze the minimum closed-loop vocabulary needed by the first schema: origin,
+   accepted outcome, revision, material change, relationship, evidence reference, verdict, and
+   reconciliation state.
+2. Implement and enforce the independent bootstrap closure manifest and validator for this
+   initiative before database implementation can satisfy its own completion gates.
+3. Implement the minimum SQLite substrate: immutable public IDs, typed relationships, revisions and
+   events, guarded transactions, schema migrations, integrity checks, deterministic export/rebuild,
+   and digest-bound Codex/operator projections.
+4. Implement one complete closed-loop vertical slice on that substrate. Import legacy source files
+   without renaming them and use HPT2 as the candidate historical qualification case.
+5. Rehearse in a disposable maintainer clone, convert the live maintainer as the first authoritative
+   hybrid workspace, reproduce the bootstrap verdict through the new closed-loop implementation,
+   and then qualify one released disconnected-client canary.
+6. Qualify fresh-clone recovery, interrupted writes and migrations, stale writers, branch/worktree
+   behavior, historical reporting, no-data-loss round trips, updater rollback, and downgrade refusal.
+7. Expand database ownership to generated indexes, queues, roadmaps, and other lifecycle state only
+   where the vertical slice demonstrates lower context cost and stronger integrity.
+8. Reduce redundant legacy generated documents only after exact manifests and recovery evidence
+   pass; preserve ambiguous historical material instead of inventing structure.
+
+## No-Data-Loss Conversion Protocol
+
+Treat adoption as a verified import and authority cutover, not as a file move or a big-bang rewrite:
+
+```text
+inventory -> verified backup -> shadow import -> parity and rebuild tests
+          -> guarded cutover -> qualification and soak -> later retirement
+```
+
+### Loss Accounting
+
+"Nothing lost" includes more than source bytes. The migration must account for every original
+file; title, body, header, and owner extension; stable ID and number; queue order and dependency;
+roadmap revision, milestone, and gate; relationship and provenance; material change, decision, and
+evidence reference; Git state and original path; and ignored or untracked Tool Shed state that Git
+does not protect. Unknown, malformed, or ambiguous content remains preserved and becomes an
+explicit unresolved import record rather than an inferred fact.
+
+### Prepare And Rehearse
+
+1. Acquire a conversion lock and generate a read-only migration manifest bound to project identity,
+   Git state, Tool Shed version, and an exact source-state token.
+2. Record every relevant path, size, SHA-256, tracked/ignored/untracked state, proposed disposition,
+   assigned immutable ID, parsed relationship, unknown field, and import warning. Assign IDs once in
+   the manifest and reuse them for every rehearsal; do not regenerate identity from mutable paths.
+3. Create and verify an external byte-for-byte archive of the complete conversion surface. Include
+   ignored and untracked state explicitly and fingerprint any excluded evidence tree.
+4. Build `state.sqlite3.next` as a shadow database without modifying source files or changing the
+   current writer. Register every source file with path and hash, preserve existing IDs, and reject
+   changed sources, duplicates, collisions, invalid foreign keys, or unaccounted entries.
+5. Compare the existing and database-backed artifact inventory, campaign order/readiness/history,
+   roadmap and milestone results, relationships, reconciliation findings, evidence references,
+   and `status`, `next`, and `overview` outputs. Every difference is either an approved intentional
+   change or a cutover blocker.
+6. Generate the portable recovery export and projections, rebuild a fresh database from retained
+   imports plus that export in a disposable fresh clone, and require identical semantic digests,
+   `PRAGMA integrity_check`, and `PRAGMA foreign_key_check` results.
+7. Run dual-read, single-write qualification: the current file implementation remains the only
+   writer while the shadow database reimports changes and continuously compares results. Never
+   operate two writable authorities for the same field.
+
+### Guarded Cutover
+
+Under one workspace migration lock, revalidate the approved source token, apply the final delta,
+repeat parity and rebuild checks, and create verified file and SQLite backups. Use the SQLite backup
+API for a consistent database snapshot; never treat a raw copy of the main database file as safe
+while WAL state may exist. Promote the validated candidate database, record the storage mode,
+migration transaction, schema version, source digest, and export digest, regenerate projections,
+and run doctor plus full validation before reopening writers.
+
+Activate database authority one domain at a time: identities/relationships/events, closed-loop
+reconciliation, campaigns, roadmaps, then generated orientation surfaces. Legacy writers must
+detect hybrid mode and refuse authority-changing file writes. Failure before writers reopen
+discards the candidate and returns to the unchanged file system. Failure after new database writes
+requires a verified reverse export; therefore the initial cutover keeps a no-write validation
+window until rollback has been exercised.
+
+### Soak, Recovery, And Retirement
+
+Keep all original files unchanged through the first hybrid release and qualification period. Keep
+familiar paths as projections where existing links depend on them. Every database mutation records
+an immutable event and export-outbox revision in the same transaction; required portable exports
+and projections carry the matching revision and digest. Stale required recovery output blocks
+further mutation until repaired.
+
+Only a later, separately reviewed retirement manifest may remove redundant generated files. It must
+prove that each candidate is reproducible, backed up, unreferenced or compatibly projected, and not
+owner-authored or ambiguous. Imported sources and irreplaceable historical material are never
+removed merely because some of their fields also exist in SQLite.
+
+Candidate migration tool surface:
+
+```text
+state_migration.py inventory
+state_migration.py prepare
+state_migration.py validate
+state_migration.py rehearse
+state_migration.py apply
+state_migration.py verify
+state_migration.py rollback
+state_migration.py report
+```
+
+Conversion is complete only when byte preservation, semantic parity, database integrity, fresh-clone
+reconstruction, interruption recovery, rollback, HPT2 closed-loop qualification, and post-cutover
+mutation/export durability all pass.
+
+## Constraints And Non-Goals
+
+- Use SQLite as an embedded library; do not introduce a database server or network service merely
+  to store local Tool Shed state.
+- Prefer Python's standard SQLite support unless a demonstrated requirement justifies another
+  dependency.
+- Preserve project-identity fencing, stale-write protection, recoverable transactions, autonomy
+  boundaries, and provider portability.
+- Enable foreign-key checks, define concurrency and journaling policy, and provide schema migration,
+  backup, integrity-check, and corruption-recovery procedures.
+- Keep secrets and provider credentials out of the database and its exports.
+- Do not hide owner-authored inputs or canonical product truth inside an opaque database by default.
+- Do not migrate every Markdown artifact merely because it can be represented relationally.
+- Do not delete or rewrite historical files until a reviewed manifest and verified recovery path
+  make the operation safe and reversible.
+- Do not rename, move, or delete original files during the conversion release. Retire only proven
+  redundant generated surfaces in a later, independently reversible change.
+- Do not activate database authority until a shadow import, semantic parity report, fresh-clone
+  rebuild, and rollback rehearsal all pass against the exact approved source state.
+- Do not begin implementation without an independently enforced bootstrap closure baseline, and do
+  not allow the new database implementation to be its own only completion authority.
+- Do not use the disconnected-snapshot installer or updater against the canonical maintainer
+  checkout. Rehearse its state conversion externally, then migrate it with the dedicated guarded
+  state-migration path.
+- Do not convert the live maintainer before a disposable rehearsal passes, synchronize the installed
+  Codex skill before publication, or broadly upgrade clients before a released canary passes.
+- Do not permit old file-authority writers to run after a domain switches to database authority.
+- Keep controlled domain scripts or a shared state-access library as the supported mutation
+  interface even though database-level accounting must detect bypass writes.
+- Do not treat untracked live-database changes as accepted durable history, and do not automatically
+  promote unmanaged SQL writes merely because they pass structural checks.
+- Do not generate a tracked checkpoint merely because the database was opened, queried, or touched;
+  checkpoint only from validated state at an explicit policy boundary.
+- Do not build the entire SQLite migration before closed-loop reconciliation. Only the minimum
+  substrate is an implementation prerequisite; the first loop must qualify it before expansion.
+- Keep the storage architecture and reconciliation semantics independently testable even though
+  their implementation sequencing is linked.
+- Do not release, install, or synchronize Tool Shed as part of this Idea Brief.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Hybrid SQLite operational state plus compact files | Strong integrity and queries while preserving readable inputs, Codex context, and portability surfaces | Requires a precise authority/export contract and migration tooling | Recommended direction to explore |
+| Minimum SQLite substrate followed immediately by a closed-loop vertical slice | Proves the storage model against a real relational, historical, and transactional need before broad migration | Requires coordinated schema and outcome-contract design | Revised first implementation |
+| Shadow import, dual-read/single-write qualification, then domain-by-domain cutover | Preserves the current system until parity, reconstruction, and rollback are proven | Longer transition and compatibility period | Recommended conversion strategy |
+| File/Git bootstrap closure gate followed by database self-hosting parity | Enforces full idea-to-product reconciliation before the closed-loop feature exists | Adds a temporary compatibility implementation and requires exact import parity | Approved prerequisite |
+| Disposable maintainer rehearsal, live maintainer conversion, then released client canary | Exercises the highest-risk special case first without making it the first destructive trial | Adds rollout stages and requires separate source, state, skill, and client evidence | Approved rollout |
+| Narrow purpose-built query capsules with measured file-mode parity | Materially reduces state context and repeated document parsing while retaining drill-down by stable ID | Requires representative fixtures, instrumentation, and prevention of oversized-query fallback | Approved efficiency contract |
+| Ignored working database plus managed promotion to tracked logical checkpoints | Avoids binary churn while preserving reviewable, reconstructable history at meaningful boundaries | Requires database-enforced revision accounting, entrance audits, and an exact checkpoint format | Recommended state/versioning model |
+| Automatically snapshot every detected database change | Maximizes snapshot frequency | Recreates commit noise and may bless accidental or semantically invalid direct SQL | Reject as the default |
+| Big-bang file-to-database conversion | Short transition in theory | High loss, split-brain, rollback, and unverified semantic-drift risk | Reject |
+| Keep the current file-only model | Maximum transparency and simple Git history | Continued path coupling, repeated parsing, duplicated projections, and script-built transactions | Known baseline; limitations now observable |
+| Put nearly all work content in SQLite | Uniform querying and fewer workspace files | Opaque review, weak disconnected portability, harder owner editing, greater recovery consequence | Not recommended as the default |
+| Track the SQLite binary in Git | Exact database artifact appears versioned | Poor diffs and branch merges; conflict and corruption risk | Generally reject |
+| Ignore a rebuildable SQLite database | Clean Git behavior and fast local state | Recovery is only credible if deterministic exports truly reproduce required history | Strong candidate with qualification |
+| Add a database server | Multi-client coordination and mature service controls | Deployment, credentials, operations, availability, and portability burden | Out of scope absent future evidence |
+
+## Open Questions
+
+- What is the exact source-of-truth contract for each entity and field?
+- What exact minimum substrate is necessary for the first closed loop without prematurely modeling
+  every Tool Shed artifact and projection?
+- Which closed-loop terms and invariants must be fixed before schema version 1 is safe to implement?
+- What must a compact cycle capsule contain for efficient and safe Codex continuation?
+- Is the local database fully rebuildable, or must it also have an independent backup/sync policy?
+- Which export format provides useful Git review, branching, historical audit, and disaster
+  recovery without reproducing the current document volume?
+- How are database revision and content digests represented so stale capsules fail closed?
+- Where should the database live, and what repository, backup, permission, and cleanup rules apply?
+- What concurrency model is required for simultaneous agents, hooks, CLI commands, or App Server
+  consumers? Which SQLite journal and lock behavior is safe across supported platforms?
+- Which exact stable-ID conflict classes can be merged automatically, and which must always require
+  semantic disposition after branch or checkpoint reconciliation?
+- Can every current lifecycle transaction and historical report be represented without losing
+  owner-authored context or provenance?
+- What compatibility window is required during migration, and how are older file-only workspaces
+  upgraded or downgraded?
+- What exact portable checkpoint/event representation can rebuild an ignored database without
+  becoming a second editable authority?
+- What compact bootstrap closure serialization best supports operator review, deterministic
+  validation, and exact later import without duplicating full PRM documents?
+- What new `minimum_updater_protocol` version should declare database lifecycle support, and how
+  should older clients report the refusal and external-updater route?
+- What soak duration and evidence threshold allow the maintainer and first disconnected client to
+  become rollout gates rather than continuing experiments?
+- How should database triggers associate a write with a managed operation without trusting only
+  client behavior, and what constitutes sufficient evidence that a write was unmanaged?
+- What minimum structural change payload supports exact reconciliation without copying sensitive or
+  unnecessarily large content into the ledger?
+- What authority and evidence allow an unmanaged but structurally valid change to be accepted,
+  verified, and promoted into a tracked checkpoint?
+- How should the entrance audit recover when direct SQL changes or removes the schema, triggers, or
+  revision metadata themselves?
+- How many rolling ignored backups and how much uncheckpointed history are required between tracked
+  checkpoint boundaries?
+- How long must original files and file-mode compatibility remain available after cutover?
+- Which ignored and untracked Tool Shed surfaces belong in the mandatory conversion archive?
+- What reverse-export contract preserves post-cutover writes if rollback becomes necessary after
+  the no-write validation window?
+- What exact signal makes legacy Tool Shed writers fail closed when a domain is database-owned?
+- Should stable document numbers be display identifiers backed by the database while filenames
+  remain unchanged, or should new compact cycle files use the stable ID from creation?
+- How will direct work and work that begins at different entry points be stored without forcing
+  unnecessary artifacts?
+- Which stable tokenizer or documented estimation method should be used when a provider does not
+  expose exact input-token counts?
+- Which fixtures represent small, typical, and large Tool Shed workspaces without tuning the
+  capsule contract only to the current maintainer repository?
+- What HPT2 source records and current product evidence are sufficient to qualify both historical
+  import fidelity and end-to-end reconciliation without inventing missing history?
+
+## Decisions
+
+- Capture SQLite-backed operational state as a new Idea Brief, separate from universal closed-loop
+  outcome reconciliation.
+- Explore a hybrid boundary rather than assuming either files-only or database-only architecture.
+- Treat stable identity, reference maintenance, transaction integrity, historical reporting, and
+  Codex context efficiency as the principal motivations; disk usage alone is not sufficient.
+- Keep imported files, canonical docs, and compact Codex/operator surfaces as files unless evidence
+  supports a different boundary.
+- Implement the minimum SQLite substrate first and make universal closed-loop reconciliation its
+  first consumer and qualification case.
+- Co-design the initial schema with the minimum closed-loop vocabulary; do not independently build
+  a broad generic data model and retrofit outcome semantics later.
+- Use the HPT2 historical cycle as the candidate end-to-end qualification workload.
+- Convert through an exact manifest, verified external backup, shadow database, semantic parity,
+  fresh-clone reconstruction, dual-read/single-write qualification, and guarded domain cutovers.
+- Preserve all original files through the first hybrid release and soak period. File retirement is
+  a later separate migration, never part of initial authority activation.
+- Require a new updater protocol for database-aware backup, migration, validation, rollback, and
+  legacy-client refusal before releasing the conversion.
+- Use an independent tracked bootstrap closure manifest and deterministic validator to enforce
+  idea-to-product reconciliation for this initiative before the database-backed feature exists.
+- Require the completed database-backed closed-loop vertical slice to import the bootstrap record
+  and reproduce its coverage, material-change history, evidence mapping, and verdict before it can
+  replace the bootstrap authority.
+- Give every worktree its own ignored database. Use deterministic tracked checkpoints/events as the
+  Git collaboration surface, and rebuild or reconcile on lineage or source-digest mismatch.
+- Make projections read-only; manual projection edits fail closed until discarded or explicitly
+  ingested through an allowed source route.
+- Limit phase one to identities, import hashes/provenance, typed relationships, revisions/events,
+  evidence references, migration/export/checkpoint ledgers, and the minimum closed-loop records.
+- Keep campaigns, roadmaps/milestones, broad index replacement, general body storage, and legacy
+  retirement outside phase-one database authority.
+- Rehearse the maintainer conversion in a disposable clone, make the live maintainer the first
+  authoritative hybrid workspace, synchronize the installed Codex skill only after publication,
+  and require one released disconnected-client canary before broad rollout.
+- Preserve the maintainer's special Git-development path; never run the disconnected-snapshot
+  updater against the canonical checkout.
+- Treat lower token/context use as a qualification requirement, not an automatic benefit of SQLite.
+- Require at least a 70% median reduction in supplied context or estimated input tokens across the
+  approved state-heavy suite, semantic/evidence parity, and no more than 5% explained full-scan
+  fallback in clean steady-state operation before expanding database authority.
+- Prefer narrow purpose-built state capsules with stable-ID drill-down over table dumps, broad
+  projections, or database storage that merely mirrors complete Markdown bodies.
+- Treat the ignored live database as working state and the tracked deterministic logical checkpoint
+  as durable, reviewed, portable state.
+- Require database-level revision, dirty-state, and structural change accounting for every mutable
+  domain table so direct SQL cannot remain silently invisible to the next managed operation.
+- Require every managed database operation to run an entrance audit and classify the current state
+  before relying on it for a lifecycle mutation.
+- Never automatically bless unmanaged SQL. Validate and report it, promote only unambiguous changes
+  covered by current authority, and block ambiguous, invalid, or unjournaled state.
+- Separate rolling local-backup cadence from tracked-checkpoint cadence; create tracked logical
+  checkpoints only at defined lifecycle, migration, release, explicit, or threshold boundaries.
+- Treat byte preservation and semantic preservation as separate mandatory gates.
+- No migration, implementation, release, or installed-skill synchronization is authorized by this
+  brainstorming route.
+
+## Don't Forget
+
+- A database eliminates path-based identity only if every relationship uses immutable IDs rather
+  than stored filenames.
+- Generated files should be disposable projections, but imported and owner-authored files are not.
+- SQLite is embedded storage, not evidence that Tool Shed needs a server.
+- Test power loss, interrupted migrations, stale writers, corruption, backup restore, and partial
+  export—not only happy-path queries.
+- Never back up a live SQLite database by copying only `state.sqlite3`; use a consistent SQLite
+  backup and verify its integrity.
+- Git protects tracked files, not ignored databases or untracked intake. The conversion archive must
+  enumerate those surfaces explicitly.
+- An ignored database prevents binary commit churn; it does not make direct SQL safe or accepted.
+- Reads should not advance semantic revision state. Every write to mutable domain state must advance
+  persistent revision accounting even when the caller bypasses supported scripts.
+- Verify the schema and trigger digest during entrance audit so a caller cannot evade the change
+  ledger by disabling its enforcement.
+- A generated checkpoint is a repository artifact, not an automatic Git commit; normal delivery
+  policy still governs committing and publishing it.
+- Do not acknowledge successful hybrid operation while the required portable recovery revision is
+  stale; repair it or block subsequent mutation.
+- Define what survives a fresh clone before moving authoritative state into an ignored database.
+- Preserve human-readable provenance for inferred or ambiguous legacy relationships.
+- Measure reduced context and maintenance burden; a database that merely mirrors every Markdown
+  field adds a second system without solving the problem.
+- Do not confuse “SQLite first” with “migrate everything first.” Stop database expansion until the
+  first closed-loop vertical slice and recovery qualification pass.
+- The bootstrap closure harness is intentionally temporary compatibility machinery, but its tracked
+  historical record remains permanent provenance after database authority takes over.
+- The maintainer checkout, its installed Codex skill, and disconnected client snapshots are three
+  separate upgrade targets with different procedures and evidence.
+- A successful maintainer conversion does not prove the released snapshot updater, and a successful
+  skill synchronization does not prove project-state migration.
+- Measure baseline and hybrid context against identical fixtures and requests. Do not compare a
+  broad file audit with a narrower database question and call the difference a token saving.
+- Lower context is not acceptable if it omits authority limits, provenance, material changes,
+  evidence, or unresolved reconciliation state.
+- Related idea: `work/ideas/idea-universal-closed-loop-outcome-reconciliation.md`.
+
+## Exploration Log
+
+### 2026-08-28
+
+- Idea Brief created from the discussion about stable document numbers, the maintenance cost of
+  renaming or moving referenced files, and whether generated Tool Shed work belongs in SQLite.
+- Initial direction favors a hybrid model: relational operational state in SQLite; imported,
+  canonical, recovery, and compact Codex/operator surfaces in files.
+- Existing workspace scale was noted as concrete evidence for an architecture spike: roughly 225
+  files and 2.7 MB under `work/`, mainly Markdown, with sizeable generated indexes and roadmaps.
+- The brief was deliberately separated from closed-loop outcome reconciliation so storage design
+  does not become an implicit prerequisite for outcome semantics.
+- Sequencing was refined: define the minimum closed-loop vocabulary, implement the minimum SQLite
+  hybrid substrate, use HPT2 closed-loop reconciliation as the first consumer and qualification
+  case, and expand database ownership only from the resulting evidence.
+- The conversion strategy was expanded into a no-data-loss protocol: exact inventory and assigned
+  IDs, verified external backups, a non-mutating shadow import, semantic parity, fresh-clone
+  round-trip reconstruction, dual-read/single-write qualification, guarded domain cutovers, a soak
+  period retaining all original files, and separately authorized retirement of reproducible
+  generated surfaces.
+- The working-state/versioning model was refined: keep the live SQLite database ignored, make
+  database-level triggers record revisions and dirty/unmanaged state even for direct SQL, run an
+  entrance audit on every managed access, and promote only validated state into tracked logical
+  checkpoints at meaningful boundaries. Direct SQL is survivable and diagnosable, but never
+  automatically accepted as durable truth.
+- The remaining pre-PRM recommendations were approved: per-worktree databases with tracked portable
+  checkpoints as the collaboration surface, an explicit phase-one ownership boundary, and staged
+  decision/evidence gates before implementation, maintainer cutover, authority expansion, and
+  release.
+- Closed-loop enforcement for the hybrid initiative will bootstrap from a tracked file/Git manifest
+  and deterministic validator, then require the new database implementation to import and reproduce
+  that exact result before taking authority.
+- The maintainer rollout was made explicit: rehearse in a disposable clone, convert the live
+  canonical maintainer as the first authoritative hybrid workspace, qualify and publish, synchronize
+  the separately installed Codex skill, then pass one released disconnected-client canary before
+  broad rollout. The canonical checkout never upgrades itself through the snapshot installer.
+- Token efficiency was made an explicit qualification contract: benchmark identical file-first and
+  hybrid state-heavy operations, require semantic and evidence parity, target at least 70% median
+  context reduction, limit explained full-scan fallback to 5% in clean steady-state runs, and block
+  authority expansion when the result is not met.
+- The owner promoted the completed synthesis into PRM. The approved project-map direction is
+  `work/maps/map-hybrid-sqlite-operational-state.md`; this brief remains durable discovery
+  provenance and no longer owns execution sequencing.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

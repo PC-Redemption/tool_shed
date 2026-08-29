@@ -71,6 +71,7 @@ PAGES = (
     Page("help/recovery", "Existing and interrupted work", "Orient safely in unfamiliar repositories and resume work without inventing history.", "help/recovery.html", "help"),
     Page("help/commands", "Using Tool Shed commands", "Route a request clearly while keeping natural language, scope, and authority intact.", "help/commands.html", "help"),
     Page("help/maintenance", "Installation and maintenance", "Install, update, validate, and preserve Tool Shed workspaces safely.", "help/maintenance.html", "help"),
+    Page("help/dashboard", "Hosted dashboard", "Connect privacy-bounded local reporters to the authenticated Tool Shed fleet dashboard.", "help/dashboard.html", "help"),
 )
 
 
@@ -84,6 +85,7 @@ SECTION_ANCHORS = {
     "Codex Reasoning Maintenance": ("maintenance", "Maintenance and continuity", "/help/maintenance/"),
     "Codex App Server Explicit Opt-In": ("execution", "Execution", "/help/execution/"),
     "Codex App Server Persistent Preference": ("execution", "Execution", "/help/execution/"),
+    "Hosted Dashboard Reporting": ("maintenance", "Maintenance and continuity", "/help/dashboard/"),
     "Artifact And Workspace Requests": ("planning", "Planning and roadmaps", "/help/planning/"),
 }
 

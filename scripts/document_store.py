@@ -76,6 +76,78 @@ def domain_digest(connection: sqlite3.Connection) -> str:
     return hashlib.sha256(canonical_bytes({table: hybrid_state.table_rows(connection, table) for table in tables})).hexdigest()
 
 
+def _body_header_value(body: str, field: str) -> str | None:
+    prefix = field + ":"
+    for line in body.splitlines()[:80]:
+        if line.startswith(prefix):
+            return line[len(prefix):].strip()
+    return None
+
+
+def _semantic_document_findings(connection: sqlite3.Connection) -> list[dict[str, Any]]:
+    """Report recoverable document/domain drift without invalidating managed-write safety."""
+    if not set(DOCUMENT_TABLES).issubset(_tables(connection)):
+        return []
+    findings: list[dict[str, Any]] = []
+    rows = connection.execute(
+        "SELECT d.id, d.visible_id, d.namespace, d.lifecycle_state, d.metadata_json, "
+        "a.type AS stored_type, a.current_path, r.body_markdown FROM document d JOIN artifact a ON a.id=d.id "
+        "JOIN document_revision r ON r.document_id=d.id AND r.revision_number=d.current_revision "
+        "ORDER BY d.visible_id"
+    ).fetchall()
+    for row in rows:
+        metadata = json.loads(row["metadata_json"])
+        declared_type = str(metadata.get("document_type") or "").strip()
+        effective_type = declared_type or str(row["stored_type"])
+        if declared_type and declared_type != row["stored_type"]:
+            findings.append({
+                "code": "DOCUMENT_TYPE_DRIFT",
+                "visible_id": row["visible_id"],
+                "stored_type": row["stored_type"],
+                "declared_type": declared_type,
+                "message": f"{row['visible_id']} stores type {row['stored_type']} but declares {declared_type}",
+            })
+        idea_status = (_body_header_value(row["body_markdown"], "Status") or "").casefold()
+        if effective_type != "idea-brief" or row["lifecycle_state"] != "active" or idea_status != "promoted":
+            continue
+        cycle = connection.execute(
+            "SELECT c.id, c.lifecycle_state FROM cycle c WHERE c.origin_artifact_id=? OR EXISTS ("
+            "SELECT 1 FROM relationship rel WHERE rel.from_artifact_id=c.origin_artifact_id "
+            "AND rel.to_artifact_id=? AND rel.relation_type='historical-overlay-for' "
+            "AND rel.retired_revision IS NULL) OR EXISTS (SELECT 1 FROM evidence_reference er "
+            "WHERE er.cycle_id=c.id AND er.kind='historical-origin' AND er.reference=?) "
+            "ORDER BY c.opened_at DESC, c.id DESC LIMIT 1",
+            (row["id"], row["id"], row["current_path"]),
+        ).fetchone()
+        if cycle is None:
+            findings.append({
+                "code": "PROMOTED_IDEA_MISSING_OUTCOME",
+                "visible_id": row["visible_id"],
+                "idea_status": idea_status,
+                "document_lifecycle": row["lifecycle_state"],
+                "message": f"{row['visible_id']} is promoted and active but has no owning outcome loop",
+            })
+            continue
+        reconciliation = connection.execute(
+            "SELECT r.state, ov.disposition FROM reconciliation r "
+            "JOIN outcome_verdict ov ON ov.id=r.verdict_id WHERE r.cycle_id=? "
+            "ORDER BY r.compared_at DESC, r.id DESC LIMIT 1",
+            (cycle["id"],),
+        ).fetchone()
+        if cycle["lifecycle_state"] == "terminal" and reconciliation and reconciliation["state"] == "reconciled":
+            expected = "superseded" if reconciliation["disposition"] == "superseded" else "completed"
+            findings.append({
+                "code": "PROMOTED_IDEA_LIFECYCLE_STALE",
+                "visible_id": row["visible_id"],
+                "cycle_id": cycle["id"],
+                "disposition": reconciliation["disposition"],
+                "document_lifecycle": row["lifecycle_state"],
+                "expected_lifecycle": expected,
+                "message": f"{row['visible_id']} has a terminal reconciled outcome but remains active",
+            })
+    return findings
+
+
 def audit_connection(workspace: Path, connection: sqlite3.Connection) -> dict[str, Any]:
     findings: list[str] = []
     integrity = [str(row[0]) for row in connection.execute("PRAGMA integrity_check")]
@@ -128,12 +200,15 @@ def audit_connection(workspace: Path, connection: sqlite3.Connection) -> dict[st
         classification = "VALID_DIRTY"
     else:
         classification = "CLEAN"
+    semantic_findings = _semantic_document_findings(connection)
     return {
         "schema_version": DOCUMENT_SCHEMA_VERSION,
         "hybrid_schema": user_version,
         "kind": "tool-shed-document-store-audit",
         "classification": classification,
         "findings": findings,
+        "semantic_findings": semantic_findings,
+        "semantic_finding_count": len(semantic_findings),
         "current_revision": current_revision,
         "last_checkpoint_revision": int(meta["last_checkpoint_revision"]),
         "domain_digest": observed,
@@ -267,7 +342,14 @@ def managed_write(workspace: Path, *, project_binding: str, command: str, actor:
         result = audit_connection(workspace, connection)
         if result["classification"] != "VALID_DIRTY":
             raise DocumentStoreError(f"managed mutation left {result['classification']}")
-        return {"schema_version": 1, "kind": "tool-shed-document-operation", "operation_id": operation_id, "revision": revision, "actual_writes": actual, "result": value, "audit": result, "writes_performed": True}
+        response = {"schema_version": 1, "kind": "tool-shed-document-operation", "operation_id": operation_id, "revision": revision, "actual_writes": actual, "result": value, "audit": result, "writes_performed": True}
+    try:
+        import dashboard_reporter
+
+        dashboard_reporter.enqueue_if_connected(workspace, reason="managed-document-update")
+    except (ImportError, AttributeError):
+        pass
+    return response
 
 
 def _parse_title(markdown: str, fallback: str) -> str:
@@ -443,12 +525,14 @@ def list_documents(workspace: Path, *, lifecycle: str | None = None, document_ty
     if lifecycle:
         clauses.append("d.lifecycle_state=?"); values.append(lifecycle)
     if document_type:
-        clauses.append("a.type=?"); values.append(document_type)
+        clauses.append("COALESCE(NULLIF(json_extract(d.metadata_json, '$.document_type'), ''), a.type)=?"); values.append(document_type)
     where = " WHERE " + " AND ".join(clauses) if clauses else ""
     with contextlib.closing(hybrid_state.connect(path, writable=False)) as connection:
         checked = audit_connection(workspace, connection)
         rows = [dict(row) for row in connection.execute(
-            "SELECT d.id AS artifact_id, d.visible_id, a.type, d.title, d.lifecycle_state AS lifecycle, d.current_revision AS document_revision "
+            "SELECT d.id AS artifact_id, d.visible_id, "
+            "COALESCE(NULLIF(json_extract(d.metadata_json, '$.document_type'), ''), a.type) AS type, "
+            "a.type AS stored_type, d.title, d.lifecycle_state AS lifecycle, d.current_revision AS document_revision "
             "FROM document d JOIN artifact a ON a.id=d.id" + where + " ORDER BY d.lifecycle_state, d.visible_id LIMIT ?",
             (*values, limit),
         )]
@@ -542,6 +626,38 @@ def set_lifecycle(workspace: Path, *, project_binding: str, identity: str, lifec
         connection.execute("UPDATE artifact SET lifecycle_state=?, updated_at=? WHERE id=?", (lifecycle, stamp, current["id"]))
         return {"artifact_id": current["id"], "visible_id": current["visible_id"], "document_revision": new_revision, "lifecycle": lifecycle}
     return managed_write(workspace, project_binding=project_binding, command="document-set-lifecycle", actor=actor, callback=apply, database=database)
+
+
+def set_type(workspace: Path, *, project_binding: str, identity: str, document_type: str, expected_revision: int, actor: str, reason: str, database: Path | None = None) -> dict[str, Any]:
+    expected_namespace = _namespace_for(document_type)
+    def apply(connection: sqlite3.Connection, revision: int) -> dict[str, Any]:
+        current = _lookup(connection, identity)
+        if int(current["current_revision"]) != expected_revision:
+            raise DocumentStoreError("stale document revision")
+        if current["namespace"] != expected_namespace:
+            raise DocumentStoreError(
+                f"document namespace {current['namespace']} is incompatible with type {document_type}"
+            )
+        metadata_type = str(json.loads(current["metadata_json"]).get("document_type") or "").strip()
+        if metadata_type and metadata_type != document_type:
+            raise DocumentStoreError(
+                f"document metadata declares {metadata_type}, not requested type {document_type}"
+            )
+        stored_type = connection.execute("SELECT type FROM artifact WHERE id=?", (current["id"],)).fetchone()[0]
+        if stored_type == document_type:
+            return {
+                "artifact_id": current["id"], "visible_id": current["visible_id"],
+                "document_revision": expected_revision, "type": document_type, "idempotent": True,
+            }
+        connection.execute(
+            "UPDATE artifact SET type=?, updated_at=? WHERE id=?",
+            (document_type, hybrid_state.now(), current["id"]),
+        )
+        return {
+            "artifact_id": current["id"], "visible_id": current["visible_id"],
+            "document_revision": expected_revision, "type": document_type, "idempotent": False,
+        }
+    return managed_write(workspace, project_binding=project_binding, command="document-set-type", actor=actor, callback=apply, database=database)
 
 
 def render_edit(document: dict[str, Any]) -> str:
@@ -921,6 +1037,7 @@ def build_parser() -> argparse.ArgumentParser:
     export_parser = commands.add_parser("export-edit"); export_parser.add_argument("identity"); export_parser.add_argument("--output", required=True)
     apply_parser = commands.add_parser("apply-edit"); apply_parser.add_argument("--project-binding", required=True); apply_parser.add_argument("--edit", required=True); apply_parser.add_argument("--actor", required=True); apply_parser.add_argument("--reason", required=True)
     lifecycle_parser = commands.add_parser("set-lifecycle"); lifecycle_parser.add_argument("identity"); lifecycle_parser.add_argument("--project-binding", required=True); lifecycle_parser.add_argument("--lifecycle", required=True); lifecycle_parser.add_argument("--expect-revision", type=int, required=True); lifecycle_parser.add_argument("--actor", required=True); lifecycle_parser.add_argument("--reason", required=True)
+    type_parser = commands.add_parser("set-type"); type_parser.add_argument("identity"); type_parser.add_argument("--project-binding", required=True); type_parser.add_argument("--type", required=True); type_parser.add_argument("--expect-revision", type=int, required=True); type_parser.add_argument("--actor", required=True); type_parser.add_argument("--reason", required=True)
     history_parser = commands.add_parser("history"); history_parser.add_argument("identity")
     diff_parser = commands.add_parser("diff"); diff_parser.add_argument("identity"); diff_parser.add_argument("--from-revision", type=int, required=True); diff_parser.add_argument("--to-revision", type=int, required=True)
     relate_parser = commands.add_parser("relate"); relate_parser.add_argument("--project-binding", required=True); relate_parser.add_argument("--from", dest="source", required=True); relate_parser.add_argument("--relation", required=True); relate_parser.add_argument("--to", dest="target", required=True); relate_parser.add_argument("--actor", required=True)
@@ -952,6 +1069,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif args.command == "export-edit": result = export_edit(workspace, args.identity, Path(args.output), database=database)
         elif args.command == "apply-edit": result = apply_edit(workspace, project_binding=args.project_binding, edit=Path(args.edit), actor=args.actor, reason=args.reason, database=database)
         elif args.command == "set-lifecycle": result = set_lifecycle(workspace, project_binding=args.project_binding, identity=args.identity, lifecycle=args.lifecycle, expected_revision=args.expect_revision, actor=args.actor, reason=args.reason, database=database)
+        elif args.command == "set-type": result = set_type(workspace, project_binding=args.project_binding, identity=args.identity, document_type=args.type, expected_revision=args.expect_revision, actor=args.actor, reason=args.reason, database=database)
         elif args.command == "history": result = history(workspace, args.identity, database=database)
         elif args.command == "diff": result = diff_revisions(workspace, args.identity, args.from_revision, args.to_revision, database=database)
         elif args.command == "relate": result = relate(workspace, project_binding=args.project_binding, source=args.source, relation=args.relation, target=args.target, actor=args.actor, database=database)

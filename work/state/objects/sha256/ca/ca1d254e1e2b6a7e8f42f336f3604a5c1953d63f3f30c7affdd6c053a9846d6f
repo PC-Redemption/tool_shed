@@ -1,0 +1,29 @@
+# Campaign: Dashboard Production Recovery, Release, and Reconciliation
+
+Status: active
+Type: campaign
+Updated: 2026-08-29
+Next Action: qualify migrations, backup/restore, rollback, load, installed-client canary, exact-SHA release, production deployment, and origin reconciliation
+Campaign ID: dashboard-production-recovery-release-and-reconciliation
+Outcome: Qualify and release the complete dashboard/reporting vertical slice, verify the live target and recoverability, and close every owning outcome through IDEA-0007.
+Roadmap: hosted-cross-project-tool-shed-dashboard
+Roadmap Document: PRM-0027
+Roadmap Revision: 1
+Milestone: M4-RECOVERY-CANARY-RELEASE-RECONCILIATION
+Unlocks Gates: G2-HUMAN-AUTH-AND-INSTANCE-ENROLLMENT, G3-FLEET-PLATFORM-AND-REPORTER-OPERATIONS, G5-PUBLIC-PRESENTATION-DASHBOARD-ACCESSIBILITY, G6-PRODUCTION-RECOVERY-RELEASE-RECONCILIATION
+Depends On: dashboard-contracts-trust-hosted-foundation, dashboard-local-reporter-delivery, dashboard-experience-and-public-compatibility
+Completion Gate: Full release qualification, PostgreSQL migration/backup/restore, application rollback, load target, disconnected installed-client canary, exact-SHA CI, semantic release, production authentication/routes/health/public compatibility, configured GitHub-issue review, and Campaign → PRM → Map → IDEA-0007 reconciliation all pass.
+
+## Work5 Boundary
+
+- Freeze one content commit and require the exact successful push validation matrix.
+- Create the provenance-only release manifest commit and stable tag only after that gate.
+- Deploy through the known `ts.rookaro.com` target with a retained rollback copy.
+- Verify static public routes separately from dashboard/API/PostgreSQL health.
+- Register and reconcile every release owner; do not close unrelated Ideas.
+
+## Consequential-stage controls
+
+- Prevent auth/secret misconfiguration with fail-closed production checks and no secret output.
+- Prevent migration/rollback coupling with backward-compatible migrations and isolated restore proof.
+- Prevent false release closure by binding exact commit, CI, release, deployment, canary, and Hybrid reconciliation evidence.

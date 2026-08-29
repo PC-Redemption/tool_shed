@@ -213,6 +213,20 @@ class AppServerUserStateTests(unittest.TestCase):
             )
         )
 
+    def test_report_groups_failures_without_exposing_raw_categories(self) -> None:
+        events = self.root / "codex" / "tool-shed" / "app-server-events.jsonl"
+        store = AppServerEventStore(events, now=lambda: 100.0)
+        store.record(
+            command="next", outcome="failed", category="transport_timeout", mutation_state="none",
+            backend="app_server", preference_mode="ON", strict_request=True,
+            source="operator", event_type="execution", role="camp_execution", correlation_id="one",
+        )
+        report = store.report(hours=1)
+        self.assertEqual(report["failure_groups"][0]["category"], "transport")
+        self.assertEqual(report["failure_groups"][0]["count"], 1)
+        self.assertNotIn("transport_timeout", json.dumps(report["failure_groups"]))
+        self.assertEqual(report["last_failure"], report["failure_groups"][0]["last_seen"])
+
 
 if __name__ == "__main__":
     unittest.main()

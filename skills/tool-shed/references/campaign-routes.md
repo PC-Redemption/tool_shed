@@ -541,6 +541,45 @@ End every Tool Shed campaign response with exactly one verdict:
 - `Campaign status: BLOCKED` when progress requires a named decision, dependency, permission,
   credential, external-state change, or required review; state the precise operator action.
 
+## Hosted Dashboard Reporting Route
+
+Treat `ts: dashboard` requests as control of the optional privacy-bounded hosted reporter for the
+verified current project. The hosted service is advisory: local Tool Shed state remains
+authoritative, and the service cannot start, stop, approve, or mutate local work.
+
+| Prompt | Operation |
+| --- | --- |
+| `ts: dashboard status` | Run `dashboard_reporter.py status`. Read-only; never print a credential. |
+| `ts: dashboard connect <server>` | Obtain the `dashboard-connect` project binding and run `connect`; show only the enrollment code and approval URL/action. |
+| `ts: dashboard connect poll` | Poll an approved enrollment with the same operation binding; retain the issued credential only in protected user-local state. |
+| `ts: dashboard disconnect` | Revoke the current reporter credential with the `dashboard-connect` binding and remove it from active local state. |
+| `ts: dashboard report now` | Obtain the `dashboard-report` binding, enqueue a controlled material event, and deliver the outbox with the singleton worker. |
+| `ts: dashboard scheduler plan` | Show the platform-specific 15-minute safety-pass plan without installing it. |
+| `ts: dashboard scheduler install` | With explicit mutation authority and the `dashboard-report` binding, install the project-scoped Linux, macOS, or Windows user scheduler. |
+| `ts: dashboard scheduler remove` | With the `dashboard-report` binding, disable and remove only this project's safety scheduler. |
+
+Invoke the workspace-local reporter directly:
+
+```bash
+python3 <shed>/scripts/dashboard_reporter.py --workspace <workspace> <operation>
+```
+
+Connection state belongs under `$CODEX_HOME/tool-shed/dashboard-connections/` (or the equivalent
+protected Tool Shed state root), never in the repository. Store bearer credentials only as private
+user-local files. The SQLite outbox may contain only the versioned allowlisted aggregate contract;
+unknown fields, uncontrolled summary text, paths, prompts, source, raw diagnostics, credentials,
+and secrets are prohibited. Managed database writes may enqueue reports best-effort. Exactly one
+background worker per project drains idempotent ordered events, retries with bounded backoff,
+heartbeats while active, and sends a final quiescent report after two idle hours. The independent
+15-minute safety pass compares the local domain digest and repairs missed reporting convergence.
+
+Enrollment begins unauthenticated with a short-lived device secret, but only a password-and-TOTP
+verified hosted maintainer may approve it. `connect` does not imply approval. Never inspect, echo,
+or request the reporter token, dashboard secret key, database password, maintainer password, TOTP
+seed, or backup encryption key. Credential provisioning and MFA confirmation remain explicit
+operator actions. A network or hosted-service failure preserves the local outbox and never blocks
+the originating Tool Shed write.
+
 ## App Server Preference and Explicit Route
 
 The committed repository default remains off. A protected user-local preference may make eligible

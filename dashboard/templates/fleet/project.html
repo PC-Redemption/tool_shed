@@ -1,0 +1,26 @@
+{% extends "fleet/base.html" %}
+{% block title %}{{ project.name }}{% endblock %}
+{% block content %}
+<section class="dashboard-heading">
+  <div><p class="eyebrow">Project</p><h1>{{ project.name }}</h1><p>Last report: {{ project.last_seen|default:"Never" }}</p></div>
+  <span class="state-badge state-{{ project.attention_state }}">{{ project.attention_state }}</span>
+</section>
+<section class="summary-grid" aria-label="Project summary">
+  <article><strong>{{ project.current_state.working_count|default:0 }}</strong><span>Working</span></article>
+  <article><strong>{{ project.current_state.blocked_count|default:0 }}</strong><span>Blocked</span></article>
+  <article><strong>{{ project.current_state.open_outcome_count|default:0 }}</strong><span>Open outcomes</span></article>
+  <article><strong>{{ project.current_state.unreconciled_outcome_count|default:0 }}</strong><span>Unreconciled</span></article>
+</section>
+<nav class="dashboard-tabs" aria-label="Project sections">
+  <a href="{% url 'fleet:project' project.id %}" {% if tab == 'overview' %}aria-current="page"{% endif %}>Overview</a>
+  <a href="{% url 'fleet:project-tab' project.id 'work' %}" {% if tab == 'work' %}aria-current="page"{% endif %}>Current Work</a>
+  <a href="{% url 'fleet:project-tab' project.id 'outcomes' %}" {% if tab == 'outcomes' %}aria-current="page"{% endif %}>Outcome Reconciliation</a>
+  <a href="{% url 'fleet:project-tab' project.id 'health' %}" {% if tab == 'health' %}aria-current="page"{% endif %}>Health</a>
+</nav>
+<section class="dashboard-panel">
+  {% if tab == 'overview' %}<h2>Overview</h2><p>{{ project.instances.count }} enrolled instance{{ project.instances.count|pluralize }}. Current hosted state is informational and never replaces the local database.</p>
+  {% elif tab == 'work' %}<h2>Current Work</h2><p>{{ project.current_state.working_count|default:0 }} working and {{ project.current_state.ready_count|default:0 }} ready campaigns.</p>
+  {% elif tab == 'outcomes' %}<h2>Outcome Reconciliation</h2><p>{{ project.current_state.open_outcome_count|default:0 }} open and {{ project.current_state.unreconciled_outcome_count|default:0 }} unreconciled outcome loops.</p>
+  {% else %}<h2>Health</h2><div class="table-scroll"><table><thead><tr><th>Instance</th><th>Platform</th><th>Client</th><th>Last seen</th><th>State</th></tr></thead><tbody>{% for instance in project.instances.all %}<tr><th>{{ instance.external_id }}</th><td>{{ instance.platform }}</td><td>{{ instance.client_version }}</td><td>{{ instance.last_seen|default:"Never" }}</td><td>{% if instance.quiescent %}Quiescent{% else %}Active{% endif %}</td></tr>{% endfor %}</tbody></table></div>{% endif %}
+</section>
+{% endblock %}

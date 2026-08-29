@@ -298,14 +298,18 @@ class DocumentationSiteTests(unittest.TestCase):
             self.assertIn("Reality is allowed to change the roadmap.", overview)
             self.assertIn("You steer. AI works the process.", overview)
 
-    def test_deployment_bundle_is_a_dedicated_nginx_service(self) -> None:
+    def test_deployment_bundle_combines_docs_dashboard_and_postgres(self) -> None:
         compose = (ROOT / "site" / "deploy" / "docker-compose.yml").read_text(encoding="utf-8")
         nginx = (ROOT / "site" / "deploy" / "nginx.conf").read_text(encoding="utf-8")
         self.assertIn("container_name: ts-rookaro-com", compose)
         self.assertIn('"8087:80"', compose)
-        self.assertIn("nginx:alpine", compose)
+        self.assertIn("nginx:1.29-alpine", compose)
+        self.assertIn("postgres:17.9-bookworm", compose)
+        self.assertIn("tool-shed-dashboard:", compose)
         self.assertIn("healthcheck:", compose)
         self.assertIn("try_files $uri $uri/ =404", nginx)
+        self.assertIn("location /dashboard/", nginx)
+        self.assertIn("location /api/v1/", nginx)
 
 
 if __name__ == "__main__":

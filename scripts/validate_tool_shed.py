@@ -227,7 +227,11 @@ def cleanup_ephemeral_canonical_state(state: EphemeralCanonicalState) -> None:
 
 def compile_python() -> None:
     step("compile python")
-    paths = sorted((ROOT / "scripts").glob("*.py")) + sorted((ROOT / "tests").glob("*.py"))
+    paths = (
+        sorted((ROOT / "scripts").glob("*.py"))
+        + sorted((ROOT / "dashboard").rglob("*.py"))
+        + sorted((ROOT / "tests").glob("*.py"))
+    )
     with tempfile.TemporaryDirectory(prefix="tool-shed-compile-") as temporary:
         compile_root = Path(temporary)
         for index, path in enumerate(paths):

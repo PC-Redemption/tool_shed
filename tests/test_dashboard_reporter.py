@@ -1,0 +1,176 @@
+from __future__ import annotations
+
+import contextlib
+import json
+import os
+import sqlite3
+import stat
+import sys
+import tempfile
+import unittest
+import uuid
+from pathlib import Path
+from unittest import mock
+
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+
+import dashboard_reporter  # noqa: E402
+
+
+class DashboardReporterTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        self.workspace = Path(self.temporary.name)
+        (self.workspace / ".tool-shed/dashboard").mkdir(parents=True)
+
+    def tearDown(self) -> None:
+        self.temporary.cleanup()
+
+    def connected(self) -> dict[str, object]:
+        return {
+            "schema_version": 1,
+            "project_id": str(uuid.uuid4()),
+            "instance_id": str(uuid.uuid4()),
+            "server": "https://dashboard.invalid",
+            "status": "connected",
+            "reporter_token": "x" * 48,
+        }
+
+    def test_private_connection_state_uses_restrictive_permissions(self) -> None:
+        target = self.workspace / "protected/state.json"
+        dashboard_reporter._write_private_json(target, {"schema_version": 1, "credential": "secret"})
+        self.assertEqual(stat.S_IMODE(target.stat().st_mode), 0o600)
+        self.assertEqual(json.loads(target.read_text(encoding="utf-8"))["credential"], "secret")
+
+    def test_worker_lease_is_released_and_two_events_deliver_once(self) -> None:
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            for sequence in (1, 2):
+                connection.execute(
+                    "INSERT INTO outbox VALUES (?, ?, ?, 0, 0, ?, NULL)",
+                    (str(uuid.uuid4()), sequence, json.dumps({"sequence": sequence}), dashboard_reporter.stamp()),
+                )
+        with mock.patch.object(dashboard_reporter, "load_connection", return_value=self.connected()), mock.patch.object(
+            dashboard_reporter, "_request", return_value={"status": "accepted"}
+        ) as request:
+            first = dashboard_reporter.worker_once(self.workspace)
+            second = dashboard_reporter.worker_once(self.workspace)
+            idle = dashboard_reporter.worker_once(self.workspace)
+        self.assertEqual((first["sequence"], second["sequence"]), (1, 2))
+        self.assertEqual(idle["status"], "idle")
+        self.assertEqual(request.call_count, 2)
+
+    def test_retry_preserves_event_and_releases_singleton(self) -> None:
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            event_id = str(uuid.uuid4())
+            connection.execute(
+                "INSERT INTO outbox VALUES (?, 1, ?, 0, 0, ?, NULL)",
+                (event_id, json.dumps({"sequence": 1}), dashboard_reporter.stamp()),
+            )
+        with mock.patch.object(dashboard_reporter, "load_connection", return_value=self.connected()), mock.patch.object(
+            dashboard_reporter, "_request", side_effect=dashboard_reporter.DashboardReporterError("offline")
+        ):
+            with self.assertRaisesRegex(dashboard_reporter.DashboardReporterError, "offline"):
+                dashboard_reporter.worker_once(self.workspace)
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            event = connection.execute("SELECT attempts, delivered_at FROM outbox WHERE id=?", (event_id,)).fetchone()
+            lease = connection.execute("SELECT COUNT(*) FROM worker_lease").fetchone()[0]
+        self.assertEqual(event["attempts"], 1)
+        self.assertIsNone(event["delivered_at"])
+        self.assertEqual(lease, 0)
+
+    def test_continuous_worker_refuses_a_second_live_process(self) -> None:
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            connection.execute(
+                "INSERT INTO worker_process VALUES (1, 'existing', ?)",
+                (__import__("time").time() + 30,),
+            )
+        with mock.patch.object(dashboard_reporter, "require_project_binding"):
+            result = dashboard_reporter.worker(self.workspace, project_binding="fixture", max_cycles=1)
+        self.assertEqual(result["status"], "singleton-active")
+
+    def test_linux_scheduler_install_writes_project_scoped_private_units(self) -> None:
+        config = self.workspace / "config"
+        identity = {"project_id": str(uuid.uuid4())}
+        with mock.patch.dict(os.environ, {"XDG_CONFIG_HOME": str(config)}), mock.patch.object(
+            dashboard_reporter, "require_project_binding"
+        ), mock.patch.object(
+            dashboard_reporter, "load_project_identity", return_value=identity
+        ), mock.patch.object(
+            dashboard_reporter, "binding_token", return_value="binding"
+        ), mock.patch.object(
+            dashboard_reporter.platform, "system", return_value="Linux"
+        ), mock.patch.object(dashboard_reporter.subprocess, "run") as run:
+            result = dashboard_reporter.scheduler_install(self.workspace, project_binding="fixture")
+        self.assertEqual(result["status"], "installed")
+        self.assertEqual(run.call_count, 2)
+        for target in result["targets"]:
+            path = Path(target)
+            self.assertTrue(path.is_file())
+            self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o600)
+            self.assertIn(identity["project_id"], path.name)
+        with mock.patch.dict(os.environ, {"XDG_CONFIG_HOME": str(config)}), mock.patch.object(
+            dashboard_reporter, "require_project_binding"
+        ), mock.patch.object(
+            dashboard_reporter, "load_project_identity", return_value=identity
+        ), mock.patch.object(
+            dashboard_reporter.platform, "system", return_value="Linux"
+        ), mock.patch.object(dashboard_reporter.subprocess, "run") as remove_run:
+            removed = dashboard_reporter.scheduler_remove(self.workspace, project_binding="fixture")
+        self.assertEqual(removed["status"], "removed")
+        self.assertEqual(remove_run.call_count, 2)
+        self.assertFalse(any(Path(target).exists() for target in result["targets"]))
+
+    def test_report_payload_contains_only_bounded_aggregate_contract(self) -> None:
+        database = self.workspace / ".tool-shed/state.sqlite3"
+        with sqlite3.connect(database) as connection:
+            connection.execute("CREATE TABLE cycle (id TEXT, lifecycle_state TEXT)")
+            connection.execute("CREATE TABLE reconciliation (id TEXT, cycle_id TEXT, state TEXT, compared_at TEXT)")
+            connection.execute("INSERT INTO cycle VALUES ('cycle-1', 'working')")
+            connection.execute("INSERT INTO reconciliation VALUES ('recon-old', 'cycle-1', 'reconciliation-required', '2026-08-28T00:00:00Z')")
+            connection.execute("INSERT INTO reconciliation VALUES ('recon-1', 'cycle-1', 'open', '2026-08-29T00:00:00Z')")
+        connection_state = self.connected()
+        efficiency = {
+            "counter_epoch": str(uuid.uuid4()),
+            "window": {"started_at": "2026-08-29T00:00:00Z", "ended_at": "2026-08-29T01:00:00Z"},
+            "remedial_tokens_actual": None,
+            "remedial_token_coverage": 0.0,
+            "remedial_proxy": {"interactions": 2, "output_bytes": 100, "duration_ms": 50, "retry_count": 1},
+        }
+        app = {
+            "opportunities": 2,
+            "app_server_selections": 1,
+            "execution_attempts": 1,
+            "gui_fallbacks": 1,
+            "counts": {"outcome": {"failed": 1}},
+        }
+        documents = {
+            ("active", "campaign"): {"documents": [{"visible_id": "CAMP-0001"}]},
+            ("active", "idea-brief"): {"documents": [{"visible_id": "IDEA-0001"}]},
+            ("completed", "campaign"): {"documents": [{"visible_id": "CAMP-0000"}]},
+        }
+
+        def listed(workspace, *, lifecycle, document_type, limit):
+            return documents[(lifecycle, document_type)]
+
+        with mock.patch.object(dashboard_reporter, "load_project_identity", return_value={"project_id": connection_state["project_id"], "project_name": "Fixture"}), mock.patch.object(
+            dashboard_reporter, "load_connection", return_value=connection_state
+        ), mock.patch.object(dashboard_reporter.document_store, "list_documents", side_effect=listed), mock.patch.object(
+            dashboard_reporter.hybrid_state, "database_path", return_value=database
+        ), mock.patch.object(dashboard_reporter.work_orchestration, "efficiency_report", return_value=efficiency), mock.patch.object(
+            dashboard_reporter.app_server_user_state.AppServerEventStore, "report", return_value=app
+        ), mock.patch.object(
+            dashboard_reporter.app_server_user_state.AppServerPreferenceStore, "status", return_value=mock.Mock(enabled=True)
+        ):
+            payload = dashboard_reporter.report_payload(self.workspace, sequence=4, reason="managed-update")
+        serialized = json.dumps(payload)
+        for prohibited in ("prompt", "source_path", "command", "credential", "raw_diagnostic"):
+            self.assertNotIn(prohibited, serialized)
+        self.assertEqual(payload["state"]["open_outcome_count"], 1)
+        self.assertEqual(payload["state"]["unreconciled_outcome_count"], 0)
+        self.assertIsNone(payload["work_efficiency"]["remedial_tokens_actual"])
+
+
+if __name__ == "__main__":
+    unittest.main()
