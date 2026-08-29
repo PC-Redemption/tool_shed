@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-milestone-evidence",
+  "roadmap": "adaptive-pre-prm-idea-readiness-review",
+  "roadmap_document": "PRM-0023",
+  "milestone": "M3-RELEASE-QUALIFIED-RECONCILED",
+  "campaign": "CAMP-0122",
+  "recorded_at": "2026-08-29T14:05:38Z",
+  "verdict": "passed",
+  "gate": {
+    "G5-UPGRADE-ADAPTIVE-QUALIFICATION": "passed"
+  },
+  "release": {
+    "version": "0.37.0",
+    "tag": "v0.37.0",
+    "released_at": "2026-08-29T13:50:23Z",
+    "content_commit": "a14f205f149c8924c3299c94068f070da08ddd8c",
+    "provenance_commit": "ceeb4b1ee5fc3d9261ff3e0c66274b73dac4dbf4",
+    "candidate_validation": "https://github.com/PC-Redemption/tool_shed/actions/runs/33255881430",
+    "publication_workflow": "https://github.com/PC-Redemption/tool_shed/actions/runs/33256042881",
+    "github_release": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.37.0",
+    "github_release_state": "published, non-draft, non-prerelease",
+    "local_release_validation": {
+      "tests_passed": 387,
+      "tests_failed": 0,
+      "focused_tests_passed": 26,
+      "generated_site_pages": 23,
+      "documented_commands": 74
+    },
+    "exact_sha_ci": "passed after rerunning the one time-budget-only Windows shard in the same exact-content-SHA run"
+  },
+  "maintainer_first_upgrade": {
+    "canonical_skill": "/home/jon/docker/tool_shed/skills/tool-shed",
+    "installed_skill": "/home/jon/.codex/skills/tool-shed",
+    "rollback_backup": "/home/jon/.codex/skills/tool-shed.backup-20260829T135208Z",
+    "canonical_and_installed_tree_sha256": "9432720d9b1d143ce9831c6474b657fc0ddc644a270423b7bc207824c1a922c1",
+    "quick_validation": "passed for canonical source, staged copy, installed target, and rollback backup",
+    "final_diff": "empty",
+    "fresh_session_smoke": "Tool Shed 0.37.0, verified manifest, current compatible skill, no mismatch, Campaign status COMPLETE"
+  },
+  "production_documentation": {
+    "url": "https://ts.rookaro.com/help/ideas/",
+    "deployment_target": "sup:/home/jon/docker/ts.rookaro.com",
+    "rollback_backup": "/home/jon/docker/ts.rookaro.com.backup-20260829T135135Z",
+    "container": "ts-rookaro-com",
+    "health": "healthy",
+    "public_response": "HTTP/2 200 over HTTPS with x-rookaro-route and x-served-by set to ts.rookaro.com",
+    "content_proof": "the public and internal page contains ts: bs review IDEA-0008"
+  },
+  "disconnected_canaries": {
+    "network_boundary": "client repositories had zero remotes, isolated Codex and GitHub configuration, and invalid HTTP, HTTPS, and ALL proxy endpoints; releases were acquired from local verified mirrors",
+    "clean_client": {
+      "mode": "new-installation",
+      "installed_version": "0.37.0",
+      "content_commit": "a14f205f149c8924c3299c94068f070da08ddd8c",
+      "snapshot_validation": "passed",
+      "document_store_audit": "VALID_DIRTY with zero findings after managed review write",
+      "readiness_state": "CURRENT-READY",
+      "readiness_verdict": "READY-WITH-PRM-GATES",
+      "review_result_digest": "d74f0bf59294a9fcf31be1f09cf3197098a6994d13bd085fe6178870e85fca86",
+      "gate": "G-DISCONNECTED",
+      "runtime_artifacts": "none"
+    },
+    "existing_client": {
+      "mode": "existing-update",
+      "from_version": "0.36.4",
+      "to_version": "0.37.0",
+      "backup": "tool_shed.backup-20260829T140355Z.tar",
+      "snapshot_validation": "passed",
+      "document_store_audit": "CLEAN with revision 1 and zero findings",
+      "readiness_state_after_upgrade": "ABSENT, correctly requiring the first deliberate review",
+      "live_database_sha256_before_and_after": "d639f86bc74272a842ef317f2bdae10064572a52fd9bdad81a42ab1534745a68",
+      "state_v1_checkpoint_sha256_before_and_after": "88f3f20eed24495954faf445b5807798d7c06e04c56c6a60666397f8415c550a",
+      "state_v2_checkpoint_sha256_before_and_after": "60b2df6df8a3ae1a94de1d0460b9b7f003e480d04dee09e67b9494fd1ff57520",
+      "owner_file_sha256_before_and_after": "d44a7d5da8ae257b8e95a81d0769a5f0b13bb0fcafee5f638ca78102c182d98f",
+      "database_owned_idea": "IDEA-0001 retained artifact identity, document revision 1, and body hash 175c97b94d26bcf33a469f88c2a42f787730d1b8478eb21140d27fc3cf04ff40",
+      "changed_work": "generated work/index.json and work/index.md only",
+      "runtime_artifacts": "none"
+    }
+  },
+  "material_development_changes": [
+    {
+      "finding": "the new Python entry point initially lacked the repository-wide disconnected-snapshot bytecode suppression",
+      "disposition": "added runtime bytecode suppression and reran focused and full validation"
+    },
+    {
+      "finding": "adding the new released files made two historical bootstrap closure ledgers stale",
+      "disposition": "recorded the authorized material change, assigned its durable UUID, refreshed exact source/evidence hashes, and revalidated both ledgers"
+    },
+    {
+      "finding": "one exact-SHA Windows shard exceeded its 60-second budget at 61.563 seconds after all functional assertions passed",
+      "disposition": "reran only the failed job in the same exact-SHA workflow; the complete run finished successful"
+    },
+    {
+      "finding": "the first disposable existing-client fixture omitted the retained state-v1 recovery checkpoint",
+      "disposition": "the updater refused before mutation as designed; the production-shaped fixture was rebuilt with state-v1 and state-v2 checkpoints and then passed"
+    }
+  ],
+  "github_issue_review": {
+    "open_issues_reviewed": [42, 44, 46, 47],
+    "readiness_release_defects": [],
+    "closed_as_fulfilled": [],
+    "verified_residual": {
+      "issue": 47,
+      "label": "next-revision",
+      "comment": "https://github.com/PC-Redemption/tool_shed/issues/47#issuecomment-5462849007",
+      "evidence": "the v0.37.0 provenance-only commit triggered a second 28-job validation matrix"
+    }
+  },
+  "source_sha256": {
+    "scripts/idea_readiness.py": "d641a244eae4352928a3474a7021b0915c41e0aec674235df00c21f5a4ebeba2",
+    "scripts/document_store.py": "a6434831d7940af8c058c6c634e3fa2be2d4b5bcdf9446262d835efb17dd9739",
+    "docs/idea-readiness-review.md": "39256514a373b299f5f8720326680fee68fbff89e4a0a3d48de5240093245f27",
+    "skills/tool-shed/SKILL.md": "5c6db012589b99afc2f9fd5af3724fa3b6d04f0571f97968055bce13bfea3eef",
+    "skills/tool-shed/references/campaign-routes.md": "75f56ce8b9edfe080129d7c933e7b4a417732f69cbd7ac9ed9e9a8145b5cc6da",
+    "site/pages/help/ideas.html": "d767229a1080792322e21ec792c2b38ab6c4653a4f9960c53d5dadbfa2562969",
+    "tests/test_idea_readiness.py": "528b91c3de88ecf7f11f58baa1fc2e737c06eb14385408fdf1d7acfef431433b",
+    "SHED_VERSION.json": "d3d46fa10c147a42528dcbdd758f2da13d0255ab182aab5658f5743adbb41904"
+  },
+  "residuals": [
+    "Additional readiness aliases, reviews for non-Idea artifacts, historical bulk review, and background review remain explicit non-goals.",
+    "Issue 47 remains a separately scoped release-efficiency improvement and does not affect readiness correctness or release safety."
+  ]
+}

@@ -1,0 +1,59 @@
+# Campaign: Qualify, Release, and Reconcile Adaptive Readiness Review
+
+Status: complete
+Type: campaign
+Updated: 2026-08-29
+Next Action: none
+Campaign ID: qualify-release-and-reconcile-adaptive-readiness-review
+Roadmap: adaptive-pre-prm-idea-readiness-review
+Roadmap Document: PRM-0023
+Roadmap Revision: 1
+Milestone: M3-RELEASE-QUALIFIED-RECONCILED
+Unlocks Gate: G5-UPGRADE-ADAPTIVE-QUALIFICATION
+Depends On: CAMP-0121
+Decision: none
+Primary Focus Areas: release-engineering
+Supporting Focus Areas: artifact-workflows, workspace-safety, provider-portability
+Completion Gate: full release validation, publication provenance, maintainer synchronization, disconnected client canaries, production documentation verification, and origin reconciliation all pass
+Completion Evidence: work/evidence/idea-readiness-m3-release-reconciliation.json
+Completion Date: 2026-08-29
+
+## Outcome
+
+Qualify and publish the adaptive Idea readiness feature, upgrade the dual-role maintainer first,
+prove clean and existing disconnected clients, verify the live documentation target, and propagate
+the released result through PRM, Map, and the originating Idea loop.
+
+## Scope
+
+- Run focused and full validation for contract compatibility, adaptive fixtures, both triggers,
+  staleness/concurrency/failure paths, lossless transfer, and zero ordinary-brainstorm review.
+- Bump the release version and publish through the exact commit, CI, manifest, tag, and GitHub
+  Release provenance sequence.
+- Synchronize the installed Codex skill using staged validation, exact diff, rollback protection,
+  and a fresh-use smoke.
+- Upgrade clean and existing disconnected production-shaped clients without relying on repository
+  state or network after acquisition.
+- Verify public documentation and review GitHub issues against released behavior.
+- Reconcile all milestone evidence and material development changes to the original Idea outcome.
+
+## Non-Goals
+
+- Do not add new readiness aliases, background review, or a schema migration.
+- Do not change unrelated Tool Shed projects or Marshal artifacts.
+- Do not claim completion from local tests or publication alone.
+
+## App Server Preparation Contract
+
+Release and upgrade operations use the repository's deterministic tooling and authenticated `gh`
+client. The campaign stays on the current GUI route; no App Server delegation is required.
+
+## Completion Result
+
+Tool Shed 0.37.0 was qualified and published from exact content commit
+`a14f205f149c8924c3299c94068f070da08ddd8c`. The maintainer skill, live documentation,
+clean disconnected installation, and v0.36.4-to-v0.37.0 existing-client upgrade passed. The
+existing client preserved its live database, both recovery checkpoints, database-owned Idea, and
+owner-authored file byte-for-byte. All G5 requirements and material development changes are
+accounted in the completion evidence; GitHub issue 47 remains a separately scoped next-revision
+release-efficiency improvement.
