@@ -10,7 +10,7 @@
     "adapters/codex-app-server-config.json": "d79964bc2371a39d50b7bcad534af133564e55bbf491baf4f3031b36e01b7e49",
     "adapters/codex-app-server-qualifications.json": "995ccd3bea135448b316045ea240c10d272f4c7e2ff65085111e0380cef947c1",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "f281ccc0149800b64a60188a31328a5977b51c891e2d58cb3a63df797db6502d",
+    "adapters/codex-skill-releases.json": "38640e67875b4dc581075544e3eab162a456612851ca3d8a07cf33bf6cca71b9",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "a16e9afbc2733b2c01b113df3f3a07fda1630b80b5a97476896123ee03bc22d2",
     "docs/codex-app-server-alpha-requalification-2026-08-24.md": "be240e9b4b63db13689c69c9fec9a870627fc39a85d5176ee4c6ce6ad256721c",
@@ -22,7 +22,7 @@
     "docs/codex-app-server-requalification-2026-08-21.md": "9aacfac50f3debb8ccff2b3b06d33f6b52c6354e7df5b7bc9c5f2114f85663b4",
     "docs/codex-app-server-write-qualification-2026-08-20.md": "db297ad88feb73f46a46178ae92304445afc2fb2447c2543d3bec84609af3923",
     "docs/codex-app-server-write-qualification-alpha-2026-08-25.md": "95d22eeb2b8d80fc884962fe30e93c5b2af4c63063970fb6ab30b55f292d40c8",
-    "docs/commands.md": "f8805e11458a6912311222759f5243483b5583a236663713ffebcd9e77d9dcb3",
+    "docs/commands.md": "3be4eadf3f26de995b31ffe4e74073178c3523f925c9df405e75c237f489ae97",
     "docs/completion-watcher-hosted-api-contract.md": "95d6915bbfa0f9e81bea2e6aaecbf8cdb1165b9aeb38a6f7a6d80b95b2ece983",
     "docs/completion-watcher-hosted-datastore.md": "5f06d3db3e92a428d5762d27f3ebef5aa05519234c412e469883a34fe5772f5f",
     "docs/completion-watcher-hosted-notification-worker.md": "d5c240a648e2c5aa22d855b6b0a3f8f4f42389bfffe66caadb03ab20ec0aaa60",
@@ -58,7 +58,7 @@
     "schemas/document-store/v1/conversion-manifest.schema.json": "1c940c60e4e25f2e9f82b1914b5156e7239c7bfa343af4c1ab8c13903e86de79",
     "schemas/document-store/v1/maintainer-assigned-ids.json": "a93e9b9d92d7a3fe180635b246974f3e8e5739c564ae48d902e3db19bba069a4",
     "schemas/hybrid-state/v1/checkpoint.schema.json": "c92f8910f815fb3f46f6d51ba7e7fc8752f3d9878a1b5a212198503a2d7dafff",
-    "schemas/hybrid-state/v1/hpt2-assigned-ids.json": "7e3af3548d64d3f8cfabe1d49f472892a552d57462f44b0114e4e47eab75be13",
+    "schemas/hybrid-state/v1/hpt2-assigned-ids.json": "1bf6649f59a09488f2931b031e8bef81fb3decacd608013e9cc3343b4422756a",
     "schemas/hybrid-state/v1/maintainer-assigned-ids.json": "033651f1d422cdf99d70da3d3ef9495d0e5feaa0dd1d7cb1fb6f9311a4551f63",
     "schemas/outcome-reconciliation/v1/manifest.schema.json": "481a7eff9ad46e1ad230da9c6d51d13594b01ad7855bcce1b3a9afba15e69cb7",
     "schemas/outcome-reconciliation/v1/source.schema.json": "025515720e206c9c957232fee9e7b22c649d60bf782eada4c6b979d5c0c13de2",
@@ -132,22 +132,22 @@
     "site/pages/guide/existing-project.html": "55dd5364f10f428d78e4c8119149c79489a102c0c8d56b6b0b9a325fe50f126c",
     "site/pages/guide/generate-campaigns.html": "33ed11a7953bd663eddfd57d3d67159c6d0071857d719be9d0fa6a3076f12ef2",
     "site/pages/guide/index.html": "0593d2e97ee08f2c6f6f638d2749f84fd37adf4397478e70acb2acf129a5d87b",
-    "site/pages/guide/new-project.html": "0da11cb39cd59cf7aa237cdf80ff0b2f5aa45d878d70e81c1e84b2439c3e485c",
+    "site/pages/guide/new-project.html": "82b0805855dd3a8366c70890458304107f455fa1b7f181fb67b503fcc7a2d406",
     "site/pages/guide/project-map.html": "7eee0204dfbc2a9e17cb1e311d45670cafd04e197dcfae8063e78a66cce1b106",
     "site/pages/guide/queue-and-select.html": "e4d4cecd9093725aa6558934a98b1d8733ee9a2b070796d24069bf6f5d7011aa",
     "site/pages/guide/roadmap.html": "87cefbebf0c0b76e8e5cc32c383a3f5ba59e597fb96f02b333f6864faf17f7d4",
-    "site/pages/help/campaigns.html": "a11dd78df458d20fcab225b4da61c74c33729344f4a4b5eaade288ae9144d1f3",
+    "site/pages/help/campaigns.html": "f009d8965dd503d778bb365ce29939a7a0ffea76120883882c90cf574d755ac9",
     "site/pages/help/commands.html": "0195da719677e6f1bf1d3a79fffe5d0b9047a8e7ff45a5fc9683476f1844186a",
     "site/pages/help/execution.html": "6186c28b6c081eece6c7b57972a1eab27f3c57099b562a0afcc10430925fd66b",
-    "site/pages/help/ideas.html": "568dd24b1531d6502aa1cf02e9d90cd6325a8365234faeb4ea0ddd52e2b5674a",
+    "site/pages/help/ideas.html": "83821110e06aed3c1d44bc5bb955556a2d4b8438e77fcd5e930544b0e804c672",
     "site/pages/help/index.html": "bb4772f5d977f04c89128c2447de40c1f9f7989d9ec4fe5d9cf193d6deb5dd64",
-    "site/pages/help/maintenance.html": "9aee9add07e310d16c6897cafbd5dadf85bf765716a0a207ee6f00419f70ba6d",
+    "site/pages/help/maintenance.html": "f64d16f076d30f7f8ab36f1206dbc0feb05aa8d077f2d15bb725d06eb098fd40",
     "site/pages/help/planning.html": "8720a93cade7c225965392eca64b921ffdcb70c6f69291a8a10deb1536a01bc0",
     "site/pages/help/recovery.html": "05f932731a803e7c120837a71c33e4e04ef05f35817fca29357cfc70d907adbe",
     "site/pages/help/review.html": "dff13b3aca7a544503a3e12fe261f842ae8c14b1d9f2672d9bb8d7dd9f976db0",
-    "site/pages/help/roadmaps.html": "938a1505672312aafd14c6d1732269e166ddb600407c805c527006d6a3145cd4",
+    "site/pages/help/roadmaps.html": "ec95abe913b55b4b69f4a498c4e473131175f302de51f94931b3cdde8a5e12d4",
     "site/pages/help/work-level-customization.html": "e4423016b334c3f854b4a2d4b7dcbb002ef65415472fe46a614fa5ad996ff6a9",
-    "site/pages/help/workflow-cycles.html": "ce96ac950163d0ca35b04d0b5903b7a6bca0115c1c67e13bf911c7ac9b624acd",
+    "site/pages/help/workflow-cycles.html": "aea90dd014fa9bbc9fd19193ea1ac27d507967db207ce0db711eb88d27796572",
     "site/pages/home.html": "5f02caf518ba174eee3ee6c5a67fa771ca73c2ba8415ab08192babd81523c907",
     "skills/tool-shed/SKILL.md": "57ea84f3d450949af0ffa093e75117909e07aa6c7d207a9148ee76df20b7e0bf",
     "skills/tool-shed/agents/openai.yaml": "5b39ceb5df84a19a82f6c406bc80c5e8c88ea236211c6c618d80c37dc7301a23",
@@ -177,34 +177,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Preserve schema-2 database-owned documents through protocol-4 snapshot upgrades.",
-  "release_commit": "cdd3166bb3716649ff482d23769d4051c1c4464a",
-  "release_qualification": {
-    "attested_at": "2026-08-29T02:35:35Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "a8ec0a24a6b23b0150767be9686ce29f4004c55fb07b45a438ade5400143647b"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "2aef28bae106f03d192e969d0f9aecbd5b720690a212773aaf9d48a401fcfa69"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "cdd3166bb3716649ff482d23769d4051c1c4464a"
-  },
-  "release_tag": "v0.36.2",
-  "released_at": "2026-08-29T02:35:35Z",
-  "shed_version": "0.36.2",
+  "notes": "Align public operator guidance with database-owned collateral and protocol-4 recovery.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.36.3",
+  "released_at": null,
+  "shed_version": "0.36.3",
   "updated_at": "2026-08-28",
   "updater_mutation_paths": [
     {

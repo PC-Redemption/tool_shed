@@ -80,7 +80,7 @@ protection. Every interrupt explains impact, blast radius, rollback, and recomme
 | `ts: help all` | Alias for the complete local command reference, with both public help and `/ref/` links. Read-only. |
 | `ts: help <topic-or-command>` | Explain the named workflow locally with examples and retain the public root help link. Read-only. |
 | `ts: discuss <topic>` | Explore the outcome, constraints, assumptions, unknowns, and smallest useful next route without modifying workspace artifacts. |
-| `ts: brainstorm` | List active Idea Briefs under `work/ideas/` without mutation. |
+| `ts: brainstorm` | List active Idea Briefs without mutation, using database authority after schema-2 cutover and `work/ideas/` before cutover. |
 | `ts: brainstorm <idea>` | Create or resume one durable pre-PRM Idea Brief, updating its current synthesis and useful dated exploration notes. |
 | `ts: bs <idea>` | Exact alias for `ts: brainstorm <idea>`. |
 | `ts: build focus areas` | Inspect existing workspace sources and produce a project-specific focus-area catalog and active-campaign assignments. Faithful reversible results may apply under planning autonomy; material responsibility choices require a decision. |
@@ -98,15 +98,18 @@ Idea → Brainstorm / Discovery → PRM (Plan → Roadmap → Milestone)
 ```
 
 `brainstorm` and `bs` are equivalent. Unlike `ts: discuss`, the brainstorm route authorizes
-creating or updating exactly one tracked `work/ideas/idea-*.md` Idea Brief. Before creating a new
-one, compare active brief titles and current syntheses; resume one clear material match and ask one
-concise choice if several match. A bare `ts: brainstorm` only lists active briefs.
+creating or updating exactly one durable Idea Brief. After schema-2 document-authority cutover,
+the brief is a versioned SQLite document with an immutable visible ID; before cutover it remains a
+tracked `work/ideas/idea-*.md` file. Before creating a new one, compare active brief titles and
+current syntheses; resume one clear material match and ask one concise choice if several match. A
+bare `ts: brainstorm` only lists active briefs.
 
 Each turn keeps `Current Synthesis` concise and appends only useful dated context to `Exploration
 Log`. Capture possibilities, tradeoffs, constraints, non-goals, reminders, assumptions, open
 questions, and decisions without requiring every section to be complete. Supported statuses are
-`exploring`, `ready-for-prm`, `promoted`, and `parked`. Idea Briefs appear in the work index but are
-excluded from campaign reconciliation.
+`exploring`, `ready-for-prm`, `promoted`, and `parked`. Idea Briefs remain outside the campaign
+queue. Promotion may open an owning outcome cycle so implementation and child campaign results can
+be reconciled back to the original intent.
 
 Use `ts: brainstorm idea <idea-id-or-path>` or its `ts: bs` equivalent to explicitly resume one
 brief. Use `ts: prm idea <idea-id-or-path>` to carry it forward; keep it ready-for-PRM until
@@ -209,6 +212,16 @@ python3 scripts/hybrid_state.py --workspace . legacy-check --field <authority-fi
 The database remains ignored, local, and `shadow` until a separately qualified conversion. These
 commands do not authorize maintainer cutover, release, installed-skill synchronization, or client
 upgrade. See [Hybrid SQLite operational state](hybrid-sqlite-state.md).
+
+After schema-2 document-authority cutover, Tool Shed-generated work documents live in SQLite and
+ordinary agents use `document_store.py`, never direct SQL. The managed surface includes audit,
+list, show, search, bounded context, create/import, guarded export-edit/apply-edit, lifecycle,
+history, diff, relationships, disposable lifecycle views, logical checkpoint, and rebuild.
+Immutable visible IDs survive title, lifecycle, and generated-view path changes. Retained imported
+files, source, canonical product documentation, provider instructions, and governed recovery
+artifacts remain file-owned. The live database stays ignored; tracked `state-v1` and `state-v2`
+checkpoints plus content objects provide reviewable recovery without a commit per access. See
+[Database-owned work collateral](database-owned-work-collateral.md).
 
 `reconcile-unmanaged` is the only acceptance route for detected direct SQL. It requires the exact
 audited revision and domain digest plus explicit authorization, journals the disposition, and

@@ -2,9 +2,9 @@
   "authority_contract": "docs/hybrid-sqlite-state-v1-contract.md",
   "baseline": {
     "created_at": "2026-08-28T16:26:19Z",
-    "source_commit": "e90e02b66879d40e92a6e8d2f0b7931ce4a4659d",
+    "source_commit": "5e8d18cb0700ed0baeb4d661cd42454e9aae22f8",
     "source_digest": "59b136000a93f64586208192799deb87efdf087f0d71857a08fa7b9120ad0af2",
-    "updated_at": "2026-08-29T02:30:23Z"
+    "updated_at": "2026-08-29T02:43:13Z"
   },
   "bindings": [
     {
@@ -503,6 +503,28 @@
       "source_commit": "e90e02b66879d40e92a6e8d2f0b7931ce4a4659d",
       "summary": "Match protocol-4 recovery rebuilds to the live database schema",
       "supersedes": []
+    },
+    {
+      "authorization": "Owner-directed database-owned collateral PRM end-to-end implementation targeting ts.rookaro.com on 2026-08-28",
+      "decision_ids": [
+        "DEC-HYBRID-010",
+        "DEC-HYBRID-012"
+      ],
+      "evidence_to_rerun": [
+        "EVID-G2-HPT2-PARITY",
+        "EVID-G4-CANARY",
+        "EVID-G4-RELEASE"
+      ],
+      "id": "CHG-HYBRID-022",
+      "rationale": "The live-site qualification found that the public operator surface still described protocol 3 and file-owned Idea Briefs after schema-2 release. Canonical commands and help pages now explain immutable document IDs, disposable lifecycle views, outcome-loop propagation, protocol-4 dual-checkpoint recovery, and the file-owned exceptions so the production documentation target matches released behavior.",
+      "recorded_at": "2026-08-29T02:42:43Z",
+      "requirement_ids": [
+        "REQ-HYBRID-010",
+        "REQ-HYBRID-011"
+      ],
+      "source_commit": "5e8d18cb0700ed0baeb4d661cd42454e9aae22f8",
+      "summary": "Publish database-owned collateral guidance to the operator documentation site",
+      "supersedes": []
     }
   ],
   "decisions": [
@@ -783,7 +805,8 @@
         "CHG-HYBRID-018",
         "CHG-HYBRID-019",
         "CHG-HYBRID-020",
-        "CHG-HYBRID-021"
+        "CHG-HYBRID-021",
+        "CHG-HYBRID-022"
       ],
       "gate": "G2-SUBSTRATE-LOOP-PROVEN",
       "id": "EVID-G2-HPT2-PARITY",
@@ -802,7 +825,7 @@
         },
         {
           "path": "schemas/hybrid-state/v1/hpt2-assigned-ids.json",
-          "sha256": "7e3af3548d64d3f8cfabe1d49f472892a552d57462f44b0114e4e47eab75be13"
+          "sha256": "1bf6649f59a09488f2931b031e8bef81fb3decacd608013e9cc3343b4422756a"
         },
         {
           "path": "tests/test_outcome_reconciliation.py",
@@ -818,7 +841,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T02:29:52Z"
+      "verified_at": "2026-08-29T02:42:54Z"
     },
     {
       "covers_change_ids": [
@@ -918,7 +941,8 @@
         "CHG-HYBRID-016",
         "CHG-HYBRID-019",
         "CHG-HYBRID-020",
-        "CHG-HYBRID-021"
+        "CHG-HYBRID-021",
+        "CHG-HYBRID-022"
       ],
       "gate": "G4-RELEASE-CANARY-PROVEN",
       "id": "EVID-G4-RELEASE",
@@ -952,16 +976,44 @@
           "sha256": "c141147b427174eea373345ae7330319df7ead7fc324b00d4a57779e8305c9b1"
         },
         {
-          "path": "work/evidence/evidence-hybrid-sqlite-disconnected-production-canary.md",
-          "sha256": "6e33a06fbc594bfb7cda344738e44afa7d225d7943f154a9f550aaceb644b853"
+          "path": "docs/commands.md",
+          "sha256": "3be4eadf3f26de995b31ffe4e74073178c3523f925c9df405e75c237f489ae97"
         },
         {
-          "path": "work/evidence/evidence-tool-shed-v0-34-0-release-and-maintainer-sync.md",
-          "sha256": "83de5ee69dde6a141ef0bc6221292c39f02517ee09f25fa5d54616e29f2c7d9d"
+          "path": "scripts/build_docs_site.py",
+          "sha256": "c6fa8e9331028c46e14fc5bc797fdd299dc301900ba1f39ec5a4730f0feeadda"
+        },
+        {
+          "path": "site/pages/help/maintenance.html",
+          "sha256": "f64d16f076d30f7f8ab36f1206dbc0feb05aa8d077f2d15bb725d06eb098fd40"
+        },
+        {
+          "path": "site/pages/help/ideas.html",
+          "sha256": "83821110e06aed3c1d44bc5bb955556a2d4b8438e77fcd5e930544b0e804c672"
+        },
+        {
+          "path": "site/pages/help/campaigns.html",
+          "sha256": "f009d8965dd503d778bb365ce29939a7a0ffea76120883882c90cf574d755ac9"
+        },
+        {
+          "path": "site/pages/help/roadmaps.html",
+          "sha256": "ec95abe913b55b4b69f4a498c4e473131175f302de51f94931b3cdde8a5e12d4"
+        },
+        {
+          "path": "site/pages/help/workflow-cycles.html",
+          "sha256": "aea90dd014fa9bbc9fd19193ea1ac27d507967db207ce0db711eb88d27796572"
+        },
+        {
+          "path": "site/pages/guide/new-project.html",
+          "sha256": "82b0805855dd3a8366c70890458304107f455fa1b7f181fb67b503fcc7a2d406"
+        },
+        {
+          "path": "tests/test_docs_site.py",
+          "sha256": "9baf4fab75014e6961ef0c67fd68fc3045812d0a5cd0bef7d243f5da9cd0139a"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T02:30:23Z"
+      "verified_at": "2026-08-29T02:43:13Z"
     },
     {
       "covers_change_ids": [
@@ -970,7 +1022,8 @@
         "CHG-HYBRID-013",
         "CHG-HYBRID-014",
         "CHG-HYBRID-020",
-        "CHG-HYBRID-021"
+        "CHG-HYBRID-021",
+        "CHG-HYBRID-022"
       ],
       "gate": "G4-RELEASE-CANARY-PROVEN",
       "id": "EVID-G4-CANARY",
@@ -988,12 +1041,40 @@
           "sha256": "c141147b427174eea373345ae7330319df7ead7fc324b00d4a57779e8305c9b1"
         },
         {
-          "path": "work/evidence/evidence-hybrid-sqlite-disconnected-production-canary.md",
-          "sha256": "6e33a06fbc594bfb7cda344738e44afa7d225d7943f154a9f550aaceb644b853"
+          "path": "docs/commands.md",
+          "sha256": "3be4eadf3f26de995b31ffe4e74073178c3523f925c9df405e75c237f489ae97"
+        },
+        {
+          "path": "site/pages/help/maintenance.html",
+          "sha256": "f64d16f076d30f7f8ab36f1206dbc0feb05aa8d077f2d15bb725d06eb098fd40"
+        },
+        {
+          "path": "site/pages/help/ideas.html",
+          "sha256": "83821110e06aed3c1d44bc5bb955556a2d4b8438e77fcd5e930544b0e804c672"
+        },
+        {
+          "path": "site/pages/help/campaigns.html",
+          "sha256": "f009d8965dd503d778bb365ce29939a7a0ffea76120883882c90cf574d755ac9"
+        },
+        {
+          "path": "site/pages/help/roadmaps.html",
+          "sha256": "ec95abe913b55b4b69f4a498c4e473131175f302de51f94931b3cdde8a5e12d4"
+        },
+        {
+          "path": "site/pages/help/workflow-cycles.html",
+          "sha256": "aea90dd014fa9bbc9fd19193ea1ac27d507967db207ce0db711eb88d27796572"
+        },
+        {
+          "path": "site/pages/guide/new-project.html",
+          "sha256": "82b0805855dd3a8366c70890458304107f455fa1b7f181fb67b503fcc7a2d406"
+        },
+        {
+          "path": "tests/test_docs_site.py",
+          "sha256": "9baf4fab75014e6961ef0c67fd68fc3045812d0a5cd0bef7d243f5da9cd0139a"
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T02:30:03Z"
+      "verified_at": "2026-08-29T02:43:02Z"
     }
   ],
   "initiative": {
@@ -1228,7 +1309,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "9ce0678a49f97bfd",
+  "state_token": "7195fe8b665521dc",
   "upgrade_targets": [
     {
       "id": "UPG-HYBRID-MAINTAINER",
