@@ -1,0 +1,100 @@
+# Project Map: Immutable Historical Qualification and Completed-Ledger Isolation
+
+Status: approved
+Type: project-map
+Updated: 2026-08-29
+Next Action: execute M1-HISTORICAL-BOUNDARY-FROZEN from the approved Program Roadmap
+Source Idea: IDEA-0009
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 1
+Reviewed Body SHA256: 59e55afe1151d98db72c4a9c9428db70239114b4ba17ec021c7a6f3d25638c6f
+Program Roadmap: PRM-0024
+
+## Purpose
+
+Separate immutable historical qualification evidence from current Tool Shed product state so
+ordinary development no longer rewrites HPT2 fixed identities or completed reconciliation ledgers.
+New work uses generic managed outcome identities, validation is non-mutating, and performance and
+CI decisions are based on stable inputs rather than repository growth or shared-runner variance.
+
+## Desired Outcome
+
+Adding an unrelated Tool Shed outcome, document, or product change does not alter the frozen HPT2
+compatibility fixture, request another HPT2 UUID, or refresh a completed historical ledger. The
+original HPT2 identity graph remains reproducible, terminal ledgers accept only append-only
+correction or supersession, validation leaves Git, SQLite revision, checkpoints, and generated
+views unchanged, and qualification remains portable across maintainer and installed-client paths.
+
+## First Useful Boundary
+
+- Freeze the exact accepted baseline before changing compatibility or ledger behavior.
+- Extract one compact checked-in HPT2 compatibility fixture with explicit callers.
+- Enforce terminal-ledger immutability through the smallest sufficient managed boundary.
+- Allocate all new outcome identities generically.
+- Make functional validation read-only.
+- Use one stable performance corpus and declared change-aware CI routing.
+- Prove maintainer upgrade, rollback, work-environment deployment, and the remaining release boundary.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Historical compatibility | Frozen HPT2 input reproduces accepted IDs and cannot absorb live records | frozen baseline |
+| Ledger and identity authority | Terminal ledgers reject ordinary mutation; corrections append; new cycles use generic IDs | historical boundary |
+| Validation and CI | Validation is non-mutating; performance and CI use stable, risk-matched inputs | authority boundary |
+| Upgrade and reconciliation | Migration, rollback, maintainer/client compatibility, deployment, and final release evidence reconcile | all implementation workstreams |
+
+## Readiness Gate Transfer
+
+All six reviewed gates are mandatory roadmap constraints:
+
+1. `G1-BASELINE-AND-CANDIDATE-BOUNDARY` freezes a clean source and database checkpoint after
+   dispositioning the existing timing candidate.
+2. `G2-HPT2-COMPATIBILITY-FIXTURE-FROZEN` preserves accepted HPT2 UUIDs and relationships in one
+   explicit compact fixture that unrelated live records cannot expand.
+3. `G3-TERMINAL-LEDGER-IMMUTABILITY` rejects ordinary terminal-ledger mutation and provides
+   append-only correction and supersession.
+4. `G4-GENERIC-IDENTITY-AND-READ-ONLY-VALIDATION` proves generic identities and zero validation
+   mutation of Git, database revision, checkpoints, and generated views.
+5. `G5-STABLE-PERFORMANCE-AND-CI-POLICY` qualifies a frozen benchmark, advisory live timing,
+   change-aware CI, overrides, and scheduled full coverage.
+6. `G6-MIGRATION-UPGRADE-RELEASE-RECONCILED` proves preservation, migration, rebuild, maintainer
+   and installed-client upgrade, rollback, Linux and Windows behavior, strict Doctor, release
+   provenance, and complete upward reconciliation.
+
+## Constraints
+
+- Preserve every accepted HPT2 UUID and historical relationship.
+- Do not mutate the frozen baseline ledgers merely to make later tests pass.
+- Reuse SQLite, managed document operations, outcome reconciliation, and existing workflows.
+- Prefer managed-command enforcement before adding schema triggers.
+- Preserve offline operation and Python 3.11+ support.
+- Keep work2 distinct from push and release authority.
+
+## Non-Goals
+
+- A generalized historical-fixture service.
+- A new database, server, or CI orchestration platform.
+- Redesigning every fixture.
+- Deleting or renaming HPT2 history.
+- Reopening completed initiatives for unrelated later work.
+
+## Navigation
+
+Do next:
+
+- Freeze and record the exact baseline commit and database checkpoint.
+- Isolate HPT2 and terminal ledgers before changing performance or CI behavior.
+- Carry work2 through implementation, local checkpoint, work-environment deployment, and focused
+  verification; leave push/release evidence visibly open until separately authorized.
+
+Avoid for now:
+
+- Adding abstractions before a current invariant proves they are necessary.
+- Treating tests, a roadmap milestone, deployment, or an empty queue as closed-loop completion.
+
+## Related Artifacts
+
+- Source Idea Brief: IDEA-0009
+- Readiness result digest: a467a22ff8ed7ccd280613f576b750d60833b60ae53e5d69f855fe4e3f22b94f
+- Frozen baseline commit: 02703bf

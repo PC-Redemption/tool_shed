@@ -1,0 +1,38 @@
+# Campaign: Generalize Outcome Identities and Make Validation Read-Only
+
+Status: queued
+Type: campaign
+Updated: 2026-08-29
+Next Action: execute after CAMP-0123 passes
+Campaign ID: generalize-outcome-identities-and-make-validation-read-only
+Campaign Number: 124
+Outcome: Allocate generic managed identities for every new work entry point and make functional validation observational rather than mutating.
+Roadmap: immutable-historical-qualification-and-completed-ledger-isolation
+Roadmap Document: PRM-0024
+Roadmap Revision: 1
+Milestone: M2-GENERIC-READ-ONLY-VALIDATION
+Unlocks Gate: G4-GENERIC-IDENTITY-AND-READ-ONLY-VALIDATION
+Depends On: CAMP-0123
+Decision: none
+Primary Focus Areas: artifact-workflows
+Supporting Focus Areas: workspace-safety, qualification-release
+Completion Gate: representative Idea, map, roadmap, campaign, milestone, and direct-work cycles use generic identities with no HPT2 registry change, and validation leaves Git, database revision, checkpoint, and generated views unchanged.
+
+## Scope
+
+- Remove HPT2 registry dependence from generic outcome-cycle allocation.
+- Add exact compatibility-boundary diagnostics.
+- Replace validator view refresh with isolated rendering and comparison.
+- Detect mismatches and report the managed repair command without performing it.
+- Add before/after mutation-sentinel tests covering Git, SQLite revision, checkpoint, and views.
+
+## Non-Goals
+
+- No provider telemetry.
+- No background reconciler.
+- No broad redesign of document or outcome schemas without demonstrated need.
+
+## App Server Preparation Contract
+
+The operator preference is off. Execute this campaign in the current GUI workflow.
+

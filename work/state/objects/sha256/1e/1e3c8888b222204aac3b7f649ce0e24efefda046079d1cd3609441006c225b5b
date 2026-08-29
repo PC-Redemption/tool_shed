@@ -1,0 +1,41 @@
+# Campaign: Freeze HPT2 Compatibility and Terminal Ledgers
+
+Status: working
+Type: campaign
+Updated: 2026-08-29
+Next Action: extract the qualified HPT2 fixture and enforce terminal-ledger mutation boundaries
+Campaign ID: freeze-hpt2-compatibility-and-terminal-ledgers
+Campaign Number: 123
+Outcome: Preserve exact HPT2 compatibility evidence independently from live state and prevent ordinary mutation of reconciled terminal ledgers.
+Roadmap: immutable-historical-qualification-and-completed-ledger-isolation
+Roadmap Document: PRM-0024
+Roadmap Revision: 1
+Milestone: M1-HISTORICAL-BOUNDARY-FROZEN
+Unlocks Gate: G1-BASELINE-AND-CANDIDATE-BOUNDARY, G2-HPT2-COMPATIBILITY-FIXTURE-FROZEN, G3-TERMINAL-LEDGER-IMMUTABILITY
+Depends On: none
+Decision: none
+Primary Focus Areas: artifact-workflows
+Supporting Focus Areas: workspace-safety, qualification-release
+Completion Gate: HPT2 reproduces from one explicit compact fixture without live registry growth, terminal ledgers reject ordinary mutation, append-only correction and supersession pass, and baseline files remain unchanged.
+
+## Scope
+
+- Freeze commit `02703bf` and database/checkpoint revision 437 as G1 evidence.
+- Extract the exact accepted HPT2 identity and relationship input into one checked-in fixture.
+- Make HPT2 compatibility callers select that fixture explicitly.
+- Reject live records accidentally routed through the frozen compatibility importer.
+- Reject ordinary changes to reconciled terminal ledgers.
+- Provide append-only correction and supersession operations with preserved provenance.
+- Prove unrelated live records neither expand the fixture nor request fixed HPT2 IDs.
+
+## Non-Goals
+
+- No generalized historical-fixture service.
+- No new database.
+- No rewrite of accepted historical UUIDs.
+
+## App Server Preparation Contract
+
+The operator preference is off. Execute this bounded campaign in the current GUI workflow and use
+deterministic focused verification before lifecycle completion.
+
