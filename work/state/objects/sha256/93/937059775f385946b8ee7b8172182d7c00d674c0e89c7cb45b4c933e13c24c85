@@ -1,0 +1,23 @@
+# Campaign: Implement and Qualify Work1/Work2 Closeout Runner
+
+Status: complete
+Type: campaign
+Updated: 2026-08-29
+Next Action: none
+Campaign ID: implement-and-qualify-work1-work2-closeout-runner
+Outcome: Implement the smallest compositional dry-run/resumable preparation and closeout slice for Direct Work1 and Work2.
+Roadmap: scripted-tool-shed-work-orchestration-and-token-efficiency
+Roadmap Document: PRM-0025
+Roadmap Revision: 1
+Milestone: M2-WORK1-WORK2-KISS-SLICE
+Unlocks Gate: G3-WORK1-WORK2-KISS-SLICE-QUALIFIED
+Depends On: freeze-scripted-orchestration-contract-and-resume-safety
+Completion Gate: the runner composes existing identity, work-level, view, validation, checkpoint, rebuild, Doctor, target-evidence, cohort, and Git surfaces without a second state authority.
+
+## Result
+
+`scripts/work_orchestration.py` now provides read-only plan, guarded prepare/closeout, exact resume,
+compact result, and independently callable underlying commands. It was dogfooded on this Work2
+candidate and resumed correctly after a generated-bytecode validation failure.
+
+Completion Evidence: `tests.test_work_orchestration`; `scripts/validate_tool_shed.py --profile release`.

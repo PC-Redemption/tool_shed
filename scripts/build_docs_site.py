@@ -65,6 +65,7 @@ PAGES = (
     Page("help/roadmaps", "Program roadmaps", "Give multi-milestone work direction without turning the plan into a rigid promise.", "help/roadmaps.html", "help"),
     Page("help/campaigns", "Campaigns", "Use focused owner-facing execution cycles with explicit outcomes and completion evidence.", "help/campaigns.html", "help"),
     Page("help/execution", "Execution levels", "Choose how far an authorized change should travel from implementation to production.", "help/execution.html", "help"),
+    Page("help/work-orchestration", "Scripted work orchestration", "Use guarded, resumable Work1 and Work2 preparation and closeout while keeping semantic decisions with Codex and the operator.", "help/work-orchestration.html", "help"),
     Page("help/work-level-customization", "Workspace work-level customization", "Add project-specific actions around one Tool Shed execution endpoint or replace its standard behavior.", "help/work-level-customization.html", "help"),
     Page("help/review", "Review and completion", "Use actual evidence to accept the outcome, revise direction, or select the next campaign.", "help/review.html", "help"),
     Page("help/recovery", "Existing and interrupted work", "Orient safely in unfamiliar repositories and resume work without inventing history.", "help/recovery.html", "help"),

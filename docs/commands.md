@@ -184,6 +184,13 @@ Validation-only route:
 ts:check <spot|focused|full|release>
 ```
 
+Direct Work1 and Work2 preparation and closeout use the guarded
+`scripts/work_orchestration.py` surface when it is present. The runner composes existing commands,
+uses exact plan tokens and resumable phase evidence, and emits a compact local efficiency journal.
+It does not perform implementation or deployment, judge target evidence, or expand the requested
+endpoint. See [Scripted Work1 and Work2 orchestration](work-orchestration.md) for the fixed phase,
+recovery, telemetry, and sanitized dashboard-aggregate contracts.
+
 This validates only. It does not implement, commit, push, deploy, or release.
 
 In the Tool Shed repository, `scripts/validate_tool_shed.py` implements the reusable profiles.

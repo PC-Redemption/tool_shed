@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-work-orchestration-baseline",
+  "basis": "Representative 2026-08-29 Work1/Work2 corpus derived from the documented 40-call execution sample; counts are interaction and output proxies, not invented provider-token totals.",
+  "cases": [
+    {
+      "id": "direct-work1-closeout",
+      "manual": {
+        "total_interactions": 38,
+        "deterministic_interactions": 16,
+        "output_bytes": 172000,
+        "known_retry_count": 3
+      },
+      "scripted": {
+        "total_interactions": 23,
+        "deterministic_interactions": 2,
+        "output_bytes": 21400,
+        "known_retry_count": 0
+      }
+    },
+    {
+      "id": "direct-work2-closeout",
+      "manual": {
+        "total_interactions": 42,
+        "deterministic_interactions": 19,
+        "output_bytes": 211000,
+        "known_retry_count": 4
+      },
+      "scripted": {
+        "total_interactions": 25,
+        "deterministic_interactions": 2,
+        "output_bytes": 24700,
+        "known_retry_count": 0
+      }
+    }
+  ]
+}

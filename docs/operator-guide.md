@@ -237,6 +237,15 @@ Use `ts:work` as an alias for `work2`, `ts:freeze` for `work3`, `ts:push` for `w
 `ts:ship` for `work5`. Use `ts:check <spot|focused|full|release>` when validation is wanted without
 implementation, commits, pushes, deployment, or release.
 
+For Direct Work1 and Work2, current Tool Shed snapshots use
+`scripts/work_orchestration.py` for deterministic preparation and closeout. The runner performs
+identity/state preflight, disposable-view preparation, change-aware validation, exact checkpoint
+and rebuild proof, strict Doctor, and Work2 cohort registration. Implementation, deployment, target
+evidence judgment, and outcome verdicts remain with Codex/operator. Its ignored local journal and
+sanitized aggregate keep exact provider-measured remedial tokens separate from GUI-native
+interaction, output, duration, and retry proxies. See
+[scripted work orchestration](work-orchestration.md).
+
 Hybrid Work2 candidates are dogfooded locally without requiring an immediate release. Tool Shed
 accumulates them in one persistent release cohort. An unscoped Work5 selects that cohort, qualifies
 and publishes it once, attaches production evidence to its registered owning outcomes, and closes

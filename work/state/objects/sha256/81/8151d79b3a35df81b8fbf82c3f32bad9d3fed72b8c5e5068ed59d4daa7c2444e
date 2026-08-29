@@ -1,0 +1,24 @@
+# Campaign: Prove Orchestration Efficiency and Dashboard Aggregate
+
+Status: complete
+Type: campaign
+Updated: 2026-08-29
+Next Action: none
+Campaign ID: prove-orchestration-efficiency-and-dashboard-aggregate
+Outcome: Prove reduced remedial interaction and output, honest provider-token coverage, separate GUI proxies, and a sanitized per-project dashboard producer.
+Roadmap: scripted-tool-shed-work-orchestration-and-token-efficiency
+Roadmap Document: PRM-0025
+Roadmap Revision: 1
+Milestone: M3-EFFICIENCY-REPORTING
+Unlocks Gate: G4-EFFICIENCY-OBSERVABILITY-AND-REPORTING-PROVEN
+Depends On: implement-and-qualify-work1-work2-closeout-runner
+Completion Gate: the same-corpus benchmark is below 15 percent deterministic interactions with zero known retries, material call/output reduction, exact measured tokens only, visible coverage, separate proxies, and a private sanitized aggregate.
+
+## Result
+
+The frozen representative Work1/Work2 corpus reports 8.0–8.7% deterministic caller interactions,
+zero known retries, 39–40% interaction reduction, and 87–88% output reduction. Tests prove exact
+provider usage remains separate from GUI-native unknowns and that the aggregate contains no paths,
+commands, prompts, source, or diagnostics.
+
+Completion Evidence: `scripts/work_orchestration.py benchmark`; `tests.test_work_orchestration`.

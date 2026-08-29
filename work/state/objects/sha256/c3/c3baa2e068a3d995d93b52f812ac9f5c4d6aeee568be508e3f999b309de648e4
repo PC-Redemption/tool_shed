@@ -1,0 +1,23 @@
+# Campaign: Freeze Scripted Orchestration Contract and Resume Safety
+
+Status: complete
+Type: campaign
+Updated: 2026-08-29
+Next Action: none
+Campaign ID: freeze-scripted-orchestration-contract-and-resume-safety
+Outcome: Freeze one public Work1/Work2 orchestration surface with explicit authority, skip, resume, concurrency, failure, and recovery rules.
+Roadmap: scripted-tool-shed-work-orchestration-and-token-efficiency
+Roadmap Document: PRM-0025
+Roadmap Revision: 1
+Milestone: M1-CONTRACT-RESUME-SAFETY
+Unlocks Gate: G1-ORCHESTRATION-AUTHORITY-CONTRACT-FROZEN, G2-EXACT-RESUME-AND-FAILURE-SAFETY
+Depends On: none
+Completion Gate: the public contract freezes exact project/state fencing, safe phase classes, bounded diagnostics, duplicate-run behavior, recovery, and the decisions the runner cannot make.
+
+## Result
+
+The contract is frozen in `docs/work-orchestration.md`, the public help page, and the portable
+campaign route. Unit coverage proves stale-token rejection, exact-input resume, duplicate-run
+exclusion, current target evidence, bounded output, and telemetry reset behavior.
+
+Completion Evidence: `tests.test_work_orchestration`; release-profile validator passed.

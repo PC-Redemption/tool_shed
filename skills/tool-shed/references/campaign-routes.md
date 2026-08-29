@@ -56,6 +56,25 @@ Coordinated, and Deep selection independent. Aliases are `ts:work` for `work2`, 
 <spot|focused|full|release>` runs only the corresponding validation and does not implement, commit,
 push, deploy, or release.
 
+When the current snapshot contains `scripts/work_orchestration.py`, use it for Direct Work1 and
+Work2 deterministic preparation and closeout. First obtain the `work-orchestration` project binding
+and a fresh read-only `plan` token for the exact endpoint, stage, changed paths, and—during
+closeout—candidate/evidence inputs. `prepare` owns identity/state preflight, disposable-view
+regeneration, and the existing changed-path validation policy. Codex still implements the product
+and creates the scoped candidate commit. For Work2, Codex also performs the configured deployment
+and changed-behavior checks, then supplies a current ignored `tool-shed-target-evidence` envelope.
+`closeout` verifies that evidence, registers the candidate and open owner chain, checkpoints and
+rebuild-proves Hybrid state, commits only the exact logical checkpoint, and requires strict Doctor.
+
+Use one stable run ID and `--resume` only after correcting an interruption. The runner skips a
+passed local phase only when its exact input digest matches; identity/audit, strict Doctor, and
+current external evidence remain always-current. It cannot implement product behavior, judge
+evidence sufficiency, choose a semantic version or deployment scope, perform deployment, push,
+release, or close an owning outcome. Its detailed journal is ignored operational telemetry, not
+project truth. If the runner fails, diagnose and record the failure, then use the independently
+callable underlying command only as an explicit bounded fallback; never interpret runner failure as
+permission to skip the check. See `docs/work-orchestration.md`.
+
 Work3 documentation alignment is limited to the requested candidate scope. Preserve unrelated
 owner documentation and historical records; delete documentation only when the coded change makes
 it obsolete and the deletion is within the authorized scope.
