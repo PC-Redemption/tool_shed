@@ -185,10 +185,32 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
   "notes": "Freeze historical qualification inputs, enforce immutable completed ledgers, and make validation reproducible and change-aware",
-  "release_commit": null,
-  "release_qualification": null,
+  "release_commit": "9616d305bf5d29f4d76a876164166c2564e8c0e7",
+  "release_qualification": {
+    "attested_at": "2026-08-29T16:23:48Z",
+    "client_smoke": {
+      "path": "scripts/validate_snapshot_client.py",
+      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
+    },
+    "full_validator": {
+      "path": "scripts/validate_tool_shed.py",
+      "sha256": "820cf80f37570a8e1d96466d0a7c3f10fa502dc9d70bf36b3e2672c7f9835867"
+    },
+    "required_ci": [
+      {
+        "path": ".github/workflows/validate.yml",
+        "sha256": "2af0c167fbe1ef499b8c4024997378728c3bdeb48bfccdf436259ebb1ce39cbe"
+      },
+      {
+        "path": ".github/workflows/release.yml",
+        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
+      }
+    ],
+    "schema_version": 1,
+    "subject_commit": "9616d305bf5d29f4d76a876164166c2564e8c0e7"
+  },
   "release_tag": "v0.38.0",
-  "released_at": null,
+  "released_at": "2026-08-29T16:23:48Z",
   "shed_version": "0.38.0",
   "updated_at": "2026-08-29",
   "updater_mutation_paths": [
