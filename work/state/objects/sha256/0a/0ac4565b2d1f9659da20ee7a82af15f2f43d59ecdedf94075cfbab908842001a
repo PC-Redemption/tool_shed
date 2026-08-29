@@ -1,0 +1,81 @@
+# Project Map: Durable Opportunity-First App Server Dogfooding
+
+Status: approved
+Type: project-map
+Updated: 2026-08-29
+Next Action: execute the approved Program Roadmap through the Work2 implementation checkpoint
+Source Idea: IDEA-0010
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 2
+Reviewed Body SHA256: 489d853683c67973dc5b7e1ae253984b0c3717d3bedd3fa3143a7a6ab02e51da
+Program Roadmap: pending
+
+## Purpose
+
+Make App Server the dependable first opportunity for eligible Tool Shed work after explicit owner
+opt-in. Preserve safe GUI fallback, keep clean installs off, retain consent across ordinary upgrades,
+and produce trustworthy local evidence about opportunities, executions, failures, and reconciliation.
+
+## Desired Outcome
+
+The protected preference remains the sole active authority and survives normal upgrades. An explicit
+owner-profile recovery copy outside Codex home can restore intent after destructive replacement but
+never acts as live consent by itself. Runtime events are versioned, privacy-bounded, correlated, and
+isolated from validator traffic. A concise local report distinguishes opportunities, selections,
+executions, completion, GUI fallback, reconciliation, controlled failures, and skipped opportunities.
+The implementation is qualified on supported platforms, upgraded in both maintainer and installed
+clients, dogfooded once with explicit consent, released, and reconciled back to IDEA-0010.
+
+## First Useful Boundary
+
+- Keep the existing protected preference as active authority and add explicit owner-profile recovery.
+- Isolate default preference and event paths through `TOOL_SHED_STATE_ROOT` during validation.
+- Add schema-v2 source, event-type, role, and correlation fields without rewriting schema-v1 history.
+- Add a bounded aggregate report and prove safe pre-mutation fallback and post-mutation reconciliation.
+- Update the configured Work2 target and register the candidate without pushing or releasing.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Preference durability | Explicit opt-in survives ordinary upgrades; destructive recovery remains explicit | current protected preference |
+| Telemetry isolation | Runtime and validation traffic are separable through a bounded schema | state-root isolation |
+| Opportunity reporting | Local aggregate exposes selection, execution, fallback, and reconciliation evidence | telemetry isolation |
+| Portable release | Supported platforms, upgrades, consented use, rollback, release, and closure are proven | all implementation workstreams |
+
+## Readiness Gate Transfer
+
+All four reviewed gates are mandatory roadmap constraints:
+
+1. `G1-OWNER-PREFERENCE-DURABILITY-AND-RECOVERY` preserves the protected preference through ordinary
+   upgrades, keeps clean installs off, and adds explicit protected recovery without a second live
+   preference authority.
+2. `G2-RUNTIME-TELEMETRY-PROVENANCE-ISOLATED` versions source-aware, correlated events, isolates
+   validator state, retains schema-v1 events as excluded legacy evidence, and stores no content or
+   credentials.
+3. `G3-OPPORTUNITY-REPORT-AND-SAFE-FALLBACK-PROVEN` reports the whole bounded opportunity funnel and
+   preserves pre-mutation continuation, post-mutation reconciliation, and no replay.
+4. `G4-PORTABLE-DOGFOODING-RELEASE-AND-CLOSED-LOOP` proves supported platforms, install and upgrade,
+   owner-profile recovery, rollback, documentation, Doctor, configured target behavior, one consented
+   real opportunity, release provenance, and origin-to-product reconciliation.
+
+## Constraints
+
+- Keep clean installs and existing owners without opt-in disabled.
+- Keep the current preference as the only active authority; the owner-profile copy is recovery evidence.
+- Reuse the local JSONL event surface and state-root isolation; do not add a database or daemon.
+- Use content-free correlation identifiers and controlled enums; never retain prompts, responses,
+  paths, source, diagnostics, or credentials.
+- Keep App Server execution optional and preserve current GUI fallback and no-replay boundaries.
+- Keep the hosted dashboard, automatic mitigation, and circuit breaking out of this implementation.
+
+## Non-Goals
+
+- Hosted dashboard ingestion or presentation.
+- Automatic repair, issue creation, denylisting, circuit breaking, or background services.
+- Automatic opt-in or automatic recovery from an owner-profile copy.
+
+## Related Artifacts
+
+- Source Idea Brief: IDEA-0010
+- Readiness result digest: d25950c8d787d78499c6473cf3e2a4e20d344778790f59e7bc1f29b4e724a2da

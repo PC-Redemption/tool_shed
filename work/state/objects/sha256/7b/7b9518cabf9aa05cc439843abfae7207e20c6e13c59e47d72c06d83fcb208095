@@ -1,0 +1,190 @@
+# Idea Brief: Durable Opportunity-First App Server Dogfooding
+
+Status: promoted
+Type: idea-brief
+Updated: 2026-08-29
+Next Action: execute MAP-0015 and PRM-0026 through the Work2 checkpoint, then Work5 release and reconciliation
+Produces: MAP-0015, PRM-0026
+Related Ideas: IDEA-0003, IDEA-0002
+
+## Current Synthesis
+
+### Idea
+
+Make the original passive App Server dogfooding intent operationally durable. After one explicit owner opt-in, Tool Shed should attempt App Server at every eligible opportunity without requiring repeated flags. Safe failures should be recorded and the same action should continue in the GUI. A possible mutation must be reconciled before GUI continuation and must never be blindly replayed.
+
+The preference is operator intent, not disposable installation state. Normal Tool Shed repository rebuilds, snapshot upgrades, installed-skill synchronization, and client upgrades must preserve it. A destructive Codex-home rebuild should restore it from an explicitly authorized protected user-profile backup or onboarding choice.
+
+Clean third-party installations remain default-off until their operator consents. The maintainer and an owner profile that already opted in should return to their selected state after supported rebuilds rather than silently reverting to the clean-install default.
+
+### Why It Matters
+
+Tool Shed cannot discover App Server defects or measure its value if eligible work quietly stays in the GUI. The owner originally requested passive dogfooding specifically so normal project work would exercise App Server, record recurring failures, and fall back without creating repetitive operator ceremony.
+
+The persistent preference feature implemented the command and routing mechanics, but current evidence shows an operational gap:
+
+- App Server is currently available and exactly qualified, while the protected preference file is absent and effective mode is `OFF`.
+- There is no durable evidence that the owner turned it off; the preference appears never to have been established after persistence support shipped.
+- Recorded App Server model operations stop on 2026-08-26 even though substantial eligible Tool Shed work continued afterward.
+- The selection-event log cannot measure real usage because tests wrote 141 repeated three-event sequences into the real user-local log.
+- Missing preference state fails safely to GUI but does not prominently report that eligible dogfooding opportunities are being skipped.
+
+This produces policy-compliant behavior but defeats the owner outcome.
+
+### Desired Outcome
+
+The operator opts in once. Thereafter every unflagged eligible `plan`, `verify`, bounded `camp run`, and executable `next` route prefers App Server across supported projects and ordinary lifecycle upgrades.
+
+For each eligible opportunity, Tool Shed records whether App Server was selected, completed, failed before mutation and fell back, reached possible mutation and required reconciliation, or was intentionally routed to GUI for a controlled reason. Reports distinguish actual model execution from selection, tests, qualification, and control events.
+
+The operator does not have to remember backend flags. App Server failures become observable learning without blocking recoverable product work. Rebuilds preserve prior operator intent, while new installations never silently grant workspace-write trust.
+
+### Opportunity-First Routing Contract
+
+Resolve every routed action into one of three classes:
+
+1. Eligible App Server opportunity.
+   - Includes supported planning, verification, bounded CAMP execution, and executable `next`.
+   - A persisted owner opt-in selects App Server automatically.
+   - Explicit `--app-server` remains the strict diagnostic route.
+   - Explicit `--gui` remains a one-command override.
+2. Intentionally GUI-native.
+   - Includes discussion, brainstorming, semantic approvals or decisions, deployment, unsupported roles, and protected actions.
+   - Record only a bounded classification when opportunity accounting requires it; do not generate noisy per-prompt telemetry by default.
+3. App Server attempted but unable to complete.
+   - Before mutation or for read-only work: record the controlled failure category and continue the same action immediately in GUI.
+   - After possible mutation: preserve the journal, reconcile Git and workspace state, then continue in GUI from the reconciled result without replay.
+   - Unknown mutation state is treated as possible mutation.
+
+### Preference Durability
+
+Keep the existing protected user-local preference as the active authority. Do not move personal backend intent into project repositories or Tool Shed snapshots.
+
+Supported lifecycle behavior should be:
+
+- normal repository rebuild or checkout replacement: preference unchanged;
+- Tool Shed snapshot upgrade: preference unchanged;
+- installed-skill synchronization: preference unchanged;
+- disconnected client upgrade: preference unchanged;
+- application or Codex CLI update: preference unchanged, subject to live runtime safety;
+- destructive `$CODEX_HOME` replacement: restore only through an explicitly authorized protected user-profile backup or an onboarding choice;
+- clean first installation: off until explicit consent;
+- malformed, unreadable, or unsupported preference: fail safely to GUI and visibly report the lost intent rather than presenting it as an ordinary owner-selected off state.
+
+A supported upgrade must never rewrite `on` to `off`. If an enabled preference disappears during a normal upgrade, Doctor or status should report a durability defect.
+
+### Accurate Telemetry
+
+Separate the following event sources and counts:
+
+- operator or passive selection;
+- actual App Server model operation;
+- deterministic controller or recovery event;
+- qualification or benchmark operation;
+- automated test;
+- GUI fallback;
+- intentionally GUI-native route.
+
+Every event should carry a controlled source, route, outcome, mutation state, preference state, and correlation identifier. Never retain prompts, responses, arbitrary exception messages, raw tool output, credentials, or repository content.
+
+Tests must always use isolated temporary preference and event paths. A test-mode guard should refuse writes to the real user-local App Server state. Existing polluted events remain historical diagnostics but are excluded from usage totals through an explicit cutoff or source-aware migration; do not silently rewrite the log as if its provenance were known.
+
+A concise report should answer:
+
+- How many eligible opportunities occurred?
+- How many selected App Server?
+- How many reached actual model execution?
+- How many completed first-pass?
+- How many safely fell back before mutation?
+- How many required post-mutation reconciliation?
+- Which controlled failure categories recur?
+- How much time and token usage did successful and failed attempts consume?
+- How many eligible opportunities were skipped because preference state was missing, off, invalid, or unavailable?
+
+### Failure Learning and Fallback
+
+Recurring failures should be visible without causing automatic Tool Shed detours. Aggregate them by controlled category and role. Recommend investigation when a threshold is reached, but do not automatically create issues, campaigns, repairs, or version denylist entries.
+
+Known categories include startup and turn timeouts, restricted-read protocol drift, automatic preparation or context-budget failures, cancellation acknowledgement races, unavailable executables, authentication or model lookup failures, unexpected paths, malformed handoffs, and deterministic verification failures.
+
+Successes are equally important. The report should show where App Server is reliable and whether it saves or increases operator time, model turns, tokens, and reconciliation work.
+
+### KISS Direction
+
+- Reuse the current preference file, selector, dispatcher, execution telemetry, mutation journal, and GUI fallback.
+- Add source isolation and opportunity accounting rather than a second telemetry system.
+- Preserve a single operator `on|off` choice.
+- Keep clean-install default off; apply explicit owner-profile restoration instead of a universal default-on.
+- Do not add a daemon, dashboard, remote service, circuit breaker, automatic repair queue, or general settings platform in the first slice.
+- Use bounded local JSONL and concise reports until real volume proves another store is necessary.
+
+### Acceptance Signals
+
+- After one explicit `on`, an eligible unflagged request selects App Server without another flag.
+- Discussion and brainstorming remain GUI-native.
+- A pre-mutation App Server failure records its category and completes the same action through GUI.
+- A possible-mutation failure reconciles the existing journal and Git state before GUI continuation and never replays the worker.
+- Repository rebuild, snapshot upgrade, installed-skill synchronization, disconnected-client upgrade, and Codex CLI update preserve the selected preference.
+- Clean installation remains off until consent.
+- A destructive Codex-home restoration can restore the explicit owner preference through a documented protected route.
+- Missing preference after prior opt-in is reported as lost or unrestored intent, not silently normalized to owner-selected off.
+- Unit and integration tests cannot append to real user-local preference, event, or execution telemetry.
+- Usage reports exclude test and controller noise and reconcile selection counts to actual executions and fallbacks.
+- A regression test proves that an enabled owner profile survives every supported upgrade path.
+- Strict Doctor and release validation remain healthy without requiring App Server availability.
+
+### Constraints and Non-Goals
+
+- Do not make App Server mandatory when unavailable or unsafe.
+- Do not enable API-key fallback.
+- Do not broaden task, endpoint, project, credential, network, release, deployment, or destructive-operation authority.
+- Do not interpret repository configuration alone as operator consent for workspace writes.
+- Do not automatically replay after possible mutation.
+- Do not make every new production install default-on.
+- Do not require repetitive `--app-server` flags after persistent opt-in.
+- Do not automatically implement, promote, release, synchronize, or alter the current preference through this brainstorming request.
+
+### Open Questions
+
+- What protected backup owns App Server preference restoration when `$CODEX_HOME` is deliberately replaced?
+- How should Tool Shed distinguish first-time missing preference from previously enabled intent without creating a second editable authority?
+- Should the installer offer an explicit `--enable-app-server` choice, an owner-profile restore option, or both?
+- What event correlation model connects selection, model execution, deterministic verification, fallback, and reconciliation without collecting sensitive content?
+- What bounded recurrence threshold should recommend review without automatically opening work?
+- How long should local operational telemetry be retained and summarized?
+- Should maintainer and disconnected clients share one user preference when they use the same Codex home, or retain independent profile identities?
+
+## Decisions
+
+- Preserve the original passive-dogfooding intent: one opt-in, automatic use at every eligible opportunity, controlled evidence, and safe GUI fallback.
+- The operator should not have to repeat `--app-server`.
+- Keep explicit `--app-server` as strict fail-closed diagnosis and `--gui` as a one-command override.
+- Preserve preference through all ordinary Tool Shed and client rebuild or upgrade paths.
+- Keep clean-install default off; restore previously opted-in owner profiles instead of silently enabling new operators.
+- Treat post-mutation continuation as reconciliation, never fallback replay.
+- Fix telemetry isolation before using selection-event totals as adoption evidence.
+- Count opportunities, selections, actual executions, outcomes, fallbacks, and reconciliations separately.
+- Keep first-slice implementation local and reuse existing Tool Shed mechanisms.
+
+## Do Not Forget
+
+- Default-off safety and persistent owner intent are compatible when installation and restoration treat them as different states.
+- Missing is not the same as explicitly off.
+- A successful selector event is not an App Server execution.
+- A completed protocol turn is not verified product work.
+- Tests and qualification traffic must never masquerade as normal operator usage.
+- Fallback success should retain the App Server failure category so reliability problems remain visible.
+- The purpose is uninterrupted real work plus honest learning, not maximum utilization at any cost.
+
+## Exploration Log
+
+### 2026-08-29
+
+- Follow-on brief created without rewriting the promoted Passive App Server Dogfooding origin.
+- The owner clarified that the expected operating model is automatic use at every eligible opportunity after one opt-in, with documented safe fallback rather than repeated per-request flags.
+- Local audit found no explicit off event or archived preference; persistent preference support shipped default-off and the owner profile was apparently never established.
+- Execution telemetry recorded 103 model-bearing App Server operations through 2026-08-26 but none afterward.
+- The selection-event log was found unsuitable for adoption counts because tests wrote 141 repeated event triplets into the real user-local log.
+- The synthesis separates clean-install consent from durable restoration of an already opted-in owner profile.
+
+Keep the synthesis current and append only useful dated exploration notes. Run readiness review only when explicitly requested or when promotion to PRM is requested.
