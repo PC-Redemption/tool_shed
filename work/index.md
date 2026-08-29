@@ -196,6 +196,7 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 | [work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md](work/evidence/evidence-windows-nonprivileged-snapshot-upgrade.md) | evidence | complete | 2026-08-09 | none | work/tickets/ticket-portable-verified-tool-shed-installer.md |
 | [work/evidence/evidence-windows-realistic-app-server-budget-v0-29-8.md](work/evidence/evidence-windows-realistic-app-server-budget-v0-29-8.md) | evidence | complete | 2026-08-26 | publish the post-v0.29.8 verifier/preparation repair and upgrade clients only under separate owner authorization | - |
 | [work/focus-areas.md](work/focus-areas.md) | focus-area-catalog | approved | 2026-08-15 | review when an enduring responsibility boundary changes | - |
+| [work/ideas/idea-database-owned-work-collateral-and-lifecycle-views.md](work/ideas/idea-database-owned-work-collateral-and-lifecycle-views.md) | idea-brief | exploring | 2026-08-28 | continue brainstorming or promote this brief with `ts: prm idea <idea-id-or-path>` | - |
 | [work/ideas/idea-operator-trust-runtime-enforcement-for-camp.md](work/ideas/idea-operator-trust-runtime-enforcement-for-camp.md) | idea-brief | promoted | 2026-08-27 | use the approved project-map direction and Program Roadmap for delivery | - |
 | [work/ideas/idea-passive-app-server-dogfooding-mode.md](work/ideas/idea-passive-app-server-dogfooding-mode.md) | idea-brief | promoted | 2026-08-27 | none; superseded by operator-trust CAMP runtime enforcement | - |
 | [work/ideas/idea-persistent-autonomy-levels.md](work/ideas/idea-persistent-autonomy-levels.md) | idea-brief | promoted | 2026-08-27 | use the approved revised project-map direction to propose Program Roadmap revision 2 | - |
@@ -262,6 +263,6 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 
 ## Summary
 
-- Total artifacts: 243
-- Active artifacts: 0
+- Total artifacts: 244
+- Active artifacts: 1
 - Completed/decided artifacts: 173

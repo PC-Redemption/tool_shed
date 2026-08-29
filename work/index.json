@@ -3369,6 +3369,23 @@
       "campaign_reason": null,
       "canonical_truth": null,
       "disposition": null,
+      "next_action": "continue brainstorming or promote this brief with `ts: prm idea <idea-id-or-path>`",
+      "parent": null,
+      "path": "work/ideas/idea-database-owned-work-collateral-and-lifecycle-views.md",
+      "produces": null,
+      "project_map": null,
+      "status": "exploring",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Idea Brief: Database-Owned Work Collateral and Lifecycle Views",
+      "type": "idea-brief",
+      "updated": "2026-08-28"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": null,
       "next_action": "use the approved project-map direction and Program Roadmap for delivery",
       "parent": null,
       "path": "work/ideas/idea-operator-trust-runtime-enforcement-for-camp.md",
@@ -4434,8 +4451,8 @@
   ],
   "schema_version": 1,
   "summary": {
-    "active_artifacts": 0,
+    "active_artifacts": 1,
     "completed_or_decided_artifacts": 173,
-    "total_artifacts": 243
+    "total_artifacts": 244
   }
 }
