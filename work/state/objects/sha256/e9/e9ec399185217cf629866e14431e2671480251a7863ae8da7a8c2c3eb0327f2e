@@ -1,0 +1,37 @@
+# Completion Watcher Program Closeout
+
+Status: complete
+Type: evidence-summary
+Updated: 2026-08-29
+Evidence ID: EVD-0072
+Scope: PRM-0001 and CAMP-0036 through CAMP-0038
+
+## Result
+
+The bounded Program Roadmap for the qualified local completion watcher is complete. Its three milestones and gates were delivered, qualified, released, and remain present in Tool Shed v0.36.4.
+
+## Milestone evidence
+
+- M1 / G1: CAMP-0036 and EVD-0008 freeze and prove the watcher protocol, state machine, failure model, local security boundary, and executable portability oracle.
+- M2 / G2: CAMP-0037 and EVD-0007 deliver and prove the opt-in local CLI, atomic spool, singleton runner, terminal outbox, cancellation, lease recovery, and local-only behavior.
+- M3 / G3: CAMP-0038 and EVD-0009 record native Linux and Windows qualification, release provenance, installation/update distribution, rollback behavior, installed-client synchronization, and bounded pilot evidence.
+
+## Current verification
+
+On 2026-08-29 against Tool Shed v0.36.4:
+
+- `python3 -m unittest -v tests.test_completion_watcher_contract tests.test_completion_watcher_runtime` passed 9 of 9 tests.
+- The portability oracle, transition oracle, schema validation, CLI workflow, singleton locking, idempotent terminal events, and Windows filesystem behavior all passed.
+- Full release validation separately passed 379 of 379 tests and all repository contracts in 18.437 seconds.
+- `SHED_VERSION.json` still covers `scripts/completion_watcher.py`.
+
+## Scope boundary
+
+This closes PRM-0001 at the explicitly accepted qualified-local-release outcome. It does not complete or reactivate the broader deferred hosted-notification scope in MAP-0002, CAMP-0035, or CAMP-0039. That independent future scope still requires a named external or non-App-Server workload and a separately approved roadmap decision.
+
+## Reconciliation
+
+- Outcome: satisfied.
+- Residual work inside PRM-0001: none.
+- Residual work outside PRM-0001: conditional hosted notification work remains deferred under MAP-0002.
+- Release consequence: none. This is historical lifecycle reconciliation of an already released capability.

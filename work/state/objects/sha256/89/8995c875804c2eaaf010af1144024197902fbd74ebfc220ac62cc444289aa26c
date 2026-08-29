@@ -1,0 +1,32 @@
+# Validation Consolidation Closeout
+
+Status: complete
+Type: evidence-summary
+Updated: 2026-08-29
+Evidence ID: EVD-0071
+Scope: MAP-0011, PRM-0021, and CAMP-0099
+
+## Result
+
+The accepted Validation Consolidation outcome remains present in the current Tool Shed product. The historical campaign was already complete; this reconciliation closes the database-owned roadmap lineage without introducing duplicate implementation work.
+
+## Historical delivery
+
+- CAMP-0099 records focused validation in 0.617 seconds, full validation in 11.369 seconds, and release validation in 12.093 seconds.
+- Commit `3d4563c` delivered the validation-profile consolidation.
+- The campaign records preserved scenario coverage, stable per-case failure isolation, and intentional ownership across focused, full, and release profiles.
+
+## Current verification
+
+On 2026-08-29 against Tool Shed v0.36.4:
+
+- `python3 scripts/validate_tool_shed.py --profile focused --max-seconds 15` passed 3 of 3 tests in 0.931 seconds total.
+- `python3 scripts/validate_tool_shed.py --profile release --max-seconds 60` passed 379 of 379 tests in 18.437 seconds total.
+- Release validation also passed manifest integrity, provider conformance, lifecycle-view generation, stale-path checks, work-state reconciliation, roadmap validation, bootstrap outcome closure, disposable installed-workspace smoke, and template/example sanity.
+- The measured full/release qualification remains below the roadmap limits of 45 and 60 seconds.
+
+## Reconciliation
+
+- Outcome: satisfied.
+- Residual work: none for the accepted Validation Consolidation scope.
+- Release consequence: none. This is historical lifecycle reconciliation of already-delivered product behavior, not a new product release.
