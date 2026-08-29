@@ -126,6 +126,9 @@ class ReleasePublicationTests(unittest.TestCase):
         validate_workflow = (ROOT / ".github" / "workflows" / "validate.yml").read_text(
             encoding="utf-8"
         )
+        validation_policy = (ROOT / "scripts" / "ci_validation_policy.py").read_text(
+            encoding="utf-8"
+        )
         performance_workflow = (
             ROOT / ".github" / "workflows" / "validation-performance.yml"
         ).read_text(encoding="utf-8")
@@ -145,12 +148,12 @@ class ReleasePublicationTests(unittest.TestCase):
         self.assertIn("status=success", workflow)
         self.assertIn('branches: ["**"]', validate_workflow)
         self.assertIn("ubuntu-latest", validate_workflow)
-        self.assertIn("windows-latest", validate_workflow)
+        self.assertIn("windows-latest", validation_policy)
+        self.assertIn("fromJSON(needs.classify.outputs.matrix)", validate_workflow)
         self.assertIn("timeout-minutes: 10", validate_workflow)
-        self.assertIn(
-            "--profile release --warn-seconds 60 --max-seconds 300",
-            validate_workflow,
-        )
+        self.assertIn("--profile ${{ matrix.profile }}", validate_workflow)
+        self.assertIn("--warn-seconds 60 --max-seconds 300", validate_workflow)
+        self.assertIn('"profile": "release"', validation_policy)
         self.assertIn("schedule:", performance_workflow)
         self.assertIn("workflow_dispatch:", performance_workflow)
         self.assertIn("--samples 3", performance_workflow)

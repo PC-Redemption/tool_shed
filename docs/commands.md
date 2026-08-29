@@ -179,10 +179,15 @@ Independent unit cases run in isolated concurrent processes and all failures are
 test-ID order. The default CLI profile is `full`; CI and release qualification pass
 `--profile release --warn-seconds 60 --max-seconds 300` explicitly, with a 10-minute job timeout
 for hangs. CI partitions unit cases into deterministic shards; each case runs once per OS/Python
-combination, and only shard zero runs the non-unit release contracts. A separate weekly Validation
-Performance workflow runs three current-Python primary-shard samples on each operating system; its
-median warns above 60 seconds and fails above 180 seconds so routine CI remains functional while
-meaningful regressions remain visible.
+combination, and only shard zero runs the non-unit release contracts. The changed-path policy in
+`scripts/ci_validation_policy.py` selects one focused Ubuntu job for documentation and database-state
+collateral, and the full 32-job matrix for product, schema, test, template, or workflow changes.
+An empty/unknown path set fails safe to full validation. Manual `workflow_dispatch` and the weekly
+scheduled run provide explicit and automatic full-matrix overrides. A separate weekly Validation
+Performance workflow first blocks on a small frozen production-shaped corpus using a checked-in
+candidate/reference ratio and relative tolerance, then runs three live primary-shard samples per
+operating system. Live timing warns above 60 seconds and has a generous 180-second median runaway
+ceiling; functional failures always fail immediately.
 
 Large authority or migration initiatives that predate their target runtime use an independent
 bootstrap closure manifest under `work/evidence/`. The guarded interface is:
@@ -209,6 +214,9 @@ migration item and upgrade target in the gate's declared milestones, to be termi
 controlled release may leave later canary scopes open only when the manifest names the pre-release
 scopes and milestones explicitly; the initiative remains open until later evidence is reconciled.
 Direct edits are detectable and cannot silently qualify a release.
+After the initiative verdict becomes terminal, all three mutation commands fail closed. Record a
+later correction or supersession with generic `outcome_reconciliation.py direct-plan --parent-cycle`
+and apply it as a new append-only cycle; never reopen the completed bootstrap ledger.
 
 The Hybrid SQLite phase-one substrate uses a separate project-bound interface:
 
@@ -301,10 +309,11 @@ python3 scripts/outcome_reconciliation.py --workspace . benchmark
 ```
 
 The two mutations require a fresh `hybrid-state` binding and remain limited to a disposable shadow
-workspace before maintainer conversion. Read-only qualification compares the exact bootstrap
+workspace before maintainer conversion. Read-only qualification compares the exact frozen HPT2
 requirement/change/evidence/verdict projection and eight file-first/hybrid operation results. HPT2
 is correctly `partial` and `reconciled`: missing original history stays residual and blocks a
-`satisfied` verdict. See [Outcome reconciliation vertical slice](outcome-reconciliation.md).
+`satisfied` verdict. The live bootstrap manifest is not an accepted compatibility input and generic
+cycles never update the fixed-ID registry. See [Outcome reconciliation vertical slice](outcome-reconciliation.md).
 
 Work3 document changes stay within the requested candidate scope. Preserve unrelated owner
 documentation and historical records, and delete documentation only when the coded change makes it

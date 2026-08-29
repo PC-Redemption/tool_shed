@@ -32,7 +32,7 @@ from project_identity import (
 
 KIND = "tool-shed-hpt2-reconciliation"
 SCHEMA_VERSION = 1
-DEFAULT_BOOTSTRAP = Path("work/evidence/bootstrap-closure-hybrid-sqlite-operational-state.json")
+DEFAULT_BOOTSTRAP = Path("schemas/outcome-reconciliation/v1/hpt2-compatibility-fixture.json")
 DEFAULT_IDS = Path("schemas/hybrid-state/v1/hpt2-assigned-ids.json")
 OPERATIONS = (
     "orientation",
@@ -91,10 +91,18 @@ def load_sources(
     bootstrap_path: Path = DEFAULT_BOOTSTRAP,
     ids_path: Path = DEFAULT_IDS,
 ) -> tuple[Path, dict[str, Any], dict[str, dict[str, str]]]:
-    source, bootstrap = load_json(workspace, bootstrap_path, label="bootstrap closure")
+    source, bootstrap = load_json(workspace, bootstrap_path, label="HPT2 compatibility fixture")
     _, assignments = load_json(workspace, ids_path, label="HPT2 assigned IDs")
     if assignments.get("schema_version") != 1 or assignments.get("kind") != "tool-shed-hpt2-assigned-ids":
         raise ReconciliationError("unsupported HPT2 assigned-ID manifest")
+    if (
+        bootstrap.get("schema_version") != 1
+        or bootstrap.get("kind") != "tool-shed-hpt2-compatibility-fixture"
+    ):
+        raise ReconciliationError(
+            "HPT2 compatibility boundary requires the frozen compatibility fixture; "
+            "live bootstrap closure ledgers are not valid HPT2 inputs"
+        )
     groups = assignments.get("ids")
     if not isinstance(groups, dict):
         raise ReconciliationError("HPT2 assigned-ID manifest lacks groups")

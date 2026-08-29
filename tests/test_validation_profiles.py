@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import json
 import tempfile
 import unittest
 from contextlib import redirect_stderr
@@ -100,6 +101,20 @@ class ValidationProfileTests(unittest.TestCase):
         with self.assertRaisesRegex(SystemExit, "exceeded its 180s budget"):
             benchmark.evaluate_median([179.0, 181.0, 190.0], 60.0, 180.0)
 
+    def test_frozen_production_shaped_corpus_is_integral_and_relative(self) -> None:
+        fixture_path = validator.ROOT / benchmark.DEFAULT_CORPUS
+        fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+        records = benchmark.materialize_corpus(fixture)
+        self.assertEqual(len(records), sum(fixture["dimensions"].values()))
+        self.assertEqual(benchmark.validate_corpus(records), fixture["expected_digest"])
+        with mock.patch.object(
+            benchmark, "timed", side_effect=[1.0, 1.1] * int(fixture["samples"])
+        ):
+            result = benchmark.qualify_frozen_corpus(fixture_path)
+        self.assertLessEqual(
+            result["relative_to_baseline"], fixture["max_relative_regression"]
+        )
+
     def test_bootstrap_closure_validation_uses_final_gate_only_for_release(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -117,6 +132,47 @@ class ValidationProfileTests(unittest.TestCase):
                 validator.validate_bootstrap_closures(require_final=True)
                 release = run.call_args.args[0]
                 self.assertIn("--require-final", release)
+
+    def test_database_owned_view_validation_compares_without_replacing_current_views(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            current = root / ".tool-shed/views/work/active"
+            current.mkdir(parents=True)
+            (current / "_index.md").write_text("same\n", encoding="utf-8")
+
+            def render(_workspace: Path, *, output: Path) -> dict[str, object]:
+                active = output / "active"
+                active.mkdir(parents=True)
+                (active / "_index.md").write_text("same\n", encoding="utf-8")
+                return {"writes_performed": True}
+
+            module = mock.Mock()
+            module.render_views.side_effect = render
+            with mock.patch.object(validator, "ROOT", root):
+                before = validator.tree_fingerprint(root / ".tool-shed/views/work")
+                validator.verify_database_views(module)
+                self.assertEqual(
+                    validator.tree_fingerprint(root / ".tool-shed/views/work"), before
+                )
+
+    def test_database_owned_view_validation_reports_precise_repair(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            current = root / ".tool-shed/views/work/active"
+            current.mkdir(parents=True)
+            (current / "_index.md").write_text("stale\n", encoding="utf-8")
+
+            def render(_workspace: Path, *, output: Path) -> dict[str, object]:
+                active = output / "active"
+                active.mkdir(parents=True)
+                (active / "_index.md").write_text("current\n", encoding="utf-8")
+                return {"writes_performed": True}
+
+            module = mock.Mock()
+            module.render_views.side_effect = render
+            with mock.patch.object(validator, "ROOT", root):
+                with self.assertRaisesRegex(SystemExit, "document_store.py.*render-views"):
+                    validator.verify_database_views(module)
 
     def test_isolated_runner_collects_every_result_in_stable_order(self) -> None:
         calls: list[str] = []

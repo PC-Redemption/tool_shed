@@ -29,10 +29,12 @@ reconciliation: reconciled
 not mean the outcome was satisfied. The four missing historical surfaces remain named residual
 work and block a `satisfied` HPT2 verdict.
 
-## Independent Bootstrap Parity
+## Frozen Historical Parity
 
-The importer reads the current guarded bootstrap closure manifest and the tracked UUIDv4 assigned-ID
-manifest. In one managed SQLite revision it records the exact requirement, material-change,
+The importer reads the checked-in `hpt2-compatibility-fixture.json` and the tracked UUIDv4 assigned-ID
+manifest. The fixture was frozen at commit `02703bf` and database revision 437; the live guarded
+bootstrap closure is deliberately outside this compatibility boundary. In one managed SQLite
+revision the importer records the exact requirement, material-change,
 evidence, and verdict projections; current product-truth hashes; the missing-origin exception; the
 partial HPT2 verdict; and both reconciliation results. Imported product/source files remain
 byte-authoritative and unchanged.
@@ -70,8 +72,9 @@ python3 scripts/outcome_reconciliation.py --workspace . qualify
 python3 scripts/outcome_reconciliation.py --workspace . benchmark
 ```
 
-After a later bootstrap evidence or verdict transition, reconcile the retained manifest into the
-existing hybrid database through the guarded sync route instead of issuing direct SQL:
+`sync` exists only to reproduce or migrate that same frozen compatibility projection. It is not a
+route for appending later live bootstrap changes. New work uses a generic outcome cycle, and a live
+bootstrap ledger passed as `--bootstrap` fails with a precise compatibility-boundary error:
 
 ```bash
 python3 scripts/outcome_reconciliation.py --workspace . sync \
@@ -81,10 +84,25 @@ python3 scripts/hybrid_state.py --workspace . checkpoint \
   --project-binding <hybrid-state-binding>
 ```
 
-`sync` reimports the changed bootstrap source bytes, preserves its assigned artifact identity,
-updates the existing requirements, evidence results, verdicts, and reconciliation projection in
-one managed revision, and inserts only newly assigned material changes. The parity check must pass
-before the new projection is checkpointed.
+`sync` preserves the assigned historical identities and reconciles the frozen projection in one
+managed revision. The parity check must pass before the projection is checkpointed. Ordinary
+Tool Shed changes never add UUIDs to `hpt2-assigned-ids.json`.
+
+Once a bootstrap initiative verdict is terminal, `record-change`, `record-evidence`, and
+`record-verdict` reject mutation without changing the ledger bytes. Corrections and supersessions
+are append-only generic child cycles:
+
+```bash
+python3 scripts/outcome_reconciliation.py --workspace . direct-plan \
+  --origin-summary "Correction to completed historical ledger" \
+  --accepted-outcome "Record corrected current truth without rewriting history" \
+  --product-truth <path> --evidence <path> \
+  --disposition satisfied-with-approved-change \
+  --authorization <reference> --parent-cycle <historical-cycle-id>
+```
+
+Use disposition `superseded` for a replacement. Apply the returned manifest with generic `apply`;
+the original cycle, verdict, evidence, and provenance remain intact.
 
 `apply` and `mutate` are guarded writes. `report`, `qualify`, and `benchmark` are read-only.
 `qualify` exits nonzero on any bootstrap or operation mismatch. `benchmark` exits nonzero below the

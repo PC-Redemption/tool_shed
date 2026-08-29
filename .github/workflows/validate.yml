@@ -4,21 +4,58 @@ on:
   push:
     branches: ["**"]
   pull_request:
+  schedule:
+    - cron: "43 10 * * 3"
+  workflow_dispatch:
+    inputs:
+      full_validation:
+        description: Run the complete cross-platform matrix
+        required: false
+        type: boolean
+        default: false
 
 jobs:
+  classify:
+    runs-on: ubuntu-latest
+    outputs:
+      profile: ${{ steps.policy.outputs.profile }}
+      full_matrix: ${{ steps.policy.outputs.full_matrix }}
+      shard_count: ${{ steps.policy.outputs.shard_count }}
+      performance: ${{ steps.policy.outputs.performance }}
+      matrix: ${{ steps.policy.outputs.matrix }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Collect changed paths
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.sha }}" > changed-paths.txt
+          elif [[ "${{ github.event_name }}" == "push" && "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]]; then
+            git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" > changed-paths.txt
+          else
+            : > changed-paths.txt
+          fi
+
+      - name: Select validation policy
+        id: policy
+        shell: bash
+        run: |
+          extra=()
+          if [[ "${{ github.event_name }}" == "schedule" || "${{ inputs.full_validation }}" == "true" ]]; then
+            extra+=(--full)
+          fi
+          python scripts/ci_validation_policy.py --paths-file changed-paths.txt --github-output "$GITHUB_OUTPUT" "${extra[@]}"
+
   validate:
+    needs: classify
     timeout-minutes: 10
     strategy:
       fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-        python-version: ["3.11", "3.x"]
-        shard: [0, 1, 2, 3, 4, 5, 6, 7]
-        include:
-          - os: ubuntu-latest
-            test-jobs: 8
-          - os: windows-latest
-            test-jobs: 6
+      matrix: ${{ fromJSON(needs.classify.outputs.matrix) }}
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -30,10 +67,10 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ matrix.python_version }}
 
       - name: Validate tool_shed
-        run: python scripts/validate_tool_shed.py --profile release --warn-seconds 60 --max-seconds 300 --jobs ${{ matrix.test-jobs }} --shard-index ${{ matrix.shard }} --shard-count 8
+        run: python scripts/validate_tool_shed.py --profile ${{ matrix.profile }} --warn-seconds 60 --max-seconds 300 --jobs ${{ matrix.test_jobs }} --shard-index ${{ matrix.shard }} --shard-count ${{ matrix.shard_count }}
 
       - name: Smoke POSIX launcher
         if: runner.os == 'Linux'

@@ -133,6 +133,39 @@ def source_fingerprint() -> dict[str, str]:
     return result
 
 
+def tree_fingerprint(root: Path) -> dict[str, str]:
+    if not root.exists():
+        return {}
+    return {
+        path.relative_to(root).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in sorted(root.rglob("*"))
+        if path.is_file()
+    }
+
+
+def canonical_state_fingerprint() -> dict[str, object]:
+    """Capture every authoritative surface validation must leave unchanged."""
+    import hybrid_state
+
+    status = subprocess.run(
+        ["git", "status", "--porcelain=v1", "-z"],
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        check=True,
+    ).stdout.hex()
+    audit = hybrid_state.audit(ROOT)
+    checkpoint = ROOT / "work/state/checkpoints/state-v2.json"
+    return {
+        "database_revision": audit["current_revision"],
+        "database_domain_digest": audit["domain_digest"],
+        "checkpoint_sha256": (
+            hashlib.sha256(checkpoint.read_bytes()).hexdigest() if checkpoint.is_file() else None
+        ),
+        "views": tree_fingerprint(ROOT / ".tool-shed/views/work"),
+        "git_status": status,
+    }
+
+
 def compile_python() -> None:
     step("compile python")
     paths = sorted((ROOT / "scripts").glob("*.py")) + sorted((ROOT / "tests").glob("*.py"))
@@ -268,12 +301,26 @@ def check_provider_adapters() -> None:
     run([sys.executable, "scripts/check_provider_adapters.py"])
 
 
+def verify_database_views(document_store_module: object) -> None:
+    current = ROOT / ".tool-shed/views/work"
+    temp_parent = ROOT / ".tool-shed"
+    temp_parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="validation-views-", dir=temp_parent) as temporary:
+        generated = Path(temporary) / "work"
+        document_store_module.render_views(ROOT, output=generated)
+        if tree_fingerprint(generated) != tree_fingerprint(current):
+            raise SystemExit(
+                "database-owned lifecycle views are stale; repair with: "
+                "python3 scripts/document_store.py --workspace . render-views"
+            )
+
+
 def regenerate_indexes() -> None:
     import document_store
 
     if document_store.is_authoritative(ROOT):
-        step("regenerate database-owned lifecycle views")
-        run([sys.executable, "scripts/document_store.py", "--workspace", ".", "render-views"])
+        step("verify database-owned lifecycle views")
+        verify_database_views(document_store)
     else:
         step("regenerate indexes")
         run([sys.executable, "scripts/update_work_index.py", "--workspace", "."])
@@ -548,7 +595,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     started = time.monotonic()
     canonical = is_canonical_checkout()
-    before = source_fingerprint() if not canonical else None
+    before = source_fingerprint() if not canonical else canonical_state_fingerprint()
     if not canonical and ((ROOT / ".git").exists() or (ROOT / "work").exists()):
         raise SystemExit("disconnected snapshot contains forbidden .git or work content")
     try:
@@ -590,8 +637,10 @@ def main(argv: list[str] | None = None) -> int:
             print("Skipped for disconnected snapshot; no snapshot-local work/ was created.")
     finally:
         cleanup_caches()
-    if before is not None and source_fingerprint() != before:
-        raise SystemExit("disconnected snapshot changed during validation")
+    after = canonical_state_fingerprint() if canonical else source_fingerprint()
+    if before != after:
+        label = "canonical authoritative state" if canonical else "disconnected snapshot"
+        raise SystemExit(f"{label} changed during validation")
     elapsed = time.monotonic() - started
     report_time_budget(
         args.profile,

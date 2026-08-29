@@ -288,6 +288,33 @@ class OutcomeReconciliationTests(unittest.TestCase):
         ):
             outcome_reconciliation.load_sources(self.workspace)
 
+    def test_live_bootstrap_is_outside_frozen_hpt2_compatibility_boundary(self) -> None:
+        live = Path("work/evidence/bootstrap-closure-live.json")
+        source = self.workspace / outcome_reconciliation.DEFAULT_BOOTSTRAP
+        payload = json.loads(source.read_text(encoding="utf-8"))
+        payload["kind"] = "tool-shed-bootstrap-closure"
+        destination = self.workspace / live
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        with self.assertRaisesRegex(
+            outcome_reconciliation.ReconciliationError,
+            "frozen compatibility fixture",
+        ):
+            outcome_reconciliation.load_sources(self.workspace, live)
+
+    def test_generic_cycles_do_not_mutate_hpt2_fixed_ids(self) -> None:
+        self.apply_slice()
+        ids_path = self.workspace / outcome_reconciliation.DEFAULT_IDS
+        before = ids_path.read_bytes()
+        manifest = outcome_loop.prepare(self.workspace, self.generic_source())
+        outcome_loop.apply_manifest(
+            self.workspace,
+            manifest,
+            expected_token=manifest["manifest_token"],
+            project_binding=self.binding,
+        )
+        self.assertEqual(ids_path.read_bytes(), before)
+
     def test_generic_prepare_validate_apply_audit_report_and_as_of(self) -> None:
         imported = self.apply_slice()
         manifest = outcome_loop.prepare(self.workspace, self.generic_source())
@@ -564,6 +591,39 @@ class OutcomeReconciliationTests(unittest.TestCase):
             project_binding=self.binding,
         )
         self.assertEqual(applied["result"]["mode"], "direct")
+
+    def test_append_only_correction_preserves_terminal_parent_provenance(self) -> None:
+        self.apply_slice()
+        self.generic_source()
+        ids = json.loads(
+            (self.workspace / outcome_reconciliation.DEFAULT_IDS).read_text(encoding="utf-8")
+        )["ids"]
+        parent_cycle = ids["cycle"]["hpt2"]
+        before = outcome_loop.report_cycle(self.workspace, parent_cycle)
+        manifest = outcome_loop.plan_direct_result(
+            self.workspace,
+            origin_summary="Correct current truth without rewriting the historical fixture.",
+            accepted_outcome="The correction is append-only and explicitly linked.",
+            product_truth=["product.py"],
+            evidence_paths=["product.py"],
+            disposition="satisfied-with-approved-change",
+            authorization_ref="fixture correction approval",
+            parent_cycle_id=parent_cycle,
+        )
+        applied = outcome_loop.apply_manifest(
+            self.workspace,
+            manifest,
+            expected_token=manifest["manifest_token"],
+            project_binding=self.binding,
+        )
+        child = outcome_loop.report_cycle(self.workspace, applied["result"]["cycle_id"])
+        after = outcome_loop.report_cycle(self.workspace, parent_cycle)
+        for key in ("cycle", "requirements", "changes", "evidence", "verdict", "reconciliation"):
+            self.assertEqual(after[key], before[key], key)
+        relation_types = {item["relation_type"] for item in child["relationships"]}
+        self.assertIn("outcome-parent", relation_types)
+        self.assertIn("outcome-result-propagated", relation_types)
+        self.assertEqual(child["verdict"]["disposition"], "satisfied-with-approved-change")
 
     def test_global_owning_capsule_reveals_open_root(self) -> None:
         self.apply_slice()

@@ -1,0 +1,21 @@
+{
+  "baseline_candidate_ratio": 1.16,
+  "dimensions": {
+    "changes": 23,
+    "cycles": 48,
+    "documents": 278,
+    "evidence": 38,
+    "relationships": 156,
+    "requirements": 82
+  },
+  "expected_digest": "00393488b1d3b459812ff4c441825ac1d1fc38993b12d75348404e46d60eaa0e",
+  "iterations": 80,
+  "kind": "tool-shed-validation-performance-corpus",
+  "max_relative_regression": 1.5,
+  "samples": 7,
+  "schema_version": 1,
+  "source_boundary": {
+    "commit": "02703bf2419c61dc05d5a0f41414a56f180737b5",
+    "database_revision": 437
+  }
+}

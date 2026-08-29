@@ -8,6 +8,7 @@ import sys as _runtime_sys
 _runtime_sys.dont_write_bytecode = True
 
 import argparse
+import functools
 import hashlib
 import json
 import os
@@ -92,6 +93,61 @@ def file_sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+@functools.lru_cache(maxsize=512)
+def committed_file_matches(workspace_text: str, relative: str, expected_sha256: str, preferred_commit: str) -> bool:
+    """Prove recorded bytes exist in reachable immutable Git history."""
+    workspace = Path(workspace_text)
+    commits: list[str] = []
+    if re.fullmatch(r"[0-9a-f]{40}", preferred_commit):
+        commits.append(preferred_commit)
+    history = subprocess.run(
+        ["git", "log", "--all", "--format=%H", "--", relative],
+        cwd=workspace,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if history.returncode:
+        return False
+    commits.extend(value for value in history.stdout.splitlines() if value not in commits)
+    for commit in commits:
+        content = subprocess.run(
+            ["git", "show", f"{commit}:{relative}"],
+            cwd=workspace,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+        if content.returncode == 0 and sha256_bytes(content.stdout) == expected_sha256:
+            return True
+    return False
+
+
+def terminal_initiative(payload: dict[str, Any]) -> bool:
+    return any(
+        item.get("scope") == "initiative" and item.get("disposition") in TERMINAL_VERDICTS
+        for item in payload.get("verdicts", [])
+        if isinstance(item, dict)
+    )
+
+
+def recorded_reference_matches(
+    workspace: Path,
+    payload: dict[str, Any],
+    *,
+    relative: str,
+    path: Path,
+    expected_sha256: object,
+) -> bool:
+    if not isinstance(expected_sha256, str) or not SHA256_RE.fullmatch(expected_sha256):
+        return False
+    if not terminal_initiative(payload):
+        return file_sha256(path) == expected_sha256
+    preferred = str(payload.get("baseline", {}).get("source_commit", ""))
+    return committed_file_matches(str(workspace.resolve()), relative, expected_sha256, preferred)
 
 
 def git_commit(workspace: Path) -> str:
@@ -273,9 +329,15 @@ def validate_manifest(
             relative, path = relative_file(workspace, binding.get("path"), label=f"{label} path")
             if binding.get("path") != relative:
                 findings.append(f"{label} path is not normalized")
-            current = file_sha256(path)
-            if binding.get("sha256") != current:
-                findings.append(f"{label} is stale: {relative}")
+            if not recorded_reference_matches(
+                workspace,
+                payload,
+                relative=relative,
+                path=path,
+                expected_sha256=binding.get("sha256"),
+            ):
+                state = "uncommitted or unavailable" if terminal_initiative(payload) else "stale"
+                findings.append(f"{label} is {state}: {relative}")
         except (ClosureError, ProjectIdentityError) as error:
             findings.append(str(error))
         if not isinstance(binding.get("sha256"), str) or not SHA256_RE.fullmatch(str(binding.get("sha256"))):
@@ -443,8 +505,15 @@ def validate_manifest(
                 continue
             try:
                 relative, path = relative_file(workspace, reference.get("path"), label=reference_label)
-                if reference.get("sha256") != file_sha256(path):
-                    findings.append(f"{reference_label} is stale: {relative}")
+                if not recorded_reference_matches(
+                    workspace,
+                    payload,
+                    relative=relative,
+                    path=path,
+                    expected_sha256=reference.get("sha256"),
+                ):
+                    state = "uncommitted or unavailable" if terminal_initiative(payload) else "stale"
+                    findings.append(f"{reference_label} is {state}: {relative}")
             except (ClosureError, ProjectIdentityError) as error:
                 findings.append(str(error))
             if not isinstance(reference.get("sha256"), str) or not SHA256_RE.fullmatch(str(reference.get("sha256"))):
@@ -705,11 +774,21 @@ def require_current(workspace: Path, payload: dict[str, Any], expected: str | No
         )
 
 
+def require_mutable_ledger(payload: dict[str, Any]) -> None:
+    """Reject edits once the initiative outcome has become historical truth."""
+    if terminal_initiative(payload):
+        raise ClosureError(
+            "completed bootstrap closure is immutable; record a correction or supersession "
+            "as a new generic outcome cycle linked to this historical cycle"
+        )
+
+
 def record_change_command(workspace: Path, path: Path, args: argparse.Namespace) -> dict[str, Any]:
     require_project_binding(workspace, args.project_binding, operation=OPERATION)
     path = require_path_within(workspace, path)
     payload = load_manifest(path)
     require_current(workspace, payload, args.expect)
+    require_mutable_ledger(payload)
     changes = require_objects(payload, "changes")
     if any(item.get("id") == args.change_id for item in changes):
         raise ClosureError(f"change ID already exists: {args.change_id}")
@@ -803,6 +882,7 @@ def record_evidence_command(workspace: Path, path: Path, args: argparse.Namespac
     path = require_path_within(workspace, path)
     payload = load_manifest(path)
     require_current(workspace, payload, args.expect)
+    require_mutable_ledger(payload)
     records = require_objects(payload, "evidence")
     record = next((item for item in records if item.get("id") == args.evidence_id), None)
     if record is None:
@@ -834,6 +914,7 @@ def record_verdict_command(workspace: Path, path: Path, args: argparse.Namespace
     path = require_path_within(workspace, path)
     payload = load_manifest(path)
     require_current(workspace, payload, args.expect)
+    require_mutable_ledger(payload)
     known_evidence = {item.get("id") for item in require_objects(payload, "evidence")}
     missing = sorted(set(args.evidence) - known_evidence)
     if missing:

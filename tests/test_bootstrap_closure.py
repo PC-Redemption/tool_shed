@@ -540,6 +540,75 @@ class BootstrapClosureTests(unittest.TestCase):
         )
         self.assertTrue(json.loads(final.stdout)["valid"])
 
+    def test_terminal_bootstrap_ledger_rejects_all_mutations_without_changing_bytes(self) -> None:
+        baseline = self.baseline()
+        closed = self.run_cli(
+            "record-verdict",
+            "--manifest",
+            str(self.manifest.relative_to(self.workspace)),
+            "--expect",
+            str(baseline["state_token"]),
+            "--project-binding",
+            project_binding(self.workspace),
+            "--scope",
+            "initiative",
+            "--disposition",
+            "satisfied",
+            "--summary",
+            "The historical fixture is complete.",
+            "--authorization",
+            "fixture",
+            "--evidence",
+            "EVID-FIXTURE-001",
+        )
+        token = json.loads(closed.stdout)["state_token"]
+        frozen = self.manifest.read_bytes()
+        attempts = [
+            (
+                "record-change",
+                "--change-id", "CHG-FIXTURE-LATE",
+                "--summary", "Attempt late history",
+                "--rationale", "This must become a child cycle.",
+                "--authorization", "fixture",
+                "--requirement", "REQ-FIXTURE-001",
+                "--rerun-evidence", "EVID-FIXTURE-001",
+            ),
+            (
+                "record-evidence",
+                "--evidence-id", "EVID-FIXTURE-001",
+                "--status", "passed",
+                "--reference", "docs/fixture-contract.md",
+            ),
+            (
+                "record-verdict",
+                "--scope", "initiative",
+                "--disposition", "open",
+                "--summary", "Attempt to reopen history.",
+                "--authorization", "fixture",
+            ),
+        ]
+        for attempt in attempts:
+            with self.subTest(command=attempt[0]):
+                result = self.run_cli(
+                    attempt[0],
+                    "--manifest", str(self.manifest.relative_to(self.workspace)),
+                    "--expect", token,
+                    "--project-binding", project_binding(self.workspace),
+                    *attempt[1:],
+                    check=False,
+                )
+                self.assertEqual(result.returncode, 2)
+                self.assertIn("completed bootstrap closure is immutable", result.stderr)
+                self.assertEqual(self.manifest.read_bytes(), frozen)
+        contract = self.workspace / "docs/fixture-contract.md"
+        contract.write_text("# Contract\n\nLater current truth.\n", encoding="utf-8")
+        verified = self.run_cli(
+            "verify",
+            "--manifest", str(self.manifest.relative_to(self.workspace)),
+            "--require-final",
+        )
+        self.assertTrue(json.loads(verified.stdout)["valid"])
+
     def test_record_change_requires_affected_state_evidence_and_known_history(self) -> None:
         baseline = self.baseline()
         token = str(baseline["state_token"])
