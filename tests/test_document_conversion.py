@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import shutil
@@ -112,8 +113,9 @@ class DocumentConversionTests(unittest.TestCase):
             document_store.show(self.workspace, "IDEA-0001", database=older)
         newer = self.workspace / ".tool-shed/newer.sqlite3"
         shutil.copyfile(self.database, newer)
-        with sqlite3.connect(newer) as connection:
+        with contextlib.closing(sqlite3.connect(newer)) as connection:
             connection.execute("PRAGMA user_version=3")
+            connection.commit()
         self.assertEqual(document_store.audit(self.workspace, newer)["classification"], "INVALID")
 
 
