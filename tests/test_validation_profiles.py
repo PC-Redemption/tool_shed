@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import json
+import sys
 import tempfile
 import unittest
 from contextlib import redirect_stderr
@@ -173,6 +174,64 @@ class ValidationProfileTests(unittest.TestCase):
             with mock.patch.object(validator, "ROOT", root):
                 with self.assertRaisesRegex(SystemExit, "document_store.py.*render-views"):
                     validator.verify_database_views(module)
+
+    def test_clean_clone_materializes_and_removes_ephemeral_hybrid_state(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            checkpoint = root / "work/state/checkpoints/state-v2.json"
+            checkpoint.parent.mkdir(parents=True)
+            checkpoint.write_text(
+                json.dumps(
+                    {
+                        "schema_version": 2,
+                        "kind": "tool-shed-document-state-checkpoint",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            def rebuild(
+                _workspace: Path,
+                *,
+                project_binding: str,
+                checkpoint: Path,
+                output: Path,
+            ) -> dict[str, object]:
+                self.assertEqual(project_binding, "binding")
+                self.assertTrue(checkpoint.is_file())
+                output.write_bytes(b"sqlite")
+                return {"writes_performed": True}
+
+            def render(_workspace: Path) -> dict[str, object]:
+                views = root / ".tool-shed/views/work/active"
+                views.mkdir(parents=True)
+                (views / "_index.md").write_text("generated\n", encoding="utf-8")
+                return {"writes_performed": True}
+
+            document_module = mock.Mock()
+            document_module.CHECKPOINT_KIND = "tool-shed-document-state-checkpoint"
+            document_module.rebuild.side_effect = rebuild
+            document_module.render_views.side_effect = render
+            hybrid_module = mock.Mock()
+            hybrid_module.database_path.return_value = root / ".tool-shed/state.sqlite3"
+            identity_module = mock.Mock()
+            identity_module.binding_token.return_value = "binding"
+            with mock.patch.object(validator, "ROOT", root), mock.patch.dict(
+                sys.modules,
+                {
+                    "document_store": document_module,
+                    "hybrid_state": hybrid_module,
+                    "project_identity": identity_module,
+                },
+            ):
+                state = validator.materialize_ephemeral_canonical_state()
+                self.assertTrue(state.created)
+                self.assertTrue(state.database.is_file())
+                self.assertTrue(state.views.is_dir())
+                validator.cleanup_ephemeral_canonical_state(state)
+                self.assertFalse(state.database.exists())
+                self.assertFalse(state.views.exists())
 
     def test_isolated_runner_collects_every_result_in_stable_order(self) -> None:
         calls: list[str] = []

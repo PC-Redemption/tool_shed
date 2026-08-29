@@ -34,6 +34,13 @@ class TestResult:
     stderr: str
 
 
+@dataclass(frozen=True)
+class EphemeralCanonicalState:
+    database: Path
+    views: Path
+    created: bool
+
+
 def positive_int(value: str) -> int:
     parsed = int(value)
     if parsed < 1:
@@ -164,6 +171,58 @@ def canonical_state_fingerprint() -> dict[str, object]:
         "views": tree_fingerprint(ROOT / ".tool-shed/views/work"),
         "git_status": status,
     }
+
+
+def materialize_ephemeral_canonical_state() -> EphemeralCanonicalState:
+    """Rebuild ignored Hybrid runtime state for a clean canonical checkout."""
+    import document_store
+    import hybrid_state
+    import project_identity
+
+    database = hybrid_state.database_path(ROOT)
+    views = ROOT / ".tool-shed/views/work"
+    if database.is_file():
+        return EphemeralCanonicalState(database=database, views=views, created=False)
+
+    checkpoint = ROOT / "work/state/checkpoints/state-v2.json"
+    if not checkpoint.is_file():
+        return EphemeralCanonicalState(database=database, views=views, created=False)
+    payload = json.loads(checkpoint.read_text(encoding="utf-8"))
+    if payload.get("schema_version") != 2 or payload.get("kind") != document_store.CHECKPOINT_KIND:
+        return EphemeralCanonicalState(database=database, views=views, created=False)
+    if views.exists():
+        raise SystemExit(
+            "canonical checkout has generated views but no live state database; "
+            "remove or reconcile the incomplete ignored runtime state before validation"
+        )
+
+    database.parent.mkdir(parents=True, exist_ok=True)
+    binding = project_identity.binding_token(ROOT, operation="hybrid-state")
+    try:
+        document_store.rebuild(
+            ROOT,
+            project_binding=binding,
+            checkpoint=checkpoint,
+            output=database,
+        )
+        document_store.render_views(ROOT)
+    except BaseException:
+        database.unlink(missing_ok=True)
+        shutil.rmtree(views, ignore_errors=True)
+        raise
+    return EphemeralCanonicalState(database=database, views=views, created=True)
+
+
+def cleanup_ephemeral_canonical_state(state: EphemeralCanonicalState) -> None:
+    if not state.created:
+        return
+    state.database.unlink(missing_ok=True)
+    shutil.rmtree(state.views, ignore_errors=True)
+    for directory in (state.views.parent, state.database.parent):
+        try:
+            directory.rmdir()
+        except OSError:
+            pass
 
 
 def compile_python() -> None:
@@ -595,6 +654,11 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     started = time.monotonic()
     canonical = is_canonical_checkout()
+    ephemeral = (
+        materialize_ephemeral_canonical_state()
+        if canonical
+        else EphemeralCanonicalState(Path(), Path(), False)
+    )
     before = source_fingerprint() if not canonical else canonical_state_fingerprint()
     if not canonical and ((ROOT / ".git").exists() or (ROOT / "work").exists()):
         raise SystemExit("disconnected snapshot contains forbidden .git or work content")
@@ -637,7 +701,8 @@ def main(argv: list[str] | None = None) -> int:
             print("Skipped for disconnected snapshot; no snapshot-local work/ was created.")
     finally:
         cleanup_caches()
-    after = canonical_state_fingerprint() if canonical else source_fingerprint()
+        after = canonical_state_fingerprint() if canonical else source_fingerprint()
+        cleanup_ephemeral_canonical_state(ephemeral)
     if before != after:
         label = "canonical authoritative state" if canonical else "disconnected snapshot"
         raise SystemExit(f"{label} changed during validation")

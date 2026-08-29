@@ -125,7 +125,7 @@
     "scripts/update_snapshot.py": "b6d3b94f42377d5297a32cde439e81f5789a280904eae04f85306b530c9da920",
     "scripts/update_work_index.py": "14839e13af13b09103ec2e8a9b204c1ba1e390d05fe42e75a0d24295da7d6c66",
     "scripts/validate_snapshot_client.py": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f",
-    "scripts/validate_tool_shed.py": "7e5e7358eddcd05a284b7b5cdfccc94746c76c725f719016edde0ded8c8415c3",
+    "scripts/validate_tool_shed.py": "820cf80f37570a8e1d96466d0a7c3f10fa502dc9d70bf36b3e2672c7f9835867",
     "scripts/work_level_config.py": "d482693c0f4deb547e90855cff7d3d5d5d320cbb2bdae7c8c5a3159d476743ae",
     "scripts/work_tree.py": "84245e2d6441556ffd417ec884bdb4cdd727520cb3d10e2fdcfd5459c773eb8e",
     "scripts/workspace_preflight.py": "d9482b21dc552c9ce73ee1395d23ea6bdd3646fcf3cd904b51937f47d3bab271",
