@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import sys
 import time
+import uuid
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from types import SimpleNamespace
@@ -1820,6 +1821,7 @@ def _gui_handoff_payload(
 
 def main() -> int:
     args = build_parser().parse_args()
+    correlation_id = uuid.uuid4().hex
     preference = AppServerPreferenceStore(args.preference).status()
     record_app_server_event_best_effort(
         path=args.events,
@@ -1830,6 +1832,10 @@ def main() -> int:
         backend="app_server",
         preference_mode=preference.mode,
         strict_request=args.app_server,
+        source="operator" if args.app_server else "passive",
+        event_type="execution",
+        role="camp_execution",
+        correlation_id=correlation_id,
     )
     try:
         payload = dispatch_next(
@@ -1861,6 +1867,10 @@ def main() -> int:
             backend="gui" if not args.app_server else "app_server",
             preference_mode=preference.mode,
             strict_request=args.app_server,
+            source="operator" if args.app_server else "passive",
+            event_type="fallback",
+            role="camp_execution",
+            correlation_id=correlation_id,
         )
         if not args.app_server:
             payload = _gui_handoff_payload(
@@ -1891,6 +1901,10 @@ def main() -> int:
             backend="gui",
             preference_mode=preference.mode,
             strict_request=False,
+            source="passive",
+            event_type="reconciliation",
+            role="camp_execution",
+            correlation_id=correlation_id,
         )
         payload = _gui_handoff_payload(
             category=category,
@@ -1908,6 +1922,10 @@ def main() -> int:
         backend="app_server",
         preference_mode=preference.mode,
         strict_request=args.app_server,
+        source="operator" if args.app_server else "passive",
+        event_type="execution",
+        role="camp_execution",
+        correlation_id=correlation_id,
     )
     print(json.dumps(payload, indent=2, sort_keys=True))
     return 0 if payload["status"] == "completed" else 2

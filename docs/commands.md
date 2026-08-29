@@ -627,6 +627,10 @@ strict one-command App Server request:
 | `ts: app-server on` | Persistently trust the resolved App Server for supported local roles, including bounded CAMP. `appserver` is an alias. |
 | `ts: app-server off` | Restore the normal GUI default. |
 | `ts: app-server status` | Read-only operator-trust, runtime-readiness, observed-safety, and optional-certification status. |
+| `ts: app-server profile status` | Inspect the protected recovery copy without making it active. |
+| `ts: app-server profile save` | Explicitly refresh recovery evidence from the current active preference. |
+| `ts: app-server profile restore` | Explicitly restore the active preference from valid recovery evidence. |
+| `ts: app-server report [hours]` | Report the bounded local opportunity funnel; the default window is 24 hours. |
 
 With the preference off, unflagged `ts: plan`, `ts: verify`, `ts: camp run`, and executable `ts:
 next` use the GUI and report `Execution: GUI`. With it on, those routes prefer App Server; `--gui`
@@ -679,10 +683,24 @@ platform supports modes. Missing or invalid state fails safely to off. Legacy sc
 enabled for read roles but requires one new `on` command before CAMP trust is granted. The committed
 global setting remains `codex_app_server_enabled = false`.
 
+An explicit `on` or `off` also refreshes a recovery-only owner profile at
+`$XDG_CONFIG_HOME/tool-shed/app-server-owner-profile.json` (normally
+`~/.config/tool-shed/app-server-owner-profile.json`). The active preference remains the sole runtime
+authority. Replacing Codex home therefore returns execution to the clean default-off state until the
+operator explicitly runs `ts: app-server profile restore`; the profile is never read as live consent.
+`profile save`, `profile status`, and `profile restore` are explicit controls and use private,
+atomic, locked files where the platform supports modes.
+
 Passive attempts, successes, fallbacks, and reconciliation handoffs append sanitized operational
-events to `$CODEX_HOME/tool-shed/app-server-events.jsonl`. Events exclude prompts, responses, raw
-tool output, credentials, secrets, exception text, and repository content. Logging is best-effort
-and never delays or blocks GUI fallback.
+events to `$CODEX_HOME/tool-shed/app-server-events.jsonl`. Schema-v2 events add controlled source,
+event type, role, and a content-free correlation ID. Events exclude prompts, responses, paths,
+source text, raw tool output, credentials, secrets, exception text, and repository content.
+Validation redirects default preference, profile, and event paths through `TOOL_SHED_STATE_ROOT`,
+so test traffic cannot enter the live log. Schema-v1 history remains excluded legacy evidence and
+is never rewritten. `ts: app-server report` summarizes opportunities, selections, execution,
+completion, GUI fallback, reconciliation, failures, and skipped opportunities; token and duration
+values remain explicitly unavailable because this event surface does not record them. Logging is
+best-effort and never delays or blocks GUI fallback.
 
 Every App Server path uses one bounded Codex resolver. A supported explicit override is
 authoritative. Otherwise it inventories `PATH`, trusted platform locations, and OpenAI VS Code

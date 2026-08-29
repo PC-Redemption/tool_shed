@@ -221,10 +221,16 @@ evidence exists.
 `ts: discuss ... --app-server` is rejected because discussion is intentionally GUI-native.
 `ts: app-server on|off` persists the user-local preference under Codex home; `appserver` is its
 exact alias. `--gui` overrides the preference for one command. The repository default remains off.
+Each explicit preference change also refreshes a recovery-only owner profile under the user config
+directory. That copy never acts as runtime consent; `ts: app-server profile restore` is required
+after destructive Codex-home replacement. `profile status` and `profile save` inspect or refresh it.
 Pre-mutation failures in persistent mode continue the same action immediately in GUI. If mutation
 is possible, reconcile the existing mutation journal and Git state first and never replay the App
-Server step. Sanitized operational events are appended best-effort under Codex home without prompts,
-responses, raw tool output, credentials, exception text, or repository content.
+Server step. Schema-v2 sanitized operational events are appended best-effort under Codex home with
+controlled source, type, role, and content-free correlation identity, but without prompts, responses,
+paths, source text, raw tool output, credentials, exception text, or repository content. Validation
+uses isolated default state. `ts: app-server report` exposes a bounded local opportunity funnel and
+excludes schema-v1 history as unclassified legacy evidence.
 
 Show the selected backend without starting App Server:
 

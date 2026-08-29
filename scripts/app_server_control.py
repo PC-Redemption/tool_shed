@@ -9,6 +9,7 @@ _runtime_sys.dont_write_bytecode = True
 
 import argparse
 import json
+import uuid
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any
@@ -37,9 +38,12 @@ try:
         FeatureConfigError,
     )
     from scripts.app_server_user_state import (
+        AppServerEventStore,
+        AppServerOwnerProfileStore,
         AppServerPreferenceStore,
         AppServerUserStateError,
         default_app_server_event_path,
+        default_app_server_profile_path,
         record_app_server_event_best_effort,
     )
 except ModuleNotFoundError:  # Direct execution: python scripts/app_server_control.py
@@ -70,9 +74,12 @@ except ModuleNotFoundError:  # Direct execution: python scripts/app_server_contr
         FeatureConfigError,
     )
     from app_server_user_state import (  # type: ignore[no-redef]
+        AppServerEventStore,
+        AppServerOwnerProfileStore,
         AppServerPreferenceStore,
         AppServerUserStateError,
         default_app_server_event_path,
+        default_app_server_profile_path,
         record_app_server_event_best_effort,
     )
 
@@ -685,10 +692,12 @@ def control_status(
     qualification_cache_path: Path | None = None,
     preference_path: Path | None = None,
     event_path: Path | None = None,
+    profile_path: Path | None = None,
     repository_policy_path: Path | None = None,
     workspace: Path | None = None,
 ) -> dict[str, Any]:
     preference = AppServerPreferenceStore(preference_path).status()
+    profile = AppServerOwnerProfileStore(profile_path).status()
     certification_policy = repository_certification_policy(
         policy_path=repository_policy_path,
         workspace=workspace,
@@ -713,6 +722,8 @@ def control_status(
             "session_control_supported": True,
             "session_note": "Persistent user-local preference; --gui overrides it once.",
             "preference": preference.as_dict(),
+            "owner_profile": profile.as_dict(),
+            "owner_profile_authority": "recovery-only-explicit-restore",
             "trust_policy": (
                 "strict-certified"
                 if certification_policy["strict"]
@@ -738,10 +749,16 @@ def control_status(
     return report
 
 
-def preference_control(action: str, *, preference_path: Path | None = None) -> dict[str, Any]:
+def preference_control(
+    action: str,
+    *,
+    preference_path: Path | None = None,
+    profile_path: Path | None = None,
+) -> dict[str, Any]:
     if action not in {"on", "off"}:
         raise AppServerControlError(f"unknown preference action: {action}")
     state = AppServerPreferenceStore(preference_path).set(action == "on")
+    profile = AppServerOwnerProfileStore(profile_path).save(state)
     return {
         "schema_version": 2,
         "accepted": True,
@@ -750,6 +767,7 @@ def preference_control(action: str, *, preference_path: Path | None = None) -> d
         "session_control_supported": True,
         "persistent_changes": True,
         "preference": state.as_dict(),
+        "owner_profile": profile.as_dict(),
         "reason": (
             "operator-runtime trust recorded for supported local App Server roles"
             if action == "on"
@@ -763,6 +781,42 @@ def session_control(action: str, *, preference_path: Path | None = None) -> dict
     """Compatibility alias for the former session-control entrypoint."""
 
     return preference_control(action, preference_path=preference_path)
+
+
+def profile_control(
+    action: str,
+    *,
+    preference_path: Path | None = None,
+    profile_path: Path | None = None,
+) -> dict[str, Any]:
+    preference_store = AppServerPreferenceStore(preference_path)
+    profile_store = AppServerOwnerProfileStore(profile_path)
+    if action == "status":
+        profile = profile_store.status()
+        return {
+            "schema_version": 1,
+            "action": "status",
+            "active_preference": preference_store.status().as_dict(),
+            "owner_profile": profile.as_dict(),
+            "authority": "active preference only; explicit restore required",
+            "restorable": profile.warning == "explicit-restore-required",
+        }
+    if action == "save":
+        profile = profile_store.save(preference_store.status())
+        restored = preference_store.status()
+    elif action == "restore":
+        restored = profile_store.restore(preference_store)
+        profile = profile_store.status()
+    else:
+        raise AppServerControlError(f"unknown profile action: {action}")
+    return {
+        "schema_version": 1,
+        "action": action,
+        "active_preference": restored.as_dict(),
+        "owner_profile": profile.as_dict(),
+        "authority": "active preference only; explicit restore required",
+        "restorable": True,
+    }
 
 
 def format_selection(selection: CommandSelection) -> str:
@@ -832,6 +886,8 @@ def format_control_status(report: dict[str, Any]) -> str:
         f"Persistent preference: {report['session_opt_in']}",
         f"Preference path: {report['preference']['path']}",
         f"Preference source: {report['preference']['source']}",
+        f"Owner profile: {report['owner_profile']['mode']} ({report['owner_profile']['path']})",
+        "Owner profile authority: recovery only; explicit restore required",
         f"Trust policy: {report['trust_policy']}",
         f"Operator trust: {'ACTIVE' if report['operator_trust'] else 'INACTIVE'}",
         f"Fallback event log: {report['event_log_path']}",
@@ -890,6 +946,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--preference", type=Path, default=None)
     parser.add_argument("--repository-policy", type=Path, default=None)
     parser.add_argument("--events", type=Path, default=None)
+    parser.add_argument("--profile", type=Path, default=None)
     subparsers = parser.add_subparsers(dest="operation", required=True)
 
     select = subparsers.add_parser("select", help="Resolve one user-facing Tool Shed command.")
@@ -912,11 +969,24 @@ def parse_args() -> argparse.Namespace:
     session = subparsers.add_parser("session", help="Compatibility alias for preference.")
     session.add_argument("action", choices=("on", "off"))
     session.add_argument("--json", action="store_true")
+
+    profile = subparsers.add_parser(
+        "profile", help="Save, inspect, or explicitly restore owner recovery intent."
+    )
+    profile.add_argument("action", choices=("save", "status", "restore"))
+    profile.add_argument("--json", action="store_true")
+
+    report = subparsers.add_parser(
+        "report", help="Summarize bounded local App Server opportunity events."
+    )
+    report.add_argument("--hours", type=float, default=24.0)
+    report.add_argument("--json", action="store_true")
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
+    correlation_id = uuid.uuid4().hex
     try:
         if args.operation == "select":
             selection = select_command(
@@ -945,6 +1015,10 @@ def main() -> int:
                 backend="app_server" if selection.execution == "App Server" else "gui",
                 preference_mode=selection.preference_mode,
                 strict_request=selection.strict_request,
+                source="operator" if selection.strict_request else "passive",
+                event_type="opportunity",
+                role=args.command,
+                correlation_id=correlation_id,
             )
             print(
                 json.dumps(asdict(selection), indent=2, sort_keys=True)
@@ -961,6 +1035,7 @@ def main() -> int:
                 qualification_cache_path=args.qualification_cache,
                 preference_path=args.preference,
                 event_path=args.events,
+                profile_path=args.profile,
                 repository_policy_path=args.repository_policy,
             )
             print(
@@ -969,7 +1044,37 @@ def main() -> int:
                 else format_control_status(report)
             )
             return 0
-        report = preference_control(args.action, preference_path=args.preference)
+        if args.operation == "report":
+            report = AppServerEventStore(args.events).report(hours=args.hours)
+            print(json.dumps(report, indent=2, sort_keys=True))
+            return 0
+        if args.operation == "profile":
+            report = profile_control(
+                args.action,
+                preference_path=args.preference,
+                profile_path=args.profile,
+            )
+            record_app_server_event_best_effort(
+                path=args.events,
+                command="profile",
+                outcome="inspected" if args.action == "status" else args.action + "d",
+                category=f"profile_{args.action}",
+                mutation_state="none",
+                backend="control",
+                preference_mode=report["active_preference"]["mode"],
+                strict_request=False,
+                source="control",
+                event_type="preference",
+                role="profile",
+                correlation_id=correlation_id,
+            )
+            print(json.dumps(report, indent=2, sort_keys=True))
+            return 0
+        report = preference_control(
+            args.action,
+            preference_path=args.preference,
+            profile_path=args.profile,
+        )
         record_app_server_event_best_effort(
             path=args.events,
             command="preference",
@@ -979,6 +1084,10 @@ def main() -> int:
             backend="control",
             preference_mode=report["session_opt_in"],
             strict_request=False,
+            source="control",
+            event_type="preference",
+            role="preference",
+            correlation_id=correlation_id,
         )
         print(
             json.dumps(report, indent=2, sort_keys=True)
@@ -1008,6 +1117,10 @@ def main() -> int:
             backend="none",
             preference_mode="UNKNOWN",
             strict_request=bool(getattr(args, "app_server", False)),
+            source="control" if getattr(args, "operation", "") in {"preference", "profile", "report"} else "operator",
+            event_type="preference" if getattr(args, "operation", "") in {"preference", "profile"} else "execution",
+            role=getattr(args, "command", getattr(args, "operation", "unknown")),
+            correlation_id=correlation_id,
         )
         print(json.dumps({"error": str(error)}, indent=2), file=__import__("sys").stderr)
         return 1

@@ -681,7 +681,8 @@ python3 <shed>/scripts/app_server_control.py status
 It reports the repository default, persistent preference and path, trust policy/source, startup
 readiness, observed safety, optional certification state, the complete bounded candidate inventory,
 selected executable and source, supported roles, current GUI default, GUI-native discussion, and
-disabled API fallback. Version and executable hash are diagnostic evidence in normal mode. A
+disabled API fallback. It also reports the owner-profile recovery state while keeping that copy
+non-authoritative. Version and executable hash are diagnostic evidence in normal mode. A
 supplied override is authoritative; otherwise the highest semantically eligible candidate at or
 above `0.146.0` wins, with source priority used only for equal-version ties.
 
@@ -696,11 +697,23 @@ read roles but does not authorize CAMP until the operator runs `on` again. This 
 `codex_app_server_enabled`, enables API-key fallback, expands permissions, or grants release,
 deployment, push, credential, or external-mutation authority.
 
-Record passive App Server attempts, completions, fallbacks, and reconciliation handoffs as compact
+For `ts: app-server profile save|status|restore`, run `app_server_control.py profile` with the
+matching action. The protected owner profile defaults to
+`$XDG_CONFIG_HOME/tool-shed/app-server-owner-profile.json` (normally `~/.config/tool-shed/...`),
+outside Codex home. Explicit `on` and `off` refresh it. It is recovery evidence only and never acts
+as live consent; only explicit `restore` may recreate the active preference after destructive
+Codex-home replacement. Missing or invalid recovery evidence fails closed without changing the
+active preference.
+
+Record passive App Server opportunities, attempts, completions, fallbacks, and reconciliation handoffs as compact
 JSON Lines at `$CODEX_HOME/tool-shed/app-server-events.jsonl` (or `~/.codex/tool-shed/...`). Events
 may contain only timestamp, route, outcome, controlled category, mutation state, backend,
-preference mode, and strict-request flag—never prompts, responses, raw tool output, credentials,
-secrets, arbitrary exception messages, or repository content. Use a private parent and mode `0600`
+preference mode, strict-request flag, controlled source/type/role, and a content-free correlation
+ID—never prompts, responses, paths, source text, raw tool output, credentials, secrets, arbitrary
+exception messages, or repository content. Validator and subprocess default state must honor
+`TOOL_SHED_STATE_ROOT`; schema-v1 events remain excluded legacy evidence and are never rewritten.
+For `ts: app-server report [hours]`, run `app_server_control.py report --hours <hours> --json` and
+surface the bounded opportunity funnel, with unavailable token/duration fields left null. Use a private parent and mode `0600`
 where supported. Event logging is best-effort: a logging failure must never block GUI fallback or
 the current action.
 

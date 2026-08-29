@@ -105,6 +105,14 @@ possible mutation requires mutation-journal and Git reconciliation before GUI co
 never replayed. The append-only user-local operational log is sanitized and best-effort; logging
 failure cannot block fallback.
 
+Explicit preference changes refresh a protected recovery-only owner profile outside Codex home.
+It is not a second authority and never enables App Server automatically; destructive replacement
+requires `ts: app-server profile restore`. Validator subprocesses route default preference, profile,
+and event paths through `TOOL_SHED_STATE_ROOT`. Schema-v2 events carry controlled source, event type,
+role, and correlation identity, while schema-v1 history remains excluded legacy evidence.
+`ts: app-server report` provides bounded local opportunity, selection, execution, completion,
+fallback, reconciliation, failure-category, and skipped-opportunity counts without storing content.
+
 All Codex consumers use one resolver. A supported explicit override remains authoritative.
 Otherwise the resolver inventories `PATH`, bounded trusted platform locations, and OpenAI VS Code
 extension bundles, then selects the highest semantically eligible CLI at or above `0.146.0`;

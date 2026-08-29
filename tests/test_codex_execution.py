@@ -23,6 +23,7 @@ from scripts.app_server_control import (
     format_control_status,
     format_selection,
     preference_control,
+    profile_control,
     select_command,
     select_role,
     session_control,
@@ -1900,7 +1901,10 @@ class CodexExecutionTests(unittest.TestCase):
 
     def test_user_command_status_and_persistent_control(self) -> None:
         preference_path = self.root / "app-server-preference.json"
-        report = control_status(codex=str(self.fake), preference_path=preference_path)
+        profile_path = self.root / "app-server-owner-profile.json"
+        report = control_status(
+            codex=str(self.fake), preference_path=preference_path, profile_path=profile_path
+        )
         self.assertEqual(report["global_default"], "OFF")
         self.assertEqual(report["session_opt_in"], "OFF")
         self.assertTrue(report["session_control_supported"])
@@ -1916,7 +1920,9 @@ class CodexExecutionTests(unittest.TestCase):
             ("gpt-5.6-sol", "high"),
         )
         self.assertIn("App Server global default: OFF", format_control_status(report))
-        enabled = preference_control("on", preference_path=preference_path)
+        enabled = preference_control(
+            "on", preference_path=preference_path, profile_path=profile_path
+        )
         self.assertTrue(enabled["accepted"])
         self.assertEqual(enabled["session_opt_in"], "ON")
         self.assertEqual("operator-runtime", enabled["preference"]["trust_policy"])
@@ -1928,7 +1934,7 @@ class CodexExecutionTests(unittest.TestCase):
             "ON",
             (
                 enabled_status := control_status(
-                    codex=str(self.fake), preference_path=preference_path
+                    codex=str(self.fake), preference_path=preference_path, profile_path=profile_path
                 )
             )["session_opt_in"],
         )
@@ -1940,8 +1946,15 @@ class CodexExecutionTests(unittest.TestCase):
             "operator-runtime",
             enabled_status["enabled_roles"]["camp_execution"]["admission"],
         )
-        disabled = session_control("off", preference_path=preference_path)
+        disabled = preference_control(
+            "off", preference_path=preference_path, profile_path=profile_path
+        )
         self.assertEqual(disabled["session_opt_in"], "OFF")
+        preference_path.unlink()
+        restored = profile_control(
+            "restore", preference_path=preference_path, profile_path=profile_path
+        )
+        self.assertEqual("OFF", restored["active_preference"]["mode"])
 
     def test_persistent_preference_precedence_and_gui_native_routes(self) -> None:
         preference_path = self.root / "app-server-preference.json"
@@ -2010,6 +2023,10 @@ class CodexExecutionTests(unittest.TestCase):
             str(ROOT / "scripts" / "app_server_control.py"),
             "--codex",
             str(self.fake),
+            "--events",
+            str(self.root / "cli-events.jsonl"),
+            "--profile",
+            str(self.root / "cli-profile.json"),
         ]
         selected = subprocess.run(
             [*base, "select", "camp-run", "--app-server"],
@@ -2041,6 +2058,26 @@ class CodexExecutionTests(unittest.TestCase):
         )
         self.assertEqual(session.returncode, 0)
         self.assertTrue(json.loads(session.stdout)["persistent_changes"])
+
+        profile = subprocess.run(
+            [*base, "--preference", str(preference_path), "profile", "status", "--json"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(0, profile.returncode)
+        self.assertTrue(json.loads(profile.stdout)["restorable"])
+
+        opportunity_report = subprocess.run(
+            [*base, "report", "--hours", "24", "--json"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(0, opportunity_report.returncode)
+        self.assertGreaterEqual(
+            json.loads(opportunity_report.stdout)["included_runtime_events"], 3
+        )
 
     def test_thread_resume_restart_and_stale_thread_classification(self) -> None:
         telemetry = self.root / "telemetry.jsonl"
