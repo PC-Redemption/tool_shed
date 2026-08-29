@@ -349,6 +349,17 @@ class WorkOrchestrationTests(unittest.TestCase):
         with self.assertRaisesRegex(work_orchestration.WorkOrchestrationError, "unrelated"):
             work_orchestration._checkpoint_commit(self.workspace, "must refuse")
 
+    def test_strict_doctor_failure_is_an_exception(self) -> None:
+        with mock.patch.object(
+            work_orchestration.doctor,
+            "inspect",
+            return_value={"verdict": "INVALID", "findings": [{"code": "STATE_DRIFT"}]},
+        ):
+            with self.assertRaisesRegex(
+                work_orchestration.WorkOrchestrationError, "STATE_DRIFT"
+            ):
+                work_orchestration._strict_doctor(self.workspace)
+
     def test_benchmark_proves_same_corpus_thresholds(self) -> None:
         result = work_orchestration.benchmark(
             ROOT / "tests/fixtures/work-orchestration-baseline-v1.json"

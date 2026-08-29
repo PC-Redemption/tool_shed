@@ -777,6 +777,20 @@ def _logical_checkpoint(workspace: Path, *, project_binding: str) -> dict[str, A
     )
 
 
+def _strict_doctor(workspace: Path) -> dict[str, Any]:
+    report = doctor.inspect(workspace)
+    if report["verdict"] != "HEALTHY":
+        summaries = "; ".join(
+            str(item.get("code") or item.get("summary"))
+            for item in report.get("findings", [])[:5]
+        )
+        raise WorkOrchestrationError(
+            "strict Doctor is not HEALTHY after closeout"
+            + (f": {summaries}" if summaries else "")
+        )
+    return report
+
+
 def closeout(
     workspace: Path,
     *,
@@ -919,13 +933,11 @@ def closeout(
             run_id=run_id,
             phase_id="strict-doctor",
             input_material=_git_state(workspace),
-            action=lambda: doctor.inspect(workspace),
+            action=lambda: _strict_doctor(workspace),
             resume=resume,
             always_run=True,
         )
         phases.append(result)
-        if not doctor_payload or doctor_payload["verdict"] != "HEALTHY":
-            raise WorkOrchestrationError("strict Doctor is not HEALTHY after closeout")
 
     payload = {
         "schema_version": SCHEMA_VERSION,
