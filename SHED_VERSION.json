@@ -83,6 +83,8 @@
     "scripts/completion_watcher.py": "d94ba056b5628a477028c8568e284da95bd78466d3839b5e126a89163d16d7a3",
     "scripts/doctor.py": "bd1fa50753fdfaf1ccd190851eb18605819962f0463ab1e0c5507f2352563cf0",
     "scripts/document_contract.py": "2b540582141065b7e7c84294142a15ddf01f255a58f844e08abaf9634b30d411",
+    "scripts/document_store.py": "55062072c83ead8ad9c2db71c1498b73f2172f4728f7ff85216b36324fbdd5e8",
+    "scripts/document_store_schema.py": "fd40962d15288e5e4d72f124d896f615b54a52db0840f1b1566564a7217842fd",
     "scripts/hybrid_state.py": "65b7aa10424c833666b2fcb8275bd04fc76faf5cfd90c0bd2fe03fc39a08ee73",
     "scripts/hybrid_state_schema.py": "cec17e40de30a77d38a91ed1d2fcffa06a573bf13e91361b3ca18135c525d508",
     "scripts/install_into_workspace.py": "9b347065410b5e2d475454a8d8a223943cef60cb72b8c21bc1385c667cf63707",

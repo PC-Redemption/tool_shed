@@ -266,10 +266,10 @@
       "campaign_reason": null,
       "canonical_truth": null,
       "disposition": "none",
-      "milestone": "M1-CONTRACT-DESIGN-FROZEN",
+      "milestone": "M2-THIN-SLICE-PROVEN",
       "next_action": "execute when selected from the active campaign queue",
       "parent": null,
-      "path": "work/00-campaigns/active/114-freeze-database-owned-document-authority-contract.md",
+      "path": "work/00-campaigns/active/115-prove-database-owned-document-thin-slice.md",
       "produces": null,
       "project_map": null,
       "roadmap": "database-owned-work-collateral-and-lifecycle-views",
@@ -277,9 +277,9 @@
       "status": "queued",
       "superseded_by": null,
       "supersedes": null,
-      "title": "Freeze the database-owned document authority and conversion contract",
+      "title": "Prove a database-owned document thin slice",
       "type": "campaign",
-      "unlocks_gate": "G1-CONTRACT-DESIGN-FROZEN",
+      "unlocks_gate": "G2-THIN-SLICE-PROVEN",
       "updated": "2026-08-28"
     },
     {
@@ -2108,6 +2108,27 @@
       "campaign": null,
       "campaign_reason": null,
       "canonical_truth": null,
+      "disposition": "completed",
+      "milestone": "M1-CONTRACT-DESIGN-FROZEN",
+      "next_action": "none",
+      "parent": null,
+      "path": "work/00-campaigns/completed/114-freeze-database-owned-document-authority-contract.md",
+      "produces": null,
+      "project_map": null,
+      "roadmap": "database-owned-work-collateral-and-lifecycle-views",
+      "roadmap_revision": "2",
+      "status": "complete",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Freeze the database-owned document authority and conversion contract",
+      "type": "campaign",
+      "unlocks_gate": "G1-CONTRACT-DESIGN-FROZEN",
+      "updated": "2026-08-28"
+    },
+    {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
       "disposition": "Replaced as the executable entrypoint by a full Program Roadmap proposal with staged milestones, evidence gates, and separately approved roadmap-derived campaigns.",
       "next_action": "reactivate when The completion-watcher Program Roadmap is explicitly rejected or abandoned and the owner chooses to return to a single umbrella campaign.",
       "parent": null,
@@ -2158,6 +2179,23 @@
       "title": "ADR: Centralize watcher email delivery at ts.rookaro.com",
       "type": "adr",
       "updated": "2026-08-18"
+    },
+    {
+      "campaign": "114",
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": null,
+      "next_action": "implement the representative thin slice against the frozen v1 document contract",
+      "parent": "work/maps/map-database-owned-work-collateral-and-lifecycle-views.md",
+      "path": "work/adr/adr-database-authority-for-generated-work-collateral.md",
+      "produces": null,
+      "project_map": null,
+      "status": "accepted",
+      "superseded_by": "none",
+      "supersedes": "none",
+      "title": "ADR: Use schema-2 SQLite authority for generated work collateral",
+      "type": "adr",
+      "updated": "2026-08-28"
     },
     {
       "campaign": "build-hosted-watcher-status-and-email-pilot",
@@ -2481,6 +2519,23 @@
       "title": "Evidence: Core v0.29.13 first-pass owner-ready proof",
       "type": "evidence",
       "updated": "2026-08-26"
+    },
+    {
+      "campaign": "114",
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": null,
+      "next_action": null,
+      "parent": null,
+      "path": "work/evidence/evidence-database-owned-collateral-g1-contract.md",
+      "produces": null,
+      "project_map": null,
+      "status": "passed",
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Evidence: Database-Owned Collateral G1 Contract",
+      "type": "evidence",
+      "updated": "2026-08-28"
     },
     {
       "campaign": "eliminate-nested-codex-wrapper-and-prove-linux-dispatch",
@@ -4532,7 +4587,7 @@
   "schema_version": 1,
   "summary": {
     "active_artifacts": 1,
-    "completed_or_decided_artifacts": 174,
-    "total_artifacts": 248
+    "completed_or_decided_artifacts": 176,
+    "total_artifacts": 251
   }
 }

@@ -4,7 +4,7 @@ Updated: 2026-08-28
 
 ## Owner State
 
-- Last completed: freeze-database-owned-document-authority-contract — Freeze the database-owned document authority and conversion contract
+- Last completed: prove-database-owned-document-thin-slice — Prove a database-owned document thin slice
 - Working now: none
 - Next: none
 - Blocker or decision needed: none
