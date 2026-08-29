@@ -1,0 +1,146 @@
+# Program Roadmap: Scripted Tool Shed Work Orchestration and Token Efficiency
+
+Status: executing
+Type: program-roadmap
+Updated: 2026-08-29
+Next Action: carry CAMP-0130 and the registered Work2 candidate through Work3/Work5 qualification, publication, upgrade proof, and upward reconciliation
+Roadmap ID: scripted-tool-shed-work-orchestration-and-token-efficiency
+Roadmap Revision: 1
+Source Idea: IDEA-0011
+Source Project Map: MAP-0014
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 3
+Reviewed Body SHA256: b6e99f6972d7cc5208b0236375287bbff9a8782524c4d040d626de724f05794e
+Outcome Loop: 9348828a-3c4e-41c8-b22a-6ae04e7e44a5
+
+## Program Outcome
+
+Tool Shed moves deterministic Work1 and Work2 preparation and closeout into one thin resumable
+runner while keeping semantic reasoning and authority with Codex/operator. The result is
+behaviorally equivalent, failure-safe, portable, measurably reduces remedial interaction and
+context, reports exact provider-measured remedial tokens with coverage plus separate GUI proxies and
+an explicitly uncertain estimate, and produces a sanitized per-project aggregate for the later
+IDEA-0007 dashboard.
+
+## M1-CONTRACT-RESUME-SAFETY — Authority, state, and recovery contract
+
+Status: complete
+Depends on: none
+
+Outcome: Freeze one public orchestration surface, exact phase/state contract, semantic and authority
+boundary, skip classes, interruption/concurrency behavior, and bounded recovery/reporting rules.
+
+Gates:
+
+- `G1-ORCHESTRATION-AUTHORITY-CONTRACT-FROZEN`: the thin runner composes existing commands and cannot
+  choose product behavior, evidence sufficiency, semantic version, deployment scope, or release.
+- `G2-EXACT-RESUME-AND-FAILURE-SAFETY`: project identity, state/input digests, step evidence,
+  mutation boundaries, duplicate runs, stale inputs, interruption, and current external evidence
+  produce deterministic skip/resume/restart behavior without guessing or replay.
+
+Candidate campaign: `freeze-scripted-orchestration-contract-and-resume-safety`.
+
+Materialized campaign: CAMP-0127. Contract and resume-safety tests passed in the Work2 candidate.
+
+## M2-WORK1-WORK2-KISS-SLICE — Compositional closeout runner
+
+Status: complete
+Depends on: M1
+
+Outcome: Implement the smallest dry-run/resumable preparation and closeout runner for representative
+Direct Work1 and Work2 paths, preserving independently callable underlying commands and exact
+behavioral equivalence.
+
+Gate:
+
+- `G3-WORK1-WORK2-KISS-SLICE-QUALIFIED`: the slice composes identity/audit, work-level resolution,
+  local view preparation, change-aware validation, outcome application, checkpoint/rebuild proof,
+  Doctor, configured target verification, and endpoint-appropriate Git behavior without adding a
+  second authority or automating semantic work.
+
+Candidate campaign: `implement-and-qualify-work1-work2-closeout-runner`.
+
+Materialized campaign: CAMP-0128. The compositional runner was dogfooded on this candidate and
+resumed from exact phase evidence after a real generated-bytecode failure.
+
+## M3-EFFICIENCY-REPORTING — Measured reduction and dashboard producer
+
+Status: complete
+Depends on: M2
+
+Outcome: Establish an honest same-corpus baseline, compact result surfaces, bounded local telemetry,
+and a deterministic sanitized per-project aggregate that IDEA-0007 can ingest later.
+
+Gate:
+
+- `G4-EFFICIENCY-OBSERVABILITY-AND-REPORTING-PROVEN`: deterministic orchestration is below 15 percent
+  of measured execution interactions; known syntax, stale-view, and completed-step replay retries
+  are zero; output/tool-call use materially falls; `remedial_tokens_actual` contains only exposed
+  token deltas with `remedial_token_coverage`; GUI proxies remain separate; the separately labelled
+  estimated total includes a range, confidence, method version, coefficients, calibration state,
+  and exact sample count; and the versioned aggregate excludes prompts, commands, paths, source,
+  and granular activity.
+
+Candidate campaign: `prove-orchestration-efficiency-and-dashboard-aggregate`.
+
+Materialized campaign: CAMP-0129. The frozen same-corpus benchmark reports 8.0–8.7% deterministic
+caller interactions, zero known retries, 39–40% interaction reduction, and 87–88% output reduction;
+provider token totals remain coverage-labelled and separate from GUI proxies. An approved Work2
+follow-up adds deterministic report-time estimates for existing unmeasured events without rewriting
+history or replacing the exact field.
+
+## M4-UPGRADE-RELEASE-RECONCILED — Portable rollout and closed loop
+
+Status: active — Work2 checkpoint pending final target verification and cohort registration
+Depends on: M3
+
+Outcome: Prove fresh install, existing-client and maintainer upgrade, installed-skill synchronization,
+provider-neutral fallback, reporting-schema compatibility/reset, rollback, supported platforms,
+documentation parity, target behavior, release provenance, and final origin-to-product closure.
+
+Gate:
+
+- `G5-PORTABLE-UPGRADE-AND-CLOSED-LOOP-RELEASE`: all accepted requirements and authorized changes
+  survive upgrade/rollback and are reconciled through current product truth and target evidence;
+  IDEA-0011 closes without requiring hosted IDEA-0007 deployment or App Server availability.
+
+Candidate campaign: `qualify-upgrade-release-and-reconcile-scripted-orchestration`.
+
+Materialized campaign: CAMP-0130. Work2 owns implementation, local release-profile validation,
+documentation-site build/deploy, focused target checks, candidate registration, logical checkpoint
+and rebuild proof, and strict Doctor. Release, cross-platform exact-SHA CI, installed-client and
+maintainer synchronization, rollback proof, and terminal upward reconciliation remain for Work5.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G1-ORCHESTRATION-AUTHORITY-CONTRACT-FROZEN | M1 / same gate |
+| G2-EXACT-RESUME-AND-FAILURE-SAFETY | M1 / same gate |
+| G3-WORK1-WORK2-KISS-SLICE-QUALIFIED | M2 / same gate |
+| G4-EFFICIENCY-OBSERVABILITY-AND-REPORTING-PROVEN | M3 / same gate |
+| G5-PORTABLE-UPGRADE-AND-CLOSED-LOOP-RELEASE | M4 / same gate |
+
+Transfer count: 5 reviewed gates; 5 mapped gates; 0 dropped.
+
+## Execution Boundary
+
+This promotion accepts the project direction and roadmap only. It grants no source implementation,
+campaign execution, deployment, push, release, credential, destructive, cross-workspace, or hosted
+dashboard authority. A later execution request derives M1 first and remains bounded by its requested
+Work1 through Work5 endpoint and the active authority envelope.
+
+## Work2 Checkpoint
+
+M1 through M3 are implemented and locally release-profile qualified. CAMP-0130 owns the remaining
+release gate and preserves it through the persistent Work2 release cohort. Work2 does not satisfy
+G5, publish a release, synchronize the separately installed maintainer skill, or close PRM-0025,
+MAP-0014, or IDEA-0011.
+
+## Deferred Possibilities
+
+- General Work3 through Work5 release automation.
+- Hosted dashboard application, authentication, PostgreSQL storage, and deployment from IDEA-0007.
+- Semantic implementation, diagnosis, mitigation, evidence, or release decisions by script.
+- Exact GUI token accounting until exposed by the provider; the bounded estimate is directional,
+  not billing-grade.

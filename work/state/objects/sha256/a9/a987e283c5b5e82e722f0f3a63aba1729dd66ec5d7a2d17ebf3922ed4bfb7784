@@ -1,0 +1,108 @@
+# Project Map: Scripted Tool Shed Work Orchestration and Token Efficiency
+
+Status: approved
+Type: project-map
+Updated: 2026-08-29
+Next Action: execute the approved Program Roadmap milestone sequence
+Source Idea: IDEA-0011
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 3
+Reviewed Body SHA256: b6e99f6972d7cc5208b0236375287bbff9a8782524c4d040d626de724f05794e
+Program Roadmap: PRM-0025
+Outcome Loop: 45fc62d3-5452-4a25-b92a-2508045e6c9b
+
+## Purpose
+
+Move repeatable Tool Shed preparation and closeout mechanics out of model turns and into one thin,
+guarded, resumable orchestration surface. Preserve semantic judgment and authority with Codex and
+the operator while measuring whether the change actually reduces remedial work, model context, and
+retries.
+
+## Desired Outcome
+
+Direct Work1 and Work2 use one compositional runner for deterministic preparation and closeout.
+The runner resumes only from exact project and state evidence, preserves current external checks,
+returns compact success and bounded failure results, and leaves every underlying command usable on
+its own. Local telemetry distinguishes reasoning, deterministic work, recovery, and waiting;
+provider-exposed remedial tokens are exact and coverage-labelled, while GUI work uses separate
+honest proxies plus a clearly labelled estimate with range, confidence, method, and calibration
+state. A sanitized versioned per-project aggregate is ready for IDEA-0007 without making the hosted
+dashboard an implementation dependency.
+
+## First Useful Boundary
+
+- Freeze one public orchestration contract and the semantic/authority boundary.
+- Define exact-state skip, resume, concurrency, mutation, and recovery behavior.
+- Implement and qualify one dry-run/resumable Work1 and Work2 preparation/closeout slice.
+- Establish the baseline and prove compact output plus remedial-work reduction.
+- Emit and qualify the sanitized per-project reporting aggregate.
+- Prove installed-client and maintainer upgrade, rollback, release, and closed-loop reconciliation.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Contract and recovery | One thin phase graph with explicit authority, state, skip, resume, and failure rules | current Tool Shed command inventory |
+| Work1/Work2 runner | Compositional closeout slice with behavioral equivalence and independent underlying commands | contract and recovery |
+| Efficiency and reporting | Honest baseline, compact envelopes, exact measured tokens, coverage, ranged estimates, proxies, and sanitized aggregate | qualified runner |
+| Upgrade and reconciliation | Portable install/upgrade/rollback, release evidence, and origin-to-product closure | all implementation workstreams |
+
+## Readiness Gate Transfer
+
+All five reviewed gates are mandatory roadmap constraints:
+
+1. `G1-ORCHESTRATION-AUTHORITY-CONTRACT-FROZEN` freezes the thin public surface and prevents the
+   runner from acquiring semantic, evidence, versioning, deployment, or release authority.
+2. `G2-EXACT-RESUME-AND-FAILURE-SAFETY` proves identity/state fences, safe skipping, interruption,
+   duplicate execution, bounded diagnostics, and recovery without guessing or replay.
+3. `G3-WORK1-WORK2-KISS-SLICE-QUALIFIED` delivers the smallest useful compositional runner and
+   demonstrates equivalence on representative Direct Work1 and Work2 paths.
+4. `G4-EFFICIENCY-OBSERVABILITY-AND-REPORTING-PROVEN` proves the efficiency target, exact measured
+   remedial tokens with coverage, separate GUI proxies, explicitly uncertain GUI estimates, compact
+   output, and the sanitized dashboard producer contract.
+5. `G5-PORTABLE-UPGRADE-AND-CLOSED-LOOP-RELEASE` proves installation, maintainer synchronization,
+   reporting-schema compatibility, rollback, supported platforms, release, and complete upward
+   reconciliation without requiring IDEA-0007 deployment.
+
+## Constraints
+
+- Reuse existing guarded commands and SQLite authority; do not build a second workflow engine or
+  project-state authority.
+- Scripts enforce settled mechanics but do not choose product behavior, semantic version, evidence
+  sufficiency, material change, deployment scope, or release authorization.
+- Keep Work1 through Work5 stopping points and the active authority envelope controlling.
+- Keep detailed operational telemetry local, ignored, bounded, and privacy-aware.
+- Never report unavailable GUI tokens as zero or actual. Estimates must remain separate,
+  deterministic, ranged, confidence-labelled, method-versioned, and calibratable from exact samples.
+- Keep local Tool Shed work independent of App Server and network/dashboard availability.
+
+## Non-Goals
+
+- Generalized Work3 through Work5 release automation in the first slice.
+- Hosted dashboard implementation, authentication, storage, or deployment from IDEA-0007.
+- Semantic implementation, diagnosis, mitigation, evidence judgment, or release decisions by script.
+- Exact GUI token accounting where the provider does not expose it.
+- Replacing existing commands with an opaque monolith.
+
+## Navigation
+
+Do next:
+
+- Execute the approved roadmap in dependency order, freezing authority and recovery before
+  implementation or efficiency claims.
+
+Related direction:
+
+- IDEA-0007 consumes the frozen sanitized aggregate after G4; it is not required to complete this
+  local orchestration outcome.
+
+Avoid for now:
+
+- Automating implementation or later release endpoints before the Work1/Work2 slice proves value.
+- Treating lower output volume as success without correctness, target evidence, and reconciliation.
+
+## Related Artifacts
+
+- Source Idea Brief: IDEA-0011
+- Readiness result digest: fe7a6de800fdb67104e2910411e75746c2ec23ceb5e0445fa4352b8ea2f0e642
+- Related dashboard consumer: IDEA-0007
