@@ -173,15 +173,19 @@ def migrate(workspace: Path, *, project_binding: str, database: Path | None = No
     shadow = source.with_name(source.name + ".schema2-next")
     if shadow.exists():
         raise DocumentStoreError(f"stale migration shadow requires review: {shadow.relative_to(workspace)}")
-    with hybrid_state.WorkspaceLock(hybrid_state.lock_path(workspace)), contextlib.closing(hybrid_state.connect(source)) as live:
-        base = hybrid_state.audit_connection(workspace, live)
-        if base["classification"] not in {"CLEAN", "VALID_DIRTY", "CHECKPOINT_DUE"}:
-            raise DocumentStoreError(f"migration refused from {base['classification']}")
-        if int(live.execute("PRAGMA user_version").fetchone()[0]) != 1:
-            raise DocumentStoreError("migration requires Hybrid schema 1")
-        with contextlib.closing(sqlite3.connect(shadow)) as target:
-            live.backup(target)
-            target.commit()
+    with hybrid_state.WorkspaceLock(hybrid_state.lock_path(workspace)):
+        # Windows refuses to replace an open SQLite file. Keep the workspace
+        # lock across promotion, but close the live connection after the
+        # backup and before os.replace promotes the qualified shadow.
+        with contextlib.closing(hybrid_state.connect(source)) as live:
+            base = hybrid_state.audit_connection(workspace, live)
+            if base["classification"] not in {"CLEAN", "VALID_DIRTY", "CHECKPOINT_DUE"}:
+                raise DocumentStoreError(f"migration refused from {base['classification']}")
+            if int(live.execute("PRAGMA user_version").fetchone()[0]) != 1:
+                raise DocumentStoreError("migration requires Hybrid schema 1")
+            with contextlib.closing(sqlite3.connect(shadow)) as target:
+                live.backup(target)
+                target.commit()
         try:
             with contextlib.closing(hybrid_state.connect(shadow)) as target:
                 target.execute("BEGIN IMMEDIATE")

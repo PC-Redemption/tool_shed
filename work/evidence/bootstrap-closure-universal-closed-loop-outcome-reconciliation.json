@@ -2,9 +2,9 @@
   "authority_contract": "docs/universal-closed-loop-outcome-reconciliation.md",
   "baseline": {
     "created_at": "1970-01-01T00:00:00Z",
-    "source_commit": "2fc4065b66dc81d02a17f24b27901c36e59dd928",
+    "source_commit": "9dd467c2d5b806290e85e6a59dc8984c46bd8820",
     "source_digest": "59df8e7786b34be488d51171bfedaf66caa16b20694e70b29e05f9cedbc62a04",
-    "updated_at": "2026-08-29T01:35:54Z"
+    "updated_at": "2026-08-29T01:43:04Z"
   },
   "bindings": [
     {
@@ -637,7 +637,7 @@
         },
         {
           "path": "scripts/document_store.py",
-          "sha256": "119b895c0016a3313e8ab103263397b6abc560ffe001274e7e6f3f9bd2636800"
+          "sha256": "addc8ff326b24065d00a1f66f5ad08686afbf2e26cee2e056f5553a90f818d8f"
         },
         {
           "path": "scripts/document_conversion.py",
@@ -661,7 +661,7 @@
         }
       ],
       "status": "passed",
-      "verified_at": "2026-08-29T01:35:54Z"
+      "verified_at": "2026-08-29T01:43:04Z"
     }
   ],
   "initiative": {
@@ -874,7 +874,7 @@
     }
   ],
   "schema_version": 1,
-  "state_token": "9d14df68d88dcaeb",
+  "state_token": "a19dc210b80ca74e",
   "upgrade_targets": [
     {
       "id": "UPG-CLOSED-MAINTAINER",
