@@ -1,0 +1,41 @@
+# Campaign: Qualify Upgrade, Release, and Reconcile Scripted Orchestration
+
+Status: completed
+Type: campaign
+Updated: 2026-08-29
+Completion Evidence: Tool Shed v0.38.1 published from qualified content commit 697d332; exact-SHA Validate run 33272481530 passed; canonical manifest and all 24 ts.rookaro.com pages were production-verified; consented App Server run 613f533b-e0a1-47c3-a050-de5ecd742b0b completed.
+Campaign ID: qualify-upgrade-release-and-reconcile-scripted-orchestration
+Outcome: Prove fresh install, existing-client and maintainer upgrade, installed-skill synchronization, fallback, reporting reset compatibility, rollback, platforms, release provenance, and origin-to-product closure.
+Roadmap: scripted-tool-shed-work-orchestration-and-token-efficiency
+Roadmap Document: PRM-0025
+Roadmap Revision: 1
+Milestone: M4-UPGRADE-RELEASE-RECONCILED
+Unlocks Gate: G5-PORTABLE-UPGRADE-AND-CLOSED-LOOP-RELEASE
+Depends On: prove-orchestration-efficiency-and-dashboard-aggregate
+Completion Gate: portable upgrade, rollback, supported platforms, release, production evidence, installed-skill synchronization, and complete Idea-to-product reconciliation all pass without requiring the hosted dashboard or App Server.
+
+## Work2 Boundary
+
+Implementation, local release-profile qualification, public-documentation build, configured-target
+deployment, focused target checks, candidate registration, logical checkpoint/rebuild proof, and
+strict Doctor belong to this Work2 checkpoint.
+
+Work2 Evidence: final product commit `27fb30a`; 420-test release profile passed through the new
+orchestration runner; the 24-page/74-command site build passed; deployment backup
+`/home/jon/docker/ts.rookaro.com.backup-20260829T183535Z`; replacement container healthy; public
+root, Guide, Help, orchestration Help, Reference, CSS, and JavaScript routes returned 200 with the
+expected `ts.rookaro.com` router identity. The initial atomic directory swap retained the old bind
+mount; a bounded container recreate remounted the new directory and all checks then passed.
+
+Estimated-token follow-up Work2 evidence: product commit `d18f5c7`; release-profile preparation
+passed all five runner phases; focused estimator tests passed; the retained 24-hour journal reports
+`remedial_tokens_actual: null`, 0% exact coverage, and a separately labelled `proxy-calibration-v1`
+estimate of 61,613 tokens with a 40,048–98,581 range and medium confidence. The 24-page/74-command
+site rebuilt and was deployed with rollback copy
+`/home/jon/docker/ts.rookaro.com.backup-20260829T185541Z`; the recreated container is healthy, the
+host-local health and changed orchestration Help content passed, and the public Help, CSS, and
+JavaScript routes returned 200 with the expected router identity.
+
+Residual Work: Work3 documentation/freeze review, Work4 push, exact-SHA Linux/Windows CI, Work5
+publication and production evidence, released-client and maintainer synchronization/rollback proof,
+and terminal reconciliation through PRM-0025, MAP-0014, and IDEA-0011.

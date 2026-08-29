@@ -1,0 +1,52 @@
+# Campaign: Implement, Qualify, and Release Opportunity-First App Server Dogfooding
+
+Status: completed
+Type: campaign
+Updated: 2026-08-29
+Completion Evidence: Tool Shed v0.38.1 published from qualified content commit 697d332; exact-SHA Validate run 33272481530 passed; canonical manifest and all 24 ts.rookaro.com pages were production-verified; consented App Server run 613f533b-e0a1-47c3-a050-de5ecd742b0b completed.
+Campaign ID: implement-qualify-and-release-opportunity-first-app-server-dogfooding
+Outcome: Preserve explicit App Server consent, add explicit owner-profile recovery, isolate and version runtime opportunity evidence, report the whole bounded funnel, preserve safe fallback, then qualify and release the behavior with complete origin-to-product reconciliation.
+Roadmap: durable-opportunity-first-app-server-dogfooding
+Roadmap Document: PRM-0026
+Roadmap Revision: 1
+Milestone: M4-PORTABLE-DOGFOODING-RELEASE-RECONCILED
+Unlocks Gates: G1-OWNER-PREFERENCE-DURABILITY-AND-RECOVERY, G2-RUNTIME-TELEMETRY-PROVENANCE-ISOLATED, G3-OPPORTUNITY-REPORT-AND-SAFE-FALLBACK-PROVEN, G4-PORTABLE-DOGFOODING-RELEASE-AND-CLOSED-LOOP
+Depends On: none
+Completion Gate: Work2 implementation and target evidence pass; then supported platforms, fresh install, existing-client and maintainer upgrade, explicit recovery, rollback, real consented opportunity, release provenance, strict Doctor, and complete reconciliation through PRM-0026, MAP-0015, and IDEA-0010 all pass.
+
+## Work2 Boundary
+
+- Keep the existing protected preference as sole active authority and keep clean installs off.
+- Add an explicit owner-profile recovery copy outside Codex home with save, status, and restore controls.
+- Route validator and subprocess default state through `TOOL_SHED_STATE_ROOT`.
+- Add schema-v2 source, event type, role, and correlation identity without content retention.
+- Add a concise local opportunity report and focused fallback/reconciliation proof.
+- Update documentation and the configured live documentation target.
+- Pass focused tests, full validation, strict Doctor, candidate registration, owner-chain proof,
+  logical checkpoint, and rebuild proof without push or release.
+
+## Work2 Evidence
+
+Candidate commit `97237c5` implements protected owner-profile recovery, validation-state isolation,
+schema-v2 source/type/role/correlation events, bounded opportunity reporting, tests, routing guidance,
+operator documentation, and public Help. Mandatory Work2 preparation passed all five phases with the
+release validation profile. The documentation build passed 24 pages and 78 commands, and all 13
+focused site tests passed. Deployment preserved rollback copy
+`/home/jon/docker/ts.rookaro.com.backup-20260829T192345Z`, recreated the original `tsrookarocom`
+Compose project, and left `ts-rookaro-com` healthy with the new directory mounted read-only. Local
+health and changed Help content passed; public Help, CSS, and JavaScript returned 200 with
+`X-Rookaro-Route: ts.rookaro.com`. No push or release occurred.
+
+## Work5 Residual
+
+- Cross-platform, fresh-install, existing-client, maintainer, recovery, rollback, and release qualification.
+- One explicitly consented real eligible App Server opportunity with trustworthy runtime evidence.
+- Push, exact-SHA CI, publication, production proof, installed-client synchronization, and terminal
+  outcome reconciliation through every owner in the chain.
+
+## Safety Boundaries
+
+- No automatic opt-in or automatic profile restore.
+- No prompt, response, path, source, diagnostic, or credential retention.
+- No replay after possible mutation; reconciliation remains mandatory.
+- No daemon, hosted dashboard dependency, auto-repair, or circuit breaker.

@@ -1,0 +1,72 @@
+# Program Roadmap: Durable Opportunity-First App Server Dogfooding
+
+Status: completed
+Type: program-roadmap
+Updated: 2026-08-29
+Completion Evidence: Tool Shed v0.38.1 published from qualified content commit 697d332; exact-SHA Validate run 33272481530 passed; canonical manifest and all 24 ts.rookaro.com pages were production-verified; consented App Server run 613f533b-e0a1-47c3-a050-de5ecd742b0b completed.
+Source Idea: IDEA-0010
+Source Map: MAP-0015
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 2
+Reviewed Body SHA256: 489d853683c67973dc5b7e1ae253984b0c3717d3bedd3fa3143a7a6ab02e51da
+
+## Program Outcome
+
+App Server is the durable first opportunity for eligible Tool Shed work only after explicit owner
+opt-in. Preference recovery remains explicit, validation traffic is isolated from runtime evidence,
+the opportunity funnel is locally reportable, fallback remains safe, and the released behavior is
+proven across supported installs and reconciled back to IDEA-0010.
+
+## Milestone Sequence
+
+| Milestone | Outcome | Readiness Gates | Required Endpoint | Status |
+| --- | --- | --- | --- | --- |
+| M1-DURABLE-PREFERENCE-RECOVERY | Sole active preference plus explicit protected owner-profile recovery | G1 | Work2 | complete at `97237c5` |
+| M2-SOURCE-AWARE-TELEMETRY | Schema-v2, privacy-bounded, correlated runtime events and isolated validator state | G2 | Work2 | complete at `97237c5` |
+| M3-OPPORTUNITY-REPORT-SAFE-FALLBACK | Bounded opportunity aggregate and qualified fallback/reconciliation behavior | G3 | Work2 | complete at `97237c5` |
+| M4-PORTABLE-DOGFOODING-RELEASE-RECONCILED | Platform, install, upgrade, rollback, real consented use, release, and origin closure | G4 | Work5 | active; candidate `97237c5` registered at Work2 |
+
+## Work2 Acceptance
+
+- The existing protected preference is the only runtime authority and clean installs remain off.
+- Explicit profile commands can save, inspect, and restore owner intent from outside Codex home.
+- Ordinary snapshot, skill, client, and CLI upgrades preserve preference state.
+- Default validator/subprocess paths honor isolated `TOOL_SHED_STATE_ROOT` state.
+- New runtime events carry controlled source, type, role, and correlation fields and retain no content.
+- Schema-v1 events remain readable as excluded legacy evidence and are never rewritten.
+- A concise command reports opportunities, selections, execution, completion, GUI fallback,
+  reconciliation, controlled failures, and skipped opportunities.
+- Focused tests, full local validation, Doctor, configured-target checks, candidate registration,
+  owner chain, and a durable checkpoint pass without push or release.
+
+## Work5 Acceptance
+
+- Supported platform qualification, fresh install, existing-client upgrade, maintainer upgrade,
+  owner-profile recovery, rollback, docs, and strict Doctor all pass.
+- One explicitly consented real eligible opportunity produces source-aware execution and outcome evidence.
+- Release provenance is complete and the candidate is promoted through the configured target.
+- Campaign, roadmap, map, and IDEA-0010 outcomes are terminal and reconciled with no open owner cycle.
+
+## Verification Strategy
+
+- Unit and CLI tests cover state-root isolation, profile save/status/restore, schema-v2 events,
+  schema-v1 exclusion, aggregate counting, and fallback/reconciliation identity.
+- Repository validation and strict Doctor prove no regression or unmanaged state.
+- The configured Work2 target is updated and checked using its declared method.
+- Work5 later executes the portability matrix, consented live sample, rollback, release, and outcome audit.
+
+## Constraints and Deferrals
+
+- No automatic opt-in, automatic recovery, daemon, dashboard dependency, circuit breaker, or auto-repair.
+- No prompts, responses, paths, source, raw diagnostics, or credentials in the event contract.
+- No change to the pre-mutation GUI continuation or post-mutation no-replay reconciliation boundary.
+- IDEA-0007 may consume a sanitized aggregate later; hosted ingestion is not required here.
+
+## Readiness Gate Transfer
+
+- `G1-OWNER-PREFERENCE-DURABILITY-AND-RECOVERY`
+- `G2-RUNTIME-TELEMETRY-PROVENANCE-ISOLATED`
+- `G3-OPPORTUNITY-REPORT-AND-SAFE-FALLBACK-PROVEN`
+- `G4-PORTABLE-DOGFOODING-RELEASE-AND-CLOSED-LOOP`
+
+Readiness result digest: d25950c8d787d78499c6473cf3e2a4e20d344778790f59e7bc1f29b4e724a2da
