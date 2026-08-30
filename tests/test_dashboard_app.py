@@ -431,6 +431,9 @@ class DashboardApplicationTests(TestCase):
         self.assertContains(first, 'class="dashboard-panel compact-table-panel"')
         self.assertContains(first, 'class="table-toolbar"')
         self.assertContains(first, 'class="artifact-title"')
+        self.assertContains(first, '<select name="type" data-auto-submit>')
+        self.assertContains(first, '<select name="rows" data-auto-submit>')
+        self.assertContains(first, "Apply status")
         self.assertContains(first, 'aria-label="Work table pages (top)"', count=1)
         self.assertContains(first, 'aria-label="Work table pages (bottom)"', count=1)
 
@@ -488,6 +491,8 @@ class DashboardApplicationTests(TestCase):
         self.assertNotContains(first, "CAMP-0005")
         self.assertLess(first.content.index(b"CAMP-0025"), first.content.index(b"CAMP-0006"))
         self.assertContains(first, "Showing 1–20 of 25")
+        self.assertContains(first, '<select name="rows" data-auto-submit>')
+        self.assertNotContains(first, "Apply status")
         self.assertContains(first, 'aria-label="History table pages (top)"', count=1)
         self.assertContains(first, 'aria-label="History table pages (bottom)"', count=1)
 
@@ -687,6 +692,8 @@ class DashboardApplicationTests(TestCase):
         self.assertIn("window.localStorage.getItem(storageKey)", script)
         self.assertIn("window.localStorage.setItem(storageKey, viewedAt)", script)
         self.assertIn("never affects active attention", script)
+        self.assertIn('document.querySelectorAll("select[data-auto-submit]")', script)
+        self.assertIn("select.form.requestSubmit()", script)
 
     def test_contract_rejects_uncontrolled_summary_and_non_boolean_flags(self) -> None:
         payload = self.report_payload()

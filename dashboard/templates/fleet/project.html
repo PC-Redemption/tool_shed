@@ -47,7 +47,7 @@
   <div class="table-toolbar">
   <form method="get" class="work-filters" aria-label="Filter work table">
     <label>Type
-      <select name="type">
+      <select name="type" data-auto-submit>
         <option value="">All</option>
         <option value="idea-brief" {% if selected_type == 'idea-brief' %}selected{% endif %}>Ideas</option>
         <option value="project-map" {% if selected_type == 'project-map' %}selected{% endif %}>Maps</option>
@@ -57,7 +57,7 @@
     </label>
     <label>Status <input name="status" value="{{ selected_status }}" placeholder="working, completed…"></label>
     <label>Rows
-      <select name="rows">
+      <select name="rows" data-auto-submit>
         <option value="10" {% if selected_rows == '10' %}selected{% endif %}>10</option>
         <option value="20" {% if selected_rows == '20' %}selected{% endif %}>20</option>
         <option value="50" {% if selected_rows == '50' %}selected{% endif %}>50</option>
@@ -65,7 +65,7 @@
         <option value="all" {% if selected_rows == 'all' %}selected{% endif %}>All</option>
       </select>
     </label>
-    <button type="submit">Apply</button>
+    <button type="submit">Apply status</button>
     {% if selected_type or selected_status %}<a href="{% url 'fleet:project-tab' project.id 'work' %}?rows={{ selected_rows }}">Clear filters</a>{% endif %}
   </form>
   <div class="table-toolbar-meta">
@@ -102,7 +102,7 @@
   <div class="table-toolbar">
   <form method="get" class="work-filters" aria-label="Set history table rows">
     <label>Rows
-      <select name="rows">
+      <select name="rows" data-auto-submit>
         <option value="10" {% if selected_rows == '10' %}selected{% endif %}>10</option>
         <option value="20" {% if selected_rows == '20' %}selected{% endif %}>20</option>
         <option value="50" {% if selected_rows == '50' %}selected{% endif %}>50</option>
@@ -110,7 +110,6 @@
         <option value="all" {% if selected_rows == 'all' %}selected{% endif %}>All</option>
       </select>
     </label>
-    <button type="submit">Apply</button>
   </form>
   <div class="table-toolbar-meta">
     <div class="work-result-summary"><span>Newest first</span><span aria-hidden="true">·</span>{% if history_page %}<span>Showing {{ history_page.start_index }}–{{ history_page.end_index }} of {{ history_result_count }}</span>{% else %}<span>Showing all {{ history_result_count }}</span>{% endif %}</div>

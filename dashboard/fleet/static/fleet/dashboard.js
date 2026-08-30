@@ -1,4 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("select[data-auto-submit]").forEach((select) => {
+    select.addEventListener("change", () => {
+      if (!select.form) return;
+      select.form.requestSubmit();
+    });
+  });
+
   const button = document.querySelector(".dashboard-nav-toggle");
   const navigation = document.querySelector("#fleet-nav");
   if (button && navigation) {
