@@ -670,6 +670,34 @@ class OutcomeReconciliationTests(unittest.TestCase):
             capsule["nearest_open_owning_loop"]["cycle_id"], manifest["cycle"]["id"]
         )
 
+    def test_open_child_does_not_claim_or_require_result_propagation(self) -> None:
+        self.apply_slice()
+        source_path = self.generic_source()
+        source = json.loads(source_path.read_text(encoding="utf-8"))
+        source["cycle"].update({"lifecycle_state": "working", "closed_at": None})
+        source["relationships"] = [
+            item
+            for item in source["relationships"]
+            if item["relation_type"] != "outcome-result-propagated"
+        ]
+        source["verdict"] = {
+            "scope": "initiative",
+            "disposition": "open",
+            "summary": "Child work remains open.",
+        }
+        source["reconciliation"] = {"state": "open", "residual_work": ["finish child"]}
+        source_path.write_text(json.dumps(source, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        manifest = outcome_loop.prepare(self.workspace, source_path)
+        self.assertTrue(outcome_loop.validate_manifest(self.workspace, manifest)["valid"])
+        outcome_loop.apply_manifest(
+            self.workspace,
+            manifest,
+            expected_token=manifest["manifest_token"],
+            project_binding=self.binding,
+        )
+        audit = outcome_loop.audit_loops(self.workspace)
+        self.assertNotIn(manifest["cycle"]["id"], audit["unpropagated"])
+
     def test_root_transition_requires_and_consumes_propagated_child_result(self) -> None:
         self.apply_slice()
         source_path = self.generic_source()

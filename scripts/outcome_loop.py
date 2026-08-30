@@ -1197,7 +1197,10 @@ def audit_loops(workspace: Path) -> dict[str, Any]:
             for row in connection.execute(
                 "SELECT c.id AS cycle_id FROM cycle c JOIN relationship p "
                 "ON p.from_artifact_id = c.origin_artifact_id AND p.relation_type = 'outcome-parent' "
-                "WHERE p.retired_revision IS NULL AND NOT EXISTS (SELECT 1 FROM relationship x "
+                "WHERE c.lifecycle_state = 'terminal' AND p.retired_revision IS NULL "
+                "AND COALESCE((SELECT r.state FROM reconciliation r WHERE r.cycle_id = c.id "
+                "ORDER BY r.origin_revision DESC, r.id DESC LIMIT 1), 'open') = 'reconciled' "
+                "AND NOT EXISTS (SELECT 1 FROM relationship x "
                 "WHERE x.from_artifact_id = p.from_artifact_id AND x.to_artifact_id = p.to_artifact_id "
                 "AND x.relation_type = 'outcome-result-propagated' AND x.retired_revision IS NULL)"
             ).fetchall()
