@@ -1,0 +1,98 @@
+# Idea Brief: Dashboard Operational Trends and Bounded Exports
+
+Status: promoted
+Type: idea-brief
+Updated: 2026-08-30
+Next Action: execute CAMP-0140 through Work2, then formalize and reconcile through Work5
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces: MAP-0021, PRM-0032
+
+## Current Synthesis
+
+### Idea
+
+Add trustworthy time-bounded operational trends for App Server behavior and Tool Shed work
+efficiency, together with privacy-bounded exports of exactly the displayed data. Replace isolated
+latest totals with interpretable changes over time while preserving measurement coverage,
+counter-epoch boundaries, platform/version cohorts, and explicit unknowns.
+
+### Why It Matters
+
+Current App Server counters are updated in place, and Work Efficiency is presented as a list of
+metric changes. These surfaces can reveal a current value but make it difficult to answer whether
+failure rate, fallback use, remedial effort, duration, or retry behavior is improving or regressing.
+Naive charts or project rankings would be worse than no analytics when token coverage or counter
+epochs differ.
+
+### Desired Outcome
+
+The operator can select a bounded time range and inspect App Server attempts, failures, fallback
+rate, recurring failure groups, remedial tokens where measured, coverage, interactions, output
+bytes, duration, and retries by project/instance/version/platform. Every chart exposes freshness,
+coverage, sample window, and epoch/reset boundaries. Exports contain the same allowlisted rows and
+active filters visible on screen, with schema version and generation timestamp.
+
+## Constraints And Non-Goals
+
+- Never rank or compare projects as if partial token coverage were complete.
+- Preserve counter epochs and reset boundaries; do not join incompatible windows into a smooth
+  but false trend.
+- Store change-only or bounded periodic observations, not one permanent history row per heartbeat.
+- Use explicit retention and aggregation limits. PostgreSQL growth must remain measurable and
+  recoverable.
+- Exports may contain only the allowlisted hosted projection—never prompts, source, paths,
+  commands, raw failures, credentials, or local database rows.
+- Do not introduce a general business-intelligence platform, arbitrary query builder, or public
+  analytics API.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Change-only metric snapshots | Matches semantic reporting and limits duplicate history | Irregular sampling needs clear chart semantics | Preferred foundation |
+| Fixed periodic rollups | Predictable chart intervals | Creates rows without semantic change and needs aggregation policy | Consider for server-side derived rollups |
+| Raw event/heartbeat retention | Maximum reconstruction | Excessive volume and privacy/cost risk | Reject |
+| CSV/JSON export of current filtered view | Portable and auditable | Needs schema/version and row caps | Preferred after view semantics settle |
+
+## Open Questions
+
+- Which default windows are useful: 24 hours, 7 days, 30 days, or release-to-release?
+- Should rates be derived from cumulative counter deltas server-side, or reported as bounded local
+  window aggregates?
+- What retention and downsampling policy preserves meaningful trends without permanent high-volume
+  telemetry?
+- Which comparisons should be blocked or visibly qualified when coverage, platform, version, or
+  epoch differs?
+- Are CSV and JSON both needed initially, and what row/size cap keeps export safe?
+- How should release markers appear on charts so regressions can be correlated without claiming
+  causation?
+
+## Decisions
+
+- Treat coverage, freshness, window, and counter epoch as first-class data, not footnotes.
+- Prefer change-only observations and server-derived bounded views; reject heartbeat history.
+- Exports must reproduce the visible filtered projection with a versioned schema and explicit cap.
+- Avoid league tables, scores, or unsupported causal claims.
+
+## Don't Forget
+
+- App Server failures mean failure of the App Server path, not a campaign or product test failure
+  after healthy execution.
+- Work Efficiency proxy fields remain separate from measured provider tokens.
+- A flat line may mean no semantic change, no report, quiescence, or missing coverage; the UI must
+  distinguish those conditions.
+- Release markers are useful context but do not prove that a release caused a metric change.
+
+## Exploration Log
+
+### 2026-08-30
+
+- Idea Brief created.
+- Captured App Server and Work Efficiency trends plus bounded export as a separate analytics
+  discovery thread.
+- Initial direction favors change-only history, explicit measurement boundaries, bounded
+  retention, and exports that exactly match the filtered hosted projection.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

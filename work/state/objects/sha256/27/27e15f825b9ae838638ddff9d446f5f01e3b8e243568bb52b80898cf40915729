@@ -1,0 +1,42 @@
+# Campaign: Implement Cross-Project Dashboard Search and Operator Views
+
+Status: working
+Type: campaign
+Updated: 2026-08-30
+Campaign ID: implement-cross-project-dashboard-search-and-operator-views
+Outcome: Deliver and Work2-qualify privacy-bounded fleet search and stable operator filters so enrolled projects remain fast to find and review.
+Roadmap: cross-project-dashboard-search-and-operator-views
+Roadmap Document: PRM-0031
+Roadmap Revision: 1
+Milestone: M1-BOUNDED-SEARCH, M2-OPERATOR-VIEWS-WORK2
+Unlocks Gate: G1-BOUNDED-CROSS-PROJECT-SEARCH, G2-STABLE-OPERATOR-FILTERS, G3-ACCESSIBLE-BOUNDED-PRESENTATION
+Depends On: none
+Requested Endpoint: work2
+Completion Gate: allowlisted cross-project search, stable URL filters, explainable ordering, accessible bounded pagination, focused privacy/query/rendering tests, configured-target checks, release-cohort registration, checkpoint rebuild proof, and strict Doctor all pass.
+
+## Request
+
+Build the smallest complete server-rendered fleet search and filter slice on the existing hosted
+dashboard. Match only allowlisted reported fields, keep current recent-activity ordering
+explainable, and preserve the hosted dashboard's advisory presentation-only role.
+
+## Contract Decisions
+
+- Global query covers project name, stable artifact ID, bounded artifact title, controlled
+  lifecycle/status, and reported client version only.
+- Filters and search are encoded in stable GET parameters and work correctly with pagination.
+- Active filter state, result count, clear/reset, and match context are visible and accessible.
+- Search and filters never change local queue, planning order, project visibility preference, or
+  any lifecycle state.
+- Bounded query terms, database-backed predicates, and focused query-count checks prevent fleet
+  growth from turning the landing page into an unbounded scan.
+
+## Work2 Boundary
+
+Implement, run focused privacy/query/rendering/navigation tests, run quick changed-path validation,
+commit the scoped candidate, deploy it to the combined `ts.rookaro.com` work target, check public
+health and authenticated browser behavior, register the candidate and open owning chain in the
+release cohort, checkpoint/rebuild-prove Hybrid state, and run strict Doctor.
+
+Do not push, tag, publish a version, add saved-view preference storage, or mark the Campaign, PRM,
+Map, or Idea terminal at Work2.

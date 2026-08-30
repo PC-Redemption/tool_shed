@@ -1,0 +1,69 @@
+# Program Roadmap: Cross-Project Dashboard Search and Operator Views
+
+Status: active
+Type: program-roadmap
+Updated: 2026-08-30
+Roadmap ID: cross-project-dashboard-search-and-operator-views
+Roadmap Revision: 1
+Source Idea: IDEA-0015
+Source Project Map: MAP-0020
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 2
+Reviewed Body SHA256: bb780ee2d5bd1a547391b5a4d9337160be31983b5e082a8986f02bde805e321f
+
+## Program Outcome
+
+The fleet dashboard provides fast, accessible, URL-backed discovery across privacy-bounded reported
+project and artifact fields, with explainable operational filtering and ordering.
+
+## M1-BOUNDED-SEARCH — Define and implement fleet discovery
+
+Status: active
+Depends on: none
+
+Outcome: Search existing hosted project and lifecycle inventory without indexing private or
+unbounded local content.
+
+Gate:
+
+- `G1-BOUNDED-CROSS-PROJECT-SEARCH`: allowlisted fields only, bounded query/result behavior, and
+  no document bodies, prompts, paths, commands, diagnostics, credentials, or hidden local content.
+
+Candidate campaign: `implement-cross-project-dashboard-search-and-operator-views`.
+
+## M2-OPERATOR-VIEWS-WORK2 — Present and qualify stable views
+
+Status: active
+Depends on: M1
+
+Outcome: Deliver stable filter URLs, explainable recent-activity order, compact result context,
+accessible navigation, bounded pagination, and configured-target verification.
+
+Gates:
+
+- `G2-STABLE-OPERATOR-FILTERS`: controlled filters, visible active state, clear/reset, result count,
+  and preserved recent-activity ordering.
+- `G3-ACCESSIBLE-BOUNDED-PRESENTATION`: keyboard, narrow-screen, pagination, query-count, response,
+  and browser behavior pass.
+
+Candidate campaign: `implement-cross-project-dashboard-search-and-operator-views`.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G1-BOUNDED-CROSS-PROJECT-SEARCH | M1 / same gate |
+| G2-STABLE-OPERATOR-FILTERS | M2 / same gate |
+| G3-ACCESSIBLE-BOUNDED-PRESENTATION | M2 / same gate |
+
+Transfer count: 3 reviewed gates; 3 mapped gates; 0 dropped.
+
+## Work2 Boundary
+
+Work2 includes the bounded search/filter implementation, focused privacy/query/rendering/navigation
+tests, quick changed-path validation, scoped product commit, deployment to the combined
+`ts.rookaro.com` target, authenticated browser and health checks, release-cohort registration,
+logical checkpoint/rebuild proof, and strict Doctor.
+
+Work2 does not push Git, tag or publish a version, add saved-view preference storage, or close the
+Idea, Map, PRM, or Campaign. Those await formal Work5 release evidence and reconciliation.

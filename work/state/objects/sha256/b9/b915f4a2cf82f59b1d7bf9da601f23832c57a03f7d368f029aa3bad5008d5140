@@ -1,0 +1,74 @@
+# Project Map: Dashboard Operational Trends and Bounded Exports
+
+Status: active
+Type: project-map
+Updated: 2026-08-30
+Source Idea: IDEA-0016
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 2
+Reviewed Body SHA256: 242883158b4659ebdd3dc4c0126d9984a360cf25efbc1c19b1a6d1e7631647ba
+Program Roadmap: PRM-0032
+
+## Purpose
+
+Turn App Server and Work Efficiency observations into truthful, bounded operational trends and
+view-faithful exports without retaining heartbeat noise or implying unsupported comparisons.
+
+## Desired Outcome
+
+An operator can select a bounded window, see what changed with its coverage and epoch context, and
+export exactly the allowlisted filtered rows shown on screen with explicit schema and row limits.
+
+## First Useful Boundary
+
+- Retain change-only Work Efficiency observations with a bounded server-side retention limit.
+- Present a compact trend table for a small set of useful windows with freshness, sample count,
+  platform/version, coverage, and reset/epoch qualifications.
+- Add CSV and JSON export of the same active filtered projection, schema-versioned and capped.
+- Preserve explicit unknown and incomparable states; avoid smoothing, ranking, and causal claims.
+- Qualify deduplication, retention, filtering, export privacy, response cost, and live rendering,
+  then deploy through Work2.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| History contract | Change-only semantic observations with retention and epoch boundaries | accepted reports |
+| Trend projection | Bounded windows with coverage and comparison qualifications | history contract |
+| Export surface | View-faithful capped CSV/JSON projection | trend projection |
+| Qualification | Deduplication, retention, privacy, filtering, rendering, deployment, and browser evidence | complete vertical slice |
+
+## Readiness Gate Transfer
+
+1. `G1-CHANGE-ONLY-TREND-HISTORY` requires semantic-change retention, duplicate suppression,
+   counter epochs, freshness, and a bounded retention policy.
+2. `G2-TRUTHFUL-TREND-SEMANTICS` requires coverage, sample windows, reset boundaries, and explicit
+   unknown or incomparable states.
+3. `G3-BOUNDED-VIEW-EXPORT` limits exports to the active allowlisted projection with schema,
+   generation time, and row cap.
+
+## Constraints
+
+- Reuse accepted report and Work Efficiency models; do not retain raw heartbeat events.
+- Partial token coverage and different epochs, platforms, or versions are visibly qualified.
+- Export never includes prompts, source, paths, commands, raw failures, credentials, or local DB rows.
+
+## Non-Goals
+
+- A business-intelligence platform, arbitrary query builder, or public analytics API.
+- Project rankings, release causality claims, or automatic comparison across incompatible cohorts.
+
+## Navigation
+
+Do next:
+
+- Execute CAMP-0140 through Work2, then formalize and reconcile through Work5.
+
+Avoid for now:
+
+- Rich charting before the change-only history and measurement-integrity contract is proven.
+
+## Related Artifacts
+
+- Source Idea Brief: IDEA-0016
+- Readiness result digest: 5cf04eb6f9103eec68307743c93f9cd89041cf51bb77b8f90eb22b0a0390d54b

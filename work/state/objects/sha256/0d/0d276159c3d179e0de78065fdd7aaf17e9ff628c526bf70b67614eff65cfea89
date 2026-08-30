@@ -1,0 +1,69 @@
+# Program Roadmap: Dashboard Operational Trends and Bounded Exports
+
+Status: active
+Type: program-roadmap
+Updated: 2026-08-30
+Roadmap ID: dashboard-operational-trends-and-bounded-exports
+Roadmap Revision: 1
+Source Idea: IDEA-0016
+Source Project Map: MAP-0021
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 2
+Reviewed Body SHA256: 242883158b4659ebdd3dc4c0126d9984a360cf25efbc1c19b1a6d1e7631647ba
+
+## Program Outcome
+
+The hosted dashboard retains and presents bounded semantic metric changes with honest measurement
+context and exports exactly the allowlisted active projection.
+
+## M1-CHANGE-HISTORY — Preserve semantic changes, not heartbeats
+
+Status: active
+Depends on: none
+
+Outcome: Persist deduplicated Work Efficiency observations with explicit source context and bounded
+retention.
+
+Gate:
+
+- `G1-CHANGE-ONLY-TREND-HISTORY`: semantic duplicate suppression, retention cap, freshness, epoch
+  boundaries, and no permanent heartbeat stream.
+
+Candidate campaign: `implement-dashboard-operational-trends-and-bounded-exports`.
+
+## M2-TRENDS-AND-EXPORT-WORK2 — Present and qualify trustworthy views
+
+Status: active
+Depends on: M1
+
+Outcome: Provide bounded windows, explicit coverage/comparability context, and capped CSV/JSON
+exports of exactly the filtered on-screen projection.
+
+Gates:
+
+- `G2-TRUTHFUL-TREND-SEMANTICS`: coverage, sample window, freshness, reset/epoch, platform/version,
+  and explicit unknown or incomparable states are visible.
+- `G3-BOUNDED-VIEW-EXPORT`: schema-versioned, generated-at, capped, allowlisted, filter-faithful
+  CSV/JSON exports pass privacy and browser checks.
+
+Candidate campaign: `implement-dashboard-operational-trends-and-bounded-exports`.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G1-CHANGE-ONLY-TREND-HISTORY | M1 / same gate |
+| G2-TRUTHFUL-TREND-SEMANTICS | M2 / same gate |
+| G3-BOUNDED-VIEW-EXPORT | M2 / same gate |
+
+Transfer count: 3 reviewed gates; 3 mapped gates; 0 dropped.
+
+## Work2 Boundary
+
+Work2 includes change-only history, retention, bounded trend and export implementation, focused
+deduplication/privacy/filter/export/rendering tests, quick changed-path validation, scoped product
+commit, deployment to the combined `ts.rookaro.com` target, authenticated browser and health
+checks, release-cohort registration, checkpoint/rebuild proof, and strict Doctor.
+
+Work2 does not push Git, tag or publish a version, introduce a BI platform, or close the Idea, Map,
+PRM, or Campaign. Those await formal Work5 release evidence and reconciliation.

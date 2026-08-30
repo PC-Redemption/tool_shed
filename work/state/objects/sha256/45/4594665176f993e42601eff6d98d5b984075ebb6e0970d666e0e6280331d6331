@@ -1,0 +1,74 @@
+# Project Map: Cross-Project Dashboard Search and Operator Views
+
+Status: active
+Type: project-map
+Updated: 2026-08-30
+Source Idea: IDEA-0015
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 2
+Reviewed Body SHA256: bb780ee2d5bd1a547391b5a4d9337160be31983b5e082a8986f02bde805e321f
+Program Roadmap: PRM-0031
+
+## Purpose
+
+Make the fleet landing page an efficient, privacy-bounded operator entry point as more Tool Shed
+projects enroll, while preserving each local instance as the authority for its reported state.
+
+## Desired Outcome
+
+An operator can search allowlisted project and artifact fields, narrow projects by controlled
+operational state, understand why results are ordered, and bookmark the exact view without the
+hosted dashboard changing project priority or truth.
+
+## First Useful Boundary
+
+- Add one server-rendered, URL-backed global query across reported project names, stable artifact
+  IDs, bounded artifact titles, controlled lifecycle/status values, and reported versions.
+- Add compact project filters for active/attention/stale state and client-version posture.
+- Preserve the existing recent-activity project order whenever filters do not specify otherwise.
+- Render active filter state, result count, clear action, keyboard labels, and bounded pagination.
+- Qualify query count and response time, then deploy the complete slice through Work2.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Search contract | Explicit allowlist and bounded matching rules | existing lifecycle inventory |
+| Fleet query | Database-backed project and artifact matching with stable URLs | search contract |
+| Operator view | Compact filters, result context, clear/reset, accessible pagination | fleet query |
+| Qualification | Privacy, query-count, rendering, navigation, deployment, and browser evidence | complete vertical slice |
+
+## Readiness Gate Transfer
+
+1. `G1-BOUNDED-CROSS-PROJECT-SEARCH` limits search to reported allowlisted project, artifact,
+   lifecycle, version, and freshness fields.
+2. `G2-STABLE-OPERATOR-FILTERS` provides URL-backed filters and explainable recent-activity order.
+3. `G3-ACCESSIBLE-BOUNDED-PRESENTATION` preserves accessibility, pagination correctness, and
+   bounded response cost.
+
+## Constraints
+
+- Reuse the existing bounded lifecycle report and server-rendered dashboard.
+- Query terms and result rows never expose document bodies, prompts, source, paths, commands,
+  diagnostics, credentials, or hidden local content.
+- Search and filters affect presentation only, never queue or planning order.
+
+## Non-Goals
+
+- Arbitrary full-text indexing, a standalone search service, or a single-page application.
+- Maintainer pins, named saved views, team sharing, or cross-account collaboration.
+
+## Navigation
+
+Do next:
+
+- Execute CAMP-0139 through Work2, then formalize and reconcile through Work5.
+
+Avoid for now:
+
+- Adding preference storage before the core filter and navigation contract is proven.
+
+## Related Artifacts
+
+- Source Idea Brief: IDEA-0015
+- Readiness result digest: c7f7f3ed76ac8c6bb12444fdb85dcee02e22dad5cee1c9e86a30317812d2dcda
