@@ -12,7 +12,7 @@
     "adapters/codex-app-server-config.json": "d79964bc2371a39d50b7bcad534af133564e55bbf491baf4f3031b36e01b7e49",
     "adapters/codex-app-server-qualifications.json": "995ccd3bea135448b316045ea240c10d272f4c7e2ff65085111e0380cef947c1",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "f39163cbe6364e81f0b05e07f1df402dcd3bbadd83283c278809863e20ac8e57",
+    "adapters/codex-skill-releases.json": "4875392a884ccfef2aa30b9eae07c466c8b07ec503af04c1ee2082d69d22494d",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "a16e9afbc2733b2c01b113df3f3a07fda1630b80b5a97476896123ee03bc22d2",
     "dashboard/Dockerfile": "8e9ff084f409aa81ab92b9dcbe8d9bab2416225551c837681653cab7b66786ad",
@@ -27,7 +27,7 @@
     "dashboard/fleet/apps.py": "a2daa1f1b69382f0a73f0ad01cfb6ac39563d8ebc270ee93d9221b3f196779b8",
     "dashboard/fleet/auth.py": "eeca33494b2682c810823701fa3dcc0352d41aa9149acb843f75ba274a87a196",
     "dashboard/fleet/context.py": "d48c56481f4caf81b93dfb4411a52ff7bb462d4ec9edad5e18b2993d150268e3",
-    "dashboard/fleet/contracts.py": "b9569b178153b41bd7b640ed5f14f74db4758e61793d0f035740a61ae238c226",
+    "dashboard/fleet/contracts.py": "cfeed18e69734e7ea62ff692b81f1f7060fe5428960c144a5b90e6097a731233",
     "dashboard/fleet/live.py": "a0cfea07344f7d6b1ca5b657eff0af71a907669d197a8de25605fa536c6339bc",
     "dashboard/fleet/management/__init__.py": "8f3063a0fc4eb9fb91014e8a2035edb0d5f98fc3b22a6bc67b8ec1a06092a468",
     "dashboard/fleet/management/commands/__init__.py": "0fdd755b9e0c22ed21b5e145f427d38e27e8313746c99c65cc9d0419c74ed6c4",
@@ -71,7 +71,7 @@
     "docs/completion-watcher-hosted-recovery-rollout.md": "62d85676540ccbc318dbd908df10ef0b405957e07989a844553b71c0aef448e1",
     "docs/completion-watcher-hosted-status-surface.md": "e8ca0e6e81cdda1a4af7a3e5d7331fa7d64cd1d5d832cf06caba34c104097f60",
     "docs/completion-watcher-protocol.md": "2fb0057ead6f1524a22a17833b448f419312588858553b0ad68ddf0c873e10bb",
-    "docs/dashboard.md": "5f650a9242a9bf333cc5776140a8141585073d4f253db4c321bbf383397ee40b",
+    "docs/dashboard.md": "e12898998e544329ac1bcd68ac239e383b7091ba04f6759e15a250b2e17ddfba",
     "docs/database-owned-work-collateral-conversion.md": "ee131fe6e232369c752a1be35e6a0e3c1438e2ee14aef47b50677f1fa5bbd98a",
     "docs/database-owned-work-collateral-v1-contract.md": "b7f04d49d1a6ba4b6a7db8130122f5b4e6b23d329d68ed14823ad09c73b3e6ab",
     "docs/database-owned-work-collateral.md": "01ff20af1a16818989f6988612482cb59508d8567f3c362dfa86a22bce9d885b",
@@ -138,7 +138,7 @@
     "scripts/codex_skill_sync.py": "78cf6c2d6605854c429cc54e63eb60b7fa7e81e47dcae9fc87c60b5f93d564a8",
     "scripts/complete_workpackage.py": "a74d1fac326d2ba3813bf00270afe698a3d276ba62f7b53067761f2892c7a0fb",
     "scripts/completion_watcher.py": "d94ba056b5628a477028c8568e284da95bd78466d3839b5e126a89163d16d7a3",
-    "scripts/dashboard_reporter.py": "7b4cd2aebf18ae4e4b7c7aff334de00df4cf471c67236fa5de37b05b9a572764",
+    "scripts/dashboard_reporter.py": "42c5d22d81205cf73d577a30337b72a58a596fbcf99a7865bd4cbf1bdaac42e8",
     "scripts/doctor.py": "b8f7c8041bdde100b370812cc49f70fe0eff7171d1a527adccdce273e7c71880",
     "scripts/document_contract.py": "2b540582141065b7e7c84294142a15ddf01f255a58f844e08abaf9634b30d411",
     "scripts/document_conversion.py": "da2b7d08f038ab4ed789f191d5855284be5d2450b32f0204bfed88fdcdde3397",
@@ -239,34 +239,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Add exact guarded retained-source retirement planning, complete rollback export, disposable recovery qualification, database-aware post-retirement topology validation, early-Python-3.11 Windows checkpoint-rebuild compatibility, and canonical Windows preferred-path handling.",
-  "release_commit": "85176d7553472193b2307e8042df1cad324dec91",
-  "release_qualification": {
-    "attested_at": "2026-08-30T20:42:33Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "81bbb1df280b8c04875d5ee96edd1c597bc74d4ce8b82a19fc01a9a619f866e5"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "85176d7553472193b2307e8042df1cad324dec91"
-  },
-  "release_tag": "v0.41.0",
-  "released_at": "2026-08-30T20:42:33Z",
-  "shed_version": "0.41.0",
+  "notes": "Fix hosted dashboard terminal lifecycle acceptance and pending report convergence",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.41.1",
+  "released_at": null,
+  "shed_version": "0.41.1",
   "updated_at": "2026-08-30",
   "updater_mutation_paths": [
     {

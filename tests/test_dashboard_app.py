@@ -245,6 +245,17 @@ class DashboardApplicationTests(TestCase):
         with self.assertRaisesRegex(ContractError, "unsupported fields"):
             validate_report(payload)
 
+    def test_contract_accepts_terminal_document_lifecycle(self) -> None:
+        payload = self.lifecycle_report_payload()
+        payload["work_inventory"]["artifacts"][0][
+            "document_lifecycle"
+        ] = "terminal"  # type: ignore[index]
+        validated = validate_report(payload)
+        self.assertEqual(
+            validated["work_inventory"]["artifacts"][0]["document_lifecycle"],
+            "terminal",
+        )
+
     def test_enrollment_issues_one_revocable_verifier_only_token(self) -> None:
         token = self.enroll_and_issue()
         credential = ReporterCredential.objects.get()

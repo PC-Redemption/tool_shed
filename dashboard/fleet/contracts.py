@@ -148,7 +148,17 @@ SUMMARY_CODES = {
     "outcome-reconciled",
 }
 ARTIFACT_TYPES = {"idea-brief", "project-map", "program-roadmap", "campaign"}
-DOCUMENT_LIFECYCLES = {"active", "working", "blocked", "parked", "deferred", "completed", "abandoned", "superseded"}
+DOCUMENT_LIFECYCLES = {
+    "active",
+    "working",
+    "blocked",
+    "parked",
+    "deferred",
+    "completed",
+    "abandoned",
+    "superseded",
+    "terminal",
+}
 OUTCOME_LIFECYCLES = {"proposed", "queued", "working", "blocked", "terminal", "unknown"}
 OUTCOME_DISPOSITIONS = {
     "open",

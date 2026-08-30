@@ -43,6 +43,7 @@ LOCK_SECONDS = 30
 PROCESS_LOCK_SECONDS = 10
 HEARTBEAT_SECONDS = 60
 IDLE_EXIT_SECONDS = 7_200
+SAFETY_DRAIN_LIMIT = 64
 
 
 class DashboardReporterError(RuntimeError):
@@ -1134,15 +1135,61 @@ def scheduler_remove(workspace: Path, *, project_binding: str) -> dict[str, Any]
 def safety_pass(workspace: Path, *, project_binding: str) -> dict[str, Any]:
     require_project_binding(workspace, project_binding, operation="dashboard-report")
     audit = document_store.audit(workspace)
+    queued: dict[str, Any] | None = None
     with contextlib.closing(_outbox(workspace)) as connection:
         previous = _meta(connection, "last_domain_digest")
         current = str(audit["domain_digest"])
-        if previous == current:
+        pending = int(
+            connection.execute(
+                "SELECT COUNT(*) FROM outbox WHERE delivered_at IS NULL"
+            ).fetchone()[0]
+        )
+        if previous == current and pending == 0:
             return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-safety-pass", "status": "current", "writes_performed": False}
-        _set_meta(connection, "last_domain_digest", current)
-    queued = enqueue(workspace, project_binding=project_binding, reason="safety-convergence")
-    delivered = worker_once(workspace)
-    return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-safety-pass", "status": delivered["status"], "sequence": queued["sequence"], "writes_performed": True}
+    if previous != current:
+        queued = enqueue(
+            workspace,
+            project_binding=project_binding,
+            reason="safety-convergence",
+        )
+        with contextlib.closing(_outbox(workspace)) as connection:
+            _set_meta(connection, "last_domain_digest", current)
+
+    delivered_count = 0
+    superseded_count = 0
+    final_status = "idle"
+    for _ in range(SAFETY_DRAIN_LIMIT):
+        delivered = worker_once(workspace)
+        final_status = str(delivered["status"])
+        if final_status == "delivered":
+            delivered_count += 1
+            continue
+        if final_status == "superseded":
+            superseded_count += 1
+            continue
+        break
+    with contextlib.closing(_outbox(workspace)) as connection:
+        pending = int(
+            connection.execute(
+                "SELECT COUNT(*) FROM outbox WHERE delivered_at IS NULL"
+            ).fetchone()[0]
+        )
+    if pending == 0 and (delivered_count or superseded_count):
+        final_status = "delivered"
+    elif pending:
+        final_status = "pending" if final_status == "idle" else final_status
+    result = {
+        "schema_version": SCHEMA_VERSION,
+        "kind": "tool-shed-dashboard-safety-pass",
+        "status": final_status,
+        "delivered_count": delivered_count,
+        "superseded_count": superseded_count,
+        "pending_events": pending,
+        "writes_performed": bool(queued or delivered_count or superseded_count),
+    }
+    if queued:
+        result["sequence"] = queued["sequence"]
+    return result
 
 
 def status(workspace: Path) -> dict[str, Any]:

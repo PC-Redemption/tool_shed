@@ -149,6 +149,56 @@ class DashboardReporterTests(unittest.TestCase):
         self.assertEqual(remove_run.call_count, 2)
         self.assertFalse(any(Path(target).exists() for target in result["targets"]))
 
+    def test_safety_pass_drains_pending_events_when_domain_digest_is_current(self) -> None:
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            dashboard_reporter._set_meta(connection, "last_domain_digest", "current-digest")
+            for sequence in (1, 2):
+                connection.execute(
+                    "INSERT INTO outbox VALUES (?, ?, ?, 0, 0, ?, NULL)",
+                    (
+                        str(uuid.uuid4()),
+                        sequence,
+                        json.dumps({"sequence": sequence}),
+                        dashboard_reporter.stamp(),
+                    ),
+                )
+        with mock.patch.object(
+            dashboard_reporter, "require_project_binding"
+        ), mock.patch.object(
+            dashboard_reporter.document_store,
+            "audit",
+            return_value={"domain_digest": "current-digest"},
+        ), mock.patch.object(
+            dashboard_reporter, "load_connection", return_value=self.connected()
+        ), mock.patch.object(
+            dashboard_reporter, "_request", return_value={"status": "accepted"}
+        ) as request:
+            result = dashboard_reporter.safety_pass(
+                self.workspace, project_binding="fixture"
+            )
+        self.assertEqual(result["status"], "delivered")
+        self.assertEqual(result["delivered_count"], 2)
+        self.assertEqual(result["pending_events"], 0)
+        self.assertTrue(result["writes_performed"])
+        self.assertEqual(request.call_count, 2)
+
+    def test_safety_pass_stays_read_only_when_digest_and_outbox_are_current(self) -> None:
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            dashboard_reporter._set_meta(connection, "last_domain_digest", "current-digest")
+        with mock.patch.object(
+            dashboard_reporter, "require_project_binding"
+        ), mock.patch.object(
+            dashboard_reporter.document_store,
+            "audit",
+            return_value={"domain_digest": "current-digest"},
+        ), mock.patch.object(dashboard_reporter, "worker_once") as worker_once:
+            result = dashboard_reporter.safety_pass(
+                self.workspace, project_binding="fixture"
+            )
+        self.assertEqual(result["status"], "current")
+        self.assertFalse(result["writes_performed"])
+        worker_once.assert_not_called()
+
     def test_report_payload_contains_only_bounded_aggregate_contract(self) -> None:
         database = self.workspace / ".tool-shed/state.sqlite3"
         with contextlib.closing(sqlite3.connect(database)) as connection:
