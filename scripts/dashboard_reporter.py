@@ -282,9 +282,9 @@ def _next_sequence(connection: sqlite3.Connection) -> int:
 
 
 def _dashboard_state(workspace: Path) -> dict[str, Any]:
-    campaigns = document_store.list_documents(workspace, lifecycle="active", document_type="campaign", limit=1000)["documents"]
-    ideas = document_store.list_documents(workspace, lifecycle="active", document_type="idea-brief", limit=1000)["documents"]
-    completed = document_store.list_documents(workspace, lifecycle="completed", document_type="campaign", limit=1000)["documents"]
+    campaigns = document_store.list_documents(workspace, lifecycle="active", document_type="campaign", limit=500)["documents"]
+    ideas = document_store.list_documents(workspace, lifecycle="active", document_type="idea-brief", limit=500)["documents"]
+    completed = document_store.list_documents(workspace, lifecycle="completed", document_type="campaign", limit=500)["documents"]
     with contextlib.closing(hybrid_state.connect(hybrid_state.database_path(workspace), writable=False)) as connection:
         open_outcomes = int(connection.execute("SELECT COUNT(*) FROM cycle WHERE lifecycle_state <> 'terminal'").fetchone()[0])
         unreconciled = int(
@@ -349,7 +349,7 @@ def report_payload(workspace: Path, *, sequence: int, reason: str | None = None,
             "fallbacks": int(app.get("gui_fallbacks", 0)),
             "last_success": app.get("last_success"),
             "last_failure": app.get("last_failure"),
-            "client_version": "",
+            "client_version": app.get("client_version") or "unknown",
             "failure_groups": app.get("failure_groups", []),
         },
         "work_efficiency": {

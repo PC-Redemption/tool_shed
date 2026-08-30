@@ -155,6 +155,7 @@ class DashboardReporterTests(unittest.TestCase):
         }
 
         def listed(workspace, *, lifecycle, document_type, limit):
+            self.assertLessEqual(limit, 500)
             return documents[(lifecycle, document_type)]
 
         with mock.patch.object(dashboard_reporter, "load_project_identity", return_value={"project_id": connection_state["project_id"], "project_name": "Fixture"}), mock.patch.object(
@@ -172,6 +173,7 @@ class DashboardReporterTests(unittest.TestCase):
             self.assertNotIn(prohibited, serialized)
         self.assertEqual(payload["state"]["open_outcome_count"], 1)
         self.assertEqual(payload["state"]["unreconciled_outcome_count"], 0)
+        self.assertEqual(payload["app_server"]["client_version"], "unknown")
         self.assertIsNone(payload["work_efficiency"]["remedial_tokens_actual"])
 
 

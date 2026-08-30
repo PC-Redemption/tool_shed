@@ -623,7 +623,8 @@ two idle hours. The 15-minute safety pass compares a local domain digest so dire
 eventually converge. Reporter files are private and user-local; payloads reject unknown fields,
 uncontrolled text, source paths, prompts, raw diagnostics, credentials, and secrets.
 
-Enrollment approval and every hosted dashboard page require an authenticated maintainer with TOTP.
+Enrollment approval and every hosted dashboard page require an authenticated maintainer. The
+default `local-mfa` mode also requires TOTP; `local-password` uses username and password only.
 The public documentation and minimal health endpoint remain unauthenticated. See
 [`dashboard.md`](dashboard.md) for setup, privacy, backup, recovery, and operating procedures.
 

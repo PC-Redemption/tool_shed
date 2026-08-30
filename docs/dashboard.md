@@ -65,7 +65,9 @@ PostgreSQL 17. It requires these protected environment values:
 - `TOOL_SHED_DASHBOARD_SECRET_KEY`: at least 50 random characters;
 - optional `POSTGRES_DB` and `POSTGRES_USER`;
 - optional `TOOL_SHED_DASHBOARD_ALLOWED_HOSTS` and
-  `TOOL_SHED_DASHBOARD_CSRF_ORIGINS` for a non-default host.
+  `TOOL_SHED_DASHBOARD_CSRF_ORIGINS` for a non-default host;
+- optional `TOOL_SHED_DASHBOARD_AUTH_MODE`: `local-mfa` by default, or `local-password` for
+  ordinary username/password authentication.
 
 Do not commit the deployment environment. From the exact release checkout, build the immutable
 dashboard image and public site, then stage `docker-compose.yml`, `nginx.conf`, and the generated
@@ -86,27 +88,37 @@ requests, serves public documentation and dashboard static assets, and proxies `
 `/api/v1/`. Security settings require HTTPS, secure cookies, HSTS, an explicit host allowlist, and
 CSRF trusted origins.
 
-## First maintainer and MFA
+## First maintainer and optional MFA
 
-Creating the first maintainer and provisioning TOTP are credential operations and must be performed
-interactively by the operator. Do not put passwords, TOTP seeds, or provisioning URIs in logs or
-tracked files.
+Create the first maintainer interactively. When `TOOL_SHED_DASHBOARD_AUTH_MODE=local-mfa`, also
+provision TOTP; `local-password` requires only the maintainer username and password. Do not put
+passwords, TOTP seeds, or provisioning URIs in logs or tracked files.
 
 ```bash
 docker compose -f site/deploy/docker-compose.yml exec dashboard \
   python /app/dashboard/manage.py createsuperuser
+```
+
+For `local-mfa` only:
+
+```bash
 docker compose -f site/deploy/docker-compose.yml exec dashboard \
   python /app/dashboard/manage.py dashboard_admin_mfa begin --username <username>
 docker compose -f site/deploy/docker-compose.yml exec dashboard \
   python /app/dashboard/manage.py dashboard_admin_mfa confirm \
   --username <username> --token <current-code>
+```
+
+For either mode:
+
+```bash
 docker compose -f site/deploy/docker-compose.yml exec dashboard \
   python /app/dashboard/manage.py check_dashboard_production
 ```
 
 The last command fails closed unless the database is reachable, production security settings are
-valid, and an active staff maintainer has a confirmed TOTP device. Both the fleet dashboard and
-Django admin use OTP-aware authentication. Enrollment approval also requires a verified session.
+valid, and an active staff maintainer exists. In `local-mfa` mode it additionally requires a
+confirmed TOTP device and OTP-aware authentication for the fleet dashboard and Django admin.
 
 ## Backup, restore, and rollback
 
@@ -131,7 +143,7 @@ re-enroll a reporter if a credential may have been exposed.
 
 - Public: `/`, `/help/`, and `/dashboard/healthz` return without authentication.
 - Protected: `/dashboard/`, `/dashboard/admin/`, project views, and enrollment decisions require
-  password plus TOTP.
+  a maintainer password, plus TOTP when `local-mfa` is configured.
 - Reporter: an invalid bearer token receives `401`; valid repeated idempotency keys do not duplicate
   work; stale sequence numbers fail.
 - Fleet: stale means no report for 20 minutes; `Unknown` is preserved when an aggregate is absent or

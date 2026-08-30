@@ -15,7 +15,7 @@ django.setup()
 
 from django.contrib.auth import get_user_model  # noqa: E402
 from django.core.management import call_command  # noqa: E402
-from django.test import TestCase  # noqa: E402
+from django.test import TestCase, override_settings  # noqa: E402
 from django.urls import reverse  # noqa: E402
 from django.utils import timezone  # noqa: E402
 
@@ -201,6 +201,13 @@ class DashboardApplicationTests(TestCase):
         self.assertContains(response, 'name="username"')
         self.assertContains(response, 'name="password"')
         self.assertContains(response, 'name="otp_token"')
+
+    @override_settings(DASHBOARD_AUTH_MODE="local-password")
+    def test_password_only_login_omits_otp_field(self) -> None:
+        response = self.client.get(reverse("login"))
+        self.assertContains(response, 'name="username"')
+        self.assertContains(response, 'name="password"')
+        self.assertNotContains(response, 'name="otp_token"')
 
     def test_authenticated_views_render_unknown_aggregates_and_filter_projects(self) -> None:
         user = get_user_model().objects.create_user("viewer", password="fixture")

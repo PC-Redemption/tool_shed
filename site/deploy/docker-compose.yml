@@ -33,7 +33,7 @@ services:
       TOOL_SHED_DASHBOARD_SECRET_KEY: ${TOOL_SHED_DASHBOARD_SECRET_KEY:?set TOOL_SHED_DASHBOARD_SECRET_KEY in the protected deployment environment}
       TOOL_SHED_DASHBOARD_ALLOWED_HOSTS: ${TOOL_SHED_DASHBOARD_ALLOWED_HOSTS:-ts.rookaro.com}
       TOOL_SHED_DASHBOARD_CSRF_ORIGINS: ${TOOL_SHED_DASHBOARD_CSRF_ORIGINS:-https://ts.rookaro.com}
-      TOOL_SHED_DASHBOARD_AUTH_MODE: local-mfa
+      TOOL_SHED_DASHBOARD_AUTH_MODE: ${TOOL_SHED_DASHBOARD_AUTH_MODE:-local-mfa}
     volumes:
       - dashboard_static:/app/build/dashboard-static
     healthcheck:
