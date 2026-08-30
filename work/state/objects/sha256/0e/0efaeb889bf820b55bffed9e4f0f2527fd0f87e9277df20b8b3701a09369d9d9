@@ -1,0 +1,124 @@
+# Idea Brief: Methodical Windows Field Upgrade and Installer Repair
+
+Status: promoted
+Type: idea-brief
+Updated: 2026-08-30
+Next Action: authorize Work5 release of candidate 578a9c8, then resume PRM-0034 against the verified Windows target
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces: MAP-0023, PRM-0034
+
+## Current Synthesis
+
+### Idea
+
+Upgrade the disconnected Tool Shed instance at
+`workpc:E:\dev\high_point\7520553_SMI_FW` from v0.33.0 to the latest verified stable release,
+using a milestone-gated Windows-native procedure. Treat failures encountered on the real target as
+evidence: reproduce genuine installer or updater defects, repair them in the canonical Linux
+maintainer repository, qualify the repair on Windows and Linux, release it, and resume the target
+upgrade.
+
+### Why It Matters
+
+The target is substantially behind the current release and prior Windows installations have been
+involved. The maintainer runs on Linux, which can conceal Windows-specific path, shell, filesystem,
+process, permissions, backup, and rollback defects. A one-off workaround would leave those defects
+for the next Windows installation; a controlled field upgrade can improve both the target and the
+reusable installer.
+
+### Desired Outcome
+
+The exact Windows workspace is safely upgraded to the latest qualified Tool Shed release without
+damaging its firmware work or silently changing its storage model. Any Windows defect exposed along
+the way is fixed canonically, covered by cross-platform tests, included in a release, and proven by
+the successful target upgrade. Recovery evidence and a concise, reusable Windows upgrade procedure
+remain afterward.
+
+## Constraints And Non-Goals
+
+- The canonical maintainer repository remains the only place where installer/updater source is
+  repaired; the disconnected target snapshot is not a development branch.
+- Path-sensitive commands run with Windows Python or PowerShell on `workpc`; Linux coordinates and
+  records evidence but does not emulate Windows path semantics.
+- Preserve unrelated firmware files and Git state. Inspect before mutation and use bounded,
+  transactional changes with rollback points.
+- The current target has no `.tool-shed/state.sqlite3`; the upgrade must preserve that absence and
+  must not silently convert the project to hybrid database ownership.
+- Use the current released updater, not the updater embedded in the old v0.33.0 snapshot.
+- Retain first-upgrade backups and recovery evidence; do not prune them during the migration.
+- Stop before mutation on target mismatch, unsafe scope, unexpected links/junctions, inadequate
+  disk space, failed provenance, or an unproven recovery path. Stop or roll back on failed
+  post-upgrade qualification.
+- Explicit non-goal: begin the remote upgrade, modify `workpc`, or repair code during this
+  brainstorming route.
+- Explicit non-goal: apply an ad-hoc target-only patch or speculate about installer changes without
+  reproducible Windows evidence.
+- Explicit non-goal: broaden qualification into unrelated firmware validation unless the upgrade
+  demonstrably affects it.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Milestone-gated field upgrade | Clear stop/go points, recoverability, useful evidence | More deliberate than a direct replacement | Recommended working model |
+| Repair only defects demonstrated by the target | Avoids speculative churn while improving the reusable installer | May require more than one release-and-retry cycle | Recommended scope boundary |
+| Windows-native execution with Linux coordination | Exercises the real OS and preserves canonical source ownership | Requires careful transfer and command logging | Required by cross-platform risk |
+| Direct snapshot replacement | Fastest path when everything works | Weak diagnosis and rollback confidence; can repeat Windows defects | Rejected as the default approach |
+
+Candidate milestones, to be refined before promotion:
+
+1. Capture a read-only target inventory and immutable evidence capsule.
+2. Qualify the current released updater and release inputs using Windows-native tooling.
+3. Prove backup, rollback, disk-space, identity, provenance, and target-scope readiness.
+4. Attempt the transactional upgrade with explicit stop/go checks.
+5. If it fails, reproduce and repair the smallest canonical installer/updater defect, test on both
+   platforms, release, and retry from a known state.
+6. Run Windows post-upgrade qualification and verify the exact target, version, identity, storage
+   posture, working tree, and rollback assets.
+7. Close with retained recovery evidence and a reusable Windows procedure.
+
+## Open Questions
+
+- What Windows Python, Git, and PowerShell versions and execution-policy constraints are present?
+- Has the v0.33.0 snapshot or its Tool Shed provider guidance been locally modified?
+- What is the safest Windows-native staging mechanism for the current signed/released updater?
+- What exact rollback proof is sufficient before the first mutation?
+- Should installed Codex skill synchronization occur within the upgrade transaction or only after
+  the snapshot and runtime pass qualification?
+
+## Decisions
+
+- Use a methodical, milestone-gated migration rather than treating this as a routine version bump.
+- The real target is both the beneficiary and a qualification canary for the Windows installer.
+- Repair genuine defects in the canonical installer/updater and release them; do not leave
+  target-only workarounds behind.
+- Execute OS-sensitive work on Windows and retain backups until the upgraded target is accepted.
+
+## Don't Forget
+
+- Known target: SSH alias `workpc`, computer `SH-06172402`, exact workspace
+  `E:\dev\high_point\7520553_SMI_FW`.
+- Observed Tool Shed state: v0.33.0 at release commit
+  `be16c89e620c99708595866fe02a23440f6cadd1`; project id
+  `caf70625-5f07-41fc-b7de-c3134f48e7da`; no hybrid state database.
+- Latest stable observed during exploration: v0.40.0. Re-resolve and verify the latest release at
+  execution time rather than hard-coding this as the eventual upgrade destination.
+
+## Exploration Log
+
+### 2026-08-30
+
+- Idea Brief created from discussion of upgrading the real Windows instance while using encountered
+  failures to repair and harden the reusable installer/updater.
+- Read-only discovery located the exact workspace and established the observed target facts listed
+  above. No remote mutation or upgrade was authorized or performed.
+- Working hypothesis: protocol-4 upgrade behavior should preserve the target's current non-hybrid
+  storage posture; conversion is not part of this objective.
+- Work2 reproduced an early-Python-3.11 Windows SQLite qualification failure before target mutation,
+  repaired it canonically, passed Linux release and Windows focused validation, and registered
+  candidate `578a9c8` for the complete owning outcome chain. The target remains verified at v0.33.0;
+  releasing the candidate and retrying the field upgrade now requires the roadmap's separate Work5 gate.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

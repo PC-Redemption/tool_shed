@@ -1,14 +1,15 @@
 {
   "envelope": {
-    "created_at": "2026-08-30T20:22:12Z",
-    "database_revision": 919,
-    "digest": "198be9be5a53dffbf1e7be6471e1c45910a25edd8d76624ed2693309c750a9aa",
+    "created_at": "2026-08-30T20:26:56Z",
+    "database_revision": 922,
+    "digest": "c31c426a23537f868d6d86143df77636f4bc53abc796142b0965cac557ce7fa1",
     "hybrid_schema": 2,
     "objects": [
       "work/state/objects/sha256/00/0082fd1d60de8f37c6d2972dac5637d8c894d2c8f1124c5061aeb74ba0c18b75",
       "work/state/objects/sha256/00/00e983d87b6cd1426169ee5077df462604741dae8ebff5c5fb437dbedefa410d",
       "work/state/objects/sha256/01/013d8d1708fcf36b6a3444490d49d7164b3a29facab1bd06745b9917bdf23aff",
       "work/state/objects/sha256/02/02913d689acccab1928f37fa014cf00edb9eb7e4d6d836e9b0fa8ee1c1211cb4",
+      "work/state/objects/sha256/03/034cea71bfa17cbc4e995a2bc99d782788ef26e60cbc555a35650f929f7ddd49",
       "work/state/objects/sha256/03/036ce339477c5a4ef74e88b99543eeefddc1b89e212e65c1352dad5a5eebec5d",
       "work/state/objects/sha256/03/03d86f7495b381bc4a8d02b04dc83d7c956ca47343d2500180bc17793b938ada",
       "work/state/objects/sha256/05/0560937df9700c8b344a00d6759f27ce43adfd6e2c0ddecfce56c98ff881108f",
@@ -28,6 +29,7 @@
       "work/state/objects/sha256/0e/0e64109b34d44f8755d78aeb750f2a32c132b291715cb4d149b68d5b47c722d2",
       "work/state/objects/sha256/0e/0ebb6a89d9d8a190657ebb72f2ada7f703c78117672af56761c9496d845d9a3e",
       "work/state/objects/sha256/0e/0ebec49bf8625ecd3480162c0afaae4bd4ad338d4520e8960751cbcc057ad7c7",
+      "work/state/objects/sha256/0e/0efaeb889bf820b55bffed9e4f0f2527fd0f87e9277df20b8b3701a09369d9d9",
       "work/state/objects/sha256/0f/0f216be390fdacb8abcf43ffcea2068f97dff0c261056016937b2cef2476837f",
       "work/state/objects/sha256/10/10504a8c99f5558f4a37696e20102adfb338a85f1381b84eccdd530b17ca26e7",
       "work/state/objects/sha256/10/10d542d1c62f935a2a0a250ba015b2ec40920e7fdcef68ff9ec77f7430303587",
@@ -273,6 +275,7 @@
       "work/state/objects/sha256/98/98abdffec8785ef564e9d58da4a0f85fdf442913dcf74d808fca068d63445617",
       "work/state/objects/sha256/98/98f6b186eb1b885c85f151bade0961b95e17869bb45650008a3f227e979f7366",
       "work/state/objects/sha256/99/990af95352d614f164847dd88acbabc36c7c76e8774e382e01d4079b70640668",
+      "work/state/objects/sha256/99/99361ac47084d4f62b60ce64ce9f3eca2ea1c987a34526172987d9d81f3f3bac",
       "work/state/objects/sha256/9a/9a366222531959de9e73a4dbc25b5ff0de0736ea69a4376fbd2749c92105d065",
       "work/state/objects/sha256/9a/9ad5a3a0837f36dd52d004df644962b1d6975cd1a4314e2b039fc5f00c93c88c",
       "work/state/objects/sha256/9b/9bed6650a9f860b987d073adc6e16279871591d4cb0d3d25af3bfaa419993712",
@@ -456,14 +459,14 @@
     "artifact": [
       {
         "authority_mode": "sqlite",
-        "content_sha256": "e59915e55e3d611a73aeb512d2e411cae60e0b9dd25aba185536277c386cb13e",
+        "content_sha256": "99361ac47084d4f62b60ce64ce9f3eca2ea1c987a34526172987d9d81f3f3bac",
         "created_at": "2026-08-30T18:43:57Z",
         "current_path": "sqlite/documents/MAP-0023",
         "display_number": "MAP-0023",
         "id": "0049b49a-5916-4922-9603-134296dfb5fe",
         "lifecycle_state": "active",
         "type": "project-map",
-        "updated_at": "2026-08-30T18:46:18Z"
+        "updated_at": "2026-08-30T20:26:41Z"
       },
       {
         "authority_mode": "sqlite",
@@ -1798,14 +1801,14 @@
       },
       {
         "authority_mode": "sqlite",
-        "content_sha256": "cf22ab73fad8853fd1be17972f2b0e5bc876ecda88286fb323cb6c2dea1b25a5",
+        "content_sha256": "0efaeb889bf820b55bffed9e4f0f2527fd0f87e9277df20b8b3701a09369d9d9",
         "created_at": "2026-08-30T16:56:56Z",
         "current_path": "sqlite/documents/IDEA-0017",
         "display_number": "IDEA-0017",
         "id": "479198f6-c395-4f60-9f96-b5e1d9a0eaf3",
         "lifecycle_state": "active",
         "type": "idea-brief",
-        "updated_at": "2026-08-30T18:46:18Z"
+        "updated_at": "2026-08-30T20:26:45Z"
       },
       {
         "authority_mode": "sqlite",
@@ -4933,14 +4936,14 @@
       },
       {
         "authority_mode": "sqlite",
-        "content_sha256": "4aa186f3646603aedc636c455c9f677c0497bcc14a5adbcd90337247e21b780e",
+        "content_sha256": "034cea71bfa17cbc4e995a2bc99d782788ef26e60cbc555a35650f929f7ddd49",
         "created_at": "2026-08-30T18:45:29Z",
         "current_path": "sqlite/documents/PRM-0034",
         "display_number": "PRM-0034",
         "id": "edb8ee14-bd11-4c44-b3c0-81ada62b4fc6",
         "lifecycle_state": "blocked",
         "type": "program-roadmap",
-        "updated_at": "2026-08-30T18:46:38Z"
+        "updated_at": "2026-08-30T20:26:37Z"
       },
       {
         "authority_mode": "sqlite",
@@ -6762,16 +6765,16 @@
     ],
     "document": [
       {
-        "body_sha256": "e59915e55e3d611a73aeb512d2e411cae60e0b9dd25aba185536277c386cb13e",
+        "body_sha256": "99361ac47084d4f62b60ce64ce9f3eca2ea1c987a34526172987d9d81f3f3bac",
         "created_at": "2026-08-30T18:43:57Z",
-        "current_revision": 2,
+        "current_revision": 3,
         "display_number": 23,
         "id": "0049b49a-5916-4922-9603-134296dfb5fe",
         "lifecycle_state": "active",
         "metadata_json": "{\"approval_state\":\"approved\",\"document_type\":\"project-map\",\"program_roadmap\":\"PRM-0034\",\"readiness_gate_ids\":[\"G1-WINDOWS-TARGET-IDENTITY-AND-ROUTING\",\"G2-BASELINE-BACKUP-ROLLBACK-AND-STORAGE-POSTURE\",\"G3-CURRENT-RELEASE-PROVENANCE-AND-UPDATER\",\"G4-WINDOWS-NATIVE-TRANSACTIONAL-UPGRADE\",\"G5-CANONICAL-DEFECT-REPAIR-AND-CROSS-PLATFORM-QUALIFICATION\",\"G6-WORK2-ACCEPTANCE-AND-RECOVERY-EVIDENCE\"],\"readiness_review_digest\":\"0239b8a6ec01345362b877ea9ba3196c071a9cac40b5417ebbd803bbff3c9249\",\"readiness_verdict\":\"READY-WITH-PRM-GATES\",\"requested_endpoint\":\"work2\",\"reviewed_idea_artifact_id\":\"479198f6-c395-4f60-9f96-b5e1d9a0eaf3\",\"reviewed_idea_body_sha256\":\"68f623cdf2509fff7c53e7da99a30db366f5b57ac26b743cab3a6bdca48f1ca4\",\"reviewed_idea_document_revision\":2,\"source_idea\":\"IDEA-0017\"}",
         "namespace": "MAP",
         "title": "Methodical Windows Field Upgrade and Installer Repair",
-        "updated_at": "2026-08-30T18:46:18Z",
+        "updated_at": "2026-08-30T20:26:41Z",
         "visible_id": "MAP-0023"
       },
       {
@@ -7932,16 +7935,16 @@
         "visible_id": "EVD-0052"
       },
       {
-        "body_sha256": "cf22ab73fad8853fd1be17972f2b0e5bc876ecda88286fb323cb6c2dea1b25a5",
+        "body_sha256": "0efaeb889bf820b55bffed9e4f0f2527fd0f87e9277df20b8b3701a09369d9d9",
         "created_at": "2026-08-30T16:56:56Z",
-        "current_revision": 3,
+        "current_revision": 4,
         "display_number": 17,
         "id": "479198f6-c395-4f60-9f96-b5e1d9a0eaf3",
         "lifecycle_state": "active",
         "metadata_json": "{\"document_type\":\"idea-brief\",\"logical_path\":\"work/ideas/idea-methodical-windows-field-upgrade-and-installer-repair.md\",\"program_roadmap\":\"PRM-0034\",\"promoted_map\":\"MAP-0023\",\"readiness_review_digest\":\"0239b8a6ec01345362b877ea9ba3196c071a9cac40b5417ebbd803bbff3c9249\",\"requested_endpoint\":\"work2\"}",
         "namespace": "IDEA",
         "title": "Methodical Windows Field Upgrade and Installer Repair",
-        "updated_at": "2026-08-30T18:46:18Z",
+        "updated_at": "2026-08-30T20:26:45Z",
         "visible_id": "IDEA-0017"
       },
       {
@@ -10701,16 +10704,16 @@
         "visible_id": "CAMP-0082"
       },
       {
-        "body_sha256": "4aa186f3646603aedc636c455c9f677c0497bcc14a5adbcd90337247e21b780e",
+        "body_sha256": "034cea71bfa17cbc4e995a2bc99d782788ef26e60cbc555a35650f929f7ddd49",
         "created_at": "2026-08-30T18:45:29Z",
-        "current_revision": 2,
+        "current_revision": 3,
         "display_number": 34,
         "id": "edb8ee14-bd11-4c44-b3c0-81ada62b4fc6",
         "lifecycle_state": "blocked",
-        "metadata_json": "{\"approval_state\":\"approved\",\"blocked_on\":\"explicit verified Windows target switch\",\"document_type\":\"program-roadmap\",\"readiness_gate_ids\":[\"G1-WINDOWS-TARGET-IDENTITY-AND-ROUTING\",\"G2-BASELINE-BACKUP-ROLLBACK-AND-STORAGE-POSTURE\",\"G3-CURRENT-RELEASE-PROVENANCE-AND-UPDATER\",\"G4-WINDOWS-NATIVE-TRANSACTIONAL-UPGRADE\",\"G5-CANONICAL-DEFECT-REPAIR-AND-CROSS-PLATFORM-QUALIFICATION\",\"G6-WORK2-ACCEPTANCE-AND-RECOVERY-EVIDENCE\"],\"readiness_review_digest\":\"0239b8a6ec01345362b877ea9ba3196c071a9cac40b5417ebbd803bbff3c9249\",\"readiness_verdict\":\"READY-WITH-PRM-GATES\",\"requested_endpoint\":\"work2\",\"reviewed_idea_artifact_id\":\"479198f6-c395-4f60-9f96-b5e1d9a0eaf3\",\"reviewed_idea_body_sha256\":\"68f623cdf2509fff7c53e7da99a30db366f5b57ac26b743cab3a6bdca48f1ca4\",\"reviewed_idea_document_revision\":2,\"roadmap_id\":\"methodical-windows-field-upgrade-and-installer-repair\",\"roadmap_revision\":1,\"source_idea\":\"IDEA-0017\",\"source_project_map\":\"MAP-0023\",\"transferred_gate_count\":6}",
+        "metadata_json": "{\"approval_state\":\"approved\",\"blocked_on\":\"Work5 release of candidate 578a9c8 before target retry\",\"document_type\":\"program-roadmap\",\"readiness_gate_ids\":[\"G1-WINDOWS-TARGET-IDENTITY-AND-ROUTING\",\"G2-BASELINE-BACKUP-ROLLBACK-AND-STORAGE-POSTURE\",\"G3-CURRENT-RELEASE-PROVENANCE-AND-UPDATER\",\"G4-WINDOWS-NATIVE-TRANSACTIONAL-UPGRADE\",\"G5-CANONICAL-DEFECT-REPAIR-AND-CROSS-PLATFORM-QUALIFICATION\",\"G6-WORK2-ACCEPTANCE-AND-RECOVERY-EVIDENCE\"],\"readiness_review_digest\":\"0239b8a6ec01345362b877ea9ba3196c071a9cac40b5417ebbd803bbff3c9249\",\"readiness_verdict\":\"READY-WITH-PRM-GATES\",\"requested_endpoint\":\"work2\",\"reviewed_idea_artifact_id\":\"479198f6-c395-4f60-9f96-b5e1d9a0eaf3\",\"reviewed_idea_body_sha256\":\"68f623cdf2509fff7c53e7da99a30db366f5b57ac26b743cab3a6bdca48f1ca4\",\"reviewed_idea_document_revision\":2,\"roadmap_id\":\"methodical-windows-field-upgrade-and-installer-repair\",\"roadmap_revision\":1,\"source_idea\":\"IDEA-0017\",\"source_project_map\":\"MAP-0023\",\"transferred_gate_count\":6}",
         "namespace": "PRM",
         "title": "Methodical Windows Field Upgrade and Installer Repair",
-        "updated_at": "2026-08-30T18:46:38Z",
+        "updated_at": "2026-08-30T20:26:37Z",
         "visible_id": "PRM-0034"
       },
       {
@@ -17998,6 +18001,20 @@
         "title": "Program Roadmap: Hybrid SQLite Operational State"
       },
       {
+        "actor": "codex",
+        "body_object": "work/state/objects/sha256/99/99361ac47084d4f62b60ce64ce9f3eca2ea1c987a34526172987d9d81f3f3bac",
+        "body_sha256": "99361ac47084d4f62b60ce64ce9f3eca2ea1c987a34526172987d9d81f3f3bac",
+        "created_at": "2026-08-30T20:26:41Z",
+        "document_id": "0049b49a-5916-4922-9603-134296dfb5fe",
+        "id": "19f08bb3-785a-4338-a724-598ad282dd55",
+        "lifecycle_state": "active",
+        "metadata_json": "{\"approval_state\":\"approved\",\"document_type\":\"project-map\",\"program_roadmap\":\"PRM-0034\",\"readiness_gate_ids\":[\"G1-WINDOWS-TARGET-IDENTITY-AND-ROUTING\",\"G2-BASELINE-BACKUP-ROLLBACK-AND-STORAGE-POSTURE\",\"G3-CURRENT-RELEASE-PROVENANCE-AND-UPDATER\",\"G4-WINDOWS-NATIVE-TRANSACTIONAL-UPGRADE\",\"G5-CANONICAL-DEFECT-REPAIR-AND-CROSS-PLATFORM-QUALIFICATION\",\"G6-WORK2-ACCEPTANCE-AND-RECOVERY-EVIDENCE\"],\"readiness_review_digest\":\"0239b8a6ec01345362b877ea9ba3196c071a9cac40b5417ebbd803bbff3c9249\",\"readiness_verdict\":\"READY-WITH-PRM-GATES\",\"requested_endpoint\":\"work2\",\"reviewed_idea_artifact_id\":\"479198f6-c395-4f60-9f96-b5e1d9a0eaf3\",\"reviewed_idea_body_sha256\":\"68f623cdf2509fff7c53e7da99a30db366f5b57ac26b743cab3a6bdca48f1ca4\",\"reviewed_idea_document_revision\":2,\"source_idea\":\"IDEA-0017\"}",
+        "reason": "Record Work2 Windows repair result and Work5 release boundary",
+        "revision_number": 3,
+        "source_revision": 921,
+        "title": "Methodical Windows Field Upgrade and Installer Repair"
+      },
+      {
         "actor": "Codex",
         "body_object": "work/state/objects/sha256/9e/9ec445368885524071448144ccc6f7fe0dd291ae80a4867fdfa7d98dfb5925de",
         "body_sha256": "9ec445368885524071448144ccc6f7fe0dd291ae80a4867fdfa7d98dfb5925de",
@@ -23094,6 +23111,20 @@
         "title": "Ticket: Add Codex skill after foundation stabilizes"
       },
       {
+        "actor": "codex",
+        "body_object": "work/state/objects/sha256/0e/0efaeb889bf820b55bffed9e4f0f2527fd0f87e9277df20b8b3701a09369d9d9",
+        "body_sha256": "0efaeb889bf820b55bffed9e4f0f2527fd0f87e9277df20b8b3701a09369d9d9",
+        "created_at": "2026-08-30T20:26:45Z",
+        "document_id": "479198f6-c395-4f60-9f96-b5e1d9a0eaf3",
+        "id": "d8c358b3-7680-4a03-8d6b-6fe674641ef5",
+        "lifecycle_state": "active",
+        "metadata_json": "{\"document_type\":\"idea-brief\",\"logical_path\":\"work/ideas/idea-methodical-windows-field-upgrade-and-installer-repair.md\",\"program_roadmap\":\"PRM-0034\",\"promoted_map\":\"MAP-0023\",\"readiness_review_digest\":\"0239b8a6ec01345362b877ea9ba3196c071a9cac40b5417ebbd803bbff3c9249\",\"requested_endpoint\":\"work2\"}",
+        "reason": "Record Work2 Windows repair result and Work5 release boundary",
+        "revision_number": 4,
+        "source_revision": 922,
+        "title": "Methodical Windows Field Upgrade and Installer Repair"
+      },
+      {
         "actor": "work5-release",
         "body_object": "work/state/objects/sha256/8e/8e1fdb0083b6672b230584f1e4a38a78e2bb7a9523b98a7f15cfc4ba29c32c96",
         "body_sha256": "8e1fdb0083b6672b230584f1e4a38a78e2bb7a9523b98a7f15cfc4ba29c32c96",
@@ -23654,6 +23685,20 @@
         "title": "Ticket: Add Tool Shed version status"
       },
       {
+        "actor": "codex",
+        "body_object": "work/state/objects/sha256/03/034cea71bfa17cbc4e995a2bc99d782788ef26e60cbc555a35650f929f7ddd49",
+        "body_sha256": "034cea71bfa17cbc4e995a2bc99d782788ef26e60cbc555a35650f929f7ddd49",
+        "created_at": "2026-08-30T20:26:37Z",
+        "document_id": "edb8ee14-bd11-4c44-b3c0-81ada62b4fc6",
+        "id": "efc82d57-8126-450b-b80c-6dae33938189",
+        "lifecycle_state": "blocked",
+        "metadata_json": "{\"approval_state\":\"approved\",\"blocked_on\":\"Work5 release of candidate 578a9c8 before target retry\",\"document_type\":\"program-roadmap\",\"readiness_gate_ids\":[\"G1-WINDOWS-TARGET-IDENTITY-AND-ROUTING\",\"G2-BASELINE-BACKUP-ROLLBACK-AND-STORAGE-POSTURE\",\"G3-CURRENT-RELEASE-PROVENANCE-AND-UPDATER\",\"G4-WINDOWS-NATIVE-TRANSACTIONAL-UPGRADE\",\"G5-CANONICAL-DEFECT-REPAIR-AND-CROSS-PLATFORM-QUALIFICATION\",\"G6-WORK2-ACCEPTANCE-AND-RECOVERY-EVIDENCE\"],\"readiness_review_digest\":\"0239b8a6ec01345362b877ea9ba3196c071a9cac40b5417ebbd803bbff3c9249\",\"readiness_verdict\":\"READY-WITH-PRM-GATES\",\"requested_endpoint\":\"work2\",\"reviewed_idea_artifact_id\":\"479198f6-c395-4f60-9f96-b5e1d9a0eaf3\",\"reviewed_idea_body_sha256\":\"68f623cdf2509fff7c53e7da99a30db366f5b57ac26b743cab3a6bdca48f1ca4\",\"reviewed_idea_document_revision\":2,\"roadmap_id\":\"methodical-windows-field-upgrade-and-installer-repair\",\"roadmap_revision\":1,\"source_idea\":\"IDEA-0017\",\"source_project_map\":\"MAP-0023\",\"transferred_gate_count\":6}",
+        "reason": "Record Work2 Windows repair result and Work5 release boundary",
+        "revision_number": 3,
+        "source_revision": 920,
+        "title": "Methodical Windows Field Upgrade and Installer Repair"
+      },
+      {
         "actor": "work5-release",
         "body_object": "work/state/objects/sha256/d7/d75bcccb03f77383ec30d00c7a6d2d07196900bcbe73803bd4c95b9595b95a9b",
         "body_sha256": "d75bcccb03f77383ec30d00c7a6d2d07196900bcbe73803bd4c95b9595b95a9b",
@@ -24126,6 +24171,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"reconciliation\"}",
         "recorded_at": "2026-08-29T19:14:13Z",
         "revision": 570
+      },
+      {
+        "entity_id": "efc82d57-8126-450b-b80c-6dae33938189",
+        "entity_type": "document_revision",
+        "id": "00db3a5a-935f-4ecc-a3c3-c133f031d3a8",
+        "kind": "structural-insert",
+        "operation_id": "7085cc5c-a72e-484c-8345-4787f977edca",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
+        "recorded_at": "2026-08-30T20:26:37Z",
+        "revision": 920
       },
       {
         "entity_id": "11e4260e-dd4d-45b6-bdc9-a4a0e72e8ef1",
@@ -36858,6 +36913,16 @@
         "revision": 529
       },
       {
+        "entity_id": "479198f6-c395-4f60-9f96-b5e1d9a0eaf3",
+        "entity_type": "document",
+        "id": "3c8e42cd-6a64-4d1a-ba46-b9a188005948",
+        "kind": "structural-update",
+        "operation_id": "838b9ef3-3098-4dde-8001-bdba9744535f",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"document\"}",
+        "recorded_at": "2026-08-30T20:26:45Z",
+        "revision": 922
+      },
+      {
         "entity_id": "6766585d-abc3-43e7-ac4e-581cb5197224",
         "entity_type": "relationship",
         "id": "3c976bfd-f711-4364-b7ce-92a737c019f2",
@@ -39716,6 +39781,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
         "recorded_at": "2026-08-30T16:56:56Z",
         "revision": 855
+      },
+      {
+        "entity_id": "edb8ee14-bd11-4c44-b3c0-81ada62b4fc6",
+        "entity_type": "document",
+        "id": "49e78609-3a28-4582-bf77-bc5d9b652a2d",
+        "kind": "structural-update",
+        "operation_id": "7085cc5c-a72e-484c-8345-4787f977edca",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"document\"}",
+        "recorded_at": "2026-08-30T20:26:37Z",
+        "revision": 920
       },
       {
         "entity_id": "dfa96cac-2f96-5ac5-bd65-4f9f958efb58",
@@ -45716,6 +45791,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
         "recorded_at": "2026-08-30T16:36:32Z",
         "revision": 793
+      },
+      {
+        "entity_id": "479198f6-c395-4f60-9f96-b5e1d9a0eaf3",
+        "entity_type": "artifact",
+        "id": "65c48bb0-32f5-4c48-b115-d76a23f3d7bb",
+        "kind": "structural-update",
+        "operation_id": "838b9ef3-3098-4dde-8001-bdba9744535f",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-30T20:26:45Z",
+        "revision": 922
       },
       {
         "entity_id": "a787bc8b-1558-4475-9985-fd2ff691b1d9",
@@ -65108,6 +65193,16 @@
         "revision": 16
       },
       {
+        "entity_id": "edb8ee14-bd11-4c44-b3c0-81ada62b4fc6",
+        "entity_type": "artifact",
+        "id": "bfec8b91-a281-4723-964a-04c920f65fdf",
+        "kind": "structural-update",
+        "operation_id": "7085cc5c-a72e-484c-8345-4787f977edca",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-30T20:26:37Z",
+        "revision": 920
+      },
+      {
         "entity_id": "17acfc38-fe58-44d9-8672-df55ae42364c",
         "entity_type": "requirement",
         "id": "bff6fa19-3fbc-457e-a6a8-72755a40cbcf",
@@ -67316,6 +67411,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"outcome_verdict\"}",
         "recorded_at": "2026-08-28T19:04:55Z",
         "revision": 22
+      },
+      {
+        "entity_id": "0049b49a-5916-4922-9603-134296dfb5fe",
+        "entity_type": "document",
+        "id": "c96d2d94-bf2d-4e4f-9958-97504b146195",
+        "kind": "structural-update",
+        "operation_id": "63b203ab-4bbf-4c71-ac27-4e0591c109e4",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"document\"}",
+        "recorded_at": "2026-08-30T20:26:41Z",
+        "revision": 921
       },
       {
         "entity_id": "454b8bd2-636c-56cd-a81a-c06499f608b5",
@@ -69596,6 +69701,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
         "recorded_at": "2026-08-29T23:09:55Z",
         "revision": 662
+      },
+      {
+        "entity_id": "0049b49a-5916-4922-9603-134296dfb5fe",
+        "entity_type": "artifact",
+        "id": "d4bf2217-1940-4bbc-85b1-839a4737c858",
+        "kind": "structural-update",
+        "operation_id": "63b203ab-4bbf-4c71-ac27-4e0591c109e4",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-30T20:26:41Z",
+        "revision": 921
       },
       {
         "entity_id": "5c2f1efa-8010-41e1-89f3-729a9ae8af51",
@@ -76068,6 +76183,16 @@
         "revision": 90
       },
       {
+        "entity_id": "d8c358b3-7680-4a03-8d6b-6fe674641ef5",
+        "entity_type": "document_revision",
+        "id": "f520eba1-5b49-437a-8e2f-b848f2c09824",
+        "kind": "structural-insert",
+        "operation_id": "838b9ef3-3098-4dde-8001-bdba9744535f",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
+        "recorded_at": "2026-08-30T20:26:45Z",
+        "revision": 922
+      },
+      {
         "entity_id": "965173c6-e299-405e-9a44-2a0ed9df9947",
         "entity_type": "import_record",
         "id": "f5214f4e-76cc-48ad-9a14-b7f30e4b6f26",
@@ -77796,6 +77921,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
         "recorded_at": "2026-08-29T10:54:53Z",
         "revision": 348
+      },
+      {
+        "entity_id": "19f08bb3-785a-4338-a724-598ad282dd55",
+        "entity_type": "document_revision",
+        "id": "fdcacac2-20d4-49a8-a452-4955e87d1446",
+        "kind": "structural-insert",
+        "operation_id": "63b203ab-4bbf-4c71-ac27-4e0591c109e4",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
+        "recorded_at": "2026-08-30T20:26:41Z",
+        "revision": 921
       },
       {
         "entity_id": "DEC",
@@ -84875,6 +85010,17 @@
         "status": "complete"
       },
       {
+        "actor": "codex",
+        "actual_writes": 3,
+        "command": "document-apply-edit",
+        "committed_at": "2026-08-30T20:26:41Z",
+        "expected_writes": null,
+        "id": "63b203ab-4bbf-4c71-ac27-4e0591c109e4",
+        "revision": 921,
+        "started_at": "2026-08-30T20:26:41Z",
+        "status": "complete"
+      },
+      {
         "actor": "tool-shed",
         "actual_writes": 1,
         "command": "add-relationship",
@@ -85510,6 +85656,17 @@
         "id": "705ab2dc-bc23-4b34-a01c-363c060405cc",
         "revision": 595,
         "started_at": "2026-08-29T20:03:38Z",
+        "status": "complete"
+      },
+      {
+        "actor": "codex",
+        "actual_writes": 3,
+        "command": "document-apply-edit",
+        "committed_at": "2026-08-30T20:26:37Z",
+        "expected_writes": null,
+        "id": "7085cc5c-a72e-484c-8345-4787f977edca",
+        "revision": 920,
+        "started_at": "2026-08-30T20:26:37Z",
         "status": "complete"
       },
       {
@@ -86313,6 +86470,17 @@
         "id": "83525bbb-3cf0-40c5-ba1a-4dbd473cb1e4",
         "revision": 434,
         "started_at": "2026-08-29T14:09:55Z",
+        "status": "complete"
+      },
+      {
+        "actor": "codex",
+        "actual_writes": 3,
+        "command": "document-apply-edit",
+        "committed_at": "2026-08-30T20:26:45Z",
+        "expected_writes": null,
+        "id": "838b9ef3-3098-4dde-8001-bdba9744535f",
+        "revision": 922,
+        "started_at": "2026-08-30T20:26:45Z",
         "status": "complete"
       },
       {
@@ -118397,6 +118565,17 @@
         "table_name": "document_revision"
       },
       {
+        "id": "4a1fb6bc-a8c3-4e7f-91fa-b024c847c106",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "63b203ab-4bbf-4c71-ac27-4e0591c109e4",
+        "payload_digest": "5171594f14f2b12194f31bc716f1aea1cbdf4883dfeecb06e691cd26e4522526",
+        "recorded_at": "2026-08-30T20:26:41Z",
+        "revision": 921,
+        "row_id": "0049b49a-5916-4922-9603-134296dfb5fe",
+        "table_name": "artifact"
+      },
+      {
         "id": "4a1fc3ac-a484-4e17-bb24-2cb05dfafe96",
         "managed": 1,
         "operation": "insert",
@@ -120839,6 +121018,17 @@
         "table_name": "outcome_verdict"
       },
       {
+        "id": "54f1d943-6a3c-465c-b19f-f1cb66638a17",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "838b9ef3-3098-4dde-8001-bdba9744535f",
+        "payload_digest": "897edffb135cb4a2f2f98c0fac9ef25f3ad17b650b5b7e84f7da1b44d46a1680",
+        "recorded_at": "2026-08-30T20:26:45Z",
+        "revision": 922,
+        "row_id": "479198f6-c395-4f60-9f96-b5e1d9a0eaf3",
+        "table_name": "document"
+      },
+      {
         "id": "54f23c4b-0ae9-4535-8934-e51a73ef032c",
         "managed": 1,
         "operation": "insert",
@@ -121244,6 +121434,17 @@
         "revision": 44,
         "row_id": "f223e7e4-af22-4330-bc03-b2ea3b96c43e",
         "table_name": "verification_result"
+      },
+      {
+        "id": "564a550a-5375-4fe8-ac35-3030cc3b4f3d",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "838b9ef3-3098-4dde-8001-bdba9744535f",
+        "payload_digest": "15a1d7ff64ba0c3208f2edcda388ca8298b0028d543d03e7f094c705f66f57fb",
+        "recorded_at": "2026-08-30T20:26:45Z",
+        "revision": 922,
+        "row_id": "479198f6-c395-4f60-9f96-b5e1d9a0eaf3",
+        "table_name": "artifact"
       },
       {
         "id": "564c3980-937a-4964-b660-6cad7b373d5e",
@@ -124412,6 +124613,17 @@
         "revision": 192,
         "row_id": "0c15b66b-9310-4e72-aa87-e5e8747e625f",
         "table_name": "document_path_alias"
+      },
+      {
+        "id": "648186fe-b11f-4a8c-9ff6-f813eb8ceeee",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "7085cc5c-a72e-484c-8345-4787f977edca",
+        "payload_digest": "05086092f726769f0e4edcc6cdc29015921e24b045b9537a86c0e238d80f5bec",
+        "recorded_at": "2026-08-30T20:26:37Z",
+        "revision": 920,
+        "row_id": "edb8ee14-bd11-4c44-b3c0-81ada62b4fc6",
+        "table_name": "artifact"
       },
       {
         "id": "64929cfb-7647-43b3-833d-e101cd7edf39",
@@ -134829,6 +135041,17 @@
         "revision": 135,
         "row_id": "653bcc40-aceb-449a-8f63-c782699fbd2a",
         "table_name": "document_revision"
+      },
+      {
+        "id": "9097db40-722d-4d37-9327-643f45d533d5",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "63b203ab-4bbf-4c71-ac27-4e0591c109e4",
+        "payload_digest": "47691b374f2c07eaa2fb7cb01256b866d78b76327d3c7115c3a10ca946b19146",
+        "recorded_at": "2026-08-30T20:26:41Z",
+        "revision": 921,
+        "row_id": "0049b49a-5916-4922-9603-134296dfb5fe",
+        "table_name": "document"
       },
       {
         "id": "909a5d5b-9668-464b-bcb8-3207a0417a86",
@@ -147811,6 +148034,17 @@
         "table_name": "reconciliation"
       },
       {
+        "id": "c6978fe3-d5bc-4e92-975a-84cb450bcda5",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "7085cc5c-a72e-484c-8345-4787f977edca",
+        "payload_digest": "415cb18cc26510d83ccc4c20e899ff276ef22f81689ef6e114276fac76d5b541",
+        "recorded_at": "2026-08-30T20:26:37Z",
+        "revision": 920,
+        "row_id": "edb8ee14-bd11-4c44-b3c0-81ada62b4fc6",
+        "table_name": "document"
+      },
+      {
         "id": "c6998a2e-a521-4bc4-9dbf-b175d301e072",
         "managed": 1,
         "operation": "insert",
@@ -153124,6 +153358,17 @@
         "table_name": "document_path_alias"
       },
       {
+        "id": "dd8cef4b-0b59-40c8-a16a-72192edc734a",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "7085cc5c-a72e-484c-8345-4787f977edca",
+        "payload_digest": "f79920605d61ff7020c36062e14edc204e6ce85c54cc4d96b7372b59e1c92ef5",
+        "recorded_at": "2026-08-30T20:26:37Z",
+        "revision": 920,
+        "row_id": "efc82d57-8126-450b-b80c-6dae33938189",
+        "table_name": "document_revision"
+      },
+      {
         "id": "dda79434-feef-4002-9d53-e26bc4343ecc",
         "managed": 1,
         "operation": "update",
@@ -157326,6 +157571,17 @@
         "table_name": "requirement"
       },
       {
+        "id": "ef0122ad-569a-4fa8-84e8-e47f627edf88",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "63b203ab-4bbf-4c71-ac27-4e0591c109e4",
+        "payload_digest": "e6cf1ba1a8ee120230909dfe7a2133347dea75f2119dcdab2a33ed957894482e",
+        "recorded_at": "2026-08-30T20:26:41Z",
+        "revision": 921,
+        "row_id": "19f08bb3-785a-4338-a724-598ad282dd55",
+        "table_name": "document_revision"
+      },
+      {
         "id": "ef16a931-007c-4b4c-91df-69b9def72ad1",
         "managed": 1,
         "operation": "insert",
@@ -157852,6 +158108,17 @@
         "revision": 91,
         "row_id": "8040d22e-156a-5850-9c4f-828909327d73",
         "table_name": "artifact"
+      },
+      {
+        "id": "f204dcd3-463f-4b6a-9bcc-2fdea168031c",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "838b9ef3-3098-4dde-8001-bdba9744535f",
+        "payload_digest": "3a86f26352483c8cd2909876e3d52d25fc3157a5f810c9ce46c96cee1a1dee37",
+        "recorded_at": "2026-08-30T20:26:45Z",
+        "revision": 922,
+        "row_id": "d8c358b3-7680-4a03-8d6b-6fe674641ef5",
+        "table_name": "document_revision"
       },
       {
         "id": "f210238c-ef3e-4dfa-b232-c71e56dd962d",
