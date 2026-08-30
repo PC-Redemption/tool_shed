@@ -1,0 +1,79 @@
+# Program Roadmap: Actionable Dashboard Attention and Recent Changes
+
+Status: active
+Type: program-roadmap
+Updated: 2026-08-30
+Roadmap ID: actionable-dashboard-attention-and-recent-changes
+Roadmap Revision: 1
+Source Idea: IDEA-0013
+Source Project Map: MAP-0018
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 2
+Reviewed Body SHA256: 7b759008361ba20a2e0edb035c948dbbc592fd23bca55cefe83000b16181c031
+
+## Program Outcome
+
+The hosted dashboard provides a controlled, explainable attention queue and a bounded recent-change
+feed for daily review. It preserves per-instance freshness, keeps unresolved state independent from
+browser visit markers, avoids cadence-generated history, and directs investigation back to safe
+local Tool Shed routes without remote control.
+
+## M1-ATTENTION-AND-CHANGE-TRUTH — Implement controlled projections
+
+Status: active
+Depends on: none
+
+Outcome: Derive stable attention items and normalized recent events from existing accepted state,
+freshness, App Server failure groups, material events, and lifecycle events.
+
+Gates:
+
+- `G1-ATTENTION-CONTRACT`: controlled reason registry; explicit severity, source, first/current
+  timestamps, freshness, deterministic deduplication and clearing; no arbitrary reporter text.
+- `G2-RECENT-CHANGE-SEMANTICS`: change-only normalized feed; existing retention; browser-local
+  last-visit presentation state; unresolved attention remains active regardless of visit state.
+
+Candidate campaign: `implement-actionable-dashboard-attention-and-recent-changes`.
+
+## M2-ACTIONABLE-DASHBOARD-WORK2 — Render and qualify the daily-review experience
+
+Status: active
+Depends on: M1
+
+Outcome: Present fleet/project attention details and recent changes with stable links, source and
+freshness context, accessible new-item highlighting, and focused Work2 deployment evidence.
+
+Gate:
+
+- `G3-ACTIONABLE-ADVISORY-UI`: each active item exposes its controlled reason, affected project or
+  instance, age/freshness, hosted detail link, and safe local investigation route; the UI remains
+  authenticated, advisory, read-only, and live through semantic SSE.
+
+Candidate campaign: `implement-actionable-dashboard-attention-and-recent-changes`.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G1-ATTENTION-CONTRACT | M1 / same gate |
+| G2-RECENT-CHANGE-SEMANTICS | M1 / same gate |
+| G3-ACTIONABLE-ADVISORY-UI | M2 / same gate |
+
+Transfer count: 3 reviewed gates; 3 mapped gates; 0 dropped.
+
+## Work2 Boundary
+
+Work2 includes implementation, migration and focused derivation/rendering/privacy/SSE tests, quick
+changed-path validation, a scoped product commit, deployment to the configured combined
+`ts.rookaro.com` target, authenticated browser and health checks, release-cohort registration,
+logical checkpoint/rebuild proof, and strict Doctor.
+
+Work2 does not push Git, tag or publish a Tool Shed version, synchronize disconnected installs, or
+close IDEA-0013, MAP-0018, this PRM, or its campaign. Those remain awaiting formal Work5 release
+evidence and upward reconciliation.
+
+## Deferred Scope
+
+- Email, paging, webhooks, and other external notification delivery.
+- Remote acknowledgement, mitigation, command execution, or local-state mutation.
+- Server-side maintainer visit tracking or a second event/telemetry subsystem.

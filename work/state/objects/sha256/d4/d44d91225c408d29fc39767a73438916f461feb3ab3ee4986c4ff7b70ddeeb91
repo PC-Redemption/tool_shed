@@ -1,0 +1,47 @@
+# Campaign: Implement Actionable Dashboard Attention and Recent Changes
+
+Status: working
+Type: campaign
+Updated: 2026-08-30
+Campaign ID: implement-actionable-dashboard-attention-and-recent-changes
+Outcome: Deliver and Work2-qualify a controlled attention queue and change-only recent feed that make dashboard warnings explainable without weakening local authority or privacy.
+Roadmap: actionable-dashboard-attention-and-recent-changes
+Roadmap Document: PRM-0029
+Roadmap Revision: 1
+Milestone: M1-ATTENTION-AND-CHANGE-TRUTH, M2-ACTIONABLE-DASHBOARD-WORK2
+Unlocks Gate: G1-ATTENTION-CONTRACT, G2-RECENT-CHANGE-SEMANTICS, G3-ACTIONABLE-ADVISORY-UI
+Depends On: none
+Requested Endpoint: work2
+Completion Gate: controlled attention derivation and clearing, bounded normalized recent events, browser-local visit highlighting, actionable fleet/project rendering, privacy constraints, semantic SSE behavior, focused tests, configured-target deployment checks, release-cohort registration, checkpoint rebuild proof, and strict Doctor all pass.
+
+## Request
+
+Build the smallest complete attention and recent-change slice on the existing hosted dashboard.
+Derive attention only from controlled accepted fields and server-owned reason mappings. Preserve
+instance freshness, stable identity, first/current timestamps, deterministic clearing, and safe
+local investigation guidance. Normalize existing lifecycle and material events for recent review,
+and mark entries since the last browser visit without creating server-side acknowledgement state.
+
+## Contract Decisions
+
+- Active attention reasons are controlled server-side: blocked work, unreconciled outcomes,
+  retained App Server failure groups, and stale/offline reporting instances.
+- Project-level counts never hide a stale or failing instance behind a fresh peer.
+- The visit marker is browser-local presentation state. It does not clear, resolve, mutate, or
+  suppress an active attention condition.
+- Lifecycle and material events remain the change-history authority; the view normalizes them but
+  does not copy or fabricate events.
+- Suggested routes are fixed server-owned text: `ts: status`, `ts: doctor`,
+  `ts: dashboard status`, or the relevant read-only dashboard detail.
+- Existing retention and semantic SSE invalidation are reused.
+
+## Work2 Boundary
+
+Implement, run focused derivation/rendering/privacy/migration/SSE tests, run quick changed-path
+validation, commit the scoped candidate, deploy it to the configured combined `ts.rookaro.com`
+work target, check public health and authenticated browser behavior, register the candidate and
+open owning chain in the release cohort, checkpoint and rebuild-prove Hybrid state, and run strict
+Doctor.
+
+Do not push, tag, publish a Tool Shed release, synchronize disconnected clients, send external
+notifications, execute remote commands, or mark the Campaign, PRM, Map, or Idea terminal at Work2.

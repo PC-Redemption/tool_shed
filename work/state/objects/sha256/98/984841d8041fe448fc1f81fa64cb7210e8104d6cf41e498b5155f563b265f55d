@@ -1,0 +1,95 @@
+# Idea Brief: Actionable Dashboard Attention and Recent Changes
+
+Status: promoted
+Type: idea-brief
+Updated: 2026-08-30
+Next Action: execute CAMP-0137 through the approved PRM-0029 Work2 boundary
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces: MAP-0018, PRM-0029
+
+## Current Synthesis
+
+### Idea
+
+Make every dashboard attention state explainable and actionable. `Needs attention` should identify
+the controlled reason, affected project/instance/artifact, age, freshness, and the safe local Tool
+Shed route for investigation. Pair it with a change-only "since your last visit" feed covering
+work transitions, outcome reconciliation, reporter recovery/staleness, releases, App Server
+failures, and enrollment or credential lifecycle events.
+
+### Why It Matters
+
+Counts and colored badges reveal that something may be wrong but do not tell the operator what
+happened or what to inspect. The operator must reopen each workspace and rediscover context. A
+bounded attention queue and recent-change feed would turn the fleet page into a useful daily review
+surface without granting the hosted service control over local work.
+
+### Desired Outcome
+
+An operator can open one attention entry, understand why it exists, see when it began and last
+changed, identify its reporting source, follow a stable link to the relevant hosted detail, and see
+a suggested local read-only or governed Tool Shed command. Repeated unchanged reports do not create
+duplicate attention or history. Resolved conditions leave recent history and disappear from the
+active attention queue deterministically.
+
+## Constraints And Non-Goals
+
+- Use controlled reason and summary codes, stable IDs, timestamps, severity, and source identity;
+  do not upload arbitrary explanations, paths, commands, logs, or diagnostics.
+- Keep the hosted service advisory and read-only. Suggested routes are text guidance, not remote
+  command execution.
+- Preserve instance freshness and divergence; one fresh instance must not hide another stale or
+  failing instance.
+- Retain change events within an explicit bounded window and deduplicate by stable event identity.
+- Do not create an email/paging system in the first useful boundary. External notifications remain
+  evidence-gated and separate from an accurate in-dashboard attention surface.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Controlled attention-reason records | Explainable, filterable, privacy-bounded, deterministic clearing | Requires contract and hosted model changes | Preferred foundation |
+| Render current generic material events | Small UI step | Generic codes lack affected artifact/reason detail | Supplement only |
+| Accept reporter-supplied free text | Flexible | Privacy leakage, inconsistent wording, poor grouping | Reject |
+| Add external notifications immediately | Proactive | Delivery, recipient, fatigue, and idempotency complexity | Defer until dashboard attention proves useful |
+
+## Open Questions
+
+- Which conditions deserve `attention`, `warning`, or informational recent-history treatment?
+- Should "since last visit" be stored per maintainer account, in the browser, or represented only
+  by explicit time filters?
+- Can suggested local routes be derived entirely server-side from controlled reason codes?
+- What acknowledgement semantics, if any, are useful without hiding an unresolved local condition?
+- Which enrollment and credential events are useful without exposing security-sensitive detail?
+
+## Decisions
+
+- Keep this separate from `IDEA-0012`: lifecycle/history explains durable work, while this brief
+  explains operational attention and recent change.
+- Prefer controlled attention reasons and change-only events; reject arbitrary summary text.
+- Preserve advisory hosting and route investigation back to governed local Tool Shed commands.
+- Defer external notification delivery until accurate attention grouping and clearing are proven.
+
+## Don't Forget
+
+- Attention must say why, not merely repeat the badge color or count.
+- A resolved condition should remain discoverable in recent history without remaining active.
+- Heartbeats and repeated unchanged reports are not material changes.
+- Enrollment approval/rejection/revocation history can be useful, but credentials and identifying
+  secrets never belong in the feed.
+
+## Exploration Log
+
+### 2026-08-30
+
+- Idea Brief created.
+- Captured the recommended actionable-attention and "changed since last visit" dashboard
+  enhancement as a separate discovery thread.
+- Initial direction favors controlled reason records, source/freshness visibility, deterministic
+  clearing, and local investigation guidance without remote control or arbitrary text upload.
+- Formal readiness review returned `READY-WITH-PRM-GATES`; MAP-0018 and PRM-0029 accepted all three
+  gates without loss, and CAMP-0137 owns implementation through Work2.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.
