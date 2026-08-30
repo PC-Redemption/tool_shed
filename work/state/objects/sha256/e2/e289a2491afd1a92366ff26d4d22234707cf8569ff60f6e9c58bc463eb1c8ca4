@@ -1,0 +1,81 @@
+# Project Map: Dashboard Release Reporter and Instance Health
+
+Status: active
+Type: project-map
+Updated: 2026-08-30
+Source Idea: IDEA-0014
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 2
+Reviewed Body SHA256: 633362eb8ae993ad7bcb1028d5c4d5c43f7df8025949ff1c1fd4628494f2851e
+Program Roadmap: PRM-0030
+
+## Purpose
+
+Make the hosted dashboard trustworthy as a fleet-health surface by showing which installed client
+and reporting instance produced each current snapshot, how fresh its evidence is, and whether
+enrolled instances disagree. Local Tool Shed state and release tooling remain authoritative.
+
+## Desired Outcome
+
+An operator can distinguish healthy, stale, offline, quiescent, delivery-delayed,
+behind-version, incompatible, unqualified, unknown-version, and divergent instances. Project
+summaries name their source and freshness and never merge conflicting lifecycle snapshots.
+
+## First Useful Boundary
+
+- Extend the privacy-bounded schema-v3 report with controlled per-instance reporter health,
+  semantic state digest, and release-provenance fields already known locally.
+- Persist only bounded codes, versions, timestamps, digests, and counts on the hosted service.
+- Derive release posture and divergence server-side with explicit unknown states.
+- Render compact project-level trust indicators and a per-instance health table on the project
+  health surface, refreshed through the existing semantic SSE revision.
+- Implement and deploy the complete vertical slice through Work2; Work5 remains the formal release
+  and production-reconciliation gate.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Reporter contract | Controlled health, release, and semantic-digest fields with strict privacy validation | existing schema-v3 reporter |
+| Hosted truth | Per-instance persistence plus deterministic release/divergence projections | accepted bounded reports |
+| Operator experience | Compact readable trust summary and per-instance drilldown | hosted truth |
+| Qualification | Contract, ingestion, rendering, SSE, migration, deployment, and browser evidence | complete vertical slice |
+
+## Readiness Gate Transfer
+
+1. `G1-REPORTER-HEALTH-CONTRACT` requires bounded delivery, freshness, heartbeat, and quiescence
+   fields while excluding paths, diagnostics, scheduler definitions, credentials, and free text.
+2. `G2-RELEASE-PROVENANCE` requires installed, stable, candidate, and production-verified release
+   concepts with controlled sources, timestamps, and explicit unknown handling.
+3. `G3-INSTANCE-DIVERGENCE-UI` requires per-instance truth and deterministic divergence without
+   merging conflicting local lifecycle snapshots or granting hosted mutation authority.
+
+## Constraints
+
+- Preserve each enrolled instance as an independent trusted source.
+- Canonical version comparison must name its source and freshness; lookup failure is unknown.
+- Reuse current report ingestion, models, semantic SSE, and authenticated dashboard surfaces.
+- The hosted dashboard cannot update, restart, revoke, deploy, reconcile, or mutate local work.
+
+## Non-Goals
+
+- Remote repair, update, deployment, reconciliation, or credential operations.
+- Raw outbox contents, repository paths or diffs, scheduler definitions, logs, or diagnostics.
+- A modified-client status without a separate privacy-safe evidence contract.
+- Silent selection of the freshest instance as project consensus.
+
+## Navigation
+
+Do next:
+
+- Execute CAMP-0138 through the approved PRM-0030 Work2 boundary.
+
+Avoid for now:
+
+- Adding a new telemetry channel or external version service when existing local and release state
+  can supply the bounded contract.
+
+## Related Artifacts
+
+- Source Idea Brief: IDEA-0014
+- Readiness result digest: d5df9db7614194b7a0375dd58c166706959a461c022884af40e0455e458d1dd3

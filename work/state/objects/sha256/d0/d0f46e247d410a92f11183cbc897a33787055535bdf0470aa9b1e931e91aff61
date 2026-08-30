@@ -1,0 +1,43 @@
+# Campaign: Implement Dashboard Release Reporter and Instance Health
+
+Status: working
+Type: campaign
+Updated: 2026-08-30
+Campaign ID: implement-dashboard-release-reporter-and-instance-health
+Outcome: Deliver and Work2-qualify privacy-bounded release posture, reporter health, and per-instance divergence so operators can trust the hosted dashboard's source and freshness.
+Roadmap: dashboard-release-reporter-and-instance-health
+Roadmap Document: PRM-0030
+Roadmap Revision: 1
+Milestone: M1-REPORTER-AND-RELEASE-TRUTH, M2-INSTANCE-HEALTH-WORK2
+Unlocks Gate: G1-REPORTER-HEALTH-CONTRACT, G2-RELEASE-PROVENANCE, G3-INSTANCE-DIVERGENCE-UI
+Depends On: none
+Requested Endpoint: work2
+Completion Gate: bounded reporter and release contracts, per-instance persistence, deterministic divergence, compact authenticated rendering, privacy constraints, semantic SSE behavior, focused tests, configured-target deployment checks, release-cohort registration, checkpoint rebuild proof, and strict Doctor all pass.
+
+## Request
+
+Build the smallest complete release-reporter and instance-health slice on the existing hosted
+dashboard. Report only locally known controlled facts, preserve independent instance authority,
+make source and freshness explicit, and render unknown or divergent states honestly.
+
+## Contract Decisions
+
+- Health fields are controlled codes, versions, UTC timestamps, digests, and bounded counts.
+- Reporter freshness, quiescence, and delivery state remain distinct.
+- Installed, latest-known-stable, candidate/pending, and production-verified releases are separate
+  concepts and each names its source and observation time.
+- A semantic digest detects differing accepted lifecycle snapshots while excluding heartbeat-only
+  changes; the server never merges rows to manufacture consensus.
+- Canonical lookup failure and absent evidence render as unknown, never current by assumption.
+- The hosted dashboard remains authenticated, advisory, read-only, and unable to mutate instances.
+
+## Work2 Boundary
+
+Implement, run focused contract/ingestion/rendering/privacy/migration/SSE tests, run quick
+changed-path validation, commit the scoped candidate, deploy it to the configured combined
+`ts.rookaro.com` work target, check public health and authenticated browser behavior, register the
+candidate and open owning chain in the release cohort, checkpoint and rebuild-prove Hybrid state,
+and run strict Doctor.
+
+Do not push, tag, publish a Tool Shed release, synchronize disconnected clients, perform remote
+repair, or mark the Campaign, PRM, Map, or Idea terminal at Work2.
