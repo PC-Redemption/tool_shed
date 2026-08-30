@@ -1144,8 +1144,6 @@ def safety_pass(workspace: Path, *, project_binding: str) -> dict[str, Any]:
                 "SELECT COUNT(*) FROM outbox WHERE delivered_at IS NULL"
             ).fetchone()[0]
         )
-        if previous == current and pending == 0:
-            return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-safety-pass", "status": "current", "writes_performed": False}
     if previous != current:
         queued = enqueue(
             workspace,
@@ -1154,6 +1152,12 @@ def safety_pass(workspace: Path, *, project_binding: str) -> dict[str, Any]:
         )
         with contextlib.closing(_outbox(workspace)) as connection:
             _set_meta(connection, "last_domain_digest", current)
+    elif pending == 0:
+        queued = enqueue(
+            workspace,
+            project_binding=project_binding,
+            reason="heartbeat",
+        )
 
     delivered_count = 0
     superseded_count = 0

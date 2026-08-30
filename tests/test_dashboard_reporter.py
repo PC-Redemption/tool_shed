@@ -182,7 +182,7 @@ class DashboardReporterTests(unittest.TestCase):
         self.assertTrue(result["writes_performed"])
         self.assertEqual(request.call_count, 2)
 
-    def test_safety_pass_stays_read_only_when_digest_and_outbox_are_current(self) -> None:
+    def test_safety_pass_delivers_heartbeat_when_digest_and_outbox_are_current(self) -> None:
         with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
             dashboard_reporter._set_meta(connection, "last_domain_digest", "current-digest")
         with mock.patch.object(
@@ -191,13 +191,31 @@ class DashboardReporterTests(unittest.TestCase):
             dashboard_reporter.document_store,
             "audit",
             return_value={"domain_digest": "current-digest"},
-        ), mock.patch.object(dashboard_reporter, "worker_once") as worker_once:
+        ), mock.patch.object(
+            dashboard_reporter,
+            "enqueue",
+            return_value={"sequence": 3},
+        ) as enqueue, mock.patch.object(
+            dashboard_reporter,
+            "worker_once",
+            side_effect=[
+                {"status": "delivered"},
+                {"status": "idle"},
+            ],
+        ) as worker_once:
             result = dashboard_reporter.safety_pass(
                 self.workspace, project_binding="fixture"
             )
-        self.assertEqual(result["status"], "current")
-        self.assertFalse(result["writes_performed"])
-        worker_once.assert_not_called()
+        self.assertEqual(result["status"], "delivered")
+        self.assertEqual(result["delivered_count"], 1)
+        self.assertEqual(result["pending_events"], 0)
+        self.assertTrue(result["writes_performed"])
+        enqueue.assert_called_once_with(
+            self.workspace,
+            project_binding="fixture",
+            reason="heartbeat",
+        )
+        self.assertEqual(worker_once.call_count, 2)
 
     def test_report_payload_contains_only_bounded_aggregate_contract(self) -> None:
         database = self.workspace / ".tool-shed/state.sqlite3"

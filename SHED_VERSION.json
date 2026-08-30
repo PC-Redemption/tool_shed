@@ -12,7 +12,7 @@
     "adapters/codex-app-server-config.json": "d79964bc2371a39d50b7bcad534af133564e55bbf491baf4f3031b36e01b7e49",
     "adapters/codex-app-server-qualifications.json": "995ccd3bea135448b316045ea240c10d272f4c7e2ff65085111e0380cef947c1",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "4875392a884ccfef2aa30b9eae07c466c8b07ec503af04c1ee2082d69d22494d",
+    "adapters/codex-skill-releases.json": "14521e275593792f2b68dbcbd8bd3989748d7fab7fca7c8d3bd76f3f0444a302",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "a16e9afbc2733b2c01b113df3f3a07fda1630b80b5a97476896123ee03bc22d2",
     "dashboard/Dockerfile": "8e9ff084f409aa81ab92b9dcbe8d9bab2416225551c837681653cab7b66786ad",
@@ -71,7 +71,7 @@
     "docs/completion-watcher-hosted-recovery-rollout.md": "62d85676540ccbc318dbd908df10ef0b405957e07989a844553b71c0aef448e1",
     "docs/completion-watcher-hosted-status-surface.md": "e8ca0e6e81cdda1a4af7a3e5d7331fa7d64cd1d5d832cf06caba34c104097f60",
     "docs/completion-watcher-protocol.md": "2fb0057ead6f1524a22a17833b448f419312588858553b0ad68ddf0c873e10bb",
-    "docs/dashboard.md": "e12898998e544329ac1bcd68ac239e383b7091ba04f6759e15a250b2e17ddfba",
+    "docs/dashboard.md": "a733272370b027c38d688c2b4f6cd1760259732eb1be180204b268c70daa62dc",
     "docs/database-owned-work-collateral-conversion.md": "ee131fe6e232369c752a1be35e6a0e3c1438e2ee14aef47b50677f1fa5bbd98a",
     "docs/database-owned-work-collateral-v1-contract.md": "b7f04d49d1a6ba4b6a7db8130122f5b4e6b23d329d68ed14823ad09c73b3e6ab",
     "docs/database-owned-work-collateral.md": "01ff20af1a16818989f6988612482cb59508d8567f3c362dfa86a22bce9d885b",
@@ -138,7 +138,7 @@
     "scripts/codex_skill_sync.py": "78cf6c2d6605854c429cc54e63eb60b7fa7e81e47dcae9fc87c60b5f93d564a8",
     "scripts/complete_workpackage.py": "a74d1fac326d2ba3813bf00270afe698a3d276ba62f7b53067761f2892c7a0fb",
     "scripts/completion_watcher.py": "d94ba056b5628a477028c8568e284da95bd78466d3839b5e126a89163d16d7a3",
-    "scripts/dashboard_reporter.py": "42c5d22d81205cf73d577a30337b72a58a596fbcf99a7865bd4cbf1bdaac42e8",
+    "scripts/dashboard_reporter.py": "1d9dd9445305eb39bbf5ea34a1cf522d588920df4ef54bd3e7894a5c65cc6b1a",
     "scripts/doctor.py": "b8f7c8041bdde100b370812cc49f70fe0eff7171d1a527adccdce273e7c71880",
     "scripts/document_contract.py": "2b540582141065b7e7c84294142a15ddf01f255a58f844e08abaf9634b30d411",
     "scripts/document_conversion.py": "da2b7d08f038ab4ed789f191d5855284be5d2450b32f0204bfed88fdcdde3397",
@@ -239,34 +239,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Fix hosted dashboard terminal lifecycle acceptance and pending report convergence",
-  "release_commit": "464f040b53be17f14682a4f4698595f6fe2ab44c",
-  "release_qualification": {
-    "attested_at": "2026-08-30T22:31:05Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "81bbb1df280b8c04875d5ee96edd1c597bc74d4ce8b82a19fc01a9a619f866e5"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "464f040b53be17f14682a4f4698595f6fe2ab44c"
-  },
-  "release_tag": "v0.41.1",
-  "released_at": "2026-08-30T22:31:05Z",
-  "shed_version": "0.41.1",
+  "notes": "Keep scheduled dashboard reporters fresh and preserve pending report convergence",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.41.2",
+  "released_at": null,
+  "shed_version": "0.41.2",
   "updated_at": "2026-08-30",
   "updater_mutation_paths": [
     {

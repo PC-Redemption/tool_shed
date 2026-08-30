@@ -48,9 +48,9 @@ Managed database writes enqueue a controlled event and wake a detached singleton
 SQLite outbox preserves ordered idempotent delivery, bounded exponential backoff, one-minute
 heartbeats, and a final quiescent report after two idle hours. When the server proves an older
 queued sequence has already been superseded, the worker retires only that exact conflict so stale
-history cannot block newer state. The independent safety pass compares the local domain digest
-every 15 minutes, delivers a convergence report when it changes, and drains ready pending events
-even when the digest is unchanged:
+history cannot block newer state. The independent safety pass runs every 15 minutes, drains ready
+pending events, delivers a convergence report when the local domain digest changes, and otherwise
+sends a content-free heartbeat so an installed scheduler remains visibly fresh:
 
 ```bash
 python3 scripts/dashboard_reporter.py --workspace . scheduler-plan
