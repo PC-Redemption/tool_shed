@@ -427,6 +427,8 @@ class DashboardApplicationTests(TestCase):
         self.assertContains(first, "CAMP-0006")
         self.assertNotContains(first, "CAMP-0005")
         self.assertLess(first.content.index(b"CAMP-0025"), first.content.index(b"CAMP-0006"))
+        self.assertContains(first, 'aria-label="Work table pages (top)"', count=1)
+        self.assertContains(first, 'aria-label="Work table pages (bottom)"', count=1)
 
         second = self.client.get(url, {"page": 2})
         self.assertContains(second, 'aria-current="page">2</span>')
@@ -482,6 +484,8 @@ class DashboardApplicationTests(TestCase):
         self.assertNotContains(first, "CAMP-0005")
         self.assertLess(first.content.index(b"CAMP-0025"), first.content.index(b"CAMP-0006"))
         self.assertContains(first, "Showing 1–20 of 25")
+        self.assertContains(first, 'aria-label="History table pages (top)"', count=1)
+        self.assertContains(first, 'aria-label="History table pages (bottom)"', count=1)
 
         second = self.client.get(url, {"page": 2})
         self.assertContains(second, 'aria-current="page">2</span>')

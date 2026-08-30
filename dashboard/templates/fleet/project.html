@@ -71,6 +71,7 @@
     {% if work_page %}<span>Showing {{ work_page.start_index }}–{{ work_page.end_index }} of {{ work_result_count }}</span>{% else %}<span>Showing all {{ work_result_count }}</span>{% endif %}
   </div>
   {% if inventory_diverged %}<p class="dashboard-warning">Instance snapshots differ; each source is shown independently.</p>{% endif %}
+  {% include "fleet/includes/table_pagination.html" with page=work_page links=page_links previous_url=previous_page_url next_url=next_page_url label="Work table pages" position="top" %}
   {% for group in instance_groups %}
   <section class="instance-snapshot">
     <div class="instance-heading">
@@ -91,15 +92,7 @@
     {% else %}<p class="dashboard-empty">{% if group.instance.report_schema_version < 2 %}This instance has not reported lifecycle inventory yet.{% else %}No artifacts match this view.{% endif %}</p>{% endif %}
   </section>
   {% empty %}<p class="dashboard-empty">No enrolled instances.</p>{% endfor %}
-  {% if work_page and work_page.paginator.num_pages > 1 %}
-  <nav class="table-pagination" aria-label="Work table pages">
-    {% if previous_page_url %}<a href="{{ previous_page_url }}" rel="prev">Previous</a>{% else %}<span aria-disabled="true">Previous</span>{% endif %}
-    {% for link in page_links %}
-      {% if link.ellipsis %}<span aria-hidden="true">…</span>{% elif link.current %}<span aria-current="page">{{ link.number }}</span>{% else %}<a href="{{ link.url }}">{{ link.number }}</a>{% endif %}
-    {% endfor %}
-    {% if next_page_url %}<a href="{{ next_page_url }}" rel="next">Next</a>{% else %}<span aria-disabled="true">Next</span>{% endif %}
-  </nav>
-  {% endif %}
+  {% include "fleet/includes/table_pagination.html" with page=work_page links=page_links previous_url=previous_page_url next_url=next_page_url label="Work table pages" position="bottom" %}
 </section>
 {% elif tab == 'history' %}
 <section class="dashboard-panel" data-recent-changes data-project-key="{{ project.id }}" data-viewed-at="{{ history_viewed_at }}">
@@ -121,18 +114,11 @@
     <span>Newest changes first.</span>
     {% if history_page %}<span>Showing {{ history_page.start_index }}–{{ history_page.end_index }} of {{ history_result_count }}</span>{% else %}<span>Showing all {{ history_result_count }}</span>{% endif %}
   </div>
+  {% include "fleet/includes/table_pagination.html" with page=history_page links=history_page_links previous_url=history_previous_page_url next_url=history_next_page_url label="History table pages" position="top" %}
   {% if history %}<div class="table-scroll"><table><thead><tr><th>When</th><th>Kind</th><th>Change</th><th>Source instance</th><th>Details</th></tr></thead><tbody>
     {% for event in history %}<tr data-change-at="{{ event.occurred_at|date:'c' }}"><td>{{ event.occurred_at }} <span class="new-change-badge" hidden>New</span></td><td>{{ event.kind }}</td><th>{{ event.title }}<small>{{ event.summary }}</small></th><td>{{ event.source_label }}</td><td>{% if event.detail_tab == 'app-server' %}<a href="{% url 'fleet:app-server' %}">Open</a>{% else %}<a href="{% url 'fleet:project-tab' project.id event.detail_tab %}">Open</a>{% endif %}</td></tr>{% endfor %}
   </tbody></table></div>{% else %}<p class="dashboard-empty">No controlled changes reported yet. The first work snapshot establishes a baseline without inventing lifecycle history.</p>{% endif %}
-  {% if history_page and history_page.paginator.num_pages > 1 %}
-  <nav class="table-pagination" aria-label="History table pages">
-    {% if history_previous_page_url %}<a href="{{ history_previous_page_url }}" rel="prev">Previous</a>{% else %}<span aria-disabled="true">Previous</span>{% endif %}
-    {% for link in history_page_links %}
-      {% if link.ellipsis %}<span aria-hidden="true">…</span>{% elif link.current %}<span aria-current="page">{{ link.number }}</span>{% else %}<a href="{{ link.url }}">{{ link.number }}</a>{% endif %}
-    {% endfor %}
-    {% if history_next_page_url %}<a href="{{ history_next_page_url }}" rel="next">Next</a>{% else %}<span aria-disabled="true">Next</span>{% endif %}
-  </nav>
-  {% endif %}
+  {% include "fleet/includes/table_pagination.html" with page=history_page links=history_page_links previous_url=history_previous_page_url next_url=history_next_page_url label="History table pages" position="bottom" %}
 </section>
 {% elif tab == 'outcomes' %}
 <section class="dashboard-panel"><h2>Outcome Reconciliation</h2><p>{{ project.current_state.open_outcome_count|default:0 }} open and {{ project.current_state.unreconciled_outcome_count|default:0 }} unreconciled outcome loops.</p><p class="dashboard-note">See Work for each artifact’s outcome lifecycle, disposition, and reconciliation state.</p></section>

@@ -1,0 +1,9 @@
+{% if page and page.paginator.num_pages > 1 %}
+<nav class="table-pagination table-pagination-{{ position }}" aria-label="{{ label }} ({{ position }})">
+  {% if previous_url %}<a href="{{ previous_url }}" rel="prev">Previous</a>{% else %}<span aria-disabled="true">Previous</span>{% endif %}
+  {% for link in links %}
+    {% if link.ellipsis %}<span aria-hidden="true">…</span>{% elif link.current %}<span aria-current="page">{{ link.number }}</span>{% else %}<a href="{{ link.url }}">{{ link.number }}</a>{% endif %}
+  {% endfor %}
+  {% if next_url %}<a href="{{ next_url }}" rel="next">Next</a>{% else %}<span aria-disabled="true">Next</span>{% endif %}
+</nav>
+{% endif %}

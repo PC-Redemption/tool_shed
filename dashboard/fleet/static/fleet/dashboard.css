@@ -68,7 +68,7 @@
 .work-filters button { background: #1d665c; cursor: pointer; }
 .work-filters a { padding-bottom: .55rem; }
 .work-result-summary { display: flex; justify-content: space-between; gap: 1rem; margin: -.25rem 0 .75rem; color: var(--dashboard-muted); font-size: .82rem; }
-.table-pagination { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: .35rem; margin-top: 1rem; }
+.table-pagination { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: .35rem; margin: 1rem 0; }
 .table-pagination a, .table-pagination span { min-width: 2.2rem; box-sizing: border-box; padding: .45rem .6rem; border: 1px solid var(--dashboard-border); border-radius: .4rem; text-align: center; text-decoration: none; }
 .table-pagination span[aria-current="page"] { color: #07111f; background: var(--dashboard-accent); border-color: var(--dashboard-accent); font-weight: 800; }
 .table-pagination span[aria-disabled="true"] { color: #66758b; }
