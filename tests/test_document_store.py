@@ -10,6 +10,7 @@ import tempfile
 import unittest
 import uuid
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -126,9 +127,18 @@ class DocumentStoreThinSliceTests(unittest.TestCase):
         )
         self.assertTrue(checkpoint["objects"])
         rebuilt_path = Path(".tool-shed/rebuilt-v2.sqlite3")
-        rebuilt = document_store.rebuild(
-            self.workspace, project_binding=self.binding, checkpoint=Path(checkpoint["path"]), output=rebuilt_path,
-        )
+        trusted_schema_during_create: list[int] = []
+        create_schema = hybrid_state.create_schema
+
+        def observe_trusted_schema(connection: sqlite3.Connection, *, include_triggers: bool = True) -> None:
+            trusted_schema_during_create.append(int(connection.execute("PRAGMA trusted_schema").fetchone()[0]))
+            create_schema(connection, include_triggers=include_triggers)
+
+        with mock.patch.object(hybrid_state, "create_schema", side_effect=observe_trusted_schema):
+            rebuilt = document_store.rebuild(
+                self.workspace, project_binding=self.binding, checkpoint=Path(checkpoint["path"]), output=rebuilt_path,
+            )
+        self.assertEqual(trusted_schema_during_create, [1])
         self.assertEqual(rebuilt["domain_digest"], document_store.audit(self.workspace, self.database)["domain_digest"])
         self.assertEqual(document_store.show(self.workspace, idea["visible_id"], database=self.workspace / rebuilt_path)["body_markdown"], shown["body_markdown"])
 

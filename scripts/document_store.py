@@ -1187,6 +1187,13 @@ def rebuild(workspace: Path, *, project_binding: str, checkpoint: Path, output: 
     try:
         connection = sqlite3.connect(temporary, isolation_level=None)
         hybrid_state.configure(connection)
+        # Early Python 3.11 Windows builds bundle SQLite versions whose JSON
+        # functions are not yet tagged SQLITE_INNOCUOUS.  Those versions reject
+        # our json_valid() CHECK constraints while trusted_schema is off.  This
+        # database is new, its checkpoint is digest-verified above, and its
+        # schema comes only from the current code, so trust only the bounded
+        # rebuild transaction and restore the hardened setting before audit.
+        connection.execute("PRAGMA trusted_schema=ON")
         connection.execute("PRAGMA foreign_keys=OFF")
         connection.execute("BEGIN IMMEDIATE")
         hybrid_state.create_schema(connection, include_triggers=False)
@@ -1221,6 +1228,7 @@ def rebuild(workspace: Path, *, project_binding: str, checkpoint: Path, output: 
         connection.execute("UPDATE state_meta SET source_digest=?, schema_trigger_digest=? WHERE id=1", (domain_digest(connection), hybrid_state.schema_digest(connection)))
         connection.execute("PRAGMA user_version=2")
         connection.commit()
+        connection.execute("PRAGMA trusted_schema=OFF")
         connection.execute("PRAGMA foreign_keys=ON")
         if list(connection.execute("PRAGMA foreign_key_check")):
             raise DocumentStoreError("rebuilt checkpoint has foreign-key violations")
