@@ -1,4 +1,32 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const viewerTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const localDateTime = new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: viewerTimeZone,
+  });
+  const localDate = new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeZone: viewerTimeZone,
+  });
+  const localClock = new Intl.DateTimeFormat(undefined, {
+    timeStyle: "short",
+    timeZone: viewerTimeZone,
+  });
+  document.querySelectorAll("time[data-local-time]").forEach((element) => {
+    const instant = new Date(element.dateTime);
+    if (Number.isNaN(instant.getTime())) return;
+    const datePart = element.querySelector("[data-local-date]");
+    const clockPart = element.querySelector("[data-local-clock]");
+    if (datePart && clockPart) {
+      datePart.textContent = localDate.format(instant);
+      clockPart.textContent = localClock.format(instant);
+    } else {
+      element.textContent = localDateTime.format(instant);
+    }
+    element.title = `${localDateTime.format(instant)} (${viewerTimeZone || "browser local time"})`;
+  });
+
   document.querySelectorAll("[data-auto-submit]").forEach((control) => {
     control.addEventListener("change", () => {
       if (!control.form) return;

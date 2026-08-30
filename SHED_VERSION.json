@@ -12,7 +12,7 @@
     "adapters/codex-app-server-config.json": "d79964bc2371a39d50b7bcad534af133564e55bbf491baf4f3031b36e01b7e49",
     "adapters/codex-app-server-qualifications.json": "995ccd3bea135448b316045ea240c10d272f4c7e2ff65085111e0380cef947c1",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "14521e275593792f2b68dbcbd8bd3989748d7fab7fca7c8d3bd76f3f0444a302",
+    "adapters/codex-skill-releases.json": "ddf95a139495fcd3f82967a4261c8e23085de4dd729e94d76e17327390cc9fe8",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "a16e9afbc2733b2c01b113df3f3a07fda1630b80b5a97476896123ee03bc22d2",
     "dashboard/Dockerfile": "8e9ff084f409aa81ab92b9dcbe8d9bab2416225551c837681653cab7b66786ad",
@@ -43,17 +43,17 @@
     "dashboard/fleet/models.py": "0c9ed2ba8c958d1f8d0cbdcc0baf02b9211b555bb90218eaf293ca12d58f9002",
     "dashboard/fleet/services.py": "4bc28b17dd3ce6d96b804ae93b31dc212aaf1bd5b2ee95edd6c665e3c218da1a",
     "dashboard/fleet/static/fleet/dashboard.css": "bb6db89cc9b255ba6453e8060893324256122c876d263c6de6e46db6db215b48",
-    "dashboard/fleet/static/fleet/dashboard.js": "7352eeed2e64ba0af047a933f2c027ea062c214c0e78bd6c63f1829cb8f8294a",
+    "dashboard/fleet/static/fleet/dashboard.js": "1bed6a2d621664975e1bff4af6f202961a7df791c33f96fbc10d642904910639",
     "dashboard/fleet/urls.py": "f4ebd548554589b4e5fcba8d8f85446ebce9c74ee771bfa7f52237ce1c88bea1",
     "dashboard/fleet/views.py": "cdec48c7f791a3c9ce4e8952c4f46f400844400fe7e4ef31648ae02105610f13",
     "dashboard/manage.py": "ff58b8b875751efba447b1db2988ba24a8f78799ed60c9a47e143af431def104",
-    "dashboard/templates/fleet/app_server.html": "0715b7573c1a7d240a2d449d8abbb5e1fef59f7c09c69dc49c9e9301444867fc",
+    "dashboard/templates/fleet/app_server.html": "b0927fec22a70aa2bfaa846191613ff97ed169b7d57018f7b30a40435464ae4e",
     "dashboard/templates/fleet/base.html": "29ae083db2211539799cef2100a994df8c263c9c67f296ed8ff95bbfde806d6b",
-    "dashboard/templates/fleet/enrollments.html": "3b9ca9cc308485bfb70667f08ea542db26c7026b1e0d70fd52f4138e9f19ddf1",
+    "dashboard/templates/fleet/enrollments.html": "d4cb14cd8339957228ccd0de00410be0a74b01788ad12b3c119f0f9243caa6e6",
     "dashboard/templates/fleet/includes/table_pagination.html": "6f85bfb263c4217d67918171c0254532307426f7b8b379ec27e4cd59df1ab783",
-    "dashboard/templates/fleet/overview.html": "b29037b616d1ca30456de9f3e20d6eb4ce56f8632319146a9a65e394c7d92d8d",
-    "dashboard/templates/fleet/project.html": "a95cdc0ce4cd08596e4bb8aba7f3041bf998d591d4cb42b5a15da99ac9675e60",
-    "dashboard/templates/fleet/work_efficiency.html": "30764417380a34d34758fc08fa95c8e7e287529b29118a22ef1e4234e737f0cd",
+    "dashboard/templates/fleet/overview.html": "2881a550f20fb9a91ca1abc16a4325f73605f5ee946698b3fcbfb6bbf2a9b4e6",
+    "dashboard/templates/fleet/project.html": "a64b12d7fc002252131e84a11439bf9f9c712e173f5d222ee76e49923589eb1a",
+    "dashboard/templates/fleet/work_efficiency.html": "8c4d0bfae660e84005592fa9650429d8a79ddc8298c90c3141efb8cfc271615a",
     "dashboard/templates/registration/login.html": "faaa980ea853b67f5c5bc8f642c0a686039ae84745f9ce5d13a999ace325208d",
     "docs/codex-app-server-alpha-requalification-2026-08-24.md": "be240e9b4b63db13689c69c9fec9a870627fc39a85d5176ee4c6ce6ad256721c",
     "docs/codex-app-server-camp-token-baseline-2026-08-20.md": "5148859c74dc0b79a7f3dd1b86b8085f03091a3268bf95dfe769337fe3fdccc9",
@@ -239,34 +239,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Keep scheduled dashboard reporters fresh and preserve pending report convergence",
-  "release_commit": "05e7a5ca5055af9cfeb5911c1ff999c908a2468e",
-  "release_qualification": {
-    "attested_at": "2026-08-30T22:41:20Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "81bbb1df280b8c04875d5ee96edd1c597bc74d4ce8b82a19fc01a9a619f866e5"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "05e7a5ca5055af9cfeb5911c1ff999c908a2468e"
-  },
-  "release_tag": "v0.41.2",
-  "released_at": "2026-08-30T22:41:20Z",
-  "shed_version": "0.41.2",
+  "notes": "Render dashboard timestamps explicitly in each viewer browser timezone.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.41.3",
+  "released_at": null,
+  "shed_version": "0.41.3",
   "updated_at": "2026-08-30",
   "updater_mutation_paths": [
     {

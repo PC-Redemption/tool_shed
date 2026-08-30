@@ -4,7 +4,7 @@
 <section class="project-summary-bar" aria-label="Project summary">
   <div class="project-summary-name"><span class="eyebrow">Project</span><h1>{{ project.name }}</h1></div>
   <span class="state-badge state-{{ project.effective_attention_state }}">{{ project.effective_attention_state }}</span>
-  <span class="project-last-report">Last report <strong>{{ project.last_seen|date:"M j, Y · g:i A"|default:"Never" }}</strong></span>
+  <span class="project-last-report">Last report <strong>{% if project.last_seen %}<time datetime="{{ project.last_seen|date:'c' }}" data-local-time>{{ project.last_seen|date:"M j, Y · g:i A" }}</time>{% else %}Never{% endif %}</strong></span>
   <dl class="project-summary-counts">
     <div class="project-metric metric-working{% if project.current_state.working_count %} has-value{% endif %}"><dt>Working</dt><dd>{{ project.current_state.working_count|default:0 }}</dd></div>
     <div class="project-metric metric-blocked{% if project.current_state.blocked_count %} has-value{% endif %}"><dt>Blocked</dt><dd>{{ project.current_state.blocked_count|default:0 }}</dd></div>
@@ -28,7 +28,7 @@
     {% for item in attention_items %}
     <article class="attention-item state-{{ item.severity }}">
       <div class="attention-main"><span class="state-badge state-{{ item.severity }}">{{ item.severity }}</span><div><h3>{{ item.title }}</h3><p>{{ item.description }}</p><small>Instance {{ item.instance.external_id }}</small></div></div>
-      <dl><div><dt>Since</dt><dd>{{ item.first_seen }}</dd></div><div><dt>Last report</dt><dd>{{ item.last_seen|default:"Never" }}</dd></div>{% if item.count > 1 %}<div><dt>Count</dt><dd>{{ item.count }}</dd></div>{% endif %}</dl>
+      <dl><div><dt>Since</dt><dd><time datetime="{{ item.first_seen|date:'c' }}" data-local-time>{{ item.first_seen|date:"M j, Y · g:i A" }}</time></dd></div><div><dt>Last report</dt><dd>{% if item.last_seen %}<time datetime="{{ item.last_seen|date:'c' }}" data-local-time>{{ item.last_seen|date:"M j, Y · g:i A" }}</time>{% else %}Never{% endif %}</dd></div>{% if item.count > 1 %}<div><dt>Count</dt><dd>{{ item.count }}</dd></div>{% endif %}</dl>
       <div class="attention-actions">{% if item.detail_tab == 'app-server' %}<a href="{% url 'fleet:app-server' %}">View details</a>{% else %}<a href="{% url 'fleet:project-tab' project.id item.detail_tab %}">View details</a>{% endif %}<span>Investigate locally: <code>{{ item.route }}</code></span></div>
     </article>
     {% endfor %}
@@ -170,7 +170,7 @@
   <section class="instance-snapshot">
     <div class="instance-heading">
       <h3>{{ group.instance.external_id }}</h3><span>{{ group.instance.platform }} · client {{ group.instance.client_version }}</span>
-      <span class="snapshot-meta">Observed {{ group.instance.work_inventory_observed_at|date:"M j, Y · g:i A"|default:"Never" }} · {{ group.instance.work_inventory_total }} total{% if group.instance.work_inventory_truncated %} · partial snapshot{% endif %}</span>
+      <span class="snapshot-meta">Observed {% if group.instance.work_inventory_observed_at %}<time datetime="{{ group.instance.work_inventory_observed_at|date:'c' }}" data-local-time>{{ group.instance.work_inventory_observed_at|date:"M j, Y · g:i A" }}</time>{% else %}Never{% endif %} · {{ group.instance.work_inventory_total }} total{% if group.instance.work_inventory_truncated %} · partial snapshot{% endif %}</span>
     </div>
     {% if group.artifacts %}
     <div class="table-scroll"><table class="work-table{% if selected_order == 'planned' %} planning-enabled{% endif %} has-release-stage"><thead><tr><th>Artifact</th>{% if selected_order == 'planned' %}<th>Plan</th>{% endif %}<th>Document</th><th>Release</th><th>Outcome</th><th>Reconciliation</th><th>Relationships</th><th>Updated</th></tr></thead><tbody>
@@ -182,7 +182,7 @@
         <td>{% if artifact.outcome_lifecycle == 'unknown' and artifact.outcome_disposition == 'unknown' %}<span class="table-state table-state-unknown">Unknown</span>{% else %}<span class="table-state table-state-{{ artifact.outcome_lifecycle }}">{{ artifact.outcome_lifecycle|capfirst }}</span>{% if artifact.outcome_disposition != artifact.outcome_lifecycle %}<small class="cell-detail">{% if artifact.outcome_disposition == 'satisfied-with-approved-change' %}Approved change{% else %}{{ artifact.outcome_disposition|capfirst }}{% endif %}</small>{% endif %}{% endif %}</td>
         <td>{% if artifact.reconciliation_state == 'unknown' %}<span class="table-state table-state-unknown">Unknown</span>{% else %}<span class="table-state table-state-{{ artifact.reconciliation_state }}">{{ artifact.reconciliation_state|capfirst }}</span>{% endif %}</td>
         <td>{% if artifact.parent_ids %}<small>Parent: {{ artifact.parent_ids|join:", " }}</small>{% endif %}{% if artifact.produces_ids %}<small>Produces: {{ artifact.produces_ids|join:", " }}</small>{% endif %}{% if not artifact.parent_ids and not artifact.produces_ids %}<span class="dashboard-note">—</span>{% endif %}</td>
-        <td class="compact-date">{{ artifact.source_updated_at|date:"M j, Y" }}<small>{{ artifact.source_updated_at|date:"g:i A" }}</small></td>
+        <td class="compact-date"><time datetime="{{ artifact.source_updated_at|date:'c' }}" data-local-time><span data-local-date>{{ artifact.source_updated_at|date:"M j, Y" }}</span><small data-local-clock>{{ artifact.source_updated_at|date:"g:i A" }}</small></time></td>
       </tr>{% endfor %}
     </tbody></table></div>
     {% else %}<p class="dashboard-empty">{% if group.instance.report_schema_version < 2 %}This instance has not reported lifecycle inventory yet.{% else %}No artifacts match this view.{% endif %}</p>{% endif %}
@@ -211,7 +211,7 @@
   </div>
   </div>
   {% if history %}<div class="table-scroll"><table><thead><tr><th>When</th><th>Kind</th><th>Change</th><th>Source instance</th><th>Details</th></tr></thead><tbody>
-    {% for event in history %}<tr data-change-at="{{ event.occurred_at|date:'c' }}"><td class="compact-date">{{ event.occurred_at|date:"M j, Y" }}<small>{{ event.occurred_at|date:"g:i A" }}</small> <span class="new-change-badge" hidden>New</span></td><td>{{ event.kind }}</td><th>{{ event.title }}<small>{{ event.summary }}</small></th><td>{{ event.source_label }}</td><td>{% if event.detail_tab == 'app-server' %}<a href="{% url 'fleet:app-server' %}">Open</a>{% else %}<a href="{% url 'fleet:project-tab' project.id event.detail_tab %}">Open</a>{% endif %}</td></tr>{% endfor %}
+    {% for event in history %}<tr data-change-at="{{ event.occurred_at|date:'c' }}"><td class="compact-date"><time datetime="{{ event.occurred_at|date:'c' }}" data-local-time><span data-local-date>{{ event.occurred_at|date:"M j, Y" }}</span><small data-local-clock>{{ event.occurred_at|date:"g:i A" }}</small></time> <span class="new-change-badge" hidden>New</span></td><td>{{ event.kind }}</td><th>{{ event.title }}<small>{{ event.summary }}</small></th><td>{{ event.source_label }}</td><td>{% if event.detail_tab == 'app-server' %}<a href="{% url 'fleet:app-server' %}">Open</a>{% else %}<a href="{% url 'fleet:project-tab' project.id event.detail_tab %}">Open</a>{% endif %}</td></tr>{% endfor %}
   </tbody></table></div>{% else %}<p class="dashboard-empty">No controlled changes reported yet. The first work snapshot establishes a baseline without inventing lifecycle history.</p>{% endif %}
   {% include "fleet/includes/table_pagination.html" with page=history_page links=history_page_links previous_url=history_previous_page_url next_url=history_next_page_url label="History table pages" position="bottom" %}
 </section>

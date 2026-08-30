@@ -21,7 +21,7 @@
         <span class="state-badge state-{{ item.severity }}">{{ item.severity }}</span>
         <div><h3>{{ item.title }}</h3><p>{{ item.description }}</p><small>{{ item.project.name }} · instance {{ item.instance.external_id }}</small></div>
       </div>
-      <dl><div><dt>Since</dt><dd>{{ item.first_seen }}</dd></div><div><dt>Last report</dt><dd>{{ item.last_seen|default:"Never" }}</dd></div>{% if item.count > 1 %}<div><dt>Count</dt><dd>{{ item.count }}</dd></div>{% endif %}</dl>
+      <dl><div><dt>Since</dt><dd><time datetime="{{ item.first_seen|date:'c' }}" data-local-time>{{ item.first_seen|date:"M j, Y · g:i A" }}</time></dd></div><div><dt>Last report</dt><dd>{% if item.last_seen %}<time datetime="{{ item.last_seen|date:'c' }}" data-local-time>{{ item.last_seen|date:"M j, Y · g:i A" }}</time>{% else %}Never{% endif %}</dd></div>{% if item.count > 1 %}<div><dt>Count</dt><dd>{{ item.count }}</dd></div>{% endif %}</dl>
       <div class="attention-actions">
         {% if item.detail_tab == 'app-server' %}<a href="{% url 'fleet:app-server' %}">View details</a>{% else %}<a href="{% url 'fleet:project-tab' item.project.id item.detail_tab %}">View details</a>{% endif %}
         <span>Investigate locally: <code>{{ item.route }}</code></span>
@@ -54,7 +54,7 @@
     <tbody>{% for project in projects %}<tr>
       <th><a href="{% url 'fleet:project' project.id %}">{{ project.name }}</a></th>
       <td><span class="state-badge state-{{ project.effective_attention_state }}">{{ project.effective_attention_state }}</span>{% if project.dashboard_attention %}<small>{{ project.dashboard_attention|length }} reason{{ project.dashboard_attention|length|pluralize }}</small>{% endif %}</td>
-      <td>{{ project.instances.count }}{% for instance in project.instances.all %}{% if forloop.first %}<small>{{ instance.client_version }} · {{ instance.platform }}</small>{% endif %}{% endfor %}</td><td>{{ project.last_activity_at|default:project.last_seen|default:"Never" }}</td>
+      <td>{{ project.instances.count }}{% for instance in project.instances.all %}{% if forloop.first %}<small>{{ instance.client_version }} · {{ instance.platform }}</small>{% endif %}{% endfor %}</td><td>{% if project.last_activity_at %}<time datetime="{{ project.last_activity_at|date:'c' }}" data-local-time>{{ project.last_activity_at|date:"M j, Y · g:i A" }}</time>{% elif project.last_seen %}<time datetime="{{ project.last_seen|date:'c' }}" data-local-time>{{ project.last_seen|date:"M j, Y · g:i A" }}</time>{% else %}Never{% endif %}</td>
       <td>{% if project.current_state.open_outcome_count == None %}Unknown{% else %}{{ project.current_state.open_outcome_count }}{% endif %}</td>
       <td>{% if project.dashboard_match %}<a href="{% url 'fleet:project-tab' project.id 'work' %}?q={{ selected_query|urlencode }}"><span class="artifact-id">{{ project.dashboard_match.visible_id }}</span></a><small>{{ project.dashboard_match.title }}</small>{% elif selected_query or selected_type or selected_lifecycle %}<span class="dashboard-note">Project or client match</span>{% else %}—{% endif %}</td>
     </tr>{% empty %}<tr><td colspan="6">No projects match this view.</td></tr>{% endfor %}</tbody>

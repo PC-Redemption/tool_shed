@@ -6,7 +6,7 @@
   <div class="table-scroll"><table>
     <thead><tr><th>Code</th><th>Project</th><th>Instance</th><th>Platform</th><th>Expires</th><th>Decision</th></tr></thead>
     <tbody>{% for enrollment in pending_enrollments %}<tr>
-      <th><code>{{ enrollment.user_code }}</code></th><td>{{ enrollment.project_name }}</td><td>{{ enrollment.instance_external_id }}</td><td>{{ enrollment.platform }}</td><td>{{ enrollment.expires_at }}</td>
+      <th><code>{{ enrollment.user_code }}</code></th><td>{{ enrollment.project_name }}</td><td>{{ enrollment.instance_external_id }}</td><td>{{ enrollment.platform }}</td><td><time datetime="{{ enrollment.expires_at|date:'c' }}" data-local-time>{{ enrollment.expires_at|date:"M j, Y · g:i A" }}</time></td>
       <td><form class="decision-form" action="{% url 'fleet:enrollment-decision-ui' enrollment.id %}" method="post">{% csrf_token %}<button name="decision" value="approve" type="submit">Approve</button><button class="secondary" name="decision" value="reject" type="submit">Reject</button></form></td>
     </tr>{% empty %}<tr><td colspan="6">No pending enrollment requests.</td></tr>{% endfor %}</tbody>
   </table></div>

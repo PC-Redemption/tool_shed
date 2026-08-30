@@ -834,6 +834,10 @@ class DashboardApplicationTests(TestCase):
         self.assertNotContains(by_identifier, "Beta</a></th>")
         self.assertContains(by_identifier, "IDEA-0015")
         self.assertContains(by_identifier, "filters affect presentation only")
+        self.assertRegex(
+            by_identifier.content.decode(),
+            r'<time datetime="[^"]+(?:Z|\+00:00)" data-local-time>',
+        )
 
         by_filters = self.client.get(
             reverse("fleet:overview"),
@@ -1297,6 +1301,10 @@ class DashboardApplicationTests(TestCase):
         self.assertIn("never affects active attention", script)
         self.assertIn('document.querySelectorAll("[data-auto-submit]")', script)
         self.assertIn("control.form.requestSubmit()", script)
+        self.assertIn('document.querySelectorAll("time[data-local-time]")', script)
+        self.assertIn("const viewerTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone", script)
+        self.assertEqual(script.count("timeZone: viewerTimeZone"), 3)
+        self.assertIn("localDateTime.format(instant)", script)
 
     def test_contract_rejects_uncontrolled_summary_and_non_boolean_flags(self) -> None:
         payload = self.report_payload()
