@@ -1,8 +1,8 @@
 {
   "envelope": {
-    "created_at": "2026-08-30T12:30:35Z",
-    "database_revision": 733,
-    "digest": "f5b1dabda0a7534eaf5d9235870c2eaff55f5eb0f39b24f051689ddf7f05f7ff",
+    "created_at": "2026-08-30T12:44:01Z",
+    "database_revision": 734,
+    "digest": "032afcbe64d280fd1b8693a0b71813a236fc780f144c6956ff8195db66c51321",
     "hybrid_schema": 2,
     "objects": [
       "work/state/objects/sha256/00/0082fd1d60de8f37c6d2972dac5637d8c894d2c8f1124c5061aeb74ba0c18b75",
@@ -22772,6 +22772,16 @@
         "revision": 112
       },
       {
+        "entity_id": "1220adf5-27d2-4f0e-b1ec-a8298442dc2f",
+        "entity_type": "relationship",
+        "id": "04a1abbc-c72b-4d9f-9ae9-009a171373c4",
+        "kind": "structural-insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734
+      },
+      {
         "entity_id": "edefbe6c-eeeb-498a-830a-af2341505333",
         "entity_type": "outcome_verdict",
         "id": "04bc80b9-4795-48e0-abf8-a6b567c2a775",
@@ -23590,6 +23600,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
         "recorded_at": "2026-08-29T01:27:29Z",
         "revision": 77
+      },
+      {
+        "entity_id": "55792ee6-c70f-5e59-893b-2e3b535604c2",
+        "entity_type": "requirement",
+        "id": "097ef05c-8335-4d33-8699-1fe8a187b646",
+        "kind": "structural-insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734
       },
       {
         "entity_id": "5bf4b380-c134-5f06-9596-f98eca72c6a4",
@@ -24630,6 +24650,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
         "recorded_at": "2026-08-30T11:38:51Z",
         "revision": 711
+      },
+      {
+        "entity_id": "7c575bd1-3e33-5fbe-ae67-f8d32faeb9ce",
+        "entity_type": "requirement",
+        "id": "107e7a67-9978-4da0-93bc-7d0a5669054f",
+        "kind": "structural-insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734
       },
       {
         "entity_id": "a5a9b755-5711-4c0f-aa4e-f3f15961d288",
@@ -28662,6 +28692,16 @@
         "revision": 34
       },
       {
+        "entity_id": "5d6da68f-8ae6-5f28-9fba-365bd330d2de",
+        "entity_type": "verification_result",
+        "id": "2745d450-1a85-4ee9-a645-afa464d628be",
+        "kind": "structural-insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734
+      },
+      {
         "entity_id": "0b331598-6356-5c30-b45f-f7ec29d7d323",
         "entity_type": "verification_result",
         "id": "275b4f21-614e-4404-98e8-0e055df566d9",
@@ -31432,6 +31472,16 @@
         "revision": 709
       },
       {
+        "entity_id": "5bc65fa9-f81c-45d1-abe4-7e7bda5d37d4",
+        "entity_type": "relationship",
+        "id": "36f5183b-baef-4a7c-a6d2-b9b91ef115bd",
+        "kind": "structural-insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734
+      },
+      {
         "entity_id": "WP",
         "entity_type": "document_namespace",
         "id": "36f79b68-aa94-4821-88e6-3b158ef877bf",
@@ -31800,6 +31850,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
         "recorded_at": "2026-08-29T19:15:38Z",
         "revision": 578
+      },
+      {
+        "entity_id": "4f7a8008-f6e8-5138-ad63-5ca2f43b3ba9",
+        "entity_type": "evidence_reference",
+        "id": "39365393-fa5e-479e-99de-836f43cad2e0",
+        "kind": "structural-insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734
       },
       {
         "entity_id": "89cbdbcf-9f58-4055-adc7-0daad13c6831",
@@ -36032,6 +36092,16 @@
         "revision": 293
       },
       {
+        "entity_id": "e6063bb9-5733-52be-8bc5-b4dad48cb2ae",
+        "entity_type": "verification_result",
+        "id": "52592832-8757-4cdb-a0c2-22da8d05ef58",
+        "kind": "structural-insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734
+      },
+      {
         "entity_id": "0f88e2fe-36b0-48ea-8039-67cfe25caf4e",
         "entity_type": "relationship",
         "id": "525cce16-0e13-4bb5-a120-ee9571f7f57c",
@@ -38090,6 +38160,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"relationship\"}",
         "recorded_at": "2026-08-29T16:52:22Z",
         "revision": 512
+      },
+      {
+        "entity_id": "cc5c7676-c445-4a76-8ee4-2ae51730d471",
+        "entity_type": "relationship",
+        "id": "5cc06f85-cb92-4255-a515-9bda08ea9cc2",
+        "kind": "structural-insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734
       },
       {
         "entity_id": "0de82d79-5bdd-4ecb-a7d3-94978946930c",
@@ -44872,6 +44952,16 @@
         "revision": 574
       },
       {
+        "entity_id": "c3edcb0f-7139-598d-9033-174f0efdbe95",
+        "entity_type": "evidence_reference",
+        "id": "84b2bd8b-1a2c-4bd6-aa51-0f57ee4a376c",
+        "kind": "structural-insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734
+      },
+      {
         "entity_id": "3c358183-e48c-4666-a2fc-c8e702238207",
         "entity_type": "document",
         "id": "84b616f0-dab4-4959-8718-5e07ecf4311b",
@@ -48070,6 +48160,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"verification_result\"}",
         "recorded_at": "2026-08-28T18:54:04Z",
         "revision": 18
+      },
+      {
+        "entity_id": "cbe26f3a-c5f7-4c46-8199-a00511df5482",
+        "entity_type": "relationship",
+        "id": "97c6e020-b2b2-4956-a60d-6187383a93e3",
+        "kind": "structural-insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734
       },
       {
         "entity_id": "3f86c7c0-a6b1-4bbf-81d0-9371d6bba6eb",
@@ -53192,6 +53292,16 @@
         "revision": 260
       },
       {
+        "entity_id": "58c6b578-eb36-5cf3-a561-693ed3771451",
+        "entity_type": "verification_result",
+        "id": "b4f92169-1926-4e9a-a7a6-b85114737660",
+        "kind": "structural-insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734
+      },
+      {
         "entity_id": "6e97f995-6b7d-40d3-9cf7-9390d67a5d90",
         "entity_type": "document_revision",
         "id": "b522008a-6190-4368-81c9-d679707a9053",
@@ -53472,6 +53582,16 @@
         "revision": 205
       },
       {
+        "entity_id": "fef60b73-40f5-522a-882b-dee840f818af",
+        "entity_type": "requirement",
+        "id": "b6b9821b-841b-4820-af96-a9c5ca7fb253",
+        "kind": "structural-insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734
+      },
+      {
         "entity_id": "16514eee-0773-5d83-87d6-bc9f141a1bfd",
         "entity_type": "verification_result",
         "id": "b6cbdf7d-4121-472e-b1d8-217b84a9928b",
@@ -53540,6 +53660,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
         "recorded_at": "2026-08-29T15:34:44Z",
         "revision": 461
+      },
+      {
+        "entity_id": "ff55df8d-a975-557b-bf0a-ea79411bb6b3",
+        "entity_type": "requirement",
+        "id": "b7386dc3-d16d-42db-a8e6-2a7c38f4f09d",
+        "kind": "structural-insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734
       },
       {
         "entity_id": "CAMP",
@@ -60822,6 +60952,16 @@
         "revision": 462
       },
       {
+        "entity_id": "e3d2ec00-fef8-54c2-acd1-ccd701a91fd9",
+        "entity_type": "verification_result",
+        "id": "e12a9705-5e99-4d9c-8aa9-4d7934143fd4",
+        "kind": "structural-insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734
+      },
+      {
         "entity_id": "CAMP",
         "entity_type": "document_namespace",
         "id": "e14528c1-fc1b-404d-9b5d-a1f434731640",
@@ -61910,6 +62050,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"document_path_alias\"}",
         "recorded_at": "2026-08-29T01:27:42Z",
         "revision": 285
+      },
+      {
+        "entity_id": "997230c9-1983-5870-b71c-c4f2324c7a1c",
+        "entity_type": "evidence_reference",
+        "id": "e806a07e-cdeb-4148-82ca-38dba5035153",
+        "kind": "structural-insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734
       },
       {
         "entity_id": "74baf2b0-bbd9-4681-b785-78540c1664d7",
@@ -63020,6 +63170,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"document\"}",
         "recorded_at": "2026-08-29T01:27:33Z",
         "revision": 149
+      },
+      {
+        "entity_id": "53ccd66c-2c19-5a6a-92a1-885d84cf88a5",
+        "entity_type": "evidence_reference",
+        "id": "ee429460-8bac-4d17-be2c-9a5dd1e587c3",
+        "kind": "structural-insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734
       },
       {
         "entity_id": "fe890cab-c547-4413-ad55-c80643cd1cc5",
@@ -66198,6 +66358,15 @@
         "target_identity": "8e564535-8500-4af3-b9da-c0edf1c3a685"
       },
       {
+        "collected_at": "2026-08-30T12:44:01Z",
+        "cycle_id": "bfb0adcf-1eab-47ad-bb2e-36a4ce1306f7",
+        "id": "4f7a8008-f6e8-5138-ad63-5ca2f43b3ba9",
+        "kind": "work2-checkpoint",
+        "reference": "git:e25cd2deb7b6c1ad0680c2d94ffb1ed842dba02b",
+        "sha256": null,
+        "target_identity": "e7f114c2-95db-4cd4-89c2-46079829b98b"
+      },
+      {
         "collected_at": "2026-08-28T17:38:29Z",
         "cycle_id": "938c9f98-7a2f-4dd2-b416-132adf126f2c",
         "id": "51028153-badc-4984-9d8e-6910c21921c4",
@@ -66205,6 +66374,15 @@
         "reference": "work/evidence/bootstrap-closure-hybrid-sqlite-operational-state.json",
         "sha256": null,
         "target_identity": "EVID-G1-EFFICIENCY-CONTRACT"
+      },
+      {
+        "collected_at": "2026-08-30T12:44:01Z",
+        "cycle_id": "bfb0adcf-1eab-47ad-bb2e-36a4ce1306f7",
+        "id": "53ccd66c-2c19-5a6a-92a1-885d84cf88a5",
+        "kind": "work2-checkpoint",
+        "reference": "git:e25cd2deb7b6c1ad0680c2d94ffb1ed842dba02b",
+        "sha256": null,
+        "target_identity": "9410835c-d194-43dc-a1ee-f38bab425e82"
       },
       {
         "collected_at": "2026-08-30T01:14:14Z",
@@ -66531,6 +66709,15 @@
         "target_identity": "EVID-G2-EFFICIENCY"
       },
       {
+        "collected_at": "2026-08-30T12:44:01Z",
+        "cycle_id": "bfb0adcf-1eab-47ad-bb2e-36a4ce1306f7",
+        "id": "997230c9-1983-5870-b71c-c4f2324c7a1c",
+        "kind": "work2-checkpoint",
+        "reference": "git:e25cd2deb7b6c1ad0680c2d94ffb1ed842dba02b",
+        "sha256": null,
+        "target_identity": "c3b4d5a2-202f-4712-9245-15692199b058"
+      },
+      {
         "collected_at": "2026-08-29T18:40:28Z",
         "cycle_id": "8e564535-8500-4af3-b9da-c0edf1c3a685",
         "id": "9b237847-a06e-50eb-ab62-8aaf7d1e1159",
@@ -66754,6 +66941,15 @@
         "reference": "work/evidence/evidence-database-owned-collateral-g1-contract.md",
         "sha256": "9f676940048268913af1bc1d0cfcec097b3d0c3822868297ef7c619019dd0291",
         "target_identity": "freeze-database-owned-document-authority-contract"
+      },
+      {
+        "collected_at": "2026-08-30T12:44:01Z",
+        "cycle_id": "bfb0adcf-1eab-47ad-bb2e-36a4ce1306f7",
+        "id": "c3edcb0f-7139-598d-9033-174f0efdbe95",
+        "kind": "work2-checkpoint",
+        "reference": "git:e25cd2deb7b6c1ad0680c2d94ffb1ed842dba02b",
+        "sha256": null,
+        "target_identity": "1e358460-930f-4b5f-b58a-040ebddd42ed"
       },
       {
         "collected_at": "2026-08-29T22:49:26Z",
@@ -73834,6 +74030,17 @@
         "status": "complete"
       },
       {
+        "actor": "release-cohort",
+        "actual_writes": 16,
+        "command": "register-work2-release-candidate",
+        "committed_at": "2026-08-30T12:44:01Z",
+        "expected_writes": null,
+        "id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "revision": 734,
+        "started_at": "2026-08-30T12:44:01Z",
+        "status": "complete"
+      },
+      {
         "actor": "outcome-reconciliation",
         "actual_writes": 9,
         "command": "apply-outcome-loop",
@@ -79311,6 +79518,15 @@
         "to_artifact_id": "bd428dd6-4b17-4ac5-b339-a6666b8c151a"
       },
       {
+        "created_revision": 734,
+        "from_artifact_id": "e59088f2-04b3-43bc-ab5d-7f0833d466ee",
+        "id": "1220adf5-27d2-4f0e-b1ec-a8298442dc2f",
+        "provenance": "release-cohort-v1",
+        "relation_type": "release-candidate-member",
+        "retired_revision": null,
+        "to_artifact_id": "307d2895-0834-46ea-8497-e829531d5951"
+      },
+      {
         "created_revision": 344,
         "from_artifact_id": "b52fede2-2314-42a9-befc-2919844701da",
         "id": "15ca9960-15ca-4d2f-b736-1bdf36253bfc",
@@ -80074,6 +80290,15 @@
         "relation_type": "outcome-result-propagated",
         "retired_revision": null,
         "to_artifact_id": "620ed838-ec6e-47f8-99a7-4e852b7b672f"
+      },
+      {
+        "created_revision": 734,
+        "from_artifact_id": "42c79b05-cc19-4ec7-9eb7-0b8391db8ade",
+        "id": "5bc65fa9-f81c-45d1-abe4-7e7bda5d37d4",
+        "provenance": "release-cohort-v1",
+        "relation_type": "release-candidate-member",
+        "retired_revision": null,
+        "to_artifact_id": "307d2895-0834-46ea-8497-e829531d5951"
       },
       {
         "created_revision": 548,
@@ -81165,6 +81390,15 @@
         "to_artifact_id": "51be4c9c-7933-4e89-bb4b-27870280188e"
       },
       {
+        "created_revision": 734,
+        "from_artifact_id": "7dfe3739-a244-4b57-aa1e-3b763edd0503",
+        "id": "cbe26f3a-c5f7-4c46-8199-a00511df5482",
+        "provenance": "release-cohort-v1",
+        "relation_type": "release-candidate-member",
+        "retired_revision": null,
+        "to_artifact_id": "307d2895-0834-46ea-8497-e829531d5951"
+      },
+      {
         "created_revision": 39,
         "from_artifact_id": "44345c08-9155-4acc-9a0d-235779ef79f3",
         "id": "cc403550-31ec-455f-af4a-c6c35882f26d",
@@ -81181,6 +81415,15 @@
         "relation_type": "outcome-parent",
         "retired_revision": null,
         "to_artifact_id": "6a6cc10d-f519-47b6-9d95-59410413c6fd"
+      },
+      {
+        "created_revision": 734,
+        "from_artifact_id": "b13ad554-a23b-4eac-a148-fc60ce138112",
+        "id": "cc5c7676-c445-4a76-8ee4-2ae51730d471",
+        "provenance": "release-cohort-v1",
+        "relation_type": "release-candidate-member",
+        "retired_revision": null,
+        "to_artifact_id": "307d2895-0834-46ea-8497-e829531d5951"
       },
       {
         "created_revision": 376,
@@ -82325,6 +82568,16 @@
         "origin_artifact_id": "0745114c-e0d2-41d6-9af9-57850d94d94b"
       },
       {
+        "accepted_outcome": "Production-release Work2 outcome: sqlite/documents/MAP-0018",
+        "accepted_revision": 734,
+        "cycle_id": "bfb0adcf-1eab-47ad-bb2e-36a4ce1306f7",
+        "disposition": "awaiting-release",
+        "evidence_gate_key": "work5-production-release",
+        "id": "55792ee6-c70f-5e59-893b-2e3b535604c2",
+        "milestone_key": "work2:e25cd2deb7b6c1ad0680c2d94ffb1ed842dba02b",
+        "origin_artifact_id": "e59088f2-04b3-43bc-ab5d-7f0833d466ee"
+      },
+      {
         "accepted_outcome": "Deterministic commands provide compact list, show, search, context, related, history, render, diff, edit, import, and export behavior without ordinary direct SQL.",
         "accepted_revision": 55,
         "cycle_id": "c56b5826-cb19-4321-8aa3-d16a7f3d425d",
@@ -82633,6 +82886,16 @@
         "id": "7c2587c4-42be-465f-a8c7-da7664d39f94",
         "milestone_key": "M2-SUBSTRATE-HPT2-PROVEN",
         "origin_artifact_id": "65538b72-8a77-4c4d-ba7c-693137779b07"
+      },
+      {
+        "accepted_outcome": "Production-release Work2 outcome: sqlite/documents/IDEA-0013",
+        "accepted_revision": 734,
+        "cycle_id": "bfb0adcf-1eab-47ad-bb2e-36a4ce1306f7",
+        "disposition": "awaiting-release",
+        "evidence_gate_key": "work5-production-release",
+        "id": "7c575bd1-3e33-5fbe-ae67-f8d32faeb9ce",
+        "milestone_key": "work2:e25cd2deb7b6c1ad0680c2d94ffb1ed842dba02b",
+        "origin_artifact_id": "7dfe3739-a244-4b57-aa1e-3b763edd0503"
       },
       {
         "accepted_outcome": "G1-CONTRACT-DESIGN-FROZEN pass criteria are evidenced and the outcome loop records any approved scope changes.",
@@ -83435,6 +83698,26 @@
         "origin_artifact_id": "0430a189-95cf-4bfe-b466-c9c79b994b15"
       },
       {
+        "accepted_outcome": "Production-release Work2 outcome: sqlite/documents/CAMP-0137",
+        "accepted_revision": 734,
+        "cycle_id": "bfb0adcf-1eab-47ad-bb2e-36a4ce1306f7",
+        "disposition": "awaiting-release",
+        "evidence_gate_key": "work5-production-release",
+        "id": "fef60b73-40f5-522a-882b-dee840f818af",
+        "milestone_key": "work2:e25cd2deb7b6c1ad0680c2d94ffb1ed842dba02b",
+        "origin_artifact_id": "b13ad554-a23b-4eac-a148-fc60ce138112"
+      },
+      {
+        "accepted_outcome": "Production-release Work2 outcome: sqlite/documents/PRM-0029",
+        "accepted_revision": 734,
+        "cycle_id": "bfb0adcf-1eab-47ad-bb2e-36a4ce1306f7",
+        "disposition": "awaiting-release",
+        "evidence_gate_key": "work5-production-release",
+        "id": "ff55df8d-a975-557b-bf0a-ea79411bb6b3",
+        "milestone_key": "work2:e25cd2deb7b6c1ad0680c2d94ffb1ed842dba02b",
+        "origin_artifact_id": "42c79b05-cc19-4ec7-9eb7-0b8391db8ade"
+      },
+      {
         "accepted_outcome": "Qualify a stable corpus and risk-matched CI policy.",
         "accepted_revision": 483,
         "cycle_id": "bb538e5a-f820-4ad0-aebb-a39f51b8a006",
@@ -84215,6 +84498,17 @@
         "revision": 319,
         "row_id": "836cefe1-2825-4604-9498-7d4c7a3fb07a",
         "table_name": "document_revision"
+      },
+      {
+        "id": "04147122-a0a4-40a4-830e-239e3fca9d0e",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_digest": "f351ddf18d3b930c827a71c3cd3a615eee6adbfd09aa1f3b3fd307ad29a3545d",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734,
+        "row_id": "ff55df8d-a975-557b-bf0a-ea79411bb6b3",
+        "table_name": "requirement"
       },
       {
         "id": "041b11d5-90f1-48a4-9a48-94c1bb5bc315",
@@ -89574,6 +89868,17 @@
         "table_name": "requirement"
       },
       {
+        "id": "1e18af5f-1841-41b5-8dde-75cbea9df716",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_digest": "10feaa932110517b91e0ef5b178a24042cacfcbae5f5fef59d01c336979b9af3",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734,
+        "row_id": "e6063bb9-5733-52be-8bc5-b4dad48cb2ae",
+        "table_name": "verification_result"
+      },
+      {
         "id": "1e25732e-3b9d-4623-8665-a993cfcb07a3",
         "managed": 1,
         "operation": "update",
@@ -94038,6 +94343,17 @@
         "revision": 46,
         "row_id": "e63597dd-dbf1-4700-a87c-2d603b956af5",
         "table_name": "verification_result"
+      },
+      {
+        "id": "36a8f9c8-09c6-4d9d-b550-2d88fbf538e5",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_digest": "a1f58363d118f5ab0c962e5e48582f92cee03065f9e7e28b81ea3a26c980072c",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734,
+        "row_id": "7c575bd1-3e33-5fbe-ae67-f8d32faeb9ce",
+        "table_name": "requirement"
       },
       {
         "id": "36b8e12d-00e3-4ca6-8769-65c5321f872f",
@@ -100189,6 +100505,17 @@
         "table_name": "relationship"
       },
       {
+        "id": "56aedde7-c768-4c94-8c7c-b2d56d6f8b7d",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_digest": "8d16bd005a586456d95efba2bb5485160ae6779610415bbba17bb93f0b15602f",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734,
+        "row_id": "997230c9-1983-5870-b71c-c4f2324c7a1c",
+        "table_name": "evidence_reference"
+      },
+      {
         "id": "56c549a0-c6c7-4577-aa0e-8021ffd92a23",
         "managed": 1,
         "operation": "insert",
@@ -102970,6 +103297,17 @@
         "revision": 471,
         "row_id": "b40a21ad-c433-447a-8bb0-fc3525def5de",
         "table_name": "artifact"
+      },
+      {
+        "id": "664c6ba2-828c-4ca8-914d-5c664e7c5d38",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_digest": "bb8a2b4ce9fe328377d48fcd8a085d9f3392ef8fed9c4d5e4bd0d7f9296720d4",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734,
+        "row_id": "e3d2ec00-fef8-54c2-acd1-ccd701a91fd9",
+        "table_name": "verification_result"
       },
       {
         "id": "664fea76-a0c7-4efb-9280-43ceae3cba26",
@@ -108043,6 +108381,17 @@
         "table_name": "document_namespace"
       },
       {
+        "id": "81455296-15de-4ed8-883d-765c13ad3405",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_digest": "9a678b16b9087692f3afde1b4b15ffcfa4dc6a1aa8232f01b3fb27ce204fc08a",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734,
+        "row_id": "58c6b578-eb36-5cf3-a561-693ed3771451",
+        "table_name": "verification_result"
+      },
+      {
         "id": "81656419-e6fd-49f2-b232-569321c23b1c",
         "managed": 1,
         "operation": "insert",
@@ -108525,6 +108874,17 @@
         "revision": 476,
         "row_id": "8dc8f0bd-cf28-4dd2-9d8c-13208d3af48f",
         "table_name": "document_revision"
+      },
+      {
+        "id": "83722a11-0628-44c3-80ce-437bf9a5e771",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_digest": "decbabceb088b418ee04454039b901154dbdc961a5dc4dc81851d345c7bb6975",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734,
+        "row_id": "53ccd66c-2c19-5a6a-92a1-885d84cf88a5",
+        "table_name": "evidence_reference"
       },
       {
         "id": "8373d0c9-2018-4d87-b6aa-624745e38016",
@@ -114027,6 +114387,17 @@
         "table_name": "document_conversion"
       },
       {
+        "id": "a2bfddcc-0bd7-4408-bff8-bde6c5daa9bf",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_digest": "36601b5d5397b6ddb4d005426b382d13772da73a70f3ab218a4f6190802f0ba1",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734,
+        "row_id": "4f7a8008-f6e8-5138-ad63-5ca2f43b3ba9",
+        "table_name": "evidence_reference"
+      },
+      {
         "id": "a310d47d-9178-4cf9-93e6-ebe008c9b8ff",
         "managed": 1,
         "operation": "insert",
@@ -115270,6 +115641,17 @@
         "table_name": "document_path_alias"
       },
       {
+        "id": "a9fd5cb2-f5f8-4c4a-b644-0cd549435b2a",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_digest": "cf9325f50376e5e0015d70983dfbb794d68f597f3d7e66b6499eb1ef5c8f2a35",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734,
+        "row_id": "c3edcb0f-7139-598d-9033-174f0efdbe95",
+        "table_name": "evidence_reference"
+      },
+      {
         "id": "aa00e28d-62b3-4e3f-a26d-295f92f1398d",
         "managed": 1,
         "operation": "insert",
@@ -116502,6 +116884,17 @@
         "table_name": "relationship"
       },
       {
+        "id": "b01bd060-a812-4c0a-885a-9c1172d6d218",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_digest": "a0ada124b13db5f053be8e91df70762c09ba4dd7c72ff74e8314a8439a60f66f",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734,
+        "row_id": "1220adf5-27d2-4f0e-b1ec-a8298442dc2f",
+        "table_name": "relationship"
+      },
+      {
         "id": "b045e3ec-0a3e-41f5-b04b-07e98a988c12",
         "managed": 1,
         "operation": "insert",
@@ -117391,6 +117784,17 @@
         "revision": 204,
         "row_id": "c1b6d0a3-331b-4702-94ff-a42cafd404b3",
         "table_name": "document_path_alias"
+      },
+      {
+        "id": "b4d64e1d-6b67-4d40-8834-ab04276db9e9",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_digest": "d1647e7dc55cf1ee766a829ba2be1924ebe18c9b8a79df8aa1cfb5db6b7c83cc",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734,
+        "row_id": "cc5c7676-c445-4a76-8ee4-2ae51730d471",
+        "table_name": "relationship"
       },
       {
         "id": "b4db14d0-fdd4-41e4-989e-63ccf6e38aec",
@@ -118293,6 +118697,17 @@
         "revision": 88,
         "row_id": "9e7d75b4-7a6d-5456-b454-c7e03c6bb157",
         "table_name": "artifact"
+      },
+      {
+        "id": "b86da991-9565-4bd0-8b10-7e3872e0e527",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_digest": "28b1ff447f35df53c54c470886c6b606ce0681a440455dd440e3c699be9c43c9",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734,
+        "row_id": "55792ee6-c70f-5e59-893b-2e3b535604c2",
+        "table_name": "requirement"
       },
       {
         "id": "b885f736-7184-40e9-9e66-49aabe2c7848",
@@ -121122,6 +121537,17 @@
         "table_name": "document"
       },
       {
+        "id": "c65ab8ac-e6cd-4920-ae5d-865e6ac6f71a",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_digest": "b46b83334053101ffb182d82121c62a07f35fa0ba956e7667504396e1c549665",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734,
+        "row_id": "5d6da68f-8ae6-5f28-9fba-365bd330d2de",
+        "table_name": "verification_result"
+      },
+      {
         "id": "c661cc96-71f7-4ba6-be4e-6a07499971b2",
         "managed": 1,
         "operation": "update",
@@ -122154,6 +122580,17 @@
         "revision": 491,
         "row_id": "51be4c9c-7933-4e89-bb4b-27870280188e",
         "table_name": "document"
+      },
+      {
+        "id": "cce53dc9-4d2c-4183-b41c-17e823eaef8b",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_digest": "222c4bdc1ba66a1bd601abcb9f520d8ca0915ffc72170aa33da808929df0997b",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734,
+        "row_id": "5bc65fa9-f81c-45d1-abe4-7e7bda5d37d4",
+        "table_name": "relationship"
       },
       {
         "id": "cd0d960b-3e80-4912-8ec6-a1a6d59c5264",
@@ -125775,6 +126212,17 @@
         "table_name": "reconciliation"
       },
       {
+        "id": "df6fae69-c3be-4420-9370-3ce365beeaf1",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_digest": "a4aa74d55c7b3c13769a9697e16102e3b4f2b969ad16dbf24d349d8a1ca19d0c",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734,
+        "row_id": "cbe26f3a-c5f7-4c46-8199-a00511df5482",
+        "table_name": "relationship"
+      },
+      {
         "id": "df84c3d1-f99b-48b6-bd85-459ab1742289",
         "managed": 1,
         "operation": "insert",
@@ -127874,6 +128322,17 @@
         "revision": 234,
         "row_id": "EVD",
         "table_name": "document_namespace"
+      },
+      {
+        "id": "e9f0eff8-ce64-4183-8850-e2ac877deb17",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "b63c1f4a-d6ce-4384-b5fd-37d7a80ceca3",
+        "payload_digest": "192fe6cdb139942bc65451e93f125fb23ab1782f841069ed0e9350b0cd454117",
+        "recorded_at": "2026-08-30T12:44:01Z",
+        "revision": 734,
+        "row_id": "fef60b73-40f5-522a-882b-dee840f818af",
+        "table_name": "requirement"
       },
       {
         "id": "ea19d680-b7f4-4645-b2e7-81e088a856a9",
@@ -132016,6 +132475,16 @@
       },
       {
         "command_or_test_id": "work2-checkpoint",
+        "details_json": "{\"commit\": \"e25cd2deb7b6c1ad0680c2d94ffb1ed842dba02b\", \"work_level\": \"work2\"}",
+        "evidence_id": "53ccd66c-2c19-5a6a-92a1-885d84cf88a5",
+        "id": "58c6b578-eb36-5cf3-a561-693ed3771451",
+        "requirement_id": "fef60b73-40f5-522a-882b-dee840f818af",
+        "source_revision": 734,
+        "status": "passed",
+        "verified_at": "2026-08-30T12:44:01Z"
+      },
+      {
+        "command_or_test_id": "work2-checkpoint",
         "details_json": "{\"commit\": \"c177fcbf3006b3d211ebf89f514062f3979397d4\", \"work_level\": \"work2\"}",
         "evidence_id": "4bf1f489-9ecf-5bfe-a9ec-41148e3eaaba",
         "id": "59a09dc6-1930-5e66-ad96-562b21a40e6c",
@@ -132053,6 +132522,16 @@
         "source_revision": 1,
         "status": "passed",
         "verified_at": "2026-08-28T17:34:43Z"
+      },
+      {
+        "command_or_test_id": "work2-checkpoint",
+        "details_json": "{\"commit\": \"e25cd2deb7b6c1ad0680c2d94ffb1ed842dba02b\", \"work_level\": \"work2\"}",
+        "evidence_id": "4f7a8008-f6e8-5138-ad63-5ca2f43b3ba9",
+        "id": "5d6da68f-8ae6-5f28-9fba-365bd330d2de",
+        "requirement_id": "55792ee6-c70f-5e59-893b-2e3b535604c2",
+        "source_revision": 734,
+        "status": "passed",
+        "verified_at": "2026-08-30T12:44:01Z"
       },
       {
         "command_or_test_id": "Verified provenance release, exact maintainer skill parity, isolated released upgrade, new Idea-to-product loop, current target evidence, satisfied and reconciled upward verdicts, backup/rebuild/rollback, and zero-finding soak pass; G5 and the initiative pass.",
@@ -132715,6 +133194,16 @@
         "verified_at": "2026-08-29T18:02:13Z"
       },
       {
+        "command_or_test_id": "work2-checkpoint",
+        "details_json": "{\"commit\": \"e25cd2deb7b6c1ad0680c2d94ffb1ed842dba02b\", \"work_level\": \"work2\"}",
+        "evidence_id": "c3edcb0f-7139-598d-9033-174f0efdbe95",
+        "id": "e3d2ec00-fef8-54c2-acd1-ccd701a91fd9",
+        "requirement_id": "7c575bd1-3e33-5fbe-ae67-f8d32faeb9ce",
+        "source_revision": 734,
+        "status": "passed",
+        "verified_at": "2026-08-30T12:44:01Z"
+      },
+      {
         "command_or_test_id": "direct-evidence-1",
         "details_json": null,
         "evidence_id": "859c4205-ec4c-49b7-9fc8-72ac411dc943",
@@ -132733,6 +133222,16 @@
         "source_revision": 662,
         "status": "passed",
         "verified_at": "2026-08-29T23:09:55Z"
+      },
+      {
+        "command_or_test_id": "work2-checkpoint",
+        "details_json": "{\"commit\": \"e25cd2deb7b6c1ad0680c2d94ffb1ed842dba02b\", \"work_level\": \"work2\"}",
+        "evidence_id": "997230c9-1983-5870-b71c-c4f2324c7a1c",
+        "id": "e6063bb9-5733-52be-8bc5-b4dad48cb2ae",
+        "requirement_id": "ff55df8d-a975-557b-bf0a-ea79411bb6b3",
+        "source_revision": 734,
+        "status": "passed",
+        "verified_at": "2026-08-30T12:44:01Z"
       },
       {
         "command_or_test_id": "EVID-G1-CONTRACT",
