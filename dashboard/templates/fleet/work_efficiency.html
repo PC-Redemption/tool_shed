@@ -1,9 +1,26 @@
 {% extends "fleet/base.html" %}
 {% block title %}Work Efficiency{% endblock %}
 {% block content %}
-<section class="dashboard-heading"><div><p class="eyebrow">Fleet</p><h1>Work Efficiency</h1><p>New metric observations only, with measured remedial tokens and explicit coverage.</p></div></section>
-<section class="dashboard-panel"><div class="table-scroll"><table>
-  <thead><tr><th>Project / instance</th><th>Window</th><th>Measured tokens</th><th>Coverage</th><th>Interactions</th><th>Output bytes</th><th>Duration</th><th>Retries</th></tr></thead>
-  <tbody>{% for item in aggregates %}<tr><th>{{ item.instance.project.name }}<small>{{ item.instance.external_id }}</small></th><td>{{ item.window_start }} – {{ item.window_end }}</td><td>{{ item.remedial_tokens_actual|default_if_none:"Unknown" }}</td><td>{% widthratio item.remedial_token_coverage 1 100 %}%</td><td>{{ item.remedial_interactions }}</td><td>{{ item.remedial_output_bytes }}</td><td>{{ item.remedial_duration_ms }} ms</td><td>{{ item.remedial_retries }}</td></tr>{% empty %}<tr><td colspan="8">No efficiency windows reported.</td></tr>{% endfor %}</tbody>
-  </table></div><p class="dashboard-note">Unchanged sliding-window reports are suppressed. Partial coverage is never treated as a complete project comparison; counter epochs remain separate.</p></section>
+<section class="dashboard-heading"><div><p class="eyebrow">Fleet</p><h1>Work Efficiency</h1><p>Change-only operational trends with explicit coverage, cohort boundaries, and bounded exports.</p></div></section>
+<section class="dashboard-panel compact-table-panel">
+  <div class="table-toolbar">
+    <form class="work-filters" method="get">
+      <label>Window <select name="window" data-auto-submit><option value="24h" {% if selected_window == '24h' %}selected{% endif %}>24 hours</option><option value="7d" {% if selected_window == '7d' %}selected{% endif %}>7 days</option><option value="30d" {% if selected_window == '30d' %}selected{% endif %}>30 days</option><option value="all" {% if selected_window == 'all' %}selected{% endif %}>All retained</option></select></label>
+      <label>Project <select name="project" data-auto-submit><option value="">All</option>{% for project in projects %}<option value="{{ project.id }}" {% if selected_project == project.id|stringformat:'s' %}selected{% endif %}>{{ project.name }}</option>{% endfor %}</select></label>
+      <label>Platform <select name="platform" data-auto-submit><option value="">All</option>{% for value in platforms %}<option value="{{ value }}" {% if selected_platform == value %}selected{% endif %}>{{ value }}</option>{% endfor %}</select></label>
+      <label>Client <select name="version" data-auto-submit><option value="">All</option>{% for value in versions %}<option value="{{ value }}" {% if selected_version == value %}selected{% endif %}>{{ value }}</option>{% endfor %}</select></label>
+      <label>Rows <select name="rows" data-auto-submit><option value="10" {% if selected_rows == '10' %}selected{% endif %}>10</option><option value="20" {% if selected_rows == '20' %}selected{% endif %}>20</option><option value="50" {% if selected_rows == '50' %}selected{% endif %}>50</option><option value="100" {% if selected_rows == '100' %}selected{% endif %}>100</option><option value="all" {% if selected_rows == 'all' %}selected{% endif %}>All</option></select></label>
+      <noscript><button type="submit">Apply</button></noscript>
+      {% if selected_project or selected_platform or selected_version or selected_window != '7d' %}<a href="{% url 'fleet:work-efficiency' %}">Clear filters</a>{% endif %}
+    </form>
+    <div class="table-toolbar-meta"><p class="work-result-summary">{{ result_count }} semantic change{{ result_count|pluralize }}{% if export_truncated %} · export capped{% endif %}</p><div class="export-links"><a href="?{{ export_query }}&amp;format=csv">Export CSV</a><a href="?{{ export_query }}&amp;format=json">Export JSON</a></div></div>
+  </div>
+  {% include "fleet/includes/table_pagination.html" with page=efficiency_page links=page_links previous_url=previous_page_url next_url=next_page_url label="Work efficiency table pages" position="top" %}
+  <div class="table-scroll"><table class="efficiency-table">
+  <thead><tr><th>Project / instance</th><th>Platform / client</th><th>Observed window</th><th>Epoch</th><th>Measured tokens</th><th>Coverage</th><th>Interactions</th><th>Output</th><th>Duration</th><th>Retries</th></tr></thead>
+  <tbody>{% for item in aggregates %}<tr><th>{{ item.instance.project.name }}<small>{{ item.instance.external_id }}</small></th><td>{{ item.instance.platform }}<small>{{ item.instance.client_version }}</small></td><td class="compact-date">{{ item.window_start|date:"M j, g:i A" }}<small>to {{ item.window_end|date:"M j, g:i A" }}</small></td><td><code>{{ item.counter_epoch|stringformat:'s'|slice:':8' }}</code></td><td>{{ item.remedial_tokens_actual|default_if_none:"Unknown" }}</td><td>{% widthratio item.remedial_token_coverage 1 100 %}%</td><td>{{ item.remedial_interactions }}</td><td>{{ item.remedial_output_bytes }} B</td><td>{{ item.remedial_duration_ms }} ms</td><td>{{ item.remedial_retries }}</td></tr>{% empty %}<tr><td colspan="10">No efficiency windows reported for this view.</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% include "fleet/includes/table_pagination.html" with page=efficiency_page links=page_links previous_url=previous_page_url next_url=next_page_url label="Work efficiency table pages" position="bottom" %}
+  <p class="dashboard-note">Unchanged sliding-window reports are suppressed and each counter epoch remains separate. A flat or empty view may mean no semantic change, no report, or missing coverage. Different coverage, epoch, platform, or client cohorts are context—not a project ranking.</p>
+</section>
 {% endblock %}

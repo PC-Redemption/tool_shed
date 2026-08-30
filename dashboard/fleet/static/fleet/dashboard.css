@@ -99,8 +99,10 @@
 .work-filters input, .work-filters select, .work-filters button { min-height: 2rem; box-sizing: border-box; padding: .35rem .55rem; border: 1px solid var(--dashboard-border); border-radius: .4rem; color: #fff; background: #0d1b2d; }
 .work-filters button { background: #1d665c; cursor: pointer; }
 .work-filters a { padding-bottom: .55rem; }
+.work-filters input[type="search"] { width: min(18rem, 72vw); }
 .table-toolbar-meta { display: grid; justify-items: end; gap: .3rem; margin-left: auto; }
 .work-result-summary { display: flex; justify-content: end; gap: .35rem; margin: 0; color: var(--dashboard-muted); font-size: .76rem; }
+.export-links { display: flex; gap: .65rem; font-size: .78rem; }
 .table-pagination { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: .35rem; margin: 1rem 0; }
 .table-pagination-top { margin: 0; }
 .table-pagination a, .table-pagination span { min-width: 2rem; box-sizing: border-box; padding: .35rem .5rem; border: 1px solid var(--dashboard-border); border-radius: .4rem; text-align: center; text-decoration: none; }
@@ -147,6 +149,9 @@
 .planning-order-cell small { color: var(--dashboard-muted); }
 .compact-date { white-space: nowrap; }
 .compact-date small { display: inline; color: var(--dashboard-muted); }
+.efficiency-table { min-width: 70rem; }
+.efficiency-table code { color: #b8d9f8; font-size: .76rem; }
+.efficiency-table td, .efficiency-table th { white-space: nowrap; }
 .dashboard-warning { padding: .7rem .8rem; border: 1px solid #8d6a26; border-radius: .5rem; color: #ffe0a3; background: rgba(141, 106, 38, .18); }
 .attention-list { display: grid; gap: .75rem; margin-top: 1rem; }
 .attention-item { display: grid; grid-template-columns: minmax(18rem, 1fr) auto; gap: .75rem 1.25rem; padding: .9rem; border: 1px solid var(--dashboard-border); border-left: .3rem solid #ff806f; border-radius: .65rem; background: rgba(8, 20, 35, .72); }

@@ -30,6 +30,7 @@ from .models import (
 
 
 STALE_AFTER = timedelta(minutes=20)
+WORK_EFFICIENCY_RETENTION_PER_EPOCH = 500
 ATTENTION_REASONS = {
     "blocked-work": {
         "title": "Blocked work",
@@ -110,11 +111,27 @@ def _efficiency_signature(value: WorkEfficiencyAggregate | dict[str, Any]) -> tu
     )
 
 
-def distinct_efficiency_aggregates(*, limit: int = 200) -> list[WorkEfficiencyAggregate]:
+def distinct_efficiency_aggregates(
+    *,
+    limit: int = 200,
+    since: object | None = None,
+    project_id: object | None = None,
+    platform: str = "",
+    client_version: str = "",
+) -> list[WorkEfficiencyAggregate]:
     """Return metric changes, hiding repeated sliding-window snapshots."""
     result: list[WorkEfficiencyAggregate] = []
     latest_by_instance: dict[tuple[object, object], tuple[object, ...]] = {}
-    rows = WorkEfficiencyAggregate.objects.select_related("instance", "instance__project")[: max(limit * 10, limit)]
+    rows = WorkEfficiencyAggregate.objects.select_related("instance", "instance__project")
+    if since is not None:
+        rows = rows.filter(window_end__gte=since)
+    if project_id is not None:
+        rows = rows.filter(instance__project_id=project_id)
+    if platform:
+        rows = rows.filter(instance__platform=platform)
+    if client_version:
+        rows = rows.filter(instance__client_version__iexact=client_version)
+    rows = rows.order_by("-window_end", "-id")[: max(limit * 10, limit)]
     for item in rows:
         key = (item.instance_id, item.counter_epoch)
         signature = _efficiency_signature(item)
@@ -125,6 +142,24 @@ def distinct_efficiency_aggregates(*, limit: int = 200) -> list[WorkEfficiencyAg
         if len(result) == limit:
             break
     return result
+
+
+def _trim_efficiency_history(
+    instance: Instance,
+    counter_epoch: object,
+    *,
+    retention: int = WORK_EFFICIENCY_RETENTION_PER_EPOCH,
+) -> int:
+    """Keep the newest bounded semantic changes for one counter epoch."""
+    stale_ids = list(
+        WorkEfficiencyAggregate.objects.filter(instance=instance, counter_epoch=counter_epoch)
+        .order_by("-window_end", "-id")
+        .values_list("id", flat=True)[retention:]
+    )
+    if not stale_ids:
+        return 0
+    deleted, _ = WorkEfficiencyAggregate.objects.filter(id__in=stale_ids).delete()
+    return deleted
 
 
 def _attention_observations(state: dict[str, Any], app: dict[str, Any]) -> dict[str, tuple[str, int]]:
@@ -639,4 +674,5 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
             window_end=work["window_end"],
             defaults=work,
         )
+        _trim_efficiency_history(locked, locked.counter_epoch)
     return {"status": "accepted", "sequence": locked.last_sequence}

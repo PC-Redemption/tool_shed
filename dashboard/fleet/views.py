@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import csv
+import io
 import json
 import time
 from datetime import timedelta
@@ -9,7 +11,7 @@ from django.conf import settings
 from django.db import close_old_connections
 from django.db.models import F, Q
 from django.core.paginator import Paginator
-from django.http import HttpRequest, JsonResponse, StreamingHttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -20,7 +22,7 @@ from django.views.decorators.http import require_GET, require_POST
 from .auth import dashboard_auth_required, reporter_instance
 from .contracts import ContractError, validate_report
 from .live import dashboard_revision
-from .models import Enrollment, FailureGroup, Project, WorkArtifactSnapshot
+from .models import Enrollment, FailureGroup, Instance, Project, WorkArtifactSnapshot
 from .services import (
     active_attention_items,
     approve_enrollment,
@@ -181,7 +183,11 @@ def dashboard_events(request: HttpRequest) -> StreamingHttpResponse:
 
 @dashboard_auth_required
 def fleet_overview(request: HttpRequest):
-    projects = Project.objects.prefetch_related("instances").all()
+    projects = Project.objects.prefetch_related("instances").order_by(
+        F("last_activity_at").desc(nulls_last=True),
+        F("last_seen").desc(nulls_last=True),
+        "name",
+    )
     attention_items = active_attention_items()
     attention_by_project: dict[object, list[dict]] = {}
     for item in attention_items:
@@ -200,9 +206,20 @@ def fleet_overview(request: HttpRequest):
         "working": projects.filter(attention_state="working").count(),
         "stale": len(stale_project_ids),
     }
-    query = request.GET.get("q", "").strip()
+    query = request.GET.get("q", "").strip()[:80]
     if query:
-        projects = projects.filter(Q(name__icontains=query) | Q(external_id__icontains=query))
+        projects = projects.filter(
+            Q(name__icontains=query)
+            | Q(external_id__icontains=query)
+            | Q(instances__client_version__icontains=query)
+            | Q(work_artifacts__visible_id__icontains=query)
+            | Q(work_artifacts__title__icontains=query)
+            | Q(work_artifacts__artifact_type__icontains=query)
+            | Q(work_artifacts__document_lifecycle__icontains=query)
+            | Q(work_artifacts__outcome_lifecycle__icontains=query)
+            | Q(work_artifacts__outcome_disposition__icontains=query)
+            | Q(work_artifacts__reconciliation_state__icontains=query)
+        )
     state = request.GET.get("state", "").strip()
     if state == "attention":
         projects = projects.filter(id__in=attention_project_ids)
@@ -210,9 +227,111 @@ def fleet_overview(request: HttpRequest):
         projects = projects.filter(attention_state="working")
     elif state == "stale":
         projects = projects.filter(id__in=stale_project_ids)
-    project_list = list(projects)
+    artifact_types = tuple(
+        WorkArtifactSnapshot.objects.order_by("artifact_type")
+        .values_list("artifact_type", flat=True)
+        .distinct()
+    )
+    selected_type = request.GET.get("type", "").strip()
+    if selected_type not in artifact_types:
+        selected_type = ""
+    if selected_type:
+        projects = projects.filter(work_artifacts__artifact_type=selected_type)
+    lifecycle_values = (
+        "active",
+        "working",
+        "blocked",
+        "completed",
+        "terminal",
+        "open",
+        "reconciled",
+        "superseded",
+    )
+    selected_lifecycle = request.GET.get("lifecycle", "").strip()
+    if selected_lifecycle not in lifecycle_values:
+        selected_lifecycle = ""
+    if selected_lifecycle:
+        projects = projects.filter(
+            Q(work_artifacts__document_lifecycle=selected_lifecycle)
+            | Q(work_artifacts__outcome_lifecycle=selected_lifecycle)
+            | Q(work_artifacts__outcome_disposition=selected_lifecycle)
+            | Q(work_artifacts__reconciliation_state=selected_lifecycle)
+        )
+    selected_version = request.GET.get("version", "").strip()[:64]
+    if selected_version:
+        projects = projects.filter(instances__client_version__iexact=selected_version)
+    projects = projects.distinct()
+    row_options = ("10", "20", "50", "100", "all")
+    selected_rows = request.GET.get("rows", "20").strip().lower()
+    if selected_rows not in row_options:
+        selected_rows = "20"
+    result_count = projects.count()
+
+    def overview_url(page: int) -> str:
+        values = {"rows": selected_rows, "page": page}
+        for key, value in (
+            ("q", query),
+            ("state", state),
+            ("type", selected_type),
+            ("lifecycle", selected_lifecycle),
+            ("version", selected_version),
+        ):
+            if value:
+                values[key] = value
+        return "?" + urlencode(values)
+
+    project_page = None
+    page_links: list[dict[str, object]] = []
+    previous_page_url = None
+    next_page_url = None
+    if selected_rows == "all":
+        project_list = list(projects)
+    else:
+        paginator = Paginator(projects, int(selected_rows))
+        project_page = paginator.get_page(request.GET.get("page", "1"))
+        project_list = list(project_page.object_list)
+        if project_page.has_previous():
+            previous_page_url = overview_url(project_page.previous_page_number())
+        if project_page.has_next():
+            next_page_url = overview_url(project_page.next_page_number())
+        for page_number in paginator.get_elided_page_range(project_page.number, on_each_side=2, on_ends=1):
+            if page_number == Paginator.ELLIPSIS:
+                page_links.append({"ellipsis": True})
+            else:
+                page_links.append(
+                    {
+                        "number": page_number,
+                        "url": overview_url(int(page_number)),
+                        "current": int(page_number) == project_page.number,
+                    }
+                )
+    match_by_project: dict[object, WorkArtifactSnapshot] = {}
+    if query or selected_type or selected_lifecycle:
+        matches = WorkArtifactSnapshot.objects.filter(project_id__in=[item.id for item in project_list])
+        if query:
+            matches = matches.filter(
+                Q(visible_id__icontains=query)
+                | Q(title__icontains=query)
+                | Q(artifact_type__icontains=query)
+                | Q(document_lifecycle__icontains=query)
+                | Q(outcome_lifecycle__icontains=query)
+                | Q(outcome_disposition__icontains=query)
+                | Q(reconciliation_state__icontains=query)
+            )
+        if selected_type:
+            matches = matches.filter(artifact_type=selected_type)
+        if selected_lifecycle:
+            matches = matches.filter(
+                Q(document_lifecycle=selected_lifecycle)
+                | Q(outcome_lifecycle=selected_lifecycle)
+                | Q(outcome_disposition=selected_lifecycle)
+                | Q(reconciliation_state=selected_lifecycle)
+            )
+        for match in matches.order_by("-source_updated_at", "-visible_id"):
+            match_by_project.setdefault(match.project_id, match)
     for project in project_list:
         project.dashboard_attention = attention_by_project.get(project.id, [])
+        project.dashboard_match = match_by_project.get(project.id)
         severities = {item["severity"] for item in project.dashboard_attention}
         project.effective_attention_state = (
             "blocked"
@@ -241,6 +360,24 @@ def fleet_overview(request: HttpRequest):
             "counts": counts,
             "attention_items": displayed_attention,
             "selected_state": state,
+            "selected_query": query,
+            "selected_type": selected_type,
+            "selected_lifecycle": selected_lifecycle,
+            "selected_version": selected_version,
+            "selected_rows": selected_rows,
+            "artifact_types": artifact_types,
+            "lifecycle_values": lifecycle_values,
+            "version_values": tuple(
+                Instance.objects.exclude(client_version="")
+                .order_by("client_version")
+                .values_list("client_version", flat=True)
+                .distinct()
+            ),
+            "result_count": result_count,
+            "project_page": project_page,
+            "page_links": page_links,
+            "previous_page_url": previous_page_url,
+            "next_page_url": next_page_url,
         },
     )
 
@@ -543,5 +680,150 @@ def app_server_view(request: HttpRequest):
 
 @dashboard_auth_required
 def work_efficiency_view(request: HttpRequest):
-    aggregates = distinct_efficiency_aggregates()
-    return render(request, "fleet/work_efficiency.html", {"aggregates": aggregates})
+    windows = {"24h": timedelta(hours=24), "7d": timedelta(days=7), "30d": timedelta(days=30)}
+    selected_window = request.GET.get("window", "7d").strip()
+    if selected_window not in {*windows, "all"}:
+        selected_window = "7d"
+    selected_project = request.GET.get("project", "").strip()
+    project_ids = {str(value) for value in Project.objects.values_list("id", flat=True)}
+    if selected_project not in project_ids:
+        selected_project = ""
+    platforms = tuple(
+        Instance.objects.exclude(platform="").order_by("platform").values_list("platform", flat=True).distinct()
+    )
+    selected_platform = request.GET.get("platform", "").strip()
+    if selected_platform not in platforms:
+        selected_platform = ""
+    versions = tuple(
+        Instance.objects.exclude(client_version="")
+        .order_by("client_version")
+        .values_list("client_version", flat=True)
+        .distinct()
+    )
+    selected_version = request.GET.get("version", "").strip()
+    if selected_version not in versions:
+        selected_version = ""
+    since = None if selected_window == "all" else timezone.now() - windows[selected_window]
+    filtered = distinct_efficiency_aggregates(
+        limit=1001,
+        since=since,
+        project_id=selected_project or None,
+        platform=selected_platform,
+        client_version=selected_version,
+    )
+    export_truncated = len(filtered) > 1000
+    filtered = filtered[:1000]
+    generated_at = timezone.now()
+
+    def projection(item) -> dict[str, object]:
+        return {
+            "project": item.instance.project.name,
+            "project_id": str(item.instance.project_id),
+            "instance_id": str(item.instance.external_id),
+            "platform": item.instance.platform,
+            "client_version": item.instance.client_version,
+            "counter_epoch": str(item.counter_epoch),
+            "window_start": item.window_start.isoformat(),
+            "window_end": item.window_end.isoformat(),
+            "remedial_tokens_actual": item.remedial_tokens_actual,
+            "remedial_token_coverage": str(item.remedial_token_coverage),
+            "remedial_interactions": item.remedial_interactions,
+            "remedial_output_bytes": item.remedial_output_bytes,
+            "remedial_duration_ms": item.remedial_duration_ms,
+            "remedial_retries": item.remedial_retries,
+        }
+
+    filters = {
+        "window": selected_window,
+        "project": selected_project or None,
+        "platform": selected_platform or None,
+        "version": selected_version or None,
+    }
+    export_format = request.GET.get("format", "").strip().lower()
+    if export_format == "json":
+        response = JsonResponse(
+            {
+                "schema_version": 1,
+                "generated_at": generated_at.isoformat(),
+                "row_limit": 1000,
+                "truncated": export_truncated,
+                "filters": filters,
+                "rows": [projection(item) for item in filtered],
+            }
+        )
+        response["Content-Disposition"] = 'attachment; filename="tool-shed-work-efficiency.json"'
+        return response
+    if export_format == "csv":
+        columns = tuple(projection(filtered[0]).keys()) if filtered else (
+            "project", "project_id", "instance_id", "platform", "client_version", "counter_epoch",
+            "window_start", "window_end", "remedial_tokens_actual", "remedial_token_coverage",
+            "remedial_interactions", "remedial_output_bytes", "remedial_duration_ms", "remedial_retries",
+        )
+        output = io.StringIO()
+        writer = csv.DictWriter(output, fieldnames=columns)
+        writer.writeheader()
+        writer.writerows(projection(item) for item in filtered)
+        response = HttpResponse(output.getvalue(), content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = 'attachment; filename="tool-shed-work-efficiency.csv"'
+        response["X-Tool-Shed-Schema-Version"] = "1"
+        response["X-Tool-Shed-Generated-At"] = generated_at.isoformat()
+        response["X-Tool-Shed-Row-Limit"] = "1000"
+        response["X-Tool-Shed-Truncated"] = "true" if export_truncated else "false"
+        return response
+    row_options = ("10", "20", "50", "100", "all")
+    selected_rows = request.GET.get("rows", "20").strip().lower()
+    if selected_rows not in row_options:
+        selected_rows = "20"
+
+    def efficiency_url(page: int) -> str:
+        values = {"window": selected_window, "rows": selected_rows, "page": page}
+        for key, value in (("project", selected_project), ("platform", selected_platform), ("version", selected_version)):
+            if value:
+                values[key] = value
+        return "?" + urlencode(values)
+
+    efficiency_page = None
+    page_links: list[dict[str, object]] = []
+    previous_page_url = None
+    next_page_url = None
+    if selected_rows == "all":
+        aggregates = filtered
+    else:
+        paginator = Paginator(filtered, int(selected_rows))
+        efficiency_page = paginator.get_page(request.GET.get("page", "1"))
+        aggregates = list(efficiency_page.object_list)
+        if efficiency_page.has_previous():
+            previous_page_url = efficiency_url(efficiency_page.previous_page_number())
+        if efficiency_page.has_next():
+            next_page_url = efficiency_url(efficiency_page.next_page_number())
+        for page_number in paginator.get_elided_page_range(efficiency_page.number, on_each_side=2, on_ends=1):
+            if page_number == Paginator.ELLIPSIS:
+                page_links.append({"ellipsis": True})
+            else:
+                page_links.append({"number": page_number, "url": efficiency_url(int(page_number)), "current": int(page_number) == efficiency_page.number})
+    export_values = {"window": selected_window}
+    for key, value in (("project", selected_project), ("platform", selected_platform), ("version", selected_version)):
+        if value:
+            export_values[key] = value
+    return render(
+        request,
+        "fleet/work_efficiency.html",
+        {
+            "aggregates": aggregates,
+            "projects": Project.objects.order_by("name").only("id", "name"),
+            "platforms": platforms,
+            "versions": versions,
+            "selected_window": selected_window,
+            "selected_project": selected_project,
+            "selected_platform": selected_platform,
+            "selected_version": selected_version,
+            "selected_rows": selected_rows,
+            "result_count": len(filtered),
+            "export_truncated": export_truncated,
+            "export_query": urlencode(export_values),
+            "efficiency_page": efficiency_page,
+            "page_links": page_links,
+            "previous_page_url": previous_page_url,
+            "next_page_url": next_page_url,
+        },
+    )

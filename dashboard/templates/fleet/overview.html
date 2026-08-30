@@ -33,16 +33,32 @@
 {% elif selected_state == 'attention' or selected_state == 'stale' %}
 <section class="dashboard-panel"><h2>No active attention</h2><p class="dashboard-empty">No reporting instance currently matches this view.</p></section>
 {% endif %}
-<section class="dashboard-panel">
-  <div class="panel-heading"><h2>Operational relevance</h2><span>{{ projects|length }} shown</span></div>
+<section class="dashboard-panel compact-table-panel">
+  <div class="compact-panel-heading"><h2>Operational relevance</h2><p class="dashboard-note">Newest local activity first; filters affect presentation only.</p></div>
+  <div class="table-toolbar">
+    <form class="work-filters" method="get">
+      <label>Search <input name="q" type="search" maxlength="80" value="{{ selected_query }}" placeholder="Project, IDEA-…, title…"></label>
+      <label>State <select name="state" data-auto-submit><option value="">All</option><option value="attention" {% if selected_state == 'attention' %}selected{% endif %}>Needs attention</option><option value="working" {% if selected_state == 'working' %}selected{% endif %}>Working</option><option value="stale" {% if selected_state == 'stale' %}selected{% endif %}>Stale / offline</option></select></label>
+      <label>Type <select name="type" data-auto-submit><option value="">All</option>{% for value in artifact_types %}<option value="{{ value }}" {% if selected_type == value %}selected{% endif %}>{{ value }}</option>{% endfor %}</select></label>
+      <label>Lifecycle <select name="lifecycle" data-auto-submit><option value="">All</option>{% for value in lifecycle_values %}<option value="{{ value }}" {% if selected_lifecycle == value %}selected{% endif %}>{{ value }}</option>{% endfor %}</select></label>
+      <label>Client <select name="version" data-auto-submit><option value="">All versions</option>{% for value in version_values %}<option value="{{ value }}" {% if selected_version == value %}selected{% endif %}>{{ value }}</option>{% endfor %}</select></label>
+      <label>Rows <select name="rows" data-auto-submit><option value="10" {% if selected_rows == '10' %}selected{% endif %}>10</option><option value="20" {% if selected_rows == '20' %}selected{% endif %}>20</option><option value="50" {% if selected_rows == '50' %}selected{% endif %}>50</option><option value="100" {% if selected_rows == '100' %}selected{% endif %}>100</option><option value="all" {% if selected_rows == 'all' %}selected{% endif %}>All</option></select></label>
+      <button type="submit">Search</button>
+      {% if selected_query or selected_state or selected_type or selected_lifecycle or selected_version %}<a href="{% url 'fleet:overview' %}?rows={{ selected_rows }}">Clear filters</a>{% endif %}
+    </form>
+    <p class="work-result-summary">{{ result_count }} project{{ result_count|pluralize }} matched</p>
+  </div>
+  {% include "fleet/includes/table_pagination.html" with page=project_page links=page_links previous_url=previous_page_url next_url=next_page_url label="Project table pages" position="top" %}
   <div class="table-scroll"><table>
-    <thead><tr><th>Project</th><th>State</th><th>Instances</th><th>Last report</th><th>Open outcomes</th></tr></thead>
+    <thead><tr><th>Project</th><th>State</th><th>Instances / client</th><th>Last activity</th><th>Open outcomes</th><th>Matched work</th></tr></thead>
     <tbody>{% for project in projects %}<tr>
       <th><a href="{% url 'fleet:project' project.id %}">{{ project.name }}</a></th>
       <td><span class="state-badge state-{{ project.effective_attention_state }}">{{ project.effective_attention_state }}</span>{% if project.dashboard_attention %}<small>{{ project.dashboard_attention|length }} reason{{ project.dashboard_attention|length|pluralize }}</small>{% endif %}</td>
-      <td>{{ project.instances.count }}</td><td>{{ project.last_seen|default:"Never" }}</td>
+      <td>{{ project.instances.count }}{% for instance in project.instances.all %}{% if forloop.first %}<small>{{ instance.client_version }} · {{ instance.platform }}</small>{% endif %}{% endfor %}</td><td>{{ project.last_activity_at|default:project.last_seen|default:"Never" }}</td>
       <td>{% if project.current_state.open_outcome_count == None %}Unknown{% else %}{{ project.current_state.open_outcome_count }}{% endif %}</td>
-    </tr>{% empty %}<tr><td colspan="5">No instances have reported yet.</td></tr>{% endfor %}</tbody>
+      <td>{% if project.dashboard_match %}<a href="{% url 'fleet:project-tab' project.id 'work' %}?q={{ selected_query|urlencode }}"><span class="artifact-id">{{ project.dashboard_match.visible_id }}</span></a><small>{{ project.dashboard_match.title }}</small>{% elif selected_query or selected_type or selected_lifecycle %}<span class="dashboard-note">Project or client match</span>{% else %}—{% endif %}</td>
+    </tr>{% empty %}<tr><td colspan="6">No projects match this view.</td></tr>{% endfor %}</tbody>
   </table></div>
+  {% include "fleet/includes/table_pagination.html" with page=project_page links=page_links previous_url=previous_page_url next_url=next_page_url label="Project table pages" position="bottom" %}
 </section>
 {% endblock %}

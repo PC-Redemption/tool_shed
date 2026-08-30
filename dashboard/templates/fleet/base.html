@@ -12,8 +12,8 @@
   <header class="dashboard-header">
     <a class="dashboard-brand" href="/dashboard/">Tool Shed <span>Dashboard</span></a>
     <form class="dashboard-search" action="/dashboard/" method="get" role="search">
-      <label class="sr-only" for="project-search">Search projects</label>
-      <input id="project-search" name="q" type="search" placeholder="Search projects" value="{{ request.GET.q }}">
+      <label class="sr-only" for="project-search">Search projects and reported work</label>
+      <input id="project-search" name="q" type="search" maxlength="80" placeholder="Search projects and work" value="{{ request.GET.q }}">
     </form>
     <div class="dashboard-account">
       <span>{{ request.user.get_username }}</span>

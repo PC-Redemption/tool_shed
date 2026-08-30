@@ -33,7 +33,7 @@ from dashboard.fleet.models import (  # noqa: E402
     WorkArtifactSnapshot,
     WorkEfficiencyAggregate,
 )
-from dashboard.fleet.services import approve_enrollment  # noqa: E402
+from dashboard.fleet.services import _trim_efficiency_history, approve_enrollment  # noqa: E402
 
 call_command("migrate", verbosity=0)
 
@@ -733,6 +733,114 @@ class DashboardApplicationTests(TestCase):
         self.assertContains(response, "Unknown")
         response = self.client.get(reverse("fleet:work-efficiency"))
         self.assertContains(response, "No efficiency windows reported")
+
+    def test_fleet_search_uses_bounded_reported_work_filters_and_stable_pages(self) -> None:
+        user = get_user_model().objects.create_user("fleet-search-viewer", password="fixture")
+        self.client.force_login(user)
+        now = timezone.now()
+        alpha = Project.objects.create(
+            external_id=uuid.uuid4(), name="Alpha", last_seen=now, last_activity_at=now
+        )
+        beta = Project.objects.create(
+            external_id=uuid.uuid4(), name="Beta", last_seen=now, last_activity_at=now - timedelta(minutes=1)
+        )
+        alpha_instance = Instance.objects.create(
+            project=alpha,
+            external_id=uuid.uuid4(),
+            platform="linux-x86_64",
+            client_version="0.40.0",
+        )
+        beta_instance = Instance.objects.create(
+            project=beta,
+            external_id=uuid.uuid4(),
+            platform="windows-amd64",
+            client_version="0.39.2",
+        )
+        for project, instance, visible_id, artifact_type, title, lifecycle in (
+            (alpha, alpha_instance, "IDEA-0015", "idea-brief", "Cross-project operator search", "active"),
+            (beta, beta_instance, "PRM-0032", "program-roadmap", "Bounded trend exports", "completed"),
+        ):
+            WorkArtifactSnapshot.objects.create(
+                project=project,
+                instance=instance,
+                artifact_external_id=uuid.uuid4(),
+                visible_id=visible_id,
+                artifact_type=artifact_type,
+                title=title,
+                document_lifecycle=lifecycle,
+                source_updated_at=now,
+                observed_at=now,
+                snapshot_sequence=1,
+            )
+
+        by_identifier = self.client.get(reverse("fleet:overview"), {"q": "IDEA-0015", "rows": "10"})
+        self.assertContains(by_identifier, "Alpha")
+        self.assertNotContains(by_identifier, "Beta</a></th>")
+        self.assertContains(by_identifier, "IDEA-0015")
+        self.assertContains(by_identifier, "filters affect presentation only")
+
+        by_filters = self.client.get(
+            reverse("fleet:overview"),
+            {"type": "program-roadmap", "lifecycle": "completed", "version": "0.39.2", "rows": "20"},
+        )
+        self.assertContains(by_filters, "Beta")
+        self.assertNotContains(by_filters, "Alpha</a></th>")
+        self.assertContains(by_filters, '<option value="20" selected>20</option>', html=True)
+
+    def test_work_efficiency_filters_exports_and_retention_are_bounded(self) -> None:
+        user = get_user_model().objects.create_user("efficiency-exporter", password="fixture")
+        self.client.force_login(user)
+        project = Project.objects.create(external_id=uuid.uuid4(), name="Exportable")
+        instance = Instance.objects.create(
+            project=project,
+            external_id=uuid.uuid4(),
+            platform="linux-x86_64",
+            client_version="0.40.0",
+            counter_epoch=self.epoch,
+        )
+        now = timezone.now()
+        for offset in range(3):
+            WorkEfficiencyAggregate.objects.create(
+                instance=instance,
+                counter_epoch=self.epoch,
+                window_start=now - timedelta(hours=offset + 1),
+                window_end=now - timedelta(hours=offset),
+                remedial_tokens_actual=100 + offset,
+                remedial_token_coverage="0.7500",
+                remedial_interactions=offset,
+                remedial_output_bytes=200 + offset,
+                remedial_duration_ms=300 + offset,
+                remedial_retries=offset,
+            )
+
+        page = self.client.get(
+            reverse("fleet:work-efficiency"),
+            {"window": "24h", "project": str(project.id), "platform": "linux-x86_64", "version": "0.40.0"},
+        )
+        self.assertContains(page, "3 semantic changes")
+        self.assertContains(page, "Export CSV")
+        self.assertContains(page, "counter epoch remains separate")
+
+        exported = self.client.get(
+            reverse("fleet:work-efficiency"),
+            {"window": "24h", "project": str(project.id), "format": "json"},
+        )
+        payload = exported.json()
+        self.assertEqual(exported["Content-Disposition"], 'attachment; filename="tool-shed-work-efficiency.json"')
+        self.assertEqual(payload["schema_version"], 1)
+        self.assertEqual(len(payload["rows"]), 3)
+        self.assertEqual(payload["filters"]["project"], str(project.id))
+        self.assertEqual(
+            set(payload["rows"][0]),
+            {
+                "project", "project_id", "instance_id", "platform", "client_version", "counter_epoch",
+                "window_start", "window_end", "remedial_tokens_actual", "remedial_token_coverage",
+                "remedial_interactions", "remedial_output_bytes", "remedial_duration_ms", "remedial_retries",
+            },
+        )
+
+        self.assertEqual(_trim_efficiency_history(instance, self.epoch, retention=2), 1)
+        self.assertEqual(WorkEfficiencyAggregate.objects.filter(instance=instance).count(), 2)
 
     def test_project_navigation_orders_activity_filters_freshness_and_toggles_visibility(self) -> None:
         user = get_user_model().objects.create_user("project-nav-viewer", password="fixture")
