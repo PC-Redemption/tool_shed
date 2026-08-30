@@ -23,7 +23,13 @@ def dashboard_revision() -> str:
     payload = {
         "projects": list(
             Project.objects.order_by("id").values_list(
-                "id", "name", "attention_state", "current_state", "state_schema_version"
+                "id",
+                "name",
+                "attention_state",
+                "current_state",
+                "state_schema_version",
+                "last_activity_at",
+                "is_hidden",
             )
         ),
         "instances": list(

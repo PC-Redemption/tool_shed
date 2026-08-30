@@ -11,6 +11,7 @@ from django.core.paginator import Paginator
 from django.http import HttpRequest, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
@@ -240,6 +241,36 @@ def fleet_overview(request: HttpRequest):
             "selected_state": state,
         },
     )
+
+
+def _navigation_redirect(request: HttpRequest):
+    target = request.POST.get("next", "")
+    if target and url_has_allowed_host_and_scheme(
+        target, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        return redirect(target)
+    return redirect("fleet:overview")
+
+
+@dashboard_auth_required
+@require_POST
+def project_navigation_preferences(request: HttpRequest):
+    scope = request.POST.get("project_scope", "active")
+    request.session["fleet_project_scope"] = scope if scope in {"active", "all"} else "active"
+    request.session["fleet_show_hidden"] = request.POST.get("show_hidden") == "1"
+    return _navigation_redirect(request)
+
+
+@dashboard_auth_required
+@require_POST
+def project_visibility(request: HttpRequest, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    action = request.POST.get("action")
+    if action not in {"hide", "show"}:
+        return JsonResponse({"status": "invalid-action"}, status=400)
+    project.is_hidden = action == "hide"
+    project.save(update_fields=("is_hidden", "updated_at"))
+    return _navigation_redirect(request)
 
 
 @dashboard_auth_required

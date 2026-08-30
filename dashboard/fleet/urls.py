@@ -13,6 +13,16 @@ urlpatterns = [
     path("api/v1/credentials/revoke", views.reporter_revoke, name="reporter-revoke"),
     path("dashboard/", views.fleet_overview, name="overview"),
     path("dashboard/events/", views.dashboard_events, name="events"),
+    path(
+        "dashboard/navigation/projects/",
+        views.project_navigation_preferences,
+        name="project-navigation-preferences",
+    ),
+    path(
+        "dashboard/projects/<uuid:project_id>/visibility/",
+        views.project_visibility,
+        name="project-visibility",
+    ),
     path("dashboard/enrollments/", views.enrollments_view, name="enrollments"),
     path("dashboard/enrollments/<uuid:enrollment_id>/decision", views.enrollment_decision_ui, name="enrollment-decision-ui"),
     path("dashboard/projects/<uuid:project_id>/", views.project_detail, name="project"),

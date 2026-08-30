@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll("select[data-auto-submit]").forEach((select) => {
-    select.addEventListener("change", () => {
-      if (!select.form) return;
-      select.form.requestSubmit();
+  document.querySelectorAll("[data-auto-submit]").forEach((control) => {
+    control.addEventListener("change", () => {
+      if (!control.form) return;
+      control.form.requestSubmit();
     });
   });
 

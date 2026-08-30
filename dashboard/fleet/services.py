@@ -428,6 +428,19 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
     observed = report["observed_at"]
     previous_last_seen = locked.last_seen
     project = locked.project
+    previous_inventory_digest = locked.work_inventory_digest
+    inventory_digest = (
+        _digest(report["work_inventory"]) if report["schema_version"] == 2 else ""
+    )
+    material_activity = (
+        locked.last_sequence == 0
+        or project.name != report["project"]["name"]
+        or project.attention_state != report["state"]["attention_state"]
+        or project.current_state
+        != {key: value for key, value in report["state"].items() if key != "attention_state"}
+        or bool(report["material_events"])
+        or (report["schema_version"] == 2 and inventory_digest != previous_inventory_digest)
+    )
     project.name = report["project"]["name"]
     project.attention_state = report["state"]["attention_state"]
     project.current_state = {
@@ -435,7 +448,18 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
     }
     project.state_schema_version = report["schema_version"]
     project.last_seen = observed
-    project.save(update_fields=("name", "attention_state", "current_state", "state_schema_version", "last_seen", "updated_at"))
+    project_fields = [
+        "name",
+        "attention_state",
+        "current_state",
+        "state_schema_version",
+        "last_seen",
+        "updated_at",
+    ]
+    if material_activity:
+        project.last_activity_at = observed
+        project_fields.append("last_activity_at")
+    project.save(update_fields=project_fields)
     locked.platform = report["instance"]["platform"]
     locked.client_version = report["instance"]["client_version"]
     locked.counter_epoch = report["instance"]["counter_epoch"]
@@ -457,7 +481,7 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
         inventory = report["work_inventory"]
         locked.work_inventory_sequence = report["sequence"]
         locked.work_inventory_observed_at = observed
-        locked.work_inventory_digest = _digest(inventory)
+        locked.work_inventory_digest = inventory_digest
         locked.work_inventory_total = inventory["total_count"]
         locked.work_inventory_truncated = inventory["truncated"]
         instance_fields.extend(

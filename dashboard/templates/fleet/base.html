@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Dashboard{% endblock %} · Tool Shed</title>
   <link rel="stylesheet" href="/assets/site.css">
-  <link rel="stylesheet" href="{% static 'fleet/dashboard.css' %}">
+  <link rel="stylesheet" href="{% static 'fleet/dashboard.css' %}?v={{ dashboard_asset_revision }}">
   <script src="{% static 'fleet/dashboard.js' %}?v={{ dashboard_asset_revision }}" defer></script>
 </head>
 <body class="dashboard-body" data-dashboard-stream-url="{% url 'fleet:events' %}" data-dashboard-revision="{{ dashboard_revision }}">
@@ -32,10 +32,27 @@
       <a href="{% url 'fleet:app-server' %}" {% if request.resolver_match.url_name == 'app-server' %}aria-current="page"{% endif %}>App Server</a>
       <a href="{% url 'fleet:work-efficiency' %}" {% if request.resolver_match.url_name == 'work-efficiency' %}aria-current="page"{% endif %}>Work Efficiency</a>
       <hr>
+      <form class="project-nav-controls" action="{% url 'fleet:project-navigation-preferences' %}" method="post">
+        {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <label>Projects
+          <select name="project_scope" data-auto-submit>
+            <option value="active" {% if fleet_project_scope == 'active' %}selected{% endif %}>Active now</option>
+            <option value="all" {% if fleet_project_scope == 'all' %}selected{% endif %}>All projects</option>
+          </select>
+        </label>
+        <label class="project-hidden-toggle"><input type="checkbox" name="show_hidden" value="1" data-auto-submit {% if fleet_show_hidden %}checked{% endif %}> Show hidden</label>
+      </form>
       {% for nav_project in fleet_projects %}
-        <a href="{% url 'fleet:project' nav_project.id %}">{{ nav_project.name }} <span class="state-dot state-{{ nav_project.attention_state }}" aria-label="{{ nav_project.attention_state }}"></span></a>
+        <div class="project-nav-item{% if nav_project.is_hidden %} is-hidden{% endif %}">
+          <a href="{% url 'fleet:project' nav_project.id %}"><span>{{ nav_project.name }}</span><span class="state-dot state-{{ nav_project.attention_state }}" aria-label="{{ nav_project.attention_state }}"></span></a>
+          <form action="{% url 'fleet:project-visibility' nav_project.id %}" method="post">
+            {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <input type="hidden" name="action" value="{% if nav_project.is_hidden %}show{% else %}hide{% endif %}">
+            <button type="submit">{% if nav_project.is_hidden %}Show{% else %}Hide{% endif %}</button>
+          </form>
+        </div>
       {% empty %}
-        <p class="dashboard-empty">No reporting projects</p>
+        <p class="dashboard-empty">No projects match this view.</p>
       {% endfor %}
     </nav>
     <main class="dashboard-content" id="main-content" tabindex="-1">

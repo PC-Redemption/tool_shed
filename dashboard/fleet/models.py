@@ -14,6 +14,8 @@ class Project(models.Model):
     current_state = models.JSONField(default=dict)
     state_schema_version = models.PositiveSmallIntegerField(default=1)
     last_seen = models.DateTimeField(null=True, blank=True)
+    last_activity_at = models.DateTimeField(null=True, blank=True)
+    is_hidden = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

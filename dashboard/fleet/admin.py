@@ -5,7 +5,7 @@ from .models import Enrollment, Instance, Project, ReporterCredential
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ("name", "attention_state", "last_seen")
+    list_display = ("name", "attention_state", "last_activity_at", "last_seen", "is_hidden")
     search_fields = ("name", "external_id")
 
 

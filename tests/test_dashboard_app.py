@@ -21,6 +21,7 @@ from django.urls import reverse  # noqa: E402
 from django.utils import timezone  # noqa: E402
 
 from dashboard.fleet.contracts import ContractError, validate_report  # noqa: E402
+from dashboard.fleet.context import fleet_navigation  # noqa: E402
 from dashboard.fleet.live import dashboard_revision  # noqa: E402
 from dashboard.fleet.models import (  # noqa: E402
     AttentionCondition,
@@ -546,6 +547,7 @@ class DashboardApplicationTests(TestCase):
         Instance.objects.create(project=first, external_id=uuid.uuid4(), platform="linux", client_version="0.39.0")
         response = self.client.get(reverse("fleet:overview"), {"state": "attention"})
         self.assertContains(response, "/dashboard/static/fleet/dashboard.js?v=")
+        self.assertContains(response, "/dashboard/static/fleet/dashboard.css?v=")
         self.assertContains(response, f'data-dashboard-stream-url="{reverse("fleet:events")}"')
         self.assertContains(response, "data-dashboard-revision=")
         self.assertContains(response, "Beta")
@@ -556,6 +558,124 @@ class DashboardApplicationTests(TestCase):
         self.assertContains(response, "Unknown")
         response = self.client.get(reverse("fleet:work-efficiency"))
         self.assertContains(response, "No efficiency windows reported")
+
+    def test_project_navigation_orders_activity_filters_freshness_and_toggles_visibility(self) -> None:
+        user = get_user_model().objects.create_user("project-nav-viewer", password="fixture")
+        self.client.force_login(user)
+        now = timezone.now()
+        alpha = Project.objects.create(
+            external_id=uuid.uuid4(),
+            name="Alpha",
+            last_seen=now,
+            last_activity_at=now - timedelta(minutes=5),
+        )
+        beta = Project.objects.create(
+            external_id=uuid.uuid4(),
+            name="Beta",
+            last_seen=now,
+            last_activity_at=now,
+        )
+        stale = Project.objects.create(
+            external_id=uuid.uuid4(),
+            name="Stale",
+            last_seen=now - timedelta(minutes=30),
+            last_activity_at=now + timedelta(minutes=1),
+        )
+        hidden = Project.objects.create(
+            external_id=uuid.uuid4(),
+            name="Hidden",
+            last_seen=now,
+            last_activity_at=now + timedelta(minutes=2),
+            is_hidden=True,
+        )
+
+        response = self.client.get(reverse("fleet:overview"))
+        navigation = fleet_navigation(response.wsgi_request)
+        self.assertEqual([project.id for project in navigation["fleet_projects"]], [beta.id, alpha.id])
+        self.assertContains(response, "Active now")
+        self.assertContains(response, "Show hidden")
+
+        preferences = self.client.post(
+            reverse("fleet:project-navigation-preferences"),
+            {"project_scope": "all", "show_hidden": "1", "next": reverse("fleet:overview")},
+        )
+        self.assertRedirects(preferences, reverse("fleet:overview"))
+        response = self.client.get(reverse("fleet:overview"))
+        navigation = fleet_navigation(response.wsgi_request)
+        self.assertEqual(
+            [project.id for project in navigation["fleet_projects"]],
+            [hidden.id, stale.id, beta.id, alpha.id],
+        )
+
+        toggled = self.client.post(
+            reverse("fleet:project-visibility", args=(beta.id,)),
+            {"action": "hide", "next": reverse("fleet:overview")},
+        )
+        self.assertRedirects(toggled, reverse("fleet:overview"))
+        beta.refresh_from_db()
+        self.assertTrue(beta.is_hidden)
+
+        self.client.post(
+            reverse("fleet:project-navigation-preferences"),
+            {"project_scope": "all", "next": reverse("fleet:overview")},
+        )
+        response = self.client.get(reverse("fleet:overview"))
+        nav_ids = [project.id for project in fleet_navigation(response.wsgi_request)["fleet_projects"]]
+        self.assertNotIn(beta.id, nav_ids)
+        self.assertNotIn(hidden.id, nav_ids)
+
+        self.client.post(
+            reverse("fleet:project-visibility", args=(beta.id,)),
+            {"action": "show", "next": reverse("fleet:overview")},
+        )
+        beta.refresh_from_db()
+        self.assertFalse(beta.is_hidden)
+
+    def test_project_activity_changes_only_for_material_report_updates(self) -> None:
+        token = self.enroll_and_issue()
+        first = self.lifecycle_report_payload()
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(first),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        project = Project.objects.get(external_id=self.project_id)
+        first_activity = project.last_activity_at
+        self.assertEqual(first_activity.isoformat(), first["observed_at"])
+
+        unchanged = json.loads(json.dumps(first))
+        unchanged["idempotency_key"] = str(uuid.uuid4())
+        unchanged["sequence"] = 2
+        unchanged["observed_at"] = (timezone.now() + timedelta(minutes=1)).isoformat()
+        unchanged["material_events"] = []
+        unchanged["lifecycle_events"] = []
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(unchanged),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        project.refresh_from_db()
+        self.assertEqual(project.last_activity_at, first_activity)
+        self.assertEqual(project.last_seen.isoformat(), unchanged["observed_at"])
+
+        changed = json.loads(json.dumps(unchanged))
+        changed["idempotency_key"] = str(uuid.uuid4())
+        changed["sequence"] = 3
+        changed["observed_at"] = (timezone.now() + timedelta(minutes=2)).isoformat()
+        changed["work_inventory"]["artifacts"][0]["document_lifecycle"] = "completed"
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(changed),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        project.refresh_from_db()
+        self.assertEqual(project.last_activity_at.isoformat(), changed["observed_at"])
 
     def test_work_efficiency_view_hides_existing_unchanged_windows(self) -> None:
         user = get_user_model().objects.create_user("efficiency-viewer", password="fixture")
@@ -692,8 +812,8 @@ class DashboardApplicationTests(TestCase):
         self.assertIn("window.localStorage.getItem(storageKey)", script)
         self.assertIn("window.localStorage.setItem(storageKey, viewedAt)", script)
         self.assertIn("never affects active attention", script)
-        self.assertIn('document.querySelectorAll("select[data-auto-submit]")', script)
-        self.assertIn("select.form.requestSubmit()", script)
+        self.assertIn('document.querySelectorAll("[data-auto-submit]")', script)
+        self.assertIn("control.form.requestSubmit()", script)
 
     def test_contract_rejects_uncontrolled_summary_and_non_boolean_flags(self) -> None:
         payload = self.report_payload()
