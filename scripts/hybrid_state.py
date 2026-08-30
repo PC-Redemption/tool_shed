@@ -10,6 +10,7 @@ _runtime_sys.dont_write_bytecode = True
 import argparse
 import contextlib
 import copy
+import functools
 import hashlib
 import json
 import os
@@ -80,6 +81,7 @@ DOCUMENT_DOMAIN_TABLES = (
 )
 DOCUMENT_PORTABLE_TABLES = DOCUMENT_DOMAIN_TABLES
 DOCUMENT_CHECKPOINT_RELATIVE = Path("work/state/checkpoints/state-v2.json")
+SQLITE_INNOCUOUS = 0x000200000
 
 
 class HybridStateError(RuntimeError):
@@ -254,6 +256,52 @@ def duplicate_active_relationship_count(connection: sqlite3.Connection) -> int:
     )
 
 
+@functools.lru_cache(maxsize=2)
+def expected_schema_digest(schema_version: int) -> str:
+    """Build the exact supported schema digest without trusting an input database."""
+    if schema_version not in SUPPORTED_SCHEMA_VERSIONS:
+        raise HybridStateError(f"unsupported schema version: {schema_version}")
+    with contextlib.closing(sqlite3.connect(":memory:")) as connection:
+        connection.execute("PRAGMA trusted_schema=ON")
+        create_schema(connection, include_triggers=True)
+        if schema_version == 2:
+            from document_store_schema import create_document_schema
+
+            create_document_schema(connection, include_triggers=True)
+        return schema_digest(connection)
+
+
+def integrity_check(
+    connection: sqlite3.Connection,
+    *,
+    current_schema_digest: str,
+    schema_version: int,
+) -> list[str]:
+    """Run integrity_check safely on SQLite builds with pre-innocuous JSON functions."""
+    json_valid_flags = [
+        int(row[5])
+        for row in connection.execute("PRAGMA function_list")
+        if str(row[0]).casefold() == "json_valid"
+    ]
+    legacy_json = bool(json_valid_flags) and not any(
+        flags & SQLITE_INNOCUOUS for flags in json_valid_flags
+    )
+    if not legacy_json:
+        return [str(row[0]) for row in connection.execute("PRAGMA integrity_check")]
+    try:
+        expected = expected_schema_digest(schema_version)
+    except HybridStateError:
+        return ["legacy SQLite integrity check refused for an unsupported schema"]
+    if current_schema_digest != expected:
+        return ["legacy SQLite integrity check refused for a noncanonical schema"]
+    prior = int(connection.execute("PRAGMA trusted_schema").fetchone()[0])
+    try:
+        connection.execute("PRAGMA trusted_schema=ON")
+        return [str(row[0]) for row in connection.execute("PRAGMA integrity_check")]
+    finally:
+        connection.execute(f"PRAGMA trusted_schema={'ON' if prior else 'OFF'}")
+
+
 def _parse_timestamp(value: object) -> datetime | None:
     if not isinstance(value, str):
         return None
@@ -265,12 +313,6 @@ def _parse_timestamp(value: object) -> datetime | None:
 
 def audit_connection(workspace: Path, connection: sqlite3.Connection) -> dict[str, Any]:
     findings: list[str] = []
-    integrity = [str(row[0]) for row in connection.execute("PRAGMA integrity_check")]
-    if integrity != ["ok"]:
-        findings.extend(f"integrity: {item}" for item in integrity)
-    foreign_keys = [tuple(row) for row in connection.execute("PRAGMA foreign_key_check")]
-    if foreign_keys:
-        findings.append(f"foreign-key violations: {len(foreign_keys)}")
     application_id = int(connection.execute("PRAGMA application_id").fetchone()[0])
     user_version = int(connection.execute("PRAGMA user_version").fetchone()[0])
     if application_id != APPLICATION_ID:
@@ -294,6 +336,16 @@ def audit_connection(workspace: Path, connection: sqlite3.Connection) -> dict[st
     current_schema_digest = schema_digest(connection)
     if meta.get("schema_trigger_digest") != current_schema_digest:
         findings.append("schema or accounting-trigger digest changed")
+    integrity = integrity_check(
+        connection,
+        current_schema_digest=current_schema_digest,
+        schema_version=user_version,
+    )
+    if integrity != ["ok"]:
+        findings.extend(f"integrity: {item}" for item in integrity)
+    foreign_keys = [tuple(row) for row in connection.execute("PRAGMA foreign_key_check")]
+    if foreign_keys:
+        findings.append(f"foreign-key violations: {len(foreign_keys)}")
     active = int(connection.execute("SELECT COUNT(*) FROM active_operation").fetchone()[0])
     if active:
         findings.append("an incomplete managed operation context remains active")
