@@ -1,0 +1,122 @@
+# Program Roadmap: Methodical Windows Field Upgrade and Installer Repair
+
+Status: active
+Type: program-roadmap
+Updated: 2026-08-30
+Next Action: perform an explicit verified switch to the Windows target, then begin M1 without invoking the current documentation-site Work2 deployment
+Roadmap ID: methodical-windows-field-upgrade-and-installer-repair
+Roadmap Revision: 1
+Source Idea: IDEA-0017
+Source Project Map: MAP-0023
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 2
+Reviewed Body SHA256: 68f623cdf2509fff7c53e7da99a30db366f5b57ac26b743cab3a6bdca48f1ca4
+
+## Program Outcome
+
+Safely upgrade the exact disconnected Windows Tool Shed instance at
+`workpc:E:\dev\high_point\7520553_SMI_FW` to the latest qualified stable release. Preserve the
+firmware workspace, non-Hybrid storage posture, rollback assets, and provenance. If the field target
+demonstrates a reusable installer defect, repair it only in the canonical maintainer repository,
+qualify it on Windows and Linux, release it under separate Work5 authority, and retry from a known
+state.
+
+## M1-TARGET-AND-RECOVERY-PREFLIGHT — Bind and prove the work target
+
+Status: blocked pending explicit verified target switch
+Required Endpoint: Work2
+Depends on: none
+
+Outcome: The exact Windows host and workspace are project-bound and the immutable baseline,
+toolchain, Git state, links, disk capacity, current Tool Shed provenance, backup, rollback, and
+non-Hybrid storage posture are proven before mutation.
+
+Gates:
+
+- `G1-WINDOWS-TARGET-IDENTITY-AND-ROUTING`
+- `G2-BASELINE-BACKUP-ROLLBACK-AND-STORAGE-POSTURE`
+- `G3-CURRENT-RELEASE-PROVENANCE-AND-UPDATER`
+
+No campaign is materialized in the canonical maintainer workspace for M1. Execution belongs to the
+verified Windows project after an explicit target switch.
+
+## M2-TRANSACTIONAL-UPGRADE-AND-WORK2-ACCEPTANCE — Upgrade and prove the target
+
+Status: waiting on M1
+Required Endpoint: Work2
+Depends on: M1-TARGET-AND-RECOVERY-PREFLIGHT
+
+Outcome: The current released updater performs a transactional Windows-native upgrade, or rolls
+back cleanly on a declared stop condition. A successful path proves the exact target version,
+identity, provider guidance, installed-skill consistency, storage posture, firmware Git state,
+rollback assets, and reusable procedure.
+
+Gates:
+
+- `G4-WINDOWS-NATIVE-TRANSACTIONAL-UPGRADE`
+- `G6-WORK2-ACCEPTANCE-AND-RECOVERY-EVIDENCE`
+
+## M3-CONDITIONAL-CANONICAL-DEFECT-REPAIR — Repair only demonstrated reusable failures
+
+Status: conditional
+Required Endpoint: Work2 candidate; Work5 release required before target retry
+Depends on: reproduced M2 failure attributable to canonical installer or updater behavior
+
+Outcome: A demonstrated Windows defect is reproduced, repaired minimally in
+`/home/jon/docker/tool_shed`, qualified on Windows and Linux, committed as a Work2 candidate, and
+registered with its open owning outcome chain. Releasing that candidate and resuming the target
+upgrade requires a later explicit Work5 route. When no reusable defect occurs, record this
+milestone and its gate as not applicable with evidence.
+
+Gate:
+
+- `G5-CANONICAL-DEFECT-REPAIR-AND-CROSS-PLATFORM-QUALIFICATION`
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G1-WINDOWS-TARGET-IDENTITY-AND-ROUTING | M1 / same gate |
+| G2-BASELINE-BACKUP-ROLLBACK-AND-STORAGE-POSTURE | M1 / same gate |
+| G3-CURRENT-RELEASE-PROVENANCE-AND-UPDATER | M1 / same gate |
+| G4-WINDOWS-NATIVE-TRANSACTIONAL-UPGRADE | M2 / same gate |
+| G5-CANONICAL-DEFECT-REPAIR-AND-CROSS-PLATFORM-QUALIFICATION | M3 / same gate |
+| G6-WORK2-ACCEPTANCE-AND-RECOVERY-EVIDENCE | M2 / same gate |
+
+Transfer count: 6 reviewed gates; 6 mapped gates; 0 dropped.
+
+## Work2 Boundary
+
+Work2 includes the bounded Windows-target preflight, recovery proof, latest-release provenance,
+transactional field upgrade, focused changed-behavior checks, a scoped local commit when source
+changes exist, deployment to the explicitly verified Windows work environment, release-cohort
+registration for any canonical candidate, governed checkpoint/rebuild proof, and strict Doctor in
+the applicable project.
+
+Work2 does not deploy the `ts.rookaro.com` documentation site for this outcome, push Git, publish a
+release, or cross into an unverified project identity. A defect repair may reach a registered
+Work2 candidate but cannot be used as a new stable target input until Work5 releases it.
+
+## Authority and Stop Conditions
+
+- The current project identity cannot mutate the external Windows workspace.
+- Stop before remote mutation until `workpc` and the exact path are verified under an explicit
+  target switch and fresh target-local instructions, Tool Shed skill, identity, and state.
+- Stop or roll back on host/path mismatch, unexpected links or junctions, inadequate space, failed
+  provenance, unproven recovery, unrelated Git damage, storage-mode change, or failed qualification.
+- Credentials and authentication changes remain explicit operator boundaries.
+
+## Verification Strategy
+
+- Windows-native commands verify paths, tool versions, Git state, manifest/tag/content provenance,
+  disk and link safety, backup hashes, rollback, updater behavior, version, identity, storage mode,
+  installed skill, and firmware-work preservation.
+- Linux and Windows focused tests qualify only an actually reproduced canonical repair.
+- Evidence remains sanitized and retains recovery assets without copying firmware content into this
+  repository.
+
+## Next Route
+
+Use an explicit Tool Shed project switch to the known Windows workspace, then resume M1 at Work2.
+
+Readiness result digest: 0239b8a6ec01345362b877ea9ba3196c071a9cac40b5417ebbd803bbff3c9249
