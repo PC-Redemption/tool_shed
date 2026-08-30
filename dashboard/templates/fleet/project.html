@@ -105,9 +105,34 @@
 <section class="dashboard-panel" data-recent-changes data-project-key="{{ project.id }}" data-viewed-at="{{ history_viewed_at }}">
   <div class="panel-heading"><div><h2>Recent Changes</h2><p class="dashboard-note">Controlled lifecycle, Tool Shed, and attention changes retained within their bounded windows. Heartbeats and unchanged snapshots do not create rows.</p></div><span class="new-change-count" aria-live="polite"></span></div>
   <p class="dashboard-note">“New” is tracked only in this browser. It never acknowledges or hides active attention.</p>
+  <form method="get" class="work-filters">
+    <label>Rows
+      <select name="rows">
+        <option value="10" {% if selected_rows == '10' %}selected{% endif %}>10</option>
+        <option value="20" {% if selected_rows == '20' %}selected{% endif %}>20</option>
+        <option value="50" {% if selected_rows == '50' %}selected{% endif %}>50</option>
+        <option value="100" {% if selected_rows == '100' %}selected{% endif %}>100</option>
+        <option value="all" {% if selected_rows == 'all' %}selected{% endif %}>All</option>
+      </select>
+    </label>
+    <button type="submit">Apply</button>
+  </form>
+  <div class="work-result-summary">
+    <span>Newest changes first.</span>
+    {% if history_page %}<span>Showing {{ history_page.start_index }}–{{ history_page.end_index }} of {{ history_result_count }}</span>{% else %}<span>Showing all {{ history_result_count }}</span>{% endif %}
+  </div>
   {% if history %}<div class="table-scroll"><table><thead><tr><th>When</th><th>Kind</th><th>Change</th><th>Source instance</th><th>Details</th></tr></thead><tbody>
     {% for event in history %}<tr data-change-at="{{ event.occurred_at|date:'c' }}"><td>{{ event.occurred_at }} <span class="new-change-badge" hidden>New</span></td><td>{{ event.kind }}</td><th>{{ event.title }}<small>{{ event.summary }}</small></th><td>{{ event.source_label }}</td><td>{% if event.detail_tab == 'app-server' %}<a href="{% url 'fleet:app-server' %}">Open</a>{% else %}<a href="{% url 'fleet:project-tab' project.id event.detail_tab %}">Open</a>{% endif %}</td></tr>{% endfor %}
   </tbody></table></div>{% else %}<p class="dashboard-empty">No controlled changes reported yet. The first work snapshot establishes a baseline without inventing lifecycle history.</p>{% endif %}
+  {% if history_page and history_page.paginator.num_pages > 1 %}
+  <nav class="table-pagination" aria-label="History table pages">
+    {% if history_previous_page_url %}<a href="{{ history_previous_page_url }}" rel="prev">Previous</a>{% else %}<span aria-disabled="true">Previous</span>{% endif %}
+    {% for link in history_page_links %}
+      {% if link.ellipsis %}<span aria-hidden="true">…</span>{% elif link.current %}<span aria-current="page">{{ link.number }}</span>{% else %}<a href="{{ link.url }}">{{ link.number }}</a>{% endif %}
+    {% endfor %}
+    {% if history_next_page_url %}<a href="{{ history_next_page_url }}" rel="next">Next</a>{% else %}<span aria-disabled="true">Next</span>{% endif %}
+  </nav>
+  {% endif %}
 </section>
 {% elif tab == 'outcomes' %}
 <section class="dashboard-panel"><h2>Outcome Reconciliation</h2><p>{{ project.current_state.open_outcome_count|default:0 }} open and {{ project.current_state.unreconciled_outcome_count|default:0 }} unreconciled outcome loops.</p><p class="dashboard-note">See Work for each artifact’s outcome lifecycle, disposition, and reconciliation state.</p></section>

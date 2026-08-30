@@ -270,6 +270,11 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
     page_links: list[dict[str, object]] = []
     previous_page_url = None
     next_page_url = None
+    history_page = None
+    history_result_count = 0
+    history_page_links: list[dict[str, object]] = []
+    history_previous_page_url = None
+    history_next_page_url = None
 
     def work_url(page: int) -> str:
         values = {"rows": selected_rows, "page": page}
@@ -333,7 +338,37 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
         for instance in instances
         if instance.work_inventory_digest
     }
-    history = recent_changes(project) if tab == "history" else []
+    history = []
+    if tab == "history":
+        all_history = recent_changes(project)
+        history_result_count = len(all_history)
+
+        def history_url(page: int) -> str:
+            return "?" + urlencode({"rows": selected_rows, "page": page})
+
+        if selected_rows == "all":
+            history = all_history
+        else:
+            paginator = Paginator(all_history, int(selected_rows))
+            history_page = paginator.get_page(request.GET.get("page", "1"))
+            history = list(history_page.object_list)
+            if history_page.has_previous():
+                history_previous_page_url = history_url(history_page.previous_page_number())
+            if history_page.has_next():
+                history_next_page_url = history_url(history_page.next_page_number())
+            for page_number in paginator.get_elided_page_range(
+                history_page.number, on_each_side=2, on_ends=1
+            ):
+                if page_number == Paginator.ELLIPSIS:
+                    history_page_links.append({"ellipsis": True})
+                else:
+                    history_page_links.append(
+                        {
+                            "number": page_number,
+                            "url": history_url(int(page_number)),
+                            "current": int(page_number) == history_page.number,
+                        }
+                    )
     return render(
         request,
         "fleet/project.html",
@@ -353,6 +388,11 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
             "page_links": page_links,
             "previous_page_url": previous_page_url,
             "next_page_url": next_page_url,
+            "history_page": history_page,
+            "history_result_count": history_result_count,
+            "history_page_links": history_page_links,
+            "history_previous_page_url": history_previous_page_url,
+            "history_next_page_url": history_next_page_url,
         },
     )
 

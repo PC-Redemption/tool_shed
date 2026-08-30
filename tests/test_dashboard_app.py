@@ -445,6 +445,60 @@ class DashboardApplicationTests(TestCase):
         invalid = self.client.get(url, {"rows": "500"})
         self.assertContains(invalid, '<option value="20" selected>20</option>', html=True)
 
+    def test_history_table_is_newest_first_and_uses_work_paging_model(self) -> None:
+        user = get_user_model().objects.create_user("history-table-viewer", password="fixture")
+        self.client.force_login(user)
+        project = Project.objects.create(external_id=uuid.uuid4(), name="Paginated history")
+        instance = Instance.objects.create(
+            project=project,
+            external_id=uuid.uuid4(),
+            platform="linux",
+            client_version="0.40.0",
+            report_schema_version=2,
+        )
+        observed = timezone.now()
+        for number in range(1, 26):
+            LifecycleEvent.objects.create(
+                project=project,
+                instance=instance,
+                event_key=f"history-{number}",
+                artifact_external_id=uuid.uuid4(),
+                visible_id=f"CAMP-{number:04d}",
+                artifact_type="campaign",
+                title=f"History {number}",
+                transition="document",
+                from_state="working",
+                to_state="completed",
+                occurred_at=observed + timedelta(minutes=number),
+                retained_until=observed + timedelta(days=30),
+            )
+        url = reverse("fleet:project-tab", args=(project.id, "history"))
+
+        first = self.client.get(url)
+        self.assertContains(first, '<option value="20" selected>20</option>', html=True)
+        self.assertEqual(first.content.count(b"data-change-at="), 20)
+        self.assertContains(first, "CAMP-0025")
+        self.assertContains(first, "CAMP-0006")
+        self.assertNotContains(first, "CAMP-0005")
+        self.assertLess(first.content.index(b"CAMP-0025"), first.content.index(b"CAMP-0006"))
+        self.assertContains(first, "Showing 1–20 of 25")
+
+        second = self.client.get(url, {"page": 2})
+        self.assertContains(second, 'aria-current="page">2</span>')
+        self.assertContains(second, "CAMP-0005")
+        self.assertNotContains(second, "CAMP-0025")
+
+        ten = self.client.get(url, {"rows": "10"})
+        self.assertEqual(ten.content.count(b"data-change-at="), 10)
+        self.assertContains(ten, "Showing 1–10 of 25")
+
+        all_rows = self.client.get(url, {"rows": "all"})
+        self.assertEqual(all_rows.content.count(b"data-change-at="), 25)
+        self.assertContains(all_rows, "Showing all 25")
+
+        invalid = self.client.get(url, {"rows": "500"})
+        self.assertContains(invalid, '<option value="20" selected>20</option>', html=True)
+
     def test_reporter_credential_is_required(self) -> None:
         response = self.client.post(
             reverse("fleet:report-ingest"),
