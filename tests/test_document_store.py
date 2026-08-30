@@ -142,6 +142,24 @@ class DocumentStoreThinSliceTests(unittest.TestCase):
         self.assertEqual(rebuilt["domain_digest"], document_store.audit(self.workspace, self.database)["domain_digest"])
         self.assertEqual(document_store.show(self.workspace, idea["visible_id"], database=self.workspace / rebuilt_path)["body_markdown"], shown["body_markdown"])
 
+        class LegacyJsonConnection:
+            def __init__(self, connection: sqlite3.Connection) -> None:
+                self.connection = connection
+                self.statements: list[str] = []
+
+            def execute(self, statement: str, *args: object) -> object:
+                self.statements.append(statement)
+                if statement == "PRAGMA function_list":
+                    return [("json_valid", 1, "s", "utf8", 1, 2048)]
+                return self.connection.execute(statement, *args)
+
+        with contextlib.closing(hybrid_state.connect(self.workspace / rebuilt_path, writable=False)) as connection:
+            legacy = LegacyJsonConnection(connection)
+            legacy_audit = document_store.audit_connection(self.workspace, legacy)  # type: ignore[arg-type]
+            self.assertEqual(legacy_audit["classification"], "CLEAN")
+            self.assertIn("PRAGMA trusted_schema=ON", legacy.statements)
+            self.assertEqual(int(connection.execute("PRAGMA trusted_schema").fetchone()[0]), 0)
+
         for relative, content in originals.items():
             self.assertEqual((self.workspace / relative).read_bytes(), content)
 

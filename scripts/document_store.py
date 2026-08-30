@@ -11,6 +11,7 @@ import argparse
 import contextlib
 import copy
 import difflib
+import functools
 import hashlib
 import json
 import os
@@ -44,6 +45,7 @@ CHECKPOINT_FORMAT = 2
 VISIBLE_ID = re.compile(r"^(?P<namespace>[A-Z]{2,5})-(?P<number>[0-9]{4,})$")
 EDIT_HEADER = "tool_shed_document: 1"
 LIFECYCLES = ("active", "working", "blocked", "parked", "deferred", "completed", "abandoned", "superseded")
+SQLITE_INNOCUOUS = 0x000200000
 
 
 class DocumentStoreError(RuntimeError):
@@ -75,6 +77,38 @@ def portable_tables(connection: sqlite3.Connection) -> tuple[str, ...]:
 def domain_digest(connection: sqlite3.Connection) -> str:
     tables = (table for table in domain_tables(connection) if table != "workspace")
     return hashlib.sha256(canonical_bytes({table: hybrid_state.table_rows(connection, table) for table in tables})).hexdigest()
+
+
+@functools.lru_cache(maxsize=1)
+def _expected_schema_digest() -> str:
+    """Return the exact current schema digest without trusting an input database."""
+    with contextlib.closing(sqlite3.connect(":memory:")) as connection:
+        connection.execute("PRAGMA trusted_schema=ON")
+        hybrid_state.create_schema(connection, include_triggers=True)
+        create_document_schema(connection, include_triggers=True)
+        return hybrid_state.schema_digest(connection)
+
+
+def _integrity_check(connection: sqlite3.Connection, current_schema_digest: str) -> list[str]:
+    """Run integrity_check safely on SQLite builds with pre-innocuous JSON functions."""
+    json_valid_flags = [
+        int(row[5])
+        for row in connection.execute("PRAGMA function_list")
+        if str(row[0]).casefold() == "json_valid"
+    ]
+    legacy_json = bool(json_valid_flags) and not any(
+        flags & SQLITE_INNOCUOUS for flags in json_valid_flags
+    )
+    if not legacy_json:
+        return [str(row[0]) for row in connection.execute("PRAGMA integrity_check")]
+    if current_schema_digest != _expected_schema_digest():
+        return ["legacy SQLite integrity check refused for a noncanonical schema"]
+    prior = int(connection.execute("PRAGMA trusted_schema").fetchone()[0])
+    try:
+        connection.execute("PRAGMA trusted_schema=ON")
+        return [str(row[0]) for row in connection.execute("PRAGMA integrity_check")]
+    finally:
+        connection.execute(f"PRAGMA trusted_schema={'ON' if prior else 'OFF'}")
 
 
 def _body_header_value(body: str, field: str) -> str | None:
@@ -151,12 +185,6 @@ def _semantic_document_findings(connection: sqlite3.Connection) -> list[dict[str
 
 def audit_connection(workspace: Path, connection: sqlite3.Connection) -> dict[str, Any]:
     findings: list[str] = []
-    integrity = [str(row[0]) for row in connection.execute("PRAGMA integrity_check")]
-    if integrity != ["ok"]:
-        findings.extend(f"integrity: {item}" for item in integrity)
-    foreign = list(connection.execute("PRAGMA foreign_key_check"))
-    if foreign:
-        findings.append(f"foreign-key violations: {len(foreign)}")
     user_version = int(connection.execute("PRAGMA user_version").fetchone()[0])
     if user_version != HYBRID_SCHEMA_VERSION:
         findings.append(f"document operations require Hybrid schema {HYBRID_SCHEMA_VERSION}; found {user_version}")
@@ -169,6 +197,12 @@ def audit_connection(workspace: Path, connection: sqlite3.Connection) -> dict[st
     current_schema_digest = hybrid_state.schema_digest(connection)
     if meta["schema_trigger_digest"] != current_schema_digest:
         findings.append("schema or accounting-trigger digest changed")
+    integrity = _integrity_check(connection, current_schema_digest)
+    if integrity != ["ok"]:
+        findings.extend(f"integrity: {item}" for item in integrity)
+    foreign = list(connection.execute("PRAGMA foreign_key_check"))
+    if foreign:
+        findings.append(f"foreign-key violations: {len(foreign)}")
     active = int(connection.execute("SELECT count(*) FROM active_operation").fetchone()[0])
     if active:
         findings.append("an incomplete managed operation context remains active")
