@@ -85,8 +85,11 @@ docker compose --project-directory <production-directory> \
 
 The dashboard runs migrations and static collection before Gunicorn. Nginx rate-limits API
 requests, serves public documentation and dashboard static assets, and proxies `/dashboard/` and
-`/api/v1/`. Security settings require HTTPS, secure cookies, HSTS, an explicit host allowlist, and
-CSRF trusted origins.
+`/api/v1/`. Authenticated dashboard pages use one visibility-scoped, read-only server-sent event
+stream to reload when semantic database state changes. Hidden and navigated-away pages close their
+streams, and heartbeat-only receipt timestamps do not trigger reloads. Work Efficiency stores and
+displays metric changes rather than a new row for every unchanged sliding-window report. Security
+settings require HTTPS, secure cookies, HSTS, an explicit host allowlist, and CSRF trusted origins.
 
 ## First maintainer and optional MFA
 

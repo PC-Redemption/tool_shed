@@ -6,9 +6,9 @@
   <title>{% block title %}Dashboard{% endblock %} · Tool Shed</title>
   <link rel="stylesheet" href="/assets/site.css">
   <link rel="stylesheet" href="{% static 'fleet/dashboard.css' %}">
-  <script src="{% static 'fleet/dashboard.js' %}" defer></script>
+  <script src="{% static 'fleet/dashboard.js' %}?v={{ dashboard_asset_revision }}" defer></script>
 </head>
-<body class="dashboard-body">
+<body class="dashboard-body" data-dashboard-stream-url="{% url 'fleet:events' %}" data-dashboard-revision="{{ dashboard_revision }}">
   <header class="dashboard-header">
     <a class="dashboard-brand" href="/dashboard/">Tool Shed <span>Dashboard</span></a>
     <form class="dashboard-search" action="/dashboard/" method="get" role="search">

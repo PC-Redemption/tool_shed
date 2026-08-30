@@ -1,19 +1,23 @@
 from __future__ import annotations
 
 import json
+import time
 from datetime import timedelta
 
-from django.http import HttpRequest, JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.conf import settings
+from django.db import close_old_connections
 from django.db.models import Q
+from django.http import HttpRequest, JsonResponse, StreamingHttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
 from .auth import dashboard_auth_required, reporter_instance
 from .contracts import ContractError, validate_report
-from .models import Enrollment, FailureGroup, Project, WorkEfficiencyAggregate
-from .services import approve_enrollment, create_enrollment, ingest_report, poll_enrollment
+from .live import dashboard_revision
+from .models import Enrollment, FailureGroup, Project
+from .services import approve_enrollment, create_enrollment, distinct_efficiency_aggregates, ingest_report, poll_enrollment
 
 
 def _payload(request: HttpRequest) -> dict:
@@ -132,6 +136,37 @@ def reporter_revoke(request: HttpRequest) -> JsonResponse:
     return JsonResponse({"schema_version": 1, "status": "revoked"})
 
 
+@require_GET
+@dashboard_auth_required
+def dashboard_events(request: HttpRequest) -> StreamingHttpResponse:
+    requested_revision = request.GET.get("since", "")
+
+    def stream():
+        yield "retry: 5000\n: connected\n\n"
+        baseline = dashboard_revision()
+        if requested_revision and baseline != requested_revision:
+            yield f"id: {baseline}\nevent: dashboard-update\ndata: {baseline}\n\n"
+            return
+        started = time.monotonic()
+        keepalive_at = started
+        while time.monotonic() - started < settings.DASHBOARD_SSE_MAX_SECONDS:
+            time.sleep(settings.DASHBOARD_SSE_POLL_SECONDS)
+            close_old_connections()
+            current = dashboard_revision()
+            if current != baseline:
+                yield f"id: {current}\nevent: dashboard-update\ndata: {current}\n\n"
+                return
+            now = time.monotonic()
+            if now - keepalive_at >= 15:
+                yield ": keepalive\n\n"
+                keepalive_at = now
+
+    response = StreamingHttpResponse(stream(), content_type="text/event-stream")
+    response["Cache-Control"] = "no-cache, no-transform"
+    response["X-Accel-Buffering"] = "no"
+    return response
+
+
 @dashboard_auth_required
 def fleet_overview(request: HttpRequest):
     projects = Project.objects.prefetch_related("instances").all()
@@ -172,5 +207,5 @@ def app_server_view(request: HttpRequest):
 
 @dashboard_auth_required
 def work_efficiency_view(request: HttpRequest):
-    aggregates = WorkEfficiencyAggregate.objects.select_related("instance", "instance__project")[:200]
+    aggregates = distinct_efficiency_aggregates()
     return render(request, "fleet/work_efficiency.html", {"aggregates": aggregates})

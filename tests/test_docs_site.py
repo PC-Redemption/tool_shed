@@ -308,6 +308,8 @@ class DocumentationSiteTests(unittest.TestCase):
         self.assertIn("tool-shed-dashboard:", compose)
         self.assertIn("healthcheck:", compose)
         self.assertIn("try_files $uri $uri/ =404", nginx)
+        self.assertIn("location = /dashboard/events/", nginx)
+        self.assertIn("proxy_buffering off", nginx)
         self.assertIn("location /dashboard/", nginx)
         self.assertIn("location /api/v1/", nginx)
 

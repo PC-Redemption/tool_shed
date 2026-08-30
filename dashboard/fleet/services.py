@@ -4,6 +4,7 @@ import hashlib
 import json
 import secrets
 from datetime import timedelta
+from decimal import Decimal
 from typing import Any
 
 from django.conf import settings
@@ -27,6 +28,37 @@ from .models import (
 
 def _digest(value: object) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), default=str).encode()).hexdigest()
+
+
+def _efficiency_signature(value: WorkEfficiencyAggregate | dict[str, Any]) -> tuple[object, ...]:
+    def field(name: str) -> object:
+        return value[name] if isinstance(value, dict) else getattr(value, name)
+
+    return (
+        field("remedial_tokens_actual"),
+        Decimal(str(field("remedial_token_coverage"))),
+        field("remedial_interactions"),
+        field("remedial_output_bytes"),
+        field("remedial_duration_ms"),
+        field("remedial_retries"),
+    )
+
+
+def distinct_efficiency_aggregates(*, limit: int = 200) -> list[WorkEfficiencyAggregate]:
+    """Return metric changes, hiding repeated sliding-window snapshots."""
+    result: list[WorkEfficiencyAggregate] = []
+    latest_by_instance: dict[tuple[object, object], tuple[object, ...]] = {}
+    rows = WorkEfficiencyAggregate.objects.select_related("instance", "instance__project")[: max(limit * 10, limit)]
+    for item in rows:
+        key = (item.instance_id, item.counter_epoch)
+        signature = _efficiency_signature(item)
+        if latest_by_instance.get(key) == signature:
+            continue
+        latest_by_instance[key] = signature
+        result.append(item)
+        if len(result) == limit:
+            break
+    return result
 
 
 def create_enrollment(payload: dict[str, Any]) -> tuple[Enrollment, str]:
@@ -191,11 +223,17 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
         )
     FailureGroup.objects.filter(retained_until__lt=timezone.now()).delete()
     work = report["work_efficiency"]
-    WorkEfficiencyAggregate.objects.update_or_create(
-        instance=locked,
-        counter_epoch=locked.counter_epoch,
-        window_start=work["window_start"],
-        window_end=work["window_end"],
-        defaults=work,
+    latest_efficiency = (
+        WorkEfficiencyAggregate.objects.filter(instance=locked, counter_epoch=locked.counter_epoch)
+        .order_by("-window_end")
+        .first()
     )
+    if latest_efficiency is None or _efficiency_signature(latest_efficiency) != _efficiency_signature(work):
+        WorkEfficiencyAggregate.objects.update_or_create(
+            instance=locked,
+            counter_epoch=locked.counter_epoch,
+            window_start=work["window_start"],
+            window_end=work["window_end"],
+            defaults=work,
+        )
     return {"status": "accepted", "sequence": locked.last_sequence}

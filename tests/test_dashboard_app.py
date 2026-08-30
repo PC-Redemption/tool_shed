@@ -4,6 +4,7 @@ import json
 import os
 import uuid
 from datetime import timedelta
+from pathlib import Path
 
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dashboard.config.settings")
@@ -20,7 +21,14 @@ from django.urls import reverse  # noqa: E402
 from django.utils import timezone  # noqa: E402
 
 from dashboard.fleet.contracts import ContractError, validate_report  # noqa: E402
-from dashboard.fleet.models import Enrollment, Instance, Project, ReporterCredential  # noqa: E402
+from dashboard.fleet.live import dashboard_revision  # noqa: E402
+from dashboard.fleet.models import (  # noqa: E402
+    Enrollment,
+    Instance,
+    Project,
+    ReporterCredential,
+    WorkEfficiencyAggregate,
+)
 from dashboard.fleet.services import approve_enrollment  # noqa: E402
 
 call_command("migrate", verbosity=0)
@@ -183,6 +191,40 @@ class DashboardApplicationTests(TestCase):
         )
         self.assertEqual(conflict.status_code, 409)
 
+    def test_ingestion_records_work_efficiency_only_when_metrics_change(self) -> None:
+        token = self.enroll_and_issue()
+        first = self.report_payload()
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(first),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+
+        unchanged = self.report_payload()
+        unchanged["sequence"] = 2
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(unchanged),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(WorkEfficiencyAggregate.objects.count(), 1)
+
+        changed = self.report_payload()
+        changed["sequence"] = 3
+        changed["work_efficiency"]["remedial_interactions"] = 5  # type: ignore[index]
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(changed),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(WorkEfficiencyAggregate.objects.count(), 2)
+
     def test_reporter_credential_is_required(self) -> None:
         response = self.client.post(
             reverse("fleet:report-ingest"),
@@ -216,6 +258,9 @@ class DashboardApplicationTests(TestCase):
         second = Project.objects.create(external_id=uuid.uuid4(), name="Beta", attention_state="attention")
         Instance.objects.create(project=first, external_id=uuid.uuid4(), platform="linux", client_version="0.39.0")
         response = self.client.get(reverse("fleet:overview"), {"state": "attention"})
+        self.assertContains(response, "/dashboard/static/fleet/dashboard.js?v=")
+        self.assertContains(response, f'data-dashboard-stream-url="{reverse("fleet:events")}"')
+        self.assertContains(response, "data-dashboard-revision=")
         self.assertContains(response, "Beta")
         self.assertNotContains(response, "Alpha</a></th>")
         response = self.client.get(reverse("fleet:overview"), {"q": "Alpha"})
@@ -224,6 +269,80 @@ class DashboardApplicationTests(TestCase):
         self.assertContains(response, "Unknown")
         response = self.client.get(reverse("fleet:work-efficiency"))
         self.assertContains(response, "No efficiency windows reported")
+
+    def test_work_efficiency_view_hides_existing_unchanged_windows(self) -> None:
+        user = get_user_model().objects.create_user("efficiency-viewer", password="fixture")
+        self.client.force_login(user)
+        project = Project.objects.create(external_id=uuid.uuid4(), name="Efficiency")
+        instance = Instance.objects.create(
+            project=project,
+            external_id=uuid.uuid4(),
+            platform="linux",
+            client_version="0.39.0",
+            counter_epoch=self.epoch,
+        )
+        now = timezone.now()
+        metrics = {
+            "remedial_tokens_actual": 1200,
+            "remedial_token_coverage": "0.7500",
+            "remedial_interactions": 4,
+            "remedial_output_bytes": 2048,
+            "remedial_duration_ms": 9000,
+            "remedial_retries": 1,
+        }
+        for offset in (2, 1):
+            WorkEfficiencyAggregate.objects.create(
+                instance=instance,
+                counter_epoch=self.epoch,
+                window_start=now - timedelta(hours=offset + 1),
+                window_end=now - timedelta(hours=offset),
+                **metrics,
+            )
+        response = self.client.get(reverse("fleet:work-efficiency"))
+        self.assertContains(response, ">1200<", count=1)
+        self.assertContains(response, "Unchanged sliding-window reports are suppressed")
+
+    def test_dashboard_event_stream_announces_a_stale_revision(self) -> None:
+        user = get_user_model().objects.create_user("stream-viewer", password="fixture")
+        self.client.force_login(user)
+        response = self.client.get(reverse("fleet:events"), {"since": "stale"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/event-stream")
+        self.assertEqual(response["Cache-Control"], "no-cache, no-transform")
+        self.assertEqual(response["X-Accel-Buffering"], "no")
+        chunks = iter(response.streaming_content)
+        payload = next(chunks) + next(chunks)
+        self.assertIn(b"retry: 5000", payload)
+        self.assertIn(b"event: dashboard-update", payload)
+
+    def test_dashboard_revision_ignores_heartbeat_only_updates(self) -> None:
+        project = Project.objects.create(
+            external_id=uuid.uuid4(),
+            name="Heartbeat",
+            current_state={"working_count": 1},
+        )
+        instance = Instance.objects.create(
+            project=project,
+            external_id=uuid.uuid4(),
+            platform="linux",
+            client_version="0.39.2",
+        )
+        initial = dashboard_revision()
+        observed = timezone.now()
+        Project.objects.filter(id=project.id).update(last_seen=observed)
+        Instance.objects.filter(id=instance.id).update(last_seen=observed, last_sequence=2)
+        self.assertEqual(dashboard_revision(), initial)
+        Project.objects.filter(id=project.id).update(current_state={"working_count": 2})
+        self.assertNotEqual(dashboard_revision(), initial)
+
+    def test_dashboard_script_scopes_event_source_to_visible_page(self) -> None:
+        script = (
+            Path(__file__).parents[1] / "dashboard" / "fleet" / "static" / "fleet" / "dashboard.js"
+        ).read_text(encoding="utf-8")
+        self.assertIn('window.addEventListener("pagehide", closeStream)', script)
+        self.assertIn('window.addEventListener("pageshow", openStream)', script)
+        self.assertIn('document.addEventListener("visibilitychange"', script)
+        self.assertIn("if (source || document.visibilityState", script)
 
     def test_contract_rejects_uncontrolled_summary_and_non_boolean_flags(self) -> None:
         payload = self.report_payload()

@@ -1,9 +1,9 @@
 {% extends "fleet/base.html" %}
 {% block title %}Work Efficiency{% endblock %}
 {% block content %}
-<section class="dashboard-heading"><div><p class="eyebrow">Fleet</p><h1>Work Efficiency</h1><p>Measured remedial tokens and separately labelled portable proxies with explicit coverage.</p></div></section>
+<section class="dashboard-heading"><div><p class="eyebrow">Fleet</p><h1>Work Efficiency</h1><p>New metric observations only, with measured remedial tokens and explicit coverage.</p></div></section>
 <section class="dashboard-panel"><div class="table-scroll"><table>
   <thead><tr><th>Project / instance</th><th>Window</th><th>Measured tokens</th><th>Coverage</th><th>Interactions</th><th>Output bytes</th><th>Duration</th><th>Retries</th></tr></thead>
   <tbody>{% for item in aggregates %}<tr><th>{{ item.instance.project.name }}<small>{{ item.instance.external_id }}</small></th><td>{{ item.window_start }} – {{ item.window_end }}</td><td>{{ item.remedial_tokens_actual|default_if_none:"Unknown" }}</td><td>{% widthratio item.remedial_token_coverage 1 100 %}%</td><td>{{ item.remedial_interactions }}</td><td>{{ item.remedial_output_bytes }}</td><td>{{ item.remedial_duration_ms }} ms</td><td>{{ item.remedial_retries }}</td></tr>{% empty %}<tr><td colspan="8">No efficiency windows reported.</td></tr>{% endfor %}</tbody>
-  </table></div><p class="dashboard-note">Partial coverage is never treated as a complete project comparison. Counter epochs and incompatible windows remain separate.</p></section>
+  </table></div><p class="dashboard-note">Unchanged sliding-window reports are suppressed. Partial coverage is never treated as a complete project comparison; counter epochs remain separate.</p></section>
 {% endblock %}

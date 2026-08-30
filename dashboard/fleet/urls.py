@@ -12,6 +12,7 @@ urlpatterns = [
     path("api/v1/reports", views.report_ingest, name="report-ingest"),
     path("api/v1/credentials/revoke", views.reporter_revoke, name="reporter-revoke"),
     path("dashboard/", views.fleet_overview, name="overview"),
+    path("dashboard/events/", views.dashboard_events, name="events"),
     path("dashboard/enrollments/", views.enrollments_view, name="enrollments"),
     path("dashboard/enrollments/<uuid:enrollment_id>/decision", views.enrollment_decision_ui, name="enrollment-decision-ui"),
     path("dashboard/projects/<uuid:project_id>/", views.project_detail, name="project"),
