@@ -295,6 +295,62 @@ class DashboardApplicationTests(TestCase):
         history = self.client.get(reverse("fleet:project-tab", args=(instance.project_id, "history")))
         self.assertContains(history, "active → completed")
 
+    def test_work_table_is_newest_first_and_supports_bounded_page_sizes(self) -> None:
+        user = get_user_model().objects.create_user("work-table-viewer", password="fixture")
+        self.client.force_login(user)
+        project = Project.objects.create(external_id=uuid.uuid4(), name="Paginated work")
+        instance = Instance.objects.create(
+            project=project,
+            external_id=uuid.uuid4(),
+            platform="linux",
+            client_version="0.40.0",
+            report_schema_version=2,
+            work_inventory_total=25,
+        )
+        observed = timezone.now()
+        for number in range(1, 26):
+            WorkArtifactSnapshot.objects.create(
+                project=project,
+                instance=instance,
+                artifact_external_id=uuid.uuid4(),
+                visible_id=f"CAMP-{number:04d}",
+                artifact_type="campaign",
+                title=f"Campaign {number}",
+                document_lifecycle="completed",
+                outcome_lifecycle="terminal",
+                outcome_disposition="satisfied",
+                reconciliation_state="reconciled",
+                source_updated_at=observed + timedelta(minutes=number),
+                observed_at=observed,
+                snapshot_sequence=1,
+            )
+        url = reverse("fleet:project-tab", args=(project.id, "work"))
+
+        first = self.client.get(url)
+        self.assertContains(first, '<option value="20" selected>20</option>', html=True)
+        self.assertEqual(first.content.count(b'class="artifact-id"'), 20)
+        self.assertContains(first, "CAMP-0025")
+        self.assertContains(first, "CAMP-0006")
+        self.assertNotContains(first, "CAMP-0005")
+        self.assertLess(first.content.index(b"CAMP-0025"), first.content.index(b"CAMP-0006"))
+
+        second = self.client.get(url, {"page": 2})
+        self.assertContains(second, 'aria-current="page">2</span>')
+        self.assertContains(second, "CAMP-0005")
+        self.assertNotContains(second, "CAMP-0025")
+
+        ten = self.client.get(url, {"rows": "10"})
+        self.assertEqual(ten.content.count(b'class="artifact-id"'), 10)
+        self.assertContains(ten, "Showing 1–10 of 25")
+
+        all_rows = self.client.get(url, {"rows": "all"})
+        self.assertEqual(all_rows.content.count(b'class="artifact-id"'), 25)
+        self.assertContains(all_rows, "CAMP-0001")
+        self.assertContains(all_rows, "Showing all 25")
+
+        invalid = self.client.get(url, {"rows": "500"})
+        self.assertContains(invalid, '<option value="20" selected>20</option>', html=True)
+
     def test_reporter_credential_is_required(self) -> None:
         response = self.client.post(
             reverse("fleet:report-ingest"),

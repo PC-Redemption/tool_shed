@@ -40,9 +40,22 @@
       </select>
     </label>
     <label>Status <input name="status" value="{{ selected_status }}" placeholder="working, completed…"></label>
-    <button type="submit">Filter</button>
-    {% if selected_type or selected_status %}<a href="{% url 'fleet:project-tab' project.id 'work' %}">Clear</a>{% endif %}
+    <label>Rows
+      <select name="rows">
+        <option value="10" {% if selected_rows == '10' %}selected{% endif %}>10</option>
+        <option value="20" {% if selected_rows == '20' %}selected{% endif %}>20</option>
+        <option value="50" {% if selected_rows == '50' %}selected{% endif %}>50</option>
+        <option value="100" {% if selected_rows == '100' %}selected{% endif %}>100</option>
+        <option value="all" {% if selected_rows == 'all' %}selected{% endif %}>All</option>
+      </select>
+    </label>
+    <button type="submit">Apply</button>
+    {% if selected_type or selected_status %}<a href="{% url 'fleet:project-tab' project.id 'work' %}?rows={{ selected_rows }}">Clear filters</a>{% endif %}
   </form>
+  <div class="work-result-summary">
+    <span>Newest updated work first.</span>
+    {% if work_page %}<span>Showing {{ work_page.start_index }}–{{ work_page.end_index }} of {{ work_result_count }}</span>{% else %}<span>Showing all {{ work_result_count }}</span>{% endif %}
+  </div>
   {% if inventory_diverged %}<p class="dashboard-warning">Instance snapshots differ; each source is shown independently.</p>{% endif %}
   {% for group in instance_groups %}
   <section class="instance-snapshot">
@@ -64,6 +77,15 @@
     {% else %}<p class="dashboard-empty">{% if group.instance.report_schema_version < 2 %}This instance has not reported lifecycle inventory yet.{% else %}No artifacts match this view.{% endif %}</p>{% endif %}
   </section>
   {% empty %}<p class="dashboard-empty">No enrolled instances.</p>{% endfor %}
+  {% if work_page and work_page.paginator.num_pages > 1 %}
+  <nav class="table-pagination" aria-label="Work table pages">
+    {% if previous_page_url %}<a href="{{ previous_page_url }}" rel="prev">Previous</a>{% else %}<span aria-disabled="true">Previous</span>{% endif %}
+    {% for link in page_links %}
+      {% if link.ellipsis %}<span aria-hidden="true">…</span>{% elif link.current %}<span aria-current="page">{{ link.number }}</span>{% else %}<a href="{{ link.url }}">{{ link.number }}</a>{% endif %}
+    {% endfor %}
+    {% if next_page_url %}<a href="{{ next_page_url }}" rel="next">Next</a>{% else %}<span aria-disabled="true">Next</span>{% endif %}
+  </nav>
+  {% endif %}
 </section>
 {% elif tab == 'history' %}
 <section class="dashboard-panel">

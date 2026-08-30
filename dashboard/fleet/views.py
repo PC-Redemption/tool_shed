@@ -3,10 +3,12 @@ from __future__ import annotations
 import json
 import time
 from datetime import timedelta
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.db import close_old_connections
 from django.db.models import Q
+from django.core.paginator import Paginator
 from django.http import HttpRequest, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -197,9 +199,31 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
     project = get_object_or_404(Project.objects.prefetch_related("instances"), id=project_id)
     artifact_type = request.GET.get("type", "").strip()
     status = request.GET.get("status", "").strip()
+    row_options = ("10", "20", "50", "100", "all")
+    selected_rows = request.GET.get("rows", "20").strip().lower()
+    if selected_rows not in row_options:
+        selected_rows = "20"
     snapshot_by_instance: dict[object, list[WorkArtifactSnapshot]] = {}
+    work_page = None
+    work_result_count = 0
+    page_links: list[dict[str, object]] = []
+    previous_page_url = None
+    next_page_url = None
+
+    def work_url(page: int) -> str:
+        values = {"rows": selected_rows, "page": page}
+        if artifact_type:
+            values["type"] = artifact_type
+        if status:
+            values["status"] = status
+        return "?" + urlencode(values)
+
     if tab == "work":
-        snapshots = WorkArtifactSnapshot.objects.filter(project=project).select_related("instance")
+        snapshots = (
+            WorkArtifactSnapshot.objects.filter(project=project)
+            .select_related("instance")
+            .order_by("-source_updated_at", "-visible_id", "instance_id")
+        )
         if artifact_type:
             snapshots = snapshots.filter(artifact_type=artifact_type)
         if status:
@@ -209,9 +233,36 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
                 | Q(outcome_disposition=status)
                 | Q(reconciliation_state=status)
             )
-        for snapshot in snapshots:
+        if selected_rows == "all":
+            page_snapshots = list(snapshots)
+            work_result_count = len(page_snapshots)
+        else:
+            paginator = Paginator(snapshots, int(selected_rows))
+            work_page = paginator.get_page(request.GET.get("page", "1"))
+            page_snapshots = list(work_page.object_list)
+            work_result_count = paginator.count
+            if work_page.has_previous():
+                previous_page_url = work_url(work_page.previous_page_number())
+            if work_page.has_next():
+                next_page_url = work_url(work_page.next_page_number())
+            for page_number in paginator.get_elided_page_range(
+                work_page.number, on_each_side=2, on_ends=1
+            ):
+                if page_number == Paginator.ELLIPSIS:
+                    page_links.append({"ellipsis": True})
+                else:
+                    page_links.append(
+                        {
+                            "number": page_number,
+                            "url": work_url(int(page_number)),
+                            "current": int(page_number) == work_page.number,
+                        }
+                    )
+        for snapshot in page_snapshots:
             snapshot_by_instance.setdefault(snapshot.instance_id, []).append(snapshot)
     instances = list(project.instances.all())
+    if tab == "work" and snapshot_by_instance:
+        instances = [instance for instance in instances if instance.id in snapshot_by_instance]
     instance_groups = [
         {"instance": instance, "artifacts": snapshot_by_instance.get(instance.id, [])}
         for instance in instances
@@ -237,6 +288,12 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
             "inventory_diverged": len(inventory_digests) > 1,
             "selected_type": artifact_type,
             "selected_status": status,
+            "selected_rows": selected_rows,
+            "work_page": work_page,
+            "work_result_count": work_result_count,
+            "page_links": page_links,
+            "previous_page_url": previous_page_url,
+            "next_page_url": next_page_url,
         },
     )
 

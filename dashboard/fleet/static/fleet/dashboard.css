@@ -65,6 +65,11 @@
 .work-filters input, .work-filters select, .work-filters button { min-height: 2.35rem; box-sizing: border-box; padding: .45rem .65rem; border: 1px solid var(--dashboard-border); border-radius: .45rem; color: #fff; background: #0d1b2d; }
 .work-filters button { background: #1d665c; cursor: pointer; }
 .work-filters a { padding-bottom: .55rem; }
+.work-result-summary { display: flex; justify-content: space-between; gap: 1rem; margin: -.25rem 0 .75rem; color: var(--dashboard-muted); font-size: .82rem; }
+.table-pagination { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: .35rem; margin-top: 1rem; }
+.table-pagination a, .table-pagination span { min-width: 2.2rem; box-sizing: border-box; padding: .45rem .6rem; border: 1px solid var(--dashboard-border); border-radius: .4rem; text-align: center; text-decoration: none; }
+.table-pagination span[aria-current="page"] { color: #07111f; background: var(--dashboard-accent); border-color: var(--dashboard-accent); font-weight: 800; }
+.table-pagination span[aria-disabled="true"] { color: #66758b; }
 .instance-snapshot { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--dashboard-border); }
 .instance-heading { display: flex; justify-content: space-between; gap: 1rem; align-items: start; }
 .instance-heading h3, .instance-heading p { margin: 0 0 .25rem; }
@@ -90,6 +95,7 @@
   .dashboard-tabs { top: 7.6rem; }
   .instance-heading { flex-direction: column; }
   .snapshot-meta { text-align: left; }
+  .work-result-summary { flex-direction: column; gap: .2rem; }
 }
 
 @media (prefers-reduced-motion: reduce) { .dashboard-sidebar { transition: none; } }
