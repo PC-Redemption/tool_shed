@@ -427,6 +427,10 @@ class DashboardApplicationTests(TestCase):
         self.assertContains(first, "CAMP-0006")
         self.assertNotContains(first, "CAMP-0005")
         self.assertLess(first.content.index(b"CAMP-0025"), first.content.index(b"CAMP-0006"))
+        self.assertContains(first, 'class="project-summary-bar"')
+        self.assertContains(first, 'class="dashboard-panel compact-table-panel"')
+        self.assertContains(first, 'class="table-toolbar"')
+        self.assertContains(first, 'class="artifact-title"')
         self.assertContains(first, 'aria-label="Work table pages (top)"', count=1)
         self.assertContains(first, 'aria-label="Work table pages (bottom)"', count=1)
 
