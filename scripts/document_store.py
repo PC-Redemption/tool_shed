@@ -595,6 +595,7 @@ def context_capsule(workspace: Path, identity: str, *, byte_budget: int = 16_384
 
 
 def create_document(workspace: Path, *, project_binding: str, document_type: str, title: str, body: str, lifecycle: str, metadata: dict[str, Any], actor: str, reason: str, preferred_path: str | None = None, database: Path | None = None) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
     if lifecycle not in LIFECYCLES or not title.strip():
         raise DocumentStoreError("create needs a title and supported lifecycle")
     namespace = _namespace_for(document_type)

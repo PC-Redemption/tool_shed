@@ -57,6 +57,38 @@ class DocumentStoreThinSliceTests(unittest.TestCase):
     def tearDown(self) -> None:
         self.temporary.cleanup()
 
+    def test_create_document_normalizes_workspace_before_preferred_alias(self) -> None:
+        presented_workspace = self.workspace / "presentation-alias"
+        original_require = document_store.require_path_within
+
+        def canonical_require(root: Path, candidate: Path) -> Path:
+            if candidate.as_posix().endswith("work/evidence/canonical-alias.md"):
+                return self.workspace / "work/evidence/canonical-alias.md"
+            return original_require(root, candidate)
+
+        with (
+            mock.patch.object(document_store, "resolved_workspace", return_value=self.workspace),
+            mock.patch.object(document_store, "require_path_within", side_effect=canonical_require),
+        ):
+            created = document_store.create_document(
+                presented_workspace,
+                project_binding=self.binding,
+                document_type="evidence-summary",
+                title="Canonical alias",
+                body="# Canonical alias\n",
+                lifecycle="completed",
+                metadata={},
+                actor="fixture",
+                reason="prove canonical workspace-relative alias",
+                preferred_path="work/evidence/canonical-alias.md",
+                database=self.database,
+            )["result"]
+
+        aliases = document_store.resolve(
+            self.workspace, created["visible_id"], database=self.database
+        )["aliases"]
+        self.assertEqual(aliases[0]["path"], "work/evidence/canonical-alias.md")
+
     def test_transactional_edit_relationship_checkpoint_rebuild_and_outcome(self) -> None:
         originals = {path: (self.workspace / path).read_bytes() for path in ("work/ideas/idea-one.md", "work/maps/map-one.md")}
         idea = document_store.import_document(
