@@ -5,11 +5,14 @@ import json
 
 from .models import (
     AppServerAggregate,
+    AttentionCondition,
     Enrollment,
     FailureGroup,
     Instance,
     LifecycleEvent,
+    MaterialEvent,
     Project,
+    ReporterCredential,
     WorkArtifactSnapshot,
     WorkEfficiencyAggregate,
 )
@@ -40,6 +43,16 @@ def dashboard_revision() -> str:
         "enrollments": list(
             Enrollment.objects.order_by("id").values_list(
                 "id", "status", "expires_at", "decided_at", "issued_instance_id"
+            )
+        ),
+        "credentials": list(
+            ReporterCredential.objects.order_by("id").values_list(
+                "id", "instance_id", "created_at", "rotated_at", "revoked_at"
+            )
+        ),
+        "material_events": list(
+            MaterialEvent.objects.order_by("id").values_list(
+                "id", "project_id", "instance_id", "event_kind", "summary_code", "occurred_at"
             )
         ),
         "app_server": list(
@@ -101,6 +114,20 @@ def dashboard_revision() -> str:
                 "from_state",
                 "to_state",
                 "occurred_at",
+            )
+        ),
+        "attention_conditions": list(
+            AttentionCondition.objects.order_by("id").values_list(
+                "id",
+                "project_id",
+                "instance_id",
+                "reason_code",
+                "severity",
+                "active",
+                "current_count",
+                "first_seen",
+                "last_changed",
+                "resolved_at",
             )
         ),
     }

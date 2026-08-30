@@ -23,6 +23,7 @@ from django.utils import timezone  # noqa: E402
 from dashboard.fleet.contracts import ContractError, validate_report  # noqa: E402
 from dashboard.fleet.live import dashboard_revision  # noqa: E402
 from dashboard.fleet.models import (  # noqa: E402
+    AttentionCondition,
     Enrollment,
     Instance,
     LifecycleEvent,
@@ -269,6 +270,99 @@ class DashboardApplicationTests(TestCase):
         )
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(WorkEfficiencyAggregate.objects.count(), 2)
+
+    def test_attention_conditions_are_controlled_change_only_and_clear_deterministically(self) -> None:
+        token = self.enroll_and_issue()
+        opened = self.report_payload()
+        opened["state"]["blocked_count"] = 2  # type: ignore[index]
+        opened["state"]["unreconciled_outcome_count"] = 1  # type: ignore[index]
+        opened["app_server"]["availability_state"] = "unavailable"  # type: ignore[index]
+        before_revision = dashboard_revision()
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(opened),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(
+            set(AttentionCondition.objects.filter(active=True).values_list("reason_code", flat=True)),
+            {"blocked-work", "unreconciled-outcomes", "app-server-failure"},
+        )
+        self.assertNotEqual(dashboard_revision(), before_revision)
+        changed_at = {
+            item.reason_code: item.last_changed for item in AttentionCondition.objects.filter(active=True)
+        }
+
+        unchanged = self.report_payload()
+        unchanged["sequence"] = 2
+        unchanged["material_events"] = []
+        unchanged["state"]["blocked_count"] = 2  # type: ignore[index]
+        unchanged["state"]["unreconciled_outcome_count"] = 1  # type: ignore[index]
+        unchanged["app_server"]["availability_state"] = "unavailable"  # type: ignore[index]
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(unchanged),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(AttentionCondition.objects.count(), 3)
+        self.assertEqual(
+            {item.reason_code: item.last_changed for item in AttentionCondition.objects.filter(active=True)},
+            changed_at,
+        )
+
+        user = get_user_model().objects.create_user("attention-viewer", password="fixture")
+        self.client.force_login(user)
+        overview = self.client.get(reverse("fleet:overview"), {"state": "attention"})
+        self.assertContains(overview, "Blocked work")
+        self.assertContains(overview, "Unreconciled outcomes")
+        self.assertContains(overview, "App Server needs attention")
+        self.assertContains(overview, "Investigate locally: <code>ts: status</code>", html=True)
+        self.client.logout()
+
+        cleared = self.report_payload()
+        cleared["sequence"] = 3
+        cleared["material_events"] = []
+        cleared["app_server"]["failures"] = 0  # type: ignore[index]
+        cleared["app_server"]["last_failure"] = None  # type: ignore[index]
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(cleared),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(AttentionCondition.objects.filter(active=True).count(), 0)
+        self.assertEqual(AttentionCondition.objects.filter(resolved_at__isnull=False).count(), 3)
+
+        self.client.force_login(user)
+        project = Project.objects.get(external_id=self.project_id)
+        history = self.client.get(reverse("fleet:project-tab", args=(project.id, "history")))
+        self.assertContains(history, "Recent Changes")
+        self.assertContains(history, "Resolved · This instance reports blocked Tool Shed work.")
+        self.assertContains(history, "Campaign started")
+        self.assertContains(history, "Reporter credential issued")
+        self.assertContains(history, "Transport failure")
+        self.assertNotContains(history, token[:12])
+        self.assertContains(history, 'data-project-key="')
+
+    def test_stale_instance_attention_preserves_source_and_safe_route(self) -> None:
+        user = get_user_model().objects.create_user("stale-attention-viewer", password="fixture")
+        self.client.force_login(user)
+        project = Project.objects.create(external_id=uuid.uuid4(), name="Stale source")
+        instance = Instance.objects.create(
+            project=project,
+            external_id=uuid.uuid4(),
+            platform="linux",
+            client_version="0.40.0",
+            last_seen=timezone.now() - timedelta(minutes=25),
+        )
+        response = self.client.get(reverse("fleet:overview"), {"state": "stale"})
+        self.assertContains(response, "Reporter stale or offline")
+        self.assertContains(response, str(instance.external_id))
+        self.assertContains(response, "ts: dashboard status")
 
     def test_schema_two_projects_per_instance_work_and_change_only_history(self) -> None:
         token = self.enroll_and_issue()
@@ -528,6 +622,9 @@ class DashboardApplicationTests(TestCase):
         self.assertIn('document.addEventListener("submit", closeStream', script)
         self.assertIn('document.addEventListener("visibilitychange"', script)
         self.assertIn("if (source || document.visibilityState", script)
+        self.assertIn("window.localStorage.getItem(storageKey)", script)
+        self.assertIn("window.localStorage.setItem(storageKey, viewedAt)", script)
+        self.assertIn("never affects active attention", script)
 
     def test_contract_rejects_uncontrolled_summary_and_non_boolean_flags(self) -> None:
         payload = self.report_payload()

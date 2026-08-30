@@ -9,6 +9,35 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  const recentChanges = document.querySelector("[data-recent-changes]");
+  if (recentChanges) {
+    const projectKey = recentChanges.dataset.projectKey;
+    const viewedAt = recentChanges.dataset.viewedAt;
+    const storageKey = `tool-shed:recent-changes:${projectKey}`;
+    let previousVisit = 0;
+    try {
+      previousVisit = Date.parse(window.localStorage.getItem(storageKey) || "") || 0;
+    } catch (_error) {
+      previousVisit = 0;
+    }
+    let newCount = 0;
+    recentChanges.querySelectorAll("[data-change-at]").forEach((row) => {
+      const changedAt = Date.parse(row.dataset.changeAt || "");
+      if (!previousVisit || !changedAt || changedAt <= previousVisit) return;
+      row.classList.add("is-new-change");
+      const badge = row.querySelector(".new-change-badge");
+      if (badge) badge.hidden = false;
+      newCount += 1;
+    });
+    const count = recentChanges.querySelector(".new-change-count");
+    if (count) count.textContent = previousVisit ? `${newCount} new` : "Visit baseline set";
+    try {
+      window.localStorage.setItem(storageKey, viewedAt);
+    } catch (_error) {
+      // Browser-local visit state is optional and never affects active attention.
+    }
+  }
+
   const streamUrl = document.body.dataset.dashboardStreamUrl;
   const revision = document.body.dataset.dashboardRevision;
   if (streamUrl && revision && "EventSource" in window) {

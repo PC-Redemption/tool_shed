@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import time
-from datetime import timedelta
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -18,8 +17,16 @@ from django.views.decorators.http import require_GET, require_POST
 from .auth import dashboard_auth_required, reporter_instance
 from .contracts import ContractError, validate_report
 from .live import dashboard_revision
-from .models import Enrollment, FailureGroup, LifecycleEvent, Project, WorkArtifactSnapshot
-from .services import approve_enrollment, create_enrollment, distinct_efficiency_aggregates, ingest_report, poll_enrollment
+from .models import Enrollment, FailureGroup, Project, WorkArtifactSnapshot
+from .services import (
+    active_attention_items,
+    approve_enrollment,
+    create_enrollment,
+    distinct_efficiency_aggregates,
+    ingest_report,
+    poll_enrollment,
+    recent_changes,
+)
 
 
 def _payload(request: HttpRequest) -> dict:
@@ -172,24 +179,67 @@ def dashboard_events(request: HttpRequest) -> StreamingHttpResponse:
 @dashboard_auth_required
 def fleet_overview(request: HttpRequest):
     projects = Project.objects.prefetch_related("instances").all()
-    stale = Q(last_seen__lt=timezone.now() - timedelta(minutes=20)) | Q(last_seen__isnull=True)
+    attention_items = active_attention_items()
+    attention_by_project: dict[object, list[dict]] = {}
+    for item in attention_items:
+        attention_by_project.setdefault(item["project"].id, []).append(item)
+    attention_project_ids = {
+        item["project"].id for item in attention_items if item["reason_code"] != "reporter-stale"
+    } | set(
+        projects.filter(attention_state__in=("attention", "blocked")).values_list("id", flat=True)
+    )
+    stale_project_ids = {
+        item["project"].id for item in attention_items if item["reason_code"] == "reporter-stale"
+    }
     counts = {
         "projects": projects.count(),
-        "attention": projects.filter(attention_state__in=("attention", "blocked")).count(),
+        "attention": len(attention_project_ids),
         "working": projects.filter(attention_state="working").count(),
-        "stale": projects.filter(stale).count(),
+        "stale": len(stale_project_ids),
     }
     query = request.GET.get("q", "").strip()
     if query:
         projects = projects.filter(Q(name__icontains=query) | Q(external_id__icontains=query))
     state = request.GET.get("state", "").strip()
     if state == "attention":
-        projects = projects.filter(attention_state__in=("attention", "blocked"))
+        projects = projects.filter(id__in=attention_project_ids)
     elif state == "working":
         projects = projects.filter(attention_state="working")
     elif state == "stale":
-        projects = projects.filter(stale)
-    return render(request, "fleet/overview.html", {"projects": projects, "counts": counts})
+        projects = projects.filter(id__in=stale_project_ids)
+    project_list = list(projects)
+    for project in project_list:
+        project.dashboard_attention = attention_by_project.get(project.id, [])
+        severities = {item["severity"] for item in project.dashboard_attention}
+        project.effective_attention_state = (
+            "blocked"
+            if "blocked" in severities
+            else "attention"
+            if "attention" in severities
+            else "stale"
+            if "stale" in severities
+            else project.attention_state
+        )
+    shown_project_ids = {project.id for project in project_list}
+    displayed_attention = [item for item in attention_items if item["project"].id in shown_project_ids]
+    if state == "attention":
+        displayed_attention = [
+            item for item in displayed_attention if item["reason_code"] != "reporter-stale"
+        ]
+    elif state == "stale":
+        displayed_attention = [
+            item for item in displayed_attention if item["reason_code"] == "reporter-stale"
+        ]
+    return render(
+        request,
+        "fleet/overview.html",
+        {
+            "projects": project_list,
+            "counts": counts,
+            "attention_items": displayed_attention,
+            "selected_state": state,
+        },
+    )
 
 
 @dashboard_auth_required
@@ -197,6 +247,17 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
     if tab not in {"overview", "work", "history", "outcomes", "health"}:
         return JsonResponse({"status": "not-found"}, status=404)
     project = get_object_or_404(Project.objects.prefetch_related("instances"), id=project_id)
+    attention_items = active_attention_items(project=project)
+    attention_severities = {item["severity"] for item in attention_items}
+    project.effective_attention_state = (
+        "blocked"
+        if "blocked" in attention_severities
+        else "attention"
+        if "attention" in attention_severities
+        else "stale"
+        if "stale" in attention_severities
+        else project.attention_state
+    )
     artifact_type = request.GET.get("type", "").strip()
     status = request.GET.get("status", "").strip()
     row_options = ("10", "20", "50", "100", "all")
@@ -272,11 +333,7 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
         for instance in instances
         if instance.work_inventory_digest
     }
-    history = (
-        LifecycleEvent.objects.filter(project=project).select_related("instance")[:200]
-        if tab == "history"
-        else []
-    )
+    history = recent_changes(project) if tab == "history" else []
     return render(
         request,
         "fleet/project.html",
@@ -285,6 +342,8 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
             "tab": tab,
             "instance_groups": instance_groups,
             "history": history,
+            "attention_items": attention_items,
+            "history_viewed_at": timezone.now().isoformat(),
             "inventory_diverged": len(inventory_digests) > 1,
             "selected_type": artifact_type,
             "selected_status": status,

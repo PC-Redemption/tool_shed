@@ -3,7 +3,7 @@
 {% block content %}
 <section class="dashboard-heading">
   <div><p class="eyebrow">Project</p><h1>{{ project.name }}</h1><p>Last report: {{ project.last_seen|default:"Never" }}</p></div>
-  <span class="state-badge state-{{ project.attention_state }}">{{ project.attention_state }}</span>
+  <span class="state-badge state-{{ project.effective_attention_state }}">{{ project.effective_attention_state }}</span>
 </section>
 <section class="summary-grid" aria-label="Project summary">
   <article><strong>{{ project.current_state.working_count|default:0 }}</strong><span>Working</span></article>
@@ -20,6 +20,20 @@
 </nav>
 
 {% if tab == 'overview' %}
+{% if attention_items %}
+<section class="dashboard-panel attention-panel">
+  <div class="panel-heading"><div><h2>Needs attention</h2><p class="dashboard-note">Active conditions cannot be acknowledged away from the hosted dashboard.</p></div><span>{{ attention_items|length }} active</span></div>
+  <div class="attention-list">
+    {% for item in attention_items %}
+    <article class="attention-item state-{{ item.severity }}">
+      <div class="attention-main"><span class="state-badge state-{{ item.severity }}">{{ item.severity }}</span><div><h3>{{ item.title }}</h3><p>{{ item.description }}</p><small>Instance {{ item.instance.external_id }}</small></div></div>
+      <dl><div><dt>Since</dt><dd>{{ item.first_seen }}</dd></div><div><dt>Last report</dt><dd>{{ item.last_seen|default:"Never" }}</dd></div>{% if item.count > 1 %}<div><dt>Count</dt><dd>{{ item.count }}</dd></div>{% endif %}</dl>
+      <div class="attention-actions">{% if item.detail_tab == 'app-server' %}<a href="{% url 'fleet:app-server' %}">View details</a>{% else %}<a href="{% url 'fleet:project-tab' project.id item.detail_tab %}">View details</a>{% endif %}<span>Investigate locally: <code>{{ item.route }}</code></span></div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
 <section class="dashboard-panel">
   <h2>Overview</h2>
   <p>{{ project.instances.count }} enrolled instance{{ project.instances.count|pluralize }}. Hosted state is informational and never replaces the local database.</p>
@@ -88,12 +102,12 @@
   {% endif %}
 </section>
 {% elif tab == 'history' %}
-<section class="dashboard-panel">
-  <h2>Lifecycle History</h2>
-  <p class="dashboard-note">Change-only events retained for 90 days. Heartbeats and unchanged snapshots do not create rows.</p>
-  {% if history %}<div class="table-scroll"><table><thead><tr><th>When</th><th>Artifact</th><th>Change</th><th>Source instance</th></tr></thead><tbody>
-    {% for event in history %}<tr><td>{{ event.occurred_at }}</td><th><span class="artifact-id">{{ event.visible_id }}</span><small>{{ event.title }}</small></th><td>{{ event.transition }}<small class="cell-detail">{{ event.from_state }} → {{ event.to_state }}</small></td><td>{{ event.instance.external_id }}</td></tr>{% endfor %}
-  </tbody></table></div>{% else %}<p class="dashboard-empty">No lifecycle changes reported yet. The first snapshot establishes a baseline without inventing history.</p>{% endif %}
+<section class="dashboard-panel" data-recent-changes data-project-key="{{ project.id }}" data-viewed-at="{{ history_viewed_at }}">
+  <div class="panel-heading"><div><h2>Recent Changes</h2><p class="dashboard-note">Controlled lifecycle, Tool Shed, and attention changes retained within their bounded windows. Heartbeats and unchanged snapshots do not create rows.</p></div><span class="new-change-count" aria-live="polite"></span></div>
+  <p class="dashboard-note">“New” is tracked only in this browser. It never acknowledges or hides active attention.</p>
+  {% if history %}<div class="table-scroll"><table><thead><tr><th>When</th><th>Kind</th><th>Change</th><th>Source instance</th><th>Details</th></tr></thead><tbody>
+    {% for event in history %}<tr data-change-at="{{ event.occurred_at|date:'c' }}"><td>{{ event.occurred_at }} <span class="new-change-badge" hidden>New</span></td><td>{{ event.kind }}</td><th>{{ event.title }}<small>{{ event.summary }}</small></th><td>{{ event.source_label }}</td><td>{% if event.detail_tab == 'app-server' %}<a href="{% url 'fleet:app-server' %}">Open</a>{% else %}<a href="{% url 'fleet:project-tab' project.id event.detail_tab %}">Open</a>{% endif %}</td></tr>{% endfor %}
+  </tbody></table></div>{% else %}<p class="dashboard-empty">No controlled changes reported yet. The first work snapshot establishes a baseline without inventing lifecycle history.</p>{% endif %}
 </section>
 {% elif tab == 'outcomes' %}
 <section class="dashboard-panel"><h2>Outcome Reconciliation</h2><p>{{ project.current_state.open_outcome_count|default:0 }} open and {{ project.current_state.unreconciled_outcome_count|default:0 }} unreconciled outcome loops.</p><p class="dashboard-note">See Work for each artifact’s outcome lifecycle, disposition, and reconciliation state.</p></section>

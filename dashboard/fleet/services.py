@@ -15,6 +15,7 @@ from .auth import token_digest
 from .contracts import ContractError
 from .models import (
     AppServerAggregate,
+    AttentionCondition,
     Enrollment,
     FailureGroup,
     IngestReceipt,
@@ -26,6 +27,51 @@ from .models import (
     WorkEfficiencyAggregate,
     WorkArtifactSnapshot,
 )
+
+
+STALE_AFTER = timedelta(minutes=20)
+ATTENTION_REASONS = {
+    "blocked-work": {
+        "title": "Blocked work",
+        "severity": "blocked",
+        "route": "ts: status",
+        "tab": "work",
+        "description": "This instance reports blocked Tool Shed work.",
+    },
+    "unreconciled-outcomes": {
+        "title": "Unreconciled outcomes",
+        "severity": "attention",
+        "route": "ts: status",
+        "tab": "outcomes",
+        "description": "This instance reports outcome results that are not reconciled.",
+    },
+    "app-server-failure": {
+        "title": "App Server needs attention",
+        "severity": "attention",
+        "route": "ts: app-server status",
+        "tab": "app-server",
+        "description": "The latest controlled App Server state is unavailable, unqualified, or has an unrecovered failure.",
+    },
+    "reporter-stale": {
+        "title": "Reporter stale or offline",
+        "severity": "stale",
+        "route": "ts: dashboard status",
+        "tab": "health",
+        "description": "This reporting instance has not checked in within the freshness window.",
+    },
+}
+
+MATERIAL_EVENT_LABELS = {
+    "managed-document-update": "Managed work changed",
+    "managed-update": "Managed Tool Shed state changed",
+    "safety-convergence": "Reporter safety pass converged",
+    "quiescent": "Reporter became quiescent",
+    "client-connected": "Reporter connected",
+    "client-disconnected": "Reporter disconnected",
+    "campaign-started": "Campaign started",
+    "campaign-completed": "Campaign completed",
+    "outcome-reconciled": "Outcome reconciled",
+}
 
 
 def _digest(value: object) -> str:
@@ -61,6 +107,225 @@ def distinct_efficiency_aggregates(*, limit: int = 200) -> list[WorkEfficiencyAg
         if len(result) == limit:
             break
     return result
+
+
+def _attention_observations(state: dict[str, Any], app: dict[str, Any]) -> dict[str, tuple[str, int]]:
+    observed: dict[str, tuple[str, int]] = {}
+    if state["blocked_count"]:
+        observed["blocked-work"] = ("blocked", state["blocked_count"])
+    if state["unreconciled_outcome_count"]:
+        observed["unreconciled-outcomes"] = ("attention", state["unreconciled_outcome_count"])
+    unrecovered_failure = bool(
+        app["last_failure"]
+        and (app["last_success"] is None or app["last_failure"] > app["last_success"])
+    )
+    if app["enabled"] and (app["availability_state"] in {"unavailable", "unqualified"} or unrecovered_failure):
+        observed["app-server-failure"] = ("attention", max(1, app["failures"]))
+    return observed
+
+
+def _sync_attention_conditions(
+    instance: Instance,
+    state: dict[str, Any],
+    app: dict[str, Any],
+    observed_at,
+    previous_last_seen,
+) -> None:
+    current = _attention_observations(state, app)
+    active = {
+        item.reason_code: item
+        for item in AttentionCondition.objects.select_for_update().filter(instance=instance, active=True)
+    }
+    retention = timedelta(days=settings.DASHBOARD_EVENT_RETENTION_DAYS)
+    for reason_code, (severity, count) in current.items():
+        condition = active.pop(reason_code, None)
+        if condition is None:
+            AttentionCondition.objects.create(
+                project=instance.project,
+                instance=instance,
+                reason_code=reason_code,
+                severity=severity,
+                current_count=count,
+                first_seen=observed_at,
+                last_changed=observed_at,
+            )
+        elif condition.current_count != count or condition.severity != severity:
+            condition.current_count = count
+            condition.severity = severity
+            condition.last_changed = observed_at
+            condition.save(update_fields=("current_count", "severity", "last_changed"))
+    for condition in active.values():
+        condition.active = False
+        condition.last_changed = observed_at
+        condition.resolved_at = observed_at
+        condition.retained_until = observed_at + retention
+        condition.save(update_fields=("active", "last_changed", "resolved_at", "retained_until"))
+
+    if previous_last_seen and observed_at - previous_last_seen > STALE_AFTER:
+        AttentionCondition.objects.create(
+            project=instance.project,
+            instance=instance,
+            reason_code="reporter-stale",
+            severity="stale",
+            active=False,
+            current_count=1,
+            first_seen=previous_last_seen + STALE_AFTER,
+            last_changed=observed_at,
+            resolved_at=observed_at,
+            retained_until=observed_at + retention,
+        )
+    AttentionCondition.objects.filter(active=False, retained_until__lt=timezone.now()).delete()
+
+
+def active_attention_items(*, project: Project | None = None, now=None) -> list[dict[str, Any]]:
+    current_time = now or timezone.now()
+    conditions = AttentionCondition.objects.filter(active=True).select_related("project", "instance")
+    instances = Instance.objects.select_related("project")
+    if project is not None:
+        conditions = conditions.filter(project=project)
+        instances = instances.filter(project=project)
+    items: list[dict[str, Any]] = []
+    for condition in conditions:
+        reason = ATTENTION_REASONS[condition.reason_code]
+        items.append(
+            {
+                "key": f"condition:{condition.id}",
+                "project": condition.project,
+                "instance": condition.instance,
+                "reason_code": condition.reason_code,
+                "title": reason["title"],
+                "description": reason["description"],
+                "severity": condition.severity,
+                "count": condition.current_count,
+                "first_seen": condition.first_seen,
+                "last_changed": condition.last_changed,
+                "last_seen": condition.instance.last_seen,
+                "route": reason["route"],
+                "detail_tab": reason["tab"],
+            }
+        )
+    cutoff = current_time - STALE_AFTER
+    for instance in instances:
+        if instance.last_seen is not None and instance.last_seen >= cutoff:
+            continue
+        reason = ATTENTION_REASONS["reporter-stale"]
+        items.append(
+            {
+                "key": f"stale:{instance.id}",
+                "project": instance.project,
+                "instance": instance,
+                "reason_code": "reporter-stale",
+                "title": reason["title"],
+                "description": reason["description"],
+                "severity": reason["severity"],
+                "count": 1,
+                "first_seen": (instance.last_seen + STALE_AFTER) if instance.last_seen else instance.created_at,
+                "last_changed": instance.last_seen or instance.created_at,
+                "last_seen": instance.last_seen,
+                "route": reason["route"],
+                "detail_tab": reason["tab"],
+            }
+        )
+    priority = {"blocked": 0, "attention": 1, "stale": 2}
+    return sorted(items, key=lambda item: (priority[item["severity"]], item["first_seen"], item["key"]))
+
+
+def recent_changes(project: Project, *, limit: int = 200) -> list[dict[str, Any]]:
+    changes: list[dict[str, Any]] = []
+    for event in LifecycleEvent.objects.filter(project=project).select_related("instance")[:limit]:
+        changes.append(
+            {
+                "key": f"lifecycle:{event.id}",
+                "kind": "Work lifecycle",
+                "title": f"{event.visible_id} · {event.title}",
+                "summary": f"{event.transition}: {event.from_state} → {event.to_state}",
+                "occurred_at": event.occurred_at,
+                "instance": event.instance,
+                "source_label": str(event.instance.external_id),
+                "detail_tab": "work",
+            }
+        )
+    for event in MaterialEvent.objects.filter(project=project).select_related("instance")[:limit]:
+        changes.append(
+            {
+                "key": f"material:{event.id}",
+                "kind": "Tool Shed event",
+                "title": MATERIAL_EVENT_LABELS[event.summary_code],
+                "summary": event.event_kind.replace("-", " ").capitalize(),
+                "occurred_at": event.occurred_at,
+                "instance": event.instance,
+                "source_label": str(event.instance.external_id),
+                "detail_tab": "overview",
+            }
+        )
+    for condition in AttentionCondition.objects.filter(project=project).select_related("instance")[:limit]:
+        reason = ATTENTION_REASONS[condition.reason_code]
+        state = "Resolved" if condition.resolved_at else "Needs attention"
+        changes.append(
+            {
+                "key": f"attention:{condition.id}:{'resolved' if condition.resolved_at else 'active'}",
+                "kind": "Attention",
+                "title": reason["title"],
+                "summary": f"{state} · {reason['description']}",
+                "occurred_at": condition.last_changed,
+                "instance": condition.instance,
+                "source_label": str(condition.instance.external_id),
+                "detail_tab": reason["tab"],
+            }
+        )
+    enrollment_labels = {
+        Enrollment.Status.PENDING: "Enrollment requested",
+        Enrollment.Status.APPROVED: "Enrollment approved",
+        Enrollment.Status.REJECTED: "Enrollment rejected",
+        Enrollment.Status.EXPIRED: "Enrollment expired",
+        Enrollment.Status.ISSUED: "Reporter credential issued",
+    }
+    for enrollment in Enrollment.objects.filter(project_external_id=project.external_id)[:limit]:
+        changes.append(
+            {
+                "key": f"enrollment:{enrollment.id}:{enrollment.status}",
+                "kind": "Enrollment",
+                "title": enrollment_labels[enrollment.status],
+                "summary": "Controlled enrollment lifecycle state changed.",
+                "occurred_at": enrollment.decided_at or enrollment.requested_at,
+                "instance": enrollment.issued_instance,
+                "source_label": str(enrollment.instance_external_id),
+                "detail_tab": "health",
+            }
+        )
+    for credential in ReporterCredential.objects.filter(instance__project=project).select_related("instance")[:limit]:
+        credential_events = [("Reporter credential created", credential.created_at)]
+        if credential.rotated_at:
+            credential_events.append(("Reporter credential rotated", credential.rotated_at))
+        if credential.revoked_at:
+            credential_events.append(("Reporter credential revoked", credential.revoked_at))
+        for title, occurred_at in credential_events:
+            changes.append(
+                {
+                    "key": f"credential:{credential.id}:{title.rsplit(' ', 1)[-1]}",
+                    "kind": "Credential",
+                    "title": title,
+                    "summary": "Credential metadata only; no secret or token prefix is retained in this feed.",
+                    "occurred_at": occurred_at,
+                    "instance": credential.instance,
+                    "source_label": str(credential.instance.external_id),
+                    "detail_tab": "health",
+                }
+            )
+    for failure in FailureGroup.objects.filter(instance__project=project).select_related("instance")[:limit]:
+        changes.append(
+            {
+                "key": f"app-failure:{failure.id}:{failure.count}",
+                "kind": "App Server",
+                "title": f"{failure.category.replace('-', ' ').title()} failure",
+                "summary": f"{failure.count} controlled occurrence{'s' if failure.count != 1 else ''} in this retained group.",
+                "occurred_at": failure.last_seen,
+                "instance": failure.instance,
+                "source_label": str(failure.instance.external_id),
+                "detail_tab": "app-server",
+            }
+        )
+    return sorted(changes, key=lambda item: (item["occurred_at"], item["key"]), reverse=True)[:limit]
 
 
 def create_enrollment(payload: dict[str, Any]) -> tuple[Enrollment, str]:
@@ -161,10 +426,13 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
     if report["sequence"] <= locked.last_sequence:
         raise ContractError("report sequence is stale")
     observed = report["observed_at"]
+    previous_last_seen = locked.last_seen
     project = locked.project
     project.name = report["project"]["name"]
-    project.attention_state = report["state"].pop("attention_state")
-    project.current_state = report["state"]
+    project.attention_state = report["state"]["attention_state"]
+    project.current_state = {
+        key: value for key, value in report["state"].items() if key != "attention_state"
+    }
     project.state_schema_version = report["schema_version"]
     project.last_seen = observed
     project.save(update_fields=("name", "attention_state", "current_state", "state_schema_version", "last_seen", "updated_at"))
@@ -298,6 +566,7 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
             },
         )
     FailureGroup.objects.filter(retained_until__lt=timezone.now()).delete()
+    _sync_attention_conditions(locked, report["state"], app, observed, previous_last_seen)
     work = report["work_efficiency"]
     latest_efficiency = (
         WorkEfficiencyAggregate.objects.filter(instance=locked, counter_epoch=locked.counter_epoch)

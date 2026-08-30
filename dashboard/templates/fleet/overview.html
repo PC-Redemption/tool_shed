@@ -11,13 +11,35 @@
   <article><strong>{{ counts.working }}</strong><span>Working</span></article>
   <article><strong>{{ counts.stale }}</strong><span>Stale / offline</span></article>
 </section>
+{% if attention_items %}
+<section class="dashboard-panel attention-panel">
+  <div class="panel-heading"><div><h2>Needs attention</h2><p class="dashboard-note">Controlled reasons from reporting state; suggested routes run locally and are never executed here.</p></div><span>{{ attention_items|length }} condition{{ attention_items|length|pluralize }}</span></div>
+  <div class="attention-list">
+    {% for item in attention_items %}
+    <article class="attention-item state-{{ item.severity }}">
+      <div class="attention-main">
+        <span class="state-badge state-{{ item.severity }}">{{ item.severity }}</span>
+        <div><h3>{{ item.title }}</h3><p>{{ item.description }}</p><small>{{ item.project.name }} · instance {{ item.instance.external_id }}</small></div>
+      </div>
+      <dl><div><dt>Since</dt><dd>{{ item.first_seen }}</dd></div><div><dt>Last report</dt><dd>{{ item.last_seen|default:"Never" }}</dd></div>{% if item.count > 1 %}<div><dt>Count</dt><dd>{{ item.count }}</dd></div>{% endif %}</dl>
+      <div class="attention-actions">
+        {% if item.detail_tab == 'app-server' %}<a href="{% url 'fleet:app-server' %}">View details</a>{% else %}<a href="{% url 'fleet:project-tab' item.project.id item.detail_tab %}">View details</a>{% endif %}
+        <span>Investigate locally: <code>{{ item.route }}</code></span>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% elif selected_state == 'attention' or selected_state == 'stale' %}
+<section class="dashboard-panel"><h2>No active attention</h2><p class="dashboard-empty">No reporting instance currently matches this view.</p></section>
+{% endif %}
 <section class="dashboard-panel">
   <div class="panel-heading"><h2>Operational relevance</h2><span>{{ projects|length }} shown</span></div>
   <div class="table-scroll"><table>
     <thead><tr><th>Project</th><th>State</th><th>Instances</th><th>Last report</th><th>Open outcomes</th></tr></thead>
     <tbody>{% for project in projects %}<tr>
       <th><a href="{% url 'fleet:project' project.id %}">{{ project.name }}</a></th>
-      <td><span class="state-badge state-{{ project.attention_state }}">{{ project.attention_state }}</span></td>
+      <td><span class="state-badge state-{{ project.effective_attention_state }}">{{ project.effective_attention_state }}</span>{% if project.dashboard_attention %}<small>{{ project.dashboard_attention|length }} reason{{ project.dashboard_attention|length|pluralize }}</small>{% endif %}</td>
       <td>{{ project.instances.count }}</td><td>{{ project.last_seen|default:"Never" }}</td>
       <td>{% if project.current_state.open_outcome_count == None %}Unknown{% else %}{{ project.current_state.open_outcome_count }}{% endif %}</td>
     </tr>{% empty %}<tr><td colspan="5">No instances have reported yet.</td></tr>{% endfor %}</tbody>

@@ -169,6 +169,31 @@ class LifecycleEvent(models.Model):
         ordering = ("-occurred_at", "-created_at")
 
 
+class AttentionCondition(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="attention_conditions")
+    instance = models.ForeignKey(Instance, on_delete=models.CASCADE, related_name="attention_conditions")
+    reason_code = models.CharField(max_length=48)
+    severity = models.CharField(max_length=16)
+    active = models.BooleanField(default=True)
+    current_count = models.PositiveIntegerField(default=1)
+    first_seen = models.DateTimeField()
+    last_changed = models.DateTimeField()
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    retained_until = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("instance", "reason_code"),
+                condition=models.Q(active=True),
+                name="unique_active_instance_attention_reason",
+            )
+        ]
+        ordering = ("-active", "-last_changed", "reason_code")
+
+
 class AppServerAggregate(models.Model):
     instance = models.OneToOneField(Instance, primary_key=True, on_delete=models.CASCADE, related_name="app_server")
     counter_epoch = models.UUIDField()
