@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "release": {
+    "tag": "v0.40.0",
+    "content_commit": "5cc76f3811b546c193acbd5b99fa1879ab71ace2",
+    "provenance_commit": "bf87450c975aeb7fc75887f3bc2b9b8fcff6db16",
+    "release_url": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.40.0"
+  },
+  "qualification": {
+    "validate_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/33322617071",
+    "validate_result": "passed: classification plus 32 Ubuntu and Windows release shards",
+    "publish_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/33322832434",
+    "publish_result": "passed: integrity, exact-content CI, metadata, publication, and release verification"
+  },
+  "production": {
+    "target": "https://ts.rookaro.com",
+    "image": "tool-shed-dashboard:v0.40.0",
+    "image_id": "sha256:1f5c47720ebad3f3f67ed7be46bd4316d3999b2e37c9e3aa218e71099359b0c5",
+    "observed_at": "2026-08-30T16:38:24Z",
+    "checks": {
+      "django_production_readiness": "passed",
+      "django_deploy_check": "passed with no issues",
+      "public_docs": "HTTP 200",
+      "public_dashboard": "HTTP 302 to authentication",
+      "public_health": "HTTP 200",
+      "dashboard_container_health": "healthy",
+      "postgres_container_health": "healthy",
+      "docs_container_health": "healthy"
+    }
+  }
+}
