@@ -36,7 +36,7 @@ from project_identity import ProjectIdentityError, binding_token, load_project_i
 
 
 SCHEMA_VERSION = 1
-REPORT_SCHEMA_VERSION = 4
+REPORT_SCHEMA_VERSION = 5
 OUTBOX_RELATIVE = Path(".tool-shed/dashboard/outbox.sqlite3")
 MAX_RESPONSE_BYTES = 65_536
 LOCK_SECONDS = 30
@@ -47,6 +47,13 @@ IDLE_EXIT_SECONDS = 7_200
 
 class DashboardReporterError(RuntimeError):
     pass
+
+
+class DashboardHTTPError(DashboardReporterError):
+    def __init__(self, status_code: int, detail: str):
+        self.status_code = status_code
+        self.detail = detail
+        super().__init__(f"dashboard request failed with HTTP {status_code}: {detail}")
 
 
 def now() -> datetime:
@@ -158,7 +165,7 @@ def _request(url: str, *, payload: dict[str, Any], headers: dict[str, str] | Non
             detail = json.loads(raw).get("error", "remote request failed")
         except (json.JSONDecodeError, AttributeError):
             detail = "remote request failed"
-        raise DashboardReporterError(f"dashboard request failed with HTTP {error.code}: {detail}") from error
+        raise DashboardHTTPError(error.code, str(detail)) from error
     except urllib.error.URLError as error:
         raise DashboardReporterError(f"dashboard request was unavailable: {error.reason}") from error
     if len(raw) > MAX_RESPONSE_BYTES:
@@ -481,7 +488,138 @@ def _lifecycle_events(
     return events[:50]
 
 
-def _release_posture(workspace: Path, *, observed_at: str) -> dict[str, Any]:
+def _release_chain_projection(
+    status: dict[str, Any], inventory: dict[str, Any]
+) -> dict[str, Any]:
+    """Roll release registrations up to operator-facing Idea chains.
+
+    The release cohort intentionally retains one registration per owning outcome.  The
+    dashboard needs the distinct chain count, so derive connected components from the
+    locally authoritative reported relationships without sending paths or document bodies.
+    """
+    registrations: list[tuple[str, str, int]] = []
+    for cohort in status.get("active", []):
+        for candidate in cohort.get("candidates", []):
+            origin_path = candidate.get("origin_path")
+            commit = candidate.get("commit")
+            if not isinstance(origin_path, str) or not origin_path.startswith("sqlite/documents/"):
+                continue
+            visible_id = origin_path.removeprefix("sqlite/documents/")
+            if not visible_id or "/" in visible_id or len(visible_id) > 64:
+                continue
+            if not isinstance(commit, str) or len(commit) != 40:
+                continue
+            registrations.append((visible_id, commit, len(registrations)))
+
+    artifacts = {
+        str(item.get("visible_id")): item
+        for item in inventory.get("artifacts", [])
+        if isinstance(item, dict) and item.get("visible_id")
+    }
+    graph = {visible_id: set() for visible_id in artifacts}
+    for visible_id, artifact in artifacts.items():
+        for related_id in [
+            *artifact.get("parent_ids", []),
+            *artifact.get("produces_ids", []),
+        ]:
+            if related_id in graph:
+                graph[visible_id].add(related_id)
+                graph[related_id].add(visible_id)
+
+    component_by_id: dict[str, set[str]] = {}
+    visited: set[str] = set()
+    for visible_id in graph:
+        if visible_id in visited:
+            continue
+        component: set[str] = set()
+        pending = [visible_id]
+        while pending:
+            current = pending.pop()
+            if current in visited:
+                continue
+            visited.add(current)
+            component.add(current)
+            pending.extend(graph[current] - visited)
+        for member in component:
+            component_by_id[member] = component
+
+    registered_ids = {visible_id for visible_id, _, _ in registrations}
+    components: dict[str, set[str]] = {}
+    for visible_id in registered_ids:
+        component = component_by_id.get(visible_id, {visible_id})
+        key = min(component)
+        components[key] = component
+
+    artifact_type_fields = {
+        "idea-brief": "idea_id",
+        "project-map": "map_id",
+        "program-roadmap": "prm_id",
+        "campaign": "campaign_id",
+    }
+    prefix_fields = {
+        "IDEA-": "idea_id",
+        "MAP-": "map_id",
+        "PRM-": "prm_id",
+        "CAMP-": "campaign_id",
+    }
+    chains: list[tuple[int, dict[str, Any]]] = []
+    for component in components.values():
+        component_registrations = [
+            (visible_id, commit, ordinal)
+            for visible_id, commit, ordinal in registrations
+            if visible_id in component
+        ]
+        if not component_registrations:
+            continue
+        ids: dict[str, str | None] = {
+            "idea_id": None,
+            "map_id": None,
+            "prm_id": None,
+            "campaign_id": None,
+        }
+        for visible_id in sorted(component):
+            artifact = artifacts.get(visible_id)
+            field = artifact_type_fields.get(str(artifact.get("artifact_type"))) if artifact else None
+            if field is None:
+                field = next(
+                    (candidate for prefix, candidate in prefix_fields.items() if visible_id.startswith(prefix)),
+                    None,
+                )
+            if field and ids[field] is None:
+                ids[field] = visible_id
+        latest_visible_id, latest_commit, latest_ordinal = max(
+            component_registrations, key=lambda item: item[2]
+        )
+        root_id = next(
+            (ids[field] for field in ("idea_id", "map_id", "prm_id", "campaign_id") if ids[field]),
+            latest_visible_id,
+        )
+        chains.append(
+            (
+                latest_ordinal,
+                {
+                    "root_id": root_id,
+                    **ids,
+                    "stage": "awaiting-work5",
+                    "latest_commit": latest_commit,
+                    "candidate_count": len({commit for _, commit, _ in component_registrations}),
+                },
+            )
+        )
+    chains.sort(key=lambda item: (item[0], str(item[1]["root_id"])), reverse=True)
+    bounded = [item for _, item in chains[:50]]
+    return {
+        "awaiting_work5_chain_count": len(chains),
+        "candidate_commit_count": len({commit for _, commit, _ in registrations}),
+        "registration_count": len(registrations),
+        "release_chains": bounded,
+        "release_chains_truncated": len(chains) > len(bounded),
+    }
+
+
+def _release_posture(
+    workspace: Path, *, inventory: dict[str, Any], observed_at: str
+) -> dict[str, Any]:
     installed = local_shed_version(workspace)
     stable_version = None
     stable_source = "unknown"
@@ -489,6 +627,13 @@ def _release_posture(workspace: Path, *, observed_at: str) -> dict[str, Any]:
     pending_candidates = 0
     production_version = None
     production_source = "unknown"
+    projection = {
+        "awaiting_work5_chain_count": 0,
+        "candidate_commit_count": 0,
+        "registration_count": 0,
+        "release_chains": [],
+        "release_chains_truncated": False,
+    }
     try:
         status = release_cohort.status(workspace)
         stable_version = status.get("current_base_tag")
@@ -512,6 +657,7 @@ def _release_posture(workspace: Path, *, observed_at: str) -> dict[str, Any]:
         )
         if production_version:
             production_source = "release-cohort"
+        projection = _release_chain_projection(status, inventory)
     except (
         OSError,
         ProjectIdentityError,
@@ -536,6 +682,7 @@ def _release_posture(workspace: Path, *, observed_at: str) -> dict[str, Any]:
             if normalized_stable and normalized_installed == normalized_stable
             else "unknown"
         ),
+        **projection,
     }
 
 
@@ -578,7 +725,9 @@ def _instance_health(
         "pending_event_count": pending_count,
         "last_delivery_at": last_delivery_at,
         "semantic_digest": semantic_digest,
-        "release": _release_posture(workspace, observed_at=observed_at),
+        "release": _release_posture(
+            workspace, inventory=inventory, observed_at=observed_at
+        ),
     }
 
 
@@ -779,6 +928,27 @@ def worker_once(workspace: Path) -> dict[str, Any]:
             )
             if result.get("status") not in {"accepted", "duplicate"}:
                 raise DashboardReporterError("dashboard did not accept the report")
+        except DashboardHTTPError as error:
+            if error.status_code == 409 and error.detail == "report sequence is stale":
+                connection.execute(
+                    "UPDATE outbox SET delivered_at=? WHERE id=?", (stamp(), row["id"])
+                )
+                connection.execute("DELETE FROM worker_lease WHERE id=1 AND owner=?", (owner,))
+                return {
+                    "schema_version": SCHEMA_VERSION,
+                    "kind": "tool-shed-dashboard-worker",
+                    "status": "superseded",
+                    "sequence": row["sequence"],
+                    "writes_performed": True,
+                }
+            attempts = int(row["attempts"]) + 1
+            delay = min(300, 2 ** min(attempts, 8)) + random.random()
+            connection.execute(
+                "UPDATE outbox SET attempts=?, next_attempt=? WHERE id=?",
+                (attempts, time.time() + delay, row["id"]),
+            )
+            connection.execute("DELETE FROM worker_lease WHERE id=1 AND owner=?", (owner,))
+            raise
         except DashboardReporterError:
             attempts = int(row["attempts"]) + 1
             delay = min(300, 2 ** min(attempts, 8)) + random.random()

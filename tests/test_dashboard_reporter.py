@@ -81,6 +81,31 @@ class DashboardReporterTests(unittest.TestCase):
         self.assertIsNone(event["delivered_at"])
         self.assertEqual(lease, 0)
 
+    def test_worker_retires_only_exact_stale_sequence_conflicts(self) -> None:
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            event_id = str(uuid.uuid4())
+            connection.execute(
+                "INSERT INTO outbox VALUES (?, 1, ?, 0, 0, ?, NULL)",
+                (event_id, json.dumps({"sequence": 1}), dashboard_reporter.stamp()),
+            )
+        with mock.patch.object(
+            dashboard_reporter, "load_connection", return_value=self.connected()
+        ), mock.patch.object(
+            dashboard_reporter,
+            "_request",
+            side_effect=dashboard_reporter.DashboardHTTPError(
+                409, "report sequence is stale"
+            ),
+        ):
+            result = dashboard_reporter.worker_once(self.workspace)
+        self.assertEqual(result["status"], "superseded")
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            event = connection.execute(
+                "SELECT attempts, delivered_at FROM outbox WHERE id=?", (event_id,)
+            ).fetchone()
+        self.assertEqual(event["attempts"], 0)
+        self.assertIsNotNone(event["delivered_at"])
+
     def test_continuous_worker_refuses_a_second_live_process(self) -> None:
         with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
             connection.execute(
@@ -175,11 +200,65 @@ class DashboardReporterTests(unittest.TestCase):
         self.assertEqual(payload["state"]["unreconciled_outcome_count"], 0)
         self.assertEqual(payload["app_server"]["client_version"], "unknown")
         self.assertIsNone(payload["work_efficiency"]["remedial_tokens_actual"])
-        self.assertEqual(payload["schema_version"], 4)
+        self.assertEqual(payload["schema_version"], 5)
         self.assertEqual(payload["work_inventory"], {"total_count": 0, "truncated": False, "artifacts": []})
         self.assertEqual(payload["instance_health"]["reporter_state"], "active")
         self.assertEqual(len(payload["instance_health"]["semantic_digest"]), 64)
         self.assertEqual(payload["instance_health"]["release"]["compatibility_state"], "compatible")
+        self.assertEqual(payload["instance_health"]["release"]["awaiting_work5_chain_count"], 0)
+
+    def test_release_projection_rolls_registrations_up_to_distinct_idea_chains(self) -> None:
+        artifacts = []
+        candidates = []
+        commits = [f"{value:040x}" for value in range(1, 7)]
+        for index in range(1, 6):
+            idea = f"IDEA-{index:04d}"
+            map_id = f"MAP-{index:04d}"
+            prm = f"PRM-{index:04d}"
+            camp = f"CAMP-{index:04d}"
+            chain_ids = (idea, map_id, prm, camp)
+            types = ("idea-brief", "project-map", "program-roadmap", "campaign")
+            for position, (visible_id, artifact_type) in enumerate(zip(chain_ids, types)):
+                artifacts.append(
+                    {
+                        "visible_id": visible_id,
+                        "artifact_type": artifact_type,
+                        "parent_ids": [chain_ids[position - 1]] if position else [],
+                        "produces_ids": [chain_ids[position + 1]] if position < 3 else [],
+                    }
+                )
+                candidates.append(
+                    {
+                        "origin_path": f"sqlite/documents/{visible_id}",
+                        "commit": commits[index - 1],
+                    }
+                )
+        # A later candidate for the first chain creates four more registrations but one commit.
+        for visible_id in ("IDEA-0001", "MAP-0001", "PRM-0001", "CAMP-0001"):
+            candidates.append(
+                {"origin_path": f"sqlite/documents/{visible_id}", "commit": commits[-1]}
+            )
+        # These are retained for audit but are intentionally not operator-facing document chains.
+        for value in range(4):
+            candidates.append(
+                {
+                    "origin_path": f"sqlite/outcome-capsules/{value}",
+                    "commit": commits[-1],
+                }
+            )
+        projection = dashboard_reporter._release_chain_projection(
+            {"active": [{"candidates": candidates}]},
+            {"artifacts": artifacts},
+        )
+        self.assertEqual(projection["awaiting_work5_chain_count"], 5)
+        self.assertEqual(projection["candidate_commit_count"], 6)
+        self.assertEqual(projection["registration_count"], 24)
+        self.assertEqual(len(projection["release_chains"]), 5)
+        first = next(
+            chain for chain in projection["release_chains"] if chain["root_id"] == "IDEA-0001"
+        )
+        self.assertEqual(first["candidate_count"], 2)
+        self.assertEqual(first["latest_commit"], commits[-1])
 
     def test_lifecycle_events_are_change_only_and_first_snapshot_is_a_baseline(self) -> None:
         artifact_id = str(uuid.uuid4())

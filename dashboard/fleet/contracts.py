@@ -106,6 +106,23 @@ RELEASE_FIELDS = {
     "compatibility_state",
     "qualification_state",
 }
+RELEASE_FIELDS_V5 = RELEASE_FIELDS | {
+    "awaiting_work5_chain_count",
+    "candidate_commit_count",
+    "registration_count",
+    "release_chains",
+    "release_chains_truncated",
+}
+RELEASE_CHAIN_FIELDS = {
+    "root_id",
+    "idea_id",
+    "map_id",
+    "prm_id",
+    "campaign_id",
+    "stage",
+    "latest_commit",
+    "candidate_count",
+}
 EVENT_KINDS = {"state-change", "outcome-change", "campaign-change", "client-change"}
 ATTENTION_STATES = {"healthy", "working", "attention", "blocked", "stale", "unknown"}
 AVAILABILITY_STATES = {"available", "unavailable", "unqualified", "disabled", "unknown"}
@@ -153,6 +170,7 @@ REPORTER_STATES = {"active", "quiescent", "delivery-delayed", "unknown"}
 RELEASE_SOURCES = {"local-git-tag", "release-cohort", "unknown"}
 COMPATIBILITY_STATES = {"compatible", "incompatible", "unsupported", "unknown"}
 QUALIFICATION_STATES = {"qualified", "unqualified", "unknown"}
+RELEASE_CHAIN_STAGES = {"awaiting-work5", "released", "reconciled"}
 
 
 def _object(value: Any, label: str, fields: set[str]) -> dict[str, Any]:
@@ -324,12 +342,113 @@ def _state(value: Any) -> dict[str, Any]:
     return result
 
 
-def _instance_health(value: Any) -> dict[str, Any]:
+def _instance_health(value: Any, *, schema_version: int) -> dict[str, Any]:
     supplied = _object(value, "instance_health", INSTANCE_HEALTH_FIELDS)
-    release = _object(supplied.get("release"), "instance_health.release", RELEASE_FIELDS)
+    release = _object(
+        supplied.get("release"),
+        "instance_health.release",
+        RELEASE_FIELDS_V5 if schema_version >= 5 else RELEASE_FIELDS,
+    )
     digest = _required_string(supplied.get("semantic_digest"), "instance_health.semantic_digest", 64)
     if len(digest) != 64 or any(character not in "0123456789abcdef" for character in digest):
         raise ContractError("instance_health.semantic_digest must be a lowercase SHA-256")
+    release_result = {
+        "installed_version": _required_string(
+            release.get("installed_version"), "instance_health.release.installed_version", 64
+        ),
+        "stable_version": _optional_string(
+            release.get("stable_version"), "instance_health.release.stable_version", 64
+        ),
+        "stable_source": _choice(
+            release.get("stable_source"),
+            "instance_health.release.stable_source",
+            RELEASE_SOURCES,
+            24,
+        ),
+        "candidate_version": _optional_string(
+            release.get("candidate_version"), "instance_health.release.candidate_version", 64
+        ),
+        "pending_candidate_count": _bounded_counter(
+            release.get("pending_candidate_count"),
+            "instance_health.release.pending_candidate_count",
+            10_000,
+        ),
+        "production_version": _optional_string(
+            release.get("production_version"), "instance_health.release.production_version", 64
+        ),
+        "production_source": _choice(
+            release.get("production_source"),
+            "instance_health.release.production_source",
+            RELEASE_SOURCES,
+            24,
+        ),
+        "observed_at": _timestamp(
+            release.get("observed_at"), "instance_health.release.observed_at"
+        ),
+        "compatibility_state": _choice(
+            release.get("compatibility_state"),
+            "instance_health.release.compatibility_state",
+            COMPATIBILITY_STATES,
+            24,
+        ),
+        "qualification_state": _choice(
+            release.get("qualification_state"),
+            "instance_health.release.qualification_state",
+            QUALIFICATION_STATES,
+            24,
+        ),
+    }
+    if schema_version >= 5:
+        raw_chains = release.get("release_chains")
+        if not isinstance(raw_chains, list) or len(raw_chains) > 50:
+            raise ContractError("instance_health.release.release_chains must be a list of at most 50 items")
+        chains = []
+        for index, raw_chain in enumerate(raw_chains, start=1):
+            label = f"release chain {index}"
+            chain = _object(raw_chain, label, RELEASE_CHAIN_FIELDS)
+            commit = _required_string(chain.get("latest_commit"), f"{label}.latest_commit", 40)
+            if len(commit) != 40 or any(character not in "0123456789abcdef" for character in commit):
+                raise ContractError(f"{label}.latest_commit must be a lowercase Git commit")
+            chains.append(
+                {
+                    "root_id": _required_string(chain.get("root_id"), f"{label}.root_id", 64),
+                    "idea_id": _optional_string(chain.get("idea_id"), f"{label}.idea_id", 64),
+                    "map_id": _optional_string(chain.get("map_id"), f"{label}.map_id", 64),
+                    "prm_id": _optional_string(chain.get("prm_id"), f"{label}.prm_id", 64),
+                    "campaign_id": _optional_string(chain.get("campaign_id"), f"{label}.campaign_id", 64),
+                    "stage": _choice(chain.get("stage"), f"{label}.stage", RELEASE_CHAIN_STAGES, 24),
+                    "latest_commit": commit,
+                    "candidate_count": _bounded_counter(chain.get("candidate_count"), f"{label}.candidate_count", 100),
+                }
+            )
+        chain_count = _bounded_counter(
+            release.get("awaiting_work5_chain_count"),
+            "instance_health.release.awaiting_work5_chain_count",
+            10_000,
+        )
+        truncated = _boolean(
+            release.get("release_chains_truncated"),
+            "instance_health.release.release_chains_truncated",
+        )
+        if chain_count < len(chains) or (not truncated and chain_count != len(chains)):
+            raise ContractError("instance_health.release.awaiting_work5_chain_count does not match release_chains")
+        release_result.update(
+            {
+                "awaiting_work5_chain_count": chain_count,
+                "candidate_commit_count": _bounded_counter(
+                    release.get("candidate_commit_count"),
+                    "instance_health.release.candidate_commit_count",
+                    10_000,
+                ),
+                "registration_count": _bounded_counter(
+                    release.get("registration_count"),
+                    "instance_health.release.registration_count",
+                    10_000,
+                ),
+                "release_chains": chains,
+                "release_chains_truncated": truncated,
+            }
+        )
     return {
         "reporter_state": _choice(
             supplied.get("reporter_state"), "instance_health.reporter_state", REPORTER_STATES, 24
@@ -341,60 +460,15 @@ def _instance_health(value: Any) -> dict[str, Any]:
             supplied.get("last_delivery_at"), "instance_health.last_delivery_at", optional=True
         ),
         "semantic_digest": digest,
-        "release": {
-            "installed_version": _required_string(
-                release.get("installed_version"), "instance_health.release.installed_version", 64
-            ),
-            "stable_version": _optional_string(
-                release.get("stable_version"), "instance_health.release.stable_version", 64
-            ),
-            "stable_source": _choice(
-                release.get("stable_source"),
-                "instance_health.release.stable_source",
-                RELEASE_SOURCES,
-                24,
-            ),
-            "candidate_version": _optional_string(
-                release.get("candidate_version"), "instance_health.release.candidate_version", 64
-            ),
-            "pending_candidate_count": _bounded_counter(
-                release.get("pending_candidate_count"),
-                "instance_health.release.pending_candidate_count",
-                10_000,
-            ),
-            "production_version": _optional_string(
-                release.get("production_version"), "instance_health.release.production_version", 64
-            ),
-            "production_source": _choice(
-                release.get("production_source"),
-                "instance_health.release.production_source",
-                RELEASE_SOURCES,
-                24,
-            ),
-            "observed_at": _timestamp(
-                release.get("observed_at"), "instance_health.release.observed_at"
-            ),
-            "compatibility_state": _choice(
-                release.get("compatibility_state"),
-                "instance_health.release.compatibility_state",
-                COMPATIBILITY_STATES,
-                24,
-            ),
-            "qualification_state": _choice(
-                release.get("qualification_state"),
-                "instance_health.release.qualification_state",
-                QUALIFICATION_STATES,
-                24,
-            ),
-        },
+        "release": release_result,
     }
 
 
 def validate_report(payload: Any) -> dict[str, Any]:
     root = _object(payload, "report", ROOT_FIELDS)
     schema_version = root.get("schema_version")
-    if schema_version not in {1, 2, 3, 4}:
-        raise ContractError("report.schema_version must be 1, 2, 3, or 4")
+    if schema_version not in {1, 2, 3, 4, 5}:
+        raise ContractError("report.schema_version must be 1, 2, 3, 4, or 5")
     if schema_version == 1 and ({"work_inventory", "lifecycle_events"} & set(root)):
         raise ContractError("report schema 1 does not support lifecycle projection fields")
     if schema_version < 4 and "instance_health" in root:
@@ -487,5 +561,7 @@ def validate_report(payload: Any) -> dict[str, Any]:
         },
         "work_inventory": _work_inventory(root.get("work_inventory"), schema_version=schema_version) if schema_version >= 2 else None,
         "lifecycle_events": _lifecycle_events(root.get("lifecycle_events", [])) if schema_version >= 2 else [],
-        "instance_health": _instance_health(root.get("instance_health")) if schema_version >= 4 else None,
+        "instance_health": _instance_health(
+            root.get("instance_health"), schema_version=schema_version
+        ) if schema_version >= 4 else None,
     }

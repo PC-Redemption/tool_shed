@@ -36,6 +36,26 @@
 </section>
 {% endif %}
 <div class="project-overview-grid">
+  <section class="dashboard-panel overview-card overview-wide release-gate-card">
+    <div class="compact-panel-heading">
+      <div><h2>Awaiting Work5</h2><p class="dashboard-note">Locally derived release chains that completed Work2 and still need release qualification.</p></div>
+      <a href="{% url 'fleet:project-tab' project.id 'work' %}?release_stage=awaiting-work5">View release work</a>
+    </div>
+    <div class="release-gate-summary" aria-label="Work awaiting release summary">
+      <div><strong>{{ overview.awaiting_work5_chain_count }}</strong><span>Idea chains</span></div>
+      <div><strong>{{ overview.candidate_commit_count }}</strong><span>Candidate commits</span></div>
+      <div><strong>{{ overview.registration_count }}</strong><span>Audit registrations</span></div>
+    </div>
+    {% if overview.release_chains %}<div class="release-chain-list">
+      {% for chain in overview.release_chains %}<article>
+        <div><strong>{{ chain.root_id }}</strong><span title="{{ chain.title }}">{{ chain.title }}</span></div>
+        <div class="release-chain-path">{% for node_id in chain.node_ids %}<code>{{ node_id }}</code>{% if not forloop.last %}<span aria-hidden="true">→</span>{% endif %}{% endfor %}</div>
+        <div class="release-chain-meta"><span class="table-state release-stage-awaiting-work5">Awaiting Work5</span><span>{{ chain.candidate_count }} candidate commit{{ chain.candidate_count|pluralize }} · <code>{{ chain.short_commit }}</code></span></div>
+      </article>{% endfor %}
+    </div>{% else %}<p class="dashboard-empty">No locally reported chains are awaiting Work5.</p>{% endif %}
+    {% if overview.release_chains_truncated %}<p class="overview-more">The local reporter bounded this list; the chain total above remains authoritative.</p>{% endif %}
+  </section>
+
   <section class="dashboard-panel overview-card overview-wide">
     <div class="compact-panel-heading">
       <div><h2>Active work chains</h2><p class="dashboard-note">Current Idea → Map → PRM → Campaign paths from the latest reporting instance.</p></div>
@@ -43,7 +63,7 @@
     </div>
     {% if overview.active_chains %}<div class="overview-chain-list">
       {% for chain in overview.active_chains %}<article class="overview-chain">
-        <div class="overview-chain-heading"><strong>{{ chain.title }}</strong><span class="state-badge state-{{ chain.current.document_lifecycle }}">{{ chain.current.document_lifecycle }}</span></div>
+        <div class="overview-chain-heading"><strong>{{ chain.title }}</strong>{% if chain.release %}<span class="table-state release-stage-awaiting-work5">Awaiting Work5</span>{% else %}<span class="state-badge state-{{ chain.current.document_lifecycle }}">{{ chain.current.document_lifecycle }}</span>{% endif %}</div>
         <div class="overview-chain-path" aria-label="Work chain">
           {% for node in chain.nodes %}<span class="overview-chain-node{% if node.visible_id == chain.current.visible_id %} is-current{% endif %}" title="{{ node.title }}">{{ node.visible_id }}</span>{% if not forloop.last %}<span aria-hidden="true">→</span>{% endif %}{% endfor %}
         </div>
@@ -84,7 +104,9 @@
       <div><dt>Reporting</dt><dd class="health-{{ overview.health.reporter_state }}">{{ overview.health.reporter_state|capfirst }}</dd></div>
       <div><dt>Version posture</dt><dd class="health-{{ overview.health.version_state }}">{{ overview.health.version_state|capfirst }}</dd></div>
       <div><dt>State consistency</dt><dd class="health-{{ overview.health.divergence_state }}">{{ overview.health.divergence_state|capfirst }}</dd></div>
-      <div><dt>Pending release records</dt><dd>{{ overview.health.pending_candidate_count }}</dd></div>
+      <div><dt>Awaiting Work5</dt><dd>{{ overview.awaiting_work5_chain_count }} chains</dd></div>
+      <div><dt>Candidate commits</dt><dd>{{ overview.candidate_commit_count }}</dd></div>
+      <div><dt>Audit registrations</dt><dd>{{ overview.registration_count }}</dd></div>
     </dl>
     {% if overview.source_instance %}<p class="overview-source">Snapshot from <code>{{ overview.source_instance.external_id }}</code><br>{{ overview.source_instance.platform }} · client {{ overview.source_instance.client_version }} · observed {{ overview.source_instance.work_inventory_observed_at|timesince }} ago</p>{% else %}<p class="dashboard-empty">No reporting instance is enrolled.</p>{% endif %}
     {% if inventory_diverged %}<p class="dashboard-warning">Instance inventories differ. This page uses only the latest reporter; Health shows the divergence.</p>{% endif %}
@@ -113,6 +135,12 @@
       </select>
     </label>
     <label>Status <input name="status" value="{{ selected_status }}" placeholder="working, completed…"></label>
+    <label>Release stage
+      <select name="release_stage" data-auto-submit>
+        <option value="">All</option>
+        <option value="awaiting-work5" {% if selected_release_stage == 'awaiting-work5' %}selected{% endif %}>Awaiting Work5</option>
+      </select>
+    </label>
     <label>Rows
       <select name="rows" data-auto-submit>
         <option value="10" {% if selected_rows == '10' %}selected{% endif %}>10</option>
@@ -129,7 +157,7 @@
       </select>
     </label>{% endif %}
     <button type="submit">Apply status</button>
-    {% if selected_type or selected_status %}<a href="{% url 'fleet:project-tab' project.id 'work' %}?rows={{ selected_rows }}">Clear filters</a>{% endif %}
+    {% if selected_type or selected_status or selected_release_stage %}<a href="{% url 'fleet:project-tab' project.id 'work' %}?rows={{ selected_rows }}">Clear filters</a>{% endif %}
   </form>
   <div class="table-toolbar-meta">
     <div class="work-result-summary"><span>{% if selected_order == 'planned' %}Local planning order{% else %}Newest first{% endif %}</span><span aria-hidden="true">·</span>{% if work_page %}<span>Showing {{ work_page.start_index }}–{{ work_page.end_index }} of {{ work_result_count }}</span>{% else %}<span>Showing all {{ work_result_count }}</span>{% endif %}</div>
@@ -145,11 +173,12 @@
       <span class="snapshot-meta">Observed {{ group.instance.work_inventory_observed_at|date:"M j, Y · g:i A"|default:"Never" }} · {{ group.instance.work_inventory_total }} total{% if group.instance.work_inventory_truncated %} · partial snapshot{% endif %}</span>
     </div>
     {% if group.artifacts %}
-    <div class="table-scroll"><table class="work-table{% if selected_order == 'planned' %} planning-enabled{% endif %}"><thead><tr><th>Artifact</th>{% if selected_order == 'planned' %}<th>Plan</th>{% endif %}<th>Document</th><th>Outcome</th><th>Reconciliation</th><th>Relationships</th><th>Updated</th></tr></thead><tbody>
+    <div class="table-scroll"><table class="work-table{% if selected_order == 'planned' %} planning-enabled{% endif %} has-release-stage"><thead><tr><th>Artifact</th>{% if selected_order == 'planned' %}<th>Plan</th>{% endif %}<th>Document</th><th>Release</th><th>Outcome</th><th>Reconciliation</th><th>Relationships</th><th>Updated</th></tr></thead><tbody>
       {% for artifact in group.artifacts %}<tr>
         <th class="artifact-cell"><span class="artifact-id">{{ artifact.visible_id }}</span><span class="artifact-title" title="{{ artifact.title }}">{{ artifact.title }}</span></th>
         {% if selected_order == 'planned' %}<td class="planning-order-cell">{% if artifact.planning_position %}<span class="planning-position">{{ artifact.planning_position }}</span><small>{{ artifact.planning_order_source|capfirst }} · {{ artifact.planning_readiness|capfirst }}</small>{% else %}<span class="dashboard-note">—</span><small>{{ artifact.planning_readiness|capfirst }}</small>{% endif %}</td>{% endif %}
         <td><span class="state-badge state-{{ artifact.document_lifecycle }}">{{ artifact.document_lifecycle }}</span></td>
+        <td>{% if artifact.release_chain %}<span class="table-state release-stage-{{ artifact.release_chain.stage }}">Awaiting Work5</span><small>{{ artifact.release_chain.candidate_count }} commit{{ artifact.release_chain.candidate_count|pluralize }}</small>{% else %}<span class="dashboard-note">—</span>{% endif %}</td>
         <td>{% if artifact.outcome_lifecycle == 'unknown' and artifact.outcome_disposition == 'unknown' %}<span class="table-state table-state-unknown">Unknown</span>{% else %}<span class="table-state table-state-{{ artifact.outcome_lifecycle }}">{{ artifact.outcome_lifecycle|capfirst }}</span>{% if artifact.outcome_disposition != artifact.outcome_lifecycle %}<small class="cell-detail">{% if artifact.outcome_disposition == 'satisfied-with-approved-change' %}Approved change{% else %}{{ artifact.outcome_disposition|capfirst }}{% endif %}</small>{% endif %}{% endif %}</td>
         <td>{% if artifact.reconciliation_state == 'unknown' %}<span class="table-state table-state-unknown">Unknown</span>{% else %}<span class="table-state table-state-{{ artifact.reconciliation_state }}">{{ artifact.reconciliation_state|capfirst }}</span>{% endif %}</td>
         <td>{% if artifact.parent_ids %}<small>Parent: {{ artifact.parent_ids|join:", " }}</small>{% endif %}{% if artifact.produces_ids %}<small>Produces: {{ artifact.produces_ids|join:", " }}</small>{% endif %}{% if not artifact.parent_ids and not artifact.produces_ids %}<span class="dashboard-note">—</span>{% endif %}</td>
@@ -196,7 +225,7 @@
     <div><span class="health-summary-value health-{{ health_summary.reporter_state }}">{{ health_summary.reporter_state|capfirst }}</span><span>Reporting</span></div>
     <div><span class="health-summary-value health-{{ health_summary.version_state }}">{{ health_summary.version_state|capfirst }}</span><span>Version posture</span></div>
     <div><span class="health-summary-value health-{{ health_summary.divergence_state }}">{{ health_summary.divergence_state|capfirst }}</span><span>State consistency</span></div>
-    <div><span class="health-summary-value">{{ health_summary.pending_candidate_count }}</span><span>Pending release records</span></div>
+    <div><span class="health-summary-value">{{ health_summary.awaiting_work5_chain_count }}</span><span>Awaiting Work5 chains</span></div>
   </div>
   {% if health_rows %}<div class="table-scroll"><table class="instance-health-table"><thead><tr><th>Instance</th><th>Reporter</th><th>Freshness</th><th>Installed / stable</th><th>Release posture</th><th>Compatibility</th><th>State digest</th></tr></thead><tbody>
     {% for row in health_rows %}<tr>
@@ -204,7 +233,7 @@
       <td><span class="table-state health-{{ row.reporter_state }}">{{ row.reporter_state|capfirst }}</span><small>{{ row.pending_event_count }} queued</small></td>
       <td>{% if row.instance.last_seen %}{{ row.instance.last_seen|timesince }} ago{% else %}Never{% endif %}<small>{% if row.last_delivery_at %}Delivered {{ row.last_delivery_at|timesince }} ago{% else %}No delivery time{% endif %}</small></td>
       <td><span class="release-version">{{ row.installed_version }}</span><small>Stable {{ row.stable_version|default:"Unknown" }} · {{ row.stable_source }}</small></td>
-      <td><span class="table-state health-{{ row.version_state }}">{{ row.version_state|capfirst }}</span><small>{% if row.pending_candidate_count %}{{ row.pending_candidate_count }} pending · candidate {{ row.candidate_version|default:row.installed_version }}{% else %}No pending candidate{% endif %}</small><small>Production {{ row.production_version|default:"Unknown" }} · {{ row.production_source }}</small></td>
+      <td><span class="table-state health-{{ row.version_state }}">{{ row.version_state|capfirst }}</span><small>{% if row.awaiting_work5_chain_count %}{{ row.awaiting_work5_chain_count }} chains · {{ row.candidate_commit_count }} commits · {{ row.registration_count }} registrations{% else %}No chain awaiting Work5{% endif %}</small><small>Production {{ row.production_version|default:"Unknown" }} · {{ row.production_source }}</small></td>
       <td>{{ row.compatibility_state|capfirst }}<small>{{ row.qualification_state|capfirst }} qualification</small></td>
       <td>{% if row.semantic_digest %}<code title="{{ row.semantic_digest }}">{{ row.semantic_digest|slice:":12" }}…</code>{% else %}<span class="dashboard-note">Unknown</span>{% endif %}<small>{% if row.release_observed_at %}Release evidence {{ row.release_observed_at|timesince }} ago{% else %}No release evidence time{% endif %}</small></td>
     </tr>{% endfor %}

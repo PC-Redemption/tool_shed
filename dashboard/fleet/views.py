@@ -441,6 +441,14 @@ def _instance_health_context(instances: list[object]) -> tuple[list[dict[str, ob
         stable = release.get("stable_version")
         candidate = release.get("candidate_version")
         pending = int(release.get("pending_candidate_count") or 0)
+        awaiting_chains = int(release.get("awaiting_work5_chain_count") or 0)
+        candidate_commits = int(release.get("candidate_commit_count") or 0)
+        registrations = int(release.get("registration_count") or pending)
+        release_chains = (
+            release.get("release_chains")
+            if isinstance(release.get("release_chains"), list)
+            else []
+        )
         installed_semver = _semver(installed)
         stable_semver = _semver(stable)
         version_state = (
@@ -466,6 +474,10 @@ def _instance_health_context(instances: list[object]) -> tuple[list[dict[str, ob
                 "stable_source": str(release.get("stable_source") or "unknown"),
                 "candidate_version": candidate,
                 "pending_candidate_count": pending,
+                "awaiting_work5_chain_count": awaiting_chains,
+                "candidate_commit_count": candidate_commits,
+                "registration_count": registrations,
+                "release_chains": release_chains,
                 "production_version": release.get("production_version"),
                 "production_source": str(release.get("production_source") or "unknown"),
                 "release_observed_at": parse_datetime(str(release.get("observed_at") or "")),
@@ -494,6 +506,11 @@ def _instance_health_context(instances: list[object]) -> tuple[list[dict[str, ob
             "divergent" if len(semantic_digests) > 1 else "aligned" if semantic_digests else "unknown"
         ),
         "pending_candidate_count": sum(int(row["pending_candidate_count"]) for row in rows),
+        "awaiting_work5_chain_count": sum(
+            int(row["awaiting_work5_chain_count"]) for row in rows
+        ),
+        "candidate_commit_count": sum(int(row["candidate_commit_count"]) for row in rows),
+        "registration_count": sum(int(row["registration_count"]) for row in rows),
     }
     return rows, summary
 
@@ -576,6 +593,43 @@ def _project_overview_context(
         )
 
     by_visible_id = {artifact.visible_id: artifact for artifact in snapshots}
+    source_health = (
+        source_instance.health_state
+        if source_instance and isinstance(source_instance.health_state, dict)
+        else {}
+    )
+    source_release = (
+        source_health.get("release")
+        if isinstance(source_health.get("release"), dict)
+        else {}
+    )
+    release_chains = (
+        source_release.get("release_chains")
+        if isinstance(source_release.get("release_chains"), list)
+        else []
+    )
+    release_by_visible_id: dict[str, dict[str, object]] = {}
+    presented_release_chains = []
+    for chain in release_chains:
+        if not isinstance(chain, dict):
+            continue
+        node_ids = [
+            str(chain.get(field))
+            for field in ("idea_id", "map_id", "prm_id", "campaign_id")
+            if chain.get(field)
+        ]
+        for node_id in node_ids:
+            release_by_visible_id[node_id] = chain
+        root_id = str(chain.get("root_id") or (node_ids[0] if node_ids else ""))
+        root_artifact = by_visible_id.get(root_id)
+        presented_release_chains.append(
+            {
+                **chain,
+                "title": root_artifact.title if root_artifact else root_id,
+                "node_ids": node_ids,
+                "short_commit": str(chain.get("latest_commit") or "")[:8],
+            }
+        )
     graph = {visible_id: set() for visible_id in by_visible_id}
     for artifact in snapshots:
         for related_id in [*artifact.parent_ids, *artifact.produces_ids]:
@@ -629,6 +683,14 @@ def _project_overview_context(
                 "current": current,
                 "open_count": sum(artifact.id in open_artifact_ids for artifact in component),
                 "updated_at": max(artifact.source_updated_at for artifact in component),
+                "release": next(
+                    (
+                        release_by_visible_id[artifact.visible_id]
+                        for artifact in nodes
+                        if artifact.visible_id in release_by_visible_id
+                    ),
+                    None,
+                ),
             }
         )
     active_chains.sort(
@@ -661,6 +723,17 @@ def _project_overview_context(
         "planning_queues": planning_queues,
         "recent_changes": recent_changes(project, limit=6),
         "health": health_summary,
+        "release_chains": presented_release_chains,
+        "release_chains_truncated": bool(source_release.get("release_chains_truncated")),
+        "awaiting_work5_chain_count": int(
+            source_release.get("awaiting_work5_chain_count") or 0
+        ),
+        "candidate_commit_count": int(source_release.get("candidate_commit_count") or 0),
+        "registration_count": int(
+            source_release.get("registration_count")
+            or source_release.get("pending_candidate_count")
+            or 0
+        ),
     }
 
 
@@ -669,6 +742,7 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
     if tab not in {"overview", "work", "history", "outcomes", "health"}:
         return JsonResponse({"status": "not-found"}, status=404)
     project = get_object_or_404(Project.objects.prefetch_related("instances"), id=project_id)
+    instances = list(project.instances.all())
     attention_items = active_attention_items(project=project)
     attention_severities = {item["severity"] for item in attention_items}
     project.effective_attention_state = (
@@ -682,6 +756,9 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
     )
     artifact_type = request.GET.get("type", "").strip()
     status = request.GET.get("status", "").strip()
+    release_stage = request.GET.get("release_stage", "").strip()
+    if release_stage not in {"", "awaiting-work5"}:
+        release_stage = ""
     planning_supported = artifact_type in PLANNING_ORDER_TYPES
     selected_order = request.GET.get(
         "order", "planned" if planning_supported else "newest"
@@ -710,6 +787,8 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
             values["type"] = artifact_type
         if status:
             values["status"] = status
+        if release_stage:
+            values["release_stage"] = release_stage
         if planning_supported:
             values["order"] = selected_order
         return "?" + urlencode(values)
@@ -725,6 +804,30 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
                 | Q(outcome_disposition=status)
                 | Q(reconciliation_state=status)
             )
+        release_chain_by_instance: dict[object, dict[str, dict[str, object]]] = {}
+        release_filter = Q()
+        for instance in instances:
+            health = instance.health_state if isinstance(instance.health_state, dict) else {}
+            release = health.get("release") if isinstance(health.get("release"), dict) else {}
+            chains = release.get("release_chains") if isinstance(release.get("release_chains"), list) else []
+            visible_index: dict[str, dict[str, object]] = {}
+            for chain in chains:
+                if not isinstance(chain, dict):
+                    continue
+                for field in ("idea_id", "map_id", "prm_id", "campaign_id"):
+                    if chain.get(field):
+                        visible_index[str(chain[field])] = chain
+            release_chain_by_instance[instance.id] = visible_index
+            if release_stage:
+                matching_ids = [
+                    visible_id
+                    for visible_id, chain in visible_index.items()
+                    if chain.get("stage") == release_stage
+                ]
+                if matching_ids:
+                    release_filter |= Q(instance_id=instance.id, visible_id__in=matching_ids)
+        if release_stage:
+            snapshots = snapshots.filter(release_filter) if release_filter else snapshots.none()
         if selected_order == "planned":
             snapshots = snapshots.order_by(
                 F("planning_position").asc(nulls_last=True),
@@ -760,8 +863,10 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
                         }
                     )
         for snapshot in page_snapshots:
+            snapshot.release_chain = release_chain_by_instance.get(snapshot.instance_id, {}).get(
+                snapshot.visible_id
+            )
             snapshot_by_instance.setdefault(snapshot.instance_id, []).append(snapshot)
-    instances = list(project.instances.all())
     health_rows, health_summary = _instance_health_context(instances)
     overview = _project_overview_context(project, instances, health_summary) if tab == "overview" else None
     if tab == "work" and snapshot_by_instance:
@@ -822,6 +927,7 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
             "overview": overview,
             "selected_type": artifact_type,
             "selected_status": status,
+            "selected_release_stage": release_stage,
             "selected_rows": selected_rows,
             "selected_order": selected_order,
             "planning_supported": planning_supported,

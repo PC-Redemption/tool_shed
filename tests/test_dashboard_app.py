@@ -182,6 +182,31 @@ class DashboardApplicationTests(TestCase):
         }
         return payload
 
+    def release_chain_report_payload(self) -> dict[str, object]:
+        payload = self.health_report_payload()
+        payload["schema_version"] = 5
+        payload["instance_health"]["release"].update(  # type: ignore[index]
+            {
+                "awaiting_work5_chain_count": 1,
+                "candidate_commit_count": 2,
+                "registration_count": 4,
+                "release_chains_truncated": False,
+                "release_chains": [
+                    {
+                        "root_id": "IDEA-0012",
+                        "idea_id": "IDEA-0012",
+                        "map_id": "MAP-0017",
+                        "prm_id": "PRM-0028",
+                        "campaign_id": "CAMP-0136",
+                        "stage": "awaiting-work5",
+                        "latest_commit": "a" * 40,
+                        "candidate_count": 2,
+                    }
+                ],
+            }
+        )
+        return payload
+
     def enroll_and_issue(self) -> str:
         created = self.client.post(
             reverse("fleet:enrollment-request"),
@@ -476,6 +501,26 @@ class DashboardApplicationTests(TestCase):
         instance.refresh_from_db()
         self.assertEqual(instance.report_schema_version, 4)
         self.assertEqual(instance.health_state["semantic_digest"], "c" * 64)
+
+    def test_schema_five_validates_and_stores_chain_level_release_projection(self) -> None:
+        token = self.enroll_and_issue()
+        payload = self.release_chain_report_payload()
+        validated = validate_report(payload)
+        self.assertEqual(
+            validated["instance_health"]["release"]["awaiting_work5_chain_count"], 1
+        )
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        instance = Instance.objects.get()
+        release = instance.health_state["release"]
+        self.assertEqual(release["candidate_commit_count"], 2)
+        self.assertEqual(release["registration_count"], 4)
+        self.assertEqual(release["release_chains"][0]["root_id"], "IDEA-0012")
 
         second = Instance.objects.create(
             project=instance.project,
@@ -947,6 +992,22 @@ class DashboardApplicationTests(TestCase):
                     "stable_version": "v0.39.2",
                     "candidate_version": "0.40.0",
                     "pending_candidate_count": 2,
+                    "awaiting_work5_chain_count": 1,
+                    "candidate_commit_count": 2,
+                    "registration_count": 4,
+                    "release_chains_truncated": False,
+                    "release_chains": [
+                        {
+                            "root_id": "IDEA-0100",
+                            "idea_id": "IDEA-0100",
+                            "map_id": "MAP-0100",
+                            "prm_id": "PRM-0100",
+                            "campaign_id": "CAMP-0100",
+                            "stage": "awaiting-work5",
+                            "latest_commit": "e" * 40,
+                            "candidate_count": 2,
+                        }
+                    ],
                 },
             },
         )
@@ -1010,6 +1071,7 @@ class DashboardApplicationTests(TestCase):
         response = self.client.get(reverse("fleet:project", args=(project.id,)))
         self.assertEqual(response.status_code, 200)
         for heading in (
+            "Awaiting Work5",
             "Active work chains",
             "Next up",
             "Open outcomes",
@@ -1028,6 +1090,18 @@ class DashboardApplicationTests(TestCase):
         self.assertContains(response, "Owner")
         self.assertContains(response, "Snapshot from")
         self.assertContains(response, "document-lifecycle: queued → working")
+        self.assertContains(response, "1</strong><span>Idea chains")
+        self.assertContains(response, "2</strong><span>Candidate commits")
+        self.assertContains(response, "4</strong><span>Audit registrations")
+
+        work = self.client.get(
+            reverse("fleet:project-tab", args=(project.id, "work")),
+            {"release_stage": "awaiting-work5"},
+        )
+        self.assertEqual(work.status_code, 200)
+        self.assertContains(work, "Release stage")
+        self.assertContains(work, "Awaiting Work5", count=5)
+        self.assertContains(work, "IDEA-0100")
 
     def test_project_activity_changes_only_for_material_report_updates(self) -> None:
         token = self.enroll_and_issue()
