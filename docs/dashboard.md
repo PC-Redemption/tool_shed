@@ -6,11 +6,13 @@ Shed commands, mutate local state, restart workers, cancel work, or retrieve arb
 
 ## Privacy contract
 
-Every report schema rejects unknown fields. Schema v4 accepts project and instance UUIDs, display
+Every report schema rejects unknown fields. Schema v5 accepts project and instance UUIDs, display
 name, platform and client versions, current lifecycle counters, controlled material-event codes,
 content-free App Server aggregates and failure signatures, Work Efficiency aggregates with explicit
 measured-token coverage, bounded lifecycle inventory, and per-instance health made only from
-controlled states, versions, timestamps, digests, and capped counts. It rejects paths, prompts,
+controlled states, versions, timestamps, digests, capped counts, and a bounded chain-level release
+projection derived by the local instance from its authoritative relationships and release cohort.
+It rejects paths, prompts,
 source text, commands, raw output, exception messages, credentials, secrets, scheduler definitions,
 diagnostic logs, and uncontrolled event summaries. Requests are capped at 256 KiB; event, failure,
 inventory, pending-delivery, and release-candidate lists or counts are bounded.
@@ -44,7 +46,9 @@ python3 scripts/dashboard_reporter.py --workspace . connect-poll \
 
 Managed database writes enqueue a controlled event and wake a detached singleton worker. Its local
 SQLite outbox preserves ordered idempotent delivery, bounded exponential backoff, one-minute
-heartbeats, and a final quiescent report after two idle hours. The independent safety pass compares
+heartbeats, and a final quiescent report after two idle hours. When the server proves an older
+queued sequence has already been superseded, the worker retires only that exact conflict so stale
+history cannot block newer state. The independent safety pass compares
 the local domain digest every 15 minutes and delivers a convergence report when it changes:
 
 ```bash
@@ -57,6 +61,20 @@ Scheduler installation is project-scoped: a systemd user timer on Linux, LaunchA
 scheduled task on Windows. Inspect without credentials using `status`. Revoke with `disconnect`.
 Network or service failures leave the outbox queued and never fail the originating local write.
 Remove the safety scheduler with `scheduler-remove` when disconnecting the project permanently.
+
+## Operator presentation
+
+The project Overview uses the newest reporting instance without merging independent inventories.
+It presents active Idea → Map → PRM → Campaign chains, locally derived Idea and PRM planning order,
+open outcomes, lifecycle posture, recent material changes, reporter health, and the distinct chains
+awaiting Work5. Candidate commits and audit registrations remain separate counts so retained
+ownership evidence is not mistaken for additional operator work.
+
+The Work view presents the current bounded inventory newest-first with consistent pagination,
+type/status/release-stage filters, and an optional locally reported planning order. History contains
+actual lifecycle changes rather than repeated snapshots. Fleet navigation sorts projects by latest
+material activity and supports active/all and hide/show controls. Search and exports remain bounded;
+the hosted dashboard has no lifecycle, planning-order, or release mutation operation.
 
 ## Production deployment
 
