@@ -1,0 +1,94 @@
+# Project Map: Methodical Windows Field Upgrade and Installer Repair
+
+Status: completed
+Type: project-map
+Updated: 2026-08-30
+Next Action: none; v0.41.0 and the Windows target upgrade are accepted
+Source Idea: IDEA-0017
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 2
+Reviewed Body SHA256: 68f623cdf2509fff7c53e7da99a30db366f5b57ac26b743cab3a6bdca48f1ca4
+Program Roadmap: PRM-0034
+
+## Purpose
+
+Coordinate a recoverable Windows-native field upgrade of the exact disconnected Tool Shed instance
+at `workpc:E:\dev\high_point\7520553_SMI_FW`, while routing any demonstrated installer or updater
+defect back to the canonical Linux maintainer repository for the smallest reusable repair.
+
+## Desired Outcome
+
+The target workspace is upgraded from its observed v0.33.0 snapshot to the latest qualified stable
+Tool Shed release without damaging firmware work, changing its non-Hybrid storage posture, or
+leaving a target-only workaround. Recovery assets and a reusable Windows procedure remain, and any
+real installer defect is repaired, cross-platform qualified, released, and proven on the target.
+
+## Work2 Boundary
+
+- Work2 means a committed and verified candidate plus deployment to the explicitly bound Windows
+  work target, Windows-native changed-behavior checks, release-cohort registration, governed
+  checkpoint, and strict health verification.
+- The current repository default resolves Work2 to the combined `ts.rookaro.com` documentation
+  target. That default is not applicable to this outcome and must not be invoked.
+- Remote mutation begins only after an explicit verified project switch or equivalent project-bound
+  target capsule for the exact Windows workspace.
+- Work2 stops before pushing, tagging, or releasing a new Tool Shed version. A demonstrated defect
+  that requires a new canonical release crosses into a later Work5 gate before retrying the field
+  upgrade.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Target routing and baseline | Exact host/workspace identity, Windows toolchain, Git state, links, disk, current Tool Shed provenance, and non-Hybrid posture are verified | explicit target binding |
+| Recovery preparation | Byte-verifiable backup, rollback procedure, and stop conditions are proven before mutation | baseline |
+| Released-updater qualification | Latest stable release and current updater inputs are provenance-verified with Windows-native tooling | baseline and recovery |
+| Transactional field upgrade | The exact target upgrades without unrelated firmware or Git-state damage | released-updater qualification |
+| Conditional canonical repair | Only a reproduced reusable defect is fixed in this canonical repository, tested on Windows and Linux, released, and retried | observed upgrade failure only |
+| Acceptance and retained evidence | Target version, identity, provider guidance, installed skill, storage posture, Git state, rollback assets, and procedure are verified | successful upgrade |
+
+## Readiness Gate Transfer
+
+1. `G1-WINDOWS-TARGET-IDENTITY-AND-ROUTING` prevents cross-workspace or documentation-target misrouting.
+2. `G2-BASELINE-BACKUP-ROLLBACK-AND-STORAGE-POSTURE` proves recovery and preserves non-Hybrid state.
+3. `G3-CURRENT-RELEASE-PROVENANCE-AND-UPDATER` verifies the current stable release and updater.
+4. `G4-WINDOWS-NATIVE-TRANSACTIONAL-UPGRADE` governs the target mutation and rollback boundary.
+5. `G5-CANONICAL-DEFECT-REPAIR-AND-CROSS-PLATFORM-QUALIFICATION` activates only from reproduced evidence.
+6. `G6-WORK2-ACCEPTANCE-AND-RECOVERY-EVIDENCE` proves the final work target and retained recovery surface.
+
+## Constraints
+
+- Canonical installer/updater changes occur only in `/home/jon/docker/tool_shed`.
+- OS-sensitive commands run on Windows with Windows Python or PowerShell.
+- Preserve unrelated firmware files and Git state.
+- Preserve the target's absence of `.tool-shed/state.sqlite3`; Hybrid conversion is out of scope.
+- Use the current released updater, not the updater embedded in the old target snapshot.
+- Retain first-upgrade backups and recovery evidence.
+
+## Non-Goals
+
+- Deploying or changing `ts.rookaro.com` as part of this Work2 outcome.
+- An ad-hoc target-only installer patch.
+- Speculative installer redesign without reproducible Windows evidence.
+- Unrelated firmware qualification.
+
+## Navigation
+
+Do next:
+
+- Establish the Program Roadmap and exact target-switch gate.
+- After an explicit verified Windows target route exists, capture the read-only baseline and recovery proof.
+
+Avoid for now:
+
+- Running the configured documentation-site Work2 deployment.
+- Mutating `workpc` from this project identity.
+- Pruning backup or recovery collateral.
+
+## Related Artifacts
+
+- Source Idea Brief: IDEA-0017
+- Completed Program Roadmap: PRM-0034
+- Released result: v0.41.0 at content commit `85176d7553472193b2307e8042df1cad324dec91`
+- Windows upgrade transaction: `5dc5bb8e4584340d010f6a0b`
+- Readiness result digest: 0239b8a6ec01345362b877ea9ba3196c071a9cac40b5417ebbd803bbff3c9249

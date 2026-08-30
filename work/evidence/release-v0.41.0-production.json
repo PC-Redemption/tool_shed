@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "release": {
+    "tag": "v0.41.0",
+    "content_commit": "85176d7553472193b2307e8042df1cad324dec91",
+    "provenance_commit": "32d5a86a69cbd50849d8e7bd4544cedc9183819d",
+    "release_url": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.41.0"
+  },
+  "qualification": {
+    "validate_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/33334189659",
+    "validate_result": "passed: classification plus 32 Ubuntu and Windows release shards",
+    "publish_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/33334423977",
+    "publish_result": "passed: integrity, exact-content CI, metadata, publication, and release verification"
+  },
+  "production": {
+    "target": "https://ts.rookaro.com",
+    "image": "tool-shed-dashboard:v0.41.0",
+    "image_id": "sha256:1f5c47720ebad3f3f67ed7be46bd4316d3999b2e37c9e3aa218e71099359b0c5",
+    "observed_at": "2026-08-30T20:58:00Z",
+    "rollback_backup": "/home/jon/docker/ts.rookaro.com.backup-20260830T205657Z",
+    "checks": {
+      "documentation_build": "passed: 25 pages and 87 commands",
+      "focused_site_tests": "passed: 13 tests",
+      "deployed_public_tree": "exact match to generated release bundle",
+      "django_production_readiness": "healthy",
+      "public_representative_routes": "HTTP 200",
+      "public_dashboard_health": "HTTP 200",
+      "dashboard_container_health": "healthy",
+      "postgres_container_health": "healthy",
+      "docs_container_health": "healthy"
+    }
+  },
+  "windows_field_target": {
+    "target": "workpc:E:\\dev\\high_point\\7520553_SMI_FW",
+    "transaction_id": "5dc5bb8e4584340d010f6a0b",
+    "previous_version": "v0.33.0",
+    "installed_version": "v0.41.0",
+    "rollback_backup": "E:\\dev\\high_point\\7520553_SMI_FW\\tool_shed.backup-20260830T204917Z.tar",
+    "checks": {
+      "strict_snapshot": "passed",
+      "installed_skill": "exact match",
+      "hybrid_database": "absent and preserved",
+      "firmware_branch_and_head": "unchanged",
+      "owner_authored_dirty_content": "four SHA256 values unchanged",
+      "nested_git_repository": "absent"
+    }
+  }
+}
