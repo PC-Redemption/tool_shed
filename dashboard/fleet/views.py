@@ -159,7 +159,7 @@ def dashboard_events(request: HttpRequest) -> StreamingHttpResponse:
                 yield f"id: {current}\nevent: dashboard-update\ndata: {current}\n\n"
                 return
             now = time.monotonic()
-            if now - keepalive_at >= 15:
+            if now - keepalive_at >= settings.DASHBOARD_SSE_KEEPALIVE_SECONDS:
                 yield ": keepalive\n\n"
                 keepalive_at = now
 

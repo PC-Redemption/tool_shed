@@ -30,7 +30,16 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     window.addEventListener("pagehide", closeStream);
+    window.addEventListener("beforeunload", closeStream);
     window.addEventListener("pageshow", openStream);
+    document.addEventListener("click", (event) => {
+      const targetElement = event.target instanceof Element ? event.target : event.target.parentElement;
+      const link = targetElement?.closest("a[href]");
+      if (!link) return;
+      const target = new URL(link.href, window.location.href);
+      if (target.origin === window.location.origin) closeStream();
+    }, { capture: true });
+    document.addEventListener("submit", closeStream, { capture: true });
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "hidden") {
         closeStream();

@@ -441,6 +441,19 @@ class DashboardApplicationTests(TestCase):
         self.assertIn(b"retry: 5000", payload)
         self.assertIn(b"event: dashboard-update", payload)
 
+    @override_settings(
+        DASHBOARD_SSE_MAX_SECONDS=0.01,
+        DASHBOARD_SSE_POLL_SECONDS=0.001,
+        DASHBOARD_SSE_KEEPALIVE_SECONDS=0.001,
+    )
+    def test_dashboard_event_stream_pulses_to_release_disconnected_clients(self) -> None:
+        user = get_user_model().objects.create_user("stream-pulse-viewer", password="fixture")
+        self.client.force_login(user)
+        response = self.client.get(reverse("fleet:events"), {"since": dashboard_revision()})
+        chunks = iter(response.streaming_content)
+        self.assertIn(b"connected", next(chunks))
+        self.assertIn(b"keepalive", next(chunks))
+
     def test_dashboard_revision_ignores_heartbeat_only_updates(self) -> None:
         project = Project.objects.create(
             external_id=uuid.uuid4(),
@@ -509,7 +522,10 @@ class DashboardApplicationTests(TestCase):
             Path(__file__).parents[1] / "dashboard" / "fleet" / "static" / "fleet" / "dashboard.js"
         ).read_text(encoding="utf-8")
         self.assertIn('window.addEventListener("pagehide", closeStream)', script)
+        self.assertIn('window.addEventListener("beforeunload", closeStream)', script)
         self.assertIn('window.addEventListener("pageshow", openStream)', script)
+        self.assertIn('document.addEventListener("click"', script)
+        self.assertIn('document.addEventListener("submit", closeStream', script)
         self.assertIn('document.addEventListener("visibilitychange"', script)
         self.assertIn("if (source || document.visibilityState", script)
 
