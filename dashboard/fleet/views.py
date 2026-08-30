@@ -498,6 +498,172 @@ def _instance_health_context(instances: list[object]) -> tuple[list[dict[str, ob
     return rows, summary
 
 
+OVERVIEW_TYPE_ORDER = {
+    "idea-brief": 0,
+    "project-map": 1,
+    "program-roadmap": 2,
+    "campaign": 3,
+}
+OVERVIEW_TYPE_LABELS = {
+    "idea-brief": "Ideas",
+    "project-map": "Maps",
+    "program-roadmap": "PRMs",
+    "campaign": "Campaigns",
+}
+OVERVIEW_ACTIVE_DOCUMENT_STATES = {
+    "active",
+    "exploring",
+    "promoted",
+    "queued",
+    "ready",
+    "ready-for-prm",
+    "working",
+}
+
+
+def _project_overview_context(
+    project: Project,
+    instances: list[Instance],
+    health_summary: dict[str, object],
+) -> dict[str, object]:
+    """Build one bounded operator snapshot without merging instance inventories."""
+    source_instance = max(
+        instances,
+        key=lambda instance: (
+            instance.work_inventory_observed_at or instance.last_seen or instance.created_at,
+            str(instance.id),
+        ),
+        default=None,
+    )
+    snapshots = (
+        list(
+            WorkArtifactSnapshot.objects.filter(instance=source_instance).order_by(
+                "-source_updated_at", "visible_id"
+            )
+        )
+        if source_instance
+        else []
+    )
+
+    open_artifacts = [
+        artifact
+        for artifact in snapshots
+        if artifact.outcome_disposition == "open"
+        or artifact.outcome_lifecycle == "working"
+        or artifact.reconciliation_state == "open"
+    ]
+    open_artifact_ids = {artifact.id for artifact in open_artifacts}
+    open_by_type = []
+    lifecycle_rows = []
+    for artifact_type, label in OVERVIEW_TYPE_LABELS.items():
+        typed = [artifact for artifact in snapshots if artifact.artifact_type == artifact_type]
+        active = sum(
+            artifact.document_lifecycle in OVERVIEW_ACTIVE_DOCUMENT_STATES for artifact in typed
+        )
+        completed = sum(artifact.document_lifecycle == "completed" for artifact in typed)
+        open_count = sum(artifact.id in open_artifact_ids for artifact in typed)
+        open_by_type.append({"type": artifact_type, "label": label, "count": open_count})
+        lifecycle_rows.append(
+            {
+                "type": artifact_type,
+                "label": label,
+                "active": active,
+                "open": open_count,
+                "completed": completed,
+                "historical": len(typed) - active - completed,
+                "total": len(typed),
+            }
+        )
+
+    by_visible_id = {artifact.visible_id: artifact for artifact in snapshots}
+    graph = {visible_id: set() for visible_id in by_visible_id}
+    for artifact in snapshots:
+        for related_id in [*artifact.parent_ids, *artifact.produces_ids]:
+            if related_id in graph:
+                graph[artifact.visible_id].add(related_id)
+                graph[related_id].add(artifact.visible_id)
+
+    active_chains = []
+    visited: set[str] = set()
+    for visible_id in graph:
+        if visible_id in visited:
+            continue
+        pending = [visible_id]
+        component_ids = []
+        while pending:
+            candidate = pending.pop()
+            if candidate in visited:
+                continue
+            visited.add(candidate)
+            component_ids.append(candidate)
+            pending.extend(graph[candidate] - visited)
+        component = [by_visible_id[item] for item in component_ids]
+        active_component = [
+            artifact
+            for artifact in component
+            if artifact.document_lifecycle in OVERVIEW_ACTIVE_DOCUMENT_STATES
+            or artifact.id in open_artifact_ids
+        ]
+        if not active_component:
+            continue
+        nodes = sorted(
+            component,
+            key=lambda artifact: (
+                OVERVIEW_TYPE_ORDER.get(artifact.artifact_type, 99),
+                artifact.visible_id,
+            ),
+        )
+        current = max(
+            active_component,
+            key=lambda artifact: (
+                OVERVIEW_TYPE_ORDER.get(artifact.artifact_type, -1),
+                artifact.source_updated_at,
+                artifact.visible_id,
+            ),
+        )
+        root = nodes[0]
+        active_chains.append(
+            {
+                "title": root.title,
+                "nodes": nodes,
+                "current": current,
+                "open_count": sum(artifact.id in open_artifact_ids for artifact in component),
+                "updated_at": max(artifact.source_updated_at for artifact in component),
+            }
+        )
+    active_chains.sort(
+        key=lambda chain: (chain["updated_at"], chain["current"].visible_id), reverse=True
+    )
+
+    planning_queues = []
+    for artifact_type, label in (("idea-brief", "Ideas"), ("program-roadmap", "PRMs")):
+        items = sorted(
+            (
+                artifact
+                for artifact in snapshots
+                if artifact.artifact_type == artifact_type
+                and artifact.planning_position is not None
+            ),
+            key=lambda artifact: (artifact.planning_position, artifact.visible_id),
+        )
+        planning_queues.append({"type": artifact_type, "label": label, "items": items[:3]})
+
+    reported_open_count = int(project.current_state.get("open_outcome_count") or 0)
+    return {
+        "source_instance": source_instance,
+        "active_chains": active_chains[:5],
+        "active_chain_count": len(active_chains),
+        "open_by_type": open_by_type,
+        "represented_open_count": len(open_artifacts),
+        "reported_open_count": reported_open_count,
+        "unrepresented_open_count": max(0, reported_open_count - len(open_artifacts)),
+        "lifecycle_rows": lifecycle_rows,
+        "planning_queues": planning_queues,
+        "recent_changes": recent_changes(project, limit=6),
+        "health": health_summary,
+    }
+
+
 @dashboard_auth_required
 def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
     if tab not in {"overview", "work", "history", "outcomes", "health"}:
@@ -597,6 +763,7 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
             snapshot_by_instance.setdefault(snapshot.instance_id, []).append(snapshot)
     instances = list(project.instances.all())
     health_rows, health_summary = _instance_health_context(instances)
+    overview = _project_overview_context(project, instances, health_summary) if tab == "overview" else None
     if tab == "work" and snapshot_by_instance:
         instances = [instance for instance in instances if instance.id in snapshot_by_instance]
     instance_groups = [
@@ -652,6 +819,7 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
             "inventory_diverged": len(inventory_digests) > 1,
             "health_rows": health_rows,
             "health_summary": health_summary,
+            "overview": overview,
             "selected_type": artifact_type,
             "selected_status": status,
             "selected_rows": selected_rows,

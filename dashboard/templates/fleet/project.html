@@ -35,12 +35,69 @@
   </div>
 </section>
 {% endif %}
-<section class="dashboard-panel">
-  <h2>Overview</h2>
-  <p>{{ project.instances.count }} enrolled instance{{ project.instances.count|pluralize }}. Hosted state is informational and never replaces the local database.</p>
-  <p>The Work tab shows the latest per-instance Idea, Map, PRM, and Campaign lifecycle projection. History records actual lifecycle changes only.</p>
-  {% if inventory_diverged %}<p class="dashboard-warning">Instances currently report different work snapshots. They remain separate so divergence is visible.</p>{% endif %}
-</section>
+<div class="project-overview-grid">
+  <section class="dashboard-panel overview-card overview-wide">
+    <div class="compact-panel-heading">
+      <div><h2>Active work chains</h2><p class="dashboard-note">Current Idea → Map → PRM → Campaign paths from the latest reporting instance.</p></div>
+      <a href="{% url 'fleet:project-tab' project.id 'work' %}?status=open">View open work</a>
+    </div>
+    {% if overview.active_chains %}<div class="overview-chain-list">
+      {% for chain in overview.active_chains %}<article class="overview-chain">
+        <div class="overview-chain-heading"><strong>{{ chain.title }}</strong><span class="state-badge state-{{ chain.current.document_lifecycle }}">{{ chain.current.document_lifecycle }}</span></div>
+        <div class="overview-chain-path" aria-label="Work chain">
+          {% for node in chain.nodes %}<span class="overview-chain-node{% if node.visible_id == chain.current.visible_id %} is-current{% endif %}" title="{{ node.title }}">{{ node.visible_id }}</span>{% if not forloop.last %}<span aria-hidden="true">→</span>{% endif %}{% endfor %}
+        </div>
+        <div class="overview-chain-meta"><span>Current: <strong>{{ chain.current.visible_id }}</strong></span><span>{{ chain.open_count }} open loop{{ chain.open_count|pluralize }}</span><span>Updated {{ chain.updated_at|timesince }} ago</span></div>
+      </article>{% endfor %}
+    </div>{% else %}<p class="dashboard-empty">No active linked work chains are present in the latest reported inventory.</p>{% endif %}
+    {% if overview.active_chain_count > 5 %}<p class="overview-more">Showing 5 of {{ overview.active_chain_count }} active chains. <a href="{% url 'fleet:project-tab' project.id 'work' %}?status=open">View all</a></p>{% endif %}
+  </section>
+
+  <section class="dashboard-panel overview-card">
+    <div class="compact-panel-heading"><div><h2>Next up</h2><p class="dashboard-note">Local anticipated order; owner overrides remain local.</p></div></div>
+    <div class="overview-queues">
+      {% for queue in overview.planning_queues %}<div class="overview-queue">
+        <div class="overview-subheading"><h3>{{ queue.label }}</h3><a href="{% url 'fleet:project-tab' project.id 'work' %}?type={{ queue.type }}&order=planned">Full order</a></div>
+        {% if queue.items %}<ol>{% for item in queue.items %}<li><span class="planning-position">{{ item.planning_position }}</span><div><strong>{{ item.visible_id }}</strong><span title="{{ item.title }}">{{ item.title }}</span><small>{{ item.planning_readiness|capfirst }} · {{ item.planning_order_source|capfirst }}</small></div></li>{% endfor %}</ol>{% else %}<p class="dashboard-empty">No reported order.</p>{% endif %}
+      </div>{% endfor %}
+    </div>
+  </section>
+
+  <section class="dashboard-panel overview-card">
+    <div class="compact-panel-heading"><div><h2>Open outcomes</h2><p class="dashboard-note">Why the project-level total is open.</p></div><strong class="overview-total">{{ overview.reported_open_count }}</strong></div>
+    <div class="overview-outcome-grid">
+      {% for item in overview.open_by_type %}<a href="{% url 'fleet:project-tab' project.id 'work' %}?type={{ item.type }}&status=open"><strong>{{ item.count }}</strong><span>{{ item.label }}</span></a>{% endfor %}
+    </div>
+    {% if overview.unrepresented_open_count %}<p class="overview-gap"><strong>{{ overview.unrepresented_open_count }}</strong> additional reported loop{{ overview.unrepresented_open_count|pluralize }} {{ overview.unrepresented_open_count|pluralize:"is,are" }} outside the current artifact inventory.</p>{% endif %}
+  </section>
+
+  <section class="dashboard-panel overview-card">
+    <div class="compact-panel-heading"><div><h2>Lifecycle summary</h2><p class="dashboard-note">Current document and outcome posture.</p></div><a href="{% url 'fleet:project-tab' project.id 'work' %}">View work</a></div>
+    <div class="table-scroll"><table class="overview-lifecycle-table"><thead><tr><th>Type</th><th>Active</th><th>Open</th><th>Completed</th><th>Other</th></tr></thead><tbody>
+      {% for row in overview.lifecycle_rows %}<tr><th>{{ row.label }}</th><td>{{ row.active }}</td><td{% if row.open %} class="has-open"{% endif %}>{{ row.open }}</td><td>{{ row.completed }}</td><td>{{ row.historical }}</td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>
+
+  <section class="dashboard-panel overview-card">
+    <div class="compact-panel-heading"><div><h2>Reporting & release</h2><p class="dashboard-note">Freshness and version posture for this project.</p></div><a href="{% url 'fleet:project-tab' project.id 'health' %}">Health details</a></div>
+    <dl class="overview-health-list">
+      <div><dt>Reporting</dt><dd class="health-{{ overview.health.reporter_state }}">{{ overview.health.reporter_state|capfirst }}</dd></div>
+      <div><dt>Version posture</dt><dd class="health-{{ overview.health.version_state }}">{{ overview.health.version_state|capfirst }}</dd></div>
+      <div><dt>State consistency</dt><dd class="health-{{ overview.health.divergence_state }}">{{ overview.health.divergence_state|capfirst }}</dd></div>
+      <div><dt>Pending release records</dt><dd>{{ overview.health.pending_candidate_count }}</dd></div>
+    </dl>
+    {% if overview.source_instance %}<p class="overview-source">Snapshot from <code>{{ overview.source_instance.external_id }}</code><br>{{ overview.source_instance.platform }} · client {{ overview.source_instance.client_version }} · observed {{ overview.source_instance.work_inventory_observed_at|timesince }} ago</p>{% else %}<p class="dashboard-empty">No reporting instance is enrolled.</p>{% endif %}
+    {% if inventory_diverged %}<p class="dashboard-warning">Instance inventories differ. This page uses only the latest reporter; Health shows the divergence.</p>{% endif %}
+  </section>
+
+  <section class="dashboard-panel overview-card overview-wide">
+    <div class="compact-panel-heading"><div><h2>Recent meaningful changes</h2><p class="dashboard-note">Lifecycle, attention, enrollment, and controlled Tool Shed events only.</p></div><a href="{% url 'fleet:project-tab' project.id 'history' %}">Full history</a></div>
+    {% if overview.recent_changes %}<div class="overview-activity-list">
+      {% for event in overview.recent_changes %}<article><time datetime="{{ event.occurred_at|date:'c' }}">{{ event.occurred_at|timesince }} ago</time><div><strong>{{ event.title }}</strong><span>{{ event.summary }}</span><small>Source {{ event.source_label }}</small></div>{% if event.detail_tab == 'app-server' %}<a href="{% url 'fleet:app-server' %}">Open</a>{% else %}<a href="{% url 'fleet:project-tab' project.id event.detail_tab %}">Open</a>{% endif %}</article>{% endfor %}
+    </div>{% else %}<p class="dashboard-empty">No meaningful changes have been reported yet.</p>{% endif %}
+  </section>
+</div>
+<p class="overview-authority-note">Hosted state is informational. The local Tool Shed database derives lifecycle and planning order; this dashboard only presents the reported snapshot.</p>
 {% elif tab == 'work' %}
 <section class="dashboard-panel compact-table-panel">
   <h2 class="sr-only">Work</h2>

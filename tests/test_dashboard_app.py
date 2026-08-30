@@ -914,6 +914,121 @@ class DashboardApplicationTests(TestCase):
         beta.refresh_from_db()
         self.assertFalse(beta.is_hidden)
 
+    def test_project_overview_presents_latest_instance_operator_snapshot(self) -> None:
+        user = get_user_model().objects.create_user("overview-operator", password="fixture")
+        self.client.force_login(user)
+        now = timezone.now()
+        project = Project.objects.create(
+            external_id=uuid.uuid4(),
+            name="Operator project",
+            attention_state="healthy",
+            current_state={"open_outcome_count": 5, "unreconciled_outcome_count": 0},
+            last_seen=now,
+        )
+        older = Instance.objects.create(
+            project=project,
+            external_id=uuid.uuid4(),
+            platform="windows-amd64",
+            client_version="0.39.2",
+            work_inventory_observed_at=now - timedelta(hours=1),
+        )
+        latest = Instance.objects.create(
+            project=project,
+            external_id=uuid.uuid4(),
+            platform="linux-x86_64",
+            client_version="0.40.0",
+            last_seen=now,
+            work_inventory_observed_at=now,
+            health_state={
+                "reporter_state": "active",
+                "semantic_digest": "d" * 64,
+                "release": {
+                    "installed_version": "0.40.0",
+                    "stable_version": "v0.39.2",
+                    "candidate_version": "0.40.0",
+                    "pending_candidate_count": 2,
+                },
+            },
+        )
+        WorkArtifactSnapshot.objects.create(
+            project=project,
+            instance=older,
+            artifact_external_id=uuid.uuid4(),
+            visible_id="IDEA-OLD",
+            artifact_type="idea-brief",
+            title="Old reporter work",
+            document_lifecycle="active",
+            outcome_lifecycle="working",
+            outcome_disposition="open",
+            reconciliation_state="open",
+            source_updated_at=now - timedelta(hours=1),
+            observed_at=now - timedelta(hours=1),
+            snapshot_sequence=1,
+        )
+        chain = (
+            ("IDEA-0100", "idea-brief", "Operator overview", [], ["MAP-0100"], 1),
+            ("MAP-0100", "project-map", "Operator overview map", ["IDEA-0100"], ["PRM-0100"], None),
+            ("PRM-0100", "program-roadmap", "Operator overview roadmap", ["MAP-0100"], ["CAMP-0100"], 1),
+            ("CAMP-0100", "campaign", "Implement operator overview", ["PRM-0100"], [], None),
+        )
+        for visible_id, artifact_type, title, parents, produces, position in chain:
+            WorkArtifactSnapshot.objects.create(
+                project=project,
+                instance=latest,
+                artifact_external_id=uuid.uuid4(),
+                visible_id=visible_id,
+                artifact_type=artifact_type,
+                title=title,
+                document_lifecycle="working" if artifact_type == "campaign" else "active",
+                outcome_lifecycle="working",
+                outcome_disposition="open",
+                reconciliation_state="open",
+                parent_ids=parents,
+                produces_ids=produces,
+                planning_position=position,
+                planning_order_source="owner" if position else "not-applicable",
+                planning_readiness="working" if position else "not-applicable",
+                source_updated_at=now,
+                observed_at=now,
+                snapshot_sequence=2,
+            )
+        LifecycleEvent.objects.create(
+            project=project,
+            instance=latest,
+            event_key="f" * 64,
+            artifact_external_id=uuid.uuid4(),
+            visible_id="CAMP-0100",
+            artifact_type="campaign",
+            title="Implement operator overview",
+            transition="document-lifecycle",
+            from_state="queued",
+            to_state="working",
+            occurred_at=now,
+            retained_until=now + timedelta(days=30),
+        )
+
+        response = self.client.get(reverse("fleet:project", args=(project.id,)))
+        self.assertEqual(response.status_code, 200)
+        for heading in (
+            "Active work chains",
+            "Next up",
+            "Open outcomes",
+            "Lifecycle summary",
+            "Reporting & release",
+            "Recent meaningful changes",
+        ):
+            self.assertContains(response, heading)
+        self.assertContains(response, "IDEA-0100")
+        self.assertContains(response, "MAP-0100")
+        self.assertContains(response, "PRM-0100")
+        self.assertContains(response, "CAMP-0100")
+        self.assertNotContains(response, "IDEA-OLD")
+        self.assertContains(response, "4 open loops")
+        self.assertContains(response, "additional reported loop")
+        self.assertContains(response, "Owner")
+        self.assertContains(response, "Snapshot from")
+        self.assertContains(response, "document-lifecycle: queued → working")
+
     def test_project_activity_changes_only_for_material_report_updates(self) -> None:
         token = self.enroll_and_issue()
         first = self.lifecycle_report_payload()
