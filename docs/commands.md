@@ -84,6 +84,9 @@ protection. Every interrupt explains impact, blast radius, rollback, and recomme
 | `ts: brainstorm <idea>` | Create or resume one durable pre-PRM Idea Brief, updating its current synthesis and useful dated exploration notes. |
 | `ts: bs <idea>` | Exact alias for `ts: brainstorm <idea>`. |
 | `ts: bs review <idea-id-or-path>` | Explicitly run the adaptive, revision-bound Idea readiness review. This is the only manual semantic-review trigger. |
+| `ts: order bs` / `ts: order prm` | Show the locally derived anticipated order, readiness, and owner-override source for active Idea Briefs or PRMs. |
+| `ts: order bs move IDEA-0012 to 1` | Persist a guarded owner priority override in the local Hybrid database. Use the equivalent `PRM-####` form for PRMs. |
+| `ts: order bs reset` / `ts: order prm reset` | Remove the local owner override and return to derived order. |
 | `ts: build focus areas` | Inspect existing workspace sources and produce a project-specific focus-area catalog and active-campaign assignments. Faithful reversible results may apply under planning autonomy; material responsibility choices require a decision. |
 | `ts: develop roadmap` | Read project evidence and clarify an opt-in Program Roadmap without mutation. |
 | `ts: overview` | Combine maps, approved roadmaps, gates, focus areas, campaign state, and drift. Read-only. |

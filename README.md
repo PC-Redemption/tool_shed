@@ -499,6 +499,11 @@ tradeoffs, constraints, non-goals, reminders, open questions, and decisions. A b
 lists active briefs without changing them. Brainstorming is durable discovery, not authorization to
 plan, build, queue, deploy, or publish.
 
+Hybrid workspaces derive a local anticipated order for active Idea Briefs and PRMs. Use
+`ts: order bs` or `ts: order prm` to inspect it, `move <ID> to <position>` to persist an owner
+override, and `reset` to return to derivation. The local database remains authoritative; hosted
+dashboard reports contain only the resulting position, source, and readiness for read-only display.
+
 When the idea is coherent enough to pursue, `ts: prm idea <idea-id-or-path>` uses it as the durable
 source for PRM. The brief remains `ready-for-prm` until settled project-map direction captures it,
 then becomes `promoted` and names that map in `Produces:`. Idea Briefs remain visible in the work

@@ -134,6 +134,9 @@ class WorkArtifactSnapshot(models.Model):
     reconciliation_state = models.CharField(max_length=32, default="unknown")
     parent_ids = models.JSONField(default=list)
     produces_ids = models.JSONField(default=list)
+    planning_position = models.PositiveIntegerField(null=True, blank=True)
+    planning_order_source = models.CharField(max_length=24, default="not-applicable")
+    planning_readiness = models.CharField(max_length=24, default="not-applicable")
     source_updated_at = models.DateTimeField()
     observed_at = models.DateTimeField()
     snapshot_sequence = models.PositiveBigIntegerField()
@@ -146,7 +149,6 @@ class WorkArtifactSnapshot(models.Model):
             )
         ]
         ordering = ("visible_id",)
-
 
 class LifecycleEvent(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

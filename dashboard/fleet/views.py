@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 
 from django.conf import settings
 from django.db import close_old_connections
-from django.db.models import Q
+from django.db.models import F, Q
 from django.core.paginator import Paginator
 from django.http import HttpRequest, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -273,6 +273,9 @@ def project_visibility(request: HttpRequest, project_id):
     return _navigation_redirect(request)
 
 
+PLANNING_ORDER_TYPES = {"idea-brief", "program-roadmap"}
+
+
 @dashboard_auth_required
 def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
     if tab not in {"overview", "work", "history", "outcomes", "health"}:
@@ -291,6 +294,12 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
     )
     artifact_type = request.GET.get("type", "").strip()
     status = request.GET.get("status", "").strip()
+    planning_supported = artifact_type in PLANNING_ORDER_TYPES
+    selected_order = request.GET.get(
+        "order", "planned" if planning_supported else "newest"
+    ).strip()
+    if selected_order not in {"newest", "planned"} or (selected_order == "planned" and not planning_supported):
+        selected_order = "newest"
     row_options = ("10", "20", "50", "100", "all")
     selected_rows = request.GET.get("rows", "20").strip().lower()
     if selected_rows not in row_options:
@@ -313,14 +322,12 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
             values["type"] = artifact_type
         if status:
             values["status"] = status
+        if planning_supported:
+            values["order"] = selected_order
         return "?" + urlencode(values)
 
     if tab == "work":
-        snapshots = (
-            WorkArtifactSnapshot.objects.filter(project=project)
-            .select_related("instance")
-            .order_by("-source_updated_at", "-visible_id", "instance_id")
-        )
+        snapshots = WorkArtifactSnapshot.objects.filter(project=project).select_related("instance")
         if artifact_type:
             snapshots = snapshots.filter(artifact_type=artifact_type)
         if status:
@@ -330,6 +337,15 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
                 | Q(outcome_disposition=status)
                 | Q(reconciliation_state=status)
             )
+        if selected_order == "planned":
+            snapshots = snapshots.order_by(
+                F("planning_position").asc(nulls_last=True),
+                "-source_updated_at",
+                "-visible_id",
+                "instance_id",
+            )
+        else:
+            snapshots = snapshots.order_by("-source_updated_at", "-visible_id", "instance_id")
         if selected_rows == "all":
             page_snapshots = list(snapshots)
             work_result_count = len(page_snapshots)
@@ -414,6 +430,8 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
             "selected_type": artifact_type,
             "selected_status": status,
             "selected_rows": selected_rows,
+            "selected_order": selected_order,
+            "planning_supported": planning_supported,
             "work_page": work_page,
             "work_result_count": work_result_count,
             "page_links": page_links,

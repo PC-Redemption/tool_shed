@@ -29,12 +29,13 @@ from typing import Any, Sequence
 import app_server_user_state
 import document_store
 import hybrid_state
+import planning_order
 import work_orchestration
 from project_identity import ProjectIdentityError, binding_token, load_project_identity, require_project_binding, resolved_workspace
 
 
 SCHEMA_VERSION = 1
-REPORT_SCHEMA_VERSION = 2
+REPORT_SCHEMA_VERSION = 3
 OUTBOX_RELATIVE = Path(".tool-shed/dashboard/outbox.sqlite3")
 MAX_RESPONSE_BYTES = 65_536
 LOCK_SECONDS = 30
@@ -348,6 +349,14 @@ def _work_inventory(workspace: Path) -> dict[str, Any]:
             LIMIT 500
             """
         ).fetchall()
+        try:
+            planning_items = {
+                item["artifact_id"]: item
+                for artifact_type in ("idea-brief", "program-roadmap")
+                for item in planning_order.projection_for_connection(connection, artifact_type)["items"]
+            }
+        except planning_order.PlanningOrderError as error:
+            raise DashboardReporterError(f"local planning order is invalid: {error}") from error
         artifact_ids = [str(row["id"]) for row in rows]
         visible_by_id = {str(row["id"]): str(row["visible_id"]) for row in rows}
         parent_ids: dict[str, list[str]] = {value: [] for value in artifact_ids}
@@ -392,12 +401,14 @@ def _work_inventory(workspace: Path) -> dict[str, Any]:
     artifacts = []
     for row in rows:
         artifact_id = str(row["id"])
+        artifact_type = type_by_namespace[str(row["namespace"])]
+        planning = planning_items.get(artifact_id)
         title = " ".join(str(row["title"]).split())[:160] or str(row["visible_id"])
         artifacts.append(
             {
                 "artifact_id": artifact_id,
                 "visible_id": str(row["visible_id"]),
-                "artifact_type": type_by_namespace[str(row["namespace"])],
+                "artifact_type": artifact_type,
                 "title": title,
                 "document_lifecycle": str(row["lifecycle_state"]),
                 "outcome_lifecycle": str(row["outcome_lifecycle"]),
@@ -405,6 +416,21 @@ def _work_inventory(workspace: Path) -> dict[str, Any]:
                 "reconciliation_state": str(row["reconciliation_state"]),
                 "parent_ids": sorted(set(parent_ids[artifact_id]))[:16],
                 "produces_ids": sorted(set(produces_ids[artifact_id]))[:16],
+                "planning_position": planning["position"] if planning else None,
+                "planning_order_source": (
+                    planning["order_source"]
+                    if planning
+                    else "derived"
+                    if artifact_type in planning_order.SUPPORTED_TYPES
+                    else "not-applicable"
+                ),
+                "planning_readiness": (
+                    planning["readiness"]
+                    if planning
+                    else "terminal"
+                    if artifact_type in planning_order.SUPPORTED_TYPES
+                    else "not-applicable"
+                ),
                 "updated_at": str(row["updated_at"]),
             }
         )

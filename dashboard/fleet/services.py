@@ -430,7 +430,7 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
     project = locked.project
     previous_inventory_digest = locked.work_inventory_digest
     inventory_digest = (
-        _digest(report["work_inventory"]) if report["schema_version"] == 2 else ""
+        _digest(report["work_inventory"]) if report["schema_version"] >= 2 else ""
     )
     material_activity = (
         locked.last_sequence == 0
@@ -439,7 +439,7 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
         or project.current_state
         != {key: value for key, value in report["state"].items() if key != "attention_state"}
         or bool(report["material_events"])
-        or (report["schema_version"] == 2 and inventory_digest != previous_inventory_digest)
+        or (report["schema_version"] >= 2 and inventory_digest != previous_inventory_digest)
     )
     project.name = report["project"]["name"]
     project.attention_state = report["state"]["attention_state"]
@@ -477,7 +477,7 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
         "last_seen",
         "updated_at",
     ]
-    if report["schema_version"] == 2:
+    if report["schema_version"] >= 2:
         inventory = report["work_inventory"]
         locked.work_inventory_sequence = report["sequence"]
         locked.work_inventory_observed_at = observed
@@ -515,7 +515,7 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
         ]
     )
     MaterialEvent.objects.filter(retained_until__lt=timezone.now()).delete()
-    if report["schema_version"] == 2:
+    if report["schema_version"] >= 2:
         inventory = report["work_inventory"]
         WorkArtifactSnapshot.objects.filter(instance=locked).delete()
         WorkArtifactSnapshot.objects.bulk_create(
@@ -533,6 +533,9 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
                     reconciliation_state=item["reconciliation_state"],
                     parent_ids=item["parent_ids"],
                     produces_ids=item["produces_ids"],
+                    planning_position=item["planning_position"],
+                    planning_order_source=item["planning_order_source"],
+                    planning_readiness=item["planning_readiness"],
                     source_updated_at=item["updated_at"],
                     observed_at=observed,
                     snapshot_sequence=report["sequence"],

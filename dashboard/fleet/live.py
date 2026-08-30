@@ -108,6 +108,9 @@ def dashboard_revision() -> str:
                 "reconciliation_state",
                 "parent_ids",
                 "produces_ids",
+                "planning_position",
+                "planning_order_source",
+                "planning_readiness",
                 "source_updated_at",
             )
         ),

@@ -38,7 +38,7 @@ Load only the route reference needed for the request:
 | `ts: identity` or `ts: use <project-alias-or-path>` | this file only |
 | discussion or campaign discovery | this file only |
 | `ts: brainstorm`, `ts: bs`, artifact selection, creation, completion, onboarding, or reconciliation | `references/artifact-workflows.md` |
-| `ts:work1` through `ts:work5`, aliases, `ts:check`, `ts:ship`, `ts: prm <outcome>`, `ts: autonomy`, numeric `ts: approve`, `ts: doctor`, campaign execution, owner campaign queues, Program Roadmaps, `ts: overview`, `ts: build focus areas`, hosted dashboard reporting, explicit App Server controls, `ts: help`, `ts: commands`, or `ts:ask` | `references/campaign-routes.md` |
+| `ts:work1` through `ts:work5`, aliases, `ts:check`, `ts:ship`, `ts: prm <outcome>`, `ts: order`, `ts: autonomy`, numeric `ts: approve`, `ts: doctor`, campaign execution, owner campaign queues, Program Roadmaps, `ts: overview`, `ts: build focus areas`, hosted dashboard reporting, explicit App Server controls, `ts: help`, `ts: commands`, or `ts:ask` | `references/campaign-routes.md` |
 | `ts: fulltsupgrade`, version, update, snapshot, or provider-specific reasoning maintenance | `references/maintenance-routes.md` |
 
 Read a referenced file completely when its route applies. Do not load unrelated route references.
@@ -125,7 +125,8 @@ Before creating a brief, compare the request with existing `work/ideas/idea-*.md
 syntheses. Resume one clear material match, create one brief when none matches, and ask one concise
 choice before writing when multiple briefs plausibly match. Create a new brief with
 `python3 <shed>/scripts/new_artifact.py idea "Title" --workspace <workspace>`. A bare
-`ts: brainstorm` or `ts: bs` lists active Idea Briefs without mutation.
+`ts: brainstorm` or `ts: bs` lists active Idea Briefs without mutation. In Hybrid mode, list them
+in the effective local Idea planning order rather than visible-ID or hosted-dashboard order.
 
 During each brainstorming turn:
 

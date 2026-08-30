@@ -65,13 +65,20 @@
         <option value="all" {% if selected_rows == 'all' %}selected{% endif %}>All</option>
       </select>
     </label>
+    {% if planning_supported %}<label>Order
+      <select name="order" data-auto-submit>
+        <option value="newest" {% if selected_order == 'newest' %}selected{% endif %}>Newest first</option>
+        <option value="planned" {% if selected_order == 'planned' %}selected{% endif %}>Planning order</option>
+      </select>
+    </label>{% endif %}
     <button type="submit">Apply status</button>
     {% if selected_type or selected_status %}<a href="{% url 'fleet:project-tab' project.id 'work' %}?rows={{ selected_rows }}">Clear filters</a>{% endif %}
   </form>
   <div class="table-toolbar-meta">
-    <div class="work-result-summary"><span>Newest first</span><span aria-hidden="true">·</span>{% if work_page %}<span>Showing {{ work_page.start_index }}–{{ work_page.end_index }} of {{ work_result_count }}</span>{% else %}<span>Showing all {{ work_result_count }}</span>{% endif %}</div>
+    <div class="work-result-summary"><span>{% if selected_order == 'planned' %}Local planning order{% else %}Newest first{% endif %}</span><span aria-hidden="true">·</span>{% if work_page %}<span>Showing {{ work_page.start_index }}–{{ work_page.end_index }} of {{ work_result_count }}</span>{% else %}<span>Showing all {{ work_result_count }}</span>{% endif %}</div>
     {% include "fleet/includes/table_pagination.html" with page=work_page links=page_links previous_url=previous_page_url next_url=next_page_url label="Work table pages" position="top" %}
   </div>
+  {% if selected_order == 'planned' %}<div class="planning-order-note">Reported by the local Tool Shed instance. Owner overrides are applied locally; this dashboard cannot change execution priority.</div>{% endif %}
   </div>
   {% if inventory_diverged %}<p class="dashboard-warning">Instance snapshots differ; each source is shown independently.</p>{% endif %}
   {% for group in instance_groups %}
@@ -81,9 +88,10 @@
       <span class="snapshot-meta">Observed {{ group.instance.work_inventory_observed_at|date:"M j, Y · g:i A"|default:"Never" }} · {{ group.instance.work_inventory_total }} total{% if group.instance.work_inventory_truncated %} · partial snapshot{% endif %}</span>
     </div>
     {% if group.artifacts %}
-    <div class="table-scroll"><table class="work-table"><thead><tr><th>Artifact</th><th>Document</th><th>Outcome</th><th>Reconciliation</th><th>Relationships</th><th>Updated</th></tr></thead><tbody>
+    <div class="table-scroll"><table class="work-table{% if selected_order == 'planned' %} planning-enabled{% endif %}"><thead><tr><th>Artifact</th>{% if selected_order == 'planned' %}<th>Plan</th>{% endif %}<th>Document</th><th>Outcome</th><th>Reconciliation</th><th>Relationships</th><th>Updated</th></tr></thead><tbody>
       {% for artifact in group.artifacts %}<tr>
         <th class="artifact-cell"><span class="artifact-id">{{ artifact.visible_id }}</span><span class="artifact-title" title="{{ artifact.title }}">{{ artifact.title }}</span></th>
+        {% if selected_order == 'planned' %}<td class="planning-order-cell">{% if artifact.planning_position %}<span class="planning-position">{{ artifact.planning_position }}</span><small>{{ artifact.planning_order_source|capfirst }} · {{ artifact.planning_readiness|capfirst }}</small>{% else %}<span class="dashboard-note">—</span><small>{{ artifact.planning_readiness|capfirst }}</small>{% endif %}</td>{% endif %}
         <td><span class="state-badge state-{{ artifact.document_lifecycle }}">{{ artifact.document_lifecycle }}</span></td>
         <td>{% if artifact.outcome_lifecycle == 'unknown' and artifact.outcome_disposition == 'unknown' %}<span class="table-state table-state-unknown">Unknown</span>{% else %}<span class="table-state table-state-{{ artifact.outcome_lifecycle }}">{{ artifact.outcome_lifecycle|capfirst }}</span>{% if artifact.outcome_disposition != artifact.outcome_lifecycle %}<small class="cell-detail">{% if artifact.outcome_disposition == 'satisfied-with-approved-change' %}Approved change{% else %}{{ artifact.outcome_disposition|capfirst }}{% endif %}</small>{% endif %}{% endif %}</td>
         <td>{% if artifact.reconciliation_state == 'unknown' %}<span class="table-state table-state-unknown">Unknown</span>{% else %}<span class="table-state table-state-{{ artifact.reconciliation_state }}">{{ artifact.reconciliation_state|capfirst }}</span>{% endif %}</td>

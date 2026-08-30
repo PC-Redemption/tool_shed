@@ -84,6 +84,11 @@ work index but stays outside campaign reconciliation, so discovery cannot create
 Resolution campaign. Brainstorming authorizes only the selected brief; it does not authorize a
 project map, roadmap, campaign, source change, deployment, or publication.
 
+Use `ts: order bs` or `ts: order prm` to see the locally derived anticipated order. Move an item
+with a command such as `ts: order bs move IDEA-0012 to 1`; Tool Shed stores the owner override in
+the local Hybrid database and keeps readiness separate from priority. `reset` returns to derived
+order. The hosted dashboard only presents the local projection and cannot change this order.
+
 The review command is deliberate: ordinary brainstorm turns remain fast and never perform a
 semantic readiness review. A manual `ts: bs review` is one trigger; `ts: prm idea` is the other,
 and only triggers when the brief lacks a current ready result. Tool Shed may show whether a stored

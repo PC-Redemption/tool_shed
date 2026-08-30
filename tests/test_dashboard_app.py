@@ -390,6 +390,30 @@ class DashboardApplicationTests(TestCase):
         history = self.client.get(reverse("fleet:project-tab", args=(instance.project_id, "history")))
         self.assertContains(history, "active → completed")
 
+    def test_schema_three_ingests_local_planning_projection(self) -> None:
+        token = self.enroll_and_issue()
+        payload = self.lifecycle_report_payload()
+        payload["schema_version"] = 3
+        artifact = payload["work_inventory"]["artifacts"][0]
+        artifact.update(
+            {
+                "planning_position": 2,
+                "planning_order_source": "owner",
+                "planning_readiness": "working",
+            }
+        )
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        snapshot = WorkArtifactSnapshot.objects.get()
+        self.assertEqual(snapshot.planning_position, 2)
+        self.assertEqual(snapshot.planning_order_source, "owner")
+        self.assertEqual(snapshot.planning_readiness, "working")
+
     def test_work_table_is_newest_first_and_supports_bounded_page_sizes(self) -> None:
         user = get_user_model().objects.create_user("work-table-viewer", password="fixture")
         self.client.force_login(user)
@@ -460,6 +484,44 @@ class DashboardApplicationTests(TestCase):
 
         invalid = self.client.get(url, {"rows": "500"})
         self.assertContains(invalid, '<option value="20" selected>20</option>', html=True)
+
+    def test_idea_planning_order_is_reported_by_local_instance_and_read_only(self) -> None:
+        user = get_user_model().objects.create_user("planning-viewer", password="fixture")
+        self.client.force_login(user)
+        project = Project.objects.create(external_id=uuid.uuid4(), name="Reported planning order")
+        instance = Instance.objects.create(
+            project=project,
+            external_id=uuid.uuid4(),
+            platform="linux",
+            client_version="0.41.0",
+            report_schema_version=3,
+            work_inventory_total=2,
+        )
+        observed = timezone.now()
+        for number, position, source in ((1, 2, "derived"), (2, 1, "owner")):
+            WorkArtifactSnapshot.objects.create(
+                project=project,
+                instance=instance,
+                artifact_external_id=uuid.uuid4(),
+                visible_id=f"IDEA-{number:04d}",
+                artifact_type="idea-brief",
+                title=f"Idea {number}",
+                document_lifecycle="active",
+                planning_position=position,
+                planning_order_source=source,
+                planning_readiness="ready",
+                source_updated_at=observed + timedelta(minutes=number),
+                observed_at=observed,
+                snapshot_sequence=1,
+            )
+        url = reverse("fleet:project-tab", args=(project.id, "work"))
+        response = self.client.get(url, {"type": "idea-brief"})
+        self.assertEqual(response.status_code, 200)
+        self.assertLess(response.content.index(b"IDEA-0002"), response.content.index(b"IDEA-0001"))
+        self.assertContains(response, "Local planning order")
+        self.assertContains(response, "Owner · Ready")
+        self.assertContains(response, "this dashboard cannot change execution priority")
+        self.assertNotContains(response, "Reset to suggested")
 
     def test_history_table_is_newest_first_and_uses_work_paging_model(self) -> None:
         user = get_user_model().objects.create_user("history-table-viewer", password="fixture")

@@ -70,6 +70,9 @@ WORK_ARTIFACT_FIELDS = {
     "reconciliation_state",
     "parent_ids",
     "produces_ids",
+    "planning_position",
+    "planning_order_source",
+    "planning_readiness",
     "updated_at",
 }
 LIFECYCLE_EVENT_FIELDS = {
@@ -124,6 +127,8 @@ OUTCOME_DISPOSITIONS = {
 }
 RECONCILIATION_STATES = {"open", "reconciliation-required", "reconciled", "unknown"}
 TRANSITIONS = {"created", "document-lifecycle", "outcome-lifecycle", "outcome-disposition", "reconciliation"}
+PLANNING_ORDER_SOURCES = {"derived", "owner", "not-applicable"}
+PLANNING_READINESS_STATES = {"ready", "working", "waiting", "blocked", "terminal", "not-applicable"}
 
 
 def _object(value: Any, label: str, fields: set[str]) -> dict[str, Any]:
@@ -193,7 +198,7 @@ def _string_list(value: Any, label: str, *, limit: int = 16) -> list[str]:
     return [_required_string(item, f"{label} item", 64) for item in value]
 
 
-def _work_inventory(value: Any) -> dict[str, Any]:
+def _work_inventory(value: Any, *, schema_version: int) -> dict[str, Any]:
     supplied = _object(value, "work_inventory", WORK_INVENTORY_FIELDS)
     raw_artifacts = supplied.get("artifacts", [])
     if not isinstance(raw_artifacts, list) or len(raw_artifacts) > 500:
@@ -207,6 +212,28 @@ def _work_inventory(value: Any) -> dict[str, Any]:
         if artifact_id in seen:
             raise ContractError("work_inventory.artifacts contains duplicate artifact_id values")
         seen.add(artifact_id)
+        planning_position = item.get("planning_position")
+        if planning_position is not None:
+            planning_position = _counter(planning_position, f"{label}.planning_position")
+            if planning_position < 1:
+                raise ContractError(f"{label}.planning_position must be positive")
+        if schema_version >= 3:
+            planning_source = _choice(
+                item.get("planning_order_source"),
+                f"{label}.planning_order_source",
+                PLANNING_ORDER_SOURCES,
+                24,
+            )
+            planning_readiness = _choice(
+                item.get("planning_readiness"),
+                f"{label}.planning_readiness",
+                PLANNING_READINESS_STATES,
+                24,
+            )
+        else:
+            planning_position = None
+            planning_source = "not-applicable"
+            planning_readiness = "not-applicable"
         artifacts.append(
             {
                 "artifact_id": artifact_id,
@@ -219,6 +246,9 @@ def _work_inventory(value: Any) -> dict[str, Any]:
                 "reconciliation_state": _choice(item.get("reconciliation_state", "unknown"), f"{label}.reconciliation_state", RECONCILIATION_STATES, 32),
                 "parent_ids": _string_list(item.get("parent_ids", []), f"{label}.parent_ids"),
                 "produces_ids": _string_list(item.get("produces_ids", []), f"{label}.produces_ids"),
+                "planning_position": planning_position,
+                "planning_order_source": planning_source,
+                "planning_readiness": planning_readiness,
                 "updated_at": _timestamp(item.get("updated_at"), f"{label}.updated_at"),
             }
         )
@@ -266,8 +296,8 @@ def _state(value: Any) -> dict[str, Any]:
 def validate_report(payload: Any) -> dict[str, Any]:
     root = _object(payload, "report", ROOT_FIELDS)
     schema_version = root.get("schema_version")
-    if schema_version not in {1, 2}:
-        raise ContractError("report.schema_version must be 1 or 2")
+    if schema_version not in {1, 2, 3}:
+        raise ContractError("report.schema_version must be 1, 2, or 3")
     if schema_version == 1 and ({"work_inventory", "lifecycle_events"} & set(root)):
         raise ContractError("report schema 1 does not support lifecycle projection fields")
     project = _object(root.get("project"), "project", PROJECT_FIELDS)
@@ -356,6 +386,6 @@ def validate_report(payload: Any) -> dict[str, Any]:
             "remedial_duration_ms": _counter(efficiency.get("remedial_duration_ms", 0), "work_efficiency.remedial_duration_ms"),
             "remedial_retries": _counter(efficiency.get("remedial_retries", 0), "work_efficiency.remedial_retries"),
         },
-        "work_inventory": _work_inventory(root.get("work_inventory")) if schema_version == 2 else None,
-        "lifecycle_events": _lifecycle_events(root.get("lifecycle_events", [])) if schema_version == 2 else [],
+        "work_inventory": _work_inventory(root.get("work_inventory"), schema_version=schema_version) if schema_version >= 2 else None,
+        "lifecycle_events": _lifecycle_events(root.get("lifecycle_events", [])) if schema_version >= 2 else [],
     }

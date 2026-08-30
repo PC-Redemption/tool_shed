@@ -175,7 +175,7 @@ class DashboardReporterTests(unittest.TestCase):
         self.assertEqual(payload["state"]["unreconciled_outcome_count"], 0)
         self.assertEqual(payload["app_server"]["client_version"], "unknown")
         self.assertIsNone(payload["work_efficiency"]["remedial_tokens_actual"])
-        self.assertEqual(payload["schema_version"], 2)
+        self.assertEqual(payload["schema_version"], 3)
         self.assertEqual(payload["work_inventory"], {"total_count": 0, "truncated": False, "artifacts": []})
 
     def test_lifecycle_events_are_change_only_and_first_snapshot_is_a_baseline(self) -> None:

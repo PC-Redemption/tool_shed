@@ -504,6 +504,29 @@ only fully matched values from an approved catalog produce suggested `set_focus_
 It never writes. Campaign or focus-area conversion requires a separate exact current manifest and
 authority-envelope evaluation; it is not implied by preview, installation, update, or `ts:ask`.
 
+## Local Idea And PRM Planning Order
+
+The verified local Tool Shed instance owns anticipated Idea Brief and PRM order. Use
+`scripts/planning_order.py`; never infer authority from the hosted dashboard and never treat this
+planning projection as the canonical campaign queue.
+
+- `ts: order bs` and `ts: order prm` run `status --type <type>` and show the effective local order,
+  readiness, and whether each position is `derived` or `owner`.
+- `ts: order bs move IDEA-0007 to 1` and the equivalent PRM form obtain the `hybrid-state` project
+  binding plus the fresh planning-order state token, then run guarded `move`.
+- An explicit complete order uses guarded `set --ids ...`; `reset` retires the local owner override
+  and returns to derivation. The agent obtains and passes fresh tokens internally when covered by
+  the authority envelope.
+- Derivation prioritizes current working and ready artifacts, then waiting and blocked artifacts,
+  with recent local activity as the deterministic tie-break. A stored owner chain controls
+  priority without changing lifecycle or readiness. Newly created artifacts append after the
+  retained owner chain until the owner revises or resets it.
+- Overrides are managed Hybrid relationships, survive checkpoint/rebuild, and are audited locally.
+  The schema-v3 reporter sends only position, controlled source, and controlled readiness. The
+  hosted dashboard stores and presents that projection read-only; it has no reorder operation.
+- The active campaign queue remains the canonical actual execution order. Planning order does not
+  bypass dependencies, decisions, readiness, lifecycle, or campaign selection rules.
+
 ## Focus Area Discovery Route
 
 Treat `ts: build focus areas` as a project-specific discovery and authority-envelope route:
