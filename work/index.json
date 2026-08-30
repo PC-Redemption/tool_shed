@@ -267,14 +267,14 @@
       "canonical_truth": null,
       "disposition": "none",
       "milestone": "M6-RELEASE-CANARY-RECONCILED",
-      "next_action": "execute when selected from the active campaign queue",
+      "next_action": "execute the campaign completion gate",
       "parent": null,
       "path": "work/00-campaigns/active/119-release-canary-and-reconcile-database-owned-collateral.md",
       "produces": null,
       "project_map": null,
       "roadmap": "database-owned-work-collateral-and-lifecycle-views",
       "roadmap_revision": "3",
-      "status": "queued",
+      "status": "working",
       "superseded_by": null,
       "supersedes": null,
       "title": "Release, client-canary, and reconcile database-owned work collateral",
@@ -4736,7 +4736,7 @@
     }
   ],
   "description": "Generated from tool_shed artifact headers. Use as navigation, not canonical truth.",
-  "generated_at": "2026-08-28",
+  "generated_at": "2026-08-30",
   "outcome_reconciliation": {
     "current_state_query": "python3 scripts/outcome_reconciliation.py --workspace . audit",
     "dimensions": [

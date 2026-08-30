@@ -1,0 +1,95 @@
+# Idea Brief: Dashboard Release Reporter and Instance Health
+
+Status: exploring
+Type: idea-brief
+Updated: 2026-08-30
+Next Action: continue brainstorming or promote this brief with `ts: prm idea <idea-id-or-path>`
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces:
+
+## Current Synthesis
+
+### Idea
+
+Give the hosted dashboard a trustworthy fleet-health view for Tool Shed releases, reporter
+operation, and multiple enrolled instances. Show each instance's installed client version,
+compatibility/qualification posture, last semantic report, heartbeat freshness, quiescent state,
+and bounded delivery health. At project level, show the latest verified release reference,
+pending-release state when safely reportable, and explicit divergence when instances disagree.
+
+### Why It Matters
+
+A green project badge can conceal an old client, a disabled scheduler, delayed reporting, a
+quiescent worker, or two installations with different local states. The operator needs to know
+whether hosted information is current and which software produced it before trusting any project
+summary.
+
+### Desired Outcome
+
+The operator can distinguish healthy, stale, offline, quiescent, behind-version, incompatible,
+unqualified, and divergent instances; see the exact source and freshness of project-level data;
+and identify which local installation requires review. Project aggregation never silently merges
+conflicting lifecycle snapshots. Release information clearly distinguishes installed client
+version, latest known stable version, candidate/pending release state, and last production-verified
+release.
+
+## Constraints And Non-Goals
+
+- Multiple instances are independently trusted and may legitimately differ. Preserve per-instance
+  truth and compute project summaries without inventing consensus.
+- Use bounded status codes, versions, timestamps, digests, and counts. Do not upload repository
+  diffs, paths, raw outbox contents, credentials, scheduler definitions, or diagnostic logs.
+- Canonical-version comparison must name its source and freshness; a failed external lookup must
+  become `unknown`, not an assumed current result.
+- Local database and release tooling remain authoritative. The dashboard cannot update, revoke,
+  restart, deploy, or reconcile an instance.
+- Do not expose "modified" status unless the privacy-safe meaning and evidence contract are explicit.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Per-instance health cards plus project summary | Preserves source truth and makes divergence visible | More UI detail | Preferred |
+| Select only the freshest instance | Simple project page | Silently hides disagreement and unhealthy instances | Reject as the only view |
+| Merge reported artifact/state rows | Looks unified | Creates false authority and ambiguous conflict rules | Reject |
+| Report a bounded state digest | Cheap divergence detection | Requires drilldown to explain differences | Useful companion signal |
+
+## Open Questions
+
+- What exact reporter-delivery indicators are privacy-safe and actionable: pending event count,
+  last successful delivery, scheduler status, or only freshness/quiescence?
+- Should the hosted server own canonical release lookup, or should reporters send their locally
+  verified version relation and observation timestamp?
+- Which pending release-cohort facts can be represented without copying local planning detail?
+- What digest should detect semantic divergence while ignoring heartbeat-only differences?
+- How should a project summary behave when one instance is fresh and another is intentionally
+  quiescent or offline?
+
+## Decisions
+
+- Preserve a first-class per-instance view and never silently merge divergent local authority.
+- Separate installed, canonical, candidate, and production-verified release concepts.
+- Prefer controlled health fields and a semantic digest over raw diagnostic or repository data.
+- Keep all repair, update, deployment, and credential actions local and governed.
+
+## Don't Forget
+
+- `stale`, `offline`, `quiescent`, and `delivery delayed` are different states and should not be
+  collapsed into one red badge.
+- Version health must account for unsupported, unqualified, locally newer, and lookup-unavailable
+  states, not only "latest" versus "old".
+- Reporter freshness is provenance for every other dashboard claim.
+
+## Exploration Log
+
+### 2026-08-30
+
+- Idea Brief created.
+- Captured release/version posture, reporter health, and multi-instance divergence as one coherent
+  fleet-trust enhancement.
+- Initial direction favors per-instance truth, controlled project summaries, semantic divergence
+  digests, and explicit unknown states without remote repair.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

@@ -1,0 +1,136 @@
+# Idea Brief: Hosted Dashboard Work Lifecycle and History
+
+Status: exploring
+Type: idea-brief
+Updated: 2026-08-30
+Next Action: continue brainstorming or promote this brief with `ts: prm idea <idea-id-or-path>`
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces:
+
+## Current Synthesis
+
+### Idea
+
+Extend each hosted dashboard project page from aggregate current-state counts into a useful,
+read-only view of the project's durable Tool Shed work. The operator should be able to see Ideas,
+Project Maps, Program Roadmaps (PRMs), and Campaigns; understand which are active, blocked,
+completed, superseded, or otherwise terminal; follow their Idea → Map → PRM → Campaign
+relationships; and review what changed over time.
+
+This requires more than a template change. Reporter contract v1 sends aggregate counts and one
+`last_completed_id`, while its retained material events carry generic summary codes without an
+artifact identity. It does not report PRMs or Maps at all. A new privacy-bounded contract must
+therefore provide both a current lifecycle inventory and artifact-specific lifecycle history.
+
+### Why It Matters
+
+The dashboard currently answers only "is anything open?" When a project is healthy and fully
+reconciled, every count becomes zero and the page loses the very context the operator needs: what
+was delivered, which Idea produced it, which PRM governed it, which Campaigns completed it, and how
+the loop closed. This makes a successful project look empty and forces the operator back into each
+workspace to understand even basic project history.
+
+### Desired Outcome
+
+From one authenticated project page, the operator can:
+
+- see a compact lifecycle inventory grouped or filtered by Ideas, Maps, PRMs, and Campaigns;
+- distinguish current, blocked, completed, superseded, deferred, abandoned, and other controlled
+  lifecycle states without treating zero open work as zero history;
+- expand or traverse the durable parent chain from an Idea through its Map and PRM to Campaigns;
+- see stable IDs, useful display titles, current lifecycle, outcome/reconciliation state,
+  freshness, and reporting-instance source;
+- review a chronological recent-history feed of artifact-specific lifecycle transitions;
+- receive live SSE refresh when a new semantic snapshot or lifecycle transition reaches the hosted
+  database.
+
+Completed inventory remains visible as durable project context while transition history may use a
+bounded retention window. Hosted state stays advisory and never mutates or replaces the local Tool
+Shed database.
+
+## Constraints And Non-Goals
+
+- Local Tool Shed state remains authoritative; the hosted dashboard is an authenticated,
+  read-only advisory projection.
+- Extend the existing versioned allowlist. Do not upload document bodies, prompts, source, paths,
+  commands, raw diagnostics, credentials, or arbitrary event text.
+- Multiple enrolled instances for one project may disagree or report at different times. The UI
+  must preserve source and freshness rather than silently merging divergent lifecycle truth.
+- Stable IDs, controlled artifact types and lifecycle states, timestamps, relationships, and
+  reconciliation summaries are suitable bounded fields. Display titles need an explicit length,
+  sanitization, and privacy decision.
+- Keep public documentation routes and the existing dashboard shell compatible.
+- A semantic report update should trigger the existing SSE refresh; heartbeat-only reports must
+  not create history or reload loops.
+- Do not add remote work control, approval, artifact editing, mitigation, or lifecycle mutation.
+- Do not mirror the complete local SQLite database into PostgreSQL.
+- Do not turn every one-minute report into a history entry.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Render the existing generic material events | Smallest UI change; provides a basic activity feed | Cannot identify an Idea, PRM, or Campaign and cannot reconstruct status/history | Useful only as a temporary supplement |
+| Add a bounded lifecycle inventory snapshot | Directly answers what exists and its current status; server can derive counts | Requires report-contract, ingestion, storage, and multi-instance semantics | Preferred foundation |
+| Add artifact-specific lifecycle transition events | Provides meaningful history without minute-by-minute noise | Requires stable idempotency, retention, and transition extraction | Preferred alongside the snapshot |
+| Upload a full local database/document mirror | Maximum detail | Violates minimum disclosure, creates competing authority, increases coupling and recovery risk | Reject |
+
+The minimum complete direction is one idempotent bounded inventory plus change-only transition
+events. The project page can then offer a Work view with type/status filters and relationship
+drilldown, plus a Recent History view or section. Counts should be derived from the accepted hosted
+inventory so cards and rows cannot disagree.
+
+## Open Questions
+
+- Should completed inventory be unbounded for all durable lifecycle artifacts, or bounded by a
+  count/time window with explicit truncation and local-review guidance?
+- Should display titles be reported, or should the first privacy-minimal release use stable IDs
+  only? IDs are safe but materially less usable.
+- When several instances report the same project, should the default show the freshest complete
+  snapshot, separate per-instance views, or a divergence warning with operator selection?
+- Which outcome fields belong beside each artifact: lifecycle only, reconciliation state and
+  disposition, or also the nearest open owning loop?
+- Should Project Maps appear as a first-class filter even though the initial operator request named
+  Ideas, PRMs, and Campaigns? They are necessary to display the actual ownership chain.
+- Is recent history best as a fifth project tab, a section under Work, or a filterable combined
+  Work/History surface?
+- What payload and row bounds cover large repositories without silently presenting a partial view?
+
+## Decisions
+
+- This is a new extension Idea, not a reopening of completed dashboard origin `IDEA-0007`.
+- The target experience must preserve completed work and history; a healthy zero-count summary is
+  not sufficient.
+- Proper artifact visibility requires a reporter-contract revision and hosted persistence, not
+  only template work.
+- Prefer a bounded lifecycle snapshot plus artifact-specific change events. Reject database or
+  document mirroring.
+- Preserve local authority, authenticated read-only hosting, explicit instance source/freshness,
+  and semantic SSE refresh.
+
+## Don't Forget
+
+- The hosted database already retains generic `MaterialEvent` rows, but they lack artifact IDs and
+  cannot satisfy this outcome by themselves.
+- Reporter v1 reads active campaigns, active ideas, and completed campaigns only for aggregate
+  state; it does not report Maps or PRMs and sends no artifact list.
+- Completed and superseded artifacts are essential product information, not clutter to hide when
+  current work reaches zero.
+- History should represent lifecycle changes, not receipt cadence or repeated unchanged snapshots.
+
+## Exploration Log
+
+### 2026-08-30
+
+- Idea Brief created.
+- Captured the operator's expectation that a project page show the status and history of Ideas,
+  PRMs, and Campaigns instead of only zero-valued current-state cards.
+- Inspection confirmed the current gap crosses reporter contract, hosted storage, and UI: aggregate
+  counts are available, generic material events are retained, but artifact identities,
+  relationships, PRMs/Maps, and lifecycle transitions are absent.
+- Initial direction favors a privacy-bounded current lifecycle inventory plus change-only,
+  artifact-specific history, with explicit multi-instance freshness/divergence semantics.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

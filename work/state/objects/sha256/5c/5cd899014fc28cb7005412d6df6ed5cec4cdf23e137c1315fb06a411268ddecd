@@ -1,0 +1,85 @@
+# Program Roadmap: Hosted Dashboard Work Lifecycle and History
+
+Status: active
+Type: program-roadmap
+Updated: 2026-08-30
+Roadmap ID: hosted-dashboard-work-lifecycle-and-history
+Roadmap Revision: 1
+Source Idea: IDEA-0012
+Source Project Map: MAP-0017
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 2
+Reviewed Body SHA256: f08fadcd614ab5ceae79e6c70c2761cdc712aa48cb3f08f4e21dc8974dda21d7
+
+## Program Outcome
+
+The hosted Tool Shed project page presents a privacy-bounded, per-instance lifecycle inventory and
+artifact-specific recent history for Ideas, Maps, PRMs, and Campaigns. The implementation preserves
+local authority, distinguishes document and outcome state, makes truncation and instance divergence
+visible, avoids cadence-generated history, and refreshes through semantic SSE.
+
+## M1-CONTRACT-AND-PERSISTENCE — Freeze and implement lifecycle projection truth
+
+Status: active
+Depends on: none
+
+Outcome: Define and implement one backward-compatible reporter contract plus hosted persistence for
+atomic per-instance snapshots and idempotent transition events.
+
+Gates:
+
+- `G1-LIFECYCLE-TRUTH-MODEL`: separate document lifecycle, outcome lifecycle, outcome disposition,
+  and reconciliation; include all four first-class artifact types and preserve incomplete links.
+- `G2-MULTI-INSTANCE-SNAPSHOT-AUTHORITY`: key snapshots to reporting instances, reject stale
+  sequences, preserve source/freshness, and surface divergence without a synthetic merge.
+- `G3-BOUNDED-DISCLOSURE-AND-RETENTION`: stable UUID/visible IDs, sanitized 160-character titles,
+  allowlisted relationships, explicit total/truncation, bounded payloads, and 90-day transition
+  retention pass contract, migration, ingestion, and privacy tests.
+
+Candidate campaign: `implement-hosted-dashboard-work-lifecycle-and-history`.
+
+## M2-PROJECT-EXPERIENCE-WORK2 — Work inventory, history, and live qualification
+
+Status: active
+Depends on: M1
+
+Outcome: Render useful Work and History surfaces, derive complete-snapshot counts consistently,
+qualify changed behavior, deploy the candidate to the configured combined Work2 target, and retain
+its open owning chain for formal release.
+
+Gate:
+
+- `G4-HISTORY-FIDELITY-AND-LIVE-REFRESH`: first observation creates no invented historical
+  transitions; only changed artifact fields create idempotent history; unchanged reports and
+  heartbeats create none; accepted semantic changes advance SSE while receipt-only updates do not.
+
+Candidate campaign: `implement-hosted-dashboard-work-lifecycle-and-history`.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G1-LIFECYCLE-TRUTH-MODEL | M1 / same gate |
+| G2-MULTI-INSTANCE-SNAPSHOT-AUTHORITY | M1 / same gate |
+| G3-BOUNDED-DISCLOSURE-AND-RETENTION | M1 / same gate |
+| G4-HISTORY-FIDELITY-AND-LIVE-REFRESH | M2 / same gate |
+
+Transfer count: 4 reviewed gates; 4 mapped gates; 0 dropped.
+
+## Work2 Boundary
+
+Work2 includes implementation, focused contract/ingestion/rendering/migration tests, the repository's
+quick changed-path validation, a scoped product commit, deployment to the configured combined
+`ts.rookaro.com` target, browser and API behavior checks, release-cohort registration, logical
+checkpoint/rebuild proof, and strict Doctor.
+
+Work2 does not push Git, tag or publish a Tool Shed version, synchronize disconnected installs, or
+close IDEA-0012, MAP-0017, this PRM, or its owning campaign. Those remain awaiting formal Work5
+release evidence and upward reconciliation.
+
+## Deferred Scope
+
+- Cross-project search and operator attention workflows from IDEA-0013 and IDEA-0015.
+- Reporter/instance health extensions from IDEA-0014.
+- Trends and bounded exports from IDEA-0016.
+- Full historical reconstruction before the lifecycle contract existed.
