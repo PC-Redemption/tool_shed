@@ -40,7 +40,7 @@
     "dashboard/fleet/migrations/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "dashboard/fleet/models.py": "092113371b266754f3cbf3c1a168292e8e1d6d7640b72cff2ebd4c04f49b720b",
     "dashboard/fleet/services.py": "0306c3c2e5f95cf99a648a55f5feea950a379ce44875f6892e0b89f969916d39",
-    "dashboard/fleet/static/fleet/dashboard.css": "67faf3bbdbb664236bcf542123408d0bd34fc8bcafec5b95537896d1ecebe283",
+    "dashboard/fleet/static/fleet/dashboard.css": "0ea80bcdd1e35681e86322890cd48099e69f714db121e4e5a297b85743e32257",
     "dashboard/fleet/static/fleet/dashboard.js": "7352eeed2e64ba0af047a933f2c027ea062c214c0e78bd6c63f1829cb8f8294a",
     "dashboard/fleet/urls.py": "f4ebd548554589b4e5fcba8d8f85446ebce9c74ee771bfa7f52237ce1c88bea1",
     "dashboard/fleet/views.py": "b6eeec22d3536c3de1d0c9ff080dc8500d9b6277d483983ff8cdc9f5c8b2e52d",
