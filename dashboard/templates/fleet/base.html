@@ -48,7 +48,7 @@
           <form action="{% url 'fleet:project-visibility' nav_project.id %}" method="post">
             {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
             <input type="hidden" name="action" value="{% if nav_project.is_hidden %}show{% else %}hide{% endif %}">
-            <button type="submit">{% if nav_project.is_hidden %}Show{% else %}Hide{% endif %}</button>
+            <button type="submit" title="{% if nav_project.is_hidden %}Show {{ nav_project.name }} in normal navigation{% else %}Hide {{ nav_project.name }} from normal navigation{% endif %}" aria-label="{% if nav_project.is_hidden %}Show {{ nav_project.name }}{% else %}Hide {{ nav_project.name }}{% endif %}">{% if nav_project.is_hidden %}Show{% else %}Hide{% endif %}</button>
           </form>
         </div>
       {% empty %}

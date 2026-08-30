@@ -6,10 +6,10 @@
   <span class="state-badge state-{{ project.effective_attention_state }}">{{ project.effective_attention_state }}</span>
   <span class="project-last-report">Last report <strong>{{ project.last_seen|date:"M j, Y · g:i A"|default:"Never" }}</strong></span>
   <dl class="project-summary-counts">
-    <div><dt>Working</dt><dd>{{ project.current_state.working_count|default:0 }}</dd></div>
-    <div><dt>Blocked</dt><dd>{{ project.current_state.blocked_count|default:0 }}</dd></div>
-    <div><dt>Open</dt><dd>{{ project.current_state.open_outcome_count|default:0 }}</dd></div>
-    <div><dt>Unreconciled</dt><dd>{{ project.current_state.unreconciled_outcome_count|default:0 }}</dd></div>
+    <div class="project-metric metric-working{% if project.current_state.working_count %} has-value{% endif %}"><dt>Working</dt><dd>{{ project.current_state.working_count|default:0 }}</dd></div>
+    <div class="project-metric metric-blocked{% if project.current_state.blocked_count %} has-value{% endif %}"><dt>Blocked</dt><dd>{{ project.current_state.blocked_count|default:0 }}</dd></div>
+    <div class="project-metric metric-open-outcomes{% if project.current_state.open_outcome_count %} has-value{% endif %}"><dt>Open outcomes</dt><dd>{{ project.current_state.open_outcome_count|default:0 }}</dd></div>
+    <div class="project-metric metric-unreconciled{% if project.current_state.unreconciled_outcome_count %} has-value{% endif %}"><dt>Unreconciled</dt><dd>{{ project.current_state.unreconciled_outcome_count|default:0 }}</dd></div>
   </dl>
 </section>
 <nav class="dashboard-tabs" aria-label="Project sections">
@@ -85,8 +85,8 @@
       {% for artifact in group.artifacts %}<tr>
         <th class="artifact-cell"><span class="artifact-id">{{ artifact.visible_id }}</span><span class="artifact-title" title="{{ artifact.title }}">{{ artifact.title }}</span></th>
         <td><span class="state-badge state-{{ artifact.document_lifecycle }}">{{ artifact.document_lifecycle }}</span></td>
-        <td>{% if artifact.outcome_lifecycle == 'unknown' and artifact.outcome_disposition == 'unknown' %}<span class="dashboard-note">Unknown</span>{% else %}{{ artifact.outcome_lifecycle }}{% if artifact.outcome_disposition != artifact.outcome_lifecycle %}<small class="cell-detail">{{ artifact.outcome_disposition }}</small>{% endif %}{% endif %}</td>
-        <td>{% if artifact.reconciliation_state == 'unknown' %}<span class="dashboard-note">—</span>{% else %}{{ artifact.reconciliation_state }}{% endif %}</td>
+        <td>{% if artifact.outcome_lifecycle == 'unknown' and artifact.outcome_disposition == 'unknown' %}<span class="table-state table-state-unknown">Unknown</span>{% else %}<span class="table-state table-state-{{ artifact.outcome_lifecycle }}">{{ artifact.outcome_lifecycle|capfirst }}</span>{% if artifact.outcome_disposition != artifact.outcome_lifecycle %}<small class="cell-detail">{% if artifact.outcome_disposition == 'satisfied-with-approved-change' %}Approved change{% else %}{{ artifact.outcome_disposition|capfirst }}{% endif %}</small>{% endif %}{% endif %}</td>
+        <td>{% if artifact.reconciliation_state == 'unknown' %}<span class="table-state table-state-unknown">Unknown</span>{% else %}<span class="table-state table-state-{{ artifact.reconciliation_state }}">{{ artifact.reconciliation_state|capfirst }}</span>{% endif %}</td>
         <td>{% if artifact.parent_ids %}<small>Parent: {{ artifact.parent_ids|join:", " }}</small>{% endif %}{% if artifact.produces_ids %}<small>Produces: {{ artifact.produces_ids|join:", " }}</small>{% endif %}{% if not artifact.parent_ids and not artifact.produces_ids %}<span class="dashboard-note">—</span>{% endif %}</td>
         <td class="compact-date">{{ artifact.source_updated_at|date:"M j, Y" }}<small>{{ artifact.source_updated_at|date:"g:i A" }}</small></td>
       </tr>{% endfor %}

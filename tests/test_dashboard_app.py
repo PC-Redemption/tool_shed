@@ -413,7 +413,9 @@ class DashboardApplicationTests(TestCase):
                 title=f"Campaign {number}",
                 document_lifecycle="completed",
                 outcome_lifecycle="terminal",
-                outcome_disposition="satisfied",
+                outcome_disposition=(
+                    "satisfied-with-approved-change" if number == 25 else "satisfied"
+                ),
                 reconciliation_state="reconciled",
                 source_updated_at=observed + timedelta(minutes=number),
                 observed_at=observed,
@@ -432,6 +434,10 @@ class DashboardApplicationTests(TestCase):
         self.assertContains(first, 'class="dashboard-panel compact-table-panel"')
         self.assertContains(first, 'class="table-toolbar"')
         self.assertContains(first, 'class="artifact-title"')
+        self.assertContains(first, "Open outcomes")
+        self.assertContains(first, "Approved change")
+        self.assertContains(first, 'class="table-state table-state-terminal"')
+        self.assertContains(first, 'class="table-state table-state-reconciled"')
         self.assertContains(first, '<select name="type" data-auto-submit>')
         self.assertContains(first, '<select name="rows" data-auto-submit>')
         self.assertContains(first, "Apply status")
