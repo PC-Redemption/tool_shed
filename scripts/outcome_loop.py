@@ -1067,6 +1067,27 @@ def prepare_transition(
             ):
                 raise OutcomeLoopError(f"supporting cycle cannot satisfy parent: {child_id}")
             children.append(dict(child))
+        parents = list(connection.execute(
+            "SELECT to_artifact_id FROM relationship WHERE from_artifact_id = ? "
+            "AND relation_type = 'outcome-parent' AND retired_revision IS NULL ORDER BY id",
+            (cycle["origin_artifact_id"],),
+        ))
+        if len(parents) > 1:
+            raise OutcomeLoopError("transition target has multiple active outcome parents")
+        parent_result = None
+        if parents:
+            parent_origin_id = str(parents[0]["to_artifact_id"])
+            propagated = connection.execute(
+                "SELECT id FROM relationship WHERE from_artifact_id = ? AND to_artifact_id = ? "
+                "AND relation_type = 'outcome-result-propagated' AND retired_revision IS NULL",
+                (cycle["origin_artifact_id"], parent_origin_id),
+            ).fetchone()
+            if propagated:
+                raise OutcomeLoopError("transition target result is already propagated")
+            parent_result = {
+                "id": str(uuid.uuid4()),
+                "to_artifact_id": parent_origin_id,
+            }
         manifest: dict[str, Any] = {
             "schema_version": SCHEMA_VERSION,
             "kind": TRANSITION_KIND,
@@ -1094,6 +1115,7 @@ def prepare_transition(
                 "residual_work": list(residual_work or []),
             },
             "supporting_cycle_ids": supporting_cycle_ids,
+            "parent_result": parent_result,
         }
         manifest["manifest_token"] = token(manifest)
         return manifest
@@ -1149,6 +1171,20 @@ def apply_transition(
                 reconciliation["compared_at"], json.dumps(reconciliation["residual_work"], sort_keys=True),
             ),
         )
+        parent_result = manifest.get("parent_result")
+        if parent_result:
+            parent = connection.execute(
+                "SELECT 1 FROM relationship WHERE from_artifact_id = ? AND to_artifact_id = ? "
+                "AND relation_type = 'outcome-parent' AND retired_revision IS NULL",
+                (manifest["origin_artifact_id"], parent_result["to_artifact_id"]),
+            ).fetchone()
+            if not parent:
+                raise OutcomeLoopError("transition outcome parent changed before transaction")
+            connection.execute(
+                "INSERT INTO relationship VALUES (?, ?, 'outcome-result-propagated', ?, "
+                "'outcome-reconciliation-v1', ?, NULL)",
+                (parent_result["id"], manifest["origin_artifact_id"], parent_result["to_artifact_id"], revision),
+            )
         return {
             "cycle_id": manifest["cycle_id"],
             "manifest_token": manifest["manifest_token"],
@@ -1156,6 +1192,7 @@ def apply_transition(
             "verdict": verdict["disposition"],
             "reconciliation": reconciliation["state"],
             "supporting_cycle_ids": manifest["supporting_cycle_ids"],
+            "parent_result_propagated": bool(parent_result),
         }
 
     return hybrid_state.managed_write(
@@ -1164,7 +1201,7 @@ def apply_transition(
         command="transition-outcome-loop",
         actor="outcome-reconciliation",
         callback=write,
-        expected_writes=3,
+        expected_writes=3 + int(bool(manifest.get("parent_result"))),
     )
 
 

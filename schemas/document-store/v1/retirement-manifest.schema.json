@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tool-shed.local/schemas/document-store/v1/retirement-manifest.schema.json",
+  "title": "Tool Shed retained-source retirement manifest v1",
+  "type": "object",
+  "required": [
+    "schema_version", "kind", "project_id", "expected_revision",
+    "expected_domain_digest", "candidates", "references", "findings",
+    "valid", "applicable", "manifest_token", "writes_performed"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "kind": {"const": "tool-shed-retained-source-retirement-manifest"},
+    "project_id": {"type": "string", "format": "uuid"},
+    "expected_revision": {"type": "integer", "minimum": 0},
+    "expected_domain_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "prepared_at": {"type": "string"},
+    "candidate_count": {"type": "integer", "minimum": 0},
+    "active_alias_count": {"type": "integer", "minimum": 0},
+    "excluded_work_file_count": {"type": "integer", "minimum": 0},
+    "candidates": {"type": "array", "items": {"type": "object"}},
+    "references": {"type": "array", "items": {"type": "object"}},
+    "reference_counts": {"type": "object"},
+    "findings": {"type": "array", "items": {"type": "object"}},
+    "valid": {"type": "boolean"},
+    "applicable": {"type": "boolean"},
+    "manifest_token": {"type": "string", "pattern": "^[0-9a-f]{16}$"},
+    "writes_performed": {"const": false}
+  },
+  "additionalProperties": false
+}

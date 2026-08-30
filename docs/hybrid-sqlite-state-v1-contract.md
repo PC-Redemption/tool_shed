@@ -299,9 +299,9 @@ evidence bundle. The preserved evidence available at G1 is:
 
 | Evidence | Location | Interpretation |
 | --- | --- | --- |
-| Operator-reported missing closure | `work/ideas/idea-universal-closed-loop-outcome-reconciliation.md` exploration log | Establishes why HPT2 was selected; not proof of original intent or delivery |
-| Accepted Hybrid DB sequencing | `work/ideas/idea-sqlite-backed-tool-shed-operational-state.md` | Requires HPT2 as the first database-backed reconciliation case |
-| Approved gate and campaign outcome | `work/roadmaps/roadmap-hybrid-sqlite-operational-state.md` | Defines the required M2 parity result |
+| Operator-reported missing closure | Tool Shed document `IDEA-0006` exploration log | Establishes why HPT2 was selected; not proof of original intent or delivery |
+| Accepted Hybrid DB sequencing | Tool Shed document `IDEA-0005` | Requires HPT2 as the first database-backed reconciliation case |
+| Approved gate and campaign outcome | Tool Shed document `PRM-0008` | Defines the required M2 parity result |
 | Current Tool Shed product truth | `README.md`, `docs/`, `scripts/`, and tests at the future M2 source commit | Candidate delivered-product evidence; must be narrowed to actual HPT2 claims |
 
 M2 must obtain or explicitly disposition the original HPT2 Idea Brief/source request, accepted

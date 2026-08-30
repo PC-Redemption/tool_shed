@@ -46,8 +46,8 @@ OPERATIONS = (
 )
 PRODUCT_PATHS = {
     "contract": "docs/hybrid-sqlite-state-v1-contract.md",
-    "closed-loop-idea": "work/ideas/idea-universal-closed-loop-outcome-reconciliation.md",
-    "hybrid-idea": "work/ideas/idea-sqlite-backed-tool-shed-operational-state.md",
+    "closed-loop-idea": "schemas/outcome-reconciliation/v1/hpt2-closed-loop-idea-evidence.json",
+    "hybrid-idea": "schemas/outcome-reconciliation/v1/hpt2-hybrid-idea-evidence.json",
     "product-tool": "scripts/outcome_reconciliation.py",
     "product-test": "tests/test_outcome_reconciliation.py",
 }

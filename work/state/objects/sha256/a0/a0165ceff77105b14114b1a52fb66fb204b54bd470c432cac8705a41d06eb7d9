@@ -1,0 +1,47 @@
+# Safe Retained Legacy Collateral Retirement — M1 Evidence
+
+Status: passed
+Type: evidence-summary
+Updated: 2026-08-30
+Gate: G1-RETIREMENT-SCOPE-FROZEN
+Campaign: CAMP-0141
+Roadmap: PRM-0033
+
+## Verdict
+
+The retirement scope and managed alias-retirement contract are frozen and verified. Planning is
+read-only, includes exactly the 259 converted retained generated sources, binds every source hash
+and active alias to the current project/database state, and refuses execution when state drifts or
+live references remain unresolved. The canonical plan is valid but intentionally not applicable:
+13 live references require migration before alias retirement can be authorized.
+
+No retained generated source was deleted. No retained-source alias was retired.
+
+## Canonical Plan
+
+- candidates: 259
+- active aliases: 259
+- excluded `work/` files: 445
+- findings: 0
+- rewrite-required references: 13
+- plan valid: true
+- plan applicable: false
+- co-retired-source references: 3967
+- disposable-projection references: 568
+- historical-recovery references: 5508
+
+## Verification
+
+- Focused tests: `tests.test_document_retirement` and `tests.test_document_store`, 9 passed.
+- Full validation: 475 of 475 tests passed.
+- Shed manifest: 232 tracked files matched.
+- Provider adapter conformance, lifecycle views, stale-path scan, work-state review, roadmap
+  validation, bootstrap closure validation, and template sanity all passed.
+- Checkpoint/rebuild domain digest matched:
+  `4590bac582070017386d3aaf729478d13d7f3ffecda3af1b3d06c86726f8490f`.
+
+## Gate Interpretation
+
+G1 is satisfied because unresolved-reference refusal is an explicit required behavior. The 13
+rewrite-required records become bounded migration input for M2; they are not permission to weaken
+or bypass the guard.

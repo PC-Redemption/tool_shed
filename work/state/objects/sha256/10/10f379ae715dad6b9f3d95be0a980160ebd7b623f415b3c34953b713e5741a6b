@@ -1,0 +1,95 @@
+# Program Roadmap: Safe Retained Legacy Collateral Retirement
+
+Status: completed
+Type: program-roadmap
+Updated: 2026-08-30
+Next Action: retain the verified external source archive through 2026-09-29; no further program work remains
+Roadmap ID: safe-retained-legacy-collateral-retirement
+Roadmap Revision: 1
+Source Project Map: MAP-0022
+
+## Program Outcome
+
+Tool Shed removes only obsolete generated legacy sources through an exact, recovery-proven,
+revision-accounted retirement transaction while preserving every file-owned and recovery surface.
+
+## M1-RETIREMENT-SCOPE — Freeze exact scope and managed semantics
+
+Status: completed
+Depends on: none
+
+Outcome: Produce a deterministic retirement plan from the verified conversion ledger, classify
+every inbound path reference, define preserved classes, and add managed alias-retirement plus
+read-only dry-run behavior.
+
+Gate:
+
+- `G1-RETIREMENT-SCOPE-FROZEN`: the plan names all and only eligible generated sources, reports
+  source/hash/alias drift, classifies every inbound reference, refuses unresolved entries, and
+  proves that file-owned and recovery surfaces cannot enter the deletion set.
+
+Candidate campaign: `freeze-safe-legacy-retirement-scope-and-tooling`.
+
+Completion evidence: `EVD-0078`.
+
+## M2-RECOVERY-REHEARSAL — Prove current recovery and disposable deletion
+
+Status: completed
+Depends on: M1
+
+Outcome: Generate a current rollback export, verify the external archive, rebuild the current
+checkpoint, and execute the exact retirement transaction in a disposable maintainer copy.
+
+Gate:
+
+- `G2-RETIREMENT-RECOVERY-PROVEN`: rehearsal preserves the semantic database digest and current
+  document bodies, leaves zero active aliases for deleted sources, produces no broken required
+  references, restores successfully from current recovery truth, and passes focused plus full
+  validation.
+
+Candidate campaign: `rehearse-and-qualify-legacy-collateral-retirement`.
+
+Completion evidence: `EVD-0079`.
+
+## M3-CANONICAL-RETIREMENT — Apply the owner-authorized exact manifest
+
+Status: completed
+Depends on: M2
+
+Applied exact scope: owner-approved manifest `459326469b84ba91`; 259 generated retained sources;
+zero findings; zero rewrite-required references; verified 715-entry external archive; current
+rollback export covers 326 managed documents.
+
+Outcome: Retire the approved source aliases and delete the exact obsolete generated files in the
+canonical maintainer, update deliberate references, checkpoint/rebuild, and qualify the resulting
+repository.
+
+Gate:
+
+- `G3-CANONICAL-RETIREMENT-QUALIFIED`: the owner explicitly authorizes the exact manifest and
+  retention window; apply is hash-, revision-, identity-, and token-fenced; rollback remains
+  available; no excluded class changes; full validation and Doctor pass; Git records only the
+  approved retirement scope and required supporting changes.
+
+Candidate campaign: `apply-and-qualify-canonical-legacy-retirement`.
+
+Completion evidence: `EVD-0080`.
+
+## Authority Boundary
+
+The owner explicitly authorized exact manifest `459326469b84ba91`, its 259-file blast radius, the
+verified rollback procedure, and 30-day archive retention. The canonical transaction completed
+within that boundary. Removing the retained archive before or after 2026-09-29 remains a separate
+destructive action and is not authorized by this program.
+
+## KISS Boundary
+
+Use one retirement manifest contract and one guarded implementation path. Do not introduce a
+server, dual-write mode, generalized repository cleaner, or unrelated `.tool-shed/` purge.
+
+## Program Closeout
+
+All three milestone gates passed. The managed transaction retired all 259 source aliases at
+revision 885, deleted exactly the approved source paths, preserved all 456 excluded work files,
+and retained verified checkpoint, rollback-export, and source-archive recovery. Full validation
+passed after the retirement and the schema-2 Doctor topology check was corrected and qualified.

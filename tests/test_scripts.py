@@ -834,7 +834,7 @@ for raw in sys.stdin:
             snapshot = Path(temp) / "tool_shed"
 
             def ignore(_directory: str, names: list[str]) -> set[str]:
-                ignored = {name for name in names if name in {".git", "work", "__pycache__"}}
+                ignored = {name for name in names if name in {".git", ".tool-shed", "work", "__pycache__"}}
                 ignored.update(name for name in names if name.endswith((".pyc", ".pyo")))
                 return ignored
 

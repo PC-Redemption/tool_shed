@@ -35,7 +35,7 @@ Name: Campaign Lifecycle
 Purpose: Provide the durable owner-facing queue, readiness, focus-area, intake, and reconciliation model.
 Includes: Campaign lifecycle transitions, dependency-aware readiness, queue projections, focus-area catalogs and assignments, Q&A intake, whole-work coverage, stale-write protection, and Dangler Resolution.
 Excludes: Generic artifact design, cross-workspace portfolio management, and automatic multi-campaign execution.
-Evidence: scripts/campaign_queue.py; scripts/reconcile_campaign_queue.py; scripts/read_ask_inbox.py; templates/campaign-request.md; templates/focus-area-catalog.md; work/00-campaigns/active-queue.md; work/wp/completed/wp-owner-facing-campaign-queues-and-lifecycle-management.md
+Evidence: scripts/campaign_queue.py; scripts/reconcile_campaign_queue.py; scripts/read_ask_inbox.py; templates/campaign-request.md; templates/focus-area-catalog.md; work/00-campaigns/active-queue.md; Tool Shed document WP-0004
 Uncertainty: Cross-workspace portfolio aggregation remains intentionally outside the project boundary.
 
 Focus Area ID: provider-portability
@@ -59,7 +59,7 @@ Name: Workspace Safety and Performance
 Purpose: Protect repository and agent reliability from oversized generated evidence while providing privacy-safe performance measurements.
 Includes: Workspace profiling and adaptive risk budgets, generated-evidence boundaries, prepare/apply migration safeguards, aggregate performance profiling, incident-derived regression profiles, and privacy controls.
 Excludes: Snapshot backup archives, artifact-state reconciliation, and external report collection or telemetry.
-Evidence: scripts/workspace_preflight.py; scripts/migrate_generated_evidence.py; scripts/profile_workspace_performance.py; docs/workspace-performance-profiling.md; tests/test_workspace_performance.py; work/wp/completed/wp-generated-evidence-safety-and-migration.md
+Evidence: scripts/workspace_preflight.py; scripts/migrate_generated_evidence.py; scripts/profile_workspace_performance.py; docs/workspace-performance-profiling.md; tests/test_workspace_performance.py; Tool Shed document WP-0003
 Uncertainty: A centralized performance-report collector is neither implemented nor currently justified. Firmware and hardware appear only as test and incident contexts, not as Tool Shed runtime boundaries.
 
 Focus Area ID: qualification-release

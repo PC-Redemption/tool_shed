@@ -1,0 +1,75 @@
+# Project Map: Safe Retained Legacy Collateral Retirement
+
+Status: completed
+Type: project-map
+Updated: 2026-08-30
+Program Roadmap: PRM-0033
+
+## Purpose
+
+Retire the original generated Markdown corpus that remained after schema-2 cutover without
+deleting file-owned truth, breaking durable references, weakening recovery, or leaving SQLite
+aliases that falsely describe removed files as live sources.
+
+## Desired Outcome
+
+The canonical maintainer no longer carries obsolete generated source files under `work/`.
+SQLite remains the sole document authority, operator navigation uses disposable lifecycle views,
+historical paths resolve deliberately, and a verified external archive plus current rollback
+export can reconstruct every retired document.
+
+## Completed Boundary
+
+- Owner-approved manifest `459326469b84ba91` retired 259 aliases at managed revision 885.
+- Exactly the 259 hash-bound generated legacy source files are absent.
+- All 456 excluded `work/` files remained byte-identical during deletion.
+- The current 326-document rollback export and 715-entry external source archive verified with
+  zero mismatches; retain the archive through 2026-09-29.
+- Full post-retirement validation passed, with no stale paths, work-state findings, roadmap
+  findings, or bootstrap-closure findings.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Exact scope and link inventory | One deterministic manifest classifies delete, preserve, redirect, and unresolved paths | current clean audit |
+| Managed retirement machinery | Dry-run and guarded apply retire aliases and files atomically or recoverably | frozen manifest contract |
+| Recovery qualification | Current rollback export, archive verification, checkpoint rebuild, and disposable rehearsal prove recovery | retirement machinery |
+| Canonical retirement | Exact approved deletion and link transition with full validation | owner destructive authorization |
+
+## Constraints
+
+- Delete only generated sources recorded by `document_conversion` and approved by the exact
+  retirement manifest.
+- Preserve imported owner material, code, tests, canonical product documentation, provider
+  instructions, raw evidence, recovery truth, checkpoints, content objects, and required
+  projections.
+- Never use path patterns alone as deletion authority.
+- Retire matching `document_path_alias` rows through managed revision-accounted state.
+- Recheck source hashes, link disposition, archive integrity, current database revision, project
+  identity, and rollback evidence immediately before deletion.
+- Perform deletion only after a separate explicit owner authorization of the exact manifest.
+
+## Non-Goals
+
+- Purging unrelated `.tool-shed/` scratch, telemetry, backups, or temporary rebuild databases.
+- Rewriting Git history or deleting the external retained-source archive during this outcome.
+- Moving file-owned artifacts into SQLite merely to enlarge the deletion set.
+- Publishing or deploying beyond what later implementation changes demonstrably require.
+
+## Navigation
+
+Completed:
+
+- `CAMP-0141` froze and implemented exact-scope retirement tooling.
+- `CAMP-0142` proved deletion and recovery in a disposable maintainer copy.
+- `CAMP-0143` applied and qualified the owner-authorized canonical retirement.
+
+Do next: retain the verified external source archive through 2026-09-29. Any archive removal is a
+separate cleanup decision outside this completed map.
+
+## Related Truth
+
+- `docs/database-owned-work-collateral-v1-contract.md`
+- `docs/database-owned-work-collateral-conversion.md`
+- `work/adr/adr-database-authority-for-generated-work-collateral.md`

@@ -705,7 +705,7 @@ class OutcomeReconciliationTests(unittest.TestCase):
         source["cycle"]["kind"] = "idea"
         source["cycle"]["lifecycle_state"] = "working"
         source["cycle"]["closed_at"] = None
-        source["relationships"] = [source["relationships"][0]]
+        source["relationships"] = source["relationships"][:2]
         source["verdict"] = {"scope": "initiative", "disposition": "open", "summary": "Work remains."}
         source["reconciliation"] = {"state": "open", "residual_work": ["child result"]}
         source_path.write_text(json.dumps(source, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -755,9 +755,14 @@ class OutcomeReconciliationTests(unittest.TestCase):
             expected_token=transition["manifest_token"],
             project_binding=self.binding,
         )
-        self.assertEqual(applied["actual_writes"], 3)
+        self.assertEqual(applied["actual_writes"], 4)
+        self.assertTrue(applied["result"]["parent_result_propagated"])
         report = outcome_loop.report_cycle(self.workspace, root["cycle"]["id"])
         self.assertEqual(report["cycle"]["lifecycle_state"], "terminal")
+        self.assertIn(
+            "outcome-result-propagated",
+            {item["relation_type"] for item in report["relationships"]},
+        )
         self.assertEqual(report["verdict"]["disposition"], "satisfied")
         self.assertEqual(report["reconciliation"]["state"], "reconciled")
 

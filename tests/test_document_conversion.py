@@ -92,6 +92,20 @@ class DocumentConversionTests(unittest.TestCase):
         qualification = document_conversion.qualify(self.workspace, manifest=plan, database=self.database)
         self.assertTrue(qualification["passed"], qualification["findings"])
 
+        created = document_store.create_document(
+            self.workspace,
+            project_binding=self.binding,
+            document_type="evidence-summary",
+            title="Post-cutover evidence",
+            body="# Post-cutover evidence\n\nStatus: completed\nType: evidence-summary\n",
+            lifecycle="completed",
+            metadata={},
+            actor="fixture",
+            reason="prove current rollback export",
+            preferred_path="work/evidence/post-cutover-evidence.md",
+            database=self.database,
+        )
+
         checkpoint = document_store.write_checkpoint(
             self.workspace, project_binding=self.binding, output=Path("work/state/checkpoints/conversion-v2.json"), database=self.database,
         )
@@ -102,10 +116,20 @@ class DocumentConversionTests(unittest.TestCase):
         rollback = document_conversion.rollback_export(
             self.workspace, manifest=plan, database=self.database, output=Path(".tool-shed/rollback"),
         )
-        self.assertEqual(rollback["documents"], 3)
+        self.assertEqual(rollback["documents"], 4)
+        self.assertEqual(rollback["database_revision"], document_store.audit(self.workspace, self.database)["current_revision"])
         for entry in plan["entries"]:
             if entry["classification"] == "generated":
                 self.assertEqual((self.workspace / ".tool-shed/rollback" / entry["path"]).read_bytes(), (self.workspace / entry["path"]).read_bytes())
+        recovered = self.workspace / ".tool-shed/rollback/work/evidence/post-cutover-evidence.md"
+        self.assertEqual(recovered.read_text(encoding="utf-8"), document_store.show(
+            self.workspace, created["result"]["visible_id"], database=self.database
+        )["body_markdown"])
+        rollback_manifest = json.loads(
+            (self.workspace / ".tool-shed/rollback/rollback-manifest.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(rollback_manifest["schema_version"], 2)
+        self.assertEqual(len(rollback_manifest["documents"]), 4)
 
         older = self.workspace / ".tool-shed/older.sqlite3"
         hybrid_state.initialize(self.workspace, project_binding=self.binding, target=older)

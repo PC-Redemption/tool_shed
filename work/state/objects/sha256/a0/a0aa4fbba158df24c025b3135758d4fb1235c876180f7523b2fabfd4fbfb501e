@@ -1,0 +1,39 @@
+# Apply and Qualify Canonical Legacy Retirement
+
+Status: completed
+Type: campaign
+Updated: 2026-08-30
+Next Action: retain the verified external source archive through 2026-09-29, then remove it only under a separately authorized cleanup
+Campaign ID: apply-and-qualify-canonical-legacy-retirement
+Outcome: The owner-authorized exact retained-source manifest is applied in the canonical maintainer, obsolete generated legacy sources are absent, database authority and recovery remain valid, and excluded work is unchanged.
+Primary Focus Areas: artifact-workflows
+Supporting Focus Areas: qualification-release
+Depends On: CAMP-0142
+Decision: owner approved manifest 459326469b84ba91 and 30-day archive retention
+Detour For: none
+Return To: none
+Completion Gate: G3-CANONICAL-RETIREMENT-QUALIFIED passes with exact authorization, revision/hash/identity/token fences, verified rollback, unchanged exclusions, full validation, Doctor qualification, and an exact Git retirement record.
+Completion Evidence: EVD-0080
+Roadmap: safe-retained-legacy-collateral-retirement
+Roadmap Revision: 1
+Milestone: M3-CANONICAL-RETIREMENT
+Unlocks Gate: G3-CANONICAL-RETIREMENT-QUALIFIED
+
+## Request
+
+Apply only owner-approved manifest `459326469b84ba91`. Revalidate the canonical schema-2 state,
+candidate hashes, aliases, excluded files, external archive, rollback export, and checkpoint before
+mutation. Retire aliases through the managed transaction, delete only the exact approved source
+paths, restore automatically if filesystem deletion is interrupted, and qualify the final state.
+
+## Result
+
+The guarded transaction retired 259 retained-source aliases at database revision 885 and deleted
+exactly the 259 hash-bound generated legacy files. All 456 excluded `work/` files remained
+byte-identical across deletion. The 715-entry external source archive and 326-document rollback
+export were verified before mutation, and the archive is retained through 2026-09-29.
+
+Post-retirement audit reported no storage or semantic findings. Full validation passed 475 of 475
+tests. A migration gap in Doctor's topology check was repaired so schema-2 database authority no
+longer treats retired file-owned campaign requests as required live queue state; its focused tests
+pass.

@@ -13,6 +13,7 @@ import sys
 from pathlib import Path
 
 import campaign_queue
+import document_store
 import program_roadmap
 from work_tree import WORK_DIRS
 
@@ -28,6 +29,7 @@ REQUIRED_FILES = (
 
 
 def inspect_work_tree(workspace: Path) -> dict[str, object]:
+    database_authoritative = document_store.is_authoritative(workspace)
     findings: list[str] = []
     missing_directories = [
         relative for relative in WORK_DIRS if not (workspace / relative).is_dir()
@@ -62,12 +64,13 @@ def inspect_work_tree(workspace: Path) -> dict[str, object]:
             if payload.get("schema_version") != 1:
                 findings.append("work/index.json has unsupported schema_version")
     campaign_root = campaign_queue.campaign_root(workspace)
-    if campaign_root.is_dir() and not missing_files:
+    if campaign_root.is_dir() and not missing_files and not database_authoritative:
         findings.extend(campaign_queue.validate(workspace))
     findings.extend(program_roadmap.validate_all(workspace))
     return {
         "schema_version": 1,
         "workspace": str(workspace),
+        "campaign_authority": "sqlite" if database_authoritative else "file",
         "converged": not findings,
         "missing_directories": missing_directories,
         "missing_files": missing_files,

@@ -1,0 +1,71 @@
+# Safe Retained Legacy Collateral Retirement — M3 Evidence
+
+Status: passed
+Type: evidence-summary
+Updated: 2026-08-30
+Gate: G3-CANONICAL-RETIREMENT-QUALIFIED
+Campaign: CAMP-0143
+Roadmap: PRM-0033
+
+## Verdict
+
+The exact owner-authorized canonical retirement completed without widening scope. SQLite remains
+the sole managed-document authority, the obsolete retained sources are absent, recovery inputs are
+verified and retained, and post-retirement repository validation passes.
+
+## Authorization and Fences
+
+- owner authorization: explicit approval in the active Codex task on 2026-08-30
+- approved manifest token: `459326469b84ba91`
+- approved manifest SHA-256:
+  `251904b7034ce6f3b5fba8b25f4c196e125419068184a7a8fe61abaf81cb9695`
+- project ID: `817b6358-b2f5-48fd-bb66-bd80f936faca`
+- pre-retirement database revision: 884
+- pre-retirement domain digest:
+  `f60e17b1f162151ae03a59af5b91bc2399c56177d5b4ae0e646b575907d5225c`
+- rewrite-required references: 0
+- manifest findings: 0
+
+## Recovery Verification
+
+- schema-2 checkpoint revision: 884
+- checkpoint digest:
+  `53aa4d0591fb4f1a2b78771f5be67811f36418cd0131396f27fde1b2ef6e64ce`
+- current rollback export: `.tool-shed/retirement-m3-current-rollback`
+- rollback documents: 326
+- rollback mismatches: 0
+- external archive:
+  `/home/jon/docker/tool_shed-retained-source-pre-retirement-v0.41.0-20260830-r2`
+- archive entries: 715
+- candidate archive coverage: 259 of 259
+- archive mismatches: 0
+- required retention: through 2026-09-29
+
+## Canonical Transaction
+
+- retained-source aliases retired: 259
+- alias retirement revision: 885
+- filesystem sources deleted: 259
+- active retained-source aliases remaining: 0
+- aliases retired at revision 885: 259
+- approved paths remaining on disk: 0
+- excluded `work/` files checked: 456
+- excluded file changes during deletion: 0
+- post-retirement domain digest:
+  `84272a4ec49ac799399608e63a60ee7e0234ff2ac9f6c5894ff4ea335e0f2666`
+- managed audit findings after retirement: 0
+- semantic findings after retirement: 0
+
+## Qualification
+
+- focused retained-source/topology tests: passed
+- full validation: 475 of 475 tests passed
+- provider adapter conformance: passed
+- database-owned lifecycle view verification: passed
+- stale paths: none
+- work-state findings: none
+- Program Roadmap findings: none
+- bootstrap closure findings: none
+
+Final checkpoint/rebuild and strict Doctor results are recorded by the M3 closeout transaction and
+repository freeze that follows this evidence record.

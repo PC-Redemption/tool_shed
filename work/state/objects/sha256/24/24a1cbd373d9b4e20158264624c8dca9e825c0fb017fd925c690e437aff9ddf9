@@ -1,0 +1,89 @@
+# Safe Retained Legacy Collateral Retirement — M2 Evidence
+
+Status: passed
+Type: evidence-summary
+Updated: 2026-08-30
+Gate: G2-RETIREMENT-RECOVERY-PROVEN
+Campaign: CAMP-0142
+Roadmap: PRM-0033
+
+## Verdict
+
+The exact retirement transaction and both recovery paths are proven in a disposable maintainer
+copy. Canonical retained-source aliases and files remain unchanged.
+
+## Canonical Pre-Retirement Truth
+
+- database revision: 878
+- domain digest: `b71be62fe5aef674019128d189dd6d20b8e0025e25648e36a151af7cb6173d39`
+- current checkpoint digest: `00a2cd5fa596b63fa7fd827360f0ed737def1545ea99af85b95771afd83171cd`
+- current managed documents: 325
+- rollback export: `.tool-shed/retirement-m2-current-rollback-r2`
+- rollback export mismatches: 0
+- exact candidates: 259
+- active retained-source aliases: 259
+- findings: 0
+- rewrite-required references: 0
+- retirement plan applicable: true
+- current manifest token: `1eda83f68525d427`
+
+## External Source Archive
+
+- path: `/home/jon/docker/tool_shed-retained-source-pre-retirement-v0.41.0-20260830-r1`
+- archived work files: 712
+- archive hash mismatches: 0
+- exact candidate coverage: 259 of 259
+
+The previous v0.36.0 archive was preserved but was found to predate five candidates. The refreshed
+archive closes that gap and is the required exact-byte source recovery input.
+
+## Disposable Retirement
+
+- workspace: `/tmp/tool-shed-retirement-rehearsal-r2.fpBvS5`
+- input database revision: 878
+- aliases retired through managed operation: 259
+- filesystem deletions after hash/alias validation: 259
+- canonical filesystem deletions: 0
+- post-retirement database revision: 879
+- post-retirement domain digest:
+  `13e0eb6ece97351e26337e2ab00990fb1a9750834c749db391937f39556eff38`
+- post-retirement checkpoint digest:
+  `3158183af9bcecc67edae81ea8bd0e9945bcab7ef2cfe7475fe2690c35ee85b8`
+- checkpoint rebuild domain digest matched the post-retirement database
+- full validation: 475 of 475 tests passed
+- bootstrap closure findings: 0
+- stale-path findings: 0
+- work-state findings: 0
+
+## Disposable Restoration
+
+The database and checkpoint were restored from revision-878 recovery truth. Current document
+rollback export parity was verified separately; its 66 post-cutover projections were not installed
+as concurrent hybrid authority. The refreshed external archive restored only the exact 259 retained
+sources.
+
+- restored database revision: 878
+- restored domain digest matched canonical pre-retirement truth
+- restored checkpoint rebuild matched canonical pre-retirement truth
+- exact source hashes restored: 259 of 259
+- active retained-source aliases restored: 259
+- restored retirement plan findings: 0
+- restored retirement plan applicable: true
+- full validation after restoration: 475 of 475 tests passed
+
+## Rehearsal-Discovered Repairs
+
+- Terminal bootstrap closure validation now accepts missing historical paths only when their exact
+  recorded bytes remain reachable in immutable Git history.
+- Outcome transition now propagates terminal child results to an active parent, and the existing M1
+  result was repaired through one managed relationship write.
+- Rollback export now contains every current managed document revision rather than only revision-1
+  conversion entries.
+- Snapshot entrypoint testing excludes runtime `.tool-shed/` state, eliminating a transient WAL
+  copy race.
+
+## Authority Boundary
+
+G2 is satisfied. Applying manifest token `1eda83f68525d427` or any refreshed canonical token remains
+a destructive M3 action and requires a separate exact owner authorization covering the manifest,
+259-file blast radius, archive retention duration, and rollback procedure.

@@ -603,6 +603,12 @@ class BootstrapClosureTests(unittest.TestCase):
                 self.assertEqual(self.manifest.read_bytes(), frozen)
         contract = self.workspace / "docs/fixture-contract.md"
         contract.write_text("# Contract\n\nLater current truth.\n", encoding="utf-8")
+        for relative in (
+            "work/ideas/idea-fixture.md",
+            "work/maps/map-fixture.md",
+            "work/roadmaps/roadmap-fixture.md",
+        ):
+            (self.workspace / relative).unlink()
         verified = self.run_cli(
             "verify",
             "--manifest", str(self.manifest.relative_to(self.workspace)),

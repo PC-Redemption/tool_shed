@@ -17,6 +17,7 @@ import os
 import re
 import shutil
 import sqlite3
+import subprocess
 import sys
 import tempfile
 import uuid
@@ -814,6 +815,227 @@ def related(workspace: Path, identity: str, *, database: Path | None = None) -> 
     return {"schema_version": 1, "kind": "tool-shed-document-relationships", "visible_id": document["visible_id"], "relationships": rows, "writes_performed": False}
 
 
+RETIREMENT_MANIFEST_KIND = "tool-shed-retained-source-retirement-manifest"
+RETIREMENT_REFERENCE_PROJECTIONS = {
+    "work/index.md",
+    "work/index.json",
+    "work/00-campaigns/active-queue.md",
+    "work/00-campaigns/completed-queue.md",
+}
+RETIREMENT_HISTORICAL_REFERENCE_PATHS = {
+    "schemas/document-store/v1/maintainer-assigned-ids.json",
+    "schemas/hybrid-state/v1/maintainer-assigned-ids.json",
+    "schemas/outcome-reconciliation/v1/hpt2-compatibility-fixture.json",
+}
+
+
+def _retirement_manifest_token(manifest: dict[str, Any]) -> str:
+    payload = copy.deepcopy(manifest)
+    payload.pop("manifest_token", None)
+    return hashlib.sha256(canonical_bytes(payload)).hexdigest()[:16]
+
+
+def _repository_files(workspace: Path) -> list[Path]:
+    if (workspace / ".git").is_dir():
+        result = subprocess.run(
+            ["git", "ls-files", "-z"], cwd=workspace, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE, check=False,
+        )
+        if result.returncode == 0:
+            files: list[Path] = []
+            for value in result.stdout.split(b"\0"):
+                if not value:
+                    continue
+                path = workspace / value.decode("utf-8", errors="surrogateescape")
+                if path.is_file():
+                    files.append(path)
+            return files
+    excluded = {".git", ".tool-shed", ".venv", "build", "__pycache__"}
+    return sorted(
+        path for path in workspace.rglob("*")
+        if path.is_file() and not any(part in excluded for part in path.relative_to(workspace).parts)
+    )
+
+
+def retirement_plan(workspace: Path, *, database: Path | None = None) -> dict[str, Any]:
+    """Build an exact, read-only plan for retiring converted generated source aliases."""
+    workspace = resolved_workspace(workspace)
+    target = require_path_within(workspace, database or hybrid_state.database_path(workspace))
+    with contextlib.closing(hybrid_state.connect(target, writable=False)) as connection:
+        entrance = audit_connection(workspace, connection)
+        if entrance["classification"] not in {"CLEAN", "VALID_DIRTY"}:
+            raise DocumentStoreError(
+                f"retirement planning refused from {entrance['classification']}: "
+                + "; ".join(entrance["findings"])
+            )
+        rows = connection.execute(
+            "SELECT dc.source_path, dc.source_sha256, dc.artifact_id, dc.visible_id, "
+            "dc.status, dc.byte_parity, dc.render_parity, pa.id AS alias_id, "
+            "pa.retired_revision FROM document_conversion dc LEFT JOIN document_path_alias pa "
+            "ON pa.document_id=dc.artifact_id AND pa.path=dc.source_path "
+            "AND pa.alias_kind='retained-source' WHERE dc.classification='generated' "
+            "ORDER BY dc.source_path"
+        ).fetchall()
+
+    findings: list[dict[str, Any]] = []
+    candidates: list[dict[str, Any]] = []
+    candidate_paths = {str(row["source_path"]) for row in rows}
+    for row in rows:
+        relative = str(row["source_path"])
+        source = require_path_within(workspace, workspace / relative)
+        observed_sha256 = hybrid_state.file_sha256(source) if source.is_file() else None
+        state = "active" if row["alias_id"] and row["retired_revision"] is None else "retired"
+        if not source.is_file():
+            findings.append({"code": "SOURCE_MISSING", "path": relative})
+        elif observed_sha256 != row["source_sha256"]:
+            findings.append({"code": "SOURCE_HASH_DRIFT", "path": relative})
+        if row["status"] != "verified" or not row["byte_parity"] or not row["render_parity"]:
+            findings.append({"code": "CONVERSION_NOT_VERIFIED", "path": relative})
+        if not row["alias_id"]:
+            findings.append({"code": "RETAINED_ALIAS_MISSING", "path": relative})
+        candidates.append({
+            "path": relative,
+            "source_sha256": str(row["source_sha256"]),
+            "observed_sha256": observed_sha256,
+            "artifact_id": str(row["artifact_id"]),
+            "visible_id": str(row["visible_id"]),
+            "alias_id": str(row["alias_id"]) if row["alias_id"] else None,
+            "alias_state": state,
+            "retired_revision": row["retired_revision"],
+        })
+
+    references: list[dict[str, Any]] = []
+    if candidate_paths:
+        pattern = re.compile(
+            "|".join(re.escape(value) for value in sorted(candidate_paths, key=lambda item: (-len(item), item)))
+        )
+        for path in _repository_files(workspace):
+            relative = path.relative_to(workspace).as_posix()
+            try:
+                text = path.read_text(encoding="utf-8")
+            except (UnicodeDecodeError, OSError):
+                continue
+            matches: dict[str, int] = {}
+            for match in pattern.finditer(text):
+                matches[match.group(0)] = matches.get(match.group(0), 0) + 1
+            for target_path, occurrences in sorted(matches.items()):
+                if relative in candidate_paths:
+                    disposition = "co-retired-source"
+                elif relative.startswith("work/state/") or relative.startswith(
+                    "work/evidence/bootstrap-closure-"
+                ) or relative in RETIREMENT_HISTORICAL_REFERENCE_PATHS:
+                    disposition = "historical-recovery-reference"
+                elif relative in RETIREMENT_REFERENCE_PROJECTIONS:
+                    disposition = "disposable-projection"
+                else:
+                    disposition = "rewrite-required"
+                references.append({
+                    "source_path": relative,
+                    "target_path": target_path,
+                    "occurrences": occurrences,
+                    "disposition": disposition,
+                })
+
+    reference_counts = {
+        name: sum(1 for item in references if item["disposition"] == name)
+        for name in (
+            "co-retired-source", "historical-recovery-reference",
+            "disposable-projection", "rewrite-required",
+        )
+    }
+    work_files = sum(1 for path in (workspace / "work").rglob("*") if path.is_file())
+    manifest: dict[str, Any] = {
+        "schema_version": 1,
+        "kind": RETIREMENT_MANIFEST_KIND,
+        "project_id": hybrid_state.load_project_identity(workspace)["project_id"],
+        "expected_revision": entrance["current_revision"],
+        "expected_domain_digest": entrance["domain_digest"],
+        "prepared_at": hybrid_state.now(),
+        "candidate_count": len(candidates),
+        "active_alias_count": sum(1 for item in candidates if item["alias_state"] == "active"),
+        "excluded_work_file_count": max(0, work_files - len(candidates)),
+        "candidates": candidates,
+        "references": references,
+        "reference_counts": reference_counts,
+        "findings": findings,
+        "valid": not findings,
+        "applicable": not findings and reference_counts["rewrite-required"] == 0
+            and bool(candidates) and all(item["alias_state"] == "active" for item in candidates),
+        "writes_performed": False,
+    }
+    manifest["manifest_token"] = _retirement_manifest_token(manifest)
+    return manifest
+
+
+def retire_source_aliases(
+    workspace: Path, *, project_binding: str, manifest_path: Path,
+    expected_token: str, actor: str, reason: str, database: Path | None = None,
+) -> dict[str, Any]:
+    """Retire exactly manifest-bound aliases without deleting filesystem sources."""
+    workspace = resolved_workspace(workspace)
+    path = require_path_within(
+        workspace, manifest_path if manifest_path.is_absolute() else workspace / manifest_path,
+    )
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    if manifest.get("schema_version") != 1 or manifest.get("kind") != RETIREMENT_MANIFEST_KIND:
+        raise DocumentStoreError("unsupported retained-source retirement manifest")
+    token = _retirement_manifest_token(manifest)
+    if token != manifest.get("manifest_token") or token != expected_token:
+        raise DocumentStoreError("retirement manifest token mismatch")
+    if not manifest.get("applicable"):
+        raise DocumentStoreError("retirement manifest is not applicable")
+    identity = hybrid_state.load_project_identity(workspace)
+    if manifest.get("project_id") != identity["project_id"]:
+        raise DocumentStoreError("retirement manifest belongs to another project")
+
+    def preflight(connection: sqlite3.Connection) -> None:
+        current = audit_connection(workspace, connection)
+        if current["current_revision"] != manifest.get("expected_revision"):
+            raise DocumentStoreError("retirement manifest expected_revision is stale")
+        if current["domain_digest"] != manifest.get("expected_domain_digest"):
+            raise DocumentStoreError("retirement manifest domain digest is stale")
+        for candidate in manifest["candidates"]:
+            source = require_path_within(workspace, workspace / candidate["path"])
+            if not source.is_file() or hybrid_state.file_sha256(source) != candidate["source_sha256"]:
+                raise DocumentStoreError(f"retirement source drift: {candidate['path']}")
+            row = connection.execute(
+                "SELECT id, retired_revision FROM document_path_alias WHERE id=? "
+                "AND document_id=? AND path=? AND alias_kind='retained-source'",
+                (candidate["alias_id"], candidate["artifact_id"], candidate["path"]),
+            ).fetchone()
+            if row is None or row["retired_revision"] is not None:
+                raise DocumentStoreError(f"retirement alias drift: {candidate['path']}")
+            conversion = connection.execute(
+                "SELECT 1 FROM document_conversion WHERE artifact_id=? AND source_path=? "
+                "AND source_sha256=? AND classification='generated' AND status='verified' "
+                "AND byte_parity=1 AND render_parity=1",
+                (candidate["artifact_id"], candidate["path"], candidate["source_sha256"]),
+            ).fetchone()
+            if conversion is None:
+                raise DocumentStoreError(f"retirement conversion drift: {candidate['path']}")
+        return None
+
+    def apply(connection: sqlite3.Connection, revision: int) -> dict[str, Any]:
+        retired: list[str] = []
+        for candidate in manifest["candidates"]:
+            connection.execute(
+                "UPDATE document_path_alias SET retired_revision=? WHERE id=?",
+                (revision, candidate["alias_id"]),
+            )
+            retired.append(candidate["path"])
+        return {
+            "manifest_token": token,
+            "retired_alias_count": len(retired),
+            "retired_paths": retired,
+            "filesystem_deletions": 0,
+        }
+
+    return managed_write(
+        workspace, project_binding=project_binding, command="retire-retained-source-aliases",
+        actor=actor, callback=apply, existing=preflight, database=database,
+    )
+
+
 def open_outcome(workspace: Path, *, project_binding: str, identity: str, accepted_outcome: str, actor: str, database: Path | None = None) -> dict[str, Any]:
     """Open one governed outcome loop on a database-owned document."""
     def apply(connection: sqlite3.Connection, revision: int) -> dict[str, Any]:
@@ -1043,6 +1265,8 @@ def build_parser() -> argparse.ArgumentParser:
     relate_parser = commands.add_parser("relate"); relate_parser.add_argument("--project-binding", required=True); relate_parser.add_argument("--from", dest="source", required=True); relate_parser.add_argument("--relation", required=True); relate_parser.add_argument("--to", dest="target", required=True); relate_parser.add_argument("--actor", required=True)
     unrelate_parser = commands.add_parser("unrelate"); unrelate_parser.add_argument("--project-binding", required=True); unrelate_parser.add_argument("--relationship", required=True); unrelate_parser.add_argument("--actor", required=True)
     related_parser = commands.add_parser("related"); related_parser.add_argument("identity")
+    commands.add_parser("retirement-plan")
+    retire_parser = commands.add_parser("retire-source-aliases"); retire_parser.add_argument("--project-binding", required=True); retire_parser.add_argument("--manifest", required=True); retire_parser.add_argument("--expect", required=True); retire_parser.add_argument("--actor", required=True); retire_parser.add_argument("--reason", required=True)
     views_parser = commands.add_parser("render-views"); views_parser.add_argument("--output")
     checkpoint_parser = commands.add_parser("checkpoint"); checkpoint_parser.add_argument("--project-binding", required=True); checkpoint_parser.add_argument("--output", required=True)
     rebuild_parser = commands.add_parser("rebuild"); rebuild_parser.add_argument("--project-binding", required=True); rebuild_parser.add_argument("--checkpoint", required=True); rebuild_parser.add_argument("--output", required=True)
@@ -1075,6 +1299,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif args.command == "relate": result = relate(workspace, project_binding=args.project_binding, source=args.source, relation=args.relation, target=args.target, actor=args.actor, database=database)
         elif args.command == "unrelate": result = unrelate(workspace, project_binding=args.project_binding, relationship_id=args.relationship, actor=args.actor, database=database)
         elif args.command == "related": result = related(workspace, args.identity, database=database)
+        elif args.command == "retirement-plan": result = retirement_plan(workspace, database=database)
+        elif args.command == "retire-source-aliases": result = retire_source_aliases(workspace, project_binding=args.project_binding, manifest_path=Path(args.manifest), expected_token=args.expect, actor=args.actor, reason=args.reason, database=database)
         elif args.command == "render-views": result = render_views(workspace, output=Path(args.output) if args.output else None, database=database)
         elif args.command == "checkpoint": result = write_checkpoint(workspace, project_binding=args.project_binding, output=Path(args.output), database=database)
         else: result = rebuild(workspace, project_binding=args.project_binding, checkpoint=Path(args.checkpoint), output=Path(args.output))

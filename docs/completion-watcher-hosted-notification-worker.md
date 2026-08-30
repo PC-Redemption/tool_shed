@@ -5,7 +5,7 @@ Type: doc
 Updated: 2026-08-19
 Next Action: map bounded concurrency/retry implementation to backend runtime
 Campaign: build-hosted-watcher-status-and-email-pilot
-Parent: work/maps/map-disposable-completion-watchers-and-hosted-notifications.md
+Parent: Tool Shed document MAP-0002
 
 ## Purpose
 

@@ -1,0 +1,7 @@
+{
+  "artifact_id": "44345c08-9155-4acc-9a0d-235779ef79f3",
+  "body_sha256": "63a9f5c46a6d7f28a48e21179a8fd65014dca49ff5f06d2c50e3e9343cfd1529",
+  "evidence_role": "operator-reported-missing-closure",
+  "schema_version": 1,
+  "visible_id": "IDEA-0006"
+}

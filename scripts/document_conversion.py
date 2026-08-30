@@ -266,20 +266,67 @@ def rollback_export(workspace: Path, *, manifest: dict[str, Any], database: Path
     target = require_path_within(workspace, output if output.is_absolute() else workspace / output)
     if target.exists():
         raise ConversionError(f"rollback export exists: {target.relative_to(workspace)}")
-    generated = [entry for entry in manifest["entries"] if entry["classification"] == "generated"]
+    checked = document_store.audit(workspace, database)
+    if checked["classification"] in {"INVALID", "UNJOURNALED"}:
+        raise ConversionError(f"rollback export refused from {checked['classification']}")
+    with contextlib.closing(hybrid_state.connect(database, writable=False)) as connection:
+        documents = [dict(row) for row in connection.execute(
+            "SELECT d.id AS artifact_id, d.visible_id, d.current_revision AS document_revision, "
+            "r.body_markdown, r.body_sha256, dc.source_path, "
+            "(SELECT MIN(pa.path) FROM document_path_alias pa WHERE pa.document_id=d.id "
+            "AND pa.alias_kind='preferred-view' AND pa.retired_revision IS NULL) AS preferred_path "
+            "FROM document d JOIN document_revision r ON r.document_id=d.id "
+            "AND r.revision_number=d.current_revision LEFT JOIN document_conversion dc "
+            "ON dc.artifact_id=d.id AND dc.classification='generated' ORDER BY d.visible_id"
+        )]
     records = []
+    paths: set[str] = set()
     try:
-        for entry in generated:
-            document = document_store.show(workspace, entry["artifact_id"], database=database)
-            path = target / entry["path"]
+        target.mkdir(parents=True)
+        for document in documents:
+            relative = document["source_path"] or document["preferred_path"] or f"work/recovered/{document['visible_id']}.md"
+            if not relative.startswith("work/") or relative in paths:
+                raise ConversionError(f"rollback export path is unsafe or duplicated: {relative}")
+            paths.add(relative)
+            path = require_path_within(workspace, target / relative)
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(document["body_markdown"], encoding="utf-8", newline="\n")
-            records.append({"path": entry["path"], "artifact_id": entry["artifact_id"], "visible_id": document["visible_id"], "document_revision": document["document_revision"], "sha256": digest_bytes(path.read_bytes())})
-        (target / "rollback-manifest.json").write_text(json.dumps({"schema_version": 1, "kind": "tool-shed-document-rollback-export", "conversion_manifest_token": manifest["manifest_token"], "created_at": hybrid_state.now(), "documents": records}, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            exported_hash = digest_bytes(path.read_bytes())
+            if exported_hash != document["body_sha256"]:
+                raise ConversionError(f"rollback export body parity failed: {relative}")
+            records.append({
+                "path": relative,
+                "artifact_id": document["artifact_id"],
+                "visible_id": document["visible_id"],
+                "document_revision": document["document_revision"],
+                "sha256": exported_hash,
+                "path_source": "conversion" if document["source_path"] else "preferred-view" if document["preferred_path"] else "recovered-fallback",
+            })
+        rollback_manifest = {
+            "schema_version": 2,
+            "kind": "tool-shed-document-rollback-export",
+            "project_id": load_project_identity(workspace)["project_id"],
+            "database_revision": checked["current_revision"],
+            "domain_digest": checked["domain_digest"],
+            "conversion_manifest_token": manifest["manifest_token"],
+            "created_at": hybrid_state.now(),
+            "documents": records,
+        }
+        (target / "rollback-manifest.json").write_text(
+            json.dumps(rollback_manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
     except BaseException:
         shutil.rmtree(target, ignore_errors=True)
         raise
-    return {"schema_version": 1, "kind": "tool-shed-document-rollback-export-result", "path": target.relative_to(workspace).as_posix(), "documents": len(records), "writes_performed": True}
+    return {
+        "schema_version": 2,
+        "kind": "tool-shed-document-rollback-export-result",
+        "path": target.relative_to(workspace).as_posix(),
+        "documents": len(records),
+        "database_revision": checked["current_revision"],
+        "domain_digest": checked["domain_digest"],
+        "writes_performed": True,
+    }
 
 
 def build_parser() -> argparse.ArgumentParser:

@@ -76,3 +76,35 @@ do not checkpoint, require Git, or require GitHub.
 
 The exact authority, conversion, rollback, compatibility, and retirement rules are frozen in
 [`database-owned-work-collateral-v1-contract.md`](database-owned-work-collateral-v1-contract.md).
+
+## Retained-source retirement planning
+
+Retirement begins with a read-only exact plan:
+
+```bash
+python3 scripts/document_store.py --workspace . retirement-plan
+```
+
+The manifest binds the project, current database revision and digest, every verified generated
+conversion, source hash, active retained-source alias, and inbound path-reference disposition.
+`rewrite-required` references make the manifest non-applicable. Known co-retired sources,
+disposable projections, and immutable recovery/history surfaces are reported separately.
+
+After all required references are migrated and the manifest is freshly regenerated, a separately
+authorized managed step may retire exactly its aliases:
+
+```bash
+python3 scripts/document_store.py --workspace . retire-source-aliases \
+  --project-binding <hybrid-state-binding> \
+  --manifest <reviewed-manifest.json> --expect <manifest-token> \
+  --actor <actor> --reason <reason>
+```
+
+That command performs no filesystem deletion. Removing the retired source files remains a later
+explicit owner decision after current rollback export and disposable-rehearsal evidence pass.
+
+The current rollback export covers every managed document at its latest revision, not only the
+original conversion cohort. Converted documents retain their original paths; post-cutover documents
+use an active preferred view or a deterministic `work/recovered/<VISIBLE-ID>.md` fallback. The
+export manifest binds the live project, database revision, domain digest, document revisions, and
+body hashes.

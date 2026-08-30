@@ -1,0 +1,46 @@
+# Rehearse and Qualify Legacy Collateral Retirement
+
+Status: active
+Type: campaign
+Updated: 2026-08-30
+Next Action: migrate the 13 rewrite-required live references to managed identities or preserved recovery references
+Campaign ID: rehearse-and-qualify-legacy-collateral-retirement
+Outcome: Current recovery truth and the exact retirement transaction are proven in a disposable maintainer copy, with no broken required references and no mutation of the canonical retained sources.
+Primary Focus Areas: artifact-workflows
+Supporting Focus Areas: qualification-release
+Depends On: CAMP-0141
+Decision: none
+Detour For: none
+Return To: none
+Completion Gate: G2-RETIREMENT-RECOVERY-PROVEN preserves the semantic database digest and current document bodies, leaves zero active aliases for deleted rehearsal sources, produces no broken required references, restores from current recovery truth, and passes focused plus full validation.
+Completion Evidence: pending
+Roadmap: safe-retained-legacy-collateral-retirement
+Roadmap Revision: 1
+Milestone: M2-RECOVERY-REHEARSAL
+Unlocks Gate: G2-RETIREMENT-RECOVERY-PROVEN
+
+## Request
+
+Resolve the exact 13 rewrite-required live references reported by the canonical retirement plan.
+Generate a rollback export current through every managed document revision, verify the retained
+external archive, and prove checkpoint rebuild parity. Then clone the maintainer into a disposable
+location, apply the exact alias retirement there, delete only its planned sources, validate the
+post-retirement repository, and exercise restoration from current recovery truth.
+
+The canonical retained generated source files and their aliases remain untouched throughout M2.
+
+## App Server Preparation Contract
+
+```json
+{
+  "campaign_id": "rehearse-and-qualify-legacy-collateral-retirement",
+  "completion_evidence": "G2-RETIREMENT-RECOVERY-PROVEN rehearsal evidence",
+  "exact_resolution": "dispatch-time",
+  "execution_shape": "bounded-local-campaign",
+  "inline_assets": "metadata-only",
+  "objective": "Prove exact retirement and recovery in a disposable maintainer copy",
+  "schema_version": 1,
+  "source_freshness": "required",
+  "verification": "focused-then-repository"
+}
+```

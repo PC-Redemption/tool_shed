@@ -188,14 +188,20 @@ def git_commit(workspace: Path) -> str:
     return value
 
 
-def relative_file(workspace: Path, value: object, *, label: str) -> tuple[str, Path]:
+def relative_file(
+    workspace: Path,
+    value: object,
+    *,
+    label: str,
+    allow_missing: bool = False,
+) -> tuple[str, Path]:
     if not isinstance(value, str) or not value or value.startswith("/"):
         raise ClosureError(f"{label} must be a repository-relative path")
     relative = Path(value)
     if relative.is_absolute() or ".." in relative.parts:
         raise ClosureError(f"{label} must stay inside the workspace")
     path = require_path_within(workspace, workspace / relative)
-    if not path.is_file() or path.is_symlink():
+    if path.is_symlink() or (not allow_missing and not path.is_file()):
         raise ClosureError(f"{label} must reference a regular file: {value}")
     return relative.as_posix(), path
 
@@ -347,7 +353,12 @@ def validate_manifest(
         else:
             roles.append(str(role))
         try:
-            relative, path = relative_file(workspace, binding.get("path"), label=f"{label} path")
+            relative, path = relative_file(
+                workspace,
+                binding.get("path"),
+                label=f"{label} path",
+                allow_missing=terminal_initiative(payload),
+            )
             if binding.get("path") != relative:
                 findings.append(f"{label} path is not normalized")
             if not recorded_reference_matches(
@@ -426,7 +437,12 @@ def validate_manifest(
             findings.append(f"{label} needs exact origin path and section")
         else:
             try:
-                relative_file(workspace, origin.get("path"), label=f"{label} origin")
+                relative_file(
+                    workspace,
+                    origin.get("path"),
+                    label=f"{label} origin",
+                    allow_missing=terminal_initiative(payload),
+                )
             except (ClosureError, ProjectIdentityError) as error:
                 findings.append(str(error))
             if not nonempty(origin.get("section")):
@@ -525,7 +541,12 @@ def validate_manifest(
                 findings.append(f"{reference_label} needs exact path and sha256 fields")
                 continue
             try:
-                relative, path = relative_file(workspace, reference.get("path"), label=reference_label)
+                relative, path = relative_file(
+                    workspace,
+                    reference.get("path"),
+                    label=reference_label,
+                    allow_missing=terminal_initiative(payload),
+                )
                 if not recorded_reference_matches(
                     workspace,
                     payload,

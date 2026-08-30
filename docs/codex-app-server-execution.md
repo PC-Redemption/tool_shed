@@ -405,6 +405,9 @@ entry per source. The adapter rejects a summary that does not declare each sourc
 source and summary bytes separately, and does not cache summaries automatically:
 
 ```bash
+python3 scripts/document_store.py export-edit CAMP-0024 \
+  --output .tool-shed/edits/CAMP-0024.md
+
 python3 scripts/codex_orchestration.py \
   --enable-app-server run \
   --role planning \
@@ -412,7 +415,7 @@ python3 scripts/codex_orchestration.py \
   --campaign 024-compact-tool-shed-site \
   --cwd . \
   --summary-file work/evidence/app-server/context-summary.md \
-  --summary-source-file work/00-campaigns/completed/024-compact-tool-shed-site-and-publish-guided-workflows.md \
+  --summary-source-file .tool-shed/edits/CAMP-0024.md \
   --prompt "Plan the next safe read-only review from the supplied campaign summary."
 ```
 

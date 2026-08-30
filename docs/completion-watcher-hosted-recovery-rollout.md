@@ -4,7 +4,7 @@ Status: active
 Type: doc
 Updated: 2026-08-19
 Next Action: convert these controls into deployment and operator runbooks
-Parent: work/maps/map-disposable-completion-watchers-and-hosted-notifications.md
+Parent: Tool Shed document MAP-0002
 Campaign: build-hosted-watcher-status-and-email-pilot
 
 ## Scope

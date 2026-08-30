@@ -1,0 +1,77 @@
+# Program Roadmap: Safe Retained Legacy Collateral Retirement
+
+Status: active
+Type: program-roadmap
+Updated: 2026-08-30
+Roadmap ID: safe-retained-legacy-collateral-retirement
+Roadmap Revision: 1
+Source Project Map: MAP-0022
+
+## Program Outcome
+
+Tool Shed removes only obsolete generated legacy sources through an exact, recovery-proven,
+revision-accounted retirement transaction while preserving every file-owned and recovery surface.
+
+## M1-RETIREMENT-SCOPE — Freeze exact scope and managed semantics
+
+Status: active
+Depends on: none
+
+Outcome: Produce a deterministic retirement plan from the verified conversion ledger, classify
+every inbound path reference, define preserved classes, and add managed alias-retirement plus
+read-only dry-run behavior.
+
+Gate:
+
+- `G1-RETIREMENT-SCOPE-FROZEN`: the plan names all and only eligible generated sources, reports
+  source/hash/alias drift, classifies every inbound reference, refuses unresolved entries, and
+  proves that file-owned and recovery surfaces cannot enter the deletion set.
+
+Candidate campaign: `freeze-safe-legacy-retirement-scope-and-tooling`.
+
+## M2-RECOVERY-REHEARSAL — Prove current recovery and disposable deletion
+
+Status: active
+Depends on: M1
+
+Outcome: Generate a current rollback export, verify the external archive, rebuild the current
+checkpoint, and execute the exact retirement transaction in a disposable maintainer copy.
+
+Gate:
+
+- `G2-RETIREMENT-RECOVERY-PROVEN`: rehearsal preserves the semantic database digest and current
+  document bodies, leaves zero active aliases for deleted sources, produces no broken required
+  references, restores successfully from current recovery truth, and passes focused plus full
+  validation.
+
+Candidate campaign: `rehearse-and-qualify-legacy-collateral-retirement`.
+
+## M3-CANONICAL-RETIREMENT — Apply the owner-authorized exact manifest
+
+Status: blocked-pending-owner-authorization
+Depends on: M2
+
+Outcome: Retire the approved source aliases and delete the exact obsolete generated files in the
+canonical maintainer, update deliberate references, checkpoint/rebuild, and qualify the resulting
+repository.
+
+Gate:
+
+- `G3-CANONICAL-RETIREMENT-QUALIFIED`: the owner explicitly authorizes the exact manifest and
+  retention window; apply is hash-, revision-, identity-, and token-fenced; rollback remains
+  available; no excluded class changes; full validation and Doctor pass; Git records only the
+  approved retirement scope and required supporting changes.
+
+Candidate campaign: `apply-and-qualify-canonical-legacy-retirement`.
+
+## Authority Boundary
+
+M1 and M2 are reversible planning, implementation, and validation work covered by the current
+authority envelope. M3 deletion is destructive and cannot begin until the owner reviews and
+explicitly authorizes the exact final manifest, blast radius, archive retention duration, and
+rollback procedure.
+
+## KISS Boundary
+
+Use one retirement manifest contract and one guarded implementation path. Do not introduce a
+server, dual-write mode, generalized repository cleaner, or unrelated `.tool-shed/` purge.

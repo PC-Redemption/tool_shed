@@ -159,8 +159,11 @@ no duplicate allocation or revision. A changed source fails until reinventory.
 Before cutover, files remain the only writer. At cutover, imported generated fields become SQLite
 authority and legacy writers refuse them. Every original remains byte-identical at its original
 path and in a verified external archive through this release and soak. `rollback-export` must render
-all post-cutover database changes into a separate recovery tree and prove semantic parity before an
-older file-authority tool may resume. Database backup and checkpoint rebuild are both qualified.
+every current managed document revision into a separate recovery tree, using the retained source
+path when one exists, then an active preferred-view path, then a stable
+`work/recovered/<VISIBLE-ID>.md` fallback. Its manifest binds the project, database revision, domain
+digest, document revision, path source, and body hash before an older file-authority tool may resume.
+Database backup and checkpoint rebuild are both qualified.
 The database-aware artifact creator switches to managed document creation and accepts the exact
 project binding; campaign and Program Roadmap file commands fail closed until invoked through the
 managed document route. This prevents a retained source from silently becoming a second writer.
@@ -169,6 +172,13 @@ This initiative does not delete, move, rewrite, or mark retained originals dispo
 requires a separate owner decision after final reconciliation, with retention duration, inbound-link
 handling, archive location, recovery test, and explicit deletion scope. Until then, retention is an
 accepted residual obligation, not incomplete conversion.
+
+The retirement decision begins with `document_store.py retirement-plan`. Its exact manifest binds
+the project, database revision and digest, every verified generated conversion, source hash, active
+retained-source alias, and inbound path-reference disposition. `retire-source-aliases` is a
+separate guarded managed operation: it accepts only an applicable fresh manifest, retires only the
+named aliases, and performs zero filesystem deletions. Canonical source deletion remains a later
+explicitly authorized transaction after current recovery and disposable-rehearsal evidence pass.
 
 ## Compatibility And Rollout
 

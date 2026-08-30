@@ -1,0 +1,53 @@
+# Freeze Safe Legacy Retirement Scope and Tooling
+
+Status: completed
+Type: campaign
+Updated: 2026-08-30
+Next Action: advance M2 with the bounded live-reference migration and disposable recovery rehearsal
+Campaign ID: freeze-safe-legacy-retirement-scope-and-tooling
+Outcome: Tool Shed can deterministically identify and validate only the retained generated sources eligible for retirement, classify path references, and retire aliases through a guarded managed operation without deleting anything during planning.
+Primary Focus Areas: artifact-workflows
+Supporting Focus Areas: qualification-release
+Depends On: none
+Decision: none
+Detour For: none
+Return To: none
+Completion Gate: G1-RETIREMENT-SCOPE-FROZEN passes with focused tests proving exact inclusion, exclusion, stale-state refusal, unresolved-reference refusal, dry-run no-write behavior, and managed alias-retirement accounting.
+Completion Evidence: EVD-0078; focused tests 9/9 passed; full validation 475/475 passed; canonical plan valid with 259 exact candidates and zero findings; execution correctly refused for 13 rewrite-required live references
+Roadmap: safe-retained-legacy-collateral-retirement
+Roadmap Revision: 1
+Milestone: M1-RETIREMENT-SCOPE
+Unlocks Gate: G1-RETIREMENT-SCOPE-FROZEN
+
+## Request
+
+Add the smallest deterministic retirement planner and managed alias-retirement mechanism needed
+to produce a reviewable exact manifest for the canonical 259 retained generated sources. The
+planner must inventory inbound references, classify required preservation, bind every candidate to
+its current source hash and active retained-source alias, and refuse drift or ambiguity. Dry-run
+must not mutate files or SQLite. Applying alias retirement remains separate from filesystem
+deletion and requires the exact current project binding, database revision, domain digest, and
+manifest token.
+
+## App Server Preparation Contract
+
+```json
+{
+  "campaign_id": "freeze-safe-legacy-retirement-scope-and-tooling",
+  "completion_evidence": "G1-RETIREMENT-SCOPE-FROZEN focused tests pass",
+  "exact_resolution": "dispatch-time",
+  "execution_shape": "bounded-local-campaign",
+  "inline_assets": "metadata-only",
+  "objective": "Implement exact non-destructive retirement planning and managed alias retirement",
+  "schema_version": 1,
+  "source_freshness": "required",
+  "verification": "focused-then-repository"
+}
+```
+
+## Result
+
+G1-RETIREMENT-SCOPE-FROZEN passed. The exact planner, schema, managed alias-only retirement
+operation, contract documentation, and refusal-path coverage are implemented. Canonical planning
+found all 259 candidates and no integrity findings. It remains deliberately inapplicable until the
+13 live references are migrated during M2. No source deletion or alias retirement occurred.

@@ -152,7 +152,7 @@ All errors return:
 
 ## Related artifacts
 
-- ADR: `work/adr/adr-centralize-watcher-email-delivery-at-ts-rookaro-com.md`
+- ADR: Tool Shed document `ADR-0001`
 - Local contract: `docs/completion-watcher-protocol.md`
 - Campaign: `work/00-campaigns/active/039-build-hosted-watcher-status-and-email-pilot.md`
 - Workspace schemas: `schemas/completion-watcher-hosted/v1/*.json`
