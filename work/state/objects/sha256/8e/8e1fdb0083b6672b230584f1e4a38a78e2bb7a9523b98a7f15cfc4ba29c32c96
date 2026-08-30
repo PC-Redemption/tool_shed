@@ -1,0 +1,94 @@
+# Idea Brief: Cross-Project Dashboard Search and Operator Views
+
+Status: promoted
+Type: idea-brief
+Updated: 2026-08-30
+Next Action: formally release and reconcile the registered Work2 candidate through Work5
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces: MAP-0020, PRM-0031
+
+## Current Synthesis
+
+### Idea
+
+Turn the fleet landing page into an efficient cross-project navigation and review surface. Provide
+global search over bounded reported identifiers and titles, useful type/status/freshness/version
+filters, explainable sorting, stable filter URLs, compact and comfortable density options, and
+optional maintainer-local pinned projects or saved views.
+
+### Why It Matters
+
+As more projects enroll, a flat list and four aggregate cards will force the operator to scan every
+project manually. The dashboard should help answer "what changed, what needs me, and where should I
+look next?" without requiring prior knowledge of a project's UUID or opening many tabs.
+
+### Desired Outcome
+
+The operator can search by project, stable artifact ID, bounded display title, type, lifecycle, or
+version; filter to active, blocked, recently completed, unreconciled, stale, divergent, or
+behind-version projects; and share or bookmark the exact resulting view. Fleet rows show the most
+useful compact context: attention reason, current work, last meaningful change, last completion,
+freshness, and version posture. Personal pins or saved views change presentation only and never
+alter project truth or priority.
+
+## Constraints And Non-Goals
+
+- Artifact search depends on the privacy-bounded lifecycle inventory explored in `IDEA-0012`.
+- Search only allowlisted bounded fields. Do not index document bodies, prompts, source, paths,
+  commands, arbitrary diagnostics, or hidden local content.
+- Preserve accessible keyboard navigation, focus state, narrow-screen behavior, and stable server
+  routes. A full single-page application is not required.
+- Saved views and pins are maintainer presentation preferences, not Tool Shed queue priority or
+  ownership state.
+- Do not add complex team sharing, role-based dashboards, or cross-account collaboration without
+  an observed need.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| URL-backed server-side search and filters | Simple, bookmarkable, accessible, works without SPA state | Page reloads and query design | Preferred foundation |
+| Client-only filtering of loaded rows | Fast interaction | Incomplete for pagination and large fleets | Useful only for small loaded sets |
+| Per-maintainer saved views and pins | Faster repeated review | Adds preference storage and reset semantics | Add after core filters prove useful |
+| Search arbitrary uploaded document text | Powerful | Violates minimum disclosure and expands indexing risk | Reject |
+
+## Open Questions
+
+- Which five filters provide the most value in the first useful release without creating a control
+  panel full of rarely used options?
+- Should bounded artifact titles participate in global search by default, or require an explicit
+  project scope?
+- Are pins sufficient, or do recurring operator workflows justify named saved views?
+- What is the default explainable sort: attention severity, last meaningful change, or a combined
+  operational-relevance key?
+- How should pagination preserve project navigation and stable URLs?
+
+## Decisions
+
+- Build on `IDEA-0012` rather than creating a second artifact-history contract.
+- Prefer server-rendered, URL-backed search and filters with accessible progressive enhancement.
+- Keep pins and saved views presentation-only and defer them until the core fleet filters are
+  proven useful.
+- Reject arbitrary document-body indexing.
+
+## Don't Forget
+
+- Search should accept human stable IDs such as `IDEA-0012` and `PRM-0027`, not only UUIDs.
+- "Operational relevance" must remain explainable; hidden scoring would make the dashboard harder
+  to trust.
+- Dense mode should increase information visibility without reducing keyboard or touch usability.
+- Export belongs with bounded analytical/reporting views, not as a substitute for good navigation.
+
+## Exploration Log
+
+### 2026-08-30
+
+- Idea Brief created.
+- Captured cross-project search, filters, explainable fleet ordering, stable URLs, and optional
+  operator presentation preferences as a separate discovery thread.
+- Initial direction favors server-rendered URL-backed filters and progressive enhancement, with
+  saved views deferred until recurring use demonstrates value.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.
