@@ -23,6 +23,7 @@ ROOT_FIELDS = {
     "work_efficiency",
     "work_inventory",
     "lifecycle_events",
+    "instance_health",
 }
 PROJECT_FIELDS = {"id", "name"}
 INSTANCE_FIELDS = {"id", "platform", "client_version", "counter_epoch", "quiescent"}
@@ -86,6 +87,25 @@ LIFECYCLE_EVENT_FIELDS = {
     "to_state",
     "occurred_at",
 }
+INSTANCE_HEALTH_FIELDS = {
+    "reporter_state",
+    "pending_event_count",
+    "last_delivery_at",
+    "semantic_digest",
+    "release",
+}
+RELEASE_FIELDS = {
+    "installed_version",
+    "stable_version",
+    "stable_source",
+    "candidate_version",
+    "pending_candidate_count",
+    "production_version",
+    "production_source",
+    "observed_at",
+    "compatibility_state",
+    "qualification_state",
+}
 EVENT_KINDS = {"state-change", "outcome-change", "campaign-change", "client-change"}
 ATTENTION_STATES = {"healthy", "working", "attention", "blocked", "stale", "unknown"}
 AVAILABILITY_STATES = {"available", "unavailable", "unqualified", "disabled", "unknown"}
@@ -129,6 +149,10 @@ RECONCILIATION_STATES = {"open", "reconciliation-required", "reconciled", "unkno
 TRANSITIONS = {"created", "document-lifecycle", "outcome-lifecycle", "outcome-disposition", "reconciliation"}
 PLANNING_ORDER_SOURCES = {"derived", "owner", "not-applicable"}
 PLANNING_READINESS_STATES = {"ready", "working", "waiting", "blocked", "terminal", "not-applicable"}
+REPORTER_STATES = {"active", "quiescent", "delivery-delayed", "unknown"}
+RELEASE_SOURCES = {"local-git-tag", "release-cohort", "unknown"}
+COMPATIBILITY_STATES = {"compatible", "incompatible", "unsupported", "unknown"}
+QUALIFICATION_STATES = {"qualified", "unqualified", "unknown"}
 
 
 def _object(value: Any, label: str, fields: set[str]) -> dict[str, Any]:
@@ -177,6 +201,13 @@ def _counter(value: Any, label: str) -> int:
     if isinstance(value, bool) or not isinstance(value, int) or value < 0:
         raise ContractError(f"{label} must be a non-negative integer")
     return value
+
+
+def _bounded_counter(value: Any, label: str, limit: int) -> int:
+    result = _counter(value, label)
+    if result > limit:
+        raise ContractError(f"{label} must be no greater than {limit}")
+    return result
 
 
 def _boolean(value: Any, label: str) -> bool:
@@ -293,13 +324,81 @@ def _state(value: Any) -> dict[str, Any]:
     return result
 
 
+def _instance_health(value: Any) -> dict[str, Any]:
+    supplied = _object(value, "instance_health", INSTANCE_HEALTH_FIELDS)
+    release = _object(supplied.get("release"), "instance_health.release", RELEASE_FIELDS)
+    digest = _required_string(supplied.get("semantic_digest"), "instance_health.semantic_digest", 64)
+    if len(digest) != 64 or any(character not in "0123456789abcdef" for character in digest):
+        raise ContractError("instance_health.semantic_digest must be a lowercase SHA-256")
+    return {
+        "reporter_state": _choice(
+            supplied.get("reporter_state"), "instance_health.reporter_state", REPORTER_STATES, 24
+        ),
+        "pending_event_count": _bounded_counter(
+            supplied.get("pending_event_count"), "instance_health.pending_event_count", 10_000
+        ),
+        "last_delivery_at": _timestamp(
+            supplied.get("last_delivery_at"), "instance_health.last_delivery_at", optional=True
+        ),
+        "semantic_digest": digest,
+        "release": {
+            "installed_version": _required_string(
+                release.get("installed_version"), "instance_health.release.installed_version", 64
+            ),
+            "stable_version": _optional_string(
+                release.get("stable_version"), "instance_health.release.stable_version", 64
+            ),
+            "stable_source": _choice(
+                release.get("stable_source"),
+                "instance_health.release.stable_source",
+                RELEASE_SOURCES,
+                24,
+            ),
+            "candidate_version": _optional_string(
+                release.get("candidate_version"), "instance_health.release.candidate_version", 64
+            ),
+            "pending_candidate_count": _bounded_counter(
+                release.get("pending_candidate_count"),
+                "instance_health.release.pending_candidate_count",
+                10_000,
+            ),
+            "production_version": _optional_string(
+                release.get("production_version"), "instance_health.release.production_version", 64
+            ),
+            "production_source": _choice(
+                release.get("production_source"),
+                "instance_health.release.production_source",
+                RELEASE_SOURCES,
+                24,
+            ),
+            "observed_at": _timestamp(
+                release.get("observed_at"), "instance_health.release.observed_at"
+            ),
+            "compatibility_state": _choice(
+                release.get("compatibility_state"),
+                "instance_health.release.compatibility_state",
+                COMPATIBILITY_STATES,
+                24,
+            ),
+            "qualification_state": _choice(
+                release.get("qualification_state"),
+                "instance_health.release.qualification_state",
+                QUALIFICATION_STATES,
+                24,
+            ),
+        },
+    }
+
+
 def validate_report(payload: Any) -> dict[str, Any]:
     root = _object(payload, "report", ROOT_FIELDS)
     schema_version = root.get("schema_version")
-    if schema_version not in {1, 2, 3}:
-        raise ContractError("report.schema_version must be 1, 2, or 3")
+    if schema_version not in {1, 2, 3, 4}:
+        raise ContractError("report.schema_version must be 1, 2, 3, or 4")
     if schema_version == 1 and ({"work_inventory", "lifecycle_events"} & set(root)):
         raise ContractError("report schema 1 does not support lifecycle projection fields")
+    if schema_version < 4 and "instance_health" in root:
+        raise ContractError("report schemas before 4 do not support instance health")
     project = _object(root.get("project"), "project", PROJECT_FIELDS)
     instance = _object(root.get("instance"), "instance", INSTANCE_FIELDS)
     app_server = _object(root.get("app_server"), "app_server", APP_SERVER_FIELDS)
@@ -388,4 +487,5 @@ def validate_report(payload: Any) -> dict[str, Any]:
         },
         "work_inventory": _work_inventory(root.get("work_inventory"), schema_version=schema_version) if schema_version >= 2 else None,
         "lifecycle_events": _lifecycle_events(root.get("lifecycle_events", [])) if schema_version >= 2 else [],
+        "instance_health": _instance_health(root.get("instance_health")) if schema_version >= 4 else None,
     }

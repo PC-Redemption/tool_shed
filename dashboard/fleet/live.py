@@ -18,6 +18,16 @@ from .models import (
 )
 
 
+def _semantic_health(value: object) -> object:
+    if not isinstance(value, dict):
+        return value
+    normalized = json.loads(json.dumps(value))
+    normalized.pop("last_delivery_at", None)
+    if isinstance(normalized.get("release"), dict):
+        normalized["release"].pop("observed_at", None)
+    return normalized
+
+
 def dashboard_revision() -> str:
     """Return a content revision for database state exposed by dashboard pages."""
     payload = {
@@ -32,8 +42,9 @@ def dashboard_revision() -> str:
                 "is_hidden",
             )
         ),
-        "instances": list(
-            Instance.objects.order_by("id").values_list(
+        "instances": [
+            (*row[:-1], _semantic_health(row[-1]))
+            for row in Instance.objects.order_by("id").values_list(
                 "id",
                 "project_id",
                 "platform",
@@ -44,8 +55,9 @@ def dashboard_revision() -> str:
                 "work_inventory_digest",
                 "work_inventory_total",
                 "work_inventory_truncated",
+                "health_state",
             )
-        ),
+        ],
         "enrollments": list(
             Enrollment.objects.order_by("id").values_list(
                 "id", "status", "expires_at", "decided_at", "issued_instance_id"

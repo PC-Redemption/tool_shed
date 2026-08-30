@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import time
+from datetime import timedelta
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -11,6 +12,7 @@ from django.core.paginator import Paginator
 from django.http import HttpRequest, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
@@ -276,6 +278,89 @@ def project_visibility(request: HttpRequest, project_id):
 PLANNING_ORDER_TYPES = {"idea-brief", "program-roadmap"}
 
 
+def _semver(value: object) -> tuple[int, int, int] | None:
+    parts = str(value or "").removeprefix("v").split(".")
+    if len(parts) != 3 or any(not part.isdigit() for part in parts):
+        return None
+    return tuple(int(part) for part in parts)  # type: ignore[return-value]
+
+
+def _instance_health_context(instances: list[object]) -> tuple[list[dict[str, object]], dict[str, object]]:
+    current = timezone.now()
+    rows: list[dict[str, object]] = []
+    for instance in instances:
+        health = instance.health_state if isinstance(instance.health_state, dict) else {}
+        release = health.get("release") if isinstance(health.get("release"), dict) else {}
+        age = current - instance.last_seen if instance.last_seen else None
+        reported_state = str(health.get("reporter_state") or "unknown")
+        reporter_state = (
+            "offline"
+            if age is None or age >= timedelta(hours=2)
+            else "stale"
+            if age >= timedelta(minutes=20)
+            else reported_state
+        )
+        installed = str(release.get("installed_version") or instance.client_version or "unknown")
+        stable = release.get("stable_version")
+        candidate = release.get("candidate_version")
+        pending = int(release.get("pending_candidate_count") or 0)
+        installed_semver = _semver(installed)
+        stable_semver = _semver(stable)
+        version_state = (
+            "current"
+            if stable_semver and installed_semver == stable_semver
+            else "candidate"
+            if pending and candidate == installed
+            else "behind"
+            if installed_semver and stable_semver and installed_semver < stable_semver
+            else "newer"
+            if installed_semver and stable_semver and installed_semver > stable_semver
+            else "unknown"
+        )
+        rows.append(
+            {
+                "instance": instance,
+                "reporter_state": reporter_state,
+                "pending_event_count": int(health.get("pending_event_count") or 0),
+                "last_delivery_at": parse_datetime(str(health.get("last_delivery_at") or "")),
+                "semantic_digest": str(health.get("semantic_digest") or ""),
+                "installed_version": installed,
+                "stable_version": stable,
+                "stable_source": str(release.get("stable_source") or "unknown"),
+                "candidate_version": candidate,
+                "pending_candidate_count": pending,
+                "production_version": release.get("production_version"),
+                "production_source": str(release.get("production_source") or "unknown"),
+                "release_observed_at": parse_datetime(str(release.get("observed_at") or "")),
+                "compatibility_state": str(release.get("compatibility_state") or "unknown"),
+                "qualification_state": str(release.get("qualification_state") or "unknown"),
+                "version_state": version_state,
+            }
+        )
+    reporter_states = {str(row["reporter_state"]) for row in rows}
+    installed_versions = {str(row["installed_version"]) for row in rows}
+    version_states = {str(row["version_state"]) for row in rows}
+    semantic_digests = {str(row["semantic_digest"]) for row in rows if row["semantic_digest"]}
+    summary = {
+        "instance_count": len(rows),
+        "reporter_state": (
+            next(iter(reporter_states)) if len(reporter_states) == 1 else "mixed" if rows else "unknown"
+        ),
+        "version_state": (
+            next(iter(version_states))
+            if len(version_states) == 1 and len(installed_versions) <= 1
+            else "mixed"
+            if rows
+            else "unknown"
+        ),
+        "divergence_state": (
+            "divergent" if len(semantic_digests) > 1 else "aligned" if semantic_digests else "unknown"
+        ),
+        "pending_candidate_count": sum(int(row["pending_candidate_count"]) for row in rows),
+    }
+    return rows, summary
+
+
 @dashboard_auth_required
 def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
     if tab not in {"overview", "work", "history", "outcomes", "health"}:
@@ -374,6 +459,7 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
         for snapshot in page_snapshots:
             snapshot_by_instance.setdefault(snapshot.instance_id, []).append(snapshot)
     instances = list(project.instances.all())
+    health_rows, health_summary = _instance_health_context(instances)
     if tab == "work" and snapshot_by_instance:
         instances = [instance for instance in instances if instance.id in snapshot_by_instance]
     instance_groups = [
@@ -427,6 +513,8 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
             "attention_items": attention_items,
             "history_viewed_at": timezone.now().isoformat(),
             "inventory_diverged": len(inventory_digests) > 1,
+            "health_rows": health_rows,
+            "health_summary": health_summary,
             "selected_type": artifact_type,
             "selected_status": status,
             "selected_rows": selected_rows,

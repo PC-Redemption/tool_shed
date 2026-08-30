@@ -30,12 +30,13 @@ import app_server_user_state
 import document_store
 import hybrid_state
 import planning_order
+import release_cohort
 import work_orchestration
 from project_identity import ProjectIdentityError, binding_token, load_project_identity, require_project_binding, resolved_workspace
 
 
 SCHEMA_VERSION = 1
-REPORT_SCHEMA_VERSION = 3
+REPORT_SCHEMA_VERSION = 4
 OUTBOX_RELATIVE = Path(".tool-shed/dashboard/outbox.sqlite3")
 MAX_RESPONSE_BYTES = 65_536
 LOCK_SECONDS = 30
@@ -480,6 +481,107 @@ def _lifecycle_events(
     return events[:50]
 
 
+def _release_posture(workspace: Path, *, observed_at: str) -> dict[str, Any]:
+    installed = local_shed_version(workspace)
+    stable_version = None
+    stable_source = "unknown"
+    candidate_version = None
+    pending_candidates = 0
+    production_version = None
+    production_source = "unknown"
+    try:
+        status = release_cohort.status(workspace)
+        stable_version = status.get("current_base_tag")
+        if isinstance(stable_version, str) and stable_version.startswith("v"):
+            stable_source = "local-git-tag"
+        else:
+            stable_version = None
+        pending_candidates = min(
+            sum(len(item.get("candidates", [])) for item in status.get("active", [])),
+            10_000,
+        )
+        if pending_candidates and installed != "unknown":
+            candidate_version = installed
+        production_version = next(
+            (
+                item.get("release_tag")
+                for item in status.get("recent_terminal", [])
+                if item.get("release_tag")
+            ),
+            None,
+        )
+        if production_version:
+            production_source = "release-cohort"
+    except (
+        OSError,
+        ProjectIdentityError,
+        release_cohort.ReleaseCohortError,
+        hybrid_state.HybridStateError,
+    ):
+        pass
+    normalized_installed = installed.removeprefix("v")
+    normalized_stable = str(stable_version or "").removeprefix("v")
+    return {
+        "installed_version": installed,
+        "stable_version": stable_version,
+        "stable_source": stable_source,
+        "candidate_version": candidate_version,
+        "pending_candidate_count": pending_candidates,
+        "production_version": production_version,
+        "production_source": production_source,
+        "observed_at": observed_at,
+        "compatibility_state": "compatible",
+        "qualification_state": (
+            "qualified"
+            if normalized_stable and normalized_installed == normalized_stable
+            else "unknown"
+        ),
+    }
+
+
+def _instance_health(
+    workspace: Path,
+    *,
+    state: dict[str, Any],
+    inventory: dict[str, Any],
+    quiescent: bool,
+    observed_at: str,
+) -> dict[str, Any]:
+    pending_count = 0
+    last_delivery_at = None
+    delayed = False
+    with contextlib.closing(_outbox(workspace)) as connection:
+        pending_count = min(
+            int(connection.execute("SELECT COUNT(*) FROM outbox WHERE delivered_at IS NULL").fetchone()[0]),
+            10_000,
+        )
+        raw_delivery = _meta(connection, "last_delivery")
+    if raw_delivery:
+        try:
+            delivered = datetime.fromtimestamp(float(raw_delivery), timezone.utc)
+            last_delivery_at = stamp(delivered)
+            delayed = pending_count > 0 and now() - delivered > timedelta(minutes=5)
+        except (ValueError, OverflowError):
+            delayed = pending_count > 0
+    elif pending_count:
+        delayed = True
+    reporter_state = "quiescent" if quiescent else "delivery-delayed" if delayed else "active"
+    semantic_digest = hashlib.sha256(
+        json.dumps(
+            {"state": state, "work_inventory": inventory},
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+    return {
+        "reporter_state": reporter_state,
+        "pending_event_count": pending_count,
+        "last_delivery_at": last_delivery_at,
+        "semantic_digest": semantic_digest,
+        "release": _release_posture(workspace, observed_at=observed_at),
+    }
+
+
 def report_payload(
     workspace: Path,
     *,
@@ -506,6 +608,8 @@ def report_payload(
     }
     summary_code = reason if reason in allowed_reasons else "managed-update"
     events = [] if not reason or reason == "heartbeat" else [{"kind": "state-change", "summary_code": summary_code, "occurred_at": observed}]
+    dashboard_state = _dashboard_state(workspace)
+    inventory = work_inventory if work_inventory is not None else _work_inventory(workspace)
     return {
         "schema_version": REPORT_SCHEMA_VERSION,
         "idempotency_key": str(uuid.uuid4()),
@@ -519,7 +623,7 @@ def report_payload(
             "counter_epoch": efficiency["counter_epoch"],
             "quiescent": quiescent,
         },
-        "state": _dashboard_state(workspace),
+        "state": dashboard_state,
         "material_events": events,
         "app_server": {
             "enabled": preference.enabled,
@@ -544,8 +648,15 @@ def report_payload(
             "remedial_duration_ms": efficiency["remedial_proxy"]["duration_ms"],
             "remedial_retries": efficiency["remedial_proxy"]["retry_count"],
         },
-        "work_inventory": work_inventory if work_inventory is not None else _work_inventory(workspace),
+        "work_inventory": inventory,
         "lifecycle_events": lifecycle_events or [],
+        "instance_health": _instance_health(
+            workspace,
+            state=dashboard_state,
+            inventory=inventory,
+            quiescent=quiescent,
+            observed_at=observed,
+        ),
     }
 
 

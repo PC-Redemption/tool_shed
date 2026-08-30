@@ -152,6 +152,36 @@ class DashboardApplicationTests(TestCase):
         )
         return payload
 
+    def health_report_payload(self) -> dict[str, object]:
+        payload = self.lifecycle_report_payload()
+        payload["schema_version"] = 4
+        payload["work_inventory"]["artifacts"][0].update(  # type: ignore[index]
+            {
+                "planning_position": 1,
+                "planning_order_source": "derived",
+                "planning_readiness": "working",
+            }
+        )
+        payload["instance_health"] = {
+            "reporter_state": "delivery-delayed",
+            "pending_event_count": 2,
+            "last_delivery_at": (timezone.now() - timedelta(minutes=8)).isoformat(),
+            "semantic_digest": "c" * 64,
+            "release": {
+                "installed_version": "0.40.0",
+                "stable_version": "v0.39.2",
+                "stable_source": "local-git-tag",
+                "candidate_version": "0.40.0",
+                "pending_candidate_count": 3,
+                "production_version": "v0.39.0",
+                "production_source": "release-cohort",
+                "observed_at": timezone.now().isoformat(),
+                "compatibility_state": "compatible",
+                "qualification_state": "unknown",
+            },
+        }
+        return payload
+
     def enroll_and_issue(self) -> str:
         created = self.client.post(
             reverse("fleet:enrollment-request"),
@@ -179,6 +209,10 @@ class DashboardApplicationTests(TestCase):
     def test_contract_rejects_unknown_and_raw_diagnostic_fields(self) -> None:
         payload = self.report_payload()
         payload["source_path"] = "/private/project"
+        with self.assertRaisesRegex(ContractError, "unsupported fields"):
+            validate_report(payload)
+        payload = self.health_report_payload()
+        payload["instance_health"]["raw_diagnostic"] = "private host detail"  # type: ignore[index]
         with self.assertRaisesRegex(ContractError, "unsupported fields"):
             validate_report(payload)
         payload = self.report_payload()
@@ -413,6 +447,79 @@ class DashboardApplicationTests(TestCase):
         self.assertEqual(snapshot.planning_position, 2)
         self.assertEqual(snapshot.planning_order_source, "owner")
         self.assertEqual(snapshot.planning_readiness, "working")
+
+    def test_schema_four_projects_instance_health_and_semantic_divergence(self) -> None:
+        token = self.enroll_and_issue()
+        payload = self.health_report_payload()
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        instance = Instance.objects.get()
+        self.assertEqual(instance.report_schema_version, 4)
+        self.assertEqual(instance.health_state["reporter_state"], "delivery-delayed")
+        self.assertEqual(instance.health_state["release"]["production_version"], "v0.39.0")
+
+        legacy = self.report_payload()
+        legacy["sequence"] = 2
+        legacy["material_events"] = []
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(legacy),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        instance.refresh_from_db()
+        self.assertEqual(instance.report_schema_version, 4)
+        self.assertEqual(instance.health_state["semantic_digest"], "c" * 64)
+
+        second = Instance.objects.create(
+            project=instance.project,
+            external_id=uuid.uuid4(),
+            platform="windows-amd64",
+            client_version="0.39.2",
+            report_schema_version=4,
+            last_seen=timezone.now(),
+            health_state={
+                "reporter_state": "active",
+                "pending_event_count": 0,
+                "last_delivery_at": timezone.now().isoformat(),
+                "semantic_digest": "d" * 64,
+                "release": {
+                    "installed_version": "0.39.2",
+                    "stable_version": "v0.39.2",
+                    "stable_source": "local-git-tag",
+                    "candidate_version": None,
+                    "pending_candidate_count": 0,
+                    "production_version": "v0.39.0",
+                    "production_source": "release-cohort",
+                    "observed_at": timezone.now().isoformat(),
+                    "compatibility_state": "compatible",
+                    "qualification_state": "qualified",
+                },
+            },
+        )
+        user = get_user_model().objects.create_user("health-viewer", password="fixture")
+        self.client.force_login(user)
+        health = self.client.get(reverse("fleet:project-tab", args=(instance.project_id, "health")))
+        self.assertContains(health, "Instance Health")
+        self.assertContains(health, "Delivery-delayed")
+        self.assertContains(health, "Divergent")
+        self.assertContains(health, "Candidate")
+        self.assertContains(health, str(second.external_id))
+
+        before = dashboard_revision()
+        second.health_state["last_delivery_at"] = (timezone.now() + timedelta(minutes=1)).isoformat()
+        second.health_state["release"]["observed_at"] = (timezone.now() + timedelta(minutes=1)).isoformat()
+        second.save(update_fields=("health_state", "updated_at"))
+        self.assertEqual(dashboard_revision(), before)
+        second.health_state["reporter_state"] = "quiescent"
+        second.save(update_fields=("health_state", "updated_at"))
+        self.assertNotEqual(dashboard_revision(), before)
 
     def test_work_table_is_newest_first_and_supports_bounded_page_sizes(self) -> None:
         user = get_user_model().objects.create_user("work-table-viewer", password="fixture")

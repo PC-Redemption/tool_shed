@@ -6,12 +6,14 @@ Shed commands, mutate local state, restart workers, cancel work, or retrieve arb
 
 ## Privacy contract
 
-Report schema v1 rejects unknown fields. It accepts project and instance UUIDs, display name,
-platform and client versions, current lifecycle counters, controlled material-event codes,
-content-free App Server aggregates and failure signatures, and Work Efficiency aggregates with
-explicit measured-token coverage. It rejects paths, prompts, source text, commands, raw output,
-exception messages, credentials, secrets, and uncontrolled event summaries. Requests are capped at
-256 KiB; event and failure lists are bounded.
+Every report schema rejects unknown fields. Schema v4 accepts project and instance UUIDs, display
+name, platform and client versions, current lifecycle counters, controlled material-event codes,
+content-free App Server aggregates and failure signatures, Work Efficiency aggregates with explicit
+measured-token coverage, bounded lifecycle inventory, and per-instance health made only from
+controlled states, versions, timestamps, digests, and capped counts. It rejects paths, prompts,
+source text, commands, raw output, exception messages, credentials, secrets, scheduler definitions,
+diagnostic logs, and uncontrolled event summaries. Requests are capped at 256 KiB; event, failure,
+inventory, pending-delivery, and release-candidate lists or counts are bounded.
 
 Reporter credentials are opaque 256-bit values. The server stores only a SHA-256 verifier and a
 non-secret lookup prefix. Local connection state is mode `0600` under a mode `0700` user-local
@@ -90,6 +92,14 @@ stream to reload when semantic database state changes. Hidden and navigated-away
 streams, and heartbeat-only receipt timestamps do not trigger reloads. Work Efficiency stores and
 displays metric changes rather than a new row for every unchanged sliding-window report. Security
 settings require HTTPS, secure cookies, HSTS, an explicit host allowlist, and CSRF trusted origins.
+
+The project Health tab preserves each enrolled instance as a separate source. It shows reporter
+freshness, active/quiescent/delivery-delayed/stale/offline state, installed and latest-known-stable
+versions, candidate and production-verified release references, compatibility and qualification
+posture, and a semantic state digest. The project summary reports aligned, divergent, mixed, or
+unknown state without merging lifecycle snapshots. Release sources and observation freshness are
+shown explicitly; missing local evidence remains `Unknown` and never becomes an assumed current
+version. The dashboard cannot update or repair an instance.
 
 ## First maintainer and optional MFA
 

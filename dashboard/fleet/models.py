@@ -42,6 +42,7 @@ class Instance(models.Model):
     work_inventory_digest = models.CharField(max_length=64, blank=True)
     work_inventory_total = models.PositiveIntegerField(default=0)
     work_inventory_truncated = models.BooleanField(default=False)
+    health_state = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

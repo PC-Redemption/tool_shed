@@ -78,6 +78,24 @@ def _digest(value: object) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), default=str).encode()).hexdigest()
 
 
+def _json_safe(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {key: _json_safe(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_json_safe(item) for item in value]
+    if hasattr(value, "isoformat"):
+        return value.isoformat()
+    return value
+
+
+def _health_material_signature(value: dict[str, Any] | None) -> str:
+    material = json.loads(json.dumps(value or {}))
+    material.pop("last_delivery_at", None)
+    if isinstance(material.get("release"), dict):
+        material["release"].pop("observed_at", None)
+    return _digest(material)
+
+
 def _efficiency_signature(value: WorkEfficiencyAggregate | dict[str, Any]) -> tuple[object, ...]:
     def field(name: str) -> object:
         return value[name] if isinstance(value, dict) else getattr(value, name)
@@ -432,6 +450,11 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
     inventory_digest = (
         _digest(report["work_inventory"]) if report["schema_version"] >= 2 else ""
     )
+    health_state = (
+        _json_safe(report["instance_health"])
+        if report["schema_version"] >= 4
+        else None
+    )
     material_activity = (
         locked.last_sequence == 0
         or project.name != report["project"]["name"]
@@ -440,6 +463,11 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
         != {key: value for key, value in report["state"].items() if key != "attention_state"}
         or bool(report["material_events"])
         or (report["schema_version"] >= 2 and inventory_digest != previous_inventory_digest)
+        or (
+            health_state is not None
+            and _health_material_signature(health_state)
+            != _health_material_signature(locked.health_state)
+        )
     )
     project.name = report["project"]["name"]
     project.attention_state = report["state"]["attention_state"]
@@ -464,7 +492,7 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
     locked.client_version = report["instance"]["client_version"]
     locked.counter_epoch = report["instance"]["counter_epoch"]
     locked.quiescent = report["instance"]["quiescent"]
-    locked.report_schema_version = report["schema_version"]
+    locked.report_schema_version = max(locked.report_schema_version, report["schema_version"])
     locked.last_sequence = report["sequence"]
     locked.last_seen = observed
     instance_fields = [
@@ -493,6 +521,9 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
                 "work_inventory_truncated",
             )
         )
+    if health_state is not None:
+        locked.health_state = health_state
+        instance_fields.append("health_state")
     locked.save(update_fields=instance_fields)
     IngestReceipt.objects.create(
         instance=locked,

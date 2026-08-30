@@ -132,6 +132,26 @@
 {% elif tab == 'outcomes' %}
 <section class="dashboard-panel"><h2>Outcome Reconciliation</h2><p>{{ project.current_state.open_outcome_count|default:0 }} open and {{ project.current_state.unreconciled_outcome_count|default:0 }} unreconciled outcome loops.</p><p class="dashboard-note">See Work for each artifact’s outcome lifecycle, disposition, and reconciliation state.</p></section>
 {% else %}
-<section class="dashboard-panel"><h2>Health</h2><div class="table-scroll"><table><thead><tr><th>Instance</th><th>Platform</th><th>Client</th><th>Last seen</th><th>State</th><th>Inventory</th></tr></thead><tbody>{% for instance in project.instances.all %}<tr><th>{{ instance.external_id }}</th><td>{{ instance.platform }}</td><td>{{ instance.client_version }}</td><td>{{ instance.last_seen|default:"Never" }}</td><td>{% if instance.quiescent %}Quiescent{% else %}Active{% endif %}</td><td>{% if instance.report_schema_version >= 2 %}{{ instance.work_inventory_total }} artifacts{% if instance.work_inventory_truncated %} (partial){% endif %}{% else %}Legacy reporter{% endif %}</td></tr>{% endfor %}</tbody></table></div></section>
+<section class="dashboard-panel compact-table-panel instance-health-panel">
+  <div class="compact-panel-heading"><h2>Instance Health</h2><p class="dashboard-note">Per-instance advisory truth; local Tool Shed and release state remain authoritative.</p></div>
+  <div class="health-summary" aria-label="Project instance health summary">
+    <div><span class="health-summary-value">{{ health_summary.instance_count }}</span><span>Instances</span></div>
+    <div><span class="health-summary-value health-{{ health_summary.reporter_state }}">{{ health_summary.reporter_state|capfirst }}</span><span>Reporting</span></div>
+    <div><span class="health-summary-value health-{{ health_summary.version_state }}">{{ health_summary.version_state|capfirst }}</span><span>Version posture</span></div>
+    <div><span class="health-summary-value health-{{ health_summary.divergence_state }}">{{ health_summary.divergence_state|capfirst }}</span><span>State consistency</span></div>
+    <div><span class="health-summary-value">{{ health_summary.pending_candidate_count }}</span><span>Pending release records</span></div>
+  </div>
+  {% if health_rows %}<div class="table-scroll"><table class="instance-health-table"><thead><tr><th>Instance</th><th>Reporter</th><th>Freshness</th><th>Installed / stable</th><th>Release posture</th><th>Compatibility</th><th>State digest</th></tr></thead><tbody>
+    {% for row in health_rows %}<tr>
+      <th><span class="instance-id-short">{{ row.instance.external_id }}</span><small>{{ row.instance.platform }}</small></th>
+      <td><span class="table-state health-{{ row.reporter_state }}">{{ row.reporter_state|capfirst }}</span><small>{{ row.pending_event_count }} queued</small></td>
+      <td>{% if row.instance.last_seen %}{{ row.instance.last_seen|timesince }} ago{% else %}Never{% endif %}<small>{% if row.last_delivery_at %}Delivered {{ row.last_delivery_at|timesince }} ago{% else %}No delivery time{% endif %}</small></td>
+      <td><span class="release-version">{{ row.installed_version }}</span><small>Stable {{ row.stable_version|default:"Unknown" }} · {{ row.stable_source }}</small></td>
+      <td><span class="table-state health-{{ row.version_state }}">{{ row.version_state|capfirst }}</span><small>{% if row.pending_candidate_count %}{{ row.pending_candidate_count }} pending · candidate {{ row.candidate_version|default:row.installed_version }}{% else %}No pending candidate{% endif %}</small><small>Production {{ row.production_version|default:"Unknown" }} · {{ row.production_source }}</small></td>
+      <td>{{ row.compatibility_state|capfirst }}<small>{{ row.qualification_state|capfirst }} qualification</small></td>
+      <td>{% if row.semantic_digest %}<code title="{{ row.semantic_digest }}">{{ row.semantic_digest|slice:":12" }}…</code>{% else %}<span class="dashboard-note">Unknown</span>{% endif %}<small>{% if row.release_observed_at %}Release evidence {{ row.release_observed_at|timesince }} ago{% else %}No release evidence time{% endif %}</small></td>
+    </tr>{% endfor %}
+  </tbody></table></div>{% else %}<p class="dashboard-empty">No enrolled instances.</p>{% endif %}
+</section>
 {% endif %}
 {% endblock %}
