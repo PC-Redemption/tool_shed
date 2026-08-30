@@ -34,6 +34,7 @@ from project_identity import ProjectIdentityError, binding_token, load_project_i
 
 
 SCHEMA_VERSION = 1
+REPORT_SCHEMA_VERSION = 2
 OUTBOX_RELATIVE = Path(".tool-shed/dashboard/outbox.sqlite3")
 MAX_RESPONSE_BYTES = 65_536
 LOCK_SECONDS = 30
@@ -306,7 +307,162 @@ def _dashboard_state(workspace: Path) -> dict[str, Any]:
     }
 
 
-def report_payload(workspace: Path, *, sequence: int, reason: str | None = None, quiescent: bool = False) -> dict[str, Any]:
+def _work_inventory(workspace: Path) -> dict[str, Any]:
+    """Build a bounded, privacy-safe lifecycle projection from canonical state."""
+    database = hybrid_state.database_path(workspace)
+    with contextlib.closing(hybrid_state.connect(database, writable=False)) as connection:
+        if connection.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='document'").fetchone() is None:
+            return {"total_count": 0, "truncated": False, "artifacts": []}
+        total = int(
+            connection.execute(
+                "SELECT COUNT(*) FROM document WHERE namespace IN ('IDEA','MAP','PRM','CAMP')"
+            ).fetchone()[0]
+        )
+        rows = connection.execute(
+            """
+            SELECT d.id, d.visible_id, d.namespace, d.title, d.lifecycle_state, d.updated_at,
+                   COALESCE((
+                       SELECT c.lifecycle_state FROM cycle AS c
+                       WHERE c.origin_artifact_id = d.id
+                       ORDER BY c.opened_at DESC, c.id DESC LIMIT 1
+                   ), 'unknown') AS outcome_lifecycle,
+                   COALESCE((
+                       SELECT v.disposition FROM outcome_verdict AS v
+                       JOIN cycle AS c ON c.id = v.cycle_id
+                       WHERE c.origin_artifact_id = d.id
+                       ORDER BY c.opened_at DESC, v.decided_at DESC, v.id DESC LIMIT 1
+                   ), CASE WHEN EXISTS (
+                       SELECT 1 FROM cycle AS c WHERE c.origin_artifact_id = d.id
+                   ) THEN 'open' ELSE 'unknown' END) AS outcome_disposition,
+                   COALESCE((
+                       SELECT r.state FROM reconciliation AS r
+                       JOIN cycle AS c ON c.id = r.cycle_id
+                       WHERE c.origin_artifact_id = d.id
+                       ORDER BY c.opened_at DESC, r.compared_at DESC, r.id DESC LIMIT 1
+                   ), CASE WHEN EXISTS (
+                       SELECT 1 FROM cycle AS c WHERE c.origin_artifact_id = d.id
+                   ) THEN 'open' ELSE 'unknown' END) AS reconciliation_state
+            FROM document AS d
+            WHERE d.namespace IN ('IDEA','MAP','PRM','CAMP')
+            ORDER BY d.visible_id
+            LIMIT 500
+            """
+        ).fetchall()
+        artifact_ids = [str(row["id"]) for row in rows]
+        visible_by_id = {str(row["id"]): str(row["visible_id"]) for row in rows}
+        parent_ids: dict[str, list[str]] = {value: [] for value in artifact_ids}
+        produces_ids: dict[str, list[str]] = {value: [] for value in artifact_ids}
+        if artifact_ids:
+            placeholders = ",".join("?" for _ in artifact_ids)
+            relations = connection.execute(
+                f"SELECT from_artifact_id, relation_type, to_artifact_id FROM relationship "
+                f"WHERE retired_revision IS NULL AND relation_type IN ('outcome-parent','produces') "
+                f"AND (from_artifact_id IN ({placeholders}) OR to_artifact_id IN ({placeholders}))",
+                (*artifact_ids, *artifact_ids),
+            ).fetchall()
+            related_ids = {
+                str(value)
+                for relation in relations
+                for value in (relation["from_artifact_id"], relation["to_artifact_id"])
+                if str(value) not in visible_by_id
+            }
+            if related_ids:
+                related_placeholders = ",".join("?" for _ in related_ids)
+                for related in connection.execute(
+                    f"SELECT id, visible_id FROM document WHERE id IN ({related_placeholders})",
+                    tuple(sorted(related_ids)),
+                ):
+                    visible_by_id[str(related["id"])] = str(related["visible_id"])
+            for relation in relations:
+                source = str(relation["from_artifact_id"])
+                target = str(relation["to_artifact_id"])
+                if relation["relation_type"] == "outcome-parent" and source in parent_ids and target in visible_by_id:
+                    parent_ids[source].append(visible_by_id[target])
+                elif relation["relation_type"] == "produces":
+                    if source in produces_ids and target in visible_by_id:
+                        produces_ids[source].append(visible_by_id[target])
+                    if target in parent_ids and source in visible_by_id:
+                        parent_ids[target].append(visible_by_id[source])
+    type_by_namespace = {
+        "IDEA": "idea-brief",
+        "MAP": "project-map",
+        "PRM": "program-roadmap",
+        "CAMP": "campaign",
+    }
+    artifacts = []
+    for row in rows:
+        artifact_id = str(row["id"])
+        title = " ".join(str(row["title"]).split())[:160] or str(row["visible_id"])
+        artifacts.append(
+            {
+                "artifact_id": artifact_id,
+                "visible_id": str(row["visible_id"]),
+                "artifact_type": type_by_namespace[str(row["namespace"])],
+                "title": title,
+                "document_lifecycle": str(row["lifecycle_state"]),
+                "outcome_lifecycle": str(row["outcome_lifecycle"]),
+                "outcome_disposition": str(row["outcome_disposition"]),
+                "reconciliation_state": str(row["reconciliation_state"]),
+                "parent_ids": sorted(set(parent_ids[artifact_id]))[:16],
+                "produces_ids": sorted(set(produces_ids[artifact_id]))[:16],
+                "updated_at": str(row["updated_at"]),
+            }
+        )
+    return {"total_count": total, "truncated": total > len(artifacts), "artifacts": artifacts}
+
+
+def _lifecycle_events(
+    previous: dict[str, Any] | None,
+    current: dict[str, Any],
+    *,
+    instance_id: str,
+    sequence: int,
+    occurred_at: str,
+) -> list[dict[str, Any]]:
+    if previous is None:
+        return []
+    old_by_id = {item["artifact_id"]: item for item in previous.get("artifacts", [])}
+    transitions = (
+        ("document_lifecycle", "document-lifecycle"),
+        ("outcome_lifecycle", "outcome-lifecycle"),
+        ("outcome_disposition", "outcome-disposition"),
+        ("reconciliation_state", "reconciliation"),
+    )
+    events: list[dict[str, Any]] = []
+    for item in current["artifacts"]:
+        old = old_by_id.get(item["artifact_id"])
+        changes = [("created", "absent", item["document_lifecycle"])] if old is None else [
+            (transition, str(old.get(field, "unknown")), str(item[field]))
+            for field, transition in transitions
+            if old.get(field) != item[field]
+        ]
+        for transition, before, after in changes:
+            material = f"{instance_id}:{sequence}:{item['artifact_id']}:{transition}:{before}:{after}"
+            events.append(
+                {
+                    "event_key": hashlib.sha256(material.encode()).hexdigest(),
+                    "artifact_id": item["artifact_id"],
+                    "visible_id": item["visible_id"],
+                    "artifact_type": item["artifact_type"],
+                    "title": item["title"],
+                    "transition": transition,
+                    "from_state": before,
+                    "to_state": after,
+                    "occurred_at": occurred_at,
+                }
+            )
+    return events[:50]
+
+
+def report_payload(
+    workspace: Path,
+    *,
+    sequence: int,
+    reason: str | None = None,
+    quiescent: bool = False,
+    work_inventory: dict[str, Any] | None = None,
+    lifecycle_events: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     identity = load_project_identity(workspace)
     state = load_connection(workspace)
     efficiency = work_orchestration.efficiency_report(workspace, hours=24)
@@ -325,7 +481,7 @@ def report_payload(workspace: Path, *, sequence: int, reason: str | None = None,
     summary_code = reason if reason in allowed_reasons else "managed-update"
     events = [] if not reason or reason == "heartbeat" else [{"kind": "state-change", "summary_code": summary_code, "occurred_at": observed}]
     return {
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": REPORT_SCHEMA_VERSION,
         "idempotency_key": str(uuid.uuid4()),
         "sequence": sequence,
         "observed_at": observed,
@@ -362,6 +518,8 @@ def report_payload(workspace: Path, *, sequence: int, reason: str | None = None,
             "remedial_duration_ms": efficiency["remedial_proxy"]["duration_ms"],
             "remedial_retries": efficiency["remedial_proxy"]["retry_count"],
         },
+        "work_inventory": work_inventory if work_inventory is not None else _work_inventory(workspace),
+        "lifecycle_events": lifecycle_events or [],
     }
 
 
@@ -372,13 +530,35 @@ def _enqueue_connected(workspace: Path, *, reason: str, quiescent: bool = False)
     with contextlib.closing(_outbox(workspace)) as connection:
         connection.execute("BEGIN IMMEDIATE")
         sequence = _next_sequence(connection)
-        payload = report_payload(workspace, sequence=sequence, reason=reason, quiescent=quiescent)
+        inventory = _work_inventory(workspace)
+        previous_raw = _meta(connection, "work_inventory_v2")
+        try:
+            previous = json.loads(previous_raw) if previous_raw else None
+        except json.JSONDecodeError:
+            previous = None
+        observed = stamp()
+        lifecycle_events = _lifecycle_events(
+            previous,
+            inventory,
+            instance_id=str(state["instance_id"]),
+            sequence=sequence,
+            occurred_at=observed,
+        )
+        payload = report_payload(
+            workspace,
+            sequence=sequence,
+            reason=reason,
+            quiescent=quiescent,
+            work_inventory=inventory,
+            lifecycle_events=lifecycle_events,
+        )
         event_id = str(uuid.uuid4())
         connection.execute(
             "INSERT INTO outbox VALUES (?, ?, ?, 0, ?, ?, NULL)",
             (event_id, sequence, json.dumps(payload, sort_keys=True, separators=(",", ":")), time.time(), stamp()),
         )
         _set_meta(connection, "last_activity", str(time.time()))
+        _set_meta(connection, "work_inventory_v2", json.dumps(inventory, sort_keys=True, separators=(",", ":")))
         connection.commit()
     return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-enqueue", "event_id": event_id, "sequence": sequence, "reason": reason, "writes_performed": True}
 

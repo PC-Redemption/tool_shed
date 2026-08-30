@@ -13,14 +13,69 @@
 </section>
 <nav class="dashboard-tabs" aria-label="Project sections">
   <a href="{% url 'fleet:project' project.id %}" {% if tab == 'overview' %}aria-current="page"{% endif %}>Overview</a>
-  <a href="{% url 'fleet:project-tab' project.id 'work' %}" {% if tab == 'work' %}aria-current="page"{% endif %}>Current Work</a>
+  <a href="{% url 'fleet:project-tab' project.id 'work' %}" {% if tab == 'work' %}aria-current="page"{% endif %}>Work</a>
+  <a href="{% url 'fleet:project-tab' project.id 'history' %}" {% if tab == 'history' %}aria-current="page"{% endif %}>History</a>
   <a href="{% url 'fleet:project-tab' project.id 'outcomes' %}" {% if tab == 'outcomes' %}aria-current="page"{% endif %}>Outcome Reconciliation</a>
   <a href="{% url 'fleet:project-tab' project.id 'health' %}" {% if tab == 'health' %}aria-current="page"{% endif %}>Health</a>
 </nav>
+
+{% if tab == 'overview' %}
 <section class="dashboard-panel">
-  {% if tab == 'overview' %}<h2>Overview</h2><p>{{ project.instances.count }} enrolled instance{{ project.instances.count|pluralize }}. Current hosted state is informational and never replaces the local database.</p>
-  {% elif tab == 'work' %}<h2>Current Work</h2><p>{{ project.current_state.working_count|default:0 }} working and {{ project.current_state.ready_count|default:0 }} ready campaigns.</p>
-  {% elif tab == 'outcomes' %}<h2>Outcome Reconciliation</h2><p>{{ project.current_state.open_outcome_count|default:0 }} open and {{ project.current_state.unreconciled_outcome_count|default:0 }} unreconciled outcome loops.</p>
-  {% else %}<h2>Health</h2><div class="table-scroll"><table><thead><tr><th>Instance</th><th>Platform</th><th>Client</th><th>Last seen</th><th>State</th></tr></thead><tbody>{% for instance in project.instances.all %}<tr><th>{{ instance.external_id }}</th><td>{{ instance.platform }}</td><td>{{ instance.client_version }}</td><td>{{ instance.last_seen|default:"Never" }}</td><td>{% if instance.quiescent %}Quiescent{% else %}Active{% endif %}</td></tr>{% endfor %}</tbody></table></div>{% endif %}
+  <h2>Overview</h2>
+  <p>{{ project.instances.count }} enrolled instance{{ project.instances.count|pluralize }}. Hosted state is informational and never replaces the local database.</p>
+  <p>The Work tab shows the latest per-instance Idea, Map, PRM, and Campaign lifecycle projection. History records actual lifecycle changes only.</p>
+  {% if inventory_diverged %}<p class="dashboard-warning">Instances currently report different work snapshots. They remain separate so divergence is visible.</p>{% endif %}
 </section>
+{% elif tab == 'work' %}
+<section class="dashboard-panel">
+  <div class="panel-heading"><div><h2>Work</h2><p class="dashboard-note">Latest bounded snapshot from each reporting instance; rows are never merged across instances.</p></div></div>
+  <form method="get" class="work-filters">
+    <label>Type
+      <select name="type">
+        <option value="">All</option>
+        <option value="idea-brief" {% if selected_type == 'idea-brief' %}selected{% endif %}>Ideas</option>
+        <option value="project-map" {% if selected_type == 'project-map' %}selected{% endif %}>Maps</option>
+        <option value="program-roadmap" {% if selected_type == 'program-roadmap' %}selected{% endif %}>PRMs</option>
+        <option value="campaign" {% if selected_type == 'campaign' %}selected{% endif %}>Campaigns</option>
+      </select>
+    </label>
+    <label>Status <input name="status" value="{{ selected_status }}" placeholder="working, completed…"></label>
+    <button type="submit">Filter</button>
+    {% if selected_type or selected_status %}<a href="{% url 'fleet:project-tab' project.id 'work' %}">Clear</a>{% endif %}
+  </form>
+  {% if inventory_diverged %}<p class="dashboard-warning">Instance snapshots differ; each source is shown independently.</p>{% endif %}
+  {% for group in instance_groups %}
+  <section class="instance-snapshot">
+    <div class="instance-heading">
+      <div><h3>{{ group.instance.external_id }}</h3><p>{{ group.instance.platform }} · client {{ group.instance.client_version }}</p></div>
+      <div class="snapshot-meta"><span>Observed {{ group.instance.work_inventory_observed_at|default:"Never" }}</span><span>{{ group.instance.work_inventory_total }} total{% if group.instance.work_inventory_truncated %} · partial snapshot{% endif %}</span></div>
+    </div>
+    {% if group.artifacts %}
+    <div class="table-scroll"><table class="work-table"><thead><tr><th>Artifact</th><th>Document</th><th>Outcome</th><th>Reconciliation</th><th>Relationships</th><th>Updated</th></tr></thead><tbody>
+      {% for artifact in group.artifacts %}<tr>
+        <th><span class="artifact-id">{{ artifact.visible_id }}</span><small>{{ artifact.title }}</small></th>
+        <td><span class="state-badge state-{{ artifact.document_lifecycle }}">{{ artifact.document_lifecycle }}</span></td>
+        <td>{{ artifact.outcome_lifecycle }}<small class="cell-detail">{{ artifact.outcome_disposition }}</small></td>
+        <td>{{ artifact.reconciliation_state }}</td>
+        <td>{% if artifact.parent_ids %}<small>Parent: {{ artifact.parent_ids|join:", " }}</small>{% endif %}{% if artifact.produces_ids %}<small>Produces: {{ artifact.produces_ids|join:", " }}</small>{% endif %}{% if not artifact.parent_ids and not artifact.produces_ids %}<span class="dashboard-note">—</span>{% endif %}</td>
+        <td>{{ artifact.source_updated_at }}</td>
+      </tr>{% endfor %}
+    </tbody></table></div>
+    {% else %}<p class="dashboard-empty">{% if group.instance.report_schema_version < 2 %}This instance has not reported lifecycle inventory yet.{% else %}No artifacts match this view.{% endif %}</p>{% endif %}
+  </section>
+  {% empty %}<p class="dashboard-empty">No enrolled instances.</p>{% endfor %}
+</section>
+{% elif tab == 'history' %}
+<section class="dashboard-panel">
+  <h2>Lifecycle History</h2>
+  <p class="dashboard-note">Change-only events retained for 90 days. Heartbeats and unchanged snapshots do not create rows.</p>
+  {% if history %}<div class="table-scroll"><table><thead><tr><th>When</th><th>Artifact</th><th>Change</th><th>Source instance</th></tr></thead><tbody>
+    {% for event in history %}<tr><td>{{ event.occurred_at }}</td><th><span class="artifact-id">{{ event.visible_id }}</span><small>{{ event.title }}</small></th><td>{{ event.transition }}<small class="cell-detail">{{ event.from_state }} → {{ event.to_state }}</small></td><td>{{ event.instance.external_id }}</td></tr>{% endfor %}
+  </tbody></table></div>{% else %}<p class="dashboard-empty">No lifecycle changes reported yet. The first snapshot establishes a baseline without inventing history.</p>{% endif %}
+</section>
+{% elif tab == 'outcomes' %}
+<section class="dashboard-panel"><h2>Outcome Reconciliation</h2><p>{{ project.current_state.open_outcome_count|default:0 }} open and {{ project.current_state.unreconciled_outcome_count|default:0 }} unreconciled outcome loops.</p><p class="dashboard-note">See Work for each artifact’s outcome lifecycle, disposition, and reconciliation state.</p></section>
+{% else %}
+<section class="dashboard-panel"><h2>Health</h2><div class="table-scroll"><table><thead><tr><th>Instance</th><th>Platform</th><th>Client</th><th>Last seen</th><th>State</th><th>Inventory</th></tr></thead><tbody>{% for instance in project.instances.all %}<tr><th>{{ instance.external_id }}</th><td>{{ instance.platform }}</td><td>{{ instance.client_version }}</td><td>{{ instance.last_seen|default:"Never" }}</td><td>{% if instance.quiescent %}Quiescent{% else %}Active{% endif %}</td><td>{% if instance.report_schema_version >= 2 %}{{ instance.work_inventory_total }} artifacts{% if instance.work_inventory_truncated %} (partial){% endif %}{% else %}Legacy reporter{% endif %}</td></tr>{% endfor %}</tbody></table></div></section>
+{% endif %}
 {% endblock %}

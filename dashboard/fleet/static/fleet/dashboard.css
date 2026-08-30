@@ -60,6 +60,21 @@
 .dashboard-login main { width: min(100% - 2rem, 28rem); padding: 2rem; border: 1px solid var(--dashboard-border); border-radius: 1rem; background: var(--dashboard-panel); }
 .dashboard-login label, .dashboard-login input { display: block; width: 100%; }
 .dashboard-login input { box-sizing: border-box; padding: .65rem; border: 1px solid var(--dashboard-border); border-radius: .5rem; color: #fff; background: #0d1b2d; }
+.work-filters { display: flex; flex-wrap: wrap; align-items: end; gap: .75rem; margin: 1rem 0; }
+.work-filters label { display: grid; gap: .3rem; color: var(--dashboard-muted); font-size: .82rem; }
+.work-filters input, .work-filters select, .work-filters button { min-height: 2.35rem; box-sizing: border-box; padding: .45rem .65rem; border: 1px solid var(--dashboard-border); border-radius: .45rem; color: #fff; background: #0d1b2d; }
+.work-filters button { background: #1d665c; cursor: pointer; }
+.work-filters a { padding-bottom: .55rem; }
+.instance-snapshot { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--dashboard-border); }
+.instance-heading { display: flex; justify-content: space-between; gap: 1rem; align-items: start; }
+.instance-heading h3, .instance-heading p { margin: 0 0 .25rem; }
+.instance-heading h3 { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9rem; overflow-wrap: anywhere; }
+.instance-heading p, .snapshot-meta { color: var(--dashboard-muted); font-size: .82rem; }
+.snapshot-meta { display: grid; text-align: right; }
+.artifact-id { color: var(--dashboard-accent); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.cell-detail { display: block; margin-top: .25rem; color: var(--dashboard-muted); }
+.work-table td small { display: block; margin-bottom: .25rem; }
+.dashboard-warning { padding: .7rem .8rem; border: 1px solid #8d6a26; border-radius: .5rem; color: #ffe0a3; background: rgba(141, 106, 38, .18); }
 
 @media (max-width: 760px) {
   .dashboard-header { grid-template-columns: 1fr auto; padding: .65rem 1rem; }
@@ -73,6 +88,8 @@
   .freshness { text-align: left; }
   .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dashboard-tabs { top: 7.6rem; }
+  .instance-heading { flex-direction: column; }
+  .snapshot-meta { text-align: left; }
 }
 
 @media (prefers-reduced-motion: reduce) { .dashboard-sidebar { transition: none; } }

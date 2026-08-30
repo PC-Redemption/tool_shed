@@ -3,7 +3,16 @@ from __future__ import annotations
 import hashlib
 import json
 
-from .models import AppServerAggregate, Enrollment, FailureGroup, Instance, Project, WorkEfficiencyAggregate
+from .models import (
+    AppServerAggregate,
+    Enrollment,
+    FailureGroup,
+    Instance,
+    LifecycleEvent,
+    Project,
+    WorkArtifactSnapshot,
+    WorkEfficiencyAggregate,
+)
 
 
 def dashboard_revision() -> str:
@@ -23,6 +32,9 @@ def dashboard_revision() -> str:
                 "report_schema_version",
                 "counter_epoch",
                 "quiescent",
+                "work_inventory_digest",
+                "work_inventory_total",
+                "work_inventory_truncated",
             )
         ),
         "enrollments": list(
@@ -62,6 +74,33 @@ def dashboard_revision() -> str:
                 "remedial_output_bytes",
                 "remedial_duration_ms",
                 "remedial_retries",
+            )
+        ),
+        "work_artifacts": list(
+            WorkArtifactSnapshot.objects.order_by("instance_id", "visible_id").values_list(
+                "instance_id",
+                "artifact_external_id",
+                "visible_id",
+                "artifact_type",
+                "title",
+                "document_lifecycle",
+                "outcome_lifecycle",
+                "outcome_disposition",
+                "reconciliation_state",
+                "parent_ids",
+                "produces_ids",
+                "source_updated_at",
+            )
+        ),
+        "lifecycle_events": list(
+            LifecycleEvent.objects.order_by("instance_id", "event_key").values_list(
+                "instance_id",
+                "event_key",
+                "artifact_external_id",
+                "transition",
+                "from_state",
+                "to_state",
+                "occurred_at",
             )
         ),
     }

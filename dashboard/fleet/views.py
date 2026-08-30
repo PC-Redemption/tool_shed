@@ -16,7 +16,7 @@ from django.views.decorators.http import require_GET, require_POST
 from .auth import dashboard_auth_required, reporter_instance
 from .contracts import ContractError, validate_report
 from .live import dashboard_revision
-from .models import Enrollment, FailureGroup, Project
+from .models import Enrollment, FailureGroup, LifecycleEvent, Project, WorkArtifactSnapshot
 from .services import approve_enrollment, create_enrollment, distinct_efficiency_aggregates, ingest_report, poll_enrollment
 
 
@@ -192,10 +192,53 @@ def fleet_overview(request: HttpRequest):
 
 @dashboard_auth_required
 def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
-    if tab not in {"overview", "work", "outcomes", "health"}:
+    if tab not in {"overview", "work", "history", "outcomes", "health"}:
         return JsonResponse({"status": "not-found"}, status=404)
     project = get_object_or_404(Project.objects.prefetch_related("instances"), id=project_id)
-    return render(request, "fleet/project.html", {"project": project, "tab": tab})
+    artifact_type = request.GET.get("type", "").strip()
+    status = request.GET.get("status", "").strip()
+    snapshot_by_instance: dict[object, list[WorkArtifactSnapshot]] = {}
+    if tab == "work":
+        snapshots = WorkArtifactSnapshot.objects.filter(project=project).select_related("instance")
+        if artifact_type:
+            snapshots = snapshots.filter(artifact_type=artifact_type)
+        if status:
+            snapshots = snapshots.filter(
+                Q(document_lifecycle=status)
+                | Q(outcome_lifecycle=status)
+                | Q(outcome_disposition=status)
+                | Q(reconciliation_state=status)
+            )
+        for snapshot in snapshots:
+            snapshot_by_instance.setdefault(snapshot.instance_id, []).append(snapshot)
+    instances = list(project.instances.all())
+    instance_groups = [
+        {"instance": instance, "artifacts": snapshot_by_instance.get(instance.id, [])}
+        for instance in instances
+    ]
+    inventory_digests = {
+        instance.work_inventory_digest
+        for instance in instances
+        if instance.work_inventory_digest
+    }
+    history = (
+        LifecycleEvent.objects.filter(project=project).select_related("instance")[:200]
+        if tab == "history"
+        else []
+    )
+    return render(
+        request,
+        "fleet/project.html",
+        {
+            "project": project,
+            "tab": tab,
+            "instance_groups": instance_groups,
+            "history": history,
+            "inventory_diverged": len(inventory_digests) > 1,
+            "selected_type": artifact_type,
+            "selected_status": status,
+        },
+    )
 
 
 @dashboard_auth_required

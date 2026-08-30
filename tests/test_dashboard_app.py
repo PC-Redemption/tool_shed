@@ -25,8 +25,10 @@ from dashboard.fleet.live import dashboard_revision  # noqa: E402
 from dashboard.fleet.models import (  # noqa: E402
     Enrollment,
     Instance,
+    LifecycleEvent,
     Project,
     ReporterCredential,
+    WorkArtifactSnapshot,
     WorkEfficiencyAggregate,
 )
 from dashboard.fleet.services import approve_enrollment  # noqa: E402
@@ -104,6 +106,49 @@ class DashboardApplicationTests(TestCase):
                 "remedial_retries": 1,
             },
         }
+
+    def lifecycle_report_payload(self) -> dict[str, object]:
+        payload = self.report_payload()
+        observed = str(payload["observed_at"])
+        artifact_id = uuid.uuid4()
+        payload.update(
+            {
+                "schema_version": 2,
+                "work_inventory": {
+                    "total_count": 1,
+                    "truncated": False,
+                    "artifacts": [
+                        {
+                            "artifact_id": str(artifact_id),
+                            "visible_id": "IDEA-0012",
+                            "artifact_type": "idea-brief",
+                            "title": "Hosted dashboard work lifecycle and history",
+                            "document_lifecycle": "active",
+                            "outcome_lifecycle": "working",
+                            "outcome_disposition": "open",
+                            "reconciliation_state": "open",
+                            "parent_ids": [],
+                            "produces_ids": ["MAP-0017"],
+                            "updated_at": observed,
+                        }
+                    ],
+                },
+                "lifecycle_events": [
+                    {
+                        "event_key": "b" * 64,
+                        "artifact_id": str(artifact_id),
+                        "visible_id": "IDEA-0012",
+                        "artifact_type": "idea-brief",
+                        "title": "Hosted dashboard work lifecycle and history",
+                        "transition": "document-lifecycle",
+                        "from_state": "active",
+                        "to_state": "completed",
+                        "occurred_at": observed,
+                    }
+                ],
+            }
+        )
+        return payload
 
     def enroll_and_issue(self) -> str:
         created = self.client.post(
@@ -225,6 +270,31 @@ class DashboardApplicationTests(TestCase):
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(WorkEfficiencyAggregate.objects.count(), 2)
 
+    def test_schema_two_projects_per_instance_work_and_change_only_history(self) -> None:
+        token = self.enroll_and_issue()
+        payload = self.lifecycle_report_payload()
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        instance = Instance.objects.get()
+        self.assertEqual(instance.report_schema_version, 2)
+        self.assertEqual(instance.work_inventory_total, 1)
+        self.assertFalse(instance.work_inventory_truncated)
+        self.assertEqual(WorkArtifactSnapshot.objects.get().visible_id, "IDEA-0012")
+        self.assertEqual(LifecycleEvent.objects.get().to_state, "completed")
+
+        user = get_user_model().objects.create_user("lifecycle-viewer", password="fixture")
+        self.client.force_login(user)
+        work = self.client.get(reverse("fleet:project-tab", args=(instance.project_id, "work")))
+        self.assertContains(work, "IDEA-0012")
+        self.assertContains(work, "MAP-0017")
+        history = self.client.get(reverse("fleet:project-tab", args=(instance.project_id, "history")))
+        self.assertContains(history, "active → completed")
+
     def test_reporter_credential_is_required(self) -> None:
         response = self.client.post(
             reverse("fleet:report-ingest"),
@@ -326,11 +396,54 @@ class DashboardApplicationTests(TestCase):
             external_id=uuid.uuid4(),
             platform="linux",
             client_version="0.39.2",
+            report_schema_version=2,
+            work_inventory_sequence=1,
+            work_inventory_observed_at=timezone.now(),
+            work_inventory_digest="d" * 64,
+            work_inventory_total=1,
+        )
+        artifact_id = uuid.uuid4()
+        source_updated = timezone.now() - timedelta(minutes=2)
+        WorkArtifactSnapshot.objects.create(
+            project=project,
+            instance=instance,
+            artifact_external_id=artifact_id,
+            visible_id="IDEA-0012",
+            artifact_type="idea-brief",
+            title="Lifecycle history",
+            document_lifecycle="active",
+            outcome_lifecycle="working",
+            outcome_disposition="open",
+            reconciliation_state="open",
+            source_updated_at=source_updated,
+            observed_at=timezone.now(),
+            snapshot_sequence=1,
         )
         initial = dashboard_revision()
         observed = timezone.now()
         Project.objects.filter(id=project.id).update(last_seen=observed)
-        Instance.objects.filter(id=instance.id).update(last_seen=observed, last_sequence=2)
+        Instance.objects.filter(id=instance.id).update(
+            last_seen=observed,
+            last_sequence=2,
+            work_inventory_sequence=2,
+            work_inventory_observed_at=observed,
+        )
+        WorkArtifactSnapshot.objects.filter(instance=instance).delete()
+        WorkArtifactSnapshot.objects.create(
+            project=project,
+            instance=instance,
+            artifact_external_id=artifact_id,
+            visible_id="IDEA-0012",
+            artifact_type="idea-brief",
+            title="Lifecycle history",
+            document_lifecycle="active",
+            outcome_lifecycle="working",
+            outcome_disposition="open",
+            reconciliation_state="open",
+            source_updated_at=source_updated,
+            observed_at=observed,
+            snapshot_sequence=2,
+        )
         self.assertEqual(dashboard_revision(), initial)
         Project.objects.filter(id=project.id).update(current_state={"working_count": 2})
         self.assertNotEqual(dashboard_revision(), initial)

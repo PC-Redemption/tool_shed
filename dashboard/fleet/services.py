@@ -19,10 +19,12 @@ from .models import (
     FailureGroup,
     IngestReceipt,
     Instance,
+    LifecycleEvent,
     MaterialEvent,
     Project,
     ReporterCredential,
     WorkEfficiencyAggregate,
+    WorkArtifactSnapshot,
 )
 
 
@@ -163,15 +165,43 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
     project.name = report["project"]["name"]
     project.attention_state = report["state"].pop("attention_state")
     project.current_state = report["state"]
+    project.state_schema_version = report["schema_version"]
     project.last_seen = observed
-    project.save(update_fields=("name", "attention_state", "current_state", "last_seen", "updated_at"))
+    project.save(update_fields=("name", "attention_state", "current_state", "state_schema_version", "last_seen", "updated_at"))
     locked.platform = report["instance"]["platform"]
     locked.client_version = report["instance"]["client_version"]
     locked.counter_epoch = report["instance"]["counter_epoch"]
     locked.quiescent = report["instance"]["quiescent"]
+    locked.report_schema_version = report["schema_version"]
     locked.last_sequence = report["sequence"]
     locked.last_seen = observed
-    locked.save(update_fields=("platform", "client_version", "counter_epoch", "quiescent", "last_sequence", "last_seen", "updated_at"))
+    instance_fields = [
+        "platform",
+        "client_version",
+        "counter_epoch",
+        "quiescent",
+        "report_schema_version",
+        "last_sequence",
+        "last_seen",
+        "updated_at",
+    ]
+    if report["schema_version"] == 2:
+        inventory = report["work_inventory"]
+        locked.work_inventory_sequence = report["sequence"]
+        locked.work_inventory_observed_at = observed
+        locked.work_inventory_digest = _digest(inventory)
+        locked.work_inventory_total = inventory["total_count"]
+        locked.work_inventory_truncated = inventory["truncated"]
+        instance_fields.extend(
+            (
+                "work_inventory_sequence",
+                "work_inventory_observed_at",
+                "work_inventory_digest",
+                "work_inventory_total",
+                "work_inventory_truncated",
+            )
+        )
+    locked.save(update_fields=instance_fields)
     IngestReceipt.objects.create(
         instance=locked,
         idempotency_key=report["idempotency_key"],
@@ -193,6 +223,52 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
         ]
     )
     MaterialEvent.objects.filter(retained_until__lt=timezone.now()).delete()
+    if report["schema_version"] == 2:
+        inventory = report["work_inventory"]
+        WorkArtifactSnapshot.objects.filter(instance=locked).delete()
+        WorkArtifactSnapshot.objects.bulk_create(
+            [
+                WorkArtifactSnapshot(
+                    project=project,
+                    instance=locked,
+                    artifact_external_id=item["artifact_id"],
+                    visible_id=item["visible_id"],
+                    artifact_type=item["artifact_type"],
+                    title=item["title"],
+                    document_lifecycle=item["document_lifecycle"],
+                    outcome_lifecycle=item["outcome_lifecycle"],
+                    outcome_disposition=item["outcome_disposition"],
+                    reconciliation_state=item["reconciliation_state"],
+                    parent_ids=item["parent_ids"],
+                    produces_ids=item["produces_ids"],
+                    source_updated_at=item["updated_at"],
+                    observed_at=observed,
+                    snapshot_sequence=report["sequence"],
+                )
+                for item in inventory["artifacts"]
+            ]
+        )
+        LifecycleEvent.objects.bulk_create(
+            [
+                LifecycleEvent(
+                    project=project,
+                    instance=locked,
+                    event_key=item["event_key"],
+                    artifact_external_id=item["artifact_id"],
+                    visible_id=item["visible_id"],
+                    artifact_type=item["artifact_type"],
+                    title=item["title"],
+                    transition=item["transition"],
+                    from_state=item["from_state"],
+                    to_state=item["to_state"],
+                    occurred_at=item["occurred_at"],
+                    retained_until=item["occurred_at"] + event_retention,
+                )
+                for item in report["lifecycle_events"]
+            ],
+            ignore_conflicts=True,
+        )
+        LifecycleEvent.objects.filter(retained_until__lt=timezone.now()).delete()
     app = report["app_server"]
     AppServerAggregate.objects.update_or_create(
         instance=locked,

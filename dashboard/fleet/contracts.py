@@ -21,6 +21,8 @@ ROOT_FIELDS = {
     "material_events",
     "app_server",
     "work_efficiency",
+    "work_inventory",
+    "lifecycle_events",
 }
 PROJECT_FIELDS = {"id", "name"}
 INSTANCE_FIELDS = {"id", "platform", "client_version", "counter_epoch", "quiescent"}
@@ -56,6 +58,31 @@ EFFICIENCY_FIELDS = {
     "remedial_duration_ms",
     "remedial_retries",
 }
+WORK_INVENTORY_FIELDS = {"total_count", "truncated", "artifacts"}
+WORK_ARTIFACT_FIELDS = {
+    "artifact_id",
+    "visible_id",
+    "artifact_type",
+    "title",
+    "document_lifecycle",
+    "outcome_lifecycle",
+    "outcome_disposition",
+    "reconciliation_state",
+    "parent_ids",
+    "produces_ids",
+    "updated_at",
+}
+LIFECYCLE_EVENT_FIELDS = {
+    "event_key",
+    "artifact_id",
+    "visible_id",
+    "artifact_type",
+    "title",
+    "transition",
+    "from_state",
+    "to_state",
+    "occurred_at",
+}
 EVENT_KINDS = {"state-change", "outcome-change", "campaign-change", "client-change"}
 ATTENTION_STATES = {"healthy", "working", "attention", "blocked", "stale", "unknown"}
 AVAILABILITY_STATES = {"available", "unavailable", "unqualified", "disabled", "unknown"}
@@ -80,6 +107,23 @@ SUMMARY_CODES = {
     "campaign-completed",
     "outcome-reconciled",
 }
+ARTIFACT_TYPES = {"idea-brief", "project-map", "program-roadmap", "campaign"}
+DOCUMENT_LIFECYCLES = {"active", "working", "blocked", "parked", "deferred", "completed", "abandoned", "superseded"}
+OUTCOME_LIFECYCLES = {"proposed", "queued", "working", "blocked", "terminal", "unknown"}
+OUTCOME_DISPOSITIONS = {
+    "open",
+    "satisfied",
+    "satisfied-with-approved-change",
+    "partial",
+    "failed",
+    "rejected",
+    "superseded",
+    "parked",
+    "not-applicable",
+    "unknown",
+}
+RECONCILIATION_STATES = {"open", "reconciliation-required", "reconciled", "unknown"}
+TRANSITIONS = {"created", "document-lifecycle", "outcome-lifecycle", "outcome-disposition", "reconciliation"}
 
 
 def _object(value: Any, label: str, fields: set[str]) -> dict[str, Any]:
@@ -136,6 +180,78 @@ def _boolean(value: Any, label: str) -> bool:
     return value
 
 
+def _choice(value: Any, label: str, choices: set[str], limit: int = 48) -> str:
+    selected = _required_string(value, label, limit)
+    if selected not in choices:
+        raise ContractError(f"{label} is unsupported")
+    return selected
+
+
+def _string_list(value: Any, label: str, *, limit: int = 16) -> list[str]:
+    if not isinstance(value, list) or len(value) > limit:
+        raise ContractError(f"{label} must be a list of at most {limit} items")
+    return [_required_string(item, f"{label} item", 64) for item in value]
+
+
+def _work_inventory(value: Any) -> dict[str, Any]:
+    supplied = _object(value, "work_inventory", WORK_INVENTORY_FIELDS)
+    raw_artifacts = supplied.get("artifacts", [])
+    if not isinstance(raw_artifacts, list) or len(raw_artifacts) > 500:
+        raise ContractError("work_inventory.artifacts must be a list of at most 500 items")
+    artifacts = []
+    seen: set[uuid.UUID] = set()
+    for index, raw in enumerate(raw_artifacts, start=1):
+        label = f"work artifact {index}"
+        item = _object(raw, label, WORK_ARTIFACT_FIELDS)
+        artifact_id = _uuid(item.get("artifact_id"), f"{label}.artifact_id")
+        if artifact_id in seen:
+            raise ContractError("work_inventory.artifacts contains duplicate artifact_id values")
+        seen.add(artifact_id)
+        artifacts.append(
+            {
+                "artifact_id": artifact_id,
+                "visible_id": _required_string(item.get("visible_id"), f"{label}.visible_id", 64),
+                "artifact_type": _choice(item.get("artifact_type"), f"{label}.artifact_type", ARTIFACT_TYPES, 32),
+                "title": _required_string(item.get("title"), f"{label}.title", 160),
+                "document_lifecycle": _choice(item.get("document_lifecycle"), f"{label}.document_lifecycle", DOCUMENT_LIFECYCLES, 32),
+                "outcome_lifecycle": _choice(item.get("outcome_lifecycle", "unknown"), f"{label}.outcome_lifecycle", OUTCOME_LIFECYCLES, 32),
+                "outcome_disposition": _choice(item.get("outcome_disposition", "unknown"), f"{label}.outcome_disposition", OUTCOME_DISPOSITIONS),
+                "reconciliation_state": _choice(item.get("reconciliation_state", "unknown"), f"{label}.reconciliation_state", RECONCILIATION_STATES, 32),
+                "parent_ids": _string_list(item.get("parent_ids", []), f"{label}.parent_ids"),
+                "produces_ids": _string_list(item.get("produces_ids", []), f"{label}.produces_ids"),
+                "updated_at": _timestamp(item.get("updated_at"), f"{label}.updated_at"),
+            }
+        )
+    total = _counter(supplied.get("total_count"), "work_inventory.total_count")
+    truncated = _boolean(supplied.get("truncated", False), "work_inventory.truncated")
+    if total < len(artifacts) or (not truncated and total != len(artifacts)):
+        raise ContractError("work_inventory.total_count does not match the bounded artifact list")
+    return {"total_count": total, "truncated": truncated, "artifacts": artifacts}
+
+
+def _lifecycle_events(value: Any) -> list[dict[str, Any]]:
+    if not isinstance(value, list) or len(value) > 50:
+        raise ContractError("lifecycle_events must be a list of at most 50 items")
+    result = []
+    for index, raw in enumerate(value, start=1):
+        label = f"lifecycle event {index}"
+        item = _object(raw, label, LIFECYCLE_EVENT_FIELDS)
+        result.append(
+            {
+                "event_key": _required_string(item.get("event_key"), f"{label}.event_key", 64),
+                "artifact_id": _uuid(item.get("artifact_id"), f"{label}.artifact_id"),
+                "visible_id": _required_string(item.get("visible_id"), f"{label}.visible_id", 64),
+                "artifact_type": _choice(item.get("artifact_type"), f"{label}.artifact_type", ARTIFACT_TYPES, 32),
+                "title": _required_string(item.get("title"), f"{label}.title", 160),
+                "transition": _choice(item.get("transition"), f"{label}.transition", TRANSITIONS, 32),
+                "from_state": _required_string(item.get("from_state"), f"{label}.from_state", 48),
+                "to_state": _required_string(item.get("to_state"), f"{label}.to_state", 48),
+                "occurred_at": _timestamp(item.get("occurred_at"), f"{label}.occurred_at"),
+            }
+        )
+    return result
+
+
 def _state(value: Any) -> dict[str, Any]:
     supplied = _object(value, "state", STATE_FIELDS)
     result = {field: _counter(supplied.get(field, 0), f"state.{field}") for field in STATE_FIELDS if field.endswith("_count")}
@@ -149,8 +265,11 @@ def _state(value: Any) -> dict[str, Any]:
 
 def validate_report(payload: Any) -> dict[str, Any]:
     root = _object(payload, "report", ROOT_FIELDS)
-    if root.get("schema_version") != 1:
-        raise ContractError("report.schema_version must be 1")
+    schema_version = root.get("schema_version")
+    if schema_version not in {1, 2}:
+        raise ContractError("report.schema_version must be 1 or 2")
+    if schema_version == 1 and ({"work_inventory", "lifecycle_events"} & set(root)):
+        raise ContractError("report schema 1 does not support lifecycle projection fields")
     project = _object(root.get("project"), "project", PROJECT_FIELDS)
     instance = _object(root.get("instance"), "instance", INSTANCE_FIELDS)
     app_server = _object(root.get("app_server"), "app_server", APP_SERVER_FIELDS)
@@ -202,7 +321,7 @@ def validate_report(payload: Any) -> dict[str, Any]:
     if availability not in AVAILABILITY_STATES:
         raise ContractError("app_server.availability_state is unsupported")
     return {
-        "schema_version": 1,
+        "schema_version": schema_version,
         "idempotency_key": _uuid(root.get("idempotency_key"), "idempotency_key"),
         "sequence": _counter(root.get("sequence"), "sequence"),
         "observed_at": _timestamp(root.get("observed_at"), "observed_at"),
@@ -237,4 +356,6 @@ def validate_report(payload: Any) -> dict[str, Any]:
             "remedial_duration_ms": _counter(efficiency.get("remedial_duration_ms", 0), "work_efficiency.remedial_duration_ms"),
             "remedial_retries": _counter(efficiency.get("remedial_retries", 0), "work_efficiency.remedial_retries"),
         },
+        "work_inventory": _work_inventory(root.get("work_inventory")) if schema_version == 2 else None,
+        "lifecycle_events": _lifecycle_events(root.get("lifecycle_events", [])) if schema_version == 2 else [],
     }

@@ -35,6 +35,11 @@ class Instance(models.Model):
     counter_epoch = models.UUIDField(default=uuid.uuid4)
     last_seen = models.DateTimeField(null=True, blank=True)
     quiescent = models.BooleanField(default=False)
+    work_inventory_sequence = models.PositiveBigIntegerField(default=0)
+    work_inventory_observed_at = models.DateTimeField(null=True, blank=True)
+    work_inventory_digest = models.CharField(max_length=64, blank=True)
+    work_inventory_total = models.PositiveIntegerField(default=0)
+    work_inventory_truncated = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -111,6 +116,57 @@ class MaterialEvent(models.Model):
 
     class Meta:
         ordering = ("-occurred_at",)
+
+
+class WorkArtifactSnapshot(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="work_artifacts")
+    instance = models.ForeignKey(Instance, on_delete=models.CASCADE, related_name="work_artifacts")
+    artifact_external_id = models.UUIDField()
+    visible_id = models.CharField(max_length=64)
+    artifact_type = models.CharField(max_length=32)
+    title = models.CharField(max_length=160)
+    document_lifecycle = models.CharField(max_length=32)
+    outcome_lifecycle = models.CharField(max_length=32, default="unknown")
+    outcome_disposition = models.CharField(max_length=48, default="unknown")
+    reconciliation_state = models.CharField(max_length=32, default="unknown")
+    parent_ids = models.JSONField(default=list)
+    produces_ids = models.JSONField(default=list)
+    source_updated_at = models.DateTimeField()
+    observed_at = models.DateTimeField()
+    snapshot_sequence = models.PositiveBigIntegerField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("instance", "artifact_external_id"),
+                name="unique_instance_work_artifact",
+            )
+        ]
+        ordering = ("visible_id",)
+
+
+class LifecycleEvent(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="lifecycle_events")
+    instance = models.ForeignKey(Instance, on_delete=models.CASCADE, related_name="lifecycle_events")
+    event_key = models.CharField(max_length=64)
+    artifact_external_id = models.UUIDField()
+    visible_id = models.CharField(max_length=64)
+    artifact_type = models.CharField(max_length=32)
+    title = models.CharField(max_length=160)
+    transition = models.CharField(max_length=32)
+    from_state = models.CharField(max_length=48)
+    to_state = models.CharField(max_length=48)
+    occurred_at = models.DateTimeField()
+    retained_until = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=("instance", "event_key"), name="unique_instance_lifecycle_event")
+        ]
+        ordering = ("-occurred_at", "-created_at")
 
 
 class AppServerAggregate(models.Model):
