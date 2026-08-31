@@ -18,6 +18,11 @@ import uuid
 from pathlib import Path
 from typing import Any
 
+try:
+    from scripts import subprocess_launch
+except ModuleNotFoundError:  # Direct execution: python scripts/project_identity.py
+    import subprocess_launch  # type: ignore[no-redef]
+
 
 SCHEMA_VERSION = 1
 IDENTITY_RELATIVE_PATH = Path("work/tool-shed-project.json")
@@ -29,7 +34,7 @@ class ProjectIdentityError(ValueError):
 
 
 def _git(workspace: Path, *arguments: str) -> str | None:
-    result = subprocess.run(
+    result = subprocess_launch.run(
         ["git", *arguments],
         cwd=workspace,
         text=True,

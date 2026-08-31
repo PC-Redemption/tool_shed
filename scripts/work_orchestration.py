@@ -30,6 +30,10 @@ import doctor
 import hybrid_state
 import release_cohort
 import work_level_config
+try:
+    from scripts import subprocess_launch
+except ModuleNotFoundError:  # Direct execution: python scripts/work_orchestration.py
+    import subprocess_launch  # type: ignore[no-redef]
 from project_identity import (
     ProjectIdentityError,
     bind_state_token,
@@ -105,7 +109,7 @@ def _parse_stamp(value: str) -> datetime:
 
 
 def _git(workspace: Path, *arguments: str, check: bool = True) -> subprocess.CompletedProcess[str]:
-    result = subprocess.run(
+    result = subprocess_launch.run(
         ["git", *arguments],
         cwd=workspace,
         text=True,
@@ -588,7 +592,7 @@ def _verify_plan(current: dict[str, Any], expected: str) -> None:
 
 
 def _subprocess_payload(command: list[str], workspace: Path) -> dict[str, Any]:
-    result = subprocess.run(
+    result = subprocess_launch.run(
         command,
         cwd=workspace,
         text=True,
@@ -756,7 +760,7 @@ def validate_target_evidence(
 def _candidate_commit(workspace: Path, commitish: str) -> dict[str, Any]:
     commit = _git(workspace, "rev-parse", "--verify", f"{commitish}^{{commit}}").stdout.strip()
     head = _git(workspace, "rev-parse", "--verify", "HEAD").stdout.strip()
-    ancestor = subprocess.run(
+    ancestor = subprocess_launch.run(
         ["git", "merge-base", "--is-ancestor", commit, head], cwd=workspace, check=False
     ).returncode == 0
     if not ancestor:

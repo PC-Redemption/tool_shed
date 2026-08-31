@@ -36,6 +36,10 @@ from document_store_schema import (
 )
 from hybrid_state_schema import PORTABLE_TABLES
 from project_identity import ProjectIdentityError, require_path_within, require_project_binding, resolved_workspace
+try:
+    from scripts import subprocess_launch
+except ModuleNotFoundError:  # Direct execution: python scripts/document_store.py
+    import subprocess_launch  # type: ignore[no-redef]
 
 
 OPERATION = "hybrid-state"
@@ -842,7 +846,7 @@ def _retirement_manifest_token(manifest: dict[str, Any]) -> str:
 
 def _repository_files(workspace: Path) -> list[Path]:
     if (workspace / ".git").is_dir():
-        result = subprocess.run(
+        result = subprocess_launch.run(
             ["git", "ls-files", "-z"], cwd=workspace, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE, check=False,
         )

@@ -44,6 +44,10 @@ from project_identity import (
     require_project_binding,
     resolved_workspace,
 )
+try:
+    from scripts import subprocess_launch
+except ModuleNotFoundError:  # Direct execution: python scripts/hybrid_state.py
+    import subprocess_launch  # type: ignore[no-redef]
 
 
 OPERATION = "hybrid-state"
@@ -129,7 +133,7 @@ def checkpoint_path(workspace: Path) -> Path:
 
 
 def git_output(workspace: Path, *arguments: str, check: bool = True) -> str:
-    result = subprocess.run(
+    result = subprocess_launch.run(
         ["git", *arguments],
         cwd=workspace,
         text=True,
@@ -143,7 +147,7 @@ def git_output(workspace: Path, *arguments: str, check: bool = True) -> str:
 
 
 def ensure_runtime_ignored(workspace: Path) -> None:
-    result = subprocess.run(
+    result = subprocess_launch.run(
         ["git", "check-ignore", "-q", ".tool-shed/state.sqlite3"],
         cwd=workspace,
         stdout=subprocess.DEVNULL,
@@ -679,7 +683,7 @@ def reconcile_unmanaged(
 
 
 def tracked_state(workspace: Path, relative: str) -> str:
-    tracked = subprocess.run(
+    tracked = subprocess_launch.run(
         ["git", "ls-files", "--error-unmatch", "--", relative],
         cwd=workspace,
         stdout=subprocess.DEVNULL,
@@ -688,7 +692,7 @@ def tracked_state(workspace: Path, relative: str) -> str:
     )
     if tracked.returncode == 0:
         return "tracked"
-    ignored = subprocess.run(
+    ignored = subprocess_launch.run(
         ["git", "check-ignore", "-q", "--", relative],
         cwd=workspace,
         stdout=subprocess.DEVNULL,
@@ -1037,7 +1041,7 @@ def restore_verified_backup(
 
 def source_tree_digest(workspace: Path, *, exclude: Path | None = None) -> str:
     workspace = resolved_workspace(workspace)
-    raw = subprocess.run(
+    raw = subprocess_launch.run(
         ["git", "ls-files", "-co", "--exclude-standard", "-z"],
         cwd=workspace,
         stdout=subprocess.PIPE,

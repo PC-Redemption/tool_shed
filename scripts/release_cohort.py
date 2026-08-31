@@ -21,6 +21,10 @@ from pathlib import Path
 from typing import Any, Sequence
 
 import hybrid_state
+try:
+    from scripts import subprocess_launch
+except ModuleNotFoundError:  # Direct execution: python scripts/release_cohort.py
+    import subprocess_launch  # type: ignore[no-redef]
 from project_identity import bind_state_token, load_project_identity, resolved_workspace
 
 
@@ -50,7 +54,7 @@ def _sha(value: object) -> str:
 
 
 def _git(workspace: Path, *arguments: str, check: bool = True) -> str:
-    result = subprocess.run(
+    result = subprocess_launch.run(
         ["git", *arguments],
         cwd=workspace,
         text=True,
@@ -71,7 +75,7 @@ def _commit(workspace: Path, value: str) -> str:
 
 
 def _is_ancestor(workspace: Path, older: str, newer: str) -> bool:
-    result = subprocess.run(
+    result = subprocess_launch.run(
         ["git", "merge-base", "--is-ancestor", older, newer],
         cwd=workspace,
         stdout=subprocess.DEVNULL,

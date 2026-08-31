@@ -35,6 +35,10 @@ import planning_order
 import release_cohort
 import work_orchestration
 from project_identity import ProjectIdentityError, binding_token, load_project_identity, require_project_binding, resolved_workspace
+try:
+    from scripts import subprocess_launch
+except ModuleNotFoundError:  # Direct execution: python scripts/dashboard_reporter.py
+    import subprocess_launch  # type: ignore[no-redef]
 
 
 SCHEMA_VERSION = 1
@@ -42,7 +46,8 @@ REPORT_SCHEMA_VERSION = 6
 OUTBOX_RELATIVE = Path(".tool-shed/dashboard/outbox.sqlite3")
 MAX_RESPONSE_BYTES = 65_536
 LOCK_SECONDS = 30
-PROCESS_LOCK_SECONDS = 10
+PROCESS_LOCK_SECONDS = 120
+LAUNCH_LOCK_SECONDS = 30
 HEARTBEAT_SECONDS = 60
 IDLE_EXIT_SECONDS = 7_200
 IDLE_POLL_SECONDS = 60
@@ -881,16 +886,21 @@ def _enqueue_connected(workspace: Path, *, reason: str, quiescent: bool = False)
 
 def enqueue(workspace: Path, *, project_binding: str, reason: str, quiescent: bool = False) -> dict[str, Any]:
     require_project_binding(workspace, project_binding, operation="dashboard-report")
-    return _enqueue_connected(workspace, reason=reason, quiescent=quiescent)
+    with subprocess_launch.windowless_subprocesses():
+        return _enqueue_connected(workspace, reason=reason, quiescent=quiescent)
 
 
 def enqueue_if_connected(workspace: Path, *, reason: str) -> dict[str, Any] | None:
     """Best-effort managed-write hook; the originating operation already proved project authority."""
     try:
-        state = load_connection(workspace, required=False)
-        if not state or state.get("status") != "connected" or not state.get("reporter_token"):
-            return None
-        queued = _enqueue_connected(workspace, reason=reason)
+        with subprocess_launch.windowless_subprocesses():
+            state = load_connection(workspace, required=False)
+            if not state or state.get("status") != "connected" or not state.get("reporter_token"):
+                return None
+            queued = _enqueue_connected(workspace, reason=reason)
+        launch_claim = _claim_worker_launch(workspace)
+        if launch_claim is None:
+            return queued
         kwargs: dict[str, Any] = {
             "cwd": workspace,
             "stdin": subprocess.DEVNULL,
@@ -898,27 +908,27 @@ def enqueue_if_connected(workspace: Path, *, reason: str) -> dict[str, Any] | No
             "stderr": subprocess.DEVNULL,
             "close_fds": True,
         }
-        if platform.system().lower() == "windows":
-            # DETACHED_PROCESS alone can still leave Python associated with visible
-            # console-host activity. CREATE_NO_WINDOW is the explicit Windows
-            # contract for a background process that must never surface UI.
-            kwargs["creationflags"] = (
-                subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
-            )
-        else:
+        if platform.system().lower() != "windows":
             kwargs["start_new_session"] = True
-        subprocess.Popen(
-            [
-                sys.executable,
-                str(Path(__file__).resolve()),
-                "--workspace",
-                str(workspace),
-                "worker",
-                "--project-binding",
-                binding_token(workspace, operation="dashboard-report"),
-            ],
-            **kwargs,
-        )
+        try:
+            subprocess_launch.popen(
+                [
+                    subprocess_launch.background_python_executable(),
+                    str(Path(__file__).resolve()),
+                    "--workspace",
+                    str(workspace),
+                    "worker",
+                    "--project-binding",
+                    binding_token(workspace, operation="dashboard-report"),
+                    "--launch-claim",
+                    launch_claim,
+                ],
+                windowless=True,
+                **kwargs,
+            )
+        except (OSError, ValueError):
+            _release_worker_process(workspace, launch_claim)
+            raise
         return queued
     except (DashboardReporterError, OSError, ValueError, sqlite3.DatabaseError):
         return None
@@ -937,6 +947,63 @@ def _lease(connection: sqlite3.Connection, owner: str) -> bool:
     )
     connection.commit()
     return True
+
+
+def _claim_worker_launch(workspace: Path) -> str | None:
+    """Atomically reserve the persistent-worker slot before spawning."""
+
+    owner = str(uuid.uuid4())
+    current = time.time()
+    with contextlib.closing(_outbox(workspace)) as connection:
+        connection.execute("BEGIN IMMEDIATE")
+        row = connection.execute(
+            "SELECT owner, expires_at FROM worker_process WHERE id=1"
+        ).fetchone()
+        if row and float(row["expires_at"]) > current:
+            connection.rollback()
+            return None
+        connection.execute(
+            "INSERT INTO worker_process VALUES (1, ?, ?) "
+            "ON CONFLICT(id) DO UPDATE SET owner=excluded.owner, expires_at=excluded.expires_at",
+            (owner, current + LAUNCH_LOCK_SECONDS),
+        )
+        connection.commit()
+    return owner
+
+
+def _adopt_worker_process(workspace: Path, launch_claim: str | None) -> str | None:
+    """Adopt an exact live launch claim or directly claim an idle worker slot."""
+
+    owner = launch_claim or str(uuid.uuid4())
+    current = time.time()
+    with contextlib.closing(_outbox(workspace)) as connection:
+        connection.execute("BEGIN IMMEDIATE")
+        row = connection.execute(
+            "SELECT owner, expires_at FROM worker_process WHERE id=1"
+        ).fetchone()
+        if launch_claim is not None:
+            if (
+                row is None
+                or str(row["owner"]) != launch_claim
+                or float(row["expires_at"]) <= current
+            ):
+                connection.rollback()
+                return None
+        elif row and float(row["expires_at"]) > current:
+            connection.rollback()
+            return None
+        connection.execute(
+            "INSERT INTO worker_process VALUES (1, ?, ?) "
+            "ON CONFLICT(id) DO UPDATE SET owner=excluded.owner, expires_at=excluded.expires_at",
+            (owner, current + PROCESS_LOCK_SECONDS),
+        )
+        connection.commit()
+    return owner
+
+
+def _release_worker_process(workspace: Path, owner: str) -> None:
+    with contextlib.closing(_outbox(workspace)) as connection:
+        connection.execute("DELETE FROM worker_process WHERE id=1 AND owner=?", (owner,))
 
 
 def worker_once(workspace: Path) -> dict[str, Any]:
@@ -1028,21 +1095,23 @@ def _worker_sleep_seconds(
     )
 
 
-def worker(workspace: Path, *, project_binding: str, max_cycles: int | None = None) -> dict[str, Any]:
+def worker(
+    workspace: Path,
+    *,
+    project_binding: str,
+    max_cycles: int | None = None,
+    launch_claim: str | None = None,
+) -> dict[str, Any]:
     require_project_binding(workspace, project_binding, operation="dashboard-report")
-    owner = str(uuid.uuid4())
-    with contextlib.closing(_outbox(workspace)) as connection:
-        current = time.time()
-        connection.execute("BEGIN IMMEDIATE")
-        row = connection.execute("SELECT owner, expires_at FROM worker_process WHERE id=1").fetchone()
-        if row and float(row["expires_at"]) > current:
-            connection.rollback()
-            return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-worker", "status": "singleton-active", "writes_performed": False}
-        connection.execute(
-            "INSERT INTO worker_process VALUES (1, ?, ?) ON CONFLICT(id) DO UPDATE SET owner=excluded.owner, expires_at=excluded.expires_at",
-            (owner, current + PROCESS_LOCK_SECONDS),
-        )
-        connection.commit()
+    owner = _adopt_worker_process(workspace, launch_claim)
+    if owner is None:
+        status = "launch-claim-invalid" if launch_claim is not None else "singleton-active"
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "kind": "tool-shed-dashboard-worker",
+            "status": status,
+            "writes_performed": False,
+        }
     cycles = 0
     try:
         while True:
@@ -1080,8 +1149,7 @@ def worker(workspace: Path, *, project_binding: str, max_cycles: int | None = No
                 )
             )
     finally:
-        with contextlib.closing(_outbox(workspace)) as connection:
-            connection.execute("DELETE FROM worker_process WHERE id=1 AND owner=?", (owner,))
+        _release_worker_process(workspace, owner)
 
 
 def disconnect(workspace: Path, *, project_binding: str) -> dict[str, Any]:
@@ -1104,11 +1172,9 @@ def disconnect(workspace: Path, *, project_binding: str) -> dict[str, Any]:
 def scheduler_plan(workspace: Path) -> dict[str, Any]:
     system = platform.system().lower()
     project_id = str(load_project_identity(workspace)["project_id"])
-    executable_path = Path(sys.executable).resolve()
-    if system == "windows":
-        windowless = executable_path.with_name("pythonw.exe")
-        if windowless.is_file():
-            executable_path = windowless
+    executable_path = Path(
+        subprocess_launch.background_python_executable(sys.executable)
+    )
     executable = executable_path.as_posix()
     script = Path(__file__).resolve().as_posix()
     root = workspace.resolve().as_posix()
@@ -1133,11 +1199,9 @@ def scheduler_install(workspace: Path, *, project_binding: str) -> dict[str, Any
     require_project_binding(workspace, project_binding, operation="dashboard-report")
     identity = load_project_identity(workspace)
     system = platform.system().lower()
-    executable_path = Path(sys.executable).resolve()
-    if system == "windows":
-        windowless = executable_path.with_name("pythonw.exe")
-        if windowless.is_file():
-            executable_path = windowless
+    executable_path = Path(
+        subprocess_launch.background_python_executable(sys.executable)
+    )
     executable = str(executable_path)
     script = str(Path(__file__).resolve())
     root = str(workspace.resolve())
@@ -1158,8 +1222,8 @@ def scheduler_install(workspace: Path, *, project_binding: str) -> dict[str, Any
             "[Unit]\nDescription=Tool Shed dashboard 15-minute safety pass\n\n[Timer]\nOnBootSec=2min\n"
             f"OnUnitActiveSec=15min\nPersistent=true\nUnit={service.name}\n\n[Install]\nWantedBy=timers.target\n",
         )
-        subprocess.run(["systemctl", "--user", "daemon-reload"], check=True)
-        subprocess.run(["systemctl", "--user", "enable", "--now", timer.name], check=True)
+        subprocess_launch.run(["systemctl", "--user", "daemon-reload"], check=True)
+        subprocess_launch.run(["systemctl", "--user", "enable", "--now", timer.name], check=True)
         installed = [str(service), str(timer)]
     elif system == "darwin":
         label = "com.toolshed.dashboard." + str(identity["project_id"])
@@ -1172,12 +1236,12 @@ def scheduler_install(workspace: Path, *, project_binding: str) -> dict[str, Any
             f"<key>Label</key><string>{label}</string><key>ProgramArguments</key><array>{arguments}</array>"
             "<key>StartInterval</key><integer>900</integer><key>RunAtLoad</key><true/></dict></plist>\n",
         )
-        subprocess.run(["launchctl", "bootstrap", f"gui/{os.getuid()}", str(target)], check=True)
+        subprocess_launch.run(["launchctl", "bootstrap", f"gui/{os.getuid()}", str(target)], check=True)
         installed = [str(target)]
     elif system == "windows":
         task = "ToolShedDashboardSafety-" + str(identity["project_id"])
         command = f'"{executable}" "{script}" --workspace "{root}" safety-pass --project-binding {binding}'
-        subprocess.run(["schtasks", "/Create", "/F", "/SC", "MINUTE", "/MO", "15", "/TN", task, "/TR", command], check=True)
+        subprocess_launch.run(["schtasks", "/Create", "/F", "/SC", "MINUTE", "/MO", "15", "/TN", task, "/TR", command], check=True)
         installed = [task]
     else:
         raise DashboardReporterError(f"dashboard scheduling is unsupported on {system}")
@@ -1194,22 +1258,22 @@ def scheduler_remove(workspace: Path, *, project_binding: str) -> dict[str, Any]
         unit_root = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "systemd" / "user"
         service = unit_root / f"tool-shed-dashboard-safety-{suffix}.service"
         timer = unit_root / f"tool-shed-dashboard-safety-{suffix}.timer"
-        subprocess.run(["systemctl", "--user", "disable", "--now", timer.name], check=False)
+        subprocess_launch.run(["systemctl", "--user", "disable", "--now", timer.name], check=False)
         for target in (service, timer):
             if target.is_file():
                 target.unlink()
                 removed.append(str(target))
-        subprocess.run(["systemctl", "--user", "daemon-reload"], check=False)
+        subprocess_launch.run(["systemctl", "--user", "daemon-reload"], check=False)
     elif system == "darwin":
         label = "com.toolshed.dashboard." + suffix
         target = Path.home() / "Library" / "LaunchAgents" / f"{label}.plist"
-        subprocess.run(["launchctl", "bootout", f"gui/{os.getuid()}", str(target)], check=False)
+        subprocess_launch.run(["launchctl", "bootout", f"gui/{os.getuid()}", str(target)], check=False)
         if target.is_file():
             target.unlink()
             removed.append(str(target))
     elif system == "windows":
         task = "ToolShedDashboardSafety-" + suffix
-        subprocess.run(["schtasks", "/Delete", "/F", "/TN", task], check=False)
+        subprocess_launch.run(["schtasks", "/Delete", "/F", "/TN", task], check=False)
         removed.append(task)
     else:
         raise DashboardReporterError(f"dashboard scheduling is unsupported on {system}")
@@ -1319,6 +1383,7 @@ def build_parser() -> argparse.ArgumentParser:
     worker_parser = commands.add_parser("worker")
     worker_parser.add_argument("--project-binding", required=True)
     worker_parser.add_argument("--max-cycles", type=int)
+    worker_parser.add_argument("--launch-claim")
     commands.add_parser("scheduler-plan")
     install_parser = commands.add_parser("scheduler-install")
     install_parser.add_argument("--project-binding", required=True)
@@ -1332,29 +1397,41 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
-        workspace = resolved_workspace(Path(args.workspace))
-        if args.command == "status":
-            result = status(workspace)
-        elif args.command == "connect":
-            result = connect(workspace, server=args.server, project_binding=args.project_binding)
-        elif args.command == "connect-poll":
-            result = connect_poll(workspace, project_binding=args.project_binding)
-        elif args.command == "disconnect":
-            result = disconnect(workspace, project_binding=args.project_binding)
-        elif args.command == "enqueue":
-            result = enqueue(workspace, project_binding=args.project_binding, reason=args.reason)
-        elif args.command == "worker-once":
-            result = worker_once(workspace)
-        elif args.command == "worker":
-            result = worker(workspace, project_binding=args.project_binding, max_cycles=args.max_cycles)
-        elif args.command == "scheduler-plan":
-            result = scheduler_plan(workspace)
-        elif args.command == "scheduler-install":
-            result = scheduler_install(workspace, project_binding=args.project_binding)
-        elif args.command == "scheduler-remove":
-            result = scheduler_remove(workspace, project_binding=args.project_binding)
-        else:
-            result = safety_pass(workspace, project_binding=args.project_binding)
+        background = args.command in {"worker-once", "worker", "safety-pass"}
+        execution_context = (
+            subprocess_launch.windowless_subprocesses()
+            if background
+            else contextlib.nullcontext()
+        )
+        with execution_context:
+            workspace = resolved_workspace(Path(args.workspace))
+            if args.command == "status":
+                result = status(workspace)
+            elif args.command == "connect":
+                result = connect(workspace, server=args.server, project_binding=args.project_binding)
+            elif args.command == "connect-poll":
+                result = connect_poll(workspace, project_binding=args.project_binding)
+            elif args.command == "disconnect":
+                result = disconnect(workspace, project_binding=args.project_binding)
+            elif args.command == "enqueue":
+                result = enqueue(workspace, project_binding=args.project_binding, reason=args.reason)
+            elif args.command == "worker-once":
+                result = worker_once(workspace)
+            elif args.command == "worker":
+                result = worker(
+                    workspace,
+                    project_binding=args.project_binding,
+                    max_cycles=args.max_cycles,
+                    launch_claim=args.launch_claim,
+                )
+            elif args.command == "scheduler-plan":
+                result = scheduler_plan(workspace)
+            elif args.command == "scheduler-install":
+                result = scheduler_install(workspace, project_binding=args.project_binding)
+            elif args.command == "scheduler-remove":
+                result = scheduler_remove(workspace, project_binding=args.project_binding)
+            else:
+                result = safety_pass(workspace, project_binding=args.project_binding)
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
     except (

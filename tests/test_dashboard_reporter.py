@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import io
 import json
 import os
 import sqlite3
@@ -155,6 +156,62 @@ class DashboardReporterTests(unittest.TestCase):
             1.0,
         )
 
+    def test_quiescent_worker_enqueues_and_delivers_final_report(self) -> None:
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            dashboard_reporter._set_meta(connection, "last_activity", "0")
+            dashboard_reporter._set_meta(connection, "last_heartbeat", "10000")
+        with mock.patch.object(
+            dashboard_reporter, "require_project_binding"
+        ), mock.patch.object(
+            dashboard_reporter.time, "time", return_value=10000.0
+        ), mock.patch.object(
+            dashboard_reporter, "worker_once", return_value={"status": "delivered"}
+        ) as worker_once, mock.patch.object(
+            dashboard_reporter, "enqueue", return_value={"sequence": 1}
+        ) as enqueue:
+            result = dashboard_reporter.worker(
+                self.workspace, project_binding="fixture", max_cycles=1
+            )
+        self.assertEqual(result["status"], "quiescent")
+        enqueue.assert_called_once_with(
+            self.workspace,
+            project_binding="fixture",
+            reason="quiescent",
+            quiescent=True,
+        )
+        self.assertEqual(worker_once.call_count, 2)
+
+    def test_safety_pass_main_activates_windowless_subprocess_context(self) -> None:
+        def safety(*args, **kwargs):
+            dashboard_reporter.subprocess_launch.run(["git", "status"], check=False)
+            return {"status": "delivered"}
+
+        with mock.patch.object(
+            dashboard_reporter, "resolved_workspace", return_value=self.workspace
+        ), mock.patch.object(
+            dashboard_reporter, "safety_pass", side_effect=safety
+        ), mock.patch.object(
+            dashboard_reporter.subprocess_launch.platform,
+            "system",
+            return_value="Windows",
+        ), mock.patch.object(
+            dashboard_reporter.subprocess_launch.subprocess, "run"
+        ) as run, contextlib.redirect_stdout(io.StringIO()):
+            result = dashboard_reporter.main(
+                [
+                    "--workspace",
+                    str(self.workspace),
+                    "safety-pass",
+                    "--project-binding",
+                    "fixture",
+                ]
+            )
+        self.assertEqual(result, 0)
+        self.assertEqual(
+            run.call_args.kwargs["creationflags"],
+            dashboard_reporter.subprocess_launch.CREATE_NO_WINDOW,
+        )
+
     def test_windows_managed_write_worker_is_created_without_a_window(self) -> None:
         queued = {"sequence": 1}
         with mock.patch.object(
@@ -170,27 +227,135 @@ class DashboardReporterTests(unittest.TestCase):
             "binding_token",
             return_value="binding",
         ), mock.patch.object(
+            dashboard_reporter,
+            "_claim_worker_launch",
+            return_value="launch-claim",
+        ), mock.patch.object(
             dashboard_reporter.platform,
             "system",
             return_value="Windows",
         ), mock.patch.object(
-            dashboard_reporter.subprocess,
-            "CREATE_NEW_PROCESS_GROUP",
-            0x00000200,
-            create=True,
+            dashboard_reporter.subprocess_launch,
+            "background_python_executable",
+            return_value="C:/Python/pythonw.exe",
         ), mock.patch.object(
-            dashboard_reporter.subprocess,
-            "CREATE_NO_WINDOW",
-            0x08000000,
-            create=True,
-        ), mock.patch.object(dashboard_reporter.subprocess, "Popen") as popen:
+            dashboard_reporter.subprocess_launch, "popen"
+        ) as popen:
             result = dashboard_reporter.enqueue_if_connected(
                 self.workspace, reason="managed-update"
             )
         self.assertEqual(result, queued)
         kwargs = popen.call_args.kwargs
-        self.assertEqual(kwargs["creationflags"], 0x08000200)
+        self.assertTrue(kwargs["windowless"])
         self.assertNotIn("start_new_session", kwargs)
+        command = popen.call_args.args[0]
+        self.assertEqual(command[0], "C:/Python/pythonw.exe")
+        self.assertEqual(command[-2:], ["--launch-claim", "launch-claim"])
+
+    def test_managed_write_reporting_activates_windowless_child_context(self) -> None:
+        def enqueue(*args, **kwargs):
+            dashboard_reporter.subprocess_launch.run(["git", "status"], check=False)
+            return {"sequence": 1}
+
+        with mock.patch.object(
+            dashboard_reporter, "load_connection", return_value=self.connected()
+        ), mock.patch.object(
+            dashboard_reporter, "_enqueue_connected", side_effect=enqueue
+        ), mock.patch.object(
+            dashboard_reporter, "_claim_worker_launch", return_value=None
+        ), mock.patch.object(
+            dashboard_reporter.subprocess_launch.platform,
+            "system",
+            return_value="Windows",
+        ), mock.patch.object(
+            dashboard_reporter.subprocess_launch.subprocess, "run"
+        ) as run:
+            result = dashboard_reporter.enqueue_if_connected(
+                self.workspace, reason="managed-update"
+            )
+        self.assertEqual(result, {"sequence": 1})
+        self.assertEqual(
+            run.call_args.kwargs["creationflags"],
+            dashboard_reporter.subprocess_launch.CREATE_NO_WINDOW,
+        )
+
+    def test_enqueue_burst_starts_only_one_persistent_worker(self) -> None:
+        with mock.patch.object(
+            dashboard_reporter, "load_connection", return_value=self.connected()
+        ), mock.patch.object(
+            dashboard_reporter, "_enqueue_connected", side_effect=lambda *args, **kwargs: {"sequence": 1}
+        ), mock.patch.object(
+            dashboard_reporter, "binding_token", return_value="binding"
+        ), mock.patch.object(
+            dashboard_reporter.subprocess_launch, "background_python_executable", return_value="python"
+        ), mock.patch.object(
+            dashboard_reporter.subprocess_launch, "popen"
+        ) as popen:
+            results = [
+                dashboard_reporter.enqueue_if_connected(
+                    self.workspace, reason="managed-update"
+                )
+                for _ in range(10)
+            ]
+        self.assertTrue(all(result == {"sequence": 1} for result in results))
+        self.assertEqual(popen.call_count, 1)
+
+    def test_live_launch_claim_prevents_another_popen(self) -> None:
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            connection.execute(
+                "INSERT INTO worker_process VALUES (1, 'live', ?)",
+                (__import__("time").time() + 30,),
+            )
+        with mock.patch.object(
+            dashboard_reporter, "load_connection", return_value=self.connected()
+        ), mock.patch.object(
+            dashboard_reporter, "_enqueue_connected", return_value={"sequence": 1}
+        ), mock.patch.object(
+            dashboard_reporter.subprocess_launch, "popen"
+        ) as popen:
+            result = dashboard_reporter.enqueue_if_connected(
+                self.workspace, reason="managed-update"
+            )
+        self.assertEqual(result, {"sequence": 1})
+        popen.assert_not_called()
+
+    def test_stale_launch_claim_is_replaced_and_exact_claim_is_required(self) -> None:
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            connection.execute(
+                "INSERT INTO worker_process VALUES (1, 'stale', ?)",
+                (__import__("time").time() - 1,),
+            )
+        claim = dashboard_reporter._claim_worker_launch(self.workspace)
+        self.assertIsNotNone(claim)
+        self.assertNotEqual(claim, "stale")
+        with mock.patch.object(dashboard_reporter, "require_project_binding"):
+            rejected = dashboard_reporter.worker(
+                self.workspace,
+                project_binding="fixture",
+                max_cycles=1,
+                launch_claim="different-claim",
+            )
+        self.assertEqual(rejected["status"], "launch-claim-invalid")
+        adopted = dashboard_reporter._adopt_worker_process(self.workspace, claim)
+        self.assertEqual(adopted, claim)
+        dashboard_reporter._release_worker_process(self.workspace, claim)
+
+    def test_failed_worker_launch_releases_exact_claim(self) -> None:
+        with mock.patch.object(
+            dashboard_reporter, "load_connection", return_value=self.connected()
+        ), mock.patch.object(
+            dashboard_reporter, "_enqueue_connected", return_value={"sequence": 1}
+        ), mock.patch.object(
+            dashboard_reporter, "binding_token", return_value="binding"
+        ), mock.patch.object(
+            dashboard_reporter.subprocess_launch, "popen", side_effect=OSError("launch failed")
+        ):
+            result = dashboard_reporter.enqueue_if_connected(
+                self.workspace, reason="managed-update"
+            )
+        self.assertIsNone(result)
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            self.assertEqual(connection.execute("SELECT COUNT(*) FROM worker_process").fetchone()[0], 0)
 
     def test_windows_scheduler_prefers_pythonw(self) -> None:
         identity = {"project_id": str(uuid.uuid4())}
@@ -214,10 +379,14 @@ class DashboardReporterTests(unittest.TestCase):
             "system",
             return_value="Windows",
         ), mock.patch.object(
+            dashboard_reporter.subprocess_launch.platform,
+            "system",
+            return_value="Windows",
+        ), mock.patch.object(
             dashboard_reporter.sys,
             "executable",
             str(executable),
-        ), mock.patch.object(dashboard_reporter.subprocess, "run") as run:
+        ), mock.patch.object(dashboard_reporter.subprocess_launch, "run") as run:
             result = dashboard_reporter.scheduler_install(
                 self.workspace, project_binding="fixture"
             )
@@ -236,7 +405,7 @@ class DashboardReporterTests(unittest.TestCase):
             dashboard_reporter, "binding_token", return_value="binding"
         ), mock.patch.object(
             dashboard_reporter.platform, "system", return_value="Linux"
-        ), mock.patch.object(dashboard_reporter.subprocess, "run") as run:
+        ), mock.patch.object(dashboard_reporter.subprocess_launch, "run") as run:
             result = dashboard_reporter.scheduler_install(self.workspace, project_binding="fixture")
         self.assertEqual(result["status"], "installed")
         self.assertEqual(run.call_count, 2)
@@ -252,7 +421,7 @@ class DashboardReporterTests(unittest.TestCase):
             dashboard_reporter, "load_project_identity", return_value=identity
         ), mock.patch.object(
             dashboard_reporter.platform, "system", return_value="Linux"
-        ), mock.patch.object(dashboard_reporter.subprocess, "run") as remove_run:
+        ), mock.patch.object(dashboard_reporter.subprocess_launch, "run") as remove_run:
             removed = dashboard_reporter.scheduler_remove(self.workspace, project_binding="fixture")
         self.assertEqual(removed["status"], "removed")
         self.assertEqual(remove_run.call_count, 2)

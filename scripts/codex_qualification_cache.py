@@ -16,6 +16,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Callable, Iterator, Mapping
 
+try:
+    from scripts import subprocess_launch
+except ModuleNotFoundError:  # Direct imports from the scripts directory
+    import subprocess_launch  # type: ignore[no-redef]
+
 
 CACHE_SCHEMA_VERSION = 1
 DIRTY_QUALIFICATION_POLICY_REVISION = "dirty-read-v2"
@@ -61,7 +66,7 @@ def _protocol_fingerprint(executable: Path) -> tuple[str, str]:
     with tempfile.TemporaryDirectory(prefix="tool-shed-codex-schema-") as temporary:
         output = Path(temporary)
         try:
-            generated = subprocess.run(
+            generated = subprocess_launch.run(
                 [
                     str(executable),
                     "app-server",
@@ -88,7 +93,7 @@ def _protocol_fingerprint(executable: Path) -> tuple[str, str]:
             return "generated-schema", digest.hexdigest()
 
     try:
-        probe = subprocess.run(
+        probe = subprocess_launch.run(
             [str(executable), "app-server", "--help"],
             capture_output=True,
             text=True,

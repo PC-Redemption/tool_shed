@@ -63,6 +63,25 @@ scheduled task on Windows. Inspect without credentials using `status`. Revoke wi
 Network or service failures leave the outbox queued and never fail the originating local write.
 Remove the safety scheduler with `scheduler-remove` when disconnecting the project permanently.
 
+On Windows, the scheduler and persistent worker prefer `pythonw.exe`, and every console child in
+the background reporting call graph receives `CREATE_NO_WINDOW`. The launch claim is recorded
+atomically before the worker is created, so a managed-write burst creates one persistent process;
+failed launches release their claim and abandoned claims expire.
+
+Qualify the installed scheduled task and a real ten-write burst from Windows PowerShell. The
+observer records console-window show events and process starts, requires successful delivery and
+task result `0`, and fails unless exactly one burst worker starts with no visible console window:
+
+```powershell
+./scripts/qualify_windows_dashboard.ps1 -Workspace .
+```
+
+For release acceptance, also observe an unforced 15-minute scheduler interval:
+
+```powershell
+./scripts/qualify_windows_dashboard.ps1 -Workspace . -ObserveNaturalInterval
+```
+
 ## Operator presentation
 
 The project Overview uses the newest reporting instance without merging independent inventories.

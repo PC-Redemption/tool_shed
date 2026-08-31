@@ -18,6 +18,11 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping
 
+try:
+    from scripts import subprocess_launch
+except ModuleNotFoundError:  # Direct imports from the scripts directory
+    import subprocess_launch  # type: ignore[no-redef]
+
 
 class CodexSource(str, Enum):
     EXPLICIT_OVERRIDE = "explicit_override"
@@ -124,7 +129,7 @@ Qualifier = Callable[[str], bool]
 
 
 def _run(command: list[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(command, capture_output=True, text=True, timeout=5, check=False)
+    return subprocess_launch.run(command, capture_output=True, text=True, timeout=5, check=False)
 
 
 def _command_result(result: Any) -> tuple[int, str, str]:
