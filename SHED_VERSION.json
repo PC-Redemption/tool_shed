@@ -12,7 +12,7 @@
     "adapters/codex-app-server-config.json": "d79964bc2371a39d50b7bcad534af133564e55bbf491baf4f3031b36e01b7e49",
     "adapters/codex-app-server-qualifications.json": "995ccd3bea135448b316045ea240c10d272f4c7e2ff65085111e0380cef947c1",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "93180e741c7bd1b465eccb1a87de9ae215dfbd33a1f58a5eb3287d3baa23f5ce",
+    "adapters/codex-skill-releases.json": "7563a4c22c84740695b8f64eb98d5e1c7041bcdfd33b1408a6e128f77afde890",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "a16e9afbc2733b2c01b113df3f3a07fda1630b80b5a97476896123ee03bc22d2",
     "dashboard/Dockerfile": "8e9ff084f409aa81ab92b9dcbe8d9bab2416225551c837681653cab7b66786ad",
@@ -72,7 +72,7 @@
     "docs/completion-watcher-hosted-recovery-rollout.md": "62d85676540ccbc318dbd908df10ef0b405957e07989a844553b71c0aef448e1",
     "docs/completion-watcher-hosted-status-surface.md": "e8ca0e6e81cdda1a4af7a3e5d7331fa7d64cd1d5d832cf06caba34c104097f60",
     "docs/completion-watcher-protocol.md": "2fb0057ead6f1524a22a17833b448f419312588858553b0ad68ddf0c873e10bb",
-    "docs/dashboard.md": "24ac3ddbafe69ec76d04029ea07918a8cce9e9a5bdcf845785557f0afc5b9731",
+    "docs/dashboard.md": "1d5f0112686a1784d13468d424f53b49cf415a70e3313d33439ad0c00fc8d735",
     "docs/database-owned-work-collateral-conversion.md": "ee131fe6e232369c752a1be35e6a0e3c1438e2ee14aef47b50677f1fa5bbd98a",
     "docs/database-owned-work-collateral-v1-contract.md": "b7f04d49d1a6ba4b6a7db8130122f5b4e6b23d329d68ed14823ad09c73b3e6ab",
     "docs/database-owned-work-collateral.md": "01ff20af1a16818989f6988612482cb59508d8567f3c362dfa86a22bce9d885b",
@@ -163,7 +163,7 @@
     "scripts/program_roadmap.py": "efd1f6380c14f296262b9e1d7c45c7baaf1e75c8b9830194db681d4c189483b2",
     "scripts/project_identity.py": "287b94c2e1019c28825a50888f3651a4eea602e26885d8195c76b32f17c477e6",
     "scripts/provider_adapters.py": "674a0b54fd573fe48882fe3e04ffc5b36602877abf1a2c7e2bdf8bfab043b807",
-    "scripts/qualify_windows_dashboard.ps1": "0141967e19d63430f055f1b5e1f1f3ad76a53435759902e5f254ead44f596337",
+    "scripts/qualify_windows_dashboard.ps1": "363e4a226b515add59f50926ffb76e80ea8aa643589fb52e5be67603f9ad3b32",
     "scripts/read_ask_inbox.py": "b949cff0e33431744195790aa035aaa2d80dfba4589cf0403c46b68bdb4b0cea",
     "scripts/reasoning_catalog.py": "668c60b60afdd80e3348ca5a2a71ab225c67c39e613f7da4adc93d792876465c",
     "scripts/reconcile_campaign_queue.py": "5e6af99304a741d668ffc31bc6ad3b993a675284269213cdc316014b20e95889",
@@ -242,34 +242,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Make hosted dashboard reporting fully windowless on Windows and prevent persistent-worker launch bursts.",
-  "release_commit": "d4d347b678b0ffe8614ee72af84a9db2dd1ce54e",
-  "release_qualification": {
-    "attested_at": "2026-08-31T14:04:28Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "81bbb1df280b8c04875d5ee96edd1c597bc74d4ce8b82a19fc01a9a619f866e5"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "d4d347b678b0ffe8614ee72af84a9db2dd1ce54e"
-  },
-  "release_tag": "v0.42.1",
-  "released_at": "2026-08-31T14:04:28Z",
-  "shed_version": "0.42.1",
+  "notes": "Make the Windows dashboard qualification harness runnable from disconnected workspace snapshots.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.42.2",
+  "released_at": null,
+  "shed_version": "0.42.2",
   "updated_at": "2026-08-31",
   "updater_mutation_paths": [
     {

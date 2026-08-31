@@ -74,12 +74,16 @@ task result `0`, and fails unless exactly one burst worker starts with no visibl
 
 ```powershell
 ./scripts/qualify_windows_dashboard.ps1 -Workspace .
+# From an installed workspace snapshot:
+./tool_shed/scripts/qualify_windows_dashboard.ps1 -Workspace .
 ```
 
 For release acceptance, also observe an unforced 15-minute scheduler interval:
 
 ```powershell
 ./scripts/qualify_windows_dashboard.ps1 -Workspace . -ObserveNaturalInterval
+# From an installed workspace snapshot:
+./tool_shed/scripts/qualify_windows_dashboard.ps1 -Workspace . -ObserveNaturalInterval
 ```
 
 ## Operator presentation

@@ -7,7 +7,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $workspacePath = (Resolve-Path -LiteralPath $Workspace).Path
-$scriptsPath = Join-Path $workspacePath "scripts"
+$scriptsPath = $PSScriptRoot
 $reporterPath = Join-Path $scriptsPath "dashboard_reporter.py"
 $identityPath = Join-Path $scriptsPath "project_identity.py"
 $python = (Get-Command python.exe -ErrorAction Stop).Source
