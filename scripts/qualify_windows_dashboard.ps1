@@ -96,7 +96,7 @@ public static class ToolShedWindowObserver {
 }
 '@
 
-$identity = (& $python $identityPath identity --operation dashboard-report --json | ConvertFrom-Json)
+$identity = (& $python $identityPath --workspace $workspacePath identity --operation dashboard-report --json | ConvertFrom-Json)
 $taskName = "ToolShedDashboardSafety-$($identity.project_id)"
 $task = Get-ScheduledTask -TaskName $taskName -ErrorAction Stop
 $statusBefore = (& $python $reporterPath --workspace $workspacePath --json status | ConvertFrom-Json)

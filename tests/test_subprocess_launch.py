@@ -48,6 +48,7 @@ class SubprocessLaunchTests(unittest.TestCase):
             "SetWinEventHook",
             "Win32_ProcessStartTrace",
             "$scriptsPath = $PSScriptRoot",
+            "$identityPath --workspace $workspacePath identity",
             "for _ in range(10)",
             "LastTaskResult",
             "pending_events",
