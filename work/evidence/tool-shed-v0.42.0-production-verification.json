@@ -1,0 +1,43 @@
+{
+  "checks": {
+    "authenticated_app_server_page": {
+      "http_status": 200,
+      "selected_window": "7d",
+      "totals": {
+        "attempts": 40,
+        "completions": 25,
+        "failures": 9,
+        "fallbacks": 0,
+        "instances": 2,
+        "interruptions": 6,
+        "ready": 1,
+        "success_rate_percent": 62.5
+      }
+    },
+    "dashboard_health": "passed",
+    "documentation_routes": {
+      "/": 200,
+      "/guide/": 200,
+      "/help/": 200,
+      "/ref/": 200
+    },
+    "production_readiness_command": "passed",
+    "router_header": "X-Rookaro-Route: ts.rookaro.com"
+  },
+  "content_commit": "686e23306a89648694a39798d373d0b46929d43d",
+  "dashboard_image": {
+    "digest": "sha256:9f893bd5a0c443fd8ab793fda0d9ae19297c5c0e6ef8bb47fdf66133d625ff2e",
+    "tag": "tool-shed-dashboard:v0.42.0"
+  },
+  "exact_sha_ci": "https://github.com/PC-Redemption/tool_shed/actions/runs/33354479958",
+  "kind": "tool-shed-production-verification",
+  "production_backup": "dashboard-daily-20260831T034338Z.dump.age",
+  "production_target": "https://ts.rookaro.com",
+  "provenance_commit": "2156bec1347cad6e0bff23427505a3b5c2715862",
+  "publication_workflow": "https://github.com/PC-Redemption/tool_shed/actions/runs/33354695699",
+  "release": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.42.0",
+  "release_tag": "v0.42.0",
+  "rollback_snapshot": "release-backups/v0.42.0-pre-20260831T0344Z",
+  "schema_version": 1,
+  "verified_at": "2026-08-31T03:45:30Z"
+}

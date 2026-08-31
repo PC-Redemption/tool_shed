@@ -1,8 +1,8 @@
 {
   "envelope": {
-    "created_at": "2026-08-31T03:19:48Z",
-    "database_revision": 949,
-    "digest": "d0dcc6ee78e150d4c33d18d9ece7a0fedcd455eca217f9911bcb042368dc2690",
+    "created_at": "2026-08-31T03:52:36Z",
+    "database_revision": 959,
+    "digest": "771bb9bb6b1e7e1b243bdc2a7f09d8d3ec84eb9626a0e0a937c6a3e170c262ea",
     "hybrid_schema": 2,
     "objects": [
       "work/state/objects/sha256/00/0082fd1d60de8f37c6d2972dac5637d8c894d2c8f1124c5061aeb74ba0c18b75",
@@ -1529,9 +1529,9 @@
         "current_path": "sqlite/documents/MAP-0024",
         "display_number": "MAP-0024",
         "id": "3a9f09f4-4aa1-4395-81cc-c6c370c7674a",
-        "lifecycle_state": "active",
+        "lifecycle_state": "completed",
         "type": "project-map",
-        "updated_at": "2026-08-31T02:53:18Z"
+        "updated_at": "2026-08-31T03:51:51Z"
       },
       {
         "authority_mode": "sqlite",
@@ -1881,9 +1881,9 @@
         "current_path": "sqlite/release-cohorts/4a3965db-4654-4787-9f45-3efa29b20cfd",
         "display_number": null,
         "id": "4a3965db-4654-4787-9f45-3efa29b20cfd",
-        "lifecycle_state": "working",
+        "lifecycle_state": "terminal",
         "type": "release-cohort",
-        "updated_at": "2026-08-31T03:19:28Z"
+        "updated_at": "2026-08-31T03:52:21Z"
       },
       {
         "authority_mode": "file",
@@ -2041,14 +2041,14 @@
       },
       {
         "authority_mode": "file",
-        "content_sha256": "f0739f6628e8c8b344a13eb303cd7bca62b5a9bfc7fa3b2fe1c220a0bfdd79dc",
+        "content_sha256": "089615f0f196695329692a7539a09f416a6ceeefc82c47871c2ecb936c7c3fea",
         "created_at": "2026-08-28T22:14:36Z",
         "current_path": "SHED_VERSION.json",
         "display_number": null,
         "id": "5405b256-0820-439b-af21-0f1815fca00a",
         "lifecycle_state": "active",
         "type": "file",
-        "updated_at": "2026-08-30T20:59:07Z"
+        "updated_at": "2026-08-31T03:49:42Z"
       },
       {
         "authority_mode": "sqlite",
@@ -3482,6 +3482,17 @@
       },
       {
         "authority_mode": "sqlite",
+        "content_sha256": "d493bb11427e7ddb6fb710e3a0ea83845f380a139a0429b259018fd1c73a1d23",
+        "created_at": "2026-08-31T03:49:42Z",
+        "current_path": "sqlite/outcome-capsules/9fcba7dd-a09d-4ee8-af4a-30bba587ef63",
+        "display_number": null,
+        "id": "9fcba7dd-a09d-4ee8-af4a-30bba587ef63",
+        "lifecycle_state": "terminal",
+        "type": "direct-capsule",
+        "updated_at": "2026-08-31T03:49:42Z"
+      },
+      {
+        "authority_mode": "sqlite",
         "content_sha256": "750ddc516a4c76fcdfe536c44aa8925ee05723e3d15fe9ec4350bab3071a7a27",
         "created_at": "2026-08-29T01:27:44Z",
         "current_path": "work/roadmaps/roadmap-persistent-autonomy-levels.md",
@@ -3542,9 +3553,9 @@
         "current_path": "sqlite/documents/PRM-0035",
         "display_number": "PRM-0035",
         "id": "a3bdb2b3-1251-4cc3-8b43-63852b961388",
-        "lifecycle_state": "active",
+        "lifecycle_state": "completed",
         "type": "program-roadmap",
-        "updated_at": "2026-08-31T02:53:19Z"
+        "updated_at": "2026-08-31T03:51:25Z"
       },
       {
         "authority_mode": "sqlite",
@@ -4829,9 +4840,9 @@
         "current_path": "sqlite/documents/CAMP-0144",
         "display_number": "CAMP-0144",
         "id": "e407c857-8996-47cd-a07c-3216b844837b",
-        "lifecycle_state": "working",
+        "lifecycle_state": "completed",
         "type": "campaign",
-        "updated_at": "2026-08-31T02:53:19Z"
+        "updated_at": "2026-08-31T03:47:02Z"
       },
       {
         "authority_mode": "file",
@@ -5896,10 +5907,10 @@
       },
       {
         "accepted_outcome": "Deliver and Work2-qualify the truthful App Server performance dashboard candidate.",
-        "closed_at": null,
+        "closed_at": "2026-08-31T03:50:45Z",
         "id": "26419dd7-233f-4e0d-98be-504c5fc635b3",
         "kind": "document",
-        "lifecycle_state": "working",
+        "lifecycle_state": "terminal",
         "opened_at": "2026-08-31T03:18:42Z",
         "origin_artifact_id": "e407c857-8996-47cd-a07c-3216b844837b"
       },
@@ -5986,10 +5997,10 @@
       },
       {
         "accepted_outcome": "Deliver the bounded App Server performance truth program through formal release.",
-        "closed_at": null,
+        "closed_at": "2026-08-31T03:51:25Z",
         "id": "3fe6be2c-6cc1-4511-9030-0d80c07a111a",
         "kind": "document",
-        "lifecycle_state": "working",
+        "lifecycle_state": "terminal",
         "opened_at": "2026-08-31T03:18:41Z",
         "origin_artifact_id": "a3bdb2b3-1251-4cc3-8b43-63852b961388"
       },
@@ -6363,6 +6374,15 @@
         "origin_artifact_id": "bf5b2191-c8fe-427b-ad40-c85dfbf47634"
       },
       {
+        "accepted_outcome": "Publish v0.42.0 and verify the truthful App Server performance screen on ts.rookaro.com.",
+        "closed_at": "2026-08-31T03:49:42Z",
+        "id": "85437975-74d1-4552-baa8-77c45057a8e4",
+        "kind": "direct-work",
+        "lifecycle_state": "terminal",
+        "opened_at": "2026-08-31T03:49:42Z",
+        "origin_artifact_id": "9fcba7dd-a09d-4ee8-af4a-30bba587ef63"
+      },
+      {
         "accepted_outcome": "Verify the qualified content commit, published v0.38.1 provenance, canonical manifest, and live ts.rookaro.com behavior.",
         "closed_at": "2026-08-29T20:11:22Z",
         "id": "8bf63f04-f2a0-42a6-845e-81c0911d8f42",
@@ -6562,10 +6582,10 @@
       },
       {
         "accepted_outcome": "Release and production-verify a truthful App Server dashboard performance surface.",
-        "closed_at": null,
+        "closed_at": "2026-08-31T03:51:52Z",
         "id": "b94ad001-f710-4556-a582-376736282735",
         "kind": "document",
-        "lifecycle_state": "working",
+        "lifecycle_state": "terminal",
         "opened_at": "2026-08-31T03:18:41Z",
         "origin_artifact_id": "3a9f09f4-4aa1-4395-81cc-c6c370c7674a"
       },
@@ -6715,10 +6735,10 @@
       },
       {
         "accepted_outcome": "Release and production-verify every registered Work2 candidate after v0.41.4.",
-        "closed_at": null,
+        "closed_at": "2026-08-31T03:52:21Z",
         "id": "d333e138-60ab-49de-a398-3e231cf63d8c",
         "kind": "release-cohort",
-        "lifecycle_state": "working",
+        "lifecycle_state": "terminal",
         "opened_at": "2026-08-31T03:19:28Z",
         "origin_artifact_id": "4a3965db-4654-4787-9f45-3efa29b20cfd"
       },
@@ -7800,14 +7820,14 @@
       {
         "body_sha256": "91365ab244a32092b40d26a45870635ae195939831ebc0e98e52f47529d63952",
         "created_at": "2026-08-31T02:31:43Z",
-        "current_revision": 2,
+        "current_revision": 3,
         "display_number": 24,
         "id": "3a9f09f4-4aa1-4395-81cc-c6c370c7674a",
-        "lifecycle_state": "active",
+        "lifecycle_state": "completed",
         "metadata_json": "{\"approval_state\":\"approved\",\"evidence_gate_ids\":[\"G1-REAL-EXECUTION-TRUTH\",\"G2-READINESS-AND-WINDOW-TRUTH\",\"G3-PERFORMANCE-SIZING\",\"G4-PRIVACY-AND-WORK2\"]}",
         "namespace": "MAP",
         "title": "App Server Dashboard Performance Truth",
-        "updated_at": "2026-08-31T02:53:18Z",
+        "updated_at": "2026-08-31T03:51:51Z",
         "visible_id": "MAP-0024"
       },
       {
@@ -9620,14 +9640,14 @@
       {
         "body_sha256": "3234f4db4ad845d5e50225928f2cf5375145e07370e192915e15cfabe06d009f",
         "created_at": "2026-08-31T02:32:12Z",
-        "current_revision": 2,
+        "current_revision": 3,
         "display_number": 35,
         "id": "a3bdb2b3-1251-4cc3-8b43-63852b961388",
-        "lifecycle_state": "active",
+        "lifecycle_state": "completed",
         "metadata_json": "{\"approval_state\":\"approved\",\"evidence_gate_ids\":[\"G1-REAL-EXECUTION-TRUTH\",\"G2-READINESS-AND-WINDOW-TRUTH\",\"G3-PERFORMANCE-SIZING\",\"G4-PRIVACY-AND-WORK2\"],\"roadmap_id\":\"app-server-dashboard-performance-truth\",\"roadmap_revision\":1,\"source_project_map\":\"MAP-0024\",\"transferred_gate_count\":4}",
         "namespace": "PRM",
         "title": "App Server Dashboard Performance Truth",
-        "updated_at": "2026-08-31T02:53:19Z",
+        "updated_at": "2026-08-31T03:51:25Z",
         "visible_id": "PRM-0035"
       },
       {
@@ -10777,14 +10797,14 @@
       {
         "body_sha256": "dff18bfd3b81543768e0ac6353116b45061d22ee109c8cab2cbf1e0709d77d65",
         "created_at": "2026-08-31T02:32:47Z",
-        "current_revision": 2,
+        "current_revision": 3,
         "display_number": 144,
         "id": "e407c857-8996-47cd-a07c-3216b844837b",
-        "lifecycle_state": "working",
+        "lifecycle_state": "completed",
         "metadata_json": "{\"campaign_id\":\"implement-app-server-dashboard-performance-truth\",\"milestone\":\"M1-TRUTHFUL-PERFORMANCE-WORK2\",\"requested_endpoint\":\"work2\",\"roadmap_document\":\"PRM-0035\",\"roadmap_id\":\"app-server-dashboard-performance-truth\",\"roadmap_revision\":1,\"source_project_map\":\"MAP-0024\",\"unlocks_gates\":[\"G1-REAL-EXECUTION-TRUTH\",\"G2-READINESS-AND-WINDOW-TRUTH\",\"G3-PERFORMANCE-SIZING\",\"G4-PRIVACY-AND-WORK2\"]}",
         "namespace": "CAMP",
         "title": "Implement App Server Dashboard Performance Truth",
-        "updated_at": "2026-08-31T02:53:19Z",
+        "updated_at": "2026-08-31T03:47:02Z",
         "visible_id": "CAMP-0144"
       },
       {
@@ -18102,6 +18122,20 @@
       },
       {
         "actor": "codex",
+        "body_object": "work/state/objects/sha256/91/91365ab244a32092b40d26a45870635ae195939831ebc0e98e52f47529d63952",
+        "body_sha256": "91365ab244a32092b40d26a45870635ae195939831ebc0e98e52f47529d63952",
+        "created_at": "2026-08-31T03:51:51Z",
+        "document_id": "3a9f09f4-4aa1-4395-81cc-c6c370c7674a",
+        "id": "156fadf2-7bde-43b0-8f50-c7044d79bc8e",
+        "lifecycle_state": "completed",
+        "metadata_json": "{\"approval_state\":\"approved\",\"evidence_gate_ids\":[\"G1-REAL-EXECUTION-TRUTH\",\"G2-READINESS-AND-WINDOW-TRUTH\",\"G3-PERFORMANCE-SIZING\",\"G4-PRIVACY-AND-WORK2\"]}",
+        "reason": "PRM-0035 and all v0.42.0 production evidence satisfied and reconciled",
+        "revision_number": 3,
+        "source_revision": 957,
+        "title": "App Server Dashboard Performance Truth"
+      },
+      {
+        "actor": "codex",
         "body_object": "work/state/objects/sha256/5c/5cd899014fc28cb7005412d6df6ed5cec4cdf23e137c1315fb06a411268ddecd",
         "body_sha256": "5cd899014fc28cb7005412d6df6ed5cec4cdf23e137c1315fb06a411268ddecd",
         "created_at": "2026-08-30T11:37:43Z",
@@ -20003,6 +20037,20 @@
         "revision_number": 1,
         "source_revision": 148,
         "title": "Prove first-pass documentation preparation on Linux"
+      },
+      {
+        "actor": "codex",
+        "body_object": "work/state/objects/sha256/df/dff18bfd3b81543768e0ac6353116b45061d22ee109c8cab2cbf1e0709d77d65",
+        "body_sha256": "dff18bfd3b81543768e0ac6353116b45061d22ee109c8cab2cbf1e0709d77d65",
+        "created_at": "2026-08-31T03:47:02Z",
+        "document_id": "e407c857-8996-47cd-a07c-3216b844837b",
+        "id": "59510d84-6ee4-45b5-8751-fc24f31716f4",
+        "lifecycle_state": "completed",
+        "metadata_json": "{\"campaign_id\":\"implement-app-server-dashboard-performance-truth\",\"milestone\":\"M1-TRUTHFUL-PERFORMANCE-WORK2\",\"requested_endpoint\":\"work2\",\"roadmap_document\":\"PRM-0035\",\"roadmap_id\":\"app-server-dashboard-performance-truth\",\"roadmap_revision\":1,\"source_project_map\":\"MAP-0024\",\"unlocks_gates\":[\"G1-REAL-EXECUTION-TRUTH\",\"G2-READINESS-AND-WINDOW-TRUTH\",\"G3-PERFORMANCE-SIZING\",\"G4-PRIVACY-AND-WORK2\"]}",
+        "reason": "Work5 v0.42.0 production release and live App Server verification passed",
+        "revision_number": 3,
+        "source_revision": 952,
+        "title": "Implement App Server Dashboard Performance Truth"
       },
       {
         "actor": "codex",
@@ -22369,6 +22417,20 @@
         "revision_number": 1,
         "source_revision": 232,
         "title": "Evidence: Native Linux installed App Server workflow"
+      },
+      {
+        "actor": "codex",
+        "body_object": "work/state/objects/sha256/32/3234f4db4ad845d5e50225928f2cf5375145e07370e192915e15cfabe06d009f",
+        "body_sha256": "3234f4db4ad845d5e50225928f2cf5375145e07370e192915e15cfabe06d009f",
+        "created_at": "2026-08-31T03:51:25Z",
+        "document_id": "a3bdb2b3-1251-4cc3-8b43-63852b961388",
+        "id": "b5229788-93e2-4ec7-93ff-a9b17d48b367",
+        "lifecycle_state": "completed",
+        "metadata_json": "{\"approval_state\":\"approved\",\"evidence_gate_ids\":[\"G1-REAL-EXECUTION-TRUTH\",\"G2-READINESS-AND-WINDOW-TRUTH\",\"G3-PERFORMANCE-SIZING\",\"G4-PRIVACY-AND-WORK2\"],\"roadmap_id\":\"app-server-dashboard-performance-truth\",\"roadmap_revision\":1,\"source_project_map\":\"MAP-0024\",\"transferred_gate_count\":4}",
+        "reason": "CAMP-0144 and all v0.42.0 evidence gates satisfied and reconciled",
+        "revision_number": 3,
+        "source_revision": 955,
+        "title": "App Server Dashboard Performance Truth"
       },
       {
         "actor": "codex",
@@ -25081,6 +25143,16 @@
         "revision": 150
       },
       {
+        "entity_id": "dc982fec-be00-45c0-a43d-b698b2076479",
+        "entity_type": "evidence_reference",
+        "id": "0349f3e9-5746-4347-a931-a6638dc8d4eb",
+        "kind": "structural-insert",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953
+      },
+      {
         "entity_id": "903c790e-3c05-4f87-9b78-bdae2bf93b69",
         "entity_type": "artifact",
         "id": "03609bc4-035d-4819-9fb0-004a386c848d",
@@ -26851,6 +26923,16 @@
         "revision": 113
       },
       {
+        "entity_id": "4ea13997-cdec-43c5-8bf3-cbb8e89468ca",
+        "entity_type": "relationship",
+        "id": "0b6299e3-5141-49fd-9e2a-86da0bb16ae3",
+        "kind": "structural-insert",
+        "operation_id": "9b30eac1-ce4e-4e86-ab11-03630f54a10a",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-08-31T03:51:07Z",
+        "revision": 954
+      },
+      {
         "entity_id": "27de0c81-ac0a-4348-8246-55a809568d93",
         "entity_type": "document_path_alias",
         "id": "0b62d861-f124-4fcb-b537-0e03580eca61",
@@ -28061,6 +28143,16 @@
         "revision": 263
       },
       {
+        "entity_id": "2d5adb02-07ff-4648-9a57-8d4d9b99812e",
+        "entity_type": "outcome_verdict",
+        "id": "11c87370-19ec-476e-bcaa-f6518a3cf84f",
+        "kind": "structural-insert",
+        "operation_id": "9b30eac1-ce4e-4e86-ab11-03630f54a10a",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"outcome_verdict\"}",
+        "recorded_at": "2026-08-31T03:51:07Z",
+        "revision": 954
+      },
+      {
         "entity_id": "f52d4394-12f8-5cc3-8aaa-a9761e9b4cad",
         "entity_type": "document",
         "id": "11cad945-db3a-4386-b07b-07f369f3b5a9",
@@ -29101,6 +29193,16 @@
         "revision": 51
       },
       {
+        "entity_id": "c2a140c5-c074-56e1-a52f-8d89376e9b54",
+        "entity_type": "requirement",
+        "id": "15e67d5d-9a2a-4cc0-8b47-ef141f9809a6",
+        "kind": "structural-update",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951
+      },
+      {
         "entity_id": "88174e41-72bc-4c22-9670-0262badb1af8",
         "entity_type": "material_change",
         "id": "163d4909-465e-4f53-9554-9579e759ad95",
@@ -29179,6 +29281,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"document\"}",
         "recorded_at": "2026-08-29T01:27:40Z",
         "revision": 255
+      },
+      {
+        "entity_id": "f8519f2d-443f-5446-ba9a-ec76d488c91b",
+        "entity_type": "evidence_reference",
+        "id": "16934c9f-d73b-4262-95b9-778c7de188fe",
+        "kind": "structural-insert",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951
       },
       {
         "entity_id": "eb1dfb57-207b-4142-98e4-4aa19a118386",
@@ -30411,6 +30523,16 @@
         "revision": 857
       },
       {
+        "entity_id": "c2a140c5-c074-56e1-a52f-8d89376e9b54",
+        "entity_type": "requirement",
+        "id": "1c1af18b-d702-40f0-9ea5-2c85fee649f8",
+        "kind": "structural-update",
+        "operation_id": "5f2577d4-61ed-40e8-b6b4-4a67a814f337",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-31T03:52:21Z",
+        "revision": 959
+      },
+      {
         "entity_id": "8abcd19f-ce6d-4072-9390-ad4c2f865933",
         "entity_type": "outcome_verdict",
         "id": "1c2214ce-ef85-4102-a640-529b2491f450",
@@ -30939,6 +31061,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
         "recorded_at": "2026-08-29T14:09:44Z",
         "revision": 433
+      },
+      {
+        "entity_id": "48f5223b-4216-4290-9e3b-53ae380a3b1a",
+        "entity_type": "reconciliation",
+        "id": "1e9eefc9-4105-4e9a-b73d-559037c1eb05",
+        "kind": "structural-insert",
+        "operation_id": "5f2577d4-61ed-40e8-b6b4-4a67a814f337",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"reconciliation\"}",
+        "recorded_at": "2026-08-31T03:52:21Z",
+        "revision": 959
       },
       {
         "entity_id": "bb538e5a-f820-4ad0-aebb-a39f51b8a006",
@@ -34281,6 +34413,16 @@
         "revision": 176
       },
       {
+        "entity_id": "7d4126b8-7976-468c-8634-36016500b2a8",
+        "entity_type": "verification_result",
+        "id": "2d0a8adc-3793-4e20-bc2a-b416102fc529",
+        "kind": "structural-insert",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953
+      },
+      {
         "entity_id": "c8edafc9-2409-40f0-9d53-1e1d9b1fbedb",
         "entity_type": "artifact",
         "id": "2d19e0e6-5bd1-40cd-8430-5412f0525011",
@@ -34491,6 +34633,16 @@
         "revision": 7
       },
       {
+        "entity_id": "0fd6e122-bee1-45fd-b18d-84a2abdd1ef9",
+        "entity_type": "relationship",
+        "id": "2de5cee2-a366-41e1-a1c6-d3b583786caa",
+        "kind": "structural-insert",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953
+      },
+      {
         "entity_id": "bee49b38-2ca0-5086-a6e6-1b7831b96ea9",
         "entity_type": "document",
         "id": "2de79267-8f8d-4b95-9d27-14b9f6e57c8b",
@@ -34699,6 +34851,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
         "recorded_at": "2026-08-29T17:00:00Z",
         "revision": 514
+      },
+      {
+        "entity_id": "054874d6-8be0-50e7-8197-71006ec28b4f",
+        "entity_type": "verification_result",
+        "id": "2f044f38-467d-4ead-a314-f633481115d3",
+        "kind": "structural-insert",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951
       },
       {
         "entity_id": "dd9aa7af-bb60-4d71-a3eb-504b629d40e8",
@@ -36359,6 +36521,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"document\"}",
         "recorded_at": "2026-08-29T15:55:25Z",
         "revision": 474
+      },
+      {
+        "entity_id": "3a9f09f4-4aa1-4395-81cc-c6c370c7674a",
+        "entity_type": "document",
+        "id": "36d5c235-cf9c-48d7-9312-fdb5c99da311",
+        "kind": "structural-update",
+        "operation_id": "3c84a1e3-5177-448a-b453-dd1619cad674",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"document\"}",
+        "recorded_at": "2026-08-31T03:51:51Z",
+        "revision": 957
       },
       {
         "entity_id": "36bc6a2a-a3e1-46a5-832d-72d402793fd5",
@@ -38171,6 +38343,16 @@
         "revision": 570
       },
       {
+        "entity_id": "0a3838b3-6103-41fa-8ccd-08dfdf21a294",
+        "entity_type": "outcome_verdict",
+        "id": "3f36fa61-767d-4391-bb8e-c84fc8a957cd",
+        "kind": "structural-insert",
+        "operation_id": "bff9cf2e-5761-4d7f-a755-916f16d423cd",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"outcome_verdict\"}",
+        "recorded_at": "2026-08-31T03:52:15Z",
+        "revision": 958
+      },
+      {
         "entity_id": "1b810169-1537-4b4a-832e-c80747c4018a",
         "entity_type": "artifact",
         "id": "3f3c6273-f9be-459d-a4f1-0c6d71d56ee9",
@@ -38569,6 +38751,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"material_change\"}",
         "recorded_at": "2026-08-28T21:25:28Z",
         "revision": 46
+      },
+      {
+        "entity_id": "9812ca29-9e83-4d47-b738-f206a445c656",
+        "entity_type": "reconciliation",
+        "id": "40f6bc03-5e63-452d-b3d0-6e880d0eba2c",
+        "kind": "structural-insert",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"reconciliation\"}",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953
       },
       {
         "entity_id": "9012bcee-b9fa-44ed-b8a0-771c60c19bf8",
@@ -39601,6 +39793,16 @@
         "revision": 621
       },
       {
+        "entity_id": "69cb9e04-f417-5222-b917-5d0714103c46",
+        "entity_type": "requirement",
+        "id": "46412afd-a514-4ed4-abe2-c07f5f8a8cbe",
+        "kind": "structural-update",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951
+      },
+      {
         "entity_id": "32c31a6d-4209-4624-85e4-904b4edb8ad9",
         "entity_type": "relationship",
         "id": "46413441-78e4-49bf-a38d-5e2676f85285",
@@ -39729,6 +39931,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
         "recorded_at": "2026-08-30T18:04:37Z",
         "revision": 894
+      },
+      {
+        "entity_id": "142c7163-1691-4253-a8f4-5ebbda28d209",
+        "entity_type": "outcome_verdict",
+        "id": "46b437ad-efc7-4c03-a172-07513d6bcffa",
+        "kind": "structural-insert",
+        "operation_id": "5f2577d4-61ed-40e8-b6b4-4a67a814f337",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"outcome_verdict\"}",
+        "recorded_at": "2026-08-31T03:52:21Z",
+        "revision": 959
       },
       {
         "entity_id": "87a204fc-3841-433d-9cad-2c57ba8bd641",
@@ -40379,6 +40591,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
         "recorded_at": "2026-08-29T01:27:29Z",
         "revision": 74
+      },
+      {
+        "entity_id": "e407c857-8996-47cd-a07c-3216b844837b",
+        "entity_type": "artifact",
+        "id": "494af639-daed-4956-85a1-9d6ebfaa0c54",
+        "kind": "structural-update",
+        "operation_id": "25edd8cd-6f46-437f-809a-d2a7bcdf3c41",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-31T03:47:02Z",
+        "revision": 952
       },
       {
         "entity_id": "WP",
@@ -41089,6 +41311,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"outcome_verdict\"}",
         "recorded_at": "2026-08-28T20:03:57Z",
         "revision": 30
+      },
+      {
+        "entity_id": "a3bdb2b3-1251-4cc3-8b43-63852b961388",
+        "entity_type": "artifact",
+        "id": "4c99427d-1dc4-4b72-9709-3e806f3719ca",
+        "kind": "structural-update",
+        "operation_id": "7bce241a-08fe-4be7-8bd3-0d0f442c89a8",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-31T03:51:25Z",
+        "revision": 955
       },
       {
         "entity_id": "6a315ebc-9ae1-4abd-8e52-1cfdf0bf64a7",
@@ -41981,6 +42213,16 @@
         "revision": 10
       },
       {
+        "entity_id": "f5372ed5-7ebb-460e-a16a-a65302d81a5b",
+        "entity_type": "requirement",
+        "id": "50b7fb0f-13f9-4474-9800-4e33bf9027cf",
+        "kind": "structural-insert",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953
+      },
+      {
         "entity_id": "0d9c46b4-e6a9-447b-8d96-fa4c97a03d71",
         "entity_type": "outcome_verdict",
         "id": "50ba4f83-57b1-4b22-8a9c-74dce792201a",
@@ -42161,6 +42403,16 @@
         "revision": 664
       },
       {
+        "entity_id": "e407c857-8996-47cd-a07c-3216b844837b",
+        "entity_type": "document",
+        "id": "519c63dc-cb1f-4499-b144-f3ab8faaf0fb",
+        "kind": "structural-update",
+        "operation_id": "25edd8cd-6f46-437f-809a-d2a7bcdf3c41",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"document\"}",
+        "recorded_at": "2026-08-31T03:47:02Z",
+        "revision": 952
+      },
+      {
         "entity_id": "9caabc45-42b3-4681-b92a-214aacfa93f2",
         "entity_type": "document_revision",
         "id": "51bd56b4-21fc-4819-8949-b8d69e339971",
@@ -42199,6 +42451,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"document_namespace\"}",
         "recorded_at": "2026-08-29T01:27:35Z",
         "revision": 178
+      },
+      {
+        "entity_id": "f1b9e937-b4fb-42c2-8215-0e6b7d93f6e7",
+        "entity_type": "evidence_reference",
+        "id": "51e6ae74-ec29-43d2-90a1-9697a07bf5f2",
+        "kind": "structural-insert",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951
       },
       {
         "entity_id": "b826958b-0351-4905-9fd1-678f9f8f7ffb",
@@ -42571,6 +42833,16 @@
         "revision": 597
       },
       {
+        "entity_id": "d333e138-60ab-49de-a398-3e231cf63d8c",
+        "entity_type": "cycle",
+        "id": "535817db-0bc5-4311-b0e1-e2c2c8a117ae",
+        "kind": "structural-update",
+        "operation_id": "5f2577d4-61ed-40e8-b6b4-4a67a814f337",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"cycle\"}",
+        "recorded_at": "2026-08-31T03:52:21Z",
+        "revision": 959
+      },
+      {
         "entity_id": "339b96e9-f803-552b-9b84-660714f6c266",
         "entity_type": "document",
         "id": "53581cf6-a98d-4498-8b3f-b97048e2a583",
@@ -42579,6 +42851,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"document\"}",
         "recorded_at": "2026-08-29T01:27:33Z",
         "revision": 144
+      },
+      {
+        "entity_id": "b5229788-93e2-4ec7-93ff-a9b17d48b367",
+        "entity_type": "document_revision",
+        "id": "5359f91e-47bb-4b04-a064-efb69193c53b",
+        "kind": "structural-insert",
+        "operation_id": "7bce241a-08fe-4be7-8bd3-0d0f442c89a8",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
+        "recorded_at": "2026-08-31T03:51:25Z",
+        "revision": 955
       },
       {
         "entity_id": "306fca51-730d-491f-9cd5-afcc23370f00",
@@ -45261,6 +45543,16 @@
         "revision": 27
       },
       {
+        "entity_id": "9fcba7dd-a09d-4ee8-af4a-30bba587ef63",
+        "entity_type": "artifact",
+        "id": "5e38061d-4dbc-498f-b143-5d5cf9e8df35",
+        "kind": "structural-insert",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953
+      },
+      {
         "entity_id": "70bbb9d7-3551-4b76-9f74-b22a58b93fa7",
         "entity_type": "document_path_alias",
         "id": "5e41dada-a1db-497c-90dc-8179561ef8a2",
@@ -45449,6 +45741,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"requirement\"}",
         "recorded_at": "2026-08-28T17:48:50Z",
         "revision": 10
+      },
+      {
+        "entity_id": "3fe6be2c-6cc1-4511-9030-0d80c07a111a",
+        "entity_type": "cycle",
+        "id": "5f7b4c46-16b7-4d60-b5db-bb9bc9945138",
+        "kind": "structural-update",
+        "operation_id": "3771cc42-92bb-4db4-a3ce-e61f05651e78",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"cycle\"}",
+        "recorded_at": "2026-08-31T03:51:51Z",
+        "revision": 956
       },
       {
         "entity_id": "796a495f-902a-5abf-8ce6-b801ffc0f619",
@@ -46851,6 +47153,16 @@
         "revision": 602
       },
       {
+        "entity_id": "4a3965db-4654-4787-9f45-3efa29b20cfd",
+        "entity_type": "artifact",
+        "id": "66e2500c-3998-405f-888d-0a1b6cf7a888",
+        "kind": "structural-update",
+        "operation_id": "6b77992f-3ecd-46a0-a1fd-4c97b1a59654",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-31T03:38:02Z",
+        "revision": 950
+      },
+      {
         "entity_id": "eb8a52cc-25a9-4c9e-83d9-82c118bcafef",
         "entity_type": "document_path_alias",
         "id": "66e6fc4c-a0d7-43e5-909d-51a76aea2c05",
@@ -46979,6 +47291,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
         "recorded_at": "2026-08-29T15:55:25Z",
         "revision": 473
+      },
+      {
+        "entity_id": "d13a5183-fde8-53e1-9ba3-7d29cd638b50",
+        "entity_type": "evidence_reference",
+        "id": "679281da-5ab2-4f00-a83e-b0fbf1941785",
+        "kind": "structural-insert",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951
       },
       {
         "entity_id": "578861a8-95dd-44cc-bd6a-d529dd1f2a04",
@@ -48669,6 +48991,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"material_change\"}",
         "recorded_at": "2026-08-28T21:26:13Z",
         "revision": 48
+      },
+      {
+        "entity_id": "156fadf2-7bde-43b0-8f50-c7044d79bc8e",
+        "entity_type": "document_revision",
+        "id": "6fccd143-4c8f-491d-886b-802de893e947",
+        "kind": "structural-insert",
+        "operation_id": "3c84a1e3-5177-448a-b453-dd1619cad674",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
+        "recorded_at": "2026-08-31T03:51:51Z",
+        "revision": 957
       },
       {
         "entity_id": "596fc233-15b8-4a9c-95af-0822c89d2d7b",
@@ -50519,6 +50851,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"document_path_alias\"}",
         "recorded_at": "2026-08-30T17:57:26Z",
         "revision": 885
+      },
+      {
+        "entity_id": "4a3965db-4654-4787-9f45-3efa29b20cfd",
+        "entity_type": "artifact",
+        "id": "77b229d7-b89a-42cd-a167-91640c5f3967",
+        "kind": "structural-update",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951
       },
       {
         "entity_id": "6c6030a6-f025-464c-9dd7-7fa710d971e2",
@@ -53131,6 +53473,16 @@
         "revision": 756
       },
       {
+        "entity_id": "88d26689-c0d9-467b-86a0-0700a05bc308",
+        "entity_type": "evidence_reference",
+        "id": "83828c96-b1e2-4d25-9692-01999172f79b",
+        "kind": "structural-insert",
+        "operation_id": "6b77992f-3ecd-46a0-a1fd-4c97b1a59654",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-31T03:38:02Z",
+        "revision": 950
+      },
+      {
         "entity_id": "46c871d0-0cf7-4d29-b2bc-f27b72655b93",
         "entity_type": "requirement",
         "id": "838f0e0d-0e9f-4b31-a2f7-ee61621e1dbe",
@@ -54071,6 +54423,16 @@
         "revision": 78
       },
       {
+        "entity_id": "4a3965db-4654-4787-9f45-3efa29b20cfd",
+        "entity_type": "artifact",
+        "id": "87475bf1-d696-4c46-938b-01349d51d7fe",
+        "kind": "structural-update",
+        "operation_id": "5f2577d4-61ed-40e8-b6b4-4a67a814f337",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-31T03:52:21Z",
+        "revision": 959
+      },
+      {
         "entity_id": "2a878779-5168-59fd-a8e0-b8c37afc005c",
         "entity_type": "verification_result",
         "id": "874885f2-28fc-4154-8784-29c803aa2b1e",
@@ -54219,6 +54581,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
         "recorded_at": "2026-08-29T00:23:12Z",
         "revision": 57
+      },
+      {
+        "entity_id": "a8ca4789-acd0-4b0b-bc85-acd4fac399fa",
+        "entity_type": "relationship",
+        "id": "87f83113-1636-4b1f-80de-256f894b4f54",
+        "kind": "structural-insert",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953
       },
       {
         "entity_id": "578861a8-95dd-44cc-bd6a-d529dd1f2a04",
@@ -55451,6 +55823,16 @@
         "revision": 1
       },
       {
+        "entity_id": "69cb9e04-f417-5222-b917-5d0714103c46",
+        "entity_type": "requirement",
+        "id": "8da26132-8569-40ec-8892-f015a8f0cb19",
+        "kind": "structural-update",
+        "operation_id": "5f2577d4-61ed-40e8-b6b4-4a67a814f337",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-31T03:52:21Z",
+        "revision": 959
+      },
+      {
         "entity_id": "e26fc47f-2200-403d-88cd-d2d6d3375943",
         "entity_type": "document_path_alias",
         "id": "8da6575c-5d61-45eb-b923-5e752323d284",
@@ -55489,6 +55871,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"document_path_alias\"}",
         "recorded_at": "2026-08-30T17:57:26Z",
         "revision": 885
+      },
+      {
+        "entity_id": "d333e138-60ab-49de-a398-3e231cf63d8c",
+        "entity_type": "cycle",
+        "id": "8db4b65c-145e-4aa2-b836-3ea7a17838b9",
+        "kind": "structural-update",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"cycle\"}",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951
       },
       {
         "entity_id": "5d176b05-9883-4e0b-a29f-a404de703268",
@@ -58271,6 +58663,16 @@
         "revision": 319
       },
       {
+        "entity_id": "59510d84-6ee4-45b5-8751-fc24f31716f4",
+        "entity_type": "document_revision",
+        "id": "9c510f24-3845-47a3-8295-de68c9c4a0db",
+        "kind": "structural-insert",
+        "operation_id": "25edd8cd-6f46-437f-809a-d2a7bcdf3c41",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
+        "recorded_at": "2026-08-31T03:47:02Z",
+        "revision": 952
+      },
+      {
         "entity_id": "72b371cf-9fb5-49b2-8a95-8d1e6ee6b30a",
         "entity_type": "evidence_reference",
         "id": "9c63f213-2a23-487d-9e37-e2114f6a46ae",
@@ -59741,6 +60143,16 @@
         "revision": 610
       },
       {
+        "entity_id": "ec79475d-9338-5a7d-8756-51ec14b7c1e5",
+        "entity_type": "verification_result",
+        "id": "a28f38a6-af85-449f-9150-4f6f35a5a8a6",
+        "kind": "structural-insert",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951
+      },
+      {
         "entity_id": "386626bc-6290-5b16-a130-6db41933a919",
         "entity_type": "evidence_reference",
         "id": "a2b3eb1d-a39e-4985-9b6b-7c379a1217ce",
@@ -59759,6 +60171,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"cycle\"}",
         "recorded_at": "2026-08-28T21:36:49Z",
         "revision": 49
+      },
+      {
+        "entity_id": "85437975-74d1-4552-baa8-77c45057a8e4",
+        "entity_type": "cycle",
+        "id": "a2df7bbc-b8cd-4916-a20c-77503cfb40c8",
+        "kind": "structural-insert",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"cycle\"}",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953
       },
       {
         "entity_id": "02ae647d-bcb3-408e-b7e6-77f8797c99c8",
@@ -60569,6 +60991,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"requirement\"}",
         "recorded_at": "2026-08-29T20:08:23Z",
         "revision": 596
+      },
+      {
+        "entity_id": "5405b256-0820-439b-af21-0f1815fca00a",
+        "entity_type": "artifact",
+        "id": "a6358d32-9011-4bd4-93a5-837f75fe1056",
+        "kind": "structural-update",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953
       },
       {
         "entity_id": "da235d5d-a1e5-4ba8-ae68-d3bb4c4fee8c",
@@ -64291,6 +64723,16 @@
         "revision": 122
       },
       {
+        "entity_id": "26419dd7-233f-4e0d-98be-504c5fc635b3",
+        "entity_type": "cycle",
+        "id": "b6531888-cecc-4853-932a-d3bb1c7e0dd0",
+        "kind": "structural-update",
+        "operation_id": "9b30eac1-ce4e-4e86-ab11-03630f54a10a",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"cycle\"}",
+        "recorded_at": "2026-08-31T03:51:07Z",
+        "revision": 954
+      },
+      {
         "entity_id": "aaa408a0-1526-464b-bab4-bd47bdcdfe76",
         "entity_type": "relationship",
         "id": "b653d32d-3024-447b-b505-045681fb1f8c",
@@ -64971,6 +65413,16 @@
         "revision": 595
       },
       {
+        "entity_id": "7b24a769-14cd-4e5a-b53c-210ba9c87f5e",
+        "entity_type": "relationship",
+        "id": "b9395495-cabb-4111-8700-0ab01d40dc1b",
+        "kind": "structural-insert",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953
+      },
+      {
         "entity_id": "95df2424-587d-4452-b181-cc22ee97c429",
         "entity_type": "document_revision",
         "id": "b93ad4a7-f6aa-48fd-b00e-1da8545c70e1",
@@ -65259,6 +65711,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"document_namespace\"}",
         "recorded_at": "2026-08-29T01:27:43Z",
         "revision": 287
+      },
+      {
+        "entity_id": "b7626303-4270-4ad8-b416-164c0c201d2c",
+        "entity_type": "reconciliation",
+        "id": "ba550fe5-a03b-403c-b038-1e8cce98f6cb",
+        "kind": "structural-insert",
+        "operation_id": "9b30eac1-ce4e-4e86-ab11-03630f54a10a",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"reconciliation\"}",
+        "recorded_at": "2026-08-31T03:51:07Z",
+        "revision": 954
       },
       {
         "entity_id": "4f23589e-ed68-4edb-9f5e-805f081b5bd6",
@@ -66471,6 +66933,16 @@
         "revision": 45
       },
       {
+        "entity_id": "57cb37b9-768a-5e28-8410-46e2d62d706c",
+        "entity_type": "requirement",
+        "id": "bfc12c24-a61c-4a11-8e83-30ecda9ab6cd",
+        "kind": "structural-update",
+        "operation_id": "5f2577d4-61ed-40e8-b6b4-4a67a814f337",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-31T03:52:21Z",
+        "revision": 959
+      },
+      {
         "entity_id": "881912d6-4491-410d-b5e3-652b3051b52f",
         "entity_type": "relationship",
         "id": "bfc5a09d-4824-4d16-9584-994a573d08e9",
@@ -66971,6 +67443,16 @@
         "revision": 390
       },
       {
+        "entity_id": "d333e138-60ab-49de-a398-3e231cf63d8c",
+        "entity_type": "cycle",
+        "id": "c18776c5-7018-4ccb-835f-0b0f1cc06755",
+        "kind": "structural-update",
+        "operation_id": "6b77992f-3ecd-46a0-a1fd-4c97b1a59654",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"cycle\"}",
+        "recorded_at": "2026-08-31T03:38:02Z",
+        "revision": 950
+      },
+      {
         "entity_id": "ebe4e11b-a455-4b29-860e-6b721d8cf2c6",
         "entity_type": "document_path_alias",
         "id": "c19c0b24-1dc7-4381-aa64-152a2e009ba8",
@@ -67149,6 +67631,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"verification_result\"}",
         "recorded_at": "2026-08-28T21:25:28Z",
         "revision": 46
+      },
+      {
+        "entity_id": "57cb37b9-768a-5e28-8410-46e2d62d706c",
+        "entity_type": "requirement",
+        "id": "c2a55bcb-2faf-4dd7-b99f-f38ccbe1eaa3",
+        "kind": "structural-update",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951
       },
       {
         "entity_id": "f1a1e577-97f6-4213-9d1d-6d840771369e",
@@ -71111,6 +71603,16 @@
         "revision": 793
       },
       {
+        "entity_id": "a3bdb2b3-1251-4cc3-8b43-63852b961388",
+        "entity_type": "document",
+        "id": "d49478c0-de7a-4c98-b1fe-8ef5a35e1edb",
+        "kind": "structural-update",
+        "operation_id": "7bce241a-08fe-4be7-8bd3-0d0f442c89a8",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"document\"}",
+        "recorded_at": "2026-08-31T03:51:25Z",
+        "revision": 955
+      },
+      {
         "entity_id": "6d9e65c7-44aa-52ef-94e6-d4ff7cec31c9",
         "entity_type": "evidence_reference",
         "id": "d4b9473a-6f1a-405a-a5ab-3651e7c88bfb",
@@ -71831,6 +72333,16 @@
         "revision": 430
       },
       {
+        "entity_id": "cdf1b0c4-cc82-4693-b1f9-ce6d558d201b",
+        "entity_type": "relationship",
+        "id": "d8319ca5-0dd0-4bab-8137-d9dda10bfad1",
+        "kind": "structural-insert",
+        "operation_id": "3771cc42-92bb-4db4-a3ce-e61f05651e78",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-08-31T03:51:51Z",
+        "revision": 956
+      },
+      {
         "entity_id": "4e215995-1aa8-4e6b-baa2-78fc8b150cac",
         "entity_type": "verification_result",
         "id": "d83517c2-17d3-438f-a71e-0a482c47b91c",
@@ -72021,6 +72533,16 @@
         "revision": 346
       },
       {
+        "entity_id": "43fd0e00-f083-55d1-812f-4ff55abdb7ff",
+        "entity_type": "verification_result",
+        "id": "d919e8b5-6294-4209-9390-0871076a3405",
+        "kind": "structural-insert",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951
+      },
+      {
         "entity_id": "MAP",
         "entity_type": "document_namespace",
         "id": "d9268099-f9e6-4a9d-b4bc-c2aa999a518c",
@@ -72139,6 +72661,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"requirement\"}",
         "recorded_at": "2026-08-28T18:58:23Z",
         "revision": 20
+      },
+      {
+        "entity_id": "5f51c265-72a7-4a60-97b7-b0445c8cbe2c",
+        "entity_type": "reconciliation",
+        "id": "d9a00dbf-4283-4e2c-bbfc-f4863e2e217e",
+        "kind": "structural-insert",
+        "operation_id": "bff9cf2e-5761-4d7f-a755-916f16d423cd",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"reconciliation\"}",
+        "recorded_at": "2026-08-31T03:52:15Z",
+        "revision": 958
       },
       {
         "entity_id": "40ea9a3a-ebb8-4138-a591-561d11117d45",
@@ -72799,6 +73331,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
         "recorded_at": "2026-08-29T02:54:43Z",
         "revision": 330
+      },
+      {
+        "entity_id": "b94ad001-f710-4556-a582-376736282735",
+        "entity_type": "cycle",
+        "id": "dcb0ec41-f0e4-4f93-91fd-736ac1847c90",
+        "kind": "structural-update",
+        "operation_id": "bff9cf2e-5761-4d7f-a755-916f16d423cd",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"cycle\"}",
+        "recorded_at": "2026-08-31T03:52:15Z",
+        "revision": 958
       },
       {
         "entity_id": "59804855-dd82-4f96-a8b9-d4810b34694f",
@@ -75291,6 +75833,16 @@
         "revision": 945
       },
       {
+        "entity_id": "3a9f09f4-4aa1-4395-81cc-c6c370c7674a",
+        "entity_type": "artifact",
+        "id": "e966b745-46e0-4e67-a697-f9b711e1f544",
+        "kind": "structural-update",
+        "operation_id": "3c84a1e3-5177-448a-b453-dd1619cad674",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-08-31T03:51:51Z",
+        "revision": 957
+      },
+      {
         "entity_id": "eb8a52cc-25a9-4c9e-83d9-82c118bcafef",
         "entity_type": "document_path_alias",
         "id": "e974825d-c0d6-45a2-97a3-b0433bcba3a1",
@@ -75891,6 +76443,16 @@
         "revision": 867
       },
       {
+        "entity_id": "46459c5d-7223-42c8-ad21-2260e40f08f1",
+        "entity_type": "reconciliation",
+        "id": "ebf221b4-de65-49e7-a17b-9ae8d506d2d8",
+        "kind": "structural-insert",
+        "operation_id": "3771cc42-92bb-4db4-a3ce-e61f05651e78",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"reconciliation\"}",
+        "recorded_at": "2026-08-31T03:51:51Z",
+        "revision": 956
+      },
+      {
         "entity_id": "eb5bbab7-fbaf-4e96-8f02-8a101ac4fa8e",
         "entity_type": "requirement",
         "id": "ebf93f87-420a-4afd-bbe9-a430149d2fda",
@@ -76329,6 +76891,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"reconciliation\"}",
         "recorded_at": "2026-08-29T20:12:27Z",
         "revision": 612
+      },
+      {
+        "entity_id": "7a5dc8e8-3163-43cd-a102-42a51bf2a1ed",
+        "entity_type": "outcome_verdict",
+        "id": "eddb717f-85e2-4bb1-81ab-75dd0aed52e8",
+        "kind": "structural-insert",
+        "operation_id": "3771cc42-92bb-4db4-a3ce-e61f05651e78",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"outcome_verdict\"}",
+        "recorded_at": "2026-08-31T03:51:51Z",
+        "revision": 956
       },
       {
         "entity_id": "2757b475-219d-4f8a-8dbe-9ff4224555c7",
@@ -78311,6 +78883,16 @@
         "revision": 793
       },
       {
+        "entity_id": "021598a3-dc44-57f6-865d-7394da31c88b",
+        "entity_type": "evidence_reference",
+        "id": "f6e2fe87-e722-41fa-a76c-8fc3ae88e5df",
+        "kind": "structural-insert",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951
+      },
+      {
         "entity_id": "15b1ede5-7c63-41c8-9594-52c22f63ff6f",
         "entity_type": "document_path_alias",
         "id": "f6f40c3a-4e9b-4107-8ac0-b96141922c61",
@@ -79871,6 +80453,16 @@
         "revision": 351
       },
       {
+        "entity_id": "36010437-fc74-47ae-9118-e7ff063dce64",
+        "entity_type": "outcome_verdict",
+        "id": "fefb3f9b-9bd0-4ca8-bf85-5c452cc7ed6a",
+        "kind": "structural-insert",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"outcome_verdict\"}",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953
+      },
+      {
         "entity_id": "d0e80c0b-2bb4-4ebf-bfe0-d19d8f08679d",
         "entity_type": "relationship",
         "id": "ff12a1b8-ce44-4b39-8091-668e5e3bdc12",
@@ -80112,6 +80704,15 @@
       }
     ],
     "evidence_reference": [
+      {
+        "collected_at": "2026-08-31T03:46:11Z",
+        "cycle_id": "26419dd7-233f-4e0d-98be-504c5fc635b3",
+        "id": "021598a3-dc44-57f6-865d-7394da31c88b",
+        "kind": "production-release",
+        "reference": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.42.0",
+        "sha256": null,
+        "target_identity": "v0.42.0"
+      },
       {
         "collected_at": "2026-08-30T20:53:48Z",
         "cycle_id": "4e649557-b8cf-473e-9455-4ad13e2de537",
@@ -81049,6 +81650,15 @@
         "target_identity": "upgrade-and-qualify-database-owned-collateral-maintainer"
       },
       {
+        "collected_at": "2026-08-31T03:38:02Z",
+        "cycle_id": "d333e138-60ab-49de-a398-3e231cf63d8c",
+        "id": "88d26689-c0d9-467b-86a0-0700a05bc308",
+        "kind": "release-content-commit",
+        "reference": "git:686e23306a89648694a39798d373d0b46929d43d",
+        "sha256": null,
+        "target_identity": "d333e138-60ab-49de-a398-3e231cf63d8c"
+      },
+      {
         "collected_at": "2026-08-30T15:13:52Z",
         "cycle_id": "bfb0adcf-1eab-47ad-bb2e-36a4ce1306f7",
         "id": "88e566f2-139f-5fac-ab8c-b123fb4dc384",
@@ -81679,6 +82289,15 @@
         "target_identity": "9cde1b3f-b763-4ae2-8e70-99b5d49b4aee"
       },
       {
+        "collected_at": "2026-08-31T03:46:11Z",
+        "cycle_id": "3fe6be2c-6cc1-4511-9030-0d80c07a111a",
+        "id": "d13a5183-fde8-53e1-9ba3-7d29cd638b50",
+        "kind": "production-release",
+        "reference": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.42.0",
+        "sha256": null,
+        "target_identity": "v0.42.0"
+      },
+      {
         "collected_at": "2026-08-30T20:22:04Z",
         "cycle_id": "99beb291-5ad4-42ff-85ec-4825bb84a291",
         "id": "d1b74c91-0a78-460d-8ed3-66d0ab41787d",
@@ -81767,6 +82386,15 @@
         "reference": "commit:02703bf",
         "sha256": null,
         "target_identity": "tool_shed baseline at database revision 437"
+      },
+      {
+        "collected_at": "2026-08-31T03:49:42Z",
+        "cycle_id": "85437975-74d1-4552-baa8-77c45057a8e4",
+        "id": "dc982fec-be00-45c0-a43d-b698b2076479",
+        "kind": "direct-verification",
+        "reference": "work/evidence/tool-shed-v0.42.0-production-verification.json",
+        "sha256": "f02dbef95d64bf12d258fb5295bbb7941166bc52f20ca1ce718f25c901c9536e",
+        "target_identity": "9fcba7dd-a09d-4ee8-af4a-30bba587ef63"
       },
       {
         "collected_at": "2026-08-29T21:09:52Z",
@@ -82003,6 +82631,15 @@
         "target_identity": "a61fca11-2c57-405a-bc00-005a6fa8886a"
       },
       {
+        "collected_at": "2026-08-31T03:46:11Z",
+        "cycle_id": "d333e138-60ab-49de-a398-3e231cf63d8c",
+        "id": "f1b9e937-b4fb-42c2-8215-0e6b7d93f6e7",
+        "kind": "release-publication",
+        "reference": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.42.0",
+        "sha256": null,
+        "target_identity": "v0.42.0"
+      },
+      {
         "collected_at": "2026-08-29T15:56:21Z",
         "cycle_id": "bb538e5a-f820-4ad0-aebb-a39f51b8a006",
         "id": "f32fd23a-35c1-49ec-966d-d52f9fc1b1d1",
@@ -82028,6 +82665,15 @@
         "reference": "tests/test_outcome_reconciliation.py",
         "sha256": "03b4becb0d8401c949053543685733983096c63737d63922d4715383ff315769",
         "target_identity": "HPT2-EVID-TEST"
+      },
+      {
+        "collected_at": "2026-08-31T03:46:11Z",
+        "cycle_id": "b94ad001-f710-4556-a582-376736282735",
+        "id": "f8519f2d-443f-5446-ba9a-ec76d488c91b",
+        "kind": "production-release",
+        "reference": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.42.0",
+        "sha256": null,
+        "target_identity": "v0.42.0"
       },
       {
         "collected_at": "2026-08-29T20:08:23Z",
@@ -84505,6 +85151,17 @@
         "status": "complete"
       },
       {
+        "actor": "codex",
+        "actual_writes": 3,
+        "command": "document-set-lifecycle",
+        "committed_at": "2026-08-31T03:47:02Z",
+        "expected_writes": null,
+        "id": "25edd8cd-6f46-437f-809a-d2a7bcdf3c41",
+        "revision": 952,
+        "started_at": "2026-08-31T03:47:02Z",
+        "status": "complete"
+      },
+      {
         "actor": "outcome-reconciliation",
         "actual_writes": 19,
         "command": "apply-outcome-loop",
@@ -85121,6 +85778,17 @@
         "status": "complete"
       },
       {
+        "actor": "outcome-reconciliation",
+        "actual_writes": 4,
+        "command": "transition-outcome-loop",
+        "committed_at": "2026-08-31T03:51:51Z",
+        "expected_writes": 4,
+        "id": "3771cc42-92bb-4db4-a3ce-e61f05651e78",
+        "revision": 956,
+        "started_at": "2026-08-31T03:51:51Z",
+        "status": "complete"
+      },
+      {
         "actor": "codex",
         "actual_writes": 4,
         "command": "document-create",
@@ -85250,6 +85918,17 @@
         "id": "3c1a3904-741e-4879-81e5-09963d5b54b7",
         "revision": 746,
         "started_at": "2026-08-30T14:31:16Z",
+        "status": "complete"
+      },
+      {
+        "actor": "codex",
+        "actual_writes": 3,
+        "command": "document-set-lifecycle",
+        "committed_at": "2026-08-31T03:51:51Z",
+        "expected_writes": null,
+        "id": "3c84a1e3-5177-448a-b453-dd1619cad674",
+        "revision": 957,
+        "started_at": "2026-08-31T03:51:51Z",
         "status": "complete"
       },
       {
@@ -86452,6 +87131,17 @@
         "status": "complete"
       },
       {
+        "actor": "outcome-reconciliation",
+        "actual_writes": 11,
+        "command": "apply-outcome-loop",
+        "committed_at": "2026-08-31T03:50:36Z",
+        "expected_writes": 11,
+        "id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "revision": 953,
+        "started_at": "2026-08-31T03:50:36Z",
+        "status": "complete"
+      },
+      {
         "actor": "codex",
         "actual_writes": 4,
         "command": "document-open-outcome",
@@ -86724,6 +87414,17 @@
         "id": "5f232ebe-666f-42a1-b63e-515633d89f45",
         "revision": 556,
         "started_at": "2026-08-29T18:32:59Z",
+        "status": "complete"
+      },
+      {
+        "actor": "release-cohort",
+        "actual_writes": 7,
+        "command": "finalize-release-cohort",
+        "committed_at": "2026-08-31T03:52:21Z",
+        "expected_writes": null,
+        "id": "5f2577d4-61ed-40e8-b6b4-4a67a814f337",
+        "revision": 959,
+        "started_at": "2026-08-31T03:52:21Z",
         "status": "complete"
       },
       {
@@ -87395,6 +88096,17 @@
         "id": "6b76bb3c-9e1f-4e4d-a1f1-c02e33dddf36",
         "revision": 309,
         "started_at": "2026-08-29T01:27:45Z",
+        "status": "complete"
+      },
+      {
+        "actor": "release-cohort",
+        "actual_writes": 3,
+        "command": "freeze-release-cohort",
+        "committed_at": "2026-08-31T03:38:03Z",
+        "expected_writes": 3,
+        "id": "6b77992f-3ecd-46a0-a1fd-4c97b1a59654",
+        "revision": 950,
+        "started_at": "2026-08-31T03:38:02Z",
         "status": "complete"
       },
       {
@@ -88132,6 +88844,17 @@
         "id": "7b53508f-af6e-438d-acad-0e392923d652",
         "revision": 52,
         "started_at": "2026-08-28T22:14:44Z",
+        "status": "complete"
+      },
+      {
+        "actor": "codex",
+        "actual_writes": 3,
+        "command": "document-set-lifecycle",
+        "committed_at": "2026-08-31T03:51:25Z",
+        "expected_writes": null,
+        "id": "7bce241a-08fe-4be7-8bd3-0d0f442c89a8",
+        "revision": 955,
+        "started_at": "2026-08-31T03:51:25Z",
         "status": "complete"
       },
       {
@@ -89268,6 +89991,17 @@
         "status": "complete"
       },
       {
+        "actor": "outcome-reconciliation",
+        "actual_writes": 4,
+        "command": "transition-outcome-loop",
+        "committed_at": "2026-08-31T03:51:07Z",
+        "expected_writes": 4,
+        "id": "9b30eac1-ce4e-4e86-ab11-03630f54a10a",
+        "revision": 954,
+        "started_at": "2026-08-31T03:51:07Z",
+        "status": "complete"
+      },
+      {
         "actor": "maintainer-final-cutover",
         "actual_writes": 6,
         "command": "document-import",
@@ -89298,6 +90032,17 @@
         "id": "9b61afc5-80c3-44b4-9be3-3615b0e244e5",
         "revision": 872,
         "started_at": "2026-08-30T17:26:01Z",
+        "status": "complete"
+      },
+      {
+        "actor": "release-cohort",
+        "actual_writes": 12,
+        "command": "record-release-cohort-publication",
+        "committed_at": "2026-08-31T03:46:11Z",
+        "expected_writes": null,
+        "id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "revision": 951,
+        "started_at": "2026-08-31T03:46:11Z",
         "status": "complete"
       },
       {
@@ -90816,6 +91561,17 @@
         "id": "bed9be84-3232-45f1-ac63-ac6c352aac70",
         "revision": 515,
         "started_at": "2026-08-29T17:06:19Z",
+        "status": "complete"
+      },
+      {
+        "actor": "outcome-reconciliation",
+        "actual_writes": 3,
+        "command": "transition-outcome-loop",
+        "committed_at": "2026-08-31T03:52:15Z",
+        "expected_writes": 3,
+        "id": "bff9cf2e-5761-4d7f-a755-916f16d423cd",
+        "revision": 958,
+        "started_at": "2026-08-31T03:52:14Z",
         "status": "complete"
       },
       {
@@ -93850,6 +94606,16 @@
         "summary": "M1 is materialized; M2 and M3 remain dependent."
       },
       {
+        "authorization_ref": "User-authorized ts: ship",
+        "cycle_id": "b94ad001-f710-4556-a582-376736282735",
+        "decided_at": "2026-08-31T03:51:52Z",
+        "decided_revision": 958,
+        "disposition": "satisfied",
+        "id": "0a3838b3-6103-41fa-8ccd-08dfdf21a294",
+        "scope": "initiative",
+        "summary": "MAP-0024 is satisfied by reconciled PRM-0035 and verified v0.42.0 production behavior."
+      },
+      {
         "authorization_ref": "Codex",
         "cycle_id": "cb99952a-8b27-42d6-9107-5f99531b3c9b",
         "decided_at": "2026-08-30T18:45:37Z",
@@ -93888,6 +94654,16 @@
         "id": "1184028c-a546-4e31-9391-3dff1e8b4601",
         "scope": "initiative",
         "summary": "The passive dogfooding Idea is explicitly superseded by the completed operator-trust CAMP runtime direction, with its qualification evidence preserved."
+      },
+      {
+        "authorization_ref": "User-authorized ts: ship",
+        "cycle_id": "d333e138-60ab-49de-a398-3e231cf63d8c",
+        "decided_at": "2026-08-31T03:52:21Z",
+        "decided_revision": 959,
+        "disposition": "satisfied",
+        "id": "142c7163-1691-4253-a8f4-5ebbda28d209",
+        "scope": "release-cohort",
+        "summary": "Released 3 Work2 outcome record(s) as v0.42.0."
       },
       {
         "authorization_ref": "Operator continue on 2026-08-29 under project-bound Tool Shed autonomy level 5; reconcile PRM-0018 from current product and field evidence",
@@ -94090,6 +94866,16 @@
         "summary": "Satisfy all operational trend and bounded-export roadmap gates through Work5."
       },
       {
+        "authorization_ref": "User-authorized ts: ship",
+        "cycle_id": "26419dd7-233f-4e0d-98be-504c5fc635b3",
+        "decided_at": "2026-08-31T03:50:45Z",
+        "decided_revision": 954,
+        "disposition": "satisfied",
+        "id": "2d5adb02-07ff-4648-9a57-8d4d9b99812e",
+        "scope": "initiative",
+        "summary": "CAMP-0144 is satisfied by the verified v0.42.0 production release and live App Server dashboard behavior."
+      },
+      {
         "authorization_ref": "User-authorized ts: ship v0.40.0",
         "cycle_id": "9410835c-d194-43dc-a1ee-f38bab425e82",
         "decided_at": "2026-08-30T16:40:17Z",
@@ -94148,6 +94934,16 @@
         "id": "32ad7012-64df-4974-9c38-ab9422589318",
         "scope": "initiative",
         "summary": "IDEA-0016 accepted outcome is satisfied by verified v0.40.0 production behavior."
+      },
+      {
+        "authorization_ref": "User-authorized ts: ship",
+        "cycle_id": "85437975-74d1-4552-baa8-77c45057a8e4",
+        "decided_at": "2026-08-31T03:49:42Z",
+        "decided_revision": 953,
+        "disposition": "satisfied",
+        "id": "36010437-fc74-47ae-9118-e7ff063dce64",
+        "scope": "direct-work",
+        "summary": "Tool Shed v0.42.0 production verification for App Server dashboard performance truth."
       },
       {
         "authorization_ref": "ts:work5 user authorization; v0.38.1 verified",
@@ -94638,6 +95434,16 @@
         "id": "774cb093-a6d5-4dc1-8ac8-1f996f9199eb",
         "scope": "initiative",
         "summary": "IDEA-0007 is delivered: the hosted dashboard is production-verified, reporting is live, recovery is automated, and the outcome chain is reconciled."
+      },
+      {
+        "authorization_ref": "User-authorized ts: ship",
+        "cycle_id": "3fe6be2c-6cc1-4511-9030-0d80c07a111a",
+        "decided_at": "2026-08-31T03:51:25Z",
+        "decided_revision": 956,
+        "disposition": "satisfied",
+        "id": "7a5dc8e8-3163-43cd-a102-42a51bf2a1ed",
+        "scope": "initiative",
+        "summary": "PRM-0035 is satisfied by reconciled CAMP-0144 and verified v0.42.0 production evidence."
       },
       {
         "authorization_ref": "owner-approved Work5 execution and password-only authentication",
@@ -96232,6 +97038,16 @@
         "verdict_id": "ba67a3d1-8e66-4042-9924-b8db7d24a991"
       },
       {
+        "compared_at": "2026-08-31T03:51:25Z",
+        "cycle_id": "3fe6be2c-6cc1-4511-9030-0d80c07a111a",
+        "id": "46459c5d-7223-42c8-ad21-2260e40f08f1",
+        "origin_revision": 956,
+        "product_truth_ref": "document:a3bdb2b3-1251-4cc3-8b43-63852b961388",
+        "residual_work_json": "[]",
+        "state": "reconciled",
+        "verdict_id": "7a5dc8e8-3163-43cd-a102-42a51bf2a1ed"
+      },
+      {
         "compared_at": "2026-08-29T02:55:24Z",
         "cycle_id": "c56b5826-cb19-4321-8aa3-d16a7f3d425d",
         "id": "46c9a0a9-d4fd-43f0-9144-ff67f531f5fb",
@@ -96260,6 +97076,16 @@
         "residual_work_json": "[]",
         "state": "reconciled",
         "verdict_id": "32ad7012-64df-4974-9c38-ab9422589318"
+      },
+      {
+        "compared_at": "2026-08-31T03:52:21Z",
+        "cycle_id": "d333e138-60ab-49de-a398-3e231cf63d8c",
+        "id": "48f5223b-4216-4290-9e3b-53ae380a3b1a",
+        "origin_revision": 959,
+        "product_truth_ref": "[\"3a9f09f4-4aa1-4395-81cc-c6c370c7674a\", \"a3bdb2b3-1251-4cc3-8b43-63852b961388\", \"e407c857-8996-47cd-a07c-3216b844837b\"]",
+        "residual_work_json": "[]",
+        "state": "reconciled",
+        "verdict_id": "142c7163-1691-4253-a8f4-5ebbda28d209"
       },
       {
         "compared_at": "2026-08-29T21:06:32Z",
@@ -96430,6 +97256,16 @@
         "residual_work_json": "[]",
         "state": "open",
         "verdict_id": "abc2c911-6153-4a6b-831f-03768fd23fef"
+      },
+      {
+        "compared_at": "2026-08-31T03:51:52Z",
+        "cycle_id": "b94ad001-f710-4556-a582-376736282735",
+        "id": "5f51c265-72a7-4a60-97b7-b0445c8cbe2c",
+        "origin_revision": 958,
+        "product_truth_ref": "document:3a9f09f4-4aa1-4395-81cc-c6c370c7674a",
+        "residual_work_json": "[]",
+        "state": "reconciled",
+        "verdict_id": "0a3838b3-6103-41fa-8ccd-08dfdf21a294"
       },
       {
         "compared_at": "2026-08-29T20:12:26Z",
@@ -96822,6 +97658,16 @@
         "verdict_id": "26f81941-bfd4-48af-918b-90e484bd940e"
       },
       {
+        "compared_at": "2026-08-31T03:49:42Z",
+        "cycle_id": "85437975-74d1-4552-baa8-77c45057a8e4",
+        "id": "9812ca29-9e83-4d47-b738-f206a445c656",
+        "origin_revision": 953,
+        "product_truth_ref": "[\"5405b256-0820-439b-af21-0f1815fca00a\"]",
+        "residual_work_json": "[]",
+        "state": "reconciled",
+        "verdict_id": "36010437-fc74-47ae-9118-e7ff063dce64"
+      },
+      {
         "compared_at": "2026-08-29T00:00:00-07:00",
         "cycle_id": "d5892dcd-7d3f-4511-80d1-e81b08d126da",
         "id": "99ef8e7e-1fb2-4a07-a27e-d368a8fb9766",
@@ -97080,6 +97926,16 @@
         "residual_work_json": "[]",
         "state": "reconciled",
         "verdict_id": "9d2902db-fb9a-4ac1-8b58-1cb23b51277f"
+      },
+      {
+        "compared_at": "2026-08-31T03:50:45Z",
+        "cycle_id": "26419dd7-233f-4e0d-98be-504c5fc635b3",
+        "id": "b7626303-4270-4ad8-b416-164c0c201d2c",
+        "origin_revision": 954,
+        "product_truth_ref": "document:e407c857-8996-47cd-a07c-3216b844837b",
+        "residual_work_json": "[]",
+        "state": "reconciled",
+        "verdict_id": "2d5adb02-07ff-4648-9a57-8d4d9b99812e"
       },
       {
         "compared_at": "2026-08-30T20:59:17Z",
@@ -97913,6 +98769,15 @@
         "relation_type": "outcome-parent",
         "retired_revision": null,
         "to_artifact_id": "fdeecdba-5e35-4ae3-adc7-0f3f694985e8"
+      },
+      {
+        "created_revision": 953,
+        "from_artifact_id": "9fcba7dd-a09d-4ee8-af4a-30bba587ef63",
+        "id": "0fd6e122-bee1-45fd-b18d-84a2abdd1ef9",
+        "provenance": "outcome-reconciliation-v1",
+        "relation_type": "evidenced-by",
+        "retired_revision": null,
+        "to_artifact_id": "5405b256-0820-439b-af21-0f1815fca00a"
       },
       {
         "created_revision": 873,
@@ -98896,6 +99761,15 @@
         "to_artifact_id": "51be4c9c-7933-4e89-bb4b-27870280188e"
       },
       {
+        "created_revision": 954,
+        "from_artifact_id": "e407c857-8996-47cd-a07c-3216b844837b",
+        "id": "4ea13997-cdec-43c5-8bf3-cbb8e89468ca",
+        "provenance": "outcome-reconciliation-v1",
+        "relation_type": "outcome-result-propagated",
+        "retired_revision": null,
+        "to_artifact_id": "a3bdb2b3-1251-4cc3-8b43-63852b961388"
+      },
+      {
         "created_revision": 782,
         "from_artifact_id": "bf5b2191-c8fe-427b-ad40-c85dfbf47634",
         "id": "4ee4b73a-821c-40e9-bde4-21c992af6fb6",
@@ -99533,6 +100407,15 @@
         "relation_type": "outcome-parent",
         "retired_revision": null,
         "to_artifact_id": "3ff5c009-8bb9-4b1a-8e91-efa441da274c"
+      },
+      {
+        "created_revision": 953,
+        "from_artifact_id": "9fcba7dd-a09d-4ee8-af4a-30bba587ef63",
+        "id": "7b24a769-14cd-4e5a-b53c-210ba9c87f5e",
+        "provenance": "outcome-reconciliation-v1",
+        "relation_type": "outcome-parent",
+        "retired_revision": null,
+        "to_artifact_id": "e407c857-8996-47cd-a07c-3216b844837b"
       },
       {
         "created_revision": 727,
@@ -100192,6 +101075,15 @@
         "to_artifact_id": "f73f63a2-cbaa-403e-83ff-ba4cc38bb262"
       },
       {
+        "created_revision": 953,
+        "from_artifact_id": "9fcba7dd-a09d-4ee8-af4a-30bba587ef63",
+        "id": "a8ca4789-acd0-4b0b-bc85-acd4fac399fa",
+        "provenance": "outcome-reconciliation-v1",
+        "relation_type": "outcome-result-propagated",
+        "retired_revision": null,
+        "to_artifact_id": "e407c857-8996-47cd-a07c-3216b844837b"
+      },
+      {
         "created_revision": 62,
         "from_artifact_id": "fdeecdba-5e35-4ae3-adc7-0f3f694985e8",
         "id": "a98cd030-f5eb-4d25-89ba-c03f43adf037",
@@ -100739,6 +101631,15 @@
         "relation_type": "outcome-result-propagated",
         "retired_revision": null,
         "to_artifact_id": "728d6caa-feb8-4dbc-8f9f-3a53dae722c3"
+      },
+      {
+        "created_revision": 956,
+        "from_artifact_id": "a3bdb2b3-1251-4cc3-8b43-63852b961388",
+        "id": "cdf1b0c4-cc82-4693-b1f9-ce6d558d201b",
+        "provenance": "outcome-reconciliation-v1",
+        "relation_type": "outcome-result-propagated",
+        "retired_revision": null,
+        "to_artifact_id": "3a9f09f4-4aa1-4395-81cc-c6c370c7674a"
       },
       {
         "created_revision": 376,
@@ -102353,7 +103254,7 @@
         "accepted_outcome": "Production-release Work2 outcome: sqlite/documents/MAP-0024",
         "accepted_revision": 949,
         "cycle_id": "d333e138-60ab-49de-a398-3e231cf63d8c",
-        "disposition": "awaiting-release",
+        "disposition": "released-reconciled",
         "evidence_gate_key": "work5-production-release",
         "id": "57cb37b9-768a-5e28-8410-46e2d62d706c",
         "milestone_key": "work2:829ff4f895875e4dd7874659df6058e427a8ded0",
@@ -102543,7 +103444,7 @@
         "accepted_outcome": "Production-release Work2 outcome: sqlite/documents/CAMP-0144",
         "accepted_revision": 949,
         "cycle_id": "d333e138-60ab-49de-a398-3e231cf63d8c",
-        "disposition": "awaiting-release",
+        "disposition": "released-reconciled",
         "evidence_gate_key": "work5-production-release",
         "id": "69cb9e04-f417-5222-b917-5d0714103c46",
         "milestone_key": "work2:829ff4f895875e4dd7874659df6058e427a8ded0",
@@ -103283,7 +104184,7 @@
         "accepted_outcome": "Production-release Work2 outcome: sqlite/documents/PRM-0035",
         "accepted_revision": 949,
         "cycle_id": "d333e138-60ab-49de-a398-3e231cf63d8c",
-        "disposition": "awaiting-release",
+        "disposition": "released-reconciled",
         "evidence_gate_key": "work5-production-release",
         "id": "c2a140c5-c074-56e1-a52f-8d89376e9b54",
         "milestone_key": "work2:829ff4f895875e4dd7874659df6058e427a8ded0",
@@ -103758,6 +104659,16 @@
         "id": "f3e72d47-7738-4007-9b8f-a936324edf4f",
         "milestone_key": "M5-RELEASE-CANARY-PROVEN",
         "origin_artifact_id": "60b227eb-59c8-4dd6-91e2-5f1c312838c7"
+      },
+      {
+        "accepted_outcome": "Publish v0.42.0 and verify the truthful App Server performance screen on ts.rookaro.com.",
+        "accepted_revision": 953,
+        "cycle_id": "85437975-74d1-4552-baa8-77c45057a8e4",
+        "disposition": "accepted",
+        "evidence_gate_key": "direct-evidence",
+        "id": "f5372ed5-7ebb-460e-a16a-a65302d81a5b",
+        "milestone_key": "direct",
+        "origin_artifact_id": "9fcba7dd-a09d-4ee8-af4a-30bba587ef63"
       },
       {
         "accepted_outcome": "Prove exact identity/state/input fences, skip classes, interruption and duplicate-run safety, bounded diagnostics, and deterministic resume/restart behavior without replay or guessed success.",
@@ -106113,6 +107024,17 @@
         "table_name": "relationship"
       },
       {
+        "id": "08fc50da-38c4-45f3-9073-92c489290933",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5f2577d4-61ed-40e8-b6b4-4a67a814f337",
+        "payload_digest": "d88e0bfb3e8684b32c47894eb8e94f831f98d6dc824b7aa3808a4491e2da5cdc",
+        "recorded_at": "2026-08-31T03:52:21Z",
+        "revision": 959,
+        "row_id": "48f5223b-4216-4290-9e3b-53ae380a3b1a",
+        "table_name": "reconciliation"
+      },
+      {
         "id": "08fd0f1f-40ad-484b-bfa7-0fbacd1a2195",
         "managed": 1,
         "operation": "update",
@@ -107123,6 +108045,17 @@
         "revision": 407,
         "row_id": "ee5ca631-6df2-4af1-906f-5b682d926caf",
         "table_name": "reconciliation"
+      },
+      {
+        "id": "0d23546e-86e5-4e80-943d-82013aca85a8",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_digest": "83265bda6b30cdccf877d42c0e9f9a1ff9a536f0915fea3e0d235d80c94e8814",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953,
+        "row_id": "5405b256-0820-439b-af21-0f1815fca00a",
+        "table_name": "artifact"
       },
       {
         "id": "0d2f5723-370a-4ed2-9dae-6d3f53671cbb",
@@ -109105,6 +110038,28 @@
         "table_name": "artifact"
       },
       {
+        "id": "14911e68-faa7-4e46-a51b-e89a07cf5c80",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "3c84a1e3-5177-448a-b453-dd1619cad674",
+        "payload_digest": "18a2e6045d2d95c490efe777d3da82268c0c14bcdd5356af7d5ac4b19002d85c",
+        "recorded_at": "2026-08-31T03:51:51Z",
+        "revision": 957,
+        "row_id": "3a9f09f4-4aa1-4395-81cc-c6c370c7674a",
+        "table_name": "document"
+      },
+      {
+        "id": "149368a3-3aab-4483-83c7-0c5ff50ad2f3",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "bff9cf2e-5761-4d7f-a755-916f16d423cd",
+        "payload_digest": "6cefc287457adb879bfab63120267252b7cee3ddfb064de8988c2596415e4122",
+        "recorded_at": "2026-08-31T03:52:15Z",
+        "revision": 958,
+        "row_id": "5f51c265-72a7-4a60-97b7-b0445c8cbe2c",
+        "table_name": "reconciliation"
+      },
+      {
         "id": "14aba962-0462-48d5-9f0b-86d5c12fbea5",
         "managed": 1,
         "operation": "insert",
@@ -109424,6 +110379,17 @@
         "table_name": "artifact"
       },
       {
+        "id": "16106c0f-ad74-4729-a258-e373c239ccdd",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "3771cc42-92bb-4db4-a3ce-e61f05651e78",
+        "payload_digest": "ba6e456783e27dc8e8cf86e23c6c96052bce8a0457d545ff42e3c0fc9a1c93b7",
+        "recorded_at": "2026-08-31T03:51:51Z",
+        "revision": 956,
+        "row_id": "7a5dc8e8-3163-43cd-a102-42a51bf2a1ed",
+        "table_name": "outcome_verdict"
+      },
+      {
         "id": "16126b67-e2ea-4168-b0ab-90a00ed98226",
         "managed": 1,
         "operation": "update",
@@ -109696,6 +110662,28 @@
         "recorded_at": "2026-08-28T20:34:50Z",
         "revision": 36,
         "row_id": "acc357fd-039b-4848-96ab-61bd99d16ae9",
+        "table_name": "verification_result"
+      },
+      {
+        "id": "17002ba6-d526-43a0-a111-928c660d5fe2",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "7bce241a-08fe-4be7-8bd3-0d0f442c89a8",
+        "payload_digest": "e17ba694bb6c05b0b1825cd9f22376611fed3ed4ff75847079c9240c21741517",
+        "recorded_at": "2026-08-31T03:51:25Z",
+        "revision": 955,
+        "row_id": "a3bdb2b3-1251-4cc3-8b43-63852b961388",
+        "table_name": "artifact"
+      },
+      {
+        "id": "1704a29c-9a7d-4045-b977-7b079437dd21",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_digest": "8e7454801f33350e81da523a493975e0f6293604e6ddc0eec15f2e1f7920fcd0",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951,
+        "row_id": "43fd0e00-f083-55d1-812f-4ff55abdb7ff",
         "table_name": "verification_result"
       },
       {
@@ -112537,6 +113525,17 @@
         "table_name": "verification_result"
       },
       {
+        "id": "22210df6-bd0e-4bba-9e53-38740cf37850",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_digest": "16682b14c77a12615e97b609fb24140a1fc64fe4092f5a93e73fd0cd587f58df",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953,
+        "row_id": "0fd6e122-bee1-45fd-b18d-84a2abdd1ef9",
+        "table_name": "relationship"
+      },
+      {
         "id": "222559b5-fbbe-4967-8969-c8f9842806bb",
         "managed": 1,
         "operation": "insert",
@@ -112623,6 +113622,17 @@
         "revision": 480,
         "row_id": "ec003570-428f-43c3-80f4-4035413c12be",
         "table_name": "verification_result"
+      },
+      {
+        "id": "22a07169-7ae2-43a2-9edd-5486dcf2ac38",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "7bce241a-08fe-4be7-8bd3-0d0f442c89a8",
+        "payload_digest": "ad19fa78ad422d1968de2d5f23a23b0faf1c6f4e60547e10385c8905345d0b44",
+        "recorded_at": "2026-08-31T03:51:25Z",
+        "revision": 955,
+        "row_id": "b5229788-93e2-4ec7-93ff-a9b17d48b367",
+        "table_name": "document_revision"
       },
       {
         "id": "22a12c20-d1eb-4f71-a5da-cdfcbccec791",
@@ -112744,6 +113754,17 @@
         "revision": 813,
         "row_id": "c65f0d91-69de-4ff6-90c8-949b89d5e469",
         "table_name": "outcome_verdict"
+      },
+      {
+        "id": "231d2678-3ab6-4d0f-95f0-c2b3825d8556",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "9b30eac1-ce4e-4e86-ab11-03630f54a10a",
+        "payload_digest": "e6bdf7e21adc89cc3117e4543b18ae523e4fe95401d505b0bed908c9126a3c8b",
+        "recorded_at": "2026-08-31T03:51:07Z",
+        "revision": 954,
+        "row_id": "b7626303-4270-4ad8-b416-164c0c201d2c",
+        "table_name": "reconciliation"
       },
       {
         "id": "2327dd0b-f9cd-4b28-ad2c-b77a5538b6c2",
@@ -115452,6 +116473,17 @@
         "table_name": "document_revision"
       },
       {
+        "id": "2fdf13c6-bfca-4c86-b2ae-6751f1d378cf",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_digest": "314cce7434a138bcf38d18fa92f9ac8ab3ef4645d4700d750a28d582d73be9d6",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951,
+        "row_id": "d13a5183-fde8-53e1-9ba3-7d29cd638b50",
+        "table_name": "evidence_reference"
+      },
+      {
         "id": "2fe1be92-46a0-49b3-b863-3cb83f88132f",
         "managed": 1,
         "operation": "update",
@@ -116189,6 +117221,17 @@
         "table_name": "document_path_alias"
       },
       {
+        "id": "32f252b6-1080-45cd-9ebf-41beb1b495a6",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "6b77992f-3ecd-46a0-a1fd-4c97b1a59654",
+        "payload_digest": "6c4b0aae4a3b05bce2b9d871baebb0e758104f2477c707bdbffbe412322bd13f",
+        "recorded_at": "2026-08-31T03:38:02Z",
+        "revision": 950,
+        "row_id": "d333e138-60ab-49de-a398-3e231cf63d8c",
+        "table_name": "cycle"
+      },
+      {
         "id": "32fc060d-f162-4fa2-af36-127687fa38ae",
         "managed": 1,
         "operation": "insert",
@@ -116904,6 +117947,17 @@
         "table_name": "artifact"
       },
       {
+        "id": "36300846-660f-4f22-8c30-d4de9263b756",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_digest": "9c6c3d85b40492b34be8848eb3862cbda018436f93c52c9cfd6eb88ee888f452",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951,
+        "row_id": "c2a140c5-c074-56e1-a52f-8d89376e9b54",
+        "table_name": "requirement"
+      },
+      {
         "id": "36386ede-bf69-4046-a008-2bd685510f2c",
         "managed": 1,
         "operation": "update",
@@ -117286,6 +118340,17 @@
         "recorded_at": "2026-08-30T16:40:17Z",
         "revision": 806,
         "row_id": "b388f315-b157-48d8-9a12-fc4a29741cd3",
+        "table_name": "cycle"
+      },
+      {
+        "id": "37dc330d-8ad4-471a-9b53-5f6a99828793",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "3771cc42-92bb-4db4-a3ce-e61f05651e78",
+        "payload_digest": "eacd9a46cebba9bff186f54efd9a062304b3d7fa9e2966bc15191af4723c75a9",
+        "recorded_at": "2026-08-31T03:51:51Z",
+        "revision": 956,
+        "row_id": "3fe6be2c-6cc1-4511-9030-0d80c07a111a",
         "table_name": "cycle"
       },
       {
@@ -118035,6 +119100,17 @@
         "revision": 533,
         "row_id": "afa34564-86fd-4f1e-bc56-a06a4cba9031",
         "table_name": "document_revision"
+      },
+      {
+        "id": "3b054f84-cc55-4209-9126-1d4ecedee0a4",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "3c84a1e3-5177-448a-b453-dd1619cad674",
+        "payload_digest": "d5ec708c80f9337c89fbf55be65e9046fd6b5b37d0e517705475611a18ee1395",
+        "recorded_at": "2026-08-31T03:51:51Z",
+        "revision": 957,
+        "row_id": "3a9f09f4-4aa1-4395-81cc-c6c370c7674a",
+        "table_name": "artifact"
       },
       {
         "id": "3b1c9391-df0a-46d1-abbc-071531bcb303",
@@ -121511,6 +122587,17 @@
         "revision": 894,
         "row_id": "b5fb4dbb-039a-4e81-bad1-6e73a2f0746a",
         "table_name": "outcome_verdict"
+      },
+      {
+        "id": "4a003722-2342-410a-9e1f-289ad515f7a7",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_digest": "92d5ea8542208db67673f34cdee2c6ca94b5238a5176a187957d908b9d7dbf0a",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951,
+        "row_id": "4a3965db-4654-4787-9f45-3efa29b20cfd",
+        "table_name": "artifact"
       },
       {
         "id": "4a020f5a-64e2-43dc-9186-da07fce2efdb",
@@ -125121,6 +126208,17 @@
         "table_name": "reconciliation"
       },
       {
+        "id": "5925fd20-c7f1-47a4-9acf-a4ce2fa5f0af",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "5f2577d4-61ed-40e8-b6b4-4a67a814f337",
+        "payload_digest": "88a9ffea1bc0b1ea1a48d3caab0b5d6078d46fe582d2dcd3a60839f953f6b7bf",
+        "recorded_at": "2026-08-31T03:52:21Z",
+        "revision": 959,
+        "row_id": "4a3965db-4654-4787-9f45-3efa29b20cfd",
+        "table_name": "artifact"
+      },
+      {
         "id": "5957d07e-2afe-463e-956a-05b841d43da3",
         "managed": 1,
         "operation": "insert",
@@ -125306,6 +126404,17 @@
         "revision": 124,
         "row_id": "2e594f3b-b1fc-4c56-bc0a-5d0226768dc0",
         "table_name": "document_revision"
+      },
+      {
+        "id": "5a22129d-a0ab-4447-90bf-addd4649fc23",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "3771cc42-92bb-4db4-a3ce-e61f05651e78",
+        "payload_digest": "20c305a3faeb803362d9878925c78dcd8faa577518009c2a5e4f13886ad22443",
+        "recorded_at": "2026-08-31T03:51:51Z",
+        "revision": 956,
+        "row_id": "cdf1b0c4-cc82-4693-b1f9-ce6d558d201b",
+        "table_name": "relationship"
       },
       {
         "id": "5a27b253-c4a9-4dfc-bdce-bba7823d9800",
@@ -126045,6 +127154,17 @@
         "table_name": "requirement"
       },
       {
+        "id": "5d602f92-7116-4dc0-9f67-5174a1491408",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "5f2577d4-61ed-40e8-b6b4-4a67a814f337",
+        "payload_digest": "e671676a3db64105d90ddf93cbd54e99a8d182db5af4f719ffb4ec724335525d",
+        "recorded_at": "2026-08-31T03:52:21Z",
+        "revision": 959,
+        "row_id": "142c7163-1691-4253-a8f4-5ebbda28d209",
+        "table_name": "outcome_verdict"
+      },
+      {
         "id": "5d73fa6e-0335-46fc-9b4e-fbb960b0cc25",
         "managed": 1,
         "operation": "update",
@@ -126076,6 +127196,17 @@
         "revision": 802,
         "row_id": "35bc9ad9-2a7d-4fc7-ad04-743d7746a5ed",
         "table_name": "document_revision"
+      },
+      {
+        "id": "5d951bce-bd04-47cb-95cc-b8a445254401",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "bff9cf2e-5761-4d7f-a755-916f16d423cd",
+        "payload_digest": "4154f895fbfac26f4cda02c8b800df9842384b1a7631f0aa9d2585fa7a59c1f1",
+        "recorded_at": "2026-08-31T03:52:15Z",
+        "revision": 958,
+        "row_id": "b94ad001-f710-4556-a582-376736282735",
+        "table_name": "cycle"
       },
       {
         "id": "5d9d2692-ea6b-4190-9045-97c582498795",
@@ -127286,6 +128417,17 @@
         "revision": 791,
         "row_id": "2f0a10c3-8203-584c-8099-b3bc7033b90e",
         "table_name": "requirement"
+      },
+      {
+        "id": "62cfc0f8-d66c-43a5-9f9e-2c59a846cd56",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_digest": "fa9e456e933448866ebf27f53105e288ad707459fc3d545b40ae959138dfddba",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953,
+        "row_id": "a8ca4789-acd0-4b0b-bc85-acd4fac399fa",
+        "table_name": "relationship"
       },
       {
         "id": "62dc9c33-55d7-49ed-8473-9a7f409d3128",
@@ -129873,6 +131015,17 @@
         "table_name": "reconciliation"
       },
       {
+        "id": "6dcc4539-98a6-49ee-8b40-85393a78ca6d",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "3c84a1e3-5177-448a-b453-dd1619cad674",
+        "payload_digest": "bd0562e466db5792d62b10d9e410b61df89c7a120051a1f4b2e69655c23193a7",
+        "recorded_at": "2026-08-31T03:51:51Z",
+        "revision": 957,
+        "row_id": "156fadf2-7bde-43b0-8f50-c7044d79bc8e",
+        "table_name": "document_revision"
+      },
+      {
         "id": "6dcdf57a-6c70-4e4e-a9d3-2516f2676d7c",
         "managed": 1,
         "operation": "insert",
@@ -131776,6 +132929,17 @@
         "table_name": "requirement"
       },
       {
+        "id": "757b314b-50b3-4d9d-9abe-3c80df10b7c6",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "5f2577d4-61ed-40e8-b6b4-4a67a814f337",
+        "payload_digest": "12524dc0f6fe6b24bb309a33f1dcfa6df6345d34041f2a99b9ae1ba8f4424352",
+        "recorded_at": "2026-08-31T03:52:21Z",
+        "revision": 959,
+        "row_id": "57cb37b9-768a-5e28-8410-46e2d62d706c",
+        "table_name": "requirement"
+      },
+      {
         "id": "759981e1-302a-4941-a976-30e166c68924",
         "managed": 1,
         "operation": "update",
@@ -131873,6 +133037,17 @@
         "revision": 36,
         "row_id": "c0844a90-f569-4c59-a98f-3b520f61a4e0",
         "table_name": "outcome_verdict"
+      },
+      {
+        "id": "760c948e-e0af-47e3-b8ba-e97e49ca71fb",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_digest": "1f6fc6295981c5c986ec5409d8d306311b4cd49179790a82dd998c4c67967552",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953,
+        "row_id": "dc982fec-be00-45c0-a43d-b698b2076479",
+        "table_name": "evidence_reference"
       },
       {
         "id": "7611b294-1177-40a0-aa5d-5afe9d86640d",
@@ -134339,6 +135514,17 @@
         "table_name": "document"
       },
       {
+        "id": "80160153-2163-4058-aba9-e4bcaab36685",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_digest": "7972ee6b45d29000f86ac97b37561388ddd706fbfc01eb66b6dd4161dd915e29",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953,
+        "row_id": "9fcba7dd-a09d-4ee8-af4a-30bba587ef63",
+        "table_name": "artifact"
+      },
+      {
         "id": "80171c4a-3437-4b8d-8016-2b15285e70a2",
         "managed": 1,
         "operation": "insert",
@@ -135162,6 +136348,17 @@
         "revision": 102,
         "row_id": "2e3c5a47-fc27-4153-a64e-7a7712c7d69a",
         "table_name": "document_path_alias"
+      },
+      {
+        "id": "82d7e824-9241-4e68-b636-576a3af40d6a",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "9b30eac1-ce4e-4e86-ab11-03630f54a10a",
+        "payload_digest": "dc22fe1d21330c4418461e5b74e176f6b71a9f507c32dfc9b737da6841384fe9",
+        "recorded_at": "2026-08-31T03:51:07Z",
+        "revision": 954,
+        "row_id": "2d5adb02-07ff-4648-9a57-8d4d9b99812e",
+        "table_name": "outcome_verdict"
       },
       {
         "id": "82df2186-35d1-4f1f-b53b-ce9e5b380d5e",
@@ -136548,6 +137745,17 @@
         "revision": 670,
         "row_id": "edfede32-a0d6-417e-a085-f5001663d468",
         "table_name": "verification_result"
+      },
+      {
+        "id": "88f49891-8124-4910-9e07-6c56e24fa3ea",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "25edd8cd-6f46-437f-809a-d2a7bcdf3c41",
+        "payload_digest": "fb3f9efdbaab96dd046a1d97e320144499c9ea62aed7491c02de99fa6360f98b",
+        "recorded_at": "2026-08-31T03:47:02Z",
+        "revision": 952,
+        "row_id": "59510d84-6ee4-45b5-8751-fc24f31716f4",
+        "table_name": "document_revision"
       },
       {
         "id": "88f98ab6-db4e-4fae-85d6-4937f643d4b4",
@@ -139641,6 +140849,17 @@
         "table_name": "document_path_alias"
       },
       {
+        "id": "964c6285-6850-42ef-bebb-2236b0fc166e",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_digest": "0448836f7dc763aad3640a0630f379fbe3836e64eae7f6e8b5fbf8efedb6a5ce",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953,
+        "row_id": "f5372ed5-7ebb-460e-a16a-a65302d81a5b",
+        "table_name": "requirement"
+      },
+      {
         "id": "96556b7d-4a6a-4b49-a5f3-38c360427532",
         "managed": 1,
         "operation": "update",
@@ -140323,6 +141542,17 @@
         "table_name": "document_namespace"
       },
       {
+        "id": "98e2876a-7b15-42ed-8b1d-8df1708f7802",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "6b77992f-3ecd-46a0-a1fd-4c97b1a59654",
+        "payload_digest": "5217b4e52660e8941aace123c43ac3eea6cd757712c6119c3735aacee1544d5d",
+        "recorded_at": "2026-08-31T03:38:02Z",
+        "revision": 950,
+        "row_id": "4a3965db-4654-4787-9f45-3efa29b20cfd",
+        "table_name": "artifact"
+      },
+      {
         "id": "98f51f29-b1a2-4aeb-9146-27ae84772336",
         "managed": 1,
         "operation": "insert",
@@ -140343,6 +141573,17 @@
         "revision": 669,
         "row_id": "2a97a475-be86-4e26-bff4-6a7f9fe95497",
         "table_name": "document_revision"
+      },
+      {
+        "id": "99063441-d015-4e05-8019-292c83d79366",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_digest": "bec8ac510489140a2e092a392b59cef48fed8e614cc19649e3d388729b44520c",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951,
+        "row_id": "f1b9e937-b4fb-42c2-8215-0e6b7d93f6e7",
+        "table_name": "evidence_reference"
       },
       {
         "id": "990f4895-71c3-4ddd-ac23-5a8d2ffaa654",
@@ -142556,6 +143797,17 @@
         "table_name": "outcome_verdict"
       },
       {
+        "id": "a304d264-3656-4e73-99db-74716215e976",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_digest": "b208d99d187ba8a4f30ba4d6f4b2052a6ba1e92d7ce73d36b861f7d991a57b38",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953,
+        "row_id": "7b24a769-14cd-4e5a-b53c-210ba9c87f5e",
+        "table_name": "relationship"
+      },
+      {
         "id": "a310d47d-9178-4cf9-93e6-ebe008c9b8ff",
         "managed": 1,
         "operation": "insert",
@@ -142917,6 +144169,17 @@
         "revision": 948,
         "row_id": "26419dd7-233f-4e0d-98be-504c5fc635b3",
         "table_name": "cycle"
+      },
+      {
+        "id": "a439a73e-2a2a-4463-9cdc-e50b62488b1c",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "6b77992f-3ecd-46a0-a1fd-4c97b1a59654",
+        "payload_digest": "648501b2967ffe7fad647d8bb73b0f50752758c652bcb8aba17af9ceabe62461",
+        "recorded_at": "2026-08-31T03:38:02Z",
+        "revision": 950,
+        "row_id": "88d26689-c0d9-467b-86a0-0700a05bc308",
+        "table_name": "evidence_reference"
       },
       {
         "id": "a449979a-352c-422f-999c-f1fcc96464f9",
@@ -144393,6 +145656,17 @@
         "table_name": "document_path_alias"
       },
       {
+        "id": "aa79c268-47bf-4e6e-bab3-020ef02609ec",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_digest": "9497bbbcb56c1993cc60146b99c82e64f26c2ec2fb6b35da4ccc78b16c22a672",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953,
+        "row_id": "36010437-fc74-47ae-9118-e7ff063dce64",
+        "table_name": "outcome_verdict"
+      },
+      {
         "id": "aa93e80f-c72c-43a9-a472-868b777c2aec",
         "managed": 1,
         "operation": "update",
@@ -144446,6 +145720,17 @@
         "revision": 318,
         "row_id": "TKT",
         "table_name": "document_namespace"
+      },
+      {
+        "id": "aaa282ab-28ac-450f-9e2a-68b3e365680e",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "7bce241a-08fe-4be7-8bd3-0d0f442c89a8",
+        "payload_digest": "fe599e5a700d4d44d607d8d5f27e05e0bb4bc3662b02012267c871ee76dee6c6",
+        "recorded_at": "2026-08-31T03:51:25Z",
+        "revision": 955,
+        "row_id": "a3bdb2b3-1251-4cc3-8b43-63852b961388",
+        "table_name": "document"
       },
       {
         "id": "aaac5783-f395-4ebe-ba1f-c9a865c1fef5",
@@ -145735,6 +147020,17 @@
         "table_name": "requirement"
       },
       {
+        "id": "afdb8f80-0f2d-4fed-83ca-3858854542d6",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_digest": "d3c65b7473cea0ea8759c04ff5d65555a9d6c9806ec8f7dd898fe01d016589cb",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951,
+        "row_id": "d333e138-60ab-49de-a398-3e231cf63d8c",
+        "table_name": "cycle"
+      },
+      {
         "id": "afe7ec6c-96f0-4211-ba90-d45687e3dc99",
         "managed": 1,
         "operation": "insert",
@@ -146591,6 +147887,17 @@
         "revision": 793,
         "row_id": "828199dd-5f17-51d2-a006-7623009e573a",
         "table_name": "verification_result"
+      },
+      {
+        "id": "b3325e74-7ee0-4244-b791-0bf3c08dba5d",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "9b30eac1-ce4e-4e86-ab11-03630f54a10a",
+        "payload_digest": "41f2f0ae323a2a007ce9f457a5ccc81cc322d05927b09c2d84d19f00ee3a3c12",
+        "recorded_at": "2026-08-31T03:51:07Z",
+        "revision": 954,
+        "row_id": "4ea13997-cdec-43c5-8bf3-cbb8e89468ca",
+        "table_name": "relationship"
       },
       {
         "id": "b34df3c2-260a-4b4c-b805-40fc1c92935b",
@@ -148441,6 +149748,17 @@
         "table_name": "outcome_verdict"
       },
       {
+        "id": "ba1f955b-0104-4767-ba81-191bdaf0a61f",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "5f2577d4-61ed-40e8-b6b4-4a67a814f337",
+        "payload_digest": "d31709dc1790327a6a10f5773481aa8a793ee6f3c15b63d21142c6e7bd312348",
+        "recorded_at": "2026-08-31T03:52:21Z",
+        "revision": 959,
+        "row_id": "69cb9e04-f417-5222-b917-5d0714103c46",
+        "table_name": "requirement"
+      },
+      {
         "id": "ba1f9c69-2689-4a73-a809-fd55ed5f3ac0",
         "managed": 1,
         "operation": "insert",
@@ -149717,6 +151035,17 @@
         "table_name": "verification_result"
       },
       {
+        "id": "beb62681-d0f0-46b9-9c40-be07ac2bd934",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "25edd8cd-6f46-437f-809a-d2a7bcdf3c41",
+        "payload_digest": "3bb9007816af2ad05a1085866f1eff1aec6f76fb962f479e731623c8a1c7c999",
+        "recorded_at": "2026-08-31T03:47:02Z",
+        "revision": 952,
+        "row_id": "e407c857-8996-47cd-a07c-3216b844837b",
+        "table_name": "artifact"
+      },
+      {
         "id": "beb6e634-6b3b-442a-9f89-3436476a71d5",
         "managed": 1,
         "operation": "insert",
@@ -149781,6 +151110,17 @@
         "revision": 247,
         "row_id": "b2b6fc22-47c4-5d0e-98d0-24d07f5363d6",
         "table_name": "artifact"
+      },
+      {
+        "id": "bf1eb394-4f88-4f0f-8cb9-12399ffa3672",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_digest": "59452d91bbc99d5e1eee1e5db54ddc9127445d87a43b11402101189b3a023368",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953,
+        "row_id": "7d4126b8-7976-468c-8634-36016500b2a8",
+        "table_name": "verification_result"
       },
       {
         "id": "bf2f7bd1-2bb8-4e57-b79a-b8f1920ce3c1",
@@ -150861,6 +152201,28 @@
         "table_name": "material_change"
       },
       {
+        "id": "c33d436e-a863-416b-abbb-5cdd05f72d42",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "25edd8cd-6f46-437f-809a-d2a7bcdf3c41",
+        "payload_digest": "25dc7124070734ba6f664f49adc8cab3fdfd3a652cf7a06f80bccb262e68d770",
+        "recorded_at": "2026-08-31T03:47:02Z",
+        "revision": 952,
+        "row_id": "e407c857-8996-47cd-a07c-3216b844837b",
+        "table_name": "document"
+      },
+      {
+        "id": "c340dd59-190f-48e0-8eb4-81214337efe3",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "5f2577d4-61ed-40e8-b6b4-4a67a814f337",
+        "payload_digest": "05c654d9ddb8323903723a0308b7c180ebd42d3c5a9589fdbe214e8f62bc7193",
+        "recorded_at": "2026-08-31T03:52:21Z",
+        "revision": 959,
+        "row_id": "c2a140c5-c074-56e1-a52f-8d89376e9b54",
+        "table_name": "requirement"
+      },
+      {
         "id": "c347c59f-b575-4ed1-a037-194b829a9801",
         "managed": 1,
         "operation": "insert",
@@ -151343,6 +152705,17 @@
         "revision": 112,
         "row_id": "b258809a-c710-49f0-9c6a-5471437e05df",
         "table_name": "document_path_alias"
+      },
+      {
+        "id": "c4fdbb03-9010-4f46-83c6-e1fb362e7e15",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_digest": "87c4dd079e0ecf53dff45620ccef2472b22cdc93cfbaa9da563fd654c15ff14c",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951,
+        "row_id": "69cb9e04-f417-5222-b917-5d0714103c46",
+        "table_name": "requirement"
       },
       {
         "id": "c501159e-eccc-4629-ab55-63b79875f2e3",
@@ -152115,6 +153488,17 @@
         "table_name": "artifact"
       },
       {
+        "id": "c8a7b6de-7592-48c6-ba50-203ec14e4eea",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "5f2577d4-61ed-40e8-b6b4-4a67a814f337",
+        "payload_digest": "d6bc96bc5d7065c3ed50f459971b133f5306a6ff0fc84167a489e9e0ac683c3c",
+        "recorded_at": "2026-08-31T03:52:21Z",
+        "revision": 959,
+        "row_id": "d333e138-60ab-49de-a398-3e231cf63d8c",
+        "table_name": "cycle"
+      },
+      {
         "id": "c8b12c7c-cd00-4ec2-b04f-922b7726fa04",
         "managed": 1,
         "operation": "update",
@@ -152498,6 +153882,17 @@
         "revision": 622,
         "row_id": "bb506b8c-5f68-48c7-993b-b9d59487b1b8",
         "table_name": "artifact"
+      },
+      {
+        "id": "ca57ef87-bd0c-499c-a5aa-48a0b704103e",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_digest": "b1376f7e3309a7dd5e2e47187a005a9185cf80fa98a317e7fea465b1e7662bc9",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953,
+        "row_id": "9812ca29-9e83-4d47-b738-f206a445c656",
+        "table_name": "reconciliation"
       },
       {
         "id": "ca5cbec8-17a1-4b56-94bd-c4a07a5a7805",
@@ -156460,6 +157855,17 @@
         "table_name": "outcome_verdict"
       },
       {
+        "id": "da85d750-c416-4fcb-b17c-cd8fbbb8fbcf",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_digest": "1572d05980721b5108750b1d61724e0589ebcfb7ef378a0efb0f1d4d7f6315ed",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951,
+        "row_id": "f8519f2d-443f-5446-ba9a-ec76d488c91b",
+        "table_name": "evidence_reference"
+      },
+      {
         "id": "da98de49-24f0-46da-bd51-d7033bd62c66",
         "managed": 1,
         "operation": "insert",
@@ -157802,6 +159208,17 @@
         "table_name": "verification_result"
       },
       {
+        "id": "dfd4f00c-00e2-4629-80b5-4968a8920e92",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_digest": "13a3df313f6c8800f206839848c3bbab3352a8bbf33fcd27d36a3de9d8ff813c",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951,
+        "row_id": "57cb37b9-768a-5e28-8410-46e2d62d706c",
+        "table_name": "requirement"
+      },
+      {
         "id": "dfdd1148-9ac1-4df2-9c2c-85ca302df800",
         "managed": 1,
         "operation": "update",
@@ -158559,6 +159976,17 @@
         "revision": 243,
         "row_id": "6c144d01-3708-52dd-90fe-9cc45a426eca",
         "table_name": "artifact"
+      },
+      {
+        "id": "e264754b-bd96-4a7f-bcb0-ea6392ff5dad",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "bff9cf2e-5761-4d7f-a755-916f16d423cd",
+        "payload_digest": "35509fd2d375cfb2bf2ec329907af1b8781d2f60204fd89be5e427f6b51e385b",
+        "recorded_at": "2026-08-31T03:52:15Z",
+        "revision": 958,
+        "row_id": "0a3838b3-6103-41fa-8ccd-08dfdf21a294",
+        "table_name": "outcome_verdict"
       },
       {
         "id": "e2667b3e-0369-447f-ab50-aaae80289506",
@@ -159428,6 +160856,17 @@
         "revision": 236,
         "row_id": "52089abe-dc4e-44e9-baa8-6361acf02955",
         "table_name": "document_path_alias"
+      },
+      {
+        "id": "e5977ec1-32fc-4796-bb0a-431da7e7a6df",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "9b30eac1-ce4e-4e86-ab11-03630f54a10a",
+        "payload_digest": "017ef7650a843e4d2828e9a74087d510afdec65e0acc02e3468ca9440c5e0e1e",
+        "recorded_at": "2026-08-31T03:51:07Z",
+        "revision": 954,
+        "row_id": "26419dd7-233f-4e0d-98be-504c5fc635b3",
+        "table_name": "cycle"
       },
       {
         "id": "e5ae5b68-b33b-4343-8e0a-74c6c53b8e58",
@@ -161463,6 +162902,17 @@
         "revision": 201,
         "row_id": "1eb0f8c5-f3de-4813-b883-ecd47a4354e6",
         "table_name": "document_conversion"
+      },
+      {
+        "id": "ee8b4f56-fdae-40ba-8b5f-6d6b6a4e9db0",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "58c326c2-20d5-4d67-804f-711413ba2b0a",
+        "payload_digest": "28a613340e58581e4f90ecb4ca62444a1a95feb4574ce158756b874c3434d414",
+        "recorded_at": "2026-08-31T03:50:36Z",
+        "revision": 953,
+        "row_id": "85437975-74d1-4552-baa8-77c45057a8e4",
+        "table_name": "cycle"
       },
       {
         "id": "ee97a3c1-bbd1-4521-a274-eff558c099ed",
@@ -164006,6 +165456,28 @@
         "table_name": "material_change"
       },
       {
+        "id": "fafb7ee9-4293-4e05-8406-e5f125c5b75d",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_digest": "d451c624aca775cf1ce66dcb2675718f32fb8bc5fd43a96393a52b1f1d4d4133",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951,
+        "row_id": "054874d6-8be0-50e7-8197-71006ec28b4f",
+        "table_name": "verification_result"
+      },
+      {
+        "id": "fafcdbfe-2a7b-444b-9f0f-0fb531f800d3",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "3771cc42-92bb-4db4-a3ce-e61f05651e78",
+        "payload_digest": "330f8077374aca71682893d6a2b0efc557de41859202a630b1e1b86c06072e16",
+        "recorded_at": "2026-08-31T03:51:51Z",
+        "revision": 956,
+        "row_id": "46459c5d-7223-42c8-ad21-2260e40f08f1",
+        "table_name": "reconciliation"
+      },
+      {
         "id": "fafd3a21-a176-4750-bfba-8d60c37d6dbb",
         "managed": 1,
         "operation": "insert",
@@ -164578,6 +166050,17 @@
         "table_name": "artifact"
       },
       {
+        "id": "fd02fe40-94f6-4cbd-8a05-ca345607b4ac",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_digest": "16e5e4099fb0be0004bf576c5425bfb62eef4329ba72df9366494690f6b9a021",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951,
+        "row_id": "021598a3-dc44-57f6-865d-7394da31c88b",
+        "table_name": "evidence_reference"
+      },
+      {
         "id": "fd03f9a4-ea36-40c1-8feb-ae4bc55a373a",
         "managed": 1,
         "operation": "insert",
@@ -165018,6 +166501,17 @@
         "table_name": "relationship"
       },
       {
+        "id": "ff4fb66f-3181-4613-96ea-a392e3fb5ba7",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "9b9ec063-cdb6-42f5-8d93-41adf75e8b72",
+        "payload_digest": "34f237f05518cad43e8ef570d17aece7ffd1935a7c99f894822ac80bb96f5601",
+        "recorded_at": "2026-08-31T03:46:11Z",
+        "revision": 951,
+        "row_id": "ec79475d-9338-5a7d-8756-51ec14b7c1e5",
+        "table_name": "verification_result"
+      },
+      {
         "id": "ff7b84c3-d08a-4953-980b-fe3e9c3795c3",
         "managed": 1,
         "operation": "insert",
@@ -165145,6 +166639,16 @@
         "source_revision": 785,
         "status": "passed",
         "verified_at": "2026-08-30T15:13:52Z"
+      },
+      {
+        "command_or_test_id": "work5-production-release",
+        "details_json": "{\"content_commit\": \"686e23306a89648694a39798d373d0b46929d43d\", \"release_tag\": \"v0.42.0\", \"tag_commit\": \"2156bec1347cad6e0bff23427505a3b5c2715862\", \"tag_mode\": \"provenance-commit\"}",
+        "evidence_id": "021598a3-dc44-57f6-865d-7394da31c88b",
+        "id": "054874d6-8be0-50e7-8197-71006ec28b4f",
+        "requirement_id": "69cb9e04-f417-5222-b917-5d0714103c46",
+        "source_revision": 951,
+        "status": "passed",
+        "verified_at": "2026-08-31T03:46:11Z"
       },
       {
         "command_or_test_id": "HPT2-EVID-CONTRACT",
@@ -165635,6 +167139,16 @@
         "source_revision": 714,
         "status": "passed",
         "verified_at": "2026-08-30T11:54:48Z"
+      },
+      {
+        "command_or_test_id": "work5-production-release",
+        "details_json": "{\"content_commit\": \"686e23306a89648694a39798d373d0b46929d43d\", \"release_tag\": \"v0.42.0\", \"tag_commit\": \"2156bec1347cad6e0bff23427505a3b5c2715862\", \"tag_mode\": \"provenance-commit\"}",
+        "evidence_id": "d13a5183-fde8-53e1-9ba3-7d29cd638b50",
+        "id": "43fd0e00-f083-55d1-812f-4ff55abdb7ff",
+        "requirement_id": "c2a140c5-c074-56e1-a52f-8d89376e9b54",
+        "source_revision": 951,
+        "status": "passed",
+        "verified_at": "2026-08-31T03:46:11Z"
       },
       {
         "command_or_test_id": "direct-evidence-1",
@@ -166175,6 +167689,16 @@
         "source_revision": 919,
         "status": "passed",
         "verified_at": "2026-08-30T20:22:04Z"
+      },
+      {
+        "command_or_test_id": "direct-evidence-1",
+        "details_json": null,
+        "evidence_id": "dc982fec-be00-45c0-a43d-b698b2076479",
+        "id": "7d4126b8-7976-468c-8634-36016500b2a8",
+        "requirement_id": "f5372ed5-7ebb-460e-a16a-a65302d81a5b",
+        "source_revision": 953,
+        "status": "passed",
+        "verified_at": "2026-08-31T03:49:42Z"
       },
       {
         "command_or_test_id": "G5-MAINTAINER-UPGRADE-PROVEN passes with validated canonical skill staging; deployment of the installed client remains post-publication work in M6.",
@@ -167075,6 +168599,16 @@
         "source_revision": 480,
         "status": "passed",
         "verified_at": "2026-08-29T15:56:20Z"
+      },
+      {
+        "command_or_test_id": "work5-production-release",
+        "details_json": "{\"content_commit\": \"686e23306a89648694a39798d373d0b46929d43d\", \"release_tag\": \"v0.42.0\", \"tag_commit\": \"2156bec1347cad6e0bff23427505a3b5c2715862\", \"tag_mode\": \"provenance-commit\"}",
+        "evidence_id": "f8519f2d-443f-5446-ba9a-ec76d488c91b",
+        "id": "ec79475d-9338-5a7d-8756-51ec14b7c1e5",
+        "requirement_id": "57cb37b9-768a-5e28-8410-46e2d62d706c",
+        "source_revision": 951,
+        "status": "passed",
+        "verified_at": "2026-08-31T03:46:11Z"
       },
       {
         "command_or_test_id": "direct-evidence-3",
