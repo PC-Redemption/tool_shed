@@ -58,16 +58,17 @@ class SubprocessLaunchTests(unittest.TestCase):
         shell = shutil.which("pwsh") or shutil.which("powershell")
         if shell is None:
             return
+        quoted_script = str(script).replace("'", "''")
         parsed = subprocess.run(
             [
                 shell,
                 "-NoProfile",
                 "-NonInteractive",
                 "-Command",
-                "$errors=$null; [System.Management.Automation.Language.Parser]::ParseFile("
-                "$args[0], [ref]$null, [ref]$errors) > $null; "
+                f"$path='{quoted_script}'; $errors=$null; "
+                "[System.Management.Automation.Language.Parser]::ParseFile("
+                "$path, [ref]$null, [ref]$errors) > $null; "
                 "if ($errors.Count) { $errors | Out-String | Write-Error; exit 1 }",
-                str(script),
             ],
             capture_output=True,
             text=True,
