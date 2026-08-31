@@ -105,7 +105,15 @@ if ($statusBefore.connection -ne "connected" -or -not $statusBefore.credential_p
 }
 
 $processSource = "ToolShedDashboardQualification.$([guid]::NewGuid())"
-Register-CimIndicationEvent -Query "SELECT * FROM Win32_ProcessStartTrace" -SourceIdentifier $processSource | Out-Null
+$processEventProvider = "cim"
+try {
+    Register-CimIndicationEvent -Query "SELECT * FROM Win32_ProcessStartTrace" -SourceIdentifier $processSource | Out-Null
+} catch {
+    Unregister-Event -SourceIdentifier $processSource -ErrorAction SilentlyContinue
+    Remove-Event -SourceIdentifier $processSource -ErrorAction SilentlyContinue
+    $processEventProvider = "wmi"
+    Register-WmiEvent -Query "SELECT * FROM Win32_ProcessStartTrace" -SourceIdentifier $processSource | Out-Null
+}
 [ToolShedWindowObserver]::Start()
 $windowEvents = @()
 $burstPath = Join-Path ([System.IO.Path]::GetTempPath()) ("tool-shed-dashboard-burst-" + [guid]::NewGuid() + ".py")
@@ -193,6 +201,7 @@ if ($windowEvents.Count -ne 0) {
     task_result = $taskInfoAfter.LastTaskResult
     report_delivery = "outbox-drained"
     burst_enqueue_count = 10
+    process_event_provider = $processEventProvider
     persistent_worker_processes_started = $workerStarts.Count
     visible_console_windows = $windowEvents.Count
     status = "passed"

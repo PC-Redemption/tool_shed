@@ -47,12 +47,14 @@ class SubprocessLaunchTests(unittest.TestCase):
         for expected in (
             "SetWinEventHook",
             "Win32_ProcessStartTrace",
+            "Register-WmiEvent",
             "$scriptsPath = $PSScriptRoot",
             "$identityPath --workspace $workspacePath identity",
             "for _ in range(10)",
             "LastTaskResult",
             "pending_events",
             "persistent_worker_processes_started",
+            "process_event_provider",
             "visible_console_windows",
         ):
             self.assertIn(expected, content)

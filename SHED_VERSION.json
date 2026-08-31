@@ -12,7 +12,7 @@
     "adapters/codex-app-server-config.json": "d79964bc2371a39d50b7bcad534af133564e55bbf491baf4f3031b36e01b7e49",
     "adapters/codex-app-server-qualifications.json": "995ccd3bea135448b316045ea240c10d272f4c7e2ff65085111e0380cef947c1",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "67bc826c6dd97d81b6d6437cf075dbc0903dff80994a8cd78321bbc4a7a7c00c",
+    "adapters/codex-skill-releases.json": "7eca2db61d0b1f04f41c0f6fbeadb9ec419eaefb89aa07ad2a54dbe2848991b3",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "a16e9afbc2733b2c01b113df3f3a07fda1630b80b5a97476896123ee03bc22d2",
     "dashboard/Dockerfile": "8e9ff084f409aa81ab92b9dcbe8d9bab2416225551c837681653cab7b66786ad",
@@ -163,7 +163,7 @@
     "scripts/program_roadmap.py": "efd1f6380c14f296262b9e1d7c45c7baaf1e75c8b9830194db681d4c189483b2",
     "scripts/project_identity.py": "287b94c2e1019c28825a50888f3651a4eea602e26885d8195c76b32f17c477e6",
     "scripts/provider_adapters.py": "674a0b54fd573fe48882fe3e04ffc5b36602877abf1a2c7e2bdf8bfab043b807",
-    "scripts/qualify_windows_dashboard.ps1": "d28f5e81e089d3f2a0b93a2951570b72365a8a7019147a8d40bdad86513d4715",
+    "scripts/qualify_windows_dashboard.ps1": "94667a5c429cf7c490113ca8075b50bb3bcd19344552c472b3f43e73432a4c97",
     "scripts/read_ask_inbox.py": "b949cff0e33431744195790aa035aaa2d80dfba4589cf0403c46b68bdb4b0cea",
     "scripts/reasoning_catalog.py": "668c60b60afdd80e3348ca5a2a71ab225c67c39e613f7da4adc93d792876465c",
     "scripts/reconcile_campaign_queue.py": "5e6af99304a741d668ffc31bc6ad3b993a675284269213cdc316014b20e95889",
@@ -242,34 +242,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Bind Windows dashboard qualification explicitly to its target workspace when launched by Task Scheduler.",
-  "release_commit": "2fcad4eef89cbb030630baa2848df201a75dc02d",
-  "release_qualification": {
-    "attested_at": "2026-08-31T14:30:11Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "81bbb1df280b8c04875d5ee96edd1c597bc74d4ce8b82a19fc01a9a619f866e5"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "2fcad4eef89cbb030630baa2848df201a75dc02d"
-  },
-  "release_tag": "v0.42.3",
-  "released_at": "2026-08-31T14:30:11Z",
-  "shed_version": "0.42.3",
+  "notes": "Fall back to native WMI process-start observation when a Windows scheduled session rejects CIM event subscriptions.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.42.4",
+  "released_at": null,
+  "shed_version": "0.42.4",
   "updated_at": "2026-08-31",
   "updater_mutation_paths": [
     {
