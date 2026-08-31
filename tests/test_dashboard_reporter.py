@@ -116,6 +116,96 @@ class DashboardReporterTests(unittest.TestCase):
             result = dashboard_reporter.worker(self.workspace, project_binding="fixture", max_cycles=1)
         self.assertEqual(result["status"], "singleton-active")
 
+    def test_idle_worker_waits_until_the_next_meaningful_deadline(self) -> None:
+        self.assertEqual(
+            dashboard_reporter._worker_sleep_seconds(
+                current=100.0,
+                last_activity=100.0,
+                last_heartbeat=100.0,
+                pending=0,
+            ),
+            60.0,
+        )
+        self.assertEqual(
+            dashboard_reporter._worker_sleep_seconds(
+                current=100.0,
+                last_activity=100.0,
+                last_heartbeat=100.0,
+                pending=1,
+            ),
+            1.0,
+        )
+
+    def test_windows_managed_write_worker_is_created_without_a_window(self) -> None:
+        queued = {"sequence": 1}
+        with mock.patch.object(
+            dashboard_reporter,
+            "load_connection",
+            return_value=self.connected(),
+        ), mock.patch.object(
+            dashboard_reporter,
+            "_enqueue_connected",
+            return_value=queued,
+        ), mock.patch.object(
+            dashboard_reporter,
+            "binding_token",
+            return_value="binding",
+        ), mock.patch.object(
+            dashboard_reporter.platform,
+            "system",
+            return_value="Windows",
+        ), mock.patch.object(
+            dashboard_reporter.subprocess,
+            "CREATE_NEW_PROCESS_GROUP",
+            0x00000200,
+            create=True,
+        ), mock.patch.object(
+            dashboard_reporter.subprocess,
+            "CREATE_NO_WINDOW",
+            0x08000000,
+            create=True,
+        ), mock.patch.object(dashboard_reporter.subprocess, "Popen") as popen:
+            result = dashboard_reporter.enqueue_if_connected(
+                self.workspace, reason="managed-update"
+            )
+        self.assertEqual(result, queued)
+        kwargs = popen.call_args.kwargs
+        self.assertEqual(kwargs["creationflags"], 0x08000200)
+        self.assertNotIn("start_new_session", kwargs)
+
+    def test_windows_scheduler_prefers_pythonw(self) -> None:
+        identity = {"project_id": str(uuid.uuid4())}
+        executable = self.workspace / "python.exe"
+        windowless = self.workspace / "pythonw.exe"
+        executable.touch()
+        windowless.touch()
+        with mock.patch.object(
+            dashboard_reporter,
+            "require_project_binding",
+        ), mock.patch.object(
+            dashboard_reporter,
+            "load_project_identity",
+            return_value=identity,
+        ), mock.patch.object(
+            dashboard_reporter,
+            "binding_token",
+            return_value="binding",
+        ), mock.patch.object(
+            dashboard_reporter.platform,
+            "system",
+            return_value="Windows",
+        ), mock.patch.object(
+            dashboard_reporter.sys,
+            "executable",
+            str(executable),
+        ), mock.patch.object(dashboard_reporter.subprocess, "run") as run:
+            result = dashboard_reporter.scheduler_install(
+                self.workspace, project_binding="fixture"
+            )
+        self.assertEqual(result["status"], "installed")
+        command = run.call_args.args[0]
+        self.assertIn(str(windowless.resolve()), command[-1])
+
     def test_linux_scheduler_install_writes_project_scoped_private_units(self) -> None:
         config = self.workspace / "config"
         identity = {"project_id": str(uuid.uuid4())}

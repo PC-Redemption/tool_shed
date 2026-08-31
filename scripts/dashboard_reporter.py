@@ -43,6 +43,7 @@ LOCK_SECONDS = 30
 PROCESS_LOCK_SECONDS = 10
 HEARTBEAT_SECONDS = 60
 IDLE_EXIT_SECONDS = 7_200
+IDLE_POLL_SECONDS = 60
 SAFETY_DRAIN_LIMIT = 64
 
 
@@ -869,8 +870,13 @@ def enqueue_if_connected(workspace: Path, *, reason: str) -> dict[str, Any] | No
             "stderr": subprocess.DEVNULL,
             "close_fds": True,
         }
-        if os.name == "nt":
-            kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS
+        if platform.system().lower() == "windows":
+            # DETACHED_PROCESS alone can still leave Python associated with visible
+            # console-host activity. CREATE_NO_WINDOW is the explicit Windows
+            # contract for a background process that must never surface UI.
+            kwargs["creationflags"] = (
+                subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
+            )
         else:
             kwargs["start_new_session"] = True
         subprocess.Popen(
@@ -962,6 +968,26 @@ def worker_once(workspace: Path) -> dict[str, Any]:
         return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-worker", "status": "delivered", "sequence": row["sequence"], "writes_performed": True}
 
 
+def _worker_sleep_seconds(
+    *,
+    current: float,
+    last_activity: float,
+    last_heartbeat: float,
+    pending: int,
+) -> float:
+    """Keep retry delivery responsive without polling an empty outbox every second."""
+    if pending:
+        return 1.0
+    return max(
+        0.05,
+        min(
+            float(IDLE_POLL_SECONDS),
+            last_heartbeat + HEARTBEAT_SECONDS - current,
+            last_activity + IDLE_EXIT_SECONDS - current,
+        ),
+    )
+
+
 def worker(workspace: Path, *, project_binding: str, max_cycles: int | None = None) -> dict[str, Any]:
     require_project_binding(workspace, project_binding, operation="dashboard-report")
     owner = str(uuid.uuid4())
@@ -994,6 +1020,7 @@ def worker(workspace: Path, *, project_binding: str, max_cycles: int | None = No
                 enqueue(workspace, project_binding=project_binding, reason="heartbeat")
                 with contextlib.closing(_outbox(workspace)) as connection:
                     _set_meta(connection, "last_heartbeat", str(current))
+                last_heartbeat = current
             try:
                 worker_once(workspace)
             except DashboardReporterError:
@@ -1004,7 +1031,14 @@ def worker(workspace: Path, *, project_binding: str, max_cycles: int | None = No
                 return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-worker", "status": "quiescent", "cycles": cycles, "writes_performed": True}
             if max_cycles is not None and cycles >= max_cycles:
                 return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-worker", "status": "bounded-stop", "cycles": cycles, "writes_performed": True}
-            time.sleep(1)
+            time.sleep(
+                _worker_sleep_seconds(
+                    current=current,
+                    last_activity=last_activity,
+                    last_heartbeat=last_heartbeat,
+                    pending=pending,
+                )
+            )
     finally:
         with contextlib.closing(_outbox(workspace)) as connection:
             connection.execute("DELETE FROM worker_process WHERE id=1 AND owner=?", (owner,))
@@ -1030,7 +1064,12 @@ def disconnect(workspace: Path, *, project_binding: str) -> dict[str, Any]:
 def scheduler_plan(workspace: Path) -> dict[str, Any]:
     system = platform.system().lower()
     project_id = str(load_project_identity(workspace)["project_id"])
-    executable = Path(sys.executable).resolve().as_posix()
+    executable_path = Path(sys.executable).resolve()
+    if system == "windows":
+        windowless = executable_path.with_name("pythonw.exe")
+        if windowless.is_file():
+            executable_path = windowless
+    executable = executable_path.as_posix()
     script = Path(__file__).resolve().as_posix()
     root = workspace.resolve().as_posix()
     if system == "windows":
@@ -1054,7 +1093,12 @@ def scheduler_install(workspace: Path, *, project_binding: str) -> dict[str, Any
     require_project_binding(workspace, project_binding, operation="dashboard-report")
     identity = load_project_identity(workspace)
     system = platform.system().lower()
-    executable = str(Path(sys.executable).resolve())
+    executable_path = Path(sys.executable).resolve()
+    if system == "windows":
+        windowless = executable_path.with_name("pythonw.exe")
+        if windowless.is_file():
+            executable_path = windowless
+    executable = str(executable_path)
     script = str(Path(__file__).resolve())
     root = str(workspace.resolve())
     binding = binding_token(workspace, operation="dashboard-report")

@@ -12,7 +12,7 @@
     "adapters/codex-app-server-config.json": "d79964bc2371a39d50b7bcad534af133564e55bbf491baf4f3031b36e01b7e49",
     "adapters/codex-app-server-qualifications.json": "995ccd3bea135448b316045ea240c10d272f4c7e2ff65085111e0380cef947c1",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "ddf95a139495fcd3f82967a4261c8e23085de4dd729e94d76e17327390cc9fe8",
+    "adapters/codex-skill-releases.json": "77a0fe670184a0b748116cfee23aeffafc7f59808dd1141b717cf3ec3aa0a579",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "a16e9afbc2733b2c01b113df3f3a07fda1630b80b5a97476896123ee03bc22d2",
     "dashboard/Dockerfile": "8e9ff084f409aa81ab92b9dcbe8d9bab2416225551c837681653cab7b66786ad",
@@ -138,7 +138,7 @@
     "scripts/codex_skill_sync.py": "78cf6c2d6605854c429cc54e63eb60b7fa7e81e47dcae9fc87c60b5f93d564a8",
     "scripts/complete_workpackage.py": "a74d1fac326d2ba3813bf00270afe698a3d276ba62f7b53067761f2892c7a0fb",
     "scripts/completion_watcher.py": "d94ba056b5628a477028c8568e284da95bd78466d3839b5e126a89163d16d7a3",
-    "scripts/dashboard_reporter.py": "1d9dd9445305eb39bbf5ea34a1cf522d588920df4ef54bd3e7894a5c65cc6b1a",
+    "scripts/dashboard_reporter.py": "b42b636c713b57824895b50ebd0d40798366528c23b1807e69bd8afb4cdd3323",
     "scripts/doctor.py": "b8f7c8041bdde100b370812cc49f70fe0eff7171d1a527adccdce273e7c71880",
     "scripts/document_contract.py": "2b540582141065b7e7c84294142a15ddf01f255a58f844e08abaf9634b30d411",
     "scripts/document_conversion.py": "da2b7d08f038ab4ed789f191d5855284be5d2450b32f0204bfed88fdcdde3397",
@@ -239,34 +239,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Render dashboard timestamps explicitly in each viewer browser timezone.",
-  "release_commit": "3b4fa710e081516d6b97864fdc49f67aac9e33d7",
-  "release_qualification": {
-    "attested_at": "2026-08-30T23:23:52Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "81bbb1df280b8c04875d5ee96edd1c597bc74d4ce8b82a19fc01a9a619f866e5"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "3b4fa710e081516d6b97864fdc49f67aac9e33d7"
-  },
-  "release_tag": "v0.41.3",
-  "released_at": "2026-08-30T23:23:52Z",
-  "shed_version": "0.41.3",
+  "notes": "Make Windows dashboard reporting windowless and reduce idle polling.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.41.4",
+  "released_at": null,
+  "shed_version": "0.41.4",
   "updated_at": "2026-08-30",
   "updater_mutation_paths": [
     {
