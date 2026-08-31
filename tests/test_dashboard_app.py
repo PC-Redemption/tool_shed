@@ -323,6 +323,20 @@ class DashboardApplicationTests(TestCase):
         self.assertEqual(aggregate.performance["windows"]["7d"]["completions"], 7)
         self.assertIsNotNone(aggregate.readiness_observed_at)
 
+        legacy = self.release_chain_report_payload()
+        legacy["sequence"] = 2
+        legacy["idempotency_key"] = str(uuid.uuid4())
+        legacy_response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(legacy),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(legacy_response.status_code, 200, legacy_response.content)
+        aggregate.refresh_from_db()
+        self.assertEqual(aggregate.performance["windows"]["7d"]["completions"], 7)
+        self.assertIsNotNone(aggregate.readiness_observed_at)
+
         user = get_user_model().objects.create_user("performance-viewer", password="fixture")
         self.client.force_login(user)
         page = self.client.get(reverse("fleet:app-server"), {"window": "7d"})

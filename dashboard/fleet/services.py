@@ -631,21 +631,27 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
         )
         LifecycleEvent.objects.filter(retained_until__lt=timezone.now()).delete()
     app = report["app_server"]
+    app_defaults = {
+        "counter_epoch": locked.counter_epoch,
+        "enabled": app["enabled"],
+        "availability_state": app["availability_state"],
+        "attempts": app["attempts"],
+        "failures": app["failures"],
+        "fallbacks": app["fallbacks"],
+        "last_success": app["last_success"],
+        "last_failure": app["last_failure"],
+        "client_version": app["client_version"],
+    }
+    if report["schema_version"] >= 6:
+        app_defaults.update(
+            {
+                "readiness_observed_at": app["readiness_observed_at"],
+                "performance": app["performance"],
+            }
+        )
     AppServerAggregate.objects.update_or_create(
         instance=locked,
-        defaults={
-            "counter_epoch": locked.counter_epoch,
-            "enabled": app["enabled"],
-            "availability_state": app["availability_state"],
-            "attempts": app["attempts"],
-            "failures": app["failures"],
-            "fallbacks": app["fallbacks"],
-            "last_success": app["last_success"],
-            "last_failure": app["last_failure"],
-            "client_version": app["client_version"],
-            "readiness_observed_at": app["readiness_observed_at"],
-            "performance": app["performance"],
-        },
+        defaults=app_defaults,
     )
     failure_retention = timedelta(days=settings.DASHBOARD_FAILURE_RETENTION_DAYS)
     for item in app["failure_groups"]:
