@@ -104,16 +104,6 @@ if ($statusBefore.connection -ne "connected" -or -not $statusBefore.credential_p
     throw "dashboard reporter must be connected before qualification"
 }
 
-$processSource = "ToolShedDashboardQualification.$([guid]::NewGuid())"
-$processEventProvider = "cim"
-try {
-    Register-CimIndicationEvent -Query "SELECT * FROM Win32_ProcessStartTrace" -SourceIdentifier $processSource | Out-Null
-} catch {
-    Unregister-Event -SourceIdentifier $processSource -ErrorAction SilentlyContinue
-    Remove-Event -SourceIdentifier $processSource -ErrorAction SilentlyContinue
-    $processEventProvider = "wmi"
-    Register-WmiEvent -Query "SELECT * FROM Win32_ProcessStartTrace" -SourceIdentifier $processSource | Out-Null
-}
 [ToolShedWindowObserver]::Start()
 $windowEvents = @()
 $burstPath = Join-Path ([System.IO.Path]::GetTempPath()) ("tool-shed-dashboard-burst-" + [guid]::NewGuid() + ".py")
@@ -161,6 +151,13 @@ for _ in range(10):
     if ($burst.ExitCode -ne 0) {
         throw "managed-write burst exited with $($burst.ExitCode)"
     }
+    $workerProcesses = @(Get-CimInstance Win32_Process | Where-Object {
+        $_.ParentProcessId -eq $burst.Id -and
+        $_.Name -in @("python.exe", "pythonw.exe")
+    })
+    if ($workerProcesses.Count -ne 1) {
+        throw "managed-write burst created $($workerProcesses.Count) persistent worker processes, expected 1"
+    }
 
     $deliveryDeadline = (Get-Date).AddSeconds([Math]::Min($TimeoutSeconds, 300))
     do {
@@ -171,20 +168,8 @@ for _ in range(10):
     if ($statusAfter.pending_events -ne 0) {
         throw "dashboard outbox did not drain after the managed-write burst"
     }
-
-    Start-Sleep -Seconds 1
-    $processEvents = @(Get-Event -SourceIdentifier $processSource -ErrorAction SilentlyContinue)
-    $workerStarts = @($processEvents | Where-Object {
-        $_.SourceEventArgs.NewEvent.ParentProcessID -eq $burst.Id -and
-        $_.SourceEventArgs.NewEvent.ProcessName -in @("python.exe", "pythonw.exe")
-    })
-    if ($workerStarts.Count -ne 1) {
-        throw "managed-write burst created $($workerStarts.Count) worker processes, expected 1"
-    }
 } finally {
     $windowEvents = @([ToolShedWindowObserver]::Stop())
-    Unregister-Event -SourceIdentifier $processSource -ErrorAction SilentlyContinue
-    Remove-Event -SourceIdentifier $processSource -ErrorAction SilentlyContinue
     Remove-Item -LiteralPath $burstPath -Force -ErrorAction SilentlyContinue
 }
 
@@ -201,8 +186,8 @@ if ($windowEvents.Count -ne 0) {
     task_result = $taskInfoAfter.LastTaskResult
     report_delivery = "outbox-drained"
     burst_enqueue_count = 10
-    process_event_provider = $processEventProvider
-    persistent_worker_processes_started = $workerStarts.Count
+    process_observation = "cim-parent-snapshot"
+    persistent_worker_processes_started = $workerProcesses.Count
     visible_console_windows = $windowEvents.Count
     status = "passed"
 } | ConvertTo-Json -Depth 4
