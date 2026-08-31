@@ -48,6 +48,48 @@ APP_SERVER_FIELDS = {
     "client_version",
     "failure_groups",
 }
+APP_SERVER_FIELDS_V6 = APP_SERVER_FIELDS | {"readiness_observed_at", "performance"}
+PERFORMANCE_FIELDS = {"default_window", "windows"}
+PERFORMANCE_WINDOW_FIELDS = {
+    "schema_version",
+    "window_start",
+    "window_end",
+    "attempts",
+    "completions",
+    "failures",
+    "interruptions",
+    "fallbacks",
+    "duration_p50_ms",
+    "duration_p95_ms",
+    "input_tokens",
+    "cached_input_tokens",
+    "output_tokens",
+    "reasoning_tokens",
+    "weighted_usage_milliunits",
+    "weighted_usage_version",
+    "last_execution",
+    "last_success",
+    "last_failure",
+    "client_version",
+    "role_metrics",
+    "excluded_malformed_records",
+    "privacy",
+}
+ROLE_METRIC_FIELDS = PERFORMANCE_WINDOW_FIELDS - {
+    "schema_version",
+    "window_start",
+    "window_end",
+    "last_execution",
+    "last_success",
+    "last_failure",
+    "client_version",
+    "role_metrics",
+    "excluded_malformed_records",
+    "privacy",
+    "fallbacks",
+}
+PERFORMANCE_WINDOWS = {"24h", "7d", "30d"}
+PERFORMANCE_ROLES = {"planning", "verification", "camp_execution"}
 FAILURE_FIELDS = {"signature", "category", "count", "first_seen", "last_seen"}
 EFFICIENCY_FIELDS = {
     "window_start",
@@ -134,6 +176,8 @@ FAILURE_CATEGORIES = {
     "qualification",
     "budget",
     "unsafe-boundary",
+    "verification",
+    "interrupted",
     "unknown",
 }
 SUMMARY_CODES = {
@@ -242,6 +286,90 @@ def _boolean(value: Any, label: str) -> bool:
     if not isinstance(value, bool):
         raise ContractError(f"{label} must be a boolean")
     return value
+
+
+def _optional_counter(value: Any, label: str) -> int | None:
+    return None if value is None else _counter(value, label)
+
+
+def _performance_metrics(value: Any, label: str, *, role: bool = False) -> dict[str, Any]:
+    fields = ROLE_METRIC_FIELDS if role else PERFORMANCE_WINDOW_FIELDS
+    item = _object(value, label, fields)
+    result = {
+        "attempts": _counter(item.get("attempts"), f"{label}.attempts"),
+        "completions": _counter(item.get("completions"), f"{label}.completions"),
+        "failures": _counter(item.get("failures"), f"{label}.failures"),
+        "interruptions": _counter(item.get("interruptions"), f"{label}.interruptions"),
+        "duration_p50_ms": _optional_counter(item.get("duration_p50_ms"), f"{label}.duration_p50_ms"),
+        "duration_p95_ms": _optional_counter(item.get("duration_p95_ms"), f"{label}.duration_p95_ms"),
+        "input_tokens": _counter(item.get("input_tokens"), f"{label}.input_tokens"),
+        "cached_input_tokens": _counter(item.get("cached_input_tokens"), f"{label}.cached_input_tokens"),
+        "output_tokens": _counter(item.get("output_tokens"), f"{label}.output_tokens"),
+        "reasoning_tokens": _counter(item.get("reasoning_tokens"), f"{label}.reasoning_tokens"),
+        "weighted_usage_milliunits": _optional_counter(
+            item.get("weighted_usage_milliunits"), f"{label}.weighted_usage_milliunits"
+        ),
+        "weighted_usage_version": _optional_string(
+            item.get("weighted_usage_version"), f"{label}.weighted_usage_version", 64
+        ),
+    }
+    if result["completions"] + result["failures"] + result["interruptions"] != result["attempts"]:
+        raise ContractError(f"{label} outcome counts must equal attempts")
+    if role:
+        return result
+    result["fallbacks"] = _counter(item.get("fallbacks"), f"{label}.fallbacks")
+    roles = _object(item.get("role_metrics"), f"{label}.role_metrics", PERFORMANCE_ROLES)
+    if set(roles) != PERFORMANCE_ROLES:
+        raise ContractError(f"{label}.role_metrics must include every supported role")
+    parsed_roles = {
+        key: _performance_metrics(roles[key], f"{label}.role_metrics.{key}", role=True)
+        for key in sorted(PERFORMANCE_ROLES)
+    }
+    for counter in ("attempts", "completions", "failures", "interruptions"):
+        if sum(role_metrics[counter] for role_metrics in parsed_roles.values()) != result[counter]:
+            raise ContractError(f"{label}.{counter} must equal the role metric total")
+    timestamps = {
+        key: _timestamp(item.get(key), f"{label}.{key}", optional=key.startswith("last_"))
+        for key in ("window_start", "window_end", "last_execution", "last_success", "last_failure")
+    }
+    result.update(
+        {
+            "schema_version": _bounded_counter(item.get("schema_version"), f"{label}.schema_version", 1),
+            "window_start": timestamps["window_start"].isoformat(),
+            "window_end": timestamps["window_end"].isoformat(),
+            "last_execution": timestamps["last_execution"].isoformat() if timestamps["last_execution"] else None,
+            "last_success": timestamps["last_success"].isoformat() if timestamps["last_success"] else None,
+            "last_failure": timestamps["last_failure"].isoformat() if timestamps["last_failure"] else None,
+            "client_version": _optional_string(item.get("client_version"), f"{label}.client_version", 64),
+            "role_metrics": parsed_roles,
+            "excluded_malformed_records": _bounded_counter(
+                item.get("excluded_malformed_records"), f"{label}.excluded_malformed_records", 10_000
+            ),
+            "privacy": _choice(
+                item.get("privacy"), f"{label}.privacy", {"content-free-controlled-aggregate-only"}, 64
+            ),
+        }
+    )
+    if result["schema_version"] != 1:
+        raise ContractError(f"{label}.schema_version must be 1")
+    return result
+
+
+def _performance(value: Any) -> dict[str, Any]:
+    supplied = _object(value, "app_server.performance", PERFORMANCE_FIELDS)
+    default_window = _choice(
+        supplied.get("default_window"), "app_server.performance.default_window", PERFORMANCE_WINDOWS, 8
+    )
+    windows = _object(supplied.get("windows"), "app_server.performance.windows", PERFORMANCE_WINDOWS)
+    if set(windows) != PERFORMANCE_WINDOWS:
+        raise ContractError("app_server.performance.windows must include 24h, 7d, and 30d")
+    return {
+        "default_window": default_window,
+        "windows": {
+            key: _performance_metrics(windows[key], f"app_server.performance.windows.{key}")
+            for key in ("24h", "7d", "30d")
+        },
+    }
 
 
 def _choice(value: Any, label: str, choices: set[str], limit: int = 48) -> str:
@@ -477,15 +605,21 @@ def _instance_health(value: Any, *, schema_version: int) -> dict[str, Any]:
 def validate_report(payload: Any) -> dict[str, Any]:
     root = _object(payload, "report", ROOT_FIELDS)
     schema_version = root.get("schema_version")
-    if schema_version not in {1, 2, 3, 4, 5}:
-        raise ContractError("report.schema_version must be 1, 2, 3, 4, or 5")
+    if schema_version not in {1, 2, 3, 4, 5, 6}:
+        raise ContractError("report.schema_version must be 1, 2, 3, 4, 5, or 6")
     if schema_version == 1 and ({"work_inventory", "lifecycle_events"} & set(root)):
         raise ContractError("report schema 1 does not support lifecycle projection fields")
     if schema_version < 4 and "instance_health" in root:
         raise ContractError("report schemas before 4 do not support instance health")
     project = _object(root.get("project"), "project", PROJECT_FIELDS)
     instance = _object(root.get("instance"), "instance", INSTANCE_FIELDS)
-    app_server = _object(root.get("app_server"), "app_server", APP_SERVER_FIELDS)
+    app_server = _object(
+        root.get("app_server"),
+        "app_server",
+        APP_SERVER_FIELDS_V6 if schema_version >= 6 else APP_SERVER_FIELDS,
+    )
+    if schema_version >= 6 and not {"readiness_observed_at", "performance"} <= set(app_server):
+        raise ContractError("report schema 6 requires App Server readiness and performance fields")
     failure_values = app_server.get("failure_groups", [])
     if not isinstance(failure_values, list) or len(failure_values) > 20:
         raise ContractError("app_server.failure_groups must be a list of at most 20 items")
@@ -558,6 +692,12 @@ def validate_report(payload: Any) -> dict[str, Any]:
             "last_failure": _timestamp(app_server.get("last_failure"), "app_server.last_failure", optional=True),
             "client_version": _optional_string(app_server.get("client_version"), "app_server.client_version", 64) or "",
             "failure_groups": failures,
+            "readiness_observed_at": _timestamp(
+                app_server.get("readiness_observed_at"),
+                "app_server.readiness_observed_at",
+                optional=True,
+            ) if schema_version >= 6 else None,
+            "performance": _performance(app_server.get("performance")) if schema_version >= 6 else {},
         },
         "work_efficiency": {
             "window_start": _timestamp(efficiency.get("window_start"), "work_efficiency.window_start"),

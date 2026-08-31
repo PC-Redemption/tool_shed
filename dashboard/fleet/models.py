@@ -210,6 +210,8 @@ class AppServerAggregate(models.Model):
     last_success = models.DateTimeField(null=True, blank=True)
     last_failure = models.DateTimeField(null=True, blank=True)
     client_version = models.CharField(max_length=64, blank=True)
+    readiness_observed_at = models.DateTimeField(null=True, blank=True)
+    performance = models.JSONField(default=dict)
     updated_at = models.DateTimeField(auto_now=True)
 
 

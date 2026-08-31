@@ -331,6 +331,48 @@ class DashboardReporterTests(unittest.TestCase):
             "gui_fallbacks": 1,
             "counts": {"outcome": {"failed": 1}},
         }
+        performance = {
+            "schema_version": 1,
+            "window_start": "2026-08-29T00:00:00Z",
+            "window_end": "2026-08-30T00:00:00Z",
+            "attempts": 3,
+            "completions": 2,
+            "failures": 1,
+            "interruptions": 0,
+            "fallbacks": 1,
+            "duration_p50_ms": 1000,
+            "duration_p95_ms": 2000,
+            "input_tokens": 100,
+            "cached_input_tokens": 25,
+            "output_tokens": 20,
+            "reasoning_tokens": 5,
+            "weighted_usage_milliunits": 1250,
+            "weighted_usage_version": "v1",
+            "last_execution": "2026-08-29T23:00:00Z",
+            "last_success": "2026-08-29T22:00:00Z",
+            "last_failure": "2026-08-29T23:00:00Z",
+            "client_version": "0.200.0",
+            "role_metrics": {
+                role: {
+                    "attempts": 1 if role == "planning" else 0,
+                    "completions": 1 if role == "planning" else 0,
+                    "failures": 0,
+                    "interruptions": 0,
+                    "duration_p50_ms": 1000 if role == "planning" else None,
+                    "duration_p95_ms": 1000 if role == "planning" else None,
+                    "input_tokens": 100 if role == "planning" else 0,
+                    "cached_input_tokens": 25 if role == "planning" else 0,
+                    "output_tokens": 20 if role == "planning" else 0,
+                    "reasoning_tokens": 5 if role == "planning" else 0,
+                    "weighted_usage_milliunits": 1250 if role == "planning" else None,
+                    "weighted_usage_version": "v1" if role == "planning" else None,
+                }
+                for role in ("planning", "verification", "camp_execution")
+            },
+            "failure_groups": [],
+            "excluded_malformed_records": 0,
+            "privacy": "content-free-controlled-aggregate-only",
+        }
         documents = {
             ("active", "campaign"): {"documents": [{"visible_id": "CAMP-0001"}]},
             ("active", "idea-brief"): {"documents": [{"visible_id": "IDEA-0001"}]},
@@ -349,6 +391,14 @@ class DashboardReporterTests(unittest.TestCase):
             dashboard_reporter.app_server_user_state.AppServerEventStore, "report", return_value=app
         ), mock.patch.object(
             dashboard_reporter.app_server_user_state.AppServerPreferenceStore, "status", return_value=mock.Mock(enabled=True)
+        ), mock.patch.object(
+            dashboard_reporter.codex_execution,
+            "app_server_performance_report",
+            side_effect=lambda *args, **kwargs: json.loads(json.dumps(performance)),
+        ), mock.patch.object(
+            dashboard_reporter.app_server_control,
+            "control_status",
+            return_value={"app_server_available": True, "enabled_roles": {"planning": {}}, "installed_codex": "0.200.0"},
         ):
             payload = dashboard_reporter.report_payload(self.workspace, sequence=4, reason="managed-update")
         serialized = json.dumps(payload)
@@ -356,9 +406,11 @@ class DashboardReporterTests(unittest.TestCase):
             self.assertNotIn(prohibited, serialized)
         self.assertEqual(payload["state"]["open_outcome_count"], 1)
         self.assertEqual(payload["state"]["unreconciled_outcome_count"], 0)
-        self.assertEqual(payload["app_server"]["client_version"], "unknown")
+        self.assertEqual(payload["app_server"]["client_version"], "0.200.0")
+        self.assertEqual(payload["app_server"]["attempts"], 3)
+        self.assertEqual(payload["app_server"]["performance"]["default_window"], "7d")
         self.assertIsNone(payload["work_efficiency"]["remedial_tokens_actual"])
-        self.assertEqual(payload["schema_version"], 5)
+        self.assertEqual(payload["schema_version"], 6)
         self.assertEqual(payload["work_inventory"], {"total_count": 0, "truncated": False, "artifacts": []})
         self.assertEqual(payload["instance_health"]["reporter_state"], "active")
         self.assertEqual(len(payload["instance_health"]["semantic_digest"]), 64)

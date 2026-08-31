@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
@@ -43,6 +44,7 @@ from scripts.codex_execution import (
     ModelPolicy,
     ModelPolicyError,
     activity_report,
+    app_server_performance_report,
     classify_recovery,
     qualification_report,
     detect_codex_version,
@@ -2342,6 +2344,57 @@ class CodexExecutionTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(ValueError, "identify every source"):
             validate_summary_context(self.root, (summary,), (source,))
+
+    def test_app_server_performance_report_counts_real_runs_and_verified_camp_outcomes(self) -> None:
+        telemetry = self.root / "performance.jsonl"
+        records = [
+            {
+                "schema_version": 2,
+                "role": "planning",
+                "status": "completed",
+                "success": True,
+                "started_at": "2026-08-30T10:00:00Z",
+                "duration_seconds": 2.0,
+                "tokens": {"input": 100, "cached_input": 40, "output": 20, "reasoning_output": 5},
+                "weighted_usage": {"units": 1.25},
+                "app_server_user_agent": "codex/0.200.0",
+            },
+            {
+                "schema_version": 2,
+                "role": "camp_execution",
+                "status": "completed",
+                "success": True,
+                "started_at": "2026-08-30T11:00:00Z",
+                "duration_seconds": 4.0,
+                "thread_id": "thread-1",
+                "turn_id": "turn-1",
+                "tokens": {"input": 200, "cached_input": 50, "output": 40, "reasoning_output": 10},
+                "weighted_usage": {"units": 2.5},
+            },
+            {
+                "schema_version": 2,
+                "role": "recovery_control",
+                "operation": "camp_mutation_journal",
+                "status": "verification_failed",
+                "recovery_action": "verify mutation journal",
+                "started_at": "2026-08-30T11:01:00Z",
+                "thread_id": "thread-1",
+                "turn_id": "turn-1",
+                "details": {"camp_duration_seconds": 5.0},
+            },
+        ]
+        telemetry.write_text("".join(json.dumps(item) + "\n" for item in records), encoding="utf-8")
+        report = app_server_performance_report(
+            telemetry,
+            hours=24,
+            observed_at=datetime(2026, 8, 30, 12, tzinfo=timezone.utc),
+        )
+        self.assertEqual((report["attempts"], report["completions"], report["failures"]), (2, 1, 1))
+        self.assertEqual(report["role_metrics"]["camp_execution"]["failures"], 1)
+        self.assertEqual(report["duration_p95_ms"], 5000)
+        self.assertEqual(report["weighted_usage_milliunits"], 3750)
+        self.assertEqual(report["failure_groups"][0]["category"], "verification")
+        self.assertNotIn("details", json.dumps(report))
 
     def test_activity_report_is_prompt_free_and_summarized(self) -> None:
         telemetry = self.root / "activity.jsonl"

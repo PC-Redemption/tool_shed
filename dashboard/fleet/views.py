@@ -22,7 +22,7 @@ from django.views.decorators.http import require_GET, require_POST
 from .auth import dashboard_auth_required, reporter_instance
 from .contracts import ContractError, validate_report
 from .live import dashboard_revision
-from .models import Enrollment, FailureGroup, Instance, Project, WorkArtifactSnapshot
+from .models import AppServerAggregate, Enrollment, FailureGroup, Instance, Project, WorkArtifactSnapshot
 from .services import (
     active_attention_items,
     approve_enrollment,
@@ -947,9 +947,74 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
 
 @dashboard_auth_required
 def app_server_view(request: HttpRequest):
-    projects = Project.objects.prefetch_related("instances__app_server", "instances__failure_groups").all()
+    selected_window = request.GET.get("window", "7d").strip()
+    if selected_window not in {"24h", "7d", "30d"}:
+        selected_window = "7d"
+    rows = []
+    totals = {"instances": 0, "ready": 0, "attempts": 0, "completions": 0, "failures": 0, "interruptions": 0, "fallbacks": 0}
+    for instance in Instance.objects.select_related("project", "app_server"):
+        try:
+            aggregate = instance.app_server
+        except AppServerAggregate.DoesNotExist:
+            aggregate = None
+        performance = aggregate.performance if aggregate and isinstance(aggregate.performance, dict) else {}
+        metrics = performance.get("windows", {}).get(
+            selected_window, {}
+        )
+        aggregate_attempts = aggregate.attempts if aggregate else 0
+        aggregate_failures = aggregate.failures if aggregate else 0
+        attempts = int(metrics.get("attempts", aggregate_attempts) or 0)
+        completions = int(metrics.get("completions", max(attempts - aggregate_failures, 0)) or 0)
+        failures = int(metrics.get("failures", aggregate_failures) or 0)
+        interruptions = int(metrics.get("interruptions", 0) or 0)
+        input_tokens = int(metrics.get("input_tokens", 0) or 0)
+        cached_tokens = int(metrics.get("cached_input_tokens", 0) or 0)
+        weighted_milliunits = metrics.get("weighted_usage_milliunits")
+        role_metrics = metrics.get("role_metrics", {}) if isinstance(metrics.get("role_metrics"), dict) else {}
+        rows.append(
+            {
+                "aggregate": aggregate,
+                "instance": instance,
+                "availability_state": aggregate.availability_state if aggregate else "unknown",
+                "client_version": aggregate.client_version if aggregate else "unknown",
+                "readiness_observed_at": aggregate.readiness_observed_at if aggregate else None,
+                "attempts": attempts,
+                "completions": completions,
+                "failures": failures,
+                "interruptions": interruptions,
+                "fallbacks": int(metrics.get("fallbacks", aggregate.fallbacks if aggregate else 0) or 0),
+                "success_rate": round(completions * 100 / attempts, 1) if attempts else None,
+                "p50_ms": metrics.get("duration_p50_ms"),
+                "p95_ms": metrics.get("duration_p95_ms"),
+                "tokens_per_run": round((input_tokens + int(metrics.get("output_tokens", 0) or 0)) / attempts) if attempts else None,
+                "cache_rate": round(cached_tokens * 100 / input_tokens, 1) if input_tokens else None,
+                "weighted_usage_per_run": (
+                    round(int(weighted_milliunits) / attempts / 1000, 2)
+                    if weighted_milliunits is not None and attempts
+                    else None
+                ),
+                "last_execution": parse_datetime(metrics.get("last_execution")) if metrics.get("last_execution") else None,
+                "roles": [
+                    ("Plan", role_metrics.get("planning", {})),
+                    ("Verify", role_metrics.get("verification", {})),
+                    ("CAMP", role_metrics.get("camp_execution", {})),
+                ],
+            }
+        )
+        totals["instances"] += 1
+        totals["ready"] += bool(aggregate and aggregate.availability_state == "available")
+        totals["attempts"] += attempts
+        totals["completions"] += completions
+        totals["failures"] += failures
+        totals["interruptions"] += interruptions
+        totals["fallbacks"] += rows[-1]["fallbacks"]
+    totals["success_rate"] = round(totals["completions"] * 100 / totals["attempts"], 1) if totals["attempts"] else None
     groups = FailureGroup.objects.select_related("instance", "instance__project")[:100]
-    return render(request, "fleet/app_server.html", {"projects": projects, "groups": groups})
+    return render(
+        request,
+        "fleet/app_server.html",
+        {"rows": rows, "groups": groups, "selected_window": selected_window, "totals": totals},
+    )
 
 
 @dashboard_auth_required

@@ -65,6 +65,12 @@
 .dashboard-panel table { width: 100%; border-collapse: collapse; }
 .dashboard-panel th, .dashboard-panel td { padding: .8rem; border-bottom: 1px solid var(--dashboard-border); text-align: left; vertical-align: top; }
 .dashboard-panel th small { display: block; margin-top: .25rem; color: var(--dashboard-muted); font-weight: 400; }
+.dashboard-panel td small { display: block; margin-top: .3rem; color: var(--dashboard-muted); font-weight: 400; line-height: 1.35; }
+.app-server-table { min-width: 76rem; }
+.app-server-table td, .app-server-table th { font-variant-numeric: tabular-nums; }
+.state-available { color: #c5f5d7; background: #18533c; }
+.state-unavailable, .state-unqualified { color: #ffd3cb; background: #5c2530; }
+.state-disabled, .state-unknown { color: #d2dbe8; background: #2b3b50; }
 .dashboard-panel a { color: #8ee9db; }
 .decision-form { display: flex; gap: .45rem; margin: 0; }
 .decision-form button { padding: .5rem .7rem; border: 1px solid transparent; border-radius: .45rem; background: #1d665c; color: #fff; cursor: pointer; }

@@ -85,6 +85,8 @@ def dashboard_revision() -> str:
                 "last_success",
                 "last_failure",
                 "client_version",
+                "readiness_observed_at",
+                "performance",
             )
         ),
         "failure_groups": list(

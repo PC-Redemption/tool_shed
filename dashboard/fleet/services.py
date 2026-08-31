@@ -643,6 +643,8 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
             "last_success": app["last_success"],
             "last_failure": app["last_failure"],
             "client_version": app["client_version"],
+            "readiness_observed_at": app["readiness_observed_at"],
+            "performance": app["performance"],
         },
     )
     failure_retention = timedelta(days=settings.DASHBOARD_FAILURE_RETENTION_DAYS)

@@ -27,6 +27,8 @@ from pathlib import Path
 from typing import Any, Sequence
 
 import app_server_user_state
+import app_server_control
+import codex_execution
 import document_store
 import hybrid_state
 import planning_order
@@ -36,7 +38,7 @@ from project_identity import ProjectIdentityError, binding_token, load_project_i
 
 
 SCHEMA_VERSION = 1
-REPORT_SCHEMA_VERSION = 5
+REPORT_SCHEMA_VERSION = 6
 OUTBOX_RELATIVE = Path(".tool-shed/dashboard/outbox.sqlite3")
 MAX_RESPONSE_BYTES = 65_536
 LOCK_SECONDS = 30
@@ -745,10 +747,36 @@ def report_payload(
     identity = load_project_identity(workspace)
     state = load_connection(workspace)
     efficiency = work_orchestration.efficiency_report(workspace, hours=24)
-    app = app_server_user_state.AppServerEventStore().report(hours=24)
+    app_events = app_server_user_state.AppServerEventStore()
+    app = app_events.report(hours=168)
     preference = app_server_user_state.AppServerPreferenceStore().status()
-    outcome_counts = app.get("counts", {}).get("outcome", {})
-    observed = stamp()
+    observed_at = now()
+    observed = stamp(observed_at)
+    telemetry_path = codex_execution.default_telemetry_path()
+    performance_windows: dict[str, dict[str, Any]] = {}
+    performance_failure_groups: list[dict[str, Any]] = []
+    for window_id, hours in (("24h", 24), ("7d", 168), ("30d", 720)):
+        metrics = codex_execution.app_server_performance_report(
+            telemetry_path, hours=hours, observed_at=observed_at
+        )
+        metrics["fallbacks"] = int(app_events.report(hours=hours).get("gui_fallbacks", 0))
+        if window_id == "7d":
+            performance_failure_groups = list(metrics.get("failure_groups", []))
+        metrics.pop("failure_groups", None)
+        performance_windows[window_id] = metrics
+    selected_performance = performance_windows["7d"]
+    readiness_state = "disabled" if not preference.enabled else "unknown"
+    readiness_client = selected_performance.get("client_version")
+    if preference.enabled:
+        try:
+            readiness = app_server_control.control_status(workspace=workspace)
+        except (OSError, ValueError, RuntimeError):
+            readiness = {}
+        if readiness.get("app_server_available") is False:
+            readiness_state = "unavailable"
+        elif readiness.get("app_server_available") is True:
+            readiness_state = "available" if readiness.get("enabled_roles") else "unqualified"
+        readiness_client = readiness.get("installed_codex") or readiness_client
     allowed_reasons = {
         "managed-document-update",
         "managed-update",
@@ -778,16 +806,16 @@ def report_payload(
         "material_events": events,
         "app_server": {
             "enabled": preference.enabled,
-            "availability_state": (
-                "disabled" if not preference.enabled else "available" if app.get("app_server_selections", 0) else "unknown"
-            ),
-            "attempts": int(app.get("execution_attempts", 0)),
-            "failures": int(outcome_counts.get("failed", 0)),
+            "availability_state": readiness_state,
+            "attempts": int(selected_performance["attempts"]),
+            "failures": int(selected_performance["failures"] + selected_performance["interruptions"]),
             "fallbacks": int(app.get("gui_fallbacks", 0)),
-            "last_success": app.get("last_success"),
-            "last_failure": app.get("last_failure"),
-            "client_version": app.get("client_version") or "unknown",
-            "failure_groups": app.get("failure_groups", []),
+            "last_success": selected_performance.get("last_success"),
+            "last_failure": selected_performance.get("last_failure"),
+            "client_version": readiness_client or "unknown",
+            "failure_groups": performance_failure_groups or app.get("failure_groups", []),
+            "readiness_observed_at": observed,
+            "performance": {"default_window": "7d", "windows": performance_windows},
         },
         "work_efficiency": {
             "window_start": efficiency["window"]["started_at"],

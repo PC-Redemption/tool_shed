@@ -24,6 +24,7 @@ from dashboard.fleet.contracts import ContractError, validate_report  # noqa: E4
 from dashboard.fleet.context import fleet_navigation  # noqa: E402
 from dashboard.fleet.live import dashboard_revision  # noqa: E402
 from dashboard.fleet.models import (  # noqa: E402
+    AppServerAggregate,
     AttentionCondition,
     Enrollment,
     Instance,
@@ -152,6 +153,62 @@ class DashboardApplicationTests(TestCase):
         )
         return payload
 
+    def performance_report_payload(self) -> dict[str, object]:
+        payload = self.release_chain_report_payload()
+        now = str(payload["observed_at"])
+        role_zero = {
+            "attempts": 0,
+            "completions": 0,
+            "failures": 0,
+            "interruptions": 0,
+            "duration_p50_ms": None,
+            "duration_p95_ms": None,
+            "input_tokens": 0,
+            "cached_input_tokens": 0,
+            "output_tokens": 0,
+            "reasoning_tokens": 0,
+            "weighted_usage_milliunits": None,
+            "weighted_usage_version": None,
+        }
+        windows = {}
+        for window_id, days in (("24h", 1), ("7d", 7), ("30d", 30)):
+            planning = {**role_zero, "attempts": 8, "completions": 7, "failures": 1, "duration_p50_ms": 1200, "duration_p95_ms": 4200, "input_tokens": 8000, "cached_input_tokens": 4000, "output_tokens": 800, "reasoning_tokens": 200, "weighted_usage_milliunits": 16000, "weighted_usage_version": "v1"}
+            windows[window_id] = {
+                "schema_version": 1,
+                "window_start": (timezone.now() - timedelta(days=days)).isoformat(),
+                "window_end": now,
+                "attempts": 8,
+                "completions": 7,
+                "failures": 1,
+                "interruptions": 0,
+                "fallbacks": 2,
+                "duration_p50_ms": 1200,
+                "duration_p95_ms": 4200,
+                "input_tokens": 8000,
+                "cached_input_tokens": 4000,
+                "output_tokens": 800,
+                "reasoning_tokens": 200,
+                "weighted_usage_milliunits": 16000,
+                "weighted_usage_version": "v1",
+                "last_execution": now,
+                "last_success": now,
+                "last_failure": now,
+                "client_version": "0.200.0",
+                "role_metrics": {"planning": planning, "verification": dict(role_zero), "camp_execution": dict(role_zero)},
+                "excluded_malformed_records": 0,
+                "privacy": "content-free-controlled-aggregate-only",
+            }
+        payload["schema_version"] = 6
+        payload["app_server"].update(  # type: ignore[union-attr]
+            {
+                "attempts": 8,
+                "failures": 1,
+                "readiness_observed_at": now,
+                "performance": {"default_window": "7d", "windows": windows},
+            }
+        )
+        return payload
+
     def health_report_payload(self) -> dict[str, object]:
         payload = self.lifecycle_report_payload()
         payload["schema_version"] = 4
@@ -244,6 +301,36 @@ class DashboardApplicationTests(TestCase):
         payload["app_server"]["raw_error"] = "secret diagnostic"  # type: ignore[index]
         with self.assertRaisesRegex(ContractError, "unsupported fields"):
             validate_report(payload)
+
+    def test_schema_six_app_server_performance_is_strict_ingested_and_rendered(self) -> None:
+        payload = self.performance_report_payload()
+        validated = validate_report(payload)
+        self.assertEqual(validated["app_server"]["performance"]["windows"]["7d"]["attempts"], 8)
+        unsafe = self.performance_report_payload()
+        unsafe["app_server"]["performance"]["windows"]["7d"]["prompt"] = "private"  # type: ignore[index]
+        with self.assertRaisesRegex(ContractError, "unsupported fields"):
+            validate_report(unsafe)
+
+        token = self.enroll_and_issue()
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        aggregate = AppServerAggregate.objects.get()
+        self.assertEqual(aggregate.performance["windows"]["7d"]["completions"], 7)
+        self.assertIsNotNone(aggregate.readiness_observed_at)
+
+        user = get_user_model().objects.create_user("performance-viewer", password="fixture")
+        self.client.force_login(user)
+        page = self.client.get(reverse("fleet:app-server"), {"window": "7d"})
+        self.assertContains(page, "Observed readiness and content-free execution telemetry")
+        self.assertContains(page, "87.5%")
+        self.assertContains(page, "p95 4200 ms")
+        self.assertContains(page, "Plan 8")
+        self.assertContains(page, "50.0% cached input")
 
     def test_contract_accepts_terminal_document_lifecycle(self) -> None:
         payload = self.lifecycle_report_payload()

@@ -8,7 +8,9 @@ import sys as _runtime_sys
 _runtime_sys.dont_write_bytecode = True
 
 import argparse
+import hashlib
 import json
+import math
 import os
 import queue
 import re
@@ -19,7 +21,7 @@ import time
 import uuid
 from collections import Counter
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable
 
@@ -1350,6 +1352,185 @@ def activity_report(path: Path, *, limit: int = 20) -> dict[str, Any]:
             "reused_threads": sum(bool(item["thread_reused"]) for item in operations),
             "context_warnings": sum(item["context_warning"] is not None for item in operations),
         },
+    }
+
+
+APP_SERVER_PERFORMANCE_ROLES = ("planning", "verification", "camp_execution")
+
+
+def _performance_timestamp(value: object) -> datetime | None:
+    if not isinstance(value, str):
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=timezone.utc)
+
+
+def _nearest_rank(values: list[float], percentile: float) -> int | None:
+    if not values:
+        return None
+    ordered = sorted(values)
+    index = max(0, min(len(ordered) - 1, math.ceil(percentile * len(ordered)) - 1))
+    return round(ordered[index] * 1000)
+
+
+def _controlled_failure_category(status: str, recovery_action: str) -> str:
+    combined = f"{status} {recovery_action}".lower()
+    for category, markers in (
+        ("authentication", ("auth", "login", "credential")),
+        ("startup", ("startup", "spawn", "executable")),
+        ("model", ("model", "catalog")),
+        ("budget", ("budget", "limit", "context")),
+        ("verification", ("verification", "verify")),
+        ("unsafe-boundary", ("unsafe", "journal", "intervention")),
+        ("interrupted", ("interrupt", "cancel", "stopped")),
+        ("transport", ("transport", "network", "timeout", "protocol", "retry")),
+    ):
+        if any(marker in combined for marker in markers):
+            return category
+    return "unknown"
+
+
+def app_server_performance_report(
+    path: Path,
+    *,
+    hours: float,
+    observed_at: datetime | None = None,
+) -> dict[str, Any]:
+    """Return a bounded, content-free aggregate of real App Server executions."""
+
+    if hours <= 0 or hours > 24 * 365:
+        raise ValueError("performance report hours must be greater than zero and at most 8760")
+    observed = observed_at or utc_now()
+    cutoff = observed - timedelta(hours=hours)
+    records = [item for item in read_telemetry(path, limit=None) if item.get("schema_version") == 2]
+    journal_controls: dict[tuple[object, object], dict[str, Any]] = {}
+    for item in records:
+        if item.get("role") != "recovery_control" or item.get("operation") != "camp_mutation_journal":
+            continue
+        journal_controls[(item.get("thread_id"), item.get("turn_id"))] = item
+
+    executions: list[dict[str, Any]] = []
+    malformed = 0
+    for item in records:
+        if item.get("role") not in APP_SERVER_PERFORMANCE_ROLES:
+            continue
+        started = _performance_timestamp(item.get("started_at"))
+        if started is None:
+            malformed += 1
+            continue
+        if started < cutoff or started > observed:
+            continue
+        executions.append({**item, "_started": started})
+
+    def summarize(selected: list[dict[str, Any]]) -> dict[str, Any]:
+        outcomes = Counter()
+        tokens = Counter()
+        durations: list[float] = []
+        weighted_units = 0.0
+        weighted_count = 0
+        failures: list[dict[str, Any]] = []
+        successes: list[str] = []
+        for item in selected:
+            status = str(item.get("status") or "unknown")
+            recovery = str(item.get("recovery_action") or "unknown")
+            duration = item.get("duration_seconds")
+            if item.get("role") == "camp_execution":
+                control = journal_controls.get((item.get("thread_id"), item.get("turn_id")))
+                if control is not None:
+                    status = str(control.get("status") or status)
+                    recovery = str(control.get("recovery_action") or recovery)
+                    details = control.get("details")
+                    if isinstance(details, dict) and isinstance(details.get("camp_duration_seconds"), (int, float)):
+                        duration = details["camp_duration_seconds"]
+            if status == "completed" and bool(item.get("success")):
+                outcome = "completed"
+                successes.append(isoformat(item["_started"]))
+            elif status in {"interrupted", "cancelled", "stopped", "context_budget_exceeded"}:
+                outcome = "interrupted"
+            else:
+                outcome = "failed"
+            outcomes[outcome] += 1
+            if outcome != "completed":
+                failures.append(
+                    {
+                        "category": _controlled_failure_category(status, recovery),
+                        "role": str(item.get("role")),
+                        "recorded_at": isoformat(item["_started"]),
+                    }
+                )
+            if isinstance(duration, (int, float)) and duration >= 0:
+                durations.append(float(duration))
+            item_tokens = item.get("tokens") if isinstance(item.get("tokens"), dict) else {}
+            for source in ("input", "cached_input", "output", "reasoning_output", "total"):
+                value = item_tokens.get(source)
+                if isinstance(value, int) and value >= 0:
+                    tokens[source] += value
+            weighted = item.get("weighted_usage")
+            if isinstance(weighted, dict) and isinstance(weighted.get("units"), (int, float)):
+                weighted_units += float(weighted["units"])
+                weighted_count += 1
+        attempts = len(selected)
+        return {
+            "attempts": attempts,
+            "completions": outcomes["completed"],
+            "failures": outcomes["failed"],
+            "interruptions": outcomes["interrupted"],
+            "duration_p50_ms": _nearest_rank(durations, 0.50),
+            "duration_p95_ms": _nearest_rank(durations, 0.95),
+            "input_tokens": tokens["input"],
+            "cached_input_tokens": tokens["cached_input"],
+            "output_tokens": tokens["output"],
+            "reasoning_tokens": tokens["reasoning_output"],
+            "weighted_usage_milliunits": round(weighted_units * 1000) if weighted_count else None,
+            "weighted_usage_version": WEIGHTED_USAGE_VERSION if weighted_count else None,
+            "last_success": max(successes) if successes else None,
+            "_failures": failures,
+        }
+
+    overall = summarize(executions)
+    grouped_failures: dict[tuple[str, str], dict[str, Any]] = {}
+    for item in overall.pop("_failures"):
+        key = (item["category"], item["role"])
+        group = grouped_failures.setdefault(
+            key,
+            {
+                "signature": hashlib.sha256(f"{key[0]}:{key[1]}".encode()).hexdigest()[:32],
+                "category": key[0],
+                "count": 0,
+                "first_seen": item["recorded_at"],
+                "last_seen": item["recorded_at"],
+            },
+        )
+        group["count"] += 1
+        group["first_seen"] = min(group["first_seen"], item["recorded_at"])
+        group["last_seen"] = max(group["last_seen"], item["recorded_at"])
+    role_metrics: dict[str, dict[str, Any]] = {}
+    for role in APP_SERVER_PERFORMANCE_ROLES:
+        role_summary = summarize([item for item in executions if item.get("role") == role])
+        role_summary.pop("_failures", None)
+        role_summary.pop("last_success", None)
+        role_metrics[role] = role_summary
+    latest = max(executions, key=lambda item: item["_started"], default=None)
+    all_executions = [item for item in records if item.get("role") in APP_SERVER_PERFORMANCE_ROLES]
+    return {
+        "schema_version": 1,
+        "window_start": isoformat(cutoff),
+        "window_end": isoformat(observed),
+        **overall,
+        "last_execution": isoformat(latest["_started"]) if latest else None,
+        "last_failure": max(
+            (item["last_seen"] for item in grouped_failures.values()), default=None
+        ),
+        "client_version": _codex_version_from_records(all_executions),
+        "role_metrics": role_metrics,
+        "failure_groups": sorted(
+            grouped_failures.values(), key=lambda item: (-item["count"], item["signature"])
+        )[:20],
+        "excluded_malformed_records": malformed,
+        "privacy": "content-free-controlled-aggregate-only",
     }
 
 
