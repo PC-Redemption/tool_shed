@@ -336,6 +336,8 @@ class DashboardApplicationTests(TestCase):
         aggregate.refresh_from_db()
         self.assertEqual(aggregate.performance["windows"]["7d"]["completions"], 7)
         self.assertIsNotNone(aggregate.readiness_observed_at)
+        self.assertEqual(aggregate.availability_state, "available")
+        self.assertEqual(aggregate.attempts, 8)
 
         user = get_user_model().objects.create_user("performance-viewer", password="fixture")
         self.client.force_login(user)

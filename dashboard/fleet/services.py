@@ -631,6 +631,7 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
         )
         LifecycleEvent.objects.filter(retained_until__lt=timezone.now()).delete()
     app = report["app_server"]
+    existing_app = AppServerAggregate.objects.filter(instance=locked).first()
     app_defaults = {
         "counter_epoch": locked.counter_epoch,
         "enabled": app["enabled"],
@@ -649,6 +650,11 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
                 "performance": app["performance"],
             }
         )
+    elif existing_app and existing_app.readiness_observed_at is not None:
+        app_defaults = {
+            "counter_epoch": locked.counter_epoch,
+            "enabled": app["enabled"],
+        }
     AppServerAggregate.objects.update_or_create(
         instance=locked,
         defaults=app_defaults,
