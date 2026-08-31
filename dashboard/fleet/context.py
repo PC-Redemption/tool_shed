@@ -2,6 +2,7 @@ import hashlib
 from datetime import timedelta
 from pathlib import Path
 
+from django.conf import settings
 from django.db.models import F
 from django.utils import timezone
 
@@ -17,9 +18,15 @@ _DASHBOARD_ASSET_REVISION = hashlib.sha256(
 
 
 def fleet_navigation(request):
+    environment = str(settings.DASHBOARD_ENVIRONMENT)
+    common = {
+        "dashboard_asset_revision": _DASHBOARD_ASSET_REVISION,
+        "dashboard_environment": environment,
+        "dashboard_is_development": environment == "development",
+    }
     if not getattr(request, "user", None) or not request.user.is_authenticated:
         return {
-            "dashboard_asset_revision": _DASHBOARD_ASSET_REVISION,
+            **common,
             "dashboard_revision": "",
             "fleet_projects": [],
         }
@@ -38,7 +45,7 @@ def fleet_navigation(request):
         "name",
     )
     return {
-        "dashboard_asset_revision": _DASHBOARD_ASSET_REVISION,
+        **common,
         "dashboard_revision": dashboard_revision(),
         "fleet_projects": projects.only(
             "id", "name", "attention_state", "last_activity_at", "last_seen", "is_hidden"

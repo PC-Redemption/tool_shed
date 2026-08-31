@@ -7,6 +7,13 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parents[2]
 DEBUG = os.environ.get("TOOL_SHED_DASHBOARD_DEBUG") == "1"
 TESTING = os.environ.get("TOOL_SHED_DASHBOARD_TESTING") == "1"
+DASHBOARD_ENVIRONMENT = os.environ.get("TOOL_SHED_DASHBOARD_ENVIRONMENT", "production").strip().lower()
+if DASHBOARD_ENVIRONMENT not in {"production", "development"}:
+    raise ValueError("TOOL_SHED_DASHBOARD_ENVIRONMENT must be production or development")
+DASHBOARD_ALLOW_INSECURE_HTTP = (
+    DASHBOARD_ENVIRONMENT == "development"
+    and os.environ.get("TOOL_SHED_DASHBOARD_ALLOW_INSECURE_HTTP") == "1"
+)
 SECRET_KEY = os.environ.get("TOOL_SHED_DASHBOARD_SECRET_KEY", "test-only-dashboard-secret")
 ALLOWED_HOSTS = [item for item in os.environ.get("TOOL_SHED_DASHBOARD_ALLOWED_HOSTS", "localhost,127.0.0.1,testserver").split(",") if item]
 CSRF_TRUSTED_ORIGINS = [item for item in os.environ.get("TOOL_SHED_DASHBOARD_CSRF_ORIGINS", "").split(",") if item]
@@ -81,6 +88,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "/dashboard/login/"
 LOGIN_REDIRECT_URL = "/dashboard/"
 LOGOUT_REDIRECT_URL = "/dashboard/login/"
+SESSION_COOKIE_NAME = os.environ.get("TOOL_SHED_DASHBOARD_SESSION_COOKIE_NAME", "tool_shed_sessionid")
+CSRF_COOKIE_NAME = os.environ.get("TOOL_SHED_DASHBOARD_CSRF_COOKIE_NAME", "tool_shed_csrftoken")
 
 DASHBOARD_AUTH_MODE = os.environ.get("TOOL_SHED_DASHBOARD_AUTH_MODE", "local-mfa")
 DASHBOARD_REQUIRE_OTP = not TESTING and DASHBOARD_AUTH_MODE == "local-mfa"
@@ -92,7 +101,7 @@ DASHBOARD_SSE_POLL_SECONDS = float(os.environ.get("TOOL_SHED_DASHBOARD_SSE_POLL_
 DASHBOARD_SSE_MAX_SECONDS = float(os.environ.get("TOOL_SHED_DASHBOARD_SSE_MAX_SECONDS", "55"))
 DASHBOARD_SSE_KEEPALIVE_SECONDS = float(os.environ.get("TOOL_SHED_DASHBOARD_SSE_KEEPALIVE_SECONDS", "2"))
 
-if not DEBUG and not TESTING:
+if not DEBUG and not TESTING and not DASHBOARD_ALLOW_INSECURE_HTTP:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -100,4 +109,10 @@ if not DEBUG and not TESTING:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+    X_FRAME_OPTIONS = "DENY"
+elif not DEBUG and not TESTING:
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    SECURE_SSL_REDIRECT = False
+    SECURE_HSTS_SECONDS = 0
     X_FRAME_OPTIONS = "DENY"

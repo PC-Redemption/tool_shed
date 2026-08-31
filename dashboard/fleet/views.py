@@ -52,7 +52,14 @@ def _error(error: ContractError, status: int = 400) -> JsonResponse:
 
 @require_GET
 def health(request: HttpRequest) -> JsonResponse:
-    return JsonResponse({"status": "healthy", "service": "tool-shed-dashboard", "schema_version": 1})
+    return JsonResponse(
+        {
+            "status": "healthy",
+            "service": "tool-shed-dashboard",
+            "environment": settings.DASHBOARD_ENVIRONMENT,
+            "schema_version": 1,
+        }
+    )
 
 
 @csrf_exempt

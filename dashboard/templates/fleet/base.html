@@ -8,7 +8,8 @@
   <link rel="stylesheet" href="{% static 'fleet/dashboard.css' %}?v={{ dashboard_asset_revision }}">
   <script src="{% static 'fleet/dashboard.js' %}?v={{ dashboard_asset_revision }}" defer></script>
 </head>
-<body class="dashboard-body" data-dashboard-stream-url="{% url 'fleet:events' %}" data-dashboard-revision="{{ dashboard_revision }}">
+<body class="dashboard-body" data-dashboard-environment="{{ dashboard_environment }}" data-dashboard-stream-url="{% url 'fleet:events' %}" data-dashboard-revision="{{ dashboard_revision }}">
+  {% if dashboard_is_development %}<div class="dashboard-environment-banner" role="status">Development environment · synthetic data only · not production</div>{% endif %}
   <header class="dashboard-header">
     <a class="dashboard-brand" href="/dashboard/">Tool Shed <span>Dashboard</span></a>
     <form class="dashboard-search" action="/dashboard/" method="get" role="search">

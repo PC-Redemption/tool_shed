@@ -301,12 +301,27 @@ class DocumentationSiteTests(unittest.TestCase):
     def test_deployment_bundle_combines_docs_dashboard_and_postgres(self) -> None:
         compose = (ROOT / "site" / "deploy" / "docker-compose.yml").read_text(encoding="utf-8")
         nginx = (ROOT / "site" / "deploy" / "nginx.conf").read_text(encoding="utf-8")
-        self.assertIn("container_name: ts-rookaro-com", compose)
-        self.assertIn('"8087:80"', compose)
+        self.assertIn(
+            "container_name: ${TOOL_SHED_DOCS_CONTAINER_NAME:-ts-rookaro-com}",
+            compose,
+        )
+        self.assertIn(
+            '"${TOOL_SHED_SITE_BIND_ADDRESS:-0.0.0.0}:${TOOL_SHED_SITE_PORT:-8087}:80"',
+            compose,
+        )
         self.assertIn("nginx:1.29-alpine", compose)
         self.assertIn("postgres:17.9-bookworm", compose)
         self.assertIn("tool-shed-dashboard:", compose)
         self.assertIn("healthcheck:", compose)
+        self.assertIn("TOOL_SHED_DASHBOARD_ENVIRONMENT", compose)
+        self.assertIn("TOOL_SHED_DASHBOARD_ALLOW_INSECURE_HTTP", compose)
+        development = (ROOT / "site" / "deploy" / ".env.development.example").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("COMPOSE_PROJECT_NAME=tsrookarocom-dev", development)
+        self.assertIn("TOOL_SHED_SITE_BIND_ADDRESS=192.168.7.5", development)
+        self.assertIn("TOOL_SHED_SITE_PORT=8443", development)
+        self.assertNotIn("ts.rookaro.com\n", development)
         self.assertIn("try_files $uri $uri/ =404", nginx)
         self.assertIn("location = /dashboard/events/", nginx)
         self.assertIn("proxy_buffering off", nginx)

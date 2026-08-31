@@ -16,6 +16,7 @@ django.setup()
 
 from django.contrib.auth import get_user_model  # noqa: E402
 from django.core.management import call_command  # noqa: E402
+from django.core.management.base import CommandError  # noqa: E402
 from django.test import TestCase, override_settings  # noqa: E402
 from django.urls import reverse  # noqa: E402
 from django.utils import timezone  # noqa: E402
@@ -858,7 +859,31 @@ class DashboardApplicationTests(TestCase):
     def test_health_is_public_and_contains_no_runtime_detail(self) -> None:
         response = self.client.get(reverse("fleet:health"))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(set(response.json()), {"status", "service", "schema_version"})
+        self.assertEqual(
+            set(response.json()),
+            {"status", "service", "environment", "schema_version"},
+        )
+        self.assertEqual(response.json()["environment"], "production")
+
+    @override_settings(DASHBOARD_ENVIRONMENT="development")
+    def test_development_identity_is_visible_and_machine_readable(self) -> None:
+        health = self.client.get(reverse("fleet:health"))
+        self.assertEqual(health.json()["environment"], "development")
+        login = self.client.get(reverse("login"))
+        self.assertContains(login, "Development environment")
+        self.assertContains(login, 'data-dashboard-environment="development"')
+
+    @override_settings(DASHBOARD_ENVIRONMENT="development")
+    def test_development_seed_is_deterministic_and_production_rejects_it(self) -> None:
+        call_command("seed_dashboard_development", verbosity=0)
+        call_command("seed_dashboard_development", verbosity=0)
+        self.assertEqual(
+            Project.objects.filter(name__startswith="Tool Shed Development ").count(),
+            2,
+        )
+        with override_settings(DASHBOARD_ENVIRONMENT="production"):
+            with self.assertRaisesRegex(CommandError, "restricted to the development environment"):
+                call_command("seed_dashboard_development", verbosity=0)
 
     def test_login_uses_password_and_otp_fields(self) -> None:
         response = self.client.get(reverse("login"))

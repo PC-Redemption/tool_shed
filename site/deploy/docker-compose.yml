@@ -15,6 +15,8 @@ services:
       retries: 5
     security_opt:
       - no-new-privileges:true
+    cpus: ${TOOL_SHED_POSTGRES_CPUS:-1.0}
+    mem_limit: ${TOOL_SHED_POSTGRES_MEMORY:-1g}
 
   dashboard:
     image: tool-shed-dashboard:${TOOL_SHED_DASHBOARD_IMAGE_TAG:-local}
@@ -34,23 +36,29 @@ services:
       TOOL_SHED_DASHBOARD_ALLOWED_HOSTS: ${TOOL_SHED_DASHBOARD_ALLOWED_HOSTS:-ts.rookaro.com}
       TOOL_SHED_DASHBOARD_CSRF_ORIGINS: ${TOOL_SHED_DASHBOARD_CSRF_ORIGINS:-https://ts.rookaro.com}
       TOOL_SHED_DASHBOARD_AUTH_MODE: ${TOOL_SHED_DASHBOARD_AUTH_MODE:-local-mfa}
+      TOOL_SHED_DASHBOARD_ENVIRONMENT: ${TOOL_SHED_DASHBOARD_ENVIRONMENT:-production}
+      TOOL_SHED_DASHBOARD_ALLOW_INSECURE_HTTP: ${TOOL_SHED_DASHBOARD_ALLOW_INSECURE_HTTP:-0}
+      TOOL_SHED_DASHBOARD_SESSION_COOKIE_NAME: ${TOOL_SHED_DASHBOARD_SESSION_COOKIE_NAME:-tool_shed_sessionid}
+      TOOL_SHED_DASHBOARD_CSRF_COOKIE_NAME: ${TOOL_SHED_DASHBOARD_CSRF_COOKIE_NAME:-tool_shed_csrftoken}
     volumes:
       - dashboard_static:/app/build/dashboard-static
     healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; r=urllib.request.Request('http://127.0.0.1:8000/dashboard/healthz',headers={'Host':'ts.rookaro.com','X-Forwarded-Proto':'https'}); raise SystemExit(0 if urllib.request.urlopen(r,timeout=3).status == 200 else 1)\""]
+      test: ["CMD-SHELL", "python -c \"import urllib.request; r=urllib.request.Request('http://127.0.0.1:8000/dashboard/healthz',headers={'Host':'${TOOL_SHED_DASHBOARD_HEALTH_HOST:-ts.rookaro.com}','X-Forwarded-Proto':'${TOOL_SHED_DASHBOARD_HEALTH_PROTO:-https}'}); raise SystemExit(0 if urllib.request.urlopen(r,timeout=3).status == 200 else 1)\""]
       interval: 15s
       timeout: 5s
       retries: 5
       start_period: 30s
     security_opt:
       - no-new-privileges:true
+    cpus: ${TOOL_SHED_DASHBOARD_CPUS:-2.0}
+    mem_limit: ${TOOL_SHED_DASHBOARD_MEMORY:-1g}
 
   docs:
     image: nginx:1.29-alpine
-    container_name: ts-rookaro-com
+    container_name: ${TOOL_SHED_DOCS_CONTAINER_NAME:-ts-rookaro-com}
     restart: unless-stopped
     ports:
-      - "8087:80"
+      - "${TOOL_SHED_SITE_BIND_ADDRESS:-0.0.0.0}:${TOOL_SHED_SITE_PORT:-8087}:80"
     volumes:
       - ./public:/usr/share/nginx/html:ro
       - dashboard_static:/usr/share/nginx/dashboard-static:ro
@@ -66,6 +74,8 @@ services:
       start_period: 5s
     security_opt:
       - no-new-privileges:true
+    cpus: ${TOOL_SHED_DOCS_CPUS:-0.5}
+    mem_limit: ${TOOL_SHED_DOCS_MEMORY:-256m}
 
 volumes:
   dashboard_postgres:

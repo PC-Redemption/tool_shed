@@ -8,6 +8,8 @@
 
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .dashboard-body { min-height: 100vh; margin: 0; background: #07111f; color: #edf4ff; }
+.dashboard-environment-banner { position: sticky; top: 0; z-index: 40; padding: .45rem 1rem; border-bottom: 1px solid #ffe39a; color: #241600; background: #f4bf4f; font-size: .78rem; font-weight: 800; letter-spacing: .06em; text-align: center; text-transform: uppercase; }
+.dashboard-environment-banner + .dashboard-header { top: 2rem; }
 .dashboard-header { position: sticky; top: 0; z-index: 20; display: grid; grid-template-columns: var(--dashboard-sidebar) minmax(12rem, 32rem) 1fr auto; align-items: center; gap: 1rem; min-height: 4.25rem; padding: 0 1.25rem; border-bottom: 1px solid var(--dashboard-border); background: rgba(7, 17, 31, 0.96); backdrop-filter: blur(14px); }
 .dashboard-brand { color: #fff; font-weight: 800; text-decoration: none; letter-spacing: -.02em; }
 .dashboard-brand span { display: block; color: var(--dashboard-accent); font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; }
@@ -91,6 +93,7 @@
 .dashboard-footer { display: flex; flex-wrap: wrap; gap: .8rem 1.5rem; padding: 1rem 1.25rem; border-top: 1px solid var(--dashboard-border); color: var(--dashboard-muted); background: #07111f; font-size: .82rem; }
 .dashboard-footer a { color: #8ee9db; }
 .dashboard-login { display: grid; min-height: 100vh; place-items: center; margin: 0; background: #07111f; color: #fff; }
+.dashboard-login .dashboard-environment-banner { position: fixed; inset: 0 0 auto; }
 .dashboard-login main { width: min(100% - 2rem, 28rem); padding: 2rem; border: 1px solid var(--dashboard-border); border-radius: 1rem; background: var(--dashboard-panel); }
 .dashboard-login label, .dashboard-login input { display: block; width: 100%; }
 .dashboard-login input { box-sizing: border-box; padding: .65rem; border: 1px solid var(--dashboard-border); border-radius: .5rem; color: #fff; background: #0d1b2d; }

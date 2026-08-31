@@ -105,6 +105,11 @@ the hosted dashboard has no lifecycle, planning-order, or release mutation opera
 The supported compose stack in `site/deploy/` runs Nginx, Django 5.2 LTS with Gunicorn, and
 PostgreSQL 17. It requires these protected environment values:
 
+The same service shape supports the isolated development profile without weakening these
+production defaults. See [Private Development Site](development-site.md) for the separate root,
+Compose identity, plain-HTTP LAN settings, synthetic data, Workpc tunnel, and scoped lifecycle
+commands.
+
 - `POSTGRES_PASSWORD`: unique database password;
 - `TOOL_SHED_DASHBOARD_SECRET_KEY`: at least 50 random characters;
 - optional `POSTGRES_DB` and `POSTGRES_USER`;

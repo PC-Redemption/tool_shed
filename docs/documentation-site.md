@@ -4,6 +4,10 @@ The public Tool Shed guide is served at [ts.rookaro.com](https://ts.rookaro.com)
 source is tracked in this repository under `site/`; `/home/jon/docker/ts.rookaro.com` on `sup` is
 only a generated deployment copy.
 
+Private development uses the separately managed LAN-only stack documented in
+[Private Development Site](development-site.md). Do not use the public deployment root or router
+for ordinary development previews.
+
 ## Information Architecture
 
 - `/` explains the flexible human/AI development process and sends operators to the right entry path.
