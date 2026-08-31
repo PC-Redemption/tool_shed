@@ -10,11 +10,7 @@ $workspacePath = (Resolve-Path -LiteralPath $Workspace).Path
 $scriptsPath = $PSScriptRoot
 $reporterPath = Join-Path $scriptsPath "dashboard_reporter.py"
 $identityPath = Join-Path $scriptsPath "project_identity.py"
-$python = (Get-Command python.exe -ErrorAction Stop).Source
-$pythonw = Join-Path (Split-Path -Parent $python) "pythonw.exe"
-if (-not (Test-Path -LiteralPath $pythonw -PathType Leaf)) {
-    throw "pythonw.exe is required for Windows dashboard qualification"
-}
+$bootstrapPython = (Get-Command python.exe -ErrorAction Stop).Source
 
 Add-Type -TypeDefinition @'
 using System;
@@ -45,9 +41,16 @@ public static class ToolShedWindowObserver {
     [DllImport("user32.dll")] private static extern bool PostThreadMessage(
         uint threadId, uint message, UIntPtr wParam, IntPtr lParam);
     [DllImport("kernel32.dll")] private static extern uint GetCurrentThreadId();
+    [DllImport("kernel32.dll", SetLastError = true)] private static extern IntPtr OpenProcess(
+        uint access, bool inheritHandle, uint processId);
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern bool QueryFullProcessImageName(
+        IntPtr process, uint flags, StringBuilder imageName, ref int size);
+    [DllImport("kernel32.dll", SetLastError = true)] private static extern bool CloseHandle(IntPtr handle);
 
     private const uint EVENT_OBJECT_SHOW = 0x8002;
     private const uint WINEVENT_OUTOFCONTEXT = 0;
+    private const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
     private const int OBJID_WINDOW = 0;
     private const uint WM_QUIT = 0x0012;
     private static readonly ConcurrentQueue<string> Events = new ConcurrentQueue<string>();
@@ -55,6 +58,9 @@ public static class ToolShedWindowObserver {
     private static WinEventDelegate Callback;
     private static Thread ObserverThread;
     private static uint ObserverThreadId;
+    private static volatile string Phase = "setup";
+
+    public static void SetPhase(string phase) { Phase = phase; }
 
     public static void Start() {
         string ignored;
@@ -85,7 +91,21 @@ public static class ToolShedWindowObserver {
         if (className != "ConsoleWindowClass" && className != "CASCADIA_HOSTING_WINDOW_CLASS") return;
         uint processId;
         GetWindowThreadProcessId(hwnd, out processId);
-        Events.Enqueue(DateTime.UtcNow.ToString("o") + "|" + processId + "|" + className);
+        Events.Enqueue(DateTime.UtcNow.ToString("o") + "|" + Phase + "|" + processId + "|" +
+            className + "|" + ProcessImage(processId));
+    }
+
+    private static string ProcessImage(uint processId) {
+        IntPtr process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, processId);
+        if (process == IntPtr.Zero) return "unavailable";
+        try {
+            int size = 1024;
+            StringBuilder imageName = new StringBuilder(size);
+            return QueryFullProcessImageName(process, 0, imageName, ref size)
+                ? imageName.ToString() : "unavailable";
+        } finally {
+            CloseHandle(process);
+        }
     }
 
     public static string[] Stop() {
@@ -96,17 +116,29 @@ public static class ToolShedWindowObserver {
 }
 '@
 
-$identity = (& $python $identityPath --workspace $workspacePath identity --operation dashboard-report --json | ConvertFrom-Json)
+$identity = (& $bootstrapPython $identityPath --workspace $workspacePath identity --operation dashboard-report --json | ConvertFrom-Json)
 $taskName = "ToolShedDashboardSafety-$($identity.project_id)"
 $task = Get-ScheduledTask -TaskName $taskName -ErrorAction Stop
+$pythonw = ([string]$task.Actions[0].Execute).Trim('"')
+if (-not (Test-Path -LiteralPath $pythonw -PathType Leaf)) {
+    throw "the scheduled dashboard task Python executable does not exist: $pythonw"
+}
+$python = Join-Path (Split-Path -Parent $pythonw) "python.exe"
+if (-not (Test-Path -LiteralPath $python -PathType Leaf)) {
+    throw "python.exe was not found beside the scheduled dashboard task executable: $python"
+}
 $statusBefore = (& $python $reporterPath --workspace $workspacePath --json status | ConvertFrom-Json)
 if ($statusBefore.connection -ne "connected" -or -not $statusBefore.credential_present) {
     throw "dashboard reporter must be connected before qualification"
 }
 
+[ToolShedWindowObserver]::SetPhase("scheduled-safety")
 [ToolShedWindowObserver]::Start()
 $windowEvents = @()
-$burstPath = Join-Path ([System.IO.Path]::GetTempPath()) ("tool-shed-dashboard-burst-" + [guid]::NewGuid() + ".py")
+$burstId = [guid]::NewGuid().ToString("N")
+$burstPath = Join-Path ([System.IO.Path]::GetTempPath()) ("tool-shed-dashboard-burst-" + $burstId + ".py")
+$burstPidPath = Join-Path ([System.IO.Path]::GetTempPath()) ("tool-shed-dashboard-burst-" + $burstId + ".pid")
+$burstTaskName = "ToolShedDashboardBurst-$burstId"
 
 try {
     $taskInfoBefore = Get-ScheduledTaskInfo -TaskName $taskName
@@ -120,15 +152,25 @@ try {
             Start-Sleep -Milliseconds 250
             $taskState = (Get-ScheduledTask -TaskName $taskName).State
             $taskInfoAfter = Get-ScheduledTaskInfo -TaskName $taskName
-        } while ($taskState -eq "Running" -and (Get-Date) -lt $deadline)
+        } while (($taskState -eq "Running" -or $taskInfoAfter.LastTaskResult -eq 0x00041301) -and (Get-Date) -lt $deadline)
     } else {
-        Start-ScheduledTask -TaskName $taskName
         $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+        do {
+            $taskState = (Get-ScheduledTask -TaskName $taskName).State
+            $taskInfoBefore = Get-ScheduledTaskInfo -TaskName $taskName
+            if ($taskState -eq "Running" -or $taskInfoBefore.LastTaskResult -eq 0x00041301) {
+                Start-Sleep -Milliseconds 250
+            }
+        } while (($taskState -eq "Running" -or $taskInfoBefore.LastTaskResult -eq 0x00041301) -and (Get-Date) -lt $deadline)
+        if ($taskState -eq "Running" -or $taskInfoBefore.LastTaskResult -eq 0x00041301) {
+            throw "scheduled safety pass was still running at the qualification timeout"
+        }
+        Start-ScheduledTask -TaskName $taskName
         do {
             Start-Sleep -Milliseconds 250
             $taskInfoAfter = Get-ScheduledTaskInfo -TaskName $taskName
             $taskState = (Get-ScheduledTask -TaskName $taskName).State
-        } while (($taskInfoAfter.LastRunTime -le $taskInfoBefore.LastRunTime -or $taskState -eq "Running") -and (Get-Date) -lt $deadline)
+        } while (($taskInfoAfter.LastRunTime -le $taskInfoBefore.LastRunTime -or $taskState -eq "Running" -or $taskInfoAfter.LastTaskResult -eq 0x00041301) -and (Get-Date) -lt $deadline)
     }
     if ($taskInfoAfter.LastRunTime -le $taskInfoBefore.LastRunTime) {
         throw "scheduled safety pass did not run before the qualification timeout"
@@ -137,28 +179,54 @@ try {
         throw "scheduled safety pass result was $($taskInfoAfter.LastTaskResult), expected 0"
     }
 
+    [ToolShedWindowObserver]::SetPhase("managed-write-burst")
     $burstSource = @"
 import sys
+import os
 from pathlib import Path
 sys.path.insert(0, r'$($scriptsPath.Replace("'", "''"))')
 import dashboard_reporter
 workspace = Path(r'$($workspacePath.Replace("'", "''"))')
+Path(r'$($burstPidPath.Replace("'", "''"))').write_text(str(os.getpid()), encoding='utf-8')
 for _ in range(10):
     dashboard_reporter.enqueue_if_connected(workspace, reason='managed-update')
 "@
     Set-Content -LiteralPath $burstPath -Value $burstSource -Encoding UTF8
-    $burst = Start-Process -FilePath $pythonw -ArgumentList @("`"$burstPath`"") -PassThru -Wait
-    if ($burst.ExitCode -ne 0) {
-        throw "managed-write burst exited with $($burst.ExitCode)"
+    $burstAction = New-ScheduledTaskAction -Execute $pythonw -Argument "`"$burstPath`""
+    $burstPrincipal = New-ScheduledTaskPrincipal `
+        -UserId ([System.Security.Principal.WindowsIdentity]::GetCurrent().Name) `
+        -LogonType Interactive -RunLevel Limited
+    $burstSettings = New-ScheduledTaskSettingsSet `
+        -ExecutionTimeLimit (New-TimeSpan -Minutes 2) `
+        -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+    Register-ScheduledTask -TaskName $burstTaskName -Action $burstAction `
+        -Principal $burstPrincipal -Settings $burstSettings -Force | Out-Null
+    Start-ScheduledTask -TaskName $burstTaskName
+    $burstDeadline = (Get-Date).AddSeconds(60)
+    do {
+        Start-Sleep -Milliseconds 100
+        $burstState = (Get-ScheduledTask -TaskName $burstTaskName).State
+        $burstInfo = Get-ScheduledTaskInfo -TaskName $burstTaskName
+    } while ((-not (Test-Path -LiteralPath $burstPidPath) -or $burstState -eq "Running" -or $burstInfo.LastTaskResult -eq 0x00041301) -and (Get-Date) -lt $burstDeadline)
+    if (-not (Test-Path -LiteralPath $burstPidPath)) {
+        throw "managed-write burst did not start within 60 seconds"
     }
+    if ($burstState -eq "Running" -or $burstInfo.LastTaskResult -eq 0x00041301) {
+        throw "managed-write burst did not exit within 60 seconds"
+    }
+    if ($burstInfo.LastTaskResult -ne 0) {
+        throw "managed-write burst exited with $($burstInfo.LastTaskResult)"
+    }
+    $burstProcessId = [int](Get-Content -LiteralPath $burstPidPath -Raw)
     $workerProcesses = @(Get-CimInstance Win32_Process | Where-Object {
-        $_.ParentProcessId -eq $burst.Id -and
-        $_.Name -in @("python.exe", "pythonw.exe")
+        $_.ParentProcessId -eq $burstProcessId -and
+        $_.Name -like "python*.exe"
     })
     if ($workerProcesses.Count -ne 1) {
         throw "managed-write burst created $($workerProcesses.Count) persistent worker processes, expected 1"
     }
 
+    [ToolShedWindowObserver]::SetPhase("report-delivery")
     $deliveryDeadline = (Get-Date).AddSeconds([Math]::Min($TimeoutSeconds, 300))
     do {
         $statusAfter = (& $python $reporterPath --workspace $workspacePath --json status | ConvertFrom-Json)
@@ -170,7 +238,8 @@ for _ in range(10):
     }
 } finally {
     $windowEvents = @([ToolShedWindowObserver]::Stop())
-    Remove-Item -LiteralPath $burstPath -Force -ErrorAction SilentlyContinue
+    Unregister-ScheduledTask -TaskName $burstTaskName -Confirm:$false -ErrorAction SilentlyContinue
+    Remove-Item -LiteralPath $burstPath,$burstPidPath -Force -ErrorAction SilentlyContinue
 }
 
 if ($windowEvents.Count -ne 0) {

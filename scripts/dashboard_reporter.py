@@ -898,9 +898,20 @@ def enqueue_if_connected(workspace: Path, *, reason: str) -> dict[str, Any] | No
             if not state or state.get("status") != "connected" or not state.get("reporter_token"):
                 return None
             queued = _enqueue_connected(workspace, reason=reason)
-        launch_claim = _claim_worker_launch(workspace)
-        if launch_claim is None:
-            return queued
+            launch_claim = _claim_worker_launch(workspace)
+            if launch_claim is None:
+                return queued
+            command = [
+                subprocess_launch.background_python_executable(),
+                str(Path(__file__).resolve()),
+                "--workspace",
+                str(workspace),
+                "worker",
+                "--project-binding",
+                binding_token(workspace, operation="dashboard-report"),
+                "--launch-claim",
+                launch_claim,
+            ]
         kwargs: dict[str, Any] = {
             "cwd": workspace,
             "stdin": subprocess.DEVNULL,
@@ -912,17 +923,7 @@ def enqueue_if_connected(workspace: Path, *, reason: str) -> dict[str, Any] | No
             kwargs["start_new_session"] = True
         try:
             subprocess_launch.popen(
-                [
-                    subprocess_launch.background_python_executable(),
-                    str(Path(__file__).resolve()),
-                    "--workspace",
-                    str(workspace),
-                    "worker",
-                    "--project-binding",
-                    binding_token(workspace, operation="dashboard-report"),
-                    "--launch-claim",
-                    launch_claim,
-                ],
+                command,
                 windowless=True,
                 **kwargs,
             )

@@ -279,6 +279,38 @@ class DashboardReporterTests(unittest.TestCase):
             dashboard_reporter.subprocess_launch.CREATE_NO_WINDOW,
         )
 
+    def test_managed_write_binding_resolution_stays_in_windowless_context(self) -> None:
+        def binding(*args, **kwargs):
+            dashboard_reporter.subprocess_launch.run(["git", "rev-parse", "HEAD"], check=False)
+            return "binding"
+
+        with mock.patch.object(
+            dashboard_reporter, "load_connection", return_value=self.connected()
+        ), mock.patch.object(
+            dashboard_reporter, "_enqueue_connected", return_value={"sequence": 1}
+        ), mock.patch.object(
+            dashboard_reporter, "_claim_worker_launch", return_value="launch-claim"
+        ), mock.patch.object(
+            dashboard_reporter, "binding_token", side_effect=binding
+        ), mock.patch.object(
+            dashboard_reporter.subprocess_launch, "background_python_executable", return_value="pythonw.exe"
+        ), mock.patch.object(
+            dashboard_reporter.subprocess_launch, "popen"
+        ), mock.patch.object(
+            dashboard_reporter.subprocess_launch.platform, "system", return_value="Windows"
+        ), mock.patch.object(
+            dashboard_reporter.subprocess_launch.subprocess, "run"
+        ) as run:
+            result = dashboard_reporter.enqueue_if_connected(
+                self.workspace, reason="managed-update"
+            )
+
+        self.assertEqual(result, {"sequence": 1})
+        self.assertEqual(
+            run.call_args.kwargs["creationflags"],
+            dashboard_reporter.subprocess_launch.CREATE_NO_WINDOW,
+        )
+
     def test_enqueue_burst_starts_only_one_persistent_worker(self) -> None:
         with mock.patch.object(
             dashboard_reporter, "load_connection", return_value=self.connected()
