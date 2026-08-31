@@ -1,0 +1,111 @@
+# Idea Brief: Private Development Site Before Public Release
+
+Status: exploring
+Type: idea-brief
+Updated: 2026-08-31
+Next Action: choose the initial development-site shape, access boundary, and data strategy
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces:
+
+## Current Synthesis
+
+### Idea
+
+Establish a separate development site where Tool Shed website and dashboard changes can be
+deployed, exercised, and refined without changing the public `ts.rookaro.com` site. The current
+project configuration is explicitly combined: both development and production name the same live
+target. This idea explores moving to a deliberate split development/production workflow.
+
+### Why It Matters
+
+Tool Shed now has a hosted dashboard, persistent data, authentication, reporter contracts, and
+frequent site releases. Iterating directly against the public site increases the chance that an
+unfinished UI, incompatible schema, broken migration, or diagnostic change becomes externally
+visible before it is ready. A development site should make realistic validation routine while
+keeping public promotion intentional.
+
+### Desired Outcome
+
+- Routine site and dashboard development happens on a clearly identified non-production target.
+- The development environment is close enough to production to expose deployment, migration,
+  authentication, browser, and reporter-integration defects.
+- Development cannot accidentally mutate the production database, credentials, enrollment state,
+  reports, or public endpoint.
+- Promotion to `ts.rookaro.com` is a separate, explicit, evidence-backed action with a practical
+  rollback path.
+- The project configuration and operator documentation accurately describe the split model.
+
+## Constraints And Non-Goals
+
+- Known constraint: the public site must remain available and authoritative while the development
+  environment is introduced.
+- Known constraint: production secrets and live reporter credentials must not be copied into the
+  development environment.
+- Known constraint: environment identity must be obvious in the UI, URLs, configuration, logs, and
+  deployment commands so an operator cannot casually confuse the targets.
+- Working preference: reuse the existing application and deployment machinery where practical
+  instead of maintaining a divergent second stack.
+- Explicit non-goal: this brainstorming turn does not provision infrastructure, alter DNS, deploy
+  a site, migrate data, or change the current public release process.
+- Explicit non-goal: the development site does not become a second source of Tool Shed project
+  truth or a remote-control surface for enrolled workspaces.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Stable private remote development site | Persistent target, realistic networking/TLS/authentication, useful across sessions and devices | Hosting cost, access control, environment drift, data isolation and maintenance | Strong working direction; exact host and access boundary unsettled |
+| Local-only site | Lowest exposure and cost, fast iteration, production data naturally isolated | Less representative of public networking and deployment; unavailable from other devices unless tunneled | Useful for unit-level development but likely insufficient as the only pre-public environment |
+| Per-branch or per-change preview environments | Excellent change isolation and reviewability | Highest deployment, cleanup, secret, database, and cost complexity | Possible later enhancement; likely more machinery than the immediate need requires |
+| Same production host with an isolated development stack | Can reuse current operations and may be inexpensive | A host-level failure or configuration mistake can affect production; strict port, volume, database, and secret isolation required | Plausible if resource and isolation checks support it |
+| Separate development host | Stronger blast-radius isolation and clearer environment identity | Additional host lifecycle, updates, backups, monitoring, and cost | Safest durable topology if operational cost is acceptable |
+
+## Open Questions
+
+- Should the development site be reachable only through a private network/VPN, or exposed through
+  a public hostname with the same authenticated maintainer boundary as production?
+- Should it run on the current production host in a strictly isolated stack or on a separate host?
+- What hostname should make the environment unmistakable, and should it be excluded from search
+  indexing regardless of its access boundary?
+- Should development use synthetic seed data, an empty database, or a tightly sanitized snapshot?
+- Which integrations must be live in development, and which side effects—email, credential
+  issuance, reporter enrollment, scheduled jobs—must be disabled or redirected?
+- Should deployment be a manual command initially, or automatically follow a dedicated development
+  branch after the environment contract is proven?
+- What evidence is required to promote a development candidate to public, and what is the rollback
+  unit for application and database changes?
+
+## Decisions
+
+- A separate development site is needed before continuing routine public-site development.
+- The public site is the promotion target, not the place for ordinary iteration.
+- No development-site topology, provider, hostname, data source, or deployment trigger has been
+  selected yet.
+
+## Don't Forget
+
+- Give the development environment a persistent visual banner and machine-readable environment
+  marker.
+- Use separate databases, volumes, secrets, enrollment credentials, cookies/session scope, and
+  backup/restore paths.
+- Prevent development reporters from being mistaken for production reporters and prevent existing
+  production clients from silently reporting to development.
+- Exercise database migrations and rollback/recovery using non-production data before promotion.
+- Consider resource contention, TLS, DNS, monitoring, retention, backups, and cleanup—not just the
+  application container.
+- Update `work/tool-shed.yaml` from `combined` to `split` only after the development target and its
+  operating contract are real and verified.
+
+## Exploration Log
+
+### 2026-08-31
+
+- Idea Brief created from the owner decision that future site development needs a non-public target
+  before changes are promoted to `ts.rookaro.com`.
+- Recorded the current combined-target configuration as the motivating gap.
+- Initial working direction favors one stable private remote development site, starting with the
+  smallest complete isolation contract; per-change preview environments can remain optional.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

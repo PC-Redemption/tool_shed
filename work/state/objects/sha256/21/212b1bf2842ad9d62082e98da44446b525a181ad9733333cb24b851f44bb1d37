@@ -1,0 +1,164 @@
+# Idea Brief: Private Development Site Before Public Release
+
+Status: exploring
+Type: idea-brief
+Updated: 2026-08-31
+Next Action: define development integration side effects and turn the approved environment contract into an implementation plan
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces:
+
+## Current Synthesis
+
+### Idea
+
+Establish a separate development site where Tool Shed website and dashboard changes can be
+deployed, exercised, and refined without changing the public `ts.rookaro.com` site. The selected
+topology keeps production and development on `sup`, but runs development as a separately isolated
+stack reachable only from the LAN or through a Workpc localhost forward. The current project
+configuration is explicitly combined; this idea moves toward a deliberate split
+development/production workflow without adding a second physical server.
+
+### Why It Matters
+
+Tool Shed now has a hosted dashboard, persistent data, authentication, reporter contracts, and
+frequent site releases. Iterating directly against the public site increases the chance that an
+unfinished UI, incompatible schema, broken migration, or diagnostic change becomes externally
+visible before it is ready. A development site should make realistic validation routine while
+keeping public promotion intentional.
+
+### Desired Outcome
+
+- Routine site and dashboard development happens on a clearly identified non-production target.
+- The development environment is close enough to production to expose deployment, migration,
+  authentication, browser, and reporter-integration defects.
+- Development cannot accidentally mutate the production database, credentials, enrollment state,
+  reports, or public endpoint.
+- Promotion to `ts.rookaro.com` is a separate, explicit, evidence-backed action with a practical
+  rollback path.
+- The project configuration and operator documentation accurately describe the split model.
+- The Linux and Windows test beds reach development directly over the LAN, while Workpc reaches it
+  privately through the existing VS Code/SSH path to `sup`.
+
+## Constraints And Non-Goals
+
+- Known constraint: the public site must remain available and authoritative while the development
+  environment is introduced.
+- Known constraint: production secrets and live reporter credentials must not be copied into the
+  development environment.
+- Approved data boundary: development starts with an empty database plus deterministic synthetic
+  seed data. Production credentials, reporter enrollments, sessions, and personal data must never
+  be cloned into development.
+- Known constraint: environment identity must be obvious in the UI, URLs, configuration, logs, and
+  deployment commands so an operator cannot casually confuse the targets.
+- Working preference: reuse the existing application and deployment machinery where practical
+  instead of maintaining a divergent second stack.
+- Selected host boundary: production and development share `sup` (`192.168.7.5`), but must use
+  separate Compose project identity, ports, networks, databases, volumes, secrets, cookies,
+  credentials, and backup/restore paths.
+- Selected network boundary: development is LAN-only and must not be registered with the public
+  Nginx Proxy Manager on `iotmaster` or the public Rookaro hostname router.
+- Confirmed clients: the Linux test bed runs on `sup`; the Windows test bed runs on `gogetter`
+  (`192.168.7.113`); Workpc is outside the LAN and runs the VS Code desktop connected remotely to
+  `sup`.
+- Explicit non-goal: this brainstorming turn does not provision infrastructure, alter DNS, deploy
+  a site, migrate data, or change the current public release process.
+- Explicit non-goal: the development site does not become a second source of Tool Shed project
+  truth or a remote-control surface for enrolled workspaces.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Stable LAN-only development stack on `sup` | Reuses the existing server, gives both test beds realistic access, and supports Workpc through forwarding | Shares host-level resource and failure blast radius with production; demands strict logical isolation | Selected topology and plain-HTTP endpoint; `8443` was temporarily bound on `192.168.7.5` and reached successfully from `gogetter`, then closed again |
+| Local-only site | Lowest exposure and cost, fast iteration, production data naturally isolated | Windows test bed could not reach it directly and it would be less representative of LAN integration | Not selected as the complete solution |
+| Per-branch or per-change preview environments | Excellent change isolation and reviewability | Highest deployment, cleanup, secret, database, and cost complexity | Possible later enhancement; likely more machinery than the immediate need requires |
+| Separate development host | Stronger blast-radius isolation and clearer environment identity | Additional host lifecycle, updates, backups, monitoring, and cost | Not selected initially; retain as an escalation if shared-host isolation or capacity proves inadequate |
+
+## Open Questions
+
+- Is Workpc access needed only while VS Code/SSH is connected, or should a separately managed
+  persistent private tunnel/VPN be available outside development sessions?
+- Which integrations must be live in development, and which side effects—email, credential
+  issuance, reporter enrollment, scheduled jobs—must be disabled or redirected?
+
+## Decisions
+
+- A separate development site is needed before continuing routine public-site development.
+- The public site is the promotion target, not the place for ordinary iteration.
+- Development will run on the same physical server as production: `sup` at `192.168.7.5`.
+- Development will remain LAN-only. It will not receive a public Nginx Proxy Manager or Rookaro
+  router entry; production remains publicly available through its existing route without change.
+- The Linux test bed on `sup` and Windows test bed on `gogetter` will access the development site
+  over the LAN.
+- Workpc will access development through a localhost-only VS Code/SSH port forward into `sup`.
+- The development endpoint will use plain HTTP on port `8443`, with LAN clients using
+  `http://192.168.7.5:8443` and Workpc using a localhost-only forwarded endpoint. Development will
+  not use TLS/SSL, public DNS, Nginx Proxy Manager, or the public Rookaro hostname router.
+- Development will begin with an empty database and deterministic synthetic seed data. Production
+  credentials, reporter enrollments, sessions, and personal data will not be cloned.
+- Development will carry unmistakable visual and machine-readable environment identity, including
+  distinct UI banners, database names, Compose names, and environment markers.
+- Initial deployment will be manual from a dedicated development branch or an exact frozen commit;
+  automatic deployment on every push is deferred until the environment contract is proven.
+- Promotion will use the exact commit tested in development, rather than rebuilding or selecting
+  different source for production.
+- Promotion requires evidence that the development stack deploys and becomes healthy; migrations
+  and recovery work on non-production data; login, MFA, dashboard pages, and reporter enrollment
+  work; both test beds connect; Workpc forwarding works; development is unreachable through public
+  routing; and production remains healthy and unchanged.
+- Development will use separate volumes, database, networks, secrets, logs, and backups, with CPU
+  and memory limits to protect the shared production host.
+- The operating contract will include development rollback and database-reset procedures. Before
+  any eventual promotion involving migrations, production will be backed up.
+- A separate physical development host and live integration/side-effect policy have not been
+  selected.
+
+## Don't Forget
+
+- Give the development environment a persistent visual banner and machine-readable environment
+  marker.
+- Use separate databases, volumes, secrets, enrollment credentials, cookies/session scope, and
+  backup/restore paths.
+- Prevent development reporters from being mistaken for production reporters and prevent existing
+  production clients from silently reporting to development.
+- Exercise database migrations and rollback/recovery using non-production data before promotion.
+- Consider resource contention, monitoring, retention, backups, and cleanup—not just the
+  application container.
+- Update `work/tool-shed.yaml` from `combined` to `split` only after the development target and its
+  operating contract are real and verified.
+- Bind any Workpc-side forwarded port to `127.0.0.1`, not a public or all-interface address.
+- Avoid a public `*.rookaro.com` development hostname because the existing wildcard DNS and TLS
+  entry path could expose the environment accidentally.
+- Configure development-specific allowed hosts, CSRF origins, cookie scope, and forwarded-protocol
+  handling for plain-HTTP LAN access and Workpc localhost forwarding.
+
+## Exploration Log
+
+### 2026-08-31
+
+- Idea Brief created from the owner decision that future site development needs a non-public target
+  before changes are promoted to `ts.rookaro.com`.
+- Recorded the current combined-target configuration as the motivating gap.
+- Initial working direction favors one stable private remote development site, starting with the
+  smallest complete isolation contract; per-change preview environments can remain optional.
+- Confirmed topology: `sup` (`192.168.7.5`) hosts production, the Linux test bed, the VS Code remote
+  process, and the future isolated development stack; `gogetter` (`192.168.7.113`) hosts the Windows
+  test bed; `iotmaster` (`192.168.7.201`) terminates public TLS; Workpc is the external VS Code
+  desktop and reaches `sup` through the existing SSH connection.
+- Read-only connectivity checks passed from `gogetter` to `sup` on SSH and the existing production
+  ports, from `iotmaster` to the production router/site on `sup`, and from both LAN hosts to public
+  production. Candidate development port `8443` currently has no listener.
+- Settled the access model: LAN clients connect directly to the `sup` LAN endpoint; Workpc connects
+  to a localhost endpoint forwarded through VS Code/SSH; production routing is unchanged.
+- The owner approved recommendations 2–5: data and identity isolation, controlled initial
+  deployment, evidence-based promotion gates, and recovery/shared-host protections.
+- The owner also approved recommendation 1 and selected plain HTTP without TLS/SSL on port `8443`:
+  direct over the LAN for the test beds and through a localhost-only VS Code/SSH forward for
+  Workpc, with no public route.
+- Proved candidate port `8443` on the LAN: it had no existing listener, a temporary listener bound
+  specifically to `192.168.7.5:8443`, and `gogetter` successfully completed a TCP connection to it.
+  The test listener was immediately removed, leaving no service listening on `8443`.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

@@ -1,0 +1,242 @@
+# Idea Brief: Private Development Site Before Public Release
+
+Status: exploring
+Type: idea-brief
+Updated: 2026-08-31
+Next Action: settle the initial integration policy, then turn the approved shared-host contract into an implementation plan
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces:
+
+## Current Synthesis
+
+### Idea
+
+Establish a separate development site where Tool Shed website and dashboard changes can be
+deployed, exercised, and refined without changing the public `ts.rookaro.com` site. The selected
+topology keeps production and development on `sup`, with development in a separately isolated
+Docker Compose stack and separate host filesystem tree, reachable only from the LAN or through a
+Workpc localhost forward. Required restart independence is limited to development web containers
+and services, so a separate host or VM is not needed. The current project configuration is
+explicitly combined; this idea moves toward a deliberate split development/production workflow
+without adding a second physical server.
+
+### Why It Matters
+
+Tool Shed now has a hosted dashboard, persistent data, authentication, reporter contracts, and
+frequent site releases. Iterating directly against the public site increases the chance that an
+unfinished UI, incompatible schema, broken migration, or diagnostic change becomes externally
+visible before it is ready. A development site should make realistic validation routine while
+keeping public promotion intentional.
+
+### Desired Outcome
+
+- Routine site and dashboard development happens on a clearly identified non-production target.
+- The development environment is close enough to production to expose deployment, migration,
+  authentication, browser, and reporter-integration defects.
+- Development cannot accidentally mutate the production database, credentials, enrollment state,
+  reports, or public endpoint.
+- Promotion to `ts.rookaro.com` is a separate, explicit, evidence-backed action with a practical
+  rollback path.
+- The project configuration and operator documentation accurately describe the split model.
+- The Linux and Windows test beds reach development directly over the LAN, while Workpc reaches it
+  privately through the existing VS Code/SSH path to `sup`.
+
+## Constraints And Non-Goals
+
+- Known constraint: the public site must remain available and authoritative while the development
+  environment is introduced.
+- Known constraint: production secrets and live reporter credentials must not be copied into the
+  development environment.
+- Approved data boundary: development starts with an empty database plus deterministic synthetic
+  seed data. Production credentials, reporter enrollments, sessions, and personal data must never
+  be cloned into development.
+- Known constraint: environment identity must be obvious in the UI, URLs, configuration, logs, and
+  deployment commands so an operator cannot casually confuse the targets.
+- Working preference: reuse the existing application and deployment machinery where practical
+  instead of maintaining a divergent second stack.
+- Selected host boundary: production and development share `sup` (`192.168.7.5`) but use separate
+  host filesystem trees, Compose project identity, containers, ports, networks, databases, Docker
+  volumes, secrets, logs, and backup/restore paths. No writable bind mount is shared between the
+  environments. Development service/container restarts must target only the development Compose
+  project; host and Docker-daemon restart independence is not required.
+- Verified production boundary: production already runs as Compose project `tsrookarocom` from
+  `/home/jon/docker/ts.rookaro.com`, with its own three-service stack, default network, PostgreSQL
+  and static-data volumes, and published host port `8087`. It is Compose-isolated but shares the
+  host Docker daemon with other stacks.
+- Selected network boundary: development is LAN-only and must not be registered with the public
+  Nginx Proxy Manager on `iotmaster` or the public Rookaro hostname router.
+- Confirmed clients: the Linux test bed runs on `sup`; the Windows test bed runs on `gogetter`
+  (`192.168.7.113`); Workpc is outside the LAN and runs the VS Code desktop connected remotely to
+  `sup`.
+- Reporter constraint: one workspace identity has one saved dashboard connection. Pointing an
+  existing workspace at development replaces that workspace's saved production dashboard
+  destination; development reporting therefore needs disposable development-only workspace
+  identities or an explicit reassignment.
+- Explicit non-goal: this brainstorming turn does not provision infrastructure, alter DNS, deploy
+  a site, migrate data, or change the current public release process.
+- Explicit non-goal: the development site does not become a second source of Tool Shed project
+  truth or a remote-control surface for enrolled workspaces.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Stable LAN-only development stack on `sup` | Reuses the existing server, gives both test beds realistic access, supports Workpc forwarding, and permits dev-only container/service restarts | Host reboot, Docker-daemon restart, disk/resource exhaustion, or network/firewall changes can still interrupt production; demands strict logical isolation and scoped commands | Selected; required restart independence is at the application-stack level and `8443` LAN connectivity on `sup` is proven |
+| Dedicated development VM on a shared physical host | Separate OS, Docker daemon, firewall, storage allocation, and service restarts with modest hardware cost | A physical-host reboot or failure still affects both; requires a suitable hypervisor and reserved capacity | Good middle option only if it is not hosted inside the production OS and shared-host failure is acceptable |
+| Dedicated development machine or VM on a different physical host | Dev reboots, Docker changes, resource pressure, storage faults, and most maintenance are independent of production | Adds another OS lifecycle, LAN address, patching, monitoring, and power/resource cost | Not selected because host-level restart independence is not expected; retain as an escalation if that requirement changes |
+| Local-only site | Lowest exposure and cost, fast iteration, production data naturally isolated | Windows test bed could not reach it directly and it would be less representative of LAN integration | Not selected as the complete solution |
+| Per-branch or per-change preview environments | Excellent change isolation and reviewability | Highest deployment, cleanup, secret, database, and cost complexity | Possible later enhancement; likely more machinery than the immediate need requires |
+
+### Verified Production And Development Model
+
+| Boundary | Production now | Development model |
+| --- | --- | --- |
+| Host and Docker daemon | `sup.local`; shared host daemon | Same `sup.local` daemon |
+| Filesystem root | `/home/jon/docker/ts.rookaro.com` | A different host filesystem root; exact path selected during implementation |
+| Compose project | `tsrookarocom` | Distinct project, working name `tsrookarocom-dev` |
+| Services | Nginx/docs, Django dashboard, PostgreSQL | Independent development instances of the same three services |
+| Network | `tsrookarocom_default` | Separately generated development network |
+| Persistent volumes | `tsrookarocom_dashboard_postgres` and `tsrookarocom_dashboard_static` | Separately prefixed development volumes; no production volume reuse |
+| Host endpoint | Production Nginx on `8087` behind the existing public route | Plain HTTP on LAN port `8443`, with no public route |
+| Bind mounts and configuration | Production `public/` and `nginx.conf` are mounted read-only; protected `.env` is production-specific | Separate generated site, Nginx configuration, and protected development environment file |
+| Lifecycle commands | Scoped to `tsrookarocom` | Scoped only to the development project; dev rebuild/restart must not address production |
+
+### Recommended Initial Integration Policy
+
+| Integration / side effect | Initial policy | Why |
+| --- | --- | --- |
+| Maintainer login and MFA | Enable with a development-only account, password, TOTP seed, and session secret | Authentication and MFA are promotion gates, but plain HTTP means no production credential may be reused |
+| Database migrations, retention, and dashboard views/SSE | Enable against the isolated development database | These are core application behaviors and do not contact an external system |
+| Reporter enrollment, credential issuance, and report ingestion | Enable only for disposable development-specific Linux and Windows test-bed workspace identities | Exercises the complete reporter contract without redirecting a live workspace or copying a production credential |
+| App Server and work-efficiency telemetry | Allow only as bounded fields in reports from those development reporters | The dashboard displays aggregates but cannot start App Server work or mutate a workspace |
+| Reporter safety scheduler and persistent worker | Start disabled; prove manual enrollment and `report now`, then enable only on the disposable development reporters | Avoids periodic traffic and saved-destination mistakes while the environment is first qualified |
+| Email, webhooks, and hosted completion notifications | Keep disabled/absent | The current dashboard sends no email or webhooks; adding outbound delivery would create unrelated risk and scope |
+| Production reporters, credentials, data, and scheduled jobs | Never connect or copy them into development | Preserves the approved isolation boundary and prevents misleading production state |
+
+## Open Questions
+
+- Should the recommended initial integration policy be accepted as written, including dedicated
+  development-only test-bed workspace identities, or does any integration need different behavior?
+
+## Decisions
+
+- A separate development site is needed before continuing routine public-site development.
+- The public site is the promotion target, not the place for ordinary iteration.
+- Development will run on the production server `sup` at `192.168.7.5` in a separately named and
+  isolated Docker Compose project with its own host filesystem tree. Dev container and web-service
+  restarts are in scope; host reboots and Docker-daemon restarts are not part of the expected
+  development workflow.
+- Production's current Docker environment is the `tsrookarocom` Compose project rooted at
+  `/home/jon/docker/ts.rookaro.com`. Development will mirror its Nginx/docs, Django dashboard, and
+  PostgreSQL service shape under a distinct Compose project and filesystem root.
+- Development will remain LAN-only. It will not receive a public Nginx Proxy Manager or Rookaro
+  router entry; production remains publicly available through its existing route without change.
+- The Linux test bed on `sup` and Windows test bed on `gogetter` will access the development site
+  over the LAN.
+- Workpc will have persistent access through an automatically started, automatically restarted
+  localhost-only SSH tunnel into `sup`; access must not depend on an active VS Code session.
+- The development endpoint will use plain HTTP on port `8443`, with LAN clients using
+  `http://192.168.7.5:8443` and Workpc using a localhost-only forwarded endpoint. Development will
+  not use TLS/SSL, public DNS, Nginx Proxy Manager, or the public Rookaro hostname router.
+- Development will begin with an empty database and deterministic synthetic seed data. Production
+  credentials, reporter enrollments, sessions, and personal data will not be cloned.
+- Development will carry unmistakable visual and machine-readable environment identity, including
+  distinct UI banners, database names, Compose names, and environment markers.
+- Initial deployment will be manual from a dedicated development branch or an exact frozen commit;
+  automatic deployment on every push is deferred until the environment contract is proven.
+- Promotion will use the exact commit tested in development, rather than rebuilding or selecting
+  different source for production.
+- Promotion requires evidence that the development stack deploys and becomes healthy; migrations
+  and recovery work on non-production data; login, MFA, dashboard pages, and reporter enrollment
+  work; both test beds connect; Workpc forwarding works; development is unreachable through public
+  routing; and production remains healthy and unchanged.
+- Development will use separate volumes, database, networks, secrets, logs, and backups, with CPU
+  and memory limits. If the shared-host option is retained, those limits also protect production.
+- Production and development will use distinct deployment/check-out roots on `sup`, distinct image
+  tags, and no shared writable bind mounts. The exact filesystem paths will be chosen during
+  implementation.
+- Development must not reuse production's fixed `ts-rookaro-com` container name, production network,
+  production volumes, `.env`, generated `public/` directory, or Nginx configuration.
+- The operating contract will include development rollback and database-reset procedures. Before
+  any eventual promotion involving migrations, production will be backed up.
+- The live integration/side-effect policy has not been selected.
+
+## Don't Forget
+
+- Give the development environment a persistent visual banner and machine-readable environment
+  marker.
+- Ensure filesystem separation includes deployment files, environment files, generated public
+  assets, database storage, logs, and backup destinations—not only different Compose filenames.
+- Use separate databases, volumes, secrets, enrollment credentials, cookies/session scope, and
+  backup/restore paths.
+- Prevent development reporters from being mistaken for production reporters and prevent existing
+  production clients from silently reporting to development.
+- Exercise database migrations and rollback/recovery using non-production data before promotion.
+- Consider resource contention, monitoring, retention, backups, and cleanup—not just the
+  application container.
+- Update `work/tool-shed.yaml` from `combined` to `split` only after the development target and its
+  operating contract are real and verified.
+- Bind any Workpc-side forwarded port to `127.0.0.1`, not a public or all-interface address.
+- Manage the Workpc tunnel with host-local startup and restart-on-failure behavior, SSH keepalives,
+  and fail-fast port-binding checks; do not store a private key in the repository.
+- Avoid a public `*.rookaro.com` development hostname because the existing wildcard DNS and TLS
+  entry path could expose the environment accidentally.
+- Configure development-specific allowed hosts, CSRF origins, cookie scope, and forwarded-protocol
+  handling for plain-HTTP LAN access and Workpc localhost forwarding.
+- Add a development-only Django security profile that permits plain HTTP without weakening the
+  production HTTPS redirect, secure-cookie, proxy-header, or HSTS settings.
+
+## Exploration Log
+
+### 2026-08-31
+
+- Idea Brief created from the owner decision that future site development needs a non-public target
+  before changes are promoted to `ts.rookaro.com`.
+- Recorded the current combined-target configuration as the motivating gap.
+- Initial working direction favors one stable private remote development site, starting with the
+  smallest complete isolation contract; per-change preview environments can remain optional.
+- Confirmed topology: `sup` (`192.168.7.5`) hosts production, the Linux test bed, the VS Code remote
+  process, and the future isolated development stack; `gogetter` (`192.168.7.113`) hosts the Windows
+  test bed; `iotmaster` (`192.168.7.201`) terminates public TLS; Workpc is the external VS Code
+  desktop and reaches `sup` through the existing SSH connection.
+- Read-only connectivity checks passed from `gogetter` to `sup` on SSH and the existing production
+  ports, from `iotmaster` to the production router/site on `sup`, and from both LAN hosts to public
+  production. Candidate development port `8443` currently has no listener.
+- Settled the access model: LAN clients connect directly to the `sup` LAN endpoint; Workpc connects
+  to a localhost endpoint forwarded through VS Code/SSH; production routing is unchanged.
+- The owner approved recommendations 2–5: data and identity isolation, controlled initial
+  deployment, evidence-based promotion gates, and recovery/shared-host protections.
+- The owner also approved recommendation 1 and selected plain HTTP without TLS/SSL on port `8443`:
+  direct over the LAN for the test beds and through a localhost-only VS Code/SSH forward for
+  Workpc, with no public route.
+- Proved candidate port `8443` on the LAN: it had no existing listener, a temporary listener bound
+  specifically to `192.168.7.5:8443`, and `gogetter` successfully completed a TCP connection to it.
+  The test listener was immediately removed, leaving no service listening on `8443`.
+- The owner selected persistent Workpc access independent of VS Code sessions. The operating
+  contract now requires a localhost-only managed SSH tunnel with automatic startup and recovery.
+- Code inspection found no dashboard email, webhook, or OpenAI/API sender. The live development
+  choices are local authentication/MFA, database behavior, reporter enrollment and credentials,
+  report ingestion, and optional reporter schedulers. Each workspace identity stores only one
+  dashboard destination, so disposable development-only identities are recommended.
+- The owner reopened the same-server decision after observing that restarting development
+  infrastructure should not interrupt production. Separate Compose projects isolate ordinary
+  container restarts, but a host or Docker-daemon restart and shared resource/network failures do
+  not. A dedicated machine or a VM on different physical infrastructure is the recommended option
+  when that independence is required.
+- The owner clarified that expected restarts are limited to development web containers and
+  services, not the host or Docker daemon. The shared `sup` topology is therefore selected again,
+  with all restart and deployment commands required to scope explicitly to the development Compose
+  project so production containers remain untouched.
+- The owner further specified one Docker host on `sup.local` with separate production and
+  development filesystem trees. Development runs as its own Docker Compose project; filesystem,
+  volume, image-tag, environment-file, and writable-mount identity must not overlap production.
+- Runtime inspection confirmed that production is already Compose-isolated as project
+  `tsrookarocom` at `/home/jon/docker/ts.rookaro.com`. Its healthy Nginx/docs, Django dashboard, and
+  PostgreSQL containers share `tsrookarocom_default`; its database and static data use separately
+  named volumes; and only Nginx publishes host port `8087`. Production shares the host Docker daemon,
+  so development will mirror this shape under a different Compose project rather than creating a
+  second daemon or VM.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.
