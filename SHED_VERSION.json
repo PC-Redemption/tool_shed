@@ -139,7 +139,7 @@
     "scripts/codex_skill_sync.py": "78cf6c2d6605854c429cc54e63eb60b7fa7e81e47dcae9fc87c60b5f93d564a8",
     "scripts/complete_workpackage.py": "a74d1fac326d2ba3813bf00270afe698a3d276ba62f7b53067761f2892c7a0fb",
     "scripts/completion_watcher.py": "d94ba056b5628a477028c8568e284da95bd78466d3839b5e126a89163d16d7a3",
-    "scripts/dashboard_reporter.py": "aa65064556e1246b6e13280742cf4bd35cf5c43942f895e21c91ec31bdc51d0a",
+    "scripts/dashboard_reporter.py": "b52011262858b7813da8e32947d3f2abfa18ed4e75c5ce17eaf6dc6efb0d9ba4",
     "scripts/doctor.py": "b8f7c8041bdde100b370812cc49f70fe0eff7171d1a527adccdce273e7c71880",
     "scripts/document_contract.py": "2b540582141065b7e7c84294142a15ddf01f255a58f844e08abaf9634b30d411",
     "scripts/document_conversion.py": "da2b7d08f038ab4ed789f191d5855284be5d2450b32f0204bfed88fdcdde3397",

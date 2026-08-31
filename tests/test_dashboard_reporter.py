@@ -106,6 +106,25 @@ class DashboardReporterTests(unittest.TestCase):
         self.assertEqual(event["attempts"], 0)
         self.assertIsNotNone(event["delivered_at"])
 
+    def test_newer_delivery_retires_older_backoff_events(self) -> None:
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            connection.execute(
+                "INSERT INTO outbox VALUES (?, 1, ?, 3, ?, ?, NULL)",
+                (str(uuid.uuid4()), json.dumps({"sequence": 1}), __import__("time").time() + 300, dashboard_reporter.stamp()),
+            )
+            connection.execute(
+                "INSERT INTO outbox VALUES (?, 2, ?, 0, 0, ?, NULL)",
+                (str(uuid.uuid4()), json.dumps({"sequence": 2}), dashboard_reporter.stamp()),
+            )
+        with mock.patch.object(dashboard_reporter, "load_connection", return_value=self.connected()), mock.patch.object(
+            dashboard_reporter, "_request", return_value={"status": "accepted"}
+        ):
+            result = dashboard_reporter.worker_once(self.workspace)
+        self.assertEqual(result["sequence"], 2)
+        self.assertEqual(result["superseded_count"], 1)
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            self.assertEqual(connection.execute("SELECT COUNT(*) FROM outbox WHERE delivered_at IS NULL").fetchone()[0], 0)
+
     def test_continuous_worker_refuses_a_second_live_process(self) -> None:
         with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
             connection.execute(

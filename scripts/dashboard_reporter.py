@@ -965,8 +965,9 @@ def worker_once(workspace: Path) -> dict[str, Any]:
                 raise DashboardReporterError("dashboard did not accept the report")
         except DashboardHTTPError as error:
             if error.status_code == 409 and error.detail == "report sequence is stale":
-                connection.execute(
-                    "UPDATE outbox SET delivered_at=? WHERE id=?", (stamp(), row["id"])
+                retired = connection.execute(
+                    "UPDATE outbox SET delivered_at=? WHERE delivered_at IS NULL AND sequence <= ?",
+                    (stamp(), row["sequence"]),
                 )
                 connection.execute("DELETE FROM worker_lease WHERE id=1 AND owner=?", (owner,))
                 return {
@@ -974,6 +975,7 @@ def worker_once(workspace: Path) -> dict[str, Any]:
                     "kind": "tool-shed-dashboard-worker",
                     "status": "superseded",
                     "sequence": row["sequence"],
+                    "superseded_count": retired.rowcount,
                     "writes_performed": True,
                 }
             attempts = int(row["attempts"]) + 1
@@ -990,10 +992,20 @@ def worker_once(workspace: Path) -> dict[str, Any]:
             connection.execute("UPDATE outbox SET attempts=?, next_attempt=? WHERE id=?", (attempts, time.time() + delay, row["id"]))
             connection.execute("DELETE FROM worker_lease WHERE id=1 AND owner=?", (owner,))
             raise
-        connection.execute("UPDATE outbox SET delivered_at=? WHERE id=?", (stamp(), row["id"]))
+        retired = connection.execute(
+            "UPDATE outbox SET delivered_at=? WHERE delivered_at IS NULL AND sequence <= ?",
+            (stamp(), row["sequence"]),
+        )
         _set_meta(connection, "last_delivery", str(time.time()))
         connection.execute("DELETE FROM worker_lease WHERE id=1 AND owner=?", (owner,))
-        return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-worker", "status": "delivered", "sequence": row["sequence"], "writes_performed": True}
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "kind": "tool-shed-dashboard-worker",
+            "status": "delivered",
+            "sequence": row["sequence"],
+            "superseded_count": max(0, retired.rowcount - 1),
+            "writes_performed": True,
+        }
 
 
 def _worker_sleep_seconds(
