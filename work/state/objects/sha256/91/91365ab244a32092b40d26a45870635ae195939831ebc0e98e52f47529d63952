@@ -1,0 +1,81 @@
+# Project Map: App Server Dashboard Performance Truth
+
+Status: active
+Type: project-map
+Updated: 2026-08-30
+
+## Purpose
+
+Make the hosted App Server fleet screen accurately distinguish readiness, routing opportunities,
+real executions, reliability, and execution cost so an operator can size the integration without
+mistaking selections or control events for completed work.
+
+## Desired Outcome
+
+For every reporting instance, the dashboard shows current App Server readiness and clearly
+bounded 24-hour, 7-day, and 30-day execution summaries sourced from the real execution ledger,
+with 7 days as the useful default. The summary separates
+planning, verification, and CAMP work; distinguishes completed, failed, interrupted, and GUI
+fallback outcomes; and exposes enough latency, token, and cache evidence to judge operational
+overhead without claiming billing cost or unsupported GUI comparisons.
+
+## First Useful Boundary
+
+- Derive availability from current runtime readiness rather than selection count.
+- Aggregate real top-level App Server executions while excluding preference, selection, and
+  recovery-control events from attempt counts.
+- Report selectable exact bounded windows, last execution, role and outcome counts, duration percentiles, token
+  totals/per-run values, cache ratio, and weighted-usage proxy.
+- Keep CAMP success stricter than protocol completion by using verified journal state where
+  available and preserving unknown historical evidence honestly.
+- Extend the privacy allowlist and hosted read model without transmitting prompts, responses,
+  paths, campaign names, raw diagnostics, credentials, or secrets.
+- Present a compact fleet summary and instance table with browser-local timestamps, then qualify
+  the candidate on the combined live Work2 target.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Local metric truth | One bounded aggregate over readiness, execution telemetry, and fallbacks | existing local ledgers |
+| Report contract | Strict schema extension for content-free performance metrics | local metric truth |
+| Hosted read model | Persist and ingest the new per-instance aggregate | report contract |
+| Operator screen | Scannable readiness, reliability, and sizing presentation | hosted read model |
+| Qualification | Privacy, aggregation, migration, rendering, browser, and target evidence | complete vertical slice |
+
+## Evidence Gates
+
+1. `G1-REAL-EXECUTION-TRUTH`: attempts and outcomes come from actual top-level executions, not
+   selections, preferences, or recovery controls, with explicit handling of historical unknowns.
+2. `G2-READINESS-AND-WINDOW-TRUTH`: readiness, observation time, report freshness, execution
+   window, and browser-local last-execution time are visible and semantically distinct.
+3. `G3-PERFORMANCE-SIZING`: role breakdown, success/interruption/fallback posture, duration
+   percentiles, token intensity, cache ratio, and weighted usage proxy are bounded and correctly
+   labelled.
+4. `G4-PRIVACY-AND-WORK2`: strict contract rejection, focused tests, live deployment, browser
+   checks, release-cohort registration, checkpoint/rebuild proof, and strict Doctor pass.
+
+## Constraints
+
+- Local Tool Shed state remains authoritative and hosted reporting remains advisory.
+- Unknown or unclassified historical evidence stays unknown; it is never guessed into operator or
+  qualification workload.
+- Weighted usage is a relative proxy, not currency, billing, or ChatGPT allowance consumption.
+- The report remains bounded and content-free.
+
+## Non-Goals
+
+- Long-term trend storage, charts, rankings, or an arbitrary analytics API.
+- Fabricated GUI baselines, savings claims, or cost estimates.
+- Changing App Server routing, qualification, permissions, or provider policy.
+
+## Navigation
+
+Do next:
+
+- Execute the single Work2 milestone through its evidence gates and retain the candidate for a
+  later formal Work5 release.
+
+Avoid for now:
+
+- Expanding into time-series analytics before the current-window truth contract is proven.

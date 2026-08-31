@@ -1,0 +1,50 @@
+# Campaign: Implement App Server Dashboard Performance Truth
+
+Status: working
+Type: campaign
+Updated: 2026-08-30
+Campaign ID: implement-app-server-dashboard-performance-truth
+Outcome: Deliver and Work2-qualify a truthful current-window App Server performance screen sourced from real execution telemetry and current readiness.
+Roadmap: app-server-dashboard-performance-truth
+Roadmap Document: PRM-0035
+Roadmap Revision: 1
+Milestone: M1-TRUTHFUL-PERFORMANCE-WORK2
+Unlocks Gate: G1-REAL-EXECUTION-TRUTH, G2-READINESS-AND-WINDOW-TRUTH, G3-PERFORMANCE-SIZING, G4-PRIVACY-AND-WORK2
+Depends On: none
+Requested Endpoint: work2
+Completion Gate: real top-level execution aggregation, truthful readiness/window semantics, role and outcome breakdown, bounded latency/token/cache/weighted-usage sizing metrics, strict privacy contract, focused tests, configured-target deployment and browser checks, release-cohort registration, checkpoint rebuild proof, and strict Doctor all pass.
+
+## Request
+
+Build the smallest complete correction to the App Server fleet screen. Reuse the existing local
+execution telemetry and routing event stores, send only bounded aggregates, and present readiness,
+reliability, and sizing evidence without exposing content or implying unsupported cost or GUI
+comparisons.
+
+## Contract Decisions
+
+- An attempt is one top-level planning, verification, or CAMP execution.
+- Preference changes, backend selections, and recovery-control events are not attempts.
+- Readiness is current runtime posture; use and performance are bounded historical observations.
+- Planning and verification completion remains distinct from CAMP verified completion.
+- The primary window is the prior 24 hours and is displayed explicitly.
+- Performance is segmented by role and uses duration, token, cache, and weighted-usage proxy
+  aggregates. Unknown historical classification remains unknown.
+- The hosted payload remains strict, bounded, and content-free.
+
+## Work2 Boundary
+
+Implement the local aggregate, schema, persistence, migration, and page changes; run focused
+aggregation/privacy/ingest/rendering tests and quick changed-path validation; commit the scoped
+candidate; deploy to the combined live `ts.rookaro.com` work target; check public health and the
+authenticated App Server page; register the candidate and open owning chain in the release cohort;
+checkpoint and rebuild-prove Hybrid state; and run strict Doctor.
+
+Do not push, tag, publish a release, add retained trend analytics, manufacture GUI baselines, claim
+billing cost, or close the Campaign, PRM, or Map before later Work5 evidence.
+
+## App Server Preparation Contract
+
+Stable intent: implement the bounded Work2 vertical slice described above. Exact paths, context,
+verification commands, and budgets are resolved at dispatch time if the dedicated App Server CAMP
+route is selected; ordinary GUI execution remains valid.

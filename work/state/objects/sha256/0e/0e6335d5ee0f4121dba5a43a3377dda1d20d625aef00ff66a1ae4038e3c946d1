@@ -1,0 +1,52 @@
+# Program Roadmap: App Server Dashboard Performance Truth
+
+Status: active
+Type: program-roadmap
+Updated: 2026-08-30
+Roadmap ID: app-server-dashboard-performance-truth
+Roadmap Revision: 1
+Source Project Map: MAP-0024
+
+## Program Outcome
+
+The hosted App Server fleet screen truthfully reports current readiness and bounded real-execution
+performance so operators can assess adoption, reliability, latency, and token overhead by role.
+
+## M1-TRUTHFUL-PERFORMANCE-WORK2 — Correct and size the App Server view
+
+Status: active
+Depends on: none
+
+Outcome: Replace selection-derived counters with a privacy-safe aggregate over actual App Server
+execution telemetry, retain current readiness and fallback context, extend the hosted contract and
+read model, and present a compact 24-hour performance view on the combined Work2 target.
+
+Gates:
+
+- `G1-REAL-EXECUTION-TRUTH`: actual top-level planning, verification, and CAMP runs drive attempts
+  and outcomes; preference, selection, and recovery-control events do not.
+- `G2-READINESS-AND-WINDOW-TRUTH`: readiness, observation time, report freshness, explicit 24-hour
+  window, and browser-local last execution are distinct and correct.
+- `G3-PERFORMANCE-SIZING`: the screen shows role breakdown, reliability posture, duration
+  percentiles, token intensity, cache ratio, and weighted usage proxy with honest labels.
+- `G4-PRIVACY-AND-WORK2`: the strict allowlist, focused tests, combined-target deployment, browser
+  checks, release cohort, checkpoint/rebuild proof, and strict Doctor pass.
+
+Candidate campaign: `implement-app-server-dashboard-performance-truth`.
+
+## Work2 Boundary
+
+Work2 includes local aggregate implementation, report schema and hosted persistence changes,
+migration, the compact App Server fleet presentation, focused aggregation/privacy/ingest/rendering
+tests, quick changed-path validation, a scoped product commit, deployment to the combined live
+`ts.rookaro.com` target, authenticated browser and public health checks, release-cohort
+registration, Hybrid checkpoint/rebuild proof, and strict Doctor.
+
+Work2 does not push Git, tag or publish a Tool Shed release, add long-term time-series analytics,
+claim GUI savings or billing cost, alter App Server routing/qualification, or mark this roadmap and
+its owning map terminal. Formal release and outcome reconciliation remain for Work5.
+
+## Deferred Follow-on
+
+After the current-window contract is proven, a later PRM may add retained hourly/daily rollups,
+7-day and 30-day trends, and explicitly matched GUI/App Server comparison evidence.
