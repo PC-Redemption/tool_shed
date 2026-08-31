@@ -240,7 +240,7 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Add truthful bounded App Server readiness and performance reporting.",
+  "notes": "Make App Server performance reporting truthful, current, and useful for production sizing.",
   "release_commit": null,
   "release_qualification": null,
   "release_tag": "v0.42.0",
