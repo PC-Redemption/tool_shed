@@ -445,7 +445,9 @@ class DashboardReporterTests(unittest.TestCase):
             )
         self.assertEqual(result["status"], "installed")
         command = run.call_args.args[0]
+        self.assertEqual(command[:4], ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command"])
         self.assertIn(str(windowless.resolve()), command[-1])
+        self.assertTrue(run.call_args.kwargs["windowless"])
 
     def test_linux_scheduler_install_writes_project_scoped_private_units(self) -> None:
         config = self.workspace / "config"

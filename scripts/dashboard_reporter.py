@@ -1180,7 +1180,13 @@ def scheduler_plan(workspace: Path) -> dict[str, Any]:
     script = Path(__file__).resolve().as_posix()
     root = workspace.resolve().as_posix()
     if system == "windows":
-        command = ["schtasks", "/Create", "/SC", "MINUTE", "/MO", "15", "/TN", f"ToolShedDashboardSafety-{project_id}", "/TR", f'"{executable}" "{script}" --workspace "{root}" safety-pass --project-binding <binding>']
+        command = [
+            "powershell.exe",
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            f"Register-ScheduledTask ToolShedDashboardSafety-{project_id} for {executable} every 15 minutes",
+        ]
     elif system == "darwin":
         command = ["launchctl", "bootstrap", "gui/<uid>", f"~/Library/LaunchAgents/com.toolshed.dashboard.{project_id}.plist"]
     else:
@@ -1241,8 +1247,24 @@ def scheduler_install(workspace: Path, *, project_binding: str) -> dict[str, Any
         installed = [str(target)]
     elif system == "windows":
         task = "ToolShedDashboardSafety-" + str(identity["project_id"])
-        command = f'"{executable}" "{script}" --workspace "{root}" safety-pass --project-binding {binding}'
-        subprocess_launch.run(["schtasks", "/Create", "/F", "/SC", "MINUTE", "/MO", "15", "/TN", task, "/TR", command], check=True)
+        arguments = f'"{script}" --workspace "{root}" safety-pass --project-binding {binding}'
+
+        def powershell_literal(value: str) -> str:
+            return "'" + value.replace("'", "''") + "'"
+
+        command = "; ".join(
+            (
+                f"$action = New-ScheduledTaskAction -Execute {powershell_literal(executable)} -Argument {powershell_literal(arguments)}",
+                "$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(15) -RepetitionInterval (New-TimeSpan -Minutes 15)",
+                "$settings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -StartWhenAvailable",
+                f"Register-ScheduledTask -TaskName {powershell_literal(task)} -Action $action -Trigger $trigger -Settings $settings -Force | Out-Null",
+            )
+        )
+        subprocess_launch.run(
+            ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command],
+            check=True,
+            windowless=True,
+        )
         installed = [task]
     else:
         raise DashboardReporterError(f"dashboard scheduling is unsupported on {system}")
