@@ -94,12 +94,37 @@ def connection_path(project_id: str) -> Path:
     return _state_root() / "dashboard-connections" / f"{project_id}.json"
 
 
+def _restrict_windows_acl(path: Path) -> None:
+    identity = subprocess_launch.run(
+        ["whoami"],
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        windowless=True,
+    ).stdout.strip()
+    if not identity:
+        raise DashboardReporterError("Windows private-state owner could not be resolved")
+    subprocess_launch.run(
+        ["icacls", str(path), "/inheritance:r", "/grant:r", f"{identity}:(F)"],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+        text=True,
+        windowless=True,
+    )
+
+
 def _write_private_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-    try:
-        os.chmod(path.parent, 0o700)
-    except OSError:
-        pass
+    windows = platform.system().lower() == "windows"
+    if windows:
+        _restrict_windows_acl(path.parent)
+    else:
+        try:
+            os.chmod(path.parent, 0o700)
+        except OSError:
+            pass
     temporary = path.with_name(path.name + ".tmp")
     descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     try:
@@ -108,11 +133,16 @@ def _write_private_json(path: Path, payload: dict[str, Any]) -> None:
             handle.write("\n")
             handle.flush()
             os.fsync(handle.fileno())
+        if windows:
+            _restrict_windows_acl(temporary)
         os.replace(temporary, path)
-        try:
-            os.chmod(path, 0o600)
-        except OSError:
-            pass
+        if windows:
+            _restrict_windows_acl(path)
+        else:
+            try:
+                os.chmod(path, 0o600)
+            except OSError:
+                pass
     except BaseException:
         temporary.unlink(missing_ok=True)
         raise

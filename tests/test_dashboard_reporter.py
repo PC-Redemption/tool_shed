@@ -46,6 +46,21 @@ class DashboardReporterTests(unittest.TestCase):
             self.assertEqual(stat.S_IMODE(target.stat().st_mode), 0o600)
         self.assertEqual(json.loads(target.read_text(encoding="utf-8"))["credential"], "secret")
 
+    def test_windows_private_connection_state_applies_user_acl(self) -> None:
+        target = self.workspace / "protected/state.json"
+        with mock.patch.object(
+            dashboard_reporter.platform, "system", return_value="Windows"
+        ), mock.patch.object(
+            dashboard_reporter, "_restrict_windows_acl"
+        ) as restrict:
+            dashboard_reporter._write_private_json(
+                target, {"schema_version": 1, "credential": "secret"}
+            )
+        self.assertEqual(
+            [call.args[0] for call in restrict.call_args_list],
+            [target.parent, target.with_name("state.json.tmp"), target],
+        )
+
     def test_worker_lease_is_released_and_two_events_deliver_once(self) -> None:
         with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
             for sequence in (1, 2):
