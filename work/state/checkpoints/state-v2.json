@@ -1,8 +1,8 @@
 {
   "envelope": {
-    "created_at": "2026-09-01T21:42:50Z",
-    "database_revision": 994,
-    "digest": "99e452db85287c9a682bec73e71462a12f10bf087298121039b4f6d49ea2a695",
+    "created_at": "2026-09-01T21:47:55Z",
+    "database_revision": 995,
+    "digest": "cced3334672852acb6011e10bb8fd47762a027cc6c99cf112ce0fec990be92d9",
     "hybrid_schema": 2,
     "objects": [
       "work/state/objects/sha256/00/0082fd1d60de8f37c6d2972dac5637d8c894d2c8f1124c5061aeb74ba0c18b75",
@@ -359,6 +359,7 @@
       "work/state/objects/sha256/b8/b8e463b0793d33f18bb4c1f9b457bac3ced9a38a9e0d979b2b655166c3d53a61",
       "work/state/objects/sha256/b9/b914c3a9626976dbc832d08faddb7784470898cb9a5b4b9b4ea09bba08bcab67",
       "work/state/objects/sha256/b9/b915f4a2cf82f59b1d7bf9da601f23832c57a03f7d368f029aa3bad5008d5140",
+      "work/state/objects/sha256/b9/b92ce385693bde55a2fdab4f934b6e2a0895e133a29a2a1b1dc70d8da47b27c6",
       "work/state/objects/sha256/b9/b9901e924a38ac378e451c3b1580f349c51ec4b6bb077ec87a29a21f4d701296",
       "work/state/objects/sha256/ba/ba04a285d7c95278935c4bf023f7bf88056d2c2b0f684f08f1aa6ad88a23f5f5",
       "work/state/objects/sha256/ba/ba185b39024aa1a974aaa19223d22510636284376362ec4784bc6cf4c84d202e",
@@ -2130,14 +2131,14 @@
       },
       {
         "authority_mode": "sqlite",
-        "content_sha256": "b8e463b0793d33f18bb4c1f9b457bac3ced9a38a9e0d979b2b655166c3d53a61",
+        "content_sha256": "b92ce385693bde55a2fdab4f934b6e2a0895e133a29a2a1b1dc70d8da47b27c6",
         "created_at": "2026-08-31T22:36:56Z",
         "current_path": "sqlite/documents/CAMP-0145",
         "display_number": "CAMP-0145",
         "id": "562c6559-609d-4934-91e1-6d06a7ef5166",
-        "lifecycle_state": "active",
+        "lifecycle_state": "completed",
         "type": "campaign",
-        "updated_at": "2026-09-01T21:42:05Z"
+        "updated_at": "2026-09-01T21:47:44Z"
       },
       {
         "authority_mode": "sqlite",
@@ -8461,16 +8462,16 @@
         "visible_id": "CAMP-0024"
       },
       {
-        "body_sha256": "b8e463b0793d33f18bb4c1f9b457bac3ced9a38a9e0d979b2b655166c3d53a61",
+        "body_sha256": "b92ce385693bde55a2fdab4f934b6e2a0895e133a29a2a1b1dc70d8da47b27c6",
         "created_at": "2026-08-31T22:36:56Z",
-        "current_revision": 5,
+        "current_revision": 6,
         "display_number": 145,
         "id": "562c6559-609d-4934-91e1-6d06a7ef5166",
-        "lifecycle_state": "active",
+        "lifecycle_state": "completed",
         "metadata_json": "{\"campaign_id\":\"establish-isolated-private-development-site\",\"milestone\":\"M1-ISOLATED-PRIVATE-DEVELOPMENT\",\"requested_endpoint\":\"work2\",\"roadmap_document\":\"PRM-0036\",\"roadmap_id\":\"private-development-site-before-public-release\",\"roadmap_revision\":1,\"source_project_map\":\"MAP-0025\",\"unlocks_gates\":[\"G1-DEVELOPMENT-ISOLATION\",\"G3-PRIVATE-ACCESS\"]}",
         "namespace": "CAMP",
         "title": "Establish Isolated Private Development Site",
-        "updated_at": "2026-09-01T21:42:05Z",
+        "updated_at": "2026-09-01T21:47:44Z",
         "visible_id": "CAMP-0145"
       },
       {
@@ -18841,6 +18842,20 @@
         "revision_number": 2,
         "source_revision": 880,
         "title": "Rehearse and Qualify Legacy Collateral Retirement"
+      },
+      {
+        "actor": "codex",
+        "body_object": "work/state/objects/sha256/b9/b92ce385693bde55a2fdab4f934b6e2a0895e133a29a2a1b1dc70d8da47b27c6",
+        "body_sha256": "b92ce385693bde55a2fdab4f934b6e2a0895e133a29a2a1b1dc70d8da47b27c6",
+        "created_at": "2026-09-01T21:47:44Z",
+        "document_id": "562c6559-609d-4934-91e1-6d06a7ef5166",
+        "id": "1ec9a636-2452-4c99-b760-2d3df68f67db",
+        "lifecycle_state": "completed",
+        "metadata_json": "{\"campaign_id\":\"establish-isolated-private-development-site\",\"milestone\":\"M1-ISOLATED-PRIVATE-DEVELOPMENT\",\"requested_endpoint\":\"work2\",\"roadmap_document\":\"PRM-0036\",\"roadmap_id\":\"private-development-site-before-public-release\",\"roadmap_revision\":1,\"source_project_map\":\"MAP-0025\",\"unlocks_gates\":[\"G1-DEVELOPMENT-ISOLATION\",\"G3-PRIVATE-ACCESS\"]}",
+        "reason": "Complete CAMP-0145 after isolated runtime, reporter, lineage, rebuild, and strict Doctor gates",
+        "revision_number": 6,
+        "source_revision": 995,
+        "title": "Establish Isolated Private Development Site"
       },
       {
         "actor": "maintainer-final-cutover",
@@ -50181,6 +50196,16 @@
         "revision": 436
       },
       {
+        "entity_id": "562c6559-609d-4934-91e1-6d06a7ef5166",
+        "entity_type": "artifact",
+        "id": "709ab8f2-75c8-46e0-83ad-69ca810c6850",
+        "kind": "structural-update",
+        "operation_id": "ed340800-fc31-41fe-a517-baad392e7f55",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-09-01T21:47:44Z",
+        "revision": 995
+      },
+      {
         "entity_id": "af4a90ed-abeb-5349-b8e7-8b0cec4861fc",
         "entity_type": "verification_result",
         "id": "709fb5f8-ca40-4f50-bb39-4c03505aa1b4",
@@ -51259,6 +51284,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
         "recorded_at": "2026-08-29T01:27:40Z",
         "revision": 252
+      },
+      {
+        "entity_id": "562c6559-609d-4934-91e1-6d06a7ef5166",
+        "entity_type": "document",
+        "id": "7491a0fb-4149-4ea4-bb7f-94ba8b9946a1",
+        "kind": "structural-update",
+        "operation_id": "ed340800-fc31-41fe-a517-baad392e7f55",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"document\"}",
+        "recorded_at": "2026-09-01T21:47:44Z",
+        "revision": 995
       },
       {
         "entity_id": "a61fca11-2c57-405a-bc00-005a6fa8886a",
@@ -55439,6 +55474,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
         "recorded_at": "2026-08-30T12:28:39Z",
         "revision": 719
+      },
+      {
+        "entity_id": "1ec9a636-2452-4c99-b760-2d3df68f67db",
+        "entity_type": "document_revision",
+        "id": "86a45004-3815-490e-818d-0b0f3170268e",
+        "kind": "structural-insert",
+        "operation_id": "ed340800-fc31-41fe-a517-baad392e7f55",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
+        "recorded_at": "2026-09-01T21:47:44Z",
+        "revision": 995
       },
       {
         "entity_id": "a3bdb2b3-1251-4cc3-8b43-63852b961388",
@@ -95448,6 +95493,17 @@
         "id": "ecdecb4e-f711-4304-a8d9-0fb961ae9c1e",
         "revision": 357,
         "started_at": "2026-08-29T10:56:17Z",
+        "status": "complete"
+      },
+      {
+        "actor": "codex",
+        "actual_writes": 3,
+        "command": "document-apply-edit",
+        "committed_at": "2026-09-01T21:47:44Z",
+        "expected_writes": null,
+        "id": "ed340800-fc31-41fe-a517-baad392e7f55",
+        "revision": 995,
+        "started_at": "2026-09-01T21:47:44Z",
         "status": "complete"
       },
       {
@@ -139413,6 +139469,17 @@
         "table_name": "document_conversion"
       },
       {
+        "id": "83036644-3e21-42de-8d04-415c50e97401",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "ed340800-fc31-41fe-a517-baad392e7f55",
+        "payload_digest": "dbc10ae6350daea83a7144e1eb893b5d5dd9d76aa0c8e3168e8637f4a3406332",
+        "recorded_at": "2026-09-01T21:47:44Z",
+        "revision": 995,
+        "row_id": "562c6559-609d-4934-91e1-6d06a7ef5166",
+        "table_name": "document"
+      },
+      {
         "id": "8308911a-adae-4074-8d9f-0d3c09c947f3",
         "managed": 1,
         "operation": "insert",
@@ -145450,6 +145517,17 @@
         "revision": 196,
         "row_id": "c622396a-750f-513d-8782-4c87fa471746",
         "table_name": "document"
+      },
+      {
+        "id": "9ca44847-dc8f-4da4-8d4a-06293645ceeb",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "ed340800-fc31-41fe-a517-baad392e7f55",
+        "payload_digest": "13e3972c68993da49cf2c66cb5a8acab797fae7022a656b04188af1b530a13c2",
+        "recorded_at": "2026-09-01T21:47:44Z",
+        "revision": 995,
+        "row_id": "1ec9a636-2452-4c99-b760-2d3df68f67db",
+        "table_name": "document_revision"
       },
       {
         "id": "9ca76b1c-f5fe-4891-9a46-5385a3ca3f42",
@@ -160058,6 +160136,17 @@
         "revision": 41,
         "row_id": "3084c298-cfe5-40ef-849a-c34c6ae71850",
         "table_name": "reconciliation"
+      },
+      {
+        "id": "d50ab396-eaca-41fb-99c1-6e780e3dec51",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "ed340800-fc31-41fe-a517-baad392e7f55",
+        "payload_digest": "8c6a5f2f812de550e032e2ac829f15da4ceb90a66cb2bc964cf232c4c4b485b4",
+        "recorded_at": "2026-09-01T21:47:44Z",
+        "revision": 995,
+        "row_id": "562c6559-609d-4934-91e1-6d06a7ef5166",
+        "table_name": "artifact"
       },
       {
         "id": "d517372b-91d1-4d3e-b660-14022241596f",
