@@ -35,7 +35,11 @@ from dashboard.fleet.models import (  # noqa: E402
     WorkArtifactSnapshot,
     WorkEfficiencyAggregate,
 )
-from dashboard.fleet.services import _trim_efficiency_history, approve_enrollment  # noqa: E402
+from dashboard.fleet.services import (  # noqa: E402
+    _trim_efficiency_history,
+    active_attention_items,
+    approve_enrollment,
+)
 
 call_command("migrate", verbosity=0)
 
@@ -884,6 +888,12 @@ class DashboardApplicationTests(TestCase):
         with override_settings(DASHBOARD_ENVIRONMENT="production"):
             with self.assertRaisesRegex(CommandError, "restricted to the development environment"):
                 call_command("seed_dashboard_development", verbosity=0)
+
+    @override_settings(DASHBOARD_ENVIRONMENT="development")
+    def test_development_seed_does_not_create_stale_reporter_attention(self) -> None:
+        call_command("seed_dashboard_development", verbosity=0)
+        Instance.objects.update(last_seen=timezone.now() - timedelta(hours=1))
+        self.assertEqual(active_attention_items(), [])
 
     def test_login_uses_password_and_otp_fields(self) -> None:
         response = self.client.get(reverse("login"))

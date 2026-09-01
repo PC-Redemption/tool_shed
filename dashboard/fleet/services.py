@@ -259,6 +259,12 @@ def active_attention_items(*, project: Project | None = None, now=None) -> list[
         )
     cutoff = current_time - STALE_AFTER
     for instance in instances:
+        if (
+            settings.DASHBOARD_ENVIRONMENT == "development"
+            and instance.client_version == "development-seed"
+            and instance.health_state.get("synthetic") is True
+        ):
+            continue
         if instance.last_seen is not None and instance.last_seen >= cutoff:
             continue
         reason = ATTENTION_REASONS["reporter-stale"]
