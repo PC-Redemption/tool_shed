@@ -212,6 +212,27 @@ class DashboardReporterTests(unittest.TestCase):
             dashboard_reporter.subprocess_launch.CREATE_NO_WINDOW,
         )
 
+    def test_safety_pass_main_tolerates_pythonw_without_console_streams(self) -> None:
+        with mock.patch.object(
+            dashboard_reporter, "resolved_workspace", return_value=self.workspace
+        ), mock.patch.object(
+            dashboard_reporter, "safety_pass", return_value={"status": "delivered"}
+        ), mock.patch.object(
+            dashboard_reporter.sys, "stdout", None
+        ), mock.patch.object(
+            dashboard_reporter.sys, "stderr", None
+        ):
+            result = dashboard_reporter.main(
+                [
+                    "--workspace",
+                    str(self.workspace),
+                    "safety-pass",
+                    "--project-binding",
+                    "fixture",
+                ]
+            )
+        self.assertEqual(result, 0)
+
     def test_windows_managed_write_worker_is_created_without_a_window(self) -> None:
         queued = {"sequence": 1}
         with mock.patch.object(

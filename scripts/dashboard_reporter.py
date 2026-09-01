@@ -1433,7 +1433,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 result = scheduler_remove(workspace, project_binding=args.project_binding)
             else:
                 result = safety_pass(workspace, project_binding=args.project_binding)
-        print(json.dumps(result, indent=2, sort_keys=True))
+        if sys.stdout is not None:
+            print(json.dumps(result, indent=2, sort_keys=True), file=sys.stdout)
         return 0
     except (
         DashboardReporterError,
@@ -1445,7 +1446,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         subprocess.CalledProcessError,
     ) as error:
         payload = {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-reporter-error", "error": str(error), "writes_performed": False}
-        print(json.dumps(payload, indent=2, sort_keys=True), file=sys.stderr)
+        if sys.stderr is not None:
+            print(json.dumps(payload, indent=2, sort_keys=True), file=sys.stderr)
         return 1
 
 
