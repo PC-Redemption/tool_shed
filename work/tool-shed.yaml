@@ -1,6 +1,6 @@
 schema_version: 1
-work_model: combined
-development_target: ts.rookaro.com live documentation site
+work_model: split
+development_target: isolated private development site at /home/jon/docker/ts.rookaro.com-dev (Compose project tsrookarocom-dev)
 production_target: ts.rookaro.com live documentation site
 work_levels:
   work3:

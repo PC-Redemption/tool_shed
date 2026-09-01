@@ -1,0 +1,80 @@
+# Campaign: Establish Isolated Private Development Site
+
+Status: working
+Type: campaign
+Updated: 2026-09-01
+Next Action: create the first development username/password maintainer and install the Workpc localhost tunnel; then approve the Linux and Windows reporter enrollment codes
+Campaign ID: establish-isolated-private-development-site
+Outcome: Create and Work2-verify the isolated LAN-only Tool Shed development site on sup.local without changing the production stack.
+Roadmap: private-development-site-before-public-release
+Roadmap Document: PRM-0036
+Roadmap Revision: 1
+Milestone: M1-ISOLATED-PRIVATE-DEVELOPMENT
+Unlocks Gate: G1-DEVELOPMENT-ISOLATION, G3-PRIVATE-ACCESS
+Depends On: none
+Requested Endpoint: work2
+Completion Gate: separate source/deployment roots, Compose project, containers, network, volumes, database, configuration, development identity, port 8443, synthetic data, scoped lifecycle commands, LAN access, Workpc localhost tunnel, production noninterference, focused tests, target checks, candidate registration, checkpoint rebuild proof, and strict Doctor all pass.
+
+## Request
+
+Build the smallest complete isolated development target for the Tool Shed documentation site and
+dashboard. Reuse the production service shape while preserving strict filesystem, Compose, data,
+credential, port, route, and lifecycle separation.
+
+## Work2 Boundary
+
+- Use development root `/home/jon/docker/ts.rookaro.com-dev` and Compose project
+  `tsrookarocom-dev` on `sup.local`.
+- Publish plain HTTP only on `192.168.7.5:8443`; create no public DNS, Nginx Proxy Manager, or
+  Rookaro router entry.
+- Keep production project `tsrookarocom`, `/home/jon/docker/ts.rookaro.com`, port `8087`, its
+  containers, network, volumes, environment, database, and public route unchanged.
+- Use an empty development database plus deterministic synthetic seed data. Never copy production
+  credentials, enrollments, sessions, personal data, or writable mounts.
+- Add explicit development UI and machine-readable identity, a plain-HTTP-only development
+  security profile, resource limits, scoped deploy/reset/rollback guidance, LAN checks, and a
+  localhost-only persistent Workpc tunnel contract.
+- Stop at the protected boundary before creating development secrets, maintainer credentials, or
+  reporter credentials unless the operator explicitly authorizes that action.
+
+## Verification
+
+Run focused settings, deployment, dashboard, and documentation tests; validate the Compose model;
+capture before/after production health and identity; test direct LAN access from the Linux and
+Windows test beds; verify the development endpoint has no public route; and verify Workpc access
+through a managed `127.0.0.1` tunnel when its host-local installation is authorized.
+
+## Current Evidence
+
+- Candidate commit `265860dd90f3efa1da3521deb266ceef09962e0f` contains the development HTTP
+  security profile, visual and health identity, isolated Compose parameters, deterministic
+  synthetic seed, development readiness check, exact-commit staging/operator script, Workpc
+  scheduled-tunnel installer, tests, and runbook.
+- New development-only PostgreSQL and Django secrets were generated directly into the protected
+  mode-`0600` development `.env` without displaying their values. The exact candidate is deployed
+  from `/home/jon/docker/ts.rookaro.com-dev` as image `tool-shed-dashboard:dev-265860dd90f3` in
+  Compose project `tsrookarocom-dev`; its docs, dashboard, and PostgreSQL containers are healthy.
+- Development uses its own network and volumes and binds only `192.168.7.5:8443`. Health and login
+  responses identify `environment=development`, and deterministic synthetic seed/readiness checks
+  pass.
+- The development authentication mode is `local-password`, matching the owner decision for
+  username/password authentication. The dashboard container was recreated with that setting and
+  reports healthy; no production configuration changed.
+- Twenty settings/deployment/site tests and thirty-five containerized dashboard tests pass.
+- Linux and Windows test beds both reach the LAN development endpoint. Each has a distinct project
+  and workspace identity, a clean schema-2 lineage database, and a manifest-verified `0.43.0`
+  development snapshot based on candidate commit `265860dd90f3efa1da3521deb266ceef09962e0f`.
+- Linux commit `1dff497a4ab770a9c2b6d8b4aee9f0ba21435ed1` and Windows commit
+  `c47614c6c3aac30aaea7c3c31ddd6650fa4db302` checkpoint their synthetic bootstrap state. Strict
+  Doctor is `HEALTHY` and focused validation passes on both operating systems.
+- Production project `tsrookarocom` remains healthy on port `8087`, the public
+  `https://ts.rookaro.com/healthz` route remains healthy, and no development public route exists.
+
+## Protected Boundary
+
+Two host-local operator actions remain. Create the first development username/password maintainer
+without placing its password in tracked files or logs. No TOTP enrollment is required. On Workpc,
+install and verify the `ToolShedDevelopmentTunnel` scheduled task from the candidate script. After
+those actions, create and approve short-lived enrollment codes for the Linux and Windows reporters,
+install both 15-minute safety schedulers, verify report delivery, and finish the
+candidate-registration, checkpoint/rebuild, and strict-Doctor completion gates.

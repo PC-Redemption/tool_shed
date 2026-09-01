@@ -1,0 +1,61 @@
+# Private Development Site Work2 Verification
+
+Status: completed
+Type: evidence-summary
+Updated: 2026-09-01
+Campaign: CAMP-0145
+Roadmap: PRM-0036
+Candidate Commit: 20b22d539937fd68318565eede42384056ae0bcc
+
+## Verified Outcome
+
+The isolated LAN-only Tool Shed development site is operating independently from production, and
+the approved Linux and Windows development reporters are enrolled, reporting, and scheduled. No
+production service, data, credential, reporter identity, scheduler, or route was redirected or
+reused.
+
+## Development And Production Boundaries
+
+- Development root: `/home/jon/docker/ts.rookaro.com-dev`.
+- Development Compose project: `tsrookarocom-dev`.
+- Development endpoint: `http://192.168.7.5:8443`; Workpc uses the managed localhost-only endpoint
+  `http://127.0.0.1:8443`.
+- Development image: `tool-shed-dashboard:dev-265860dd90f3`, built from exact deployed application
+  commit `265860dd90f3efa1da3521deb266ceef09962e0f`.
+- Development reports `environment=development`, uses local username/password authentication, has
+  deterministic synthetic data, and owns distinct containers, network, volumes, database,
+  configuration, and mode-`0600` secrets.
+- Production Compose project `tsrookarocom` remained healthy on port `8087`, and the public
+  `https://ts.rookaro.com/healthz` route remained healthy. No public development route exists.
+
+## Client And Reporter Proof
+
+- Workpc scheduled task `ToolShedDevelopmentTunnel` is running; a direct curl through
+  `127.0.0.1:8443` returned the healthy development identity.
+- Linux test bed project `4e6c7752-8ce6-44d1-bf76-dffb18cd8137` enrolled development reporter
+  instance `71fa633f-d6e6-4e44-b904-dd52a748bb70`. Its systemd user scheduler completed with
+  `Result=success` and `ExecMainStatus=0`; pending events are zero.
+- Windows test bed project `10066c9b-e5e3-419f-9ee8-bb47fc029e9c` enrolled development reporter
+  instance `4906bbc9-36c3-486a-a247-bb442ea15dba`. Its scheduled task completed with
+  `LastTaskResult=0`; pending events are zero.
+- Both isolated schema-2 test-bed projects report connected dashboard state and strict Doctor
+  `HEALTHY`. Their root repositories remained clean after installation and verification.
+
+## Candidate And Test Proof
+
+- Final Work2 candidate `20b22d539937fd68318565eede42384056ae0bcc` adds the Windows scheduler
+  corrections proven during cross-platform qualification: no-console reporting under `pythonw`,
+  correctly encoded scheduled-task actions, and reporter-state ACL ownership for the scheduled
+  user.
+- All 25 focused dashboard reporter tests pass on the final candidate. Earlier qualification also
+  passed 20 settings/deployment/site tests and 35 containerized dashboard tests.
+- Linux and Windows each run a manifest-verified Tool Shed `0.43.0` development snapshot created
+  from the exact final candidate. Manual reports and subsequent scheduler reports were delivered,
+  with no queued events remaining.
+
+## Security And Recovery Notes
+
+No password, enrollment code, reporter credential, private key, cookie, session value, or secret is
+recorded in this evidence. Development credentials remain host-local. The deployment and reporter
+installations are scoped to the development Compose project and dedicated disposable test-bed
+identities.
