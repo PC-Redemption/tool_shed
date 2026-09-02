@@ -1,0 +1,413 @@
+# Idea Brief: Recursive Element Closure Lineage and Status Rollups
+
+Status: exploring
+Type: idea-brief
+Updated: 2026-09-01
+Next Action: confirm or revise the preferred incremental-rollup and deterministic-rebuild contract, then settle the remaining envelope and projection details before readiness review
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces:
+
+## Current Synthesis
+
+### Idea
+
+Extend the completed Universal Closed-Loop Outcome Reconciliation foundation (`IDEA-0006`) with a
+self-describing recursive closure graph for every durable actionable Tool Shed element. Each
+element carries recoverable immediate lineage to the exact parent requirement it serves. The
+database derives fast reverse ancestry and closure rollups from those claims instead of making a
+single normalized edge index the only recoverable representation.
+
+Separate an element's local closure from its effective subtree closure. Local work may close through
+an evidence-backed outcome loop or an explicit manual closure, but the element remains effectively
+open while any governing child or deeper descendant is open, missing, unknown, invalid, or
+unreconciled. Parent status must say why it remains open and identify the nearest blockers.
+
+The parent owns its accepted requirements; the child declares where its result belongs. This lets
+Tool Shed rebuild lineage from self-describing elements without allowing a missing child to vanish
+silently from parent scope. Every material actionable commitment must be classified as a governing
+requirement, an independent child cycle, or an explicit non-governing action.
+
+Closure is scoped to an exact obligation and subject revision, not stored as one timeless boolean
+on the whole element. The release workflow is the concrete example: Work3 may close development
+qualification for one candidate while Work5 and the owning Idea remain open. If later development
+changes the candidate, the prior Work3 proof remains valid history for its original commit but is
+stale for the new candidate and cannot authorize production promotion.
+
+### Why It Matters
+
+Tool Shed already has cycles, requirements, typed relationships, evidence, verdicts, reconciliation,
+revisions, and checkpoints, but current status surfaces can flatten those dimensions and obscure
+the open owning outcome. A child can appear complete without clearly showing which parent
+requirement it satisfied, whether its result propagated, or which ancestor remains open.
+
+The hosted-dashboard fidelity and compatibility gaps in GitHub issues `#57` and `#58` exposed the
+larger weakness: a fresh projection can still be semantically incomplete. The local Hybrid
+dashboard patch demonstrated a small safe projection boundary, but it also showed that lifecycle
+alone cannot answer what remains. An Idea can be exploring with a Next Action while a simplified
+view reports no active workflow.
+
+Operators need one fast, trustworthy answer for any element: whether it and its complete governing
+subtree are closed, how each local closure was achieved, what remains open, and whether the answer
+is current for the verified graph revision.
+
+### Desired Outcome
+
+For every durable actionable element, Tool Shed reports local closure, effective closure, closure
+method, open/unknown/invalid descendant counts, nearest blockers, evidence health, and the verified
+graph revision. The recursive invariant is:
+
+```text
+effective_closed(element) =
+    locally_closed(element)
+    AND every governing child is effectively closed
+```
+
+`locally_closed` means either `closed-loop` or `closed-manual`. Manual closure applies only to the
+element itself and never force-closes descendants. Missing evidence triggers an authorized,
+deterministic proof attempt when a declared verification recipe exists; otherwise the result is
+`UNPROVEN`, not guessed success or failure.
+
+Normal status reads are fast because rebuildable ancestor and rollup indexes are updated
+incrementally in the same guarded revision as closure changes. Recovery can rescan immediate
+lineage claims, requirements, relationship history, tombstones, and checkpoints; rebuild the
+indexes; detect divergence; and keep affected roots open until ambiguity is reconciled.
+
+A child can rediscover that a parent is missing, but it cannot reconstruct the parent's full
+meaning. Its lineage envelope contains enough identity to create a non-authoritative
+`MISSING_PARENT` recovery stub and locate exact parent revisions in checkpoints, the content-object
+store, relationship history, or backups. Only an exact recovered parent revision restores the
+authoritative parent. If none exists, the orphan claim and recovery stub remain durable, the child
+is invalid for effective closure, and no affected ancestry may close. The system never invents the
+parent's requirements, lifecycle, evidence, or ancestors from the child's partial claim.
+
+The clean-graph invariant is zero unresolved orphans. Normal creation must verify the exact parent
+and requirement in the same transaction; ordinary parent deletion is rejected while governing
+children exist; and reparent, retire, or supersede operations update child envelopes, relationship
+history, tombstones, and projections atomically. Orphans should therefore arise only from detected
+corruption, interrupted legacy migration, or imported incomplete state.
+
+Any detected orphan becomes one bounded `RECOVERY_REQUIRED` case rather than an ordinary tree
+element. The affected roots remain open, the dashboard reports the orphan count and repair state,
+and closure or release gates for those roots fail. Deterministic recovery first searches exact
+durable history. If that fails, the only exits are an explicitly authorized reparent operation or
+explicit retirement/abandonment with a durable tombstone and reason. Recovery snapshots may
+preserve unresolved cases, but a normal clean checkpoint cannot certify them as resolved.
+
+The failure blast radius follows governing ancestry rather than becoming global by default. An
+orphan blocks its affected root and every ancestor reached through governing lineage. Unrelated
+healthy roots continue operating. A release cohort is blocked when it contains any affected root,
+so incomplete lineage cannot cross the production boundary while unrelated development remains
+usable.
+
+The model applies consistently to Ideas, Maps, Program Roadmaps and milestones, Campaigns,
+workpackages, tickets, checklists, spikes, ADRs, decisions, inventories, runbooks, incidents,
+durable direct work, release cohorts, and other explicitly governed outcome cycles. Nested
+requirements, gates, phases, steps, and acceptance conditions participate in closure without
+automatically requiring a separate cycle.
+
+Intermediate requirements and gates can therefore close independently while their owner remains
+effectively open. Each closure record identifies its obligation, subject revision or digest,
+environment or lane when applicable, evidence, method, and graph revision. A rollup reports both
+closed progress and the exact remaining obligations instead of flattening the element to a single
+ambiguous lifecycle label.
+
+The settled status contract keeps four independent facts rather than one expanding enum:
+
+| Field | Values | Meaning |
+| --- | --- | --- |
+| `local_closure` | `open`, `closed-loop`, `closed-manual` | The element's own disposition |
+| `evidence_health` | `not-required`, `current`, `missing`, `stale`, `checker-error` | Whether evidence appropriate to that disposition is required and trustworthy |
+| `graph_health` | `valid`, `recovery-required`, `invalid` | Whether governing lineage can be evaluated safely |
+| `effective_closed` | `true`, `false` | Revision-bound cached result for the complete governing subtree |
+
+When `effective_closed` is false, structured reason codes explain the result: `LOCAL_OPEN`,
+`DESCENDANT_OPEN`, `UNPROVEN`, `STALE_EVIDENCE`, `CHECKER_ERROR`, `MISSING_PARENT`, `CYCLE`,
+`CONFLICTING_LINEAGE`, or `STALE_ROLLUP`. Nearest blockers, complete blocker counts, subject and
+graph revisions, and last evaluation time accompany the summary. `READY_TO_CLOSE` and `BLOCKED`
+remain derived operator hints, not additional sources of closure truth.
+
+This model stays consistent across edge cases. Ordinary unfinished work is
+`open / not-required / valid / false`, while work claiming completion without proof is
+`open / missing / valid / false` with `UNPROVEN`. A historically closed loop with stale evidence
+is `closed-loop / stale / valid / false`; a manually closed element requires a current
+authorization record; a locally closed parent with an open child is
+`closed-loop / current / valid / false`; and a missing parent is never flattened into ordinary
+open work because graph health separately says `recovery-required`.
+
+The settled automatic proof-attempt contract is deliberately narrower than general autonomous
+work. Missing or stale evidence never authorizes Tool Shed to invent a command or decide how to
+prove completion. It may execute only a predeclared, versioned verification recipe bound to the
+exact obligation, subject revision or digest, target identity, recipe version and digest, and
+freshness policy being evaluated.
+
+Each recipe references an audited checker or executable by immutable digest; free-form generated
+shell is not a verification recipe. The declaration names its read, write, network, credential,
+production, and external-cost classes; target and workspace boundaries; timeout, resource limit,
+retry and cooldown policy; expected evidence schema; pass and fail semantics; and output-redaction
+rules. Read-only, local, non-protected recipes may run automatically only inside the active
+authority envelope. Mutating, credentialed, externally costly, cross-workspace, or production
+recipes require explicit current authority. Without it, the attempt is `PROOF_BLOCKED`, evidence
+remains missing or stale, and effective closure remains false.
+
+Proof attempts are append-only execution events, with operational outcomes such as `eligible`,
+`running`, `passed`, `failed`, `blocked`, `checker-error`, `timed-out`, or `superseded`; these never
+become additional closure states. The idempotency key is the element, subject revision, obligation,
+recipe digest, and target identity. A lease prevents concurrent duplicates, and retries are bounded
+by the declared cooldown. If the subject revision changes while a recipe is running, its result is
+`superseded` and cannot close the newer revision.
+
+A clean `passed` result emits schema-valid, redacted, content-addressed evidence and may permit
+`closed-loop` when every declared predicate is satisfied. A clean `failed` result proves
+incompletion only when the recipe explicitly declares that meaning. A blocked attempt, timeout,
+checker error, malformed output, or infrastructure failure is not proof that the work failed; it
+sets the appropriate missing or checker-error evidence health, records the reason, and keeps the
+element open. Secret values are referenced through handles during execution and are never retained
+in the proof event or evidence payload.
+
+The preferred rollup contract uses two evaluators with one semantic result. Normal mutations use
+an incremental evaluator for speed. The audit and recovery path uses a full recursive evaluator
+from authoritative element envelopes, parent-owned requirements, current closure records,
+relationship history, and tombstones. The incremental projection is valid only when it produces
+the same revision-bound result as that reference evaluator.
+
+Each normal lineage, requirement, evidence, local-closure, or subject-revision mutation first
+resolves the unique affected ancestor set through the derived reverse index. In the same guarded
+database transaction, Tool Shed validates the graph mutation, updates current edges and ancestor
+paths, and recomputes affected rollups once each in leaf-to-root order. Multi-parent paths are
+deduplicated for computation, while blocker identities remain obligation-scoped so one shared
+child cannot conceal two distinct parent requirements. SQLite's serialized write boundary plus an
+expected database revision prevents two writers from publishing incompatible rollups.
+
+The per-element rollup stores the four-field status, reason codes, counts by blocker class,
+nearest blocker references, subject revision, graph revision or digest, evaluation contract
+version, and evaluation time. The complete blocker set lives in an indexed projection keyed by
+ancestor, governing obligation, blocking element and obligation, and reason. A normal summary read
+is therefore constant-time, with a bounded indexed query only when the operator expands blockers.
+An unfulfilled parent-owned requirement participates as a blocker even when no child exists, so a
+missing child cannot disappear from the rollup.
+
+No projection row can authorize closure unless its subject revision, graph revision, and evaluator
+contract match current authority. A mismatch yields `STALE_ROLLUP` and fails closed. Normal writes
+roll back if their required projection update fails; they do not commit authoritative changes with
+a deceptively current cache. If a future large-scale mode deliberately defers projection work, it
+must mark the affected ancestry stale before commit and closure or release gates must reject it.
+
+Deterministic rebuild never repairs authority by editing it. It scans authoritative current
+envelopes and accepted parent requirements, reconciles them with append-only assertions and
+tombstones, identifies missing parents, missing children, conflicting lineage and cycles, builds
+current edges and ancestor paths in shadow tables, then evaluates rollups leaf-to-root. It compares
+the shadow result with the live projection and an independent recursive reference result. Only a
+complete, internally consistent rebuild is atomically promoted under one new graph revision;
+otherwise the live projection remains non-authoritative for affected closure gates and the exact
+recovery findings remain visible.
+
+Incremental-versus-full parity runs after migration and fault recovery, on a scheduled audit, and
+in qualification against generated DAGs containing deep chains, wide trees, shared children,
+cycles, missing-parent cases, tombstones, concurrent revision changes, and interrupted rebuilds.
+The dev rigs establish explicit read-latency, mutation-latency, affected-ancestor, graph-size, and
+rebuild-time budgets before schema choice is considered final.
+
+## Constraints And Non-Goals
+
+- Build, migration rehearsal, fault injection, performance measurement, and qualification will be
+  performed on the confirmed disposable Tool Shed development lanes: the isolated development web
+  stack on `sup`, Linux workspace `/home/jon/dev/ts_linux_test_bed`, and Windows workspace
+  `E:\\dev\\ts_windows_test_bed`. Production remains untouched until explicit Work5 promotion.
+- Preserve the completed `IDEA-0006` outcome as history. This is a follow-on extension, not a
+  reopening or reinterpretation of that satisfied loop.
+- Use the existing Hybrid SQLite primitives before proposing schema expansion. Add a new bridge or
+  index table only if the exact parent-requirement-to-child-cycle binding or required performance
+  cannot be expressed safely with current records.
+- Keep local project state authoritative. Dashboards and generated lifecycle views remain
+  disposable projections with no write-back authority.
+- Store immediate parent claims, not a mutable full ancestor chain in every element.
+- Do not treat lifecycle `terminal`, an empty queue, a successful database transaction, or a
+  manually closed parent as proof that a governing subtree is closed.
+- Do not invent historical lineage, verification recipes, evidence, semantic verdicts, or manual
+  authorization.
+- Do not let deletion erase lineage. Retired, superseded, or deleted elements require durable
+  relationship history or tombstones.
+- A graph reported as clean may contain no unresolved orphan. Recovery state may preserve an
+  orphan temporarily, but it must remain visible, block the affected roots, and have one explicit
+  repair disposition.
+- This Idea does not authorize implementation, migration, release, deployment, or modification of
+  production/live Tool Shed instances.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Self-describing immediate child lineage plus parent-owned requirements and derived reverse indexes | Rebuildable lineage, complete-scope checks, fast reads, no second editable authority | Requires exact reconciliation and conflict rules | Current preferred direction |
+| One normalized edge table as the only lineage authority | Simple relational queries and constraints | Harder recovery when the index or surrounding state becomes inconsistent | Insufficient as the sole recovery representation |
+| Copy complete ancestor chains into every element | Fast local ancestry reads | High write amplification and stale duplicated chains when intermediate ownership changes | Reject |
+| Recursive query on every status read | Minimal derived state | Latency grows with graph size; repeated dashboard/report cost | Retain as audit/rebuild reference path |
+| Revision-bound ancestor index and closure rollup | Constant-time status summary and bounded updates along unique affected ancestor paths | Requires transactional invalidation, deterministic rebuild, and parity qualification | Preferred rollup/rebuild contract; pending owner decision |
+| Missing evidence automatically means failure | Simple binary closure | Confuses absence of proof with proof of non-completion | Reject; use `UNPROVEN` |
+| Run declared proof recipes when evidence is missing or stale | Can recover current truth without manual bookkeeping | Must respect target, credential, cost, safety, and authority boundaries | Preferred when deterministic and authorized |
+| Predeclared, versioned proof recipes bound to subject, target, and checker digests | Reproducible proof, bounded authority, safe retries, and auditable results | Requires recipe schema, runner policy, and checker lifecycle discipline | Approved proof-attempt contract |
+| Let an AI generate ad hoc commands when proof is absent | May find novel ways to test work | Unbounded side effects, irreproducible meaning, and no stable authority boundary | Reject as a closure-proof mechanism |
+| Manual close recursively closes a subtree | Convenient bulk disposition | Conceals unfinished children and destroys lineage truth | Reject; manual close is local only |
+| Four orthogonal closure fields plus structured reason codes | Small vocabulary, accurate composition, fast boolean gate, detailed diagnosis | Consumers must display dimensions without collapsing them back into lifecycle | Approved status contract |
+
+## Open Questions
+
+- What common versioned-envelope representation can carry immediate lineage consistently across
+  documents, cycles, requirements, gates, steps, and durable direct work while preserving their
+  existing typed schemas?
+- Can the existing relationship and requirement primitives bind one child cycle to one exact
+  parent requirement unambiguously, including multiple parents and multiple children per
+  requirement?
+- What relationship classes govern closure by default, and how are optional, informational,
+  not-applicable, retired, and superseded children represented?
+- What exact subject identity invalidates closure proof: element revision, content digest,
+  candidate commit, graph revision, verification-recipe revision, target identity, or a required
+  combination of those values?
+- Which Tool Shed document types always own a loop, which own one only when actionable, and which
+  remain evidence or projection records? The current universal contract omits incidents even
+  though they are durable actionable documents.
+- What exact authorization and evidence are required for manual closure, and can a manual closure
+  later be superseded by a proven loop without rewriting history?
+- What is the minimum declarative recipe schema, and how are checker artifacts registered,
+  versioned, content-addressed, revoked, and qualified before automatic use?
+- Which combinations of read, write, network, credential, production, external-cost, and target
+  classes may execute under standing project authority, and which always require a fresh explicit
+  authorization?
+- What retry, cooldown, lease-expiry, aging, and escalation rules prevent proof storms while making
+  blocked or repeatedly failing verification visible to the operator?
+- Can the existing relationship primitives support the preferred reverse-ancestor and blocker
+  projections, or is one minimal schema addition justified by measured dev-rig performance?
+- What exact graph sizes and read, affected-ancestor update, and full-rebuild latency budgets must
+  Windows, Linux, and hosted-development qualification enforce?
+- How are graph mutations, multi-parent propagation, cycle detection, tombstones, and concurrent
+  closure changes applied atomically and recovered after interruption?
+- What retry, aging, and escalation policy prevents a `RECOVERY_REQUIRED` orphan from remaining
+  indefinitely after its affected-root and containing-release-cohort scope has been computed?
+- What projection contract gives local and hosted dashboards accurate typed status without
+  conflating lifecycle, outcome verdict, reconciliation, semantic readiness, and effective
+  descendant closure?
+
+## Decisions
+
+- Create a new follow-on Idea rather than reopening completed `IDEA-0006`.
+- Every material actionable commitment must be a governing requirement, an independent child
+  cycle, or explicitly non-governing; material actions may not remain unclassified prose.
+- The child declares its immediate parent and exact parent requirement; the parent retains the
+  accepted requirement that proves discovery coverage is complete.
+- The child's versioned element envelope is the recovery authority for its current immediate
+  lineage. Append-only relationship assertions preserve history, while the relationship table,
+  reverse-parent index, ancestor paths, and rollups are database projections rebuilt from current
+  envelopes and checked against parent-owned requirements.
+- Reverse parent-to-children and transitive ancestry structures are derived, indexed, auditable,
+  and rebuildable rather than separately editable authority.
+- Local closure and effective subtree closure are independent. Either closed-loop or manual action
+  may close the local element, but every governing descendant must close before the element is
+  effectively closed.
+- Missing, unknown, corrupt, cyclic, or unreconciled descendants keep every owning ancestor open.
+- Missing evidence may trigger only an existing deterministic and authorized proof recipe;
+  otherwise it remains explicitly unproven.
+- Automatic proof attempts may execute only immutable predeclared recipes bound to the exact
+  obligation, subject, target, and checker. Side-effect and authority classes are declared;
+  attempts are append-only, idempotent, leased, retry-bounded, and redacted; stale results are
+  superseded; and blocked or broken verification never becomes false proof of failure.
+- Closure status uses four independent authoritative facts: `local_closure`, `evidence_health`,
+  `graph_health`, and revision-bound `effective_closed`. Structured reason codes explain false
+  closure; `READY_TO_CLOSE` and `BLOCKED` are derived operator hints, never additional truth.
+- Ordinary reads should use revision-bound incremental rollups, while a full recursive evaluator
+  remains the audit, rebuild, and semantic-parity reference.
+- A requirement or gate may close independently without closing its owning element. Work3
+  development qualification and Work5 production promotion are distinct governing obligations.
+- Closure evidence is bound to its exact obligation and subject revision. Later changes preserve
+  the historical proof but make it inapplicable to the new subject until requalification.
+- A surviving child may create a non-authoritative `MISSING_PARENT` recovery stub and trigger an
+  exact-parent lookup, but it may not synthesize an authoritative parent. Failure to recover the
+  exact parent keeps the child and every discoverable governing ancestor open and invalid.
+- A parent with governing children cannot disappear through ordinary deletion. Reparenting,
+  retirement, or supersession must atomically preserve a tombstone and every affected lineage
+  path before the parent revision ceases to be current.
+- The clean-graph invariant is zero unresolved orphans. Child creation validates its exact parent
+  requirement, and lineage-changing operations update envelopes, history, tombstones, indexes,
+  and rollups in one guarded transaction.
+- Corruption or incomplete-import orphans are grouped into a derived `RECOVERY_REQUIRED` queue,
+  not hidden or treated as normal root elements. They keep affected roots open and have only three
+  valid exits: exact restore, explicitly authorized reparenting, or explicit retirement or
+  abandonment with a durable tombstone and disposition.
+- Orphan blocking is ancestry-scoped during ordinary development: the affected root and its
+  governing ancestors remain open, while unrelated healthy roots continue. Any release cohort
+  containing an affected root is blocked from promotion.
+- Implementation and qualification use the confirmed web, Windows, and Linux development lanes;
+  production remains outside scope until explicit Work5 promotion.
+
+## Don't Forget
+
+- A child can have multiple parents; closure must propagate through every governing ancestry path.
+- A parent can be locally complete while still effectively waiting on descendants.
+- A parent requirement is essential even when children self-report lineage; otherwise a missing
+  child could disappear from discovery and falsely permit closure.
+- `terminal` is lifecycle, not proof. `reconciled` is comparison, not satisfaction. Manual closure
+  is explicit disposition, not inherited evidence.
+- Status must name the nearest open blockers and preserve the complete blocker set for structured
+  inspection.
+- Every rollup must be bound to a graph/database revision or digest so stale summaries cannot
+  authorize closure.
+- Recovery must preserve retired and superseded lineage and distinguish later knowledge from
+  historical fact.
+- Fast reporting is a product requirement, but derived indexes must never become unrecoverable
+  truth.
+
+## Exploration Log
+
+### 2026-09-01
+
+- Idea Brief created as a follow-on to completed Universal Closed-Loop Outcome Reconciliation.
+- Discussion began from open GitHub dashboard issues and the local Hybrid dashboard patch, then
+  identified the deeper weakness as incomplete authoritative status and parent/child propagation.
+- Established the target invariant that any governing element still open—whether awaiting
+  evidence-backed closure or manual closure—keeps all parents and ancestors effectively open.
+- Chose self-describing immediate lineage plus parent-owned requirements and derived fast indexes
+  so lineage can be rediscovered without allowing missing children to disappear from accepted
+  scope.
+- Separated local closure from effective subtree closure; manual closure is local only.
+- Identified authorized proof attempts, revision-bound rollups, graph rebuild, tombstones,
+  multi-parent propagation, and typed status projection as the main remaining design areas.
+- Recorded the owner's direction that this work will be built and qualified on the Tool Shed dev
+  rig rather than a live installation.
+
+### 2026-09-02
+
+- Used the completed `IDEA-0018` Work3 flow as a concrete closure example: all development lanes
+  can be verified while the release cohort, Work5 production obligations, and owning Idea remain
+  open.
+- Established that closure proof is obligation- and revision-scoped. New development does not
+  erase prior evidence, but it invalidates that evidence as authority for the changed candidate.
+- Confirmed the development qualification matrix as the isolated web stack plus the disposable
+  Linux and Windows installation test beds; production remains an explicit Work5 boundary.
+- The owner approved the child-envelope recovery authority with append-only relationship history
+  and rebuildable database projections.
+- Settled missing-parent behavior: the child can reconstruct a recovery reference and request an
+  exact restore, but never fabricates the authoritative parent or its requirements. Unrecoverable
+  parents remain explicit `MISSING_PARENT` blockers.
+- The owner approved the missing-parent model and required prevention of unresolved-orphan
+  accumulation. Established zero unresolved orphans as a clean-graph invariant, prevention through
+  transactional referential checks, and a bounded recovery queue with restore, reparent, or
+  tombstoned disposition as its only exits.
+- The owner accepted ancestry-scoped orphan blocking: affected roots remain open, unrelated roots
+  continue, and every release cohort containing an affected root fails closed.
+- Stress-tested the preferred four-field status contract against loop closure, manual closure,
+  stale evidence, open descendants, checker errors, and missing parents. The dimensions compose
+  without adding authoritative `READY_TO_CLOSE` or `BLOCKED` states; the owner approved this
+  contract.
+- Added `not-required` evidence health after testing ordinary unfinished work. Absence of closure
+  evidence is expected while an element is simply open; `missing` is reserved for an element that
+  claims or requests closure without its required proof.
+- Developed the preferred automatic proof-attempt boundary: only immutable, predeclared recipes
+  may run; authority and side-effect classes are explicit; attempts are idempotent, leased, bounded,
+  and append-only; stale-subject results are superseded; and infrastructure failure never becomes
+  false evidence of incomplete work. The owner approved this contract.
+- Developed the preferred rollup and rebuild contract: transactional incremental evaluation along
+  unique affected ancestors for ordinary writes, constant-time summaries plus indexed blocker
+  expansion for reads, revision-bound fail-closed caches, and a shadow-table full rebuild checked
+  against the independent recursive evaluator before atomic promotion. Owner decision remains open.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.
