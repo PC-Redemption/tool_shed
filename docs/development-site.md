@@ -54,8 +54,9 @@ python3 scripts/development_site.py --json deploy
 python3 scripts/development_site.py --json status
 ```
 
-The development container runs migrations automatically. Seed only deterministic, credential-free
-development rows and check the environment contract:
+The development container runs migrations automatically. Real enrolled development reporters are
+the normal dashboard data source. An empty dashboard may optionally seed deterministic,
+credential-free sample rows; they are hidden by default and are not required for readiness:
 
 ```bash
 docker compose --project-name tsrookarocom-dev \
@@ -70,6 +71,10 @@ docker compose --project-name tsrookarocom-dev \
   -f /home/jon/docker/ts.rookaro.com-dev/docker-compose.yml \
   exec dashboard python /app/dashboard/manage.py check_dashboard_development
 ```
+
+Do not use visible synthetic projects as fixture identity. Linux and Windows qualification should
+enroll their actual disposable test-bed project identities. Re-running the optional seed command
+also re-hides its two deterministic sample projects.
 
 The development health response includes `"environment": "development"`; every dashboard and
 login page displays a development banner. Production defaults retain HTTPS redirect, secure

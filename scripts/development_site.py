@@ -63,7 +63,7 @@ def target_contract(target: Path = DEVELOPMENT_ROOT) -> dict[str, Any]:
         "workpc_endpoint": f"http://127.0.0.1:{PORT}",
         "public_route": False,
         "tls": False,
-        "data_source": "empty-database-plus-synthetic-seed-only",
+        "data_source": "isolated-development-database",
     }
 
 

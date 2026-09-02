@@ -26,7 +26,7 @@ SYNTHETIC_PROJECTS = (
 
 
 class Command(BaseCommand):
-    help = "Create deterministic, credential-free synthetic development dashboard rows."
+    help = "Create optional hidden, credential-free synthetic development dashboard rows."
 
     def handle(self, *args, **options):
         if settings.DASHBOARD_ENVIRONMENT != "development":
@@ -41,6 +41,7 @@ class Command(BaseCommand):
                     "current_state": {"synthetic": True, "environment": "development"},
                     "last_seen": now,
                     "last_activity_at": now,
+                    "is_hidden": True,
                 },
             )
             Instance.objects.update_or_create(
@@ -54,4 +55,6 @@ class Command(BaseCommand):
                     "health_state": {"synthetic": True, "environment": "development"},
                 },
             )
-        self.stdout.write(f"development synthetic seed: {len(SYNTHETIC_PROJECTS)} projects")
+        self.stdout.write(
+            f"development synthetic seed: {len(SYNTHETIC_PROJECTS)} hidden projects"
+        )

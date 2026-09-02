@@ -935,9 +935,28 @@ class DashboardApplicationTests(TestCase):
             Project.objects.filter(name__startswith="Tool Shed Development ").count(),
             2,
         )
+        self.assertEqual(
+            Project.objects.filter(
+                name__startswith="Tool Shed Development ",
+                is_hidden=True,
+            ).count(),
+            2,
+        )
         with override_settings(DASHBOARD_ENVIRONMENT="production"):
             with self.assertRaisesRegex(CommandError, "restricted to the development environment"):
                 call_command("seed_dashboard_development", verbosity=0)
+
+    @override_settings(DASHBOARD_ENVIRONMENT="development")
+    def test_development_seed_rehides_existing_synthetic_projects(self) -> None:
+        call_command("seed_dashboard_development", verbosity=0)
+        Project.objects.filter(name__startswith="Tool Shed Development ").update(is_hidden=False)
+        call_command("seed_dashboard_development", verbosity=0)
+        self.assertFalse(
+            Project.objects.filter(
+                name__startswith="Tool Shed Development ",
+                is_hidden=False,
+            ).exists()
+        )
 
     @override_settings(DASHBOARD_ENVIRONMENT="development")
     def test_development_seed_does_not_create_stale_reporter_attention(self) -> None:

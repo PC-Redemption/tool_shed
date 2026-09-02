@@ -35,10 +35,15 @@ class Command(BaseCommand):
         findings.extend(str(item) for item in run_checks(include_deployment_checks=True) if item.level >= 40)
         try:
             connection.ensure_connection()
-            expected = {item[0] for item in SYNTHETIC_PROJECTS}
-            observed = set(Project.objects.filter(external_id__in=expected).values_list("external_id", flat=True))
-            if observed != expected:
-                findings.append("deterministic synthetic development rows are incomplete")
+            synthetic_ids = {item[0] for item in SYNTHETIC_PROJECTS}
+            visible_synthetic = list(
+                Project.objects.filter(
+                    external_id__in=synthetic_ids,
+                    is_hidden=False,
+                ).values_list("external_id", flat=True)
+            )
+            if visible_synthetic:
+                findings.append("synthetic development rows must be hidden")
         except Exception as error:
             findings.append(f"database readiness failed: {type(error).__name__}")
         if findings:
