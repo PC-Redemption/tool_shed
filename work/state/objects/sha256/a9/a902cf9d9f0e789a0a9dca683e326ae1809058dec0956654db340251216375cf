@@ -1,0 +1,36 @@
+# Campaign: Drive Recursive Closure Proof-of-Concept Fixtures
+
+Status: working
+Type: campaign
+Updated: 2026-09-02
+Next Action: exercise the exact Work2 candidate through blocking, recovery, manual closure, proof safety, parity, reporter, and hosted-dashboard scenarios on Linux and Windows development fixtures
+Campaign ID: drive-recursive-closure-proof-of-concept-fixtures
+Outcome: Demonstrate that recursive closure behaves coherently across the disposable Linux and Windows fixtures and the hosted development projection before Work3 freezes a candidate.
+Roadmap: recursive-element-closure-lineage-and-status-rollups
+Roadmap Document: PRM-0037
+Roadmap Revision: 1
+Milestone: M3B-WORK2-POC-FIXTURE-DRIVE
+Unlocks Gate: additional exploratory evidence for G4-ROLLUP-PARITY-AND-PERFORMANCE
+Depends On: M3-WORK2-DEVELOPMENT-INTEGRATION
+Requested Endpoint: work2
+Completion Gate: the exact candidate passes the same operator-oriented fixture matrix on Linux and Windows; blocked and restored states reach report schema 7 and render correctly on hosted development; incremental and recursive results agree; any observed defect is repaired, redeployed, and rechecked; production remains unchanged; evidence, cohort ownership, reconciliation, and checkpoint are durable.
+
+## Test Matrix
+
+- Verify the exact candidate and schema-3 fixture identity on both operating systems.
+- Prove a deep child recovery condition keeps the locally closed root effectively open and reports
+  the nearest blocker.
+- Prove bounded recovery retries escalate and refuse an unbounded third retry.
+- Prove exact authorized recovery restores effective closure through the complete ancestry.
+- Prove local manual closure does not force descendants and remains distinguishable from
+  evidence-backed closed-loop closure.
+- Prove fabricated proof output cannot satisfy immutable recipe and subject bindings.
+- Compare incremental projections with the independent recursive evaluator.
+- Deliver both blocked and restored schema-7 states from each reporter and verify the hosted
+  development projection and authenticated Work surface.
+
+## Development Boundary
+
+Only `tsrookarocom-dev`, `/home/jon/dev/ts_linux_test_bed`, and
+`E:\dev\ts_windows_test_bed` are in scope. Work3 freezing, Git push, publication, production
+migration, production deployment, and Work5 reconciliation are excluded.
