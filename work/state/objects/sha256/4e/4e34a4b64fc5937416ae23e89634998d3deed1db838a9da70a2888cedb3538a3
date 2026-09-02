@@ -1,0 +1,52 @@
+# Campaign: Inventory and Freeze Recursive Closure Contract
+
+Status: completed
+Type: campaign
+Updated: 2026-09-02
+Next Action: execute PRM-0037 M2; M1 is satisfied and reconciled
+Campaign ID: inventory-and-freeze-recursive-closure-contract
+Outcome: Establish the evidence-backed minimum recursive-lineage, closure, proof, recovery, migration, and status contract without inferring legacy lineage or completion.
+Roadmap: recursive-element-closure-lineage-and-status-rollups
+Roadmap Document: PRM-0037
+Roadmap Revision: 1
+Milestone: M1-OBSERVED-CONTRACT
+Unlocks Gate: G1-LEGACY-INVENTORY-AND-SCHEMA, G2-PROOF-RUNNER-SAFETY (contract portion)
+Depends On: none
+Requested Endpoint: work1
+Completion Gate: Current adapters, actionable types, relationship primitives, closure writers, status consumers, protected manual-close policies, migration surfaces, patch behavior, related open issues, performance corpus, and exact minimum schema delta are inventoried; every unknown remains explicit; focused validation and a recoverable checkpoint pass.
+
+## Request
+
+Inventory the current Hybrid schema-2 implementation and the local Hybrid dashboard patch, compare
+the observations with GitHub issues #57 and #58, and freeze only the contract necessary for the
+next Work2 implementation. Do not infer parentage or completion from legacy prose, lifecycle, queue
+state, filenames, or plausible history.
+
+## Required Evidence
+
+- Counts and identities for current closure-bearing document/cycle/requirement/relationship types.
+- Exact current writer and reader paths for lifecycle, outcomes, relationships, checkpoints,
+  reporter payloads, and dashboard projections.
+- Classification rules for cycles, obligations, records, projections, and malformed embedded work.
+- The minimum persistent-authority and rebuildable-projection delta, including migration and
+  old-writer behavior.
+- The frozen proof-recipe safety envelope and bounded recovery-queue exits.
+- Provisional corpus and latency budgets carried forward unchanged unless measured evidence
+  requires an explicit revision.
+
+## Work1 Boundary
+
+This campaign may add planning/evidence collateral and focused inventory validation only. It does
+not migrate the live database, implement closure behavior, deploy any environment, publish a
+release, or mutate production.
+
+## Completion
+
+`work/evidence/evidence-recursive-closure-m1-contract.md` records the exact observed inventory,
+related open-issue and local-patch findings, frozen role and closure semantics, minimum schema-3
+delta, proof/recovery safety envelope, and unchanged qualification corpus/budgets. The evidence was
+committed as `b197b4e82b9977135298c0c471757aff269de7e5`; stale-path validation passed. The default
+whole-tree profile was not accepted as M1 evidence because pre-existing unrelated App Server edits
+change the release manifest. Those edits remain untouched and IDEA-0019 implementation moves to an
+isolated same-repository development worktree. The M1 outcome cycle is satisfied, reconciled, and
+propagated to PRM-0037; later milestones remain open.

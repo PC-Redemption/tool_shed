@@ -1,0 +1,109 @@
+# Project Map: Recursive Element Closure Lineage and Status Rollups
+
+Status: active
+Type: project-map
+Updated: 2026-09-02
+Next Action: execute PRM-0037 M1 through M3 to the requested Work2 development endpoint
+Source Idea: IDEA-0019
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 15
+Reviewed Body SHA256: 6fe155ca700227665a18ae3e49bb58a18923e7760af6316880a207368358d09e
+Program Roadmap: PRM-0037
+
+## Purpose
+
+Make every durable actionable Tool Shed element report trustworthy local and recursive closure.
+The element's versioned immediate-lineage envelope is the recoverable current authority; the
+database relationship graph, ancestor paths, blocker rows, and status rollups are guarded,
+rebuildable projections. Parent-owned requirements determine whether a child governs closure.
+
+## Desired Outcome
+
+- Every closure-bearing cycle or obligation has a stable identity, versioned subject, explicit
+  immediate lineage, and obligation-scoped closure record.
+- A parent remains effectively open while any governing requirement or descendant is open,
+  missing, stale, invalid, or unreconciled, regardless of the parent's local closure method.
+- Status exposes `local_closure`, `evidence_health`, `graph_health`, `effective_closed`, structured
+  reasons, counts, nearest blockers, and the exact subject/graph/evaluator revisions.
+- Normal reads use transactionally maintained projections; an independent recursive evaluator can
+  rebuild and prove the same semantic answer from element envelopes and parent requirements.
+- Missing parents become bounded recovery cases, never silently dropped children or invented
+  parents. Clean checkpoints and release gates require zero unresolved governing orphans.
+- Missing evidence can trigger only a predeclared, versioned proof recipe within current authority;
+  blocked, stale, malformed, or failed infrastructure never becomes guessed completion.
+- Work2 produces one exact development candidate deployed to the isolated web, Linux, and Windows
+  development lanes. Work3 qualifies that frozen candidate. Work5 remains a separate production
+  decision.
+
+## Selected Architecture
+
+| Surface | Authority | Derived/operational role |
+| --- | --- | --- |
+| Current lineage | Child's versioned immediate-lineage envelope | Relationship assertions preserve history; indexed edges and paths serve traversal |
+| Governing scope | Parent-owned requirement and its disposition | Missing fulfillment remains an explicit blocker even when no child exists |
+| Local closure | Revision-bound closed-loop or authorized manual-closure record | Manual closure never closes descendants or bypasses protected gates |
+| Effective closure | Recursive invariant over local closure, evidence, graph health, and governing descendants | Incremental rollup is valid only when bound to current revisions and parity-proven |
+| Recovery | Exact envelope, requirement, assertion, tombstone, checkpoint, and content history | Recovery stubs locate missing authority but cannot synthesize it |
+| Automatic proof | Immutable registered checker plus declarative recipe and active authority envelope | Attempts are leased, idempotent, bounded, redacted, and append-only |
+| Operator status | One typed local/hosted projection | Friendly labels never overwrite lifecycle, readiness, reconciliation, or closure authority |
+
+## Workstreams
+
+| Workstream | Work2 outcome | Later boundary |
+| --- | --- | --- |
+| Legacy inventory and schema | Classify current adapters, commitments, relationship primitives, protected closures, and exact minimum schema delta | Schema expansion beyond observed needs is deferred |
+| Closure graph and evaluator | Implement envelopes, parent requirements, assertions, validated mutations, recursive evaluation, incremental projections, manual closure, and blockers | Work3 freezes evaluator/schema versions |
+| Proof and recovery operations | Implement recipe registry/execution safety, evidence freshness, recovery findings, bounded queue operations, and exact exits | Protected or production recipes still require current explicit authority |
+| Migration and compatibility | Implement exact-manifest shadow migration, backup, resume, rollback, old-writer rejection, clean cutover checks, and deterministic rebuild | Production migration is deferred to Work5 |
+| Status and development integration | Feed typed closure status to CLI/reporter/hosted dashboard and deploy the exact Work2 candidate across the three development lanes | Work3 performs candidate-bound cross-lane qualification |
+
+## Readiness Gate Transfer
+
+1. `G1-LEGACY-INVENTORY-AND-SCHEMA` — observed inventory and measurements justify the minimum
+   schema; no lineage or completion is inferred.
+2. `G2-PROOF-RUNNER-SAFETY` — recipe, checker, authority, lease, freshness, redaction, retry,
+   timeout, and supersession behavior are explicit before proof can affect closure.
+3. `G3-MIGRATION-RECOVERY-AND-WRITER-COMPATIBILITY` — migration, backup, interruption, rollback,
+   writer refusal, rebuild, and clean-cutover invariants pass.
+4. `G4-ROLLUP-PARITY-AND-PERFORMANCE` — incremental and recursive results match and provisional
+   latency/rebuild budgets are either met or explicitly revised from evidence.
+5. `G5-RECOVERY-QUEUE-OPERATIONS` — recovery cases have bounded ownership, aging, retry, escalation,
+   and exact restore/reparent/tombstone exits.
+6. `G6-CANDIDATE-BOUND-QUALIFICATION` — Work3 binds schema, evaluator, fixtures, faults, timings,
+   rollback, targets, and semantic results to one exact candidate across all three lanes.
+
+## Constraints
+
+- Current envelopes are recovery authority; database relationship and rollup tables are indexed
+  projections, not a second editable truth.
+- Multi-parent lineage is supported, but governing participation is obligation-scoped and paths
+  are deduplicated only for computation.
+- Unknown schema or relationship types, graph cycles, conflicting lineage, stale rollups, and
+  unresolved orphans fail closed for affected ancestry and release cohorts.
+- Recovery may restore an exact parent revision or apply an explicitly authorized reparent or
+  retirement tombstone. It may not reconstruct parent meaning from a child hint.
+- The initial relationship registry is limited to fulfills, contributes, informs, and historical
+  supersedes. Expansion needs a qualified use case.
+- Work2 uses the existing split development targets only. It does not mutate production, publish a
+  release, synchronize installed production clients, or close the owning Idea/Map/Roadmap.
+
+## Non-Goals
+
+- Treating lifecycle, queue emptiness, or a child's terminal state as proof of parent completion.
+- Storing full ancestor chains or mutable parent lists in every child.
+- Executing generated shell or unregistered checkers as automatic proof.
+- Inventing missing parent content, historical lineage, evidence, or completion.
+- Production promotion during this Work2 request.
+
+## Navigation
+
+Do next:
+
+- Approve a roadmap that stages inventory, implementation, Work2 integration, Work3 qualification,
+  and the later Work5 release boundary without dropping any readiness gate.
+
+Avoid for now:
+
+- Letting implementation convenience select a larger schema before the legacy inventory.
+- Closing any ancestor from projections whose source, subject, graph, or evaluator revision is stale.
+- Treating development deployment as Work3 qualification or production evidence.
