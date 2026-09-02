@@ -288,6 +288,9 @@ class ClosureLineageTests(unittest.TestCase):
         self.migrate()
         self.close(self.requirement_for(self.roadmap_cycle))
         self.close(self.roadmap_cycle)
+        self.close(self.map_cycle)
+        self.close(self.idea_cycle)
+        self.assertTrue(closure_lineage.status(self.workspace, self.idea_cycle)["effective_closed"])
         opened = closure_lineage.open_recovery_case(
             self.workspace,
             project_binding=self.binding,
@@ -296,7 +299,13 @@ class ClosureLineageTests(unittest.TestCase):
             detail={"claim": "fixture"},
             actor="fixture",
         )
-        self.assertEqual(closure_lineage.status(self.workspace, self.roadmap_cycle)["graph_health"], "recovery-required")
+        child = closure_lineage.status(self.workspace, self.roadmap_cycle)
+        root = closure_lineage.status(self.workspace, self.idea_cycle)
+        self.assertEqual(child["graph_health"], "recovery-required")
+        self.assertIn("MISSING_PARENT", child["reason_codes"])
+        self.assertIn("MISSING_PARENT", {item["reason_code"] for item in child["blockers"]})
+        self.assertFalse(root["effective_closed"])
+        self.assertIn("MISSING_PARENT", {item["reason_code"] for item in root["blockers"]})
         closure_lineage.resolve_recovery_case(
             self.workspace,
             project_binding=self.binding,
@@ -306,7 +315,23 @@ class ClosureLineageTests(unittest.TestCase):
             reason="Exact parent restored.",
             actor="fixture",
         )
-        self.assertEqual(closure_lineage.status(self.workspace, self.roadmap_cycle)["graph_health"], "valid")
+        child = closure_lineage.status(self.workspace, self.roadmap_cycle)
+        root = closure_lineage.status(self.workspace, self.idea_cycle)
+        self.assertEqual(child["graph_health"], "valid")
+        self.assertNotIn("MISSING_PARENT", child["reason_codes"])
+        self.assertTrue(root["effective_closed"])
+        self.assertNotIn("MISSING_PARENT", {item["reason_code"] for item in root["blockers"]})
+        with contextlib.closing(
+            hybrid_state.connect(hybrid_state.database_path(self.workspace), writable=False)
+        ) as connection:
+            recursive = closure_lineage.evaluate_recursive(connection)
+            projected = connection.execute(
+                "SELECT reason_codes_json, graph_health, effective_closed FROM closure_rollup WHERE element_id=?",
+                (self.roadmap_cycle,),
+            ).fetchone()
+        self.assertEqual(json.loads(projected["reason_codes_json"]), recursive[self.roadmap_cycle]["reasons"])
+        self.assertEqual(projected["graph_health"], recursive[self.roadmap_cycle]["graph_health"])
+        self.assertEqual(bool(projected["effective_closed"]), recursive[self.roadmap_cycle]["effective_closed"])
 
     def test_recovery_retry_is_owned_bounded_and_escalates(self) -> None:
         self.migrate()

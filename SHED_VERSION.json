@@ -133,7 +133,7 @@
     "scripts/check_stale_paths.py": "b9935ff44b491b6d8afe0c396d16d0a3ad72aa15665d3a467a43b05a19fe8ae8",
     "scripts/check_work_tree.py": "efc7e954bf096f2945c7629252098124dd06fb18283892b8f6d55a845fee42c4",
     "scripts/ci_validation_policy.py": "98bc7de2ad635d6bf1d9708116ac941088c94ba161d2cc65f51c83ac063ad4b8",
-    "scripts/closure_lineage.py": "f1a14164dd8a71d41e1f95a59c2b57949fa97f17839ada274a8041edad3a0593",
+    "scripts/closure_lineage.py": "86c03f91f4d505ddfe17878d4138c09f784d70f16fd0a89a81544477fc3ae7fb",
     "scripts/closure_lineage_benchmark.py": "564f5751d51deddff26e2392334a6aaa0a70d94b35e335f402ef5c88ff2e4569",
     "scripts/closure_lineage_schema.py": "3c7814cba682f0e74ab435192ac1eae45d19be8dc35693dc4b36d6167d37236e",
     "scripts/codex_app_server.py": "8551db99e4ae9fb865cd04aa37b01d6b62c0e082a53e9fac1b78faa1aa31be7f",

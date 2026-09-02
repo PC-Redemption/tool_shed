@@ -475,6 +475,22 @@ def _active_claims(connection: sqlite3.Connection) -> list[sqlite3.Row]:
     return list(connection.execute("SELECT * FROM lineage_claim WHERE retired_revision IS NULL ORDER BY id"))
 
 
+def _recovery_reason_maps(
+    connection: sqlite3.Connection,
+) -> tuple[dict[str, set[str]], dict[str, set[str]]]:
+    active: dict[str, set[str]] = {}
+    history: dict[str, set[str]] = {}
+    for row in connection.execute(
+        "SELECT element_id, reason_code, state FROM recovery_case WHERE element_id IS NOT NULL"
+    ):
+        element_id = str(row["element_id"])
+        reason_code = str(row["reason_code"])
+        history.setdefault(element_id, set()).add(reason_code)
+        if str(row["state"]) in OPEN_RECOVERY_STATES:
+            active.setdefault(element_id, set()).add(reason_code)
+    return active, history
+
+
 def _graph_findings(connection: sqlite3.Connection) -> tuple[list[dict[str, Any]], dict[str, list[str]]]:
     elements = {str(row["id"]): row for row in connection.execute("SELECT * FROM closure_element")}
     requirements = {str(row["id"]): row for row in connection.execute("SELECT * FROM requirement")}
@@ -561,12 +577,7 @@ def evaluate_recursive(connection: sqlite3.Connection) -> dict[str, dict[str, An
     findings_by_element: dict[str, list[str]] = {}
     for item in findings:
         findings_by_element.setdefault(str(item.get("element_id")), []).append(str(item["code"]))
-    recovery_elements = {
-        str(row["element_id"])
-        for row in connection.execute(
-            "SELECT element_id FROM recovery_case WHERE state IN ('open','retry-wait','escalated') AND element_id IS NOT NULL"
-        )
-    }
+    recovery_reasons, _ = _recovery_reason_maps(connection)
     memo: dict[str, dict[str, Any]] = {}
     active: set[str] = set()
 
@@ -585,9 +596,9 @@ def evaluate_recursive(connection: sqlite3.Connection) -> dict[str, dict[str, An
         local = str(closure["method"]) if closure else "open"
         evidence = str(closure["evidence_health"]) if closure else "not-required"
         local_reasons: list[str] = []
-        graph_reasons = findings_by_element.get(element_id, [])
+        graph_reasons = sorted(set([*findings_by_element.get(element_id, []), *recovery_reasons.get(element_id, set())]))
         graph_health = "invalid" if any(item in {"CYCLE", "CONFLICTING_LINEAGE"} for item in graph_reasons) else "valid"
-        if element_id in recovery_elements or any(item in {"MISSING_PARENT", "MISSING_REQUIREMENT"} for item in graph_reasons):
+        if element_id in recovery_reasons or any(item in {"MISSING_PARENT", "MISSING_REQUIREMENT"} for item in graph_reasons):
             graph_health = "recovery-required"
         if local == "open":
             local_reasons.append("LOCAL_OPEN")
@@ -754,13 +765,20 @@ def refresh_projection(
                 value for value in json.loads(prior["reason_codes_json"])
                 if value in graph_reason_codes
             ]
-    recovery_elements = {
-        str(row["element_id"])
-        for row in connection.execute(
-            "SELECT element_id FROM recovery_case WHERE state IN ('open','retry-wait','escalated') "
-            "AND element_id IS NOT NULL"
-        )
-    }
+    recovery_reasons, recovery_history = _recovery_reason_maps(connection)
+    # Recovery reasons are projected into the same public reason-code field as structural graph
+    # findings. When a recovery case closes, recompute structural findings once so a historical
+    # recovery reason disappears without concealing a real finding that happens to share its code.
+    refresh_static_findings = any(
+        (set(findings_by_element.get(element_id, [])) & recovery_history.get(element_id, set()))
+        - recovery_reasons.get(element_id, set())
+        for element_id in affected
+    )
+    if refresh_static_findings:
+        fresh_findings, _ = _graph_findings(connection)
+        findings_by_element = {}
+        for item in fresh_findings:
+            findings_by_element.setdefault(str(item.get("element_id")), []).append(str(item["code"]))
     graph = connection.execute("SELECT * FROM closure_graph_meta WHERE id=1").fetchone()
     graph_revision = int(graph["graph_revision"]) + 1
     stamp = hybrid_state.now()
@@ -794,11 +812,26 @@ def refresh_projection(
         local = str(closure["method"]) if closure else "open"
         evidence = str(closure["evidence_health"]) if closure else "not-required"
         local_reasons: list[str] = []
-        graph_reasons = findings_by_element.get(element_id, [])
+        graph_reasons = sorted(
+            set(
+                [
+                    *(
+                        findings_by_element.get(element_id, [])
+                        if refresh_static_findings
+                        else [
+                            reason
+                            for reason in findings_by_element.get(element_id, [])
+                            if reason not in recovery_history.get(element_id, set())
+                        ]
+                    ),
+                    *recovery_reasons.get(element_id, set()),
+                ]
+            )
+        )
         graph_health = "invalid" if any(
             item in {"CYCLE", "CONFLICTING_LINEAGE"} for item in graph_reasons
         ) else "valid"
-        if element_id in recovery_elements or any(
+        if element_id in recovery_reasons or any(
             item in {"MISSING_PARENT", "MISSING_REQUIREMENT"} for item in graph_reasons
         ):
             graph_health = "recovery-required"
