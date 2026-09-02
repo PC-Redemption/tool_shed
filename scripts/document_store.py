@@ -45,6 +45,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/document_store.p
 OPERATION = "hybrid-state"
 CHECKPOINT_KIND = "tool-shed-document-state-checkpoint"
 CHECKPOINT_FORMAT = 2
+DOCUMENT_HYBRID_SCHEMAS = {HYBRID_SCHEMA_VERSION, 3}
 VISIBLE_ID = re.compile(r"^(?P<namespace>[A-Z]{2,5})-(?P<number>[0-9]{4,})$")
 EDIT_HEADER = "tool_shed_document: 1"
 LIFECYCLES = ("active", "working", "blocked", "parked", "deferred", "completed", "abandoned", "superseded")
@@ -68,12 +69,30 @@ def _tables(connection: sqlite3.Connection) -> set[str]:
 
 def domain_tables(connection: sqlite3.Connection) -> tuple[str, ...]:
     present = _tables(connection)
-    return tuple(table for table in (*hybrid_state.DOMAIN_TABLES, *DOCUMENT_TABLES) if table in present)
+    closure_tables: tuple[str, ...] = ()
+    if "closure_element" in present:
+        from closure_lineage_schema import CLOSURE_DOMAIN_TABLES
+
+        closure_tables = CLOSURE_DOMAIN_TABLES
+    return tuple(
+        table
+        for table in (*hybrid_state.DOMAIN_TABLES, *DOCUMENT_TABLES, *closure_tables)
+        if table in present
+    )
 
 
 def portable_tables(connection: sqlite3.Connection) -> tuple[str, ...]:
     present = _tables(connection)
-    return tuple(table for table in (*PORTABLE_TABLES, *DOCUMENT_PORTABLE_TABLES) if table in present)
+    closure_tables: tuple[str, ...] = ()
+    if "closure_element" in present:
+        from closure_lineage_schema import CLOSURE_PORTABLE_TABLES
+
+        closure_tables = CLOSURE_PORTABLE_TABLES
+    return tuple(
+        table
+        for table in (*PORTABLE_TABLES, *DOCUMENT_PORTABLE_TABLES, *closure_tables)
+        if table in present
+    )
 
 
 def domain_digest(connection: sqlite3.Connection) -> str:
@@ -156,10 +175,13 @@ def _semantic_document_findings(connection: sqlite3.Connection) -> list[dict[str
 def audit_connection(workspace: Path, connection: sqlite3.Connection) -> dict[str, Any]:
     findings: list[str] = []
     user_version = int(connection.execute("PRAGMA user_version").fetchone()[0])
-    if user_version != HYBRID_SCHEMA_VERSION:
-        findings.append(f"document operations require Hybrid schema {HYBRID_SCHEMA_VERSION}; found {user_version}")
+    if user_version not in DOCUMENT_HYBRID_SCHEMAS:
+        findings.append(
+            "document operations require Hybrid schema 2 or 3; "
+            f"found {user_version}"
+        )
     meta = hybrid_state.meta_row(connection)
-    if int(meta["schema_version"]) != HYBRID_SCHEMA_VERSION:
+    if int(meta["schema_version"]) != user_version:
         findings.append("state metadata schema version differs from PRAGMA user_version")
     required = set(DOCUMENT_TABLES)
     if not required.issubset(_tables(connection)):
@@ -241,7 +263,7 @@ def is_authoritative(workspace: Path, database: Path | None = None) -> bool:
     if not path.is_file():
         return False
     with contextlib.closing(hybrid_state.connect(path, writable=False)) as connection:
-        if int(connection.execute("PRAGMA user_version").fetchone()[0]) != HYBRID_SCHEMA_VERSION:
+        if int(connection.execute("PRAGMA user_version").fetchone()[0]) not in DOCUMENT_HYBRID_SCHEMAS:
             return False
         meta = hybrid_state.meta_row(connection)
         return str(meta["storage_mode"]) == "hybrid"
@@ -1152,11 +1174,12 @@ def write_checkpoint(workspace: Path, *, project_binding: str, output: Path, dat
             row["body_object"] = relative
             objects.append(relative)
         meta = hybrid_state.meta_row(connection)
+        hybrid_schema = int(connection.execute("PRAGMA user_version").fetchone()[0])
         payload = {
             "schema_version": CHECKPOINT_FORMAT,
             "kind": CHECKPOINT_KIND,
             "envelope": {
-                "project_id": meta["project_id"], "workspace_id": meta["workspace_id"], "hybrid_schema": 2,
+                "project_id": meta["project_id"], "workspace_id": meta["workspace_id"], "hybrid_schema": hybrid_schema,
                 "database_revision": meta["current_revision"], "storage_mode": meta["storage_mode"],
                 "created_at": hybrid_state.now(), "objects": sorted(set(objects)), "digest": None,
             },
@@ -1205,15 +1228,27 @@ def rebuild(workspace: Path, *, project_binding: str, checkpoint: Path, output: 
         connection.execute("PRAGMA trusted_schema=ON")
         connection.execute("PRAGMA foreign_keys=OFF")
         connection.execute("BEGIN IMMEDIATE")
+        envelope, tables = payload["envelope"], payload["tables"]
+        hybrid_schema = int(envelope.get("hybrid_schema", 0))
+        if hybrid_schema not in DOCUMENT_HYBRID_SCHEMAS:
+            raise DocumentStoreError(f"unsupported checkpoint Hybrid schema: {hybrid_schema}")
         hybrid_state.create_schema(connection, include_triggers=False)
         create_document_schema(connection, include_triggers=False)
-        envelope, tables = payload["envelope"], payload["tables"]
+        if hybrid_schema == 3:
+            from closure_lineage_schema import create_closure_schema
+
+            create_closure_schema(connection, include_triggers=False)
         meta_source = tables.pop("state_meta", None)
         connection.execute(
-            "INSERT INTO state_meta VALUES (1, 2, ?, ?, ?, ?, ?, ?, 0, 0, 0, ?, ?, ?)",
-            (envelope["project_id"], hybrid_state.stable_uuid(envelope["project_id"], f"workspace:{workspace.resolve()}"), envelope["storage_mode"], envelope["database_revision"], envelope["database_revision"], envelope["database_revision"], hybrid_state.EMPTY_SHA256, envelope["digest"], hybrid_state.EMPTY_SHA256),
+            "INSERT INTO state_meta VALUES (1, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, ?, ?, ?)",
+            (hybrid_schema, envelope["project_id"], hybrid_state.stable_uuid(envelope["project_id"], f"workspace:{workspace.resolve()}"), envelope["storage_mode"], envelope["database_revision"], envelope["database_revision"], envelope["database_revision"], hybrid_state.EMPTY_SHA256, envelope["digest"], hybrid_state.EMPTY_SHA256),
         )
-        for table in (*PORTABLE_TABLES, *DOCUMENT_PORTABLE_TABLES):
+        ordered_portable = [*PORTABLE_TABLES, *DOCUMENT_PORTABLE_TABLES]
+        if hybrid_schema == 3:
+            from closure_lineage_schema import CLOSURE_PORTABLE_TABLES
+
+            ordered_portable.extend(CLOSURE_PORTABLE_TABLES)
+        for table in ordered_portable:
             if table == "workspace":
                 continue
             for original in tables.get(table, []):
@@ -1234,8 +1269,12 @@ def rebuild(workspace: Path, *, project_binding: str, checkpoint: Path, output: 
         hybrid_state.create_triggers(connection)
         from document_store_schema import document_trigger_sql
         connection.executescript(document_trigger_sql())
+        if hybrid_schema == 3:
+            from closure_lineage_schema import closure_trigger_sql
+
+            connection.executescript(closure_trigger_sql())
         connection.execute("UPDATE state_meta SET source_digest=?, schema_trigger_digest=? WHERE id=1", (domain_digest(connection), hybrid_state.schema_digest(connection)))
-        connection.execute("PRAGMA user_version=2")
+        connection.execute(f"PRAGMA user_version={hybrid_schema}")
         connection.commit()
         connection.execute("PRAGMA trusted_schema=OFF")
         connection.execute("PRAGMA foreign_keys=ON")

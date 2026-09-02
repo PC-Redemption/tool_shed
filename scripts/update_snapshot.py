@@ -280,11 +280,13 @@ def protocol4_hybrid_preflight(
         schema_version = audit.get("schema_version")
         if schema_version == 1:
             rebuilt = legacy_rebuilt
-        elif schema_version == 2:
+        elif schema_version in {2, 3}:
             document_checkpoint = workspace / "work" / "state" / "checkpoints" / "state-v2.json"
             if not document_checkpoint.is_file():
-                raise UpdateError("protocol 4 schema-2 state requires the tracked state-v2 checkpoint")
-            current_shadow_relative = f".tool-shed/state.protocol4-v2-{os.urandom(8).hex()}.sqlite3"
+                raise UpdateError(
+                    f"protocol 4 schema-{schema_version} state requires the tracked state-v2 checkpoint"
+                )
+            current_shadow_relative = f".tool-shed/state.protocol4-v{schema_version}-{os.urandom(8).hex()}.sqlite3"
             current_shadow = workspace / current_shadow_relative
             rebuilt = _protocol4_document_command(
                 snapshot,
@@ -317,7 +319,7 @@ def protocol4_hybrid_preflight(
         "shadow_rebuild": rebuilt,
         "recovery_rebuilds": {
             "state_v1": legacy_rebuilt,
-            "state_v2": rebuilt if audit.get("schema_version") == 2 else None,
+            "state_v2": rebuilt if audit.get("schema_version") in {2, 3} else None,
         },
         "writes_performed": True,
     }

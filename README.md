@@ -52,6 +52,9 @@ An optional [hosted dashboard](docs/dashboard.md) can receive a strict privacy-b
 report from explicitly enrolled instances; it never becomes local authority or a remote-control
 surface.
 
+The schema-3 [recursive closure lineage](docs/recursive-closure-lineage.md) contract keeps parent
+outcomes open until every governing descendant is proven, valid, and reconciled.
+
 ## AI Provider Support
 
 Tool Shed ships one portable Agent Skills workflow plus native instruction adapters for OpenAI
