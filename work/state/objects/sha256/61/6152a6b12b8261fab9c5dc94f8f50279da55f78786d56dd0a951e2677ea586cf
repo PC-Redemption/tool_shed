@@ -1,0 +1,108 @@
+# Project Map: Private Development Site Before Public Release
+
+Status: active
+Type: project-map
+Updated: 2026-09-02
+Next Action: explicitly authorize Work5 for release cohort 9902c070-34c6-4885-9f93-115fa6f59402 to execute M3 production promotion and recovery proof
+Source Idea: IDEA-0018
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 9
+Reviewed Body SHA256: 04a31a68d350fe820a3a40d8dd5bd07511f07e8f5ef5323a451ea712548955ba
+Program Roadmap: PRM-0036
+
+## Purpose
+
+Establish a realistic private development site for the Tool Shed website and dashboard on
+`sup.local` without changing or interrupting the public `ts.rookaro.com` stack during ordinary
+development. Keep development close enough to production to prove deployment, migrations,
+authentication, reporter communications, browser access, recovery, and exact-commit promotion.
+
+## Desired Outcome
+
+- Development runs on `sup.local` in a distinct host filesystem tree and Docker Compose project.
+- The development stack owns its containers, image tags, network, database, volumes, secrets,
+  configuration, generated assets, logs, backups, and port `8443`.
+- Linux and Windows development project identities communicate continuously with the development
+  dashboard using development-only credentials, workers, and safety schedulers.
+- LAN clients use `http://192.168.7.5:8443`; Workpc uses a persistent localhost-only SSH tunnel.
+- No development route is exposed by public DNS, Nginx Proxy Manager, or the Rookaro router.
+- Promotion uses the exact commit proven in development and retains production backup, migration,
+  health, and rollback evidence.
+- One canonical Git source feeds explicit web, Windows-installation, and Linux-installation lanes;
+  every required lane must carry exact-SHA development and release evidence before parent closure.
+
+## Selected Architecture
+
+| Surface | Development contract | Production boundary |
+| --- | --- | --- |
+| Host | `sup.local` / `192.168.7.5`, shared Docker daemon | Host and daemon restarts remain shared-risk events |
+| Filesystem | A dedicated root selected during implementation | Never reuse `/home/jon/docker/ts.rookaro.com` or its writable paths |
+| Compose | Distinct project, working name `tsrookarocom-dev` | Never run unscoped Compose commands against `tsrookarocom` |
+| Services | Separate Nginx/docs, Django dashboard, and PostgreSQL containers | No production container, network, volume, secret, or database reuse |
+| Access | Plain HTTP on LAN-only port `8443` | No TLS, public DNS, NPM entry, or public router path |
+| Workpc | Managed `127.0.0.1` SSH forward with automatic startup and recovery | Independent of VS Code sessions and never bound to all interfaces |
+| Test beds | Dedicated Linux and Windows development identities | Existing production-connected identities remain unchanged |
+| Data | Empty database plus deterministic synthetic seed | No production credentials, enrollments, sessions, or personal data |
+| Promotion | Exact development-tested commit | Production backup and practical rollback before migration-bearing promotion |
+| Release lanes | Web, Windows installation, and Linux installation are separately qualified derived copies of one source | Missing, stale, unknown, or open required-lane evidence keeps M3 and every owning parent open |
+
+## Workstreams
+
+| Workstream | Status | Outcome | Depends On |
+| --- | --- | --- | --- |
+| Isolated development stack | Complete | Separate filesystem, Compose, services, data, configuration, resources, and port | exact implementation paths and protected development secrets |
+| Private access | Complete | LAN reachability plus a persistent localhost-only Workpc tunnel | healthy isolated stack |
+| Development communication | Complete | Dedicated Linux and Windows identities enroll, handshake, report, and run persistent workers/schedulers | development authentication and endpoint health |
+| Three-lane release enforcement | Work3 development proof complete | Candidate `bb95a6aa1ad3d2ae44656a006f50200449436109` is bound and verified across web, Windows, and Linux development lanes; Work5 remains fail-closed until production/released evidence exists | completed development stack and test beds |
+| Promotion and recovery | Awaiting explicit Work5 | A development-tested commit, migrations, recovery, browser flows, clients, production backup, promotion, health, and rollback are evidenced | all preceding workstreams |
+
+## Readiness Gate Transfer
+
+1. `G1-DEVELOPMENT-ISOLATION` — development owns every writable runtime and configuration surface,
+   and production remains unchanged.
+2. `G2-DEVELOPMENT-COMMUNICATION` — dedicated development projects complete a manual handshake and
+   maintain bounded reporting without redirecting production identities.
+3. `G3-PRIVATE-ACCESS` — test beds use the LAN endpoint, Workpc uses a localhost-only tunnel, and
+   development has no public route.
+4. `G4-PROMOTION-RECOVERY` — exact-commit promotion, non-production migration/recovery evidence,
+   required web/Windows/Linux lane checks, production backup, health, rollback, and parent
+   reconciliation all pass.
+
+## Constraints
+
+- Plain HTTP is an accepted development-only LAN choice; production HTTPS policy is not weakened.
+- Development credentials, TOTP material, cookies, and sessions are unique and never reused in
+  production.
+- Restart and deployment commands must scope explicitly to the development Compose project.
+- CPU and memory limits protect production from routine development load.
+- The exact development root and Workpc tunnel mechanism may be selected during implementation,
+  but neither choice may weaken the transferred gates.
+- `work/tool-shed.yaml` is `split`; Work2 targets the verified private development stack and Work5
+  remains the production boundary.
+- Portable Work1 through Work5 definitions stay unchanged. This repository extends Work3 and uses
+  a project-only Work5 replacement envelope because production-lane evidence must be captured
+  before release-cohort and parent finalization.
+
+## Non-Goals
+
+- A second physical host, VM, Docker daemon, or public development hostname.
+- Email, webhook, or hosted completion-notification delivery.
+- Copying production data, identities, credentials, sessions, or reporter state.
+- Automatic deployment on every push before the development contract is proven.
+- Any production change during the Plan or Roadmap cycles.
+
+## Navigation
+
+Do next:
+
+- Invoke explicit Work5 for release cohort `9902c070-34c6-4885-9f93-115fa6f59402` when production
+  promotion is intended. Work3 has already bound and proven candidate
+  `bb95a6aa1ad3d2ae44656a006f50200449436109` across all three development lanes.
+
+Avoid for now:
+
+- Treating the completed Work2 proof as production evidence.
+- Promoting a commit other than the exact frozen development-tested content commit.
+- Closing the Idea, Map, or PRM before release evidence propagates through the owning outcome chain.
+- Treating an ordinary Work5 `after` action as a sufficient guard; it runs too late to interleave
+  lane evidence before standard finalization.

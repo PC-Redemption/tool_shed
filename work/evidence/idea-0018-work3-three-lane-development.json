@@ -1,0 +1,71 @@
+{
+  "candidate_commit": "bb95a6aa1ad3d2ae44656a006f50200449436109",
+  "idea_id": "IDEA-0018",
+  "kind": "tool-shed-three-lane-development-qualification",
+  "lanes": {
+    "linux": {
+      "artifact": "disconnected-snapshot:f26cfd5cae5926bb7bd8e9746682d360b9754ed695b52e338864b0a334497d76",
+      "doctor": {
+        "internal_consistency_verified": true,
+        "snapshot_integrity": "verified",
+        "state_token": "91f33da29e4defeb",
+        "verdict": "DEGRADED",
+        "warnings": [
+          "disposable fixture untracked-count budget",
+          "generated work/index projections"
+        ]
+      },
+      "host": "sup",
+      "manifest_sha256": "fc8f05c382d6df5b7888f84e37c27c58b879a51d7dd773f9808f03e1c7a39e30",
+      "platform_validation": "511 of 511 tests passed",
+      "snapshot_integrity": "verified",
+      "workspace": "/home/jon/dev/ts_linux_test_bed"
+    },
+    "web": {
+      "artifact": "tool-shed-dashboard:dev-bb95a6aa1ad3",
+      "development_health": "healthy",
+      "environment": "development",
+      "host_header": "ts.rookaro.com-dev",
+      "routes": {
+        "/": 200,
+        "/dashboard/healthz": 200,
+        "/guide/": 200,
+        "/help/": 200,
+        "/ref/": 200
+      },
+      "source_marker": "bb95a6aa1ad3d2ae44656a006f50200449436109",
+      "target": "/home/jon/docker/ts.rookaro.com-dev"
+    },
+    "windows": {
+      "artifact": "disconnected-snapshot:f26cfd5cae5926bb7bd8e9746682d360b9754ed695b52e338864b0a334497d76",
+      "doctor": {
+        "internal_consistency_verified": true,
+        "snapshot_integrity": "verified",
+        "state_token": "83a616bd0986b1b9",
+        "verdict": "DEGRADED",
+        "warnings": [
+          "disposable fixture untracked-count budget",
+          "generated work/index projections"
+        ]
+      },
+      "host": "GOGETTER",
+      "manifest_sha256": "fc8f05c382d6df5b7888f84e37c27c58b879a51d7dd773f9808f03e1c7a39e30",
+      "platform_validation": "511 of 511 tests passed",
+      "snapshot_integrity": "verified",
+      "workspace": "E:\\dev\\ts_windows_test_bed"
+    }
+  },
+  "observed_at": "2026-09-02T14:35:16Z",
+  "production": {
+    "health": "healthy",
+    "mutated": false,
+    "target": "/home/jon/docker/ts.rookaro.com"
+  },
+  "release_id": "9902c070-34c6-4885-9f93-115fa6f59402",
+  "schema_version": 1,
+  "validation": {
+    "documentation": "25 pages and 87 commands passed",
+    "project_release_lane_tests": "7 of 7 passed",
+    "tool_shed_full": "511 of 511 tests passed"
+  }
+}
