@@ -1,8 +1,8 @@
 {
   "envelope": {
-    "created_at": "2026-09-02T18:35:44Z",
-    "database_revision": 1023,
-    "digest": "41c511cfc599761745c66adfb0773c3ed70470a81023ec40400d34ef70bb4279",
+    "created_at": "2026-09-02T19:01:12Z",
+    "database_revision": 1024,
+    "digest": "97d1a7ea0839bef6d6128db786b00c11eafb2b22d804f9825b0fd5864f52d45d",
     "hybrid_schema": 2,
     "objects": [
       "work/state/objects/sha256/00/0082fd1d60de8f37c6d2972dac5637d8c894d2c8f1124c5061aeb74ba0c18b75",
@@ -56351,6 +56351,16 @@
         "revision": 253
       },
       {
+        "entity_id": "2f6ddce8-4861-484f-925e-dd1ea68e8395",
+        "entity_type": "idea-brief",
+        "id": "867defae-4608-4cc3-a89f-563d021a3433",
+        "kind": "idea-readiness-review-v1",
+        "operation_id": "62e3c06c-906c-452c-a147-11cdb801e8a5",
+        "payload_json": "{\"adaptive_modules\":[{\"id\":\"lineage-integrity-and-recovery\",\"reason\":\"The Idea introduces a multi-parent closure DAG, self-describing recovery authority, orphan prevention, and deterministic reconstruction.\"},{\"id\":\"migration-and-compatibility\",\"reason\":\"Existing Hybrid state and older writers require inventory, shadow migration, guarded cutover, rollback, and compatibility enforcement.\"},{\"id\":\"proof-authority-and-failure\",\"reason\":\"Automatic verification crosses execution, authority, credential, retry, freshness, redaction, and failure-classification boundaries.\"},{\"id\":\"cross-platform-performance\",\"reason\":\"Fast rollups and deterministic rebuild require semantic parity and measured qualification across web, Linux, and Windows development lanes.\"}],\"complexity_findings\":[\"The outcome spans lineage authority, closure semantics, migration, verification execution, derived projections, dashboards, installation, recovery, and release; PRM should stage these behind explicit gates instead of treating them as one implementation step.\",\"The fast status path and the full recursive evaluator intentionally duplicate computation but not authority; parity qualification is required to keep this justified complexity from becoming divergent truth.\",\"Cross-platform compatibility and protected proof execution are material enough to require development-lane evidence, but they do not require an additional server or external tracker.\"],\"contradictions\":[],\"deferred_items\":[{\"id\":\"production-promotion\",\"summary\":\"Production migration, deployment, and verification remain outside this Idea and require the later explicit Work5 promotion decision.\"},{\"id\":\"relationship-registry-expansion\",\"summary\":\"Relationship semantics beyond fulfills, contributes, informs, and historical supersedes are deferred until a concrete qualified use case exists.\"}],\"idea\":{\"artifact_id\":\"2f6ddce8-4861-484f-925e-dd1ea68e8395\",\"body_sha256\":\"6fe155ca700227665a18ae3e49bb58a18923e7760af6316880a207368358d09e\",\"document_revision\":15,\"visible_id\":\"IDEA-0019\"},\"kind\":\"tool-shed-idea-readiness-review\",\"prm_gates\":[{\"id\":\"G1-LEGACY-INVENTORY-AND-SCHEMA\",\"requirement\":\"Inventory current element adapters, actionable legacy prose, parent and requirement bindings, protected manual-close policies, and existing relationship primitives; select only the minimum schema extension justified by observed gaps and measured budgets, with no inferred lineage or completion.\",\"title\":\"Observed legacy inventory and minimum schema\"},{\"id\":\"G2-PROOF-RUNNER-SAFETY\",\"requirement\":\"Define and qualify the minimum declarative recipe schema, checker registration and revocation, side-effect and authority classes, target binding, idempotency lease, retry and cooldown, freshness, redaction, timeout, malformed-output, and superseded-result behavior before automatic proof can affect closure.\",\"title\":\"Versioned proof recipe and authority contract\"},{\"id\":\"G3-MIGRATION-RECOVERY-AND-WRITER-COMPATIBILITY\",\"requirement\":\"Prove exact-manifest migration, verified backup, interruption and resume, rollback boundary, old-writer rejection, deterministic rebuild, and a guarded cutover with zero unresolved active orphans, cycles, conflicting lineage, or unclassified commitments.\",\"title\":\"Crash-safe shadow migration and clean cutover\"},{\"id\":\"G4-ROLLUP-PARITY-AND-PERFORMANCE\",\"requirement\":\"Demonstrate incremental versus full-recursive semantic parity and meet or evidence-adjust the approved provisional status, blocker, mutation, rebuild, and hosted API budgets on the versioned graph corpus across Linux, Windows, and hosted-development lanes.\",\"title\":\"Independent evaluator parity and fast status\"},{\"id\":\"G5-RECOVERY-QUEUE-OPERATIONS\",\"requirement\":\"Define and verify retry, aging, cooldown, ownership, escalation, and terminal disposition behavior so RECOVERY_REQUIRED cases remain visible, ancestry-scoped, release-blocking where applicable, and cannot accumulate as indefinite unresolved orphans.\",\"title\":\"Bounded orphan recovery operations\"},{\"id\":\"G6-CANDIDATE-BOUND-QUALIFICATION\",\"requirement\":\"Produce one Work3 evidence set bound to the exact code commit, schema and evaluator versions, fixture digest, targets, semantic results, timing distribution, fault outcomes, and rollback result across web, Linux, and Windows; preserve Work5 as the separate explicit production-promotion boundary.\",\"title\":\"Exact development candidate qualification\"}],\"promotion_blockers\":[],\"recommended_updates\":[\"Carry all six readiness gates losslessly into the derived project map and Program Roadmap.\",\"Sequence planning around schema and inventory, closure evaluator and proof runner, migration and recovery, status projections and dashboards, then cross-lane qualification and release handoff.\",\"Keep production frozen until the exact Work3-qualified candidate enters an explicitly authorized Work5 promotion.\"],\"result_digest\":\"571c44f64b59c76396d920a6bb61b195da309eae68d82c91ec468d7a71660fa8\",\"resumes_result_digest\":null,\"review_contract_version\":1,\"reviewed_at\":\"2026-09-02T19:00:19Z\",\"reviewer\":\"codex\",\"schema_version\":1,\"verdict\":\"READY-WITH-PRM-GATES\"}",
+        "recorded_at": "2026-09-02T19:01:02Z",
+        "revision": 1024
+      },
+      {
         "entity_id": "45b6944f-3f0f-5b41-ae00-5be09e2bfc97",
         "entity_type": "document",
         "id": "86870253-1f63-482a-8b14-6135b22aaf5c",
@@ -91072,6 +91082,17 @@
         "id": "628f3553-1035-4d36-976f-ba12921218cb",
         "revision": 610,
         "started_at": "2026-08-29T20:12:26Z",
+        "status": "complete"
+      },
+      {
+        "actor": "codex",
+        "actual_writes": 0,
+        "command": "idea-readiness-review-apply",
+        "committed_at": "2026-09-02T19:01:02Z",
+        "expected_writes": null,
+        "id": "62e3c06c-906c-452c-a147-11cdb801e8a5",
+        "revision": 1024,
+        "started_at": "2026-09-02T19:01:02Z",
         "status": "complete"
       },
       {
