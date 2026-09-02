@@ -1,0 +1,38 @@
+# Campaign: Implement Recursive Closure Substrate
+
+Status: completed
+Type: campaign
+Updated: 2026-09-02
+Next Action: none; M3 consumes this completed substrate
+Campaign ID: implement-recursive-closure-substrate
+Outcome: Deliver the guarded recursive-closure authority and deterministic evaluator/recovery substrate defined by M1 without changing production.
+Roadmap: recursive-element-closure-lineage-and-status-rollups
+Roadmap Document: PRM-0037
+Roadmap Revision: 1
+Milestone: M2-CLOSURE-SUBSTRATE
+Unlocks Gate: G2-PROOF-RUNNER-SAFETY, G3-MIGRATION-RECOVERY-AND-WRITER-COMPATIBILITY, G5-RECOVERY-QUEUE-OPERATIONS
+Depends On: M1-OBSERVED-CONTRACT
+Requested Endpoint: work2
+Completion Gate: schema-2-to-3 exact migration, backup/resume/rollback, old-writer refusal, versioned envelopes and requirement-bound claims, protected local/manual closure, recursive and incremental parity, proof recipes/attempts, recovery cases and exact exits, deterministic checkpoint rebuild, and focused fault tests all pass in clean disposable state.
+
+## Request
+
+Implement the minimum schema-3 closure domain frozen by CAMP-0146. Preserve current Hybrid and
+document authority, use guarded managed revisions, reject ambiguous migration, and keep every
+affected ancestry open on missing, stale, cyclic, conflicting, unproven, or unreconciled state.
+
+## Development Boundary
+
+Source work occurs on branch `dev/idea-0019-work2` in the isolated same-repository worktree
+`/home/jon/dev/tool_shed_idea0019_work2` because the canonical worktree contains unrelated owner
+App Server edits. This campaign may mutate disposable fixtures and development state only. Hosted
+integration and cross-lane deployment occur in M3. Production, publication, and Work5 remain out
+of scope.
+
+## Completion Evidence
+
+Completed and reconciled on 2026-09-02. Candidate commit
+`744deef7c7e851b504a532ddb58b765f89f54941` implements the schema-3 lineage, closure,
+proof, migration, recovery, deterministic checkpoint, and guarded-writer substrate. Ten focused
+closure tests and the clean candidate validation suite passed. The detailed record is
+`work/evidence/evidence-recursive-closure-m2-substrate.md`.

@@ -1,0 +1,27 @@
+# Campaign: Integrate and Deploy Recursive Closure Status
+
+Status: working
+Type: campaign
+Updated: 2026-09-02
+Next Action: complete exact Work2 development evidence, cohort registration, and checkpoint
+Campaign ID: integrate-and-deploy-recursive-closure-status
+Outcome: Expose trustworthy recursive closure status and deploy the exact candidate to all three development lanes without changing production.
+Roadmap: recursive-element-closure-lineage-and-status-rollups
+Roadmap Document: PRM-0037
+Roadmap Revision: 1
+Milestone: M3-WORK2-DEVELOPMENT-INTEGRATION
+Unlocks Gate: G4-ROLLUP-PARITY-AND-PERFORMANCE (Work2 portion)
+Depends On: M2-CLOSURE-SUBSTRATE
+Requested Endpoint: work2
+Completion Gate: CLI, report schema 7, hosted projection, recursive/incremental parity, provisional performance corpus, exact web/Linux/Windows deployment, changed-behavior checks, release-cohort registration, and recoverable checkpoint all pass.
+
+## Request
+
+Integrate the four-field recursive closure status, bounded counts/reasons/blockers, and exact
+revision identity through the local reporter and hosted development dashboard. Qualify the
+specified corpus and exercise the exact candidate on hosted-development, Linux, and Windows.
+
+## Development Boundary
+
+This campaign is development-only. Work3 freezing, production migration, publication, and Work5
+reconciliation remain separate explicit requests.

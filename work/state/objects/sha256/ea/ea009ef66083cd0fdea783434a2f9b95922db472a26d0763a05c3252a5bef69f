@@ -1,0 +1,39 @@
+# Campaign: Integrate and Deploy Recursive Closure Status
+
+Status: completed
+Type: campaign
+Updated: 2026-09-02
+Next Action: none; M4 performs the separate Work3 candidate freeze and qualification
+Campaign ID: integrate-and-deploy-recursive-closure-status
+Outcome: Expose trustworthy recursive closure status and deploy the exact candidate to all three development lanes without changing production.
+Roadmap: recursive-element-closure-lineage-and-status-rollups
+Roadmap Document: PRM-0037
+Roadmap Revision: 1
+Milestone: M3-WORK2-DEVELOPMENT-INTEGRATION
+Unlocks Gate: G4-ROLLUP-PARITY-AND-PERFORMANCE (Work2 portion)
+Depends On: M2-CLOSURE-SUBSTRATE
+Requested Endpoint: work2
+Completion Gate: CLI, report schema 7, hosted projection, recursive/incremental parity, provisional performance corpus, exact web/Linux/Windows deployment, changed-behavior checks, release-cohort registration, and recoverable checkpoint all pass.
+
+## Request
+
+Integrate the four-field recursive closure status, bounded counts/reasons/blockers, and exact
+revision identity through the local reporter and hosted development dashboard. Qualify the
+specified corpus and exercise the exact candidate on hosted-development, Linux, and Windows.
+
+## Development Boundary
+
+This campaign is development-only. Work3 freezing, production migration, publication, and Work5
+reconciliation remain separate explicit requests.
+
+## Completion Evidence
+
+Completed and reconciled on 2026-09-02 at exact development candidate
+`d6a90f172dca050fc0d7deb08f2230080560704f`. The clean candidate passed 522 tests and
+all adapter, view, roadmap, bootstrap, stale-path, and manifest checks. Its 25,000-element,
+100,000-edge, depth-128 corpus met all provisional budgets. The same commit was deployed and
+exercised on hosted development, the disposable Linux test bed, and the disposable Windows test
+bed; both reporters delivered report schema 7 closure state to the development dashboard. The
+candidate and the four open owning cycles were registered in release cohort
+`9902c070-34c6-4885-9f93-115fa6f59402`. Production was not changed. The detailed record is
+`work/evidence/evidence-recursive-closure-m3-work2-development.md`.
