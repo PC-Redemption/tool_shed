@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -92,6 +93,48 @@ class DevelopmentSiteTests(unittest.TestCase):
                 "TOOL_SHED_SITE_PORT",
             ):
                 DEVELOPMENT_SITE._controlled_environment(target, marker)
+
+    def test_deploy_recreates_docs_after_atomic_public_replacement(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            target = Path(temporary)
+            marker = {
+                "compose_project": "tsrookarocom-dev",
+                "image_tag": "dev-0123456789ab",
+            }
+            (target / DEVELOPMENT_SITE.MARKER).write_text(
+                json.dumps(marker),
+                encoding="utf-8",
+            )
+            environment = target / ".env"
+            environment.write_text("placeholder=1\n", encoding="utf-8")
+            os.chmod(environment, 0o600)
+
+            with (
+                mock.patch.object(DEVELOPMENT_SITE, "_controlled_environment"),
+                mock.patch.object(DEVELOPMENT_SITE, "run") as run,
+                mock.patch.object(
+                    DEVELOPMENT_SITE,
+                    "status",
+                    return_value={"development_health": {"healthy": True}},
+                ),
+            ):
+                result = DEVELOPMENT_SITE.deploy(target=target)
+
+            self.assertEqual(result["state"], "started")
+            commands = [call.args[0] for call in run.call_args_list]
+            self.assertEqual(commands[0][-2:], ("config", "--quiet"))
+            self.assertEqual(commands[1][-3:], ("up", "-d", "--no-build"))
+            self.assertEqual(
+                commands[2][-6:],
+                (
+                    "up",
+                    "-d",
+                    "--no-build",
+                    "--force-recreate",
+                    "--no-deps",
+                    "docs",
+                ),
+            )
 
     def test_workpc_tunnel_contract_is_localhost_only_and_restartable(self) -> None:
         script = (ROOT / "scripts" / "workpc_development_tunnel.ps1").read_text(

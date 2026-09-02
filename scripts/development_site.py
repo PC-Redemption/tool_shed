@@ -234,6 +234,20 @@ def deploy(*, target: Path = DEVELOPMENT_ROOT) -> dict[str, Any]:
     _controlled_environment(resolved_target, marker)
     run(compose_arguments(resolved_target, "config", "--quiet"), cwd=resolved_target)
     run(compose_arguments(resolved_target, "up", "-d", "--no-build"), cwd=resolved_target)
+    # Staging replaces public/ atomically. Recreate the docs container so its
+    # bind mount follows the replacement directory instead of the old inode.
+    run(
+        compose_arguments(
+            resolved_target,
+            "up",
+            "-d",
+            "--no-build",
+            "--force-recreate",
+            "--no-deps",
+            "docs",
+        ),
+        cwd=resolved_target,
+    )
     return {"operation": "deploy", "state": "started", **marker, "status": status(target=resolved_target)}
 
 
