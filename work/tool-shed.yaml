@@ -1,11 +1,17 @@
 schema_version: 1
 work_model: split
-development_target: isolated private development site at /home/jon/docker/ts.rookaro.com-dev (Compose project tsrookarocom-dev)
-production_target: ts.rookaro.com live documentation site
+development_target: web at tsrookarocom-dev on sup.local, Windows at PC-Redemption/ts_windows_test_bed on GOGETTER, and Linux at PC-Redemption/ts_linux_test_bed on sup.local
+production_target: ts.rookaro.com web service plus released Tool Shed behavior on approved Windows and Linux workspaces
 work_levels:
   work3:
+    before:
+      - Select or initialize the active release-lane manifest under work/evidence/release-lanes with work/runbooks/release_lanes.py and require web, windows, and linux without deploying or closing a lane
+    run_default: true
     after:
-      - Synchronize the canonical ts.rookaro.com site source with current Tool Shed code behavior and docs/commands.md, run focused site checks, build and checkpoint any resulting documentation changes, deploy through docs/documentation-site.md, and verify the live site and representative routes
+      - Bind the final Work3 candidate commit in the active release-lane manifest, synchronize and verify that exact candidate on the development web, Windows, and Linux targets, record evidence or an authorized manual closure for every required development lane, and require work/runbooks/release_lanes.py verify --phase work3 to pass
   work5:
+    before:
+      - Execute the complete project Work5 replacement in work/runbooks/three-lane-release.md, preserving release qualification, exact-SHA push validation, provenance manifest and stable tag publication, production promotion and verification, then record all required production lanes and require work5-complete before outcome reconciliation or release-cohort finalization
+    run_default: false
     after:
       - Review the repository's GitHub issues against the released behavior, close or update issues completed by the release with evidence, and create or update appropriately labeled next-revision issues for verified remaining gaps
