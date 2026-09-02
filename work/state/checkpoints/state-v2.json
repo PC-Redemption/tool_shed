@@ -1,11 +1,12 @@
 {
   "envelope": {
-    "created_at": "2026-09-02T22:36:09Z",
-    "database_revision": 1080,
-    "digest": "b5a8c14532fcd18cc66b3bc2378a4e26851db0b5a06fbf8fbfebe54dac52cff3",
+    "created_at": "2026-09-02T22:47:44Z",
+    "database_revision": 1095,
+    "digest": "8da9af476ce8590a827edf93f5a93ba57bb8f932e1d019929fbbcd24cdee6874",
     "hybrid_schema": 2,
     "objects": [
       "work/state/objects/sha256/00/0082fd1d60de8f37c6d2972dac5637d8c894d2c8f1124c5061aeb74ba0c18b75",
+      "work/state/objects/sha256/00/00c420922cc13320bd10dbe7fe99afab42441ffa3d0de95018e682934d01471c",
       "work/state/objects/sha256/00/00e983d87b6cd1426169ee5077df462604741dae8ebff5c5fb437dbedefa410d",
       "work/state/objects/sha256/00/00ff68296adb819e567e0f8ca12c3acff6ea44c073ed11ce33fe5dfa4339c0a6",
       "work/state/objects/sha256/01/013d8d1708fcf36b6a3444490d49d7164b3a29facab1bd06745b9917bdf23aff",
@@ -46,12 +47,14 @@
       "work/state/objects/sha256/12/12fd066bd63ecdcca0512b5c04845baf1e9bb577df8bfd803be8d0aad7a100a2",
       "work/state/objects/sha256/14/142caa8e6035097dbf33bebd1f4de25b774e76baec902791613597dd4f07e5f0",
       "work/state/objects/sha256/14/1451abc79e56f7beb44891c93fbbc8c23939137b1d2cd638aa1a40b7e95aa108",
+      "work/state/objects/sha256/14/1453a47ddbadc771405fe8c29980a455c70c58f3004b8acfcb213179861fe673",
       "work/state/objects/sha256/14/1468b6ac9838674534b80412047a78168c4768b444a905feb0fca440134d2259",
       "work/state/objects/sha256/14/14a394db4579823e4c15aea7d60613ef4ad38f10e67799d68bb802b99f0f49e4",
       "work/state/objects/sha256/15/15f2b1347bd1e00dbb289f6ed87017d828051a63dc8424d89c87fe9c1c72be17",
       "work/state/objects/sha256/16/161d299255dc05c7c0b74257423c774ed461bd469cd42ad3ad41f3dc68771c03",
       "work/state/objects/sha256/16/16be2c8596e61957361c86d7e691041645cc8800fe83365575254d065e5d7eac",
       "work/state/objects/sha256/17/176c45a5f7b429dff9959e72b703f5cfbd03007914a6ca7262d1ff067b103283",
+      "work/state/objects/sha256/18/186641c2e96ec533ebdec56794dd275d3807d9bafd26ad1053264c29148a142d",
       "work/state/objects/sha256/18/189ca6bae65c17a2ba13f2c495ba4495543bc2630aa70dfab86dbd295dd6d67b",
       "work/state/objects/sha256/18/18bc786e4be6663b8028e2797dde73ba4be119662fbc02696b2d192ace740840",
       "work/state/objects/sha256/19/19455fc25d5c85d0dc023e0b2a359f1f1f64a8d9bdbf4a3311e4fa4efd8ecf26",
@@ -170,6 +173,7 @@
       "work/state/objects/sha256/4e/4ef4ada03913624584f10f5047ef510e253a5a8323f067b07f295cddf7531c14",
       "work/state/objects/sha256/4f/4f2ad488c2dfbff90ffc8ad1278af5a55240af31dbfd7c14296e2a8546fbb73a",
       "work/state/objects/sha256/4f/4f401c0a624f665df6f7760bc9a3ee5348c6658ac705718ca5e8a2c7de2fec7d",
+      "work/state/objects/sha256/4f/4fc4d1323ec4f26a35ca52d4b07cf58fab468c08c965c68f1aa951c61683fedd",
       "work/state/objects/sha256/50/50208883b53acd692da2ca623296f18d570f5473579c6c4ab6c20633f5331f13",
       "work/state/objects/sha256/50/50f458fa5dda8ecc8c443fbaef042b90327c1e7d78c2ac04e62f36084ba4b4dc",
       "work/state/objects/sha256/52/522628e77583290e368725404afa953f4af40eb4d0074c1a7f5bf14b17a8f3c2",
@@ -204,6 +208,7 @@
       "work/state/objects/sha256/61/610a39d74ddeffdff9abb0e57ebfb6112a6ba5c2d3cbd66ab5017ec8c6734da9",
       "work/state/objects/sha256/61/6152a6b12b8261fab9c5dc94f8f50279da55f78786d56dd0a951e2677ea586cf",
       "work/state/objects/sha256/61/61539d89aea6e3a12c691647151d3d1d69a175a3e041cfc3c5ab5524aede3d7f",
+      "work/state/objects/sha256/61/61fc4722076ecb4c3d77df4ee0d10f32de49ca8d75cfd20874b5a819396c9d4f",
       "work/state/objects/sha256/62/62082210bfc43a4da4c49eda499501ddc93790786c6812ef6b270a075e647077",
       "work/state/objects/sha256/62/62b59a9423413d86e7a7b8bc55baceb5f308e243f3dce68c560b11b2fb527f8e",
       "work/state/objects/sha256/63/633362eb8ae993ad7bcb1028d5c4d5c43f7df8025949ff1c1fd4628494f2851e",
@@ -399,6 +404,7 @@
       "work/state/objects/sha256/bb/bb780ee2d5bd1a547391b5a4d9337160be31983b5e082a8986f02bde805e321f",
       "work/state/objects/sha256/bb/bb843c6f79281915e10ab2693c23235df271e04e0439cad8077ffcad22ae276a",
       "work/state/objects/sha256/bc/bc60d79093fe3965e0a3a9dfd28d6f0ca2ae832702510ecbe2b7515a60efcfbc",
+      "work/state/objects/sha256/bc/bc7de1f94acb4c0986f8c03d3a0a69ed113a648b43f39f60213185b5f4189b54",
       "work/state/objects/sha256/bc/bcf65f79e7949a59b8cb066e05742702a94f5f994b9dbaba28cac2bf14417b52",
       "work/state/objects/sha256/bd/bd5a8994da62f29cc42dbd8b4e09be211c54a117287a4d39e1f21f2384997795",
       "work/state/objects/sha256/bd/bdd03f62738d9144a68400c810cc9de83c40a9e08dba069b34fd793a9cd82ef0",
@@ -513,6 +519,7 @@
       "work/state/objects/sha256/f3/f39eabb04ef5af9cd859d34bdb74d09da922c062d9aa17ee073f63f130b9cd6f",
       "work/state/objects/sha256/f3/f3b6990ab56f2600276a11d993244527df18c4f0af6034e59c71382bf48297ad",
       "work/state/objects/sha256/f4/f4a2aaa7f0ce0e4da7b868b429ec15fec8fd796c713b65b9a7785b73f04e6725",
+      "work/state/objects/sha256/f5/f54979da85c26703aa506b1c9dd5010470f4951e8a06be41b1c71a23077e2a83",
       "work/state/objects/sha256/f6/f65ee6b72011b79c99711db800a44d5dea36f39f916a4cfce8c92f94e25d5cf1",
       "work/state/objects/sha256/f7/f71b2353bc8c72cbba6f65c20bb4142d644a8f30d2294efd7c6b7f2dd8f332ea",
       "work/state/objects/sha256/f8/f828ced5b6211dfb5a600d52cad131bbd38f972e6ab0c3de3e30da27fd860027",
@@ -693,6 +700,17 @@
         "lifecycle_state": "active",
         "type": "markdown",
         "updated_at": "2026-08-29T13:29:05Z"
+      },
+      {
+        "authority_mode": "sqlite",
+        "content_sha256": "61fc4722076ecb4c3d77df4ee0d10f32de49ca8d75cfd20874b5a819396c9d4f",
+        "created_at": "2026-09-02T22:41:55Z",
+        "current_path": "sqlite/documents/MAP-0027",
+        "display_number": "MAP-0027",
+        "id": "064ea636-20df-4e79-8922-2375fe555462",
+        "lifecycle_state": "active",
+        "type": "project-map",
+        "updated_at": "2026-09-02T22:44:53Z"
       },
       {
         "authority_mode": "sqlite",
@@ -3996,14 +4014,14 @@
       },
       {
         "authority_mode": "sqlite",
-        "content_sha256": "c3e3960e98b83a27c26d5f41fb8b1e1b9447bdd8c77857e8575fed493f8fa9d0",
+        "content_sha256": "1453a47ddbadc771405fe8c29980a455c70c58f3004b8acfcb213179861fe673",
         "created_at": "2026-09-02T22:20:13Z",
         "current_path": "sqlite/documents/IDEA-0020",
         "display_number": "IDEA-0020",
         "id": "b199f1c1-10c7-4402-8fd6-bb5749a9d9d1",
         "lifecycle_state": "active",
         "type": "idea-brief",
-        "updated_at": "2026-09-02T22:31:29Z"
+        "updated_at": "2026-09-02T22:45:11Z"
       },
       {
         "authority_mode": "sqlite",
@@ -5324,6 +5342,17 @@
         "lifecycle_state": "completed",
         "type": "campaign",
         "updated_at": "2026-08-29T13:29:30Z"
+      },
+      {
+        "authority_mode": "sqlite",
+        "content_sha256": "bc7de1f94acb4c0986f8c03d3a0a69ed113a648b43f39f60213185b5f4189b54",
+        "created_at": "2026-09-02T22:43:53Z",
+        "current_path": "sqlite/documents/PRM-0038",
+        "display_number": "PRM-0038",
+        "id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
+        "lifecycle_state": "active",
+        "type": "program-roadmap",
+        "updated_at": "2026-09-02T22:44:20Z"
       },
       {
         "authority_mode": "sqlite",
@@ -6834,6 +6863,15 @@
         "origin_artifact_id": "3ca61f1c-8199-46e2-8ac5-dd27e022b59c"
       },
       {
+        "accepted_outcome": "Deliver and qualify the deterministic lifecycle truth harness through Work2 development milestones and one exact Work3 candidate while preserving Work5 production promotion as a separate open milestone.",
+        "closed_at": null,
+        "id": "919853e8-9cea-46ce-b2e9-ccd918a8fb61",
+        "kind": "document",
+        "lifecycle_state": "working",
+        "opened_at": "2026-09-02T22:46:53Z",
+        "origin_artifact_id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7"
+      },
+      {
         "accepted_outcome": "Complete the approved operational trends and bounded-export direction through release evidence.",
         "closed_at": "2026-08-30T16:40:39Z",
         "id": "91bcbfd1-5dad-407c-9c4d-0b5fdc24078e",
@@ -7059,6 +7097,15 @@
         "origin_artifact_id": "307d2895-0834-46ea-8497-e829531d5951"
       },
       {
+        "accepted_outcome": "Coordinate the run contract, independent oracle, local corpus, hosted truth, isolated fault namespace, evidence and scale qualification, route smoke, candidate freeze, and separate production boundary without dropping any readiness gate.",
+        "closed_at": null,
+        "id": "c017d40f-a7a3-43e0-b42c-5f7ac5159bcb",
+        "kind": "document",
+        "lifecycle_state": "working",
+        "opened_at": "2026-09-02T22:46:52Z",
+        "origin_artifact_id": "064ea636-20df-4e79-8922-2375fe555462"
+      },
+      {
         "accepted_outcome": "Project direction for immutable historical qualification and completed-ledger isolation",
         "closed_at": "2026-08-29T16:35:59Z",
         "id": "c2402764-9fd3-47e2-a3ad-141b53478037",
@@ -7228,6 +7275,15 @@
         "lifecycle_state": "terminal",
         "opened_at": "2026-08-30T17:14:52Z",
         "origin_artifact_id": "9f407e8c-f5e3-4ee9-8921-3f4f86abb671"
+      },
+      {
+        "accepted_outcome": "Tool Shed deterministically proves complete Idea-to-closure lifecycle and database truth across local authority, reporter transport, hosted projection, and operator presentation before production promotion.",
+        "closed_at": null,
+        "id": "dba25451-4d38-4583-aea2-c0a978c0f9a7",
+        "kind": "document",
+        "lifecycle_state": "working",
+        "opened_at": "2026-09-02T22:46:51Z",
+        "origin_artifact_id": "b199f1c1-10c7-4402-8fd6-bb5749a9d9d1"
       },
       {
         "accepted_outcome": "Deliver and Work2-qualify the complete hosted lifecycle inventory and change-only history vertical slice.",
@@ -7513,6 +7569,19 @@
         "title": "Project Map: Dashboard Release Reporter and Instance Health",
         "updated_at": "2026-08-30T16:40:27Z",
         "visible_id": "MAP-0019"
+      },
+      {
+        "body_sha256": "61fc4722076ecb4c3d77df4ee0d10f32de49ca8d75cfd20874b5a819396c9d4f",
+        "created_at": "2026-09-02T22:41:55Z",
+        "current_revision": 3,
+        "display_number": 27,
+        "id": "064ea636-20df-4e79-8922-2375fe555462",
+        "lifecycle_state": "active",
+        "metadata_json": "{\"approval_state\":\"approved\",\"document_type\":\"project-map\",\"program_roadmap\":\"PRM-0038\",\"readiness_gate_ids\":[\"G1-RUN-CONTRACT-AND-INDEPENDENT-ORACLE\",\"G2-LOCAL-LIFECYCLE-CORPUS\",\"G3-REPORTER-HOSTED-AND-UI-TRUTH\",\"G4-DEVELOPMENT-ONLY-FAULT-NAMESPACE\",\"G5-EVIDENCE-MINIMIZATION-AND-PERFORMANCE\",\"G6-ROUTE-SMOKE-AND-CANDIDATE-BOUND-QUALIFICATION\"],\"readiness_review_digest\":\"ab89cc9a5ae1f9b76b255808137e09299085d8e4164222fe42ea92b4afec065e\",\"readiness_verdict\":\"READY-WITH-PRM-GATES\",\"reviewed_idea_artifact_id\":\"b199f1c1-10c7-4402-8fd6-bb5749a9d9d1\",\"reviewed_idea_body_sha256\":\"4fc4d1323ec4f26a35ca52d4b07cf58fab468c08c965c68f1aa951c61683fedd\",\"reviewed_idea_document_revision\":6,\"source_idea\":\"IDEA-0020\"}",
+        "namespace": "MAP",
+        "title": "Deterministic Tool Shed Lifecycle and Database Truth Qualification Harness",
+        "updated_at": "2026-09-02T22:44:53Z",
+        "visible_id": "MAP-0027"
       },
       {
         "body_sha256": "7edeb018996e70ca86ce0e40bbfb6f15fce3e97ad6b12b3873aaa5cdb3718445",
@@ -10414,16 +10483,16 @@
         "visible_id": "EVD-0027"
       },
       {
-        "body_sha256": "c3e3960e98b83a27c26d5f41fb8b1e1b9447bdd8c77857e8575fed493f8fa9d0",
+        "body_sha256": "1453a47ddbadc771405fe8c29980a455c70c58f3004b8acfcb213179861fe673",
         "created_at": "2026-09-02T22:20:13Z",
-        "current_revision": 5,
+        "current_revision": 7,
         "display_number": 20,
         "id": "b199f1c1-10c7-4402-8fd6-bb5749a9d9d1",
         "lifecycle_state": "active",
-        "metadata_json": "{\"document_type\":\"idea-brief\",\"logical_path\":\"work/ideas/idea-deterministic-tool-shed-lifecycle-and-database-truth-qualification-harness.md\"}",
+        "metadata_json": "{\"document_type\":\"idea-brief\",\"logical_path\":\"work/ideas/idea-deterministic-tool-shed-lifecycle-and-database-truth-qualification-harness.md\",\"program_roadmap\":\"PRM-0038\",\"promoted_map\":\"MAP-0027\",\"readiness_review_digest\":\"ab89cc9a5ae1f9b76b255808137e09299085d8e4164222fe42ea92b4afec065e\"}",
         "namespace": "IDEA",
         "title": "Deterministic Tool Shed Lifecycle and Database Truth Qualification Harness",
-        "updated_at": "2026-09-02T22:31:29Z",
+        "updated_at": "2026-09-02T22:45:11Z",
         "visible_id": "IDEA-0020"
       },
       {
@@ -11530,6 +11599,19 @@
         "title": "Freeze Adaptive Readiness Contract and Authority",
         "updated_at": "2026-08-29T13:29:30Z",
         "visible_id": "CAMP-0120"
+      },
+      {
+        "body_sha256": "bc7de1f94acb4c0986f8c03d3a0a69ed113a648b43f39f60213185b5f4189b54",
+        "created_at": "2026-09-02T22:43:53Z",
+        "current_revision": 2,
+        "display_number": 38,
+        "id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
+        "lifecycle_state": "active",
+        "metadata_json": "{\"approval_state\":\"approved\",\"document_type\":\"program-roadmap\",\"readiness_gate_ids\":[\"G1-RUN-CONTRACT-AND-INDEPENDENT-ORACLE\",\"G2-LOCAL-LIFECYCLE-CORPUS\",\"G3-REPORTER-HOSTED-AND-UI-TRUTH\",\"G4-DEVELOPMENT-ONLY-FAULT-NAMESPACE\",\"G5-EVIDENCE-MINIMIZATION-AND-PERFORMANCE\",\"G6-ROUTE-SMOKE-AND-CANDIDATE-BOUND-QUALIFICATION\"],\"readiness_review_digest\":\"ab89cc9a5ae1f9b76b255808137e09299085d8e4164222fe42ea92b4afec065e\",\"readiness_verdict\":\"READY-WITH-PRM-GATES\",\"reviewed_idea_artifact_id\":\"b199f1c1-10c7-4402-8fd6-bb5749a9d9d1\",\"reviewed_idea_body_sha256\":\"4fc4d1323ec4f26a35ca52d4b07cf58fab468c08c965c68f1aa951c61683fedd\",\"reviewed_idea_document_revision\":6,\"roadmap_id\":\"deterministic-tool-shed-lifecycle-and-database-truth-qualification-harness\",\"roadmap_revision\":1,\"source_idea\":\"IDEA-0020\",\"source_project_map\":\"MAP-0027\",\"transferred_gate_count\":6}",
+        "namespace": "PRM",
+        "title": "Deterministic Tool Shed Lifecycle and Database Truth Qualification Harness",
+        "updated_at": "2026-09-02T22:44:20Z",
+        "visible_id": "PRM-0038"
       },
       {
         "body_sha256": "e8622d009f274414b2fb6b5e5dad3f215517bc5839ec8dfc384ae97b4c898c19",
@@ -15546,11 +15628,11 @@
       },
       {
         "id": "MAP",
-        "next_number": 27
+        "next_number": 28
       },
       {
         "id": "PRM",
-        "next_number": 38
+        "next_number": 39
       },
       {
         "id": "SPK",
@@ -16815,6 +16897,14 @@
         "retired_revision": 885
       },
       {
+        "alias_kind": "preferred-view",
+        "created_revision": 1083,
+        "document_id": "064ea636-20df-4e79-8922-2375fe555462",
+        "id": "74b1183e-5936-4a9c-b41e-9bdd78c0ee8f",
+        "path": "work/maps/map-deterministic-tool-shed-lifecycle-and-database-truth-qualification-harness.md",
+        "retired_revision": null
+      },
+      {
         "alias_kind": "retained-source",
         "created_revision": 248,
         "document_id": "46978857-407a-5c92-a3bb-cf2c9d9959f9",
@@ -17607,6 +17697,14 @@
         "retired_revision": 885
       },
       {
+        "alias_kind": "preferred-view",
+        "created_revision": 1087,
+        "document_id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
+        "id": "c86bdff1-3afe-48cc-b635-e97f1b811fb9",
+        "path": "work/roadmaps/roadmap-deterministic-tool-shed-lifecycle-and-database-truth-qualification-harness.md",
+        "retired_revision": null
+      },
+      {
         "alias_kind": "retained-source",
         "created_revision": 134,
         "document_id": "ca50437c-c7bb-527e-a8f8-25e614b7e834",
@@ -18331,6 +18429,20 @@
         "revision_number": 1,
         "source_revision": 197,
         "title": "Adaptive Generated-Evidence Safeguards Validation"
+      },
+      {
+        "actor": "Codex",
+        "body_object": "work/state/objects/sha256/bc/bc7de1f94acb4c0986f8c03d3a0a69ed113a648b43f39f60213185b5f4189b54",
+        "body_sha256": "bc7de1f94acb4c0986f8c03d3a0a69ed113a648b43f39f60213185b5f4189b54",
+        "created_at": "2026-09-02T22:44:20Z",
+        "document_id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
+        "id": "0755911f-03eb-4385-8e24-fd7d05da2742",
+        "lifecycle_state": "active",
+        "metadata_json": "{\"approval_state\":\"approved\",\"document_type\":\"program-roadmap\",\"readiness_gate_ids\":[\"G1-RUN-CONTRACT-AND-INDEPENDENT-ORACLE\",\"G2-LOCAL-LIFECYCLE-CORPUS\",\"G3-REPORTER-HOSTED-AND-UI-TRUTH\",\"G4-DEVELOPMENT-ONLY-FAULT-NAMESPACE\",\"G5-EVIDENCE-MINIMIZATION-AND-PERFORMANCE\",\"G6-ROUTE-SMOKE-AND-CANDIDATE-BOUND-QUALIFICATION\"],\"readiness_review_digest\":\"ab89cc9a5ae1f9b76b255808137e09299085d8e4164222fe42ea92b4afec065e\",\"readiness_verdict\":\"READY-WITH-PRM-GATES\",\"reviewed_idea_artifact_id\":\"b199f1c1-10c7-4402-8fd6-bb5749a9d9d1\",\"reviewed_idea_body_sha256\":\"4fc4d1323ec4f26a35ca52d4b07cf58fab468c08c965c68f1aa951c61683fedd\",\"reviewed_idea_document_revision\":6,\"roadmap_id\":\"deterministic-tool-shed-lifecycle-and-database-truth-qualification-harness\",\"roadmap_revision\":1,\"source_idea\":\"IDEA-0020\",\"source_project_map\":\"MAP-0027\",\"transferred_gate_count\":6}",
+        "reason": "Approve faithful gate-complete roadmap after exact readiness transfer",
+        "revision_number": 2,
+        "source_revision": 1088,
+        "title": "Deterministic Tool Shed Lifecycle and Database Truth Qualification Harness"
       },
       {
         "actor": "codex",
@@ -19943,6 +20055,20 @@
         "title": "Implement the minimum SQLite operational substrate"
       },
       {
+        "actor": "Codex",
+        "body_object": "work/state/objects/sha256/18/186641c2e96ec533ebdec56794dd275d3807d9bafd26ad1053264c29148a142d",
+        "body_sha256": "186641c2e96ec533ebdec56794dd275d3807d9bafd26ad1053264c29148a142d",
+        "created_at": "2026-09-02T22:43:53Z",
+        "document_id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
+        "id": "33b14530-ec81-4889-afe6-903255c43c84",
+        "lifecycle_state": "active",
+        "metadata_json": "{\"approval_state\":\"proposed\",\"document_type\":\"program-roadmap\",\"readiness_gate_ids\":[\"G1-RUN-CONTRACT-AND-INDEPENDENT-ORACLE\",\"G2-LOCAL-LIFECYCLE-CORPUS\",\"G3-REPORTER-HOSTED-AND-UI-TRUTH\",\"G4-DEVELOPMENT-ONLY-FAULT-NAMESPACE\",\"G5-EVIDENCE-MINIMIZATION-AND-PERFORMANCE\",\"G6-ROUTE-SMOKE-AND-CANDIDATE-BOUND-QUALIFICATION\"],\"readiness_review_digest\":\"ab89cc9a5ae1f9b76b255808137e09299085d8e4164222fe42ea92b4afec065e\",\"readiness_verdict\":\"READY-WITH-PRM-GATES\",\"reviewed_idea_artifact_id\":\"b199f1c1-10c7-4402-8fd6-bb5749a9d9d1\",\"reviewed_idea_body_sha256\":\"4fc4d1323ec4f26a35ca52d4b07cf58fab468c08c965c68f1aa951c61683fedd\",\"reviewed_idea_document_revision\":6,\"roadmap_id\":\"deterministic-tool-shed-lifecycle-and-database-truth-qualification-harness\",\"roadmap_revision\":1,\"source_idea\":\"IDEA-0020\",\"source_project_map\":\"MAP-0027\",\"transferred_gate_count\":6}",
+        "reason": "Propose gate-complete Program Roadmap for IDEA-0020",
+        "revision_number": 1,
+        "source_revision": 1087,
+        "title": "Deterministic Tool Shed Lifecycle and Database Truth Qualification Harness"
+      },
+      {
         "actor": "work5-release",
         "body_object": "work/state/objects/sha256/e2/e289a2491afd1a92366ff26d4d22234707cf8569ff60f6e9c58bc463eb1c8ca4",
         "body_sha256": "e289a2491afd1a92366ff26d4d22234707cf8569ff60f6e9c58bc463eb1c8ca4",
@@ -20053,6 +20179,20 @@
         "revision_number": 2,
         "source_revision": 802,
         "title": "Project Map: Hosted Dashboard Work Lifecycle and History"
+      },
+      {
+        "actor": "Codex",
+        "body_object": "work/state/objects/sha256/4f/4fc4d1323ec4f26a35ca52d4b07cf58fab468c08c965c68f1aa951c61683fedd",
+        "body_sha256": "4fc4d1323ec4f26a35ca52d4b07cf58fab468c08c965c68f1aa951c61683fedd",
+        "created_at": "2026-09-02T22:40:54Z",
+        "document_id": "b199f1c1-10c7-4402-8fd6-bb5749a9d9d1",
+        "id": "35d99002-82cb-4626-8d88-dd372373185e",
+        "lifecycle_state": "active",
+        "metadata_json": "{\"document_type\":\"idea-brief\",\"logical_path\":\"work/ideas/idea-deterministic-tool-shed-lifecycle-and-database-truth-qualification-harness.md\"}",
+        "reason": "Owner selected IDEA-0020 for PRM planning",
+        "revision_number": 6,
+        "source_revision": 1081,
+        "title": "Deterministic Tool Shed Lifecycle and Database Truth Qualification Harness"
       },
       {
         "actor": "maintainer-final-cutover",
@@ -20781,6 +20921,20 @@
         "revision_number": 8,
         "source_revision": 967,
         "title": "Private Development Site Before Public Release"
+      },
+      {
+        "actor": "Codex",
+        "body_object": "work/state/objects/sha256/61/61fc4722076ecb4c3d77df4ee0d10f32de49ca8d75cfd20874b5a819396c9d4f",
+        "body_sha256": "61fc4722076ecb4c3d77df4ee0d10f32de49ca8d75cfd20874b5a819396c9d4f",
+        "created_at": "2026-09-02T22:44:53Z",
+        "document_id": "064ea636-20df-4e79-8922-2375fe555462",
+        "id": "502dc8f3-8bdf-4dae-93e1-d461f26fffaa",
+        "lifecycle_state": "active",
+        "metadata_json": "{\"approval_state\":\"approved\",\"document_type\":\"project-map\",\"program_roadmap\":\"PRM-0038\",\"readiness_gate_ids\":[\"G1-RUN-CONTRACT-AND-INDEPENDENT-ORACLE\",\"G2-LOCAL-LIFECYCLE-CORPUS\",\"G3-REPORTER-HOSTED-AND-UI-TRUTH\",\"G4-DEVELOPMENT-ONLY-FAULT-NAMESPACE\",\"G5-EVIDENCE-MINIMIZATION-AND-PERFORMANCE\",\"G6-ROUTE-SMOKE-AND-CANDIDATE-BOUND-QUALIFICATION\"],\"readiness_review_digest\":\"ab89cc9a5ae1f9b76b255808137e09299085d8e4164222fe42ea92b4afec065e\",\"readiness_verdict\":\"READY-WITH-PRM-GATES\",\"reviewed_idea_artifact_id\":\"b199f1c1-10c7-4402-8fd6-bb5749a9d9d1\",\"reviewed_idea_body_sha256\":\"4fc4d1323ec4f26a35ca52d4b07cf58fab468c08c965c68f1aa951c61683fedd\",\"reviewed_idea_document_revision\":6,\"source_idea\":\"IDEA-0020\"}",
+        "reason": "Link approved MAP-0027 to PRM-0038 and its first development milestone",
+        "revision_number": 3,
+        "source_revision": 1091,
+        "title": "Deterministic Tool Shed Lifecycle and Database Truth Qualification Harness"
       },
       {
         "actor": "codex",
@@ -22463,6 +22617,20 @@
         "title": "Private Development Site Before Public Release"
       },
       {
+        "actor": "Codex",
+        "body_object": "work/state/objects/sha256/00/00c420922cc13320bd10dbe7fe99afab42441ffa3d0de95018e682934d01471c",
+        "body_sha256": "00c420922cc13320bd10dbe7fe99afab42441ffa3d0de95018e682934d01471c",
+        "created_at": "2026-09-02T22:41:55Z",
+        "document_id": "064ea636-20df-4e79-8922-2375fe555462",
+        "id": "8505b9ed-d4ad-4509-820f-94a67cd0ca46",
+        "lifecycle_state": "active",
+        "metadata_json": "{\"approval_state\":\"proposed\",\"document_type\":\"project-map\",\"readiness_gate_ids\":[\"G1-RUN-CONTRACT-AND-INDEPENDENT-ORACLE\",\"G2-LOCAL-LIFECYCLE-CORPUS\",\"G3-REPORTER-HOSTED-AND-UI-TRUTH\",\"G4-DEVELOPMENT-ONLY-FAULT-NAMESPACE\",\"G5-EVIDENCE-MINIMIZATION-AND-PERFORMANCE\",\"G6-ROUTE-SMOKE-AND-CANDIDATE-BOUND-QUALIFICATION\"],\"readiness_review_digest\":\"ab89cc9a5ae1f9b76b255808137e09299085d8e4164222fe42ea92b4afec065e\",\"readiness_verdict\":\"READY-WITH-PRM-GATES\",\"reviewed_idea_artifact_id\":\"b199f1c1-10c7-4402-8fd6-bb5749a9d9d1\",\"reviewed_idea_body_sha256\":\"4fc4d1323ec4f26a35ca52d4b07cf58fab468c08c965c68f1aa951c61683fedd\",\"reviewed_idea_document_revision\":6,\"source_idea\":\"IDEA-0020\"}",
+        "reason": "Capture the reviewed IDEA-0020 project direction",
+        "revision_number": 1,
+        "source_revision": 1083,
+        "title": "Deterministic Tool Shed Lifecycle and Database Truth Qualification Harness"
+      },
+      {
         "actor": "maintainer-final-cutover",
         "body_object": "work/state/objects/sha256/74/743af68e5cac90aa6da74ee4e6c8c1138013c774ee9dc147c7e6308491dbad98",
         "body_sha256": "743af68e5cac90aa6da74ee4e6c8c1138013c774ee9dc147c7e6308491dbad98",
@@ -23063,6 +23231,20 @@
         "revision_number": 4,
         "source_revision": 926,
         "title": "Methodical Windows Field Upgrade and Installer Repair"
+      },
+      {
+        "actor": "Codex",
+        "body_object": "work/state/objects/sha256/14/1453a47ddbadc771405fe8c29980a455c70c58f3004b8acfcb213179861fe673",
+        "body_sha256": "1453a47ddbadc771405fe8c29980a455c70c58f3004b8acfcb213179861fe673",
+        "created_at": "2026-09-02T22:45:11Z",
+        "document_id": "b199f1c1-10c7-4402-8fd6-bb5749a9d9d1",
+        "id": "9c33c730-9430-45ae-9762-797516329e75",
+        "lifecycle_state": "active",
+        "metadata_json": "{\"document_type\":\"idea-brief\",\"logical_path\":\"work/ideas/idea-deterministic-tool-shed-lifecycle-and-database-truth-qualification-harness.md\",\"program_roadmap\":\"PRM-0038\",\"promoted_map\":\"MAP-0027\",\"readiness_review_digest\":\"ab89cc9a5ae1f9b76b255808137e09299085d8e4164222fe42ea92b4afec065e\"}",
+        "reason": "Promote IDEA-0020 after approved map and roadmap captured all readiness gates",
+        "revision_number": 7,
+        "source_revision": 1092,
+        "title": "Deterministic Tool Shed Lifecycle and Database Truth Qualification Harness"
       },
       {
         "actor": "codex",
@@ -24984,6 +25166,20 @@
       },
       {
         "actor": "Codex",
+        "body_object": "work/state/objects/sha256/f5/f54979da85c26703aa506b1c9dd5010470f4951e8a06be41b1c71a23077e2a83",
+        "body_sha256": "f54979da85c26703aa506b1c9dd5010470f4951e8a06be41b1c71a23077e2a83",
+        "created_at": "2026-09-02T22:42:22Z",
+        "document_id": "064ea636-20df-4e79-8922-2375fe555462",
+        "id": "d7437914-81de-41d9-b1d5-0f320198c7c6",
+        "lifecycle_state": "active",
+        "metadata_json": "{\"approval_state\":\"approved\",\"document_type\":\"project-map\",\"readiness_gate_ids\":[\"G1-RUN-CONTRACT-AND-INDEPENDENT-ORACLE\",\"G2-LOCAL-LIFECYCLE-CORPUS\",\"G3-REPORTER-HOSTED-AND-UI-TRUTH\",\"G4-DEVELOPMENT-ONLY-FAULT-NAMESPACE\",\"G5-EVIDENCE-MINIMIZATION-AND-PERFORMANCE\",\"G6-ROUTE-SMOKE-AND-CANDIDATE-BOUND-QUALIFICATION\"],\"readiness_review_digest\":\"ab89cc9a5ae1f9b76b255808137e09299085d8e4164222fe42ea92b4afec065e\",\"readiness_verdict\":\"READY-WITH-PRM-GATES\",\"reviewed_idea_artifact_id\":\"b199f1c1-10c7-4402-8fd6-bb5749a9d9d1\",\"reviewed_idea_body_sha256\":\"4fc4d1323ec4f26a35ca52d4b07cf58fab468c08c965c68f1aa951c61683fedd\",\"reviewed_idea_document_revision\":6,\"source_idea\":\"IDEA-0020\"}",
+        "reason": "Approve faithful IDEA-0020 project-map direction after exact gate transfer",
+        "revision_number": 2,
+        "source_revision": 1084,
+        "title": "Deterministic Tool Shed Lifecycle and Database Truth Qualification Harness"
+      },
+      {
+        "actor": "Codex",
         "body_object": "work/state/objects/sha256/2a/2afa0079e851b41a112413c91ce700acb2e534bee8e5d49900f858692cce0f57",
         "body_sha256": "2afa0079e851b41a112413c91ce700acb2e534bee8e5d49900f858692cce0f57",
         "created_at": "2026-08-30T14:59:21Z",
@@ -26189,6 +26385,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
         "recorded_at": "2026-08-29T01:27:46Z",
         "revision": 317
+      },
+      {
+        "entity_id": "f3c94db8-c9c8-4709-91a7-740aedf04dd6",
+        "entity_type": "outcome_verdict",
+        "id": "001a44f6-6ac9-4a88-bd94-73173493b138",
+        "kind": "structural-insert",
+        "operation_id": "7c516976-7a06-4d9d-a919-05353328c6f8",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"outcome_verdict\"}",
+        "recorded_at": "2026-09-02T22:46:51Z",
+        "revision": 1093
       },
       {
         "entity_id": "48d75fc7-9b58-4363-b4e6-19beec95b3d8",
@@ -28871,6 +29077,16 @@
         "revision": 242
       },
       {
+        "entity_id": "PRM",
+        "entity_type": "document_namespace",
+        "id": "0b91c2f7-f847-4aa7-95dc-bf573d617f92",
+        "kind": "structural-update",
+        "operation_id": "4419326b-0206-4c4f-a9a8-21f012c4c7d6",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"document_namespace\"}",
+        "recorded_at": "2026-09-02T22:43:53Z",
+        "revision": 1087
+      },
+      {
         "entity_id": "ca545d7a-d37f-45f7-99a5-2afa3b9c2027",
         "entity_type": "relationship",
         "id": "0b9d146d-0ad1-4c5b-8294-ed1a0a6de5b7",
@@ -29229,6 +29445,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"document\"}",
         "recorded_at": "2026-08-30T16:40:27Z",
         "revision": 826
+      },
+      {
+        "entity_id": "f7bb40c7-347b-4614-89d0-3ab28e1886a7",
+        "entity_type": "reconciliation",
+        "id": "0db31cdb-b39e-468e-88ad-66db47317429",
+        "kind": "structural-insert",
+        "operation_id": "7c516976-7a06-4d9d-a919-05353328c6f8",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"reconciliation\"}",
+        "recorded_at": "2026-09-02T22:46:51Z",
+        "revision": 1093
       },
       {
         "entity_id": "f611d56f-68ae-411d-8bb4-2159590e0609",
@@ -31171,6 +31397,16 @@
         "revision": 212
       },
       {
+        "entity_id": "0755911f-03eb-4385-8e24-fd7d05da2742",
+        "entity_type": "document_revision",
+        "id": "15c125b5-09b5-4fb6-bfa1-1a4c030d0fff",
+        "kind": "structural-insert",
+        "operation_id": "4667fde7-993a-4eb0-8fab-c36f9db1a278",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
+        "recorded_at": "2026-09-02T22:44:20Z",
+        "revision": 1088
+      },
+      {
         "entity_id": "e3c2c595-1844-46ff-a249-8b0e197b6841",
         "entity_type": "artifact",
         "id": "15cee49f-4508-490c-947e-180698572e33",
@@ -32741,6 +32977,16 @@
         "revision": 596
       },
       {
+        "entity_id": "b199f1c1-10c7-4402-8fd6-bb5749a9d9d1",
+        "entity_type": "idea-brief",
+        "id": "1c9eb98d-a918-47ac-a0cd-4685e326c9a7",
+        "kind": "idea-readiness-review-v1",
+        "operation_id": "e0b99897-48f0-4ff4-ab97-95f0d7e966a9",
+        "payload_json": "{\"adaptive_modules\":[{\"id\":\"database-authority-and-independent-oracle\",\"reason\":\"The harness must distinguish canonical lifecycle facts from indexed rollups and must independently reconstruct lineage, blockers, and effective closure so a shared implementation defect cannot certify itself.\"},{\"id\":\"lineage-recovery-and-fault-isolation\",\"reason\":\"Deep and shared ancestry, stale evidence, interrupted reconciliation, malformed graphs, and recovery require exact fail-closed semantics plus tightly bounded destructive fixtures.\"},{\"id\":\"reporter-hosted-and-operator-truth\",\"reason\":\"Local authority, reporter delivery, hosted rows, view models, and critical browser-visible values can diverge independently and must be compared without promoting presentation into authority.\"},{\"id\":\"development-namespace-and-security-boundary\",\"reason\":\"Hosted fault cases need purpose-bound synthetic identities, scoped credentials, development-only enforcement, operational-view exclusion, and exact recoverable cleanup.\"},{\"id\":\"evidence-performance-and-cross-platform-release\",\"reason\":\"Replay, minimization, redaction, retention, accumulation, Linux and Windows parity, measured budgets, and separation of development qualification from production promotion are release-critical.\"}],\"complexity_findings\":[\"Reuse Tool Shed's guarded public lifecycle and reporting services for the normal driver, with read-only independent inspection and only narrow development-only hooks for frozen time, interruption, and corrupt scratch copies.\",\"Keep the acceptance foundation to nine named scenarios before seeded state-machine expansion so failures stay attributable and replayable.\",\"Use four content-bound record types and ordinary generated evidence storage rather than introducing a harness database or daemon.\",\"Retain completed normal-run history and prove a zero-residue operational tail; cleanup must not manufacture apparent closure.\",\"Keep full hosted coverage primarily at database, view-model, and HTTP layers with browser checks limited to the three operator-critical truth claims.\"],\"contradictions\":[],\"deferred_items\":[{\"id\":\"production-promotion-and-deployment\",\"summary\":\"Production release, deployment, and production-data qualification remain outside this development proof-of-concept and require a separate Work5 decision after candidate-bound evidence passes.\"},{\"id\":\"large-scale-absolute-ceilings\",\"summary\":\"Hard absolute ceilings beyond the initial 100-lifecycle tier remain evidence-driven until the 1,000-lifecycle and 100,000-history-row measurements exist for both platforms.\"},{\"id\":\"generated-prose-quality-evaluation\",\"summary\":\"Semantic grading of model-generated prose is outside the harness; route smoke checks required structure, provenance, lineage, boundaries, and database truth.\"},{\"id\":\"general-purpose-test-service\",\"summary\":\"A production cleanup utility, second operational database, general remote test service, or duplicate Tool Shed implementation remains out of scope.\"}],\"idea\":{\"artifact_id\":\"b199f1c1-10c7-4402-8fd6-bb5749a9d9d1\",\"body_sha256\":\"4fc4d1323ec4f26a35ca52d4b07cf58fab468c08c965c68f1aa951c61683fedd\",\"document_revision\":6,\"visible_id\":\"IDEA-0020\"},\"kind\":\"tool-shed-idea-readiness-review\",\"prm_gates\":[{\"id\":\"G1-RUN-CONTRACT-AND-INDEPENDENT-ORACLE\",\"requirement\":\"Version and freeze the scenario specification, sealed manifest, append-only journal, compact result, run identity, checkpoint selector, truth-vector, verdict, and replay contracts; independently reconstruct ancestry, blockers, evidence validity, and effective closure from canonical inputs without importing or querying product rollup evaluators, and assert both exact expected facts and zero unexpected rows.\",\"title\":\"Freeze the deterministic run contract and independent truth oracle\"},{\"id\":\"G2-LOCAL-LIFECYCLE-CORPUS\",\"requirement\":\"Implement QH-001 through QH-006 plus the local portions of QH-008 and QH-009 on the exact disposable Linux and Windows fixtures using guarded public mutations for the normal path; prove identity, recursive closure, revision-bound evidence, shared lineage, interruption recovery, idempotency, checkpoint/rebuild parity, bounded invalid-graph findings, and a closed reconciled operational tail with no unresolved residue.\",\"title\":\"Prove the local lifecycle corpus on Linux and Windows\"},{\"id\":\"G3-REPORTER-HOSTED-AND-UI-TRUTH\",\"requirement\":\"Run QH-001, QH-007, and QH-008 through the established fixture reporter identities and compare immutable outbox and sequence facts, hosted base and projection rows, API/view-model values, and real-browser inventory, project-detail, and attention/freshness claims; reject phantom or duplicate projects and instances, stale data presented as current, wrong counts or classifications, broken filters or links, and any unexpected hosted row.\",\"title\":\"Prove reporter, hosted database, API, and operator presentation parity\"},{\"id\":\"G4-DEVELOPMENT-ONLY-FAULT-NAMESPACE\",\"requirement\":\"Create a server-side qualification-run root with manifest-bound foreign-key-owned descendants, qualification:write credentials, application and database rejection outside development, exclusion from all operational project views and counts, a separate authenticated synthetic-run view, expiry without orphaning, and exact preview-token purge that leaves a tombstone and refuses operational, mixed-purpose, stale, unknown, or production targets; only then extend QH-009 to hosted destructive testing.\",\"title\":\"Establish and qualify the development-only hosted fault namespace\"},{\"id\":\"G5-EVIDENCE-MINIMIZATION-AND-PERFORMANCE\",\"requirement\":\"Produce bounded redacted evidence with the specified verdict classes, retention rules, digests, replay recipes, storage caps, and protected product-failure cases; minimize failures only on isolated copies with signature-preserving deterministic delta debugging and three-of-three reproduction; pass the inherited 25,000-element, 100,000-edge, depth-128 closure budgets and the provisional lifecycle, reporter, convergence, dashboard, browser-runaway, and 15-minute corpus budgets on both platforms after 100 retained lifecycles, then measure the 1,000-lifecycle and 100,000-history-row tier before revising larger-scale ceilings.\",\"title\":\"Qualify evidence integrity, deterministic minimization, accumulation, and performance\"},{\"id\":\"G6-ROUTE-SMOKE-AND-CANDIDATE-BOUND-QUALIFICATION\",\"requirement\":\"Run one fixed low-reasoning ts: lifecycle on Linux and Windows and prove exact artifact cardinality, source revision and digest provenance, readiness-gate transfer, parent and requirement relationships, authority boundaries, revision changes, resume idempotency, Work2 development-only behavior, final clean closure, and zero extra artifacts or hosted rows; bind the complete corpus to one exact Work3 development candidate and keep Work5 production promotion as a separate owner-authorized release decision.\",\"title\":\"Prove low-reasoning routing and one exact development candidate\"}],\"promotion_blockers\":[],\"recommended_updates\":[\"Promote IDEA-0020 into PRM only with all six gates transferred exactly and in dependency order.\",\"Begin implementation with the frozen run/oracle contract and QH-001/QH-002 on both disposable platform fixtures before adding hosted fault behavior.\",\"Treat the existing phantom seed-project display as the first QH-001 regression fixture and require exact operational inventory cardinality.\",\"Keep destructive hosted QH-009 disabled until the development-only qualification namespace and purge refusal cases satisfy G4.\",\"Use Work3 for the exact development candidate qualification and require a separate Work5 production-promotion decision.\"],\"result_digest\":\"ab89cc9a5ae1f9b76b255808137e09299085d8e4164222fe42ea92b4afec065e\",\"resumes_result_digest\":\"7e9bdf34eada4d88dd09b3cdd932efd587797a009a9a2351afcfc98bbcb18398\",\"review_contract_version\":1,\"reviewed_at\":\"2026-09-02T22:41:10Z\",\"reviewer\":\"Codex\",\"schema_version\":1,\"verdict\":\"READY-WITH-PRM-GATES\"}",
+        "recorded_at": "2026-09-02T22:41:11Z",
+        "revision": 1082
+      },
+      {
         "entity_id": "d9b9f541-cf3d-5e11-b405-d6bc223a37b8",
         "entity_type": "evidence_reference",
         "id": "1c9f7200-142a-4844-ab84-55525a65b86f",
@@ -32819,6 +33065,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"document_conversion\"}",
         "recorded_at": "2026-08-29T01:27:31Z",
         "revision": 109
+      },
+      {
+        "entity_id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
+        "entity_type": "document",
+        "id": "1ce055eb-00e9-44e8-844e-51dc9991b7bb",
+        "kind": "structural-insert",
+        "operation_id": "4419326b-0206-4c4f-a9a8-21f012c4c7d6",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document\"}",
+        "recorded_at": "2026-09-02T22:43:53Z",
+        "revision": 1087
       },
       {
         "entity_id": "94189654-532c-4aab-8e9a-a9a1fbf767f1",
@@ -33519,6 +33775,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
         "recorded_at": "2026-08-30T16:36:32Z",
         "revision": 793
+      },
+      {
+        "entity_id": "d2822d68-4052-4f3f-aea6-0c363c08774f",
+        "entity_type": "relationship",
+        "id": "20892eef-1efb-4ddc-9d2f-35198342269c",
+        "kind": "structural-insert",
+        "operation_id": "2b5fd514-86bf-4bb6-bf47-6746d0039d38",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-09-02T22:44:27Z",
+        "revision": 1090
       },
       {
         "entity_id": "86ffe4b6-a551-471d-a5cc-2080db8b48ea",
@@ -34761,6 +35027,16 @@
         "revision": 571
       },
       {
+        "entity_id": "9e3e8c4f-66e8-4b4d-9755-202efbb81410",
+        "entity_type": "reconciliation",
+        "id": "252dfd83-e552-4fba-a8a4-67fd1af59b40",
+        "kind": "structural-insert",
+        "operation_id": "72efa767-483d-40ad-b78d-8f718ab6f8d6",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"reconciliation\"}",
+        "recorded_at": "2026-09-02T22:46:53Z",
+        "revision": 1095
+      },
+      {
         "entity_id": "41c9d167-f6d2-49a7-b8f1-abc29b14327b",
         "entity_type": "document_conversion",
         "id": "2531a112-dec3-456f-9b17-16bf5917180a",
@@ -35059,6 +35335,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"document_namespace\"}",
         "recorded_at": "2026-08-29T01:27:33Z",
         "revision": 148
+      },
+      {
+        "entity_id": "ce579e18-7a41-45a5-97a7-d04bd55122ca",
+        "entity_type": "relationship",
+        "id": "26182d4a-59c7-4114-9f14-c5ad2d2f9621",
+        "kind": "structural-insert",
+        "operation_id": "afced4db-25a5-4eb5-82b4-691a68b154e3",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-09-02T22:42:28Z",
+        "revision": 1086
       },
       {
         "entity_id": "67c08b12-b8dd-4042-9cd2-ba87bc125a58",
@@ -36001,6 +36287,26 @@
         "revision": 238
       },
       {
+        "entity_id": "064ea636-20df-4e79-8922-2375fe555462",
+        "entity_type": "document",
+        "id": "29a848ac-c1ce-4b18-9103-204ffffe6d5b",
+        "kind": "structural-insert",
+        "operation_id": "ee9a287d-e376-4c27-8e82-71ca1cac6dd6",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document\"}",
+        "recorded_at": "2026-09-02T22:41:55Z",
+        "revision": 1083
+      },
+      {
+        "entity_id": "87a13c7a-24cc-4633-93d6-61f1cd72e9c9",
+        "entity_type": "outcome_verdict",
+        "id": "29b4993d-6f01-4d27-ac46-7977f8ebfbb1",
+        "kind": "structural-insert",
+        "operation_id": "efd6bce9-cfa6-45c8-8e90-763070cb64df",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"outcome_verdict\"}",
+        "recorded_at": "2026-09-02T22:46:52Z",
+        "revision": 1094
+      },
+      {
         "entity_id": "27a6c0e5-4c11-46f2-80df-6124e5d28b17",
         "entity_type": "document_conversion",
         "id": "29ba7434-dc1d-479d-82af-243584fcc55e",
@@ -36209,6 +36515,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
         "recorded_at": "2026-08-30T16:36:32Z",
         "revision": 793
+      },
+      {
+        "entity_id": "064ea636-20df-4e79-8922-2375fe555462",
+        "entity_type": "document",
+        "id": "2a89db20-a422-4750-96d6-7183733ade4f",
+        "kind": "structural-update",
+        "operation_id": "10958c24-70a0-4b60-a249-6d152cad77ed",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"document\"}",
+        "recorded_at": "2026-09-02T22:44:53Z",
+        "revision": 1091
       },
       {
         "entity_id": "d470f56f-cf72-45e8-a960-6127ba338e20",
@@ -37881,6 +38197,16 @@
         "revision": 99
       },
       {
+        "entity_id": "8505b9ed-d4ad-4509-820f-94a67cd0ca46",
+        "entity_type": "document_revision",
+        "id": "31ef0a67-4574-4d83-9f15-0d9e81bfc83a",
+        "kind": "structural-insert",
+        "operation_id": "ee9a287d-e376-4c27-8e82-71ca1cac6dd6",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
+        "recorded_at": "2026-09-02T22:41:55Z",
+        "revision": 1083
+      },
+      {
         "entity_id": "31e47a3e-cca5-48fd-aa21-f7105e98a1ff",
         "entity_type": "document_path_alias",
         "id": "31efb6ab-47a2-4060-90bd-39d30154d620",
@@ -38679,6 +39005,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
         "recorded_at": "2026-08-29T11:03:47Z",
         "revision": 371
+      },
+      {
+        "entity_id": "c017d40f-a7a3-43e0-b42c-5f7ac5159bcb",
+        "entity_type": "cycle",
+        "id": "352b432c-5c12-4729-89d8-4120f093b473",
+        "kind": "structural-insert",
+        "operation_id": "efd6bce9-cfa6-45c8-8e90-763070cb64df",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"cycle\"}",
+        "recorded_at": "2026-09-02T22:46:52Z",
+        "revision": 1094
       },
       {
         "entity_id": "fa236d2d-f5c5-4b9c-bf70-3b17cc22c8af",
@@ -40711,6 +41047,16 @@
         "revision": 123
       },
       {
+        "entity_id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
+        "entity_type": "document",
+        "id": "3d3d4a52-f006-4432-9120-adb6d08faaa2",
+        "kind": "structural-update",
+        "operation_id": "4667fde7-993a-4eb0-8fab-c36f9db1a278",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"document\"}",
+        "recorded_at": "2026-09-02T22:44:20Z",
+        "revision": 1088
+      },
+      {
         "entity_id": "17acfc38-fe58-44d9-8672-df55ae42364c",
         "entity_type": "requirement",
         "id": "3d485a66-e87e-4293-b612-257d971421d0",
@@ -41121,6 +41467,16 @@
         "revision": 627
       },
       {
+        "entity_id": "b199f1c1-10c7-4402-8fd6-bb5749a9d9d1",
+        "entity_type": "artifact",
+        "id": "3f47c038-a38e-472b-bf34-5fa2edcb099b",
+        "kind": "structural-update",
+        "operation_id": "320a2cdc-cc1b-484d-b5b0-0335fdf996f8",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-09-02T22:45:11Z",
+        "revision": 1092
+      },
+      {
         "entity_id": "d08850e1-3b16-4a84-acfb-ccb15c4b80fd",
         "entity_type": "document_path_alias",
         "id": "3f4a460e-a143-4f28-94e5-13419279859d",
@@ -41409,6 +41765,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
         "recorded_at": "2026-08-29T15:32:38Z",
         "revision": 446
+      },
+      {
+        "entity_id": "10602f60-481b-4d4b-9a50-0793ea5e88a6",
+        "entity_type": "relationship",
+        "id": "4033ed08-222b-4ca0-8e72-b716150b98da",
+        "kind": "structural-insert",
+        "operation_id": "ddc9249d-c97e-41b0-b664-731ec75fc3a1",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-09-02T22:42:27Z",
+        "revision": 1085
       },
       {
         "entity_id": "MAP",
@@ -44211,6 +44577,16 @@
         "revision": 414
       },
       {
+        "entity_id": "c86bdff1-3afe-48cc-b635-e97f1b811fb9",
+        "entity_type": "document_path_alias",
+        "id": "4c26755a-540e-4c3a-95bc-32bd4d93cb84",
+        "kind": "structural-insert",
+        "operation_id": "4419326b-0206-4c4f-a9a8-21f012c4c7d6",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_path_alias\"}",
+        "recorded_at": "2026-09-02T22:43:53Z",
+        "revision": 1087
+      },
+      {
         "entity_id": "9b670523-aa5b-4bac-8dc6-51eac28d025f",
         "entity_type": "outcome_verdict",
         "id": "4c364060-6f49-4a45-bc04-356a2d0f00ff",
@@ -46971,6 +47347,16 @@
         "revision": 68
       },
       {
+        "entity_id": "b41504ea-9c0f-408b-9c10-f60a0ed19cf1",
+        "entity_type": "outcome_verdict",
+        "id": "56b5a5ff-3de7-466c-bbfc-45eb8a0db6e9",
+        "kind": "structural-insert",
+        "operation_id": "72efa767-483d-40ad-b78d-8f718ab6f8d6",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"outcome_verdict\"}",
+        "recorded_at": "2026-09-02T22:46:53Z",
+        "revision": 1095
+      },
+      {
         "entity_id": "c7f74118-db10-483d-b54e-9dc48d35005c",
         "entity_type": "document_path_alias",
         "id": "56c0241d-ad43-446e-8331-4b1e18236276",
@@ -47471,6 +47857,16 @@
         "revision": 43
       },
       {
+        "entity_id": "b199f1c1-10c7-4402-8fd6-bb5749a9d9d1",
+        "entity_type": "document",
+        "id": "590659e2-bff0-4d7d-99d1-841163d1f458",
+        "kind": "structural-update",
+        "operation_id": "320a2cdc-cc1b-484d-b5b0-0335fdf996f8",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"document\"}",
+        "recorded_at": "2026-09-02T22:45:11Z",
+        "revision": 1092
+      },
+      {
         "entity_id": "ace65adf-02cf-4d22-b44c-17dfddfa0283",
         "entity_type": "document_path_alias",
         "id": "590f329c-d302-4af8-bd21-5fa5e12d34f2",
@@ -47509,6 +47905,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
         "recorded_at": "2026-08-28T17:45:41Z",
         "revision": 5
+      },
+      {
+        "entity_id": "064ea636-20df-4e79-8922-2375fe555462",
+        "entity_type": "artifact",
+        "id": "5924beab-7cf2-4c95-a57c-c9463c4d529c",
+        "kind": "structural-insert",
+        "operation_id": "ee9a287d-e376-4c27-8e82-71ca1cac6dd6",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-09-02T22:41:55Z",
+        "revision": 1083
       },
       {
         "entity_id": "cbaa7a09-1d05-48c1-8d32-d7bae66c7166",
@@ -50311,6 +50717,16 @@
         "revision": 46
       },
       {
+        "entity_id": "064ea636-20df-4e79-8922-2375fe555462",
+        "entity_type": "artifact",
+        "id": "64d5e11f-8aaf-48eb-bf51-a5a37464ddc8",
+        "kind": "structural-update",
+        "operation_id": "0b97df9a-cc9b-4270-ab18-083adf3ff46c",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-09-02T22:42:22Z",
+        "revision": 1084
+      },
+      {
         "entity_id": "426c60b1-97b5-42f7-9aa8-d1b848e6ebac",
         "entity_type": "document_revision",
         "id": "64f3444a-0da0-47ac-84ba-7c24d9a41a1c",
@@ -51099,6 +51515,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"cycle\"}",
         "recorded_at": "2026-08-28T21:26:13Z",
         "revision": 48
+      },
+      {
+        "entity_id": "502dc8f3-8bdf-4dae-93e1-d461f26fffaa",
+        "entity_type": "document_revision",
+        "id": "68e15354-3a26-4d5a-87ee-6d2710327c5f",
+        "kind": "structural-insert",
+        "operation_id": "10958c24-70a0-4b60-a249-6d152cad77ed",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
+        "recorded_at": "2026-09-02T22:44:53Z",
+        "revision": 1091
       },
       {
         "entity_id": "ea3abf82-4026-4f9a-bc85-66fe11c37b26",
@@ -52301,6 +52727,16 @@
         "revision": 32
       },
       {
+        "entity_id": "9c33c730-9430-45ae-9762-797516329e75",
+        "entity_type": "document_revision",
+        "id": "6ed34467-af16-442d-b206-af5f37a11738",
+        "kind": "structural-insert",
+        "operation_id": "320a2cdc-cc1b-484d-b5b0-0335fdf996f8",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
+        "recorded_at": "2026-09-02T22:45:11Z",
+        "revision": 1092
+      },
+      {
         "entity_id": "1a4cbb78-db42-4ca5-b27d-9bd30002be23",
         "entity_type": "relationship",
         "id": "6edbbafe-100e-421a-ac16-7f9d365b7d8a",
@@ -53069,6 +53505,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"document_path_alias\"}",
         "recorded_at": "2026-08-29T01:27:31Z",
         "revision": 120
+      },
+      {
+        "entity_id": "da867ee7-f92e-4b9a-addd-0e049ddc98ba",
+        "entity_type": "reconciliation",
+        "id": "71c6a678-cef8-4973-a093-ae1b9d772017",
+        "kind": "structural-insert",
+        "operation_id": "efd6bce9-cfa6-45c8-8e90-763070cb64df",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"reconciliation\"}",
+        "recorded_at": "2026-09-02T22:46:52Z",
+        "revision": 1094
       },
       {
         "entity_id": "56b376b7-2ccc-5bb5-b17a-1c74c6ccc5ee",
@@ -55521,6 +55967,16 @@
         "revision": 49
       },
       {
+        "entity_id": "dba25451-4d38-4583-aea2-c0a978c0f9a7",
+        "entity_type": "cycle",
+        "id": "7b9de7e6-8746-4476-807b-c6b810d804a7",
+        "kind": "structural-insert",
+        "operation_id": "7c516976-7a06-4d9d-a919-05353328c6f8",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"cycle\"}",
+        "recorded_at": "2026-09-02T22:46:51Z",
+        "revision": 1093
+      },
+      {
         "entity_id": "46c871d0-0cf7-4d29-b2bc-f27b72655b93",
         "entity_type": "requirement",
         "id": "7b9e4915-0dfd-495c-801f-349175dd5b88",
@@ -57761,6 +58217,16 @@
         "revision": 885
       },
       {
+        "entity_id": "b45ec3ff-0b97-4f7e-95a0-62e762be0c97",
+        "entity_type": "relationship",
+        "id": "84ff6e10-6792-4d81-8d6c-a58b8d358455",
+        "kind": "structural-insert",
+        "operation_id": "25c08582-0dbb-4ce3-ac02-042937f7001f",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-09-02T22:44:26Z",
+        "revision": 1089
+      },
+      {
         "entity_id": "4448b0c2-d5d1-4a0a-be29-af915ba4442d",
         "entity_type": "outcome_verdict",
         "id": "8504f440-6619-4d8b-8004-034795f0288b",
@@ -58251,6 +58717,16 @@
         "revision": 281
       },
       {
+        "entity_id": "d7437914-81de-41d9-b1d5-0f320198c7c6",
+        "entity_type": "document_revision",
+        "id": "86c76713-65ac-4f95-8de6-4e6cf1ce8ca4",
+        "kind": "structural-insert",
+        "operation_id": "0b97df9a-cc9b-4270-ab18-083adf3ff46c",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
+        "recorded_at": "2026-09-02T22:42:22Z",
+        "revision": 1084
+      },
+      {
         "entity_id": "259e605d-f0a5-41c9-817f-3a89bd679fb0",
         "entity_type": "requirement",
         "id": "86dc1a9b-520a-4ccd-a606-879161e6f6e2",
@@ -58739,6 +59215,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
         "recorded_at": "2026-08-29T15:34:44Z",
         "revision": 461
+      },
+      {
+        "entity_id": "919853e8-9cea-46ce-b2e9-ccd918a8fb61",
+        "entity_type": "cycle",
+        "id": "89b6fd47-0649-4c8d-8182-baccf6587b01",
+        "kind": "structural-insert",
+        "operation_id": "72efa767-483d-40ad-b78d-8f718ab6f8d6",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"cycle\"}",
+        "recorded_at": "2026-09-02T22:46:53Z",
+        "revision": 1095
       },
       {
         "entity_id": "17acfc38-fe58-44d9-8672-df55ae42364c",
@@ -61621,6 +62107,16 @@
         "revision": 1056
       },
       {
+        "entity_id": "b199f1c1-10c7-4402-8fd6-bb5749a9d9d1",
+        "entity_type": "document",
+        "id": "951f7692-c8fe-4c47-8f16-425c3fc51f7d",
+        "kind": "structural-update",
+        "operation_id": "c45976a6-79a2-4921-ace3-bbf919a47e2c",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"document\"}",
+        "recorded_at": "2026-09-02T22:40:54Z",
+        "revision": 1081
+      },
+      {
         "entity_id": "ef8d44e7-e0c5-4700-a85f-38af2ba04e64",
         "entity_type": "outcome_verdict",
         "id": "95243a38-a5d7-47cf-9f9a-827e920d5819",
@@ -64321,6 +64817,16 @@
         "revision": 244
       },
       {
+        "entity_id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
+        "entity_type": "artifact",
+        "id": "a1b312fe-1ae2-4b93-8670-fd3767b247ab",
+        "kind": "structural-update",
+        "operation_id": "4667fde7-993a-4eb0-8fab-c36f9db1a278",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-09-02T22:44:20Z",
+        "revision": 1088
+      },
+      {
         "entity_id": "2f6ddce8-4861-484f-925e-dd1ea68e8395",
         "entity_type": "document",
         "id": "a1b4dd13-3b32-4f5a-b047-61d8e9d5ea5d",
@@ -65861,6 +66367,16 @@
         "revision": 885
       },
       {
+        "entity_id": "fdb1f902-d868-4ceb-bf03-e73b9f532137",
+        "entity_type": "requirement",
+        "id": "a8408443-6a29-45cb-94fd-e70669ac40a8",
+        "kind": "structural-insert",
+        "operation_id": "72efa767-483d-40ad-b78d-8f718ab6f8d6",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-09-02T22:46:53Z",
+        "revision": 1095
+      },
+      {
         "entity_id": "772f49b5-8661-4b84-9129-73a4b2b6a17d",
         "entity_type": "requirement",
         "id": "a8561e97-028a-477d-b438-7273d981df16",
@@ -65879,6 +66395,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"document_namespace\"}",
         "recorded_at": "2026-08-29T01:27:46Z",
         "revision": 323
+      },
+      {
+        "entity_id": "b199f1c1-10c7-4402-8fd6-bb5749a9d9d1",
+        "entity_type": "artifact",
+        "id": "a87682f2-bc04-4f64-9811-a9dd737e8f88",
+        "kind": "structural-update",
+        "operation_id": "c45976a6-79a2-4921-ace3-bbf919a47e2c",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-09-02T22:40:54Z",
+        "revision": 1081
       },
       {
         "entity_id": "3ca61f1c-8199-46e2-8ac5-dd27e022b59c",
@@ -67049,6 +67575,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"document_namespace\"}",
         "recorded_at": "2026-08-29T01:27:28Z",
         "revision": 72
+      },
+      {
+        "entity_id": "33b14530-ec81-4889-afe6-903255c43c84",
+        "entity_type": "document_revision",
+        "id": "aca496f6-a5a3-4404-9bd2-2954e13693f4",
+        "kind": "structural-insert",
+        "operation_id": "4419326b-0206-4c4f-a9a8-21f012c4c7d6",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
+        "recorded_at": "2026-09-02T22:43:53Z",
+        "revision": 1087
       },
       {
         "entity_id": "60adad1d-5d95-47a7-858e-83f7e97b696e",
@@ -69351,6 +69887,16 @@
         "revision": 984
       },
       {
+        "entity_id": "35d99002-82cb-4626-8d88-dd372373185e",
+        "entity_type": "document_revision",
+        "id": "b5dc3cac-0db0-43b4-b380-d650a742d9e8",
+        "kind": "structural-insert",
+        "operation_id": "c45976a6-79a2-4921-ace3-bbf919a47e2c",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
+        "recorded_at": "2026-09-02T22:40:54Z",
+        "revision": 1081
+      },
+      {
         "entity_id": "3ca61f1c-8199-46e2-8ac5-dd27e022b59c",
         "entity_type": "artifact",
         "id": "b5e56592-f2c5-474a-93de-fe9d46166e6c",
@@ -69669,6 +70215,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"outcome_verdict\"}",
         "recorded_at": "2026-08-28T20:01:22Z",
         "revision": 27
+      },
+      {
+        "entity_id": "c0d5c6ce-4234-46bf-98c5-db8f358b08c4",
+        "entity_type": "requirement",
+        "id": "b6ef712b-6769-451d-a9ff-5881ab84ab96",
+        "kind": "structural-insert",
+        "operation_id": "7c516976-7a06-4d9d-a919-05353328c6f8",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-09-02T22:46:51Z",
+        "revision": 1093
       },
       {
         "entity_id": "0481939b-27e3-4d60-a77a-a4f6da19d93d",
@@ -75691,6 +76247,16 @@
         "revision": 696
       },
       {
+        "entity_id": "74b1183e-5936-4a9c-b41e-9bdd78c0ee8f",
+        "entity_type": "document_path_alias",
+        "id": "cfaf32c9-f473-4af9-a111-9ee56514288c",
+        "kind": "structural-insert",
+        "operation_id": "ee9a287d-e376-4c27-8e82-71ca1cac6dd6",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_path_alias\"}",
+        "recorded_at": "2026-09-02T22:41:55Z",
+        "revision": 1083
+      },
+      {
         "entity_id": "eda9ede0-ccde-4975-8cb5-f4cfc1808fbf",
         "entity_type": "reconciliation",
         "id": "cfc639c8-6d5b-4bce-a01c-971b03e4d4fa",
@@ -78591,6 +79157,16 @@
         "revision": 793
       },
       {
+        "entity_id": "064ea636-20df-4e79-8922-2375fe555462",
+        "entity_type": "document",
+        "id": "db95219d-a642-4776-9975-59998e27f559",
+        "kind": "structural-update",
+        "operation_id": "0b97df9a-cc9b-4270-ab18-083adf3ff46c",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"document\"}",
+        "recorded_at": "2026-09-02T22:42:22Z",
+        "revision": 1084
+      },
+      {
         "entity_id": "89300100-7991-535f-b074-2748654093ec",
         "entity_type": "verification_result",
         "id": "dbb1fb28-585d-4f2f-a226-1e26ded46b4d",
@@ -79159,6 +79735,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"document_conversion\"}",
         "recorded_at": "2026-08-29T01:27:46Z",
         "revision": 323
+      },
+      {
+        "entity_id": "c7c1336b-ed40-467d-a6f3-825919cebeff",
+        "entity_type": "requirement",
+        "id": "de4e9e7e-22f4-49e4-af9c-f6a265c8f03f",
+        "kind": "structural-insert",
+        "operation_id": "efd6bce9-cfa6-45c8-8e90-763070cb64df",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-09-02T22:46:52Z",
+        "revision": 1094
       },
       {
         "entity_id": "441e1b1f-7d9e-4f49-b516-ba598114a808",
@@ -80909,6 +81495,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"document_path_alias\"}",
         "recorded_at": "2026-08-29T01:27:40Z",
         "revision": 256
+      },
+      {
+        "entity_id": "MAP",
+        "entity_type": "document_namespace",
+        "id": "e634933b-41ee-4b35-92c4-219c97145a53",
+        "kind": "structural-update",
+        "operation_id": "ee9a287d-e376-4c27-8e82-71ca1cac6dd6",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"document_namespace\"}",
+        "recorded_at": "2026-09-02T22:41:55Z",
+        "revision": 1083
       },
       {
         "entity_id": "b738839d-3330-4487-b300-0e67c1c7687d",
@@ -84161,6 +84757,16 @@
         "revision": 431
       },
       {
+        "entity_id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
+        "entity_type": "artifact",
+        "id": "f4a3744a-e512-4560-b6e7-5cde1534a8ed",
+        "kind": "structural-insert",
+        "operation_id": "4419326b-0206-4c4f-a9a8-21f012c4c7d6",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-09-02T22:43:53Z",
+        "revision": 1087
+      },
+      {
         "entity_id": "9d263bb4-8d10-4301-b52f-00663039a024",
         "entity_type": "requirement",
         "id": "f4a73144-453c-473d-89ad-a3ac28d7f158",
@@ -84889,6 +85495,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"document\"}",
         "recorded_at": "2026-08-29T01:27:37Z",
         "revision": 210
+      },
+      {
+        "entity_id": "064ea636-20df-4e79-8922-2375fe555462",
+        "entity_type": "artifact",
+        "id": "f7458d06-72e5-4fc3-b567-a2bfdf1b3ea6",
+        "kind": "structural-update",
+        "operation_id": "10958c24-70a0-4b60-a249-6d152cad77ed",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-09-02T22:44:53Z",
+        "revision": 1091
       },
       {
         "entity_id": "efdb4e67-1219-428e-bda4-8fa7c3241a0b",
@@ -90402,6 +91018,17 @@
         "status": "complete"
       },
       {
+        "actor": "Codex",
+        "actual_writes": 3,
+        "command": "document-apply-edit",
+        "committed_at": "2026-09-02T22:42:22Z",
+        "expected_writes": null,
+        "id": "0b97df9a-cc9b-4270-ab18-083adf3ff46c",
+        "revision": 1084,
+        "started_at": "2026-09-02T22:42:22Z",
+        "status": "complete"
+      },
+      {
         "actor": "outcome-reconciliation",
         "actual_writes": 11,
         "command": "apply-outcome-loop",
@@ -90586,6 +91213,17 @@
         "id": "107f3720-aed0-415b-b363-d4344d8423d9",
         "revision": 150,
         "started_at": "2026-08-29T01:27:33Z",
+        "status": "complete"
+      },
+      {
+        "actor": "Codex",
+        "actual_writes": 3,
+        "command": "document-apply-edit",
+        "committed_at": "2026-09-02T22:44:53Z",
+        "expected_writes": null,
+        "id": "10958c24-70a0-4b60-a249-6d152cad77ed",
+        "revision": 1091,
+        "started_at": "2026-09-02T22:44:53Z",
         "status": "complete"
       },
       {
@@ -91535,6 +92173,17 @@
         "status": "complete"
       },
       {
+        "actor": "Codex",
+        "actual_writes": 1,
+        "command": "document-relate",
+        "committed_at": "2026-09-02T22:44:26Z",
+        "expected_writes": null,
+        "id": "25c08582-0dbb-4ce3-ac02-042937f7001f",
+        "revision": 1089,
+        "started_at": "2026-09-02T22:44:26Z",
+        "status": "complete"
+      },
+      {
         "actor": "maintainer-final-cutover",
         "actual_writes": 6,
         "command": "document-import",
@@ -91843,6 +92492,17 @@
         "status": "complete"
       },
       {
+        "actor": "Codex",
+        "actual_writes": 1,
+        "command": "document-relate",
+        "committed_at": "2026-09-02T22:44:27Z",
+        "expected_writes": null,
+        "id": "2b5fd514-86bf-4bb6-bf47-6746d0039d38",
+        "revision": 1090,
+        "started_at": "2026-09-02T22:44:27Z",
+        "status": "complete"
+      },
+      {
         "actor": "maintainer-final-cutover",
         "actual_writes": 6,
         "command": "document-import",
@@ -92115,6 +92775,17 @@
         "id": "31fd512c-2e3e-4ac5-8123-2b366ead6d41",
         "revision": 346,
         "started_at": "2026-08-29T10:54:52Z",
+        "status": "complete"
+      },
+      {
+        "actor": "Codex",
+        "actual_writes": 3,
+        "command": "document-apply-edit",
+        "committed_at": "2026-09-02T22:45:11Z",
+        "expected_writes": null,
+        "id": "320a2cdc-cc1b-484d-b5b0-0335fdf996f8",
+        "revision": 1092,
+        "started_at": "2026-09-02T22:45:11Z",
         "status": "complete"
       },
       {
@@ -92822,6 +93493,17 @@
         "status": "complete"
       },
       {
+        "actor": "Codex",
+        "actual_writes": 5,
+        "command": "document-create",
+        "committed_at": "2026-09-02T22:43:53Z",
+        "expected_writes": null,
+        "id": "4419326b-0206-4c4f-a9a8-21f012c4c7d6",
+        "revision": 1087,
+        "started_at": "2026-09-02T22:43:53Z",
+        "status": "complete"
+      },
+      {
         "actor": "work5-release",
         "actual_writes": 3,
         "command": "document-set-lifecycle",
@@ -92896,6 +93578,17 @@
         "id": "4625c4d2-78d4-47b5-bb40-f65f0a31f62a",
         "revision": 384,
         "started_at": "2026-08-29T12:44:20Z",
+        "status": "complete"
+      },
+      {
+        "actor": "Codex",
+        "actual_writes": 3,
+        "command": "document-apply-edit",
+        "committed_at": "2026-09-02T22:44:20Z",
+        "expected_writes": null,
+        "id": "4667fde7-993a-4eb0-8fab-c36f9db1a278",
+        "revision": 1088,
+        "started_at": "2026-09-02T22:44:20Z",
         "status": "complete"
       },
       {
@@ -95275,6 +95968,17 @@
         "status": "complete"
       },
       {
+        "actor": "Codex",
+        "actual_writes": 4,
+        "command": "document-open-outcome",
+        "committed_at": "2026-09-02T22:46:53Z",
+        "expected_writes": null,
+        "id": "72efa767-483d-40ad-b78d-8f718ab6f8d6",
+        "revision": 1095,
+        "started_at": "2026-09-02T22:46:53Z",
+        "status": "complete"
+      },
+      {
         "actor": "codex",
         "actual_writes": 3,
         "command": "document-apply-edit",
@@ -95822,6 +96526,17 @@
         "id": "7c4b6e65-6f0e-41ee-9774-40ecf67db252",
         "revision": 768,
         "started_at": "2026-08-30T15:02:14Z",
+        "status": "complete"
+      },
+      {
+        "actor": "Codex",
+        "actual_writes": 4,
+        "command": "document-open-outcome",
+        "committed_at": "2026-09-02T22:46:51Z",
+        "expected_writes": null,
+        "id": "7c516976-7a06-4d9d-a919-05353328c6f8",
+        "revision": 1093,
+        "started_at": "2026-09-02T22:46:51Z",
         "status": "complete"
       },
       {
@@ -98234,6 +98949,17 @@
         "status": "complete"
       },
       {
+        "actor": "Codex",
+        "actual_writes": 1,
+        "command": "document-relate",
+        "committed_at": "2026-09-02T22:42:28Z",
+        "expected_writes": null,
+        "id": "afced4db-25a5-4eb5-82b4-691a68b154e3",
+        "revision": 1086,
+        "started_at": "2026-09-02T22:42:28Z",
+        "status": "complete"
+      },
+      {
         "actor": "outcome-reconciliation",
         "actual_writes": 6,
         "command": "apply-outcome-loop",
@@ -99045,6 +99771,17 @@
         "id": "c4164025-5be9-485f-aa1e-d1a68aadc809",
         "revision": 22,
         "started_at": "2026-08-28T19:04:55Z",
+        "status": "complete"
+      },
+      {
+        "actor": "Codex",
+        "actual_writes": 3,
+        "command": "document-apply-edit",
+        "committed_at": "2026-09-02T22:40:54Z",
+        "expected_writes": null,
+        "id": "c45976a6-79a2-4921-ace3-bbf919a47e2c",
+        "revision": 1081,
+        "started_at": "2026-09-02T22:40:54Z",
         "status": "complete"
       },
       {
@@ -100170,6 +100907,17 @@
         "status": "complete"
       },
       {
+        "actor": "Codex",
+        "actual_writes": 1,
+        "command": "document-relate",
+        "committed_at": "2026-09-02T22:42:27Z",
+        "expected_writes": null,
+        "id": "ddc9249d-c97e-41b0-b664-731ec75fc3a1",
+        "revision": 1085,
+        "started_at": "2026-09-02T22:42:27Z",
+        "status": "complete"
+      },
+      {
         "actor": "release-cohort",
         "actual_writes": 16,
         "command": "register-work2-release-candidate",
@@ -100310,6 +101058,17 @@
         "id": "e071dbac-5d1d-40cb-89d1-45beb3c5f539",
         "revision": 338,
         "started_at": "2026-08-29T02:56:13Z",
+        "status": "complete"
+      },
+      {
+        "actor": "Codex",
+        "actual_writes": 0,
+        "command": "idea-readiness-review-apply",
+        "committed_at": "2026-09-02T22:41:11Z",
+        "expected_writes": null,
+        "id": "e0b99897-48f0-4ff4-ab97-95f0d7e966a9",
+        "revision": 1082,
+        "started_at": "2026-09-02T22:41:11Z",
         "status": "complete"
       },
       {
@@ -100819,6 +101578,17 @@
         "status": "complete"
       },
       {
+        "actor": "Codex",
+        "actual_writes": 5,
+        "command": "document-create",
+        "committed_at": "2026-09-02T22:41:55Z",
+        "expected_writes": null,
+        "id": "ee9a287d-e376-4c27-8e82-71ca1cac6dd6",
+        "revision": 1083,
+        "started_at": "2026-09-02T22:41:55Z",
+        "status": "complete"
+      },
+      {
         "actor": "codex",
         "actual_writes": 1,
         "command": "document-relate",
@@ -100915,6 +101685,17 @@
         "id": "efb26604-dcc4-472a-8d2c-571b3c7ef63f",
         "revision": 361,
         "started_at": "2026-08-29T11:01:42Z",
+        "status": "complete"
+      },
+      {
+        "actor": "Codex",
+        "actual_writes": 4,
+        "command": "document-open-outcome",
+        "committed_at": "2026-09-02T22:46:52Z",
+        "expected_writes": null,
+        "id": "efd6bce9-cfa6-45c8-8e90-763070cb64df",
+        "revision": 1094,
+        "started_at": "2026-09-02T22:46:52Z",
         "status": "complete"
       },
       {
@@ -103166,6 +103947,16 @@
         "summary": "work in progress"
       },
       {
+        "authorization_ref": "Codex",
+        "cycle_id": "c017d40f-a7a3-43e0-b42c-5f7ac5159bcb",
+        "decided_at": "2026-09-02T22:46:52Z",
+        "decided_revision": 1094,
+        "disposition": "open",
+        "id": "87a13c7a-24cc-4633-93d6-61f1cd72e9c9",
+        "scope": "MAP-0027",
+        "summary": "Coordinate the run contract, independent oracle, local corpus, hosted truth, isolated fault namespace, evidence and scale qualification, route smoke, candidate freeze, and separate production boundary without dropping any readiness gate."
+      },
+      {
         "authorization_ref": "User-authorized ts: ship v0.40.0",
         "cycle_id": "3f4bd60e-bdcb-48b3-a5a8-5a25993d5e2d",
         "decided_at": "2026-08-30T16:40:25Z",
@@ -103664,6 +104455,16 @@
         "id": "b2b550ab-7775-4f11-b198-9e56e72411c7",
         "scope": "initiative",
         "summary": "IDEA-0013 accepted outcome is satisfied by verified v0.40.0 production behavior."
+      },
+      {
+        "authorization_ref": "Codex",
+        "cycle_id": "919853e8-9cea-46ce-b2e9-ccd918a8fb61",
+        "decided_at": "2026-09-02T22:46:53Z",
+        "decided_revision": 1095,
+        "disposition": "open",
+        "id": "b41504ea-9c0f-408b-9c10-f60a0ed19cf1",
+        "scope": "PRM-0038",
+        "summary": "Deliver and qualify the deterministic lifecycle truth harness through Work2 development milestones and one exact Work3 candidate while preserving Work5 production promotion as a separate open milestone."
       },
       {
         "authorization_ref": "Completed PRM-0033 and owner-approved canonical manifest 459326469b84ba91.",
@@ -104234,6 +105035,16 @@
         "id": "f3446fbd-38d1-44ae-a6cd-42e4cebd2b9c",
         "scope": "IDEA-0011",
         "summary": "Promoted into approved MAP-0014 and PRM-0025; implementation and gate evidence remain open."
+      },
+      {
+        "authorization_ref": "Codex",
+        "cycle_id": "dba25451-4d38-4583-aea2-c0a978c0f9a7",
+        "decided_at": "2026-09-02T22:46:51Z",
+        "decided_revision": 1093,
+        "disposition": "open",
+        "id": "f3c94db8-c9c8-4709-91a7-740aedf04dd6",
+        "scope": "IDEA-0020",
+        "summary": "Tool Shed deterministically proves complete Idea-to-closure lifecycle and database truth across local authority, reporter transport, hosted projection, and operator presentation before production promotion."
       },
       {
         "authorization_ref": "codex",
@@ -105538,6 +106349,16 @@
         "verdict_id": "ae3d4b3b-1dc3-4849-84e6-900c21238130"
       },
       {
+        "compared_at": "2026-09-02T22:46:53Z",
+        "cycle_id": "919853e8-9cea-46ce-b2e9-ccd918a8fb61",
+        "id": "9e3e8c4f-66e8-4b4d-9755-202efbb81410",
+        "origin_revision": 1095,
+        "product_truth_ref": "document:eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
+        "residual_work_json": "[]",
+        "state": "open",
+        "verdict_id": "b41504ea-9c0f-408b-9c10-f60a0ed19cf1"
+      },
+      {
         "compared_at": "2026-08-29T21:06:32Z",
         "cycle_id": "70cfd97b-80f0-45c1-9200-523046b82a12",
         "id": "9e7b55d3-935d-4353-b4a3-c06ad5116804",
@@ -106168,6 +106989,16 @@
         "verdict_id": "4d376cb0-c629-4e6c-95be-4e98ce96a7d0"
       },
       {
+        "compared_at": "2026-09-02T22:46:52Z",
+        "cycle_id": "c017d40f-a7a3-43e0-b42c-5f7ac5159bcb",
+        "id": "da867ee7-f92e-4b9a-addd-0e049ddc98ba",
+        "origin_revision": 1094,
+        "product_truth_ref": "document:064ea636-20df-4e79-8922-2375fe555462",
+        "residual_work_json": "[]",
+        "state": "open",
+        "verdict_id": "87a13c7a-24cc-4633-93d6-61f1cd72e9c9"
+      },
+      {
         "compared_at": "2026-08-30T12:30:18Z",
         "cycle_id": "e7f114c2-95db-4cd4-89c2-46079829b98b",
         "id": "daf1300f-9851-4015-8b2d-c220ef72c885",
@@ -106448,6 +107279,16 @@
         "verdict_id": "43281a42-e496-4522-b2f3-0f93ca90e836"
       },
       {
+        "compared_at": "2026-09-02T22:46:51Z",
+        "cycle_id": "dba25451-4d38-4583-aea2-c0a978c0f9a7",
+        "id": "f7bb40c7-347b-4614-89d0-3ab28e1886a7",
+        "origin_revision": 1093,
+        "product_truth_ref": "document:b199f1c1-10c7-4402-8fd6-bb5749a9d9d1",
+        "residual_work_json": "[]",
+        "state": "open",
+        "verdict_id": "f3c94db8-c9c8-4709-91a7-740aedf04dd6"
+      },
+      {
         "compared_at": "2026-08-29T15:34:44Z",
         "cycle_id": "7fd0fd15-8bfa-4cff-a0a3-4bcfc442fa7f",
         "id": "f917c3ba-969c-40d1-bcf3-761e98c82285",
@@ -106717,6 +107558,15 @@
         "relation_type": "evidenced-by",
         "retired_revision": null,
         "to_artifact_id": "5405b256-0820-439b-af21-0f1815fca00a"
+      },
+      {
+        "created_revision": 1085,
+        "from_artifact_id": "064ea636-20df-4e79-8922-2375fe555462",
+        "id": "10602f60-481b-4d4b-9a50-0793ea5e88a6",
+        "provenance": "document-store-v1",
+        "relation_type": "outcome-parent",
+        "retired_revision": null,
+        "to_artifact_id": "b199f1c1-10c7-4402-8fd6-bb5749a9d9d1"
       },
       {
         "created_revision": 873,
@@ -109473,6 +110323,15 @@
         "to_artifact_id": "449bdacc-b9e0-4b6c-99a5-bee43f8ac37e"
       },
       {
+        "created_revision": 1089,
+        "from_artifact_id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
+        "id": "b45ec3ff-0b97-4f7e-95a0-62e762be0c97",
+        "provenance": "document-store-v1",
+        "relation_type": "outcome-parent",
+        "retired_revision": null,
+        "to_artifact_id": "064ea636-20df-4e79-8922-2375fe555462"
+      },
+      {
         "created_revision": 1032,
         "from_artifact_id": "449bdacc-b9e0-4b6c-99a5-bee43f8ac37e",
         "id": "b746f560-007a-46c9-9e5f-f583d11ea52f",
@@ -109923,6 +110782,15 @@
         "to_artifact_id": "d60fcf78-ee30-5dcb-a1fa-ccf0e95e08e3"
       },
       {
+        "created_revision": 1086,
+        "from_artifact_id": "b199f1c1-10c7-4402-8fd6-bb5749a9d9d1",
+        "id": "ce579e18-7a41-45a5-97a7-d04bd55122ca",
+        "provenance": "document-store-v1",
+        "relation_type": "produces",
+        "retired_revision": null,
+        "to_artifact_id": "064ea636-20df-4e79-8922-2375fe555462"
+      },
+      {
         "created_revision": 622,
         "from_artifact_id": "32df1fac-3d45-4236-88e1-0d68ba9ff2ee",
         "id": "ce7aabec-b2aa-458f-b7cc-19b7391133a6",
@@ -109984,6 +110852,15 @@
         "relation_type": "produces",
         "retired_revision": null,
         "to_artifact_id": "8ca95ecf-bba9-4a5d-8384-175feab7f05f"
+      },
+      {
+        "created_revision": 1090,
+        "from_artifact_id": "064ea636-20df-4e79-8922-2375fe555462",
+        "id": "d2822d68-4052-4f3f-aea6-0c363c08774f",
+        "provenance": "document-store-v1",
+        "relation_type": "produces",
+        "retired_revision": null,
+        "to_artifact_id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7"
       },
       {
         "created_revision": 667,
@@ -112706,6 +113583,16 @@
         "origin_artifact_id": "3a5fe896-c9ad-40f4-a8cc-c82b2687855c"
       },
       {
+        "accepted_outcome": "Tool Shed deterministically proves complete Idea-to-closure lifecycle and database truth across local authority, reporter transport, hosted projection, and operator presentation before production promotion.",
+        "accepted_revision": 1093,
+        "cycle_id": "dba25451-4d38-4583-aea2-c0a978c0f9a7",
+        "disposition": "accepted",
+        "evidence_gate_key": "open-outcome",
+        "id": "c0d5c6ce-4234-46bf-98c5-db8f358b08c4",
+        "milestone_key": "document-thin-slice",
+        "origin_artifact_id": "b199f1c1-10c7-4402-8fd6-bb5749a9d9d1"
+      },
+      {
         "accepted_outcome": "Production-release Work2 outcome: sqlite/documents/PRM-0037",
         "accepted_revision": 1067,
         "cycle_id": "9902c070-34c6-4885-9f93-115fa6f59402",
@@ -112804,6 +113691,16 @@
         "id": "c56b5e41-1de4-4394-858b-ad58760302a7",
         "milestone_key": "document-thin-slice",
         "origin_artifact_id": "6a6cc10d-f519-47b6-9d95-59410413c6fd"
+      },
+      {
+        "accepted_outcome": "Coordinate the run contract, independent oracle, local corpus, hosted truth, isolated fault namespace, evidence and scale qualification, route smoke, candidate freeze, and separate production boundary without dropping any readiness gate.",
+        "accepted_revision": 1094,
+        "cycle_id": "c017d40f-a7a3-43e0-b42c-5f7ac5159bcb",
+        "disposition": "accepted",
+        "evidence_gate_key": "open-outcome",
+        "id": "c7c1336b-ed40-467d-a6f3-825919cebeff",
+        "milestone_key": "document-thin-slice",
+        "origin_artifact_id": "064ea636-20df-4e79-8922-2375fe555462"
       },
       {
         "accepted_outcome": "Production-release Work2 outcome: sqlite/outcome-capsules/7e3d1d50-2317-46a8-bfc1-0f0494ca98f7",
@@ -113384,6 +114281,16 @@
         "id": "fd8bc40a-01bb-42ab-b382-431bc463c5c8",
         "milestone_key": "document-thin-slice",
         "origin_artifact_id": "3ca61f1c-8199-46e2-8ac5-dd27e022b59c"
+      },
+      {
+        "accepted_outcome": "Deliver and qualify the deterministic lifecycle truth harness through Work2 development milestones and one exact Work3 candidate while preserving Work5 production promotion as a separate open milestone.",
+        "accepted_revision": 1095,
+        "cycle_id": "919853e8-9cea-46ce-b2e9-ccd918a8fb61",
+        "disposition": "accepted",
+        "evidence_gate_key": "open-outcome",
+        "id": "fdb1f902-d868-4ceb-bf03-e73b9f532137",
+        "milestone_key": "document-thin-slice",
+        "origin_artifact_id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7"
       },
       {
         "accepted_outcome": "Qualify upgrade, deploy, and reconcile historical isolation",
@@ -115705,6 +116612,17 @@
         "table_name": "outcome_verdict"
       },
       {
+        "id": "08780aea-aaca-4124-be24-e6c461ad80a2",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "ee9a287d-e376-4c27-8e82-71ca1cac6dd6",
+        "payload_digest": "9af1b01c867825584fb8f5f447d533e44c008c5894c2326612f1ca94c6579bee",
+        "recorded_at": "2026-09-02T22:41:55Z",
+        "revision": 1083,
+        "row_id": "064ea636-20df-4e79-8922-2375fe555462",
+        "table_name": "document"
+      },
+      {
         "id": "087a49fe-9794-416f-b656-ee82a916018c",
         "managed": 1,
         "operation": "update",
@@ -116937,6 +117855,17 @@
         "table_name": "relationship"
       },
       {
+        "id": "0da89350-abfe-47f6-af78-5aa163d4b4be",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "c45976a6-79a2-4921-ace3-bbf919a47e2c",
+        "payload_digest": "61384e5e04a51888d271dfa43eae6e0504ce781fb0867899aa510407824969e2",
+        "recorded_at": "2026-09-02T22:40:54Z",
+        "revision": 1081,
+        "row_id": "b199f1c1-10c7-4402-8fd6-bb5749a9d9d1",
+        "table_name": "artifact"
+      },
+      {
         "id": "0ddda340-3435-4b4a-9d51-838b3bdca2c9",
         "managed": 1,
         "operation": "insert",
@@ -116957,6 +117886,17 @@
         "revision": 12,
         "row_id": "5d176b05-9883-4e0b-a29f-a404de703268",
         "table_name": "verification_result"
+      },
+      {
+        "id": "0de66790-14ca-4938-82de-b5917c4583c9",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "320a2cdc-cc1b-484d-b5b0-0335fdf996f8",
+        "payload_digest": "9aaa62f143d7dcc22831efaf9f8d75cd49fe0fab132f58bd51ae5f4acfc20dbb",
+        "recorded_at": "2026-09-02T22:45:11Z",
+        "revision": 1092,
+        "row_id": "b199f1c1-10c7-4402-8fd6-bb5749a9d9d1",
+        "table_name": "document"
       },
       {
         "id": "0dea706e-5b37-466d-a638-353575bc6d78",
@@ -119850,6 +120790,17 @@
         "revision": 885,
         "row_id": "0e473228-2b5a-45e0-a5a9-a6342ac115c0",
         "table_name": "document_path_alias"
+      },
+      {
+        "id": "17d13360-fe63-4fb3-a5b6-70514ce38a65",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "0b97df9a-cc9b-4270-ab18-083adf3ff46c",
+        "payload_digest": "eda2966523b4fedd18d1859e5880a8090b682cd2ab1c4286ae1a9d6c68ae6dd1",
+        "recorded_at": "2026-09-02T22:42:22Z",
+        "revision": 1084,
+        "row_id": "064ea636-20df-4e79-8922-2375fe555462",
+        "table_name": "artifact"
       },
       {
         "id": "17d391a7-f53a-454b-8c7d-52689c057ab2",
@@ -125759,6 +126710,17 @@
         "table_name": "document"
       },
       {
+        "id": "2f67bd23-0abd-40fd-bd4d-efa4ae88e798",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "4419326b-0206-4c4f-a9a8-21f012c4c7d6",
+        "payload_digest": "485d5c57ae9ab20ec69dc791094bbe495ca68a5e03a329c989cfe798e74f4adf",
+        "recorded_at": "2026-09-02T22:43:53Z",
+        "revision": 1087,
+        "row_id": "33b14530-ec81-4889-afe6-903255c43c84",
+        "table_name": "document_revision"
+      },
+      {
         "id": "2f67de67-dd44-4c17-92d7-e184c42e65a6",
         "managed": 1,
         "operation": "insert",
@@ -125812,6 +126774,17 @@
         "revision": 49,
         "row_id": "f156ff6c-1648-49d6-9842-c4bbb205ac02",
         "table_name": "outcome_verdict"
+      },
+      {
+        "id": "2faa5bf0-589b-4697-9290-30777fa439a0",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "320a2cdc-cc1b-484d-b5b0-0335fdf996f8",
+        "payload_digest": "74406d28882baa984df1733ea8459d66c02c36a78f4f49eaa104c6059e03974e",
+        "recorded_at": "2026-09-02T22:45:11Z",
+        "revision": 1092,
+        "row_id": "9c33c730-9430-45ae-9762-797516329e75",
+        "table_name": "document_revision"
       },
       {
         "id": "2fae8fd1-1c80-4a06-9f20-b93cc72129c7",
@@ -128839,6 +129812,17 @@
         "table_name": "reconciliation"
       },
       {
+        "id": "3b2c0c28-6d4a-4b3a-b84a-c8dd8cc54395",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "7c516976-7a06-4d9d-a919-05353328c6f8",
+        "payload_digest": "066c64f31e45c8162f09e7a8fa95eeb08b8f653b525daced5489fcf7f063cdd8",
+        "recorded_at": "2026-09-02T22:46:51Z",
+        "revision": 1093,
+        "row_id": "dba25451-4d38-4583-aea2-c0a978c0f9a7",
+        "table_name": "cycle"
+      },
+      {
         "id": "3b31e40f-a7f0-4206-b2ec-d507a47c828f",
         "managed": 1,
         "operation": "insert",
@@ -128892,6 +129876,17 @@
         "revision": 1035,
         "row_id": "cae5f8a2-cc73-462d-87f1-6a078288274a",
         "table_name": "outcome_verdict"
+      },
+      {
+        "id": "3b4d9c49-3ea9-4ab6-a423-97587d8aff98",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "0b97df9a-cc9b-4270-ab18-083adf3ff46c",
+        "payload_digest": "e25a766417ea4af5b7923ee75bdd011bb6e2460d40e2487219a5fda415c2b8db",
+        "recorded_at": "2026-09-02T22:42:22Z",
+        "revision": 1084,
+        "row_id": "064ea636-20df-4e79-8922-2375fe555462",
+        "table_name": "document"
       },
       {
         "id": "3b52f57a-dd68-48a1-9b33-3c24a05e50cc",
@@ -132469,6 +133464,17 @@
         "table_name": "requirement"
       },
       {
+        "id": "49351649-2151-4de1-ba8e-ddc64e8b38cd",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "efd6bce9-cfa6-45c8-8e90-763070cb64df",
+        "payload_digest": "d602c3b6f896c0bb9d7565af473984ed6c7c73d391e814e432958e86dd2868bc",
+        "recorded_at": "2026-09-02T22:46:52Z",
+        "revision": 1094,
+        "row_id": "c017d40f-a7a3-43e0-b42c-5f7ac5159bcb",
+        "table_name": "cycle"
+      },
+      {
         "id": "4935e004-feda-4b25-89a0-fb7642fd2bc4",
         "managed": 1,
         "operation": "insert",
@@ -132643,6 +133649,17 @@
         "revision": 117,
         "row_id": "c037823a-43b5-5d85-8f70-cae96228fb5e",
         "table_name": "artifact"
+      },
+      {
+        "id": "49e33b1e-2cc3-4234-9cf4-6c7907d81c2d",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "c45976a6-79a2-4921-ace3-bbf919a47e2c",
+        "payload_digest": "d4f58452d8fc67ac85a378eb0e0ff0be19761564945edadeb24b854aa95e52d6",
+        "recorded_at": "2026-09-02T22:40:54Z",
+        "revision": 1081,
+        "row_id": "35d99002-82cb-4626-8d88-dd372373185e",
+        "table_name": "document_revision"
       },
       {
         "id": "49f4fdc8-fff6-4767-9d92-05b674b93d31",
@@ -133006,6 +134023,17 @@
         "revision": 67,
         "row_id": "d865ca5b-0abb-4890-a13c-4a27e9293c38",
         "table_name": "relationship"
+      },
+      {
+        "id": "4b2238ad-2141-43e4-a3f7-fd13919ceb31",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "10958c24-70a0-4b60-a249-6d152cad77ed",
+        "payload_digest": "17d067539ef3f8fe769deb03209c34614b0375725200d437f6002e91e28a6593",
+        "recorded_at": "2026-09-02T22:44:53Z",
+        "revision": 1091,
+        "row_id": "502dc8f3-8bdf-4dae-93e1-d461f26fffaa",
+        "table_name": "document_revision"
       },
       {
         "id": "4b261fa3-22b0-40c6-8a71-19bf45072e37",
@@ -133930,6 +134958,17 @@
         "revision": 36,
         "row_id": "17acfc38-fe58-44d9-8672-df55ae42364c",
         "table_name": "requirement"
+      },
+      {
+        "id": "4edd16ab-2607-4320-9741-40ce017a3632",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "afced4db-25a5-4eb5-82b4-691a68b154e3",
+        "payload_digest": "ef9614c9462f6e24b3071caf99ac457d92b9ad48333b5748b5b54f2287e6b9cd",
+        "recorded_at": "2026-09-02T22:42:28Z",
+        "revision": 1086,
+        "row_id": "ce579e18-7a41-45a5-97a7-d04bd55122ca",
+        "table_name": "relationship"
       },
       {
         "id": "4ee0b5bf-440b-4569-ba45-819fad3cbe99",
@@ -135307,6 +136346,17 @@
         "table_name": "artifact"
       },
       {
+        "id": "547b64f7-fd69-47ac-9b9e-369ef489e1e9",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "0b97df9a-cc9b-4270-ab18-083adf3ff46c",
+        "payload_digest": "e73b9d82f3516239cff36141e07b58aad5f12f56b8bd4756b3eec6651b442465",
+        "recorded_at": "2026-09-02T22:42:22Z",
+        "revision": 1084,
+        "row_id": "d7437914-81de-41d9-b1d5-0f320198c7c6",
+        "table_name": "document_revision"
+      },
+      {
         "id": "54a7c497-9361-4f3f-a211-e6bdeb1bc166",
         "managed": 1,
         "operation": "insert",
@@ -135316,6 +136366,17 @@
         "revision": 311,
         "row_id": "fac7e598-071b-5e5a-b573-1136b39aebb4",
         "table_name": "artifact"
+      },
+      {
+        "id": "54a7dbdf-b43b-4b83-a98d-159ab59c25ea",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "25c08582-0dbb-4ce3-ac02-042937f7001f",
+        "payload_digest": "cf5c63fd1f697e02c526cd289de49e9e10b136ed796ff31eb1dc3c773d7fdca7",
+        "recorded_at": "2026-09-02T22:44:26Z",
+        "revision": 1089,
+        "row_id": "b45ec3ff-0b97-4f7e-95a0-62e762be0c97",
+        "table_name": "relationship"
       },
       {
         "id": "54a9e0ce-af26-4af4-8406-07e98e785c1d",
@@ -135989,6 +137050,17 @@
         "table_name": "material_change"
       },
       {
+        "id": "569d6522-8a1f-4129-a670-f20c3c0f4438",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "4667fde7-993a-4eb0-8fab-c36f9db1a278",
+        "payload_digest": "d5c002dd2a89bd21be944882d214cd465e1aab66791f3da33a46a57890660aab",
+        "recorded_at": "2026-09-02T22:44:20Z",
+        "revision": 1088,
+        "row_id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
+        "table_name": "document"
+      },
+      {
         "id": "56a7b620-c0e8-46b3-abfb-39e8c5a7f31c",
         "managed": 1,
         "operation": "update",
@@ -136174,6 +137246,17 @@
         "revision": 212,
         "row_id": "cfd4f509-1bb6-47ab-a1d2-2459d6d700f0",
         "table_name": "document_path_alias"
+      },
+      {
+        "id": "57868a8e-3b44-4789-9fcf-3cd40e9418ee",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "ee9a287d-e376-4c27-8e82-71ca1cac6dd6",
+        "payload_digest": "28b56cb1bfbd3760963d83ce092c17831bb3f697a9fb2c89706a08debb467454",
+        "recorded_at": "2026-09-02T22:41:55Z",
+        "revision": 1083,
+        "row_id": "8505b9ed-d4ad-4509-820f-94a67cd0ca46",
+        "table_name": "document_revision"
       },
       {
         "id": "57878a2a-9a47-4109-8e97-66bb1e7aa1a0",
@@ -139432,6 +140515,17 @@
         "table_name": "document_revision"
       },
       {
+        "id": "64620032-c7bb-4254-a175-a69f930e8e24",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "72efa767-483d-40ad-b78d-8f718ab6f8d6",
+        "payload_digest": "08d990304eccdbc27b4b0817f3dabcdbf97f8cf9db25fc964e600ed8a465e974",
+        "recorded_at": "2026-09-02T22:46:53Z",
+        "revision": 1095,
+        "row_id": "b41504ea-9c0f-408b-9c10-f60a0ed19cf1",
+        "table_name": "outcome_verdict"
+      },
+      {
         "id": "64635cd0-a02a-4126-adcd-6f1c1f77ad26",
         "managed": 1,
         "operation": "insert",
@@ -140972,6 +142066,17 @@
         "table_name": "outcome_verdict"
       },
       {
+        "id": "6a5b532e-8231-43d8-8336-dc43914f3a9c",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "320a2cdc-cc1b-484d-b5b0-0335fdf996f8",
+        "payload_digest": "26eb40a5439b577565ba7edcd99e9cb2ef8d2b9b2619382c977603d40005cfe7",
+        "recorded_at": "2026-09-02T22:45:11Z",
+        "revision": 1092,
+        "row_id": "b199f1c1-10c7-4402-8fd6-bb5749a9d9d1",
+        "table_name": "artifact"
+      },
+      {
         "id": "6a5c6e1b-5387-40e9-a5c1-8fcc80daa48f",
         "managed": 1,
         "operation": "insert",
@@ -142213,6 +143318,17 @@
         "revision": 404,
         "row_id": "3f258380-218d-4c49-8463-321140fc3ef6",
         "table_name": "cycle"
+      },
+      {
+        "id": "6f1fdfc2-6e4f-4b9e-a02a-c93c93af9b29",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "efd6bce9-cfa6-45c8-8e90-763070cb64df",
+        "payload_digest": "3d998c869c69f7035101442a84b98d67d764f4604abcdc4dc96d84a8f00d5960",
+        "recorded_at": "2026-09-02T22:46:52Z",
+        "revision": 1094,
+        "row_id": "87a13c7a-24cc-4633-93d6-61f1cd72e9c9",
+        "table_name": "outcome_verdict"
       },
       {
         "id": "6f28ab88-30e1-443d-acf9-841bcc1653b5",
@@ -148144,6 +149260,17 @@
         "table_name": "evidence_reference"
       },
       {
+        "id": "849edcfb-04e8-49fe-8be8-2976bf476ec6",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "efd6bce9-cfa6-45c8-8e90-763070cb64df",
+        "payload_digest": "f7195e8fbe331571a13401c3e55fee5f25eca71faf93df8738f14daaac7c2c99",
+        "recorded_at": "2026-09-02T22:46:52Z",
+        "revision": 1094,
+        "row_id": "da867ee7-f92e-4b9a-addd-0e049ddc98ba",
+        "table_name": "reconciliation"
+      },
+      {
         "id": "84a1459a-8d65-4062-bb73-b5017e55f0a0",
         "managed": 1,
         "operation": "insert",
@@ -149024,6 +150151,17 @@
         "table_name": "material_change"
       },
       {
+        "id": "888b5d94-8d57-4380-ae03-92a790278252",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "7c516976-7a06-4d9d-a919-05353328c6f8",
+        "payload_digest": "cc516126267f0300e2129bab846115a49ee3494c4cc913ebc0241cb24ca9a3de",
+        "recorded_at": "2026-09-02T22:46:51Z",
+        "revision": 1093,
+        "row_id": "f3c94db8-c9c8-4709-91a7-740aedf04dd6",
+        "table_name": "outcome_verdict"
+      },
+      {
         "id": "889229c4-745c-45d1-9ffa-bd1dd0c9f69b",
         "managed": 1,
         "operation": "insert",
@@ -149165,6 +150303,17 @@
         "revision": 670,
         "row_id": "edfede32-a0d6-417e-a085-f5001663d468",
         "table_name": "verification_result"
+      },
+      {
+        "id": "88e8fcde-ef1a-416a-8f2c-d9ed4f3c1d3b",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "ee9a287d-e376-4c27-8e82-71ca1cac6dd6",
+        "payload_digest": "366608f7fe01aba715e9e4bc2924062b16de2e302297b9296ab4b04967520b83",
+        "recorded_at": "2026-09-02T22:41:55Z",
+        "revision": 1083,
+        "row_id": "064ea636-20df-4e79-8922-2375fe555462",
+        "table_name": "artifact"
       },
       {
         "id": "88f49891-8124-4910-9e07-6c56e24fa3ea",
@@ -154359,6 +155508,17 @@
         "table_name": "document_namespace"
       },
       {
+        "id": "9da1bfd2-0da2-464a-857f-f485fd2fa908",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "4667fde7-993a-4eb0-8fab-c36f9db1a278",
+        "payload_digest": "9d5655415dea4e58ed8126d9974a20c9232ba5ca16620b09b630ee349a0aa13a",
+        "recorded_at": "2026-09-02T22:44:20Z",
+        "revision": 1088,
+        "row_id": "0755911f-03eb-4385-8e24-fd7d05da2742",
+        "table_name": "document_revision"
+      },
+      {
         "id": "9da48280-5a45-4248-9ef3-6b5c04143de6",
         "managed": 1,
         "operation": "update",
@@ -155404,6 +156564,17 @@
         "table_name": "outcome_verdict"
       },
       {
+        "id": "a2309fe2-2b83-4d39-8cfd-f25c38c12384",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "4419326b-0206-4c4f-a9a8-21f012c4c7d6",
+        "payload_digest": "3d57af2eabdd9bafdbc81241147b807f5705c83a406207bfc02c74fa4cca220c",
+        "recorded_at": "2026-09-02T22:43:53Z",
+        "revision": 1087,
+        "row_id": "PRM",
+        "table_name": "document_namespace"
+      },
+      {
         "id": "a253f549-b828-4544-a412-24ff98353a02",
         "managed": 1,
         "operation": "update",
@@ -156438,6 +157609,17 @@
         "table_name": "import_record"
       },
       {
+        "id": "a606be61-4616-4758-b53e-886022589b8a",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "72efa767-483d-40ad-b78d-8f718ab6f8d6",
+        "payload_digest": "305f35b3b8ad5e2e18abe5bb8d3e93167bc5b57beb5ceb21602f37dd513d970c",
+        "recorded_at": "2026-09-02T22:46:53Z",
+        "revision": 1095,
+        "row_id": "9e3e8c4f-66e8-4b4d-9755-202efbb81410",
+        "table_name": "reconciliation"
+      },
+      {
         "id": "a61a4d3d-0b0e-4003-88fe-9abdc1220be5",
         "managed": 1,
         "operation": "update",
@@ -156634,6 +157816,17 @@
         "revision": 46,
         "row_id": "79541e0f-bfc4-42b0-949b-5e70693ea48e",
         "table_name": "requirement"
+      },
+      {
+        "id": "a718bbf4-e0c6-4d55-8269-664b3e2b3514",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "10958c24-70a0-4b60-a249-6d152cad77ed",
+        "payload_digest": "105aa3c6f54552da02de5a6be74ee96e4051821775b3a632436629644106b96b",
+        "recorded_at": "2026-09-02T22:44:53Z",
+        "revision": 1091,
+        "row_id": "064ea636-20df-4e79-8922-2375fe555462",
+        "table_name": "artifact"
       },
       {
         "id": "a71aa593-0191-440b-b363-f53b6424b7da",
@@ -157560,6 +158753,17 @@
         "table_name": "document"
       },
       {
+        "id": "aa7422c7-21f8-4014-87d2-f38815f7779b",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "10958c24-70a0-4b60-a249-6d152cad77ed",
+        "payload_digest": "eab8fa7047bd969b51a8c8bfa32d63ac5fd500a274541a704903ec9649e8c8f5",
+        "recorded_at": "2026-09-02T22:44:53Z",
+        "revision": 1091,
+        "row_id": "064ea636-20df-4e79-8922-2375fe555462",
+        "table_name": "document"
+      },
+      {
         "id": "aa771a93-5faf-4416-8e45-550d69ec0f00",
         "managed": 1,
         "operation": "update",
@@ -157943,6 +159147,17 @@
         "revision": 885,
         "row_id": "e806bb85-7581-4cc5-88e3-fc8a8b49f6be",
         "table_name": "document_path_alias"
+      },
+      {
+        "id": "aba2a02a-766c-4c70-8e3a-2c628c7faba6",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "4419326b-0206-4c4f-a9a8-21f012c4c7d6",
+        "payload_digest": "b5122d629a467b0ecce49cd1a629e0f27363e9fed8df9b1a5cc295758d08f6b0",
+        "recorded_at": "2026-09-02T22:43:53Z",
+        "revision": 1087,
+        "row_id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
+        "table_name": "document"
       },
       {
         "id": "aba47289-0c99-4457-a7d7-98b118e1dd0a",
@@ -159089,6 +160304,17 @@
         "table_name": "reconciliation"
       },
       {
+        "id": "b008c4de-5d1c-4e42-8058-533058fd76c2",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "7c516976-7a06-4d9d-a919-05353328c6f8",
+        "payload_digest": "b56ead1718f67f04b8cff06e44e1a2f687bd125b3686d271bf48412dd523e23e",
+        "recorded_at": "2026-09-02T22:46:51Z",
+        "revision": 1093,
+        "row_id": "c0d5c6ce-4234-46bf-98c5-db8f358b08c4",
+        "table_name": "requirement"
+      },
+      {
         "id": "b00bf065-9ef8-44ea-91f8-0d98cd84785d",
         "managed": 1,
         "operation": "update",
@@ -159692,6 +160918,17 @@
         "revision": 124,
         "row_id": "21f4e978-c622-45fe-a82e-f2f36d263334",
         "table_name": "document_conversion"
+      },
+      {
+        "id": "b2286128-b945-4442-91ae-e79a1c21c983",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "72efa767-483d-40ad-b78d-8f718ab6f8d6",
+        "payload_digest": "9261627f92a0a1c3919f0f964dac2157a3d7aced6a20628b43817869a4e21cdd",
+        "recorded_at": "2026-09-02T22:46:53Z",
+        "revision": 1095,
+        "row_id": "fdb1f902-d868-4ceb-bf03-e73b9f532137",
+        "table_name": "requirement"
       },
       {
         "id": "b22bf313-f34e-42b3-84cd-f947cb6abec9",
@@ -160728,6 +161965,17 @@
         "table_name": "cycle"
       },
       {
+        "id": "b5f4ae0f-9738-4c08-b614-a6e9a51f684f",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "72efa767-483d-40ad-b78d-8f718ab6f8d6",
+        "payload_digest": "006b87db19ca8ddc1f84b43be43010ed28af63ef4e79b4f2b3c0ee231a2120ff",
+        "recorded_at": "2026-09-02T22:46:53Z",
+        "revision": 1095,
+        "row_id": "919853e8-9cea-46ce-b2e9-ccd918a8fb61",
+        "table_name": "cycle"
+      },
+      {
         "id": "b5f8277e-32af-4031-bdf2-fc8f95023276",
         "managed": 1,
         "operation": "insert",
@@ -160825,6 +162073,17 @@
         "revision": 619,
         "row_id": "59cbc4aa-c114-44be-98e9-b07eb30e05d4",
         "table_name": "reconciliation"
+      },
+      {
+        "id": "b65cb3bf-f0cb-4950-adf9-a866d28c1651",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "4419326b-0206-4c4f-a9a8-21f012c4c7d6",
+        "payload_digest": "5b4bca3e7a574b6f27f4ee2e79768244818cc417f51fcbc2992a24a7444e598a",
+        "recorded_at": "2026-09-02T22:43:53Z",
+        "revision": 1087,
+        "row_id": "c86bdff1-3afe-48cc-b635-e97f1b811fb9",
+        "table_name": "document_path_alias"
       },
       {
         "id": "b66d4762-5cf7-4596-88ef-9c184ebcecbe",
@@ -162398,6 +163657,17 @@
         "revision": 1026,
         "row_id": "449bdacc-b9e0-4b6c-99a5-bee43f8ac37e",
         "table_name": "document"
+      },
+      {
+        "id": "bbcdb182-fd13-49ab-9302-a62a8cc4ae66",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "efd6bce9-cfa6-45c8-8e90-763070cb64df",
+        "payload_digest": "353ea6f39c195a9918a74c1d53aa19e510791c4a4ea19101db3a15047b68e056",
+        "recorded_at": "2026-09-02T22:46:52Z",
+        "revision": 1094,
+        "row_id": "c7c1336b-ed40-467d-a6f3-825919cebeff",
+        "table_name": "requirement"
       },
       {
         "id": "bbcf771b-93d7-4dae-85e5-d881e5916c42",
@@ -166668,6 +167938,17 @@
         "table_name": "artifact"
       },
       {
+        "id": "cbf5c272-b2ae-46ba-8719-aa5bb9cd53bf",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "c45976a6-79a2-4921-ace3-bbf919a47e2c",
+        "payload_digest": "f856b0a7378ee67acd998380b7d24e80f2b9e28e94f9d989dd7f7c0c0c638544",
+        "recorded_at": "2026-09-02T22:40:54Z",
+        "revision": 1081,
+        "row_id": "b199f1c1-10c7-4402-8fd6-bb5749a9d9d1",
+        "table_name": "document"
+      },
+      {
         "id": "cc007ad0-cde6-49b2-aa93-ebf4d6209c08",
         "managed": 1,
         "operation": "update",
@@ -167304,6 +168585,17 @@
         "revision": 463,
         "row_id": "19ee67e6-de6a-46f1-a25f-c43ab3192a7b",
         "table_name": "requirement"
+      },
+      {
+        "id": "ce8e8d4b-f7b0-4dfb-9c33-c23b8db783af",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "4419326b-0206-4c4f-a9a8-21f012c4c7d6",
+        "payload_digest": "5347c0692eb3555b35b42754c560c594d71d76f702f17a8d331c6a6373d4bb3b",
+        "recorded_at": "2026-09-02T22:43:53Z",
+        "revision": 1087,
+        "row_id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
+        "table_name": "artifact"
       },
       {
         "id": "ce97d803-babe-45da-b422-c2d8a5e4c780",
@@ -168723,6 +170015,17 @@
         "revision": 38,
         "row_id": "5414d8a4-326b-489d-b1b9-ab68f6acaa24",
         "table_name": "verification_result"
+      },
+      {
+        "id": "d36ef940-5a3c-4bdf-bf84-8a1935d7a4ca",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "ee9a287d-e376-4c27-8e82-71ca1cac6dd6",
+        "payload_digest": "b4f79fdef929cd6fba3fe4a6f6f1b60916b4485ce20a3ac7db8af8ae9f4262bb",
+        "recorded_at": "2026-09-02T22:41:55Z",
+        "revision": 1083,
+        "row_id": "MAP",
+        "table_name": "document_namespace"
       },
       {
         "id": "d374e765-4542-4a26-bc3e-1dc9e52796b5",
@@ -173255,6 +174558,17 @@
         "revision": 558,
         "row_id": "b4eb76ce-ecc9-5425-8286-f186a7abbf98",
         "table_name": "evidence_reference"
+      },
+      {
+        "id": "e46dc640-81a4-48ec-929b-46a6fdd0f39a",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "ddc9249d-c97e-41b0-b664-731ec75fc3a1",
+        "payload_digest": "b98243a0deedac5cf0583fecab0e7c0ff5882242d204c278bf883b69862b6b7b",
+        "recorded_at": "2026-09-02T22:42:27Z",
+        "revision": 1085,
+        "row_id": "10602f60-481b-4d4b-9a50-0793ea5e88a6",
+        "table_name": "relationship"
       },
       {
         "id": "e47ad9e5-90af-44a7-b2b8-7eb86f710834",
@@ -178548,6 +179862,17 @@
         "table_name": "document_path_alias"
       },
       {
+        "id": "faa78fda-ee55-4985-ace2-b4d817fa824a",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "7c516976-7a06-4d9d-a919-05353328c6f8",
+        "payload_digest": "5cb17b0cd36943a4f3f107430146aa3af9322cf2db5787b668fc2bab5f1572b2",
+        "recorded_at": "2026-09-02T22:46:51Z",
+        "revision": 1093,
+        "row_id": "f7bb40c7-347b-4614-89d0-3ab28e1886a7",
+        "table_name": "reconciliation"
+      },
+      {
         "id": "fab7873d-a282-439a-99e3-e0b8c5ab3415",
         "managed": 1,
         "operation": "update",
@@ -178733,6 +180058,17 @@
         "revision": 234,
         "row_id": "a831319b-43fb-47f2-bf0c-b5ee6205d67a",
         "table_name": "document_conversion"
+      },
+      {
+        "id": "fb034195-897a-4cd2-9f58-5a833cd85844",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "4667fde7-993a-4eb0-8fab-c36f9db1a278",
+        "payload_digest": "c531add490c26a788293ddaeb50faeb1ff827e6b033c4f7ff29dc4f9de11cb93",
+        "recorded_at": "2026-09-02T22:44:20Z",
+        "revision": 1088,
+        "row_id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
+        "table_name": "artifact"
       },
       {
         "id": "fb11e259-9cde-4ab1-8a56-0931fd569468",
@@ -178944,6 +180280,17 @@
         "table_name": "cycle"
       },
       {
+        "id": "fba60df5-09b2-4474-a1a0-cf5e9424a7d1",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "ee9a287d-e376-4c27-8e82-71ca1cac6dd6",
+        "payload_digest": "92bdf36298e3182543b84b7ec0b275aecd8f5dbd2192fd78af33f287001521c8",
+        "recorded_at": "2026-09-02T22:41:55Z",
+        "revision": 1083,
+        "row_id": "74b1183e-5936-4a9c-b41e-9bdd78c0ee8f",
+        "table_name": "document_path_alias"
+      },
+      {
         "id": "fba86a9d-7443-414e-a4bd-af17dd6d29b2",
         "managed": 1,
         "operation": "update",
@@ -179063,6 +180410,17 @@
         "revision": 885,
         "row_id": "ff8ec7f7-8986-4bfa-9bdd-cbb4d24d65be",
         "table_name": "document_path_alias"
+      },
+      {
+        "id": "fc2973a9-44c8-4880-8ebd-db4bf057543d",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "2b5fd514-86bf-4bb6-bf47-6746d0039d38",
+        "payload_digest": "4f627b8f1167400a437b8dab7388e65184010cc4161e878d9e65ee48e3ce9706",
+        "recorded_at": "2026-09-02T22:44:27Z",
+        "revision": 1090,
+        "row_id": "d2822d68-4052-4f3f-aea6-0c363c08774f",
+        "table_name": "relationship"
       },
       {
         "id": "fc2e2b4d-9c0f-4ad0-b83c-956ad7d40157",
