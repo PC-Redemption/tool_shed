@@ -51,6 +51,8 @@ class DevelopmentSiteTests(unittest.TestCase):
         self.assertEqual(payload["compose_project"], "tsrookarocom-dev")
 
     def test_deploy_environment_must_match_staged_identity_without_reading_secrets(self) -> None:
+        if os.name == "nt":
+            self.skipTest("development-site environment permissions require POSIX mode bits")
         with tempfile.TemporaryDirectory() as temporary:
             target = Path(temporary)
             marker = {
@@ -111,6 +113,11 @@ class DevelopmentSiteTests(unittest.TestCase):
 
             with (
                 mock.patch.object(DEVELOPMENT_SITE, "_controlled_environment"),
+                mock.patch.object(
+                    DEVELOPMENT_SITE,
+                    "_protected_environment",
+                    return_value=environment,
+                ),
                 mock.patch.object(DEVELOPMENT_SITE, "run") as run,
                 mock.patch.object(
                     DEVELOPMENT_SITE,
