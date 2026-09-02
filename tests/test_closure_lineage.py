@@ -160,6 +160,34 @@ class ClosureLineageTests(unittest.TestCase):
         reasons = {item["reason_code"] for item in status["blockers"]}
         self.assertTrue({"LOCAL_OPEN", "UNFULFILLED_REQUIREMENT"} & reasons)
 
+    def test_incremental_projection_matches_independent_recursive_evaluator(self) -> None:
+        self.migrate()
+        self.close(self.requirement_for(self.roadmap_cycle))
+        self.close(self.roadmap_cycle)
+        with contextlib.closing(
+            hybrid_state.connect(hybrid_state.database_path(self.workspace), writable=False)
+        ) as connection:
+            recursive = closure_lineage.evaluate_recursive(connection)
+            projected = {
+                str(row["element_id"]): {
+                    "local_closure": str(row["local_closure"]),
+                    "evidence_health": str(row["evidence_health"]),
+                    "graph_health": str(row["graph_health"]),
+                    "effective_closed": bool(row["effective_closed"]),
+                    "reasons": json.loads(row["reason_codes_json"]),
+                    "open_descendants": int(row["open_descendants"]),
+                    "unknown_descendants": int(row["unknown_descendants"]),
+                    "invalid_descendants": int(row["invalid_descendants"]),
+                }
+                for row in connection.execute("SELECT * FROM closure_rollup")
+            }
+        for element_id, expected in recursive.items():
+            self.assertEqual(
+                projected[element_id],
+                {key: expected[key] for key in projected[element_id]},
+                element_id,
+            )
+
     def test_proof_recipe_is_idempotent_and_subject_bound(self) -> None:
         self.migrate()
         requirement_id = self.requirement_for(self.roadmap_cycle)

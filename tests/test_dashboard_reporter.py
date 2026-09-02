@@ -668,7 +668,7 @@ class DashboardReporterTests(unittest.TestCase):
         self.assertEqual(payload["app_server"]["attempts"], 3)
         self.assertEqual(payload["app_server"]["performance"]["default_window"], "7d")
         self.assertIsNone(payload["work_efficiency"]["remedial_tokens_actual"])
-        self.assertEqual(payload["schema_version"], 6)
+        self.assertEqual(payload["schema_version"], 7)
         self.assertEqual(payload["work_inventory"], {"total_count": 0, "truncated": False, "artifacts": []})
         self.assertEqual(payload["instance_health"]["reporter_state"], "active")
         self.assertEqual(len(payload["instance_health"]["semantic_digest"]), 64)

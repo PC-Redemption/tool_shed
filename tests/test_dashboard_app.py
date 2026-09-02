@@ -214,6 +214,31 @@ class DashboardApplicationTests(TestCase):
         )
         return payload
 
+    def closure_report_payload(self) -> dict[str, object]:
+        payload = self.performance_report_payload()
+        payload["schema_version"] = 7
+        payload["work_inventory"]["artifacts"][0]["closure_status"] = {  # type: ignore[index]
+            "local_closure": "closed-loop",
+            "evidence_health": "current",
+            "graph_health": "valid",
+            "effective_closed": False,
+            "reason_codes": ["DESCENDANT_OPEN"],
+            "counts": {"open": 2, "unknown": 0, "invalid": 0},
+            "blockers": [
+                {
+                    "blocking_element_id": str(uuid.uuid4()),
+                    "blocking_obligation_id": str(uuid.uuid4()),
+                    "reason_code": "LOCAL_OPEN",
+                    "depth": 2,
+                }
+            ],
+            "subject_revision": 41,
+            "graph_revision": 12,
+            "evaluator_version": "recursive-closure-v1",
+            "evaluated_at": str(payload["observed_at"]),
+        }
+        return payload
+
     def health_report_payload(self) -> dict[str, object]:
         payload = self.lifecycle_report_payload()
         payload["schema_version"] = 4
@@ -591,6 +616,31 @@ class DashboardApplicationTests(TestCase):
         self.assertEqual(snapshot.planning_position, 2)
         self.assertEqual(snapshot.planning_order_source, "owner")
         self.assertEqual(snapshot.planning_readiness, "working")
+
+    def test_schema_seven_ingests_and_renders_recursive_closure_status(self) -> None:
+        token = self.enroll_and_issue()
+        payload = self.closure_report_payload()
+        validated = validate_report(payload)
+        closure = validated["work_inventory"]["artifacts"][0]["closure_status"]
+        self.assertFalse(closure["effective_closed"])
+        self.assertEqual(closure["counts"]["open"], 2)
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        snapshot = WorkArtifactSnapshot.objects.get()
+        self.assertEqual(snapshot.closure_status["local_closure"], "closed-loop")
+        self.assertEqual(snapshot.closure_status["reason_codes"], ["DESCENDANT_OPEN"])
+
+        user = get_user_model().objects.create_user("closure-viewer", password="fixture")
+        self.client.force_login(user)
+        work = self.client.get(reverse("fleet:project-tab", args=(snapshot.project_id, "work")))
+        self.assertContains(work, "closed-loop · current · valid")
+        self.assertContains(work, "2 open · 0 unknown · 0 invalid")
+        self.assertContains(work, "DESCENDANT_OPEN")
 
     def test_schema_four_projects_instance_health_and_semantic_divergence(self) -> None:
         token = self.enroll_and_issue()

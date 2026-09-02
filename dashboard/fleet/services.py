@@ -608,6 +608,7 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
                     planning_position=item["planning_position"],
                     planning_order_source=item["planning_order_source"],
                     planning_readiness=item["planning_readiness"],
+                    closure_status=_json_safe(item["closure_status"]),
                     source_updated_at=item["updated_at"],
                     observed_at=observed,
                     snapshot_sequence=report["sequence"],

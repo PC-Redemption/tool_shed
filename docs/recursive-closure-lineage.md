@@ -64,8 +64,8 @@ python3 scripts/closure_lineage.py --workspace . --json close \
 
 `status` returns exact subject, graph, and evaluator revisions; reasons; descendant counts; and up
 to the first 100 nearest obligation-scoped blockers. Every closure mutation supersedes the prior
-current record, rebuilds paths/rollups in the same guarded revision, and fails if the resulting
-state cannot audit.
+current record and refreshes only the changed element and its indexed governing ancestors in the
+same guarded revision. Full rebuild remains the independent parity oracle.
 
 ## Proof recipes
 
@@ -76,8 +76,9 @@ pass/fail meaning. The checker has its own immutable digest. Generated free-form
 recipe.
 
 `proof-record` is idempotent on element, obligation, subject revision/digest, recipe digest, and
-target. A passed safe recipe emits a current closed-loop record. Mutating, networked, credentialed,
-production, or costly recipes become `blocked` unless the invocation carries explicit current
+target. A passed result closes work only when its output repeats the immutable checker, recipe,
+target, and subject digests and the invocation carries explicit current authority. Mutating,
+networked, credentialed, production, or costly recipes also become `blocked` without that current
 authority. Failed, blocked, timed-out, checker-error, or superseded attempts cannot close work.
 
 ## Recovery
@@ -92,6 +93,29 @@ visible in blockers. `recovery-resolve` accepts only:
 
 Reparent and retirement dispositions append lineage tombstones. Recovery never synthesizes a
 parent's requirements, lifecycle, evidence, or ancestors from child hints.
+
+`recovery-retry` requires a current owner, reason, maximum-attempt bound, and cooldown. Attempts
+enter `retry-wait` until the declared bound and then become `escalated`; an escalated case cannot be
+silently retried or resolved without one of the exact terminal dispositions above.
+
+## Reporter and provisional performance
+
+Dashboard report schema 7 adds a bounded `closure_status` object to every reported artifact. It
+carries the four status fields, reason codes, descendant counts, first 20 blockers, subject/graph
+revisions, evaluator version, and observation time. Schema-1 through schema-6 reporters remain
+accepted, and their stored artifacts display closure as not reported rather than being treated as
+closed.
+
+Run the deterministic Work2 corpus with:
+
+```bash
+python3 scripts/closure_lineage_benchmark.py \
+  --elements 25000 --edges 100000 --depth 128 --repeats 10
+```
+
+The benchmark compares ancestor-only refresh results with the independent recursive evaluator and
+reports p95 summary, first-100-blocker, and mutation timings plus full-rebuild duration against the
+provisional budgets. Work3 will freeze and repeat the measurements on each exact target candidate.
 
 ## Checkpoint and compatibility
 

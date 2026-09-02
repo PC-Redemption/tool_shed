@@ -118,6 +118,15 @@ WORK_ARTIFACT_FIELDS = {
     "planning_readiness",
     "updated_at",
 }
+WORK_ARTIFACT_FIELDS_V7 = WORK_ARTIFACT_FIELDS | {"closure_status"}
+CLOSURE_STATUS_FIELDS = {
+    "local_closure", "evidence_health", "graph_health", "effective_closed", "reason_codes",
+    "counts", "blockers", "subject_revision", "graph_revision", "evaluator_version", "evaluated_at",
+}
+CLOSURE_COUNT_FIELDS = {"open", "unknown", "invalid"}
+CLOSURE_BLOCKER_FIELDS = {
+    "blocking_element_id", "blocking_obligation_id", "reason_code", "depth",
+}
 LIFECYCLE_EVENT_FIELDS = {
     "event_key",
     "artifact_id",
@@ -385,6 +394,56 @@ def _string_list(value: Any, label: str, *, limit: int = 16) -> list[str]:
     return [_required_string(item, f"{label} item", 64) for item in value]
 
 
+def _closure_status(value: Any, label: str) -> dict[str, Any]:
+    item = _object(value, label, CLOSURE_STATUS_FIELDS)
+    counts = _object(item.get("counts"), f"{label}.counts", CLOSURE_COUNT_FIELDS)
+    raw_blockers = item.get("blockers")
+    if not isinstance(raw_blockers, list) or len(raw_blockers) > 20:
+        raise ContractError(f"{label}.blockers must be a list of at most 20 items")
+    blockers = []
+    for index, raw in enumerate(raw_blockers, start=1):
+        blocker = _object(raw, f"{label}.blocker {index}", CLOSURE_BLOCKER_FIELDS)
+        blockers.append(
+            {
+                "blocking_element_id": _optional_string(
+                    blocker.get("blocking_element_id"), f"{label}.blocker {index}.blocking_element_id", 64
+                ),
+                "blocking_obligation_id": _optional_string(
+                    blocker.get("blocking_obligation_id"), f"{label}.blocker {index}.blocking_obligation_id", 64
+                ),
+                "reason_code": _required_string(
+                    blocker.get("reason_code"), f"{label}.blocker {index}.reason_code", 64
+                ),
+                "depth": _bounded_counter(blocker.get("depth"), f"{label}.blocker {index}.depth", 10_000),
+            }
+        )
+    return {
+        "local_closure": _choice(
+            item.get("local_closure"), f"{label}.local_closure",
+            {"open", "closed-loop", "closed-manual", "unknown"}, 24,
+        ),
+        "evidence_health": _choice(
+            item.get("evidence_health"), f"{label}.evidence_health",
+            {"current", "stale", "missing", "checker-error", "not-required", "unknown"}, 24,
+        ),
+        "graph_health": _choice(
+            item.get("graph_health"), f"{label}.graph_health",
+            {"valid", "invalid", "recovery-required", "unknown"}, 24,
+        ),
+        "effective_closed": _boolean(item.get("effective_closed"), f"{label}.effective_closed"),
+        "reason_codes": _string_list(item.get("reason_codes", []), f"{label}.reason_codes", limit=32),
+        "counts": {
+            field: _bounded_counter(counts.get(field), f"{label}.counts.{field}", 1_000_000)
+            for field in CLOSURE_COUNT_FIELDS
+        },
+        "blockers": blockers,
+        "subject_revision": _counter(item.get("subject_revision"), f"{label}.subject_revision"),
+        "graph_revision": _counter(item.get("graph_revision"), f"{label}.graph_revision"),
+        "evaluator_version": _required_string(item.get("evaluator_version"), f"{label}.evaluator_version", 64),
+        "evaluated_at": _timestamp(item.get("evaluated_at"), f"{label}.evaluated_at"),
+    }
+
+
 def _work_inventory(value: Any, *, schema_version: int) -> dict[str, Any]:
     supplied = _object(value, "work_inventory", WORK_INVENTORY_FIELDS)
     raw_artifacts = supplied.get("artifacts", [])
@@ -394,7 +453,7 @@ def _work_inventory(value: Any, *, schema_version: int) -> dict[str, Any]:
     seen: set[uuid.UUID] = set()
     for index, raw in enumerate(raw_artifacts, start=1):
         label = f"work artifact {index}"
-        item = _object(raw, label, WORK_ARTIFACT_FIELDS)
+        item = _object(raw, label, WORK_ARTIFACT_FIELDS_V7 if schema_version >= 7 else WORK_ARTIFACT_FIELDS)
         artifact_id = _uuid(item.get("artifact_id"), f"{label}.artifact_id")
         if artifact_id in seen:
             raise ContractError("work_inventory.artifacts contains duplicate artifact_id values")
@@ -436,6 +495,9 @@ def _work_inventory(value: Any, *, schema_version: int) -> dict[str, Any]:
                 "planning_position": planning_position,
                 "planning_order_source": planning_source,
                 "planning_readiness": planning_readiness,
+                "closure_status": _closure_status(
+                    item.get("closure_status"), f"{label}.closure_status"
+                ) if schema_version >= 7 else {},
                 "updated_at": _timestamp(item.get("updated_at"), f"{label}.updated_at"),
             }
         )
@@ -605,8 +667,8 @@ def _instance_health(value: Any, *, schema_version: int) -> dict[str, Any]:
 def validate_report(payload: Any) -> dict[str, Any]:
     root = _object(payload, "report", ROOT_FIELDS)
     schema_version = root.get("schema_version")
-    if schema_version not in {1, 2, 3, 4, 5, 6}:
-        raise ContractError("report.schema_version must be 1, 2, 3, 4, 5, or 6")
+    if schema_version not in {1, 2, 3, 4, 5, 6, 7}:
+        raise ContractError("report.schema_version must be 1, 2, 3, 4, 5, 6, or 7")
     if schema_version == 1 and ({"work_inventory", "lifecycle_events"} & set(root)):
         raise ContractError("report schema 1 does not support lifecycle projection fields")
     if schema_version < 4 and "instance_health" in root:

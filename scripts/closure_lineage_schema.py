@@ -55,6 +55,7 @@ CREATE TABLE closure_element (
            (role = 'obligation' AND cycle_id IS NULL AND requirement_id IS NOT NULL))
 ) WITHOUT ROWID;
 CREATE INDEX closure_element_artifact_idx ON closure_element(artifact_id, id);
+CREATE INDEX closure_requirement_cycle_idx ON requirement(cycle_id, id);
 
 CREATE TABLE lineage_claim (
     id TEXT PRIMARY KEY,
@@ -71,6 +72,7 @@ CREATE TABLE lineage_claim (
 ) WITHOUT ROWID;
 CREATE INDEX lineage_claim_child_idx ON lineage_claim(child_element_id, retired_revision, id);
 CREATE INDEX lineage_claim_parent_idx ON lineage_claim(parent_element_id, parent_requirement_id, retired_revision, id);
+CREATE INDEX closure_lineage_parent_requirement_idx ON lineage_claim(parent_requirement_id, relationship_type, retired_revision, child_element_id);
 
 CREATE TABLE closure_record (
     id TEXT PRIMARY KEY,

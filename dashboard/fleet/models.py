@@ -138,6 +138,7 @@ class WorkArtifactSnapshot(models.Model):
     planning_position = models.PositiveIntegerField(null=True, blank=True)
     planning_order_source = models.CharField(max_length=24, default="not-applicable")
     planning_readiness = models.CharField(max_length=24, default="not-applicable")
+    closure_status = models.JSONField(default=dict)
     source_updated_at = models.DateTimeField()
     observed_at = models.DateTimeField()
     snapshot_sequence = models.PositiveBigIntegerField()

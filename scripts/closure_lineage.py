@@ -477,6 +477,7 @@ def _active_claims(connection: sqlite3.Connection) -> list[sqlite3.Row]:
 
 def _graph_findings(connection: sqlite3.Connection) -> tuple[list[dict[str, Any]], dict[str, list[str]]]:
     elements = {str(row["id"]): row for row in connection.execute("SELECT * FROM closure_element")}
+    requirements = {str(row["id"]): row for row in connection.execute("SELECT * FROM requirement")}
     claims = _active_claims(connection)
     findings: list[dict[str, Any]] = []
     parents: dict[str, list[str]] = {key: [] for key in elements}
@@ -485,7 +486,7 @@ def _graph_findings(connection: sqlite3.Connection) -> tuple[list[dict[str, Any]
         if child not in elements or parent not in elements:
             findings.append({"code": "MISSING_PARENT", "claim_id": claim["id"], "element_id": child})
             continue
-        requirement = connection.execute("SELECT * FROM requirement WHERE id=?", (claim["parent_requirement_id"],)).fetchone()
+        requirement = requirements.get(str(claim["parent_requirement_id"]))
         if requirement is None:
             findings.append({"code": "MISSING_REQUIREMENT", "claim_id": claim["id"], "element_id": child})
             continue
@@ -533,6 +534,29 @@ def _children(connection: sqlite3.Connection, element: sqlite3.Row) -> list[tupl
 
 def evaluate_recursive(connection: sqlite3.Connection) -> dict[str, dict[str, Any]]:
     elements = {str(row["id"]): row for row in connection.execute("SELECT * FROM closure_element ORDER BY id")}
+    children_by_element: dict[str, list[tuple[str, str | None]]] = {key: [] for key in elements}
+    for row in connection.execute(
+        "SELECT parent.id AS parent_id, child.id AS child_id, child.requirement_id "
+        "FROM closure_element parent JOIN requirement q ON q.cycle_id=parent.cycle_id "
+        "JOIN closure_element child ON child.requirement_id=q.id "
+        "WHERE parent.role='cycle' AND child.role='obligation' "
+        "AND q.disposition NOT IN ('not-applicable','retired','superseded')"
+    ):
+        children_by_element[str(row["parent_id"])].append(
+            (str(row["child_id"]), str(row["requirement_id"]))
+        )
+    for row in connection.execute(
+        "SELECT obligation.id AS parent_id, claim.child_element_id AS child_id, "
+        "claim.parent_requirement_id FROM lineage_claim claim JOIN closure_element obligation "
+        "ON obligation.requirement_id=claim.parent_requirement_id "
+        "WHERE claim.relationship_type IN ('fulfills','contributes') "
+        "AND claim.retired_revision IS NULL AND claim.child_element_id<>obligation.id"
+    ):
+        children_by_element[str(row["parent_id"])].append(
+            (str(row["child_id"]), str(row["parent_requirement_id"]))
+        )
+    for value in children_by_element.values():
+        value.sort()
     findings, _ = _graph_findings(connection)
     findings_by_element: dict[str, list[str]] = {}
     for item in findings:
@@ -574,7 +598,7 @@ def evaluate_recursive(connection: sqlite3.Connection) -> dict[str, dict[str, An
         elif evidence == "checker-error":
             local_reasons.append("CHECKER_ERROR")
 
-        children = _children(connection, element)
+        children = children_by_element[element_id]
         # An obligation can be satisfied by its governing children even before a separate local record is emitted.
         child_results = [(child, requirement, evaluate(child)) for child, requirement in children if child in elements]
         obligation_derived = element["role"] == "obligation" and bool(child_results) and all(item[2]["effective_closed"] for item in child_results)
@@ -673,6 +697,209 @@ def rebuild_projection(connection: sqlite3.Connection, *, revision: int) -> dict
         (graph_revision, EVALUATOR_VERSION, source_digest, stamp),
     )
     return {"graph_revision": graph_revision, "element_count": len(results), "finding_count": len(findings)}
+
+
+def refresh_projection(
+    connection: sqlite3.Connection,
+    *,
+    revision: int,
+    changed_element_ids: Iterable[str],
+) -> dict[str, Any]:
+    """Refresh changed elements and their indexed ancestors without walking unrelated subtrees."""
+    changed = {str(value) for value in changed_element_ids}
+    if not changed:
+        return {"graph_revision": 0, "element_count": 0, "finding_count": 0}
+    affected = set(changed)
+    elements: dict[str, sqlite3.Row] = {}
+    frontier = list(changed)
+    while frontier:
+        element_id = frontier.pop()
+        element = connection.execute("SELECT * FROM closure_element WHERE id=?", (element_id,)).fetchone()
+        if element is None:
+            raise ClosureLineageError("incremental projection references a missing closure element")
+        elements[element_id] = element
+        if element["role"] == "obligation":
+            parent_rows = connection.execute(
+                "SELECT parent.id FROM requirement q JOIN closure_element parent "
+                "ON parent.cycle_id=q.cycle_id AND parent.role='cycle' WHERE q.id=?",
+                (element["requirement_id"],),
+            )
+        else:
+            parent_rows = connection.execute(
+                "SELECT obligation.id FROM lineage_claim claim JOIN closure_element obligation "
+                "ON obligation.requirement_id=claim.parent_requirement_id AND obligation.role='obligation' "
+                "WHERE claim.child_element_id=? AND claim.relationship_type IN ('fulfills','contributes') "
+                "AND claim.retired_revision IS NULL",
+                (element_id,),
+            )
+        for row in parent_rows:
+            parent_id = str(row["id"])
+            if parent_id not in affected:
+                affected.add(parent_id)
+                frontier.append(parent_id)
+    if set(elements) != affected:
+        raise ClosureLineageError("incremental projection references a missing closure element")
+    children_by_element = {
+        element_id: _children(connection, element)
+        for element_id, element in elements.items()
+    }
+    findings_by_element: dict[str, list[str]] = {}
+    graph_reason_codes = {"CYCLE", "CONFLICTING_LINEAGE", "MISSING_PARENT", "MISSING_REQUIREMENT"}
+    for element_id in affected:
+        prior = connection.execute(
+            "SELECT reason_codes_json FROM closure_rollup WHERE element_id=?", (element_id,)
+        ).fetchone()
+        if prior:
+            findings_by_element[element_id] = [
+                value for value in json.loads(prior["reason_codes_json"])
+                if value in graph_reason_codes
+            ]
+    recovery_elements = {
+        str(row["element_id"])
+        for row in connection.execute(
+            "SELECT element_id FROM recovery_case WHERE state IN ('open','retry-wait','escalated') "
+            "AND element_id IS NOT NULL"
+        )
+    }
+    graph = connection.execute("SELECT * FROM closure_graph_meta WHERE id=1").fetchone()
+    graph_revision = int(graph["graph_revision"]) + 1
+    stamp = hybrid_state.now()
+
+    def child_result(child_id: str) -> dict[str, Any]:
+        rollup = connection.execute("SELECT * FROM closure_rollup WHERE element_id=?", (child_id,)).fetchone()
+        if rollup is None:
+            raise ClosureLineageError(f"incremental child rollup is unavailable: {child_id}")
+        blockers = [
+            (
+                row["blocking_element_id"], row["blocking_obligation_id"],
+                str(row["reason_code"]), int(row["depth"]),
+            )
+            for row in connection.execute(
+                "SELECT blocking_element_id, blocking_obligation_id, reason_code, depth "
+                "FROM closure_blocker WHERE ancestor_element_id=? ORDER BY depth, reason_code, id",
+                (child_id,),
+            )
+        ]
+        return {
+            "effective_closed": bool(rollup["effective_closed"]),
+            "open_descendants": int(rollup["open_descendants"]),
+            "unknown_descendants": int(rollup["unknown_descendants"]),
+            "invalid_descendants": int(rollup["invalid_descendants"]),
+            "blockers": blockers,
+        }
+
+    def evaluate_one(element_id: str) -> dict[str, Any]:
+        element = elements[element_id]
+        closure = _latest_closure(connection, element_id)
+        local = str(closure["method"]) if closure else "open"
+        evidence = str(closure["evidence_health"]) if closure else "not-required"
+        local_reasons: list[str] = []
+        graph_reasons = findings_by_element.get(element_id, [])
+        graph_health = "invalid" if any(
+            item in {"CYCLE", "CONFLICTING_LINEAGE"} for item in graph_reasons
+        ) else "valid"
+        if element_id in recovery_elements or any(
+            item in {"MISSING_PARENT", "MISSING_REQUIREMENT"} for item in graph_reasons
+        ):
+            graph_health = "recovery-required"
+        if local == "open":
+            local_reasons.append("LOCAL_OPEN")
+        elif evidence == "missing":
+            local_reasons.append("UNPROVEN")
+        elif evidence == "stale":
+            local_reasons.append("STALE_EVIDENCE")
+        elif evidence == "checker-error":
+            local_reasons.append("CHECKER_ERROR")
+        children = children_by_element[element_id]
+        child_results = [(child, requirement, child_result(child)) for child, requirement in children]
+        obligation_derived = (
+            element["role"] == "obligation" and bool(child_results)
+            and all(item[2]["effective_closed"] for item in child_results)
+        )
+        locally_closed = local in {"closed-loop", "closed-manual"} or obligation_derived
+        if obligation_derived and local == "open":
+            local_reasons = []
+            local = "closed-loop"
+            evidence = "current"
+        blockers: list[tuple[str | None, str | None, str, int]] = []
+        open_descendants = unknown_descendants = invalid_descendants = 0
+        for child, requirement, result in child_results:
+            if not result["effective_closed"]:
+                open_descendants += 1 + int(result["open_descendants"])
+                unknown_descendants += int(result["unknown_descendants"])
+                invalid_descendants += int(result["invalid_descendants"])
+                blockers.extend(
+                    (blocking, obligation or requirement, reason, depth + 1)
+                    for blocking, obligation, reason, depth in result["blockers"]
+                )
+        if element["role"] == "obligation" and not children and not locally_closed:
+            local_reasons.append("UNFULFILLED_REQUIREMENT")
+            blockers.append((element_id, str(element["requirement_id"]), "UNFULFILLED_REQUIREMENT", 0))
+        for reason in graph_reasons:
+            blockers.append((element_id, str(element["requirement_id"]) if element["role"] == "obligation" else None, reason, 0))
+        for reason in local_reasons:
+            blockers.append((element_id, str(element["requirement_id"]) if element["role"] == "obligation" else None, reason, 0))
+        if child_results and any(not item[2]["effective_closed"] for item in child_results):
+            local_reasons.append("DESCENDANT_OPEN")
+        effective = (
+            locally_closed and evidence in {"not-required", "current"} and graph_health == "valid"
+            and all(item[2]["effective_closed"] for item in child_results)
+        )
+        return {
+            "local_closure": local, "evidence_health": evidence, "graph_health": graph_health,
+            "effective_closed": effective, "reasons": sorted(set([*local_reasons, *graph_reasons])),
+            "blockers": sorted(set(blockers), key=lambda item: (item[3], item[2], item[0] or "", item[1] or "")),
+            "open_descendants": open_descendants, "unknown_descendants": unknown_descendants,
+            "invalid_descendants": invalid_descendants + (1 if graph_health != "valid" else 0),
+        }
+
+    pending = set(affected)
+    processed: list[str] = []
+    while pending:
+        ready = sorted(
+            element_id for element_id in pending
+            if not ({child for child, _ in children_by_element[element_id]} & pending)
+        )
+        if not ready:
+            raise ClosureLineageError("incremental projection cannot order cyclic affected elements")
+        for element_id in ready:
+            result = evaluate_one(element_id)
+            element = elements[element_id]
+            connection.execute("DELETE FROM closure_blocker WHERE ancestor_element_id=?", (element_id,))
+            connection.execute(
+                "INSERT INTO closure_rollup VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+                "ON CONFLICT(element_id) DO UPDATE SET local_closure=excluded.local_closure, "
+                "evidence_health=excluded.evidence_health, graph_health=excluded.graph_health, "
+                "effective_closed=excluded.effective_closed, reason_codes_json=excluded.reason_codes_json, "
+                "open_descendants=excluded.open_descendants, unknown_descendants=excluded.unknown_descendants, "
+                "invalid_descendants=excluded.invalid_descendants, subject_revision=excluded.subject_revision, "
+                "graph_revision=excluded.graph_revision, evaluator_version=excluded.evaluator_version, "
+                "evaluated_at=excluded.evaluated_at",
+                (
+                    stable_uuid("rollup", element_id), element_id, result["local_closure"], result["evidence_health"],
+                    result["graph_health"], int(result["effective_closed"]), json.dumps(result["reasons"]),
+                    result["open_descendants"], result["unknown_descendants"], result["invalid_descendants"],
+                    element["subject_revision"], graph_revision, EVALUATOR_VERSION, stamp,
+                ),
+            )
+            for index, (blocking, obligation, reason, depth) in enumerate(result["blockers"]):
+                connection.execute(
+                    "INSERT INTO closure_blocker VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        stable_uuid("blocker", graph_revision, element_id, index, blocking, obligation, reason, depth),
+                        element_id, obligation, blocking, obligation, reason, depth, graph_revision,
+                    ),
+                )
+            pending.remove(element_id)
+            processed.append(element_id)
+    source_digest = digest(
+        [graph["source_digest"], revision, sorted(changed), graph_revision, EVALUATOR_VERSION]
+    )
+    connection.execute(
+        "UPDATE closure_graph_meta SET graph_revision=?, evaluator_version=?, source_digest=?, updated_at=? WHERE id=1",
+        (graph_revision, EVALUATOR_VERSION, source_digest, stamp),
+    )
+    return {"graph_revision": graph_revision, "element_count": len(processed), "finding_count": 0}
 
 
 def status(workspace: Path, identity: str) -> dict[str, Any]:
@@ -778,7 +1005,7 @@ def close_element(
                 evidence_health, authorization_ref, json.dumps(sorted(set(evidence))), revision,
             ),
         )
-        rebuilt = rebuild_projection(connection, revision=revision)
+        rebuilt = refresh_projection(connection, revision=revision, changed_element_ids=[element_id])
         return {"record_id": record_id, "element_id": element_id, **rebuilt}
 
     return document_store.managed_write(
@@ -918,7 +1145,7 @@ def record_proof_attempt(
                     json.dumps([f"proof-attempt:{attempt_id}"]), revision,
                 ),
             )
-        rebuild_projection(connection, revision=revision)
+        refresh_projection(connection, revision=revision, changed_element_ids=[element_id])
         return {"attempt_id": attempt_id, "state": state_value, "idempotent": False}
 
     return document_store.managed_write(
@@ -951,7 +1178,7 @@ def open_recovery_case(
             "INSERT INTO recovery_case VALUES (?, ?, ?, 'open', NULL, 0, NULL, ?, ?, ?, NULL)",
             (case_id, element_id, reason_code, json.dumps(detail, sort_keys=True), revision, revision),
         )
-        rebuild_projection(connection, revision=revision)
+        refresh_projection(connection, revision=revision, changed_element_ids=[element_id])
         return {"case_id": case_id, "idempotent": False}
 
     return document_store.managed_write(
@@ -1003,7 +1230,7 @@ def retry_recovery_case(
                 json.dumps(detail, sort_keys=True), revision, case_id,
             ),
         )
-        rebuild_projection(connection, revision=revision)
+        refresh_projection(connection, revision=revision, changed_element_ids=[case["element_id"]])
         return {
             "case_id": case_id,
             "state": state_value,
@@ -1045,7 +1272,7 @@ def resolve_recovery_case(
                 "INSERT INTO lineage_tombstone VALUES (?, ?, NULL, ?, ?, ?, ?, ?)",
                 (random_uuid(), case["element_id"], disposition, reason, authorization_ref, json.dumps({"case_id": case_id}), revision),
             )
-        rebuild_projection(connection, revision=revision)
+        refresh_projection(connection, revision=revision, changed_element_ids=[case["element_id"]])
         return {"case_id": case_id, "state": mapping[disposition]}
 
     return document_store.managed_write(

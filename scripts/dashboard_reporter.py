@@ -42,7 +42,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/dashboard_report
 
 
 SCHEMA_VERSION = 1
-REPORT_SCHEMA_VERSION = 6
+REPORT_SCHEMA_VERSION = 7
 OUTBOX_RELATIVE = Path(".tool-shed/dashboard/outbox.sqlite3")
 MAX_RESPONSE_BYTES = 65_536
 LOCK_SECONDS = 30
@@ -408,6 +408,7 @@ def _work_inventory(workspace: Path) -> dict[str, Any]:
         visible_by_id = {str(row["id"]): str(row["visible_id"]) for row in rows}
         parent_ids: dict[str, list[str]] = {value: [] for value in artifact_ids}
         produces_ids: dict[str, list[str]] = {value: [] for value in artifact_ids}
+        closure_by_artifact: dict[str, dict[str, Any]] = {}
         if artifact_ids:
             placeholders = ",".join("?" for _ in artifact_ids)
             relations = connection.execute(
@@ -439,6 +440,55 @@ def _work_inventory(workspace: Path) -> dict[str, Any]:
                         produces_ids[source].append(visible_by_id[target])
                     if target in parent_ids and source in visible_by_id:
                         parent_ids[target].append(visible_by_id[source])
+        if artifact_ids and connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='closure_rollup'"
+        ).fetchone():
+            placeholders = ",".join("?" for _ in artifact_ids)
+            closure_rows = connection.execute(
+                f"SELECT ce.artifact_id, ce.id AS element_id, ce.subject_revision, "
+                f"cr.local_closure, cr.evidence_health, cr.graph_health, cr.effective_closed, "
+                f"cr.reason_codes_json, cr.open_descendants, cr.unknown_descendants, "
+                f"cr.invalid_descendants, cr.graph_revision, cr.evaluator_version, cr.evaluated_at "
+                f"FROM closure_element ce JOIN closure_rollup cr ON cr.element_id=ce.id "
+                f"WHERE ce.role='cycle' AND ce.artifact_id IN ({placeholders}) "
+                f"ORDER BY ce.artifact_id, ce.subject_revision DESC, ce.id",
+                tuple(artifact_ids),
+            ).fetchall()
+            for closure in closure_rows:
+                artifact_id = str(closure["artifact_id"])
+                if artifact_id in closure_by_artifact:
+                    continue
+                blockers = [
+                    {
+                        "blocking_element_id": item["blocking_element_id"],
+                        "blocking_obligation_id": item["blocking_obligation_id"],
+                        "reason_code": item["reason_code"],
+                        "depth": int(item["depth"]),
+                    }
+                    for item in connection.execute(
+                        "SELECT blocking_element_id, blocking_obligation_id, reason_code, depth "
+                        "FROM closure_blocker WHERE ancestor_element_id=? "
+                        "ORDER BY depth, reason_code, id LIMIT 20",
+                        (closure["element_id"],),
+                    )
+                ]
+                closure_by_artifact[artifact_id] = {
+                    "local_closure": str(closure["local_closure"]),
+                    "evidence_health": str(closure["evidence_health"]),
+                    "graph_health": str(closure["graph_health"]),
+                    "effective_closed": bool(closure["effective_closed"]),
+                    "reason_codes": json.loads(closure["reason_codes_json"]),
+                    "counts": {
+                        "open": int(closure["open_descendants"]),
+                        "unknown": int(closure["unknown_descendants"]),
+                        "invalid": int(closure["invalid_descendants"]),
+                    },
+                    "blockers": blockers,
+                    "subject_revision": int(closure["subject_revision"]),
+                    "graph_revision": int(closure["graph_revision"]),
+                    "evaluator_version": str(closure["evaluator_version"]),
+                    "evaluated_at": str(closure["evaluated_at"]),
+                }
     type_by_namespace = {
         "IDEA": "idea-brief",
         "MAP": "project-map",
@@ -477,6 +527,22 @@ def _work_inventory(workspace: Path) -> dict[str, Any]:
                     else "terminal"
                     if artifact_type in planning_order.SUPPORTED_TYPES
                     else "not-applicable"
+                ),
+                "closure_status": closure_by_artifact.get(
+                    artifact_id,
+                    {
+                        "local_closure": "unknown",
+                        "evidence_health": "unknown",
+                        "graph_health": "unknown",
+                        "effective_closed": False,
+                        "reason_codes": ["CLOSURE_NOT_AVAILABLE"],
+                        "counts": {"open": 0, "unknown": 1, "invalid": 0},
+                        "blockers": [],
+                        "subject_revision": 0,
+                        "graph_revision": 0,
+                        "evaluator_version": "not-available",
+                        "evaluated_at": str(row["updated_at"]),
+                    },
                 ),
                 "updated_at": str(row["updated_at"]),
             }
