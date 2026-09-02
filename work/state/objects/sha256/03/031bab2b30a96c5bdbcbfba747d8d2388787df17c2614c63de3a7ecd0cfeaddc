@@ -1,0 +1,204 @@
+# Idea Brief: Deterministic Tool Shed Lifecycle and Database Truth Qualification Harness
+
+Status: exploring
+Type: idea-brief
+Updated: 2026-09-02
+Next Action: define the first deterministic acceptance corpus, fixture reset boundary, and fault-injection contract
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces:
+
+## Current Synthesis
+
+### Idea
+
+Create a deterministic lifecycle and database-truth qualification harness that repeatedly drives
+synthetic Tool Shed work through the same routes an operator uses: create an Idea, develop and
+promote it into planning, create and work actionable descendants, close them in different orders,
+reconcile outcomes, checkpoint and rebuild state, report it to the development dashboard, and
+verify that every resulting status is true.
+
+The harness should be deliberately low-reasoning and database-heavy. A model may provide small,
+bounded fixture text where a route requires prose, but it does not decide whether the system is
+correct. Exact machine-checkable invariants over stored identities, lineage, closure, evidence,
+reporter delivery, hosted records, and rendered views form the test oracle.
+
+This is broader than `IDEA-0019`. That Idea defines the recursive closure and lineage substrate;
+this Idea qualifies Tool Shed as a complete operating system across real lifecycle routes and all
+three development lanes. It should reveal gaps between individually passing components and the
+truth an operator actually sees.
+
+### Why It Matters
+
+The development dashboard recently displayed two synthetic seed projects as if they were real
+active projects alongside the Linux and Windows test beds. The individual services were healthy,
+yet the operator-facing inventory was materially false. That is direct evidence that component
+tests and isolated closure tests are not enough.
+
+Tool Shed needs a repeatable proof that one source event does not become contradictory facts in
+different stores or views. A lifecycle can look clean locally while its reporter is delayed, its
+hosted projection is duplicated or stale, or the UI labels it incorrectly. Conversely, a display
+problem must not be allowed to rewrite authoritative local state.
+
+The harness should make those gaps cheap to reproduce and diagnose before development code is
+promoted to a production release.
+
+### Desired Outcome
+
+A maintainer can run a bounded deterministic qualification suite against disposable web, Linux,
+and Windows development fixtures and receive an exact pass/fail report with a retained replay
+recipe for every failure. Given the same release candidate, fixture baseline, scenario seed, and
+inputs, the run produces the same logical sequence and expected state.
+
+For every checkpoint in a scenario, the harness compares three truth layers:
+
+1. **Local authority:** canonical Tool Shed documents, cycles, requirements, lineage, evidence,
+   closure rollups, checkpoints, and recovery findings in the fixture database.
+2. **Transport and hosted projection:** reporter payload/outbox state, delivery identity and
+   sequence, ingestion result, and the hosted development database rows derived from that report.
+3. **Operator presentation:** dashboard inventory, counts, labels, filters, attention state, detail
+   pages, provenance, and freshness as rendered for the operator.
+
+The suite passes only when all applicable layers agree with the authoritative contract and every
+expected exception is represented explicitly rather than disappearing or being guessed.
+
+### Qualification Invariants
+
+- Every created cycle and obligation has a stable, resolvable identity and valid immediate lineage.
+- A parent remains effectively open while any governing child or deeper descendant is open,
+  missing, unknown, invalid, stale, or unreconciled.
+- Manual closure closes only the selected element; it never silently closes descendants.
+- Closed-loop status requires current evidence for the exact obligation and subject revision.
+- Terminal child outcomes propagate and reconcile exactly once to each governing parent
+  obligation, including shared-child paths.
+- A clean graph has zero unresolved orphans, cycles, conflicting lineage claims, missing governing
+  requirements, stale rollups, or unpropagated outcomes.
+- Full recursive evaluation and incremental rollups return the same semantic result at the same
+  graph revision.
+- Checkpoint, restart, rebuild, update, and replay preserve semantic state and do not resurrect
+  retired work.
+- Retried commands, duplicate reporter submissions, and repeated reconciliation are idempotent.
+- Reporter delivery either drains to the expected hosted state or remains visibly pending/stale;
+  transport failure never presents stale data as current.
+- One stable project identity maps to one hosted project and one stable instance identity maps to
+  one hosted instance. Reinstall, restart, alias, or hostname changes do not create phantom rows.
+- Hosted counts, classifications, freshness, filters, detail pages, and hidden/retired behavior
+  match the hosted database and never imply authority the server does not own.
+- Each failure identifies the first divergent checkpoint, relevant IDs and revisions, expected and
+  actual values, and a deterministic replay recipe without leaking secrets.
+
+### Scenario Families
+
+| Family | What it should vary and prove |
+| --- | --- |
+| Normal lifecycle | Idea through planning, campaign/work creation, evidence, reconciliation, and effective closure |
+| Closure ordering | Parent/children closed in different orders; manual versus closed-loop; reopened or revised work |
+| Graph shape | Deep chains, wide trees, shared children, nested obligations, missing parents, cycles, and reparenting |
+| Interruption | Stop and resume between writes, evidence, rollup propagation, checkpoint, and reconciliation |
+| Concurrency/idempotency | Duplicate commands, stale expected revisions, repeated delivery, and competing closure attempts |
+| Projection recovery | Corrupt or remove rebuildable indexes, then compare deterministic rebuild with authority |
+| Reporter disruption | Offline, delayed, reordered, duplicated, rejected, revoked, and reconnected delivery |
+| Runtime persistence | Process restart, host reboot, client update, dashboard redeploy, and compatible schema migration |
+| Operator truth | Phantom, duplicate, stale, hidden, retired, unknown, misclassified, and divergent project displays |
+| Accumulation and scale | Many completed lifecycles plus active work, bounded reads, mutation cost, reporter backlog, and rebuild time |
+
+Start with named hand-authored scenarios for the most important contracts. Add seeded deterministic
+state-machine sequences to explore combinations and retain the seed plus a minimized failing action
+sequence. Randomness without a stable seed or replay log does not qualify as evidence.
+
+## Constraints And Non-Goals
+
+- Run destructive and corruption cases only in the explicitly disposable Linux, Windows, and web
+  development fixtures. Production data and production deployment are outside this Idea's initial
+  qualification boundary.
+- Use public Tool Shed commands and normal reporting routes for the main acceptance path. Permit
+  narrow internal hooks only where controlled fault injection or independent database inspection
+  cannot be achieved through public behavior.
+- Keep fixture prose minimal, deterministic, and structurally sufficient. Do not spend model
+  reasoning on creative content that is irrelevant to database transitions.
+- Inspect authoritative stores independently of the code path being tested so a shared defect does
+  not make both the implementation and its oracle agree on the same wrong answer.
+- Do not make elapsed wall-clock timing the semantic oracle. Use controllable clocks or bounded
+  waits for freshness, leases, retries, and expiry where practical.
+- Do not turn the harness into a second implementation of Tool Shed or a production cleanup tool.
+- Initial success is a proof of concept on development fixtures, not authorization to release a
+  candidate to production.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Public-command scenario driver | Exercises the operator contract and catches integration gaps | Slower and less direct fault control | Preferred main acceptance path |
+| Direct library/API driver | Fast, precise, and easy to generate many transitions | Can bypass command routing and conceal integration defects | Useful for lower-level generated tests, not sufficient alone |
+| Exact hand-authored corpus | Easy to understand and stable in release gates | Covers fewer combinations | Required foundation |
+| Seeded state-machine sequences | Explores ordering and graph combinations at high database volume | Needs shrinking and strong diagnostics | Add after the foundation |
+| Reset fixture for each scenario | Strong isolation and reproducibility | Misses long-term accumulation defects | Use for destructive and fault cases |
+| Retain a shared synthetic history | Reveals buildup, stale-state, and performance defects | Harder failure isolation | Use as a separate accumulation suite |
+| Database plus HTTP assertions | Fast and precise coverage of hosted truth | May miss browser rendering behavior | Required core web proof |
+| Small browser smoke layer | Verifies operator-visible inventory and navigation | More environment-sensitive | Recommended for critical display invariants |
+
+## Open Questions
+
+- What exact first corpus gives the smallest useful end-to-end proof before generated scenarios are
+  added?
+- Which operations must be driven only through public CLI routes, and which narrow internal hooks
+  are acceptable for corruption, interruption, clock control, and independent inspection?
+- Should each scenario start from a restored baseline, or should the suite combine isolated cases
+  with a deliberately accumulating long-lived database?
+- Which hosted UI invariants need a real browser, and which are sufficiently proven by hosted DB,
+  view-model, and HTTP response assertions?
+- What synthetic identity namespace and run identifier guarantee that Linux, Windows, and web
+  fixtures cannot collide with each other or with production?
+- What graph sizes, lifecycle counts, query latency, mutation latency, report-drain time, and full
+  rebuild time form the first performance budgets?
+- How should a failing generated sequence be minimized without removing the timing or ordering fact
+  that caused the failure?
+- Which evidence bundle is safe and sufficient to retain after a failed run, and what should be
+  automatically discarded after a pass?
+
+## Decisions
+
+- Treat this as a separate system-qualification Idea, with `IDEA-0019` supplying recursive closure
+  semantics rather than absorbing the harness scope.
+- Make the suite deterministic, replayable, database-heavy, and low-reasoning.
+- Use exact invariant checks—not model judgment—as the pass/fail authority.
+- Compare local authority, reporter/hosted projection, and operator presentation at explicit
+  checkpoints.
+- Exercise the real web, Linux, and Windows development lanes before any production qualification.
+- Preserve both an isolated correctness suite and an accumulation/scale suite because they expose
+  different failure classes.
+- Fail closed on unknown, missing, stale, contradictory, or unreconciled state; never convert lack
+  of proof into success.
+
+## Don't Forget
+
+- The phantom seed projects are a concrete regression fixture, not merely background context.
+- A healthy service response proves availability, not truthful inventory or lifecycle state.
+- A drained reporter queue proves delivery, not correct ingestion or presentation.
+- The harness must inspect absence: extra rows, resurrected elements, hidden blockers, stale
+  assertions, and duplicate identities are failures even when all expected rows also exist.
+- Parent/child proof must cover grandchildren and shared descendants, not only one-level examples.
+- Tests should state which layer owns each fact so a derived view cannot accidentally become the
+  recovery authority.
+- Timeouts and infrastructure errors are `unknown` or harness failures, not evidence that the
+  product correctly rejected a lifecycle transition.
+- Every retained replay case must name the candidate revision, fixture baseline, platform, scenario
+  version, seed, and action sequence.
+
+## Exploration Log
+
+### 2026-09-02
+
+- Idea Brief created.
+- Separated complete lifecycle qualification from the recursive closure implementation in
+  `IDEA-0019`.
+- Used the development dashboard's two phantom synthetic seed projects as evidence that isolated
+  component health does not prove operator-facing truth.
+- Established a low-reasoning, exact-oracle direction that drives synthetic Ideas and descendants
+  through real lifecycle routes and compares local, transport/hosted, and rendered state.
+- Captured hand-authored regression scenarios, seeded state-machine exploration, replay/minimization,
+  fault recovery, reporter disruption, persistence, UI truth, and accumulation/performance as the
+  proposed qualification shape.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.
