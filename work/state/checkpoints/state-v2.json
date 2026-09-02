@@ -1,8 +1,8 @@
 {
   "envelope": {
-    "created_at": "2026-09-02T12:19:47Z",
-    "database_revision": 1000,
-    "digest": "9a5d86e6de42cf5005c1c20a360bbe0d200091aee7070c48bcb0e3f416a06d93",
+    "created_at": "2026-09-02T13:12:01Z",
+    "database_revision": 1001,
+    "digest": "c90c557454144c54c9e9da1c2f7be0f557d842320d272658f9a728e8a72d1eae",
     "hybrid_schema": 2,
     "objects": [
       "work/state/objects/sha256/00/0082fd1d60de8f37c6d2972dac5637d8c894d2c8f1124c5061aeb74ba0c18b75",
@@ -46,6 +46,7 @@
       "work/state/objects/sha256/14/1451abc79e56f7beb44891c93fbbc8c23939137b1d2cd638aa1a40b7e95aa108",
       "work/state/objects/sha256/14/1468b6ac9838674534b80412047a78168c4768b444a905feb0fca440134d2259",
       "work/state/objects/sha256/14/14a394db4579823e4c15aea7d60613ef4ad38f10e67799d68bb802b99f0f49e4",
+      "work/state/objects/sha256/15/15f2b1347bd1e00dbb289f6ed87017d828051a63dc8424d89c87fe9c1c72be17",
       "work/state/objects/sha256/16/161d299255dc05c7c0b74257423c774ed461bd469cd42ad3ad41f3dc68771c03",
       "work/state/objects/sha256/16/16be2c8596e61957361c86d7e691041645cc8800fe83365575254d065e5d7eac",
       "work/state/objects/sha256/17/176c45a5f7b429dff9959e72b703f5cfbd03007914a6ca7262d1ff067b103283",
@@ -1651,14 +1652,14 @@
       },
       {
         "authority_mode": "sqlite",
-        "content_sha256": "36efaae35fc71fbb56fb1fd1e27ee88b67ee944e067c9dcdf0792abdbde66157",
+        "content_sha256": "15f2b1347bd1e00dbb289f6ed87017d828051a63dc8424d89c87fe9c1c72be17",
         "created_at": "2026-08-31T20:14:08Z",
         "current_path": "sqlite/documents/IDEA-0018",
         "display_number": "IDEA-0018",
         "id": "3ca61f1c-8199-46e2-8ac5-dd27e022b59c",
         "lifecycle_state": "active",
         "type": "idea-brief",
-        "updated_at": "2026-09-02T12:18:59Z"
+        "updated_at": "2026-09-02T13:10:10Z"
       },
       {
         "authority_mode": "sqlite",
@@ -8076,16 +8077,16 @@
         "visible_id": "EVD-0063"
       },
       {
-        "body_sha256": "36efaae35fc71fbb56fb1fd1e27ee88b67ee944e067c9dcdf0792abdbde66157",
+        "body_sha256": "15f2b1347bd1e00dbb289f6ed87017d828051a63dc8424d89c87fe9c1c72be17",
         "created_at": "2026-08-31T20:14:08Z",
-        "current_revision": 11,
+        "current_revision": 12,
         "display_number": 18,
         "id": "3ca61f1c-8199-46e2-8ac5-dd27e022b59c",
         "lifecycle_state": "active",
         "metadata_json": "{\"document_type\":\"idea-brief\",\"logical_path\":\"work/ideas/idea-private-development-site-before-public-release.md\",\"program_roadmap\":\"PRM-0036\",\"promoted_map\":\"MAP-0025\",\"readiness_review_digest\":\"58db01461740e0dfa8ca884db9afecb5ce60691e7578bfa59aeb19f45e38a722\"}",
         "namespace": "IDEA",
         "title": "Private Development Site Before Public Release",
-        "updated_at": "2026-09-02T12:18:59Z",
+        "updated_at": "2026-09-02T13:10:10Z",
         "visible_id": "IDEA-0018"
       },
       {
@@ -20848,6 +20849,20 @@
         "revision_number": 1,
         "source_revision": 758,
         "title": "Implement Cross-Project Dashboard Search and Operator Views"
+      },
+      {
+        "actor": "codex",
+        "body_object": "work/state/objects/sha256/15/15f2b1347bd1e00dbb289f6ed87017d828051a63dc8424d89c87fe9c1c72be17",
+        "body_sha256": "15f2b1347bd1e00dbb289f6ed87017d828051a63dc8424d89c87fe9c1c72be17",
+        "created_at": "2026-09-02T13:10:10Z",
+        "document_id": "3ca61f1c-8199-46e2-8ac5-dd27e022b59c",
+        "id": "683f9091-378c-4e00-8a19-d564dc02ce50",
+        "lifecycle_state": "active",
+        "metadata_json": "{\"document_type\":\"idea-brief\",\"logical_path\":\"work/ideas/idea-private-development-site-before-public-release.md\",\"program_roadmap\":\"PRM-0036\",\"promoted_map\":\"MAP-0025\",\"readiness_review_digest\":\"58db01461740e0dfa8ca884db9afecb5ce60691e7578bfa59aeb19f45e38a722\"}",
+        "reason": "Capture owner-selected three-lane delivery model and project-only Work3/Work5 customization contract",
+        "revision_number": 12,
+        "source_revision": 1001,
+        "title": "Private Development Site Before Public Release"
       },
       {
         "actor": "maintainer-final-cutover",
@@ -40736,6 +40751,16 @@
         "revision": 162
       },
       {
+        "entity_id": "683f9091-378c-4e00-8a19-d564dc02ce50",
+        "entity_type": "document_revision",
+        "id": "45f50355-f70a-4a1f-b7da-2eeb3a3e4c80",
+        "kind": "structural-insert",
+        "operation_id": "aa75f264-2c08-49c1-be61-a248a940139d",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
+        "recorded_at": "2026-09-02T13:10:10Z",
+        "revision": 1001
+      },
+      {
         "entity_id": "b5631e09-28f4-4b54-b83f-5b3f8b2428b7",
         "entity_type": "document_path_alias",
         "id": "45fc833f-f769-4758-8ae6-bc2239dd5cfe",
@@ -48644,6 +48669,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"document_path_alias\"}",
         "recorded_at": "2026-08-30T17:57:26Z",
         "revision": 885
+      },
+      {
+        "entity_id": "3ca61f1c-8199-46e2-8ac5-dd27e022b59c",
+        "entity_type": "artifact",
+        "id": "683bda23-df76-4f23-9f9e-b15b788bc8cc",
+        "kind": "structural-update",
+        "operation_id": "aa75f264-2c08-49c1-be61-a248a940139d",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-09-02T13:10:10Z",
+        "revision": 1001
       },
       {
         "entity_id": "e3ac5c49-5abb-4862-b8e2-aced484483f2",
@@ -67164,6 +67199,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"document_conversion\"}",
         "recorded_at": "2026-08-29T01:27:38Z",
         "revision": 228
+      },
+      {
+        "entity_id": "3ca61f1c-8199-46e2-8ac5-dd27e022b59c",
+        "entity_type": "document",
+        "id": "b9d1050e-7cfa-4183-bf71-fd3d8b8f65ac",
+        "kind": "structural-update",
+        "operation_id": "aa75f264-2c08-49c1-be61-a248a940139d",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"document\"}",
+        "recorded_at": "2026-09-02T13:10:10Z",
+        "revision": 1001
       },
       {
         "entity_id": "c0e2f809-a97a-4f4f-9480-437e25265f94",
@@ -93238,6 +93283,17 @@
         "id": "aa47b824-c02b-4193-8deb-5fbf832868ac",
         "revision": 180,
         "started_at": "2026-08-29T01:27:35Z",
+        "status": "complete"
+      },
+      {
+        "actor": "codex",
+        "actual_writes": 3,
+        "command": "document-apply-edit",
+        "committed_at": "2026-09-02T13:10:10Z",
+        "expected_writes": null,
+        "id": "aa75f264-2c08-49c1-be61-a248a940139d",
+        "revision": 1001,
+        "started_at": "2026-09-02T13:10:10Z",
         "status": "complete"
       },
       {
@@ -139224,6 +139280,17 @@
         "table_name": "cycle"
       },
       {
+        "id": "80b434b7-64b1-4e9c-891c-7641f964fdb6",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "aa75f264-2c08-49c1-be61-a248a940139d",
+        "payload_digest": "4b7afe0fe553f2cede28b808fcea993f3762e9d5888bd982321191ddfca2ed6e",
+        "recorded_at": "2026-09-02T13:10:10Z",
+        "revision": 1001,
+        "row_id": "683f9091-378c-4e00-8a19-d564dc02ce50",
+        "table_name": "document_revision"
+      },
+      {
         "id": "80b9c035-5f0f-4a69-ace6-4e19e4fa9fa2",
         "managed": 1,
         "operation": "insert",
@@ -150059,6 +150126,17 @@
         "table_name": "outcome_verdict"
       },
       {
+        "id": "ac4b9a77-6131-40d2-8d43-25d76afcb387",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "aa75f264-2c08-49c1-be61-a248a940139d",
+        "payload_digest": "26e4d2b768223a0959320d285fb39c326a1aa81d5384b70357adc390a662c695",
+        "recorded_at": "2026-09-02T13:10:10Z",
+        "revision": 1001,
+        "row_id": "3ca61f1c-8199-46e2-8ac5-dd27e022b59c",
+        "table_name": "document"
+      },
+      {
         "id": "ac5d11ac-ebb1-40c4-b1d3-1543fceee736",
         "managed": 1,
         "operation": "insert",
@@ -158164,6 +158242,17 @@
         "revision": 733,
         "row_id": "9410835c-d194-43dc-a1ee-f38bab425e82",
         "table_name": "cycle"
+      },
+      {
+        "id": "cb81872e-f919-46ff-8ada-dfdf9ae28098",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "aa75f264-2c08-49c1-be61-a248a940139d",
+        "payload_digest": "6dd0222daf20ee4e39a462ae3b394b688f606459911cbc7612a9bc2dd6247560",
+        "recorded_at": "2026-09-02T13:10:10Z",
+        "revision": 1001,
+        "row_id": "3ca61f1c-8199-46e2-8ac5-dd27e022b59c",
+        "table_name": "artifact"
       },
       {
         "id": "cb829eff-d5f7-43b5-ac8f-0ae7332e15ef",
