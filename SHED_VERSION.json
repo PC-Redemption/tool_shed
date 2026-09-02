@@ -143,7 +143,7 @@
     "scripts/complete_workpackage.py": "a74d1fac326d2ba3813bf00270afe698a3d276ba62f7b53067761f2892c7a0fb",
     "scripts/completion_watcher.py": "d94ba056b5628a477028c8568e284da95bd78466d3839b5e126a89163d16d7a3",
     "scripts/dashboard_reporter.py": "64b6a03958ba59e8db81a9864758e77903c165e80d0da130a8a56be1446d7471",
-    "scripts/development_site.py": "97b9344bcb5f82d762993c817bd9ebca9cde3a81febadce22ff16927699ea11d",
+    "scripts/development_site.py": "10240ba1153a6e3d5c9eff3aa46c3b8e3c167c2c18f7d40431f1a030219353d9",
     "scripts/doctor.py": "b8f7c8041bdde100b370812cc49f70fe0eff7171d1a527adccdce273e7c71880",
     "scripts/document_contract.py": "2b540582141065b7e7c84294142a15ddf01f255a58f844e08abaf9634b30d411",
     "scripts/document_conversion.py": "da2b7d08f038ab4ed789f191d5855284be5d2450b32f0204bfed88fdcdde3397",
@@ -254,7 +254,7 @@
   "release_tag": "v0.43.0",
   "released_at": null,
   "shed_version": "0.43.0",
-  "updated_at": "2026-09-01",
+  "updated_at": "2026-09-02",
   "updater_mutation_paths": [
     {
       "mode": "tree",
