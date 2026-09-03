@@ -97,6 +97,27 @@ class LifecycleQualificationTests(unittest.TestCase):
                 checkpoint_id="not-declared",
             )
 
+    def test_qualification_root_uses_sealed_fixture_platform(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace, project_id = self.local_fixture(Path(directory))
+            manifest = qualification.seal_manifest(
+                self.scenario("QH-009"),
+                candidate_commit="a" * 40,
+                candidate_version="0.43.0",
+                platform_name="linux-x86_64",
+                project_id=project_id,
+                instance_id="fixture-instance",
+                serial=1,
+                seed=0,
+                target_environment="development",
+                baseline_digest="b" * 64,
+            )
+
+            root = qualification.qualification_run_manifest(workspace, manifest)
+
+            self.assertEqual(root["platform"], "linux-x86_64")
+            self.assertEqual(root["instance"]["platform"], "linux-x86_64")
+
     def test_journal_is_hash_chained_and_idempotent(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "journal.jsonl"

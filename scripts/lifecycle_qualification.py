@@ -1037,11 +1037,11 @@ def qualification_run_manifest(workspace: Path, manifest: dict[str, Any]) -> dic
         "manifest_digest": manifest["manifest_digest"],
         "candidate_commit": manifest["candidate"]["commit"],
         "scenario_id": manifest["scenario"]["id"],
-        "platform": manifest["target"]["platform"],
+        "platform": manifest["fixture"]["platform"],
         "project": {"id": identity["project_id"], "name": identity["project_name"]},
         "instance": {
             "id": manifest["fixture"]["instance_id"],
-            "platform": manifest["target"]["platform"],
+            "platform": manifest["fixture"]["platform"],
             "client_version": manifest["candidate"]["version"],
         },
     }
