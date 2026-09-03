@@ -1,6 +1,6 @@
 # Lifecycle Qualification Harness
 
-Status: Work2 reporter, hosted projection, and browser truth corpus
+Status: Work2 development fault-namespace qualification
 Contract: `lifecycle-qualification-v1`
 Oracle: `lifecycle-truth-oracle-v1`
 
@@ -73,13 +73,17 @@ authority but cannot replace it.
   checkpoint additionally reports rebuilt meaning through hosting and the browser.
 - `QH-009` copies healthy authority into three isolated databases and injects one missing parent,
   one conflicting lineage digest, and one cycle. Each finding must be explicit while the healthy
-  source database and an unrelated control element remain unchanged.
+  source database and an unrelated control element remain unchanged. Its M4 replay reports the
+  isolated source through a purpose-bound shared-development Qualification Run, proves exact
+  manifest-owned hosted rows and operational absence, then expires and exactly purges only that
+  run while retaining its tombstone.
 - `QH-010` constructs sanitized, structurally faithful file-owned and Hybrid snapshots,
   upgrades each in place, and checks stable artifact IDs, retained document history, recovered
   parent claims, explicit unresolved ancestry, idempotent replay, and zero invisible orphans.
   M3 ingests the upgraded file-owned source through a real reporter outbox into an ephemeral
   development database, then requires exact source/hosted/browser set and field equality. The
-  shared development database remains untouched until the M4 qualification namespace exists.
+  M4 replays the upgraded Hybrid source through the same shared-development qualification
+  namespace and applies the same absence, expiry, exact-purge, and tombstone checks.
 
 Normal QH-002 runs are append-only and retained. M2 local runs use a distinct nested workspace
 below `.tool-shed/qualification/runs/<run-id>/` on the exact disposable OS fixture. This keeps
@@ -159,6 +163,37 @@ python3 scripts/lifecycle_qualification.py evaluate \
   --manifest <manifest.json> --local <local-drive.json> \
   --transport <transport.json> --dashboard <hosted.json> --browser <browser.json> \
   --output <result.json>
+```
+
+For shared-development QH-009 and QH-010, first derive the exact server manifest from the sealed
+run and the isolated source workspace. Create the root inside the development dashboard container
+and direct the one-time credential to a mode-`0600` file; command output never contains it:
+
+```bash
+python3 scripts/lifecycle_qualification.py qualification-root \
+  --workspace <isolated-source> --manifest <manifest.json> --output <root.json>
+python /app/dashboard/manage.py qualification_run create \
+  --manifest <root.json> --token-file <protected-token-file>
+```
+
+Run outage/convergence with `--qualification-token-file`; the reporter automatically selects the
+qualification endpoint. The browser probe takes `--qualification-run-id <run-id>` and must observe
+the run in the authenticated Qualification Runs page while the operational project list omits its
+project. Evaluate with `--qualification-namespace`, then expire, preview, and apply the exact purge:
+
+```bash
+python3 scripts/lifecycle_hosted_qualification.py \
+  --workspace <isolated-source> --manifest <manifest.json> \
+  --server http://<development-host> --state-root <private-state> \
+  --qualification-token-file <protected-token-file> --output <outage.json> outage
+python3 scripts/lifecycle_qualification.py evaluate \
+  --manifest <manifest.json> --local <local-drive.json> --transport <transport.json> \
+  --dashboard <hosted.json> --browser <browser.json> --qualification-namespace \
+  --output <result.json>
+python /app/dashboard/manage.py qualification_run expire --run-id <run-id> --force
+python /app/dashboard/manage.py qualification_run preview-purge --run-id <run-id>
+python /app/dashboard/manage.py qualification_run purge \
+  --run-id <run-id> --preview-token <fresh-preview-token>
 ```
 
 `scripts/dashboard_browser_probe.js` uses an installed Chromium-family browser through its native

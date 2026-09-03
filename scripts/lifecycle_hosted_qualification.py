@@ -86,7 +86,42 @@ def _require_manifest(workspace: Path, manifest: dict[str, Any]) -> dict[str, An
         raise HostedQualificationError("manifest instance does not match the isolated connection")
     if state.get("status") != "connected" or not state.get("reporter_token"):
         raise HostedQualificationError("isolated reporter connection is not active")
+    if state.get("credential_scope") == "qualification:write" and state.get("qualification_run_id") != manifest["run_id"]:
+        raise HostedQualificationError("qualification credential does not belong to the sealed run")
     return state
+
+
+def _configure_qualification_state(
+    workspace: Path,
+    manifest: dict[str, Any],
+    server: str,
+    token_path: Path,
+) -> None:
+    try:
+        token = token_path.read_text(encoding="utf-8").strip()
+    except OSError as error:
+        raise HostedQualificationError("qualification credential file is unreadable") from error
+    if len(token) < 32:
+        raise HostedQualificationError("qualification credential file is invalid")
+    if os.name != "nt" and token_path.stat().st_mode & 0o077:
+        raise HostedQualificationError("qualification credential file must not be group/world accessible")
+    identity = load_project_identity(workspace)
+    if str(identity["project_id"]) != str(manifest["fixture"]["project_id"]):
+        raise HostedQualificationError("qualification source identity does not match the sealed run")
+    state = {
+        "schema_version": dashboard_reporter.SCHEMA_VERSION,
+        "project_id": str(identity["project_id"]),
+        "instance_id": str(manifest["fixture"]["instance_id"]),
+        "server": _development_server(server),
+        "status": "connected",
+        "reporter_token": token,
+        "credential_scope": "qualification:write",
+        "qualification_run_id": str(manifest["run_id"]),
+        "updated_at": dashboard_reporter.stamp(),
+    }
+    dashboard_reporter._write_private_json(  # noqa: SLF001 - purpose-bound qualification state
+        dashboard_reporter.connection_path(state["project_id"]), state
+    )
 
 
 def _summary_row(row: dict[str, Any]) -> dict[str, Any]:
@@ -143,6 +178,8 @@ def drive_outage(workspace: Path, manifest: dict[str, Any], server: str) -> dict
         "project_id": manifest["fixture"]["project_id"],
         "instance_id": manifest["fixture"]["instance_id"],
         "project_name": load_project_identity(workspace)["project_name"],
+        "credential_scope": state.get("credential_scope", "operational"),
+        "qualification_run_id": state.get("qualification_run_id"),
         "baseline": _summary_row(next(item for item in _rows(workspace) if item["sequence"] == baseline["sequence"])),
         "queued": [_summary_row(item) for item in pending],
         "outage": {
@@ -155,10 +192,10 @@ def drive_outage(workspace: Path, manifest: dict[str, Any], server: str) -> dict
     }
 
 
-def _submit(server: str, token: str, payload: dict[str, Any]) -> str:
+def _submit(state: dict[str, Any], token: str, payload: dict[str, Any]) -> str:
     try:
         result = dashboard_reporter._request(  # noqa: SLF001
-            server + "/api/v1/reports",
+            dashboard_reporter.report_endpoint(state),
             payload=payload,
             headers={"Authorization": "Bearer " + token},
         )
@@ -195,9 +232,9 @@ def drive_convergence(
     token = str(state["reporter_token"])
     older, newer = pending[0], pending[-1]
     submissions = [
-        {"sequence": newer["sequence"], "status": _submit(good_server, token, newer["payload"])},
-        {"sequence": newer["sequence"], "status": _submit(good_server, token, newer["payload"])},
-        {"sequence": older["sequence"], "status": _submit(good_server, token, older["payload"])},
+        {"sequence": newer["sequence"], "status": _submit(state, token, newer["payload"])},
+        {"sequence": newer["sequence"], "status": _submit(state, token, newer["payload"])},
+        {"sequence": older["sequence"], "status": _submit(state, token, older["payload"])},
     ]
     for _ in range(len(pending) + 1):
         if not _pending(workspace):
@@ -232,6 +269,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--server", required=True)
     parser.add_argument("--state-root", required=True)
     parser.add_argument("--output", required=True)
+    parser.add_argument("--qualification-token-file")
     sub = parser.add_subparsers(dest="phase", required=True)
     sub.add_parser("outage")
     converge = sub.add_parser("converge")
@@ -246,6 +284,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         workspace = Path(args.workspace).resolve()
         os.environ["TOOL_SHED_STATE_ROOT"] = str(Path(args.state_root).resolve())
         manifest = lifecycle_qualification.load_json(Path(args.manifest), label="manifest")
+        if args.qualification_token_file:
+            _configure_qualification_state(
+                workspace,
+                manifest,
+                args.server,
+                Path(args.qualification_token_file).resolve(),
+            )
         if args.phase == "outage":
             result = drive_outage(workspace, manifest, args.server)
         else:

@@ -12,6 +12,7 @@ from dashboard.fleet.models import (
     Instance,
     LifecycleEvent,
     Project,
+    QualificationRun,
     WorkArtifactSnapshot,
 )
 
@@ -28,9 +29,10 @@ class Command(BaseCommand):
                 "name": row.name,
                 "is_hidden": row.is_hidden,
                 "attention_state": row.attention_state,
+                "qualification_run_id": row.qualification_run.run_id if row.qualification_run_id else None,
                 "last_seen": row.last_seen.isoformat() if row.last_seen else None,
             }
-            for row in Project.objects.order_by("external_id")
+            for row in Project.objects.select_related("qualification_run").order_by("external_id")
         ]
         instances = [
             {
@@ -121,6 +123,23 @@ class Command(BaseCommand):
             "observed_at": timezone.now().isoformat(),
             "source": {"layer": "hosted-postgresql", "authority_class": "hosted-projection"},
             "projects": projects,
+            "qualification_runs": [
+                {
+                    "run_id": row.run_id,
+                    "manifest_digest": row.manifest_digest,
+                    "candidate_commit": row.candidate_commit,
+                    "scenario_id": row.scenario_id,
+                    "platform": row.platform,
+                    "environment": row.environment,
+                    "status": row.status,
+                    "expires_at": row.expires_at.isoformat(),
+                    "purged_at": row.purged_at.isoformat() if row.purged_at else None,
+                    "purge_digest": row.purge_digest,
+                    "purged_descendant_count": row.purged_descendant_count,
+                    "project_ids": sorted(str(value) for value in row.projects.values_list("external_id", flat=True)),
+                }
+                for row in QualificationRun.objects.prefetch_related("projects").order_by("run_id")
+            ],
             "instances": instances,
             "work_artifacts": artifacts,
             "attention_conditions": attention,

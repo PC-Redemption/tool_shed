@@ -167,6 +167,69 @@ class LifecycleQualificationTests(unittest.TestCase):
         checks = qualification.evaluate_qh007(transport, dashboard, browser, manifest)
         self.assertFalse(next(item for item in checks if item["id"] == "QH007-HOSTED-FIELD-PARITY")["passed"])
 
+    def test_qualification_namespace_requires_root_lineage_scope_absence_and_separate_visibility(self) -> None:
+        project_id = str(uuid.uuid4())
+        instance_id = str(uuid.uuid4())
+        manifest = qualification.seal_manifest(
+            self.scenario("QH-009"),
+            candidate_commit="a" * 40,
+            candidate_version="0.45.0",
+            platform_name="linux-x86_64",
+            project_id=project_id,
+            instance_id=instance_id,
+            serial=1,
+            seed=0,
+            target_environment="development",
+            baseline_digest="b" * 64,
+        )
+        artifact_id = str(uuid.uuid4())
+        transport = {
+            "run_id": manifest["run_id"],
+            "project_id": project_id,
+            "instance_id": instance_id,
+            "project_name": "qh009-qualification",
+            "credential_scope": "qualification:write",
+            "qualification_run_id": manifest["run_id"],
+            "latest_payload": {
+                "work_inventory": {
+                    "total_count": 1,
+                    "artifacts": [{"artifact_id": artifact_id}],
+                }
+            },
+        }
+        dashboard = {
+            "qualification_runs": [{
+                "run_id": manifest["run_id"],
+                "manifest_digest": manifest["manifest_digest"],
+                "candidate_commit": manifest["candidate"]["commit"],
+                "scenario_id": "QH-009",
+                "environment": "development",
+                "status": "active",
+                "project_ids": [project_id],
+            }],
+            "projects": [{"external_id": project_id, "qualification_run_id": manifest["run_id"]}],
+            "instances": [{"external_id": instance_id, "project_external_id": project_id}],
+            "work_artifacts": [{
+                "artifact_external_id": artifact_id,
+                "project_external_id": project_id,
+                "instance_external_id": instance_id,
+            }],
+        }
+        browser = {
+            "project_names": ["ts_linux_test_bed", "ts_windows_test_bed"],
+            "qualification_runs": [{"run_id": manifest["run_id"]}],
+            "requested_qualification_run_visible": True,
+        }
+        checks = qualification.evaluate_qualification_namespace(
+            transport, dashboard, browser, manifest, prefix="QH009"
+        )
+        self.assertTrue(all(item["passed"] for item in checks), checks)
+        browser["project_names"].append("qh009-qualification")
+        checks = qualification.evaluate_qualification_namespace(
+            transport, dashboard, browser, manifest, prefix="QH009"
+        )
+        self.assertFalse(next(item for item in checks if item["id"] == "QH009-OPERATIONAL-ABSENCE")["passed"])
+
     def test_independent_oracle_detects_projection_divergence(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             database = Path(directory) / "fixture.sqlite3"

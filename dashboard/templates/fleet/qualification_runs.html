@@ -1,0 +1,25 @@
+{% extends "fleet/base.html" %}
+{% block title %}Qualification runs{% endblock %}
+{% block content %}
+<section class="dashboard-hero">
+  <div><span class="eyebrow">Development only</span><h1>Qualification runs</h1>
+    <p>Purpose-bound synthetic state. These rows are excluded from every operational project view and count.</p>
+  </div>
+  <div class="hero-stat"><strong>{{ qualification_runs|length }}</strong><span>retained roots</span></div>
+</section>
+<section class="dashboard-panel">
+  <div class="table-wrap"><table>
+    <thead><tr><th>Run</th><th>Scenario</th><th>Platform</th><th>Status</th><th>Owned state</th><th>Expires</th></tr></thead>
+    <tbody>
+      {% for run in qualification_runs %}
+      <tr data-qualification-run="{{ run.run_id }}">
+        <th scope="row"><strong>{{ run.run_id }}</strong><small class="mono">{{ run.manifest_digest|slice:":12" }}</small></th>
+        <td>{{ run.scenario_id }}</td><td>{{ run.platform }}</td><td><span class="status-pill status-{{ run.status }}">{{ run.status|title }}</span></td>
+        <td>{{ run.dashboard_descendant_state }}{% if run.dashboard_project_names %}<small>{{ run.dashboard_project_names }}</small>{% endif %}</td>
+        <td>{% if run.status == "purged" %}<span class="mono">tombstone retained</span>{% else %}<time data-local-time datetime="{{ run.expires_at|date:'c' }}">{{ run.expires_at }}</time>{% endif %}</td>
+      </tr>
+      {% empty %}<tr><td colspan="6">No qualification runs have been retained.</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+</section>
+{% endblock %}

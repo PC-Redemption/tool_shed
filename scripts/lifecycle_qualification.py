@@ -691,6 +691,85 @@ def evaluate_hosted_truth(
     ]
 
 
+def evaluate_qualification_namespace(
+    transport: dict[str, Any],
+    dashboard: dict[str, Any],
+    browser: dict[str, Any],
+    manifest: dict[str, Any],
+    *,
+    prefix: str,
+) -> list[dict[str, Any]]:
+    """Prove hosted qualification truth without treating it as operational inventory."""
+    run_id = str(manifest["run_id"])
+    project_id = str(manifest["fixture"]["project_id"])
+    instance_id = str(manifest["fixture"]["instance_id"])
+    runs = [item for item in dashboard.get("qualification_runs", []) if item.get("run_id") == run_id]
+    projects = [item for item in dashboard.get("projects", []) if item.get("external_id") == project_id]
+    instances = [
+        item
+        for item in dashboard.get("instances", [])
+        if item.get("external_id") == instance_id and item.get("project_external_id") == project_id
+    ]
+    latest = transport.get("latest_payload") or {}
+    inventory = latest.get("work_inventory") or {}
+    expected = {str(item.get("artifact_id")) for item in inventory.get("artifacts", [])}
+    hosted = {
+        str(item.get("artifact_external_id"))
+        for item in dashboard.get("work_artifacts", [])
+        if item.get("project_external_id") == project_id and item.get("instance_external_id") == instance_id
+    }
+    browser_runs = {str(item.get("run_id")) for item in browser.get("qualification_runs", [])}
+    operational_names = set(browser.get("project_names") or [])
+    run = runs[0] if len(runs) == 1 else {}
+    return [
+        {
+            "id": f"{prefix}-QUALIFICATION-ROOT-EXACT",
+            "passed": len(runs) == 1
+            and run.get("manifest_digest") == manifest.get("manifest_digest")
+            and run.get("candidate_commit") == manifest.get("candidate", {}).get("commit")
+            and run.get("scenario_id") == manifest.get("scenario", {}).get("id")
+            and run.get("environment") == "development"
+            and run.get("status") == "active",
+            "expected": [run_id, manifest.get("manifest_digest"), "development", "active"],
+            "actual": [run.get("run_id"), run.get("manifest_digest"), run.get("environment"), run.get("status")],
+        },
+        {
+            "id": f"{prefix}-MANIFEST-OWNED-LINEAGE",
+            "passed": len(projects) == 1
+            and projects[0].get("qualification_run_id") == run_id
+            and len(instances) == 1
+            and run.get("project_ids") == [project_id],
+            "expected": {"project": project_id, "instance": instance_id, "run": run_id},
+            "actual": {"projects": projects, "instance_count": len(instances), "root_project_ids": run.get("project_ids")},
+        },
+        {
+            "id": f"{prefix}-QUALIFICATION-SCOPE-ONLY",
+            "passed": transport.get("credential_scope") == "qualification:write"
+            and transport.get("qualification_run_id") == run_id,
+            "expected": ["qualification:write", run_id],
+            "actual": [transport.get("credential_scope"), transport.get("qualification_run_id")],
+        },
+        {
+            "id": f"{prefix}-HOSTED-EXACT-ARTIFACT-SET",
+            "passed": expected == hosted and len(expected) == int(inventory.get("total_count", -1)),
+            "expected": sorted(expected),
+            "actual": sorted(hosted),
+        },
+        {
+            "id": f"{prefix}-OPERATIONAL-ABSENCE",
+            "passed": str(transport.get("project_name")) not in operational_names,
+            "expected": "qualification project absent from operational browser inventory",
+            "actual": sorted(operational_names),
+        },
+        {
+            "id": f"{prefix}-AUTHENTICATED-QUALIFICATION-VISIBILITY",
+            "passed": browser.get("requested_qualification_run_visible") is True and run_id in browser_runs,
+            "expected": run_id,
+            "actual": sorted(browser_runs),
+        },
+    ]
+
+
 def evaluate_qh007(
     transport: dict[str, Any],
     dashboard: dict[str, Any],
@@ -891,6 +970,28 @@ def _write_json(path: Path, value: dict[str, Any]) -> None:
     os.replace(temporary, path)
 
 
+def qualification_run_manifest(workspace: Path, manifest: dict[str, Any]) -> dict[str, Any]:
+    validate_manifest(manifest)
+    from project_identity import load_project_identity
+
+    identity = load_project_identity(workspace)
+    if str(identity["project_id"]) != str(manifest["fixture"]["project_id"]):
+        raise QualificationError("qualification source project does not match the sealed manifest")
+    return {
+        "run_id": manifest["run_id"],
+        "manifest_digest": manifest["manifest_digest"],
+        "candidate_commit": manifest["candidate"]["commit"],
+        "scenario_id": manifest["scenario"]["id"],
+        "platform": manifest["target"]["platform"],
+        "project": {"id": identity["project_id"], "name": identity["project_name"]},
+        "instance": {
+            "id": manifest["fixture"]["instance_id"],
+            "platform": manifest["target"]["platform"],
+            "client_version": manifest["candidate"]["version"],
+        },
+    }
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -900,9 +1001,10 @@ def build_parser() -> argparse.ArgumentParser:
     seal.add_argument("--serial", required=True, type=int); seal.add_argument("--seed", type=int, default=0); seal.add_argument("--target-environment", default="development"); seal.add_argument("--checkpoint")
     seal.add_argument("--baseline-digest", required=True); seal.add_argument("--output", required=True)
     observe = commands.add_parser("observe-local"); observe.add_argument("--database", required=True); observe.add_argument("--run-id", required=True); observe.add_argument("--output")
-    evaluate = commands.add_parser("evaluate"); evaluate.add_argument("--manifest", required=True); evaluate.add_argument("--local"); evaluate.add_argument("--transport"); evaluate.add_argument("--dashboard"); evaluate.add_argument("--browser"); evaluate.add_argument("--output", required=True)
+    evaluate = commands.add_parser("evaluate"); evaluate.add_argument("--manifest", required=True); evaluate.add_argument("--local"); evaluate.add_argument("--transport"); evaluate.add_argument("--dashboard"); evaluate.add_argument("--browser"); evaluate.add_argument("--qualification-namespace", action="store_true"); evaluate.add_argument("--output", required=True)
     drive = commands.add_parser("drive-qh002"); drive.add_argument("--workspace", required=True); drive.add_argument("--manifest", required=True); drive.add_argument("--project-binding", required=True); drive.add_argument("--output", required=True)
     local_drive = commands.add_parser("drive-local"); local_drive.add_argument("--workspace", required=True); local_drive.add_argument("--manifest", required=True); local_drive.add_argument("--output", required=True)
+    root_manifest = commands.add_parser("qualification-root"); root_manifest.add_argument("--workspace", required=True); root_manifest.add_argument("--manifest", required=True); root_manifest.add_argument("--output", required=True)
     return parser
 
 
@@ -923,6 +1025,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif args.command == "drive-local":
             manifest = load_json(Path(args.manifest), label="manifest")
             result = drive_local_corpus(Path(args.workspace), manifest)
+            _write_json(Path(args.output), result)
+        elif args.command == "qualification-root":
+            manifest = load_json(Path(args.manifest), label="manifest")
+            result = qualification_run_manifest(Path(args.workspace), manifest)
             _write_json(Path(args.output), result)
         else:
             manifest = load_json(Path(args.manifest), label="manifest")
@@ -970,13 +1076,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                 if not checks:
                     raise QualificationError("local drive result has no invariant checks")
                 evidence = [{"layer": "local-sqlite", "sha256": file_digest(Path(args.local)), "path": Path(args.local).name}]
-                if scenario["scenario_id"] in {"QH-008", "QH-010"} and any((args.transport, args.dashboard, args.browser)):
+                if scenario["scenario_id"] in {"QH-008", "QH-009", "QH-010"} and any((args.transport, args.dashboard, args.browser)):
                     if not args.transport or not args.dashboard or not args.browser:
                         raise QualificationError(f"hosted {scenario['scenario_id']} requires --transport, --dashboard, and --browser")
                     transport = load_json(Path(args.transport), label="transport record")
                     dashboard = load_json(Path(args.dashboard), label="dashboard snapshot")
                     browser = load_json(Path(args.browser), label="browser snapshot")
-                    checks += evaluate_hosted_truth(
+                    evaluator = evaluate_qualification_namespace if args.qualification_namespace else evaluate_hosted_truth
+                    checks += evaluator(
                         transport,
                         dashboard,
                         browser,

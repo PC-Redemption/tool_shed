@@ -19,15 +19,25 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
-from .auth import dashboard_auth_required, reporter_instance
+from .auth import dashboard_auth_required, reporter_credential, reporter_instance
 from .contracts import ContractError, validate_report
 from .live import dashboard_revision
-from .models import AppServerAggregate, Enrollment, FailureGroup, Instance, Project, WorkArtifactSnapshot
+from .models import (
+    AppServerAggregate,
+    Enrollment,
+    FailureGroup,
+    Instance,
+    Project,
+    QualificationRun,
+    ReporterCredential,
+    WorkArtifactSnapshot,
+)
 from .services import (
     active_attention_items,
     approve_enrollment,
     create_enrollment,
     distinct_efficiency_aggregates,
+    expire_qualification_run,
     ingest_report,
     poll_enrollment,
     recent_changes,
@@ -147,6 +157,39 @@ def report_ingest(request: HttpRequest) -> JsonResponse:
 
 @csrf_exempt
 @require_POST
+def qualification_report_ingest(request: HttpRequest) -> JsonResponse:
+    if settings.DASHBOARD_ENVIRONMENT != "development":
+        return JsonResponse(
+            {"schema_version": 1, "status": "error", "error": "qualification reporting is restricted to development"},
+            status=403,
+        )
+    credential = reporter_credential(request, scope=ReporterCredential.Scope.QUALIFICATION_WRITE)
+    if credential is None or credential.qualification_run_id is None:
+        return JsonResponse(
+            {"schema_version": 1, "status": "error", "error": "invalid qualification credential"},
+            status=401,
+        )
+    run = credential.qualification_run
+    if run.status == QualificationRun.Status.ACTIVE and run.expires_at <= timezone.now():
+        try:
+            expire_qualification_run(run.run_id, force=True)
+        except ContractError as error:
+            return _error(error, 409)
+        return _error(ContractError("qualification run has expired"), 409)
+    if run.status != QualificationRun.Status.ACTIVE:
+        return _error(ContractError("qualification run is not active"), 409)
+    if credential.instance.project.qualification_run_id != run.id:
+        return _error(ContractError("qualification credential lineage is inconsistent"), 409)
+    try:
+        report = validate_report(_payload(request))
+        result = ingest_report(credential.instance, report)
+    except ContractError as error:
+        return _error(error, 409 if "idempotency" in str(error) or "sequence" in str(error) else 400)
+    return JsonResponse({"schema_version": 1, **result})
+
+
+@csrf_exempt
+@require_POST
 def reporter_revoke(request: HttpRequest) -> JsonResponse:
     instance = reporter_instance(request)
     if instance is None:
@@ -190,7 +233,7 @@ def dashboard_events(request: HttpRequest) -> StreamingHttpResponse:
 
 @dashboard_auth_required
 def fleet_overview(request: HttpRequest):
-    projects = Project.objects.prefetch_related("instances").order_by(
+    projects = Project.objects.filter(qualification_run__isnull=True).prefetch_related("instances").order_by(
         F("last_activity_at").desc(nulls_last=True),
         F("last_seen").desc(nulls_last=True),
         "name",
@@ -235,7 +278,7 @@ def fleet_overview(request: HttpRequest):
     elif state == "stale":
         projects = projects.filter(id__in=stale_project_ids)
     artifact_types = tuple(
-        WorkArtifactSnapshot.objects.order_by("artifact_type")
+        WorkArtifactSnapshot.objects.filter(project__qualification_run__isnull=True).order_by("artifact_type")
         .values_list("artifact_type", flat=True)
         .distinct()
     )
@@ -375,7 +418,7 @@ def fleet_overview(request: HttpRequest):
             "artifact_types": artifact_types,
             "lifecycle_values": lifecycle_values,
             "version_values": tuple(
-                Instance.objects.exclude(client_version="")
+                Instance.objects.filter(project__qualification_run__isnull=True).exclude(client_version="")
                 .order_by("client_version")
                 .values_list("client_version", flat=True)
                 .distinct()
@@ -387,6 +430,32 @@ def fleet_overview(request: HttpRequest):
             "next_page_url": next_page_url,
         },
     )
+
+
+@dashboard_auth_required
+def qualification_runs_view(request: HttpRequest):
+    if settings.DASHBOARD_ENVIRONMENT != "development":
+        return HttpResponse("Qualification runs are available only in development.", status=404)
+    runs = list(
+        QualificationRun.objects.prefetch_related("projects", "projects__instances").order_by(
+            "-created_at", "run_id"
+        )[:200]
+    )
+    now = timezone.now()
+    for run in runs:
+        if run.status == QualificationRun.Status.ACTIVE and run.expires_at <= now:
+            expire_qualification_run(run.run_id, force=True)
+            run.refresh_from_db()
+        run.dashboard_projects = list(run.projects.all())
+        run.dashboard_project_count = len(run.dashboard_projects)
+        run.dashboard_project_names = ", ".join(project.name for project in run.dashboard_projects)
+        run.dashboard_instance_count = sum(project.instances.count() for project in run.dashboard_projects)
+        run.dashboard_descendant_state = (
+            f"{run.purged_descendant_count} purged"
+            if run.status == QualificationRun.Status.PURGED
+            else f"{run.dashboard_project_count} project · {run.dashboard_instance_count} instance"
+        )
+    return render(request, "fleet/qualification_runs.html", {"qualification_runs": runs})
 
 
 def _navigation_redirect(request: HttpRequest):
@@ -410,7 +479,7 @@ def project_navigation_preferences(request: HttpRequest):
 @dashboard_auth_required
 @require_POST
 def project_visibility(request: HttpRequest, project_id):
-    project = get_object_or_404(Project, id=project_id)
+    project = get_object_or_404(Project, id=project_id, qualification_run__isnull=True)
     action = request.POST.get("action")
     if action not in {"hide", "show"}:
         return JsonResponse({"status": "invalid-action"}, status=400)
@@ -748,7 +817,10 @@ def _project_overview_context(
 def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
     if tab not in {"overview", "work", "history", "outcomes", "health"}:
         return JsonResponse({"status": "not-found"}, status=404)
-    project = get_object_or_404(Project.objects.prefetch_related("instances"), id=project_id)
+    project = get_object_or_404(
+        Project.objects.filter(qualification_run__isnull=True).prefetch_related("instances"),
+        id=project_id,
+    )
     instances = list(project.instances.all())
     attention_items = active_attention_items(project=project)
     attention_severities = {item["severity"] for item in attention_items}
@@ -959,7 +1031,7 @@ def app_server_view(request: HttpRequest):
         selected_window = "7d"
     rows = []
     totals = {"instances": 0, "ready": 0, "attempts": 0, "completions": 0, "failures": 0, "interruptions": 0, "fallbacks": 0}
-    for instance in Instance.objects.select_related("project", "app_server"):
+    for instance in Instance.objects.filter(project__qualification_run__isnull=True).select_related("project", "app_server"):
         try:
             aggregate = instance.app_server
         except AppServerAggregate.DoesNotExist:
@@ -1016,7 +1088,7 @@ def app_server_view(request: HttpRequest):
         totals["interruptions"] += interruptions
         totals["fallbacks"] += rows[-1]["fallbacks"]
     totals["success_rate"] = round(totals["completions"] * 100 / totals["attempts"], 1) if totals["attempts"] else None
-    groups = FailureGroup.objects.select_related("instance", "instance__project")[:100]
+    groups = FailureGroup.objects.filter(instance__project__qualification_run__isnull=True).select_related("instance", "instance__project")[:100]
     return render(
         request,
         "fleet/app_server.html",
@@ -1031,17 +1103,20 @@ def work_efficiency_view(request: HttpRequest):
     if selected_window not in {*windows, "all"}:
         selected_window = "7d"
     selected_project = request.GET.get("project", "").strip()
-    project_ids = {str(value) for value in Project.objects.values_list("id", flat=True)}
+    project_ids = {
+        str(value)
+        for value in Project.objects.filter(qualification_run__isnull=True).values_list("id", flat=True)
+    }
     if selected_project not in project_ids:
         selected_project = ""
     platforms = tuple(
-        Instance.objects.exclude(platform="").order_by("platform").values_list("platform", flat=True).distinct()
+        Instance.objects.filter(project__qualification_run__isnull=True).exclude(platform="").order_by("platform").values_list("platform", flat=True).distinct()
     )
     selected_platform = request.GET.get("platform", "").strip()
     if selected_platform not in platforms:
         selected_platform = ""
     versions = tuple(
-        Instance.objects.exclude(client_version="")
+        Instance.objects.filter(project__qualification_run__isnull=True).exclude(client_version="")
         .order_by("client_version")
         .values_list("client_version", flat=True)
         .distinct()
@@ -1156,7 +1231,7 @@ def work_efficiency_view(request: HttpRequest):
         "fleet/work_efficiency.html",
         {
             "aggregates": aggregates,
-            "projects": Project.objects.order_by("name").only("id", "name"),
+            "projects": Project.objects.filter(qualification_run__isnull=True).order_by("name").only("id", "name"),
             "platforms": platforms,
             "versions": versions,
             "selected_window": selected_window,

@@ -6,6 +6,56 @@ from django.conf import settings
 from django.db import models
 
 
+class QualificationRun(models.Model):
+    class Status(models.TextChoices):
+        ACTIVE = "active", "Active"
+        EXPIRED = "expired", "Expired"
+        PURGED = "purged", "Purged"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    run_id = models.CharField(max_length=96, unique=True)
+    manifest_digest = models.CharField(max_length=64)
+    candidate_commit = models.CharField(max_length=40)
+    scenario_id = models.CharField(max_length=16)
+    platform = models.CharField(max_length=64)
+    environment = models.CharField(max_length=16, default="development")
+    status = models.CharField(max_length=16, choices=Status.choices, default=Status.ACTIVE)
+    manifest = models.JSONField(default=dict)
+    expires_at = models.DateTimeField()
+    expired_at = models.DateTimeField(null=True, blank=True)
+    purged_at = models.DateTimeField(null=True, blank=True)
+    purge_digest = models.CharField(max_length=64, blank=True)
+    purged_descendant_count = models.PositiveIntegerField(default=0)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="qualification_runs",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(environment="development"),
+                name="qualification_run_development_only",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(status__in=("active", "expired"), purged_at__isnull=True, purge_digest="")
+                    | models.Q(status="purged", purged_at__isnull=False)
+                ),
+                name="qualification_run_purge_state_valid",
+            ),
+        ]
+        ordering = ("-created_at", "run_id")
+
+    def __str__(self) -> str:
+        return self.run_id
+
+
 class Project(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     external_id = models.UUIDField(unique=True)
@@ -16,6 +66,13 @@ class Project(models.Model):
     last_seen = models.DateTimeField(null=True, blank=True)
     last_activity_at = models.DateTimeField(null=True, blank=True)
     is_hidden = models.BooleanField(default=False)
+    qualification_run = models.ForeignKey(
+        QualificationRun,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="projects",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -82,13 +139,36 @@ class Enrollment(models.Model):
 
 
 class ReporterCredential(models.Model):
+    class Scope(models.TextChoices):
+        OPERATIONAL = "operational", "Operational"
+        QUALIFICATION_WRITE = "qualification:write", "Qualification write"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     instance = models.OneToOneField(Instance, on_delete=models.CASCADE, related_name="credential")
     token_prefix = models.CharField(max_length=12, db_index=True)
     token_digest = models.CharField(max_length=64, unique=True)
+    scope = models.CharField(max_length=32, choices=Scope.choices, default=Scope.OPERATIONAL)
+    qualification_run = models.ForeignKey(
+        QualificationRun,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="credentials",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     rotated_at = models.DateTimeField(null=True, blank=True)
     revoked_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(scope="operational", qualification_run__isnull=True)
+                    | models.Q(scope="qualification:write", qualification_run__isnull=False)
+                ),
+                name="reporter_credential_scope_owner_valid",
+            )
+        ]
 
     @property
     def active(self) -> bool:

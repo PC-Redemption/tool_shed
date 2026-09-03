@@ -187,6 +187,15 @@ def load_connection(workspace: Path, *, required: bool = True) -> dict[str, Any]
     return value
 
 
+def report_endpoint(state: dict[str, Any]) -> str:
+    scope = state.get("credential_scope", "operational")
+    if scope == "qualification:write":
+        return state["server"] + "/api/v1/qualification/reports"
+    if scope != "operational":
+        raise DashboardReporterError("dashboard credential scope is unsupported")
+    return state["server"] + "/api/v1/reports"
+
+
 def _request(url: str, *, payload: dict[str, Any], headers: dict[str, str] | None = None) -> dict[str, Any]:
     body = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     request = urllib.request.Request(
@@ -1121,7 +1130,7 @@ def worker_once(workspace: Path) -> dict[str, Any]:
         payload = json.loads(row["payload_json"])
         try:
             result = _request(
-                state["server"] + "/api/v1/reports",
+                report_endpoint(state),
                 payload=payload,
                 headers={"Authorization": "Bearer " + state["reporter_token"]},
             )

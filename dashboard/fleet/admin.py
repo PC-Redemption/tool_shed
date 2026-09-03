@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Enrollment, Instance, Project, ReporterCredential
+from .models import Enrollment, Instance, Project, QualificationRun, ReporterCredential
 
 
 @admin.register(Project)
@@ -24,5 +24,12 @@ class EnrollmentAdmin(admin.ModelAdmin):
 
 @admin.register(ReporterCredential)
 class ReporterCredentialAdmin(admin.ModelAdmin):
-    list_display = ("instance", "token_prefix", "created_at", "rotated_at", "revoked_at")
+    list_display = ("instance", "scope", "token_prefix", "created_at", "rotated_at", "revoked_at")
     readonly_fields = ("token_digest",)
+
+
+@admin.register(QualificationRun)
+class QualificationRunAdmin(admin.ModelAdmin):
+    list_display = ("run_id", "scenario_id", "platform", "status", "expires_at", "purged_at")
+    list_filter = ("status", "scenario_id", "platform")
+    readonly_fields = ("manifest", "manifest_digest", "purge_digest")

@@ -34,7 +34,7 @@ def fleet_navigation(request):
     if project_scope not in {"active", "all"}:
         project_scope = "active"
     show_hidden = bool(request.session.get("fleet_show_hidden", False))
-    projects = Project.objects.all()
+    projects = Project.objects.filter(qualification_run__isnull=True)
     if project_scope == "active":
         projects = projects.filter(last_seen__gte=timezone.now() - timedelta(minutes=20))
     if not show_hidden:

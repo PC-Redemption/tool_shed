@@ -15,7 +15,7 @@ def token_digest(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
-def reporter_instance(request: HttpRequest):
+def reporter_credential(request: HttpRequest, *, scope: str):
     authorization = request.headers.get("Authorization", "")
     if not authorization.startswith("Bearer "):
         return None
@@ -24,13 +24,18 @@ def reporter_instance(request: HttpRequest):
         return None
     prefix = token[:12]
     candidates = ReporterCredential.objects.select_related("instance", "instance__project").filter(
-        token_prefix=prefix, revoked_at__isnull=True
+        token_prefix=prefix, revoked_at__isnull=True, scope=scope
     )
     supplied = token_digest(token)
     for credential in candidates:
         if hmac.compare_digest(credential.token_digest, supplied):
-            return credential.instance
+            return credential
     return None
+
+
+def reporter_instance(request: HttpRequest):
+    credential = reporter_credential(request, scope=ReporterCredential.Scope.OPERATIONAL)
+    return None if credential is None else credential.instance
 
 
 def dashboard_auth_required(view: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:

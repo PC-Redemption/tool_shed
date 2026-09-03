@@ -18,6 +18,7 @@ django.setup()
 from django.contrib.auth import get_user_model  # noqa: E402
 from django.core.management import call_command  # noqa: E402
 from django.core.management.base import CommandError  # noqa: E402
+from django.db import IntegrityError, transaction  # noqa: E402
 from django.test import TestCase, override_settings  # noqa: E402
 from django.urls import reverse  # noqa: E402
 from django.utils import timezone  # noqa: E402
@@ -33,6 +34,7 @@ from dashboard.fleet.models import (  # noqa: E402
     Instance,
     LifecycleEvent,
     Project,
+    QualificationRun,
     ReporterCredential,
     WorkArtifactSnapshot,
     WorkEfficiencyAggregate,
@@ -41,6 +43,10 @@ from dashboard.fleet.services import (  # noqa: E402
     _trim_efficiency_history,
     active_attention_items,
     approve_enrollment,
+    create_qualification_run,
+    expire_qualification_run,
+    purge_qualification_run,
+    qualification_purge_preview,
 )
 
 call_command("migrate", verbosity=0)
@@ -1570,3 +1576,144 @@ class DashboardApplicationTests(TestCase):
         self.assertEqual(exported["work_artifacts"][0]["produces_ids"], ["MAP-0017"])
         self.assertEqual(exported["ingest_receipts"][0]["idempotency_key"], payload["idempotency_key"])
         self.assertNotIn("reporter_token", json.dumps(exported))
+
+    def qualification_manifest(self, *, run_id: str = "qh-m4-fixture") -> dict[str, object]:
+        return {
+            "run_id": run_id,
+            "manifest_digest": "d" * 64,
+            "candidate_commit": "a" * 40,
+            "scenario_id": "QH-009",
+            "platform": "linux-x86_64",
+            "project": {"id": str(self.project_id), "name": "Qualification fixture"},
+            "instance": {
+                "id": str(self.instance_id),
+                "platform": "linux-x86_64",
+                "client_version": "0.43.0-dev",
+            },
+        }
+
+    @override_settings(DASHBOARD_ENVIRONMENT="development")
+    def test_qualification_scope_is_lineage_bound_and_excluded_from_operational_views(self) -> None:
+        run, token = create_qualification_run(self.qualification_manifest())
+        payload = self.lifecycle_report_payload()
+        payload["project"] = {"id": str(self.project_id), "name": "Qualification fixture"}
+        payload["instance"]["id"] = str(self.instance_id)  # type: ignore[index]
+        operational = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(operational.status_code, 401)
+        accepted = self.client.post(
+            reverse("fleet:qualification-report-ingest"),
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(accepted.status_code, 200, accepted.content)
+        project = Project.objects.get(external_id=self.project_id)
+        self.assertEqual(project.qualification_run_id, run.id)
+        self.assertEqual(project.instances.get().credential.scope, "qualification:write")
+
+        user = get_user_model().objects.create_user("qualification-viewer", password="fixture")
+        self.client.force_login(user)
+        overview = self.client.get(reverse("fleet:overview"))
+        self.assertNotContains(overview, "Qualification fixture")
+        self.assertContains(overview, "<strong>0</strong><span>Projects</span>", html=True)
+        self.assertEqual(self.client.get(reverse("fleet:project", args=(project.id,))).status_code, 404)
+        separate = self.client.get(reverse("fleet:qualification-runs"))
+        self.assertContains(separate, run.run_id)
+        self.assertContains(separate, "Qualification fixture")
+        self.assertContains(separate, "1 project · 1 instance")
+
+        same_run, replacement = create_qualification_run(self.qualification_manifest())
+        self.assertEqual(same_run.id, run.id)
+        self.assertNotEqual(replacement, token)
+        self.assertIsNotNone(ReporterCredential.objects.get(instance__project=project).rotated_at)
+        rejected_old = self.client.post(
+            reverse("fleet:qualification-report-ingest"),
+            data=json.dumps({**payload, "sequence": 2, "idempotency_key": str(uuid.uuid4())}),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(rejected_old.status_code, 401)
+
+    @override_settings(DASHBOARD_ENVIRONMENT="development")
+    def test_qualification_expiry_preserves_lineage_and_purge_is_exact_and_tombstoned(self) -> None:
+        run, _ = create_qualification_run(self.qualification_manifest())
+        project = run.projects.get()
+        instance = project.instances.get()
+        expired = expire_qualification_run(run.run_id, force=True)
+        self.assertEqual(expired.status, QualificationRun.Status.EXPIRED)
+        self.assertTrue(Project.objects.filter(id=project.id, qualification_run=run).exists())
+        self.assertIsNotNone(instance.credential.revoked_at)
+
+        stale = qualification_purge_preview(run.run_id)
+        IngestReceipt.objects.create(
+            instance=instance,
+            idempotency_key=uuid.uuid4(),
+            sequence=1,
+            payload_digest="e" * 64,
+        )
+        with self.assertRaisesRegex(ContractError, "stale"):
+            purge_qualification_run(run.run_id, stale["preview_token"])
+        exact = qualification_purge_preview(run.run_id)
+        purged = purge_qualification_run(run.run_id, exact["preview_token"])
+        self.assertEqual(purged["status"], QualificationRun.Status.PURGED)
+        run.refresh_from_db()
+        self.assertEqual(run.status, QualificationRun.Status.PURGED)
+        self.assertEqual(run.purge_digest, exact["descendant_digest"])
+        self.assertEqual(run.purged_descendant_count, exact["descendant_count"])
+        self.assertFalse(run.projects.exists())
+        viewer = get_user_model().objects.create_user("tombstone-viewer", password="fixture")
+        self.client.force_login(viewer)
+        page = self.client.get(reverse("fleet:qualification-runs"))
+        self.assertContains(page, run.run_id)
+        self.assertContains(page, "tombstone retained")
+
+    @override_settings(DASHBOARD_ENVIRONMENT="development")
+    def test_qualification_purge_refuses_unknown_and_mixed_purpose_targets(self) -> None:
+        with self.assertRaisesRegex(ContractError, "not found"):
+            qualification_purge_preview("unknown-run")
+        run, _ = create_qualification_run(self.qualification_manifest())
+        expire_qualification_run(run.run_id, force=True)
+        Project.objects.create(
+            external_id=uuid.uuid4(),
+            name="Foreign descendant",
+            qualification_run=run,
+        )
+        with self.assertRaisesRegex(ContractError, "mixed-purpose"):
+            qualification_purge_preview(run.run_id)
+
+    def test_qualification_application_and_database_guards_refuse_production_and_invalid_scope(self) -> None:
+        with override_settings(DASHBOARD_ENVIRONMENT="production"):
+            with self.assertRaisesRegex(ContractError, "development"):
+                create_qualification_run(self.qualification_manifest())
+            response = self.client.post(reverse("fleet:qualification-report-ingest"), data="{}", content_type="application/json")
+            self.assertEqual(response.status_code, 403)
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            QualificationRun.objects.create(
+                run_id="production-direct-insert",
+                manifest_digest="d" * 64,
+                candidate_commit="a" * 40,
+                scenario_id="QH-009",
+                platform="linux",
+                environment="production",
+                manifest={},
+                expires_at=timezone.now() + timedelta(hours=1),
+            )
+        operational_project = Project.objects.create(external_id=uuid.uuid4(), name="Operational")
+        operational_instance = Instance.objects.create(
+            project=operational_project,
+            external_id=uuid.uuid4(),
+            platform="linux",
+            client_version="fixture",
+        )
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            ReporterCredential.objects.create(
+                instance=operational_instance,
+                token_prefix="x" * 12,
+                token_digest="f" * 64,
+                scope="qualification:write",
+            )

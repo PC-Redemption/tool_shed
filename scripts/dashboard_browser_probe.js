@@ -167,6 +167,14 @@ async function main() {
         work_rows: work.rows,
       });
     }
+    let qualificationRuns = [];
+    if (args["--qualification-run-id"]) {
+      await navigate(cdp, `${baseUrl}/dashboard/qualification-runs/`);
+      qualificationRuns = await evaluate(cdp, `(() => [...document.querySelectorAll('[data-qualification-run]')].map((row) => ({
+        run_id: row.dataset.qualificationRun,
+        text: row.textContent.replace(/\s+/g, ' ').trim()
+      })))()`);
+    }
     const payload = {
       schema_version: 1,
       kind: "tool-shed-dashboard-browser-snapshot",
@@ -175,6 +183,10 @@ async function main() {
       development_banner: overview.development,
       project_names: overview.rows.map((row) => row.name),
       projects,
+      qualification_runs: qualificationRuns,
+      requested_qualification_run_visible: args["--qualification-run-id"]
+        ? qualificationRuns.some((row) => row.run_id === args["--qualification-run-id"])
+        : null,
       links_ok: linksOk,
     };
     fs.mkdirSync(path.dirname(path.resolve(output)), { recursive: true });

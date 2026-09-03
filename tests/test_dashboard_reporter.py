@@ -78,6 +78,20 @@ class DashboardReporterTests(unittest.TestCase):
         self.assertEqual(idle["status"], "idle")
         self.assertEqual(request.call_count, 2)
 
+    def test_report_endpoint_is_scope_separated_and_unknown_scope_fails_closed(self) -> None:
+        operational = self.connected()
+        self.assertEqual(
+            dashboard_reporter.report_endpoint(operational),
+            "https://dashboard.invalid/api/v1/reports",
+        )
+        qualification = {**operational, "credential_scope": "qualification:write"}
+        self.assertEqual(
+            dashboard_reporter.report_endpoint(qualification),
+            "https://dashboard.invalid/api/v1/qualification/reports",
+        )
+        with self.assertRaisesRegex(dashboard_reporter.DashboardReporterError, "unsupported"):
+            dashboard_reporter.report_endpoint({**operational, "credential_scope": "admin"})
+
     def test_retry_preserves_event_and_releases_singleton(self) -> None:
         with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
             event_id = str(uuid.uuid4())

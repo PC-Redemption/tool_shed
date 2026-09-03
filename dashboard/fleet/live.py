@@ -32,7 +32,7 @@ def dashboard_revision() -> str:
     """Return a content revision for database state exposed by dashboard pages."""
     payload = {
         "projects": list(
-            Project.objects.order_by("id").values_list(
+            Project.objects.filter(qualification_run__isnull=True).order_by("id").values_list(
                 "id",
                 "name",
                 "attention_state",
@@ -44,7 +44,7 @@ def dashboard_revision() -> str:
         ),
         "instances": [
             (*row[:-1], _semantic_health(row[-1]))
-            for row in Instance.objects.order_by("id").values_list(
+            for row in Instance.objects.filter(project__qualification_run__isnull=True).order_by("id").values_list(
                 "id",
                 "project_id",
                 "platform",
@@ -64,17 +64,17 @@ def dashboard_revision() -> str:
             )
         ),
         "credentials": list(
-            ReporterCredential.objects.order_by("id").values_list(
+            ReporterCredential.objects.filter(scope="operational").order_by("id").values_list(
                 "id", "instance_id", "created_at", "rotated_at", "revoked_at"
             )
         ),
         "material_events": list(
-            MaterialEvent.objects.order_by("id").values_list(
+            MaterialEvent.objects.filter(project__qualification_run__isnull=True).order_by("id").values_list(
                 "id", "project_id", "instance_id", "event_kind", "summary_code", "occurred_at"
             )
         ),
         "app_server": list(
-            AppServerAggregate.objects.order_by("instance_id").values_list(
+            AppServerAggregate.objects.filter(instance__project__qualification_run__isnull=True).order_by("instance_id").values_list(
                 "instance_id",
                 "counter_epoch",
                 "enabled",
@@ -90,12 +90,12 @@ def dashboard_revision() -> str:
             )
         ),
         "failure_groups": list(
-            FailureGroup.objects.order_by("id").values_list(
+            FailureGroup.objects.filter(instance__project__qualification_run__isnull=True).order_by("id").values_list(
                 "id", "instance_id", "signature", "category", "count", "first_seen", "last_seen"
             )
         ),
         "work_efficiency": list(
-            WorkEfficiencyAggregate.objects.order_by("id").values_list(
+            WorkEfficiencyAggregate.objects.filter(instance__project__qualification_run__isnull=True).order_by("id").values_list(
                 "id",
                 "instance_id",
                 "counter_epoch",
@@ -110,7 +110,7 @@ def dashboard_revision() -> str:
             )
         ),
         "work_artifacts": list(
-            WorkArtifactSnapshot.objects.order_by("instance_id", "visible_id").values_list(
+            WorkArtifactSnapshot.objects.filter(project__qualification_run__isnull=True).order_by("instance_id", "visible_id").values_list(
                 "instance_id",
                 "artifact_external_id",
                 "visible_id",
@@ -129,7 +129,7 @@ def dashboard_revision() -> str:
             )
         ),
         "lifecycle_events": list(
-            LifecycleEvent.objects.order_by("instance_id", "event_key").values_list(
+            LifecycleEvent.objects.filter(project__qualification_run__isnull=True).order_by("instance_id", "event_key").values_list(
                 "instance_id",
                 "event_key",
                 "artifact_external_id",
@@ -140,7 +140,7 @@ def dashboard_revision() -> str:
             )
         ),
         "attention_conditions": list(
-            AttentionCondition.objects.order_by("id").values_list(
+            AttentionCondition.objects.filter(project__qualification_run__isnull=True).order_by("id").values_list(
                 "id",
                 "project_id",
                 "instance_id",

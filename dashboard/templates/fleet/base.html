@@ -26,6 +26,7 @@
     <nav class="dashboard-sidebar" id="fleet-nav" aria-label="Fleet navigation">
       <a href="{% url 'fleet:overview' %}" {% if request.resolver_match.url_name == 'overview' %}aria-current="page"{% endif %}>All projects</a>
       <a href="{% url 'fleet:enrollments' %}" {% if request.resolver_match.url_name == 'enrollments' %}aria-current="page"{% endif %}>Enrollment requests</a>
+      {% if dashboard_is_development %}<a href="{% url 'fleet:qualification-runs' %}" {% if request.resolver_match.url_name == 'qualification-runs' %}aria-current="page"{% endif %}>Qualification runs</a>{% endif %}
       <a href="{% url 'fleet:overview' %}?state=attention">Needs attention</a>
       <a href="{% url 'fleet:overview' %}?state=working">Working</a>
       <a href="{% url 'fleet:overview' %}?state=stale">Stale / offline</a>

@@ -22,6 +22,21 @@ non-secret lookup prefix. Local connection state is mode `0600` under a mode `07
 directory. The credential is returned once after an authenticated approval and is never printed by
 status. Disconnect revokes it server-side.
 
+Development qualification uses a separate `qualification:write` credential and
+`/api/v1/qualification/reports` endpoint. The credential is bound to one manifest-derived
+Qualification Run and cannot authenticate the operational reporting endpoint. Its project is
+foreign-key-owned by that retained root and is excluded from project navigation, fleet counts,
+search, attention, App Server, Work Efficiency, project detail, exports, and live operational
+revision signals. Authenticated maintainers inspect these records only at
+`/dashboard/qualification-runs/`.
+
+Qualification roots and their descendants can exist only with the database-level `development`
+environment marker, while services and management commands independently reject non-development
+runtimes. Expiry revokes write credentials but retains the complete lineage. Purge is allowed only
+for an expired run and requires a fresh token covering the exact sorted descendant set; stale,
+unknown, mixed-purpose, already-purged, and production requests fail closed. Purge deletes only
+those owned descendants and retains the root as a tombstone with the deleted-set digest and count.
+
 Material events are retained for 90 days. Sanitized failure groups are retained for 30 days and
 reports include at most 20 groups. Hosted rows are current advisory state; deleting or recovering
 the hosted database never alters local Tool Shed work.

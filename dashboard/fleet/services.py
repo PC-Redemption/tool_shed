@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import secrets
 from datetime import timedelta
 from decimal import Decimal
@@ -23,6 +24,7 @@ from .models import (
     LifecycleEvent,
     MaterialEvent,
     Project,
+    QualificationRun,
     ReporterCredential,
     WorkEfficiencyAggregate,
     WorkArtifactSnapshot,
@@ -30,6 +32,7 @@ from .models import (
 
 
 STALE_AFTER = timedelta(minutes=20)
+QUALIFICATION_SCOPE = ReporterCredential.Scope.QUALIFICATION_WRITE
 WORK_EFFICIENCY_RETENTION_PER_EPOCH = 500
 ATTENTION_REASONS = {
     "blocked-work": {
@@ -79,6 +82,230 @@ def _digest(value: object) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), default=str).encode()).hexdigest()
 
 
+def _require_qualification_environment() -> None:
+    if settings.DASHBOARD_ENVIRONMENT != "development":
+        raise ContractError("qualification operations are restricted to the development environment")
+
+
+def _qualification_manifest(payload: dict[str, Any]) -> dict[str, Any]:
+    required = {
+        "run_id",
+        "manifest_digest",
+        "candidate_commit",
+        "scenario_id",
+        "platform",
+        "project",
+        "instance",
+    }
+    if not isinstance(payload, dict) or set(payload) != required:
+        raise ContractError("qualification manifest fields are incomplete or unsupported")
+    run_id = str(payload.get("run_id") or "")
+    digest = str(payload.get("manifest_digest") or "").lower()
+    commit = str(payload.get("candidate_commit") or "").lower()
+    scenario = str(payload.get("scenario_id") or "")
+    platform_name = str(payload.get("platform") or "")
+    if not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9._:-]{0,95}", run_id):
+        raise ContractError("qualification run_id is invalid")
+    if not re.fullmatch(r"[0-9a-f]{64}", digest):
+        raise ContractError("qualification manifest_digest must be a SHA-256 digest")
+    if not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise ContractError("qualification candidate_commit must be an exact Git commit")
+    if not re.fullmatch(r"QH-[0-9]{3}", scenario):
+        raise ContractError("qualification scenario_id is invalid")
+    if not platform_name or len(platform_name) > 64:
+        raise ContractError("qualification platform is invalid")
+    project = payload.get("project")
+    instance = payload.get("instance")
+    if not isinstance(project, dict) or set(project) != {"id", "name"}:
+        raise ContractError("qualification project must contain exactly id and name")
+    if not isinstance(instance, dict) or set(instance) != {"id", "platform", "client_version"}:
+        raise ContractError("qualification instance must contain exactly id, platform, and client_version")
+    import uuid
+
+    try:
+        project_id = uuid.UUID(str(project.get("id")))
+        instance_id = uuid.UUID(str(instance.get("id")))
+    except (TypeError, ValueError) as error:
+        raise ContractError("qualification project and instance IDs must be UUIDs") from error
+    project_name = str(project.get("name") or "").strip()
+    instance_platform = str(instance.get("platform") or "").strip()
+    client_version = str(instance.get("client_version") or "").strip()
+    if not project_name or len(project_name) > 160:
+        raise ContractError("qualification project name is invalid")
+    if not instance_platform or len(instance_platform) > 64:
+        raise ContractError("qualification instance platform is invalid")
+    if not client_version or len(client_version) > 64:
+        raise ContractError("qualification client version is invalid")
+    return {
+        "run_id": run_id,
+        "manifest_digest": digest,
+        "candidate_commit": commit,
+        "scenario_id": scenario,
+        "platform": platform_name,
+        "project": {"id": str(project_id), "name": project_name},
+        "instance": {
+            "id": str(instance_id),
+            "platform": instance_platform,
+            "client_version": client_version,
+        },
+    }
+
+
+@transaction.atomic
+def create_qualification_run(payload: dict[str, Any], *, user=None) -> tuple[QualificationRun, str]:
+    _require_qualification_environment()
+    manifest = _qualification_manifest(payload)
+    run = QualificationRun.objects.select_for_update().filter(run_id=manifest["run_id"]).first()
+    if run is not None and (run.manifest_digest != manifest["manifest_digest"] or run.manifest != manifest):
+        raise ContractError("qualification run_id was reused with a different manifest")
+    if run is not None and run.status != QualificationRun.Status.ACTIVE:
+        raise ContractError("qualification run is no longer active")
+    if run is None:
+        run = QualificationRun.objects.create(
+            run_id=manifest["run_id"],
+            manifest_digest=manifest["manifest_digest"],
+            candidate_commit=manifest["candidate_commit"],
+            scenario_id=manifest["scenario_id"],
+            platform=manifest["platform"],
+            environment="development",
+            manifest=manifest,
+            expires_at=timezone.now() + timedelta(hours=settings.DASHBOARD_QUALIFICATION_TTL_HOURS),
+            created_by=user if getattr(user, "is_authenticated", False) else None,
+        )
+    project_id = manifest["project"]["id"]
+    project = Project.objects.select_for_update().filter(external_id=project_id).first()
+    if project is not None and project.qualification_run_id != run.id:
+        raise ContractError("qualification project identity collides with operational or foreign-purpose state")
+    if project is None:
+        project = Project.objects.create(
+            external_id=project_id,
+            name=manifest["project"]["name"],
+            qualification_run=run,
+        )
+    instance_id = manifest["instance"]["id"]
+    instance = Instance.objects.select_for_update().filter(project=project, external_id=instance_id).first()
+    if instance is None:
+        instance = Instance.objects.create(
+            project=project,
+            external_id=instance_id,
+            platform=manifest["instance"]["platform"],
+            client_version=manifest["instance"]["client_version"],
+        )
+    token = secrets.token_urlsafe(32)
+    credential, created = ReporterCredential.objects.update_or_create(
+        instance=instance,
+        defaults={
+            "token_prefix": token[:12],
+            "token_digest": token_digest(token),
+            "scope": QUALIFICATION_SCOPE,
+            "qualification_run": run,
+            "revoked_at": None,
+        },
+    )
+    if not created:
+        credential.rotated_at = timezone.now()
+        credential.save(update_fields=("rotated_at",))
+    return run, token
+
+
+@transaction.atomic
+def expire_qualification_run(run_id: str, *, force: bool = False) -> QualificationRun:
+    _require_qualification_environment()
+    run = QualificationRun.objects.select_for_update().filter(run_id=run_id).first()
+    if run is None:
+        raise ContractError("qualification run was not found")
+    if run.status == QualificationRun.Status.PURGED:
+        raise ContractError("purged qualification run cannot be expired")
+    now = timezone.now()
+    if not force and run.expires_at > now:
+        raise ContractError("qualification run has not reached its expiry")
+    if run.status != QualificationRun.Status.EXPIRED:
+        run.status = QualificationRun.Status.EXPIRED
+        run.expired_at = now
+        run.save(update_fields=("status", "expired_at", "updated_at"))
+    ReporterCredential.objects.filter(qualification_run=run, revoked_at__isnull=True).update(revoked_at=now)
+    return run
+
+
+def _qualification_descendants(run: QualificationRun) -> list[str]:
+    project_ids = list(run.projects.order_by("id").values_list("id", flat=True))
+    instance_ids = list(Instance.objects.filter(project_id__in=project_ids).order_by("id").values_list("id", flat=True))
+    descendants = [f"project:{value}" for value in project_ids]
+    descendants += [f"instance:{value}" for value in instance_ids]
+    model_queries = (
+        ("credential", ReporterCredential.objects.filter(qualification_run=run)),
+        ("receipt", IngestReceipt.objects.filter(instance_id__in=instance_ids)),
+        ("material-event", MaterialEvent.objects.filter(project_id__in=project_ids)),
+        ("work-artifact", WorkArtifactSnapshot.objects.filter(project_id__in=project_ids)),
+        ("lifecycle-event", LifecycleEvent.objects.filter(project_id__in=project_ids)),
+        ("attention-condition", AttentionCondition.objects.filter(project_id__in=project_ids)),
+        ("app-server", AppServerAggregate.objects.filter(instance_id__in=instance_ids)),
+        ("failure-group", FailureGroup.objects.filter(instance_id__in=instance_ids)),
+        ("work-efficiency", WorkEfficiencyAggregate.objects.filter(instance_id__in=instance_ids)),
+    )
+    for label, query in model_queries:
+        descendants.extend(f"{label}:{value}" for value in query.order_by("pk").values_list("pk", flat=True))
+    return sorted(descendants)
+
+
+def qualification_purge_preview(run_id: str) -> dict[str, Any]:
+    _require_qualification_environment()
+    run = QualificationRun.objects.filter(run_id=run_id).first()
+    if run is None:
+        raise ContractError("qualification run was not found")
+    if run.status == QualificationRun.Status.PURGED:
+        raise ContractError("qualification run is already purged")
+    if run.status != QualificationRun.Status.EXPIRED:
+        raise ContractError("qualification run must be expired before purge preview")
+    if Project.objects.filter(qualification_run=run).exclude(external_id=run.manifest["project"]["id"]).exists():
+        raise ContractError("qualification run contains mixed-purpose descendants")
+    descendants = _qualification_descendants(run)
+    digest = _digest(descendants)
+    token = _digest(
+        {
+            "run_id": run.run_id,
+            "manifest_digest": run.manifest_digest,
+            "status": run.status,
+            "updated_at": run.updated_at.isoformat(),
+            "descendant_digest": digest,
+            "descendant_count": len(descendants),
+        }
+    )
+    return {
+        "run_id": run.run_id,
+        "status": run.status,
+        "descendant_count": len(descendants),
+        "descendant_digest": digest,
+        "preview_token": token,
+    }
+
+
+@transaction.atomic
+def purge_qualification_run(run_id: str, preview_token: str) -> dict[str, Any]:
+    _require_qualification_environment()
+    run = QualificationRun.objects.select_for_update().filter(run_id=run_id).first()
+    if run is None:
+        raise ContractError("qualification run was not found")
+    preview = qualification_purge_preview(run_id)
+    if not secrets.compare_digest(preview["preview_token"], str(preview_token)):
+        raise ContractError("qualification purge preview is stale or does not match the exact descendants")
+    run.projects.all().delete()
+    run.status = QualificationRun.Status.PURGED
+    run.purged_at = timezone.now()
+    run.purge_digest = preview["descendant_digest"]
+    run.purged_descendant_count = preview["descendant_count"]
+    run.save(
+        update_fields=(
+            "status",
+            "purged_at",
+            "purge_digest",
+            "purged_descendant_count",
+            "updated_at",
+        )
+    )
+    return {**preview, "status": run.status, "purged_at": run.purged_at}
+
+
 def _json_safe(value: Any) -> Any:
     if isinstance(value, dict):
         return {key: _json_safe(item) for key, item in value.items()}
@@ -122,7 +349,9 @@ def distinct_efficiency_aggregates(
     """Return metric changes, hiding repeated sliding-window snapshots."""
     result: list[WorkEfficiencyAggregate] = []
     latest_by_instance: dict[tuple[object, object], tuple[object, ...]] = {}
-    rows = WorkEfficiencyAggregate.objects.select_related("instance", "instance__project")
+    rows = WorkEfficiencyAggregate.objects.filter(
+        instance__project__qualification_run__isnull=True
+    ).select_related("instance", "instance__project")
     if since is not None:
         rows = rows.filter(window_end__gte=since)
     if project_id is not None:
@@ -232,8 +461,10 @@ def _sync_attention_conditions(
 
 def active_attention_items(*, project: Project | None = None, now=None) -> list[dict[str, Any]]:
     current_time = now or timezone.now()
-    conditions = AttentionCondition.objects.filter(active=True).select_related("project", "instance")
-    instances = Instance.objects.select_related("project")
+    conditions = AttentionCondition.objects.filter(
+        active=True, project__qualification_run__isnull=True
+    ).select_related("project", "instance")
+    instances = Instance.objects.filter(project__qualification_run__isnull=True).select_related("project")
     if project is not None:
         conditions = conditions.filter(project=project)
         instances = instances.filter(project=project)
