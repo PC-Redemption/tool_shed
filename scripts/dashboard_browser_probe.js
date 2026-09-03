@@ -25,6 +25,20 @@ async function waitForFile(file, attempts = 200) {
   throw new Error("browser did not publish its DevTools endpoint");
 }
 
+async function removeTemporary(directory) {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    try {
+      fs.rmSync(directory, { recursive: true, force: true });
+      return;
+    } catch (error) {
+      if (!error || !["EBUSY", "EPERM"].includes(error.code)) throw error;
+      await delay(100);
+    }
+  }
+  // The browser truth record is already durable. A late Windows profile lock is
+  // housekeeping, not a failed browser assertion; the OS temp cleaner owns it.
+}
+
 class CDP {
   constructor(socket) {
     this.socket = socket;
@@ -169,7 +183,11 @@ async function main() {
     await cdp.call("Browser.close").catch(() => {});
   } finally {
     if (!browser.killed) browser.kill();
-    fs.rmSync(userData, { recursive: true, force: true });
+    await Promise.race([
+      new Promise((resolve) => browser.once("exit", resolve)),
+      delay(1000),
+    ]);
+    await removeTemporary(userData);
   }
 }
 

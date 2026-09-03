@@ -163,7 +163,7 @@
     "scripts/codex_skill_sync.py": "78cf6c2d6605854c429cc54e63eb60b7fa7e81e47dcae9fc87c60b5f93d564a8",
     "scripts/complete_workpackage.py": "a74d1fac326d2ba3813bf00270afe698a3d276ba62f7b53067761f2892c7a0fb",
     "scripts/completion_watcher.py": "d94ba056b5628a477028c8568e284da95bd78466d3839b5e126a89163d16d7a3",
-    "scripts/dashboard_browser_probe.js": "462dc4e05e204705709a30438e3899ff2df5ef65a4572ebb45aafb4339975629",
+    "scripts/dashboard_browser_probe.js": "03226a90300016e52dea7fee604468d6f16a33f2f9b1795aa2bb88136a353d47",
     "scripts/dashboard_reporter.py": "ed21a0e03bbc375aa774fb9f3b2817733e1b7a8a13b60b9739b77929b0442840",
     "scripts/development_site.py": "9e33d7d57f3f42a8995b656ffa69fe9bc98f743b697faff6190668276c20542a",
     "scripts/doctor.py": "b8f7c8041bdde100b370812cc49f70fe0eff7171d1a527adccdce273e7c71880",
