@@ -514,12 +514,15 @@ def synchronize_authority(connection: sqlite3.Connection, *, revision: int) -> d
 
     for key, observed in desired_claims.items():
         claim_id = next(item["claim_id"] for item in claims_by_child[key[0]] if item["parent_element_id"] == key[1] and item["parent_requirement_id"] == key[2] and item["relationship_type"] == key[3])
-        if connection.execute("SELECT 1 FROM lineage_claim WHERE id=?", (claim_id,)).fetchone() is None:
+        claim = connection.execute(
+            "SELECT envelope_digest FROM lineage_claim WHERE id=?", (claim_id,)
+        ).fetchone()
+        if claim is None:
             connection.execute(
                 "INSERT INTO lineage_claim VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)",
                 (claim_id, *key, observed["observed_parent_revision"], observed["observed_requirement_digest"], envelope_by_id[key[0]], revision),
             )
-        else:
+        elif str(claim["envelope_digest"]) != envelope_by_id[key[0]]:
             connection.execute("UPDATE lineage_claim SET envelope_digest=? WHERE id=?", (envelope_by_id[key[0]], claim_id))
 
     closed_count = 0

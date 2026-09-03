@@ -190,7 +190,29 @@ class ClosureLineageTests(unittest.TestCase):
 
     def test_new_cycle_refreshes_only_its_projection_branch(self) -> None:
         self.migrate()
-        sibling = self.create_document("ticket", "Independent sibling")
+        created = document_store.create_document(
+            self.workspace,
+            project_binding=self.binding,
+            document_type="ticket",
+            title="Independent sibling",
+            body="# Independent sibling\n\nStatus: active\n",
+            lifecycle="active",
+            metadata={"document_type": "ticket"},
+            actor="fixture",
+            reason="closure fixture",
+        )
+        sibling = created["result"]
+        with contextlib.closing(
+            hybrid_state.connect(hybrid_state.database_path(self.workspace), writable=False)
+        ) as connection:
+            unchanged_claim_writes = int(
+                connection.execute(
+                    "SELECT COUNT(*) FROM structural_change "
+                    "WHERE revision=? AND table_name='lineage_claim'",
+                    (int(created["revision"]),),
+                ).fetchone()[0]
+            )
+        self.assertEqual(unchanged_claim_writes, 0)
         opened = document_store.open_outcome(
             self.workspace,
             project_binding=self.binding,
