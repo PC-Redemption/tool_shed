@@ -460,6 +460,42 @@ class LifecycleQualificationTests(unittest.TestCase):
             self.assertTrue(resumed["resumed"])
             self.assertTrue(all(item["passed"] for item in resumed["checks"]), resumed)
 
+    def test_qh002_driver_resumes_after_three_document_prefix(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace, project_id = self.local_fixture(Path(directory))
+            scenario_target = workspace / "tool_shed/schemas/lifecycle-qualification/v1/scenarios/QH-002.json"
+            scenario_target.parent.mkdir(parents=True)
+            shutil.copy2(ROOT / "schemas/lifecycle-qualification/v1/scenarios/QH-002.json", scenario_target)
+            binding = binding_token(workspace, operation="hybrid-state")
+            hybrid_state.initialize(workspace, project_binding=binding)
+            document_store.migrate(workspace, project_binding=binding)
+            migration = closure_lineage.prepare_migration(workspace)
+            closure_lineage.apply_migration(
+                workspace, migration, expected_token=migration["manifest_token"], project_binding=binding
+            )
+            manifest = qualification.seal_manifest(
+                self.scenario("QH-002"), candidate_commit="a" * 40, candidate_version="0.46.0",
+                platform_name="windows-amd64", project_id=project_id, instance_id="fixture-instance",
+                serial=78, seed=0, target_environment="development",
+                baseline_digest=document_store.audit(workspace)["domain_digest"],
+            )
+            original = document_store.create_document
+            calls = 0
+
+            def interrupt(*args: object, **kwargs: object) -> dict[str, object]:
+                nonlocal calls
+                calls += 1
+                if calls == 4:
+                    raise KeyboardInterrupt("sealed document-prefix interruption")
+                return original(*args, **kwargs)
+
+            with mock.patch.object(document_store, "create_document", side_effect=interrupt):
+                with self.assertRaises(KeyboardInterrupt):
+                    qualification.drive_qh002(workspace, manifest, project_binding=binding)
+            resumed = qualification.drive_qh002(workspace, manifest, project_binding=binding)
+            self.assertTrue(resumed["resumed"])
+            self.assertTrue(all(item["passed"] for item in resumed["checks"]), resumed)
+
     def test_m2_local_scenario_contracts_are_sealable(self) -> None:
         for scenario_id in ("QH-003", "QH-004", "QH-005", "QH-006", "QH-007", "QH-008", "QH-009", "QH-010"):
             scenario = self.scenario(scenario_id)

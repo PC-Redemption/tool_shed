@@ -910,25 +910,75 @@ def _resume_qh002(
     project_binding: str,
     runtime: Path,
 ) -> dict[str, Any]:
-    """Resume QH-002 after all four documents exist and resolve writes from authority."""
+    """Resume QH-002 from any valid document/outcome boundary."""
     import document_store  # type: ignore
     import hybrid_state  # type: ignore
     import outcome_loop  # type: ignore
 
     run_id = str(manifest["run_id"])
-    expected_types = ("idea-brief", "project-map", "program-roadmap", "campaign")
+    expected = (
+        ("idea-brief", "Qualification Idea"),
+        ("project-map", "Qualification Map"),
+        ("program-roadmap", "Qualification Roadmap"),
+        ("campaign", "Qualification Campaign"),
+    )
+    expected_types = tuple(item[0] for item in expected)
     by_type: dict[str, list[dict[str, Any]]] = {}
     for item in existing["documents"]:
         by_type.setdefault(str(item["type"]), []).append(item)
-    if any(len(by_type.get(name, [])) != 1 for name in expected_types):
+    if set(by_type) - set(expected_types) or any(len(items) != 1 for items in by_type.values()):
         raise QualificationError(
-            "partial QH-002 resume requires exactly one existing document of each expected type"
+            "partial QH-002 resume found duplicate or unexpected run documents"
         )
-    documents = [by_type[name][0] for name in expected_types]
-    cycle_by_artifact = {str(item["origin_artifact_id"]): item for item in existing["cycles"]}
-    if any(str(item["artifact_id"]) not in cycle_by_artifact for item in documents):
-        raise QualificationError("partial QH-002 resume found a document without its outcome cycle")
-    cycles = [str(cycle_by_artifact[str(item["artifact_id"])]["id"]) for item in documents]
+    present = tuple(name for name in expected_types if name in by_type)
+    if present != expected_types[: len(present)]:
+        raise QualificationError("partial QH-002 resume found a non-prefix document sequence")
+
+    documents: list[dict[str, Any]] = []
+    cycles: list[str] = []
+    cycles_by_artifact: dict[str, list[dict[str, Any]]] = {}
+    for item in existing["cycles"]:
+        cycles_by_artifact.setdefault(str(item["origin_artifact_id"]), []).append(item)
+    for document_type, label in expected:
+        if document_type in by_type:
+            document = by_type[document_type][0]
+        else:
+            body = (
+                f"# {label}: {run_id}\n\nStatus: active\nType: {document_type}\n"
+                f"Qualification Run: {run_id}\n"
+            )
+            document = document_store.create_document(
+                workspace,
+                project_binding=project_binding,
+                document_type=document_type,
+                title=f"{label} {run_id}",
+                body=body,
+                lifecycle="active",
+                metadata={
+                    "qualification_run_id": run_id,
+                    "qualification_scenario": "QH-002",
+                },
+                actor="lifecycle-qualification",
+                reason="QH-002 deterministic lifecycle resume",
+            )["result"]
+        artifact_id = str(document["artifact_id"])
+        governed = cycles_by_artifact.get(artifact_id, [])
+        if len(governed) > 1:
+            raise QualificationError("partial QH-002 resume found duplicate document outcome cycles")
+        if governed:
+            cycle_id = str(governed[0]["id"])
+        else:
+            cycle_id = str(
+                document_store.open_outcome(
+                    workspace,
+                    project_binding=project_binding,
+                    identity=str(document["visible_id"]),
+                    accepted_outcome=f"Complete {label} for {run_id}",
+                    actor="lifecycle-qualification",
+                )["result"]["cycle_id"]
+            )
+        documents.append(document)
+        cycles.append(cycle_id)
 
     for parent, child in zip(documents, documents[1:]):
         document_store.relate(
