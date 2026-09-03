@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -79,6 +80,25 @@ class DoctorTests(unittest.TestCase):
             "--json",
         )
         return json.loads(result.stdout)
+
+    def test_schema3_doctor_uses_database_document_authority(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary)
+            database = workspace / ".tool-shed/state.sqlite3"
+            database.parent.mkdir(parents=True)
+            database.touch()
+            audit = {
+                "hybrid_schema": 3,
+                "classification": "VALID_DIRTY",
+                "findings": [],
+            }
+            listed = {"documents": [], "count": 0}
+            with mock.patch.object(doctor.document_store, "audit", return_value=audit), mock.patch.object(
+                doctor.document_store, "list_documents", return_value=listed
+            ):
+                state = doctor.database_document_state(workspace)
+            self.assertIsNotNone(state)
+            self.assertEqual(state["campaigns"]["authority"], "sqlite")
 
     def test_detects_stale_index_and_dirty_campaign_transition_across_passing_checks(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

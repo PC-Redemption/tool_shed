@@ -222,12 +222,12 @@ def index_state(workspace: Path) -> dict[str, Any]:
 
 
 def database_document_state(workspace: Path) -> dict[str, Any] | None:
-    """Return schema-2 document authority state, or None for file-authoritative workspaces."""
+    """Return database document authority state, or None for file-authoritative workspaces."""
     database = workspace / ".tool-shed" / "state.sqlite3"
     if not database.is_file():
         return None
     audit = document_store.audit(workspace, database=database)
-    if audit.get("hybrid_schema") != 2:
+    if audit.get("hybrid_schema") not in document_store.DOCUMENT_HYBRID_SCHEMAS:
         return None
     documents = document_store.list_documents(workspace, limit=500, database=database)
     campaigns = document_store.list_documents(

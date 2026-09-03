@@ -31,6 +31,7 @@ STATUS_KIND = "tool-shed-idea-readiness-status"
 TRANSFER_KIND = "tool-shed-idea-readiness-transfer"
 EVENT_KIND = "idea-readiness-review-v1"
 EVENT_ENTITY_TYPE = "idea-brief"
+SUPPORTED_HYBRID_SCHEMAS = {2, 3}
 VERDICTS = {"READY", "READY-WITH-PRM-GATES", "NOT-READY"}
 READY_VERDICTS = {"READY", "READY-WITH-PRM-GATES"}
 LIST_FIELDS = (
@@ -85,10 +86,10 @@ def _connection(workspace: Path, database: Path | None = None) -> sqlite3.Connec
         raise IdeaReadinessError("Hybrid database is not available", code="database-unavailable", unavailable=True)
     connection = hybrid_state.connect(path, writable=False)
     version = int(connection.execute("PRAGMA user_version").fetchone()[0])
-    if version != 2:
+    if version not in SUPPORTED_HYBRID_SCHEMAS:
         connection.close()
         raise IdeaReadinessError(
-            f"Idea readiness requires Hybrid schema 2; found {version}",
+            f"Idea readiness requires Hybrid schema 2 or 3; found {version}",
             code="unsupported-hybrid-schema",
             unavailable=True,
         )

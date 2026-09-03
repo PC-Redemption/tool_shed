@@ -143,6 +143,15 @@ class IdeaReadinessTests(unittest.TestCase):
             with self.assertRaises(sqlite3.DatabaseError):
                 connection.execute("UPDATE event SET kind='changed' WHERE id=?", (event_id,))
 
+    def test_status_accepts_current_schema3_document_authority(self) -> None:
+        with contextlib.closing(sqlite3.connect(self.database)) as connection:
+            connection.execute("PRAGMA user_version=3")
+            connection.execute("UPDATE state_meta SET schema_version=3 WHERE id=1")
+            connection.commit()
+        status = idea_readiness.status(self.workspace, self.idea["visible_id"], database=self.database)
+        self.assertEqual(status["state"], "ABSENT")
+        self.assertTrue(status["review_required"])
+
     def test_not_ready_is_semantic_result_not_operational_error(self) -> None:
         self.apply_review("NOT-READY")
         status = idea_readiness.status(self.workspace, self.idea["visible_id"], database=self.database)
