@@ -137,7 +137,7 @@ class LifecycleQualificationTests(unittest.TestCase):
             "artifact_id": "artifact", "visible_id": "IDEA-0001", "artifact_type": "idea-brief",
             "title": "Fixture", "document_lifecycle": "active", "outcome_lifecycle": "working",
             "outcome_disposition": "open", "reconciliation_state": "open", "parent_ids": [],
-            "produces_ids": [], "closure_status": {"effective_closed": False},
+            "produces_ids": [], "closure_status": {"effective_closed": False, "evaluated_at": "2026-09-03T00:00:00Z"},
         }
         transport = {
             "run_id": manifest["run_id"], "project_id": "project", "instance_id": "instance",
@@ -158,6 +158,7 @@ class LifecycleQualificationTests(unittest.TestCase):
             }],
             "ingest_receipts": [{"instance_external_id": "instance", "idempotency_key": key} for key in ("baseline", "newer", "final")],
         }
+        dashboard["work_artifacts"][0]["closure_status"]["evaluated_at"] = "2026-09-03T00:00:00+00:00"
         browser = {"links_ok": True, "projects": [{"name": "fixture", "freshness": "fresh", "attention_state": "working", "work_artifact_ids": ["IDEA-0001"]}]}
         checks = qualification.evaluate_qh007(transport, dashboard, browser, manifest)
         self.assertTrue(all(item["passed"] for item in checks), checks)

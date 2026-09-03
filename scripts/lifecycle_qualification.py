@@ -10,6 +10,7 @@ import os
 import platform as host_platform
 import sqlite3
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
@@ -554,6 +555,21 @@ def _hosted_instance(
     )
 
 
+def _canonical_closure(value: object) -> object:
+    if not isinstance(value, dict):
+        return value
+    normalized = dict(value)
+    observed = normalized.get("evaluated_at")
+    if isinstance(observed, str):
+        try:
+            parsed = datetime.fromisoformat(observed.replace("Z", "+00:00"))
+        except ValueError:
+            pass
+        else:
+            normalized["evaluated_at"] = parsed.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+    return normalized
+
+
 def evaluate_hosted_truth(
     transport: dict[str, Any],
     dashboard: dict[str, Any],
@@ -593,7 +609,12 @@ def evaluate_hosted_truth(
             ("produces_ids", "produces_ids"),
             ("closure_status", "closure_status"),
         ):
-            if source.get(source_field) != hosted.get(hosted_field):
+            source_value = source.get(source_field)
+            hosted_value = hosted.get(hosted_field)
+            if source_field == "closure_status":
+                source_value = _canonical_closure(source_value)
+                hosted_value = _canonical_closure(hosted_value)
+            if source_value != hosted_value:
                 state_errors.append(f"{artifact_id}:{source_field}")
     expected_ids = set(expected_by_id)
     hosted_ids = set(hosted_by_id)
