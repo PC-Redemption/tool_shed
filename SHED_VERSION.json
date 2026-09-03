@@ -181,7 +181,7 @@
     "scripts/install_into_workspace.py": "7634619c32ffc379d060e501111c0a74d5622b323c1a001f80c077c8d272c80f",
     "scripts/inventory_tool_shed_fleet.py": "495e262d42ba47fcf0cd944f684442ecf6668debf287375c41a36af520e56c6e",
     "scripts/lifecycle_hosted_qualification.py": "b9ed25a1057e8e9402eaf0a05d70b51462858b0ca497cfbee69b976782452b72",
-    "scripts/lifecycle_qualification.py": "990b0d07467fe954d363a05480ce84692a9c40606c09559789f61038e3f7af54",
+    "scripts/lifecycle_qualification.py": "b52fca61aa8ef2793dc15184c9807a2ea86be3c44b43356bba0ef699e1819386",
     "scripts/lifecycle_qualification_scenarios.py": "9e5a4c5fe1929f8914ed4df05c985607c5bf7b77a1020b80ef8d65607b29f620",
     "scripts/maintainer_hybrid_conversion.py": "1090daee442522f8ab0895de97251260414b5128531af7d7db45da7dfbf763ea",
     "scripts/migrate_generated_evidence.py": "c160078098ffee910b683108cbe32bd24acec63cbb195ddef85b5ba3a3b0475e",
