@@ -1,0 +1,31 @@
+{
+  "actions": [
+    "restore-file-owned-snapshot",
+    "upgrade-file-owned-snapshot",
+    "restore-hybrid-snapshot",
+    "upgrade-hybrid-snapshot",
+    "replay-upgrade"
+  ],
+  "checkpoints": [
+    {
+      "id": "local-existing-instance-intake",
+      "invariants": [
+        "stable-artifact-identities",
+        "document-history-preserved",
+        "recoverable-lineage-rebuilt",
+        "unresolved-ancestry-explicit",
+        "idempotent-replay",
+        "zero-invisible-orphans"
+      ]
+    }
+  ],
+  "kind": "tool-shed-qualification-scenario",
+  "platforms": [
+    "linux-x86_64",
+    "windows-amd64"
+  ],
+  "scenario_id": "QH-010",
+  "schema_version": 1,
+  "title": "Local existing-instance intake",
+  "version": 1
+}

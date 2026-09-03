@@ -1,0 +1,28 @@
+{
+  "actions": [
+    "prove-current-subject",
+    "revise-subject",
+    "observe-proof-superseded",
+    "reprove-revised-subject"
+  ],
+  "checkpoints": [
+    {
+      "id": "revision-reproved",
+      "invariants": [
+        "revision-invalidates-old-proof",
+        "old-proof-history-retained",
+        "new-proof-binds-new-subject",
+        "oracle-projection-parity"
+      ]
+    }
+  ],
+  "kind": "tool-shed-qualification-scenario",
+  "platforms": [
+    "linux-x86_64",
+    "windows-amd64"
+  ],
+  "scenario_id": "QH-005",
+  "schema_version": 1,
+  "title": "Revision-invalidated proof",
+  "version": 1
+}

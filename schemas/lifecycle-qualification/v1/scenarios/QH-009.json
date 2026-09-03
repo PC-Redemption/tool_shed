@@ -1,0 +1,30 @@
+{
+  "actions": [
+    "clone-healthy-authority",
+    "inject-missing-parent",
+    "inject-conflicting-lineage",
+    "inject-cycle",
+    "compare-unrelated-control"
+  ],
+  "checkpoints": [
+    {
+      "id": "malformed-graph-contained",
+      "invariants": [
+        "missing-parent-explicit",
+        "conflict-explicit",
+        "cycle-explicit",
+        "findings-contained-to-ancestry",
+        "healthy-authority-unchanged"
+      ]
+    }
+  ],
+  "kind": "tool-shed-qualification-scenario",
+  "platforms": [
+    "linux-x86_64",
+    "windows-amd64"
+  ],
+  "scenario_id": "QH-009",
+  "schema_version": 1,
+  "title": "Isolated malformed graph recovery",
+  "version": 1
+}

@@ -1,6 +1,6 @@
 # Lifecycle Qualification Harness
 
-Status: Work2 development foundation
+Status: Work2 local lifecycle and recovery corpus
 Contract: `lifecycle-qualification-v1`
 Oracle: `lifecycle-truth-oracle-v1`
 
@@ -46,7 +46,7 @@ Truth-vector fields identify their layer and authority class. Local SQLite facts
 `hosted-projection`; HTTP and browser claims are `presentation`. A downstream layer may agree with
 authority but cannot replace it.
 
-## Foundation scenarios
+## Scenario corpus
 
 - `QH-001` exports every raw development project and instance, then requires the visible project
   set to equal the two enrolled disposable fixtures. The two optional seed UUIDs must be absent or
@@ -54,10 +54,33 @@ authority but cannot replace it.
 - `QH-002` creates one run-tagged Idea, project map, Program Roadmap, campaign, and governed result
   through guarded document/outcome services. It reconciles child to parent, completes document
   lifecycle, and requires a terminal clean tail plus independent closure/projection parity.
+- `QH-003` mixes manual and closed-loop child completion in reverse branch order and proves a
+  locally closed parent remains effectively open until every governing child closes. A separate
+  non-governing child remains open without blocking the parent.
+- `QH-004` builds a three-document-level diamond with one shared leaf. It proves both indexed
+  ancestry paths, bounded and deduplicated blockers, recursive completion, and oracle parity.
+- `QH-005` closes one obligation, changes its authoritative subject, observes the old closure
+  record become superseded, and re-proves the new subject while retaining both records.
+- `QH-006` commits a terminal child before its parent transition, resumes after that explicit
+  interruption point, and replays the resume. Exactly one terminal verdict, reconciliation, and
+  parent-result propagation may exist.
+- `QH-008` writes a logical schema-3 checkpoint, rebuilds a distinct database, and requires exact
+  domain-digest and independently calculated closure parity with a clean rebuilt audit.
+- `QH-009` copies healthy authority into three isolated databases and injects one missing parent,
+  one conflicting lineage digest, and one cycle. Each finding must be explicit while the healthy
+  source database and an unrelated control element remain unchanged.
+- Local `QH-010` constructs sanitized, structurally faithful file-owned and Hybrid snapshots,
+  upgrades each in place, and checks stable artifact IDs, retained document history, recovered
+  parent claims, explicit unresolved ancestry, idempotent replay, and zero invisible orphans.
+  Hosted ingestion of these snapshots remains an M3 activity and uses an ephemeral development
+  database until the M4 qualification namespace exists.
 
-Normal QH-002 runs are append-only and retained. Reusing an already-complete manifest is an
-idempotent resume. A partial run is refused until its last authoritative checkpoint is understood;
-the harness does not guess whether an incompletely observed mutation happened.
+Normal QH-002 runs are append-only and retained. M2 local runs use a distinct nested workspace
+below `.tool-shed/qualification/runs/<run-id>/` on the exact disposable OS fixture. This keeps
+malformed graph and pre-upgrade snapshots out of the fixture's operational database without
+moving execution off the target platform. Reusing an already-complete manifest returns the sealed
+result as an idempotent resume. A partial run is refused until its last authoritative checkpoint
+is understood; the harness does not guess whether an incompletely observed mutation happened.
 
 ## Commands
 
@@ -78,6 +101,22 @@ Drive QH-002 only in a verified disposable development workspace:
 python3 scripts/lifecycle_qualification.py drive-qh002 \
   --workspace <fixture> --manifest <manifest.json> \
   --project-binding <fresh-hybrid-state-binding> --output <drive.json>
+```
+
+Drive any M2 local scenario (`QH-003` through `QH-006`, `QH-008`, `QH-009`, or local `QH-010`):
+
+```bash
+python3 scripts/lifecycle_qualification.py drive-local \
+  --workspace <fixture> --manifest <manifest.json> --output <drive.json>
+```
+
+The driver refuses any target environment other than `development`. It imports the installed
+candidate's guarded lifecycle services; only QH-005's subject-revision hook and QH-009's isolated
+malformed copies use bounded test mutations. Evaluate and seal the resulting local record with:
+
+```bash
+python3 scripts/lifecycle_qualification.py evaluate \
+  --manifest <manifest.json> --local <drive.json> --output <result.json>
 ```
 
 After its reporter converges, evaluate the local truth vector and hosted snapshot together. The

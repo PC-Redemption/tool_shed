@@ -1,0 +1,29 @@
+{
+  "actions": [
+    "close-parent-locally",
+    "close-first-governing-child",
+    "observe-parent-open",
+    "close-second-governing-child-manually",
+    "observe-parent-closed"
+  ],
+  "checkpoints": [
+    {
+      "id": "branched-terminal-order",
+      "invariants": [
+        "parent-open-until-all-governing-children-close",
+        "manual-and-closed-loop-equivalence",
+        "non-governing-child-does-not-block",
+        "oracle-projection-parity"
+      ]
+    }
+  ],
+  "kind": "tool-shed-qualification-scenario",
+  "platforms": [
+    "linux-x86_64",
+    "windows-amd64"
+  ],
+  "scenario_id": "QH-003",
+  "schema_version": 1,
+  "title": "Branched closure ordering",
+  "version": 1
+}

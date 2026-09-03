@@ -228,6 +228,7 @@ def independent_closure(connection: sqlite3.Connection) -> dict[str, Any]:
     requirements = {str(row["id"]): dict(row) for row in connection.execute("SELECT * FROM requirement")}
     children: dict[str, list[tuple[str, str | None]]] = {key: [] for key in elements}
     findings: dict[str, set[str]] = {key: set() for key in elements}
+    parents: dict[str, list[str]] = {key: [] for key in elements}
 
     for parent in elements.values():
         if parent["role"] != "cycle":
@@ -242,15 +243,44 @@ def independent_closure(connection: sqlite3.Connection) -> dict[str, Any]:
         if child_id not in elements or parent_id not in elements:
             findings.setdefault(child_id, set()).add("MISSING_PARENT")
             continue
+        parents[child_id].append(parent_id)
         if requirement_id not in requirements:
             findings[child_id].add("MISSING_REQUIREMENT")
             continue
+        requirement = requirements[requirement_id]
+        digest_fields = (
+            "id", "cycle_id", "origin_artifact_id", "accepted_outcome", "disposition",
+            "accepted_revision", "milestone_key", "evidence_gate_key",
+        )
+        if "observed_requirement_digest" in row.keys() and all(field in requirement for field in digest_fields):
+            observed = digest({field: requirement[field] for field in digest_fields})
+            if str(row["observed_requirement_digest"]) != observed:
+                findings[child_id].add("CONFLICTING_LINEAGE")
         if row["relationship_type"] in {"fulfills", "contributes"}:
             obligation = next((item for item in elements.values() if str(item.get("requirement_id")) == requirement_id), None)
             if obligation and child_id != obligation["id"]:
                 children[obligation["id"]].append((child_id, requirement_id))
     for value in children.values():
         value.sort()
+
+    visiting: list[str] = []
+    visited: set[str] = set()
+
+    def visit(node: str) -> None:
+        if node in visiting:
+            for member in visiting[visiting.index(node):]:
+                findings[member].add("CYCLE")
+            return
+        if node in visited:
+            return
+        visiting.append(node)
+        for parent in parents.get(node, []):
+            visit(parent)
+        visiting.pop()
+        visited.add(node)
+
+    for element_id in sorted(elements):
+        visit(element_id)
 
     recovery: dict[str, set[str]] = {}
     for row in connection.execute("SELECT element_id, reason_code, state FROM recovery_case WHERE element_id IS NOT NULL"):
@@ -619,6 +649,31 @@ def drive_qh002(workspace: Path, manifest: dict[str, Any], *, project_binding: s
     return {"run_id": run_id, "resumed": False, "truth": truth, "checks": checks, "journal": journal.relative_to(workspace).as_posix()}
 
 
+def drive_local_corpus(workspace: Path, manifest: dict[str, Any]) -> dict[str, Any]:
+    """Drive one M2 local scenario in an isolated database below the OS fixture."""
+    validate_manifest(manifest)
+    supported = {"QH-003", "QH-004", "QH-005", "QH-006", "QH-008", "QH-009", "QH-010"}
+    scenario_id = str(manifest["scenario"]["id"])
+    if scenario_id not in supported:
+        raise QualificationError(f"local corpus driver does not support {scenario_id}")
+    if manifest["target"]["environment"] != "development":
+        raise QualificationError("local corpus driver is restricted to development")
+    scripts = Path(__file__).resolve().parent
+    if str(scripts) not in sys.path:
+        sys.path.insert(0, str(scripts))
+    import lifecycle_qualification_scenarios  # type: ignore
+
+    try:
+        return lifecycle_qualification_scenarios.drive(
+            workspace,
+            manifest,
+            oracle=independent_closure,
+            compare=compare_closure_projection,
+        )
+    except RuntimeError as error:
+        raise QualificationError(str(error)) from error
+
+
 def _write_json(path: Path, value: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(path.name + ".tmp")
@@ -637,6 +692,7 @@ def build_parser() -> argparse.ArgumentParser:
     observe = commands.add_parser("observe-local"); observe.add_argument("--database", required=True); observe.add_argument("--run-id", required=True); observe.add_argument("--output")
     evaluate = commands.add_parser("evaluate"); evaluate.add_argument("--manifest", required=True); evaluate.add_argument("--local"); evaluate.add_argument("--dashboard"); evaluate.add_argument("--output", required=True)
     drive = commands.add_parser("drive-qh002"); drive.add_argument("--workspace", required=True); drive.add_argument("--manifest", required=True); drive.add_argument("--project-binding", required=True); drive.add_argument("--output", required=True)
+    local_drive = commands.add_parser("drive-local"); local_drive.add_argument("--workspace", required=True); local_drive.add_argument("--manifest", required=True); local_drive.add_argument("--output", required=True)
     return parser
 
 
@@ -653,6 +709,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif args.command == "drive-qh002":
             manifest = load_json(Path(args.manifest), label="manifest")
             result = drive_qh002(Path(args.workspace), manifest, project_binding=args.project_binding)
+            _write_json(Path(args.output), result)
+        elif args.command == "drive-local":
+            manifest = load_json(Path(args.manifest), label="manifest")
+            result = drive_local_corpus(Path(args.workspace), manifest)
             _write_json(Path(args.output), result)
         else:
             manifest = load_json(Path(args.manifest), label="manifest")
@@ -673,6 +733,15 @@ def main(argv: Sequence[str] | None = None) -> int:
                     {"layer": "local-sqlite", "sha256": file_digest(Path(args.local)), "path": Path(args.local).name},
                     {"layer": "hosted-projection", "sha256": file_digest(Path(args.dashboard)), "path": Path(args.dashboard).name},
                 ]
+            elif scenario["scenario_id"] in {"QH-003", "QH-004", "QH-005", "QH-006", "QH-008", "QH-009", "QH-010"}:
+                if not args.local: raise QualificationError(f"{scenario['scenario_id']} requires --local")
+                local = load_json(Path(args.local), label="local drive result")
+                if local.get("run_id") != manifest["run_id"] or local.get("scenario_id") != scenario["scenario_id"]:
+                    raise QualificationError("local drive result does not match the sealed run")
+                checks = list(local.get("checks") or [])
+                if not checks:
+                    raise QualificationError("local drive result has no invariant checks")
+                evidence = [{"layer": "local-sqlite", "sha256": file_digest(Path(args.local)), "path": Path(args.local).name}]
             else:
                 raise QualificationError("scenario evaluator is not implemented")
             result = result_summary(manifest, checks, evidence=evidence, replay=["python3 scripts/lifecycle_qualification.py evaluate", "--manifest", Path(args.manifest).name])

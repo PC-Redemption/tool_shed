@@ -1,0 +1,28 @@
+{
+  "actions": [
+    "create-parent-and-terminal-child",
+    "interrupt-before-parent-transition",
+    "resume-parent-transition",
+    "replay-resume"
+  ],
+  "checkpoints": [
+    {
+      "id": "interrupted-replay-terminal",
+      "invariants": [
+        "child-terminal-before-parent",
+        "resume-closes-parent-once",
+        "replay-does-not-duplicate-terminal-effect",
+        "oracle-projection-parity"
+      ]
+    }
+  ],
+  "kind": "tool-shed-qualification-scenario",
+  "platforms": [
+    "linux-x86_64",
+    "windows-amd64"
+  ],
+  "scenario_id": "QH-006",
+  "schema_version": 1,
+  "title": "Interrupted reconciliation and replay",
+  "version": 1
+}

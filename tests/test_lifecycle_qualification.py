@@ -29,6 +29,21 @@ class LifecycleQualificationTests(unittest.TestCase):
             label="scenario",
         )
 
+    def local_fixture(self, root: Path) -> tuple[Path, str]:
+        workspace = root / "fixture"
+        workspace.mkdir()
+        subprocess.run(["git", "init", "--quiet", "-b", "main"], cwd=workspace, check=True)
+        subprocess.run(["git", "config", "user.name", "Qualification Fixture"], cwd=workspace, check=True)
+        subprocess.run(["git", "config", "user.email", "fixture@example.invalid"], cwd=workspace, check=True)
+        project_id = str(uuid.uuid4())
+        identity = workspace / "work/tool-shed-project.json"
+        identity.parent.mkdir(parents=True)
+        identity.write_text(json.dumps({"schema_version": 1, "project_id": project_id, "project_name": "qualification-fixture"}) + "\n", encoding="utf-8")
+        (workspace / ".gitignore").write_text("/.tool-shed/\n", encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=workspace, check=True)
+        subprocess.run(["git", "commit", "--quiet", "-m", "fixture"], cwd=workspace, check=True)
+        return workspace, project_id
+
     def test_manifest_identity_is_content_derived_and_input_sensitive(self) -> None:
         scenario = self.scenario("QH-002")
         first = qualification.seal_manifest(
@@ -273,6 +288,46 @@ class LifecycleQualificationTests(unittest.TestCase):
             by_id = {item["id"]: item for item in driven["checks"]}
             self.assertTrue(by_id["QH002-CLOSURE-PROJECTION-PARITY"]["passed"])
             self.assertTrue(all(item["passed"] for item in driven["checks"]))
+
+    def test_m2_local_scenario_contracts_are_sealable(self) -> None:
+        for scenario_id in ("QH-003", "QH-004", "QH-005", "QH-006", "QH-008", "QH-009", "QH-010"):
+            scenario = self.scenario(scenario_id)
+            qualification.validate_scenario(scenario)
+            manifest = qualification.seal_manifest(
+                scenario,
+                candidate_commit="a" * 40,
+                candidate_version="0.44.0",
+                platform_name="linux-x86_64",
+                project_id=str(uuid.uuid4()),
+                instance_id="fixture-instance",
+                serial=1,
+                seed=0,
+                target_environment="development",
+                baseline_digest="b" * 64,
+            )
+            self.assertEqual(manifest["scenario"]["id"], scenario_id)
+
+    def test_m2_local_database_corpus_passes_and_replays_idempotently(self) -> None:
+        for serial, scenario_id in enumerate(("QH-003", "QH-004", "QH-005", "QH-006", "QH-008", "QH-009", "QH-010"), start=1):
+            with self.subTest(scenario=scenario_id), tempfile.TemporaryDirectory() as directory:
+                workspace, project_id = self.local_fixture(Path(directory))
+                manifest = qualification.seal_manifest(
+                    self.scenario(scenario_id),
+                    candidate_commit="a" * 40,
+                    candidate_version="0.44.0",
+                    platform_name="linux-x86_64",
+                    project_id=project_id,
+                    instance_id="fixture-instance",
+                    serial=serial,
+                    seed=0,
+                    target_environment="development",
+                    baseline_digest="b" * 64,
+                )
+                driven = qualification.drive_local_corpus(workspace, manifest)
+                self.assertTrue(all(item["passed"] for item in driven["checks"]), driven)
+                repeated = qualification.drive_local_corpus(workspace, manifest)
+                self.assertTrue(repeated["resumed"])
+                self.assertEqual(driven["checks"], repeated["checks"])
 
 
 if __name__ == "__main__":

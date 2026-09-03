@@ -1,0 +1,28 @@
+{
+  "actions": [
+    "create-three-level-diamond",
+    "close-shared-leaf",
+    "observe-both-paths",
+    "close-root-locally"
+  ],
+  "checkpoints": [
+    {
+      "id": "shared-lineage-terminal",
+      "invariants": [
+        "three-or-more-levels",
+        "shared-child-has-two-parent-paths",
+        "blockers-deduplicate",
+        "oracle-projection-parity"
+      ]
+    }
+  ],
+  "kind": "tool-shed-qualification-scenario",
+  "platforms": [
+    "linux-x86_64",
+    "windows-amd64"
+  ],
+  "scenario_id": "QH-004",
+  "schema_version": 1,
+  "title": "Deep and shared lineage",
+  "version": 1
+}

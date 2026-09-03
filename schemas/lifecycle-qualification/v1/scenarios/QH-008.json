@@ -1,0 +1,27 @@
+{
+  "actions": [
+    "checkpoint-authority",
+    "rebuild-new-database",
+    "compare-domain-and-closure-truth"
+  ],
+  "checkpoints": [
+    {
+      "id": "checkpoint-rebuild-parity",
+      "invariants": [
+        "checkpoint-digest-valid",
+        "domain-digest-equal",
+        "closure-truth-equal",
+        "rebuilt-database-clean"
+      ]
+    }
+  ],
+  "kind": "tool-shed-qualification-scenario",
+  "platforms": [
+    "linux-x86_64",
+    "windows-amd64"
+  ],
+  "scenario_id": "QH-008",
+  "schema_version": 1,
+  "title": "Checkpoint and rebuild parity",
+  "version": 1
+}
