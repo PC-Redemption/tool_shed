@@ -1,0 +1,44 @@
+# Campaign: Complete Local Lifecycle and Existing-Instance Corpus
+
+Status: completed
+Type: campaign
+Updated: 2026-09-02
+Next Action: continue PRM-0038 M3 reporter, hosted, and browser truth qualification
+Campaign ID: complete-local-lifecycle-and-recovery-corpus
+Outcome: Complete deterministic local authority, recovery, malformed-graph, and existing-instance intake qualification on Linux and Windows without touching production.
+Roadmap: deterministic-tool-shed-lifecycle-and-database-truth-qualification-harness
+Roadmap Document: PRM-0038
+Roadmap Revision: 2
+Milestone: M2-LOCAL-LIFECYCLE-CORPUS
+Unlocks Gate: remaining G2-LOCAL-LIFECYCLE-CORPUS
+Depends On: M1-CONTRACT-AND-FOUNDATION
+Requested Endpoint: work2
+Completion Gate: QH-003 through QH-006 and local QH-008/QH-009/QH-010 are versioned and pass on the exact Linux and Windows disposable fixtures; existing file-owned and Hybrid snapshots are upgraded in place with stable identity and preserved history; recoverable parent projections rebuild; unavailable parent authority remains an explicit blocker; repeated and interrupted operations are idempotent; live and rebuilt local truth match; no invisible orphan, false closure, unpropagated result, or normal-run residue remains; the exact candidate is registered for later release; production remains unchanged.
+
+## Scope
+
+- Extend the deterministic lifecycle driver and independent oracle for the M2 scenario set.
+- Add sanitized structurally faithful existing-instance snapshot fixtures without credentials or
+  uncontrolled private content.
+- Qualify local upgrade, recovery, replay, graph isolation, and checkpoint/rebuild parity on
+  `/home/jon/dev/ts_linux_test_bed` and `E:\dev\ts_windows_test_bed`.
+- Deploy the exact candidate only to configured development lanes and retain bounded evidence.
+
+## Boundary
+
+Hosted QH-007/QH-010 convergence belongs to M3. The shared hosted qualification namespace belongs
+to M4. Work3 freezing, Git push, publication, production ingestion, and production deployment are
+outside this campaign.
+
+## Completion
+
+Exact candidate `dd0081438454a16f9ec539350f47fa68fdf74540` passed the release validation
+profile (537/537 tests) and all seven M2 local scenarios on both exact disposable fixtures. The 14
+sealed runs passed 74 invariant checks, and replay of every run was idempotent. The local
+existing-instance corpus preserved artifact identities and document history, reconstructed
+recoverable lineage, surfaced unresolved ancestry explicitly, and produced zero invisible orphan
+claims. Evidence is retained at `work/evidence/evidence-lifecycle-qualification-m2.md`.
+
+The development web component is healthy on candidate tag `dev-dd0081438454`. Its shipped
+dashboard payload is byte-identical to the prior candidate. No production target, published
+release, or installed personal Codex skill was changed.
