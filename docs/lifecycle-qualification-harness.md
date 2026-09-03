@@ -87,6 +87,10 @@ malformed graph and pre-upgrade snapshots out of the fixture's operational datab
 moving execution off the target platform. Reusing an already-complete manifest returns the sealed
 result as an idempotent resume. A partial run is refused until its last authoritative checkpoint
 is understood; the harness does not guess whether an incompletely observed mutation happened.
+During every local corpus drive, user-level Tool Shed state is rebound to an OS-temporary,
+run-specific root. Managed-write reporter hooks therefore cannot discover the fixture's enrolled
+credential or start a reporter from a nested qualification workspace. Hosted phases opt into a
+separate explicit state root only after the local checkpoint is complete.
 
 ## Commands
 

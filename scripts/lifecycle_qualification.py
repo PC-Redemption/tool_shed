@@ -10,6 +10,7 @@ import os
 import platform as host_platform
 import sqlite3
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Sequence
@@ -860,6 +861,13 @@ def drive_local_corpus(workspace: Path, manifest: dict[str, Any]) -> dict[str, A
         sys.path.insert(0, str(scripts))
     import lifecycle_qualification_scenarios  # type: ignore
 
+    prior_state_root = os.environ.get("TOOL_SHED_STATE_ROOT")
+    isolated_state = (
+        Path(tempfile.gettempdir())
+        / "tool-shed-qualification-state"
+        / str(manifest["run_id"])
+    )
+    os.environ["TOOL_SHED_STATE_ROOT"] = str(isolated_state)
     try:
         return lifecycle_qualification_scenarios.drive(
             workspace,
@@ -869,6 +877,11 @@ def drive_local_corpus(workspace: Path, manifest: dict[str, Any]) -> dict[str, A
         )
     except RuntimeError as error:
         raise QualificationError(str(error)) from error
+    finally:
+        if prior_state_root is None:
+            os.environ.pop("TOOL_SHED_STATE_ROOT", None)
+        else:
+            os.environ["TOOL_SHED_STATE_ROOT"] = prior_state_root
 
 
 def _write_json(path: Path, value: dict[str, Any]) -> None:

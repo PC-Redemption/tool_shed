@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import sqlite3
 import subprocess
@@ -348,6 +349,7 @@ class LifecycleQualificationTests(unittest.TestCase):
             self.assertEqual(manifest["scenario"]["id"], scenario_id)
 
     def test_m2_local_database_corpus_passes_and_replays_idempotently(self) -> None:
+        original_state_root = os.environ.get("TOOL_SHED_STATE_ROOT")
         for serial, scenario_id in enumerate(("QH-003", "QH-004", "QH-005", "QH-006", "QH-008", "QH-009", "QH-010"), start=1):
             with self.subTest(scenario=scenario_id), tempfile.TemporaryDirectory() as directory:
                 workspace, project_id = self.local_fixture(Path(directory))
@@ -368,6 +370,7 @@ class LifecycleQualificationTests(unittest.TestCase):
                 repeated = qualification.drive_local_corpus(workspace, manifest)
                 self.assertTrue(repeated["resumed"])
                 self.assertEqual(driven["checks"], repeated["checks"])
+                self.assertEqual(os.environ.get("TOOL_SHED_STATE_ROOT"), original_state_root)
 
 
 if __name__ == "__main__":
