@@ -38,7 +38,12 @@ class LifecycleQualificationEvidenceTests(unittest.TestCase):
         records = [
             {"id": "old", "body_markdown": "private prose"},
             {"id": "prior", "value": "Bearer abc.def"},
-            {"id": "broken", "password": "dont-save", "actual": "sk-secretvalue"},
+            {
+                "id": "broken",
+                "password": "dont-save",
+                "actual": "sk-secretvalue",
+                "command": "runner --secret hidden",
+            },
             {"id": "later", "value": "must not be captured"},
         ]
         bundle = evidence.seal_bundle(manifest, result, records, created_at="2026-09-03T00:00:00Z")
@@ -47,6 +52,7 @@ class LifecycleQualificationEvidenceTests(unittest.TestCase):
         self.assertNotIn("dont-save", encoded)
         self.assertNotIn("secretvalue", encoded)
         self.assertNotIn("--token hidden", encoded)
+        self.assertNotIn("--secret hidden", encoded)
         self.assertNotIn("must not be captured", encoded)
         self.assertEqual([item["id"] for item in bundle["records"]], ["prior", "broken"])
         self.assertEqual(bundle["records"][1]["password"], "[REDACTED]")

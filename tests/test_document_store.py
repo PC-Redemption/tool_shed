@@ -91,6 +91,10 @@ class DocumentStoreThinSliceTests(unittest.TestCase):
         self.assertEqual(aliases[0]["path"], "work/evidence/canonical-alias.md")
 
     def test_managed_writes_reuse_physical_audit_only_while_database_is_unchanged(self) -> None:
+        hybrid_state._PHYSICAL_AUDIT_CACHE.pop(str(self.database.resolve()), None)
+        document_store._MANAGED_AUDIT_CACHE.pop(
+            (str(self.workspace), str(self.database)), None
+        )
         original = hybrid_state.integrity_check
         with (
             mock.patch.object(hybrid_state, "integrity_check", wraps=original) as checked,
@@ -117,6 +121,10 @@ class DocumentStoreThinSliceTests(unittest.TestCase):
                 callback=lambda _connection, revision: {"revision": revision},
                 expected_writes=0,
                 path=self.database,
+            )
+            self.assertEqual(
+                hybrid_state.audit(self.workspace, self.database)["classification"],
+                "VALID_DIRTY",
             )
             self.assertEqual(checked.call_count, 1)
 

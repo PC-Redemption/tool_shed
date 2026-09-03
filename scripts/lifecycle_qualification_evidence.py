@@ -88,7 +88,12 @@ def _unsafe_paths(value: object, *, location: str = "$") -> list[str]:
     elif isinstance(value, list):
         for index, item in enumerate(value):
             findings.extend(_unsafe_paths(item, location=f"{location}[{index}]"))
-    elif isinstance(value, str) and (BEARER.search(value) or SECRET_LITERAL.search(value) or COMMAND_SECRET.search(value) or ABSOLUTE_PATH.search(value)):
+    elif isinstance(value, str) and (
+        BEARER.search(value)
+        or SECRET_LITERAL.search(value)
+        or COMMAND_SECRET.sub(r"\1[REDACTED]", value) != value
+        or ABSOLUTE_PATH.search(value)
+    ):
         findings.append(location)
     return findings
 

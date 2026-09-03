@@ -260,7 +260,15 @@ def audit(workspace: Path, database: Path | None = None) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
     path = require_path_within(workspace, database or hybrid_state.database_path(workspace))
     with contextlib.closing(hybrid_state.connect(path)) as connection:
-        return audit_connection(workspace, connection)
+        revision = int(hybrid_state.meta_row(connection)["current_revision"])
+        result = audit_connection(
+            workspace,
+            connection,
+            physical_integrity=not hybrid_state.physical_audit_current(path, revision),
+        )
+    if result["classification"] in {"CLEAN", "VALID_DIRTY"}:
+        hybrid_state.remember_physical_audit(path, revision)
+    return result
 
 
 def is_authoritative(workspace: Path, database: Path | None = None) -> bool:

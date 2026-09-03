@@ -469,7 +469,15 @@ def audit(workspace: Path, path: Path | None = None) -> dict[str, Any]:
     if not target.is_file():
         raise HybridStateError(f"state database does not exist: {target.relative_to(workspace)}")
     with contextlib.closing(connect(target)) as connection:
-        return audit_connection(workspace, connection)
+        revision = int(meta_row(connection)["current_revision"])
+        result = audit_connection(
+            workspace,
+            connection,
+            physical_integrity=not physical_audit_current(target, revision),
+        )
+    if result["classification"] in {"CLEAN", "VALID_DIRTY", "CHECKPOINT_DUE"}:
+        remember_physical_audit(target, revision)
+    return result
 
 
 def _atomic_promote(source: Path, destination: Path) -> None:
