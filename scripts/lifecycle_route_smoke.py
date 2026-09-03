@@ -9,8 +9,10 @@ _runtime_sys.dont_write_bytecode = True
 
 import argparse
 import contextlib
+import hashlib
 import json
 import os
+import re
 import sqlite3
 from pathlib import Path
 from typing import Any, Sequence
@@ -20,6 +22,7 @@ import lifecycle_qualification as qualification
 
 
 EXPECTED_TYPES = {"idea-brief": 1, "project-map": 1, "program-roadmap": 1, "campaign": 1}
+COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 
 
 class RouteSmokeError(RuntimeError):
@@ -35,6 +38,28 @@ def _write(path: Path, value: dict[str, Any]) -> None:
 
 def snapshot(workspace: Path, *, run_tag: str) -> dict[str, Any]:
     workspace = workspace.resolve()
+    shed = workspace / "tool_shed"
+    manifest_path = shed / "SHED_VERSION.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    hashes = manifest.get("content_hashes")
+    if not isinstance(hashes, dict):
+        raise RouteSmokeError("snapshot manifest has no content hashes")
+    missing: list[str] = []
+    modified: list[str] = []
+    for relative, expected in sorted(hashes.items()):
+        path = shed / str(relative)
+        if not path.is_file() or path.is_symlink():
+            missing.append(str(relative))
+        elif hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+            modified.append(str(relative))
+    candidate_snapshot = {
+        "manifest_sha256": hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
+        "shed_version": manifest.get("shed_version"),
+        "tracked_files": len(hashes),
+        "integrity": "verified" if not missing and not modified else "modified",
+        "missing": missing,
+        "modified": modified,
+    }
     database = hybrid_state.database_path(workspace)
     with contextlib.closing(hybrid_state.connect(database, writable=False)) as connection:
         meta = dict(connection.execute("SELECT * FROM state_meta WHERE id=1").fetchone())
@@ -95,6 +120,7 @@ def snapshot(workspace: Path, *, run_tag: str) -> dict[str, Any]:
             "schema_version": 1,
             "kind": "tool-shed-route-smoke-snapshot",
             "run_tag": run_tag,
+            "candidate_snapshot": candidate_snapshot,
             "database_revision": int(meta["current_revision"]),
             "domain_digest": hybrid_state.audit_connection(workspace, connection)["domain_digest"],
             "documents": documents,
@@ -118,6 +144,8 @@ def evaluate(
     duration_seconds: float,
     adapter_version: str,
     platform_name: str,
+    candidate_commit: str,
+    candidate_manifest_sha256: str,
 ) -> dict[str, Any]:
     docs = completed["documents"]
     by_type: dict[str, list[dict[str, Any]]] = {}
@@ -153,7 +181,20 @@ def evaluate(
         for item in cycles
     )
     closure = completed.get("closure_elements", {})
+    snapshots = [before.get("candidate_snapshot", {}), completed.get("candidate_snapshot", {}), replayed.get("candidate_snapshot", {})]
+    candidate_binding = (
+        COMMIT_RE.fullmatch(candidate_commit) is not None
+        and len(candidate_manifest_sha256) == 64
+        and all(
+            item.get("integrity") == "verified"
+            and item.get("manifest_sha256") == candidate_manifest_sha256
+            and not item.get("missing")
+            and not item.get("modified")
+            for item in snapshots
+        )
+    )
     checks = [
+        {"id": "ROUTE-CANDIDATE-BINDING", "passed": candidate_binding, "expected": {"commit": candidate_commit, "manifest_sha256": candidate_manifest_sha256, "integrity": "verified"}, "actual": snapshots},
         {"id": "ROUTE-CARDINALITY", "passed": actual_types == EXPECTED_TYPES and len(docs) == 4, "expected": EXPECTED_TYPES, "actual": actual_types},
         {"id": "ROUTE-CURRENT-READINESS", "passed": len(idea_readiness) == 1 and reviewed.get("verdict") in {"READY", "READY-WITH-PRM-GATES"}, "expected": "one revision-bound ready result", "actual": [{"revision": item.get("idea", {}).get("document_revision"), "verdict": item.get("verdict")} for item in idea_readiness]},
         {"id": "ROUTE-PROVENANCE", "passed": bool(idea and project_map and roadmap and reviewed and project_map["metadata"].get("reviewed_idea_artifact_id") == reviewed["idea"]["artifact_id"] and roadmap["metadata"].get("reviewed_idea_artifact_id") == reviewed["idea"]["artifact_id"] and project_map["metadata"].get("reviewed_idea_document_revision") == reviewed["idea"]["document_revision"] and roadmap["metadata"].get("reviewed_idea_document_revision") == reviewed["idea"]["document_revision"] and project_map["metadata"].get("reviewed_idea_body_sha256") == reviewed["idea"]["body_sha256"] and roadmap["metadata"].get("reviewed_idea_body_sha256") == reviewed["idea"]["body_sha256"]), "expected": "exact reviewed Idea artifact/revision/body provenance", "actual": {"reviewed_idea": reviewed.get("idea"), "map_metadata": (project_map or {}).get("metadata"), "roadmap_metadata": (roadmap or {}).get("metadata")}},
@@ -170,6 +211,7 @@ def evaluate(
         "kind": "tool-shed-low-reasoning-route-smoke-result",
         "run_tag": completed["run_tag"],
         "platform": platform_name,
+        "candidate": {"commit": candidate_commit, "manifest_sha256": candidate_manifest_sha256},
         "execution": {"provider": provider, "model": model, "effort": effort, "turns": turns, "duration_seconds": duration_seconds, "adapter_version": adapter_version},
         "checks": checks,
         "first_divergence": next((item["id"] for item in checks if not item["passed"]), None),
@@ -185,14 +227,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     capture = commands.add_parser("snapshot")
     capture.add_argument("--workspace", required=True); capture.add_argument("--run-tag", required=True); capture.add_argument("--output", required=True)
     check = commands.add_parser("evaluate")
-    check.add_argument("--before", required=True); check.add_argument("--completed", required=True); check.add_argument("--replayed", required=True); check.add_argument("--provider", required=True); check.add_argument("--model", required=True); check.add_argument("--effort", required=True); check.add_argument("--turns", required=True, type=int); check.add_argument("--duration-seconds", required=True, type=float); check.add_argument("--adapter-version", required=True); check.add_argument("--platform", required=True); check.add_argument("--output", required=True)
+    check.add_argument("--before", required=True); check.add_argument("--completed", required=True); check.add_argument("--replayed", required=True); check.add_argument("--provider", required=True); check.add_argument("--model", required=True); check.add_argument("--effort", required=True); check.add_argument("--turns", required=True, type=int); check.add_argument("--duration-seconds", required=True, type=float); check.add_argument("--adapter-version", required=True); check.add_argument("--platform", required=True); check.add_argument("--candidate-commit", required=True); check.add_argument("--candidate-manifest-sha256", required=True); check.add_argument("--output", required=True)
     args = parser.parse_args(argv)
     try:
         if args.command == "snapshot":
             value = snapshot(Path(args.workspace), run_tag=args.run_tag)
         else:
             load = lambda name: json.loads(Path(name).read_text(encoding="utf-8"))
-            value = evaluate(load(args.before), load(args.completed), load(args.replayed), provider=args.provider, model=args.model, effort=args.effort, turns=args.turns, duration_seconds=args.duration_seconds, adapter_version=args.adapter_version, platform_name=args.platform)
+            value = evaluate(load(args.before), load(args.completed), load(args.replayed), provider=args.provider, model=args.model, effort=args.effort, turns=args.turns, duration_seconds=args.duration_seconds, adapter_version=args.adapter_version, platform_name=args.platform, candidate_commit=args.candidate_commit, candidate_manifest_sha256=args.candidate_manifest_sha256)
         _write(Path(args.output), value)
         print(json.dumps({"kind": value["kind"], "verdict": value.get("verdict"), "result_digest": value.get("result_digest")}, indent=2, sort_keys=True))
         return 0 if value.get("verdict", "PASS") == "PASS" else 3
