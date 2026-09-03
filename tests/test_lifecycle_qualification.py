@@ -126,6 +126,45 @@ class LifecycleQualificationTests(unittest.TestCase):
         self.assertFalse(next(item for item in checks if item["id"] == "QH001-SEEDS-NOT-OPERATIONAL")["passed"])
         self.assertFalse(next(item for item in checks if item["id"] == "QH001-EXACT-PROJECT-SET")["passed"])
 
+    def test_qh007_proves_outage_classification_and_exact_convergence(self) -> None:
+        scenario = self.scenario("QH-007")
+        manifest = qualification.seal_manifest(
+            scenario, candidate_commit="a" * 40, candidate_version="0.45.0",
+            platform_name="hosted-development", project_id="project", instance_id="instance",
+            serial=1, seed=0, target_environment="development", baseline_digest="b" * 64,
+        )
+        artifact = {
+            "artifact_id": "artifact", "visible_id": "IDEA-0001", "artifact_type": "idea-brief",
+            "title": "Fixture", "document_lifecycle": "active", "outcome_lifecycle": "working",
+            "outcome_disposition": "open", "reconciliation_state": "open", "parent_ids": [],
+            "produces_ids": [], "closure_status": {"effective_closed": False},
+        }
+        transport = {
+            "run_id": manifest["run_id"], "project_id": "project", "instance_id": "instance",
+            "project_name": "fixture", "queued": [{"sequence": 2}, {"sequence": 3}],
+            "outage": {"status": "unavailable", "pending_count": 2, "hosted_sequence": 1, "latest_sequence": 3, "browser_freshness": "stale"},
+            "delivery": {"pending_count": 0, "submissions": [
+                {"sequence": 3, "status": "accepted"}, {"sequence": 3, "status": "duplicate"},
+                {"sequence": 2, "status": "stale"},
+            ]},
+            "accepted_idempotency_keys": ["baseline", "newer", "final"],
+            "latest_payload": {"sequence": 4, "work_inventory": {"total_count": 1, "artifacts": [artifact]}},
+        }
+        dashboard = {
+            "instances": [{"project_external_id": "project", "external_id": "instance", "last_sequence": 4, "work_inventory_sequence": 4, "work_inventory_total": 1}],
+            "work_artifacts": [{
+                "project_external_id": "project", "instance_external_id": "instance",
+                "artifact_external_id": "artifact", **{key: value for key, value in artifact.items() if key != "artifact_id"},
+            }],
+            "ingest_receipts": [{"instance_external_id": "instance", "idempotency_key": key} for key in ("baseline", "newer", "final")],
+        }
+        browser = {"links_ok": True, "projects": [{"name": "fixture", "freshness": "fresh", "attention_state": "working", "work_artifact_ids": ["IDEA-0001"]}]}
+        checks = qualification.evaluate_qh007(transport, dashboard, browser, manifest)
+        self.assertTrue(all(item["passed"] for item in checks), checks)
+        dashboard["work_artifacts"][0]["closure_status"] = {"effective_closed": True}
+        checks = qualification.evaluate_qh007(transport, dashboard, browser, manifest)
+        self.assertFalse(next(item for item in checks if item["id"] == "QH007-HOSTED-FIELD-PARITY")["passed"])
+
     def test_independent_oracle_detects_projection_divergence(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             database = Path(directory) / "fixture.sqlite3"
@@ -290,14 +329,14 @@ class LifecycleQualificationTests(unittest.TestCase):
             self.assertTrue(all(item["passed"] for item in driven["checks"]))
 
     def test_m2_local_scenario_contracts_are_sealable(self) -> None:
-        for scenario_id in ("QH-003", "QH-004", "QH-005", "QH-006", "QH-008", "QH-009", "QH-010"):
+        for scenario_id in ("QH-003", "QH-004", "QH-005", "QH-006", "QH-007", "QH-008", "QH-009", "QH-010"):
             scenario = self.scenario(scenario_id)
             qualification.validate_scenario(scenario)
             manifest = qualification.seal_manifest(
                 scenario,
                 candidate_commit="a" * 40,
                 candidate_version="0.44.0",
-                platform_name="linux-x86_64",
+                platform_name="hosted-development" if scenario_id == "QH-007" else "linux-x86_64",
                 project_id=str(uuid.uuid4()),
                 instance_id="fixture-instance",
                 serial=1,

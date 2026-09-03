@@ -1,6 +1,6 @@
 # Lifecycle Qualification Harness
 
-Status: Work2 local lifecycle and recovery corpus
+Status: Work2 reporter, hosted projection, and browser truth corpus
 Contract: `lifecycle-qualification-v1`
 Oracle: `lifecycle-truth-oracle-v1`
 
@@ -64,16 +64,22 @@ authority but cannot replace it.
 - `QH-006` commits a terminal child before its parent transition, resumes after that explicit
   interruption point, and replays the resume. Exactly one terminal verdict, reconciliation, and
   parent-result propagation may exist.
+- `QH-007` establishes one hosted baseline, queues two reports during a forced unavailable
+  endpoint, stops at that sealed checkpoint, and then resumes. The newer report is accepted before
+  the older report, replayed as a duplicate, and followed by the stale older report. The outbox must
+  drain to one exact current projection without duplicate receipts or identities.
 - `QH-008` writes a logical schema-3 checkpoint, rebuilds a distinct database, and requires exact
-  domain-digest and independently calculated closure parity with a clean rebuilt audit.
+  domain-digest and independently calculated closure parity with a clean rebuilt audit. Its M3
+  checkpoint additionally reports rebuilt meaning through hosting and the browser.
 - `QH-009` copies healthy authority into three isolated databases and injects one missing parent,
   one conflicting lineage digest, and one cycle. Each finding must be explicit while the healthy
   source database and an unrelated control element remain unchanged.
-- Local `QH-010` constructs sanitized, structurally faithful file-owned and Hybrid snapshots,
+- `QH-010` constructs sanitized, structurally faithful file-owned and Hybrid snapshots,
   upgrades each in place, and checks stable artifact IDs, retained document history, recovered
   parent claims, explicit unresolved ancestry, idempotent replay, and zero invisible orphans.
-  Hosted ingestion of these snapshots remains an M3 activity and uses an ephemeral development
-  database until the M4 qualification namespace exists.
+  M3 ingests the upgraded file-owned source through a real reporter outbox into an ephemeral
+  development database, then requires exact source/hosted/browser set and field equality. The
+  shared development database remains untouched until the M4 qualification namespace exists.
 
 Normal QH-002 runs are append-only and retained. M2 local runs use a distinct nested workspace
 below `.tool-shed/qualification/runs/<run-id>/` on the exact disposable OS fixture. This keeps
@@ -128,6 +134,34 @@ python3 scripts/lifecycle_qualification.py evaluate \
   --manifest <manifest.json> --local <truth.json> --dashboard <snapshot.json> \
   --output <result.json>
 ```
+
+For `QH-007`, and for the hosted checkpoints of `QH-008` and `QH-010`, isolate both the web database
+and reporter private state. Enroll the copied source workspace into that ephemeral server, stop
+after the outage phase, capture the browser's stale classification, and then resume convergence:
+
+```bash
+python3 scripts/lifecycle_hosted_qualification.py \
+  --workspace <isolated-source-copy> --manifest <manifest.json> \
+  --server http://<development-host>:<ephemeral-port> --state-root <private-state> \
+  --output <outage.json> outage
+
+python3 scripts/lifecycle_hosted_qualification.py \
+  --workspace <isolated-source-copy> --manifest <manifest.json> \
+  --server http://<development-host>:<ephemeral-port> --state-root <private-state> \
+  --output <transport.json> converge --prior <outage.json> \
+  --outage-browser <stale-browser.json>
+
+python3 scripts/lifecycle_qualification.py evaluate \
+  --manifest <manifest.json> --local <local-drive.json> \
+  --transport <transport.json> --dashboard <hosted.json> --browser <browser.json> \
+  --output <result.json>
+```
+
+`scripts/dashboard_browser_probe.js` uses an installed Chromium-family browser through its native
+DevTools protocol; it has no package dependency. Credentials are accepted only through
+`TOOL_SHED_BROWSER_USERNAME` and `TOOL_SHED_BROWSER_PASSWORD`, and are never emitted. The probe
+opens the authenticated overview, every project detail, Work, Outcome Reconciliation, and Health
+route and records project cardinality, visible work IDs, row text, freshness, and link success.
 
 Export the hosted raw snapshot from the development dashboard container, then evaluate QH-001:
 

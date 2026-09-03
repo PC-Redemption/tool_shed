@@ -540,6 +540,182 @@ def evaluate_qh002_hosted(
     ]
 
 
+def _hosted_instance(
+    dashboard: dict[str, Any], project_id: str, instance_id: str
+) -> dict[str, Any] | None:
+    return next(
+        (
+            item
+            for item in dashboard.get("instances", [])
+            if str(item.get("project_external_id")) == project_id
+            and str(item.get("external_id")) == instance_id
+        ),
+        None,
+    )
+
+
+def evaluate_hosted_truth(
+    transport: dict[str, Any],
+    dashboard: dict[str, Any],
+    browser: dict[str, Any],
+    manifest: dict[str, Any],
+    *,
+    prefix: str,
+) -> list[dict[str, Any]]:
+    """Compare one reporter truth record with hosted rows and browser claims."""
+    project_id = str(manifest["fixture"]["project_id"])
+    instance_id = str(manifest["fixture"]["instance_id"])
+    latest = transport.get("latest_payload") or {}
+    inventory = latest.get("work_inventory") or {}
+    expected_items = inventory.get("artifacts") or []
+    expected_by_id = {str(item.get("artifact_id")): item for item in expected_items}
+    hosted_items = [
+        item
+        for item in dashboard.get("work_artifacts", [])
+        if str(item.get("project_external_id")) == project_id
+        and str(item.get("instance_external_id")) == instance_id
+    ]
+    hosted_by_id = {str(item.get("artifact_external_id")): item for item in hosted_items}
+    hosted_instance = _hosted_instance(dashboard, project_id, instance_id)
+    state_errors: list[str] = []
+    for artifact_id in sorted(set(expected_by_id) & set(hosted_by_id)):
+        source = expected_by_id[artifact_id]
+        hosted = hosted_by_id[artifact_id]
+        for source_field, hosted_field in (
+            ("visible_id", "visible_id"),
+            ("artifact_type", "artifact_type"),
+            ("title", "title"),
+            ("document_lifecycle", "document_lifecycle"),
+            ("outcome_lifecycle", "outcome_lifecycle"),
+            ("outcome_disposition", "outcome_disposition"),
+            ("reconciliation_state", "reconciliation_state"),
+            ("parent_ids", "parent_ids"),
+            ("produces_ids", "produces_ids"),
+            ("closure_status", "closure_status"),
+        ):
+            if source.get(source_field) != hosted.get(hosted_field):
+                state_errors.append(f"{artifact_id}:{source_field}")
+    expected_ids = set(expected_by_id)
+    hosted_ids = set(hosted_by_id)
+    receipt_keys = [
+        str(item.get("idempotency_key"))
+        for item in dashboard.get("ingest_receipts", [])
+        if str(item.get("instance_external_id")) == instance_id
+    ]
+    accepted_keys = sorted(str(item) for item in transport.get("accepted_idempotency_keys", []))
+    browser_project = next(
+        (
+            item
+            for item in browser.get("projects", [])
+            if str(item.get("name")) == str(transport.get("project_name"))
+        ),
+        None,
+    )
+    browser_ids = set((browser_project or {}).get("work_artifact_ids") or [])
+    return [
+        {
+            "id": f"{prefix}-TRANSPORT-IDENTITY",
+            "passed": transport.get("run_id") == manifest["run_id"]
+            and str(transport.get("project_id")) == project_id
+            and str(transport.get("instance_id")) == instance_id,
+            "expected": [manifest["run_id"], project_id, instance_id],
+            "actual": [transport.get("run_id"), transport.get("project_id"), transport.get("instance_id")],
+        },
+        {
+            "id": f"{prefix}-HOSTED-EXACT-WORK-SET",
+            "passed": expected_ids == hosted_ids and len(hosted_items) == len(hosted_by_id),
+            "expected": sorted(expected_ids),
+            "actual": sorted(hosted_ids),
+        },
+        {
+            "id": f"{prefix}-HOSTED-FIELD-PARITY",
+            "passed": not state_errors and expected_ids == hosted_ids,
+            "expected": [],
+            "actual": state_errors[:40],
+        },
+        {
+            "id": f"{prefix}-HOSTED-CURRENT-SEQUENCE",
+            "passed": hosted_instance is not None
+            and hosted_instance.get("last_sequence") == latest.get("sequence")
+            and hosted_instance.get("work_inventory_sequence") == latest.get("sequence")
+            and hosted_instance.get("work_inventory_total") == inventory.get("total_count"),
+            "expected": [latest.get("sequence"), inventory.get("total_count")],
+            "actual": None
+            if hosted_instance is None
+            else [hosted_instance.get("last_sequence"), hosted_instance.get("work_inventory_total")],
+        },
+        {
+            "id": f"{prefix}-RECEIPTS-EXACT-AND-UNIQUE",
+            "passed": sorted(receipt_keys) == accepted_keys and len(receipt_keys) == len(set(receipt_keys)),
+            "expected": accepted_keys,
+            "actual": sorted(receipt_keys),
+        },
+        {
+            "id": f"{prefix}-BROWSER-INVENTORY-AND-WORK",
+            "passed": browser.get("links_ok") is True
+            and browser_project is not None
+            and browser_ids == {str(item.get("visible_id")) for item in expected_items},
+            "expected": sorted(str(item.get("visible_id")) for item in expected_items),
+            "actual": sorted(browser_ids),
+        },
+        {
+            "id": f"{prefix}-BROWSER-FRESHNESS",
+            "passed": browser_project is not None
+            and browser_project.get("freshness") == "fresh"
+            and browser_project.get("attention_state") not in {"stale", "unknown"},
+            "expected": "fresh",
+            "actual": None if browser_project is None else browser_project.get("freshness"),
+        },
+    ]
+
+
+def evaluate_qh007(
+    transport: dict[str, Any],
+    dashboard: dict[str, Any],
+    browser: dict[str, Any],
+    manifest: dict[str, Any],
+) -> list[dict[str, Any]]:
+    outage = transport.get("outage") or {}
+    delivery = transport.get("delivery") or {}
+    submissions = delivery.get("submissions") or []
+    statuses = [str(item.get("status")) for item in submissions]
+    sequences = [int(item.get("sequence", -1)) for item in transport.get("queued", [])]
+    checks = [
+        {
+            "id": "QH007-OUTAGE-RETAINED-PENDING",
+            "passed": outage.get("status") == "unavailable"
+            and int(outage.get("pending_count", 0)) >= 2
+            and int(outage.get("latest_sequence", 0)) > int(outage.get("hosted_sequence", 0))
+            and outage.get("browser_freshness") == "stale",
+            "expected": "unavailable with at least two newer queued reports",
+            "actual": outage,
+        },
+        {
+            "id": "QH007-QUEUED-SEQUENCE-MONOTONIC",
+            "passed": bool(sequences)
+            and sequences == sorted(sequences)
+            and len(sequences) == len(set(sequences)),
+            "expected": sorted(set(sequences)),
+            "actual": sequences,
+        },
+        {
+            "id": "QH007-REORDER-DUPLICATE-CLASSIFIED",
+            "passed": "accepted" in statuses and "duplicate" in statuses and "stale" in statuses,
+            "expected": ["accepted", "duplicate", "stale"],
+            "actual": statuses,
+        },
+        {
+            "id": "QH007-OUTBOX-DRAINED",
+            "passed": delivery.get("pending_count") == 0,
+            "expected": 0,
+            "actual": delivery.get("pending_count"),
+        },
+    ]
+    return checks + evaluate_hosted_truth(
+        transport, dashboard, browser, manifest, prefix="QH007"
+    )
+
+
 def result_summary(manifest: dict[str, Any], checks: list[dict[str, Any]], *, evidence: list[dict[str, Any]], replay: list[str]) -> dict[str, Any]:
     validate_manifest(manifest)
     verdict = "PASS" if checks and all(item.get("passed") is True for item in checks) else "PRODUCT-FAIL"
@@ -690,7 +866,7 @@ def build_parser() -> argparse.ArgumentParser:
     seal.add_argument("--serial", required=True, type=int); seal.add_argument("--seed", type=int, default=0); seal.add_argument("--target-environment", default="development"); seal.add_argument("--checkpoint")
     seal.add_argument("--baseline-digest", required=True); seal.add_argument("--output", required=True)
     observe = commands.add_parser("observe-local"); observe.add_argument("--database", required=True); observe.add_argument("--run-id", required=True); observe.add_argument("--output")
-    evaluate = commands.add_parser("evaluate"); evaluate.add_argument("--manifest", required=True); evaluate.add_argument("--local"); evaluate.add_argument("--dashboard"); evaluate.add_argument("--output", required=True)
+    evaluate = commands.add_parser("evaluate"); evaluate.add_argument("--manifest", required=True); evaluate.add_argument("--local"); evaluate.add_argument("--transport"); evaluate.add_argument("--dashboard"); evaluate.add_argument("--browser"); evaluate.add_argument("--output", required=True)
     drive = commands.add_parser("drive-qh002"); drive.add_argument("--workspace", required=True); drive.add_argument("--manifest", required=True); drive.add_argument("--project-binding", required=True); drive.add_argument("--output", required=True)
     local_drive = commands.add_parser("drive-local"); local_drive.add_argument("--workspace", required=True); local_drive.add_argument("--manifest", required=True); local_drive.add_argument("--output", required=True)
     return parser
@@ -723,6 +899,24 @@ def main(argv: Sequence[str] | None = None) -> int:
                 dashboard = load_json(Path(args.dashboard), label="dashboard snapshot")
                 checks = evaluate_qh001(scenario, dashboard)
                 evidence = [{"layer": "hosted-projection", "sha256": file_digest(Path(args.dashboard)), "path": Path(args.dashboard).name}]
+                if args.browser:
+                    browser = load_json(Path(args.browser), label="browser snapshot")
+                    expected_names = set(scenario.get("expectations", {}).get("operational_project_names", []))
+                    actual_names = set(browser.get("project_names") or [])
+                    checks.append({"id": "QH001-BROWSER-EXACT-PROJECT-SET", "passed": browser.get("links_ok") is True and actual_names == expected_names, "expected": sorted(expected_names), "actual": sorted(actual_names)})
+                    evidence.append({"layer": "browser", "sha256": file_digest(Path(args.browser)), "path": Path(args.browser).name})
+            elif scenario["scenario_id"] == "QH-007":
+                if not args.transport or not args.dashboard or not args.browser:
+                    raise QualificationError("QH-007 requires --transport, --dashboard, and --browser")
+                transport = load_json(Path(args.transport), label="transport record")
+                dashboard = load_json(Path(args.dashboard), label="dashboard snapshot")
+                browser = load_json(Path(args.browser), label="browser snapshot")
+                checks = evaluate_qh007(transport, dashboard, browser, manifest)
+                evidence = [
+                    {"layer": "transport-record", "sha256": file_digest(Path(args.transport)), "path": Path(args.transport).name},
+                    {"layer": "hosted-projection", "sha256": file_digest(Path(args.dashboard)), "path": Path(args.dashboard).name},
+                    {"layer": "browser", "sha256": file_digest(Path(args.browser)), "path": Path(args.browser).name},
+                ]
             elif scenario["scenario_id"] == "QH-002":
                 if not args.local: raise QualificationError("QH-002 requires --local")
                 if not args.dashboard: raise QualificationError("QH-002 requires --dashboard")
@@ -742,6 +936,24 @@ def main(argv: Sequence[str] | None = None) -> int:
                 if not checks:
                     raise QualificationError("local drive result has no invariant checks")
                 evidence = [{"layer": "local-sqlite", "sha256": file_digest(Path(args.local)), "path": Path(args.local).name}]
+                if scenario["scenario_id"] in {"QH-008", "QH-010"} and any((args.transport, args.dashboard, args.browser)):
+                    if not args.transport or not args.dashboard or not args.browser:
+                        raise QualificationError(f"hosted {scenario['scenario_id']} requires --transport, --dashboard, and --browser")
+                    transport = load_json(Path(args.transport), label="transport record")
+                    dashboard = load_json(Path(args.dashboard), label="dashboard snapshot")
+                    browser = load_json(Path(args.browser), label="browser snapshot")
+                    checks += evaluate_hosted_truth(
+                        transport,
+                        dashboard,
+                        browser,
+                        manifest,
+                        prefix=scenario["scenario_id"].replace("-", ""),
+                    )
+                    evidence += [
+                        {"layer": "transport-record", "sha256": file_digest(Path(args.transport)), "path": Path(args.transport).name},
+                        {"layer": "hosted-projection", "sha256": file_digest(Path(args.dashboard)), "path": Path(args.dashboard).name},
+                        {"layer": "browser", "sha256": file_digest(Path(args.browser)), "path": Path(args.browser).name},
+                    ]
             else:
                 raise QualificationError("scenario evaluator is not implemented")
             result = result_summary(manifest, checks, evidence=evidence, replay=["python3 scripts/lifecycle_qualification.py evaluate", "--manifest", Path(args.manifest).name])

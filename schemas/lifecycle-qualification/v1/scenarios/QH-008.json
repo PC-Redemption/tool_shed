@@ -2,7 +2,9 @@
   "actions": [
     "checkpoint-authority",
     "rebuild-new-database",
-    "compare-domain-and-closure-truth"
+    "compare-domain-and-closure-truth",
+    "report-rebuilt-state",
+    "compare-hosted-and-browser-presentation"
   ],
   "checkpoints": [
     {
@@ -11,17 +13,20 @@
         "checkpoint-digest-valid",
         "domain-digest-equal",
         "closure-truth-equal",
-        "rebuilt-database-clean"
+        "rebuilt-database-clean",
+        "hosted-state-equal",
+        "browser-state-equal"
       ]
     }
   ],
   "kind": "tool-shed-qualification-scenario",
   "platforms": [
     "linux-x86_64",
-    "windows-amd64"
+    "windows-amd64",
+    "hosted-development"
   ],
   "scenario_id": "QH-008",
   "schema_version": 1,
-  "title": "Checkpoint and rebuild parity",
-  "version": 1
+  "title": "Checkpoint, rebuild, and presentation parity",
+  "version": 2
 }

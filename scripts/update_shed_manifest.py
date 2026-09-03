@@ -37,6 +37,7 @@ TRACKED_GLOBS = (
     "docs/*.md",
     "dashboard/**/*",
     "scripts/*.py",
+    "scripts/*.js",
     "scripts/*.ps1",
     "scripts/*.sh",
     "schemas/**/*.json",

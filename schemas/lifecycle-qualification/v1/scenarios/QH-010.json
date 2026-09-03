@@ -4,7 +4,10 @@
     "upgrade-file-owned-snapshot",
     "restore-hybrid-snapshot",
     "upgrade-hybrid-snapshot",
-    "replay-upgrade"
+    "replay-upgrade",
+    "report-upgraded-file-owned-snapshot",
+    "interrupt-resume-reorder-duplicate-and-replay",
+    "compare-exact-source-hosted-browser-sets"
   ],
   "checkpoints": [
     {
@@ -15,17 +18,20 @@
         "recoverable-lineage-rebuilt",
         "unresolved-ancestry-explicit",
         "idempotent-replay",
-        "zero-invisible-orphans"
+        "zero-invisible-orphans",
+        "hosted-exact-set",
+        "browser-explicit-unresolved-ancestry"
       ]
     }
   ],
   "kind": "tool-shed-qualification-scenario",
   "platforms": [
     "linux-x86_64",
-    "windows-amd64"
+    "windows-amd64",
+    "hosted-development"
   ],
   "scenario_id": "QH-010",
   "schema_version": 1,
-  "title": "Local existing-instance intake",
-  "version": 1
+  "title": "Existing-instance intake and hosted replay",
+  "version": 2
 }

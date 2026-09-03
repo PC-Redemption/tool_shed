@@ -4,6 +4,7 @@ import json
 import os
 import uuid
 from datetime import timedelta
+from io import StringIO
 from pathlib import Path
 
 
@@ -28,6 +29,7 @@ from dashboard.fleet.models import (  # noqa: E402
     AppServerAggregate,
     AttentionCondition,
     Enrollment,
+    IngestReceipt,
     Instance,
     LifecycleEvent,
     Project,
@@ -1546,3 +1548,25 @@ class DashboardApplicationTests(TestCase):
         self.assertContains(response, "<strong>100</strong><span>Projects</span>", html=True)
         self.assertContains(response, "<strong>25</strong><span>Working</span>", html=True)
         self.assertContains(response, "<strong>75</strong><span>Stale / offline</span>", html=True)
+
+    @override_settings(DASHBOARD_ENVIRONMENT="development")
+    def test_qualification_export_exposes_raw_projection_and_receipt_truth(self) -> None:
+        token = self.enroll_and_issue()
+        payload = self.lifecycle_report_payload()
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(IngestReceipt.objects.count(), 1)
+        output = StringIO()
+        call_command("export_dashboard_qualification_snapshot", stdout=output)
+        exported = json.loads(output.getvalue())
+        self.assertEqual(exported["instances"][0]["work_inventory_sequence"], payload["sequence"])
+        self.assertEqual(exported["work_artifacts"][0]["snapshot_sequence"], payload["sequence"])
+        self.assertEqual(exported["work_artifacts"][0]["parent_ids"], [])
+        self.assertEqual(exported["work_artifacts"][0]["produces_ids"], ["MAP-0017"])
+        self.assertEqual(exported["ingest_receipts"][0]["idempotency_key"], payload["idempotency_key"])
+        self.assertNotIn("reporter_token", json.dumps(exported))

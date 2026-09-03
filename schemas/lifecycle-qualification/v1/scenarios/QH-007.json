@@ -1,0 +1,39 @@
+{
+  "actions": [
+    "deliver-baseline-report",
+    "make-reporter-endpoint-unavailable",
+    "enqueue-two-current-reports",
+    "observe-pending-and-stale-hosted-state",
+    "restore-endpoint",
+    "submit-newer-before-older",
+    "replay-newer-report",
+    "submit-stale-older-report",
+    "drain-outbox",
+    "compare-source-hosted-and-browser-truth"
+  ],
+  "checkpoints": [
+    {
+      "id": "reporter-outage-and-convergence",
+      "invariants": [
+        "pending-work-retained",
+        "sequence-monotonic",
+        "stale-hosted-state-visible",
+        "reorder-classified",
+        "duplicate-idempotent",
+        "outbox-drained",
+        "exact-hosted-projection",
+        "browser-truth-parity"
+      ]
+    }
+  ],
+  "expectations": {
+    "minimum_offline_queue_depth": 2,
+    "submission_statuses": ["accepted", "duplicate", "stale"]
+  },
+  "kind": "tool-shed-qualification-scenario",
+  "platforms": ["hosted-development"],
+  "scenario_id": "QH-007",
+  "schema_version": 1,
+  "title": "Reporter outage and deterministic convergence",
+  "version": 1
+}
