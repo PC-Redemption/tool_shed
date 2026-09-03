@@ -469,7 +469,10 @@ def audit(workspace: Path, path: Path | None = None) -> dict[str, Any]:
     if not target.is_file():
         raise HybridStateError(f"state database does not exist: {target.relative_to(workspace)}")
     with contextlib.closing(connect(target)) as connection:
-        revision = int(meta_row(connection)["current_revision"])
+        try:
+            revision = int(meta_row(connection)["current_revision"])
+        except sqlite3.DatabaseError as error:
+            raise HybridStateError(f"state database is not a Tool Shed database: {error}") from error
         result = audit_connection(
             workspace,
             connection,
