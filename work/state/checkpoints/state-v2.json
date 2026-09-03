@@ -1,8 +1,8 @@
 {
   "envelope": {
-    "created_at": "2026-09-03T03:03:02Z",
-    "database_revision": 1117,
-    "digest": "102db7a73d652ca5cee65b07522e9c31e3c6c2a828288e73079868561b74a543",
+    "created_at": "2026-09-03T03:07:32Z",
+    "database_revision": 1118,
+    "digest": "af1ed3bd0d6644af4223aa83718c2ea9418ed32ba4ed2ea43d00fa80ad3d3d86",
     "hybrid_schema": 2,
     "objects": [
       "work/state/objects/sha256/00/0082fd1d60de8f37c6d2972dac5637d8c894d2c8f1124c5061aeb74ba0c18b75",
@@ -523,6 +523,7 @@
       "work/state/objects/sha256/f0/f0f3323eba86e1da927d2e340b7910b439b7d125c146da9e757874935b895d53",
       "work/state/objects/sha256/f0/f0f640e20033fec78e0e32960be02080ff6f48fbd2a06667f52c2269e32dcd7a",
       "work/state/objects/sha256/f2/f21eaed1f4f2e51deea8eee080aca6d84a5b96d15dde1e89aba599e6a323e187",
+      "work/state/objects/sha256/f2/f2aa36c3a2d95edad53d1068b1d0396a90ba28c1e007e6125d9c8b1dde340529",
       "work/state/objects/sha256/f3/f3464aeb54a860d43d2198ffe6e72969eb593ae455e75f5207c884067f28fb26",
       "work/state/objects/sha256/f3/f39eabb04ef5af9cd859d34bdb74d09da922c062d9aa17ee073f63f130b9cd6f",
       "work/state/objects/sha256/f3/f3b6990ab56f2600276a11d993244527df18c4f0af6034e59c71382bf48297ad",
@@ -5474,14 +5475,14 @@
       },
       {
         "authority_mode": "sqlite",
-        "content_sha256": "4f266067ecd6579cfa7f24a8e660c15f84efc8646350d117529abfac2cd553b2",
+        "content_sha256": "f2aa36c3a2d95edad53d1068b1d0396a90ba28c1e007e6125d9c8b1dde340529",
         "created_at": "2026-09-02T22:43:53Z",
         "current_path": "sqlite/documents/PRM-0038",
         "display_number": "PRM-0038",
         "id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
         "lifecycle_state": "active",
         "type": "program-roadmap",
-        "updated_at": "2026-09-03T03:01:32Z"
+        "updated_at": "2026-09-03T03:07:22Z"
       },
       {
         "authority_mode": "sqlite",
@@ -11825,16 +11826,16 @@
         "visible_id": "CAMP-0120"
       },
       {
-        "body_sha256": "4f266067ecd6579cfa7f24a8e660c15f84efc8646350d117529abfac2cd553b2",
+        "body_sha256": "f2aa36c3a2d95edad53d1068b1d0396a90ba28c1e007e6125d9c8b1dde340529",
         "created_at": "2026-09-02T22:43:53Z",
-        "current_revision": 5,
+        "current_revision": 6,
         "display_number": 38,
         "id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
         "lifecycle_state": "active",
         "metadata_json": "{\"approval_state\":\"approved\",\"document_type\":\"program-roadmap\",\"readiness_gate_ids\":[\"G1-RUN-CONTRACT-AND-INDEPENDENT-ORACLE\",\"G2-LOCAL-LIFECYCLE-CORPUS\",\"G3-REPORTER-HOSTED-AND-UI-TRUTH\",\"G4-DEVELOPMENT-ONLY-FAULT-NAMESPACE\",\"G5-EVIDENCE-MINIMIZATION-AND-PERFORMANCE\",\"G6-ROUTE-SMOKE-AND-CANDIDATE-BOUND-QUALIFICATION\"],\"readiness_review_digest\":\"68b04af2a3b05134a7d0a2b76750d5d6b209140407bd07322d83ab9bcb791e07\",\"readiness_verdict\":\"READY-WITH-PRM-GATES\",\"reviewed_idea_artifact_id\":\"b199f1c1-10c7-4402-8fd6-bb5749a9d9d1\",\"reviewed_idea_body_sha256\":\"9fe7a6342904a85c04fdbacff4f02b1e3d5ce72a1f2baf223bf71f1ab29d085d\",\"reviewed_idea_document_revision\":8,\"roadmap_id\":\"deterministic-tool-shed-lifecycle-and-database-truth-qualification-harness\",\"roadmap_revision\":2,\"source_idea\":\"IDEA-0020\",\"source_project_map\":\"MAP-0027\",\"transferred_gate_count\":6}",
         "namespace": "PRM",
         "title": "Deterministic Tool Shed Lifecycle and Database Truth Qualification Harness",
-        "updated_at": "2026-09-03T03:01:32Z",
+        "updated_at": "2026-09-03T03:07:22Z",
         "visible_id": "PRM-0038"
       },
       {
@@ -20789,6 +20790,20 @@
         "revision_number": 1,
         "source_revision": 261,
         "title": "w1-dev SMB access evidence"
+      },
+      {
+        "actor": "codex",
+        "body_object": "work/state/objects/sha256/f2/f2aa36c3a2d95edad53d1068b1d0396a90ba28c1e007e6125d9c8b1dde340529",
+        "body_sha256": "f2aa36c3a2d95edad53d1068b1d0396a90ba28c1e007e6125d9c8b1dde340529",
+        "created_at": "2026-09-03T03:07:22Z",
+        "document_id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
+        "id": "4213df6c-90e0-47e5-bc8d-b2d761e1cc82",
+        "lifecycle_state": "active",
+        "metadata_json": "{\"approval_state\":\"approved\",\"document_type\":\"program-roadmap\",\"readiness_gate_ids\":[\"G1-RUN-CONTRACT-AND-INDEPENDENT-ORACLE\",\"G2-LOCAL-LIFECYCLE-CORPUS\",\"G3-REPORTER-HOSTED-AND-UI-TRUTH\",\"G4-DEVELOPMENT-ONLY-FAULT-NAMESPACE\",\"G5-EVIDENCE-MINIMIZATION-AND-PERFORMANCE\",\"G6-ROUTE-SMOKE-AND-CANDIDATE-BOUND-QUALIFICATION\"],\"readiness_review_digest\":\"68b04af2a3b05134a7d0a2b76750d5d6b209140407bd07322d83ab9bcb791e07\",\"readiness_verdict\":\"READY-WITH-PRM-GATES\",\"reviewed_idea_artifact_id\":\"b199f1c1-10c7-4402-8fd6-bb5749a9d9d1\",\"reviewed_idea_body_sha256\":\"9fe7a6342904a85c04fdbacff4f02b1e3d5ce72a1f2baf223bf71f1ab29d085d\",\"reviewed_idea_document_revision\":8,\"roadmap_id\":\"deterministic-tool-shed-lifecycle-and-database-truth-qualification-harness\",\"roadmap_revision\":2,\"source_idea\":\"IDEA-0020\",\"source_project_map\":\"MAP-0027\",\"transferred_gate_count\":6}",
+        "reason": "Advance IDEA-0020 roadmap next route from completed M2 to ready M3",
+        "revision_number": 6,
+        "source_revision": 1118,
+        "title": "Deterministic Tool Shed Lifecycle and Database Truth Qualification Harness"
       },
       {
         "actor": "maintainer-final-cutover",
@@ -47125,6 +47140,16 @@
         "revision": 1070
       },
       {
+        "entity_id": "4213df6c-90e0-47e5-bc8d-b2d761e1cc82",
+        "entity_type": "document_revision",
+        "id": "53341fe5-4888-4af5-95b2-6a6f1159f82d",
+        "kind": "structural-insert",
+        "operation_id": "1662154c-325f-4b41-8fa5-46f5bb91da30",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
+        "recorded_at": "2026-09-03T03:07:22Z",
+        "revision": 1118
+      },
+      {
         "entity_id": "19e92da6-ed84-4837-bd88-715ce0de7f05",
         "entity_type": "document_path_alias",
         "id": "53348b7e-9b10-4ec8-909d-ed2c9f8b755f",
@@ -63523,6 +63548,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"requirement\"}",
         "recorded_at": "2026-08-28T20:33:28Z",
         "revision": 32
+      },
+      {
+        "entity_id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
+        "entity_type": "document",
+        "id": "969852af-80b6-43f1-b9e2-bb88aad9aab3",
+        "kind": "structural-update",
+        "operation_id": "1662154c-325f-4b41-8fa5-46f5bb91da30",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"document\"}",
+        "recorded_at": "2026-09-03T03:07:22Z",
+        "revision": 1118
       },
       {
         "entity_id": "532756c9-bacd-4956-b406-02904c1a6da3",
@@ -81635,6 +81670,16 @@
         "revision": 788
       },
       {
+        "entity_id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
+        "entity_type": "artifact",
+        "id": "e06e5fb6-bdc9-4446-9ac8-2ad5b437b8d5",
+        "kind": "structural-update",
+        "operation_id": "1662154c-325f-4b41-8fa5-46f5bb91da30",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-09-03T03:07:22Z",
+        "revision": 1118
+      },
+      {
         "entity_id": "45b9d3fa-9854-518f-8a52-25c9a28a40b9",
         "entity_type": "evidence_reference",
         "id": "e0863a7f-7cd7-4858-af39-7eedc4c87f12",
@@ -93113,6 +93158,17 @@
         "id": "1661926c-45b5-46ff-a1ee-ee8099a06a44",
         "revision": 99,
         "started_at": "2026-08-29T01:27:30Z",
+        "status": "complete"
+      },
+      {
+        "actor": "codex",
+        "actual_writes": 3,
+        "command": "document-apply-edit",
+        "committed_at": "2026-09-03T03:07:22Z",
+        "expected_writes": null,
+        "id": "1662154c-325f-4b41-8fa5-46f5bb91da30",
+        "revision": 1118,
+        "started_at": "2026-09-03T03:07:22Z",
         "status": "complete"
       },
       {
@@ -134808,6 +134864,17 @@
         "table_name": "cycle"
       },
       {
+        "id": "43d26d5c-7f9f-4643-b260-8d4e6b53bb55",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "1662154c-325f-4b41-8fa5-46f5bb91da30",
+        "payload_digest": "20b1f6684640ebc85817f337fe9364bff88d1c4e8c203810e3747c0b2a078d54",
+        "recorded_at": "2026-09-03T03:07:22Z",
+        "revision": 1118,
+        "row_id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
+        "table_name": "document"
+      },
+      {
         "id": "43d3bc11-abb2-4593-9723-92ec6bbd2b4d",
         "managed": 1,
         "operation": "insert",
@@ -155114,6 +155181,17 @@
         "table_name": "material_change"
       },
       {
+        "id": "8fd556dc-08a9-449f-ad8a-e3bd3882b876",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "1662154c-325f-4b41-8fa5-46f5bb91da30",
+        "payload_digest": "3453b45210efbb3b59db4821dd9936ee0dd43421ba7c05a8970cfe3ca3340740",
+        "recorded_at": "2026-09-03T03:07:22Z",
+        "revision": 1118,
+        "row_id": "eee1c280-dda7-44ee-ac61-6c1fcb2033a7",
+        "table_name": "artifact"
+      },
+      {
         "id": "8fe7464c-4777-46c2-96c6-649da06f51a2",
         "managed": 1,
         "operation": "insert",
@@ -171117,6 +171195,17 @@
         "revision": 32,
         "row_id": "3baa3138-6305-4e73-b3e9-65368668707d",
         "table_name": "requirement"
+      },
+      {
+        "id": "cbc9546c-c9fa-4486-ba2c-c66197e29e04",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "1662154c-325f-4b41-8fa5-46f5bb91da30",
+        "payload_digest": "545f23bee41a9e282defafe024ab34ecb13ed510fdc4fe4ed738a8e0439e5e13",
+        "recorded_at": "2026-09-03T03:07:22Z",
+        "revision": 1118,
+        "row_id": "4213df6c-90e0-47e5-bc8d-b2d761e1cc82",
+        "table_name": "document_revision"
       },
       {
         "id": "cbd97519-f366-4d40-8730-6d2c4c5c6897",
