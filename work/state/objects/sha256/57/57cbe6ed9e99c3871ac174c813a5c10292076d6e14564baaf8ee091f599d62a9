@@ -1,0 +1,44 @@
+# Campaign: Build and Qualify Hosted Fault Namespace
+
+Status: completed
+Type: campaign
+Updated: 2026-09-03
+Campaign ID: build-and-qualify-hosted-fault-namespace
+Roadmap Document: PRM-0038
+Milestone: M4-DEVELOPMENT-FAULT-NAMESPACE
+Requested Endpoint: work2
+
+## Outcome
+
+Add a purpose-bound hosted-development qualification-run root whose manifest owns every synthetic
+descendant; issue only `qualification:write` credentials for those descendants; enforce the
+development boundary in both application and database state; exclude qualification records from
+every operational view; and expose them only in a separate authenticated Qualification Runs view.
+
+Implement expiry that preserves lineage, exact preview-bound purge with stale/foreign/production
+refusals, and retained tombstones. After the controls pass, run QH-009 and structurally faithful
+QH-010 replays through the shared hosted-development namespace from the Linux and Windows
+development fixtures without borrowing operational credentials.
+
+## Completion Gate
+
+The exact candidate passes focused model/service/API/UI tests, database constraint and refusal
+tests, operational absence checks, authenticated qualification-view checks, expiry and purge
+lineage checks, retained-tombstone checks, and QH-009/QH-010 hosted-development replays from both
+disposable operating-system fixtures. The web, Linux, and Windows development lanes contain that
+candidate; production remains unchanged.
+
+## Completion Evidence
+
+`work/evidence/evidence-lifecycle-qualification-m4.md` records exact candidate
+`3e3771d9d1c7a44afdd430278eb7de1a50a42850`. Its clean detached release profile passed all 546
+tests. QH-009 and QH-010 passed from both disposable operating-system fixtures through the shared
+development namespace (66 of 66 independent checks), including authenticated isolation, expiry,
+stale-preview refusal, exact purge, retained tombstones, and a final operational browser inventory
+containing only `ts_linux_test_bed` and `ts_windows_test_bed`.
+
+## Boundary
+
+Only the isolated hosted-development service and disposable Linux and Windows fixtures are in
+scope. Work3 freezing, push, publication, and every production operation remain outside this
+campaign.
