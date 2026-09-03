@@ -3,6 +3,7 @@
   "additionalProperties": false,
   "properties": {
     "checks": {"items": {"required": ["id", "passed"], "type": "object"}, "type": "array"},
+    "checkpoint_id": {"minLength": 1, "type": "string"},
     "evidence": {"items": {"required": ["layer", "path", "sha256"], "type": "object"}, "type": "array"},
     "first_divergence": {"type": ["string", "null"]},
     "kind": {"const": "tool-shed-qualification-result"},
@@ -15,7 +16,7 @@
     "schema_version": {"const": 1},
     "verdict": {"enum": ["PASS", "PRODUCT-FAIL", "HARNESS-FAIL", "INFRA-BLOCKED"]}
   },
-  "required": ["schema_version", "kind", "run_id", "manifest_digest", "scenario_id", "verdict", "oracle_version", "checks", "first_divergence", "evidence", "replay", "result_digest"],
+  "required": ["schema_version", "kind", "run_id", "manifest_digest", "scenario_id", "checkpoint_id", "verdict", "oracle_version", "checks", "first_divergence", "evidence", "replay", "result_digest"],
   "title": "Tool Shed lifecycle qualification compact result v1",
   "type": "object"
 }

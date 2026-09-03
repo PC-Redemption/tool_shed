@@ -10,6 +10,10 @@ invariants, a sealed run manifest fixes every input, an append-only hash-chained
 actions, and a compact result names the first divergence and replay inputs. It does not create a
 second operational database.
 
+Every manifest binds one exact checkpoint ID declared by its scenario. A scenario with one
+checkpoint selects it by default; a multi-checkpoint scenario requires `--checkpoint <id>`. The
+selector participates in the manifest digest and run ID and is repeated in the result summary.
+
 ## Record contract
 
 | Record | Authority | Location |
@@ -62,6 +66,7 @@ Seal a run after recording the exact candidate and fixture baseline:
 ```bash
 python3 scripts/lifecycle_qualification.py seal \
   --scenario QH-002 --candidate-commit <sha> --candidate-version <version> \
+  --checkpoint terminal-clean-tail \
   --platform linux-x86_64 --project-id <uuid> --instance-id <uuid> \
   --serial 1 --seed 0 --target-environment development \
   --baseline-digest <sha256> --output <manifest.json>

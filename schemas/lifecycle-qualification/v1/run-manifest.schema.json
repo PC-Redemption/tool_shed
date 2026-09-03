@@ -9,7 +9,7 @@
     "manifest_digest": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
     "run": {"required": ["serial", "seed", "clock_mode"], "type": "object"},
     "run_id": {"pattern": "^tsqh-[0-9a-f]{24}$", "type": "string"},
-    "scenario": {"required": ["id", "version", "sha256"], "type": "object"},
+    "scenario": {"required": ["id", "version", "sha256", "checkpoint_id"], "type": "object"},
     "schema_version": {"const": 1},
     "target": {"required": ["environment"], "type": "object"}
   },

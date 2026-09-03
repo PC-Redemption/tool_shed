@@ -70,6 +70,16 @@ class LifecycleQualificationTests(unittest.TestCase):
         qualification.validate_manifest(first)
         self.assertEqual(first, repeated)
         self.assertNotEqual(first["run_id"], changed["run_id"])
+        self.assertEqual(first["scenario"]["checkpoint_id"], "terminal-clean-tail")
+
+    def test_manifest_rejects_unknown_checkpoint_selector(self) -> None:
+        with self.assertRaisesRegex(qualification.QualificationError, "checkpoint selector"):
+            qualification.seal_manifest(
+                self.scenario("QH-002"), candidate_commit="a" * 40, candidate_version="0.43.0",
+                platform_name="linux-x86_64", project_id="project", instance_id="instance",
+                serial=1, seed=0, target_environment="development", baseline_digest="b" * 64,
+                checkpoint_id="not-declared",
+            )
 
     def test_journal_is_hash_chained_and_idempotent(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

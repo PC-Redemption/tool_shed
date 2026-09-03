@@ -98,12 +98,17 @@ def seal_manifest(
     seed: int,
     target_environment: str,
     baseline_digest: str,
+    checkpoint_id: str | None = None,
 ) -> dict[str, Any]:
     validate_scenario(scenario)
     if platform_name not in scenario["platforms"]:
         raise QualificationError(f"scenario does not support platform: {platform_name}")
     if serial < 1 or seed < 0:
         raise QualificationError("serial must be positive and seed must be nonnegative")
+    checkpoint_ids = [str(item["id"]) for item in scenario["checkpoints"]]
+    selected_checkpoint = checkpoint_id or (checkpoint_ids[0] if len(checkpoint_ids) == 1 else None)
+    if selected_checkpoint not in checkpoint_ids:
+        raise QualificationError("manifest requires an exact declared checkpoint selector")
     material: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "kind": MANIFEST_KIND,
@@ -111,6 +116,7 @@ def seal_manifest(
             "id": scenario["scenario_id"],
             "version": scenario["version"],
             "sha256": digest(scenario),
+            "checkpoint_id": selected_checkpoint,
         },
         "candidate": {"commit": candidate_commit, "version": candidate_version},
         "fixture": {
@@ -138,6 +144,8 @@ def validate_manifest(value: dict[str, Any]) -> None:
     expected = digest(material)
     if value.get("manifest_digest") != expected or value.get("run_id") != f"tsqh-{expected[:24]}":
         raise QualificationError("run manifest seal is invalid")
+    if not str(value.get("scenario", {}).get("checkpoint_id") or "").strip():
+        raise QualificationError("run manifest has no checkpoint selector")
 
 
 def append_journal(path: Path, event: dict[str, Any]) -> dict[str, Any]:
@@ -511,6 +519,7 @@ def result_summary(manifest: dict[str, Any], checks: list[dict[str, Any]], *, ev
         "run_id": manifest["run_id"],
         "manifest_digest": manifest["manifest_digest"],
         "scenario_id": manifest["scenario"]["id"],
+        "checkpoint_id": manifest["scenario"]["checkpoint_id"],
         "verdict": verdict,
         "oracle_version": ORACLE_VERSION,
         "checks": checks,
@@ -623,7 +632,7 @@ def build_parser() -> argparse.ArgumentParser:
     seal = commands.add_parser("seal")
     seal.add_argument("--scenario", required=True); seal.add_argument("--candidate-commit", required=True); seal.add_argument("--candidate-version", required=True)
     seal.add_argument("--platform", required=True); seal.add_argument("--project-id", required=True); seal.add_argument("--instance-id", required=True)
-    seal.add_argument("--serial", required=True, type=int); seal.add_argument("--seed", type=int, default=0); seal.add_argument("--target-environment", default="development")
+    seal.add_argument("--serial", required=True, type=int); seal.add_argument("--seed", type=int, default=0); seal.add_argument("--target-environment", default="development"); seal.add_argument("--checkpoint")
     seal.add_argument("--baseline-digest", required=True); seal.add_argument("--output", required=True)
     observe = commands.add_parser("observe-local"); observe.add_argument("--database", required=True); observe.add_argument("--run-id", required=True); observe.add_argument("--output")
     evaluate = commands.add_parser("evaluate"); evaluate.add_argument("--manifest", required=True); evaluate.add_argument("--local"); evaluate.add_argument("--dashboard"); evaluate.add_argument("--output", required=True)
@@ -636,7 +645,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         if args.command == "seal":
             scenario = load_json(scenario_path(args.scenario), label="scenario")
-            result = seal_manifest(scenario, candidate_commit=args.candidate_commit, candidate_version=args.candidate_version, platform_name=args.platform, project_id=args.project_id, instance_id=args.instance_id, serial=args.serial, seed=args.seed, target_environment=args.target_environment, baseline_digest=args.baseline_digest)
+            result = seal_manifest(scenario, candidate_commit=args.candidate_commit, candidate_version=args.candidate_version, platform_name=args.platform, project_id=args.project_id, instance_id=args.instance_id, serial=args.serial, seed=args.seed, target_environment=args.target_environment, baseline_digest=args.baseline_digest, checkpoint_id=args.checkpoint)
             _write_json(Path(args.output), result)
         elif args.command == "observe-local":
             result = observe_local(Path(args.database), args.run_id)
