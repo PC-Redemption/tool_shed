@@ -75,6 +75,16 @@ python3 scripts/lifecycle_qualification.py drive-qh002 \
   --project-binding <fresh-hybrid-state-binding> --output <drive.json>
 ```
 
+After its reporter converges, evaluate the local truth vector and hosted snapshot together. The
+hosted comparison is identity-bound to the exact run artifacts and fixture project/instance; a
+missing row or a non-terminal, unreconciled, or ineffectively closed row fails qualification.
+
+```bash
+python3 scripts/lifecycle_qualification.py evaluate \
+  --manifest <manifest.json> --local <truth.json> --dashboard <snapshot.json> \
+  --output <result.json>
+```
+
 Export the hosted raw snapshot from the development dashboard container, then evaluate QH-001:
 
 ```bash

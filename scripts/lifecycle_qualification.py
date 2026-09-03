@@ -364,10 +364,15 @@ def observe_local(database: Path, run_id: str) -> dict[str, Any]:
         closure = independent_closure(connection)
         projection_mismatches = compare_closure_projection(connection, closure) if "closure_rollup" in tables else []
         run_cycle_ids = {item["id"] for item in cycles}
-        closure_elements = {
-            element_id: value for element_id, value in closure.get("elements", {}).items()
-            if element_id in run_cycle_ids or any(item.get("cycle_id") in run_cycle_ids and item.get("id") == element_id for item in requirements)
-        }
+        run_requirement_ids = {item["id"] for item in requirements}
+        closure_elements: dict[str, dict[str, Any]] = {}
+        if closure["available"] and run_cycle_ids:
+            for row in connection.execute("SELECT id,role,cycle_id,requirement_id FROM closure_element ORDER BY id"):
+                identity = dict(row)
+                if identity.get("cycle_id") not in run_cycle_ids and identity.get("requirement_id") not in run_requirement_ids:
+                    continue
+                element_id = str(identity["id"])
+                closure_elements[element_id] = {**identity, **closure["elements"][element_id]}
         return {
             "schema_version": 1,
             "kind": TRUTH_KIND,
@@ -412,6 +417,27 @@ def evaluate_qh002(scenario: dict[str, Any], local: dict[str, Any]) -> list[dict
     artifact_ids = {item["artifact_id"] for item in documents}
     parent_edges = {(item["from_artifact_id"], item["to_artifact_id"]) for item in relationships if item["relation_type"] == "outcome-parent" and item["from_artifact_id"] in artifact_ids and item["to_artifact_id"] in artifact_ids}
     propagated = {(item["from_artifact_id"], item["to_artifact_id"]) for item in relationships if item["relation_type"] == "outcome-result-propagated" and item["from_artifact_id"] in artifact_ids and item["to_artifact_id"] in artifact_ids}
+    expected_cycle_ids = {item["id"] for item in cycles}
+    closure_elements = local["closure"]["elements"]
+    projected_cycle_ids = {
+        item["cycle_id"] for item in closure_elements.values()
+        if item.get("role") == "cycle" and item.get("cycle_id") in expected_cycle_ids
+    }
+    closure_projection_actual = {
+        "missing_cycles": sorted(expected_cycle_ids - projected_cycle_ids),
+        "open_elements": sorted(
+            element_id for element_id, item in closure_elements.items()
+            if not item.get("effective_closed")
+        ),
+        "projection_mismatches": local["closure"]["projection_mismatches"][:20],
+    }
+    closure_projection_passed = (
+        local["closure"]["available"]
+        and projected_cycle_ids == expected_cycle_ids
+        and bool(closure_elements)
+        and not closure_projection_actual["open_elements"]
+        and not closure_projection_actual["projection_mismatches"]
+    )
     checks = [
         {"id": "QH002-EXACT-DOCUMENT-TYPES", "passed": actual_types == expected_types and len(documents) == len(expected_types), "expected": sorted(expected_types), "actual": sorted(actual_types)},
         {"id": "QH002-DOCUMENTS-COMPLETED", "passed": len(documents) == len(expected_types) and all(item["lifecycle"] == "completed" for item in documents), "expected": len(expected_types), "actual": sum(item["lifecycle"] == "completed" for item in documents)},
@@ -419,9 +445,61 @@ def evaluate_qh002(scenario: dict[str, Any], local: dict[str, Any]) -> list[dict
         {"id": "QH002-PARENT-CHAIN", "passed": len(parent_edges) == max(0, len(expected_types) - 1), "expected": max(0, len(expected_types) - 1), "actual": len(parent_edges)},
         {"id": "QH002-PROPAGATED-CHAIN", "passed": parent_edges == propagated, "expected": sorted(parent_edges), "actual": sorted(propagated)},
         {"id": "QH002-NO-ACTIVE-RUN-RESIDUE", "passed": not any(item["lifecycle"] != "completed" for item in documents) and not any(item["lifecycle_state"] != "terminal" for item in cycles), "expected": 0, "actual": sum(item["lifecycle"] != "completed" for item in documents) + sum(item["lifecycle_state"] != "terminal" for item in cycles)},
-        {"id": "QH002-CLOSURE-PROJECTION-PARITY", "passed": local["closure"]["available"] and not local["closure"]["projection_mismatches"], "expected": [], "actual": local["closure"]["projection_mismatches"][:20]},
+        {"id": "QH002-CLOSURE-PROJECTION-PARITY", "passed": closure_projection_passed, "expected": {"missing_cycles": [], "open_elements": [], "projection_mismatches": []}, "actual": closure_projection_actual},
     ]
     return checks
+
+
+def evaluate_qh002_hosted(
+    scenario: dict[str, Any],
+    local: dict[str, Any],
+    dashboard: dict[str, Any],
+    manifest: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Compare the run's authoritative document identities with the hosted projection."""
+    expected_types = set(scenario.get("expectations", {}).get("document_types", []))
+    local_by_id = {item["artifact_id"]: item for item in local["documents"]}
+    projected = [
+        item for item in dashboard.get("work_artifacts", [])
+        if item.get("artifact_external_id") in local_by_id
+    ]
+    projected_by_id = {item["artifact_external_id"]: item for item in projected}
+    expected_ids = set(local_by_id)
+    actual_ids = set(projected_by_id)
+    identity_errors = [
+        artifact_id for artifact_id, item in projected_by_id.items()
+        if item.get("project_external_id") != manifest["fixture"]["project_id"]
+        or item.get("instance_external_id") != manifest["fixture"]["instance_id"]
+        or item.get("artifact_type") != local_by_id[artifact_id]["type"]
+    ]
+    state_errors = [
+        artifact_id for artifact_id, item in projected_by_id.items()
+        if item.get("document_lifecycle") != "completed"
+        or item.get("outcome_lifecycle") != "terminal"
+        or item.get("outcome_disposition") != "satisfied"
+        or item.get("reconciliation_state") != "reconciled"
+        or item.get("closure_status", {}).get("effective_closed") is not True
+    ]
+    return [
+        {
+            "id": "QH002-HOSTED-EXACT-RUN-SET",
+            "passed": expected_ids == actual_ids and len(expected_ids) == len(expected_types),
+            "expected": sorted(expected_ids),
+            "actual": sorted(actual_ids),
+        },
+        {
+            "id": "QH002-HOSTED-IDENTITY-PARITY",
+            "passed": not identity_errors and expected_ids == actual_ids,
+            "expected": [],
+            "actual": sorted(identity_errors),
+        },
+        {
+            "id": "QH002-HOSTED-TERMINAL-CLOSED",
+            "passed": not state_errors and expected_ids == actual_ids,
+            "expected": [],
+            "actual": sorted(state_errors),
+        },
+    ]
 
 
 def result_summary(manifest: dict[str, Any], checks: list[dict[str, Any]], *, evidence: list[dict[str, Any]], replay: list[str]) -> dict[str, Any]:
@@ -578,9 +656,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                 evidence = [{"layer": "hosted-projection", "sha256": file_digest(Path(args.dashboard)), "path": Path(args.dashboard).name}]
             elif scenario["scenario_id"] == "QH-002":
                 if not args.local: raise QualificationError("QH-002 requires --local")
+                if not args.dashboard: raise QualificationError("QH-002 requires --dashboard")
                 local = load_json(Path(args.local), label="local truth vector")
-                checks = evaluate_qh002(scenario, local)
-                evidence = [{"layer": "local-sqlite", "sha256": file_digest(Path(args.local)), "path": Path(args.local).name}]
+                dashboard = load_json(Path(args.dashboard), label="dashboard snapshot")
+                checks = evaluate_qh002(scenario, local) + evaluate_qh002_hosted(scenario, local, dashboard, manifest)
+                evidence = [
+                    {"layer": "local-sqlite", "sha256": file_digest(Path(args.local)), "path": Path(args.local).name},
+                    {"layer": "hosted-projection", "sha256": file_digest(Path(args.dashboard)), "path": Path(args.dashboard).name},
+                ]
             else:
                 raise QualificationError("scenario evaluator is not implemented")
             result = result_summary(manifest, checks, evidence=evidence, replay=["python3 scripts/lifecycle_qualification.py evaluate", "--manifest", Path(args.manifest).name])

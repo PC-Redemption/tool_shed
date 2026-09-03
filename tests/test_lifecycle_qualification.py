@@ -142,6 +142,60 @@ class LifecycleQualificationTests(unittest.TestCase):
         with self.assertRaisesRegex(qualification.QualificationError, "digest"):
             qualification.validate_result(result)
 
+    def test_qh002_rejects_missing_run_cycle_projection(self) -> None:
+        local = {
+            "documents": [
+                {"artifact_id": f"artifact-{index}", "type": document_type, "lifecycle": "completed"}
+                for index, document_type in enumerate(("idea-brief", "project-map", "program-roadmap", "campaign"))
+            ],
+            "cycles": [
+                {
+                    "id": f"cycle-{index}",
+                    "lifecycle_state": "terminal",
+                    "verdict": {"disposition": "satisfied"},
+                    "reconciliation": {"state": "reconciled"},
+                }
+                for index in range(4)
+            ],
+            "relationships": [],
+            "closure": {"available": True, "elements": {}, "projection_mismatches": []},
+        }
+        checks = qualification.evaluate_qh002(self.scenario("QH-002"), local)
+        projection = next(item for item in checks if item["id"] == "QH002-CLOSURE-PROJECTION-PARITY")
+        self.assertFalse(projection["passed"])
+        self.assertEqual(projection["actual"]["missing_cycles"], [f"cycle-{index}" for index in range(4)])
+
+    def test_qh002_hosted_requires_exact_terminal_run_projection(self) -> None:
+        document_types = ("idea-brief", "project-map", "program-roadmap", "campaign")
+        local = {
+            "documents": [
+                {"artifact_id": f"artifact-{index}", "type": document_type}
+                for index, document_type in enumerate(document_types)
+            ]
+        }
+        manifest = {"fixture": {"project_id": "project", "instance_id": "instance"}}
+        dashboard = {
+            "work_artifacts": [
+                {
+                    "artifact_external_id": f"artifact-{index}",
+                    "artifact_type": document_type,
+                    "project_external_id": "project",
+                    "instance_external_id": "instance",
+                    "document_lifecycle": "completed",
+                    "outcome_lifecycle": "terminal",
+                    "outcome_disposition": "satisfied",
+                    "reconciliation_state": "reconciled",
+                    "closure_status": {"effective_closed": True},
+                }
+                for index, document_type in enumerate(document_types)
+            ]
+        }
+        checks = qualification.evaluate_qh002_hosted(self.scenario("QH-002"), local, dashboard, manifest)
+        self.assertTrue(all(item["passed"] for item in checks))
+        dashboard["work_artifacts"][0]["outcome_lifecycle"] = "working"
+        checks = qualification.evaluate_qh002_hosted(self.scenario("QH-002"), local, dashboard, manifest)
+        self.assertFalse(next(item for item in checks if item["id"] == "QH002-HOSTED-TERMINAL-CLOSED")["passed"])
+
     def test_qh002_driver_completes_schema2_outcome_chain(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             workspace = Path(directory)
