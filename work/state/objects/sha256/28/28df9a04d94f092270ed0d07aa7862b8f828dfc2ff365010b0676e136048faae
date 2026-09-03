@@ -1,0 +1,31 @@
+# Campaign: Complete Local Lifecycle and Existing-Instance Corpus
+
+Status: working
+Type: campaign
+Updated: 2026-09-02
+Next Action: implement and qualify QH-003 through QH-006 plus local QH-008, QH-009, and QH-010 on both development fixtures
+Campaign ID: complete-local-lifecycle-and-recovery-corpus
+Outcome: Complete deterministic local authority, recovery, malformed-graph, and existing-instance intake qualification on Linux and Windows without touching production.
+Roadmap: deterministic-tool-shed-lifecycle-and-database-truth-qualification-harness
+Roadmap Document: PRM-0038
+Roadmap Revision: 2
+Milestone: M2-LOCAL-LIFECYCLE-CORPUS
+Unlocks Gate: remaining G2-LOCAL-LIFECYCLE-CORPUS
+Depends On: M1-CONTRACT-AND-FOUNDATION
+Requested Endpoint: work2
+Completion Gate: QH-003 through QH-006 and local QH-008/QH-009/QH-010 are versioned and pass on the exact Linux and Windows disposable fixtures; existing file-owned and Hybrid snapshots are upgraded in place with stable identity and preserved history; recoverable parent projections rebuild; unavailable parent authority remains an explicit blocker; repeated and interrupted operations are idempotent; live and rebuilt local truth match; no invisible orphan, false closure, unpropagated result, or normal-run residue remains; the exact candidate is registered for later release; production remains unchanged.
+
+## Scope
+
+- Extend the deterministic lifecycle driver and independent oracle for the M2 scenario set.
+- Add sanitized structurally faithful existing-instance snapshot fixtures without credentials or
+  uncontrolled private content.
+- Qualify local upgrade, recovery, replay, graph isolation, and checkpoint/rebuild parity on
+  `/home/jon/dev/ts_linux_test_bed` and `E:\dev\ts_windows_test_bed`.
+- Deploy the exact candidate only to configured development lanes and retain bounded evidence.
+
+## Boundary
+
+Hosted QH-007/QH-010 convergence belongs to M3. The shared hosted qualification namespace belongs
+to M4. Work3 freezing, Git push, publication, production ingestion, and production deployment are
+outside this campaign.
