@@ -109,6 +109,15 @@ class DocumentStoreThinSliceTests(unittest.TestCase):
                     reason="physical audit cache qualification",
                     database=self.database,
                 )
+            hybrid_state.managed_write(
+                self.workspace,
+                project_binding=self.binding,
+                command="shared-physical-audit-cache-probe",
+                actor="fixture",
+                callback=lambda _connection, revision: {"revision": revision},
+                expected_writes=0,
+                path=self.database,
+            )
             self.assertEqual(checked.call_count, 1)
 
             stat = self.database.stat()

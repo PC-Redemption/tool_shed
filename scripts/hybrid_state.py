@@ -53,6 +53,33 @@ except ModuleNotFoundError:  # Direct execution: python scripts/hybrid_state.py
 OPERATION = "hybrid-state"
 CHECKPOINT_KIND = "tool-shed-hybrid-state-checkpoint"
 CHECKPOINT_FORMAT = 1
+_PHYSICAL_AUDIT_CACHE: dict[str, tuple[int, tuple[tuple[int, int, int, int] | None, ...]]] = {}
+
+
+def database_signature(path: Path) -> tuple[tuple[int, int, int, int] | None, ...]:
+    """Return a cheap identity/change signature for the database and its WAL."""
+    values: list[tuple[int, int, int, int] | None] = []
+    for candidate in (path, path.with_name(path.name + "-wal")):
+        try:
+            stat = candidate.stat()
+        except FileNotFoundError:
+            values.append(None)
+        else:
+            if candidate.name.endswith("-wal") and int(stat.st_size) == 0:
+                values.append(None)
+            else:
+                values.append((int(stat.st_dev), int(stat.st_ino), int(stat.st_size), int(stat.st_mtime_ns)))
+    return tuple(values)
+
+
+def physical_audit_current(path: Path, revision: int) -> bool:
+    return _PHYSICAL_AUDIT_CACHE.get(str(path.resolve())) == (
+        int(revision), database_signature(path)
+    )
+
+
+def remember_physical_audit(path: Path, revision: int) -> None:
+    _PHYSICAL_AUDIT_CACHE[str(path.resolve())] = (int(revision), database_signature(path))
 LOCK_TIMEOUT_SECONDS = 5.0
 CHECKPOINT_REVISION_LIMIT = 100
 CHECKPOINT_AGE_SECONDS = 24 * 60 * 60
@@ -328,7 +355,12 @@ def _parse_timestamp(value: object) -> datetime | None:
         return None
 
 
-def audit_connection(workspace: Path, connection: sqlite3.Connection) -> dict[str, Any]:
+def audit_connection(
+    workspace: Path,
+    connection: sqlite3.Connection,
+    *,
+    physical_integrity: bool = True,
+) -> dict[str, Any]:
     findings: list[str] = []
     application_id = int(connection.execute("PRAGMA application_id").fetchone()[0])
     user_version = int(connection.execute("PRAGMA user_version").fetchone()[0])
@@ -353,16 +385,17 @@ def audit_connection(workspace: Path, connection: sqlite3.Connection) -> dict[st
     current_schema_digest = schema_digest(connection)
     if meta.get("schema_trigger_digest") != current_schema_digest:
         findings.append("schema or accounting-trigger digest changed")
-    integrity = integrity_check(
-        connection,
-        current_schema_digest=current_schema_digest,
-        schema_version=user_version,
-    )
-    if integrity != ["ok"]:
-        findings.extend(f"integrity: {item}" for item in integrity)
-    foreign_keys = [tuple(row) for row in connection.execute("PRAGMA foreign_key_check")]
-    if foreign_keys:
-        findings.append(f"foreign-key violations: {len(foreign_keys)}")
+    if physical_integrity:
+        integrity = integrity_check(
+            connection,
+            current_schema_digest=current_schema_digest,
+            schema_version=user_version,
+        )
+        if integrity != ["ok"]:
+            findings.extend(f"integrity: {item}" for item in integrity)
+        foreign_keys = [tuple(row) for row in connection.execute("PRAGMA foreign_key_check")]
+        if foreign_keys:
+            findings.append(f"foreign-key violations: {len(foreign_keys)}")
     active = int(connection.execute("SELECT COUNT(*) FROM active_operation").fetchone()[0])
     if active:
         findings.append("an incomplete managed operation context remains active")
@@ -542,7 +575,12 @@ def managed_write(
     require_project_binding(workspace, project_binding, operation=OPERATION)
     target = path or database_path(workspace)
     with WorkspaceLock(lock_path(workspace)), contextlib.closing(connect(target)) as connection:
-        entrance = audit_connection(workspace, connection)
+        entrance_revision = int(meta_row(connection)["current_revision"])
+        entrance = audit_connection(
+            workspace,
+            connection,
+            physical_integrity=not physical_audit_current(target, entrance_revision),
+        )
         if entrance["classification"] not in {"CLEAN", "VALID_DIRTY", "CHECKPOINT_DUE"}:
             raise HybridStateError(
                 f"managed mutation refused from {entrance['classification']}: "
@@ -612,9 +650,11 @@ def managed_write(
         except BaseException:
             connection.rollback()
             raise
-        exit_audit = audit_connection(workspace, connection)
+        exit_audit = audit_connection(workspace, connection, physical_integrity=False)
         if exit_audit["classification"] not in {"VALID_DIRTY", "CHECKPOINT_DUE"}:
             raise HybridStateError(f"managed mutation left unexpected state: {exit_audit['classification']}")
+        connection.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+        remember_physical_audit(target, revision)
         return {
             "schema_version": int(connection.execute("PRAGMA user_version").fetchone()[0]),
             "kind": "tool-shed-hybrid-state-operation",

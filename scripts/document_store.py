@@ -56,25 +56,6 @@ class DocumentStoreError(RuntimeError):
     pass
 
 
-def _database_signature(path: Path) -> tuple[tuple[int, int, int, int] | None, ...]:
-    """Return a cheap identity/change signature for the database and its WAL."""
-    values: list[tuple[int, int, int, int] | None] = []
-    for candidate in (path, path.with_name(path.name + "-wal")):
-        try:
-            stat = candidate.stat()
-        except FileNotFoundError:
-            values.append(None)
-        else:
-            # Opening a WAL-mode database creates an empty WAL before any content changes. Treat
-            # that transient file exactly like an absent WAL so read-only connection setup does
-            # not invalidate an otherwise current audit.
-            if candidate.name.endswith("-wal") and int(stat.st_size) == 0:
-                values.append(None)
-            else:
-                values.append((int(stat.st_dev), int(stat.st_ino), int(stat.st_size), int(stat.st_mtime_ns)))
-    return tuple(values)
-
-
 def canonical_bytes(value: object) -> bytes:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
@@ -363,7 +344,7 @@ def managed_write(workspace: Path, *, project_binding: str, command: str, actor:
         with contextlib.closing(hybrid_state.connect(path)) as connection:
             cached = _MANAGED_AUDIT_CACHE.get(cache_key)
             meta = hybrid_state.meta_row(connection)
-            signature = _database_signature(path)
+            signature = hybrid_state.database_signature(path)
             if (
                 cached is not None
                 and cached["signature"] == signature
@@ -373,7 +354,13 @@ def managed_write(workspace: Path, *, project_binding: str, command: str, actor:
             ):
                 entrance = cached["result"]
             else:
-                entrance = audit_connection(workspace, connection)
+                entrance = audit_connection(
+                    workspace,
+                    connection,
+                    physical_integrity=not hybrid_state.physical_audit_current(
+                        path, int(meta["current_revision"])
+                    ),
+                )
             if entrance["classification"] not in {"CLEAN", "VALID_DIRTY"}:
                 raise DocumentStoreError(f"managed mutation refused from {entrance['classification']}: {'; '.join(entrance['findings'])}")
             existing_result = existing(connection) if existing is not None else None
@@ -421,11 +408,13 @@ def managed_write(workspace: Path, *, project_binding: str, command: str, actor:
             if result["classification"] != "VALID_DIRTY":
                 raise DocumentStoreError(f"managed mutation left {result['classification']}")
             response = {"schema_version": 1, "kind": "tool-shed-document-operation", "operation_id": operation_id, "revision": revision, "actual_writes": actual, "result": value, "audit": result, "writes_performed": True}
+            connection.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+            hybrid_state.remember_physical_audit(path, revision)
         # Cache the post-close signature while the cooperative workspace lock is still held;
         # closing the final WAL connection can update the main database file.
         _MANAGED_AUDIT_CACHE[cache_key] = {
             "revision": revision,
-            "signature": _database_signature(path),
+            "signature": hybrid_state.database_signature(path),
             "result": result,
         }
     try:
