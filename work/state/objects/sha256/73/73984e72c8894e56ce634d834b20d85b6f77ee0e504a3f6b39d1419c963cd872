@@ -1,0 +1,29 @@
+# Campaign: Build Qualification Contract and First Lifecycle Slice
+
+Status: working
+Type: campaign
+Updated: 2026-09-02
+Next Action: implement and run QH-001 and QH-002 on the split development lanes
+Campaign ID: build-qualification-contract-and-first-lifecycle-slice
+Outcome: Freeze the deterministic lifecycle qualification records and independent oracle, then prove exact dashboard inventory and one complete governed lifecycle on Linux, Windows, and hosted development without touching production.
+Roadmap: deterministic-tool-shed-lifecycle-and-database-truth-qualification-harness
+Roadmap Document: PRM-0038
+Roadmap Revision: 1
+Milestone: M1-CONTRACT-AND-FOUNDATION
+Unlocks Gate: G1-RUN-CONTRACT-AND-INDEPENDENT-ORACLE, foundation of G2-LOCAL-LIFECYCLE-CORPUS, baseline of G3-REPORTER-HOSTED-AND-UI-TRUTH
+Depends On: none
+Requested Endpoint: work2
+Completion Gate: versioned scenario, sealed-manifest, append-only-journal, compact-result, run-ID, checkpoint-selector, truth-vector, verdict, and replay contracts are executable; the oracle does not import product rollups; QH-001 excludes phantom seed projects and matches exact operational inventory; QH-002 completes and reconciles one governed lifecycle on both disposable operating-system fixtures and agrees with the hosted development surface; the committed candidate is registered for later release; production remains unchanged.
+
+## Scope
+
+- Implement the smallest executable harness foundation and independent database oracle.
+- Check in deterministic QH-001 and QH-002 scenario specifications.
+- Qualify the exact candidate on `/home/jon/dev/ts_linux_test_bed`,
+  `E:\dev\ts_windows_test_bed`, and `tsrookarocom-dev`.
+- Retain bounded, redacted evidence and exact candidate/fixture identities.
+
+## Boundary
+
+M2 through M7, destructive hosted qualification, Work3 freezing, Git push, publication, and
+production deployment remain outside this campaign.
