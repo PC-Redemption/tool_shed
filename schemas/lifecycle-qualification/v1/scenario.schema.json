@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "actions": {"items": {"minLength": 1, "type": "string"}, "type": "array"},
+    "checkpoints": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {"minLength": 1, "type": "string"},
+          "invariants": {"items": {"minLength": 1, "type": "string"}, "minItems": 1, "type": "array"}
+        },
+        "required": ["id", "invariants"],
+        "type": "object"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "expectations": {"type": "object"},
+    "kind": {"const": "tool-shed-qualification-scenario"},
+    "platforms": {"items": {"minLength": 1, "type": "string"}, "minItems": 1, "type": "array"},
+    "scenario_id": {"pattern": "^QH-[0-9]{3}$", "type": "string"},
+    "schema_version": {"const": 1},
+    "title": {"minLength": 1, "type": "string"},
+    "version": {"minimum": 1, "type": "integer"}
+  },
+  "required": ["schema_version", "kind", "scenario_id", "version", "title", "platforms", "actions", "checkpoints", "expectations"],
+  "title": "Tool Shed lifecycle qualification scenario v1",
+  "type": "object"
+}

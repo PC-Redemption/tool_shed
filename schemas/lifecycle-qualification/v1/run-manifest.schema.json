@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "candidate": {"required": ["commit", "version"], "type": "object"},
+    "contracts": {"required": ["oracle_version", "record_schema_version"], "type": "object"},
+    "fixture": {"required": ["platform", "project_id", "instance_id", "baseline_digest"], "type": "object"},
+    "kind": {"const": "tool-shed-qualification-run-manifest"},
+    "manifest_digest": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+    "run": {"required": ["serial", "seed", "clock_mode"], "type": "object"},
+    "run_id": {"pattern": "^tsqh-[0-9a-f]{24}$", "type": "string"},
+    "scenario": {"required": ["id", "version", "sha256"], "type": "object"},
+    "schema_version": {"const": 1},
+    "target": {"required": ["environment"], "type": "object"}
+  },
+  "required": ["schema_version", "kind", "scenario", "candidate", "fixture", "run", "target", "contracts", "manifest_digest", "run_id"],
+  "title": "Tool Shed lifecycle qualification sealed run manifest v1",
+  "type": "object"
+}

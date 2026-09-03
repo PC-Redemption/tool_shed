@@ -1,0 +1,42 @@
+{
+  "actions": [
+    "create-idea",
+    "create-project-map",
+    "create-program-roadmap",
+    "create-governed-campaign",
+    "record-evidence",
+    "reconcile-campaign",
+    "reconcile-roadmap",
+    "reconcile-map",
+    "reconcile-idea"
+  ],
+  "checkpoints": [
+    {
+      "id": "terminal-clean-tail",
+      "invariants": [
+        "exact-types",
+        "terminal-reconciled",
+        "outcome-result-propagated",
+        "no-active-residue",
+        "closure-projection-parity"
+      ]
+    }
+  ],
+  "expectations": {
+    "document_types": [
+      "campaign",
+      "idea-brief",
+      "program-roadmap",
+      "project-map"
+    ]
+  },
+  "kind": "tool-shed-qualification-scenario",
+  "platforms": [
+    "linux-x86_64",
+    "windows-amd64"
+  ],
+  "scenario_id": "QH-002",
+  "schema_version": 1,
+  "title": "Single complete lifecycle",
+  "version": 1
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "checks": {"items": {"required": ["id", "passed"], "type": "object"}, "type": "array"},
+    "evidence": {"items": {"required": ["layer", "path", "sha256"], "type": "object"}, "type": "array"},
+    "first_divergence": {"type": ["string", "null"]},
+    "kind": {"const": "tool-shed-qualification-result"},
+    "manifest_digest": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+    "oracle_version": {"const": "lifecycle-truth-oracle-v1"},
+    "replay": {"items": {"type": "string"}, "type": "array"},
+    "result_digest": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+    "run_id": {"pattern": "^tsqh-[0-9a-f]{24}$", "type": "string"},
+    "scenario_id": {"pattern": "^QH-[0-9]{3}$", "type": "string"},
+    "schema_version": {"const": 1},
+    "verdict": {"enum": ["PASS", "PRODUCT-FAIL", "HARNESS-FAIL", "INFRA-BLOCKED"]}
+  },
+  "required": ["schema_version", "kind", "run_id", "manifest_digest", "scenario_id", "verdict", "oracle_version", "checks", "first_divergence", "evidence", "replay", "result_digest"],
+  "title": "Tool Shed lifecycle qualification compact result v1",
+  "type": "object"
+}

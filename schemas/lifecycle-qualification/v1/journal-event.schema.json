@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "event_digest": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+    "idempotency_key": {"minLength": 1, "type": "string"},
+    "kind": {"const": "tool-shed-qualification-journal-event"},
+    "prior_event_digest": {"oneOf": [{"pattern": "^[0-9a-f]{64}$", "type": "string"}, {"type": "null"}]},
+    "run_id": {"pattern": "^tsqh-[0-9a-f]{24}$", "type": "string"},
+    "schema_version": {"const": 1},
+    "sequence": {"minimum": 1, "type": "integer"}
+  },
+  "required": ["schema_version", "kind", "run_id", "sequence", "idempotency_key", "prior_event_digest", "event_digest"],
+  "title": "Tool Shed lifecycle qualification append-only journal event v1",
+  "type": "object"
+}

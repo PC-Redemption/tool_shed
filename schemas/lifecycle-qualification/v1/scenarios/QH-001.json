@@ -1,0 +1,31 @@
+{
+  "actions": [
+    "export-hosted-raw-snapshot",
+    "evaluate-exact-operational-inventory"
+  ],
+  "checkpoints": [
+    {
+      "id": "hosted-inventory",
+      "invariants": [
+        "exact-set",
+        "absence",
+        "unique-identity",
+        "cardinality"
+      ]
+    }
+  ],
+  "expectations": {
+    "operational_project_names": [
+      "ts_linux_test_bed",
+      "ts_windows_test_bed"
+    ]
+  },
+  "kind": "tool-shed-qualification-scenario",
+  "platforms": [
+    "hosted-development"
+  ],
+  "scenario_id": "QH-001",
+  "schema_version": 1,
+  "title": "Baseline identity and inventory",
+  "version": 1
+}

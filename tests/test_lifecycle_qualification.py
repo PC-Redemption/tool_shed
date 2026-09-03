@@ -1,0 +1,178 @@
+from __future__ import annotations
+
+import json
+import shutil
+import sqlite3
+import subprocess
+import sys
+import tempfile
+import unittest
+import uuid
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+SCRIPTS = ROOT / "scripts"
+sys.path.insert(0, str(SCRIPTS))
+
+import lifecycle_qualification as qualification  # noqa: E402
+import document_store  # noqa: E402
+import hybrid_state  # noqa: E402
+from project_identity import binding_token  # noqa: E402
+
+
+class LifecycleQualificationTests(unittest.TestCase):
+    def scenario(self, name: str) -> dict[str, object]:
+        return qualification.load_json(
+            ROOT / "schemas/lifecycle-qualification/v1/scenarios" / f"{name}.json",
+            label="scenario",
+        )
+
+    def test_manifest_identity_is_content_derived_and_input_sensitive(self) -> None:
+        scenario = self.scenario("QH-002")
+        first = qualification.seal_manifest(
+            scenario,
+            candidate_commit="a" * 40,
+            candidate_version="0.43.0",
+            platform_name="linux-x86_64",
+            project_id="project",
+            instance_id="instance",
+            serial=1,
+            seed=7,
+            target_environment="development",
+            baseline_digest="b" * 64,
+        )
+        repeated = qualification.seal_manifest(
+            scenario,
+            candidate_commit="a" * 40,
+            candidate_version="0.43.0",
+            platform_name="linux-x86_64",
+            project_id="project",
+            instance_id="instance",
+            serial=1,
+            seed=7,
+            target_environment="development",
+            baseline_digest="b" * 64,
+        )
+        changed = qualification.seal_manifest(
+            scenario,
+            candidate_commit="a" * 40,
+            candidate_version="0.43.0",
+            platform_name="linux-x86_64",
+            project_id="project",
+            instance_id="instance",
+            serial=2,
+            seed=7,
+            target_environment="development",
+            baseline_digest="b" * 64,
+        )
+        qualification.validate_manifest(first)
+        self.assertEqual(first, repeated)
+        self.assertNotEqual(first["run_id"], changed["run_id"])
+
+    def test_journal_is_hash_chained_and_idempotent(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "journal.jsonl"
+            first = qualification.append_journal(path, {"run_id": "tsqh-" + "a" * 24, "action": "create", "state": "passed", "logical_tick": 1, "idempotency_key": "one", "payload_digest": "b" * 64})
+            repeated = qualification.append_journal(path, {"run_id": "tsqh-" + "a" * 24, "action": "create", "state": "passed", "logical_tick": 1, "idempotency_key": "one", "payload_digest": "b" * 64})
+            second = qualification.append_journal(path, {"run_id": "tsqh-" + "a" * 24, "action": "close", "state": "passed", "logical_tick": 2, "idempotency_key": "two", "payload_digest": "c" * 64})
+            self.assertEqual(first, repeated)
+            self.assertEqual(second["sequence"], 2)
+            self.assertEqual(second["prior_event_digest"], first["event_digest"])
+            self.assertEqual(len(path.read_text(encoding="utf-8").splitlines()), 2)
+
+    def test_qh001_rejects_visible_seed_or_extra_project(self) -> None:
+        scenario = self.scenario("QH-001")
+        clean = {
+            "projects": [
+                {"external_id": "linux", "name": "ts_linux_test_bed", "is_hidden": False},
+                {"external_id": "windows", "name": "ts_windows_test_bed", "is_hidden": False},
+                {"external_id": next(iter(qualification.SEED_PROJECT_IDS)), "name": "seed", "is_hidden": True},
+            ],
+            "instances": [
+                {"external_id": "linux-instance", "project_external_id": "linux"},
+                {"external_id": "windows-instance", "project_external_id": "windows"},
+            ],
+        }
+        self.assertTrue(all(item["passed"] for item in qualification.evaluate_qh001(scenario, clean)))
+        clean["projects"][-1]["is_hidden"] = False
+        checks = qualification.evaluate_qh001(scenario, clean)
+        self.assertFalse(next(item for item in checks if item["id"] == "QH001-SEEDS-NOT-OPERATIONAL")["passed"])
+        self.assertFalse(next(item for item in checks if item["id"] == "QH001-EXACT-PROJECT-SET")["passed"])
+
+    def test_independent_oracle_detects_projection_divergence(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            database = Path(directory) / "fixture.sqlite3"
+            connection = sqlite3.connect(database)
+            connection.row_factory = sqlite3.Row
+            connection.executescript(
+                """
+                CREATE TABLE closure_element(id TEXT PRIMARY KEY,role TEXT,element_kind TEXT,artifact_id TEXT,cycle_id TEXT,requirement_id TEXT,subject_revision INTEGER);
+                CREATE TABLE requirement(id TEXT PRIMARY KEY,cycle_id TEXT,disposition TEXT);
+                CREATE TABLE lineage_claim(id TEXT PRIMARY KEY,child_element_id TEXT,parent_element_id TEXT,parent_requirement_id TEXT,relationship_type TEXT,retired_revision INTEGER);
+                CREATE TABLE closure_record(id TEXT PRIMARY KEY,element_id TEXT,method TEXT,evidence_health TEXT,created_revision INTEGER,superseded_revision INTEGER);
+                CREATE TABLE recovery_case(id TEXT PRIMARY KEY,element_id TEXT,reason_code TEXT,state TEXT);
+                CREATE TABLE closure_rollup(element_id TEXT PRIMARY KEY,local_closure TEXT,evidence_health TEXT,graph_health TEXT,effective_closed INTEGER,reason_codes_json TEXT,open_descendants INTEGER,unknown_descendants INTEGER,invalid_descendants INTEGER);
+                INSERT INTO closure_element VALUES('cycle','cycle','document','artifact','cycle',NULL,1);
+                INSERT INTO closure_element VALUES('requirement','obligation','requirement','artifact',NULL,'requirement',1);
+                INSERT INTO requirement VALUES('requirement','cycle','accepted');
+                INSERT INTO closure_record VALUES('closed','requirement','closed-loop','current',1,NULL);
+                INSERT INTO closure_record VALUES('cycle-closed','cycle','closed-loop','current',1,NULL);
+                INSERT INTO closure_rollup VALUES('requirement','closed-loop','current','valid',1,'[]',0,0,0);
+                INSERT INTO closure_rollup VALUES('cycle','closed-loop','current','valid',0,'[]',0,0,0);
+                """
+            )
+            oracle = qualification.independent_closure(connection)
+            self.assertTrue(oracle["elements"]["cycle"]["effective_closed"])
+            mismatch = qualification.compare_closure_projection(connection, oracle)
+            self.assertEqual(mismatch[0]["element_id"], "cycle")
+            self.assertEqual(mismatch[0]["field"], "effective_closed")
+            connection.close()
+
+    def test_result_digest_covers_verdict_and_checks(self) -> None:
+        manifest = qualification.seal_manifest(
+            self.scenario("QH-001"), candidate_commit="a" * 40, candidate_version="0.43.0",
+            platform_name="hosted-development", project_id="project", instance_id="instance",
+            serial=1, seed=0, target_environment="development", baseline_digest="b" * 64,
+        )
+        result = qualification.result_summary(manifest, [{"id": "exact", "passed": True}], evidence=[], replay=["replay"])
+        qualification.validate_result(result)
+        self.assertEqual(result["verdict"], "PASS")
+        result["checks"][0]["passed"] = False
+        with self.assertRaisesRegex(qualification.QualificationError, "digest"):
+            qualification.validate_result(result)
+
+    def test_qh002_driver_completes_schema2_outcome_chain(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            subprocess.run(["git", "init", "--quiet", "-b", "main"], cwd=workspace, check=True)
+            subprocess.run(["git", "config", "user.name", "Qualification Fixture"], cwd=workspace, check=True)
+            subprocess.run(["git", "config", "user.email", "fixture@example.invalid"], cwd=workspace, check=True)
+            identity = workspace / "work/tool-shed-project.json"
+            identity.parent.mkdir(parents=True)
+            identity.write_text(json.dumps({"schema_version": 1, "project_id": str(uuid.uuid4()), "project_name": "qualification-fixture"}) + "\n", encoding="utf-8")
+            (workspace / ".gitignore").write_text("/.tool-shed/\n/tool_shed/\n", encoding="utf-8")
+            scenario_target = workspace / "tool_shed/schemas/lifecycle-qualification/v1/scenarios/QH-002.json"
+            scenario_target.parent.mkdir(parents=True)
+            shutil.copy2(ROOT / "schemas/lifecycle-qualification/v1/scenarios/QH-002.json", scenario_target)
+            subprocess.run(["git", "add", "."], cwd=workspace, check=True)
+            subprocess.run(["git", "commit", "--quiet", "-m", "fixture"], cwd=workspace, check=True)
+            binding = binding_token(workspace, operation="hybrid-state")
+            hybrid_state.initialize(workspace, project_binding=binding)
+            document_store.migrate(workspace, project_binding=binding)
+            manifest = qualification.seal_manifest(
+                self.scenario("QH-002"), candidate_commit="a" * 40, candidate_version="0.43.0",
+                platform_name="linux-x86_64", project_id="project", instance_id="instance",
+                serial=1, seed=0, target_environment="development",
+                baseline_digest=document_store.audit(workspace)["domain_digest"],
+            )
+            driven = qualification.drive_qh002(workspace, manifest, project_binding=binding)
+            by_id = {item["id"]: item for item in driven["checks"]}
+            self.assertTrue(by_id["QH002-OUTCOMES-TERMINAL-RECONCILED"]["passed"])
+            self.assertTrue(by_id["QH002-PROPAGATED-CHAIN"]["passed"])
+            self.assertTrue(by_id["QH002-NO-ACTIVE-RUN-RESIDUE"]["passed"])
+            self.assertFalse(by_id["QH002-CLOSURE-PROJECTION-PARITY"]["passed"])
+
+
+if __name__ == "__main__":
+    unittest.main()
