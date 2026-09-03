@@ -352,6 +352,204 @@ def _insert_manifest(connection: sqlite3.Connection, manifest: dict[str, Any], r
     rebuild_projection(connection, revision=revision)
 
 
+def synchronize_authority(connection: sqlite3.Connection, *, revision: int) -> dict[str, Any]:
+    """Enroll current lifecycle authority into schema 3 and rebuild its indexed projection.
+
+    This runs inside the same managed transaction as the lifecycle mutation.  Authority remains
+    in cycle, requirement, relationship, verdict, and reconciliation rows; closure tables retain
+    the recoverable element envelopes and append-only claim/closure history derived from them.
+    """
+    if int(connection.execute("PRAGMA user_version").fetchone()[0]) != HYBRID_SCHEMA_VERSION:
+        return {"applicable": False, "element_count": 0, "claim_count": 0, "closed_count": 0}
+    if not set(CLOSURE_TABLES) <= _tables(connection):
+        raise ClosureLineageError("schema 3 is missing closure authority tables")
+
+    cycles = {str(row["id"]): row for row in connection.execute("SELECT * FROM cycle ORDER BY id")}
+    requirements = {str(row["id"]): row for row in connection.execute("SELECT * FROM requirement ORDER BY id")}
+    requirements_by_cycle: dict[str, list[sqlite3.Row]] = {}
+    for row in requirements.values():
+        requirements_by_cycle.setdefault(str(row["cycle_id"]), []).append(row)
+
+    desired_claims: dict[tuple[str, str, str, str], dict[str, Any]] = {}
+    for requirement in requirements.values():
+        parent_id = str(requirement["cycle_id"])
+        if parent_id not in cycles:
+            continue
+        key = (str(requirement["id"]), parent_id, str(requirement["id"]), "contributes")
+        desired_claims[key] = {
+            "observed_parent_revision": revision,
+            "observed_requirement_digest": _requirement_digest(requirement),
+        }
+
+    latest_cycle_by_artifact: dict[str, sqlite3.Row] = {}
+    for cycle in sorted(cycles.values(), key=lambda item: (str(item["opened_at"]), str(item["id"]))):
+        latest_cycle_by_artifact[str(cycle["origin_artifact_id"])] = cycle
+    for edge in connection.execute(
+        "SELECT from_artifact_id,to_artifact_id FROM relationship "
+        "WHERE relation_type='outcome-parent' AND retired_revision IS NULL ORDER BY id"
+    ):
+        child = latest_cycle_by_artifact.get(str(edge["from_artifact_id"]))
+        parent = latest_cycle_by_artifact.get(str(edge["to_artifact_id"]))
+        if child is None or parent is None:
+            continue
+        obligations = requirements_by_cycle.get(str(parent["id"]), [])
+        if len(obligations) != 1:
+            continue
+        requirement = obligations[0]
+        key = (str(child["id"]), str(parent["id"]), str(requirement["id"]), "fulfills")
+        desired_claims[key] = {
+            "observed_parent_revision": revision,
+            "observed_requirement_digest": _requirement_digest(requirement),
+        }
+
+    claims_by_child: dict[str, list[dict[str, Any]]] = {}
+    active_rows = list(connection.execute("SELECT * FROM lineage_claim WHERE retired_revision IS NULL ORDER BY id"))
+    active_by_key = {
+        (
+            str(row["child_element_id"]), str(row["parent_element_id"]),
+            str(row["parent_requirement_id"]), str(row["relationship_type"]),
+        ): row
+        for row in active_rows
+    }
+    selected_claim_ids: set[str] = set()
+    for key, observed in desired_claims.items():
+        current = active_by_key.get(key)
+        if current is not None and current["observed_requirement_digest"] == observed["observed_requirement_digest"]:
+            claim_id = str(current["id"])
+            observed["observed_parent_revision"] = int(current["observed_parent_revision"])
+        else:
+            if current is not None:
+                connection.execute("UPDATE lineage_claim SET retired_revision=? WHERE id=?", (revision, current["id"]))
+            claim_id = stable_uuid("authority-claim", *key, observed["observed_requirement_digest"])
+        selected_claim_ids.add(claim_id)
+        claims_by_child.setdefault(key[0], []).append(
+            {
+                "claim_id": claim_id,
+                "parent_element_id": key[1],
+                "parent_kind": str(cycles[key[1]]["kind"]),
+                "parent_visible_id": None,
+                "parent_requirement_id": key[2],
+                "relationship_type": key[3],
+                "observed_parent_revision": observed["observed_parent_revision"],
+                "observed_requirement_digest": observed["observed_requirement_digest"],
+            }
+        )
+    for row in active_rows:
+        if str(row["id"]) not in selected_claim_ids and row["retired_revision"] is None:
+            connection.execute("UPDATE lineage_claim SET retired_revision=? WHERE id=?", (revision, row["id"]))
+
+    desired_elements: list[dict[str, Any]] = []
+    for cycle in cycles.values():
+        desired_elements.append(
+            {
+                "id": str(cycle["id"]), "role": "cycle", "element_kind": str(cycle["kind"]),
+                "artifact_id": str(cycle["origin_artifact_id"]), "cycle_id": str(cycle["id"]),
+                "requirement_id": None, "subject_digest": _subject_digest(cycle, "cycle"),
+            }
+        )
+    for requirement in requirements.values():
+        desired_elements.append(
+            {
+                "id": str(requirement["id"]), "role": "obligation", "element_kind": "requirement",
+                "artifact_id": str(requirement["origin_artifact_id"]), "cycle_id": None,
+                "requirement_id": str(requirement["id"]), "subject_digest": _subject_digest(requirement, "obligation"),
+            }
+        )
+
+    envelope_by_id: dict[str, str] = {}
+    for item in desired_elements:
+        current = connection.execute("SELECT * FROM closure_element WHERE id=?", (item["id"],)).fetchone()
+        subject_revision = int(current["subject_revision"]) if current and current["subject_digest"] == item["subject_digest"] else revision
+        element_revision = revision
+        if current is not None:
+            prior_envelope = json.loads(current["envelope_json"])
+            unchanged_envelope, unchanged_digest = _envelope(
+                element_id=item["id"], element_kind=item["element_kind"],
+                element_revision=int(prior_envelope["element_revision"]),
+                subject_digest=item["subject_digest"], claims=claims_by_child.get(item["id"], []),
+            )
+            if unchanged_digest == current["envelope_digest"]:
+                element_revision = int(prior_envelope["element_revision"])
+        envelope, envelope_digest = _envelope(
+            element_id=item["id"], element_kind=item["element_kind"], element_revision=element_revision,
+            subject_digest=item["subject_digest"], claims=claims_by_child.get(item["id"], []),
+        )
+        envelope_by_id[item["id"]] = envelope_digest
+        values = (
+            item["role"], item["element_kind"], item["artifact_id"], item["cycle_id"], item["requirement_id"],
+            subject_revision, item["subject_digest"], json.dumps(envelope, sort_keys=True), envelope_digest, revision,
+        )
+        if current is None:
+            connection.execute(
+                "INSERT INTO closure_element VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (item["id"], *values[:-1], revision, revision),
+            )
+        elif any(
+            current[field] != expected for field, expected in (
+                ("role", item["role"]), ("element_kind", item["element_kind"]),
+                ("artifact_id", item["artifact_id"]), ("cycle_id", item["cycle_id"]),
+                ("requirement_id", item["requirement_id"]), ("subject_revision", subject_revision),
+                ("subject_digest", item["subject_digest"]), ("envelope_digest", envelope_digest),
+            )
+        ):
+            connection.execute(
+                "UPDATE closure_element SET role=?,element_kind=?,artifact_id=?,cycle_id=?,requirement_id=?,"
+                "subject_revision=?,subject_digest=?,envelope_json=?,envelope_digest=?,updated_revision=? WHERE id=?",
+                (*values, item["id"]),
+            )
+
+    for key, observed in desired_claims.items():
+        claim_id = next(item["claim_id"] for item in claims_by_child[key[0]] if item["parent_element_id"] == key[1] and item["parent_requirement_id"] == key[2] and item["relationship_type"] == key[3])
+        if connection.execute("SELECT 1 FROM lineage_claim WHERE id=?", (claim_id,)).fetchone() is None:
+            connection.execute(
+                "INSERT INTO lineage_claim VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)",
+                (claim_id, *key, observed["observed_parent_revision"], observed["observed_requirement_digest"], envelope_by_id[key[0]], revision),
+            )
+        else:
+            connection.execute("UPDATE lineage_claim SET envelope_digest=? WHERE id=?", (envelope_by_id[key[0]], claim_id))
+
+    closed_count = 0
+    for cycle_id, cycle in cycles.items():
+        latest = connection.execute(
+            "SELECT v.disposition,v.authorization_ref,r.state,r.residual_work_json "
+            "FROM reconciliation r JOIN outcome_verdict v ON v.id=r.verdict_id "
+            "WHERE r.cycle_id=? ORDER BY r.origin_revision DESC LIMIT 1",
+            (cycle_id,),
+        ).fetchone()
+        proven = (
+            cycle["lifecycle_state"] == "terminal" and latest is not None
+            and latest["disposition"] in {"satisfied", "satisfied-with-approved-change", "not-applicable"}
+            and latest["state"] == "reconciled" and json.loads(latest["residual_work_json"]) == []
+        )
+        element_ids = [cycle_id, *(str(item["id"]) for item in requirements_by_cycle.get(cycle_id, []))]
+        for element_id in element_ids:
+            element = connection.execute("SELECT * FROM closure_element WHERE id=?", (element_id,)).fetchone()
+            current = _latest_closure(connection, element_id)
+            current_matches = current is not None and current["subject_digest"] == element["subject_digest"] and int(current["subject_revision"]) == int(element["subject_revision"])
+            if current is not None and not current_matches:
+                connection.execute("UPDATE closure_record SET superseded_revision=? WHERE id=?", (revision, current["id"]))
+                current = None
+            if proven and current is None:
+                connection.execute(
+                    "INSERT INTO closure_record VALUES (?, ?, ?, ?, ?, 'closed-loop', 'current', ?, ?, ?, NULL)",
+                    (
+                        random_uuid(), element_id, element["requirement_id"], element["subject_revision"],
+                        element["subject_digest"], str(latest["authorization_ref"]),
+                        json.dumps([f"outcome-cycle:{cycle_id}"], sort_keys=True), revision,
+                    ),
+                )
+                closed_count += 1
+
+    rebuilt = rebuild_projection(connection, revision=revision)
+    return {
+        "applicable": True,
+        "element_count": len(desired_elements),
+        "claim_count": len(desired_claims),
+        "closed_count": closed_count,
+        **rebuilt,
+    }
+
+
 def apply_migration(
     workspace: Path,
     manifest: dict[str, Any],

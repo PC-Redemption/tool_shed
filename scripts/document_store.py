@@ -359,6 +359,10 @@ def managed_write(workspace: Path, *, project_binding: str, command: str, actor:
             )
             connection.execute("INSERT INTO active_operation VALUES (1, ?, ?)", (operation_id, revision))
             value = callback(connection, revision)
+            if int(connection.execute("PRAGMA user_version").fetchone()[0]) == 3:
+                import closure_lineage
+
+                closure_lineage.synchronize_authority(connection, revision=revision)
             actual = int(connection.execute("SELECT actual_writes FROM managed_operation WHERE id=?", (operation_id,)).fetchone()[0])
             connection.execute("DELETE FROM active_operation WHERE id=1")
             connection.execute("UPDATE managed_operation SET status='complete', committed_at=? WHERE id=?", (hybrid_state.now(), operation_id))

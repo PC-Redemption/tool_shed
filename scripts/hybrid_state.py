@@ -573,14 +573,28 @@ def managed_write(
                 "INSERT INTO active_operation VALUES (1, ?, ?)", (operation_id, revision)
             )
             callback_result = callback(connection, revision)
+            product_actual = int(
+                connection.execute(
+                    "SELECT actual_writes FROM managed_operation WHERE id = ?", (operation_id,)
+                ).fetchone()[0]
+            )
+            if expected_writes is not None and product_actual != expected_writes:
+                raise HybridStateError(
+                    f"managed operation expected {expected_writes} accounted writes but observed {product_actual}"
+                )
+            if int(connection.execute("PRAGMA user_version").fetchone()[0]) == 3:
+                import closure_lineage
+
+                closure_lineage.synchronize_authority(connection, revision=revision)
             actual = int(
                 connection.execute(
                     "SELECT actual_writes FROM managed_operation WHERE id = ?", (operation_id,)
                 ).fetchone()[0]
             )
-            if expected_writes is not None and actual != expected_writes:
-                raise HybridStateError(
-                    f"managed operation expected {expected_writes} accounted writes but observed {actual}"
+            if expected_writes is not None and actual != product_actual:
+                connection.execute(
+                    "UPDATE managed_operation SET expected_writes=? WHERE id=?",
+                    (actual, operation_id),
                 )
             connection.execute("DELETE FROM active_operation WHERE id = 1")
             digest = domain_digest(connection)

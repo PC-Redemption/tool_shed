@@ -5,9 +5,11 @@ Hybrid schema: 3
 Evaluator: `recursive-closure-v1`
 
 Tool Shed schema 3 keeps local closure separate from recursive effective closure. Every migrated
-nonterminal cycle and accepted requirement receives a versioned closure element. Its envelope owns
-the current immediate lineage claim; requirement-bound `lineage_claim` rows, ancestor paths,
-rollups, blockers, and dashboard fields are indexed projections.
+nonterminal cycle and accepted requirement receives a versioned closure element. After migration,
+every managed lifecycle transaction synchronizes newly created or changed cycles, requirements,
+and active `outcome-parent` relationships into the same recoverable envelopes before commit. Its
+envelope owns the current immediate lineage claim; requirement-bound `lineage_claim` rows,
+ancestor paths, rollups, blockers, and dashboard fields are indexed projections.
 
 The four status fields are independent:
 
@@ -63,9 +65,16 @@ python3 scripts/closure_lineage.py --workspace . --json close \
 ```
 
 `status` returns exact subject, graph, and evaluator revisions; reasons; descendant counts; and up
-to the first 100 nearest obligation-scoped blockers. Every closure mutation supersedes the prior
-current record and refreshes only the changed element and its indexed governing ancestors in the
-same guarded revision. Full rebuild remains the independent parity oracle.
+to the first 100 nearest obligation-scoped blockers. Every explicit closure mutation supersedes
+the prior current record and refreshes the changed element and its indexed governing ancestors in
+the same guarded revision. The managed authority synchronizer then performs a deterministic
+projection rebuild; the independent evaluator remains the parity oracle.
+
+A terminal, satisfied (or approved-change/not-applicable), reconciled outcome with no residual
+work records closed-loop closure for its exact current cycle and requirement subjects in that same
+managed transaction. Explicit manual or proof closure remains valid until its subject changes.
+New elements are therefore visible immediately, and a later managed write can deterministically
+recover an element missed by an interrupted older writer from the authoritative lifecycle rows.
 
 ## Proof recipes
 
