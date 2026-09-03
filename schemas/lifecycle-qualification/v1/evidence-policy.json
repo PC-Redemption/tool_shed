@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-qualification-evidence-policy",
+  "capture": {
+    "per_run_bytes": 262144000,
+    "per_fixture_bytes": 2147483648,
+    "checkpoint_window_before": 1
+  },
+  "retention_days": {
+    "PASS": 14,
+    "PRODUCT-FAIL_AFTER_FIX": 30,
+    "HARNESS-FAIL": 14,
+    "INFRA-BLOCKED": 14
+  },
+  "minimization": {
+    "required_reproductions": 3,
+    "maximum_attempts": 100,
+    "maximum_seconds": 600
+  },
+  "forbidden_fields": [
+    "authorization",
+    "cookie",
+    "credential",
+    "password",
+    "raw_prompt",
+    "secret",
+    "token"
+  ],
+  "body_fields": ["body", "body_markdown", "document_body", "prompt"]
+}

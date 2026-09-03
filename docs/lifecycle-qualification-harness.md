@@ -214,3 +214,56 @@ Generated manifests, journals, raw database observations, and browser captures b
 ignored `work/evidence/generated/` or `.tool-shed/qualification/`. A retained summary records their
 hashes and target identity. Production execution is refused by the QH-002 driver and production
 deployment remains a separate Work5 decision.
+
+## M5 evidence, accumulation, and route smoke
+
+`schemas/lifecycle-qualification/v1/evidence-policy.json` is the versioned evidence contract.
+`scripts/lifecycle_qualification_evidence.py` sanitizes selected checkpoint records before hashing,
+limits failure capture to the first divergence and its predecessor, enforces the per-run cap, and
+calculates verdict-specific retention. Its reclaim command is deliberately preview-only and selects
+only expired successful raw bundles; a protected failure or an exhausted host with no eligible
+bundle returns `INFRA-BLOCKED`.
+
+The same module exposes deterministic signature-preserving delta debugging to the harness. It
+refuses an unsealed original or a live/non-isolated target, preserves declared dependencies,
+requires the exact normalized failure signature three consecutive times, stops at 100 attempts or
+ten minutes, and always retains the original action identity beside the minimum.
+
+Accumulate normal QH-002 lifecycles in an enrolled disposable fixture without rewinding its database
+or reporter identity:
+
+```bash
+python3 scripts/lifecycle_scale_qualification.py \
+  --workspace <fixture> --project-binding <hybrid-state-binding> \
+  --candidate-commit <sha> --candidate-version <version> \
+  --platform <linux-x86_64-or-windows-amd64> --instance-id <stable-instance-id> \
+  --serial-start <n> --lifecycle-count 100 --minimum-history-delta 1 \
+  --output <generated-result.json>
+```
+
+The driver seals each serial against the immediately preceding database digest, resumes from its
+ignored state record, and retains all completed Idea→Map→PRM→Campaign histories. It requires exact
+run-owned cardinality, terminal reconciliation, independent-oracle parity, zero open recovery
+cases, and the provisional guarded-mutation and truth-vector ceilings. The 1,000-lifecycle tier uses
+the same command with `--minimum-history-delta 100000`; it is a measurement gate rather than a new
+semantic path. Results include table counts, database/WAL size, query plans, and timing samples.
+
+For the model-bearing route sample, capture a snapshot before the fixed prompts, another after the
+first completed lifecycle, and a third after reissuing the routes:
+
+```bash
+python3 scripts/lifecycle_route_smoke.py snapshot \
+  --workspace <fixture> --run-tag <unique-tag> --output <before.json>
+python3 scripts/lifecycle_route_smoke.py evaluate \
+  --before <before.json> --completed <completed.json> --replayed <replayed.json> \
+  --provider <provider> --model <model> --effort <effort> --turns <count> \
+  --duration-seconds <seconds> --adapter-version <version> \
+  --platform <platform> --output <result.json>
+```
+
+The route oracle reads canonical database history rather than generated wording. It requires one
+run-tagged artifact of each expected type, one revision-bound ready result, exact readiness-gate
+and source provenance transfer, both directions of the planning lineage, terminal reconciled and
+effectively closed cycles, monotonic first-run revision changes, and no revision, digest, or
+artifact-set change on replay. Work2 execution remains development-only under the project split
+work-level declaration.
