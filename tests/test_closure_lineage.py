@@ -188,6 +188,49 @@ class ClosureLineageTests(unittest.TestCase):
                 element_id,
             )
 
+    def test_new_cycle_refreshes_only_its_projection_branch(self) -> None:
+        self.migrate()
+        sibling = self.create_document("ticket", "Independent sibling")
+        opened = document_store.open_outcome(
+            self.workspace,
+            project_binding=self.binding,
+            identity=str(sibling["visible_id"]),
+            accepted_outcome="Sibling result is closed.",
+            actor="fixture",
+        )
+        revision = int(opened["revision"])
+        cycle_id = str(opened["result"]["cycle_id"])
+        requirement_id = self.requirement_for(cycle_id)
+        with contextlib.closing(
+            hybrid_state.connect(hybrid_state.database_path(self.workspace), writable=False)
+        ) as connection:
+            projection_changes = list(
+                connection.execute(
+                    "SELECT change.table_name,change.row_id,change.operation,rollup.element_id "
+                    "FROM structural_change change LEFT JOIN closure_rollup rollup "
+                    "ON change.table_name='closure_rollup' AND rollup.id=change.row_id "
+                    "WHERE change.revision=? AND change.table_name IN "
+                    "('closure_rollup','closure_blocker','closure_ancestor_path')",
+                    (revision,),
+                )
+            )
+            changed_rollups = {
+                str(row["element_id"])
+                for row in projection_changes
+                if str(row["table_name"]) == "closure_rollup"
+            }
+            self.assertEqual(changed_rollups, {cycle_id, requirement_id})
+            self.assertFalse(any(str(row["operation"]) == "delete" for row in projection_changes))
+            recursive = closure_lineage.evaluate_recursive(connection)
+            projected = {
+                str(row["element_id"]): bool(row["effective_closed"])
+                for row in connection.execute("SELECT element_id,effective_closed FROM closure_rollup")
+            }
+            self.assertEqual(
+                projected,
+                {key: bool(value["effective_closed"]) for key, value in recursive.items()},
+            )
+
     def test_proof_recipe_is_idempotent_and_subject_bound(self) -> None:
         self.migrate()
         requirement_id = self.requirement_for(self.roadmap_cycle)

@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import hashlib
 import json
+import os
 import sqlite3
 import subprocess
 import sys
@@ -88,6 +89,46 @@ class DocumentStoreThinSliceTests(unittest.TestCase):
             self.workspace, created["visible_id"], database=self.database
         )["aliases"]
         self.assertEqual(aliases[0]["path"], "work/evidence/canonical-alias.md")
+
+    def test_managed_writes_reuse_physical_audit_only_while_database_is_unchanged(self) -> None:
+        original = hybrid_state.integrity_check
+        with (
+            mock.patch.object(hybrid_state, "integrity_check", wraps=original) as checked,
+            mock.patch("dashboard_reporter.enqueue_if_connected"),
+        ):
+            for index in range(2):
+                document_store.create_document(
+                    self.workspace,
+                    project_binding=self.binding,
+                    document_type="ticket",
+                    title=f"Cached audit {index}",
+                    body=f"# Cached audit {index}\n",
+                    lifecycle="active",
+                    metadata={},
+                    actor="fixture",
+                    reason="physical audit cache qualification",
+                    database=self.database,
+                )
+            self.assertEqual(checked.call_count, 1)
+
+            stat = self.database.stat()
+            os.utime(
+                self.database,
+                ns=(stat.st_atime_ns, stat.st_mtime_ns + 1_000_000_000),
+            )
+            document_store.create_document(
+                self.workspace,
+                project_binding=self.binding,
+                document_type="ticket",
+                title="Invalidated audit",
+                body="# Invalidated audit\n",
+                lifecycle="active",
+                metadata={},
+                actor="fixture",
+                reason="database signature invalidates cache",
+                database=self.database,
+            )
+            self.assertEqual(checked.call_count, 2)
 
     def test_transactional_edit_relationship_checkpoint_rebuild_and_outcome(self) -> None:
         originals = {path: (self.workspace / path).read_bytes() for path in ("work/ideas/idea-one.md", "work/maps/map-one.md")}

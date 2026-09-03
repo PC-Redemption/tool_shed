@@ -49,10 +49,30 @@ DOCUMENT_HYBRID_SCHEMAS = {HYBRID_SCHEMA_VERSION, 3}
 VISIBLE_ID = re.compile(r"^(?P<namespace>[A-Z]{2,5})-(?P<number>[0-9]{4,})$")
 EDIT_HEADER = "tool_shed_document: 1"
 LIFECYCLES = ("active", "working", "blocked", "parked", "deferred", "completed", "abandoned", "superseded")
+_MANAGED_AUDIT_CACHE: dict[tuple[str, str], dict[str, Any]] = {}
 
 
 class DocumentStoreError(RuntimeError):
     pass
+
+
+def _database_signature(path: Path) -> tuple[tuple[int, int, int, int] | None, ...]:
+    """Return a cheap identity/change signature for the database and its WAL."""
+    values: list[tuple[int, int, int, int] | None] = []
+    for candidate in (path, path.with_name(path.name + "-wal")):
+        try:
+            stat = candidate.stat()
+        except FileNotFoundError:
+            values.append(None)
+        else:
+            # Opening a WAL-mode database creates an empty WAL before any content changes. Treat
+            # that transient file exactly like an absent WAL so read-only connection setup does
+            # not invalidate an otherwise current audit.
+            if candidate.name.endswith("-wal") and int(stat.st_size) == 0:
+                values.append(None)
+            else:
+                values.append((int(stat.st_dev), int(stat.st_ino), int(stat.st_size), int(stat.st_mtime_ns)))
+    return tuple(values)
 
 
 def canonical_bytes(value: object) -> bytes:
@@ -172,7 +192,12 @@ def _semantic_document_findings(connection: sqlite3.Connection) -> list[dict[str
     return findings
 
 
-def audit_connection(workspace: Path, connection: sqlite3.Connection) -> dict[str, Any]:
+def audit_connection(
+    workspace: Path,
+    connection: sqlite3.Connection,
+    *,
+    physical_integrity: bool = True,
+) -> dict[str, Any]:
     findings: list[str] = []
     user_version = int(connection.execute("PRAGMA user_version").fetchone()[0])
     if user_version not in DOCUMENT_HYBRID_SCHEMAS:
@@ -189,16 +214,17 @@ def audit_connection(workspace: Path, connection: sqlite3.Connection) -> dict[st
     current_schema_digest = hybrid_state.schema_digest(connection)
     if meta["schema_trigger_digest"] != current_schema_digest:
         findings.append("schema or accounting-trigger digest changed")
-    integrity = hybrid_state.integrity_check(
-        connection,
-        current_schema_digest=current_schema_digest,
-        schema_version=user_version,
-    )
-    if integrity != ["ok"]:
-        findings.extend(f"integrity: {item}" for item in integrity)
-    foreign = list(connection.execute("PRAGMA foreign_key_check"))
-    if foreign:
-        findings.append(f"foreign-key violations: {len(foreign)}")
+    if physical_integrity:
+        integrity = hybrid_state.integrity_check(
+            connection,
+            current_schema_digest=current_schema_digest,
+            schema_version=user_version,
+        )
+        if integrity != ["ok"]:
+            findings.extend(f"integrity: {item}" for item in integrity)
+        foreign = list(connection.execute("PRAGMA foreign_key_check"))
+        if foreign:
+            findings.append(f"foreign-key violations: {len(foreign)}")
     active = int(connection.execute("SELECT count(*) FROM active_operation").fetchone()[0])
     if active:
         findings.append("an incomplete managed operation context remains active")
@@ -332,52 +358,76 @@ def managed_write(workspace: Path, *, project_binding: str, command: str, actor:
     workspace = resolved_workspace(workspace)
     require_project_binding(workspace, project_binding, operation=OPERATION)
     path = require_path_within(workspace, database or hybrid_state.database_path(workspace))
-    with hybrid_state.WorkspaceLock(hybrid_state.lock_path(workspace)), contextlib.closing(hybrid_state.connect(path)) as connection:
-        entrance = audit_connection(workspace, connection)
-        if entrance["classification"] not in {"CLEAN", "VALID_DIRTY"}:
-            raise DocumentStoreError(f"managed mutation refused from {entrance['classification']}: {'; '.join(entrance['findings'])}")
-        existing_result = existing(connection) if existing is not None else None
-        if existing_result is not None:
-            return {
-                "schema_version": 1,
-                "kind": "tool-shed-document-operation",
-                "operation_id": None,
-                "revision": entrance["current_revision"],
-                "actual_writes": 0,
-                "result": existing_result,
-                "audit": entrance,
-                "writes_performed": False,
-            }
-        operation_id = str(uuid.uuid4())
-        stamp = hybrid_state.now()
-        try:
-            connection.execute("BEGIN IMMEDIATE")
-            revision = int(connection.execute("SELECT current_revision + 1 FROM state_meta WHERE id=1").fetchone()[0])
-            connection.execute(
-                "INSERT INTO managed_operation VALUES (?, ?, ?, ?, ?, NULL, NULL, 0, 'active')",
-                (operation_id, revision, command, actor, stamp),
-            )
-            connection.execute("INSERT INTO active_operation VALUES (1, ?, ?)", (operation_id, revision))
-            value = callback(connection, revision)
-            if int(connection.execute("PRAGMA user_version").fetchone()[0]) == 3:
-                import closure_lineage
+    cache_key = (str(workspace), str(path))
+    with hybrid_state.WorkspaceLock(hybrid_state.lock_path(workspace)):
+        with contextlib.closing(hybrid_state.connect(path)) as connection:
+            cached = _MANAGED_AUDIT_CACHE.get(cache_key)
+            meta = hybrid_state.meta_row(connection)
+            signature = _database_signature(path)
+            if (
+                cached is not None
+                and cached["signature"] == signature
+                and cached["revision"] == int(meta["current_revision"])
+                and not int(meta["unmanaged_write_detected"])
+                and not int(connection.execute("SELECT COUNT(*) FROM active_operation").fetchone()[0])
+            ):
+                entrance = cached["result"]
+            else:
+                entrance = audit_connection(workspace, connection)
+            if entrance["classification"] not in {"CLEAN", "VALID_DIRTY"}:
+                raise DocumentStoreError(f"managed mutation refused from {entrance['classification']}: {'; '.join(entrance['findings'])}")
+            existing_result = existing(connection) if existing is not None else None
+            if existing_result is not None:
+                return {
+                    "schema_version": 1,
+                    "kind": "tool-shed-document-operation",
+                    "operation_id": None,
+                    "revision": entrance["current_revision"],
+                    "actual_writes": 0,
+                    "result": existing_result,
+                    "audit": entrance,
+                    "writes_performed": False,
+                }
+            operation_id = str(uuid.uuid4())
+            stamp = hybrid_state.now()
+            try:
+                connection.execute("BEGIN IMMEDIATE")
+                revision = int(connection.execute("SELECT current_revision + 1 FROM state_meta WHERE id=1").fetchone()[0])
+                connection.execute(
+                    "INSERT INTO managed_operation VALUES (?, ?, ?, ?, ?, NULL, NULL, 0, 'active')",
+                    (operation_id, revision, command, actor, stamp),
+                )
+                connection.execute("INSERT INTO active_operation VALUES (1, ?, ?)", (operation_id, revision))
+                value = callback(connection, revision)
+                if int(connection.execute("PRAGMA user_version").fetchone()[0]) == 3:
+                    import closure_lineage
 
-                closure_lineage.synchronize_authority(connection, revision=revision)
-            actual = int(connection.execute("SELECT actual_writes FROM managed_operation WHERE id=?", (operation_id,)).fetchone()[0])
-            connection.execute("DELETE FROM active_operation WHERE id=1")
-            connection.execute("UPDATE managed_operation SET status='complete', committed_at=? WHERE id=?", (hybrid_state.now(), operation_id))
-            connection.execute(
-                "UPDATE state_meta SET current_revision=?, last_verified_revision=?, source_digest=?, dirty=1, checkpoint_pending=1 WHERE id=1",
-                (revision, revision, domain_digest(connection)),
-            )
-            connection.commit()
-        except BaseException:
-            connection.rollback()
-            raise
-        result = audit_connection(workspace, connection)
-        if result["classification"] != "VALID_DIRTY":
-            raise DocumentStoreError(f"managed mutation left {result['classification']}")
-        response = {"schema_version": 1, "kind": "tool-shed-document-operation", "operation_id": operation_id, "revision": revision, "actual_writes": actual, "result": value, "audit": result, "writes_performed": True}
+                    closure_lineage.synchronize_authority(connection, revision=revision)
+                actual = int(connection.execute("SELECT actual_writes FROM managed_operation WHERE id=?", (operation_id,)).fetchone()[0])
+                connection.execute("DELETE FROM active_operation WHERE id=1")
+                connection.execute("UPDATE managed_operation SET status='complete', committed_at=? WHERE id=?", (hybrid_state.now(), operation_id))
+                connection.execute(
+                    "UPDATE state_meta SET current_revision=?, last_verified_revision=?, source_digest=?, dirty=1, checkpoint_pending=1 WHERE id=1",
+                    (revision, revision, domain_digest(connection)),
+                )
+                connection.commit()
+            except BaseException:
+                connection.rollback()
+                raise
+            # SQLite committed a transaction that began from a physically verified state with
+            # foreign keys and accounting triggers enabled. Recheck semantic and ledger parity
+            # now; any observed database/WAL change performs the physical scans again.
+            result = audit_connection(workspace, connection, physical_integrity=False)
+            if result["classification"] != "VALID_DIRTY":
+                raise DocumentStoreError(f"managed mutation left {result['classification']}")
+            response = {"schema_version": 1, "kind": "tool-shed-document-operation", "operation_id": operation_id, "revision": revision, "actual_writes": actual, "result": value, "audit": result, "writes_performed": True}
+        # Cache the post-close signature while the cooperative workspace lock is still held;
+        # closing the final WAL connection can update the main database file.
+        _MANAGED_AUDIT_CACHE[cache_key] = {
+            "revision": revision,
+            "signature": _database_signature(path),
+            "result": result,
+        }
     try:
         import dashboard_reporter
 

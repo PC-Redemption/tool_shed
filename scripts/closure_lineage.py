@@ -353,7 +353,7 @@ def _insert_manifest(connection: sqlite3.Connection, manifest: dict[str, Any], r
 
 
 def synchronize_authority(connection: sqlite3.Connection, *, revision: int) -> dict[str, Any]:
-    """Enroll current lifecycle authority into schema 3 and rebuild its indexed projection.
+    """Enroll current lifecycle authority and refresh only affected projection branches.
 
     This runs inside the same managed transaction as the lifecycle mutation.  Authority remains
     in cycle, requirement, relationship, verdict, and reconciliation rows; closure tables retain
@@ -371,6 +371,8 @@ def synchronize_authority(connection: sqlite3.Connection, *, revision: int) -> d
         requirements_by_cycle.setdefault(str(row["cycle_id"]), []).append(row)
 
     desired_claims: dict[tuple[str, str, str, str], dict[str, Any]] = {}
+    changed_element_ids: set[str] = set()
+    changed_claim_children: set[str] = set()
     for requirement in requirements.values():
         parent_id = str(requirement["cycle_id"])
         if parent_id not in cycles:
@@ -420,7 +422,13 @@ def synchronize_authority(connection: sqlite3.Connection, *, revision: int) -> d
         else:
             if current is not None:
                 connection.execute("UPDATE lineage_claim SET retired_revision=? WHERE id=?", (revision, current["id"]))
+                changed_claim_children.add(str(current["child_element_id"]))
+                changed_element_ids.update(
+                    (str(current["child_element_id"]), str(current["parent_element_id"]))
+                )
             claim_id = stable_uuid("authority-claim", *key, observed["observed_requirement_digest"])
+            changed_claim_children.add(key[0])
+            changed_element_ids.update((key[0], key[1]))
         selected_claim_ids.add(claim_id)
         claims_by_child.setdefault(key[0], []).append(
             {
@@ -437,6 +445,10 @@ def synchronize_authority(connection: sqlite3.Connection, *, revision: int) -> d
     for row in active_rows:
         if str(row["id"]) not in selected_claim_ids and row["retired_revision"] is None:
             connection.execute("UPDATE lineage_claim SET retired_revision=? WHERE id=?", (revision, row["id"]))
+            changed_claim_children.add(str(row["child_element_id"]))
+            changed_element_ids.update(
+                (str(row["child_element_id"]), str(row["parent_element_id"]))
+            )
 
     desired_elements: list[dict[str, Any]] = []
     for cycle in cycles.values():
@@ -484,6 +496,7 @@ def synchronize_authority(connection: sqlite3.Connection, *, revision: int) -> d
                 "INSERT INTO closure_element VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (item["id"], *values[:-1], revision, revision),
             )
+            changed_element_ids.add(item["id"])
         elif any(
             current[field] != expected for field, expected in (
                 ("role", item["role"]), ("element_kind", item["element_kind"]),
@@ -497,6 +510,7 @@ def synchronize_authority(connection: sqlite3.Connection, *, revision: int) -> d
                 "subject_revision=?,subject_digest=?,envelope_json=?,envelope_digest=?,updated_revision=? WHERE id=?",
                 (*values, item["id"]),
             )
+            changed_element_ids.add(item["id"])
 
     for key, observed in desired_claims.items():
         claim_id = next(item["claim_id"] for item in claims_by_child[key[0]] if item["parent_element_id"] == key[1] and item["parent_requirement_id"] == key[2] and item["relationship_type"] == key[3])
@@ -528,6 +542,7 @@ def synchronize_authority(connection: sqlite3.Connection, *, revision: int) -> d
             current_matches = current is not None and current["subject_digest"] == element["subject_digest"] and int(current["subject_revision"]) == int(element["subject_revision"])
             if current is not None and not current_matches:
                 connection.execute("UPDATE closure_record SET superseded_revision=? WHERE id=?", (revision, current["id"]))
+                changed_element_ids.add(element_id)
                 current = None
             if proven and current is None:
                 connection.execute(
@@ -539,8 +554,20 @@ def synchronize_authority(connection: sqlite3.Connection, *, revision: int) -> d
                     ),
                 )
                 closed_count += 1
+                changed_element_ids.add(element_id)
 
-    rebuilt = rebuild_projection(connection, revision=revision)
+    if changed_claim_children:
+        _refresh_ancestor_paths(
+            connection,
+            revision=revision,
+            changed_child_ids=changed_claim_children,
+        )
+    rebuilt = refresh_projection(
+        connection,
+        revision=revision,
+        changed_element_ids=changed_element_ids,
+        refresh_graph_findings=bool(changed_claim_children),
+    )
     return {
         "applicable": True,
         "element_count": len(desired_elements),
@@ -854,6 +881,64 @@ def evaluate_recursive(connection: sqlite3.Connection) -> dict[str, dict[str, An
     return memo
 
 
+def _refresh_ancestor_paths(
+    connection: sqlite3.Connection,
+    *,
+    revision: int,
+    changed_child_ids: Iterable[str],
+) -> int:
+    """Refresh paths for graph branches affected by changed lineage claims.
+
+    Existing paths identify descendants below a changed child before they are replaced.  Only
+    those descendants can acquire or lose ancestors when that child's parent claims change.
+    """
+    changed = {str(value) for value in changed_child_ids}
+    if not changed:
+        return 0
+    impacted = set(changed)
+    placeholders = ",".join("?" for _ in changed)
+    impacted.update(
+        str(row["descendant_element_id"])
+        for row in connection.execute(
+            f"SELECT DISTINCT descendant_element_id FROM closure_ancestor_path "
+            f"WHERE ancestor_element_id IN ({placeholders})",
+            sorted(changed),
+        )
+    )
+    findings, parents = _graph_findings(connection)
+    for descendant in sorted(impacted):
+        connection.execute(
+            "DELETE FROM closure_ancestor_path WHERE descendant_element_id=?",
+            (descendant,),
+        )
+        counts: dict[str, tuple[int, int]] = {}
+        frontier: list[tuple[str, int, tuple[str, ...]]] = [
+            (parent, 1, (descendant,)) for parent in parents.get(descendant, [])
+        ]
+        while frontier:
+            ancestor, depth, trail = frontier.pop()
+            if ancestor in trail:
+                continue
+            prior = counts.get(ancestor)
+            counts[ancestor] = (
+                depth if prior is None else min(depth, prior[0]),
+                1 if prior is None else prior[1] + 1,
+            )
+            frontier.extend(
+                (parent, depth + 1, (*trail, ancestor))
+                for parent in parents.get(ancestor, [])
+            )
+        for ancestor, (depth, path_count) in sorted(counts.items()):
+            connection.execute(
+                "INSERT INTO closure_ancestor_path VALUES (?, ?, ?, ?, ?, ?)",
+                (
+                    stable_uuid("path", ancestor, descendant), ancestor, descendant,
+                    depth, path_count, revision,
+                ),
+            )
+    return len(findings)
+
+
 def rebuild_projection(connection: sqlite3.Connection, *, revision: int) -> dict[str, Any]:
     """Rebuild paths, rollups, and blockers from envelopes/current claims in one transaction."""
     graph = connection.execute("SELECT * FROM closure_graph_meta WHERE id=1").fetchone()
@@ -913,6 +998,7 @@ def refresh_projection(
     *,
     revision: int,
     changed_element_ids: Iterable[str],
+    refresh_graph_findings: bool = False,
 ) -> dict[str, Any]:
     """Refresh changed elements and their indexed ancestors without walking unrelated subtrees."""
     changed = {str(value) for value in changed_element_ids}
@@ -967,7 +1053,7 @@ def refresh_projection(
     # Recovery reasons are projected into the same public reason-code field as structural graph
     # findings. When a recovery case closes, recompute structural findings once so a historical
     # recovery reason disappears without concealing a real finding that happens to share its code.
-    refresh_static_findings = any(
+    refresh_static_findings = refresh_graph_findings or any(
         (set(findings_by_element.get(element_id, [])) & recovery_history.get(element_id, set()))
         - recovery_reasons.get(element_id, set())
         for element_id in affected
