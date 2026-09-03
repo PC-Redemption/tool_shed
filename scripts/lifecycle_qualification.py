@@ -712,16 +712,50 @@ def evaluate_qualification_namespace(
     ]
     latest = transport.get("latest_payload") or {}
     inventory = latest.get("work_inventory") or {}
-    expected = {str(item.get("artifact_id")) for item in inventory.get("artifacts", [])}
-    hosted = {
-        str(item.get("artifact_external_id"))
+    expected_items = inventory.get("artifacts", [])
+    expected_by_id = {str(item.get("artifact_id")): item for item in expected_items}
+    hosted_items = [
+        item
         for item in dashboard.get("work_artifacts", [])
         if item.get("project_external_id") == project_id and item.get("instance_external_id") == instance_id
-    }
+    ]
+    hosted_by_id = {str(item.get("artifact_external_id")): item for item in hosted_items}
+    expected = set(expected_by_id)
+    hosted = set(hosted_by_id)
+    field_errors: list[str] = []
+    for artifact_id in sorted(expected & hosted):
+        source = expected_by_id[artifact_id]
+        projection = hosted_by_id[artifact_id]
+        for field in (
+            "visible_id", "artifact_type", "title", "document_lifecycle", "outcome_lifecycle",
+            "outcome_disposition", "reconciliation_state", "parent_ids", "produces_ids", "closure_status",
+        ):
+            source_value = source.get(field)
+            hosted_value = projection.get(field)
+            if field == "closure_status":
+                source_value = _canonical_closure(source_value)
+                hosted_value = _canonical_closure(hosted_value)
+            if source_value != hosted_value:
+                field_errors.append(f"{artifact_id}:{field}")
+    hosted_instance = _hosted_instance(dashboard, project_id, instance_id)
+    receipt_keys = sorted(
+        str(item.get("idempotency_key"))
+        for item in dashboard.get("ingest_receipts", [])
+        if item.get("instance_external_id") == instance_id
+    )
+    accepted_keys = sorted(str(item) for item in transport.get("accepted_idempotency_keys", []))
     browser_runs = {str(item.get("run_id")) for item in browser.get("qualification_runs", [])}
     operational_names = set(browser.get("project_names") or [])
     run = runs[0] if len(runs) == 1 else {}
     return [
+        {
+            "id": f"{prefix}-TRANSPORT-IDENTITY",
+            "passed": transport.get("run_id") == run_id
+            and str(transport.get("project_id")) == project_id
+            and str(transport.get("instance_id")) == instance_id,
+            "expected": [run_id, project_id, instance_id],
+            "actual": [transport.get("run_id"), transport.get("project_id"), transport.get("instance_id")],
+        },
         {
             "id": f"{prefix}-QUALIFICATION-ROOT-EXACT",
             "passed": len(runs) == 1
@@ -754,6 +788,27 @@ def evaluate_qualification_namespace(
             "passed": expected == hosted and len(expected) == int(inventory.get("total_count", -1)),
             "expected": sorted(expected),
             "actual": sorted(hosted),
+        },
+        {
+            "id": f"{prefix}-HOSTED-FIELD-PARITY",
+            "passed": not field_errors and expected == hosted,
+            "expected": [],
+            "actual": field_errors[:40],
+        },
+        {
+            "id": f"{prefix}-HOSTED-CURRENT-SEQUENCE",
+            "passed": hosted_instance is not None
+            and hosted_instance.get("last_sequence") == latest.get("sequence")
+            and hosted_instance.get("work_inventory_sequence") == latest.get("sequence")
+            and hosted_instance.get("work_inventory_total") == inventory.get("total_count"),
+            "expected": [latest.get("sequence"), inventory.get("total_count")],
+            "actual": None if hosted_instance is None else [hosted_instance.get("last_sequence"), hosted_instance.get("work_inventory_total")],
+        },
+        {
+            "id": f"{prefix}-RECEIPTS-EXACT-AND-UNIQUE",
+            "passed": receipt_keys == accepted_keys and len(receipt_keys) == len(set(receipt_keys)),
+            "expected": accepted_keys,
+            "actual": receipt_keys,
         },
         {
             "id": f"{prefix}-OPERATIONAL-ABSENCE",

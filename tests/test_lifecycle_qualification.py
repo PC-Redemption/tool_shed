@@ -190,7 +190,9 @@ class LifecycleQualificationTests(unittest.TestCase):
             "project_name": "qh009-qualification",
             "credential_scope": "qualification:write",
             "qualification_run_id": manifest["run_id"],
+            "accepted_idempotency_keys": ["receipt-one"],
             "latest_payload": {
+                "sequence": 4,
                 "work_inventory": {
                     "total_count": 1,
                     "artifacts": [{"artifact_id": artifact_id}],
@@ -208,12 +210,19 @@ class LifecycleQualificationTests(unittest.TestCase):
                 "project_ids": [project_id],
             }],
             "projects": [{"external_id": project_id, "qualification_run_id": manifest["run_id"]}],
-            "instances": [{"external_id": instance_id, "project_external_id": project_id}],
+            "instances": [{
+                "external_id": instance_id,
+                "project_external_id": project_id,
+                "last_sequence": 4,
+                "work_inventory_sequence": 4,
+                "work_inventory_total": 1,
+            }],
             "work_artifacts": [{
                 "artifact_external_id": artifact_id,
                 "project_external_id": project_id,
                 "instance_external_id": instance_id,
             }],
+            "ingest_receipts": [{"instance_external_id": instance_id, "idempotency_key": "receipt-one"}],
         }
         browser = {
             "project_names": ["ts_linux_test_bed", "ts_windows_test_bed"],
