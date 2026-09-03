@@ -7,6 +7,7 @@ import sys
 import tempfile
 import unittest
 import uuid
+from unittest import mock
 from pathlib import Path
 
 
@@ -45,7 +46,8 @@ class LifecycleScaleQualificationTests(unittest.TestCase):
                 workspace, migration, expected_token=migration["manifest_token"], project_binding=binding
             )
             output = workspace / ".tool-shed/qualification/scale/result.json"
-            result = scale.run(
+            with mock.patch.object(scale.dashboard_reporter, "safety_pass", return_value={"status": "delivered", "pending_events": 0, "writes_performed": True}):
+                result = scale.run(
                 workspace,
                 project_binding=binding,
                 candidate_commit="a" * 40,
@@ -63,7 +65,8 @@ class LifecycleScaleQualificationTests(unittest.TestCase):
             self.assertEqual(result["semantic"]["open_cycles"], 0)
             self.assertEqual(result["semantic"]["projection_mismatch_count"], 0)
             first_revision = document_store.audit(workspace)["current_revision"]
-            repeated = scale.run(
+            with mock.patch.object(scale.dashboard_reporter, "safety_pass", return_value={"status": "delivered", "pending_events": 0, "writes_performed": True}):
+                repeated = scale.run(
                 workspace,
                 project_binding=binding,
                 candidate_commit="a" * 40,

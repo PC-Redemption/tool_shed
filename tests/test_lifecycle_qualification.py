@@ -10,6 +10,7 @@ import tempfile
 import unittest
 import uuid
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -422,6 +423,42 @@ class LifecycleQualificationTests(unittest.TestCase):
             by_id = {item["id"]: item for item in driven["checks"]}
             self.assertTrue(by_id["QH002-CLOSURE-PROJECTION-PARITY"]["passed"])
             self.assertTrue(all(item["passed"] for item in driven["checks"]))
+
+    def test_qh002_driver_resumes_after_terminal_transition_before_document_completion(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace, project_id = self.local_fixture(Path(directory))
+            scenario_target = workspace / "tool_shed/schemas/lifecycle-qualification/v1/scenarios/QH-002.json"
+            scenario_target.parent.mkdir(parents=True)
+            shutil.copy2(ROOT / "schemas/lifecycle-qualification/v1/scenarios/QH-002.json", scenario_target)
+            binding = binding_token(workspace, operation="hybrid-state")
+            hybrid_state.initialize(workspace, project_binding=binding)
+            document_store.migrate(workspace, project_binding=binding)
+            migration = closure_lineage.prepare_migration(workspace)
+            closure_lineage.apply_migration(
+                workspace, migration, expected_token=migration["manifest_token"], project_binding=binding
+            )
+            manifest = qualification.seal_manifest(
+                self.scenario("QH-002"), candidate_commit="a" * 40, candidate_version="0.46.0",
+                platform_name="linux-x86_64", project_id=project_id, instance_id="fixture-instance",
+                serial=77, seed=0, target_environment="development",
+                baseline_digest=document_store.audit(workspace)["domain_digest"],
+            )
+            original = document_store.set_lifecycle
+            calls = 0
+
+            def interrupt(*args: object, **kwargs: object) -> dict[str, object]:
+                nonlocal calls
+                calls += 1
+                if calls == 1:
+                    raise KeyboardInterrupt("sealed interruption")
+                return original(*args, **kwargs)
+
+            with mock.patch.object(document_store, "set_lifecycle", side_effect=interrupt):
+                with self.assertRaises(KeyboardInterrupt):
+                    qualification.drive_qh002(workspace, manifest, project_binding=binding)
+            resumed = qualification.drive_qh002(workspace, manifest, project_binding=binding)
+            self.assertTrue(resumed["resumed"])
+            self.assertTrue(all(item["passed"] for item in resumed["checks"]), resumed)
 
     def test_m2_local_scenario_contracts_are_sealable(self) -> None:
         for scenario_id in ("QH-003", "QH-004", "QH-005", "QH-006", "QH-007", "QH-008", "QH-009", "QH-010"):

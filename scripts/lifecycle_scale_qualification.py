@@ -13,13 +13,16 @@ import json
 import math
 import os
 import sqlite3
+import tempfile
 import time
 from pathlib import Path
 from typing import Any, Sequence
 
 import document_store
+import dashboard_reporter
 import hybrid_state
 import lifecycle_qualification as qualification
+from project_identity import binding_token
 
 
 APPEND_ONLY_TABLES = (
@@ -186,29 +189,46 @@ def run(
     if actual_state != expected_state:
         raise ScaleError("existing scale state belongs to different immutable inputs")
     scenario = qualification.load_json(qualification.scenario_path("QH-002"), label="scenario")
-    for offset in range(len(state["runs"]), lifecycle_count):
-        serial = serial_start + offset
-        baseline = document_store.audit(workspace)["domain_digest"]
-        manifest = qualification.seal_manifest(
-            scenario,
-            candidate_commit=candidate_commit,
-            candidate_version=candidate_version,
-            platform_name=platform_name,
-            project_id=project_id,
-            instance_id=instance_id,
-            serial=serial,
-            seed=0,
-            target_environment="development",
-            baseline_digest=baseline,
-        )
-        started = time.perf_counter()
-        driven = qualification.drive_qh002(workspace, manifest, project_binding=project_binding)
-        elapsed = (time.perf_counter() - started) * 1000
-        if not all(item.get("passed") for item in driven["checks"]):
-            raise ScaleError(f"QH-002 serial {serial} failed semantic checks")
-        state["runs"].append({"serial": serial, "run_id": manifest["run_id"], "manifest_digest": manifest["manifest_digest"]})
-        state["elapsed_ms"].append(elapsed)
-        _write(state_path, state)
+    prior_state_root = os.environ.get("TOOL_SHED_STATE_ROOT")
+    isolated_reporter_state = Path(tempfile.gettempdir()) / "tool-shed-scale-reporter" / qualification.digest(expected_state)[:24]
+    os.environ["TOOL_SHED_STATE_ROOT"] = str(isolated_reporter_state)
+    try:
+        for offset in range(len(state["runs"]), lifecycle_count):
+            serial = serial_start + offset
+            manifest = state.get("pending_manifest")
+            if manifest is None:
+                baseline = document_store.audit(workspace)["domain_digest"]
+                manifest = qualification.seal_manifest(
+                    scenario,
+                    candidate_commit=candidate_commit,
+                    candidate_version=candidate_version,
+                    platform_name=platform_name,
+                    project_id=project_id,
+                    instance_id=instance_id,
+                    serial=serial,
+                    seed=0,
+                    target_environment="development",
+                    baseline_digest=baseline,
+                )
+                state["pending_manifest"] = manifest
+                _write(state_path, state)
+            if int(manifest["run"]["serial"]) != serial:
+                raise ScaleError("pending manifest serial does not match the next scale serial")
+            started = time.perf_counter()
+            driven = qualification.drive_qh002(workspace, manifest, project_binding=project_binding)
+            elapsed = (time.perf_counter() - started) * 1000
+            if not all(item.get("passed") for item in driven["checks"]):
+                raise ScaleError(f"QH-002 serial {serial} failed semantic checks")
+            state["runs"].append({"serial": serial, "run_id": manifest["run_id"], "manifest_digest": manifest["manifest_digest"], "resumed": bool(driven.get("resumed"))})
+            state["elapsed_ms"].append(elapsed)
+            state.pop("pending_manifest", None)
+            _write(state_path, state)
+        mutation_ms = _probe_mutations(workspace, project_binding, run_key=f"{candidate_commit[:12]}-{serial_start}-{lifecycle_count}", samples=mutation_samples)
+    finally:
+        if prior_state_root is None:
+            os.environ.pop("TOOL_SHED_STATE_ROOT", None)
+        else:
+            os.environ["TOOL_SHED_STATE_ROOT"] = prior_state_root
 
     run_ids = [str(item["run_id"]) for item in state["runs"]]
     local = _run_owned_state(database, run_ids)
@@ -219,7 +239,10 @@ def run(
         mismatches = qualification.compare_closure_projection(connection, oracle)
         recovery_open = int(connection.execute("SELECT COUNT(*) FROM recovery_case WHERE state='open'").fetchone()[0])
         graph_revision = int(connection.execute("SELECT graph_revision FROM closure_graph_meta WHERE id=1").fetchone()[0])
-    mutation_ms = _probe_mutations(workspace, project_binding, run_key=f"{candidate_commit[:12]}-{serial_start}-{lifecycle_count}", samples=mutation_samples)
+    reporter = dashboard_reporter.safety_pass(
+        workspace,
+        project_binding=binding_token(workspace, operation="dashboard-report"),
+    )
     before_counts = state["baseline_counts"]
     after_counts = _table_counts(database)
     history_delta = _history_count(after_counts) - _history_count(before_counts)
@@ -275,12 +298,15 @@ def run(
         "graph_revision": graph_revision,
         "query_plans": _query_plans(database),
         "resumed_runs": sum(bool(item.get("resumed")) for item in state.get("runs", [])),
+        "reporter": reporter,
     }
     result["verdict"] = "PASS" if (
         result["semantic"]["passed"]
         and result["history"]["passed"]
         and result["timing_ms"]["guarded_mutation_passed"]
         and result["timing_ms"]["truth_vector_passed"]
+        and reporter.get("status") == "delivered"
+        and reporter.get("pending_events") == 0
     ) else "PRODUCT-FAIL"
     result["result_digest"] = qualification.digest(result)
     _write(output, result)

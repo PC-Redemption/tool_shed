@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
 import json
 import os
@@ -901,6 +902,118 @@ def validate_result(value: dict[str, Any]) -> None:
         raise QualificationError("qualification result digest is invalid")
 
 
+def _resume_qh002(
+    workspace: Path,
+    manifest: dict[str, Any],
+    existing: dict[str, Any],
+    *,
+    project_binding: str,
+    runtime: Path,
+) -> dict[str, Any]:
+    """Resume QH-002 after all four documents exist and resolve writes from authority."""
+    import document_store  # type: ignore
+    import hybrid_state  # type: ignore
+    import outcome_loop  # type: ignore
+
+    run_id = str(manifest["run_id"])
+    expected_types = ("idea-brief", "project-map", "program-roadmap", "campaign")
+    by_type: dict[str, list[dict[str, Any]]] = {}
+    for item in existing["documents"]:
+        by_type.setdefault(str(item["type"]), []).append(item)
+    if any(len(by_type.get(name, [])) != 1 for name in expected_types):
+        raise QualificationError(
+            "partial QH-002 resume requires exactly one existing document of each expected type"
+        )
+    documents = [by_type[name][0] for name in expected_types]
+    cycle_by_artifact = {str(item["origin_artifact_id"]): item for item in existing["cycles"]}
+    if any(str(item["artifact_id"]) not in cycle_by_artifact for item in documents):
+        raise QualificationError("partial QH-002 resume found a document without its outcome cycle")
+    cycles = [str(cycle_by_artifact[str(item["artifact_id"])]["id"]) for item in documents]
+
+    for parent, child in zip(documents, documents[1:]):
+        document_store.relate(
+            workspace, project_binding=project_binding, source=parent["visible_id"],
+            relation="produces", target=child["visible_id"], actor="lifecycle-qualification",
+        )
+        document_store.relate(
+            workspace, project_binding=project_binding, source=child["visible_id"],
+            relation="outcome-parent", target=parent["visible_id"], actor="lifecycle-qualification",
+        )
+
+    evidence_path = runtime / "driver-evidence.json"
+    if not evidence_path.is_file():
+        _write_json(
+            evidence_path,
+            {
+                "schema_version": 1,
+                "kind": "tool-shed-qualification-driver-evidence",
+                "run_id": run_id,
+                "status": "passed",
+                "manifest_digest": manifest["manifest_digest"],
+            },
+        )
+    with contextlib.closing(hybrid_state.connect(hybrid_state.database_path(workspace), writable=False)) as connection:
+        direct = connection.execute(
+            "SELECT id FROM cycle WHERE kind='direct-work' AND accepted_outcome=? ORDER BY opened_at,id",
+            (f"Produce passing governed work evidence for {run_id}",),
+        ).fetchall()
+    if len(direct) > 1:
+        raise QualificationError("partial QH-002 resume found duplicate governed result cycles")
+    if direct:
+        supporting = str(direct[0]["id"])
+    else:
+        installed_scenario = workspace / "tool_shed/schemas/lifecycle-qualification/v1/scenarios/QH-002.json"
+        selected_scenario = installed_scenario if installed_scenario.is_file() else scenario_path("QH-002")
+        direct_manifest = outcome_loop.plan_direct_result(
+            workspace,
+            origin_summary=f"QH-002 governed work evidence {run_id}",
+            accepted_outcome=f"Produce passing governed work evidence for {run_id}",
+            product_truth=[selected_scenario.relative_to(workspace).as_posix()],
+            evidence_paths=[evidence_path.relative_to(workspace).as_posix()],
+            disposition="satisfied",
+            authorization_ref="QH-002 development fixture manifest",
+            parent_cycle_id=cycles[-1],
+        )
+        supporting = str(
+            outcome_loop.apply_manifest(
+                workspace, direct_manifest,
+                expected_token=direct_manifest["manifest_token"],
+                project_binding=project_binding,
+            )["result"]["cycle_id"]
+        )
+
+    for index in range(len(cycles) - 1, -1, -1):
+        with contextlib.closing(hybrid_state.connect(hybrid_state.database_path(workspace), writable=False)) as connection:
+            state = str(connection.execute("SELECT lifecycle_state FROM cycle WHERE id=?", (cycles[index],)).fetchone()[0])
+        if state != "terminal":
+            transition = outcome_loop.prepare_transition(
+                workspace, cycles[index], lifecycle_state="terminal", disposition="satisfied",
+                reconciliation_state="reconciled",
+                summary=f"QH-002 checkpoint closed {documents[index]['visible_id']}",
+                authorization_ref="QH-002 development fixture manifest",
+                supporting_cycle_ids=[supporting], residual_work=[],
+            )
+            outcome_loop.apply_transition(
+                workspace, transition,
+                expected_token=transition["manifest_token"], project_binding=project_binding,
+            )
+        current = document_store.show(workspace, documents[index]["visible_id"])
+        if current["lifecycle"] != "completed":
+            document_store.set_lifecycle(
+                workspace, project_binding=project_binding,
+                identity=documents[index]["visible_id"], lifecycle="completed",
+                expected_revision=current["document_revision"], actor="lifecycle-qualification",
+                reason="QH-002 terminal reconciled outcome",
+            )
+        supporting = cycles[index]
+
+    truth = observe_local(hybrid_state.database_path(workspace), run_id)
+    checks = evaluate_qh002(load_json(scenario_path("QH-002"), label="scenario"), truth)
+    if not all(item["passed"] for item in checks):
+        raise QualificationError("partial QH-002 resume did not reach a verified terminal checkpoint")
+    return {"run_id": run_id, "resumed": True, "truth": truth, "checks": checks}
+
+
 def drive_qh002(workspace: Path, manifest: dict[str, Any], *, project_binding: str) -> dict[str, Any]:
     """Drive one append-only Idea→Map→PRM→Campaign lifecycle through guarded services."""
     validate_manifest(manifest)
@@ -926,7 +1039,10 @@ def drive_qh002(workspace: Path, manifest: dict[str, Any], *, project_binding: s
         checks = evaluate_qh002(load_json(scenario_path("QH-002"), label="scenario"), existing)
         if all(item["passed"] for item in checks):
             return {"run_id": run_id, "resumed": True, "truth": existing, "checks": checks}
-        raise QualificationError("run identity already exists but is not at a verified terminal checkpoint")
+        return _resume_qh002(
+            workspace, manifest, existing,
+            project_binding=project_binding, runtime=runtime,
+        )
 
     def log(action: str, state: str, payload: object) -> None:
         append_journal(journal, {"run_id": run_id, "action": action, "state": state, "logical_tick": len(journal.read_text(encoding="utf-8").splitlines()) + 1 if journal.exists() else 1, "idempotency_key": digest([run_id, action]), "payload_digest": digest(payload)})
