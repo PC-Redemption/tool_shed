@@ -4,6 +4,7 @@ import csv
 import io
 import json
 import time
+import zlib
 from datetime import timedelta
 from urllib.parse import urlencode
 
@@ -44,11 +45,34 @@ from .services import (
 )
 
 
+MAX_REQUEST_BYTES = 262_144
+MAX_DECOMPRESSED_REQUEST_BYTES = 2_097_152
+
+
 def _payload(request: HttpRequest) -> dict:
-    if len(request.body) > 262_144:
+    wire_body = request.body
+    if len(wire_body) > MAX_REQUEST_BYTES:
         raise ContractError("request body exceeds 256 KiB")
+    encoding = request.headers.get("Content-Encoding", "").strip().lower()
+    if encoding:
+        if encoding != "gzip":
+            raise ContractError("request content encoding is unsupported")
+        try:
+            decoder = zlib.decompressobj(16 + zlib.MAX_WBITS)
+            body = decoder.decompress(wire_body, MAX_DECOMPRESSED_REQUEST_BYTES + 1)
+            if len(body) > MAX_DECOMPRESSED_REQUEST_BYTES or decoder.unconsumed_tail:
+                raise ContractError("decompressed request body exceeds 2 MiB")
+            body += decoder.flush(MAX_DECOMPRESSED_REQUEST_BYTES + 1 - len(body))
+        except zlib.error as error:
+            raise ContractError("request body is not valid gzip") from error
+        if len(body) > MAX_DECOMPRESSED_REQUEST_BYTES:
+            raise ContractError("decompressed request body exceeds 2 MiB")
+        if not decoder.eof or decoder.unused_data:
+            raise ContractError("request body is not one complete gzip member")
+    else:
+        body = wire_body
     try:
-        value = json.loads(request.body or b"{}")
+        value = json.loads(body or b"{}")
     except json.JSONDecodeError as error:
         raise ContractError("request body must be JSON") from error
     if not isinstance(value, dict):

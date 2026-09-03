@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import gzip
 import io
 import json
 import os
@@ -91,6 +92,20 @@ class DashboardReporterTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(dashboard_reporter.DashboardReporterError, "unsupported"):
             dashboard_reporter.report_endpoint({**operational, "credential_scope": "admin"})
+
+    def test_large_request_is_deterministically_gzip_encoded(self) -> None:
+        response = mock.MagicMock()
+        response.__enter__.return_value.read.return_value = b'{"status":"accepted"}'
+        with mock.patch.object(dashboard_reporter.urllib.request, "urlopen", return_value=response) as opened:
+            result = dashboard_reporter._request(
+                "https://dashboard.invalid/api/v1/reports",
+                payload={"content": "a" * (dashboard_reporter.MAX_REQUEST_BYTES + 1)},
+            )
+        request = opened.call_args.args[0]
+        self.assertEqual(result["status"], "accepted")
+        self.assertEqual(request.get_header("Content-encoding"), "gzip")
+        self.assertGreater(len(gzip.decompress(request.data)), dashboard_reporter.MAX_REQUEST_BYTES)
+        self.assertLessEqual(len(request.data), dashboard_reporter.MAX_REQUEST_BYTES)
 
     def test_retry_preserves_event_and_releases_singleton(self) -> None:
         with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import gzip
 import json
 import os
 import uuid
@@ -19,7 +20,7 @@ from django.contrib.auth import get_user_model  # noqa: E402
 from django.core.management import call_command  # noqa: E402
 from django.core.management.base import CommandError  # noqa: E402
 from django.db import IntegrityError, transaction  # noqa: E402
-from django.test import TestCase, override_settings  # noqa: E402
+from django.test import RequestFactory, TestCase, override_settings  # noqa: E402
 from django.urls import reverse  # noqa: E402
 from django.utils import timezone  # noqa: E402
 
@@ -48,6 +49,7 @@ from dashboard.fleet.services import (  # noqa: E402
     purge_qualification_run,
     qualification_purge_preview,
 )
+from dashboard.fleet.views import _payload  # noqa: E402
 
 call_command("migrate", verbosity=0)
 
@@ -57,6 +59,26 @@ class DashboardApplicationTests(TestCase):
         self.project_id = uuid.uuid4()
         self.instance_id = uuid.uuid4()
         self.epoch = uuid.uuid4()
+
+    def test_payload_accepts_bounded_gzip_and_rejects_expansion_bomb(self) -> None:
+        factory = RequestFactory()
+        content = {"value": "a" * 300_000}
+        request = factory.post(
+            "/",
+            data=gzip.compress(json.dumps(content).encode("utf-8"), mtime=0),
+            content_type="application/json",
+            HTTP_CONTENT_ENCODING="gzip",
+        )
+        self.assertEqual(_payload(request), content)
+
+        oversized = factory.post(
+            "/",
+            data=gzip.compress(b'a' * 2_097_153, mtime=0),
+            content_type="application/json",
+            HTTP_CONTENT_ENCODING="gzip",
+        )
+        with self.assertRaisesRegex(ContractError, "decompressed request body exceeds 2 MiB"):
+            _payload(oversized)
 
     def enrollment_payload(self) -> dict[str, object]:
         return {

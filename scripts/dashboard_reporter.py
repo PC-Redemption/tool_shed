@@ -9,6 +9,7 @@ _runtime_sys.dont_write_bytecode = True
 
 import argparse
 import contextlib
+import gzip
 import hashlib
 import html
 import json
@@ -45,6 +46,7 @@ SCHEMA_VERSION = 1
 REPORT_SCHEMA_VERSION = 7
 OUTBOX_RELATIVE = Path(".tool-shed/dashboard/outbox.sqlite3")
 MAX_RESPONSE_BYTES = 65_536
+MAX_REQUEST_BYTES = 262_144
 LOCK_SECONDS = 30
 PROCESS_LOCK_SECONDS = 120
 LAUNCH_LOCK_SECONDS = 30
@@ -198,11 +200,17 @@ def report_endpoint(state: dict[str, Any]) -> str:
 
 def _request(url: str, *, payload: dict[str, Any], headers: dict[str, str] | None = None) -> dict[str, Any]:
     body = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    request_headers = {"Content-Type": "application/json", "Accept": "application/json", **(headers or {})}
+    if len(body) > MAX_REQUEST_BYTES:
+        body = gzip.compress(body, mtime=0)
+        if len(body) > MAX_REQUEST_BYTES:
+            raise DashboardReporterError("compressed dashboard request exceeded 256 KiB")
+        request_headers["Content-Encoding"] = "gzip"
     request = urllib.request.Request(
         url,
         data=body,
         method="POST",
-        headers={"Content-Type": "application/json", "Accept": "application/json", **(headers or {})},
+        headers=request_headers,
     )
     try:
         with urllib.request.urlopen(request, timeout=15) as response:
