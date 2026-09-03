@@ -1,0 +1,28 @@
+# Campaign: Prove Reporter Hosted and Browser Truth
+
+Status: completed
+Type: campaign
+Updated: 2026-09-03
+Campaign ID: prove-reporter-hosted-and-browser-truth
+Roadmap Document: PRM-0038
+Milestone: M3-REPORTER-HOSTED-UI-TRUTH
+Requested Endpoint: work2
+
+## Outcome
+
+Complete QH-001, QH-007, QH-008, and hosted QH-010 across immutable reporter outbox and sequence state, hosted ingestion and projections, and real-browser inventory, closure/blocker, attention, freshness, filter, and navigation claims.
+
+## Completion Gate
+
+The exact candidate passes the deterministic hosted corpus against a dedicated ephemeral development database from both disposable OS fixtures. Interrupted, resumed, reordered, duplicated, and replayed reports converge without silent loss, fabricated rows, phantom or duplicate identity, stale-current presentation, wrong counts or filters, broken links, or invisible unresolved ancestry. The three development lanes receive the candidate; production remains unchanged.
+
+## Boundary
+
+A shared hosted qualification namespace is M4. Work3 freezing, push, publication, and production deployment are outside this campaign.
+
+## Completion Evidence
+
+Exact candidate `8af4a0c91112fc935b2d6cd1275bb585e8e09f47` passed the clean release profile and the
+QH-001, cross-platform QH-007, hosted QH-008, and hosted QH-010 matrix recorded in
+`work/evidence/evidence-lifecycle-qualification-m3.md`. The web, Linux, and Windows development
+lanes serve or contain that candidate. Production was not changed.
