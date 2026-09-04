@@ -1,0 +1,237 @@
+# Program Roadmap: Deterministic Tool Shed Lifecycle and Database Truth Qualification Harness
+
+Status: approved
+Type: program-roadmap
+Updated: 2026-09-04
+Next Action: `ts:work3 IDEA-0020` to execute M6 candidate-bound qualification
+Roadmap ID: deterministic-tool-shed-lifecycle-and-database-truth-qualification-harness
+Roadmap Revision: 3
+Source Idea: IDEA-0020
+Source Project Map: MAP-0027
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 8
+Reviewed Body SHA256: 9fe7a6342904a85c04fdbacff4f02b1e3d5ce72a1f2baf223bf71f1ab29d085d
+
+## Program Outcome
+
+Tool Shed has a deterministic, low-reasoning, database-heavy qualification harness that exercises
+real Idea-to-PRM-to-governed-work lifecycles and proves exact agreement among local authority,
+reporter transport, hosted projections, and operator presentation. It detects phantom, missing,
+duplicate, stale, unreconciled, orphaned, and falsely closed state; retains bounded replay evidence;
+and qualifies one exact candidate across hosted-development, Linux, and Windows before any separate
+production promotion.
+
+## M1-CONTRACT-AND-FOUNDATION — Freeze the oracle and prove the first vertical slice
+
+Status: completed
+Required Endpoint: Work2 on development source and disposable Linux, Windows, and hosted fixtures
+Depends on: none
+
+Outcome: Freeze versioned scenario, sealed-manifest, append-only-journal, compact-result, run-ID,
+checkpoint-selector, truth-vector, verdict, and replay contracts. Implement an independent
+lineage/closure oracle that cannot import product rollups. Prove `QH-001` exact baseline inventory,
+including the phantom-seed regression, and `QH-002` one complete lifecycle on both operating-system
+fixtures through the hosted operator surface.
+
+Gates:
+
+- `G1-RUN-CONTRACT-AND-INDEPENDENT-ORACLE`
+- Foundation portion of `G2-LOCAL-LIFECYCLE-CORPUS`
+- Baseline portion of `G3-REPORTER-HOSTED-AND-UI-TRUTH`
+
+Candidate campaign: `build-qualification-contract-and-first-lifecycle-slice`.
+
+Completion evidence: `work/evidence/evidence-lifecycle-qualification-m1.md`. Exact candidate
+`e7b2b28516d5fbe68df452510c73d6155b80171f` passed QH-001 and QH-002 across hosted development,
+Linux, and Windows. The candidate is registered for later production promotion; production was not
+changed by this milestone.
+
+## M2-LOCAL-LIFECYCLE-CORPUS — Complete deterministic authority and recovery coverage
+
+Status: completed
+Required Endpoint: Work2 on development source and disposable Linux and Windows fixtures
+Depends on: M1-CONTRACT-AND-FOUNDATION
+
+Outcome: Implement `QH-003` through `QH-006` plus local `QH-008`, `QH-009`, and `QH-010`. Prove
+branched and shared closure ordering, revision-invalidated proof, interrupted reconciliation,
+idempotent replay, checkpoint/rebuild parity, isolated malformed-graph findings, and independent-
+oracle parity. Restore sanitized, structurally faithful file-owned and Hybrid instance snapshots
+into the exact disposable Linux and Windows fixtures, upgrade them in place, and prove stable
+identity, preserved history, recoverable lineage reconstruction, explicit unresolved ancestry, and
+zero invisible orphan or normal-run residue.
+
+Gate:
+
+- Remaining `G2-LOCAL-LIFECYCLE-CORPUS`
+
+Candidate campaign: `complete-local-lifecycle-and-recovery-corpus`.
+
+Completion evidence: `work/evidence/evidence-lifecycle-qualification-m2.md`. Exact candidate
+`dd0081438454a16f9ec539350f47fa68fdf74540` passed QH-003 through QH-006 and local QH-008,
+QH-009, and QH-010 on both disposable OS fixtures, including idempotent replay. G2 local corpus
+coverage is complete; production was not changed.
+
+## M3-REPORTER-HOSTED-UI-TRUTH — Prove cross-layer convergence and presentation
+
+Status: completed
+Required Endpoint: Work2 on split hosted-development, Linux, and Windows targets
+Depends on: M2-LOCAL-LIFECYCLE-CORPUS
+
+Outcome: Complete `QH-001`, `QH-007`, `QH-008`, and the hosted half of `QH-010` across immutable
+outbox and sequence state, ingestion and hosted base rows, hosted projections, API/view models, and
+real-browser inventory, detail closure/blockers, and attention/freshness. For existing-instance
+intake, use a dedicated ephemeral development web database; interrupt, resume, reorder, duplicate,
+and replay reports and prove exact source-to-hosted set equality. Reject silent loss or fabrication,
+phantom or duplicate identities, stale data presented as current, wrong counts or filters, broken
+links, invisible orphans, and every unexpected row.
+
+Gate:
+
+- `G3-REPORTER-HOSTED-AND-UI-TRUTH`
+
+Candidate campaign: `prove-reporter-hosted-and-browser-truth`.
+
+Completion evidence: `work/evidence/evidence-lifecycle-qualification-m3.md`. Exact candidate
+`8af4a0c91112fc935b2d6cd1275bb585e8e09f47` passed QH-001 and cross-platform QH-007, hosted
+QH-008, and hosted QH-010 against shared and dedicated ephemeral development databases. G3
+reporter, hosted, and browser truth coverage is complete; production was not changed.
+
+## M4-DEVELOPMENT-FAULT-NAMESPACE — Contain hosted destructive qualification
+
+Status: completed
+Required Endpoint: Work2 on hosted-development and isolated database fixtures
+Depends on: M3-REPORTER-HOSTED-UI-TRUTH
+
+Outcome: Add a purpose-bound qualification-run root, manifest-owned descendants,
+`qualification:write` credentials, application and database development-only enforcement,
+operational-view exclusion, a separate authenticated Qualification Runs view, expiry without
+orphaning, preview-bound exact purge, refusal cases, and retained tombstones. Only after those
+controls pass, extend `QH-009` and structurally faithful `QH-010` replays into the shared hosted
+development qualification namespace without operational credentials.
+
+Gate:
+
+- `G4-DEVELOPMENT-ONLY-FAULT-NAMESPACE`
+
+Candidate campaign: `build-and-qualify-hosted-fault-namespace`.
+
+Completion evidence: `work/evidence/evidence-lifecycle-qualification-m4.md`. Exact candidate
+`3e3771d9d1c7a44afdd430278eb7de1a50a42850` passed the 546-test clean release profile and all
+66 cross-platform QH-009/QH-010 namespace checks. Development-only credential scope, operational
+absence, authenticated qualification visibility, expiry, stale-preview refusal, exact purge, and
+retained tombstones are proven; production was not changed.
+
+## M5-EVIDENCE-SCALE-AND-ROUTE-SMOKE — Prove repeatability under accumulated state
+
+Status: completed
+Required Endpoint: Work2 on split hosted-development, Linux, and Windows targets
+Depends on: M4-DEVELOPMENT-FAULT-NAMESPACE
+
+Outcome: Enforce bounded redacted evidence, verdict-specific retention, replay protection, storage
+caps, and signature-preserving deterministic minimization. Accumulate and retain 100 closed
+lifecycles per platform; pass semantic parity before provisional absolute and same-target
+performance gates; measure the 1,000-lifecycle and 100,000-history-row tier. Run one fixed
+low-reasoning `ts:` lifecycle per platform and prove artifact cardinality, provenance, complete gate
+transfer, lineage, authority, revision accounting, resume idempotency, final clean tails, and zero
+extra local or hosted rows.
+
+Gates:
+
+- `G5-EVIDENCE-MINIMIZATION-AND-PERFORMANCE`
+- Route-smoke portion of `G6-ROUTE-SMOKE-AND-CANDIDATE-BOUND-QUALIFICATION`
+
+Candidate campaign: `qualify-evidence-scale-minimization-and-route-smoke`.
+
+Completion evidence: `EVD-0082`. The retained 100-lifecycle corpora passed exact semantic parity,
+more than 100,000 append-only history rows per platform, zero recovery/open-tail/projection drift,
+and unchanged provisional 1,000 ms truth-vector and guarded-mutation ceilings on Linux and Windows.
+Bounded redaction, verdict-specific retention, replay protection, deterministic minimization, the
+25,000-element/100,000-edge/depth-128 benchmark, fixed low-reasoning route smoke, and exact hosted
+development inventory all passed. Work2 candidate `3cbbb1225646fc324f0eb424466ad662835fa5de`
+is deployed only to development; production was not changed.
+
+## M6-WORK3-CANDIDATE-QUALIFICATION — Freeze and qualify one exact development candidate
+
+Status: pending
+Required Endpoint: Work3
+Depends on: M5-EVIDENCE-SCALE-AND-ROUTE-SMOKE
+
+Outcome: Bind one frozen commit to the ten-scenario corpus and evaluator versions, database schemas,
+fixture and target identities, timing distributions, failure and minimization outcomes, reporter
+and hosted convergence, browser results, restart/rebuild behavior, and rollback evidence. Rerun the
+complete required matrix across hosted-development, Linux, and Windows without changing the
+candidate.
+
+Gate:
+
+- Final candidate portion of `G6-ROUTE-SMOKE-AND-CANDIDATE-BOUND-QUALIFICATION`
+
+Candidate campaign: `freeze-and-qualify-lifecycle-harness-candidate`.
+
+## M7-WORK5-PROMOTION-AND-RECONCILIATION — Release only after explicit production authority
+
+Status: pending
+Required Endpoint: Work5
+Depends on: M6-WORK3-CANDIDATE-QUALIFICATION and explicit production authority
+
+Outcome: Freeze the complete release cohort, publish and deploy only the Work3-qualified candidate,
+verify production health and the approved non-destructive product behavior, then propagate the
+satisfied result through this roadmap, MAP-0027, and IDEA-0020. Missing production evidence,
+unexpected mutation, or any failed owning gate leaves the complete outcome chain open.
+
+Candidate campaign: `promote-and-reconcile-lifecycle-harness-release`.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G1-RUN-CONTRACT-AND-INDEPENDENT-ORACLE | M1 |
+| G2-LOCAL-LIFECYCLE-CORPUS | M1 foundation and M2 completion |
+| G3-REPORTER-HOSTED-AND-UI-TRUTH | M1 baseline and M3 completion |
+| G4-DEVELOPMENT-ONLY-FAULT-NAMESPACE | M4 |
+| G5-EVIDENCE-MINIMIZATION-AND-PERFORMANCE | M5 |
+| G6-ROUTE-SMOKE-AND-CANDIDATE-BOUND-QUALIFICATION | M5 route smoke and M6 final qualification |
+
+Transfer count: 6 reviewed gates; 6 mapped gates; 0 dropped.
+
+## Program Constraints
+
+- Normal scenarios use guarded public lifecycle/reporting services and retain completed history;
+  cleanup cannot manufacture a passing clean tail.
+- Independent read-only inspection owns the oracle. Narrow time, interruption, and corruption
+  hooks fail closed outside verified development fixtures.
+- Live reporter identity, sequence, credential, and hosted cursor state are never partially reset
+  or borrowed for destructive tests.
+- Existing-instance snapshots are sanitized without changing structural identities, revisions,
+  lineage, verdicts, reconciliation, or representative lifecycle shape. Until M4 passes, their
+  hosted intake is confined to a dedicated ephemeral development database and excluded from the
+  shared operational development inventory.
+- Recoverable parent projections are rebuilt from authoritative content. Missing parent authority
+  remains an explicit unresolved-ancestor blocker that holds its chain open; the system never
+  fabricates completion or leaves an invisible orphan.
+- Required unknown, stale, missing, conflicting, or unavailable state prevents `PASS`.
+- Correctness precedes timing. Larger absolute ceilings and any budget revision require retained
+  measurements from the same platform and target class.
+- Work2 modifies development lanes only. Work3 freezes and qualifies; Work5 production promotion
+  remains a separate explicit request.
+
+## Verification Strategy
+
+- Compare canonical local facts, an independently calculated graph, stored rollups, outbox and
+  sequence records, hosted base/projection rows, HTTP/view-model values, and bounded browser-visible
+  claims at each declared checkpoint.
+- For QH-010, seal an exact pre-upgrade source inventory, then compare exact local and hosted sets
+  after upgrade, first ingestion, interruption/resume, duplicate delivery, reordered delivery, and
+  idempotent replay.
+- Assert exact values, set equality, cardinality, monotonic revisions, bounded convergence, required
+  presence, and zero unexpected rows.
+- Preserve the original replay and any minimized replay with candidate, fixture, platform,
+  scenario, seed, action order, failure signature, hashes, and evidence locations.
+- Keep `PASS`, `PRODUCT-FAIL`, `HARNESS-FAIL`, and `INFRA-BLOCKED` distinct; only complete required
+  cross-platform observations may satisfy a gate.
+
+## Next Route
+
+Continue only on an explicit `ts:work3 IDEA-0020` request. Execute M6 to freeze one exact candidate
+and rerun the complete candidate-bound matrix across hosted development, Linux, and Windows.
+Production and M7 remain untouched.

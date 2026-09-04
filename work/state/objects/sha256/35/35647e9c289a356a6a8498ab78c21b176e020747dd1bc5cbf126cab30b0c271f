@@ -1,0 +1,48 @@
+# Campaign: Qualify Evidence Scale Minimization and Route Smoke
+
+Status: completed
+Disposition: satisfied
+Outcome: Evidence remains bounded, redacted, replay-safe, and semantically exact under accumulated lifecycle state on Linux, Windows, and hosted development.
+Completion Gate: M5 scale, minimization, retention, replay, performance, and fixed-route checks pass on one exact development candidate.
+Completion Evidence: EVD-0082
+Type: campaign
+Updated: 2026-09-04
+Campaign ID: qualify-evidence-scale-minimization-and-route-smoke
+Roadmap: deterministic-tool-shed-lifecycle-and-database-truth-qualification-harness
+Roadmap Document: PRM-0038
+Milestone: M5-EVIDENCE-SCALE-AND-ROUTE-SMOKE
+Requested Endpoint: work2
+
+## Outcome
+
+Enforce bounded redacted qualification evidence, verdict-specific retention, replay protection,
+storage caps, and signature-preserving deterministic minimization. Accumulate and retain 100
+closed lifecycles per operating-system fixture, prove semantic parity before provisional absolute
+and same-target performance gates, and measure the 1,000-lifecycle and 100,000-history-row tier.
+
+Run one fixed low-reasoning Tool Shed lifecycle per platform and prove artifact cardinality,
+provenance, complete gate transfer, lineage, authority, revision accounting, resume idempotency,
+final clean tails, and zero extra local or hosted rows.
+
+## Completion Gate
+
+The exact Work2 candidate passes focused retention/minimization/replay/storage tests, the clean
+release profile, 100-lifecycle retained runs on Linux and Windows, the declared larger-tier
+measurements, fixed-route lifecycle smoke on both platforms, shared-development reporting and
+browser checks where applicable, and checkpoint/rebuild parity. Evidence records are bounded and
+contain no credentials, raw prompts, uncontrolled paths, or unrelated workspace content.
+
+## Completion Evidence
+
+`EVD-0082` records the complete M5 result. Candidate `3cbbb1225646fc324f0eb424466ad662835fa5de`
+passed 570 clean release tests and focused Linux/Windows checks, deployed to all three configured
+development lanes, and left production unchanged. Both retained 100-lifecycle corpora pass exact
+semantic parity and the unchanged 1,000 ms truth-vector and guarded-mutation ceilings. Bounded
+evidence, retention, minimization, the larger graph/history tier, reporter drain, fixed route smoke,
+hosted inventory, and focused Chrome presentation checks all pass.
+
+## Boundary
+
+Only development source, hosted development, and the disposable Linux and Windows fixtures are in
+scope. Work3 candidate freezing, push, publication, and all production operations remain outside
+this campaign.

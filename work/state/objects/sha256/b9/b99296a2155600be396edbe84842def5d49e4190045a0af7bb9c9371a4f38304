@@ -1,0 +1,98 @@
+# Evidence: IDEA-0020 M5 Evidence Scale, Minimization, and Route Smoke
+
+Status: passed
+Date: 2026-09-04
+Campaign: CAMP-0154
+Program Roadmap: PRM-0038
+Milestone: M5-EVIDENCE-SCALE-AND-ROUTE-SMOKE
+Work2 Candidate: 3cbbb1225646fc324f0eb424466ad662835fa5de
+Accumulation Candidate: 78a78f4d4df8f3a2e7a1cc33d09c33158516591c
+Environment: development only
+
+## Outcome
+
+M5 passes. Tool Shed retains bounded and redacted qualification evidence, protects product-failure
+records, minimizes failures without changing their signatures, preserves replay identity, and
+maintains exact semantic closure under accumulated state. The fixed low-reasoning lifecycle route
+passed on both operating-system fixtures. No performance ceiling was revised.
+
+The initial completed 100-lifecycle measurements exposed two real scale defects in the
+independent oracle and guarded-write authority synchronization. Candidate `3cbbb1225646` replaces
+quadratic and per-row reads with bounded bulk loads and reuses the transaction-sealing semantic
+digest during its immediate locked exit audit. The exact candidate was then installed and checked
+on Linux, Windows, and hosted development against the retained corpus.
+
+## Exact Work2 Candidate
+
+- Candidate commit: `3cbbb1225646fc324f0eb424466ad662835fa5de`
+- Candidate version: `0.43.0` (unpublished development candidate)
+- Linux disconnected snapshot SHA-256:
+  `d938bd1443ba28e86bfb4e01ac593c0b04c553f8a0507395ce7a1137a4c51136`
+- Windows disconnected snapshot SHA-256:
+  `169dbcc9c7969b266607307f3ef806af5c9eeb3ac9c5dbcd749e07795f8d66f6`
+- Hosted development image: `tool-shed-dashboard:dev-3cbbb1225646`
+- Clean detached release validation: 570 of 570 tests passed in 52.712 seconds.
+- Focused lifecycle/scale/closure validation: 31 of 31 tests passed on Linux and Windows.
+
+## Accumulated-State Results
+
+The retained lifecycle manifests remain honestly bound to the candidate that created them,
+`78a78f4d4df8f3a2e7a1cc33d09c33158516591c`. The Work2 candidate executed the independent oracle,
+projection comparison, reporter drain, and 50 guarded mutation samples against those unchanged
+100-lifecycle corpora. This preserves run provenance while qualifying the repaired verifier and
+write path; M6 remains responsible for freezing and rerunning the complete matrix on one candidate.
+
+| Check | Linux | Windows |
+| --- | ---: | ---: |
+| Retained lifecycles | 100 | 100 |
+| Completed run documents | 400/400 | 400/400 |
+| Append-only history delta | 106,600 | 106,616 |
+| Projection mismatches | 0 | 0 |
+| Open recovery cases | 0 | 0 |
+| Open or unreconciled run cycles | 0 | 0 |
+| Independent truth vector | 53.635 ms | 110.218 ms |
+| Guarded mutation p95 | 378.367 ms | 816.028 ms |
+| Provisional ceiling | 1,000 ms | 1,000 ms |
+| Verdict | PASS | PASS |
+
+Result bindings:
+
+- Linux result SHA-256: `0dddedc3d4ca715bec4f89d1549a2aa737ede1617a9435f2993be2dd2f5b1c38`;
+  result digest `0e71e8d04be3b7b3a387702ebdac7ab51f6dad87aa914f8ee7845235d62410d8`.
+- Windows result SHA-256: `fc2969b71dc208dda7eb3982fb33a993f3f547ee8615d5aa97c6069b21e554dd`;
+  result digest `e07eeef00dd9a288fab8aa369ca54a2f424ec312ae67f3f3c5514a830c15b370`.
+
+## Evidence, Minimization, and Route Smoke
+
+- The 25,000-element, 100,000-edge, depth-128 recursive-closure benchmark passed with exact parity;
+  bound SHA-256 `d0496113dce1bbe967bdbf6960514dae90d1430073edc3862833b3bdeafb74eb`.
+- Signature-preserving minimization required three reproductions and reduced the failing replay to
+  `setup` plus `trigger`; SHA-256
+  `0af4a106b34d893fc07459f5b23b5b8275b5f705d5e81fc897e96e3ad8fe196e`.
+- The PASS retention bundle remains reclaimable only after expiry and a newer accepted candidate;
+  SHA-256 `9bcff6c38aa3178242267d95a9b149a63f0cf89b2dfa96c003a9bad280f11ef5`.
+- The PRODUCT-FAIL retention bundle remains protected; SHA-256
+  `c261d4fc089ef2e710db8955da4c081f05e78eb6bc1a7334b8752b72d5a6e9d6`.
+- Fixed low-reasoning route smoke passed all 11 checks on Linux and Windows, including exact
+  artifact cardinality, readiness provenance, complete gate transfer, lineage, terminal
+  reconciliation, independent closure parity, clean tail, revision accounting, and idempotent
+  replay. Result SHA-256 values are
+  `b178f7d9795f4cf9c157fbab7920e69a038f7f1dfb5eafd6f1bfbe03c2cbdcc9` and
+  `e3d3fe80a49ced78144f349d90b01b979328ecd1d789c8552a8ff0277f3b68eb`.
+
+## Development Presentation and Boundary
+
+Hosted development is healthy at the exact candidate marker and its database-backed visible
+project inventory is exactly `ts_linux_test_bed` and `ts_windows_test_bed`. A fresh headless Chrome
+load from Windows returned HTTP 200 for the dashboard sign-in page and rendered the development
+environment banner. The authenticated M4 browser corpus remains the detailed project/qualification
+presentation proof because this Work2 correction changes no dashboard behavior.
+
+Production was checked read-only before and after development deployment and remained healthy.
+No source was pushed, no release was published, and no production deployment, database, container,
+network, volume, credential, or outcome was changed.
+
+## Next Gate
+
+M6-WORK3-CANDIDATE-QUALIFICATION is next. It must freeze one exact candidate and rerun the complete
+required matrix across hosted development, Linux, and Windows before any separate Work5 request.

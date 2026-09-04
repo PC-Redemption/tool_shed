@@ -1,0 +1,101 @@
+# Project Map: Deterministic Tool Shed Lifecycle and Database Truth Qualification Harness
+
+Status: active
+Type: project-map
+Updated: 2026-09-04
+Next Action: `ts:work3 IDEA-0020` to execute PRM-0038 milestone M6
+Source Idea: IDEA-0020
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 8
+Reviewed Body SHA256: 9fe7a6342904a85c04fdbacff4f02b1e3d5ce72a1f2baf223bf71f1ab29d085d
+Program Roadmap: PRM-0038
+
+## Purpose
+
+Build a deterministic, low-reasoning qualification harness that drives synthetic Tool Shed work
+through real lifecycle routes and proves that local authority, reporter and hosted projections,
+and operator-visible status agree at every material checkpoint. The first regression target is the
+phantom development-dashboard projects that demonstrated healthy components can still present
+materially false fleet state.
+
+## Desired Outcome
+
+- A fixed nine-scenario corpus exercises Idea, readiness, PRM, governed work, evidence, recursive
+  closure, reconciliation, checkpoint/rebuild, reporting, hosted storage, and critical browser UI.
+- An independent oracle reconstructs lineage, blockers, evidence validity, and effective closure
+  from canonical records without importing the product rollup evaluator.
+- Every checkpoint proves expected presence and zero unexpected rows across local, transport,
+  hosted, and presentation layers.
+- Failures retain a bounded redacted replay recipe and may be minimized deterministically without
+  mutating enrolled fixtures or changing the failure signature.
+- The Linux, Windows, and hosted-development lanes qualify one exact candidate before any separate
+  production-promotion decision.
+
+## System Boundary
+
+| Surface | Authority or role | Qualification responsibility |
+| --- | --- | --- |
+| Local Tool Shed database | Canonical document, cycle, requirement, lineage, evidence, closure, and reconciliation facts | Drive guarded mutations and independently inspect exact revisions and residue |
+| Reporter and hosted database | Ordered transport records and advisory hosted projections | Prove identity, sequence, idempotency, convergence, freshness, and exact cardinality |
+| Dashboard and browser | Operator presentation only | Prove inventory, detail closure/blockers, attention/freshness, filters, counts, and links |
+| Harness records | Versioned scenario intent and generated replay evidence | Bind candidate, fixture, platform, seed, actions, checkpoints, verdict, and retained evidence |
+| Fault environment | Verified disposable copies and a future development-only hosted namespace | Contain corruption, reject production and operational identities, and preserve tombstones |
+
+## Workstreams
+
+| Workstream | Development outcome | Boundary |
+| --- | --- | --- |
+| Run contract and oracle | Freeze four record types, deterministic IDs, invariant selectors, truth vectors, verdicts, replay, and an evaluator independent from product projections | No second operational database or model judgment as truth |
+| Local lifecycle corpus | Implement QH-001 through QH-006 and local QH-008/QH-009 on Linux and Windows with exact closure, lineage, recovery, idempotency, and zero-residue checks | Destructive cases use verified ephemeral copies |
+| Reporter, hosted, and UI truth | Exercise QH-001, QH-007, and QH-008 through established fixture identities and compare outbox, ingestion, hosted rows, API/view model, and browser claims | Hosted presentation remains advisory and cannot rewrite local authority |
+| Hosted fault namespace | Add purpose-bound qualification runs, scoped credentials, dual development enforcement, operational exclusion, separate UI, expiry, exact purge, and tombstones | Hosted destructive QH-009 stays disabled until this boundary passes |
+| Evidence, scale, and minimization | Enforce verdicts, redaction, retention, caps, signature-preserving reduction, 100-lifecycle accumulation, inherited graph budgets, and measured larger tiers | Correctness gates precede timing; budget revisions require evidence |
+| Route and candidate qualification | Run fixed low-reasoning route smoke on both platforms, then bind the full corpus to one exact Work3 development candidate | Work2 remains development-only; Work5 is a separate production decision |
+
+## Readiness Gate Transfer
+
+1. `G1-RUN-CONTRACT-AND-INDEPENDENT-ORACLE` — freeze deterministic run records, selectors,
+   truth-vector semantics, replay, and the independent evaluator.
+2. `G2-LOCAL-LIFECYCLE-CORPUS` — prove the local named corpus, recovery, rebuild, idempotency, and
+   clean tails on Linux and Windows.
+3. `G3-REPORTER-HOSTED-AND-UI-TRUTH` — prove ordered convergence and exact hosted/operator truth,
+   including absence of phantom or duplicate state.
+4. `G4-DEVELOPMENT-ONLY-FAULT-NAMESPACE` — establish purpose, credential, environment, visibility,
+   expiry, purge-refusal, and tombstone boundaries before hosted corruption tests.
+5. `G5-EVIDENCE-MINIMIZATION-AND-PERFORMANCE` — qualify bounded evidence, deterministic reduction,
+   accumulation, provisional budgets, and evidence-driven scale measurement.
+6. `G6-ROUTE-SMOKE-AND-CANDIDATE-BOUND-QUALIFICATION` — prove route structure and idempotency, then
+   qualify one exact Work3 development candidate without implicitly authorizing Work5.
+
+## Constraints
+
+- Reuse public guarded lifecycle and reporting services for normal execution; use read-only
+  independent inspection and only narrow development-only hooks for time, interruption, and
+  scratch-copy corruption.
+- Retain completed normal-run history and prove closure through reconciliation and delivery rather
+  than cleanup or database reset.
+- Never rewind a live reporter sequence or hosted ingestion cursor, borrow an operational reporter
+  credential for destructive testing, or let a synthetic qualification row enter operational
+  inventory.
+- Unknown, missing, stale, contradictory, unreconciled, or unavailable required facts fail closed.
+- Keep generated prose structurally sufficient; database structure and exact invariants are the
+  semantic oracle.
+
+## Deferred And Separate Scope
+
+- Production release, deployment, and production-data qualification require a later Work5 route.
+- Hard larger-scale ceilings wait for the 1,000-lifecycle and 100,000-history-row measurements.
+- General-purpose test services, production cleanup, a second harness database, and semantic prose
+  grading remain out of scope.
+
+## Navigation
+
+Do next:
+
+- Execute PRM-0038 M6: freeze one exact candidate and rerun the complete required qualification
+  matrix across hosted development, Linux, and Windows.
+
+Avoid for now:
+
+- Treating the M5 Work2 candidate as Work3-qualified before the full candidate-bound matrix passes.
+- Publishing or changing production before a later explicit Work5 request.
