@@ -229,18 +229,27 @@ def independent_closure(connection: sqlite3.Connection) -> dict[str, Any]:
         return {"available": False, "reason": "closure-authority-tables-unavailable", "elements": {}}
     elements = {str(row["id"]): dict(row) for row in connection.execute("SELECT * FROM closure_element ORDER BY id")}
     requirements = {str(row["id"]): dict(row) for row in connection.execute("SELECT * FROM requirement")}
+    cycle_elements = {
+        str(element["cycle_id"]): element
+        for element in elements.values()
+        if element["role"] == "cycle"
+    }
+    obligations = {
+        str(element["requirement_id"]): element
+        for element in elements.values()
+        if element["role"] == "obligation" and element.get("requirement_id") is not None
+    }
     children: dict[str, list[tuple[str, str | None]]] = {key: [] for key in elements}
     findings: dict[str, set[str]] = {key: set() for key in elements}
     parents: dict[str, list[str]] = {key: [] for key in elements}
 
-    for parent in elements.values():
-        if parent["role"] != "cycle":
+    for requirement_id, child in obligations.items():
+        requirement = requirements.get(requirement_id)
+        if not requirement or requirement["disposition"] in {"not-applicable", "retired", "superseded"}:
             continue
-        for child in elements.values():
-            requirement = requirements.get(str(child.get("requirement_id")))
-            if child["role"] == "obligation" and requirement and str(requirement["cycle_id"]) == str(parent["cycle_id"]):
-                if requirement["disposition"] not in {"not-applicable", "retired", "superseded"}:
-                    children[parent["id"]].append((child["id"], child.get("requirement_id")))
+        parent = cycle_elements.get(str(requirement["cycle_id"]))
+        if parent:
+            children[parent["id"]].append((child["id"], child.get("requirement_id")))
     for row in connection.execute("SELECT * FROM lineage_claim WHERE retired_revision IS NULL ORDER BY id"):
         child_id, parent_id, requirement_id = map(str, (row["child_element_id"], row["parent_element_id"], row["parent_requirement_id"]))
         if child_id not in elements or parent_id not in elements:
@@ -260,7 +269,7 @@ def independent_closure(connection: sqlite3.Connection) -> dict[str, Any]:
             if str(row["observed_requirement_digest"]) != observed:
                 findings[child_id].add("CONFLICTING_LINEAGE")
         if row["relationship_type"] in {"fulfills", "contributes"}:
-            obligation = next((item for item in elements.values() if str(item.get("requirement_id")) == requirement_id), None)
+            obligation = obligations.get(requirement_id)
             if obligation and child_id != obligation["id"]:
                 children[obligation["id"]].append((child_id, requirement_id))
     for value in children.values():
@@ -290,6 +299,13 @@ def independent_closure(connection: sqlite3.Connection) -> dict[str, Any]:
         if row["state"] in {"open", "retry-wait", "escalated"}:
             recovery.setdefault(str(row["element_id"]), set()).add(str(row["reason_code"]))
 
+    closures: dict[str, dict[str, Any]] = {}
+    for row in connection.execute(
+        "SELECT element_id,method,evidence_health FROM closure_record "
+        "WHERE superseded_revision IS NULL ORDER BY element_id,created_revision DESC,id DESC"
+    ):
+        closures.setdefault(str(row["element_id"]), dict(row))
+
     memo: dict[str, dict[str, Any]] = {}
     active: set[str] = set()
 
@@ -300,10 +316,7 @@ def independent_closure(connection: sqlite3.Connection) -> dict[str, Any]:
             return {"local_closure": "open", "evidence_health": "not-required", "graph_health": "invalid", "effective_closed": False, "reason_codes": ["CYCLE"], "open_descendants": 0, "invalid_descendants": 1, "unknown_descendants": 0}
         active.add(element_id)
         element = elements[element_id]
-        closure = connection.execute(
-            "SELECT method,evidence_health FROM closure_record WHERE element_id=? AND superseded_revision IS NULL ORDER BY created_revision DESC,id DESC LIMIT 1",
-            (element_id,),
-        ).fetchone()
+        closure = closures.get(element_id)
         local = str(closure["method"]) if closure else "open"
         evidence = str(closure["evidence_health"]) if closure else "not-required"
         reasons = set(findings.get(element_id, set())) | recovery.get(element_id, set())

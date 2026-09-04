@@ -290,6 +290,44 @@ class LifecycleQualificationTests(unittest.TestCase):
             self.assertEqual(mismatch[0]["field"], "effective_closed")
             connection.close()
 
+    def test_independent_oracle_loads_closure_records_in_one_query(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            database = Path(directory) / "fixture.sqlite3"
+            connection = sqlite3.connect(database)
+            connection.row_factory = sqlite3.Row
+            connection.executescript(
+                """
+                CREATE TABLE closure_element(id TEXT PRIMARY KEY,role TEXT,element_kind TEXT,artifact_id TEXT,cycle_id TEXT,requirement_id TEXT,subject_revision INTEGER);
+                CREATE TABLE requirement(id TEXT PRIMARY KEY,cycle_id TEXT,disposition TEXT);
+                CREATE TABLE lineage_claim(id TEXT PRIMARY KEY,child_element_id TEXT,parent_element_id TEXT,parent_requirement_id TEXT,relationship_type TEXT,retired_revision INTEGER);
+                CREATE TABLE closure_record(id TEXT PRIMARY KEY,element_id TEXT,method TEXT,evidence_health TEXT,created_revision INTEGER,superseded_revision INTEGER);
+                CREATE TABLE recovery_case(id TEXT PRIMARY KEY,element_id TEXT,reason_code TEXT,state TEXT);
+                """
+            )
+            for index in range(20):
+                connection.execute(
+                    "INSERT INTO closure_element VALUES(?,?,?,?,?,?,?)",
+                    (f"element-{index}", "obligation", "requirement", "artifact", None, f"requirement-{index}", 1),
+                )
+                connection.execute(
+                    "INSERT INTO requirement VALUES(?,?,?)",
+                    (f"requirement-{index}", f"cycle-{index}", "accepted"),
+                )
+                connection.execute(
+                    "INSERT INTO closure_record VALUES(?,?,?,?,?,NULL)",
+                    (f"record-{index}", f"element-{index}", "closed-loop", "current", 1),
+                )
+            statements: list[str] = []
+            connection.set_trace_callback(statements.append)
+            oracle = qualification.independent_closure(connection)
+            closure_selects = [
+                statement for statement in statements
+                if "FROM closure_record" in statement
+            ]
+            self.assertEqual(len(oracle["elements"]), 20)
+            self.assertEqual(len(closure_selects), 1, closure_selects)
+            connection.close()
+
     def test_result_digest_covers_verdict_and_checks(self) -> None:
         manifest = qualification.seal_manifest(
             self.scenario("QH-001"), candidate_commit="a" * 40, candidate_version="0.43.0",

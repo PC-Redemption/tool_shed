@@ -178,6 +178,7 @@ def audit_connection(
     connection: sqlite3.Connection,
     *,
     physical_integrity: bool = True,
+    precomputed_domain_digest: str | None = None,
 ) -> dict[str, Any]:
     findings: list[str] = []
     user_version = int(connection.execute("PRAGMA user_version").fetchone()[0])
@@ -220,7 +221,11 @@ def audit_connection(
     if mismatches:
         findings.append(f"current document/revision mismatches: {mismatches}")
     current_revision = int(meta["current_revision"])
-    observed = domain_digest(connection) if hard_finding_count == 0 else None
+    observed = (
+        precomputed_domain_digest
+        if hard_finding_count == 0 and precomputed_domain_digest is not None
+        else domain_digest(connection) if hard_finding_count == 0 else None
+    )
     changed = observed is not None and observed != meta["source_digest"]
     unmanaged = bool(meta["unmanaged_write_detected"])
     if hard_finding_count:
@@ -401,9 +406,10 @@ def managed_write(workspace: Path, *, project_binding: str, command: str, actor:
                 actual = int(connection.execute("SELECT actual_writes FROM managed_operation WHERE id=?", (operation_id,)).fetchone()[0])
                 connection.execute("DELETE FROM active_operation WHERE id=1")
                 connection.execute("UPDATE managed_operation SET status='complete', committed_at=? WHERE id=?", (hybrid_state.now(), operation_id))
+                resulting_domain_digest = domain_digest(connection)
                 connection.execute(
                     "UPDATE state_meta SET current_revision=?, last_verified_revision=?, source_digest=?, dirty=1, checkpoint_pending=1 WHERE id=1",
-                    (revision, revision, domain_digest(connection)),
+                    (revision, revision, resulting_domain_digest),
                 )
                 connection.commit()
             except BaseException:
@@ -411,8 +417,14 @@ def managed_write(workspace: Path, *, project_binding: str, command: str, actor:
                 raise
             # SQLite committed a transaction that began from a physically verified state with
             # foreign keys and accounting triggers enabled. Recheck semantic and ledger parity
-            # now; any observed database/WAL change performs the physical scans again.
-            result = audit_connection(workspace, connection, physical_integrity=False)
+            # while reusing the digest calculated after every domain mutation in this same
+            # locked connection. A later database/WAL change invalidates the managed-audit cache.
+            result = audit_connection(
+                workspace,
+                connection,
+                physical_integrity=False,
+                precomputed_domain_digest=resulting_domain_digest,
+            )
             if result["classification"] != "VALID_DIRTY":
                 raise DocumentStoreError(f"managed mutation left {result['classification']}")
             response = {"schema_version": 1, "kind": "tool-shed-document-operation", "operation_id": operation_id, "revision": revision, "actual_writes": actual, "result": value, "audit": result, "writes_performed": True}

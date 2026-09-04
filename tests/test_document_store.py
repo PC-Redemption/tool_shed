@@ -147,6 +147,36 @@ class DocumentStoreThinSliceTests(unittest.TestCase):
             )
             self.assertEqual(checked.call_count, 2)
 
+    def test_managed_write_reuses_its_sealing_domain_digest_for_exit_audit(self) -> None:
+        with mock.patch("dashboard_reporter.enqueue_if_connected"):
+            document_store.create_document(
+                self.workspace,
+                project_binding=self.binding,
+                document_type="ticket",
+                title="Warm managed audit cache",
+                body="# Warm managed audit cache\n",
+                lifecycle="active",
+                metadata={},
+                actor="fixture",
+                reason="prepare managed audit cache",
+                database=self.database,
+            )
+            original = document_store.domain_digest
+            with mock.patch.object(document_store, "domain_digest", wraps=original) as digested:
+                document_store.create_document(
+                    self.workspace,
+                    project_binding=self.binding,
+                    document_type="ticket",
+                    title="Single digest write",
+                    body="# Single digest write\n",
+                    lifecycle="active",
+                    metadata={},
+                    actor="fixture",
+                    reason="prove one full semantic scan per managed write",
+                    database=self.database,
+                )
+            self.assertEqual(digested.call_count, 1)
+
     def test_transactional_edit_relationship_checkpoint_rebuild_and_outcome(self) -> None:
         originals = {path: (self.workspace / path).read_bytes() for path in ("work/ideas/idea-one.md", "work/maps/map-one.md")}
         idea = document_store.import_document(
