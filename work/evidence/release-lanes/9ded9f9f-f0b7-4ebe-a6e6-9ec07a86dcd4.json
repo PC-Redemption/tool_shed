@@ -1,0 +1,88 @@
+{
+  "candidate_commit": null,
+  "created_at": "2026-09-04T17:34:49Z",
+  "kind": "tool-shed-project-release-lanes",
+  "lanes": {
+    "linux": {
+      "development": {
+        "actor": null,
+        "artifact": null,
+        "authorization_ref": null,
+        "evidence": [],
+        "reason": null,
+        "recorded_at": null,
+        "source_commit": null,
+        "status": "open",
+        "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed"
+      },
+      "production": {
+        "actor": null,
+        "artifact": null,
+        "authorization_ref": null,
+        "evidence": [],
+        "reason": null,
+        "recorded_at": null,
+        "source_commit": null,
+        "status": "open",
+        "target": "github-release:tool-shed-linux-install-client"
+      }
+    },
+    "web": {
+      "development": {
+        "actor": null,
+        "artifact": null,
+        "authorization_ref": null,
+        "evidence": [],
+        "reason": null,
+        "recorded_at": null,
+        "source_commit": null,
+        "status": "open",
+        "target": "tsrookarocom-dev@sup.local:/home/jon/docker/ts.rookaro.com-dev"
+      },
+      "production": {
+        "actor": null,
+        "artifact": null,
+        "authorization_ref": null,
+        "evidence": [],
+        "reason": null,
+        "recorded_at": null,
+        "source_commit": null,
+        "status": "open",
+        "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com"
+      }
+    },
+    "windows": {
+      "development": {
+        "actor": null,
+        "artifact": null,
+        "authorization_ref": null,
+        "evidence": [],
+        "reason": null,
+        "recorded_at": null,
+        "source_commit": null,
+        "status": "open",
+        "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed"
+      },
+      "production": {
+        "actor": null,
+        "artifact": null,
+        "authorization_ref": null,
+        "evidence": [],
+        "reason": null,
+        "recorded_at": null,
+        "source_commit": null,
+        "status": "open",
+        "target": "github-release:tool-shed-windows-install-client"
+      }
+    }
+  },
+  "release_id": "9ded9f9f-f0b7-4ebe-a6e6-9ec07a86dcd4",
+  "required_lanes": [
+    "web",
+    "windows",
+    "linux"
+  ],
+  "revision": 1,
+  "schema_version": 1,
+  "updated_at": "2026-09-04T17:34:49Z"
+}
