@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "release": "v0.45.0",
+  "reason": "The disposable test beds already contained an unpublished v0.45.0 candidate. They were reset to exact published v0.43.0 snapshots so the normal updater could prove a real stable-release upgrade to v0.45.0 without replaying historical qualification corpora.",
+  "captured_at": "2026-09-04T18:00:18Z",
+  "targets": [
+    {
+      "platform": "linux",
+      "host": "sup",
+      "path": "/home/jon/dev/ts_linux_test_bed",
+      "repository": "PC-Redemption/ts_linux_test_bed",
+      "candidate_version": "0.45.0",
+      "candidate_release_commit": "5c42222a9e578fb3891dfd1f9aaf5a824a07d236",
+      "baseline_version": "0.43.0",
+      "candidate_snapshot_backup": ".tool-shed/work5-v045-candidate-snapshot"
+    },
+    {
+      "platform": "windows",
+      "host": "GOGETTER",
+      "path": "E:\\dev\\ts_windows_test_bed",
+      "repository": "PC-Redemption/ts_windows_test_bed",
+      "candidate_version": "0.45.0",
+      "candidate_release_commit": "5c42222a9e578fb3891dfd1f9aaf5a824a07d236",
+      "baseline_version": "0.43.0",
+      "candidate_snapshot_backup": ".tool-shed\\work5-v045-candidate-snapshot",
+      "fixture_recovery": "The prior disposable empty state.sqlite3 fixture was quarantined as state.invalid-empty-work5-v045.sqlite3 before the file-authoritative update."
+    }
+  ]
+}

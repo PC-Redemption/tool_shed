@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "release": {
+    "tag": "v0.45.0",
+    "content_commit": "2c1d282585d2f4daf27972792fa0d9a9b6af6e6c",
+    "provenance_commit": "223686d5b6a38a6eded092beeba6c1d07c16cdd8",
+    "published_at": "2026-09-04T17:52:18Z",
+    "url": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.45.0",
+    "full_validation": {
+      "conclusion": "success",
+      "run": "https://github.com/PC-Redemption/tool_shed/actions/runs/33902103206",
+      "note": "One timing-only Windows shard exceeded its one-second mutation ceiling during the first fully concurrent attempt; the unchanged exact-SHA rerun passed the complete matrix."
+    },
+    "publication": {
+      "conclusion": "success",
+      "run": "https://github.com/PC-Redemption/tool_shed/actions/runs/33902845263"
+    }
+  },
+  "recorded_at": "2026-09-04T18:00:18Z",
+  "manifest_content_hashes_digest": "cc41d9aeff3e5305e326f09846f6e421ceb39f0c6e6e35f237fa9b3da81996a9",
+  "lanes": {
+    "web": {
+      "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com",
+      "artifact": "tool-shed-dashboard:v0.45.0@sha256:b52319d7a1571f7034f525dcd167514be47950f7cc9bcbfb28650c421c79e701",
+      "status": "verified",
+      "checks": {
+        "container_health": "healthy",
+        "production_readiness": "healthy",
+        "public_health": {
+          "environment": "production",
+          "schema_version": 1,
+          "service": "tool-shed-dashboard",
+          "status": "healthy"
+        },
+        "public_routes": {
+          "/": 200,
+          "/guide/": 200,
+          "/help/": 200,
+          "/ref/": 200
+        },
+        "preserved_volumes": [
+          "tsrookarocom_dashboard_postgres",
+          "tsrookarocom_dashboard_static"
+        ]
+      },
+      "rollback_backup": "/home/jon/docker/ts.rookaro.com/release-backups/v0.45.0-pre-20260904T175300Z"
+    },
+    "linux": {
+      "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed",
+      "artifact": "github-release:v0.45.0:linux-install-client:transaction-a594d090cd5acb54ffd07b45",
+      "status": "verified",
+      "baseline": "v0.43.0",
+      "result": {
+        "mode": "existing-update",
+        "release_validation": "official-attestation",
+        "selected_version": "0.45.0",
+        "release_commit": "2c1d282585d2f4daf27972792fa0d9a9b6af6e6c",
+        "snapshot_integrity": "verified",
+        "focused_client_smoke": "passed",
+        "canonical_relation": "current"
+      }
+    },
+    "windows": {
+      "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed",
+      "artifact": "github-release:v0.45.0:windows-install-client:transaction-17cb1435c5ddebf239f44729",
+      "status": "verified",
+      "baseline": "v0.43.0",
+      "result": {
+        "mode": "existing-update",
+        "release_validation": "official-attestation",
+        "selected_version": "0.45.0",
+        "release_commit": "2c1d282585d2f4daf27972792fa0d9a9b6af6e6c",
+        "snapshot_integrity": "verified",
+        "focused_client_smoke": "passed with the documented default Python selector",
+        "powershell_launcher": "passed read-only prune preview",
+        "canonical_relation": "current"
+      }
+    }
+  },
+  "qualification_strategy": {
+    "full_historical_state_replay": "not repeated in Work5",
+    "reason": "The exact-SHA full validation workflow and prior Work2/Work3 platform qualification cover lifecycle and recovery behavior. Work5 uses compact published-release upgrade fixtures to verify distribution, integrity, platform behavior, and rollback protection.",
+    "reset_capsule": "work/evidence/work5-testbed-reset-v0.45.0.json"
+  },
+  "closeout": {
+    "release_cohort": {
+      "candidate_count": 6,
+      "cycle_id": "9ded9f9f-f0b7-4ebe-a6e6-9ec07a86dcd4",
+      "lifecycle": "released-pending-reconciliation",
+      "release_evidence_recorded": true,
+      "release_tag": "v0.45.0",
+      "open_registered_owners": [
+        "sqlite/documents/MAP-0028",
+        "sqlite/documents/PRM-0039"
+      ],
+      "finalization": "intentionally refused because PRM-0039 explicitly retains M3 through M6 and MAP-0028 remains active; closing either would overstate the delivered outcome",
+      "follow_up_issue": "https://github.com/PC-Redemption/tool_shed/issues/59"
+    },
+    "loop_findings": {
+      "active_count": 3,
+      "discovery_version": "loop-findings-v2",
+      "disposition": "preserved for the supervised historical review in PRM-0039 M3",
+      "subjects": [
+        "IDEA-0018",
+        "IDEA-0019",
+        "IDEA-0020"
+      ]
+    },
+    "hybrid_state": {
+      "checkpoint_digest": "0eccd95175e3f1b99e279daca771068a4e23500eda1b1951cc695e43480c588c",
+      "classification": "CLEAN",
+      "domain_digest": "47b07b63210ebf7edd6d4b3435abac3f56c3b0e72e42c5520fec240b5985de63",
+      "rebuild_classification": "CLEAN",
+      "rebuild_domain_digest": "47b07b63210ebf7edd6d4b3435abac3f56c3b0e72e42c5520fec240b5985de63",
+      "revision": 1233,
+      "schema": 5
+    },
+    "installed_codex_skill": {
+      "backup": "/home/jon/.codex/skills/tool-shed.backup-20260904T180319Z",
+      "canonical_validation": "passed",
+      "installed_validation": "passed",
+      "post_sync_diff": "empty"
+    },
+    "github_after_action": {
+      "closed_as_released": [],
+      "updated_as_remaining": [
+        47,
+        49,
+        50,
+        51,
+        52,
+        57
+      ],
+      "created_next_revision": [
+        59
+      ]
+    }
+  }
+}
