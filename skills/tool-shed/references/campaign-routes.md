@@ -605,9 +605,10 @@ the originating Tool Shed write.
 
 ## App Server Preference and Explicit Route
 
-The committed repository default remains off. A protected user-local preference may make eligible
-unflagged commands prefer App Server. Resolve execution in this order: standalone `--gui`, strict
-standalone `--app-server`, persisted preference, then the committed GUI default. Do not interpret
+The committed repository default is on for eligible App Server roles. A protected user-local
+preference may explicitly add operator-runtime trust or force GUI. Resolve execution in this order:
+standalone `--gui`, strict standalone `--app-server`, persisted preference, then the committed App
+Server default. Do not interpret
 examples, quoted text, or a mere mention as a control request.
 
 | Prompt | Supported role | Model / reasoning | Orchestrator path |
@@ -617,10 +618,11 @@ examples, quoted text, or a mere mention as a control request.
 | `ts: camp run <camp> --app-server` | CAMP execution | `gpt-5.6-terra` / `medium` | bounded `camp-run` |
 | `ts: next --app-server` | selected qualified role only | selected role policy | one deterministic dispatch to normal `next`, then its existing runner |
 
-The same unflagged routes use App Server only while the preference is on. `--gui` is a one-command
-override and never changes the preference. Remove either standalone execution option from the
-request passed to the worker. Discussion, brainstorming, qualification gates, unsupported roles,
-and other GUI-native routes remain GUI-native regardless of the preference.
+The same unflagged routes use the repository App Server default when no valid user-local override
+exists. A persisted `off` preference forces GUI; a persisted `on` preference adds operator-runtime
+trust. `--gui` is a one-command override and never changes the preference. Remove either standalone
+execution option from the request passed to the worker. Discussion, brainstorming, qualification
+gates, unsupported roles, and other GUI-native routes remain GUI-native regardless of the default.
 
 Before every explicit operation, run the deterministic selector from the workspace-local shed:
 
@@ -630,8 +632,9 @@ python3 <shed>/scripts/app_server_control.py select <plan|verify|camp-run> --jso
 
 Add `--app-server` for a strict request or `--gui` for the one-command override. Surface its concise
 execution banner. Continue to App Server only when `allowed` is true. An explicit App Server request
-fails closed; a persisted request that cannot select App Server records a sanitized event, reports
-the reason, and continues the same action immediately in the current GUI without asking or stopping.
+fails closed; a persisted or repository-default request that cannot select App Server records a
+sanitized event, reports the reason, and continues the same action immediately in the current GUI
+without asking or stopping.
 Fresh schema-v2 `ts: app-server on` consent selects `operator-runtime` trust for every supported
 local role, including CAMP. In that mode, version and executable hash are telemetry, and missing
 positive qualification or dirty-read evidence never blocks admission. The actual App Server
@@ -723,7 +726,8 @@ establish exact execution boundaries, or any unqualified or unsupported role, re
 action and its ordinary next route without starting CAMP execution. Discussion remains GUI-native.
 If selection, Codex discovery, authentication, qualification, startup, network, model lookup,
 read-only preparation, or another pre-mutation step fails, explicit App Server remains fail-closed.
-For a persisted request, report the compact category and continue the same action in GUI immediately.
+For a persisted or repository-default request, report the compact category and continue the same
+action in GUI immediately.
 If App Server may have mutated the workspace, reconcile the existing mutation journal and Git state
 in GUI before continuing; never replay the App Server step. This forwarding never changes the
 repository default or enables API fallback.
@@ -743,8 +747,8 @@ python3 <shed>/scripts/app_server_control.py status
 
 It reports the repository default, persistent preference and path, trust policy/source, startup
 readiness, observed safety, optional certification state, the complete bounded candidate inventory,
-selected executable and source, supported roles, current GUI default, GUI-native discussion, and
-disabled API fallback. It also reports the owner-profile recovery state while keeping that copy
+selected executable and source, supported roles, current effective execution default and source,
+GUI-native discussion, and disabled API fallback. It also reports the owner-profile recovery state while keeping that copy
 non-authoritative. Version and executable hash are diagnostic evidence in normal mode. A
 supplied override is authoritative; otherwise the highest semantically eligible candidate at or
 above `0.146.0` wins, with source priority used only for equal-version ties.

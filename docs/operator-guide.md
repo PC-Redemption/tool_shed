@@ -705,14 +705,15 @@ reconciliation, and no-replay controls.
 Only an exact reviewed qualification-registry record with `status: unqualified` and evidence denies
 a version in normal mode; a fixed or newer version runs normally. The disposable harness remains
 available for regression investigation, release qualification, and optional strict mode. A
-repository `.tool-shed-policy.json` may explicitly select `strict-certified` with a reason. Rerun
-without `--app-server` to use GUI fallback. `ts: discuss` always remains GUI-native, and `ts:
+repository `.tool-shed-policy.json` may explicitly select `strict-certified` with a reason. Use
+`--gui` to select GUI explicitly. `ts: discuss` always remains GUI-native, and `ts:
 discuss ... --app-server` is rejected with an explanation.
 
 `ts: app-server on|off` persists only the schema-versioned mode, trust policy, consent time, and
 update time under Codex home. `appserver` is an exact alias. Legacy schema-v1 `on` remains read-only
 until the operator runs `on` again. `--gui` overrides an enabled preference once; explicit
-`--app-server` remains strict. The repository App Server default and API fallback remain off.
+`--app-server` remains strict. The repository App Server default is on for eligible roles; API
+fallback remains off. A persisted `off` preference or one-command `--gui` selection forces GUI.
 
 In persistent mode, a failure before possible mutation records a compact event and immediately
 continues the same action in the current GUI. If a worker may have changed files, Tool Shed first
@@ -730,8 +731,8 @@ trust, startup readiness, observed safety, and optional certification. The same 
 status, selection, smoke, startup, version
 detection, qualification, reasoning refresh, and install/upgrade readiness. It does not install or
 copy Codex, alter permanent `PATH`, search arbitrary disk locations, persist user paths, or enable
-an API fallback. If Codex is unavailable, only explicit App Server work is unavailable; normal GUI
-Tool Shed work continues.
+an API fallback. If Codex is unavailable, strict App Server work is unavailable and default-routed
+work falls back to the normal GUI before mutation.
 
 On Linux, trusted bundle discovery checks the user's `.vscode`, `.vscode-insiders`,
 `.vscode-server`, and `.vscode-server-insiders` extension roots for x86_64, aarch64, and arm64

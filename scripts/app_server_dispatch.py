@@ -1561,7 +1561,7 @@ def dispatch_next(
         raise DispatchError(
             "no_executable_campaign",
             "ordinary next selection did not resolve an executable campaign",
-            recovery_action=str(selected.get("cycle_state", {}).get("next_transition", {}).get("command", "run ts: next without --app-server")),
+            recovery_action=str(selected.get("cycle_state", {}).get("next_transition", {}).get("command", "run ts: next --gui")),
         )
     campaigns = campaign_queue.load_all(root)
     campaign = campaigns[campaign_id]
@@ -1617,7 +1617,7 @@ def dispatch_next(
             recovery_action=(
                 "rerun the same Tool Shed command with --gui"
                 if not getattr(selection, "strict_request", app_server_requested)
-                else "rerun the same Tool Shed command without --app-server or with --gui"
+                else "rerun the same Tool Shed command with --gui"
             ),
         )
     preflight = _app_server_host_preflight(selection, timeout=timeout)
@@ -1641,7 +1641,7 @@ def dispatch_next(
             raise DispatchError(
                 getattr(planning_selection, "fallback_reason", None) or planning_selection.reason,
                 "automatic App Server CAMP preparation was not allowed",
-                recovery_action="rerun the same Tool Shed command without --app-server",
+                recovery_action="rerun the same Tool Shed command with --gui",
             )
         planning_preflight = _app_server_host_preflight(
             planning_selection,

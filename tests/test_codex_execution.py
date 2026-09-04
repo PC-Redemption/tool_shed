@@ -261,6 +261,11 @@ class CodexExecutionTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name)
+        self.state_root_patch = patch.dict(
+            os.environ,
+            {"TOOL_SHED_STATE_ROOT": str(self.root / "state")},
+        )
+        self.state_root_patch.start()
         script = self.root / "fake-codex.py"
         script.write_text(FAKE_CODEX, encoding="utf-8", newline="\n")
         if os.name == "nt":
@@ -276,6 +281,7 @@ class CodexExecutionTests(unittest.TestCase):
         self.policy = ModelPolicy.load(ROOT / "adapters" / "codex-model-policy.json")
 
     def tearDown(self) -> None:
+        self.state_root_patch.stop()
         self.temporary.cleanup()
 
     def test_policy_routes_frontier_and_workhorse_roles(self) -> None:
@@ -1163,7 +1169,7 @@ class CodexExecutionTests(unittest.TestCase):
             "verify",
         )
         self.assertIn("BEGIN adapters/codex-model-policy.json", inline)
-        self.assertEqual(config.route("planning").reason, "global_feature_disabled")
+        self.assertEqual(config.route("planning").reason, "read_only_role_enabled")
         self.assertTrue(config.route("planning", enable_override=True).use_app_server)
         self.assertTrue(config.route("verification", enable_override=True).use_app_server)
         self.assertFalse(config.route("implementation", enable_override=True).use_app_server)
@@ -1221,15 +1227,19 @@ class CodexExecutionTests(unittest.TestCase):
                 telemetry_path=self.root / "unexpected-resume.jsonl",
             )
 
-    def test_user_command_control_preserves_gui_and_routes_qualified_roles(self) -> None:
+    def test_user_command_control_uses_repository_default_and_routes_qualified_roles(self) -> None:
         normal = select_command(
             "plan",
             app_server_requested=False,
             codex=str(self.fake),
         )
         self.assertTrue(normal.allowed)
-        self.assertEqual((normal.execution, normal.reason), ("GUI", "default_gui"))
-        self.assertEqual(format_selection(normal), "Execution: GUI")
+        self.assertEqual(
+            (normal.execution, normal.reason),
+            ("App Server", "repository_default_qualified"),
+        )
+        self.assertEqual(normal.opt_in, "repository-default")
+        self.assertIn("Execution: App Server", format_selection(normal))
 
         expected = {
             "plan": ("planning", "gpt-5.6-sol", "high", "run"),
@@ -1260,7 +1270,7 @@ class CodexExecutionTests(unittest.TestCase):
                     route,
                 )
                 self.assertEqual(selected.opt_in, "explicit")
-                self.assertEqual(selected.global_default, "OFF")
+                self.assertEqual(selected.global_default, "ON")
                 self.assertFalse(selected.api_fallback)
                 self.assertIn("Execution: App Server", format_selection(selected))
                 self.assertIn("API fallback: disabled", format_selection(selected))
@@ -1314,6 +1324,45 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertIn(f"Executable: {self.fake}", blocked_banner)
         self.assertIn("Qualification state: below-minimum", blocked_banner)
         self.assertIn("Certification: not-certified", blocked_banner)
+
+    def test_repository_default_failure_returns_to_gui(self) -> None:
+        os.environ["FAKE_CODEX_VERSION"] = "0.145.9"
+        try:
+            selected = select_command(
+                "verify",
+                app_server_requested=False,
+                codex=str(self.fake),
+            )
+        finally:
+            os.environ.pop("FAKE_CODEX_VERSION", None)
+        self.assertTrue(selected.allowed)
+        self.assertEqual(selected.execution, "GUI")
+        self.assertEqual(selected.reason, "repository_default_gui_fallback")
+        self.assertTrue(selected.fallback_used)
+        self.assertEqual(
+            selected.fallback_reason,
+            "codex_below_minimum_dirty_read_version",
+        )
+        fallback_banner = format_selection(selected)
+        self.assertIn("App Server automatic fallback: ACTIVE", fallback_banner)
+        self.assertNotIn("preference fallback", fallback_banner)
+
+    def test_malformed_preference_fails_safe_to_gui_over_repository_default(self) -> None:
+        preference_path = self.root / "malformed-preference.json"
+        preference_path.write_text("not-json\n", encoding="utf-8")
+
+        selected = select_command(
+            "plan",
+            app_server_requested=False,
+            codex=str(self.fake),
+            preference_path=preference_path,
+        )
+
+        self.assertTrue(selected.allowed)
+        self.assertEqual(selected.execution, "GUI")
+        self.assertEqual(selected.opt_in, "preference-fail-safe")
+        self.assertEqual(selected.reason, "preference_fail_safe_gui")
+        self.assertEqual(selected.preference_warning, "malformed-preference")
 
     def test_unseen_newer_codex_dirty_qualifies_and_continues_read_request(self) -> None:
         os.environ["FAKE_CODEX_VERSION"] = "0.200.0-alpha.7"
@@ -1907,10 +1956,11 @@ class CodexExecutionTests(unittest.TestCase):
         report = control_status(
             codex=str(self.fake), preference_path=preference_path, profile_path=profile_path
         )
-        self.assertEqual(report["global_default"], "OFF")
+        self.assertEqual(report["global_default"], "ON")
         self.assertEqual(report["session_opt_in"], "OFF")
         self.assertTrue(report["session_control_supported"])
-        self.assertEqual(report["current_execution_default"], "GUI")
+        self.assertEqual(report["current_execution_default"], "App Server")
+        self.assertEqual(report["current_execution_source"], "repository-default")
         self.assertEqual(report["discussion_execution"], "GUI-native")
         self.assertFalse(report["api_fallback"])
         self.assertEqual(report["minimum_dirty_read_codex"], "0.146.0")
@@ -1921,7 +1971,7 @@ class CodexExecutionTests(unittest.TestCase):
             ),
             ("gpt-5.6-sol", "high"),
         )
-        self.assertIn("App Server global default: OFF", format_control_status(report))
+        self.assertIn("App Server global default: ON", format_control_status(report))
         enabled = preference_control(
             "on", preference_path=preference_path, profile_path=profile_path
         )
@@ -1952,6 +2002,15 @@ class CodexExecutionTests(unittest.TestCase):
             "off", preference_path=preference_path, profile_path=profile_path
         )
         self.assertEqual(disabled["session_opt_in"], "OFF")
+        disabled_status = control_status(
+            codex=str(self.fake),
+            preference_path=preference_path,
+            profile_path=profile_path,
+        )
+        self.assertEqual(disabled_status["current_execution_default"], "GUI")
+        self.assertEqual(
+            disabled_status["current_execution_source"], "user-local-preference"
+        )
         preference_path.unlink()
         restored = profile_control(
             "restore", preference_path=preference_path, profile_path=profile_path
@@ -1971,6 +2030,7 @@ class CodexExecutionTests(unittest.TestCase):
         self.assertTrue(persistent.allowed)
         self.assertEqual("App Server", persistent.execution)
         self.assertEqual("persistent", persistent.opt_in)
+        self.assertEqual("ON", persistent.session_opt_in)
         self.assertEqual("persistent_operator_runtime_trust", persistent.reason)
         self.assertFalse(persistent.strict_request)
 
@@ -1991,6 +2051,17 @@ class CodexExecutionTests(unittest.TestCase):
         )
         self.assertTrue(discussion.allowed)
         self.assertEqual((discussion.execution, discussion.reason), ("GUI", "discussion_is_gui_native"))
+
+        AppServerPreferenceStore(preference_path).set(False)
+        disabled = select_command(
+            "plan",
+            app_server_requested=False,
+            codex=str(self.fake),
+            preference_path=preference_path,
+        )
+        self.assertTrue(disabled.allowed)
+        self.assertEqual((disabled.execution, disabled.reason), ("GUI", "persistent_gui_override"))
+        self.assertEqual(disabled.opt_in, "persistent-off")
 
     def test_fresh_operator_trust_accepts_unknown_version_for_passive_and_explicit(self) -> None:
         preference_path = self.root / "app-server-preference.json"
@@ -2500,8 +2571,8 @@ class CodexExecutionTests(unittest.TestCase):
         )
         self.assertEqual(qualifications[-1]["codex_version"], "0.149.0")
         status = status_report(codex=str(self.fake))
-        self.assertEqual(status["status"], "OPT-IN")
-        self.assertEqual(status["global_default"], "disabled")
+        self.assertEqual(status["status"], "DEFAULT-ON")
+        self.assertEqual(status["global_default"], "enabled")
         self.assertEqual(status["compatibility"], "qualified_with_blockers")
         self.assertIsNone(status["qualified_savings"])
         self.assertEqual(

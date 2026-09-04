@@ -1,12 +1,13 @@
 # Codex App Server Maintainer Note
 
-Status: maintenance/watch; experimental; global default disabled
+Status: maintenance/watch; experimental; eligible local roles default on
 
 App Server support exists, but the
 [official App Server documentation](https://developers.openai.com/codex/app-server) currently
-describes it as experimental and unsupported for production workloads. Do not enable it globally.
-Normal Tool Shed and `ts: discuss` remain on the existing GUI path; Terra is the normal interactive
-model unless the operator intentionally selects Sol for difficult direct GUI work.
+describes it as experimental and unsupported for production workloads. Tool Shed enables only the
+qualified local planning, verification, and bounded CAMP roles by default. `ts: discuss`, broader
+writing, deployment, and production workloads remain on the existing GUI path; Terra is the normal
+interactive model unless the operator intentionally selects Sol for difficult direct GUI work.
 
 ## Daily owner contract
 
@@ -28,8 +29,8 @@ a ceiling is reached, Tool Shed interrupts the turn and skips reserved verificat
 mutation, follow `resume_bounded_camp`. After an authorized path changes, follow
 `reconcile_workspace_then_resume_bounded_camp`; inspect and preserve the mutation journal first,
 and never replay the worker blindly. For an ordinary preflight or preparation failure before
-mutation, repair the reported condition and rerun once, or omit `--app-server` to use the normal
-GUI route.
+mutation, repair the reported condition and rerun once, or use `--gui` to select the normal GUI
+route.
 
 Representative evidence now supersedes the earlier fixture-only efficiency conclusion:
 
@@ -56,15 +57,15 @@ remain separate owner-authorized work.
 
 Linux execution is proven with the reviewed local Codex baseline. Windows execution and verification must run
 in the logged-in GUI console; an SSH service session cannot reach the GUI sandbox runner pipe,
-though it may trigger an interactive console task. API-key fallback, globally enabled App Server,
-macOS, deployment, and production workloads are not supported by this contract. The outer GUI token
+though it may trigger an interactive console task. API-key fallback, broader writing roles, macOS,
+deployment, and production workloads are not supported by this contract. The outer GUI token
 count is not exposed. Weighted usage is a comparative proxy,
 not price or ChatGPT allowance.
 
 Read-only planning (`gpt-5.6-sol` / high), verification (`gpt-5.6-terra` / low), and one explicitly
 scoped `camp_execution` step (`gpt-5.6-terra` / medium) are supported. CAMP writing must
 use `camp-run`, exact declared paths, the hardened workspace-write sandbox, and a Git mutation
-journal. It remains opt-in. The representative CAMP used 241,524 input tokens and did not establish
+journal. It remains bounded and exact-qualified. The representative CAMP used 241,524 input tokens and did not establish
 savings in the original qualification; Campaign 040 subsequently reduced the same fixture to
 61,516 input tokens and two model requests. Those results remain fixture history, not general
 owner-efficiency evidence. The realistic Linux and Windows results above are authoritative for the
@@ -88,14 +89,16 @@ Reaching a ceiling interrupts the active turn, skips reserved verification, pres
 journal, and returns either `resume_bounded_camp` or
 `reconcile_workspace_then_resume_bounded_camp`. Telemetry retains no raw tool output.
 
-The user-facing opt-ins are `ts: plan <request> --app-server`, `ts: verify <request>
---app-server`, `ts: camp run <camp> --app-server`, and `ts: next --app-server`; the last invokes
+The strict one-command forms are `ts: plan <request> --app-server`,
+`ts: verify <request> --app-server`, `ts: camp run <camp> --app-server`, and
+`ts: next --app-server`; the last invokes
 `app_server_dispatch.py` directly, with no nested `codex exec`, to perform normal next-action
 selection, validate the campaign execution capsule and host preflight, and forward only to an
 supported role rather than making `next` a role. `ts: app-server status` reports operator trust,
 runtime readiness, observed safety, optional certification, and routing; `appserver` is an alias.
-Eligible unflagged forms follow the protected user-local preference. Fresh schema-v2 `on` consent
-trusts the resolved CLI for supported local roles, including bounded CAMP. `--gui` overrides it
+Eligible unflagged forms follow the protected user-local preference when one exists and otherwise
+follow the repository default. Persisted `off` forces GUI. Fresh schema-v2 `on` consent trusts the
+resolved CLI for supported local roles, including bounded CAMP. `--gui` overrides either source
 once, while explicit `--app-server` stays strict. Missing positive qualification and executable-hash
 certification do not block operator-runtime mode. An exact evidence-backed `unqualified` record is
 the only version denial, and it does not block a fixed or newer version.

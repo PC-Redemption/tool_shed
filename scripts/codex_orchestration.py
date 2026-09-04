@@ -1517,7 +1517,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--enable-app-server",
         action="store_true",
-        help="Enable App Server for this invocation without changing the default-off config.",
+        help="Enable App Server for this invocation without changing the repository default.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 

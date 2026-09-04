@@ -1,18 +1,19 @@
 # Codex App Server Execution
 
-Status: maintenance/watch; feature-flagged read-only and bounded CAMP integration; default off
+Status: maintenance/watch; feature-flagged read-only and bounded CAMP integration; eligible roles default on
 
-Tool Shed can route selected local lifecycle roles through the resolved Codex App Server while
-retaining the current Codex GUI conversation as the default and fallback execution surface. Fresh
-schema-v2 operator trust includes one explicitly bounded workspace-writing CAMP step through the
-dedicated `camp-run` path; broader writing is not enabled.
+Tool Shed routes selected local lifecycle roles through the resolved Codex App Server by default,
+while retaining the current Codex GUI conversation as the explicit override and failure fallback.
+Fresh schema-v2 operator trust includes one explicitly bounded workspace-writing CAMP step through
+the dedicated `camp-run` path; broader writing is not enabled.
 
 The reviewed baseline targets Codex CLI 0.149.0 and App Server v2 over local stdio JSONL, but normal
 operator-runtime access is not restricted to that version. The
 [official App Server documentation](https://developers.openai.com/codex/app-server) describes the
 handshake, thread and turn lifecycle, token events, and server-initiated approvals. It also labels
 the App Server command experimental and unsupported for production workloads. This integration
-therefore remains opt-in.
+therefore remains bounded to the qualified local roles and is not used for deployment or production
+workloads.
 
 For the short operational handoff, read the
 [App Server maintainer note](codex-app-server-maintainer-note.md). Further engineering is
@@ -54,21 +55,23 @@ policy remains centralized in `adapters/codex-model-policy.json`.
 
 ```text
 ts: discuss                                  -> current Codex GUI conversation
-ts: plan <request>                           -> current GUI path
+ts: plan <request>                           -> App Server / Sol / high
 ts: plan <request> --app-server              -> App Server / Sol / high
-ts: verify <request>                         -> current GUI path
+ts: verify <request>                         -> App Server / Terra / low
 ts: verify <request> --app-server            -> App Server / Terra / low
-ts: camp run <camp>                          -> current GUI path
+ts: camp run <camp>                          -> App Server / Terra / medium through camp-run
 ts: camp run <camp> --app-server             -> App Server / Terra / medium through camp-run
-ts: next                                     -> normal selection and current GUI path
+ts: next                                     -> normal selection and App Server dispatch for an eligible action
 ts: next --app-server                        -> one deterministic normal-next dispatch, no nested Codex agent
-unsupported role, failed runtime, or denylist -> blocked; GUI remains available without the flag
+unsupported role or discussion               -> current GUI conversation
+failed default App Server runtime             -> current GUI fallback
+failed explicit --app-server runtime          -> blocked
 ```
 
 The committed defaults are:
 
 ```text
-codex_app_server_enabled = false
+codex_app_server_enabled = true
 planning                 = true
 verification             = true
 program_derivation       = false
@@ -84,9 +87,9 @@ allowed_sandboxes         = read-only and workspace-write
 workspace_write_enabled   = false
 ```
 
-`--enable-app-server` is an invocation-scoped backend request; it does not modify the
-default-off configuration. It is an internal orchestration flag. The user-facing Tool Shed option
-is `--app-server` on the qualified `ts:` commands above.
+`--enable-app-server` is an invocation-scoped backend request; it does not modify the repository
+default. It is an internal orchestration flag. The user-facing Tool Shed option is `--app-server`
+on the qualified `ts:` commands above.
 
 `ts: next --app-server` is forwarding, not a fourth execution role. The GUI invokes
 `python3 <shed>/scripts/app_server_dispatch.py --workspace . next --app-server --json` directly and
@@ -114,8 +117,9 @@ source-bound capsule through the guarded campaign transaction, reloads it, and c
 existing bounded Terra/medium `camp-run` in the same invocation. Invalid, unsafe, ambiguous, stale,
 or over-budget preparation stops before workspace or lifecycle mutation. A selected discussion,
 decision, blocker, external gate, GUI-native action, or unsupported role remains on its natural
-route. Compatibility failure remains fail-closed, the unflagged GUI route stays available, and the
-selector is not retained for later commands.
+route. Compatibility failure remains fail-closed for strict explicit selection. A
+repository-default failure falls back to the current GUI, and the selector is not retained for
+later commands.
 
 Resolve and display the user-facing selection before execution:
 
@@ -168,8 +172,8 @@ The selector reuses the centralized config, model policy, qualification registry
 Codex version check. Fresh schema-v2 `ts: app-server on` consent selects operator-runtime trust for
 all supported local roles, including CAMP. Unknown and newly updated versions run without a
 positive exact record or hash certificate. An exact record with `status: unqualified` and reviewed
-evidence denies only that version. The existing GUI remains available by rerunning without
-`--app-server`; the control never switches to API execution.
+evidence denies only that version. The existing GUI remains available with `--gui`; the control
+never switches to API execution.
 
 Historical dirty-read summaries remain stored in a protected user-local cache at
 `$CODEX_HOME/tool-shed/dirty-read-qualifications.json`, falling back to the matching `~/.codex`
@@ -220,7 +224,9 @@ evidence exists.
 
 `ts: discuss ... --app-server` is rejected because discussion is intentionally GUI-native.
 `ts: app-server on|off` persists the user-local preference under Codex home; `appserver` is its
-exact alias. `--gui` overrides the preference for one command. The repository default remains off.
+exact alias. A persisted preference overrides repository policy: `off` forces GUI and fresh
+schema-v2 `on` also records operator-runtime trust. With no preference, eligible routes follow the
+repository default. `--gui` overrides either source for one command.
 Each explicit preference change also refreshes a recovery-only owner profile under the user config
 directory. That copy never acts as runtime consent; `ts: app-server profile restore` is required
 after destructive Codex-home replacement. `profile status` and `profile save` inspect or refresh it.
@@ -571,23 +577,24 @@ checks establish and configure a new validated version. An optional
 `--comparison` JSON file can attach manually reviewed GUI/App Server quality evidence; absent GUI
 token metrics remain `null` rather than being estimated.
 
-## Promotion Decision
+## Default-On Decision
 
-App Server is ready for explicitly enabled, read-only planning and verification trials and one
-bounded `camp_execution` step. It is not ready to become Tool Shed's default execution path because:
+App Server is the repository default for read-only planning and verification and one bounded
+`camp_execution` step. The following risks constrain that default to those eligible local roles:
 
 1. OpenAI still labels App Server experimental and unsupported for production workloads.
 2. CLI 0.149.0 still returned a contradictory `turn/interrupt` acknowledgement, although bounded
    reconciliation safely observed terminal `interrupted`.
 3. The real Codex GUI approval surface is not connected to `ApprovalBridge`.
 4. The optimized representative write CAMP succeeded safely at 61,516 input tokens and demonstrated
-   material savings, but the fixed harness floor remains large and does not justify global enablement.
+   material savings, but the fixed harness floor remains large.
 5. Broader workspace writing, build, deployment, and permission expansion remain unqualified.
 6. The installed runtime and published/schema restricted-read surfaces currently disagree.
 
-Promotion should occur only after those conditions are resolved. The existing GUI path remains the
-default and rollback path throughout. The completed real-campaign observation and measurements are
-recorded in [the 2026-08-20 qualification report](codex-app-server-qualification-2026-08-20.md).
+The existing GUI path remains the explicit override and rollback path. Those conditions must be
+resolved before broadening the eligible roles or using App Server for deployment or production
+workloads. The completed real-campaign observation and measurements are recorded in
+[the 2026-08-20 qualification report](codex-app-server-qualification-2026-08-20.md).
 
 ### Gate A: default planning and verification
 
@@ -649,11 +656,11 @@ Passing unit tests alone does not promote a role. API fallback and Luna routing 
 
 ## Merge Readiness
 
-The infrastructure is sufficiently isolated to merge into the normal Tool Shed codebase while it
-remains disabled by default: it is confined to App Server adapters/scripts, explicit configuration,
-tests, and documentation; normal GUI routing is unchanged; and unsupported roles fail back to the
-existing path. The recommended long-term state is infrastructure present on `main`, global default
-disabled, explicit read-only opt-in available, and compatibility status visible.
+The infrastructure is sufficiently isolated to merge into the normal Tool Shed codebase with the
+eligible roles enabled by default: it is confined to App Server adapters/scripts, explicit
+configuration, tests, and documentation; unsupported roles remain on the existing GUI path; and
+compatibility status is visible. A protected user-local `off` preference and `--gui` remain the
+rollback controls.
 
 Do not merge by mutating or cleaning the active dirty checkout. Merge only through a reviewed,
 clean Git operation after its unrelated campaign work is reconciled. This hardening phase prepares

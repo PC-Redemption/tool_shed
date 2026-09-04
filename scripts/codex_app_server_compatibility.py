@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Status and compatibility smoke checks for Tool Shed's opt-in Codex App Server path."""
+"""Status and compatibility smoke checks for Tool Shed's bounded App Server path."""
 
 from __future__ import annotations
 
@@ -512,7 +512,7 @@ def status_report(
     return {
         "schema_version": 1,
         "title": "CODEX APP SERVER",
-        "status": "OPT-IN",
+        "status": "DEFAULT-ON" if config.globally_enabled else "OPT-IN",
         "global_default": "disabled" if not config.globally_enabled else "enabled",
         "installed_codex": installed,
         "qualified_codex": configured_qualified,
@@ -732,7 +732,7 @@ def smoke_report(
             ),
         ),
     ]
-    fallback = config.route("planning", enable_override=None)
+    fallback = config.route("planning", enable_override=False)
     checks.append(
         check(
             "existing_gui_fallback",
@@ -1154,7 +1154,7 @@ def smoke_report(
             if dirty_qualification
             else "Review smoke evidence and add a version-specific qualification record."
             if record is None
-            else "Keep App Server opt-in until recorded blockers are cleared and requalified."
+            else "Keep App Server bounded to qualified roles until recorded blockers are cleared."
         ),
     }
 
@@ -1191,7 +1191,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--policy", type=Path, default=DEFAULT_POLICY)
     parser.add_argument("--qualifications", type=Path, default=DEFAULT_QUALIFICATIONS)
     subparsers = parser.add_subparsers(dest="command", required=True)
-    status = subparsers.add_parser("status", help="Show concise opt-in and compatibility status.")
+    status = subparsers.add_parser("status", help="Show concise routing and compatibility status.")
     status.add_argument("--json", action="store_true")
     smoke = subparsers.add_parser("smoke", help="Run live read-only compatibility checks.")
     smoke.add_argument("--cwd", type=Path, default=ROOT)

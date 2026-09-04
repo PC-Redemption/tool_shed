@@ -645,9 +645,9 @@ Ordinary Tool Shed requests do not refresh or require this catalog.
 
 ## Codex App Server Persistent Preference
 
-The repository default remains GUI. Turn on a protected user-local preference once to make eligible
-unflagged commands prefer App Server, use `--gui` for one GUI action, or use `--app-server` for a
-strict one-command App Server request:
+The repository default uses App Server for eligible unflagged commands. A protected user-local
+preference can add operator-runtime trust with `on` or force GUI with `off`; use `--gui` for one GUI
+action or `--app-server` for a strict one-command App Server request:
 
 | Prompt | Selected execution |
 | --- | --- |
@@ -656,16 +656,17 @@ strict one-command App Server request:
 | `ts: camp run <camp> --app-server` | Existing bounded App Server CAMP path with `gpt-5.6-terra` / `medium` |
 | `ts: next --app-server` | Invoke one deterministic dispatcher that reuses normal `next` selection, preflights CAMP before planning, automatically prepares an unprepared ready campaign with at most 64,000 bytes of inline context through read-only App Server planning, and continues to the existing Terra/medium CAMP path; never launch a nested Codex agent. |
 | `ts: app-server on` | Persistently trust the resolved App Server for supported local roles, including bounded CAMP. `appserver` is an alias. |
-| `ts: app-server off` | Restore the normal GUI default. |
+| `ts: app-server off` | Persist a user-local GUI override of the repository App Server default. |
 | `ts: app-server status` | Read-only operator-trust, runtime-readiness, observed-safety, and optional-certification status. |
 | `ts: app-server profile status` | Inspect the protected recovery copy without making it active. |
 | `ts: app-server profile save` | Explicitly refresh recovery evidence from the current active preference. |
 | `ts: app-server profile restore` | Explicitly restore the active preference from valid recovery evidence. |
 | `ts: app-server report [hours]` | Report the bounded local opportunity funnel; the default window is 24 hours. |
 
-With the preference off, unflagged `ts: plan`, `ts: verify`, `ts: camp run`, and executable `ts:
-next` use the GUI and report `Execution: GUI`. With it on, those routes prefer App Server; `--gui`
-overrides it once without changing stored state. Fresh schema-v2 `on` consent selects
+With no user-local preference, unflagged `ts: plan`, `ts: verify`, `ts: camp run`, and executable
+`ts: next` follow the repository App Server default and fall back to GUI before mutation when App
+Server is unavailable or ineligible. A persisted `off` forces GUI; a persisted `on` adds
+operator-runtime trust. `--gui` overrides once without changing stored state. Fresh schema-v2 `on` consent selects
 operator-runtime trust, so an unknown or newly updated Codex version may use every supported local
 role without a positive qualification record or executable-hash certificate. The actual operation
 checks App Server startup, ChatGPT authentication, the live model, and requested sandbox while the
@@ -710,15 +711,16 @@ changing execution surfaces.
 time in
 `$CODEX_HOME/tool-shed/app-server-preference.json` (or the equivalent `~/.codex` path), outside
 repositories and installed Tool Shed snapshots. Writes are locked, atomic, and private where the
-platform supports modes. Missing or invalid state fails safely to off. Legacy schema-v1 `on` stays
-enabled for read roles but requires one new `on` command before CAMP trust is granted. The committed
-global setting remains `codex_app_server_enabled = false`.
+platform supports modes. Missing state defers to the repository default; malformed, unsupported,
+or unreadable state fails safely to GUI. Legacy schema-v1 `on` stays enabled for read roles but
+requires one new `on` command before CAMP trust is granted. The committed global setting is
+`codex_app_server_enabled = true`.
 
 An explicit `on` or `off` also refreshes a recovery-only owner profile at
 `$XDG_CONFIG_HOME/tool-shed/app-server-owner-profile.json` (normally
 `~/.config/tool-shed/app-server-owner-profile.json`). The active preference remains the sole runtime
-authority. Replacing Codex home therefore returns execution to the clean default-off state until the
-operator explicitly runs `ts: app-server profile restore`; the profile is never read as live consent.
+authority. Replacing Codex home therefore returns execution to the repository default until the
+operator explicitly creates or restores a user-local override; the profile is never read as live consent.
 `profile save`, `profile status`, and `profile restore` are explicit controls and use private,
 atomic, locked files where the platform supports modes.
 

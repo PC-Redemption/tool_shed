@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Resolve Tool Shed's explicit and user-persisted Codex App Server controls."""
+"""Resolve Tool Shed's repository, explicit, and user-persisted App Server controls."""
 
 from __future__ import annotations
 
@@ -213,6 +213,21 @@ def _global_default(config: AppServerFeatureConfig) -> str:
     return "ON" if config.globally_enabled else "OFF"
 
 
+def _preference_override(preference: PreferenceState) -> bool | None:
+    """Return an explicit user override, or None when repository policy owns the default."""
+
+    if preference.source in {
+        "user-local-preference",
+        "legacy-user-local-preference",
+    }:
+        return preference.enabled
+    if preference.warning == "not-found":
+        return None
+    # Malformed, unsupported, unreadable, or otherwise unsafe preference state
+    # continues to fail closed even when the repository default is enabled.
+    return False
+
+
 def select_role(
     role: str,
     *,
@@ -237,14 +252,39 @@ def select_role(
     if app_server_requested and gui_requested:
         raise AppServerControlError("--app-server and --gui are mutually exclusive")
     preference = AppServerPreferenceStore(preference_path).status()
+    config = AppServerFeatureConfig.load(config_path)
+    preference_override = _preference_override(preference)
     certification_policy = repository_certification_policy(
         policy_path=repository_policy_path,
         workspace=workspace,
     )
     operator_runtime = bool(preference.operator_trust and not certification_policy["strict"])
     persisted_request = preference.enabled and not app_server_requested and not gui_requested
-    effective_app_server = app_server_requested or persisted_request
-    config = AppServerFeatureConfig.load(config_path)
+    preference_off_override = bool(
+        preference_override is False
+        and preference.source in {
+            "user-local-preference",
+            "legacy-user-local-preference",
+        }
+        and not app_server_requested
+        and not gui_requested
+    )
+    preference_fail_safe = bool(
+        preference_override is False
+        and not preference_off_override
+        and not app_server_requested
+        and not gui_requested
+    )
+    repository_default_request = bool(
+        config.globally_enabled
+        and preference_override is None
+        and not app_server_requested
+        and not gui_requested
+    )
+    effective_app_server = bool(
+        not gui_requested
+        and (app_server_requested or persisted_request or repository_default_request)
+    )
     policy = ModelPolicy.load(policy_path)
     api_fallback = bool(policy.payload["authentication"]["allow_api_key_fallback"])
     common: dict[str, Any] = {
@@ -255,12 +295,15 @@ def select_role(
         "opt_in": (
             "explicit" if app_server_requested
             else "persistent" if persisted_request
+            else "persistent-off" if preference_off_override
+            else "preference-fail-safe" if preference_fail_safe
+            else "repository-default" if repository_default_request
             else "explicit-gui" if gui_requested
             else "default"
         ),
         "fallback_available": True,
         "global_default": _global_default(config),
-        "session_opt_in": "OFF",
+        "session_opt_in": preference.mode,
         "qualified_codex": ", ".join(config.qualified_codex_versions),
         "minimum_dirty_read_codex": config.minimum_dirty_read_codex_version,
         "api_fallback": api_fallback,
@@ -291,7 +334,15 @@ def select_role(
             model=None,
             reasoning=None,
             allowed=True,
-            reason="explicit_gui" if gui_requested else "default_gui",
+            reason=(
+                "explicit_gui"
+                if gui_requested
+                else "persistent_gui_override"
+                if preference_off_override
+                else "preference_fail_safe_gui"
+                if preference_fail_safe
+                else "default_gui"
+            ),
             installed_codex=None,
             codex_executable=None,
             codex_discovery=None,
@@ -308,7 +359,13 @@ def select_role(
                 **{
                     **common,
                     "requested_execution": "GUI",
-                    "opt_in": "persistent-bypass" if persisted_request else common["opt_in"],
+                    "opt_in": (
+                        "persistent-bypass"
+                        if persisted_request
+                        else "repository-default-bypass"
+                        if repository_default_request
+                        else common["opt_in"]
+                    ),
                 },
                 execution="GUI",
                 model=None,
@@ -591,12 +648,16 @@ def select_role(
             "explicit_dirty_qualified_opt_in"
             if app_server_requested
             else "persistent_dirty_qualified_preference"
+            if persisted_request
+            else "repository_default_dirty_qualified"
         )
     else:
         reason = (
             "explicit_qualified_opt_in"
             if app_server_requested
             else "persistent_qualified_preference"
+            if persisted_request
+            else "repository_default_qualified"
         )
     allowed = reason in {
         "explicit_operator_runtime_trust",
@@ -605,6 +666,8 @@ def select_role(
         "explicit_dirty_qualified_opt_in",
         "persistent_qualified_preference",
         "persistent_dirty_qualified_preference",
+        "repository_default_qualified",
+        "repository_default_dirty_qualified",
     }
     common.update(
         {
@@ -671,12 +734,16 @@ def select_command(
         workspace=workspace,
         force_requalification=force_requalification,
     )
-    if selection.opt_in == "persistent" and not selection.allowed:
+    if selection.opt_in in {"persistent", "repository-default"} and not selection.allowed:
         return replace(
             selection,
             allowed=True,
             execution="GUI",
-            reason="persistent_gui_fallback",
+            reason=(
+                "persistent_gui_fallback"
+                if selection.opt_in == "persistent"
+                else "repository_default_gui_fallback"
+            ),
             fallback_used=True,
             fallback_reason=selection.reason,
         )
@@ -697,6 +764,7 @@ def control_status(
     workspace: Path | None = None,
 ) -> dict[str, Any]:
     preference = AppServerPreferenceStore(preference_path).status()
+    preference_override = _preference_override(preference)
     profile = AppServerOwnerProfileStore(profile_path).status()
     certification_policy = repository_certification_policy(
         policy_path=repository_policy_path,
@@ -715,12 +783,30 @@ def control_status(
         strict_certification=bool(certification_policy["strict"]),
     )
     policy = ModelPolicy.load(policy_path)
+    if preference_override is True:
+        current_execution_default = "App Server"
+        current_execution_source = "user-local-preference"
+    elif preference_override is False:
+        current_execution_default = "GUI"
+        current_execution_source = (
+            "user-local-preference"
+            if preference.source in {
+                "user-local-preference",
+                "legacy-user-local-preference",
+            }
+            else "fail-safe-preference-state"
+        )
+    else:
+        current_execution_default = (
+            "App Server" if report["global_default"] == "enabled" else "GUI"
+        )
+        current_execution_source = "repository-default"
     report.update(
         {
             "global_default": "ON" if report["global_default"] == "enabled" else "OFF",
             "session_opt_in": preference.mode,
             "session_control_supported": True,
-            "session_note": "Persistent user-local preference; --gui overrides it once.",
+            "session_note": "Persistent user-local preference overrides the repository default; --gui overrides once.",
             "preference": preference.as_dict(),
             "owner_profile": profile.as_dict(),
             "owner_profile_authority": "recovery-only-explicit-restore",
@@ -739,7 +825,8 @@ def control_status(
             "event_log_path": str(
                 (event_path or default_app_server_event_path()).expanduser().resolve()
             ),
-            "current_execution_default": "App Server" if preference.enabled else "GUI",
+            "current_execution_default": current_execution_default,
+            "current_execution_source": current_execution_source,
             "discussion_execution": "GUI-native",
             "api_fallback": bool(
                 policy.payload["authentication"]["allow_api_key_fallback"]
@@ -845,7 +932,7 @@ def format_selection(selection: CommandSelection) -> str:
             return "\n".join(
                 [
                     "Execution: GUI",
-                    "App Server preference fallback: ACTIVE",
+                    "App Server automatic fallback: ACTIVE",
                     f"Reason: {selection.fallback_reason}",
                     "Action: continue the same request immediately in GUI",
                 ]
@@ -873,7 +960,7 @@ def format_selection(selection: CommandSelection) -> str:
             ]
         )
     if selection.strict_request:
-        lines.append("Fallback: rerun the command without --app-server or use --gui")
+        lines.append("Fallback: rerun the command with --gui")
     else:
         lines.append("Fallback: GUI will be used automatically when safe")
     return "\n".join(lines)
@@ -929,6 +1016,7 @@ def format_control_status(report: dict[str, Any]) -> str:
         [
             "",
             f"Current execution default: {report['current_execution_default']}",
+            f"Current default source: {report['current_execution_source']}",
             f"ts: discuss: {report['discussion_execution']}",
             f"API fallback: {'enabled' if report['api_fallback'] else 'disabled'}",
         ]
@@ -961,7 +1049,7 @@ def parse_args() -> argparse.Namespace:
     status.add_argument("--json", action="store_true")
 
     preference = subparsers.add_parser(
-        "preference", help="Persistently enable or disable passive App Server use."
+        "preference", help="Persistently trust App Server or override the default with GUI."
     )
     preference.add_argument("action", choices=("on", "off"))
     preference.add_argument("--json", action="store_true")
