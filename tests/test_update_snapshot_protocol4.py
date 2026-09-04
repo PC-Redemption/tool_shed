@@ -71,7 +71,7 @@ class Protocol4UpdaterTests(unittest.TestCase):
                 allowed_campaign_mutations=paths,
             )
 
-    def test_schema2_preflight_rebuilds_both_recovery_checkpoints(self) -> None:
+    def test_schema2_preflight_rebuilds_current_recovery_checkpoint(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)
             database = workspace / ".tool-shed/state.sqlite3"
@@ -87,7 +87,6 @@ class Protocol4UpdaterTests(unittest.TestCase):
                 "domain_digest": "current-domain",
             }
             backup = {"backup": ".tool-shed/backup.sqlite3"}
-            legacy = {"domain_digest": "legacy-domain"}
             current = {"domain_digest": "current-domain"}
             with (
                 mock.patch.object(update_snapshot, "binding_token", return_value="binding"),
@@ -99,7 +98,7 @@ class Protocol4UpdaterTests(unittest.TestCase):
                 mock.patch.object(
                     update_snapshot,
                     "_protocol4_hybrid_command",
-                    side_effect=[backup, legacy],
+                    return_value=backup,
                 ) as hybrid_command,
                 mock.patch.object(
                     update_snapshot,
@@ -113,10 +112,10 @@ class Protocol4UpdaterTests(unittest.TestCase):
                     timeout=60,
                 )
 
-            self.assertEqual(hybrid_command.call_count, 2)
+            self.assertEqual(hybrid_command.call_count, 1)
             document_command.assert_called_once()
             self.assertEqual(result["shadow_rebuild"], current)
-            self.assertEqual(result["recovery_rebuilds"]["state_v1"], legacy)
+            self.assertIsNone(result["recovery_rebuilds"]["state_v1"])
             self.assertEqual(result["recovery_rebuilds"]["state_v2"], current)
 
     def test_schema2_preflight_requires_document_checkpoint(self) -> None:

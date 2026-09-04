@@ -217,7 +217,7 @@
     "scripts/update-tool-shed.ps1": "271d8970201341f66595b902de0c1e03ace41203ef113b81eed5464b2a75591d",
     "scripts/update-tool-shed.sh": "51740376eca2cbe2eba8590333f55bfa7cf7bd6b720b27176a127a0e44223fdb",
     "scripts/update_shed_manifest.py": "acb207b6f099298966a83257cfa01f70ed4b86f72e0b4bfb03c0262e61e59a30",
-    "scripts/update_snapshot.py": "f7f043b7d0fb679ea8ceff0d93b3793156dd1c1f468e3fb1248b028a200e5d3b",
+    "scripts/update_snapshot.py": "57d1a85d1c6a87f6746c881cc8ffe3723d3e2942d6f035f3de7a3451a7c6c34a",
     "scripts/update_work_index.py": "14839e13af13b09103ec2e8a9b204c1ba1e390d05fe42e75a0d24295da7d6c66",
     "scripts/validate_snapshot_client.py": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f",
     "scripts/validate_tool_shed.py": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb",

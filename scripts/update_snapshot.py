@@ -258,27 +258,29 @@ def protocol4_hybrid_preflight(
     )
     if backup_audit.get("domain_digest") != audit.get("domain_digest"):
         raise UpdateError("protocol 4 hybrid backup changed the domain digest")
-    checkpoint = workspace / "work" / "state" / "checkpoints" / "state-v1.json"
-    if not checkpoint.is_file():
-        raise UpdateError("protocol 4 hybrid state requires the tracked state-v1 checkpoint")
-    legacy_shadow_relative = f".tool-shed/state.protocol4-v1-{os.urandom(8).hex()}.sqlite3"
-    legacy_shadow = workspace / legacy_shadow_relative
+    schema_version = audit.get("schema_version")
+    legacy_shadow: Path | None = None
+    legacy_rebuilt: dict[str, object] | None = None
     current_shadow: Path | None = None
     try:
-        legacy_rebuilt = _protocol4_hybrid_command(
-            snapshot,
-            workspace,
-            "rebuild",
-            "--project-binding",
-            binding,
-            "--checkpoint",
-            checkpoint.relative_to(workspace).as_posix(),
-            "--output",
-            legacy_shadow_relative,
-            timeout=timeout,
-        )
-        schema_version = audit.get("schema_version")
         if schema_version == 1:
+            checkpoint = workspace / "work" / "state" / "checkpoints" / "state-v1.json"
+            if not checkpoint.is_file():
+                raise UpdateError("protocol 4 schema-1 state requires the tracked state-v1 checkpoint")
+            legacy_shadow_relative = f".tool-shed/state.protocol4-v1-{os.urandom(8).hex()}.sqlite3"
+            legacy_shadow = workspace / legacy_shadow_relative
+            legacy_rebuilt = _protocol4_hybrid_command(
+                snapshot,
+                workspace,
+                "rebuild",
+                "--project-binding",
+                binding,
+                "--checkpoint",
+                checkpoint.relative_to(workspace).as_posix(),
+                "--output",
+                legacy_shadow_relative,
+                timeout=timeout,
+            )
             rebuilt = legacy_rebuilt
         elif schema_version in {2, 3, 4, 5}:
             document_checkpoint = workspace / "work" / "state" / "checkpoints" / "state-v2.json"
@@ -305,7 +307,7 @@ def protocol4_hybrid_preflight(
         if rebuilt.get("domain_digest") != audit.get("domain_digest"):
             raise UpdateError("protocol 4 current-schema shadow rebuild changed the domain digest")
     finally:
-        shadows = [legacy_shadow]
+        shadows = [legacy_shadow] if legacy_shadow is not None else []
         if current_shadow is not None:
             shadows.append(current_shadow)
         for shadow in shadows:
