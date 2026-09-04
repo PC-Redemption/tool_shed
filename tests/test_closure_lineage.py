@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import json
 from pathlib import Path
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -276,6 +277,18 @@ class ClosureLineageTests(unittest.TestCase):
             "redaction": "no-output",
             "pass_semantics": "exact predicate passed",
             "fail_semantics": "exact predicate failed",
+            "verification_context": {
+                "schema_version": 1,
+                "kind": "tool-shed-verification-policy-input",
+                "changed_paths": ["scripts/closure_lineage.py"],
+                "components": ["proof-runner"],
+                "side_effect_classes": ["none"],
+                "target_class": "development",
+                "protected_boundaries": [],
+                "behavior_neutral": False,
+                "requested_profile": "normal",
+                "parent_minimum_profile": "normal",
+            },
         }
         registered = closure_lineage.register_recipe(
             self.workspace,
@@ -288,6 +301,10 @@ class ClosureLineageTests(unittest.TestCase):
             actor="fixture",
         )
         self.assertFalse(registered["result"]["idempotent"])
+        policy = registered["result"]["verification_policy"]
+        self.assertEqual(policy["classified_profile"], "normal")
+        self.assertEqual(policy["effective_profile"], "high-risk")
+        self.assertIn("automatic-lowering-disabled", policy["reason_codes"])
         repeated = closure_lineage.register_recipe(
             self.workspace,
             project_binding=self.binding,
@@ -312,6 +329,11 @@ class ClosureLineageTests(unittest.TestCase):
                 "recipe_digest": registered["result"]["recipe_digest"],
                 "target_identity": "fixture-local",
                 "subject_digest": closure_lineage.status(self.workspace, self.roadmap_cycle)["subject_digest"],
+                "verification_policy_digest": policy["policy_digest"],
+                "verification_decision_digest": policy["decision_digest"],
+                "effective_profile": policy["effective_profile"],
+                "completed_recipe_set": policy["required_recipe_set"],
+                "evidence": ["fixture:full-loop", "fixture:independent-review"],
             },
             authority_ref="fixture proof execution",
             actor="fixture",
@@ -329,12 +351,29 @@ class ClosureLineageTests(unittest.TestCase):
                 "recipe_digest": registered["result"]["recipe_digest"],
                 "target_identity": "fixture-local",
                 "subject_digest": closure_lineage.status(self.workspace, self.roadmap_cycle)["subject_digest"],
+                "verification_policy_digest": policy["policy_digest"],
+                "verification_decision_digest": policy["decision_digest"],
+                "effective_profile": policy["effective_profile"],
+                "completed_recipe_set": policy["required_recipe_set"],
+                "evidence": ["fixture:full-loop", "fixture:independent-review"],
             },
             authority_ref="fixture proof execution",
             actor="fixture",
         )
         self.assertFalse(first["result"]["idempotent"])
         self.assertTrue(second["result"]["idempotent"])
+        with contextlib.closing(sqlite3.connect(hybrid_state.database_path(self.workspace))) as connection:
+            row = connection.execute(
+                "SELECT evidence_json FROM closure_record WHERE element_id=? AND superseded_revision IS NULL",
+                (self.roadmap_cycle,),
+            ).fetchone()
+        closure_evidence = json.loads(row[0])
+        self.assertEqual(closure_evidence["verification_policy"]["policy_digest"], policy["policy_digest"])
+        self.assertEqual(closure_evidence["verification_policy"]["effective_profile"], "high-risk")
+        self.assertEqual(
+            closure_evidence["actual_evidence"],
+            ["fixture:full-loop", "fixture:independent-review"],
+        )
 
         fabricated = closure_lineage.record_proof_attempt(
             self.workspace,

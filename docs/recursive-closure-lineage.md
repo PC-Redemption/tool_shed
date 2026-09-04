@@ -81,14 +81,47 @@ recover an element missed by an interrupted older writer from the authoritative 
 A recipe is immutable and content-addressed. Its declaration must bind the obligation and target;
 read, write, network, credential, production, and external-cost classes; workspace/target
 boundaries; timeout/resources; retry/cooldown/freshness; output schema/redaction; and explicit
-pass/fail meaning. The checker has its own immutable digest. Generated free-form shell is not a
-recipe.
+pass/fail meaning. It also carries a `verification_context`; registration deterministically
+attaches its versioned verification-policy decision before computing the recipe digest. The
+checker has its own immutable digest. Generated free-form shell is not a recipe.
 
 `proof-record` is idempotent on element, obligation, subject revision/digest, recipe digest, and
 target. A passed result closes work only when its output repeats the immutable checker, recipe,
-target, and subject digests and the invocation carries explicit current authority. Mutating,
+target, subject, verification-policy, and policy-decision digests; reports the effective profile
+and complete required recipe set; and the invocation carries explicit current authority. Mutating,
 networked, credentialed, production, or costly recipes also become `blocked` without that current
 authority. Failed, blocked, timed-out, checker-error, or superseded attempts cannot close work.
+
+## Risk-adaptive verification hooks
+
+Policy revision 1 defines three ordered profiles:
+
+| Profile | Intended minimum recipe set |
+| --- | --- |
+| `mechanical` | Edit and targeted verification |
+| `normal` | Mechanical recipes plus applicable tests and diff review |
+| `high-risk` | Normal recipes plus recursive closure and independent verification |
+
+Run `python3 scripts/verification_policy.py policy` to inspect the immutable policy and digest, or
+pass a schema-version-1 input to `verification_policy.py classify --input <path>`. Classification
+uses declared changed paths and components, side-effect classes, target class, protected
+boundaries, behavior-neutrality, parent minimum, and explicit escalation signals. Mixed scope takes
+the highest profile. Production, migration, schema, controller/orchestration, architecture,
+recovery, security, credential, deployment, release, unknown, stale, failed, dependency-changing,
+or unexpected scope is high risk.
+
+The first release is deliberately hooks-only: `automatic_lowering_enabled` is false, so a
+mechanical or normal classification is recorded but the effective profile remains `high-risk`.
+This preserves the prior full-depth proof obligation while gathering stable policy inputs. A later
+policy revision may enable proportional lowering only after comparative qualification demonstrates
+token and elapsed-time savings without increasing missed regressions or false closure.
+
+Every policy decision is deterministic and content-addressed. Recipe registration stores the
+classified and effective profiles, policy and decision digests, reason codes, required recipe set,
+and escalation history. Passed proof results must repeat those bindings, and the resulting closure
+record retains them with the actual evidence references. Changing the policy context therefore
+changes recipe identity and prevents historical shallower evidence from silently closing a new
+subject.
 
 ## Recovery
 

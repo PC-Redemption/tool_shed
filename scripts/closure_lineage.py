@@ -23,6 +23,7 @@ from typing import Any, Iterable, Sequence
 
 import document_store
 import hybrid_state
+import verification_policy
 from closure_lineage_schema import (
     CLOSURE_SCHEMA_VERSION,
     CLOSURE_TABLES,
@@ -1341,7 +1342,7 @@ RECIPE_REQUIRED_FIELDS = {
     "obligation_id", "target_identity", "read_class", "write_class", "network_class",
     "credential_class", "production_class", "cost_class", "workspace_boundary", "target_boundary",
     "timeout_seconds", "resource_limit", "retry_limit", "cooldown_seconds", "freshness_seconds",
-    "output_schema", "redaction", "pass_semantics", "fail_semantics",
+    "output_schema", "redaction", "pass_semantics", "fail_semantics", "verification_context",
 }
 
 
@@ -1361,6 +1362,14 @@ def register_recipe(
         raise ClosureLineageError("proof recipe lacks: " + ", ".join(missing))
     if len(checker_digest) != 64:
         raise ClosureLineageError("checker digest must be SHA-256")
+    try:
+        policy_decision = verification_policy.classify(declaration["verification_context"])
+    except verification_policy.VerificationPolicyError as error:
+        raise ClosureLineageError(f"invalid verification policy context: {error}") from error
+    supplied_policy = declaration.get("verification_policy")
+    if supplied_policy is not None and supplied_policy != policy_decision:
+        raise ClosureLineageError("supplied verification policy decision is stale or invalid")
+    declaration = {**declaration, "verification_policy": policy_decision}
     recipe_digest = digest(declaration)
 
     def existing(connection: sqlite3.Connection) -> dict[str, Any] | None:
@@ -1368,7 +1377,13 @@ def register_recipe(
         if row is None:
             return None
         if int(row["version"]) == version and row["recipe_digest"] == recipe_digest and row["revoked_revision"] is None:
-            return {"recipe_id": recipe_id, "version": version, "recipe_digest": recipe_digest, "idempotent": True}
+            return {
+                "recipe_id": recipe_id,
+                "version": version,
+                "recipe_digest": recipe_digest,
+                "verification_policy": policy_decision,
+                "idempotent": True,
+            }
         raise ClosureLineageError("recipe identity already exists with different immutable content")
 
     def apply(connection: sqlite3.Connection, revision: int) -> dict[str, Any]:
@@ -1376,7 +1391,13 @@ def register_recipe(
             "INSERT INTO proof_recipe VALUES (?, ?, ?, ?, ?, ?, ?, NULL)",
             (recipe_id, version, recipe_digest, checker_id, checker_digest, json.dumps(declaration, sort_keys=True), revision),
         )
-        return {"recipe_id": recipe_id, "version": version, "recipe_digest": recipe_digest, "idempotent": False}
+        return {
+            "recipe_id": recipe_id,
+            "version": version,
+            "recipe_digest": recipe_digest,
+            "verification_policy": policy_decision,
+            "idempotent": False,
+        }
 
     return document_store.managed_write(
         workspace, project_binding=project_binding, command="closure-proof-recipe-register", actor=actor,
@@ -1406,6 +1427,10 @@ def record_proof_attempt(
         if recipe is None or element is None:
             raise ClosureLineageError("proof recipe or element is unavailable")
         declaration = json.loads(recipe["declaration_json"])
+        try:
+            policy_decision = verification_policy.validate_decision(declaration.get("verification_policy"))
+        except verification_policy.VerificationPolicyError as error:
+            raise ClosureLineageError(f"registered recipe has invalid verification policy: {error}") from error
         protected = any(
             str(declaration[field]) not in {"none", "read-only", "local", "non-production", "zero"}
             for field in ("write_class", "network_class", "credential_class", "production_class", "cost_class")
@@ -1416,6 +1441,10 @@ def record_proof_attempt(
             "recipe_digest": recipe["recipe_digest"],
             "target_identity": target_identity,
             "subject_digest": element["subject_digest"],
+            "verification_policy_digest": policy_decision["policy_digest"],
+            "verification_decision_digest": policy_decision["decision_digest"],
+            "effective_profile": policy_decision["effective_profile"],
+            "completed_recipe_set": policy_decision["required_recipe_set"],
         }
         binding_errors = [
             field for field, expected in expected_result.items()
@@ -1462,7 +1491,25 @@ def record_proof_attempt(
                 (
                     random_uuid(), element_id, declaration["obligation_id"], element["subject_revision"],
                     element["subject_digest"], authority_ref or "registered safe proof recipe",
-                    json.dumps([f"proof-attempt:{attempt_id}"]), revision,
+                    json.dumps(
+                        {
+                            "proof_attempt": f"proof-attempt:{attempt_id}",
+                            "verification_policy": {
+                                "classified_profile": policy_decision["classified_profile"],
+                                "effective_profile": policy_decision["effective_profile"],
+                                "policy_id": policy_decision["policy_id"],
+                                "policy_version": policy_decision["policy_version"],
+                                "policy_digest": policy_decision["policy_digest"],
+                                "decision_digest": policy_decision["decision_digest"],
+                                "reason_codes": policy_decision["reason_codes"],
+                                "required_recipe_set": policy_decision["required_recipe_set"],
+                                "escalation_history": policy_decision["escalation_history"],
+                            },
+                            "actual_evidence": result_value.get("evidence", []),
+                        },
+                        sort_keys=True,
+                    ),
+                    revision,
                 ),
             )
         refresh_projection(connection, revision=revision, changed_element_ids=[element_id])
