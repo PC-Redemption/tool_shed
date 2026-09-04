@@ -883,7 +883,7 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
     artifact_type = request.GET.get("type", "").strip()
     status = request.GET.get("status", "").strip()
     release_stage = request.GET.get("release_stage", "").strip()
-    if release_stage not in {"", "awaiting-work5"}:
+    if release_stage not in {"", "awaiting-work5", "released", "reconciled"}:
         release_stage = ""
     planning_supported = artifact_type in PLANNING_ORDER_TYPES
     selected_order = request.GET.get(
@@ -1018,11 +1018,22 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
                     "-last_observed_at", "finding_external_id"
                 )[:50]
             )
-            for finding in findings:
+            resolved_findings = list(
+                LoopFindingSnapshot.objects.filter(instance=instance, state="resolved").order_by(
+                    "-resolved_at", "finding_external_id"
+                )[:50]
+            )
+            for finding in [*findings, *resolved_findings]:
                 finding.display_title = LOOP_FINDING_TITLES.get(
                     finding.reason_code, finding.reason_code.replace("_", " ").title()
                 )
-            outcome_groups.append({"instance": instance, "findings": findings})
+            outcome_groups.append(
+                {
+                    "instance": instance,
+                    "findings": findings,
+                    "resolved_findings": resolved_findings,
+                }
+            )
     health_rows, health_summary = _instance_health_context(instances)
     overview = _project_overview_context(project, instances, health_summary) if tab == "overview" else None
     if tab == "work" and snapshot_by_instance:

@@ -704,8 +704,9 @@ def _instance_health(value: Any, *, schema_version: int) -> dict[str, Any]:
             release.get("release_chains_truncated"),
             "instance_health.release.release_chains_truncated",
         )
-        if chain_count < len(chains) or (not truncated and chain_count != len(chains)):
-            raise ContractError("instance_health.release.awaiting_work5_chain_count does not match release_chains")
+        reported_awaiting = sum(item["stage"] == "awaiting-work5" for item in chains)
+        if chain_count < reported_awaiting or (not truncated and chain_count != reported_awaiting):
+            raise ContractError("instance_health.release.awaiting_work5_chain_count does not match awaiting chains")
         release_result.update(
             {
                 "awaiting_work5_chain_count": chain_count,

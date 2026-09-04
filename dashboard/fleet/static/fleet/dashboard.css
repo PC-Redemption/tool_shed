@@ -166,6 +166,8 @@
 .table-state-open { color: #f7d787; background: rgba(89, 68, 25, .65); }
 .table-state-unknown { color: var(--dashboard-muted); background: rgba(42, 55, 73, .45); }
 .release-stage-awaiting-work5 { border-color: rgba(243, 196, 94, .65); color: #f7d787; background: rgba(89, 68, 25, .65); }
+.release-stage-released { border-color: rgba(85, 200, 170, .65); color: #87e5ca; background: rgba(24, 74, 65, .65); }
+.release-stage-reconciled { border-color: rgba(108, 180, 245, .65); color: #a9d5fb; background: rgba(29, 63, 93, .65); }
 .cell-detail { display: block; margin-top: .25rem; color: var(--dashboard-muted); }
 .work-table td small { display: block; margin-top: .15rem; }
 .planning-order-note { flex-basis: 100%; margin: -.1rem 0 .45rem; color: var(--dashboard-muted); font-size: .76rem; }

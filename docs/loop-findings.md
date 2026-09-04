@@ -48,3 +48,30 @@ action. The service does not expose a hosted action channel, writeback, or remot
 Historical recovery remains supervised. Current-state discovery does not claim that every legacy
 manifest can be inferred safely and does not force-close past work. A later history-review manifest
 can preserve zero unexplained—not necessarily zero open—loops as the acceptance rule.
+
+## Supervised historical review
+
+`audit --history` includes active and resolved finding history and accepts repeatable bounded
+`--source` selectors for an exact finding ID, subject ID, category, reason, or state. A review then
+binds explicit operator decisions to the current Hybrid revision, domain digest, finding rows, and
+managed-document revisions:
+
+```bash
+python3 scripts/loop_findings.py --workspace . audit --history --source IDEA-0001
+python3 scripts/loop_findings.py --workspace . history-plan \
+  --decision LOOP-ABC123DEF456=apply-expected-state \
+  --rationale "The terminal reconciled outcome proves the promoted Idea is complete." \
+  --complete-cluster
+python3 scripts/loop_findings.py --workspace . history-validate \
+  --manifest <review-manifest.json>
+python3 scripts/loop_findings.py --workspace . history-apply \
+  --manifest <review-manifest.json> --expect <manifest-token> \
+  --project-binding <hybrid-state-binding> --authorization <review-evidence>
+```
+
+Every selected item requires one controlled decision: `apply-expected-state`, `retain-open`, or
+`requires-evidence`. `--complete-cluster` refuses a manifest that omits another active finding in
+the same outcome-parent lineage. Apply records review evidence for every decision; only the
+supported promoted-Idea lifecycle correction mutates product state. Any intervening database,
+finding, document-revision, project, digest, or cluster change makes the manifest stale. The normal
+managed-write refresh then re-audits findings, propagation/lineage authority, and checkpoint need.

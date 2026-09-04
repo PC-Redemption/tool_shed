@@ -28,7 +28,13 @@ from loop_findings_schema import (
     create_loop_finding_schema,
     loop_finding_migration_digest,
 )
-from project_identity import load_project_identity, require_project_binding, resolved_workspace
+from project_identity import (
+    bind_state_token,
+    load_project_identity,
+    require_path_within,
+    require_project_binding,
+    resolved_workspace,
+)
 
 
 SCHEMA_VERSION = 1
@@ -37,6 +43,13 @@ ZERO_DIGEST = "0" * 64
 MAX_ACTIVE_REPORT = 50
 MAX_RECENT_RESOLVED_REPORT = 50
 STALL_AFTER = timedelta(days=30)
+HISTORY_REVIEW_KIND = "tool-shed-loop-history-review-manifest"
+HISTORY_REVIEW_DECISIONS = {
+    "apply-expected-state",
+    "retain-open",
+    "requires-evidence",
+}
+MAX_HISTORY_SELECTION = 50
 
 
 class LoopFindingError(RuntimeError):
@@ -389,6 +402,376 @@ def audit(workspace: Path, *, database: Path | None = None) -> dict[str, Any]:
     }
 
 
+def history_audit(
+    workspace: Path,
+    *,
+    sources: Sequence[str] = (),
+    database: Path | None = None,
+) -> dict[str, Any]:
+    """Return bounded active and resolved history for explicit local sources."""
+    result = audit(workspace, database=database)
+    normalized = [item.strip().casefold() for item in sources if item.strip()]
+    if len(normalized) > MAX_HISTORY_SELECTION:
+        raise LoopFindingError(
+            f"history audit accepts at most {MAX_HISTORY_SELECTION} source selectors"
+        )
+    findings = result["findings"]
+    if normalized:
+        findings = [
+            item for item in findings
+            if any(
+                selector in {
+                    str(item["finding_id"]).casefold(),
+                    str(item["subject_id"]).casefold(),
+                    str(item["category"]).casefold(),
+                    str(item["reason_code"]).casefold(),
+                    str(item["state"]).casefold(),
+                }
+                for selector in normalized
+            )
+        ]
+    return {
+        **result,
+        "kind": "tool-shed-loop-finding-history-audit",
+        "selection": list(sources),
+        "selected_count": len(findings),
+        "findings": findings,
+    }
+
+
+def _history_cluster_ids(
+    connection: sqlite3.Connection, subject_artifact_ids: set[str]
+) -> set[str]:
+    pending = list(subject_artifact_ids)
+    connected = set(subject_artifact_ids)
+    while pending:
+        artifact_id = pending.pop(0)
+        rows = connection.execute(
+            "SELECT from_artifact_id, to_artifact_id FROM relationship "
+            "WHERE relation_type='outcome-parent' AND retired_revision IS NULL "
+            "AND (from_artifact_id=? OR to_artifact_id=?)",
+            (artifact_id, artifact_id),
+        ).fetchall()
+        for row in rows:
+            for candidate in (str(row["from_artifact_id"]), str(row["to_artifact_id"])):
+                if candidate not in connected:
+                    connected.add(candidate)
+                    pending.append(candidate)
+    rows = connection.execute(
+        "SELECT visible_id FROM loop_finding WHERE state='active' AND subject_artifact_id IN ("
+        + ",".join("?" for _ in connected)
+        + ") ORDER BY visible_id",
+        sorted(connected),
+    ).fetchall()
+    return {str(row["visible_id"]) for row in rows}
+
+
+def _review_token(workspace: Path, payload: dict[str, Any]) -> str:
+    material = dict(payload)
+    material.pop("manifest_token", None)
+    material.pop("manifest_digest", None)
+    return bind_state_token(workspace, "loop-history-review", _digest(material))
+
+
+def history_review_plan(
+    workspace: Path,
+    *,
+    decisions: Sequence[str],
+    rationale: str,
+    complete_cluster: bool,
+) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
+    if not rationale.strip() or len(rationale.strip()) > 2048:
+        raise LoopFindingError("history review requires a bounded rationale")
+    parsed: dict[str, str] = {}
+    for supplied in decisions:
+        finding_id, separator, decision = supplied.partition("=")
+        finding_id, decision = finding_id.strip().upper(), decision.strip()
+        if not separator or not finding_id or decision not in HISTORY_REVIEW_DECISIONS:
+            raise LoopFindingError(
+                "history decisions must use LOOP-id=apply-expected-state|retain-open|requires-evidence"
+            )
+        if finding_id in parsed:
+            raise LoopFindingError(f"duplicate history decision: {finding_id}")
+        parsed[finding_id] = decision
+    if not parsed or len(parsed) > MAX_HISTORY_SELECTION:
+        raise LoopFindingError(
+            f"history review requires 1 to {MAX_HISTORY_SELECTION} decisions"
+        )
+    audit_result = audit(workspace)
+    if not audit_result["fresh"]:
+        raise LoopFindingError("loop discovery is stale; perform a managed refresh before review")
+    identity = load_project_identity(workspace)
+    with contextlib.closing(
+        hybrid_state.connect(hybrid_state.database_path(workspace), writable=False)
+    ) as connection:
+        placeholders = ",".join("?" for _ in parsed)
+        rows = list(
+            connection.execute(
+                f"SELECT * FROM loop_finding WHERE upper(visible_id) IN ({placeholders}) "
+                "ORDER BY visible_id",
+                sorted(parsed),
+            )
+        )
+        found = {str(row["visible_id"]).upper() for row in rows}
+        missing = sorted(set(parsed) - found)
+        if missing:
+            raise LoopFindingError("history findings were not found: " + ", ".join(missing))
+        if any(str(row["state"]) != "active" for row in rows):
+            raise LoopFindingError("history review accepts only currently active findings")
+        if complete_cluster:
+            required = _history_cluster_ids(
+                connection, {str(row["subject_artifact_id"]) for row in rows}
+            )
+            omitted = sorted(required - set(parsed))
+            if omitted:
+                raise LoopFindingError(
+                    "complete cluster review omitted active findings: " + ", ".join(omitted)
+                )
+        items: list[dict[str, Any]] = []
+        for row in rows:
+            public = _public_row(row)
+            decision = parsed[str(row["visible_id"]).upper()]
+            document_revision = None
+            if decision == "apply-expected-state":
+                if str(row["reason_code"]) != "PROMOTED_IDEA_LIFECYCLE_STALE":
+                    raise LoopFindingError(
+                        f"{row['visible_id']} does not support apply-expected-state"
+                    )
+                document = connection.execute(
+                    "SELECT current_revision FROM document WHERE id=?",
+                    (row["subject_artifact_id"],),
+                ).fetchone()
+                if document is None:
+                    raise LoopFindingError(f"{row['visible_id']} subject is not a managed document")
+                document_revision = int(document["current_revision"])
+            items.append(
+                {
+                    "finding": public,
+                    "subject_artifact_id": str(row["subject_artifact_id"]),
+                    "document_revision": document_revision,
+                    "decision": decision,
+                }
+            )
+    payload: dict[str, Any] = {
+        "schema_version": 1,
+        "kind": HISTORY_REVIEW_KIND,
+        "project_id": identity["project_id"],
+        "database_revision": audit_result["database_revision"],
+        "domain_digest": document_store.audit(workspace)["domain_digest"],
+        "discovery_version": audit_result["discovery_version"],
+        "selection_mode": "complete-lineage-cluster" if complete_cluster else "per-finding",
+        "rationale": rationale.strip(),
+        "decisions": items,
+        "writes_performed": False,
+    }
+    material = dict(payload)
+    material.pop("writes_performed")
+    payload["manifest_digest"] = _digest(material)
+    payload["manifest_token"] = _review_token(workspace, payload)
+    return payload
+
+
+def load_history_review_manifest(workspace: Path, supplied: Path) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
+    path = require_path_within(
+        workspace, supplied if supplied.is_absolute() else workspace / supplied
+    )
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise LoopFindingError(f"cannot load history review manifest: {error}") from error
+    if not isinstance(payload, dict):
+        raise LoopFindingError("history review manifest must be a JSON object")
+    return payload
+
+
+def validate_history_review(workspace: Path, manifest: dict[str, Any]) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
+    identity = load_project_identity(workspace)
+    if (
+        manifest.get("schema_version") != 1
+        or manifest.get("kind") != HISTORY_REVIEW_KIND
+        or manifest.get("project_id") != identity["project_id"]
+    ):
+        raise LoopFindingError("history review manifest does not match this project or schema")
+    decisions = manifest.get("decisions")
+    if not isinstance(decisions, list) or not 1 <= len(decisions) <= MAX_HISTORY_SELECTION:
+        raise LoopFindingError("history review manifest has an invalid decision set")
+    material = dict(manifest)
+    supplied_token = str(material.pop("manifest_token", ""))
+    supplied_digest = str(material.pop("manifest_digest", ""))
+    material.pop("writes_performed", None)
+    expected_digest = _digest(material)
+    if supplied_digest != expected_digest:
+        raise LoopFindingError("history review manifest digest does not match its content")
+    if supplied_token != _review_token(workspace, manifest):
+        raise LoopFindingError("history review manifest token does not match its content")
+    current = document_store.audit(workspace)
+    audit_result = audit(workspace)
+    if (
+        int(manifest.get("database_revision", -1)) != current["current_revision"]
+        or manifest.get("domain_digest") != current["domain_digest"]
+        or not audit_result["fresh"]
+    ):
+        raise LoopFindingError("history review manifest is stale")
+    current_by_id = {
+        str(item["finding_id"]): item for item in audit_result["findings"]
+    }
+    seen: set[str] = set()
+    subject_ids: set[str] = set()
+    with contextlib.closing(
+        hybrid_state.connect(hybrid_state.database_path(workspace), writable=False)
+    ) as connection:
+        for item in decisions:
+            if not isinstance(item, dict) or not isinstance(item.get("finding"), dict):
+                raise LoopFindingError("history review decision is malformed")
+            finding = item["finding"]
+            finding_id = str(finding.get("finding_id") or "")
+            if finding_id in seen or item.get("decision") not in HISTORY_REVIEW_DECISIONS:
+                raise LoopFindingError("history review decisions must be unique and controlled")
+            seen.add(finding_id)
+            current_finding = current_by_id.get(finding_id)
+            if current_finding != finding or current_finding.get("state") != "active":
+                raise LoopFindingError(f"history finding changed before review: {finding_id}")
+            row = connection.execute(
+                "SELECT subject_artifact_id FROM loop_finding WHERE visible_id=?",
+                (finding_id,),
+            ).fetchone()
+            if row is None or str(row["subject_artifact_id"]) != item.get("subject_artifact_id"):
+                raise LoopFindingError(f"history finding subject changed: {finding_id}")
+            subject_ids.add(str(row["subject_artifact_id"]))
+            if item["decision"] == "apply-expected-state":
+                document = connection.execute(
+                    "SELECT current_revision FROM document WHERE id=?",
+                    (row["subject_artifact_id"],),
+                ).fetchone()
+                if document is None or int(document["current_revision"]) != item.get("document_revision"):
+                    raise LoopFindingError(f"history document revision changed: {finding_id}")
+        if manifest.get("selection_mode") == "complete-lineage-cluster":
+            required = _history_cluster_ids(connection, subject_ids)
+            if required != seen:
+                raise LoopFindingError("history lineage cluster changed before review")
+        elif manifest.get("selection_mode") != "per-finding":
+            raise LoopFindingError("history review selection mode is invalid")
+    return {
+        "schema_version": 1,
+        "kind": "tool-shed-loop-history-review-validation",
+        "manifest_digest": supplied_digest,
+        "manifest_token": supplied_token,
+        "decision_count": len(decisions),
+        "applicable": True,
+        "writes_performed": False,
+    }
+
+
+def _subject_cycle_id(connection: sqlite3.Connection, artifact_id: str) -> str:
+    row = connection.execute(
+        "SELECT id FROM cycle WHERE origin_artifact_id=? ORDER BY opened_at DESC, id DESC LIMIT 1",
+        (artifact_id,),
+    ).fetchone()
+    if row is None:
+        row = connection.execute(
+            "SELECT c.id FROM relationship rel JOIN cycle c ON c.origin_artifact_id=rel.from_artifact_id "
+            "WHERE rel.to_artifact_id=? AND rel.relation_type='historical-overlay-for' "
+            "AND rel.retired_revision IS NULL ORDER BY c.opened_at DESC, c.id DESC LIMIT 1",
+            (artifact_id,),
+        ).fetchone()
+    if row is None:
+        raise LoopFindingError("history finding subject has no outcome cycle")
+    return str(row["id"])
+
+
+def apply_history_review(
+    workspace: Path,
+    *,
+    manifest: dict[str, Any],
+    expected_token: str,
+    project_binding: str,
+    authorization: str,
+) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
+    validated = validate_history_review(workspace, manifest)
+    if expected_token != validated["manifest_token"]:
+        raise LoopFindingError("history review token is stale or does not match")
+    require_project_binding(workspace, project_binding, operation="hybrid-state")
+    if not authorization.strip() or len(authorization.strip()) > 2048:
+        raise LoopFindingError("history review apply requires bounded authorization evidence")
+
+    def write(connection: sqlite3.Connection, revision: int) -> dict[str, Any]:
+        if hybrid_state.meta_row(connection)["current_revision"] != manifest["database_revision"]:
+            raise LoopFindingError("history review revision changed before apply")
+        stamp = hybrid_state.now()
+        applied: list[str] = []
+        retained: list[str] = []
+        project_id = load_project_identity(workspace)["project_id"]
+        for item in manifest["decisions"]:
+            finding = item["finding"]
+            finding_id = str(finding["finding_id"])
+            cycle_id = _subject_cycle_id(connection, str(item["subject_artifact_id"]))
+            evidence_id = hybrid_state.stable_uuid(
+                project_id, f"loop-history-review:{manifest['manifest_digest']}:{finding_id}"
+            )
+            connection.execute(
+                "INSERT INTO evidence_reference VALUES (?, ?, 'loop-history-review', ?, NULL, ?, ?)",
+                (
+                    evidence_id,
+                    cycle_id,
+                    f"loop-history-review:{manifest['manifest_digest']}",
+                    item["decision"],
+                    stamp,
+                ),
+            )
+            if item["decision"] != "apply-expected-state":
+                retained.append(finding_id)
+                continue
+            artifact_id = str(item["subject_artifact_id"])
+            current = connection.execute(
+                "SELECT d.*, r.body_markdown FROM document d JOIN document_revision r "
+                "ON r.document_id=d.id AND r.revision_number=d.current_revision WHERE d.id=?",
+                (artifact_id,),
+            ).fetchone()
+            if current is None or int(current["current_revision"]) != item["document_revision"]:
+                raise LoopFindingError(f"history document changed before apply: {finding_id}")
+            lifecycle = str(finding["expected_state"])
+            if lifecycle not in document_store.LIFECYCLES:
+                raise LoopFindingError(f"history expected lifecycle is unsupported: {lifecycle}")
+            document_revision = int(current["current_revision"]) + 1
+            connection.execute(
+                "INSERT INTO document_revision VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    str(uuid.uuid4()), artifact_id, document_revision, current["title"], lifecycle,
+                    current["metadata_json"], current["body_markdown"], current["body_sha256"],
+                    "loop-history-review", authorization.strip(), revision, stamp,
+                ),
+            )
+            connection.execute(
+                "UPDATE document SET lifecycle_state=?, current_revision=?, updated_at=? WHERE id=?",
+                (lifecycle, document_revision, stamp, artifact_id),
+            )
+            connection.execute(
+                "UPDATE artifact SET lifecycle_state=?, updated_at=? WHERE id=?",
+                (lifecycle, stamp, artifact_id),
+            )
+            applied.append(finding_id)
+        return {
+            "manifest_digest": manifest["manifest_digest"],
+            "applied": applied,
+            "retained": retained,
+            "authorization": authorization.strip(),
+        }
+
+    result = hybrid_state.managed_write(
+        workspace,
+        project_binding=project_binding,
+        command="apply-loop-history-review",
+        actor="loop-history-review",
+        callback=write,
+    )
+    result["audit"] = audit(workspace)
+    return result
+
+
 def report_projection(workspace: Path) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
     path = hybrid_state.database_path(workspace)
@@ -579,9 +962,22 @@ def build_parser() -> argparse.ArgumentParser:
     commands = parser.add_subparsers(dest="command", required=True)
     migrate_parser = commands.add_parser("migrate")
     migrate_parser.add_argument("--project-binding", required=True)
-    commands.add_parser("audit")
+    audit_parser = commands.add_parser("audit")
+    audit_parser.add_argument("--history", action="store_true")
+    audit_parser.add_argument("--source", action="append", default=[])
     resolve_parser = commands.add_parser("resolve")
     resolve_parser.add_argument("finding_id")
+    plan_parser = commands.add_parser("history-plan")
+    plan_parser.add_argument("--decision", action="append", required=True)
+    plan_parser.add_argument("--rationale", required=True)
+    plan_parser.add_argument("--complete-cluster", action="store_true")
+    validate_parser = commands.add_parser("history-validate")
+    validate_parser.add_argument("--manifest", required=True)
+    apply_parser = commands.add_parser("history-apply")
+    apply_parser.add_argument("--manifest", required=True)
+    apply_parser.add_argument("--expect", required=True)
+    apply_parser.add_argument("--project-binding", required=True)
+    apply_parser.add_argument("--authorization", required=True)
     return parser
 
 
@@ -592,9 +988,32 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.command == "migrate":
             result = migrate(workspace, project_binding=args.project_binding)
         elif args.command == "audit":
-            result = audit(workspace)
-        else:
+            result = (
+                history_audit(workspace, sources=args.source)
+                if args.history or args.source
+                else audit(workspace)
+            )
+        elif args.command == "resolve":
             result = resolve(workspace, args.finding_id)
+        elif args.command == "history-plan":
+            result = history_review_plan(
+                workspace,
+                decisions=args.decision,
+                rationale=args.rationale,
+                complete_cluster=args.complete_cluster,
+            )
+        elif args.command == "history-validate":
+            result = validate_history_review(
+                workspace, load_history_review_manifest(workspace, Path(args.manifest))
+            )
+        else:
+            result = apply_history_review(
+                workspace,
+                manifest=load_history_review_manifest(workspace, Path(args.manifest)),
+                expected_token=args.expect,
+                project_binding=args.project_binding,
+                authorization=args.authorization,
+            )
     except (LoopFindingError, document_store.DocumentStoreError, hybrid_state.HybridStateError) as error:
         result = {
             "schema_version": SCHEMA_VERSION,

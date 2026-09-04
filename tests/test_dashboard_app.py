@@ -754,6 +754,26 @@ class DashboardApplicationTests(TestCase):
             "OUTCOME_BLOCKED",
         )
 
+        resolved = self.loop_finding_report_payload()
+        resolved["sequence"] = 2
+        resolved["state"]["active_loop_finding_count"] = 0  # type: ignore[index]
+        resolved["loop_findings"]["total_active_count"] = 0  # type: ignore[index]
+        resolved["loop_findings"]["total_resolved_count"] = 1  # type: ignore[index]
+        resolved_finding = resolved["loop_findings"]["findings"][0]  # type: ignore[index]
+        resolved_finding["state"] = "resolved"
+        resolved_finding["resolved_at"] = "2026-08-22T13:00:00Z"
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(resolved),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        outcomes = self.client.get(reverse("fleet:project-tab", args=(snapshot.project_id, "outcomes")))
+        self.assertContains(outcomes, "Recently resolved")
+        self.assertContains(outcomes, "LOOP-17A1B2C3D4E5")
+        self.assertNotContains(outcomes, 'data-copy-command="ts: resolve loop LOOP-17A1B2C3D4E5"')
+
     def test_schema_four_projects_instance_health_and_semantic_divergence(self) -> None:
         token = self.enroll_and_issue()
         payload = self.health_report_payload()

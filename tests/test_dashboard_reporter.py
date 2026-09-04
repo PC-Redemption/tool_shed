@@ -761,6 +761,23 @@ class DashboardReporterTests(unittest.TestCase):
         self.assertEqual(first["candidate_count"], 2)
         self.assertEqual(first["latest_commit"], commits[-1])
 
+        released = dashboard_reporter._release_chain_projection(
+            {
+                "active": [
+                    {
+                        "lifecycle_state": "released-pending-reconciliation",
+                        "candidates": candidates,
+                    }
+                ]
+            },
+            {"artifacts": artifacts},
+        )
+        self.assertEqual(released["awaiting_work5_chain_count"], 0)
+        self.assertTrue(released["release_chains"])
+        self.assertEqual(
+            {chain["stage"] for chain in released["release_chains"]}, {"released"}
+        )
+
     def test_lifecycle_events_are_change_only_and_first_snapshot_is_a_baseline(self) -> None:
         artifact_id = str(uuid.uuid4())
         current = {

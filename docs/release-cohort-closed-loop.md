@@ -6,7 +6,7 @@ changes, and pay the Work5 qualification cost once without losing Idea-to-produc
 
 ## State model
 
-One active `release-cohort` cycle owns zero or more candidate requirements. Each Work2 requirement
+One mutable `release-cohort` cycle owns zero or more candidate requirements. Each Work2 requirement
 records the exact product commit, the owning outcome cycle, its origin artifact, and a passed Work2
 checkpoint verification. `release-candidate-member` relationships connect every registered owner
 to the cohort. Registration follows active `outcome-parent` relationships, so a PRM or campaign
@@ -22,6 +22,8 @@ working -> frozen -> released-pending-reconciliation -> terminal/reconciled
 - `working`: candidates may be registered and used in the configured work environment.
 - `frozen`: the cohort is bound to the exact clean Work5 content commit; registration stops.
 - `released-pending-reconciliation`: production publication evidence is attached to every owner.
+  This state does not prevent a later Work2 result from starting a fresh working cohort while an
+  intentionally continuing parent outcome remains open.
 - `terminal`: every registered owner is terminal, reconciled, and has an accepted terminal verdict.
 
 The live SQLite database remains the operational authority. Normal Hybrid checkpoints preserve the
@@ -72,12 +74,13 @@ until the replacement content commit passes the ordinary exact-SHA gate.
 
 Reconcile the registered outcome chains from their innermost result to their Idea roots using the
 ordinary outcome-transition interface. Finalization fails closed while any registered owner is
-open, failed, partial without approval, unreconciled, or unpropagated:
+open, failed, partial without approval, unreconciled, or unpropagated. When multiple released
+cohorts await parent reconciliation, select the exact cohort:
 
 ```bash
 python3 scripts/release_cohort.py --workspace . finalize \
   --expect <fresh-token> --project-binding <hybrid-state-binding> \
-  --authorization <reference>
+  --authorization <reference> [--cohort-id <cycle-uuid>]
 ```
 
 The mechanism never treats all open Ideas as release scope. An intentionally excluded candidate

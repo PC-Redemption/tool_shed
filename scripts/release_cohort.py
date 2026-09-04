@@ -33,6 +33,7 @@ KIND = "tool-shed-release-cohort-status"
 OPERATION = "hybrid-state"
 COHORT_KIND = "release-cohort"
 ACTIVE_STATES = {"working", "frozen", "released-pending-reconciliation"}
+MUTABLE_STATES = {"working", "frozen"}
 TERMINAL_DISPOSITIONS = {
     "satisfied",
     "satisfied-with-approved-change",
@@ -210,8 +211,9 @@ def status(workspace: Path) -> dict[str, Any]:
         ).fetchall()
         terminal = [_cohort_capsule(connection, row) for row in terminal_rows]
     findings: list[str] = []
-    if len(active) > 1:
-        findings.append(f"multiple active release cohorts: {len(active)}")
+    mutable = [item for item in active if item["lifecycle_state"] in MUTABLE_STATES]
+    if len(mutable) > 1:
+        findings.append(f"multiple mutable release cohorts: {len(mutable)}")
     for cohort in active:
         if not cohort["base_tag"]:
             findings.append(f"cohort {cohort['cycle_id']} lacks a base tag")
@@ -356,8 +358,12 @@ def register(
     if accepted_outcome and not (summary or "").strip():
         raise ReleaseCohortError("direct Work2 registration requires --summary")
 
-    if origin_cycles and len(snapshot["active"]) == 1:
-        cohort_id = snapshot["active"][0]["cycle_id"]
+    mutable = [
+        item for item in snapshot["active"]
+        if item["lifecycle_state"] in MUTABLE_STATES
+    ]
+    if origin_cycles and len(mutable) == 1 and mutable[0]["lifecycle_state"] == "working":
+        cohort_id = mutable[0]["cycle_id"]
         project_id = load_project_identity(workspace)["project_id"]
         with contextlib.closing(
             hybrid_state.connect(hybrid_state.database_path(workspace), writable=False)
@@ -402,13 +408,14 @@ def register(
         if hybrid_state.meta_row(connection)["current_revision"] != snapshot["revision"]:
             raise ReleaseCohortError("release cohort revision changed before registration")
         rows = _active_cohort_rows(connection)
-        if len(rows) > 1:
-            raise ReleaseCohortError("multiple active release cohorts require repair")
-        created_cohort = not rows
-        if rows:
-            cohort_id = str(rows[0]["cycle_id"])
-            cohort_artifact_id = str(rows[0]["origin_artifact_id"])
-            if rows[0]["lifecycle_state"] != "working":
+        mutable_rows = [row for row in rows if row["lifecycle_state"] in MUTABLE_STATES]
+        if len(mutable_rows) > 1:
+            raise ReleaseCohortError("multiple mutable release cohorts require repair")
+        created_cohort = not mutable_rows
+        if mutable_rows:
+            cohort_id = str(mutable_rows[0]["cycle_id"])
+            cohort_artifact_id = str(mutable_rows[0]["origin_artifact_id"])
+            if mutable_rows[0]["lifecycle_state"] != "working":
                 raise ReleaseCohortError("cannot register Work2 work after the cohort is frozen")
         else:
             cohort_id, cohort_artifact_id = _insert_open_cycle(
@@ -574,9 +581,13 @@ def freeze(
 ) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
     snapshot = _require_snapshot(workspace, expected)
-    if len(snapshot["active"]) != 1:
-        raise ReleaseCohortError("freeze requires exactly one active release cohort")
-    cohort = snapshot["active"][0]
+    mutable = [
+        item for item in snapshot["active"]
+        if item["lifecycle_state"] in MUTABLE_STATES
+    ]
+    if len(mutable) != 1:
+        raise ReleaseCohortError("freeze requires exactly one working or frozen release cohort")
+    cohort = mutable[0]
     content_commit = _commit(workspace, content_commitish)
     retrying = cohort["lifecycle_state"] == "frozen" and cohort["content_commit"] != content_commit
     if cohort["lifecycle_state"] != "working" and not retrying:
@@ -669,13 +680,22 @@ def record_release(
 ) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
     snapshot = _require_snapshot(workspace, expected)
-    if len(snapshot["active"]) != 1:
-        raise ReleaseCohortError("release recording requires exactly one active cohort")
-    cohort = snapshot["active"][0]
-    if cohort["lifecycle_state"] == "released-pending-reconciliation":
-        if cohort["release_tag"] == tag and cohort["release_evidence"] == evidence:
+    frozen = [
+        item for item in snapshot["active"] if item["lifecycle_state"] == "frozen"
+    ]
+    if not frozen:
+        matches = [
+            item for item in snapshot["active"]
+            if item["lifecycle_state"] == "released-pending-reconciliation"
+            and item["release_tag"] == tag
+            and item["release_evidence"] == evidence
+        ]
+        if len(matches) == 1:
             return {"kind": "tool-shed-release-cohort-publication", "idempotent": True, "status": snapshot, "writes_performed": False}
-        raise ReleaseCohortError("release cohort already records different publication evidence")
+        raise ReleaseCohortError("release recording requires exactly one frozen cohort")
+    if len(frozen) != 1:
+        raise ReleaseCohortError("release recording requires exactly one frozen cohort")
+    cohort = frozen[0]
     if cohort["lifecycle_state"] != "frozen" or not cohort["content_commit"]:
         raise ReleaseCohortError("release cohort must be frozen before publication is recorded")
     if not evidence.strip() or len(evidence) > 2048 or any(ord(char) < 32 for char in evidence):
@@ -762,14 +782,24 @@ def finalize(
     expected: str,
     project_binding: str,
     authorization: str,
+    cohort_id: str | None = None,
 ) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
     snapshot = _require_snapshot(workspace, expected)
-    if len(snapshot["active"]) != 1:
-        raise ReleaseCohortError("finalization requires exactly one active release cohort")
-    cohort = snapshot["active"][0]
-    if cohort["lifecycle_state"] != "released-pending-reconciliation":
-        raise ReleaseCohortError("release publication must be recorded before finalization")
+    pending_cohorts = [
+        item for item in snapshot["active"]
+        if item["lifecycle_state"] == "released-pending-reconciliation"
+        and (cohort_id is None or item["cycle_id"] == cohort_id)
+    ]
+    if len(pending_cohorts) != 1:
+        if cohort_id is None and len(pending_cohorts) > 1:
+            raise ReleaseCohortError(
+                "multiple released cohorts await reconciliation; specify --cohort-id"
+            )
+        raise ReleaseCohortError(
+            "release publication must be recorded for the selected cohort"
+        )
+    cohort = pending_cohorts[0]
     pending = [
         {
             "cycle_id": item["origin_cycle_id"],
@@ -875,6 +905,7 @@ def build_parser() -> argparse.ArgumentParser:
     finalize_parser.add_argument("--expect", required=True)
     finalize_parser.add_argument("--project-binding", required=True)
     finalize_parser.add_argument("--authorization", required=True)
+    finalize_parser.add_argument("--cohort-id")
     return parser
 
 
@@ -935,6 +966,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 expected=args.expect,
                 project_binding=args.project_binding,
                 authorization=args.authorization,
+                cohort_id=args.cohort_id,
             )
         else:  # pragma: no cover
             raise ReleaseCohortError(f"unsupported command: {args.command}")

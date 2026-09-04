@@ -1,0 +1,78 @@
+{
+  "database_revision": 1233,
+  "decisions": [
+    {
+      "decision": "apply-expected-state",
+      "document_revision": 18,
+      "finding": {
+        "category": "semantic-lifecycle-drift",
+        "command": "ts: resolve loop LOOP-1E2AB8FF492F",
+        "expected_state": "completed",
+        "finding_id": "LOOP-1E2AB8FF492F",
+        "first_observed_at": "2026-09-04T16:01:38Z",
+        "last_observed_at": "2026-09-04T18:02:50Z",
+        "observed_state": "active",
+        "reason_code": "PROMOTED_IDEA_LIFECYCLE_STALE",
+        "recurrence_count": 0,
+        "resolved_at": null,
+        "severity": "attention",
+        "source_revision": 1233,
+        "state": "active",
+        "subject_id": "IDEA-0019"
+      },
+      "subject_artifact_id": "2f6ddce8-4861-484f-925e-dd1ea68e8395"
+    },
+    {
+      "decision": "apply-expected-state",
+      "document_revision": 8,
+      "finding": {
+        "category": "semantic-lifecycle-drift",
+        "command": "ts: resolve loop LOOP-E1E6B5F7FDEA",
+        "expected_state": "completed",
+        "finding_id": "LOOP-E1E6B5F7FDEA",
+        "first_observed_at": "2026-09-04T16:01:38Z",
+        "last_observed_at": "2026-09-04T18:02:50Z",
+        "observed_state": "active",
+        "reason_code": "PROMOTED_IDEA_LIFECYCLE_STALE",
+        "recurrence_count": 0,
+        "resolved_at": null,
+        "severity": "attention",
+        "source_revision": 1233,
+        "state": "active",
+        "subject_id": "IDEA-0020"
+      },
+      "subject_artifact_id": "b199f1c1-10c7-4402-8fd6-bb5749a9d9d1"
+    },
+    {
+      "decision": "apply-expected-state",
+      "document_revision": 15,
+      "finding": {
+        "category": "semantic-lifecycle-drift",
+        "command": "ts: resolve loop LOOP-E23AE1BA0FD3",
+        "expected_state": "completed",
+        "finding_id": "LOOP-E23AE1BA0FD3",
+        "first_observed_at": "2026-09-04T16:01:38Z",
+        "last_observed_at": "2026-09-04T18:02:50Z",
+        "observed_state": "active",
+        "reason_code": "PROMOTED_IDEA_LIFECYCLE_STALE",
+        "recurrence_count": 0,
+        "resolved_at": null,
+        "severity": "attention",
+        "source_revision": 1233,
+        "state": "active",
+        "subject_id": "IDEA-0018"
+      },
+      "subject_artifact_id": "3ca61f1c-8199-46e2-8ac5-dd27e022b59c"
+    }
+  ],
+  "discovery_version": "loop-findings-v2",
+  "domain_digest": "47b07b63210ebf7edd6d4b3435abac3f56c3b0e72e42c5520fec240b5985de63",
+  "kind": "tool-shed-loop-history-review-manifest",
+  "manifest_digest": "394ec83bef49b6562cbd32e39b5d0e340983e8e56ac5ea24849bc3eca0e2e7c9",
+  "manifest_token": "c70025754073c532",
+  "project_id": "817b6358-b2f5-48fd-bb66-bd80f936faca",
+  "rationale": "Each promoted Idea has a terminal, reconciled, satisfied outcome with v0.43.0 production-release evidence and propagated child results; completing only the stale Idea document lifecycle matches established authority without changing historical verdicts.",
+  "schema_version": 1,
+  "selection_mode": "complete-lineage-cluster",
+  "writes_performed": false
+}

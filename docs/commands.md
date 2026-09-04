@@ -310,12 +310,23 @@ Schema-4 and schema-5 workspaces persist bounded outcome-loop findings:
 ```text
 python3 scripts/loop_findings.py --workspace . migrate --project-binding <binding>
 python3 scripts/loop_findings.py --workspace . audit
+python3 scripts/loop_findings.py --workspace . audit --history [--source <selector>]
 python3 scripts/loop_findings.py --workspace . resolve <LOOP-id>
+python3 scripts/loop_findings.py --workspace . history-plan \
+  --decision <LOOP-id>=<decision> --rationale <review-rationale> [--complete-cluster]
+python3 scripts/loop_findings.py --workspace . history-validate --manifest <manifest.json>
+python3 scripts/loop_findings.py --workspace . history-apply \
+  --manifest <manifest.json> --expect <manifest-token> \
+  --project-binding <binding> --authorization <review-evidence>
 ```
 
 `migrate` advances one guarded schema step, 3→4 or 4→5. `audit` and `resolve` are read-only;
 `ts: resolve loop <LOOP-id>` is the conversational route that rechecks local authority before a
-controlled local correction. The hosted dashboard only copies that command. See
+controlled local correction. Historical review accepts the controlled decisions
+`apply-expected-state`, `retain-open`, and `requires-evidence`; every apply is bound to the exact
+project, database revision and digest, finding rows, selected lineage cluster, and document
+revision. The hosted dashboard only copies current-action commands and never attaches them to
+resolved history. See
 [Outcome Loop Findings](loop-findings.md).
 
 `prepare`, `validate`, `audit`, `report`, and `backfill-plan` are read-only. A prepared manifest is

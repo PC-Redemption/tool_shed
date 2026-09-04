@@ -119,8 +119,10 @@ the hosted dashboard has no lifecycle, planning-order, or release mutation opera
 
 Outcome Reconciliation presents active, locally discovered loop findings grouped by reporting
 instance. Each card explains the controlled mismatch and copies its exact `ts: resolve loop …`
-route for pasting into the local Tool Shed chat. The browser never writes an action intent to the
-client and the hosted service has no local-execution channel. See
+route for pasting into the local Tool Shed chat. Up to 50 recently resolved findings per instance
+appear separately as non-actionable history with resolution and recurrence evidence; resolved rows
+never retain a copy control. The browser never writes an action intent to the client and the hosted
+service has no local-execution channel. See
 [Outcome Loop Findings](loop-findings.md).
 
 The same reusable copy control appears on Overview and Needs Attention for exact built-in status

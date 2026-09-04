@@ -39,7 +39,7 @@
 <div class="project-overview-grid">
   <section class="dashboard-panel overview-card overview-wide release-gate-card">
     <div class="compact-panel-heading">
-      <div><h2>Awaiting Work5</h2><p class="dashboard-note">Locally derived release chains that completed Work2 and still need release qualification.</p></div>
+      <div><h2>Release chains</h2><p class="dashboard-note">Locally derived chains distinguish pending Work5 delivery from a completed release whose parent outcome intentionally continues.</p></div>
       <a href="{% url 'fleet:project-tab' project.id 'work' %}?release_stage=awaiting-work5">View release work</a>
     </div>
     <div class="release-gate-summary" aria-label="Work awaiting release summary">
@@ -51,7 +51,7 @@
       {% for chain in overview.release_chains %}<article>
         <div><strong>{{ chain.root_id }}</strong><span title="{{ chain.title }}">{{ chain.title }}</span></div>
         <div class="release-chain-path">{% for node_id in chain.node_ids %}<code>{{ node_id }}</code>{% if not forloop.last %}<span aria-hidden="true">→</span>{% endif %}{% endfor %}</div>
-        <div class="release-chain-meta"><span class="table-state release-stage-awaiting-work5">Awaiting Work5</span><span>{{ chain.candidate_count }} candidate commit{{ chain.candidate_count|pluralize }} · <code>{{ chain.short_commit }}</code></span></div>
+        <div class="release-chain-meta"><span class="table-state release-stage-{{ chain.stage }}">{% if chain.stage == 'awaiting-work5' %}Awaiting Work5{% elif chain.stage == 'released' %}Released · parent open{% else %}Reconciled{% endif %}</span><span>{{ chain.candidate_count }} candidate commit{{ chain.candidate_count|pluralize }} · <code>{{ chain.short_commit }}</code></span></div>
       </article>{% endfor %}
     </div>{% else %}<p class="dashboard-empty">No locally reported chains are awaiting Work5.</p>{% endif %}
     {% if overview.release_chains_truncated %}<p class="overview-more">The local reporter bounded this list; the chain total above remains authoritative.</p>{% endif %}
@@ -64,7 +64,7 @@
     </div>
     {% if overview.active_chains %}<div class="overview-chain-list">
       {% for chain in overview.active_chains %}<article class="overview-chain">
-        <div class="overview-chain-heading"><strong>{{ chain.title }}</strong>{% if chain.release %}<span class="table-state release-stage-awaiting-work5">Awaiting Work5</span>{% else %}<span class="state-badge state-{{ chain.current.document_lifecycle }}">{{ chain.current.document_lifecycle }}</span>{% endif %}</div>
+        <div class="overview-chain-heading"><strong>{{ chain.title }}</strong>{% if chain.release %}<span class="table-state release-stage-{{ chain.release.stage }}">{% if chain.release.stage == 'awaiting-work5' %}Awaiting Work5{% elif chain.release.stage == 'released' %}Released · parent open{% else %}Reconciled{% endif %}</span>{% else %}<span class="state-badge state-{{ chain.current.document_lifecycle }}">{{ chain.current.document_lifecycle }}</span>{% endif %}</div>
         <div class="overview-chain-path" aria-label="Work chain">
           {% for node in chain.nodes %}<span class="overview-chain-node{% if node.visible_id == chain.current.visible_id %} is-current{% endif %}" title="{{ node.title }}">{{ node.visible_id }}</span>{% if not forloop.last %}<span aria-hidden="true">→</span>{% endif %}{% endfor %}
         </div>
@@ -140,6 +140,8 @@
       <select name="release_stage" data-auto-submit>
         <option value="">All</option>
         <option value="awaiting-work5" {% if selected_release_stage == 'awaiting-work5' %}selected{% endif %}>Awaiting Work5</option>
+        <option value="released" {% if selected_release_stage == 'released' %}selected{% endif %}>Released · parent open</option>
+        <option value="reconciled" {% if selected_release_stage == 'reconciled' %}selected{% endif %}>Reconciled</option>
       </select>
     </label>
     <label>Rows
@@ -233,6 +235,19 @@
         {% include "fleet/includes/local_command.html" with command=finding.command label="Copy Tool Shed command" aria_label="Copy Tool Shed command for finding" %}
       </article>{% endfor %}
     </div>{% else %}<p class="dashboard-empty">No active loop findings from this instance.</p>{% endif %}
+    {% if group.resolved_findings %}
+    <div class="outcome-resolved-history">
+      <h4>Recently resolved</h4>
+      <div class="outcome-finding-list">
+        {% for finding in group.resolved_findings %}<article class="outcome-finding-card outcome-finding-resolved">
+          <div class="outcome-finding-heading"><span class="state-badge state-complete">Resolved</span><code>{{ finding.finding_external_id }}</code></div>
+          <h5>{{ finding.display_title }}</h5>
+          <p><strong>{{ finding.subject_visible_id }}</strong> was resolved{% if finding.resolved_at %} <time datetime="{{ finding.resolved_at|date:'c' }}" data-local-time>{{ finding.resolved_at|date:"M j, Y, g:i A" }}</time>{% endif %}.</p>
+          {% if finding.recurrence_count %}<p>Recurrences: {{ finding.recurrence_count }}</p>{% endif %}
+        </article>{% endfor %}
+      </div>
+    </div>
+    {% endif %}
   </section>
   {% empty %}<p class="dashboard-empty">No enrolled instances.</p>{% endfor %}
   <p class="dashboard-note">See Work for each artifact’s outcome lifecycle, disposition, reconciliation, and recursive closure state.</p>

@@ -331,6 +331,167 @@ class ReleaseCohortTests(unittest.TestCase):
                 1,
             )
 
+    def test_sequential_milestone_releases_share_one_open_parent(self) -> None:
+        ids: dict[str, str] = {}
+
+        def create_chain(connection, revision):
+            stamp = hybrid_state.now()
+            for name in ("parent", "milestone-one"):
+                artifact_id = hybrid_state.random_uuid()
+                cycle_id = hybrid_state.random_uuid()
+                ids[f"{name}_artifact"] = artifact_id
+                ids[f"{name}_cycle"] = cycle_id
+                connection.execute(
+                    "INSERT INTO artifact VALUES (?, ?, NULL, ?, 'sqlite', 'working', ?, ?, ?)",
+                    (artifact_id, name, f"sqlite/documents/{name}", "2" * 64, stamp, stamp),
+                )
+                connection.execute(
+                    "INSERT INTO cycle VALUES (?, ?, ?, ?, 'working', ?, NULL)",
+                    (cycle_id, name, artifact_id, f"Complete {name}.", stamp),
+                )
+                verdict_id = hybrid_state.random_uuid()
+                connection.execute(
+                    "INSERT INTO outcome_verdict VALUES (?, ?, ?, 'open', ?, 'fixture', ?, ?)",
+                    (verdict_id, cycle_id, name, f"Open {name}.", revision, stamp),
+                )
+                connection.execute(
+                    "INSERT INTO reconciliation VALUES (?, ?, ?, '[]', ?, 'open', ?, '[]')",
+                    (hybrid_state.random_uuid(), cycle_id, revision, verdict_id, stamp),
+                )
+            connection.execute(
+                "INSERT INTO relationship VALUES (?, ?, 'outcome-parent', ?, 'fixture', ?, NULL)",
+                (
+                    hybrid_state.random_uuid(), ids["milestone-one_artifact"],
+                    ids["parent_artifact"], revision,
+                ),
+            )
+
+        hybrid_state.managed_write(
+            self.workspace,
+            project_binding=self.binding,
+            command="create-sequential-release-chain",
+            actor="fixture",
+            callback=create_chain,
+            expected_writes=9,
+        )
+        first = release_cohort.register(
+            self.workspace,
+            expected=release_cohort.status(self.workspace)["state_token"],
+            project_binding=self.binding,
+            commitish="HEAD",
+            origin_cycles=[ids["milestone-one_cycle"]],
+            accepted_outcome=None,
+            summary=None,
+        )
+        first_cohort = first["result"]["cohort_id"]
+        self._close_cycle(ids["milestone-one_cycle"])
+        frozen = release_cohort.freeze(
+            self.workspace,
+            expected=release_cohort.status(self.workspace)["state_token"],
+            project_binding=self.binding,
+            content_commitish="HEAD",
+        )
+        subprocess.run(["git", "tag", "v1.1.0", frozen["result"]["content_commit"]], cwd=self.workspace, check=True)
+        release_cohort.record_release(
+            self.workspace,
+            expected=release_cohort.status(self.workspace)["state_token"],
+            project_binding=self.binding,
+            tag="v1.1.0",
+            evidence="https://example.invalid/releases/v1.1.0",
+        )
+
+        (self.workspace / "product.txt").write_text("Second milestone\n", encoding="utf-8")
+        subprocess.run(["git", "add", "product.txt"], cwd=self.workspace, check=True)
+        subprocess.run(["git", "commit", "--quiet", "-m", "second milestone"], cwd=self.workspace, check=True)
+
+        def create_second_milestone(connection, revision):
+            stamp = hybrid_state.now()
+            artifact_id = hybrid_state.random_uuid()
+            cycle_id = hybrid_state.random_uuid()
+            ids["milestone-two_artifact"] = artifact_id
+            ids["milestone-two_cycle"] = cycle_id
+            connection.execute(
+                "INSERT INTO artifact VALUES (?, 'milestone', NULL, ?, 'sqlite', 'working', ?, ?, ?)",
+                (artifact_id, "sqlite/documents/milestone-two", "3" * 64, stamp, stamp),
+            )
+            connection.execute(
+                "INSERT INTO cycle VALUES (?, 'milestone', ?, ?, 'working', ?, NULL)",
+                (cycle_id, artifact_id, "Complete milestone two.", stamp),
+            )
+            verdict_id = hybrid_state.random_uuid()
+            connection.execute(
+                "INSERT INTO outcome_verdict VALUES (?, ?, 'milestone', 'open', ?, 'fixture', ?, ?)",
+                (verdict_id, cycle_id, "Open milestone two.", revision, stamp),
+            )
+            connection.execute(
+                "INSERT INTO reconciliation VALUES (?, ?, ?, '[]', ?, 'open', ?, '[]')",
+                (hybrid_state.random_uuid(), cycle_id, revision, verdict_id, stamp),
+            )
+            connection.execute(
+                "INSERT INTO relationship VALUES (?, ?, 'outcome-parent', ?, 'fixture', ?, NULL)",
+                (
+                    hybrid_state.random_uuid(), artifact_id, ids["parent_artifact"], revision,
+                ),
+            )
+
+        hybrid_state.managed_write(
+            self.workspace,
+            project_binding=self.binding,
+            command="create-second-milestone",
+            actor="fixture",
+            callback=create_second_milestone,
+            expected_writes=5,
+        )
+        second = release_cohort.register(
+            self.workspace,
+            expected=release_cohort.status(self.workspace)["state_token"],
+            project_binding=self.binding,
+            commitish="HEAD",
+            origin_cycles=[ids["milestone-two_cycle"]],
+            accepted_outcome=None,
+            summary=None,
+        )
+        second_cohort = second["result"]["cohort_id"]
+        self.assertNotEqual(first_cohort, second_cohort)
+        self.assertEqual(second["status"]["finding_count"], 0)
+        self.assertEqual(len(second["status"]["active"]), 2)
+
+        second_frozen = release_cohort.freeze(
+            self.workspace,
+            expected=second["status"]["state_token"],
+            project_binding=self.binding,
+            content_commitish="HEAD",
+        )
+        subprocess.run(["git", "tag", "v1.2.0", second_frozen["result"]["content_commit"]], cwd=self.workspace, check=True)
+        release_cohort.record_release(
+            self.workspace,
+            expected=release_cohort.status(self.workspace)["state_token"],
+            project_binding=self.binding,
+            tag="v1.2.0",
+            evidence="https://example.invalid/releases/v1.2.0",
+        )
+        both_pending = release_cohort.status(self.workspace)
+        with self.assertRaisesRegex(release_cohort.ReleaseCohortError, "specify --cohort-id"):
+            release_cohort.finalize(
+                self.workspace,
+                expected=both_pending["state_token"],
+                project_binding=self.binding,
+                authorization="fixture",
+            )
+
+        self._close_cycle(ids["milestone-two_cycle"])
+        self._close_cycle(ids["parent_cycle"])
+        for cohort_id in (first_cohort, second_cohort):
+            current = release_cohort.status(self.workspace)
+            release_cohort.finalize(
+                self.workspace,
+                expected=current["state_token"],
+                project_binding=self.binding,
+                authorization="fixture",
+                cohort_id=cohort_id,
+            )
+        self.assertEqual(release_cohort.status(self.workspace)["active"], [])
+
 
 if __name__ == "__main__":
     unittest.main()

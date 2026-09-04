@@ -16,6 +16,7 @@ import json
 import os
 import platform
 import random
+import re
 import sqlite3
 import subprocess
 import sys
@@ -622,8 +623,13 @@ def _release_chain_projection(
     dashboard needs the distinct chain count, so derive connected components from the
     locally authoritative reported relationships without sending paths or document bodies.
     """
-    registrations: list[tuple[str, str, int]] = []
+    registrations: list[tuple[str, str, str, int]] = []
     for cohort in status.get("active", []):
+        stage = (
+            "released"
+            if cohort.get("lifecycle_state") == "released-pending-reconciliation"
+            else "awaiting-work5"
+        )
         for candidate in cohort.get("candidates", []):
             origin_path = candidate.get("origin_path")
             commit = candidate.get("commit")
@@ -634,7 +640,7 @@ def _release_chain_projection(
                 continue
             if not isinstance(commit, str) or len(commit) != 40:
                 continue
-            registrations.append((visible_id, commit, len(registrations)))
+            registrations.append((visible_id, commit, stage, len(registrations)))
 
     artifacts = {
         str(item.get("visible_id")): item
@@ -668,7 +674,7 @@ def _release_chain_projection(
         for member in component:
             component_by_id[member] = component
 
-    registered_ids = {visible_id for visible_id, _, _ in registrations}
+    registered_ids = {visible_id for visible_id, _, _, _ in registrations}
     components: dict[str, set[str]] = {}
     for visible_id in registered_ids:
         component = component_by_id.get(visible_id, {visible_id})
@@ -690,8 +696,8 @@ def _release_chain_projection(
     chains: list[tuple[int, dict[str, Any]]] = []
     for component in components.values():
         component_registrations = [
-            (visible_id, commit, ordinal)
-            for visible_id, commit, ordinal in registrations
+            (visible_id, commit, stage, ordinal)
+            for visible_id, commit, stage, ordinal in registrations
             if visible_id in component
         ]
         if not component_registrations:
@@ -712,8 +718,8 @@ def _release_chain_projection(
                 )
             if field and ids[field] is None:
                 ids[field] = visible_id
-        latest_visible_id, latest_commit, latest_ordinal = max(
-            component_registrations, key=lambda item: item[2]
+        latest_visible_id, latest_commit, latest_stage, latest_ordinal = max(
+            component_registrations, key=lambda item: item[3]
         )
         root_id = next(
             (ids[field] for field in ("idea_id", "map_id", "prm_id", "campaign_id") if ids[field]),
@@ -725,17 +731,21 @@ def _release_chain_projection(
                 {
                     "root_id": root_id,
                     **ids,
-                    "stage": "awaiting-work5",
+                    "stage": latest_stage,
                     "latest_commit": latest_commit,
-                    "candidate_count": len({commit for _, commit, _ in component_registrations}),
+                    "candidate_count": len(
+                        {commit for _, commit, _, _ in component_registrations}
+                    ),
                 },
             )
         )
     chains.sort(key=lambda item: (item[0], str(item[1]["root_id"])), reverse=True)
     bounded = [item for _, item in chains[:50]]
     return {
-        "awaiting_work5_chain_count": len(chains),
-        "candidate_commit_count": len({commit for _, commit, _ in registrations}),
+        "awaiting_work5_chain_count": sum(
+            item[1]["stage"] == "awaiting-work5" for item in chains
+        ),
+        "candidate_commit_count": len({commit for _, commit, _, _ in registrations}),
         "registration_count": len(registrations),
         "release_chains": bounded,
         "release_chains_truncated": len(chains) > len(bounded),
@@ -766,19 +776,33 @@ def _release_posture(
             stable_source = "local-git-tag"
         else:
             stable_version = None
+        mutable_cohorts = [
+            item for item in status.get("active", [])
+            if item.get("lifecycle_state") in {"working", "frozen"}
+        ]
         pending_candidates = min(
-            sum(len(item.get("candidates", [])) for item in status.get("active", [])),
+            sum(len(item.get("candidates", [])) for item in mutable_cohorts),
             10_000,
         )
         if pending_candidates and installed != "unknown":
             candidate_version = installed
-        production_version = next(
-            (
-                item.get("release_tag")
-                for item in status.get("recent_terminal", [])
-                if item.get("release_tag")
-            ),
-            None,
+        released = [
+            *[
+                item for item in status.get("active", [])
+                if item.get("lifecycle_state") == "released-pending-reconciliation"
+            ],
+            *status.get("recent_terminal", []),
+        ]
+        release_tags = [
+            str(item["release_tag"])
+            for item in released
+            if isinstance(item.get("release_tag"), str)
+            and re.fullmatch(r"v\d+\.\d+\.\d+", str(item["release_tag"]))
+        ]
+        production_version = max(
+            release_tags,
+            key=lambda value: tuple(int(part) for part in value.removeprefix("v").split(".")),
+            default=None,
         )
         if production_version:
             production_source = "release-cohort"

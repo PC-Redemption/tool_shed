@@ -167,6 +167,65 @@ class LoopFindingTests(unittest.TestCase):
         self.assertEqual(recurring["findings"][0]["finding_id"], finding_id)
         self.assertEqual(recurring["findings"][0]["recurrence_count"], 1)
 
+    def test_history_review_is_source_bounded_stale_safe_and_guarded(self) -> None:
+        loop_findings.migrate(self.workspace, project_binding=self.binding)
+        finding = loop_findings.audit(self.workspace)["findings"][0]
+        selected = loop_findings.history_audit(
+            self.workspace, sources=[str(self.idea["visible_id"])]
+        )
+        self.assertEqual(selected["selected_count"], 1)
+        self.assertEqual(selected["findings"][0]["finding_id"], finding["finding_id"])
+
+        first = loop_findings.history_review_plan(
+            self.workspace,
+            decisions=[f"{finding['finding_id']}=apply-expected-state"],
+            rationale="The promoted Idea has terminal reconciled outcome evidence.",
+            complete_cluster=True,
+        )
+        self.assertTrue(loop_findings.validate_history_review(self.workspace, first)["applicable"])
+        document_store.create_document(
+            self.workspace,
+            project_binding=self.binding,
+            document_type="ticket",
+            title="Concurrent mutation",
+            body="# Concurrent mutation\n",
+            lifecycle="active",
+            metadata={"document_type": "ticket"},
+            actor="fixture",
+            reason="invalidate history review token",
+        )
+        with self.assertRaisesRegex(loop_findings.LoopFindingError, "stale"):
+            loop_findings.validate_history_review(self.workspace, first)
+
+        current = loop_findings.history_review_plan(
+            self.workspace,
+            decisions=[f"{finding['finding_id']}=apply-expected-state"],
+            rationale="The promoted Idea has terminal reconciled outcome evidence.",
+            complete_cluster=True,
+        )
+        applied = loop_findings.apply_history_review(
+            self.workspace,
+            manifest=current,
+            expected_token=current["manifest_token"],
+            project_binding=self.binding,
+            authorization="fixture-supervised-review",
+        )
+        self.assertEqual(applied["result"]["applied"], [finding["finding_id"]])
+        self.assertEqual(applied["audit"]["active_count"], 0)
+        self.assertEqual(
+            document_store.show(self.workspace, str(self.idea["visible_id"]))["lifecycle"],
+            "completed",
+        )
+        with contextlib.closing(
+            hybrid_state.connect(hybrid_state.database_path(self.workspace), writable=False)
+        ) as connection:
+            evidence = connection.execute(
+                "SELECT target_identity FROM evidence_reference "
+                "WHERE cycle_id=? AND kind='loop-history-review'",
+                (self.cycle_id,),
+            ).fetchone()
+        self.assertEqual(evidence["target_identity"], "apply-expected-state")
+
     def test_schema5_discovers_current_outcome_health_and_preserves_schema4_history(self) -> None:
         loop_findings.migrate(self.workspace, project_binding=self.binding)
         migrated = loop_findings.migrate(self.workspace, project_binding=self.binding)

@@ -101,6 +101,14 @@ the implemented classes exhaust all historical problems. Schema 3 requires the g
 `loop_findings.py migrate` route with a fresh `hybrid-state` project binding before findings exist.
 Run it once more on schema 4 to enable the expanded schema-5 current-state classes.
 
+For `ts: audit loops --history`, use the same command with `audit --history` and repeatable bounded
+`--source` selectors when requested. Historical mitigation is a supervised local sequence:
+`history-plan`, `history-validate`, then guarded `history-apply` with the exact manifest token,
+Hybrid project binding, and review authorization. Require one explicit controlled decision per
+selected finding and `--complete-cluster` when the review claims lineage-cluster completeness.
+Never infer a historical disposition or treat a `retain-open`/`requires-evidence` decision as
+closure; record it as reviewed evidence and keep the finding active.
+
 For `ts: resolve loop <LOOP-id>`, first run the read-only `loop_findings.py resolve <LOOP-id>` against
 the local workspace. Refuse unknown or stale identity. When it reports `actionable` and
 the reported controlled mitigation class, re-read the subject document, owning cycle, current
