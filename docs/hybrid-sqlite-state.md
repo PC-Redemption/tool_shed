@@ -135,15 +135,16 @@ The HPT2 shadow qualification and its explicit `partial`/`reconciled` historical
 documented in [`outcome-reconciliation.md`](outcome-reconciliation.md). Passing that vertical slice
 does not itself authorize the later live maintainer conversion.
 
-## Schema 4 outcome-loop index
+## Schema 4–5 outcome-loop index
 
 After the schema-3 recursive-closure migration, `scripts/loop_findings.py migrate` performs a
 guarded schema-4 extension through a verified backup and audited shadow replacement. It adds only
 the persisted loop-finding authority and discovery metadata tables. Managed Hybrid writes then
 refresh both recursive closure and loop findings in the same transaction. Checkpoint, rebuild,
-domain-digest, and updater validation include the schema-4 tables. See
-[`loop-findings.md`](loop-findings.md) for the controlled first discovery class and local mitigation
-route.
+domain-digest, and updater validation include the schema-4 tables. A second guarded migration from
+schema 4 to 5 expands the controlled finding enums and current-state discovery without changing
+the table shape or hosted write authority. See [`loop-findings.md`](loop-findings.md) for the
+discovery classes and local mitigation route.
 
 ## Dedicated Maintainer Conversion
 

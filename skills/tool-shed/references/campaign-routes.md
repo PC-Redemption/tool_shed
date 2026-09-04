@@ -99,18 +99,21 @@ For `ts: audit loops`, use `scripts/loop_findings.py --workspace . audit`. Repor
 and resolved counts, whether discovery is fresh, and each controlled finding without claiming that
 the implemented classes exhaust all historical problems. Schema 3 requires the guarded
 `loop_findings.py migrate` route with a fresh `hybrid-state` project binding before findings exist.
+Run it once more on schema 4 to enable the expanded schema-5 current-state classes.
 
 For `ts: resolve loop <LOOP-id>`, first run the read-only `loop_findings.py resolve <LOOP-id>` against
 the local workspace. Refuse unknown or stale identity. When it reports `actionable` and
-`correct-document-lifecycle`, re-read the subject document and owning cycle, explain the proposed
-local lifecycle correction, then use the ordinary managed document lifecycle operation with its
-fresh expected revision. Re-audit and checkpoint after the mutation. If the finding is already
+the reported controlled mitigation class, re-read the subject document, owning cycle, current
+reconciliation, lineage blockers, and evidence as applicable. Explain the proposed local action,
+then use only the ordinary project-bound managed operation for that class. Re-audit and checkpoint
+after the mutation. If the finding is already
 resolved, report that result without writing. Never interpret this route as hosted authorization,
 remote execution, or permission to force-close an outcome.
 
-The hosted Outcome Reconciliation screen is an advisory projection. Its control copies the exact
-`ts: resolve loop <LOOP-id>` text for local chat; it must not create a hosted-to-local action-intent
-channel or mutate local state.
+Hosted pages are advisory projections. They may copy a reporter-supplied exact
+`ts: resolve loop <LOOP-id>` route or a product-defined allowlisted status/diagnostic route when the
+displayed current state is actionable. They must not synthesize target commands, attach commands to
+history-only rows, create a hosted-to-local action-intent channel, or mutate local state.
 
 Read optional project state from root `work/tool-shed.yaml` when present. The minimal supported
 declaration is:

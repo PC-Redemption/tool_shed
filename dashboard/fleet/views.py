@@ -48,6 +48,19 @@ from .services import (
 
 MAX_REQUEST_BYTES = 262_144
 MAX_DECOMPRESSED_REQUEST_BYTES = 2_097_152
+LOOP_FINDING_TITLES = {
+    "PROMOTED_IDEA_LIFECYCLE_STALE": "Promoted Idea lifecycle drift",
+    "OUTCOME_BLOCKED": "Outcome is blocked",
+    "OUTCOME_STALLED": "Outcome has stalled",
+    "TERMINAL_OUTCOME_UNRECONCILED": "Terminal outcome is unreconciled",
+    "INVALID_RECONCILED_DISPOSITION": "Reconciled outcome has an invalid disposition",
+    "OUTCOME_RESULT_UNPROPAGATED": "Outcome result was not propagated",
+    "LINEAGE_INVALID": "Closure lineage is invalid",
+    "LINEAGE_RECOVERY_REQUIRED": "Closure lineage needs recovery",
+    "CLOSURE_EVIDENCE_MISSING": "Closure evidence is missing",
+    "CLOSURE_EVIDENCE_STALE": "Closure evidence is stale",
+    "CLOSURE_EVIDENCE_CHECKER_ERROR": "Closure evidence check failed",
+}
 
 
 def _payload(request: HttpRequest) -> dict:
@@ -563,11 +576,19 @@ def _instance_health_context(instances: list[object]) -> tuple[list[dict[str, ob
             if installed_semver and stable_semver and installed_semver > stable_semver
             else "unknown"
         )
+        local_commands = []
+        pending_events = int(health.get("pending_event_count") or 0)
+        if reporter_state != "healthy" or pending_events:
+            local_commands.append({"command": "ts: dashboard status", "label": "Check reporter locally"})
+        compatibility = str(release.get("compatibility_state") or "unknown")
+        qualification = str(release.get("qualification_state") or "unknown")
+        if compatibility not in {"compatible", "current"} or qualification not in {"qualified", "current"}:
+            local_commands.append({"command": "ts: doctor", "label": "Run local diagnostics"})
         rows.append(
             {
                 "instance": instance,
                 "reporter_state": reporter_state,
-                "pending_event_count": int(health.get("pending_event_count") or 0),
+                "pending_event_count": pending_events,
                 "last_delivery_at": parse_datetime(str(health.get("last_delivery_at") or "")),
                 "semantic_digest": str(health.get("semantic_digest") or ""),
                 "installed_version": installed,
@@ -582,9 +603,10 @@ def _instance_health_context(instances: list[object]) -> tuple[list[dict[str, ob
                 "production_version": release.get("production_version"),
                 "production_source": str(release.get("production_source") or "unknown"),
                 "release_observed_at": parse_datetime(str(release.get("observed_at") or "")),
-                "compatibility_state": str(release.get("compatibility_state") or "unknown"),
-                "qualification_state": str(release.get("qualification_state") or "unknown"),
+                "compatibility_state": compatibility,
+                "qualification_state": qualification,
                 "version_state": version_state,
+                "local_commands": local_commands,
             }
         )
     reporter_states = {str(row["reporter_state"]) for row in rows}
@@ -972,6 +994,23 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
                 snapshot.visible_id
             )
             snapshot_by_instance.setdefault(snapshot.instance_id, []).append(snapshot)
+        finding_rows = LoopFindingSnapshot.objects.filter(
+            project=project,
+            state="active",
+            subject_visible_id__in=[item.visible_id for item in page_snapshots],
+        ).order_by("instance_id", "subject_visible_id", "finding_external_id")
+        finding_map: dict[tuple[object, str], list[LoopFindingSnapshot]] = {}
+        for finding in finding_rows:
+            finding.display_title = LOOP_FINDING_TITLES.get(
+                finding.reason_code, finding.reason_code.replace("_", " ").title()
+            )
+            finding_map.setdefault(
+                (finding.instance_id, finding.subject_visible_id), []
+            ).append(finding)
+        for snapshot in page_snapshots:
+            snapshot.local_findings = finding_map.get(
+                (snapshot.instance_id, snapshot.visible_id), []
+            )
     if tab == "outcomes":
         for instance in instances:
             findings = list(
@@ -979,6 +1018,10 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
                     "-last_observed_at", "finding_external_id"
                 )[:50]
             )
+            for finding in findings:
+                finding.display_title = LOOP_FINDING_TITLES.get(
+                    finding.reason_code, finding.reason_code.replace("_", " ").title()
+                )
             outcome_groups.append({"instance": instance, "findings": findings})
     health_rows, health_summary = _instance_health_context(instances)
     overview = _project_overview_context(project, instances, health_summary) if tab == "overview" else None

@@ -167,6 +167,80 @@ class LoopFindingTests(unittest.TestCase):
         self.assertEqual(recurring["findings"][0]["finding_id"], finding_id)
         self.assertEqual(recurring["findings"][0]["recurrence_count"], 1)
 
+    def test_schema5_discovers_current_outcome_health_and_preserves_schema4_history(self) -> None:
+        loop_findings.migrate(self.workspace, project_binding=self.binding)
+        migrated = loop_findings.migrate(self.workspace, project_binding=self.binding)
+        self.assertEqual((migrated["from_schema"], migrated["to_schema"]), (4, 5))
+
+        blocked = document_store.create_document(
+            self.workspace,
+            project_binding=self.binding,
+            document_type="campaign",
+            title="Blocked campaign",
+            body="# Blocked campaign\n",
+            lifecycle="working",
+            metadata={"document_type": "campaign"},
+            actor="fixture",
+            reason="schema five finding fixture",
+        )["result"]
+        blocked_cycle = document_store.open_outcome(
+            self.workspace,
+            project_binding=self.binding,
+            identity=str(blocked["visible_id"]),
+            accepted_outcome="The campaign completes.",
+            actor="fixture",
+        )["result"]["cycle_id"]
+
+        def block(connection, revision):
+            connection.execute(
+                "UPDATE cycle SET lifecycle_state='blocked' WHERE id=?", (blocked_cycle,)
+            )
+
+        hybrid_state.managed_write(
+            self.workspace,
+            project_binding=self.binding,
+            command="block-fixture",
+            actor="fixture",
+            callback=block,
+        )
+        audit = loop_findings.audit(self.workspace)
+        reasons = {item["reason_code"] for item in audit["findings"] if item["state"] == "active"}
+        self.assertIn("PROMOTED_IDEA_LIFECYCLE_STALE", reasons)
+        self.assertIn("OUTCOME_BLOCKED", reasons)
+        blocked_finding = next(item for item in audit["findings"] if item["reason_code"] == "OUTCOME_BLOCKED")
+        self.assertEqual(
+            loop_findings.resolve(self.workspace, blocked_finding["finding_id"])["recommended_action"],
+            "inspect-blocker-and-continue-or-dispose",
+        )
+        checkpoint = document_store.write_checkpoint(
+            self.workspace,
+            project_binding=self.binding,
+            output=self.workspace / "work/state/checkpoints/state-v2.json",
+        )
+        rebuilt_path = self.workspace / ".tool-shed/schema5-rebuilt.sqlite3"
+        document_store.rebuild(
+            self.workspace,
+            project_binding=self.binding,
+            checkpoint=self.workspace / str(checkpoint["path"]),
+            output=rebuilt_path,
+        )
+        rebuilt_audit = document_store.audit(self.workspace, rebuilt_path)
+        self.assertEqual(rebuilt_audit["hybrid_schema"], 5)
+        self.assertEqual(rebuilt_audit["classification"], "CLEAN")
+
+    def test_missing_report_projection_does_not_create_an_empty_database(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            empty = Path(directory)
+            subprocess.run(["git", "init", "--quiet", "-b", "main"], cwd=empty, check=True)
+            (empty / "work").mkdir()
+            (empty / "work/tool-shed-project.json").write_text(
+                (self.workspace / "work/tool-shed-project.json").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            projection = loop_findings.report_projection(empty)
+            self.assertEqual(projection["total_active_count"], 0)
+            self.assertFalse((empty / ".tool-shed/state.sqlite3").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

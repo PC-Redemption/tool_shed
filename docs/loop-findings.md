@@ -1,16 +1,18 @@
 # Outcome Loop Findings
 
-Tool Shed schema 4 adds a bounded, local discovery index for outcome loops that need operator
+Tool Shed schemas 4 and 5 provide a bounded, local discovery index for outcome loops that need operator
 attention. Hybrid SQLite remains authoritative. The hosted dashboard receives a read-only
 projection and cannot run a command or mutate a workspace.
 
-The first implemented finding class is deliberately narrow:
+Schema 4 retains the initial promoted-Idea lifecycle check. Schema 5 also discovers current:
 
-- category: `semantic-lifecycle-drift`;
-- reason: `PROMOTED_IDEA_LIFECYCLE_STALE`;
-- condition: a promoted Idea document is still `active` after its owning outcome cycle is
-  terminal and its latest satisfied or superseded verdict is reconciled;
-- expected correction: `completed`, or `superseded` when the verdict disposition is superseded.
+- blocked outcomes and nonterminal outcomes with no activity for 30 days;
+- terminal but unreconciled outcomes and reconciled outcomes with an open disposition;
+- terminal reconciled child results that were not propagated to their parent;
+- invalid or recovery-required recursive closure lineage; and
+- missing, stale, or checker-error closure evidence.
+
+Healthy progressing open outcomes remain visible work, not attention findings.
 
 Findings use a stable `LOOP-…` identifier derived from the semantic condition and subject. Every
 managed Hybrid write refreshes this index. A repeated observation updates the same row; a corrected
@@ -27,8 +29,9 @@ python3 scripts/loop_findings.py --workspace . audit
 python3 scripts/loop_findings.py --workspace . resolve LOOP-17A1B2C3D4E5
 ```
 
-Migration requires a valid schema-3 database, copies a verified backup, upgrades a shadow copy,
-seeds current findings, audits it, and atomically promotes it. `audit` and `resolve` are read-only.
+Migration advances one guarded step from schema 3 to 4 or schema 4 to 5. It copies a verified
+backup, upgrades a shadow copy, seeds current findings, audits it, and atomically promotes it.
+`audit` and `resolve` are read-only.
 `resolve` re-reads local authority and reports the controlled mitigation class; the Tool Shed chat
 route `ts: resolve loop <finding-id>` performs the actual supervised local correction after checking
 the subject’s current revision and outcome state.
@@ -37,11 +40,11 @@ the subject’s current revision and outcome state.
 
 Report schema 8 carries at most 50 active and 50 recently resolved findings. The server accepts
 only controlled categories, reasons, state fields, timestamps, counts, subject IDs, and the exact
-command `ts: resolve loop <finding-id>`. The Outcome Reconciliation screen renders active findings
-per reporting instance and offers **Copy Tool Shed command**. It does not expose a hosted action
-channel, writeback, or remote execution.
+command `ts: resolve loop <finding-id>`. Overview and Needs Attention copy exact built-in status
+routes; Work and Outcome Reconciliation copy reporter-provided finding routes; Health copies exact
+diagnostic routes only when its current state is actionable. History-only rows do not gain an
+action. The service does not expose a hosted action channel, writeback, or remote execution.
 
-Historical recovery remains supervised. This first slice does not claim exhaustive discovery of
-all legacy loop classes and does not force-close past work. Later milestones can add separately
-tested classes and a deterministic history-review manifest while preserving zero unexplained—not
-necessarily zero open—loops as the acceptance rule.
+Historical recovery remains supervised. Current-state discovery does not claim that every legacy
+manifest can be inferred safely and does not force-close past work. A later history-review manifest
+can preserve zero unexplained—not necessarily zero open—loops as the acceptance rule.

@@ -15,6 +15,7 @@ import os
 import sqlite3
 import sys
 import uuid
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -31,10 +32,11 @@ from project_identity import load_project_identity, require_project_binding, res
 
 
 SCHEMA_VERSION = 1
-DISCOVERY_VERSION = "loop-findings-v1"
+DISCOVERY_VERSION = "loop-findings-v2"
 ZERO_DIGEST = "0" * 64
 MAX_ACTIVE_REPORT = 50
 MAX_RECENT_RESOLVED_REPORT = 50
+STALL_AFTER = timedelta(days=30)
 
 
 class LoopFindingError(RuntimeError):
@@ -56,6 +58,140 @@ def _body_status(body: str) -> str:
         if line.casefold().startswith("status:"):
             return line.split(":", 1)[1].strip().casefold()
     return ""
+
+
+def _candidate(
+    *, category: str, reason_code: str, artifact_id: str, visible_id: str,
+    observed: str, expected: str,
+) -> dict[str, Any]:
+    key = _digest({
+        "category": category,
+        "reason_code": reason_code,
+        "subject_artifact_id": artifact_id,
+        "expected_state": expected,
+    })
+    finding_id = f"LOOP-{key[:12].upper()}"
+    return {
+        "finding_key": key,
+        "visible_id": finding_id,
+        "category": category,
+        "severity": "attention",
+        "reason_code": reason_code,
+        "subject_artifact_id": artifact_id,
+        "subject_visible_id": visible_id,
+        "observed_state": observed,
+        "expected_state": expected,
+        "command": f"ts: resolve loop {finding_id}",
+    }
+
+
+def _parse_time(value: object) -> datetime | None:
+    if not isinstance(value, str):
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def _discover_current_cycle_findings(connection: sqlite3.Connection) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
+    cutoff = datetime.now(timezone.utc) - STALL_AFTER
+    rows = connection.execute(
+        "SELECT c.id AS cycle_id, c.lifecycle_state, c.opened_at, c.origin_artifact_id, "
+        "COALESCE(d.visible_id, a.display_number, a.current_path) AS visible_id, a.updated_at, "
+        "(SELECT r.state FROM reconciliation r WHERE r.cycle_id=c.id "
+        " ORDER BY r.origin_revision DESC, r.id DESC LIMIT 1) AS reconciliation_state, "
+        "(SELECT ov.disposition FROM reconciliation r JOIN outcome_verdict ov ON ov.id=r.verdict_id "
+        " WHERE r.cycle_id=c.id ORDER BY r.origin_revision DESC, r.id DESC LIMIT 1) AS disposition, "
+        "MAX(c.opened_at, a.updated_at, "
+        "COALESCE((SELECT MAX(ov.decided_at) FROM outcome_verdict ov WHERE ov.cycle_id=c.id), ''), "
+        "COALESCE((SELECT MAX(r.compared_at) FROM reconciliation r WHERE r.cycle_id=c.id), ''), "
+        "COALESCE((SELECT MAX(er.collected_at) FROM evidence_reference er WHERE er.cycle_id=c.id), '')) AS latest_activity "
+        "FROM cycle c JOIN artifact a ON a.id=c.origin_artifact_id "
+        "LEFT JOIN document d ON d.id=a.id ORDER BY c.opened_at, c.id"
+    ).fetchall()
+    for row in rows:
+        artifact_id, visible_id = str(row["origin_artifact_id"]), str(row["visible_id"])
+        lifecycle = str(row["lifecycle_state"])
+        reconciliation = str(row["reconciliation_state"] or "open")
+        disposition = str(row["disposition"] or "open")
+        if lifecycle == "blocked":
+            findings.append(_candidate(
+                category="outcome-health", reason_code="OUTCOME_BLOCKED",
+                artifact_id=artifact_id, visible_id=visible_id,
+                observed="blocked", expected="working-or-terminal",
+            ))
+        elif lifecycle not in {"terminal", "completed", "abandoned", "superseded"}:
+            latest = _parse_time(row["latest_activity"])
+            if latest is not None and latest < cutoff:
+                findings.append(_candidate(
+                    category="outcome-health", reason_code="OUTCOME_STALLED",
+                    artifact_id=artifact_id, visible_id=visible_id,
+                    observed="stalled-30-days", expected="recent-progress-or-terminal",
+                ))
+        if lifecycle in {"terminal", "completed", "abandoned", "superseded"} and reconciliation != "reconciled":
+            findings.append(_candidate(
+                category="outcome-reconciliation", reason_code="TERMINAL_OUTCOME_UNRECONCILED",
+                artifact_id=artifact_id, visible_id=visible_id,
+                observed=reconciliation, expected="reconciled",
+            ))
+        if reconciliation == "reconciled" and disposition == "open":
+            findings.append(_candidate(
+                category="outcome-reconciliation", reason_code="INVALID_RECONCILED_DISPOSITION",
+                artifact_id=artifact_id, visible_id=visible_id,
+                observed="reconciled-open", expected="terminal-disposition",
+            ))
+        if lifecycle in {"terminal", "completed", "abandoned", "superseded"} and reconciliation == "reconciled":
+            missing = connection.execute(
+                "SELECT 1 FROM relationship p WHERE p.from_artifact_id=? "
+                "AND p.relation_type='outcome-parent' AND p.retired_revision IS NULL "
+                "AND NOT EXISTS (SELECT 1 FROM relationship x WHERE x.from_artifact_id=p.from_artifact_id "
+                "AND x.to_artifact_id=p.to_artifact_id AND x.relation_type='outcome-result-propagated' "
+                "AND x.retired_revision IS NULL) LIMIT 1",
+                (artifact_id,),
+            ).fetchone()
+            if missing:
+                findings.append(_candidate(
+                    category="outcome-propagation", reason_code="OUTCOME_RESULT_UNPROPAGATED",
+                    artifact_id=artifact_id, visible_id=visible_id,
+                    observed="terminal-not-propagated", expected="outcome-result-propagated",
+                ))
+    return findings
+
+
+def _discover_closure_findings(connection: sqlite3.Connection) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
+    rows = connection.execute(
+        "SELECT ce.artifact_id, COALESCE(d.visible_id, a.display_number, a.current_path) AS visible_id, "
+        "cr.graph_health, cr.evidence_health FROM closure_rollup cr "
+        "JOIN closure_element ce ON ce.id=cr.element_id AND ce.role='cycle' "
+        "JOIN artifact a ON a.id=ce.artifact_id LEFT JOIN document d ON d.id=a.id "
+        "ORDER BY visible_id"
+    ).fetchall()
+    for row in rows:
+        artifact_id, visible_id = str(row["artifact_id"]), str(row["visible_id"])
+        graph = str(row["graph_health"])
+        evidence = str(row["evidence_health"])
+        if graph != "valid":
+            findings.append(_candidate(
+                category="lineage-health",
+                reason_code="LINEAGE_INVALID" if graph == "invalid" else "LINEAGE_RECOVERY_REQUIRED",
+                artifact_id=artifact_id, visible_id=visible_id,
+                observed=graph, expected="valid",
+            ))
+        if evidence in {"missing", "stale", "checker-error"}:
+            reason = {
+                "missing": "CLOSURE_EVIDENCE_MISSING",
+                "stale": "CLOSURE_EVIDENCE_STALE",
+                "checker-error": "CLOSURE_EVIDENCE_CHECKER_ERROR",
+            }[evidence]
+            findings.append(_candidate(
+                category="evidence-health", reason_code=reason,
+                artifact_id=artifact_id, visible_id=visible_id,
+                observed=evidence, expected="current",
+            ))
+    return findings
 
 
 def discover_candidates(connection: sqlite3.Connection) -> list[dict[str, Any]]:
@@ -99,27 +235,15 @@ def discover_candidates(connection: sqlite3.Connection) -> list[dict[str, Any]]:
         if str(reconciliation["disposition"]) not in {"satisfied", "superseded"}:
             continue
         expected = "superseded" if reconciliation["disposition"] == "superseded" else "completed"
-        key_material = {
-            "category": "semantic-lifecycle-drift",
-            "reason_code": "PROMOTED_IDEA_LIFECYCLE_STALE",
-            "subject_artifact_id": str(row["id"]),
-            "expected_state": expected,
-        }
-        finding_key = _digest(key_material)
-        candidates.append(
-            {
-                "finding_key": finding_key,
-                "visible_id": f"LOOP-{finding_key[:12].upper()}",
-                "category": "semantic-lifecycle-drift",
-                "severity": "attention",
-                "reason_code": "PROMOTED_IDEA_LIFECYCLE_STALE",
-                "subject_artifact_id": str(row["id"]),
-                "subject_visible_id": str(row["visible_id"]),
-                "observed_state": "active",
-                "expected_state": expected,
-                "command": f"ts: resolve loop LOOP-{finding_key[:12].upper()}",
-            }
-        )
+        candidates.append(_candidate(
+            category="semantic-lifecycle-drift",
+            reason_code="PROMOTED_IDEA_LIFECYCLE_STALE",
+            artifact_id=str(row["id"]), visible_id=str(row["visible_id"]),
+            observed="active", expected=expected,
+        ))
+    if int(connection.execute("PRAGMA user_version").fetchone()[0]) >= 5:
+        candidates.extend(_discover_current_cycle_findings(connection))
+        candidates.extend(_discover_closure_findings(connection))
     return candidates
 
 
@@ -129,10 +253,11 @@ def candidate_digest(candidates: list[dict[str, Any]]) -> str:
 
 def synchronize_findings(connection: sqlite3.Connection, *, revision: int) -> dict[str, Any]:
     """Refresh persisted findings inside the caller's managed transaction."""
-    if int(connection.execute("PRAGMA user_version").fetchone()[0]) != HYBRID_SCHEMA_VERSION:
+    hybrid_schema = int(connection.execute("PRAGMA user_version").fetchone()[0])
+    if hybrid_schema not in {4, 5}:
         return {"applicable": False, "active_count": 0, "resolved_count": 0, "recurrence_count": 0}
     if not set(LOOP_FINDING_TABLES) <= _tables(connection):
-        raise LoopFindingError("schema 4 is missing loop-finding authority tables")
+        raise LoopFindingError(f"schema {hybrid_schema} is missing loop-finding authority tables")
     candidates = discover_candidates(connection)
     by_key = {item["finding_key"]: item for item in candidates}
     existing = {
@@ -193,7 +318,7 @@ def synchronize_findings(connection: sqlite3.Connection, *, revision: int) -> di
     digest = candidate_digest(candidates)
     connection.execute(
         "UPDATE loop_finding_meta SET discovery_version=?, last_source_revision=?, last_source_digest=?, updated_at=? WHERE id=1",
-        (DISCOVERY_VERSION, revision, digest, stamp),
+        ("loop-findings-v1" if hybrid_schema == 4 else DISCOVERY_VERSION, revision, digest, stamp),
     )
     counts = {
         str(row["state"]): int(row["count"])
@@ -233,8 +358,8 @@ def audit(workspace: Path, *, database: Path | None = None) -> dict[str, Any]:
     path = database or hybrid_state.database_path(workspace)
     with contextlib.closing(hybrid_state.connect(path, writable=False)) as connection:
         version = int(connection.execute("PRAGMA user_version").fetchone()[0])
-        if version != HYBRID_SCHEMA_VERSION or not set(LOOP_FINDING_TABLES) <= _tables(connection):
-            raise LoopFindingError(f"loop findings require Hybrid schema 4; found {version}")
+        if version not in {4, 5} or not set(LOOP_FINDING_TABLES) <= _tables(connection):
+            raise LoopFindingError(f"loop findings require Hybrid schema 4 or 5; found {version}")
         meta = connection.execute("SELECT * FROM loop_finding_meta WHERE id=1").fetchone()
         candidates = discover_candidates(connection)
         rows = list(
@@ -254,7 +379,7 @@ def audit(workspace: Path, *, database: Path | None = None) -> dict[str, Any]:
     return {
         "schema_version": SCHEMA_VERSION,
         "kind": "tool-shed-loop-finding-audit",
-        "discovery_version": DISCOVERY_VERSION,
+        "discovery_version": "loop-findings-v1" if version == 4 else DISCOVERY_VERSION,
         "database_revision": current_revision,
         "fresh": fresh,
         "active_count": sum(item["state"] == "active" for item in findings),
@@ -266,8 +391,11 @@ def audit(workspace: Path, *, database: Path | None = None) -> dict[str, Any]:
 
 def report_projection(workspace: Path) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
-    with contextlib.closing(hybrid_state.connect(hybrid_state.database_path(workspace), writable=False)) as connection:
-        if int(connection.execute("PRAGMA user_version").fetchone()[0]) < HYBRID_SCHEMA_VERSION:
+    path = hybrid_state.database_path(workspace)
+    if not path.is_file():
+        return {"total_active_count": 0, "total_resolved_count": 0, "truncated": False, "findings": []}
+    with contextlib.closing(hybrid_state.connect(path, writable=False)) as connection:
+        if int(connection.execute("PRAGMA user_version").fetchone()[0]) < 4:
             return {"total_active_count": 0, "total_resolved_count": 0, "truncated": False, "findings": []}
     result = audit(workspace)
     active = [item for item in result["findings"] if item["state"] == "active"][:MAX_ACTIVE_REPORT]
@@ -299,7 +427,19 @@ def resolve(workspace: Path, finding_id: str) -> dict[str, Any]:
         action = "none"
     else:
         status = "actionable"
-        action = "correct-document-lifecycle"
+        action = {
+            "PROMOTED_IDEA_LIFECYCLE_STALE": "correct-document-lifecycle",
+            "OUTCOME_BLOCKED": "inspect-blocker-and-continue-or-dispose",
+            "OUTCOME_STALLED": "confirm-owner-and-continue-or-dispose",
+            "TERMINAL_OUTCOME_UNRECONCILED": "reconcile-terminal-outcome",
+            "INVALID_RECONCILED_DISPOSITION": "correct-outcome-disposition",
+            "OUTCOME_RESULT_UNPROPAGATED": "propagate-outcome-result",
+            "LINEAGE_INVALID": "repair-or-disposition-invalid-lineage",
+            "LINEAGE_RECOVERY_REQUIRED": "recover-lineage-authority",
+            "CLOSURE_EVIDENCE_MISSING": "collect-required-closure-evidence",
+            "CLOSURE_EVIDENCE_STALE": "refresh-required-closure-evidence",
+            "CLOSURE_EVIDENCE_CHECKER_ERROR": "repair-checker-and-rerun-evidence",
+        }[selected["reason_code"]]
     return {
         "schema_version": SCHEMA_VERSION,
         "kind": "tool-shed-loop-finding-resolution",
@@ -316,20 +456,22 @@ def migrate(workspace: Path, *, project_binding: str) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
     require_project_binding(workspace, project_binding, operation="hybrid-state")
     source = hybrid_state.database_path(workspace)
-    shadow = source.with_name(source.name + ".loop-schema4.next")
+    shadow = source.with_name(source.name + ".loop-schema.next")
     if shadow.exists():
         raise LoopFindingError(f"stale migration shadow requires review: {shadow.relative_to(workspace)}")
     with contextlib.closing(hybrid_state.connect(source, writable=False)) as probe:
         entrance = document_store.audit_connection(workspace, probe)
         if entrance["classification"] not in {"CLEAN", "VALID_DIRTY"}:
             raise LoopFindingError(f"migration refused from {entrance['classification']}")
-        if int(probe.execute("PRAGMA user_version").fetchone()[0]) != 3:
-            raise LoopFindingError("loop-finding migration requires Hybrid schema 3")
+        from_schema = int(probe.execute("PRAGMA user_version").fetchone()[0])
+        if from_schema not in {3, 4}:
+            raise LoopFindingError("loop-finding migration requires Hybrid schema 3 or 4")
         expected_revision = int(entrance["current_revision"])
         expected_digest = str(entrance["domain_digest"])
     backup_root = workspace / ".tool-shed/backups"
     backup_root.mkdir(parents=True, exist_ok=True)
-    backup = backup_root / f"loop-findings-schema3-r{expected_revision}.sqlite3"
+    to_schema = from_schema + 1
+    backup = backup_root / f"loop-findings-schema{from_schema}-r{expected_revision}.sqlite3"
     if backup.exists():
         raise LoopFindingError(f"migration backup already exists and requires review: {backup.relative_to(workspace)}")
     with hybrid_state.WorkspaceLock(hybrid_state.lock_path(workspace)):
@@ -344,27 +486,49 @@ def migrate(workspace: Path, *, project_binding: str) -> dict[str, Any]:
         try:
             with contextlib.closing(hybrid_state.connect(shadow)) as target:
                 target.execute("BEGIN IMMEDIATE")
-                create_loop_finding_schema(target, include_triggers=True)
                 revision = expected_revision + 1
                 operation_id = str(uuid.uuid4())
                 stamp = hybrid_state.now()
                 target.execute(
-                    "INSERT INTO managed_operation VALUES (?, ?, 'loop-findings-schema4-migrate', 'loop-findings', ?, NULL, NULL, 0, 'active')",
-                    (operation_id, revision, stamp),
+                    "INSERT INTO managed_operation VALUES (?, ?, ?, 'loop-findings', ?, NULL, NULL, 0, 'active')",
+                    (operation_id, revision, f"loop-findings-schema{to_schema}-migrate", stamp),
                 )
                 target.execute("INSERT INTO active_operation VALUES (1, ?, ?)", (operation_id, revision))
-                target.execute("UPDATE state_meta SET schema_version=4 WHERE id=1")
-                target.execute("PRAGMA user_version=4")
-                target.execute(
-                    "INSERT INTO loop_finding_meta VALUES (1, ?, ?, 0, ?, ?)",
-                    (LOOP_FINDING_SCHEMA_VERSION, DISCOVERY_VERSION, ZERO_DIGEST, stamp),
-                )
+                if from_schema == 3:
+                    create_loop_finding_schema(target, include_triggers=True, schema_version=1)
+                    target.execute("UPDATE state_meta SET schema_version=4 WHERE id=1")
+                    target.execute("PRAGMA user_version=4")
+                    target.execute(
+                        "INSERT INTO loop_finding_meta VALUES (1, 1, 'loop-findings-v1', 0, ?, ?)",
+                        (ZERO_DIGEST, stamp),
+                    )
+                else:
+                    for table in LOOP_FINDING_TABLES:
+                        for operation in ("insert", "update", "delete"):
+                            target.execute(f"DROP TRIGGER ts_account_{table}_{operation}")
+                    target.execute("DROP INDEX loop_finding_state_idx")
+                    target.execute("DROP INDEX loop_finding_subject_idx")
+                    target.execute("ALTER TABLE loop_finding_meta RENAME TO loop_finding_meta_v1")
+                    target.execute("ALTER TABLE loop_finding RENAME TO loop_finding_v1")
+                    create_loop_finding_schema(target, include_triggers=True, schema_version=2)
+                    target.execute(
+                        "INSERT INTO loop_finding_meta SELECT id, 2, ?, last_source_revision, "
+                        "last_source_digest, updated_at FROM loop_finding_meta_v1",
+                        (DISCOVERY_VERSION,),
+                    )
+                    target.execute("INSERT INTO loop_finding SELECT * FROM loop_finding_v1")
+                    target.execute("DROP TABLE loop_finding_v1")
+                    target.execute("DROP TABLE loop_finding_meta_v1")
+                    target.execute("UPDATE state_meta SET schema_version=5 WHERE id=1")
+                    target.execute("PRAGMA user_version=5")
                 synchronize_findings(target, revision=revision)
                 target.execute(
-                    "INSERT INTO migration_ledger VALUES (?, 3, 4, ?, ?, ?, 'complete', ?, ?)",
+                    "INSERT INTO migration_ledger VALUES (?, ?, ?, ?, ?, ?, 'complete', ?, ?)",
                     (
                         str(uuid.uuid4()),
-                        loop_finding_migration_digest(),
+                        from_schema,
+                        to_schema,
+                        loop_finding_migration_digest(schema_version=1 if to_schema == 4 else 2),
                         expected_digest,
                         backup.relative_to(workspace).as_posix(),
                         stamp,
@@ -398,8 +562,8 @@ def migrate(workspace: Path, *, project_binding: str) -> dict[str, Any]:
     return {
         "schema_version": SCHEMA_VERSION,
         "kind": "tool-shed-loop-finding-migration",
-        "from_schema": 3,
-        "to_schema": 4,
+        "from_schema": from_schema,
+        "to_schema": to_schema,
         "backup": backup.relative_to(workspace).as_posix(),
         "backup_sha256": hybrid_state.file_sha256(backup),
         "revision": result["database_revision"],

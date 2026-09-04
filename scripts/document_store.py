@@ -45,7 +45,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/document_store.p
 OPERATION = "hybrid-state"
 CHECKPOINT_KIND = "tool-shed-document-state-checkpoint"
 CHECKPOINT_FORMAT = 2
-DOCUMENT_HYBRID_SCHEMAS = {HYBRID_SCHEMA_VERSION, 3, 4}
+DOCUMENT_HYBRID_SCHEMAS = {HYBRID_SCHEMA_VERSION, 3, 4, 5}
 VISIBLE_ID = re.compile(r"^(?P<namespace>[A-Z]{2,5})-(?P<number>[0-9]{4,})$")
 EDIT_HEADER = "tool_shed_document: 1"
 LIFECYCLES = ("active", "working", "blocked", "parked", "deferred", "completed", "abandoned", "superseded")
@@ -1311,25 +1311,29 @@ def rebuild(workspace: Path, *, project_binding: str, checkpoint: Path, output: 
             raise DocumentStoreError(f"unsupported checkpoint Hybrid schema: {hybrid_schema}")
         hybrid_state.create_schema(connection, include_triggers=False)
         create_document_schema(connection, include_triggers=False)
-        if hybrid_schema in {3, 4}:
+        if hybrid_schema in {3, 4, 5}:
             from closure_lineage_schema import create_closure_schema
 
             create_closure_schema(connection, include_triggers=False)
-        if hybrid_schema == 4:
+        if hybrid_schema in {4, 5}:
             from loop_findings_schema import create_loop_finding_schema
 
-            create_loop_finding_schema(connection, include_triggers=False)
+            create_loop_finding_schema(
+                connection,
+                include_triggers=False,
+                schema_version=1 if hybrid_schema == 4 else 2,
+            )
         meta_source = tables.pop("state_meta", None)
         connection.execute(
             "INSERT INTO state_meta VALUES (1, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, ?, ?, ?)",
             (hybrid_schema, envelope["project_id"], hybrid_state.stable_uuid(envelope["project_id"], f"workspace:{workspace.resolve()}"), envelope["storage_mode"], envelope["database_revision"], envelope["database_revision"], envelope["database_revision"], hybrid_state.EMPTY_SHA256, envelope["digest"], hybrid_state.EMPTY_SHA256),
         )
         ordered_portable = [*PORTABLE_TABLES, *DOCUMENT_PORTABLE_TABLES]
-        if hybrid_schema in {3, 4}:
+        if hybrid_schema in {3, 4, 5}:
             from closure_lineage_schema import CLOSURE_PORTABLE_TABLES
 
             ordered_portable.extend(CLOSURE_PORTABLE_TABLES)
-        if hybrid_schema == 4:
+        if hybrid_schema in {4, 5}:
             from loop_findings_schema import LOOP_FINDING_PORTABLE_TABLES
 
             ordered_portable.extend(LOOP_FINDING_PORTABLE_TABLES)
@@ -1354,11 +1358,11 @@ def rebuild(workspace: Path, *, project_binding: str, checkpoint: Path, output: 
         hybrid_state.create_triggers(connection)
         from document_store_schema import document_trigger_sql
         connection.executescript(document_trigger_sql())
-        if hybrid_schema in {3, 4}:
+        if hybrid_schema in {3, 4, 5}:
             from closure_lineage_schema import closure_trigger_sql
 
             connection.executescript(closure_trigger_sql())
-        if hybrid_schema == 4:
+        if hybrid_schema in {4, 5}:
             from loop_findings_schema import loop_finding_trigger_sql
 
             connection.executescript(loop_finding_trigger_sql())

@@ -110,6 +110,17 @@ LOOP_FINDING_FIELDS = {
     "expected_state", "state", "source_revision", "first_observed_at", "last_observed_at",
     "resolved_at", "recurrence_count", "command",
 }
+LOOP_FINDING_CATEGORIES = {
+    "semantic-lifecycle-drift", "outcome-health", "outcome-reconciliation",
+    "outcome-propagation", "lineage-health", "evidence-health",
+}
+LOOP_FINDING_REASON_CODES = {
+    "PROMOTED_IDEA_LIFECYCLE_STALE", "OUTCOME_BLOCKED", "OUTCOME_STALLED",
+    "TERMINAL_OUTCOME_UNRECONCILED", "INVALID_RECONCILED_DISPOSITION",
+    "OUTCOME_RESULT_UNPROPAGATED", "LINEAGE_INVALID", "LINEAGE_RECOVERY_REQUIRED",
+    "CLOSURE_EVIDENCE_MISSING", "CLOSURE_EVIDENCE_STALE",
+    "CLOSURE_EVIDENCE_CHECKER_ERROR",
+}
 WORK_ARTIFACT_FIELDS = {
     "artifact_id",
     "visible_id",
@@ -566,9 +577,9 @@ def _loop_findings(value: Any) -> dict[str, Any]:
         findings.append(
             {
                 "finding_id": finding_id,
-                "category": _choice(item.get("category"), f"{label}.category", {"semantic-lifecycle-drift"}, 48),
+                "category": _choice(item.get("category"), f"{label}.category", LOOP_FINDING_CATEGORIES, 48),
                 "severity": _choice(item.get("severity"), f"{label}.severity", {"attention"}, 16),
-                "reason_code": _choice(item.get("reason_code"), f"{label}.reason_code", {"PROMOTED_IDEA_LIFECYCLE_STALE"}, 64),
+                "reason_code": _choice(item.get("reason_code"), f"{label}.reason_code", LOOP_FINDING_REASON_CODES, 64),
                 "subject_id": _required_string(item.get("subject_id"), f"{label}.subject_id", 64),
                 "observed_state": _required_string(item.get("observed_state"), f"{label}.observed_state", 32),
                 "expected_state": _required_string(item.get("expected_state"), f"{label}.expected_state", 32),

@@ -305,7 +305,7 @@ python3 scripts/outcome_reconciliation.py --workspace . transition-apply \
   --manifest <transition.json> --expect <transition-token> --project-binding <binding>
 ```
 
-Schema-4 workspaces also persist bounded outcome-loop findings:
+Schema-4 and schema-5 workspaces persist bounded outcome-loop findings:
 
 ```text
 python3 scripts/loop_findings.py --workspace . migrate --project-binding <binding>
@@ -313,7 +313,7 @@ python3 scripts/loop_findings.py --workspace . audit
 python3 scripts/loop_findings.py --workspace . resolve <LOOP-id>
 ```
 
-`migrate` is the guarded schema-3 to schema-4 transition. `audit` and `resolve` are read-only;
+`migrate` advances one guarded schema step, 3→4 or 4→5. `audit` and `resolve` are read-only;
 `ts: resolve loop <LOOP-id>` is the conversational route that rechecks local authority before a
 controlled local correction. The hosted dashboard only copies that command. See
 [Outcome Loop Findings](loop-findings.md).

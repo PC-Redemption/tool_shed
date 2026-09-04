@@ -585,7 +585,7 @@ class DashboardApplicationTests(TestCase):
         self.assertContains(overview, "Blocked work")
         self.assertContains(overview, "Unreconciled outcomes")
         self.assertContains(overview, "App Server needs attention")
-        self.assertContains(overview, "Investigate locally: <code>ts: status</code>", html=True)
+        self.assertContains(overview, 'data-copy-command="ts: status"')
         self.client.logout()
 
         cleared = self.report_payload()
@@ -736,6 +736,23 @@ class DashboardApplicationTests(TestCase):
         self.assertContains(outcomes, "Copy Tool Shed command")
         self.assertContains(outcomes, 'data-copy-command="ts: resolve loop LOOP-17A1B2C3D4E5"')
         self.assertNotContains(outcomes, "Run command")
+
+        work = self.client.get(reverse("fleet:project-tab", args=(snapshot.project_id, "work")))
+        self.assertContains(work, 'data-copy-command="ts: resolve loop LOOP-17A1B2C3D4E5"')
+
+        expanded = self.loop_finding_report_payload()
+        expanded["loop_findings"]["findings"][0].update(  # type: ignore[index]
+            {
+                "category": "outcome-health",
+                "reason_code": "OUTCOME_BLOCKED",
+                "observed_state": "blocked",
+                "expected_state": "working-or-terminal",
+            }
+        )
+        self.assertEqual(
+            validate_report(expanded)["loop_findings"]["findings"][0]["reason_code"],
+            "OUTCOME_BLOCKED",
+        )
 
     def test_schema_four_projects_instance_health_and_semantic_divergence(self) -> None:
         token = self.enroll_and_issue()

@@ -24,7 +24,7 @@
       <dl><div><dt>Since</dt><dd><time datetime="{{ item.first_seen|date:'c' }}" data-local-time>{{ item.first_seen|date:"M j, Y · g:i A" }}</time></dd></div><div><dt>Last report</dt><dd>{% if item.last_seen %}<time datetime="{{ item.last_seen|date:'c' }}" data-local-time>{{ item.last_seen|date:"M j, Y · g:i A" }}</time>{% else %}Never{% endif %}</dd></div>{% if item.count > 1 %}<div><dt>Count</dt><dd>{{ item.count }}</dd></div>{% endif %}</dl>
       <div class="attention-actions">
         {% if item.detail_tab == 'app-server' %}<a href="{% url 'fleet:app-server' %}">View details</a>{% else %}<a href="{% url 'fleet:project-tab' item.project.id item.detail_tab %}">View details</a>{% endif %}
-        <span>Investigate locally: <code>{{ item.route }}</code></span>
+        {% include "fleet/includes/local_command.html" with command=item.route label="Copy Tool Shed command" aria_label="Copy local Tool Shed command for this condition" %}
       </div>
     </article>
     {% endfor %}

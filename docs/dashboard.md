@@ -123,6 +123,13 @@ route for pasting into the local Tool Shed chat. The browser never writes an act
 client and the hosted service has no local-execution channel. See
 [Outcome Loop Findings](loop-findings.md).
 
+The same reusable copy control appears on Overview and Needs Attention for exact built-in status
+routes, on Work for active findings attached to the displayed artifact, and on Health for current
+reporter or compatibility diagnostics. Navigation and history remain ordinary links unless a
+current supported local route is present. App Server readiness failures likewise copy the exact
+`ts: app-server status` route. Work Efficiency has no local command because its controls are hosted
+report filters and exports, not Tool Shed actions.
+
 ## Production deployment
 
 The supported compose stack in `site/deploy/` runs Nginx, Django 5.2 LTS with Gunicorn, and

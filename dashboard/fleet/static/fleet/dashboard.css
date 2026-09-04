@@ -78,12 +78,13 @@
 .outcome-finding-list { display: grid; gap: .8rem; margin-top: 1rem; }
 .outcome-finding-card { padding: .9rem; border: 1px solid var(--dashboard-border); border-radius: .65rem; background: rgba(7, 17, 31, .45); }
 .outcome-finding-card h4 { margin: .55rem 0 .35rem; }
-.outcome-finding-heading, .outcome-command { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem; }
+.outcome-finding-heading, .local-command { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem; }
 .outcome-finding-card dl { display: flex; flex-wrap: wrap; gap: .55rem 1.2rem; margin: .65rem 0; }
 .outcome-finding-card dl div { display: grid; gap: .15rem; }
 .outcome-finding-card dt { color: var(--dashboard-muted); font-size: .78rem; }
-.outcome-command code { overflow-wrap: anywhere; }
-.outcome-command button { padding: .45rem .7rem; border: 1px solid #35bca6; border-radius: .45rem; background: #123d45; color: #e7fff9; cursor: pointer; }
+.local-command { margin-top: .45rem; }
+.local-command code { overflow-wrap: anywhere; }
+.local-command button { padding: .45rem .7rem; border: 1px solid #35bca6; border-radius: .45rem; background: #123d45; color: #e7fff9; cursor: pointer; }
 .copy-feedback { min-width: 4rem; color: #8ee9db; font-size: .82rem; }
 .decision-form { display: flex; gap: .45rem; margin: 0; }
 .decision-form button { padding: .5rem .7rem; border: 1px solid transparent; border-radius: .45rem; background: #1d665c; color: #fff; cursor: pointer; }

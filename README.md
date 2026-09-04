@@ -271,10 +271,11 @@ one exact content SHA, attaches verified publication evidence to every registere
 finalize until each recorded chain reconciles through its originating Idea. See
 [`docs/release-cohort-closed-loop.md`](docs/release-cohort-closed-loop.md).
 
-Hybrid schema 4 adds persisted, deduplicated outcome-loop findings. The initial class detects a
-promoted Idea left active after its outcome is terminal and reconciled. Local audit and mitigation
-remain authoritative; dashboard report schema 8 projects a bounded read-only list whose only action
-copies `ts: resolve loop <finding-id>` for use in local chat. See
+Hybrid schema 4 adds persisted, deduplicated outcome-loop findings; schema 5 expands current-state
+discovery to blocked or stalled outcomes, reconciliation and result-propagation gaps, invalid
+lineage, and missing, stale, or failed closure evidence. Local audit and mitigation remain
+authoritative. Dashboard report schema 8 projects a bounded read-only list, and applicable hosted
+pages copy controlled local Tool Shed commands for use in chat. See
 [`docs/loop-findings.md`](docs/loop-findings.md).
 
 Before a long campaign, run:

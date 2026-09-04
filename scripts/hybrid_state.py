@@ -106,7 +106,7 @@ DB_AUTHORITY_FIELDS = {
     "document.metadata",
     "document.lifecycle",
 }
-SUPPORTED_SCHEMA_VERSIONS = {1, 2, 3, 4}
+SUPPORTED_SCHEMA_VERSIONS = {1, 2, 3, 4, 5}
 DOCUMENT_DOMAIN_TABLES = (
     "document_namespace", "document", "document_revision", "document_path_alias", "document_conversion",
 )
@@ -230,7 +230,20 @@ def configure(connection: sqlite3.Connection, *, writable: bool = True) -> None:
 
 
 def connect(path: Path, *, writable: bool = True) -> sqlite3.Connection:
-    connection = sqlite3.connect(path, timeout=LOCK_TIMEOUT_SECONDS, isolation_level=None)
+    if writable:
+        database: str = str(path)
+        uri = False
+    else:
+        if not path.is_file():
+            raise HybridStateError(f"state database does not exist: {path}")
+        database = path.resolve().as_uri() + "?mode=ro"
+        uri = True
+    connection = sqlite3.connect(
+        database,
+        timeout=LOCK_TIMEOUT_SECONDS,
+        isolation_level=None,
+        uri=uri,
+    )
     try:
         configure(connection, writable=writable)
     except BaseException:
@@ -309,18 +322,22 @@ def expected_schema_digest(schema_version: int) -> str:
     with contextlib.closing(sqlite3.connect(":memory:")) as connection:
         connection.execute("PRAGMA trusted_schema=ON")
         create_schema(connection, include_triggers=True)
-        if schema_version in {2, 3, 4}:
+        if schema_version in {2, 3, 4, 5}:
             from document_store_schema import create_document_schema
 
             create_document_schema(connection, include_triggers=True)
-        if schema_version in {3, 4}:
+        if schema_version in {3, 4, 5}:
             from closure_lineage_schema import create_closure_schema
 
             create_closure_schema(connection, include_triggers=True)
-        if schema_version == 4:
+        if schema_version in {4, 5}:
             from loop_findings_schema import create_loop_finding_schema
 
-            create_loop_finding_schema(connection, include_triggers=True)
+            create_loop_finding_schema(
+                connection,
+                include_triggers=True,
+                schema_version=1 if schema_version == 4 else 2,
+            )
         return schema_digest(connection)
 
 
@@ -1174,7 +1191,7 @@ def write_checkpoint(
     require_project_binding(workspace, project_binding, operation=OPERATION)
     database = database_path(workspace)
     with contextlib.closing(connect(database, writable=False)) as probe:
-        if int(probe.execute("PRAGMA user_version").fetchone()[0]) in {2, 3, 4}:
+        if int(probe.execute("PRAGMA user_version").fetchone()[0]) in {2, 3, 4, 5}:
             from document_store import write_checkpoint as write_document_checkpoint
             selected = output or workspace / DOCUMENT_CHECKPOINT_RELATIVE
             return write_document_checkpoint(
