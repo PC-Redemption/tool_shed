@@ -1,0 +1,220 @@
+# Idea Brief: Dashboard-Assisted Outcome Loop Management
+
+Status: promoted
+Type: idea-brief
+Updated: 2026-09-04
+Next Action: execute PRM-0039 milestone M1 through the requested Work2 endpoint
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces: MAP-0028
+
+## Current Synthesis
+
+### Idea
+
+Add a local discovery process that continuously identifies unclosed or unhealthy outcome loops and
+records actionable findings in the authoritative Tool Shed database. Local Tool Shed status and
+the hosted Outcome Reconciliation screen should present the same bounded finding projection: what
+is open, why, the affected cycle or obligation, the nearest blocker, evidence/reconciliation
+health, and the recommended local mitigation route.
+
+Mitigation remains entirely local. The hosted dashboard does not enqueue work, contact an agent,
+or write back to a Tool Shed instance. Each finding instead displays one context-specific `ts:`
+command with a copy control. Clicking it writes that command to the browser clipboard so the
+operator can paste it into the appropriate local Tool Shed chat. The local command re-audits the
+current workspace, resolves the stable finding identity, obtains fresh project/state bindings,
+and then reconciles, updates, resumes, verifies, or explains the loop under the normal authority
+envelope.
+
+A likely compact interaction is `ts: resolve loop <finding-id>`, with the hosted card also showing
+the human-readable reason and affected stable IDs. The exact command name remains to be settled,
+but the copied form should carry only stable, non-secret identity—not a state token, path, raw
+diagnostic, prompt, or executable command. If the finding is already resolved or belongs to a
+different workspace, local Tool Shed reports that safely instead of replaying stale mitigation.
+
+### Why It Matters
+
+The dashboard now makes aggregate loop state visible, but a zero/count screen is not a discovery or
+mitigation system. When a loop is unhealthy, the operator needs the specific reason and a reliable
+way to carry that context into the local authority without manually reconstructing commands or
+giving the hosted service remote-control power.
+
+The current `tool_shed` project demonstrates the distinction: it has zero open or unreconciled
+outcome loops, yet the document audit reports three promoted Ideas whose lifecycle metadata remains
+active. Discovery should identify that as semantic document drift, store a deduplicated finding,
+show it locally and on the appropriate hosted screen, and provide a copyable local mitigation
+command without mislabeling it as an open outcome loop.
+
+### Desired Outcome
+
+Local discovery runs after relevant managed writes and during a periodic safety pass. It records a
+durable, deduplicated finding with a stable ID, controlled category and reason codes, affected
+element IDs, source database/graph revision, first/last observed timestamps, current/resolved
+state, and one safe local Tool Shed route. Findings cover at least open parents, blocked governing
+descendants, terminal-unreconciled results, unpropagated results, invalid lineage, stale or missing
+evidence, stalled loops, and related semantic lifecycle drift.
+
+The local status surface and hosted dashboard show the same controlled findings without merging
+independent reporting instances. Each hosted item has a visibly labelled **Copy Tool Shed command**
+control. After the operator pastes the command into the matching workspace chat, local Tool Shed
+rechecks the finding and continues through the existing outcome, campaign, PRM, release, and
+verification machinery. It asks only for genuine decisions or new authority and never force-closes
+governing descendants.
+
+Resolution is discovered rather than asserted by the browser: after local mitigation succeeds, the
+next discovery pass marks the finding resolved and the normal reporter sends that updated bounded
+state. The dashboard then removes it from active attention while retaining appropriate history. No
+hosted action queue, local action polling, remote agent channel, or new write credential is needed.
+
+### Historical Cleanup Strategy
+
+Treat the finite historical backlog differently from ongoing detection. Run one supervised manual
+review supported by deterministic inventory, proposal, mutation, and verification tools. Automation
+may discover, group, and explain historical conditions, but it must not infer missing intent,
+manufacture evidence, or choose a semantic disposition for ambiguous old work.
+
+The historical review starts from a verified backup/checkpoint and combines the existing workspace
+Doctor, outcome reconciliation audit, recursive closure-lineage audit/status, document audit/history,
+and historical backfill planner. It emits an ordered, revision-bound review manifest with one stable
+finding per issue. The operator resolves one finding or one complete lineage cluster at a time as:
+continue, satisfied with evidence, satisfied with approved change, partial, superseded, abandoned,
+not applicable, recover lineage, or correct lifecycle metadata. Exact guarded tools apply the
+choice, recompute descendants and ancestors, rerun every applicable audit, and checkpoint only the
+verified state.
+
+The minimum missing local command surface is a unified read-only route such as `ts: audit loops
+--history` and a finding-oriented route such as `ts: resolve loop <finding-id>`. These commands
+compose existing engines rather than replace them. The same stable finding IDs can later appear on
+the hosted dashboard with the clipboard control.
+
+The historical success condition is **zero unexplained or unclassified loops**, not zero open loops
+at any cost. A remaining loop is acceptable only when it is actively progressing, explicitly
+blocked with a named dependency or decision, or has an evidence-backed terminal disposition.
+
+## Constraints And Non-Goals
+
+- Local Hybrid SQLite state remains authoritative; hosted state is a privacy-bounded projection.
+- Discovery records findings; it does not automatically decide or apply mitigation.
+- Finding records are operational diagnostics/projections, not new outcome loops, campaigns, or a
+  second source of lifecycle truth.
+- Each finding must bind stable project, instance, cycle/obligation/document identity and the
+  authoritative revision at which it was observed.
+- Local project identity, stale-state tokens, autonomy, provider policy, credentials, and protected
+  environment boundaries remain authoritative.
+- Multi-instance projects keep findings source-specific; the hosted service must not merge them or
+  assume that the newest reporter is writable authority.
+- The hosted report and copied command must preserve the reporting privacy contract: no source
+  text, paths, raw shell commands, prompts, credentials, secrets, state tokens, or unrestricted
+  diagnostics.
+- Clipboard commands use stable public/finding IDs and force local fresh-state resolution rather
+  than embedding transient mutation tokens.
+- Explicit non-goal: add hosted action intents, action delivery, a local polling executor, arbitrary
+  remote shell access, direct hosted writes, or a button that force-closes a recursive tree.
+- Explicit non-goal: duplicate outcome, campaign, PRM, reconciliation, or release logic in Django.
+- Explicit non-goal: let copied text imply deployment, release, credential use, destructive
+  recovery, or a material owner decision that the local authority envelope does not cover.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Persisted local mitigation findings | Stable IDs, deduplication, resolution history, local/hosted parity, and actionable reporting | Adds a bounded database contract and retention lifecycle | Selected direction |
+| Compute findings only at read time | Minimal stored state | Cannot track first seen, recurrence, resolution, or reliable hosted identity | Too weak for mitigation tracking |
+| Supervised historical review with deterministic manifests | Preserves human judgment where old intent/evidence is ambiguous while keeping every mutation guarded and auditable | Requires a deliberate one-time review effort in each workspace | Selected for historical cleanup |
+| Automatic historical closure | Fast and low-touch | Can invent intent, accept missing evidence, hide unresolved lineage, or misclassify old work | Rejected; automation may propose but not decide ambiguous history |
+| One generic copied command per finding | Short, privacy-safe, and always re-resolves current local truth | Local chat must inspect before choosing the exact operation | Preferred direction: `ts: resolve loop <finding-id>` or equivalent |
+| Fully expanded mutation command | Makes the proposed operation visible | Becomes stale, may expose transient tokens/context, and can overstate authority | Reject; show explanation separately and copy a stable local route |
+| Hosted action-intent channel | Removes paste step | Adds remote-control credentials, queues, leases, and failure modes without a clear benefit | Rejected by owner for this outcome |
+
+### Candidate Support Tools
+
+| Finding/action class | Hosted presentation | Local behavior after paste |
+| --- | --- | --- |
+| Open or blocked loop | Reason, nearest blocker, ancestry, age, copy command | Inspect current state and resume the existing owning cycle when covered |
+| Terminal-unreconciled | Result/evidence state and copy command | Prepare and apply exact reconciliation, then propagate upward |
+| Unpropagated closure | Closed child and open ancestor path | Recompute/apply propagation and re-audit the graph |
+| Invalid lineage or stale evidence | Controlled reason codes and affected IDs | Diagnose recovery/evidence requirements; never guess closure |
+| Semantic lifecycle drift | Correct outcome state beside stale document state | Apply a guarded lifecycle correction and checkpoint when authorized |
+
+## Open Questions
+
+- What exact finding categories, severities, reason codes, and stall thresholds belong in the first
+  discovery contract?
+- Should historical review proceed strictly one finding at a time or permit a manifest-bound batch
+  for a complete lineage cluster whose dispositions were reviewed together?
+- Which retained sources, checkpoints, completed ledgers, and imported aliases define the bounded
+  historical review surface for an upgraded workspace?
+- Should the canonical pasted route be `ts: resolve loop <finding-id>`, `ts: mitigate <finding-id>`,
+  or a small verb family for inspect/reconcile/continue?
+- How should a cross-project copied command identify the expected project without including a local
+  path, and what message should appear when pasted into the wrong workspace?
+- Which findings belong on Outcome Reconciliation versus Health or Work, while still appearing in
+  a unified Needs Attention view?
+- What event triggers and periodic cadence provide prompt discovery without repeating expensive
+  full-graph work unnecessarily?
+- How long should resolved findings remain in local and hosted history, and how are recurring
+  findings linked without hiding recurrence?
+- What bounded per-instance limits prevent a corrupt project from flooding the reporting contract?
+
+## Decisions
+
+- Local Tool Shed owns discovery, finding persistence, mitigation, verification, and closure.
+- The hosted dashboard remains read-only and receives a privacy-bounded finding projection through
+  the existing reporting direction.
+- Each hosted finding provides a command that a user click copies to the clipboard for pasting into
+  the corresponding local Tool Shed chat.
+- No hosted-to-local action-intent or execution channel is needed.
+- Historical cleanup uses a one-time supervised manual review: tools discover and propose, while
+  the operator supplies ambiguous semantic dispositions.
+- Ongoing current/future management uses automatic local discovery plus local mitigation initiated
+  from the copied dashboard command.
+- Historical success means zero unexplained or unclassified loops, not forced satisfaction of every
+  old item.
+- Completion remains evidence-backed recursive closure; the dashboard cannot mark a parent closed,
+  and the pasted local command cannot bypass open or unhealthy governing descendants or obligations.
+- Existing local Tool Shed lifecycle and reconciliation tools should be reused as the execution
+  engine.
+
+## Don't Forget
+
+- Keep lifecycle, outcome disposition, reconciliation, propagation, and effective recursive closure
+  visible as separate dimensions.
+- Keep discovery findings distinct from outcome loops so detecting a problem does not create a new
+  loop recursively.
+- Give each finding a stable ID while binding each observation to current graph/database revision.
+- The copied command must trigger a fresh local read; never copy a state token or pre-authorized
+  mutation.
+- Use accessible icon-plus-text copy feedback and a fallback when the Clipboard API is unavailable.
+- Do not mark a finding resolved until local authoritative state proves it and reports the change.
+- Back up and checkpoint before historical mutation; preserve every prior disposition and evidence
+  record rather than rewriting history to appear cleaner.
+- Prefer reviewing a complete lineage cluster when resolving one item could change several ancestor
+  rollups, but require one exact manifest and explicit disposition for every affected semantic item.
+- Preserve the dashboard's useful fleet view: attention should link directly to the affected loop
+  and its copyable local mitigation command.
+
+## Exploration Log
+
+### 2026-09-04
+
+- Owner proposed that the dashboard's existing loop tracking grow into loop-management support for
+  reconciliation, updates, continuation, and evidence-backed completion.
+- Existing completed Ideas establish universal outcome reconciliation, recursive lineage, hosted
+  lifecycle/history, and actionable attention, but deliberately keep the dashboard read-only.
+  This brief captures the new controlled-action extension rather than reopening those histories.
+- Initial synthesis favors typed hosted intents executed by an explicitly selected local authority,
+  with guided local actions as the smallest compatible first slice and arbitrary remote execution
+  excluded.
+- Owner clarified the intended boundary: local discovery finds unclosed or unhealthy loops and
+  stores mitigation findings in the local database; local and hosted outcome views report them;
+  mitigation runs only after the operator pastes a copied `ts:` command into local chat.
+- The hosted action-intent design was rejected as needless indirection and added risk. The selected
+  interaction is one context-specific, clipboard-copyable local Tool Shed command per finding.
+- Owner selected supervised manual evaluation for historical work. Deterministic tools should
+  inventory, explain, propose, apply exact reviewed dispositions, propagate, verify, and checkpoint;
+  they must not automatically decide ambiguous historical outcomes.
+- Current and future loops retain automatic local discovery and dashboard reporting, with all
+  mitigation performed through local Tool Shed after the copied command is pasted into chat.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

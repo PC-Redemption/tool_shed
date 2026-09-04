@@ -1,0 +1,157 @@
+# Idea Brief: Dashboard-Assisted Outcome Loop Management
+
+Status: exploring
+Type: idea-brief
+Updated: 2026-09-04
+Next Action: settle the hosted-to-local action boundary, authorization model, and smallest useful loop-management tool set
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces:
+
+## Current Synthesis
+
+### Idea
+
+Extend the hosted Tool Shed dashboard from loop tracking into governed loop management. When the
+dashboard shows an open, blocked, invalid, stale, or unreconciled outcome, it should offer support
+tools that help the operator inspect the exact blocker, reconcile completed work, update accepted
+outcome state, and continue the correct owning loop toward evidence-backed completion.
+
+The useful distinction is not "read-only versus arbitrary remote control." The dashboard can
+originate a narrowly typed loop-management intent while the verified local Tool Shed instance
+remains the mutation authority. The local side resolves the exact project and instance, checks
+current database revision and lineage, applies project identity and autonomy rules, performs only
+the allowlisted action, and reports a bounded result back to the hosted view.
+
+The dashboard experience should make the safe path obvious. Candidate controls include **Inspect
+blockers**, **Prepare reconciliation**, **Update outcome**, **Continue loop**, and **Verify and
+close**. A control must explain what it will do, which cycle and obligation it targets, what
+authority is required, and why the loop cannot close yet. "Continue" means advance through the
+existing Tool Shed lifecycle; it must not force-close descendants or treat an empty queue as a
+completed outcome.
+
+### Why It Matters
+
+The dashboard now makes loop state visible, but resolution still requires the operator to leave the
+page, infer the correct local command, find the right workspace, and re-establish context. That gap
+turns an actionable status surface into a passive monitor and increases the chance that
+terminal-unreconciled work, stale lifecycle metadata, missing evidence, or an open parent survives
+after the implementation itself is finished.
+
+The current `tool_shed` project demonstrates the distinction: it has zero open or unreconciled
+outcome loops, yet the document audit reports three promoted Ideas whose lifecycle metadata remains
+active. A useful management surface should identify that as semantic document drift, recommend the
+specific guarded correction, and verify the audits after it is applied without mislabeling the
+condition as an open outcome loop.
+
+### Desired Outcome
+
+From an authenticated loop or artifact view, the operator can understand what is open, why it is
+open, which local instance owns authority, and the next safe transition. For supported cases, the
+operator can initiate a scoped action that the selected local instance validates and executes under
+normal Tool Shed identity, stale-state, autonomy, evidence, and protected-boundary rules.
+
+The page shows durable progress from requested through claimed, running, waiting-for-decision,
+verified, reconciled, propagated, and closed. It distinguishes a successful command from a
+completed outcome and exposes failures with a safe resume path. Repeated actions are idempotent,
+stale intents fail closed, offline instances retain pending work safely, and no action can silently
+change projects, broaden scope, bypass a descendant, or manufacture closure evidence.
+
+The first useful release should cover deterministic loop maintenance before general agent-driven
+continuation: inspect blockers, prepare and apply exact reconciliation, correct lifecycle metadata,
+rerun audits, and prove propagation. Broader "continue this loop" execution should reuse existing
+`ts: next`, PRM, campaign, and Work1–Work5 machinery rather than creating a second lifecycle engine.
+
+## Constraints And Non-Goals
+
+- Local Hybrid SQLite state remains authoritative; hosted state is a privacy-bounded projection.
+- Every action must target one verified project, enrolled instance, cycle or obligation, expected
+  revision/digest, allowlisted operation, and expiry/idempotency identity.
+- The existing dashboard connection is reporter-scoped. Adding action delivery requires a new,
+  explicit capability and authorization contract rather than silently upgrading report credentials.
+- Local project identity, stale-state tokens, autonomy, provider policy, credentials, and protected
+  environment boundaries remain authoritative.
+- Multi-instance projects need an explicit authority rule; the newest reporter is not automatically
+  the correct writer.
+- The dashboard must preserve the reporting privacy contract: no source text, raw shell commands,
+  prompts, credentials, secrets, or unrestricted diagnostics in hosted action payloads.
+- An unavailable local instance must leave an action visibly pending or expired; the server must
+  never infer that local state changed.
+- Explicit non-goal: provide arbitrary remote shell access, direct hosted writes to a workspace
+  database, or a button that force-closes a recursive tree.
+- Explicit non-goal: duplicate outcome, campaign, PRM, reconciliation, or release logic in Django.
+- Explicit non-goal: let a hosted action imply deployment, release, credential use, destructive
+  recovery, or a material owner decision that was not separately authorized.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Guided local actions only | Dashboard explains the blocker and provides an exact local route or copyable invocation | Safe and simple, but still requires context switching and cannot show execution progress | Compatible with the current advisory boundary; useful minimum slice |
+| Typed hosted action intents claimed outbound by the enrolled local instance | Enables controlled reconcile/update/continue tools, preserves no inbound workstation port, and supports progress reporting | Requires new scoped credentials, authorization, leases, idempotency, stale-state handling, audit history, and multi-instance ownership | Strong candidate for the intended outcome |
+| Browser-to-local companion or deep link | Keeps mutation on the operator device and can feel immediate | Provider/platform-specific, browser security and discovery friction, and weak unattended continuation | Possible optional transport, not a portable core assumption |
+| General remote agent or command queue | Maximum flexibility | Creates a remote execution surface, conflicts with least authority and privacy boundaries, and duplicates local orchestration | Reject for the initial design |
+
+### Candidate Support Tools
+
+| Tool | Purpose | Required local proof |
+| --- | --- | --- |
+| Inspect blockers | Expand nearest blockers, governing obligations, evidence health, and ancestry | Fresh read of the selected instance and graph revision |
+| Prepare reconciliation | Build the exact proposed result/disposition/propagation transaction | Current cycle, evidence, accepted outcome, and state token |
+| Update outcome | Record an explicit approved change, correction, waiver, or not-applicable disposition | Named authority basis and revision-bound audit event |
+| Continue loop | Resume the existing next transition, campaign, milestone, PRM, or release gate | Applicable endpoint plus autonomy and protected-boundary evaluation |
+| Verify and close | Run the required checks, apply reconciliation, propagate closure, and re-audit | Current evidence for every governing descendant and obligation |
+
+## Open Questions
+
+- Should the first release stop at guided local actions, or include the typed hosted action-intent
+  channel from the beginning?
+- Does each project designate exactly one writable enrolled instance, or can authority be leased to
+  a selected instance for each action?
+- Which actions may run automatically under the existing autonomy level, and which always require a
+  fresh confirmation on the dashboard or local client?
+- How should a dashboard confirmation prove the maintainer's identity and authority to the local
+  instance without reusing the reporting bearer credential?
+- What is the minimum controlled payload that can express reconciliation and continuation without
+  transporting arbitrary prompts or commands?
+- How are cancel, expiry, retry, crash recovery, and "may have mutated" reconciliation represented?
+- Should agent-driven continuation be launched by the existing App Server path, the active Codex
+  session, or only through an explicit local operator handoff?
+- What exact action and result history is retained locally and hosted, and for how long?
+
+## Decisions
+
+- The web dashboard should support tools to reconcile, update, and continue outcome loops toward
+  completion rather than only display loop counts.
+- Completion remains evidence-backed recursive closure; a hosted action cannot force a parent
+  closed while governing descendants or obligations remain open or unhealthy.
+- Existing local Tool Shed lifecycle and reconciliation tools should be reused as the execution
+  engine.
+
+## Don't Forget
+
+- Keep lifecycle, outcome disposition, reconciliation, propagation, and effective recursive closure
+  visible as separate dimensions.
+- Show whether an action is merely proposed, locally accepted, running, waiting, failed, verified,
+  or fully propagated.
+- Bind every action to the displayed data revision so a stale browser tab cannot overwrite newer
+  local truth.
+- Make rollback or recovery explicit before any action that may mutate product or external state.
+- Preserve the dashboard's useful fleet view: attention should link directly to the affected loop
+  and its safest available management tool.
+
+## Exploration Log
+
+### 2026-09-04
+
+- Owner proposed that the dashboard's existing loop tracking grow into loop-management support for
+  reconciliation, updates, continuation, and evidence-backed completion.
+- Existing completed Ideas establish universal outcome reconciliation, recursive lineage, hosted
+  lifecycle/history, and actionable attention, but deliberately keep the dashboard read-only.
+  This brief captures the new controlled-action extension rather than reopening those histories.
+- Initial synthesis favors typed hosted intents executed by an explicitly selected local authority,
+  with guided local actions as the smallest compatible first slice and arbitrary remote execution
+  excluded.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

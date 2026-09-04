@@ -1,0 +1,59 @@
+# Work2 Evidence: Current Loop Finding Vertical Slice
+
+Date: 2026-09-04
+Campaign: CAMP-0156
+Roadmap: PRM-0039, milestone M1-CURRENT-FINDING-VERTICAL-SLICE
+Implementation commit: `49cd25f60cfff45accef00843b964975c05ed60d`
+Candidate version: `0.44.0` (unpublished Work2 candidate)
+
+## Delivered outcome
+
+- Added Hybrid schema 4 persistence for stable, deduplicated loop findings with observation,
+  resolution, and recurrence state.
+- Implemented the first bounded finding class: a promoted active Idea whose authoritative outcome
+  is terminal, reconciled, and satisfied or superseded.
+- Added fresh local routes `ts: audit loops` and `ts: resolve loop <LOOP-id>`.
+- Extended the privacy-bounded reporter contract to schema 8 and added hosted development storage,
+  ingestion, attention routing, Outcome Reconciliation cards, and an accessible clipboard control.
+- Preserved the one-way advisory boundary: no hosted writeback, action intent, credentials, paths,
+  state tokens, source text, or executable shell commands were added.
+
+## Qualification evidence
+
+- Full unit suite passed: 575 tests in 153.660 seconds.
+- Focused validation passed: 8 of 8 checks.
+- Django targeted suite passed: 76 tests; `makemigrations --check --dry-run` reported no changes.
+- `git diff --check` and the version-manifest check passed.
+- Development dashboard is healthy on image `tool-shed-dashboard:dev-49cd25f60cff`, with source
+  commit `49cd25f60cfff45accef00843b964975c05ed60d`; development readiness passed.
+- A real Edge browser probe on GOGETTER confirmed the development banner, project navigation,
+  Needs Attention state, Outcome Reconciliation route, Health route, and working links.
+- Linux and Windows disposable test beds installed the exact 0.44.0 candidate and passed the
+  installed loop-finding tests (2 of 2 on each platform); existing dirty work indexes were
+  preserved.
+- A Linux end-to-end fixture produced `LOOP-181CFB4ECA27`, delivered report sequence 1683, and the
+  development dashboard stored the exact safe command `ts: resolve loop LOOP-181CFB4ECA27`.
+- Production was not changed and remained healthy throughout qualification.
+
+## Current findings and residual work
+
+The first discovery pass surfaced three real active semantic lifecycle-drift findings in this
+workspace: `LOOP-E23AE1BA0FD3` (IDEA-0018), `LOOP-1E2AB8FF492F` (IDEA-0019), and
+`LOOP-E1E6B5F7FDEA` (IDEA-0020). They are reported but deliberately not mitigated by this campaign.
+
+Two recovery gaps were observed and are retained for later roadmap work:
+
+1. An absent Hybrid database can be recreated as an invalid empty SQLite file by a read/report or
+   post-install path. M2 should remove this side effect and add regression coverage.
+2. Losing a local reporter outbox can reset sequence numbers below the hosted instance watermark,
+   causing otherwise valid reports to be rejected as stale. M4 should implement bounded reporter
+   sequence recovery/convergence rather than requiring manual test-bed repair.
+
+The historical backlog is not declared clean. M2 must add the remaining current outcome and
+lineage finding classes; M3 must perform supervised, manifest-bound historical review.
+
+## Preserved recovery artifacts
+
+Invalid empty database files were moved, not deleted, to timestamped quarantine paths in the Linux
+and Windows disposable test beds. The source state and existing dirty work indexes remain
+recoverable and unchanged.

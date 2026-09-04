@@ -1,0 +1,90 @@
+# Project Map: Dashboard-Assisted Outcome Loop Management
+
+Status: proposed
+Type: project-map
+Updated: 2026-09-04
+Next Action: validate exact readiness-gate transfer and approve this project direction
+Source Idea: IDEA-0022
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 4
+Reviewed Body SHA256: 67426695b4c777940da80d67fc9aacf7bc4513d70075d57e1bf2214710d65b1a
+Program Roadmap:
+
+## Purpose
+
+Turn Tool Shed's aggregate outcome visibility into a safe, actionable loop-management system. Local
+Hybrid state discovers and owns bounded findings; the hosted dashboard remains advisory and hands
+the operator a privacy-safe command to paste into the matching local Tool Shed chat.
+
+## Desired Outcome
+
+- Local discovery records stable, deduplicated findings for unhealthy outcome, reconciliation,
+  lineage, evidence, propagation, and related document-lifecycle conditions.
+- `ts: audit loops` reports current findings and `ts: resolve loop <finding-id>` refreshes local
+  authority before selecting or explaining a guarded mitigation.
+- A supervised historical mode inventories old conditions without inventing intent or evidence.
+- The reporter transports only a bounded, allowlisted projection; the hosted dashboard displays
+  each finding with an accessible copy-to-clipboard Tool Shed command.
+- Resolution comes from verified local truth and ordinary reporting convergence, never from a
+  hosted write, action queue, or remote execution channel.
+
+## System Boundary
+
+| Surface | Authority or role | Boundary |
+| --- | --- | --- |
+| Hybrid SQLite | Authoritative findings, source revisions, lifecycle, recurrence, and local relationships | Findings are diagnostics, not new outcome loops |
+| Local Tool Shed routes | Audit, fresh resolution, guarded mitigation, and verification | Existing outcome, campaign, PRM, release, and document engines remain authoritative |
+| Reporter | Ordered privacy-bounded projection | Stable public IDs and controlled fields only; no paths, prompts, tokens, diagnostics, or source text |
+| Hosted dashboard | Fleet visibility and clipboard handoff | Read-only; cannot enqueue, approve, reconcile, or execute local work |
+| Historical review | Deterministic inventory, proposals, reviewed manifests, and evidence | Ambiguous semantic dispositions always remain operator decisions |
+
+## Workstreams
+
+| Workstream | Development outcome | Boundary |
+| --- | --- | --- |
+| Finding contract and discovery | Stable identity, controlled classes/severity/reasons, observation revisions, recurrence, resolution, limits, and managed-write/safety-pass triggers | No recursive finding-created outcomes |
+| Local audit and mitigation | Current/history audits plus fresh finding resolution into existing guarded commands and precise explanations | No stale token replay or authority bypass |
+| Historical cleanup | Revision-bound inventories and complete-lineage-cluster manifests with explicit per-item dispositions | No automatic closure or manufactured evidence |
+| Reporter and hosted presentation | Source-specific bounded finding payloads, storage, outcome/attention cards, and accessible clipboard behavior | No hosted-to-local intent channel |
+| Qualification and release | Migration/rebuild/upgrade parity, browser behavior, and exact-candidate verification across development lanes | Work5 production delivery remains separate |
+
+## Readiness Gate Transfer
+
+1. `G1-FINDING-CONTRACT-AND-DISCOVERY` — freeze and implement the bounded persisted finding model
+   and automatic local discovery behavior.
+2. `G2-LOCAL-AUDIT-AND-MITIGATION` — implement current/history inspection and fresh local
+   mitigation routing through existing guarded engines.
+3. `G3-SUPERVISED-HISTORICAL-REVIEW` — implement safe historical inventory, proposal, reviewed
+   manifest, application, propagation, verification, and checkpoint behavior.
+4. `G4-HOSTED-PROJECTION-AND-CLIPBOARD` — extend the reporter and hosted dashboard while preserving
+   the one-way advisory boundary and privacy limits.
+5. `G5-DEVELOPMENT-QUALIFICATION-AND-RELEASE-CLOSURE` — qualify migrations and behavior on all
+   development lanes, then separately release and recursively reconcile the owning outcome.
+
+## Constraints
+
+- The canonical copied form is `ts: resolve loop <finding-id>`; it contains no path or transient
+  authorization material and always triggers a fresh local read.
+- The historical success condition is zero unexplained or unclassified loops, not forced
+  satisfaction of every old loop.
+- Complete-lineage-cluster batching is allowed only when one exact manifest names an explicit
+  reviewed disposition for every affected semantic item.
+- Resolved findings remain bounded recurrence/history evidence; active and recent projections are
+  capped per reporting instance.
+- Wrong-workspace, stale, missing, ambiguous, and already-resolved commands fail safely and explain
+  the next local action.
+
+## Navigation
+
+Do next:
+
+- Approve a Program Roadmap that starts with one end-to-end Work2 slice: persist and discover the
+  current semantic lifecycle-drift class, expose it through local audit, transport its bounded
+  projection, and prove the hosted copy command on all development lanes.
+
+Avoid for now:
+
+- Automatically applying historical dispositions.
+- Expanding the hosted service into a local action dispatcher.
+- Treating an empty aggregate count as proof that document, evidence, and lineage health agree.
+

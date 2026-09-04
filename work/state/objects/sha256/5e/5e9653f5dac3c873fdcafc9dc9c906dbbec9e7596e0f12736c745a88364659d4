@@ -1,0 +1,29 @@
+# Campaign: Build Current Loop Finding Vertical Slice
+
+Status: working
+Type: campaign
+Updated: 2026-09-04
+Next Action: implement and qualify the first local-to-hosted finding class on all development lanes
+Campaign ID: build-current-loop-finding-vertical-slice
+Outcome: Persist semantic lifecycle-drift findings, expose fresh local audit/resolution routes, report a bounded projection, and prove an accessible hosted copy-to-clipboard Tool Shed command without touching production.
+Roadmap: dashboard-assisted-outcome-loop-management
+Roadmap Document: PRM-0039
+Roadmap Revision: 1
+Milestone: M1-CURRENT-FINDING-VERTICAL-SLICE
+Unlocks Gate: foundation of G1-FINDING-CONTRACT-AND-DISCOVERY, inspect slice of G2-LOCAL-AUDIT-AND-MITIGATION, first complete G4-HOSTED-PROJECTION-AND-CLIPBOARD slice, Work2 portion of G5-DEVELOPMENT-QUALIFICATION-AND-RELEASE-CLOSURE
+Depends On: none
+Requested Endpoint: work2
+Completion Gate: a versioned Hybrid finding model automatically discovers, deduplicates, resolves, and recurs semantic lifecycle-drift findings; `ts: audit loops` and `ts: resolve loop <finding-id>` perform fresh safe inspection; the reporter and hosted development stack retain only the allowlisted bounded projection; Outcome Reconciliation renders accessible finding cards whose control copies the exact privacy-safe local command with a fallback; focused tests and browser checks pass on the development web plus disposable Linux and Windows targets; the committed candidate and owning outcome chain are registered for later release; production remains unchanged.
+
+## Scope
+
+- Implement the smallest stable finding persistence/discovery contract and one real finding class.
+- Add deterministic current audit and fresh finding-resolution inspection routes.
+- Extend reporter schema, hosted ingestion/storage/view model, and Outcome Reconciliation cards.
+- Prove copy behavior, wrong/stale/missing safety, privacy exclusions, migration/rebuild parity, and
+  development-lane installation behavior.
+
+## Boundary
+
+Additional outcome/lineage/evidence/stall classes, historical manifest mutation, full retention and
+recurrence UX, Work3 freezing, Git push, publication, and production deployment remain outside M1.
