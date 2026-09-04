@@ -18,14 +18,16 @@
         "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed"
       },
       "production": {
-        "actor": null,
-        "artifact": null,
+        "actor": "codex",
+        "artifact": "github-release:v0.46.0@e490d6cf5c22d0051930e97fe9593bb6c46f4198",
         "authorization_ref": null,
-        "evidence": [],
+        "evidence": [
+          "Official updater upgraded sup:/home/jon/dev/ts_linux_test_bed from verified v0.45.0 to v0.46.0 via attested focused smoke; Hybrid state and work were preserved. Transaction e41034fa709358d0109c25f1."
+        ],
         "reason": null,
-        "recorded_at": null,
-        "source_commit": null,
-        "status": "open",
+        "recorded_at": "2026-09-04T18:57:17Z",
+        "source_commit": "e9288eca37cd52ff9a65be03e67db41b662c255c",
+        "status": "verified",
         "target": "github-release:tool-shed-linux-install-client"
       }
     },
@@ -44,14 +46,16 @@
         "target": "tsrookarocom-dev@sup.local:/home/jon/docker/ts.rookaro.com-dev"
       },
       "production": {
-        "actor": null,
-        "artifact": null,
+        "actor": "codex",
+        "artifact": "tool-shed-dashboard:v0.46.0",
         "authorization_ref": null,
-        "evidence": [],
+        "evidence": [
+          "Production compose project tsrookarocom runs the exact v0.46.0 image; readiness check, local health, public HTTPS health, and authenticated-route redirect passed. Rollback backup: release-backups/pre-v0.46.0-20260904T1853Z."
+        ],
         "reason": null,
-        "recorded_at": null,
-        "source_commit": null,
-        "status": "open",
+        "recorded_at": "2026-09-04T18:57:09Z",
+        "source_commit": "e9288eca37cd52ff9a65be03e67db41b662c255c",
+        "status": "verified",
         "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com"
       }
     },
@@ -70,14 +74,16 @@
         "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed"
       },
       "production": {
-        "actor": null,
-        "artifact": null,
+        "actor": "codex",
+        "artifact": "github-release:v0.46.0@e490d6cf5c22d0051930e97fe9593bb6c46f4198",
         "authorization_ref": null,
-        "evidence": [],
+        "evidence": [
+          "Official updater upgraded GOGETTER:E:\\dev\\ts_windows_test_bed from verified v0.45.0 to v0.46.0 via attested focused smoke after the disposable fixture checkpoint satisfied protocol 4; Hybrid state and work were preserved. Transaction a208a576020fb4c7e4288d0e."
+        ],
         "reason": null,
-        "recorded_at": null,
-        "source_commit": null,
-        "status": "open",
+        "recorded_at": "2026-09-04T18:57:27Z",
+        "source_commit": "e9288eca37cd52ff9a65be03e67db41b662c255c",
+        "status": "verified",
         "target": "github-release:tool-shed-windows-install-client"
       }
     }
@@ -88,7 +94,7 @@
     "windows",
     "linux"
   ],
-  "revision": 5,
+  "revision": 8,
   "schema_version": 1,
-  "updated_at": "2026-09-04T18:41:58Z"
+  "updated_at": "2026-09-04T18:57:27Z"
 }
