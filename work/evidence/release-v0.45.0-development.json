@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-three-lane-development-qualification",
+  "release_id": "9ded9f9f-f0b7-4ebe-a6e6-9ec07a86dcd4",
+  "candidate_commit": "639601f0692ffc2f408d23322ae24f224e4dfe11",
+  "snapshot_fingerprint": "27a6ae272fe84493421bb0ee936021317ab6e216b5e61ede4e9e5cd654562d79",
+  "observed_at": "2026-09-04T17:41:46Z",
+  "validation": {
+    "canonical_release_profile": "577 of 577 tests; passed in 31.384 seconds",
+    "program_roadmaps": "valid with zero findings",
+    "production_during_development": "healthy and unchanged"
+  },
+  "lanes": {
+    "web": {
+      "target": "tsrookarocom-dev@sup.local:/home/jon/docker/ts.rookaro.com-dev",
+      "artifact": "tool-shed-dashboard:dev-639601f0692f@sha256:735cc49b5789c2377e8a6a8da89c853ee4a86ba2df18b65efc2f2f493e406c60",
+      "source_commit": "639601f0692ffc2f408d23322ae24f224e4dfe11",
+      "status": "verified",
+      "checks": {
+        "development_health": "healthy",
+        "dashboard_environment": "development",
+        "dashboard_readiness": "healthy",
+        "real_browser": "Chrome; development banner, both project identities, and Work/Outcome/Health links verified",
+        "temporary_browser_user_removed": true
+      }
+    },
+    "linux": {
+      "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed",
+      "artifact": "disconnected-snapshot:27a6ae272fe84493421bb0ee936021317ab6e216b5e61ede4e9e5cd654562d79",
+      "source_commit": "639601f0692ffc2f408d23322ae24f224e4dfe11",
+      "status": "verified",
+      "checks": {
+        "local_integrity": "verified",
+        "version": "0.45.0",
+        "release_profile": "577 of 577 tests; passed in 28.328 seconds"
+      }
+    },
+    "windows": {
+      "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed",
+      "artifact": "disconnected-snapshot:27a6ae272fe84493421bb0ee936021317ab6e216b5e61ede4e9e5cd654562d79",
+      "source_commit": "639601f0692ffc2f408d23322ae24f224e4dfe11",
+      "status": "verified",
+      "checks": {
+        "host": "GOGETTER",
+        "resolved_root": "E:\\dev\\ts_windows_test_bed",
+        "local_integrity": "verified",
+        "version": "0.45.0",
+        "release_profile": "577 of 577 tests; passed in 117.687 seconds within the 300-second hard budget"
+      }
+    }
+  }
+}

@@ -1,18 +1,20 @@
 {
-  "candidate_commit": null,
+  "candidate_commit": "639601f0692ffc2f408d23322ae24f224e4dfe11",
   "created_at": "2026-09-04T17:34:49Z",
   "kind": "tool-shed-project-release-lanes",
   "lanes": {
     "linux": {
       "development": {
-        "actor": null,
-        "artifact": null,
+        "actor": "codex",
+        "artifact": "disconnected-snapshot:27a6ae272fe84493421bb0ee936021317ab6e216b5e61ede4e9e5cd654562d79",
         "authorization_ref": null,
-        "evidence": [],
+        "evidence": [
+          "work/evidence/release-v0.45.0-development.json"
+        ],
         "reason": null,
-        "recorded_at": null,
-        "source_commit": null,
-        "status": "open",
+        "recorded_at": "2026-09-04T17:42:17Z",
+        "source_commit": "639601f0692ffc2f408d23322ae24f224e4dfe11",
+        "status": "verified",
         "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed"
       },
       "production": {
@@ -29,14 +31,16 @@
     },
     "web": {
       "development": {
-        "actor": null,
-        "artifact": null,
+        "actor": "codex",
+        "artifact": "tool-shed-dashboard:dev-639601f0692f@sha256:735cc49b5789c2377e8a6a8da89c853ee4a86ba2df18b65efc2f2f493e406c60",
         "authorization_ref": null,
-        "evidence": [],
+        "evidence": [
+          "work/evidence/release-v0.45.0-development.json"
+        ],
         "reason": null,
-        "recorded_at": null,
-        "source_commit": null,
-        "status": "open",
+        "recorded_at": "2026-09-04T17:42:17Z",
+        "source_commit": "639601f0692ffc2f408d23322ae24f224e4dfe11",
+        "status": "verified",
         "target": "tsrookarocom-dev@sup.local:/home/jon/docker/ts.rookaro.com-dev"
       },
       "production": {
@@ -53,14 +57,16 @@
     },
     "windows": {
       "development": {
-        "actor": null,
-        "artifact": null,
+        "actor": "codex",
+        "artifact": "disconnected-snapshot:27a6ae272fe84493421bb0ee936021317ab6e216b5e61ede4e9e5cd654562d79",
         "authorization_ref": null,
-        "evidence": [],
+        "evidence": [
+          "work/evidence/release-v0.45.0-development.json"
+        ],
         "reason": null,
-        "recorded_at": null,
-        "source_commit": null,
-        "status": "open",
+        "recorded_at": "2026-09-04T17:42:17Z",
+        "source_commit": "639601f0692ffc2f408d23322ae24f224e4dfe11",
+        "status": "verified",
         "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed"
       },
       "production": {
@@ -82,7 +88,7 @@
     "windows",
     "linux"
   ],
-  "revision": 1,
+  "revision": 5,
   "schema_version": 1,
-  "updated_at": "2026-09-04T17:34:49Z"
+  "updated_at": "2026-09-04T17:42:17Z"
 }
