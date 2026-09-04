@@ -6,15 +6,17 @@ Shed commands, mutate local state, restart workers, cancel work, or retrieve arb
 
 ## Privacy contract
 
-Every report schema rejects unknown fields. Schema v5 accepts project and instance UUIDs, display
+Every report schema rejects unknown fields. Schema v8 accepts project and instance UUIDs, display
 name, platform and client versions, current lifecycle counters, controlled material-event codes,
 content-free App Server aggregates and failure signatures, Work Efficiency aggregates with explicit
 measured-token coverage, bounded lifecycle inventory, and per-instance health made only from
 controlled states, versions, timestamps, digests, capped counts, and a bounded chain-level release
 projection derived by the local instance from its authoritative relationships and release cohort.
-It rejects paths, prompts,
-source text, commands, raw output, exception messages, credentials, secrets, scheduler definitions,
-diagnostic logs, and uncontrolled event summaries. Requests are capped at 256 KiB; event, failure,
+It rejects paths, prompts, source text, uncontrolled commands, raw output, exception messages,
+credentials, secrets, scheduler definitions, diagnostic logs, and uncontrolled event summaries.
+The one command-shaped schema-v8 field is restricted to the exact local route
+`ts: resolve loop <finding-id>` and is rendered only as a clipboard action. Requests are capped at
+256 KiB; event, failure,
 inventory, pending-delivery, and release-candidate lists or counts are bounded.
 
 Reporter credentials are opaque 256-bit values. The server stores only a SHA-256 verifier and a
@@ -114,6 +116,12 @@ type/status/release-stage filters, and an optional locally reported planning ord
 actual lifecycle changes rather than repeated snapshots. Fleet navigation sorts projects by latest
 material activity and supports active/all and hide/show controls. Search and exports remain bounded;
 the hosted dashboard has no lifecycle, planning-order, or release mutation operation.
+
+Outcome Reconciliation presents active, locally discovered loop findings grouped by reporting
+instance. Each card explains the controlled mismatch and copies its exact `ts: resolve loop …`
+route for pasting into the local Tool Shed chat. The browser never writes an action intent to the
+client and the hosted service has no local-execution channel. See
+[Outcome Loop Findings](loop-findings.md).
 
 ## Production deployment
 

@@ -232,6 +232,37 @@ class WorkArtifactSnapshot(models.Model):
         ]
         ordering = ("visible_id",)
 
+
+class LoopFindingSnapshot(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="loop_findings")
+    instance = models.ForeignKey(Instance, on_delete=models.CASCADE, related_name="loop_findings")
+    finding_external_id = models.CharField(max_length=32)
+    category = models.CharField(max_length=48)
+    severity = models.CharField(max_length=16)
+    reason_code = models.CharField(max_length=64)
+    subject_visible_id = models.CharField(max_length=64)
+    observed_state = models.CharField(max_length=32)
+    expected_state = models.CharField(max_length=32)
+    state = models.CharField(max_length=16)
+    source_revision = models.PositiveBigIntegerField()
+    first_observed_at = models.DateTimeField()
+    last_observed_at = models.DateTimeField()
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    recurrence_count = models.PositiveIntegerField(default=0)
+    command = models.CharField(max_length=64)
+    observed_at = models.DateTimeField()
+    snapshot_sequence = models.PositiveBigIntegerField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("instance", "finding_external_id"),
+                name="unique_instance_loop_finding",
+            )
+        ]
+        ordering = ("-last_observed_at", "finding_external_id")
+
 class LifecycleEvent(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="lifecycle_events")

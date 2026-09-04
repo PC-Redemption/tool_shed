@@ -22,6 +22,7 @@ from .models import (
     IngestReceipt,
     Instance,
     LifecycleEvent,
+    LoopFindingSnapshot,
     MaterialEvent,
     Project,
     QualificationRun,
@@ -48,6 +49,13 @@ ATTENTION_REASONS = {
         "route": "ts: status",
         "tab": "outcomes",
         "description": "This instance reports outcome results that are not reconciled.",
+    },
+    "loop-findings": {
+        "title": "Outcome loops need review",
+        "severity": "attention",
+        "route": "ts: audit loops",
+        "tab": "outcomes",
+        "description": "This instance reports specific unhealthy loop or lifecycle findings.",
     },
     "app-server-failure": {
         "title": "App Server needs attention",
@@ -238,6 +246,7 @@ def _qualification_descendants(run: QualificationRun) -> list[str]:
         ("material-event", MaterialEvent.objects.filter(project_id__in=project_ids)),
         ("work-artifact", WorkArtifactSnapshot.objects.filter(project_id__in=project_ids)),
         ("lifecycle-event", LifecycleEvent.objects.filter(project_id__in=project_ids)),
+        ("loop-finding", LoopFindingSnapshot.objects.filter(project_id__in=project_ids)),
         ("attention-condition", AttentionCondition.objects.filter(project_id__in=project_ids)),
         ("app-server", AppServerAggregate.objects.filter(instance_id__in=instance_ids)),
         ("failure-group", FailureGroup.objects.filter(instance_id__in=instance_ids)),
@@ -397,6 +406,8 @@ def _attention_observations(state: dict[str, Any], app: dict[str, Any]) -> dict[
         observed["blocked-work"] = ("blocked", state["blocked_count"])
     if state["unreconciled_outcome_count"]:
         observed["unreconciled-outcomes"] = ("attention", state["unreconciled_outcome_count"])
+    if state.get("active_loop_finding_count"):
+        observed["loop-findings"] = ("attention", state["active_loop_finding_count"])
     unrecovered_failure = bool(
         app["last_failure"]
         and (app["last_success"] is None or app["last_failure"] > app["last_success"])
@@ -868,6 +879,34 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
             ignore_conflicts=True,
         )
         LifecycleEvent.objects.filter(retained_until__lt=timezone.now()).delete()
+    if report["schema_version"] >= 8:
+        projection = report["loop_findings"]
+        LoopFindingSnapshot.objects.filter(instance=locked).delete()
+        LoopFindingSnapshot.objects.bulk_create(
+            [
+                LoopFindingSnapshot(
+                    project=project,
+                    instance=locked,
+                    finding_external_id=item["finding_id"],
+                    category=item["category"],
+                    severity=item["severity"],
+                    reason_code=item["reason_code"],
+                    subject_visible_id=item["subject_id"],
+                    observed_state=item["observed_state"],
+                    expected_state=item["expected_state"],
+                    state=item["state"],
+                    source_revision=item["source_revision"],
+                    first_observed_at=item["first_observed_at"],
+                    last_observed_at=item["last_observed_at"],
+                    resolved_at=item["resolved_at"],
+                    recurrence_count=item["recurrence_count"],
+                    command=item["command"],
+                    observed_at=observed,
+                    snapshot_sequence=report["sequence"],
+                )
+                for item in projection["findings"]
+            ]
+        )
     app = report["app_server"]
     existing_app = AppServerAggregate.objects.filter(instance=locked).first()
     app_defaults = {

@@ -161,30 +161,9 @@ class ScriptTests(unittest.TestCase):
                 repository / "scripts" / "check_stale_paths.py",
             )
         if include_provider_adapter:
-            for name in (
-                "codex_cli_resolver.py",
-                "codex_skill_sync.py",
-                "bootstrap_closure.py",
-                "campaign_queue.py",
-                "check_stale_paths.py",
-                "check_work_tree.py",
-                "doctor.py",
-                "hybrid_state.py",
-                "hybrid_state_schema.py",
-                "outcome_loop.py",
-                "install_into_workspace.py",
-                "provider_adapters.py",
-                "program_roadmap.py",
-                "project_identity.py",
-                "reconcile_campaign_queue.py",
-                "repository_policy.py",
-                "review_work_state.py",
-                "update_work_index.py",
-                "work_tree.py",
-                "workspace_preflight.py",
-                "work_level_config.py",
-            ):
-                shutil.copyfile(ROOT / "scripts" / name, repository / "scripts" / name)
+            for source in (ROOT / "scripts").iterdir():
+                if source.is_file() and source.suffix in {".py", ".js", ".ps1", ".sh"}:
+                    shutil.copyfile(source, repository / "scripts" / source.name)
             shutil.copytree(ROOT / "adapters", repository / "adapters")
             shutil.copytree(ROOT / "skills", repository / "skills")
             (repository / "adapters" / "codex-skill-releases.json").write_text(
@@ -227,30 +206,9 @@ class ScriptTests(unittest.TestCase):
                 if path.is_file()
             )
             hashed_paths.extend(
-                f"scripts/{name}"
-                for name in (
-                    "codex_cli_resolver.py",
-                    "codex_skill_sync.py",
-                    "bootstrap_closure.py",
-                    "campaign_queue.py",
-                    "check_stale_paths.py",
-                    "check_work_tree.py",
-                    "doctor.py",
-                    "hybrid_state.py",
-                    "hybrid_state_schema.py",
-                    "outcome_loop.py",
-                    "install_into_workspace.py",
-                    "provider_adapters.py",
-                    "program_roadmap.py",
-                    "project_identity.py",
-                    "reconcile_campaign_queue.py",
-                    "repository_policy.py",
-                    "review_work_state.py",
-                    "update_work_index.py",
-                    "work_tree.py",
-                    "workspace_preflight.py",
-                    "work_level_config.py",
-                )
+                path.relative_to(repository).as_posix()
+                for path in (repository / "scripts").iterdir()
+                if path.is_file()
             )
         content_hashes = {
             relative: hashlib.sha256((repository / relative).read_bytes()).hexdigest()

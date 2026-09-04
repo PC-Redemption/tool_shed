@@ -10,6 +10,7 @@ from .models import (
     FailureGroup,
     Instance,
     LifecycleEvent,
+    LoopFindingSnapshot,
     MaterialEvent,
     Project,
     ReporterCredential,
@@ -137,6 +138,25 @@ def dashboard_revision() -> str:
                 "from_state",
                 "to_state",
                 "occurred_at",
+            )
+        ),
+        "loop_findings": list(
+            LoopFindingSnapshot.objects.filter(project__qualification_run__isnull=True).order_by(
+                "instance_id", "finding_external_id"
+            ).values_list(
+                "instance_id",
+                "finding_external_id",
+                "category",
+                "severity",
+                "reason_code",
+                "subject_visible_id",
+                "observed_state",
+                "expected_state",
+                "state",
+                "source_revision",
+                "last_observed_at",
+                "recurrence_count",
+                "command",
             )
         ),
         "attention_conditions": list(

@@ -10,6 +10,7 @@
     <div class="project-metric metric-blocked{% if project.current_state.blocked_count %} has-value{% endif %}"><dt>Blocked</dt><dd>{{ project.current_state.blocked_count|default:0 }}</dd></div>
     <div class="project-metric metric-open-outcomes{% if project.current_state.open_outcome_count %} has-value{% endif %}"><dt>Open outcomes</dt><dd>{{ project.current_state.open_outcome_count|default:0 }}</dd></div>
     <div class="project-metric metric-unreconciled{% if project.current_state.unreconciled_outcome_count %} has-value{% endif %}"><dt>Unreconciled</dt><dd>{{ project.current_state.unreconciled_outcome_count|default:0 }}</dd></div>
+    <div class="project-metric metric-loop-findings{% if project.current_state.active_loop_finding_count %} has-value{% endif %}"><dt>Loop findings</dt><dd>{{ project.current_state.active_loop_finding_count|default:0 }}</dd></div>
   </dl>
 </section>
 <nav class="dashboard-tabs" aria-label="Project sections">
@@ -217,7 +218,25 @@
   {% include "fleet/includes/table_pagination.html" with page=history_page links=history_page_links previous_url=history_previous_page_url next_url=history_next_page_url label="History table pages" position="bottom" %}
 </section>
 {% elif tab == 'outcomes' %}
-<section class="dashboard-panel"><h2>Outcome Reconciliation</h2><p>{{ project.current_state.open_outcome_count|default:0 }} open and {{ project.current_state.unreconciled_outcome_count|default:0 }} unreconciled outcome loops.</p><p class="dashboard-note">See Work for each artifact’s outcome lifecycle, disposition, and reconciliation state.</p></section>
+<section class="dashboard-panel outcome-findings-panel">
+  <div class="panel-heading"><div><h2>Outcome Reconciliation</h2><p>{{ project.current_state.open_outcome_count|default:0 }} open, {{ project.current_state.unreconciled_outcome_count|default:0 }} unreconciled, and {{ project.current_state.active_loop_finding_count|default:0 }} active loop findings.</p></div></div>
+  <p class="dashboard-note">Findings are discovered by the named local Tool Shed instance. This dashboard is read-only; copy the command into that workspace’s Tool Shed chat to inspect current authority and continue safely.</p>
+  {% for group in outcome_groups %}
+  <section class="instance-snapshot outcome-instance">
+    <div class="instance-heading"><h3>{{ group.instance.external_id }}</h3><span>{{ group.instance.platform }} · client {{ group.instance.client_version }}</span></div>
+    {% if group.findings %}<div class="outcome-finding-list">
+      {% for finding in group.findings %}<article class="outcome-finding-card">
+        <div class="outcome-finding-heading"><span class="state-badge state-attention">Needs review</span><code>{{ finding.finding_external_id }}</code></div>
+        <h4>Promoted Idea lifecycle drift</h4>
+        <p><strong>{{ finding.subject_visible_id }}</strong> is reported as {{ finding.observed_state }}; the reconciled outcome expects {{ finding.expected_state }}.</p>
+        <dl><div><dt>Reason</dt><dd>{{ finding.reason_code }}</dd></div><div><dt>Observed</dt><dd>revision {{ finding.source_revision }}</dd></div>{% if finding.recurrence_count %}<div><dt>Recurrences</dt><dd>{{ finding.recurrence_count }}</dd></div>{% endif %}</dl>
+        <div class="outcome-command"><code>{{ finding.command }}</code><button type="button" data-copy-command="{{ finding.command }}" aria-label="Copy Tool Shed command for {{ finding.finding_external_id }}">Copy Tool Shed command</button><span class="copy-feedback" role="status" aria-live="polite"></span></div>
+      </article>{% endfor %}
+    </div>{% else %}<p class="dashboard-empty">No active loop findings from this instance.</p>{% endif %}
+  </section>
+  {% empty %}<p class="dashboard-empty">No enrolled instances.</p>{% endfor %}
+  <p class="dashboard-note">See Work for each artifact’s outcome lifecycle, disposition, reconciliation, and recursive closure state.</p>
+</section>
 {% else %}
 <section class="dashboard-panel compact-table-panel instance-health-panel">
   <div class="compact-panel-heading"><h2>Instance Health</h2><p class="dashboard-note">Per-instance advisory truth; local Tool Shed and release state remain authoritative.</p></div>

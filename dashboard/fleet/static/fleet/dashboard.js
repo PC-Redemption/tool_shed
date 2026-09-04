@@ -34,6 +34,34 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  document.querySelectorAll("[data-copy-command]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const command = button.dataset.copyCommand || "";
+      const feedback = button.parentElement?.querySelector(".copy-feedback");
+      let copied = false;
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(command);
+          copied = true;
+        }
+      } catch (_error) {
+        copied = false;
+      }
+      if (!copied) {
+        const field = document.createElement("textarea");
+        field.value = command;
+        field.setAttribute("readonly", "");
+        field.style.position = "fixed";
+        field.style.opacity = "0";
+        document.body.appendChild(field);
+        field.select();
+        copied = document.execCommand("copy");
+        field.remove();
+      }
+      if (feedback) feedback.textContent = copied ? "Copied" : "Select and copy the command shown.";
+    });
+  });
+
   const button = document.querySelector(".dashboard-nav-toggle");
   const navigation = document.querySelector("#fleet-nav");
   if (button && navigation) {

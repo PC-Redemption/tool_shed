@@ -360,7 +360,7 @@ def synchronize_authority(connection: sqlite3.Connection, *, revision: int) -> d
     in cycle, requirement, relationship, verdict, and reconciliation rows; closure tables retain
     the recoverable element envelopes and append-only claim/closure history derived from them.
     """
-    if int(connection.execute("PRAGMA user_version").fetchone()[0]) != HYBRID_SCHEMA_VERSION:
+    if int(connection.execute("PRAGMA user_version").fetchone()[0]) < HYBRID_SCHEMA_VERSION:
         return {"applicable": False, "element_count": 0, "claim_count": 0, "closed_count": 0}
     if not set(CLOSURE_TABLES) <= _tables(connection):
         raise ClosureLineageError("schema 3 is missing closure authority tables")
@@ -1248,8 +1248,8 @@ def refresh_projection(
 def status(workspace: Path, identity: str) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
     with contextlib.closing(hybrid_state.connect(hybrid_state.database_path(workspace), writable=False)) as connection:
-        if int(connection.execute("PRAGMA user_version").fetchone()[0]) != 3:
-            raise ClosureLineageError("closure status requires Hybrid schema 3")
+        if int(connection.execute("PRAGMA user_version").fetchone()[0]) < 3:
+            raise ClosureLineageError("closure status requires Hybrid schema 3 or newer")
         row = connection.execute(
             "SELECT ce.*, cr.local_closure, cr.evidence_health, cr.graph_health, cr.effective_closed, "
             "cr.reason_codes_json, cr.open_descendants, cr.unknown_descendants, cr.invalid_descendants, "
@@ -1672,8 +1672,8 @@ def resolve_recovery_case(
 def audit_connection(workspace: Path, connection: sqlite3.Connection) -> dict[str, Any]:
     findings: list[str] = []
     user_version = int(connection.execute("PRAGMA user_version").fetchone()[0])
-    if user_version != HYBRID_SCHEMA_VERSION:
-        findings.append(f"closure lineage requires Hybrid schema 3; found {user_version}")
+    if user_version < HYBRID_SCHEMA_VERSION:
+        findings.append(f"closure lineage requires Hybrid schema 3 or newer; found {user_version}")
     missing = set(CLOSURE_TABLES) - _tables(connection)
     if missing:
         findings.append("missing closure tables: " + ", ".join(sorted(missing)))

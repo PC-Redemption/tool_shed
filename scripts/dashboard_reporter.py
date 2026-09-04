@@ -32,6 +32,7 @@ import app_server_control
 import codex_execution
 import document_store
 import hybrid_state
+import loop_findings
 import planning_order
 import release_cohort
 import work_orchestration
@@ -43,7 +44,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/dashboard_report
 
 
 SCHEMA_VERSION = 1
-REPORT_SCHEMA_VERSION = 7
+REPORT_SCHEMA_VERSION = 8
 OUTBOX_RELATIVE = Path(".tool-shed/dashboard/outbox.sqlite3")
 MAX_RESPONSE_BYTES = 65_536
 MAX_REQUEST_BYTES = 262_144
@@ -361,6 +362,7 @@ def _dashboard_state(workspace: Path) -> dict[str, Any]:
                 "WHERE r.cycle_id = c.id ORDER BY r.compared_at DESC, r.id DESC LIMIT 1), 'open') <> 'reconciled')"
             ).fetchone()[0]
         )
+    finding_count = loop_findings.report_projection(workspace)["total_active_count"]
     return {
         "working_count": len(campaigns),
         "ready_count": 0,
@@ -368,6 +370,7 @@ def _dashboard_state(workspace: Path) -> dict[str, Any]:
         "active_idea_count": len(ideas),
         "open_outcome_count": open_outcomes,
         "unreconciled_outcome_count": unreconciled,
+        "active_loop_finding_count": finding_count,
         "last_completed_id": completed[-1]["visible_id"] if completed else None,
     }
 
@@ -837,7 +840,11 @@ def _instance_health(
     reporter_state = "quiescent" if quiescent else "delivery-delayed" if delayed else "active"
     semantic_digest = hashlib.sha256(
         json.dumps(
-            {"state": state, "work_inventory": inventory},
+            {
+                "state": state,
+                "work_inventory": inventory,
+                "loop_findings": loop_findings.report_projection(workspace),
+            },
             sort_keys=True,
             separators=(",", ":"),
         ).encode("utf-8")
@@ -946,6 +953,7 @@ def report_payload(
             "remedial_retries": efficiency["remedial_proxy"]["retry_count"],
         },
         "work_inventory": inventory,
+        "loop_findings": loop_findings.report_projection(workspace),
         "lifecycle_events": lifecycle_events or [],
         "instance_health": _instance_health(
             workspace,

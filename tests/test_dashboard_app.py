@@ -34,6 +34,7 @@ from dashboard.fleet.models import (  # noqa: E402
     IngestReceipt,
     Instance,
     LifecycleEvent,
+    LoopFindingSnapshot,
     Project,
     QualificationRun,
     ReporterCredential,
@@ -266,6 +267,37 @@ class DashboardApplicationTests(TestCase):
             "graph_revision": 12,
             "evaluator_version": "recursive-closure-v1",
             "evaluated_at": str(payload["observed_at"]),
+        }
+        return payload
+
+    def loop_finding_report_payload(self) -> dict[str, object]:
+        payload = self.closure_report_payload()
+        observed = str(payload["observed_at"])
+        finding_id = "LOOP-17A1B2C3D4E5"
+        payload["schema_version"] = 8
+        payload["state"]["active_loop_finding_count"] = 1  # type: ignore[index]
+        payload["loop_findings"] = {
+            "total_active_count": 1,
+            "total_resolved_count": 0,
+            "truncated": False,
+            "findings": [
+                {
+                    "finding_id": finding_id,
+                    "category": "semantic-lifecycle-drift",
+                    "severity": "attention",
+                    "reason_code": "PROMOTED_IDEA_LIFECYCLE_STALE",
+                    "subject_id": "IDEA-0012",
+                    "observed_state": "active",
+                    "expected_state": "completed",
+                    "state": "active",
+                    "source_revision": 42,
+                    "first_observed_at": observed,
+                    "last_observed_at": observed,
+                    "resolved_at": None,
+                    "recurrence_count": 0,
+                    "command": f"ts: resolve loop {finding_id}",
+                }
+            ],
         }
         return payload
 
@@ -671,6 +703,39 @@ class DashboardApplicationTests(TestCase):
         self.assertContains(work, "closed-loop · current · valid")
         self.assertContains(work, "2 open · 0 unknown · 0 invalid")
         self.assertContains(work, "DESCENDANT_OPEN")
+
+    def test_schema_eight_ingests_and_renders_copy_only_loop_findings(self) -> None:
+        token = self.enroll_and_issue()
+        payload = self.loop_finding_report_payload()
+        validated = validate_report(payload)
+        finding = validated["loop_findings"]["findings"][0]
+        self.assertEqual(finding["command"], "ts: resolve loop LOOP-17A1B2C3D4E5")
+
+        unsafe = self.loop_finding_report_payload()
+        unsafe["loop_findings"]["findings"][0]["command"] = "ts: resolve loop LOOP-17A1B2C3D4E5; rm data"  # type: ignore[index]
+        with self.assertRaisesRegex(ContractError, "stable local Tool Shed route"):
+            validate_report(unsafe)
+
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        snapshot = LoopFindingSnapshot.objects.get()
+        self.assertEqual(snapshot.subject_visible_id, "IDEA-0012")
+        self.assertEqual(snapshot.command, "ts: resolve loop LOOP-17A1B2C3D4E5")
+        self.assertTrue(AttentionCondition.objects.get(reason_code="loop-findings").active)
+
+        user = get_user_model().objects.create_user("loop-viewer", password="fixture")
+        self.client.force_login(user)
+        outcomes = self.client.get(reverse("fleet:project-tab", args=(snapshot.project_id, "outcomes")))
+        self.assertContains(outcomes, "Promoted Idea lifecycle drift")
+        self.assertContains(outcomes, "IDEA-0012")
+        self.assertContains(outcomes, "Copy Tool Shed command")
+        self.assertContains(outcomes, 'data-copy-command="ts: resolve loop LOOP-17A1B2C3D4E5"')
+        self.assertNotContains(outcomes, "Run command")
 
     def test_schema_four_projects_instance_health_and_semantic_divergence(self) -> None:
         token = self.enroll_and_issue()
@@ -1538,6 +1603,9 @@ class DashboardApplicationTests(TestCase):
         self.assertIn("never affects active attention", script)
         self.assertIn('document.querySelectorAll("[data-auto-submit]")', script)
         self.assertIn("control.form.requestSubmit()", script)
+        self.assertIn('document.querySelectorAll("[data-copy-command]")', script)
+        self.assertIn("navigator.clipboard?.writeText", script)
+        self.assertIn('document.execCommand("copy")', script)
         self.assertIn('document.querySelectorAll("time[data-local-time]")', script)
         self.assertIn("const viewerTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone", script)
         self.assertEqual(script.count("timeZone: viewerTimeZone"), 3)
@@ -1580,7 +1648,7 @@ class DashboardApplicationTests(TestCase):
     @override_settings(DASHBOARD_ENVIRONMENT="development")
     def test_qualification_export_exposes_raw_projection_and_receipt_truth(self) -> None:
         token = self.enroll_and_issue()
-        payload = self.lifecycle_report_payload()
+        payload = self.loop_finding_report_payload()
         response = self.client.post(
             reverse("fleet:report-ingest"),
             data=json.dumps(payload),
@@ -1596,6 +1664,8 @@ class DashboardApplicationTests(TestCase):
         self.assertEqual(exported["work_artifacts"][0]["snapshot_sequence"], payload["sequence"])
         self.assertEqual(exported["work_artifacts"][0]["parent_ids"], [])
         self.assertEqual(exported["work_artifacts"][0]["produces_ids"], ["MAP-0017"])
+        self.assertEqual(exported["loop_findings"][0]["finding_external_id"], "LOOP-17A1B2C3D4E5")
+        self.assertEqual(exported["loop_findings"][0]["snapshot_sequence"], payload["sequence"])
         self.assertEqual(exported["ingest_receipts"][0]["idempotency_key"], payload["idempotency_key"])
         self.assertNotIn("reporter_token", json.dumps(exported))
 

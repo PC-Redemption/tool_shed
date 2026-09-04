@@ -28,6 +28,7 @@ from .models import (
     Enrollment,
     FailureGroup,
     Instance,
+    LoopFindingSnapshot,
     Project,
     QualificationRun,
     ReporterCredential,
@@ -883,6 +884,7 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
     history_page_links: list[dict[str, object]] = []
     history_previous_page_url = None
     history_next_page_url = None
+    outcome_groups = []
 
     def work_url(page: int) -> str:
         values = {"rows": selected_rows, "page": page}
@@ -970,6 +972,14 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
                 snapshot.visible_id
             )
             snapshot_by_instance.setdefault(snapshot.instance_id, []).append(snapshot)
+    if tab == "outcomes":
+        for instance in instances:
+            findings = list(
+                LoopFindingSnapshot.objects.filter(instance=instance, state="active").order_by(
+                    "-last_observed_at", "finding_external_id"
+                )[:50]
+            )
+            outcome_groups.append({"instance": instance, "findings": findings})
     health_rows, health_summary = _instance_health_context(instances)
     overview = _project_overview_context(project, instances, health_summary) if tab == "overview" else None
     if tab == "work" and snapshot_by_instance:
@@ -1021,6 +1031,7 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
             "project": project,
             "tab": tab,
             "instance_groups": instance_groups,
+            "outcome_groups": outcome_groups,
             "history": history,
             "attention_items": attention_items,
             "history_viewed_at": timezone.now().isoformat(),

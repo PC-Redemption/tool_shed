@@ -34,10 +34,12 @@ class DashboardQualificationSnapshotTests(TestCase):
         call_command("export_dashboard_qualification_snapshot", stdout=output, verbosity=0)
         payload = json.loads(output.getvalue())
         self.assertEqual(payload["kind"], "tool-shed-dashboard-qualification-snapshot")
+        self.assertEqual(payload["schema_version"], 2)
         self.assertEqual(len(payload["projects"]), 3)
         hidden = {item["external_id"] for item in payload["projects"] if item["is_hidden"]}
         self.assertEqual(hidden, {str(item[0]) for item in SYNTHETIC_PROJECTS})
         self.assertNotIn("credentials", payload)
+        self.assertEqual(payload["loop_findings"], [])
 
     @override_settings(DASHBOARD_ENVIRONMENT="production")
     def test_snapshot_refuses_production(self) -> None:

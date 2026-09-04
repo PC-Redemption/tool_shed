@@ -106,7 +106,7 @@ DB_AUTHORITY_FIELDS = {
     "document.metadata",
     "document.lifecycle",
 }
-SUPPORTED_SCHEMA_VERSIONS = {1, 2, 3}
+SUPPORTED_SCHEMA_VERSIONS = {1, 2, 3, 4}
 DOCUMENT_DOMAIN_TABLES = (
     "document_namespace", "document", "document_revision", "document_path_alias", "document_conversion",
 )
@@ -254,9 +254,14 @@ def domain_digest(connection: sqlite3.Connection) -> str:
         from closure_lineage_schema import CLOSURE_DOMAIN_TABLES
 
         closure_tables = CLOSURE_DOMAIN_TABLES
+    finding_tables: tuple[str, ...] = ()
+    if "loop_finding" in present:
+        from loop_findings_schema import LOOP_FINDING_DOMAIN_TABLES
+
+        finding_tables = LOOP_FINDING_DOMAIN_TABLES
     tables = (
         table
-        for table in (*DOMAIN_TABLES, *DOCUMENT_DOMAIN_TABLES, *closure_tables)
+        for table in (*DOMAIN_TABLES, *DOCUMENT_DOMAIN_TABLES, *closure_tables, *finding_tables)
         if table != "workspace" and table in present
     )
     return sha256_bytes(canonical_bytes({table: table_rows(connection, table) for table in tables}))
@@ -304,14 +309,18 @@ def expected_schema_digest(schema_version: int) -> str:
     with contextlib.closing(sqlite3.connect(":memory:")) as connection:
         connection.execute("PRAGMA trusted_schema=ON")
         create_schema(connection, include_triggers=True)
-        if schema_version in {2, 3}:
+        if schema_version in {2, 3, 4}:
             from document_store_schema import create_document_schema
 
             create_document_schema(connection, include_triggers=True)
-        if schema_version == 3:
+        if schema_version in {3, 4}:
             from closure_lineage_schema import create_closure_schema
 
             create_closure_schema(connection, include_triggers=True)
+        if schema_version == 4:
+            from loop_findings_schema import create_loop_finding_schema
+
+            create_loop_finding_schema(connection, include_triggers=True)
         return schema_digest(connection)
 
 
@@ -631,10 +640,14 @@ def managed_write(
                 raise HybridStateError(
                     f"managed operation expected {expected_writes} accounted writes but observed {product_actual}"
                 )
-            if int(connection.execute("PRAGMA user_version").fetchone()[0]) == 3:
+            if int(connection.execute("PRAGMA user_version").fetchone()[0]) >= 3:
                 import closure_lineage
 
                 closure_lineage.synchronize_authority(connection, revision=revision)
+            if int(connection.execute("PRAGMA user_version").fetchone()[0]) >= 4:
+                import loop_findings
+
+                loop_findings.synchronize_findings(connection, revision=revision)
             actual = int(
                 connection.execute(
                     "SELECT actual_writes FROM managed_operation WHERE id = ?", (operation_id,)
@@ -1161,7 +1174,7 @@ def write_checkpoint(
     require_project_binding(workspace, project_binding, operation=OPERATION)
     database = database_path(workspace)
     with contextlib.closing(connect(database, writable=False)) as probe:
-        if int(probe.execute("PRAGMA user_version").fetchone()[0]) in {2, 3}:
+        if int(probe.execute("PRAGMA user_version").fetchone()[0]) in {2, 3, 4}:
             from document_store import write_checkpoint as write_document_checkpoint
             selected = output or workspace / DOCUMENT_CHECKPOINT_RELATIVE
             return write_document_checkpoint(

@@ -24,6 +24,7 @@ ROOT_FIELDS = {
     "work_inventory",
     "lifecycle_events",
     "instance_health",
+    "loop_findings",
 }
 PROJECT_FIELDS = {"id", "name"}
 INSTANCE_FIELDS = {"id", "platform", "client_version", "counter_epoch", "quiescent"}
@@ -34,6 +35,7 @@ STATE_FIELDS = {
     "active_idea_count",
     "open_outcome_count",
     "unreconciled_outcome_count",
+    "active_loop_finding_count",
     "last_completed_id",
 }
 EVENT_FIELDS = {"kind", "summary_code", "occurred_at"}
@@ -102,6 +104,12 @@ EFFICIENCY_FIELDS = {
     "remedial_retries",
 }
 WORK_INVENTORY_FIELDS = {"total_count", "truncated", "artifacts"}
+LOOP_FINDING_PROJECTION_FIELDS = {"total_active_count", "total_resolved_count", "truncated", "findings"}
+LOOP_FINDING_FIELDS = {
+    "finding_id", "category", "severity", "reason_code", "subject_id", "observed_state",
+    "expected_state", "state", "source_revision", "first_observed_at", "last_observed_at",
+    "resolved_at", "recurrence_count", "command",
+}
 WORK_ARTIFACT_FIELDS = {
     "artifact_id",
     "visible_id",
@@ -531,6 +539,60 @@ def _lifecycle_events(value: Any) -> list[dict[str, Any]]:
     return result
 
 
+def _loop_findings(value: Any) -> dict[str, Any]:
+    supplied = _object(value, "loop_findings", LOOP_FINDING_PROJECTION_FIELDS)
+    raw_findings = supplied.get("findings", [])
+    if not isinstance(raw_findings, list) or len(raw_findings) > 100:
+        raise ContractError("loop_findings.findings must be a list of at most 100 items")
+    findings = []
+    seen: set[str] = set()
+    for index, raw in enumerate(raw_findings, start=1):
+        label = f"loop finding {index}"
+        item = _object(raw, label, LOOP_FINDING_FIELDS)
+        finding_id = _required_string(item.get("finding_id"), f"{label}.finding_id", 32)
+        if finding_id in seen or not finding_id.startswith("LOOP-"):
+            raise ContractError("loop findings must have unique LOOP- identifiers")
+        seen.add(finding_id)
+        command = _required_string(item.get("command"), f"{label}.command", 64)
+        if command != f"ts: resolve loop {finding_id}":
+            raise ContractError(f"{label}.command must contain only its stable local Tool Shed route")
+        source_revision = _counter(item.get("source_revision"), f"{label}.source_revision")
+        if source_revision < 1:
+            raise ContractError(f"{label}.source_revision must be positive")
+        state = _choice(item.get("state"), f"{label}.state", {"active", "resolved"}, 16)
+        resolved_at = _timestamp(item.get("resolved_at"), f"{label}.resolved_at", optional=True)
+        if (state == "resolved") != (resolved_at is not None):
+            raise ContractError(f"{label}.resolved_at must match state")
+        findings.append(
+            {
+                "finding_id": finding_id,
+                "category": _choice(item.get("category"), f"{label}.category", {"semantic-lifecycle-drift"}, 48),
+                "severity": _choice(item.get("severity"), f"{label}.severity", {"attention"}, 16),
+                "reason_code": _choice(item.get("reason_code"), f"{label}.reason_code", {"PROMOTED_IDEA_LIFECYCLE_STALE"}, 64),
+                "subject_id": _required_string(item.get("subject_id"), f"{label}.subject_id", 64),
+                "observed_state": _required_string(item.get("observed_state"), f"{label}.observed_state", 32),
+                "expected_state": _required_string(item.get("expected_state"), f"{label}.expected_state", 32),
+                "state": state,
+                "source_revision": source_revision,
+                "first_observed_at": _timestamp(item.get("first_observed_at"), f"{label}.first_observed_at"),
+                "last_observed_at": _timestamp(item.get("last_observed_at"), f"{label}.last_observed_at"),
+                "resolved_at": resolved_at,
+                "recurrence_count": _bounded_counter(item.get("recurrence_count"), f"{label}.recurrence_count", 1_000_000),
+                "command": command,
+            }
+        )
+    active = _bounded_counter(supplied.get("total_active_count"), "loop_findings.total_active_count", 1_000_000)
+    resolved = _bounded_counter(supplied.get("total_resolved_count"), "loop_findings.total_resolved_count", 1_000_000)
+    truncated = _boolean(supplied.get("truncated"), "loop_findings.truncated")
+    reported_active = sum(item["state"] == "active" for item in findings)
+    reported_resolved = sum(item["state"] == "resolved" for item in findings)
+    if active < reported_active or resolved < reported_resolved:
+        raise ContractError("loop finding totals cannot be smaller than the bounded list")
+    if not truncated and (active != reported_active or resolved != reported_resolved):
+        raise ContractError("untruncated loop finding totals must match the bounded list")
+    return {"total_active_count": active, "total_resolved_count": resolved, "truncated": truncated, "findings": findings}
+
+
 def _state(value: Any) -> dict[str, Any]:
     supplied = _object(value, "state", STATE_FIELDS)
     result = {field: _counter(supplied.get(field, 0), f"state.{field}") for field in STATE_FIELDS if field.endswith("_count")}
@@ -538,7 +600,8 @@ def _state(value: Any) -> dict[str, Any]:
     blocked = result["blocked_count"]
     unreconciled = result["unreconciled_outcome_count"]
     working = result["working_count"]
-    result["attention_state"] = "blocked" if blocked else "attention" if unreconciled else "working" if working else "healthy"
+    findings = result["active_loop_finding_count"]
+    result["attention_state"] = "blocked" if blocked else "attention" if unreconciled or findings else "working" if working else "healthy"
     return result
 
 
@@ -667,12 +730,16 @@ def _instance_health(value: Any, *, schema_version: int) -> dict[str, Any]:
 def validate_report(payload: Any) -> dict[str, Any]:
     root = _object(payload, "report", ROOT_FIELDS)
     schema_version = root.get("schema_version")
-    if schema_version not in {1, 2, 3, 4, 5, 6, 7}:
-        raise ContractError("report.schema_version must be 1, 2, 3, 4, 5, 6, or 7")
+    if schema_version not in {1, 2, 3, 4, 5, 6, 7, 8}:
+        raise ContractError("report.schema_version must be between 1 and 8")
     if schema_version == 1 and ({"work_inventory", "lifecycle_events"} & set(root)):
         raise ContractError("report schema 1 does not support lifecycle projection fields")
     if schema_version < 4 and "instance_health" in root:
         raise ContractError("report schemas before 4 do not support instance health")
+    if schema_version < 8 and "loop_findings" in root:
+        raise ContractError("report schemas before 8 do not support loop findings")
+    if schema_version >= 8 and "loop_findings" not in root:
+        raise ContractError("report schema 8 requires loop findings")
     project = _object(root.get("project"), "project", PROJECT_FIELDS)
     instance = _object(root.get("instance"), "instance", INSTANCE_FIELDS)
     app_server = _object(
@@ -776,4 +843,5 @@ def validate_report(payload: Any) -> dict[str, Any]:
         "instance_health": _instance_health(
             root.get("instance_health"), schema_version=schema_version
         ) if schema_version >= 4 else None,
+        "loop_findings": _loop_findings(root.get("loop_findings")) if schema_version >= 8 else None,
     }

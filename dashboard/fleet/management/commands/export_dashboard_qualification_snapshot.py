@@ -11,6 +11,7 @@ from dashboard.fleet.models import (
     IngestReceipt,
     Instance,
     LifecycleEvent,
+    LoopFindingSnapshot,
     Project,
     QualificationRun,
     WorkArtifactSnapshot,
@@ -116,8 +117,32 @@ class Command(BaseCommand):
                 "instance__external_id", "event_key"
             )
         ]
+        loop_findings = [
+            {
+                "project_external_id": str(row.project.external_id),
+                "instance_external_id": str(row.instance.external_id),
+                "finding_external_id": row.finding_external_id,
+                "category": row.category,
+                "severity": row.severity,
+                "reason_code": row.reason_code,
+                "subject_visible_id": row.subject_visible_id,
+                "observed_state": row.observed_state,
+                "expected_state": row.expected_state,
+                "state": row.state,
+                "source_revision": row.source_revision,
+                "first_observed_at": row.first_observed_at.isoformat(),
+                "last_observed_at": row.last_observed_at.isoformat(),
+                "resolved_at": row.resolved_at.isoformat() if row.resolved_at else None,
+                "recurrence_count": row.recurrence_count,
+                "command": row.command,
+                "snapshot_sequence": row.snapshot_sequence,
+            }
+            for row in LoopFindingSnapshot.objects.select_related("project", "instance").order_by(
+                "instance__external_id", "finding_external_id"
+            )
+        ]
         payload = {
-            "schema_version": 1,
+            "schema_version": 2,
             "kind": "tool-shed-dashboard-qualification-snapshot",
             "environment": "development",
             "observed_at": timezone.now().isoformat(),
@@ -145,5 +170,6 @@ class Command(BaseCommand):
             "attention_conditions": attention,
             "ingest_receipts": receipts,
             "lifecycle_events": lifecycle_events,
+            "loop_findings": loop_findings,
         }
         self.stdout.write(json.dumps(payload, separators=(",", ":"), sort_keys=True))

@@ -305,6 +305,19 @@ python3 scripts/outcome_reconciliation.py --workspace . transition-apply \
   --manifest <transition.json> --expect <transition-token> --project-binding <binding>
 ```
 
+Schema-4 workspaces also persist bounded outcome-loop findings:
+
+```text
+python3 scripts/loop_findings.py --workspace . migrate --project-binding <binding>
+python3 scripts/loop_findings.py --workspace . audit
+python3 scripts/loop_findings.py --workspace . resolve <LOOP-id>
+```
+
+`migrate` is the guarded schema-3 to schema-4 transition. `audit` and `resolve` are read-only;
+`ts: resolve loop <LOOP-id>` is the conversational route that rechecks local authority before a
+controlled local correction. The hosted dashboard only copies that command. See
+[Outcome Loop Findings](loop-findings.md).
+
 `prepare`, `validate`, `audit`, `report`, and `backfill-plan` are read-only. A prepared manifest is
 bound to the project, current revision, domain digest, file hashes, immutable UUIDv4 identities,
 and an exact approval token. Apply routes refuse stale state, foreign identity, graph cycles,
