@@ -281,7 +281,7 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Complete reporter, hosted projection, and real-browser truth qualification corpus",
+  "notes": "Closed-loop lifecycle and three-lane release gating, with qualified App Server routes enabled by default and safe GUI fallback.",
   "release_commit": null,
   "release_qualification": null,
   "release_tag": "v0.43.0",
