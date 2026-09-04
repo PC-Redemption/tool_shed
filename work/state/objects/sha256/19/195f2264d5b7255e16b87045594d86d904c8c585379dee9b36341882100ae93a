@@ -1,0 +1,36 @@
+# Campaign: Complete supervised loop history and milestone release continuity
+
+Status: completed
+Type: campaign
+Updated: 2026-09-04
+Roadmap: PRM-0039
+Roadmap Revision: 3
+Milestones: M3-SUPERVISED-HISTORICAL-REVIEW, M4-HOSTED-OPERATIONS-AND-RETENTION
+Required Endpoint: Work2
+
+## Outcome
+
+Provide a revision-bound supervised historical review that resolves only explicitly reviewed
+findings, retain resolved and recurrence history without replay actions, and permit sequential
+milestone releases while the owning roadmap remains honestly open.
+
+## Completion Gate
+
+- Historical audit supports bounded sources and active/resolved history.
+- Exact per-finding or complete-lineage manifests fail closed on stale state or omitted findings.
+- Guarded apply records each reviewed decision and re-audits local authority.
+- Resolved dashboard history is bounded and has no action control.
+- A released milestone cohort no longer blocks a later Work2 cohort under the same open roadmap.
+- Focused local, dashboard, reporter, checkpoint/rebuild, Linux, Windows, and development-web
+  evidence passes for the exact candidate.
+
+## Completion Evidence
+
+- Historical review manifest `work/evidence/loop-history-review-m3-v0.45.0.json` resolved the
+  three inherited findings through explicit, revision-bound decisions; the fresh audit reports
+  zero active and three resolved findings.
+- Candidate commit `877de11f2cd8206828c3162a34639b4e2406ed57` passed the release validation
+  profile (579 tests) and the development web, Linux, and Windows lanes recorded in release-lane
+  manifest `07e467d8-ffd8-45b7-9dbc-e70ac62112a3`.
+- The hosted projection retains bounded resolved history without copy actions, while sequential
+  milestone cohorts preserve released history and permit one later mutable cohort.

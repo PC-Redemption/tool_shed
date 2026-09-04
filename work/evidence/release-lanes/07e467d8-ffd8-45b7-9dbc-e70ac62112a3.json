@@ -1,0 +1,94 @@
+{
+  "candidate_commit": "877de11f2cd8206828c3162a34639b4e2406ed57",
+  "created_at": "2026-09-04T18:36:34Z",
+  "kind": "tool-shed-project-release-lanes",
+  "lanes": {
+    "linux": {
+      "development": {
+        "actor": "codex",
+        "artifact": "tool-shed-v046-candidate-877de11.tar.gz@sha256:ffa2f2a99ae62db10204734fa0efcbb6b97331c0bcb2e0dec225cff61ca53386",
+        "authorization_ref": null,
+        "evidence": [
+          "sup exact Linux test bed: manifest and v0.46.0 verified; installed-client history audit and cohort status smoke tests passed."
+        ],
+        "reason": null,
+        "recorded_at": "2026-09-04T18:41:58Z",
+        "source_commit": "877de11f2cd8206828c3162a34639b4e2406ed57",
+        "status": "verified",
+        "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed"
+      },
+      "production": {
+        "actor": null,
+        "artifact": null,
+        "authorization_ref": null,
+        "evidence": [],
+        "reason": null,
+        "recorded_at": null,
+        "source_commit": null,
+        "status": "open",
+        "target": "github-release:tool-shed-linux-install-client"
+      }
+    },
+    "web": {
+      "development": {
+        "actor": "codex",
+        "artifact": "tool-shed-dashboard:dev-877de11f2cd8",
+        "authorization_ref": null,
+        "evidence": [
+          "Dev dashboard image built from candidate; health endpoint returned healthy while production remained healthy."
+        ],
+        "reason": null,
+        "recorded_at": "2026-09-04T18:41:43Z",
+        "source_commit": "877de11f2cd8206828c3162a34639b4e2406ed57",
+        "status": "verified",
+        "target": "tsrookarocom-dev@sup.local:/home/jon/docker/ts.rookaro.com-dev"
+      },
+      "production": {
+        "actor": null,
+        "artifact": null,
+        "authorization_ref": null,
+        "evidence": [],
+        "reason": null,
+        "recorded_at": null,
+        "source_commit": null,
+        "status": "open",
+        "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com"
+      }
+    },
+    "windows": {
+      "development": {
+        "actor": "codex",
+        "artifact": "tool-shed-v046-candidate-877de11.tar.gz@sha256:ffa2f2a99ae62db10204734fa0efcbb6b97331c0bcb2e0dec225cff61ca53386",
+        "authorization_ref": null,
+        "evidence": [
+          "GOGETTER exact test bed: manifest and v0.46.0 verified; Hybrid schema 5 initialized; history audit and cohort status completed with zero findings."
+        ],
+        "reason": null,
+        "recorded_at": "2026-09-04T18:41:50Z",
+        "source_commit": "877de11f2cd8206828c3162a34639b4e2406ed57",
+        "status": "verified",
+        "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed"
+      },
+      "production": {
+        "actor": null,
+        "artifact": null,
+        "authorization_ref": null,
+        "evidence": [],
+        "reason": null,
+        "recorded_at": null,
+        "source_commit": null,
+        "status": "open",
+        "target": "github-release:tool-shed-windows-install-client"
+      }
+    }
+  },
+  "release_id": "07e467d8-ffd8-45b7-9dbc-e70ac62112a3",
+  "required_lanes": [
+    "web",
+    "windows",
+    "linux"
+  ],
+  "revision": 5,
+  "schema_version": 1,
+  "updated_at": "2026-09-04T18:41:58Z"
+}
