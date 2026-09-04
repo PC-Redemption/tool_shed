@@ -1,0 +1,54 @@
+# Work2 Evidence: Current Loop Discovery and Command Handoffs
+
+Date: 2026-09-04
+Campaign: CAMP-0157
+Roadmap: PRM-0039, milestone M2-OUTCOME-AND-LINEAGE-FINDINGS
+Implementation commit: `5c42222a9e578fb3891dfd1f9aaf5a824a07d236`
+Candidate version: `0.45.0` (unpublished Work2 candidate)
+
+## Delivered outcome
+
+- Expanded Hybrid persistence to schema 5 and loop findings to schema 2 with stable,
+  deduplicated current findings for blocked and stalled ownership, terminal reconciliation,
+  terminal-result propagation, closure lineage, closure evidence, and semantic lifecycle drift.
+- Kept healthy progressing outcomes as ordinary Work instead of classifying them as attention.
+- Preserved one local entry point, `ts: resolve loop LOOP-*`, which re-reads authority and returns
+  a controlled supported inspection or mitigation route rather than embedding transient tokens,
+  paths, or shell commands.
+- Added a reusable hosted copy-command component to current actionable Overview, Needs Attention,
+  Work, Outcome Reconciliation, Health, and App Server contexts. History and filter/export-only
+  controls remain informational and do not synthesize actions.
+- Preserved the one-way advisory boundary: the hosted site writes only to the browser clipboard;
+  it does not send action intents to a local Tool Shed instance or execute local commands.
+- Fixed read/report and updater recovery so a missing Hybrid database is not recreated as an
+  invalid empty SQLite file, and current-schema installations no longer require the obsolete
+  schema-1 checkpoint.
+
+## Qualification evidence
+
+- The complete release-profile validator passed twice: 577 of 577 tests plus provider
+  conformance, roadmap validation, bootstrap closure checks, and temporary-workspace smoke tests.
+- Guarded schema 4 to 5 migration created
+  `.tool-shed/backups/loop-findings-schema4-r1222.sqlite3`; the post-migration audit was clean and
+  retained exactly the three already-known lifecycle-drift findings without new false positives.
+- The Linux disposable test bed installed the exact 0.45.0 candidate, migrated schema 4 to 5 with
+  a verified backup, checkpointed state v2, and completed a fresh loop audit.
+- The Windows disposable test bed passed the full local release validator under Python 3.11 and
+  installed the exact candidate. With no Hybrid database present, reporter/read checks did not
+  recreate one. Earlier invalid empty fixtures were moved to recoverable quarantine paths.
+- Development deployed image `tool-shed-dashboard:dev-5c42222a9e57`; Django system checks passed,
+  and both development and production health endpoints returned healthy.
+- A real Chrome browser probe from GOGETTER verified the development banner, both Linux and
+  Windows project views, and successful Work, Outcome Reconciliation, and Health navigation.
+  The temporary browser user was deleted after the probe.
+- The exact candidate commit was registered against CAMP-0157, PRM-0039, and MAP-0028 in the
+  active post-v0.43 release cohort.
+
+## Boundaries and residual work
+
+No Git push, public tag, release publication, installed user-level Codex skill synchronization,
+or production deployment occurred. Candidate 0.45.0 remains reserved for Work5 release handling.
+
+The three current semantic lifecycle-drift findings for IDEA-0018, IDEA-0019, and IDEA-0020 remain
+visible and intentionally unmitigated. M3 is the supervised historical review and manifest-bound
+cleanup pass. Recurrence/convergence UX and reporter sequence recovery remain M4 work.

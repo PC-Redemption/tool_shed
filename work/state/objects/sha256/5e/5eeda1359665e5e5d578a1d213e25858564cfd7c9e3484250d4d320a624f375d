@@ -1,0 +1,178 @@
+# Program Roadmap: Dashboard-Assisted Outcome Loop Management
+
+Status: approved
+Type: program-roadmap
+Updated: 2026-09-04
+Next Action: execute M2 to add current finding classes, safe local routing, and shared hosted command handoffs
+Roadmap ID: dashboard-assisted-outcome-loop-management
+Roadmap Revision: 2
+Source Idea: IDEA-0022
+Source Project Map: MAP-0028
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 4
+Reviewed Body SHA256: 67426695b4c777940da80d67fc9aacf7bc4513d70075d57e1bf2214710d65b1a
+
+## Program Outcome
+
+Tool Shed continuously discovers, records, explains, and reports unclosed or unhealthy outcome
+loops as bounded source-specific findings. Operators can copy a stable Tool Shed command from the
+hosted dashboard, paste it into the matching local chat, and safely continue or reconcile the loop
+through existing authority and evidence controls. Historical ambiguity remains supervised and no
+hosted execution channel exists.
+
+## M1-CURRENT-FINDING-VERTICAL-SLICE — Prove local discovery through hosted clipboard handoff
+
+Status: completed
+Required Endpoint: Work2 on development source, hosted development, and disposable Linux and Windows fixtures
+Depends on: none
+
+Outcome: Freeze the versioned finding contract and persist automatic current-state findings. Cover
+semantic document-lifecycle drift as the first complete class, expose `ts: audit loops` and fresh
+`ts: resolve loop <finding-id>` inspection, extend the allowlisted reporter/hosted storage, and show
+accessible source-specific finding cards with a working copy command on Outcome Reconciliation.
+
+Gates:
+
+- Foundation and first executable class of `G1-FINDING-CONTRACT-AND-DISCOVERY`
+- Fresh inspect/explain slice of `G2-LOCAL-AUDIT-AND-MITIGATION`
+- First complete slice of `G4-HOSTED-PROJECTION-AND-CLIPBOARD`
+- Work2 portion of `G5-DEVELOPMENT-QUALIFICATION-AND-RELEASE-CLOSURE`
+
+Candidate campaign: `build-current-loop-finding-vertical-slice`.
+
+Completion evidence: EVD-0083; implementation commit
+`49cd25f60cfff45accef00843b964975c05ed60d`. The development web and disposable Linux and Windows
+lanes passed, production was unchanged, and the first discovery class surfaced three real current
+findings without applying mitigation.
+
+## M2-OUTCOME-AND-LINEAGE-FINDINGS — Complete current/future discovery and mitigation routing
+
+Status: ready
+Required Endpoint: Work2 on development source and disposable Linux and Windows fixtures
+Depends on: M1-CURRENT-FINDING-VERTICAL-SLICE
+
+Outcome: Add controlled discovery for open/blocked ownership, terminal-unreconciled and
+unpropagated results, invalid lineage, stale/missing evidence, and stalled loops. Resolve each fresh
+finding into the existing guarded reconciliation, continuation, recovery, or evidence route while
+preserving decisions and protected boundaries. Provide one reusable **Copy Tool Shed command**
+handoff on every applicable hosted Overview, Needs Attention, Work, Outcome Reconciliation, and
+Health presentation where current report data establishes a supported local route. Navigation
+links remain navigation, and the web UI never synthesizes or executes local commands.
+
+Gates:
+
+- Remaining `G1-FINDING-CONTRACT-AND-DISCOVERY`
+- Remaining current/future `G2-LOCAL-AUDIT-AND-MITIGATION`
+- Shared current-action slice of `G4-HOSTED-PROJECTION-AND-CLIPBOARD`
+
+Candidate campaign: `complete-current-loop-discovery-and-command-handoffs`.
+
+Observed input: prevent read/report or post-install paths from creating an invalid empty Hybrid
+database when authoritative state is absent. Reporter sequence recovery remains assigned to M4.
+
+## M3-SUPERVISED-HISTORICAL-REVIEW — Classify and mitigate inherited loop history
+
+Status: pending
+Required Endpoint: Work2 on development source and disposable upgraded fixtures
+Depends on: M2-OUTCOME-AND-LINEAGE-FINDINGS
+
+Outcome: Implement `ts: audit loops --history`, bounded source selection, revision-bound review
+manifests, per-finding and complete-lineage-cluster review, guarded application, full re-audit,
+propagation, and verified checkpointing. Prove that ambiguous old intent cannot be auto-disposed.
+
+Gates:
+
+- `G3-SUPERVISED-HISTORICAL-REVIEW`
+- Historical portion of `G2-LOCAL-AUDIT-AND-MITIGATION`
+
+Candidate campaign: `build-supervised-historical-loop-review`.
+
+## M4-HOSTED-OPERATIONS-AND-RETENTION — Complete fleet presentation and recurrence history
+
+Status: pending
+Required Endpoint: Work2 on split hosted-development, Linux, and Windows targets
+Depends on: M3-SUPERVISED-HISTORICAL-REVIEW
+
+Outcome: Complete active and recently resolved history, recurrence presentation, bounded
+per-instance limits, reporter convergence, stale-instance behavior, cross-page action polish,
+clipboard fallback, accessible feedback, and wrong-workspace guidance without adding hosted writes.
+
+Gate:
+
+- Remaining `G4-HOSTED-PROJECTION-AND-CLIPBOARD`
+
+Candidate campaign: `complete-hosted-loop-operations-and-retention`.
+
+## M5-WORK3-CANDIDATE-QUALIFICATION — Freeze and qualify one exact development candidate
+
+Status: pending
+Required Endpoint: Work3
+Depends on: M4-HOSTED-OPERATIONS-AND-RETENTION
+
+Outcome: Bind one exact candidate and prove schema migration, checkpoint/rebuild, upgraded history,
+discovery triggers, local routes, reporter delivery, hosted database/view-model parity, browser
+clipboard behavior, recurrence, failure recovery, and rollback across all required development lanes.
+
+Gate:
+
+- Candidate-bound portion of `G5-DEVELOPMENT-QUALIFICATION-AND-RELEASE-CLOSURE`
+
+Candidate campaign: `qualify-loop-management-release-candidate`.
+
+## M6-WORK5-RELEASE-AND-RECONCILIATION — Release and close only with production evidence
+
+Status: pending
+Required Endpoint: Work5
+Depends on: M5-WORK3-CANDIDATE-QUALIFICATION and explicit production authority
+
+Outcome: Publish and deploy only the qualified candidate, verify production reporting and operator
+behavior, reconcile any verified historical findings, and propagate the satisfied result through
+this roadmap, its project map, and IDEA-0022. Any unexplained loop or missing release evidence keeps
+the owning outcome open.
+
+Candidate campaign: `release-and-reconcile-loop-management`.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G1-FINDING-CONTRACT-AND-DISCOVERY | M1 foundation and M2 completion |
+| G2-LOCAL-AUDIT-AND-MITIGATION | M1 inspect slice, M2 current completion, and M3 historical completion |
+| G3-SUPERVISED-HISTORICAL-REVIEW | M3 |
+| G4-HOSTED-PROJECTION-AND-CLIPBOARD | M1 vertical slice and M4 completion |
+| G5-DEVELOPMENT-QUALIFICATION-AND-RELEASE-CLOSURE | M1 Work2, M5 Work3, and M6 Work5 |
+
+Transfer count: 5 reviewed gates; 5 mapped gates; 0 dropped.
+
+## Program Constraints
+
+- Findings are bounded operational diagnostics tied to authoritative revisions, not a parallel
+  outcome or campaign system.
+- Local resolution always refreshes project identity and state; copied commands never embed a
+  path, token, disposition, or pre-authorized mutation.
+- Historical automation discovers, groups, proposes, applies exact reviewed manifests, and
+  verifies; it never supplies ambiguous semantic judgment.
+- Reporter and hosted fields remain allowlisted, controlled, capped, and source-specific.
+- Hosted pages consume commands only from a shared controlled action descriptor or an exact
+  allowlisted built-in route. Pages never construct target-specific commands from display text.
+- Copy controls appear only for currently supported local routes. Resolved history and ordinary
+  navigation do not imply an actionable command.
+- Work2 changes development only. Work3 freezes and qualifies. Work5 production promotion remains
+  a separate explicit route.
+
+## Verification Strategy
+
+- Assert stable finding identity, deduplication, first/last observation, source revision,
+  resolution, recurrence, migration, checkpoint/rebuild parity, and bounded cardinality.
+- Compare local finding rows, report payloads, hosted rows, view models, and browser-visible text and
+  clipboard values exactly while also proving forbidden fields are absent.
+- Assert the shared copy component on every applicable hosted page and its absence for unsupported
+  or historical-only rows.
+- Exercise stale, wrong-workspace, missing, already-resolved, ambiguous, and protected-action cases.
+- Verify every historical manifest against the complete scanned surface and rerun document,
+  outcome, lineage, evidence, propagation, and release audits after mutation.
+
+## Next Route
+
+Execute M2 under the Work2 endpoint. Production, automatic historical disposition, M3 through M6,
+push, publication, and Work5 remain untouched.

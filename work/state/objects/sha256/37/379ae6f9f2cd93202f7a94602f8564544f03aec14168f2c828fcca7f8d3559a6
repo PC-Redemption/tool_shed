@@ -1,0 +1,50 @@
+# Campaign: Complete Current Loop Discovery and Command Handoffs
+
+Status: completed
+Type: campaign
+Updated: 2026-09-04
+Next Action: execute PRM-0039 milestone M3 as a supervised historical review
+Campaign ID: complete-current-loop-discovery-and-command-handoffs
+Outcome: Discover the remaining current outcome and lineage failure classes, resolve each finding to a fresh safe local Tool Shed route, and expose one shared copy-command handoff on every applicable hosted page without adding hosted execution or changing production.
+Roadmap: dashboard-assisted-outcome-loop-management
+Roadmap Document: PRM-0039
+Roadmap Revision: 2
+Milestone: M2-OUTCOME-AND-LINEAGE-FINDINGS
+Unlocks Gate: remaining G1-FINDING-CONTRACT-AND-DISCOVERY, remaining current/future G2-LOCAL-AUDIT-AND-MITIGATION, shared current-action slice of G4-HOSTED-PROJECTION-AND-CLIPBOARD
+Depends On: M1-CURRENT-FINDING-VERTICAL-SLICE
+Requested Endpoint: work2
+Completion Gate: a guarded migration expands the persisted finding contract; deterministic discovery covers blocked/stalled open ownership, terminal-unreconciled and unpropagated results, invalid lineage, and stale/missing evidence without treating healthy progressing work as attention; every fresh finding resolves to a supported local inspection or mitigation route; reporter and hosted contracts remain bounded and privacy-safe; a reusable copy-command component appears on applicable Overview, Needs Attention, Work, Outcome Reconciliation, and Health surfaces while navigation and historical-only rows remain non-actions; the absent-database read/report regression is fixed; focused, full, migration/rebuild, browser, Linux, and Windows development checks pass; the exact candidate is registered; production remains unchanged.
+
+## Scope
+
+- Extend finding persistence and discovery for current outcome, reconciliation, propagation,
+  lineage, evidence, blocked, and stalled states.
+- Keep healthy progressing open cycles visible as work, not attention findings.
+- Route every finding through a fresh local resolution response that names the existing guarded
+  command family and never embeds transient authorization.
+- Reuse one hosted copy-command component across current actionable surfaces; use only reporter
+  commands or exact allowlisted built-in status routes.
+- Prevent read/report/post-install inspection from creating an empty Hybrid database.
+
+## Boundary
+
+Supervised historical manifests, automatic semantic disposition, recurrence retention UX,
+reporter sequence recovery, Work3 freezing, Git push, publication, and production deployment remain
+outside M2.
+
+## Completion Evidence
+
+- Evidence summary: EVD-0084.
+- Implementation commit: `5c42222a9e578fb3891dfd1f9aaf5a824a07d236`.
+- Candidate: unpublished 0.45.0 Work2 build, installed and tested on the disposable Linux and
+  Windows targets.
+- Hosted development: healthy exact candidate image with real Chrome navigation verification;
+  production unchanged and healthy.
+- Current discovery: schema 5 covers all planned M2 current finding classes, with the three known
+  semantic lifecycle drifts retained for supervised local mitigation.
+
+## Residuals
+
+- M3 owns supervised historical classification, exact manifest review, and mitigation.
+- M4 owns recurrence/convergence presentation, reporter sequence recovery, and final hosted
+  action polish.
