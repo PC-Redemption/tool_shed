@@ -52,7 +52,12 @@ def _sanitize_string(value: str) -> str:
     value = BEARER.sub("[REDACTED]", value)
     value = SECRET_LITERAL.sub("[REDACTED]", value)
     value = COMMAND_SECRET.sub(r"\1[REDACTED]", value)
-    return ABSOLUTE_PATH.sub(lambda match: f"<path:{Path(match.group(0).replace('\\\\', '/')).name}>", value)
+
+    def redact_path(match: re.Match[str]) -> str:
+        normalized = match.group(0).replace("\\", "/")
+        return f"<path:{Path(normalized).name}>"
+
+    return ABSOLUTE_PATH.sub(redact_path, value)
 
 
 def sanitize(value: object, *, key: str = "") -> object:
