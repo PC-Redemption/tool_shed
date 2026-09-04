@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "release": {
+    "tag": "v0.43.0",
+    "content_commit": "1782f55d0a2cba7cf50c3e69259882dddb195529",
+    "provenance_commit": "980bd5cc231b28f974286dc13a76069d8253a284",
+    "published_at": "2026-09-04T13:43:57Z",
+    "url": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.43.0",
+    "full_validation": {
+      "conclusion": "success",
+      "run": "https://github.com/PC-Redemption/tool_shed/actions/runs/33879213236"
+    }
+  },
+  "recorded_at": "2026-09-04T14:24:06Z",
+  "lanes": {
+    "web": {
+      "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com",
+      "artifact": "tool-shed-dashboard:v0.43.0@sha256:2bcbea7c679c820d8904898cee172ed2a59b1defc587b61c5679364892d7fe08",
+      "status": "verified",
+      "checks": {
+        "container_health": "healthy",
+        "public_health": {
+          "environment": "production",
+          "schema_version": 1,
+          "service": "tool-shed-dashboard",
+          "status": "healthy"
+        },
+        "public_root_http_status": 200
+      },
+      "rollback_backup": "/home/jon/docker/ts.rookaro.com/release-backups/v0.43.0-pre-20260904T134600Z"
+    },
+    "linux": {
+      "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed",
+      "artifact": "github-release:v0.43.0:linux-install-client:transaction-0e3597516fee7ac823112400",
+      "status": "verified",
+      "baseline": "v0.42.4",
+      "result": {
+        "mode": "existing-update",
+        "release_validation": "official-attestation",
+        "selected_version": "0.43.0",
+        "snapshot_integrity": "verified"
+      },
+      "app_server": {
+        "default": "App Server",
+        "execution": "App Server",
+        "fallback_used": false,
+        "selection_source": "user-local-preference"
+      }
+    },
+    "windows": {
+      "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed",
+      "artifact": "github-release:v0.43.0:windows-install-client:transaction-881776846963e0f895392a08",
+      "status": "verified",
+      "baseline": "v0.42.4",
+      "result": {
+        "mode": "existing-update",
+        "release_validation": "official-attestation",
+        "selected_version": "0.43.0",
+        "snapshot_integrity": "verified"
+      },
+      "app_server": {
+        "default": "App Server",
+        "execution": "GUI",
+        "fallback_reason": "dirty_qualification_failed",
+        "fallback_used": true,
+        "selection_source": "repository-default"
+      }
+    }
+  },
+  "qualification_strategy": {
+    "full_historical_state_replay": "not repeated in Work5",
+    "reason": "The full validation workflow and prior Work2/Work3 qualification already cover lifecycle and recovery behavior. Work5 uses compact published-release upgrade fixtures to verify distribution, integrity, platform behavior, and safe App Server selection without reprocessing disposable historical corpora.",
+    "reset_capsule": "work/evidence/work5-testbed-reset-v0.43.0.json"
+  },
+  "closeout": {
+    "release_cohort": {
+      "candidate_count": 34,
+      "cycle_id": "9902c070-34c6-4885-9f93-115fa6f59402",
+      "lifecycle": "terminal",
+      "origin_cycle_count": 13,
+      "reconciliation": "reconciled",
+      "verdict": "satisfied"
+    },
+    "hybrid_state": {
+      "checkpoint_digest": "6709573ac0e9e235ac71abdf4a1e4b9d85932245632dde891e849964262f0817",
+      "classification": "CLEAN",
+      "domain_digest": "e42c9b3c6de432b335198a25b8bec5d9e59c03779fb59990f6ca8703935ca76a",
+      "rebuild_classification": "CLEAN",
+      "rebuild_domain_digest": "e42c9b3c6de432b335198a25b8bec5d9e59c03779fb59990f6ca8703935ca76a",
+      "revision": 1189,
+      "schema": 3
+    },
+    "audits": {
+      "closure_lineage": "CLEAN; zero graph findings",
+      "document_store": "CLEAN",
+      "outcome_reconciliation": "zero findings"
+    },
+    "installed_codex_skill": {
+      "backup": "/home/jon/.codex/skills/tool-shed.backup-20260904T143429Z",
+      "canonical_validation": "passed",
+      "installed_validation": "passed",
+      "post_sync_diff": "empty"
+    },
+    "github_after_action": {
+      "closed_as_released": [54, 55],
+      "updated_as_remaining": [47, 49, 50, 52, 56],
+      "labeled_next_revision": [44, 57, 58]
+    }
+  }
+}

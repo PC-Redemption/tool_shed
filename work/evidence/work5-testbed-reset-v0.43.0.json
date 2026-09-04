@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "release": "v0.43.0",
+  "reason": "Operator-authorized lean Work5 qualification: replace large disposable historical fixtures with compact v0.42.4 baselines before exercising the published v0.43.0 updater.",
+  "captured_at": "2026-09-04T14:17:36Z",
+  "targets": [
+    {
+      "platform": "linux",
+      "host": "sup",
+      "path": "/home/jon/dev/ts_linux_test_bed",
+      "repository": "PC-Redemption/ts_linux_test_bed",
+      "head": "26b058c26b759b623ff8a0417f35ad1c1806ee21",
+      "pre_reset_size": "3.5G",
+      "hybrid_revision": 9446,
+      "hybrid_status": "CLEAN",
+      "prior_failed_transaction": "71b7f0b323b797ddf953a322"
+    },
+    {
+      "platform": "windows",
+      "host": "GOGETTER",
+      "path": "E:\\dev\\ts_windows_test_bed",
+      "repository": "PC-Redemption/ts_windows_test_bed",
+      "head": "c47614c6c3aac30aaea7c3c31ddd6650fa4db302",
+      "pre_reset_size_bytes": 2593904281,
+      "hybrid_revision": 7424,
+      "hybrid_status": "CLEAN"
+    }
+  ]
+}
