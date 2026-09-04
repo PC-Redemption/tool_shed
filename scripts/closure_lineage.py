@@ -367,6 +367,10 @@ def synchronize_authority(connection: sqlite3.Connection, *, revision: int) -> d
 
     cycles = {str(row["id"]): row for row in connection.execute("SELECT * FROM cycle ORDER BY id")}
     requirements = {str(row["id"]): row for row in connection.execute("SELECT * FROM requirement ORDER BY id")}
+    current_elements = {
+        str(row["id"]): row
+        for row in connection.execute("SELECT * FROM closure_element ORDER BY id")
+    }
     requirements_by_cycle: dict[str, list[sqlite3.Row]] = {}
     for row in requirements.values():
         requirements_by_cycle.setdefault(str(row["cycle_id"]), []).append(row)
@@ -470,8 +474,9 @@ def synchronize_authority(connection: sqlite3.Connection, *, revision: int) -> d
         )
 
     envelope_by_id: dict[str, str] = {}
+    element_authority: dict[str, dict[str, Any]] = {}
     for item in desired_elements:
-        current = connection.execute("SELECT * FROM closure_element WHERE id=?", (item["id"],)).fetchone()
+        current = current_elements.get(item["id"])
         subject_revision = int(current["subject_revision"]) if current and current["subject_digest"] == item["subject_digest"] else revision
         element_revision = revision
         if current is not None:
@@ -488,6 +493,11 @@ def synchronize_authority(connection: sqlite3.Connection, *, revision: int) -> d
             subject_digest=item["subject_digest"], claims=claims_by_child.get(item["id"], []),
         )
         envelope_by_id[item["id"]] = envelope_digest
+        element_authority[item["id"]] = {
+            "requirement_id": item["requirement_id"],
+            "subject_revision": subject_revision,
+            "subject_digest": item["subject_digest"],
+        }
         values = (
             item["role"], item["element_kind"], item["artifact_id"], item["cycle_id"], item["requirement_id"],
             subject_revision, item["subject_digest"], json.dumps(envelope, sort_keys=True), envelope_digest, revision,
@@ -513,11 +523,13 @@ def synchronize_authority(connection: sqlite3.Connection, *, revision: int) -> d
             )
             changed_element_ids.add(item["id"])
 
+    claims_by_id = {
+        str(row["id"]): row
+        for row in connection.execute("SELECT id,envelope_digest FROM lineage_claim")
+    }
     for key, observed in desired_claims.items():
         claim_id = next(item["claim_id"] for item in claims_by_child[key[0]] if item["parent_element_id"] == key[1] and item["parent_requirement_id"] == key[2] and item["relationship_type"] == key[3])
-        claim = connection.execute(
-            "SELECT envelope_digest FROM lineage_claim WHERE id=?", (claim_id,)
-        ).fetchone()
+        claim = claims_by_id.get(claim_id)
         if claim is None:
             connection.execute(
                 "INSERT INTO lineage_claim VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)",
@@ -526,14 +538,23 @@ def synchronize_authority(connection: sqlite3.Connection, *, revision: int) -> d
         elif str(claim["envelope_digest"]) != envelope_by_id[key[0]]:
             connection.execute("UPDATE lineage_claim SET envelope_digest=? WHERE id=?", (envelope_by_id[key[0]], claim_id))
 
+    latest_reconciliation: dict[str, sqlite3.Row] = {}
+    for row in connection.execute(
+        "SELECT r.cycle_id,v.disposition,v.authorization_ref,r.state,r.residual_work_json "
+        "FROM reconciliation r JOIN outcome_verdict v ON v.id=r.verdict_id "
+        "ORDER BY r.cycle_id,r.origin_revision DESC,r.id DESC"
+    ):
+        latest_reconciliation.setdefault(str(row["cycle_id"]), row)
+    latest_closure: dict[str, sqlite3.Row] = {}
+    for row in connection.execute(
+        "SELECT * FROM closure_record WHERE superseded_revision IS NULL "
+        "ORDER BY element_id,created_revision DESC,id DESC"
+    ):
+        latest_closure.setdefault(str(row["element_id"]), row)
+
     closed_count = 0
     for cycle_id, cycle in cycles.items():
-        latest = connection.execute(
-            "SELECT v.disposition,v.authorization_ref,r.state,r.residual_work_json "
-            "FROM reconciliation r JOIN outcome_verdict v ON v.id=r.verdict_id "
-            "WHERE r.cycle_id=? ORDER BY r.origin_revision DESC LIMIT 1",
-            (cycle_id,),
-        ).fetchone()
+        latest = latest_reconciliation.get(cycle_id)
         proven = (
             cycle["lifecycle_state"] == "terminal" and latest is not None
             and latest["disposition"] in {"satisfied", "satisfied-with-approved-change", "not-applicable"}
@@ -541,13 +562,14 @@ def synchronize_authority(connection: sqlite3.Connection, *, revision: int) -> d
         )
         element_ids = [cycle_id, *(str(item["id"]) for item in requirements_by_cycle.get(cycle_id, []))]
         for element_id in element_ids:
-            element = connection.execute("SELECT * FROM closure_element WHERE id=?", (element_id,)).fetchone()
-            current = _latest_closure(connection, element_id)
+            element = element_authority[element_id]
+            current = latest_closure.get(element_id)
             current_matches = current is not None and current["subject_digest"] == element["subject_digest"] and int(current["subject_revision"]) == int(element["subject_revision"])
             if current is not None and not current_matches:
                 connection.execute("UPDATE closure_record SET superseded_revision=? WHERE id=?", (revision, current["id"]))
                 changed_element_ids.add(element_id)
                 current = None
+                latest_closure.pop(element_id, None)
             if proven and current is None:
                 connection.execute(
                     "INSERT INTO closure_record VALUES (?, ?, ?, ?, ?, 'closed-loop', 'current', ?, ?, ?, NULL)",

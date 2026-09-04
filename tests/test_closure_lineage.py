@@ -254,6 +254,23 @@ class ClosureLineageTests(unittest.TestCase):
                 {key: bool(value["effective_closed"]) for key, value in recursive.items()},
             )
 
+    def test_synchronize_authority_bulk_loads_current_rows(self) -> None:
+        self.migrate()
+        with contextlib.closing(
+            hybrid_state.connect(hybrid_state.database_path(self.workspace))
+        ) as connection:
+            statements: list[str] = []
+            connection.set_trace_callback(statements.append)
+            closure_lineage.synchronize_authority(connection, revision=999)
+        normalized = [" ".join(statement.split()) for statement in statements]
+        self.assertFalse(any("FROM closure_element WHERE id=" in statement for statement in normalized))
+        self.assertFalse(any("FROM lineage_claim WHERE id=" in statement for statement in normalized))
+        self.assertFalse(any("WHERE r.cycle_id=" in statement for statement in normalized))
+        self.assertEqual(
+            sum("FROM closure_record WHERE superseded_revision IS NULL" in statement for statement in normalized),
+            1,
+        )
+
     def test_proof_recipe_is_idempotent_and_subject_bound(self) -> None:
         self.migrate()
         requirement_id = self.requirement_for(self.roadmap_cycle)
