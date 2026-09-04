@@ -1,0 +1,165 @@
+# Idea Brief: Bounded Reference and Retrieval Context for App Server Planning
+
+Status: exploring
+Type: idea-brief
+Updated: 2026-09-03
+Next Action: settle the controlled retrieval contract, token/evidence budgets, and GUI fallback boundary
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces:
+
+## Current Synthesis
+
+### Idea
+
+Replace Tool Shed's all-inclusive inline context delivery for Codex App Server planning with a
+bounded, reference-oriented retrieval design. Tool Shed should send a small deterministic planning
+capsule first, expose only an allowlisted read-only context snapshot, and let the planner retrieve
+specific files or ranges as needed under measurable per-result and cumulative budgets.
+
+The observed failure, `focused context exceeded its 100 KB inline limit before any model request`,
+is a Tool Shed admission failure rather than evidence of a Codex model context-window failure. The
+current repository config sets `max_inline_bytes` to 100,000, and Tool Shed checks that value before
+calling the App Server. Automatic CAMP preparation is intentionally tighter: a 48,000-byte planning
+snapshot and at most 64,000 bytes of selected context files.
+
+Codex App Server already supports read-only filesystem boundaries, focused working directories,
+threads, and explicit compaction. It does not currently document a generic local-document input
+item comparable to `localImage`, so "pass by reference" likely means allowing controlled reads from
+an isolated snapshot rather than merely placing an arbitrary host path in the turn payload.
+
+### Why It Matters
+
+Moderately complicated Tool Shed planning can exceed 100 KB even though the selected model can
+accept substantially more context. Rejecting such work before the model sees it prevents App Server
+from reducing GUI-session token use on exactly the larger jobs where a separate bounded worker is
+most valuable.
+
+Simply raising the byte limit would preserve the underlying inefficiency: Tool Shed would continue
+serializing every selected file into one prompt, spend tokens on material the planner may not need,
+and fail again at a larger threshold. The desired gain comes from progressive relevance-based
+retrieval, not from moving one large context blob from the GUI to App Server.
+
+This also needs a safety-preserving solution. Current automatic preparation deliberately gives the
+planner no tools and treats its supplied snapshot as complete. Introducing retrieval changes that
+trust boundary and must not permit repository mutation, network access, parent-workspace discovery,
+or unbounded tool output.
+
+### Desired Outcome
+
+A Tool Shed planning operation can handle a repository whose potentially relevant material exceeds
+the inline cap without weakening planning correctness or CAMP safety. Before the first model
+request, Tool Shed constructs a compact manifest containing intent, exact snapshot identity, Git
+state, candidate paths, byte sizes, content digests, budgets, and authority boundaries. The planner
+then reads only necessary allowlisted content through a bounded read-only mechanism.
+
+The resulting plan or execution capsule remains source-bound, deterministic, and independently
+validated. Every retrieval records the path or content identity, requested range, returned bytes,
+and digest without retaining unnecessary raw output in durable telemetry. Tool Shed measures total
+input tokens, retrieved bytes, turns, latency, task success, and fallback rate against the current
+inline implementation.
+
+When the bounded planner cannot establish adequate context, it returns a controlled
+`needs_more_context` or equivalent result. Tool Shed either expands the allowed snapshot within a
+defined budget, starts a compact continuation, or immediately falls back to the normal GUI route.
+It never converts missing context into a guessed plan or lifecycle advance.
+
+## Constraints And Non-Goals
+
+- Preserve the existing project identity, Git journal, path allowlist, source-state token,
+  exactly-once verification, no-retry-after-mutation, and fail-closed lifecycle rules.
+- Planning retrieval is read-only, workspace-bounded, network-disabled, and unavailable to paths
+  outside the isolated snapshot or explicit readable roots.
+- Bound each retrieval and the cumulative bytes/tokens/turns. Do not make one giant read equivalent
+  to the current inline prompt.
+- A file path alone is not proof the model received or read its contents. Record actual retrieval
+  evidence and source digests.
+- References and compaction are context-management mechanisms, not proof of lower token use; the
+  qualification must measure savings on representative planning tasks.
+- Keep model context size and App Server protocol capabilities version-observed rather than frozen
+  as permanent Tool Shed assumptions.
+- Do not replace deterministic repository inventory, relevance scoring, or capsule validation with
+  model judgment.
+- Do not enable unrestricted shell access, network access, workspace mutation, production changes,
+  or a general-purpose retrieval service as part of this Idea.
+- Do not treat increasing `max_inline_bytes` as the primary solution.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Raise the inline byte limit | Minimal implementation change; immediately admits larger prompts | Higher token cost, repeated irrelevant context, merely moves the failure threshold | Rejected as the primary design; may remain an emergency tuning control |
+| Copy allowlisted files into a focused read-only snapshot and let Codex read them | Reuses existing focused-snapshot and App Server sandbox concepts; natural repository workflow | Read operations and outputs must be tightly bounded and auditable | Preferred foundation |
+| Add a dedicated `read_context(path, start, limit)` capability | Precise path/range limits, compact telemetry, no general shell | New protocol/adapter surface and cross-platform qualification | Preferred safety shape unless existing App Server file tools prove equally enforceable |
+| Precompute summaries for every candidate file | Very small prompts and predictable cost | Summaries may omit decisive details or become stale; generation itself costs work | Useful only as a digest-bound optional index, never sole authority |
+| Split one large inline prompt across turns | Avoids one-request byte admission limit | Still consumes the full context and complicates continuity | Insufficient by itself |
+| Fall back to GUI for oversized or unresolved planning | Preserves correctness while retrieval matures | Does not achieve low-token App Server execution for those cases | Required fail-safe |
+
+## Open Questions
+
+- Should the first implementation use Codex's existing read-only filesystem tools against copied
+  snapshots, or expose a dedicated range-reading tool with a smaller capability surface?
+- What information must always be inline so the planner can select context without first knowing
+  repository contents: campaign text, project instructions, file inventory, symbol index, Git
+  status, recent diffs, or bounded excerpts?
+- What per-read, per-turn, and complete-operation limits preserve useful planning while ensuring a
+  retrieval loop cannot consume more tokens than the GUI route it is intended to replace?
+- When should Tool Shed expand a snapshot, compact and continue the same thread, start a new bounded
+  planning thread, or fall back immediately to GUI?
+- How will Tool Shed prove that a successful plan did not silently omit a required dependency or
+  instruction file? Candidate approaches include dependency fixtures, deliberate decoy files, and
+  comparison with a full-context oracle on a bounded qualification corpus.
+- Can one reference/retrieval contract behave identically on Linux and Windows despite path,
+  encoding, newline, and sandbox differences?
+- Should repeated unchanged content use prompt caching, local digest-addressed summaries, or both,
+  and what invalidation evidence is required?
+
+## Decisions
+
+- Treat the 100 KB failure as Tool Shed's current inline admission limit, not as a demonstrated
+  Codex App Server transport or model limit.
+- Optimize for bounded progressive retrieval rather than a larger monolithic inline prompt.
+- Start every planning run from a deterministic, digest-bound manifest and an isolated allowlisted
+  read-only snapshot.
+- Prefer a narrow context-read interface over unrestricted shell access when it can provide the
+  required repository understanding.
+- Preserve explicit GUI fallback whenever bounded retrieval cannot prove sufficient context.
+- Evaluate the design on correctness, completeness, token use, latency, and fallback rate; fewer
+  tokens alone do not qualify a worse plan.
+- Keep planning/retrieval separate from write-capable CAMP execution and retain all existing CAMP
+  mutation and verification controls.
+
+## Don't Forget
+
+- The current configuration already contains a `reference` delivery mode for generic focused
+  contexts, but the active configuration selects `inline_relevant_files`; automatic preparation
+  separately forces inline deterministic context and prohibits tools.
+- `thread/inject_items` still places content in model-visible history; it is not an external
+  zero-token reference store.
+- Thread compaction helps long-running conversations but does not fix a pre-request Tool Shed byte
+  guard on the first planning payload.
+- Tool output can become the new context bottleneck unless reads return bounded ranges and compact
+  metadata.
+- Relevant project instructions and authority boundaries must be available before optional source
+  retrieval so a small prompt does not become an under-specified prompt.
+- Compare against real planning failures above 100 KB, not only synthetic byte-count tests.
+- No currently open GitHub issue was found that directly owns this context-delivery redesign.
+
+## Exploration Log
+
+### 2026-09-03
+
+- Idea Brief created.
+- Captured the observed pre-model 100 KB rejection and separated Tool Shed's configured admission
+  limit from Codex App Server transport and model context capacity.
+- Confirmed the present automatic preparation path intentionally uses a small inline snapshot and
+  no planner tools, while App Server supports controlled filesystem access and thread compaction.
+- Selected a small digest-bound manifest plus progressive allowlisted retrieval as the preferred
+  direction, with a narrow read interface, explicit budgets, source-bound evidence, and GUI
+  fallback.
+- Rejected a simple byte-limit increase and multi-turn blob splitting as complete solutions.
+- Preserved open design work around retrieval mechanism, mandatory inline context, budgets,
+  completeness proof, caching, compaction, and Linux/Windows parity.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

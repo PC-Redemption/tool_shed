@@ -1,0 +1,54 @@
+# Campaign: Implement Risk-Adaptive Verification Hooks
+
+Status: working
+Type: campaign
+Updated: 2026-09-04
+Next Action: implement and exercise the hooks-only verification-policy contract through Work2
+Campaign ID: implement-risk-adaptive-verification-hooks
+Outcome: Preserve versioned, auditable mechanical, normal, and high-risk verification intent in recursive closure without enabling automatic verification-depth lowering before comparative qualification.
+Roadmap: recursive-element-closure-lineage-and-status-rollups
+Roadmap Document: PRM-0037
+Roadmap Revision: 2
+Milestone: M3C-WORK2-RISK-POLICY-HOOKS
+Unlocks Gate: G7-RISK-ADAPTIVE-VERIFICATION-POLICY (Work2 hooks-only portion)
+Depends On: M3B-WORK2-POC-FIXTURE-DRIVE
+Requested Endpoint: work2
+Completion Gate: versioned profile and policy identity, reason codes, required recipes, governing floors, effective profile, and escalation history are preserved in proof registration and attempts; automatic lowering remains disabled; uncertain, mixed, unexpected, or protected scope escalates safely; focused tests and exact Linux/Windows development fixtures pass; relevant hosted development health is verified; the committed candidate and open owner chain are registered; production remains unchanged.
+
+## Request
+
+Extend the existing schema-3 recursive-closure proof contract with the smallest hooks-only
+risk-adaptive verification increment. Reuse declaration and result JSON rather than adding a new
+authority table. Keep prior M1 through M3B evidence as history and preserve the already-open Work3
+and Work5 boundaries.
+
+## Required Behavior
+
+- Define canonical `mechanical`, `normal`, and `high-risk` profiles and a versioned policy digest.
+- Classify explicit changed paths/components, declared side effects, target class, and protected
+  boundary inputs deterministically.
+- Treat parent minimums as floors, compose mixed changes at the highest applicable profile, and
+  escalate unknown or unexpected scope.
+- Bind recipe identity and proof-attempt idempotency to the effective profile and policy digest.
+- Retain classification reasons, required recipe set, and escalation history in immutable proof
+  evidence.
+- Keep automatic lowering disabled. A caller may request or explain a profile, but cannot obtain a
+  shallower effective profile than the governing safe default, parent floor, or protected floor.
+
+## Development Boundary
+
+Only the canonical source and known split development targets are in scope. Preserve unrelated
+App Server edits in the canonical worktree. Do not push, publish, migrate or deploy production,
+alter credentials, close Work3/Work5, or claim measured token savings.
+
+## Verification
+
+- Focused unit tests cover each profile, mixed composition, parent/protected floors, unknown and
+  unexpected-scope escalation, immutable policy identity, proof-attempt binding, and disabled
+  automatic lowering.
+- The exact committed snapshot is installed and exercised on the disposable Linux and Windows
+  test beds.
+- Hosted-development health remains green; update it only if the changed behavior reaches that
+  surface.
+- Record durable Work2 evidence and register the exact candidate with the open CAMP → PRM → MAP →
+  Idea outcome chain.
