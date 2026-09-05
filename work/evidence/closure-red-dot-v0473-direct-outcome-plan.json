@@ -1,0 +1,131 @@
+{
+  "ambiguities": [],
+  "artifacts": [
+    {
+      "action": "create",
+      "authority_mode": "sqlite",
+      "content_sha256": "995019ba72fb70074d5c17977f677ec0f5523c067d1e357885d9d229887e9a21",
+      "created_at": "2026-09-05T18:23:17Z",
+      "display_number": null,
+      "id": "c748976d-4fe5-4a2d-b2f7-824e4ceb6301",
+      "key": "origin",
+      "lifecycle_state": "terminal",
+      "path": "sqlite/outcome-capsules/c748976d-4fe5-4a2d-b2f7-824e4ceb6301",
+      "type": "direct-capsule"
+    },
+    {
+      "action": "update",
+      "authority_mode": "file",
+      "content_sha256": "bddbf2e55b3c28356fe988d4eff29df1720aeb636ff1f9f6345a86ded1d3d69b",
+      "created_at": "2026-09-02T21:43:42Z",
+      "display_number": null,
+      "id": "68f6ddc5-bdc7-493d-8cfa-26bfa2e58fd5",
+      "key": "product-1",
+      "lifecycle_state": "active",
+      "path": "scripts/closure_lineage.py",
+      "type": "file"
+    },
+    {
+      "action": "update",
+      "authority_mode": "file",
+      "content_sha256": "a380ff64561fcf3373810594625e1044020a7a404054e6b7cfb6dd5ad5ef7c49",
+      "created_at": "2026-09-02T21:43:42Z",
+      "display_number": null,
+      "id": "f47086eb-9f79-47e5-83e1-7453e0d44c73",
+      "key": "product-2",
+      "lifecycle_state": "active",
+      "path": "tests/test_closure_lineage.py",
+      "type": "file"
+    }
+  ],
+  "authorization_ref": "user:continue-red-dot-recovery-end-to-end",
+  "changes": [],
+  "cycle": {
+    "accepted_outcome": "Terminal reconciled history closes from actual lineage, historical state is repaired deterministically, and local project attention clears without hiding unresolved descendants.",
+    "closed_at": "2026-09-05T18:23:17Z",
+    "id": "32747680-ea57-4fc8-8971-4233ea460b1c",
+    "kind": "direct-work",
+    "lifecycle_state": "terminal",
+    "opened_at": "2026-09-05T18:23:17Z",
+    "origin_artifact_id": "c748976d-4fe5-4a2d-b2f7-824e4ceb6301"
+  },
+  "evidence": [
+    {
+      "collected_at": "2026-09-05T18:23:17Z",
+      "id": "0aa9be66-a2c9-4d9f-a171-50059d9c95cf",
+      "key": "evidence-1",
+      "kind": "direct-verification",
+      "reference": "work/evidence/closure-red-dot-recovery-v0473.md",
+      "sha256": "e85c3bdd0db2ae18a8e95f97d2156caf88af8ac36fb14ef25650b8da1548aa4e",
+      "target_identity": "c748976d-4fe5-4a2d-b2f7-824e4ceb6301"
+    }
+  ],
+  "expected_domain_digest": "ff95a4ec9a5744e8d78be37ddc519937acb82d0e23003e5eb55d5f8eb34bdedf",
+  "expected_revision": 1319,
+  "kind": "tool-shed-outcome-reconciliation-manifest",
+  "manifest_token": "d5312cd4d96b7790",
+  "mode": "direct",
+  "prepared_at": "2026-09-05T18:23:17Z",
+  "project_id": "817b6358-b2f5-48fd-bb66-bd80f936faca",
+  "reconciliation": {
+    "compared_at": "2026-09-05T18:23:17Z",
+    "id": "df13de14-a59e-493d-ac6f-8ebc5f1b9d5d",
+    "product_truth_artifact_ids": [
+      "68f6ddc5-bdc7-493d-8cfa-26bfa2e58fd5",
+      "f47086eb-9f79-47e5-83e1-7453e0d44c73"
+    ],
+    "residual_work": [
+      "Publish v0.47.3, deploy the hosted dashboard, synchronize clients, deliver a fresh report, and verify the hosted tool_shed project indicator clears."
+    ],
+    "state": "reconciled"
+  },
+  "relationships": [
+    {
+      "from_artifact_id": "c748976d-4fe5-4a2d-b2f7-824e4ceb6301",
+      "id": "df2334f5-08a2-4bc2-9d60-d2df55b9cd37",
+      "key": "product-1",
+      "provenance": "outcome-reconciliation-v1",
+      "relation_type": "evidenced-by",
+      "to_artifact_id": "68f6ddc5-bdc7-493d-8cfa-26bfa2e58fd5"
+    },
+    {
+      "from_artifact_id": "c748976d-4fe5-4a2d-b2f7-824e4ceb6301",
+      "id": "f0dd1b8f-1067-4124-bf34-15bc84d42aec",
+      "key": "product-2",
+      "provenance": "outcome-reconciliation-v1",
+      "relation_type": "evidenced-by",
+      "to_artifact_id": "f47086eb-9f79-47e5-83e1-7453e0d44c73"
+    }
+  ],
+  "requirements": [
+    {
+      "accepted_outcome": "Terminal reconciled history closes from actual lineage, historical state is repaired deterministically, and local project attention clears without hiding unresolved descendants.",
+      "disposition": "accepted",
+      "evidence_gate_key": "direct-evidence",
+      "id": "b9765329-b6f7-4613-9641-ed7f2ad5c8a8",
+      "key": "direct-outcome",
+      "milestone_key": "direct"
+    }
+  ],
+  "schema_version": 1,
+  "verdict": {
+    "authorization_ref": "user:continue-red-dot-recovery-end-to-end",
+    "decided_at": "2026-09-05T18:23:17Z",
+    "disposition": "satisfied",
+    "id": "77421fd1-614f-4172-bfab-38676312c001",
+    "scope": "direct-work",
+    "summary": "Terminal closure red-dot recovery Work2 candidate"
+  },
+  "verifications": [
+    {
+      "command_or_test_id": "direct-evidence-1",
+      "details": null,
+      "evidence_key": "evidence-1",
+      "id": "ac9b2751-edd5-4022-a544-ad5cb2460fd2",
+      "key": "verification-1",
+      "requirement_key": "direct-outcome",
+      "status": "passed",
+      "verified_at": "2026-09-05T18:23:17Z"
+    }
+  ]
+}
