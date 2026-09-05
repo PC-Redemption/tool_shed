@@ -1,0 +1,129 @@
+# Program Roadmap: Lifecycle and Recursive Closure Integrity Recovery
+
+Status: completed
+Type: program-roadmap
+Updated: 2026-09-05
+Next Action: execute M1 through CAMP-0159
+Roadmap ID: lifecycle-recursive-closure-integrity-recovery
+Roadmap Revision: 1
+Corrective Source: PRM-0039
+Source Project Map: MAP-0028
+
+## Program Outcome
+
+Tool Shed preserves distinct document, outcome, reconciliation, and recursive-closure states while
+preventing contradictory closeout claims, safely repairing inherited inconsistencies, and reporting
+queued, working, completed, and closure-blocked work truthfully. The correction is proven on clean
+installations and historical upgrades before production release.
+
+## M1-STATE-CONTRACT-AND-PREVENTION — Define and enforce the closeout invariant
+
+Status: ready
+Required Endpoint: Work2
+Depends on: none
+
+Outcome: Define the allowed state matrix, extend current-state discovery beyond promoted Ideas,
+make lifecycle transition behavior coherent, and prevent Work5 finalization when its owning scope
+fails required document or recursive-closure gates. Preserve legitimate independence between a
+completed document and open descendant work while preventing misleading program-completion claims.
+
+Gate: `G1-STATE-CONTRACT-AND-PREVENTION`
+
+Candidate campaign: CAMP-0159 `repair-terminal-map-prm-lifecycle-drift`.
+
+## M2-MANIFEST-DRIVEN-HISTORICAL-REPAIR — Build the bounded repair utility
+
+Status: waiting
+Required Endpoint: Work2
+Depends on: M1-STATE-CONTRACT-AND-PREVENTION
+
+Outcome: Add a project-bound, revision-bound, idempotent plan/validate/apply utility that classifies
+safe lifecycle repair, body-only drift, residual-work review, and open-descendant review. It never
+forces closure tables or invents semantic dispositions.
+
+Gate: `G2-MANIFEST-DRIVEN-HISTORICAL-REPAIR`
+
+Candidate campaign: CAMP-0160 `build-manifest-driven-lifecycle-repair`.
+
+## M3-SUPERVISED-HISTORICAL-CONVERGENCE — Reconcile inherited state
+
+Status: waiting
+Required Endpoint: Work2
+Depends on: M2-MANIFEST-DRIVEN-HISTORICAL-REPAIR
+
+Outcome: Apply one complete reviewed manifest to this workspace, repair only established truth,
+retain or route genuine residual work and open descendants, rebuild derived closure and checkpoints,
+and reach zero unexplained cross-layer inconsistencies without closing IDEA-0021.
+
+Gate: `G3-SUPERVISED-HISTORICAL-CONVERGENCE`
+
+Candidate campaign: CAMP-0161 `reconcile-inherited-lifecycle-and-closure-state`.
+
+## M4-TRUTHFUL-PROJECTION — Correct local and hosted presentation
+
+Status: waiting
+Required Endpoint: Work2
+Depends on: M1-STATE-CONTRACT-AND-PREVENTION
+
+Outcome: Distinguish queued, working, terminal, and closure-blocked states in reporter and dashboard
+summaries; surface closure debt without conflating it with open outcomes; and make visible-ID closure
+lookup deterministic when an artifact owns both cycle and obligation elements.
+
+Gate: `G4-TRUTHFUL-PROJECTION`
+
+Candidate campaign: CAMP-0162 `correct-lifecycle-closure-projections`.
+
+## M5-FRESH-AND-UPGRADE-QUALIFICATION — Freeze one proven candidate
+
+Status: waiting
+Required Endpoint: Work3
+Depends on: M3-SUPERVISED-HISTORICAL-CONVERGENCE and M4-TRUTHFUL-PROJECTION
+
+Outcome: Prove clean-install prevention, historical-upgrade repair, interruption and retry safety,
+checkpoint/rebuild parity, reporter delivery, and browser-visible behavior on development plus the
+disposable Linux and Windows test beds, then freeze one exact candidate.
+
+Gate: `G5-FRESH-AND-UPGRADE-QUALIFICATION`
+
+Candidate campaign: CAMP-0163 `qualify-lifecycle-closure-recovery`.
+
+## M6-RELEASE-AND-RECURSIVE-CLOSURE — Release only the qualified correction
+
+Status: waiting
+Required Endpoint: Work5
+Depends on: M5-FRESH-AND-UPGRADE-QUALIFICATION and explicit production authority
+
+Outcome: Publish and deploy only the qualified candidate, verify production reporting, confirm the
+new finalization gates operate on real state, and recursively reconcile this corrective roadmap
+without rewriting PRM-0039 or MAP-0028 history.
+
+Gate: `G6-RELEASE-AND-RECURSIVE-CLOSURE`
+
+Candidate campaign: CAMP-0164 `release-lifecycle-closure-integrity-recovery`.
+
+## Program Constraints
+
+- Hybrid SQLite remains canonical; the hosted service stays a read-only projection.
+- Document lifecycle, outcome disposition, reconciliation, and recursive closure remain explicit
+  independent dimensions. Labels and gates must not imply equivalence.
+- Historical repair is manifest-driven and supervised when residual work, descendants, or intent
+  are ambiguous.
+- Closure records and rollups are derived; repair acts through their governing document, outcome,
+  relationship, evidence, and reconciliation authorities.
+- Completed PRM-0039 and MAP-0028 remain immutable historical evidence of the escaped gate.
+- IDEA-0021 remains active and unrelated unless separate evidence changes its state.
+
+## Verification Strategy
+
+- Exercise fresh and upgraded fixtures that reproduce safe drift, open descendants, residual work,
+  body/database disagreement, queued campaigns, and multi-role closure lookup.
+- Assert plan/apply idempotence, stale-token refusal, rollback/retry safety, and checkpoint/rebuild
+  parity.
+- Compare canonical local state, loop findings, closure projections, reporter payloads, hosted view
+  models, and browser-visible summaries exactly.
+- Separate Work3 candidate qualification from Work5 publication and production reconciliation.
+
+## Next Route
+
+Execute CAMP-0159 as the bounded M1 Work2 campaign. Do not run historical repair or production
+delivery inside M1.

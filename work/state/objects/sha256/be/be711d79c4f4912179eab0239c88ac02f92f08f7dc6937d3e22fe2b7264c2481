@@ -1,0 +1,40 @@
+# Campaign: Qualify Lifecycle and Closure Recovery
+
+Status: completed
+Type: campaign
+Updated: 2026-09-05
+Next Action: qualify the exact candidate across web, Windows, and Linux development lanes
+Campaign ID: qualify-lifecycle-closure-recovery
+Campaign Number: 163
+Outcome: One exact candidate proves recurrence prevention, historical repair, projection truthfulness, and interruption-safe convergence on clean and upgraded Tool Shed installations.
+Primary Focus Areas: qualification-release
+Supporting Focus Areas: campaign-lifecycle, hosted-dashboard
+Depends On: reconcile-inherited-lifecycle-and-closure-state, correct-lifecycle-closure-projections
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work3
+Completion Gate: Full release-profile validation passes; clean-install and historical-upgrade scenarios pass on disposable Linux and Windows test beds; checkpoint/rebuild, stale-token, retry, rollback, reporter delivery, and browser-visible state are verified; documentation matches the candidate; and one exact clean content commit is frozen for Work5.
+Completion Evidence: none
+Disposition: none
+Roadmap: lifecycle-recursive-closure-integrity-recovery
+Roadmap Revision: 1
+Roadmap Document: PRM-0040
+Milestone: M5-FRESH-AND-UPGRADE-QUALIFICATION
+Unlocks Gate: G5-FRESH-AND-UPGRADE-QUALIFICATION
+
+## Request
+
+Qualify the accumulated correction as one exact candidate. Cover both a brand-new installation and
+an upgrade containing representative historical drift. Verify interruption between outcome and
+document transitions, manifest retry, recursive descendant behavior, body/database agreement,
+queued campaign presentation, deterministic closure lookup, reporter convergence, and rollback.
+
+Use the authorized disposable Linux and Windows Tool Shed test beds plus the configured development
+web target. Align current documentation, run the full release profile, freeze the candidate, and
+stop before push, tag, publication, or production promotion.
+
+## Completion Check
+
+Record the exact candidate SHA and bounded qualification evidence for every required lane. Any
+unexplained mismatch keeps M5 open.
