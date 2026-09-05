@@ -1,0 +1,52 @@
+# Campaign: Build Atomic Correlated App Server Dispatch
+
+Status: completed
+Type: campaign
+Updated: 2026-09-05
+Next Action: implement the single accountable dispatch lifecycle and focused Work2 proof
+Campaign ID: build-atomic-correlated-app-server-dispatch
+Campaign Number: 165
+Outcome: Eligible App Server selection and execution form one correlated lifecycle whose completion, controlled pre-mutation fallback, or reconciliation-required state cannot be silently bypassed.
+Primary Focus Areas: provider-portability
+Supporting Focus Areas: campaign-lifecycle, qualification-release
+Depends On: none
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work2
+Completion Gate: One supported dispatch entry point or bounded lease carries the same content-free correlation ID through selection, attempt, and terminal state; default pre-mutation fallback, strict fail-closed behavior, post-mutation reconciliation, crash expiry, and attempted GUI bypass pass focused tests; the development target and strict Doctor pass; and the committed candidate is registered to PRM-0041 without publication or production release.
+Completion Evidence: none
+Disposition: none
+Roadmap: enforced-app-server-dispatch-and-closure
+Roadmap Revision: 1
+Roadmap Document: PRM-0041
+Milestone: M1-ATOMIC-CORRELATED-DISPATCH
+Unlocks Gate: G1-ATOMIC-CORRELATED-DISPATCH
+
+## Request
+
+Make the existing App Server selector and dispatcher one accountable operation for eligible Tool
+Shed work. Prefer the smallest implementation: either select and dispatch in one command or issue a
+short-lived dispatch lease that the dispatcher must consume. Preserve the current supported roles,
+model/reasoning policy, qualification, authentication, safety checks, and bounded CAMP runner.
+
+Use one correlation ID from opportunity through attempt and one controlled terminal result. Treat
+completed, default-mode pre-mutation GUI fallback, and post-mutation reconciliation-required as the
+only terminal branches. An incomplete process remains explicit pending debt and cannot be mistaken
+for a normal GUI continuation. Do not add closure gating, cross-platform release qualification, or
+production delivery beyond the minimal M1 interface needed for the later campaign.
+
+## App Server Preparation Contract
+
+```json
+{"schema_version":1,"campaign_id":"build-atomic-correlated-app-server-dispatch","objective":"Make eligible App Server selection inseparable from a correlated accountable execution lifecycle.","execution_shape":"single-bounded-camp","exact_resolution":"dispatch-time","inline_assets":"metadata-only","source_freshness":"required","verification":"orchestrator-exactly-once","completion_evidence":"Atomic selection, execution, terminal accounting, safe fallback, no-replay reconciliation, lease expiry, and bypass refusal pass focused tests and Work2 development verification."}
+```
+
+## Completion Check
+
+Reproduce the historical selected-without-attempt failure before the fix and prove the new route
+cannot silently continue. Verify selected-to-completed, selected-to-fallback, mutation-uncertain
+reconciliation, explicit strict failure, process loss, and idempotent recovery. Run the focused test
+slice, configured Work2 development check, strict Doctor, and candidate registration. Stop before
+M2 closeout integration, supported-platform release qualification, push, publication, or production.
+

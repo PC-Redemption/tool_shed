@@ -1,8 +1,8 @@
 {
   "envelope": {
-    "created_at": "2026-09-05T20:22:04Z",
-    "database_revision": 1341,
-    "digest": "0f6dcecdd3ac7b9528d1d7dd727ab9a2b94bbe343a8bd76e1caa52d8690e4900",
+    "created_at": "2026-09-05T20:23:39Z",
+    "database_revision": 1342,
+    "digest": "42b12f04cbc3fa6084491bde256c933310a8a72583cceab846e1a8a917780f84",
     "hybrid_schema": 5,
     "objects": [
       "work/state/objects/sha256/00/0082fd1d60de8f37c6d2972dac5637d8c894d2c8f1124c5061aeb74ba0c18b75",
@@ -424,6 +424,7 @@
       "work/state/objects/sha256/a0/a0aa4fbba158df24c025b3135758d4fb1235c876180f7523b2fabfd4fbfb501e",
       "work/state/objects/sha256/a0/a0cbd7ead4e8af89d25076b895565ecfee59705db95741b5d32eef90222c6fd3",
       "work/state/objects/sha256/a2/a292282dfd6a62028164b48ebb362204bfc9ed668467dfe6a21c44fe950b537f",
+      "work/state/objects/sha256/a2/a2b81c39b10caceb45c031364342e5a497eb6adb59078a6f618716e2295af809",
       "work/state/objects/sha256/a2/a2bc82604fd8bc0d89e333b930a1206db64fc854330c66d4476fc5d69d14bc7e",
       "work/state/objects/sha256/a3/a380c7a82c7890a9375d9c12ad764e2c8508d5c23e584c97102599b1f2af16f3",
       "work/state/objects/sha256/a3/a3b359b37df4210db6aceac78248763f109cd7154ebea0696c301c6ea70c9f7e",
@@ -6279,14 +6280,14 @@
       },
       {
         "authority_mode": "sqlite",
-        "content_sha256": "38d6fdfe6947fc45c24c057255907658c3d4902d1aece1441777efaa3ff3e790",
+        "content_sha256": "a2b81c39b10caceb45c031364342e5a497eb6adb59078a6f618716e2295af809",
         "created_at": "2026-09-05T19:44:06Z",
         "current_path": "sqlite/documents/CAMP-0165",
         "display_number": "CAMP-0165",
         "id": "f29aa968-081e-4e0b-b9a8-6c512d3fe68e",
-        "lifecycle_state": "active",
+        "lifecycle_state": "completed",
         "type": "campaign",
-        "updated_at": "2026-09-05T19:44:06Z"
+        "updated_at": "2026-09-05T20:23:09Z"
       },
       {
         "authority_mode": "file",
@@ -44297,16 +44298,16 @@
         "visible_id": "CAMP-0088"
       },
       {
-        "body_sha256": "38d6fdfe6947fc45c24c057255907658c3d4902d1aece1441777efaa3ff3e790",
+        "body_sha256": "a2b81c39b10caceb45c031364342e5a497eb6adb59078a6f618716e2295af809",
         "created_at": "2026-09-05T19:44:06Z",
-        "current_revision": 1,
+        "current_revision": 2,
         "display_number": 165,
         "id": "f29aa968-081e-4e0b-b9a8-6c512d3fe68e",
-        "lifecycle_state": "active",
+        "lifecycle_state": "completed",
         "metadata_json": "{\"campaign_id\":\"build-atomic-correlated-app-server-dispatch\",\"document_type\":\"campaign\",\"milestone\":\"M1-ATOMIC-CORRELATED-DISPATCH\",\"primary_focus_areas\":[\"provider-portability\"],\"requested_endpoint\":\"work2\",\"roadmap\":\"enforced-app-server-dispatch-and-closure\",\"roadmap_document\":\"PRM-0041\",\"roadmap_revision\":1,\"supporting_focus_areas\":[\"campaign-lifecycle\",\"qualification-release\"],\"unlocks_gates\":[\"G1-ATOMIC-CORRELATED-DISPATCH\"]}",
         "namespace": "CAMP",
         "title": "Build Atomic Correlated App Server Dispatch",
-        "updated_at": "2026-09-05T19:44:06Z",
+        "updated_at": "2026-09-05T20:23:09Z",
         "visible_id": "CAMP-0165"
       },
       {
@@ -56374,6 +56375,20 @@
         "revision_number": 13,
         "source_revision": 1002,
         "title": "Private Development Site Before Public Release"
+      },
+      {
+        "actor": "codex",
+        "body_object": "work/state/objects/sha256/a2/a2b81c39b10caceb45c031364342e5a497eb6adb59078a6f618716e2295af809",
+        "body_sha256": "a2b81c39b10caceb45c031364342e5a497eb6adb59078a6f618716e2295af809",
+        "created_at": "2026-09-05T20:23:09Z",
+        "document_id": "f29aa968-081e-4e0b-b9a8-6c512d3fe68e",
+        "id": "86e7a82d-334c-49fc-9a50-eaeca8e49bb7",
+        "lifecycle_state": "completed",
+        "metadata_json": "{\"campaign_id\":\"build-atomic-correlated-app-server-dispatch\",\"document_type\":\"campaign\",\"milestone\":\"M1-ATOMIC-CORRELATED-DISPATCH\",\"primary_focus_areas\":[\"provider-portability\"],\"requested_endpoint\":\"work2\",\"roadmap\":\"enforced-app-server-dispatch-and-closure\",\"roadmap_document\":\"PRM-0041\",\"roadmap_revision\":1,\"supporting_focus_areas\":[\"campaign-lifecycle\",\"qualification-release\"],\"unlocks_gates\":[\"G1-ATOMIC-CORRELATED-DISPATCH\"]}",
+        "reason": "Work2 candidate 3ebab84 passed focused Linux and Windows tests, exact development web health, release-profile validation, strict Doctor, and cohort registration.",
+        "revision_number": 2,
+        "source_revision": 1342,
+        "title": "Build Atomic Correlated App Server Dispatch"
       },
       {
         "actor": "maintainer-final-cutover",
@@ -79732,6 +79747,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_ancestor_path\"}",
         "recorded_at": "2026-09-05T14:42:35Z",
         "revision": 1292
+      },
+      {
+        "entity_id": "1",
+        "entity_type": "loop_finding_meta",
+        "id": "218c64be-0fa9-4bfc-aa24-effba4dea8e7",
+        "kind": "structural-update",
+        "operation_id": "8c022a99-9af4-4a3a-b7f4-3224ef6af251",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"loop_finding_meta\"}",
+        "recorded_at": "2026-09-05T20:23:12Z",
+        "revision": 1342
       },
       {
         "entity_id": "17acfc38-fe58-44d9-8672-df55ae42364c",
@@ -130634,6 +130659,16 @@
         "revision": 1190
       },
       {
+        "entity_id": "f29aa968-081e-4e0b-b9a8-6c512d3fe68e",
+        "entity_type": "document",
+        "id": "7a1a9734-178d-434c-8a97-116f021869d9",
+        "kind": "structural-update",
+        "operation_id": "8c022a99-9af4-4a3a-b7f4-3224ef6af251",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"document\"}",
+        "recorded_at": "2026-09-05T20:23:09Z",
+        "revision": 1342
+      },
+      {
         "entity_id": "c9c39301-c464-5c47-af46-a0120f0299fe",
         "entity_type": "document",
         "id": "7a1cc043-9ae9-4ec7-96cb-6316dafcef75",
@@ -145372,6 +145407,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_element\"}",
         "recorded_at": "2026-09-04T15:06:02Z",
         "revision": 1190
+      },
+      {
+        "entity_id": "86e7a82d-334c-49fc-9a50-eaeca8e49bb7",
+        "entity_type": "document_revision",
+        "id": "9420a074-f696-4887-af1d-d312d64f3468",
+        "kind": "structural-insert",
+        "operation_id": "8c022a99-9af4-4a3a-b7f4-3224ef6af251",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
+        "recorded_at": "2026-09-05T20:23:09Z",
+        "revision": 1342
       },
       {
         "entity_id": "ccd581bc-6357-455d-8c75-9ac8648ed10c",
@@ -179292,6 +179337,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
         "recorded_at": "2026-09-03T13:02:17Z",
         "revision": 1138
+      },
+      {
+        "entity_id": "f29aa968-081e-4e0b-b9a8-6c512d3fe68e",
+        "entity_type": "artifact",
+        "id": "cfa47a06-e300-4c59-aac7-bf89dababf8f",
+        "kind": "structural-update",
+        "operation_id": "8c022a99-9af4-4a3a-b7f4-3224ef6af251",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-09-05T20:23:09Z",
+        "revision": 1342
       },
       {
         "entity_id": "5e37886b-6b27-5e02-ae92-c76d46210032",
@@ -218294,9 +218349,9 @@
         "discovery_version": "loop-findings-v3",
         "id": 1,
         "last_source_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-        "last_source_revision": 1341,
+        "last_source_revision": 1342,
         "schema_version": 2,
-        "updated_at": "2026-09-05T20:21:56Z"
+        "updated_at": "2026-09-05T20:23:12Z"
       }
     ],
     "managed_operation": [
@@ -226581,6 +226636,17 @@
         "id": "8bdd1641-58d3-4532-9aa9-2e4eb2cd7ace",
         "revision": 1057,
         "started_at": "2026-09-02T20:22:36Z",
+        "status": "complete"
+      },
+      {
+        "actor": "codex",
+        "actual_writes": 4,
+        "command": "document-set-lifecycle",
+        "committed_at": "2026-09-05T20:23:12Z",
+        "expected_writes": null,
+        "id": "8c022a99-9af4-4a3a-b7f4-3224ef6af251",
+        "revision": 1342,
+        "started_at": "2026-09-05T20:23:09Z",
         "status": "complete"
       },
       {
@@ -282907,6 +282973,17 @@
         "table_name": "closure_blocker"
       },
       {
+        "id": "3706dbe0-7e02-47e7-adf2-af73eee58045",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "8c022a99-9af4-4a3a-b7f4-3224ef6af251",
+        "payload_digest": "792935d70ab2b2a4774b36dc4297492ca6ef6cd00ab7f76c9275c310004c7de6",
+        "recorded_at": "2026-09-05T20:23:09Z",
+        "revision": 1342,
+        "row_id": "f29aa968-081e-4e0b-b9a8-6c512d3fe68e",
+        "table_name": "document"
+      },
+      {
         "id": "370eaad2-7238-4b52-af8c-7730300b145a",
         "managed": 1,
         "operation": "insert",
@@ -292068,6 +292145,17 @@
         "revision": 65,
         "row_id": "ca545d7a-d37f-45f7-99a5-2afa3b9c2027",
         "table_name": "relationship"
+      },
+      {
+        "id": "44d473ef-e020-4211-a399-d338b3320ab3",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "8c022a99-9af4-4a3a-b7f4-3224ef6af251",
+        "payload_digest": "e2d455c142d08abf996dd4afda9e3d3579653ab7bc3be9ded8a84a91a0121268",
+        "recorded_at": "2026-09-05T20:23:09Z",
+        "revision": 1342,
+        "row_id": "86e7a82d-334c-49fc-9a50-eaeca8e49bb7",
+        "table_name": "document_revision"
       },
       {
         "id": "44d9a735-8cf2-44cd-b2cf-33f18ae612aa",
@@ -374361,6 +374449,17 @@
         "table_name": "closure_ancestor_path"
       },
       {
+        "id": "c712e10a-5c66-440f-b721-1ae81824bc61",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "8c022a99-9af4-4a3a-b7f4-3224ef6af251",
+        "payload_digest": "6a5b3e0abe5daf165392817c1492fbedcdb229e2e5fcfb02465f7c814a50fd27",
+        "recorded_at": "2026-09-05T20:23:09Z",
+        "revision": 1342,
+        "row_id": "f29aa968-081e-4e0b-b9a8-6c512d3fe68e",
+        "table_name": "artifact"
+      },
+      {
         "id": "c7139ab1-0482-4622-ac13-f5f62892cdd8",
         "managed": 1,
         "operation": "insert",
@@ -385590,6 +385689,17 @@
         "revision": 1190,
         "row_id": "2bad3262-629d-5e4c-b31c-a803ba581e52",
         "table_name": "closure_rollup"
+      },
+      {
+        "id": "d929925a-991a-4f59-a758-4ce04656b63e",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "8c022a99-9af4-4a3a-b7f4-3224ef6af251",
+        "payload_digest": "04325cc56ad5db6dc2a386f8e0adc689d6b8cc2348ca4ea77741424566d7ad8c",
+        "recorded_at": "2026-09-05T20:23:12Z",
+        "revision": 1342,
+        "row_id": "1",
+        "table_name": "loop_finding_meta"
       },
       {
         "id": "d92bfad0-e285-42cf-a759-8903c4a729e9",
