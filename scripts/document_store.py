@@ -329,7 +329,17 @@ def audit_connection(
         classification = "VALID_DIRTY"
     else:
         classification = "CLEAN"
-    semantic_findings = _semantic_document_findings(connection)
+    all_semantic_findings = _semantic_document_findings(connection)
+    closure_codes = {
+        "TERMINAL_DOCUMENT_DESCENDANTS_OPEN",
+        "COMPLETED_DOCUMENT_CLOSURE_OPEN",
+    }
+    closure_findings = [
+        item for item in all_semantic_findings if item["code"] in closure_codes
+    ]
+    semantic_findings = [
+        item for item in all_semantic_findings if item["code"] not in closure_codes
+    ]
     return {
         "schema_version": DOCUMENT_SCHEMA_VERSION,
         "hybrid_schema": user_version,
@@ -338,6 +348,8 @@ def audit_connection(
         "findings": findings,
         "semantic_findings": semantic_findings,
         "semantic_finding_count": len(semantic_findings),
+        "closure_findings": closure_findings,
+        "closure_finding_count": len(closure_findings),
         "current_revision": current_revision,
         "last_checkpoint_revision": int(meta["last_checkpoint_revision"]),
         "domain_digest": observed,

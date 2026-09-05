@@ -22,7 +22,10 @@ campaign. A terminal, reconciled outcome is classified against its cycle-role re
 - terminal database lifecycle with a nonterminal body `Status:` is a body-only repair candidate.
 
 These checks never write closure projection tables. `closure_element` and `closure_rollup` remain
-derived authority refreshed by normal managed transactions.
+derived authority refreshed by normal managed transactions. Document audit reports actionable
+metadata/lifecycle/body drift in `semantic_findings` and reports recursively open but otherwise
+coherent work separately in `closure_findings`, so strict Doctor does not mislabel reviewed closure
+debt as database corruption.
 
 Healthy progressing open outcomes remain visible work, not attention findings.
 
