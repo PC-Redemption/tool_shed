@@ -45,7 +45,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/dashboard_report
 
 
 SCHEMA_VERSION = 1
-REPORT_SCHEMA_VERSION = 8
+REPORT_SCHEMA_VERSION = 9
 OUTBOX_RELATIVE = Path(".tool-shed/dashboard/outbox.sqlite3")
 MAX_RESPONSE_BYTES = 65_536
 MAX_REQUEST_BYTES = 262_144
@@ -350,10 +350,24 @@ def _next_sequence(connection: sqlite3.Connection) -> int:
 
 
 def _dashboard_state(workspace: Path) -> dict[str, Any]:
-    campaigns = document_store.list_documents(workspace, lifecycle="active", document_type="campaign", limit=500)["documents"]
     ideas = document_store.list_documents(workspace, lifecycle="active", document_type="idea-brief", limit=500)["documents"]
     completed = document_store.list_documents(workspace, lifecycle="completed", document_type="campaign", limit=500)["documents"]
     with contextlib.closing(hybrid_state.connect(hybrid_state.database_path(workspace), writable=False)) as connection:
+        has_documents = bool(connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='document'"
+        ).fetchone())
+        campaign_rows = connection.execute(
+            "SELECT d.lifecycle_state, r.body_markdown FROM document d JOIN artifact a ON a.id=d.id "
+            "JOIN document_revision r ON r.document_id=d.id AND r.revision_number=d.current_revision "
+            "WHERE a.type='campaign' AND d.lifecycle_state IN ('active','working','blocked')"
+        ).fetchall() if has_documents else []
+        work_states = [loop_findings._body_status(str(row["body_markdown"])) for row in campaign_rows]
+        blocked_campaigns = sum(
+            str(row["lifecycle_state"]) == "blocked" or state == "blocked"
+            for row, state in zip(campaign_rows, work_states)
+        )
+        queued_campaigns = sum(state in {"queued", "ready"} for state in work_states)
+        working_campaigns = len(campaign_rows) - blocked_campaigns - queued_campaigns
         open_outcomes = int(connection.execute("SELECT COUNT(*) FROM cycle WHERE lifecycle_state <> 'terminal'").fetchone()[0])
         unreconciled = int(
             connection.execute(
@@ -363,11 +377,22 @@ def _dashboard_state(workspace: Path) -> dict[str, Any]:
                 "WHERE r.cycle_id = c.id ORDER BY r.compared_at DESC, r.id DESC LIMIT 1), 'open') <> 'reconciled')"
             ).fetchone()[0]
         )
+        has_closure = bool(connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='closure_rollup'"
+        ).fetchone())
+        closure_debt = int(connection.execute(
+            "SELECT COUNT(DISTINCT d.id) FROM document d JOIN cycle c ON c.origin_artifact_id=d.id "
+            "JOIN closure_element ce ON ce.cycle_id=c.id AND ce.role='cycle' "
+            "JOIN closure_rollup cr ON cr.element_id=ce.id WHERE c.lifecycle_state='terminal' "
+            "AND cr.effective_closed=0"
+        ).fetchone()[0]) if has_documents and has_closure else 0
     finding_count = loop_findings.report_projection(workspace)["total_active_count"]
     return {
-        "working_count": len(campaigns),
-        "ready_count": 0,
-        "blocked_count": 0,
+        "working_count": working_campaigns,
+        "ready_count": queued_campaigns,
+        "queued_count": queued_campaigns,
+        "blocked_count": blocked_campaigns,
+        "closure_debt_count": closure_debt,
         "active_idea_count": len(ideas),
         "open_outcome_count": open_outcomes,
         "unreconciled_outcome_count": unreconciled,

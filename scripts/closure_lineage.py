@@ -1245,8 +1245,10 @@ def refresh_projection(
     return {"graph_revision": graph_revision, "element_count": len(processed), "finding_count": 0}
 
 
-def status(workspace: Path, identity: str) -> dict[str, Any]:
+def status(workspace: Path, identity: str, *, role: str | None = None) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
+    if role not in {None, "cycle", "obligation"}:
+        raise ClosureLineageError("closure status role must be cycle or obligation")
     with contextlib.closing(hybrid_state.connect(hybrid_state.database_path(workspace), writable=False)) as connection:
         if int(connection.execute("PRAGMA user_version").fetchone()[0]) < 3:
             raise ClosureLineageError("closure status requires Hybrid schema 3 or newer")
@@ -1255,8 +1257,10 @@ def status(workspace: Path, identity: str) -> dict[str, Any]:
             "cr.reason_codes_json, cr.open_descendants, cr.unknown_descendants, cr.invalid_descendants, "
             "cr.graph_revision, cr.evaluator_version, cr.evaluated_at "
             "FROM closure_element ce JOIN closure_rollup cr ON cr.element_id=ce.id "
-            "WHERE ce.id=? OR ce.artifact_id=? OR ce.cycle_id=? OR ce.requirement_id=?",
-            (identity, identity, identity, identity),
+            "WHERE ce.id=? OR ce.artifact_id=? OR ce.cycle_id=? OR ce.requirement_id=? "
+            "ORDER BY CASE WHEN ce.id=? THEN 0 WHEN ce.role=? THEN 1 ELSE 2 END, "
+            "ce.subject_revision DESC, ce.id LIMIT 1",
+            (identity, identity, identity, identity, identity, role or "cycle"),
         ).fetchone()
         if row is None:
             artifact = connection.execute("SELECT id FROM artifact WHERE display_number=?", (identity,)).fetchone()
@@ -1265,8 +1269,10 @@ def status(workspace: Path, identity: str) -> dict[str, Any]:
                     "SELECT ce.*, cr.local_closure, cr.evidence_health, cr.graph_health, cr.effective_closed, "
                     "cr.reason_codes_json, cr.open_descendants, cr.unknown_descendants, cr.invalid_descendants, "
                     "cr.graph_revision, cr.evaluator_version, cr.evaluated_at "
-                    "FROM closure_element ce JOIN closure_rollup cr ON cr.element_id=ce.id WHERE ce.artifact_id=?",
-                    (artifact["id"],),
+                    "FROM closure_element ce JOIN closure_rollup cr ON cr.element_id=ce.id "
+                    "WHERE ce.artifact_id=? ORDER BY CASE WHEN ce.role=? THEN 0 ELSE 1 END, "
+                    "ce.subject_revision DESC, ce.id LIMIT 1",
+                    (artifact["id"], role or "cycle"),
                 ).fetchone()
         if row is None:
             raise ClosureLineageError(f"closure element not found: {identity}")
@@ -1730,7 +1736,7 @@ def build_parser() -> argparse.ArgumentParser:
     validate = commands.add_parser("migration-validate"); validate.add_argument("--manifest", required=True)
     migrate = commands.add_parser("migrate"); migrate.add_argument("--manifest", required=True); migrate.add_argument("--expect", required=True); migrate.add_argument("--project-binding", required=True)
     commands.add_parser("audit")
-    status_parser = commands.add_parser("status"); status_parser.add_argument("identity")
+    status_parser = commands.add_parser("status"); status_parser.add_argument("identity"); status_parser.add_argument("--role", choices=("cycle", "obligation"))
     close = commands.add_parser("close"); close.add_argument("--project-binding", required=True); close.add_argument("--element", required=True); close.add_argument("--method", choices=("closed-loop", "closed-manual"), required=True); close.add_argument("--evidence-health", required=True); close.add_argument("--authorization", required=True); close.add_argument("--evidence", action="append", default=[]); close.add_argument("--actor", default="operator"); close.add_argument("--allow-protected-manual", action="store_true")
     recipe = commands.add_parser("recipe-register"); recipe.add_argument("--project-binding", required=True); recipe.add_argument("--recipe-id", required=True); recipe.add_argument("--version", type=int, required=True); recipe.add_argument("--checker-id", required=True); recipe.add_argument("--checker-digest", required=True); recipe.add_argument("--declaration", required=True); recipe.add_argument("--actor", default="operator")
     attempt = commands.add_parser("proof-record"); attempt.add_argument("--project-binding", required=True); attempt.add_argument("--recipe-id", required=True); attempt.add_argument("--element", required=True); attempt.add_argument("--target", required=True); attempt.add_argument("--state", required=True); attempt.add_argument("--result", required=True); attempt.add_argument("--authority"); attempt.add_argument("--actor", default="operator")
@@ -1748,7 +1754,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif args.command == "migration-validate": result = validate_manifest(workspace, _read_json(workspace, args.manifest))
         elif args.command == "migrate": result = apply_migration(workspace, _read_json(workspace, args.manifest), expected_token=args.expect, project_binding=args.project_binding)
         elif args.command == "audit": result = audit(workspace)
-        elif args.command == "status": result = status(workspace, args.identity)
+        elif args.command == "status": result = status(workspace, args.identity, role=args.role)
         elif args.command == "close": result = close_element(workspace, project_binding=args.project_binding, element_id=args.element, method=args.method, evidence_health=args.evidence_health, authorization_ref=args.authorization, evidence=args.evidence, actor=args.actor, allow_protected_manual=args.allow_protected_manual)
         elif args.command == "recipe-register": result = register_recipe(workspace, project_binding=args.project_binding, recipe_id=args.recipe_id, version=args.version, checker_id=args.checker_id, checker_digest=args.checker_digest, declaration=_read_json(workspace, args.declaration), actor=args.actor)
         elif args.command == "proof-record": result = record_proof_attempt(workspace, project_binding=args.project_binding, recipe_id=args.recipe_id, element_id=args.element, target_identity=args.target, state=args.state, result=_read_json(workspace, args.result), authority_ref=args.authority, actor=args.actor)

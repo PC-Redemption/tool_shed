@@ -38,6 +38,7 @@ STATE_FIELDS = {
     "active_loop_finding_count",
     "last_completed_id",
 }
+STATE_FIELDS_V9 = STATE_FIELDS | {"queued_count", "closure_debt_count"}
 EVENT_FIELDS = {"kind", "summary_code", "occurred_at"}
 APP_SERVER_FIELDS = {
     "enabled",
@@ -112,10 +113,14 @@ LOOP_FINDING_FIELDS = {
 }
 LOOP_FINDING_CATEGORIES = {
     "semantic-lifecycle-drift", "outcome-health", "outcome-reconciliation",
-    "outcome-propagation", "lineage-health", "evidence-health",
+    "outcome-propagation", "lineage-health", "evidence-health", "semantic-body-drift",
+    "closure-debt",
 }
 LOOP_FINDING_REASON_CODES = {
     "PROMOTED_IDEA_LIFECYCLE_STALE", "OUTCOME_BLOCKED", "OUTCOME_STALLED",
+    "PROMOTED_IDEA_MISSING_OUTCOME", "TERMINAL_DOCUMENT_LIFECYCLE_STALE",
+    "TERMINAL_DOCUMENT_BODY_STATUS_STALE", "TERMINAL_DOCUMENT_DESCENDANTS_OPEN",
+    "COMPLETED_DOCUMENT_CLOSURE_OPEN",
     "TERMINAL_OUTCOME_UNRECONCILED", "INVALID_RECONCILED_DISPOSITION",
     "OUTCOME_RESULT_UNPROPAGATED", "LINEAGE_INVALID", "LINEAGE_RECOVERY_REQUIRED",
     "CLOSURE_EVIDENCE_MISSING", "CLOSURE_EVIDENCE_STALE",
@@ -604,9 +609,10 @@ def _loop_findings(value: Any) -> dict[str, Any]:
     return {"total_active_count": active, "total_resolved_count": resolved, "truncated": truncated, "findings": findings}
 
 
-def _state(value: Any) -> dict[str, Any]:
-    supplied = _object(value, "state", STATE_FIELDS)
-    result = {field: _counter(supplied.get(field, 0), f"state.{field}") for field in STATE_FIELDS if field.endswith("_count")}
+def _state(value: Any, *, schema_version: int) -> dict[str, Any]:
+    fields = STATE_FIELDS_V9 if schema_version >= 9 else STATE_FIELDS
+    supplied = _object(value, "state", fields)
+    result = {field: _counter(supplied.get(field, 0), f"state.{field}") for field in fields if field.endswith("_count")}
     result["last_completed_id"] = _optional_string(supplied.get("last_completed_id"), "state.last_completed_id", 64)
     blocked = result["blocked_count"]
     unreconciled = result["unreconciled_outcome_count"]
@@ -742,8 +748,8 @@ def _instance_health(value: Any, *, schema_version: int) -> dict[str, Any]:
 def validate_report(payload: Any) -> dict[str, Any]:
     root = _object(payload, "report", ROOT_FIELDS)
     schema_version = root.get("schema_version")
-    if schema_version not in {1, 2, 3, 4, 5, 6, 7, 8}:
-        raise ContractError("report.schema_version must be between 1 and 8")
+    if schema_version not in {1, 2, 3, 4, 5, 6, 7, 8, 9}:
+        raise ContractError("report.schema_version must be between 1 and 9")
     if schema_version == 1 and ({"work_inventory", "lifecycle_events"} & set(root)):
         raise ContractError("report schema 1 does not support lifecycle projection fields")
     if schema_version < 4 and "instance_health" in root:
@@ -821,7 +827,7 @@ def validate_report(payload: Any) -> dict[str, Any]:
             "counter_epoch": _uuid(instance.get("counter_epoch"), "instance.counter_epoch"),
             "quiescent": _boolean(instance.get("quiescent", False), "instance.quiescent"),
         },
-        "state": _state(root.get("state")),
+        "state": _state(root.get("state"), schema_version=schema_version),
         "material_events": events,
         "app_server": {
             "enabled": _boolean(app_server.get("enabled", False), "app_server.enabled"),

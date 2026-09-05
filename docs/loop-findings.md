@@ -12,6 +12,18 @@ Schema 4 retains the initial promoted-Idea lifecycle check. Schema 5 also discov
 - invalid or recovery-required recursive closure lineage; and
 - missing, stale, or checker-error closure evidence.
 
+Current clients additionally apply the same semantic check to every managed Idea, Map, PRM, and
+campaign. A terminal, reconciled outcome is classified against its cycle-role recursive closure:
+
+- an active document whose recursive closure is closed is a safe lifecycle repair candidate;
+- an active document whose descendants remain open is retained open and reported as closure debt;
+- a completed document whose recursive closure remains open stays completed but is reported as
+  closure debt; and
+- terminal database lifecycle with a nonterminal body `Status:` is a body-only repair candidate.
+
+These checks never write closure projection tables. `closure_element` and `closure_rollup` remain
+derived authority refreshed by normal managed transactions.
+
 Healthy progressing open outcomes remain visible work, not attention findings.
 
 Findings use a stable `LOOP-…` identifier derived from the semantic condition and subject. Every
@@ -38,7 +50,8 @@ the subject’s current revision and outcome state.
 
 ## Hosted projection
 
-Report schema 8 carries at most 50 active and 50 recently resolved findings. The server accepts
+Report schema 9 carries at most 50 active and 50 recently resolved findings and separates queued
+campaigns, working campaigns, and recursive closure debt in the project summary. The server accepts
 only controlled categories, reasons, state fields, timestamps, counts, subject IDs, and the exact
 command `ts: resolve loop <finding-id>`. Overview and Needs Attention copy exact built-in status
 routes; Work and Outcome Reconciliation copy reporter-provided finding routes; Health copies exact
@@ -72,6 +85,8 @@ python3 scripts/loop_findings.py --workspace . history-apply \
 Every selected item requires one controlled decision: `apply-expected-state`, `retain-open`, or
 `requires-evidence`. `--complete-cluster` refuses a manifest that omits another active finding in
 the same outcome-parent lineage. Apply records review evidence for every decision; only the
-supported promoted-Idea lifecycle correction mutates product state. Any intervening database,
+safe recursively closed lifecycle correction or body-only status correction mutates product state.
+Open-descendant and completed-but-open closure debt is retained for descendant reconciliation.
+Any intervening database,
 finding, document-revision, project, digest, or cluster change makes the manifest stale. The normal
 managed-write refresh then re-audits findings, propagation/lineage authority, and checkpoint need.

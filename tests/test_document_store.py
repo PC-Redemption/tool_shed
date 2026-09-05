@@ -384,6 +384,10 @@ class DocumentStoreThinSliceTests(unittest.TestCase):
             expected_revision=1, actor="fixture", reason="qualified", database=self.database,
         )["result"]
         self.assertEqual(moved["document_revision"], 2)
+        self.assertIn(
+            "Status: completed",
+            document_store.show(self.workspace, first["visible_id"], database=self.database)["body_markdown"],
+        )
         rendered = document_store.render_views(self.workspace, database=self.database)
         view_root = self.workspace / rendered["path"]
         first_render = sorted((view_root / "completed").glob("TKT-*.md"))[0].read_bytes()

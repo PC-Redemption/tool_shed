@@ -273,8 +273,9 @@ finalize until each recorded chain reconciles through its originating Idea. See
 
 Hybrid schema 4 adds persisted, deduplicated outcome-loop findings; schema 5 expands current-state
 discovery to blocked or stalled outcomes, reconciliation and result-propagation gaps, invalid
-lineage, and missing, stale, or failed closure evidence. Local audit and mitigation remain
-authoritative. Dashboard report schema 8 projects a bounded read-only list, and applicable hosted
+lineage, missing, stale, or failed closure evidence, and lifecycle/body drift across durable work
+documents. Local audit and supervised history repair remain authoritative. Dashboard report schema
+9 projects a bounded read-only list plus separate queued, working, and closure-debt counts, and applicable hosted
 pages copy controlled local Tool Shed commands for use in chat. See
 [`docs/loop-findings.md`](docs/loop-findings.md).
 

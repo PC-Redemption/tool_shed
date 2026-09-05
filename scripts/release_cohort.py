@@ -20,6 +20,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Sequence
 
+import document_store
 import hybrid_state
 try:
     from scripts import subprocess_launch
@@ -167,10 +168,37 @@ def _candidate_rows(connection: sqlite3.Connection, cohort_id: str) -> list[dict
         item["origin_lifecycle"] = outcome["lifecycle_state"]
         item["origin_verdict"] = outcome["disposition"]
         item["origin_reconciliation"] = outcome["state"]
+        document = connection.execute(
+            "SELECT lifecycle_state FROM document WHERE id=?",
+            (item["origin_artifact_id"],),
+        ).fetchone() if connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='document'"
+        ).fetchone() else None
+        closure_available = bool(connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='closure_rollup'"
+        ).fetchone())
+        closure = connection.execute(
+            "SELECT cr.effective_closed FROM closure_element ce JOIN closure_rollup cr "
+            "ON cr.element_id=ce.id WHERE ce.cycle_id=? AND ce.role='cycle' "
+            "ORDER BY ce.subject_revision DESC, ce.id LIMIT 1",
+            (item["origin_cycle_id"],),
+        ).fetchone() if closure_available else None
+        item["origin_document_lifecycle"] = (
+            str(document["lifecycle_state"]) if document is not None else None
+        )
+        item["origin_recursive_closure"] = (
+            bool(closure["effective_closed"]) if closure is not None else None
+        )
         item["origin_ready_to_finalize"] = (
             outcome["lifecycle_state"] == "terminal"
             and outcome["disposition"] in TERMINAL_DISPOSITIONS
             and outcome["state"] == "reconciled"
+            and (
+                document is None
+                or str(document["lifecycle_state"])
+                in document_store.TERMINAL_DOCUMENT_LIFECYCLES
+            )
+            and (not closure_available or bool(closure and closure["effective_closed"]))
         )
         results.append(item)
     return results
@@ -807,6 +835,8 @@ def finalize(
             "lifecycle": item["origin_lifecycle"],
             "verdict": item["origin_verdict"],
             "reconciliation": item["origin_reconciliation"],
+            "document_lifecycle": item["origin_document_lifecycle"],
+            "recursive_closure": item["origin_recursive_closure"],
         }
         for item in cohort["candidates"]
         if not item["origin_ready_to_finalize"]

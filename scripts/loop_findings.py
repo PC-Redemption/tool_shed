@@ -38,7 +38,7 @@ from project_identity import (
 
 
 SCHEMA_VERSION = 1
-DISCOVERY_VERSION = "loop-findings-v2"
+DISCOVERY_VERSION = "loop-findings-v3"
 ZERO_DIGEST = "0" * 64
 MAX_ACTIVE_REPORT = 50
 MAX_RECENT_RESOLVED_REPORT = 50
@@ -49,7 +49,7 @@ HISTORY_REVIEW_DECISIONS = {
     "retain-open",
     "requires-evidence",
 }
-MAX_HISTORY_SELECTION = 50
+MAX_HISTORY_SELECTION = 100
 
 
 class LoopFindingError(RuntimeError):
@@ -210,51 +210,81 @@ def _discover_closure_findings(connection: sqlite3.Connection) -> list[dict[str,
 def discover_candidates(connection: sqlite3.Connection) -> list[dict[str, Any]]:
     """Return the controlled current finding set without mutating authority."""
     candidates: list[dict[str, Any]] = []
-    rows = connection.execute(
-        "SELECT d.id, d.visible_id, d.lifecycle_state, a.current_path, d.current_revision, "
-        "a.type AS stored_type, r.metadata_json, r.body_markdown "
-        "FROM document d JOIN artifact a ON a.id=d.id "
-        "JOIN document_revision r ON r.document_id=d.id AND r.revision_number=d.current_revision "
-        "ORDER BY d.visible_id"
-    ).fetchall()
-    for row in rows:
-        metadata = json.loads(row["metadata_json"])
-        effective_type = str(metadata.get("document_type") or row["stored_type"])
-        if (
-            effective_type != "idea-brief"
-            or str(row["lifecycle_state"]) != "active"
-            or _body_status(str(row["body_markdown"])) != "promoted"
-        ):
+    hybrid_schema = int(connection.execute("PRAGMA user_version").fetchone()[0])
+    if hybrid_schema < 5:
+        rows = connection.execute(
+            "SELECT d.id, d.visible_id, d.lifecycle_state, a.current_path, a.type AS stored_type, "
+            "r.metadata_json, r.body_markdown FROM document d JOIN artifact a ON a.id=d.id "
+            "JOIN document_revision r ON r.document_id=d.id AND r.revision_number=d.current_revision "
+            "WHERE d.lifecycle_state='active' ORDER BY d.visible_id"
+        ).fetchall()
+        for row in rows:
+            metadata = json.loads(row["metadata_json"])
+            if (
+                str(metadata.get("document_type") or row["stored_type"]) != "idea-brief"
+                or _body_status(str(row["body_markdown"])) != "promoted"
+            ):
+                continue
+            cycle = document_store._latest_cycle_for_document(connection, row)
+            if cycle is None or str(cycle["lifecycle_state"]) != "terminal":
+                continue
+            reconciliation = connection.execute(
+                "SELECT r.state, ov.disposition FROM reconciliation r JOIN outcome_verdict ov "
+                "ON ov.id=r.verdict_id WHERE r.cycle_id=? ORDER BY r.compared_at DESC, r.id DESC LIMIT 1",
+                (cycle["id"],),
+            ).fetchone()
+            if reconciliation and str(reconciliation["state"]) == "reconciled":
+                expected = "superseded" if reconciliation["disposition"] == "superseded" else "completed"
+                candidates.append(_candidate(
+                    category="semantic-lifecycle-drift",
+                    reason_code="PROMOTED_IDEA_LIFECYCLE_STALE",
+                    artifact_id=str(row["id"]), visible_id=str(row["visible_id"]),
+                    observed="active", expected=expected,
+                ))
+        return candidates
+    document_ids = {
+        str(row["visible_id"]): str(row["id"])
+        for row in connection.execute("SELECT id, visible_id FROM document")
+    }
+    for finding in document_store._semantic_document_findings(connection):
+        code = str(finding["code"])
+        if code not in {
+            "TERMINAL_DOCUMENT_LIFECYCLE_STALE",
+            "TERMINAL_DOCUMENT_DESCENDANTS_OPEN",
+            "COMPLETED_DOCUMENT_CLOSURE_OPEN",
+            "TERMINAL_DOCUMENT_BODY_STATUS_STALE",
+        }:
             continue
-        cycle = connection.execute(
-            "SELECT c.id, c.lifecycle_state FROM cycle c WHERE c.origin_artifact_id=? OR EXISTS ("
-            "SELECT 1 FROM relationship rel WHERE rel.from_artifact_id=c.origin_artifact_id "
-            "AND rel.to_artifact_id=? AND rel.relation_type='historical-overlay-for' "
-            "AND rel.retired_revision IS NULL) OR EXISTS (SELECT 1 FROM evidence_reference er "
-            "WHERE er.cycle_id=c.id AND er.kind='historical-origin' AND er.reference=?) "
-            "ORDER BY c.opened_at DESC, c.id DESC LIMIT 1",
-            (row["id"], row["id"], row["current_path"]),
-        ).fetchone()
-        if cycle is None or str(cycle["lifecycle_state"]) != "terminal":
-            continue
-        reconciliation = connection.execute(
-            "SELECT r.state, ov.disposition FROM reconciliation r "
-            "JOIN outcome_verdict ov ON ov.id=r.verdict_id WHERE r.cycle_id=? "
-            "ORDER BY r.compared_at DESC, r.id DESC LIMIT 1",
-            (cycle["id"],),
-        ).fetchone()
-        if reconciliation is None or str(reconciliation["state"]) != "reconciled":
-            continue
-        if str(reconciliation["disposition"]) not in {"satisfied", "superseded"}:
-            continue
-        expected = "superseded" if reconciliation["disposition"] == "superseded" else "completed"
+        visible_id = str(finding["visible_id"])
+        artifact_id = document_ids[visible_id]
+        if code == "TERMINAL_DOCUMENT_LIFECYCLE_STALE":
+            category = "semantic-lifecycle-drift"
+            reason_code = "PROMOTED_IDEA_LIFECYCLE_STALE"
+            observed = str(finding["document_lifecycle"])
+            expected = str(finding["expected_lifecycle"])
+        elif code == "TERMINAL_DOCUMENT_BODY_STATUS_STALE":
+            category = "semantic-lifecycle-drift"
+            reason_code = "PROMOTED_IDEA_LIFECYCLE_STALE"
+            observed = "body-status:" + str(finding.get("body_status") or "missing")
+            expected = "body-status:" + str(finding["expected_body_status"])
+        else:
+            category = "lineage-health"
+            reason_code = "LINEAGE_RECOVERY_REQUIRED"
+            observed = "recursive-closure-open"
+            expected = (
+                "retain-open-until-recursively-closed"
+                if code == "TERMINAL_DOCUMENT_DESCENDANTS_OPEN"
+                else "recursively-closed"
+            )
         candidates.append(_candidate(
-            category="semantic-lifecycle-drift",
-            reason_code="PROMOTED_IDEA_LIFECYCLE_STALE",
-            artifact_id=str(row["id"]), visible_id=str(row["visible_id"]),
-            observed="active", expected=expected,
+            category=category,
+            reason_code=reason_code,
+            artifact_id=artifact_id,
+            visible_id=visible_id,
+            observed=observed,
+            expected=expected,
         ))
-    if int(connection.execute("PRAGMA user_version").fetchone()[0]) >= 5:
+    if hybrid_schema >= 5:
         candidates.extend(_discover_current_cycle_findings(connection))
         candidates.extend(_discover_closure_findings(connection))
     return candidates
@@ -534,7 +564,13 @@ def history_review_plan(
             decision = parsed[str(row["visible_id"]).upper()]
             document_revision = None
             if decision == "apply-expected-state":
-                if str(row["reason_code"]) != "PROMOTED_IDEA_LIFECYCLE_STALE":
+                if not (
+                    str(row["reason_code"]) == "PROMOTED_IDEA_LIFECYCLE_STALE"
+                    and (
+                        str(row["expected_state"]) in document_store.LIFECYCLES
+                        or str(row["expected_state"]).startswith("body-status:")
+                    )
+                ):
                     raise LoopFindingError(
                         f"{row['visible_id']} does not support apply-expected-state"
                     )
@@ -733,25 +769,41 @@ def apply_history_review(
             ).fetchone()
             if current is None or int(current["current_revision"]) != item["document_revision"]:
                 raise LoopFindingError(f"history document changed before apply: {finding_id}")
-            lifecycle = str(finding["expected_state"])
-            if lifecycle not in document_store.LIFECYCLES:
-                raise LoopFindingError(f"history expected lifecycle is unsupported: {lifecycle}")
+            reason_code = str(finding["reason_code"])
+            lifecycle = str(current["lifecycle_state"])
+            body = str(current["body_markdown"])
+            expected_state = str(finding["expected_state"])
+            if reason_code == "PROMOTED_IDEA_LIFECYCLE_STALE" and expected_state in document_store.LIFECYCLES:
+                lifecycle = str(finding["expected_state"])
+                if lifecycle not in document_store.LIFECYCLES:
+                    raise LoopFindingError(f"history expected lifecycle is unsupported: {lifecycle}")
+                body = document_store.replace_body_header(
+                    body, "Status", "completed" if lifecycle == "terminal" else lifecycle
+                )
+            elif reason_code == "PROMOTED_IDEA_LIFECYCLE_STALE" and expected_state.startswith("body-status:"):
+                expected = expected_state
+                if not expected.startswith("body-status:"):
+                    raise LoopFindingError("history body-status finding has an invalid expected state")
+                body = document_store.replace_body_header(body, "Status", expected.split(":", 1)[1])
+            else:
+                raise LoopFindingError(f"history finding cannot be applied automatically: {reason_code}")
+            body_hash = document_store.sha256_text(body)
             document_revision = int(current["current_revision"]) + 1
             connection.execute(
                 "INSERT INTO document_revision VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     str(uuid.uuid4()), artifact_id, document_revision, current["title"], lifecycle,
-                    current["metadata_json"], current["body_markdown"], current["body_sha256"],
+                    current["metadata_json"], body, body_hash,
                     "loop-history-review", authorization.strip(), revision, stamp,
                 ),
             )
             connection.execute(
-                "UPDATE document SET lifecycle_state=?, current_revision=?, updated_at=? WHERE id=?",
-                (lifecycle, document_revision, stamp, artifact_id),
+                "UPDATE document SET lifecycle_state=?, current_revision=?, body_sha256=?, updated_at=? WHERE id=?",
+                (lifecycle, document_revision, body_hash, stamp, artifact_id),
             )
             connection.execute(
-                "UPDATE artifact SET lifecycle_state=?, updated_at=? WHERE id=?",
-                (lifecycle, stamp, artifact_id),
+                "UPDATE artifact SET lifecycle_state=?, content_sha256=?, updated_at=? WHERE id=?",
+                (lifecycle, body_hash, stamp, artifact_id),
             )
             applied.append(finding_id)
         return {
@@ -811,14 +863,22 @@ def resolve(workspace: Path, finding_id: str) -> dict[str, Any]:
     else:
         status = "actionable"
         action = {
-            "PROMOTED_IDEA_LIFECYCLE_STALE": "correct-document-lifecycle",
+            "PROMOTED_IDEA_LIFECYCLE_STALE": (
+                "correct-body-status"
+                if str(selected["expected_state"]).startswith("body-status:")
+                else "correct-document-lifecycle-and-body-status"
+            ),
             "OUTCOME_BLOCKED": "inspect-blocker-and-continue-or-dispose",
             "OUTCOME_STALLED": "confirm-owner-and-continue-or-dispose",
             "TERMINAL_OUTCOME_UNRECONCILED": "reconcile-terminal-outcome",
             "INVALID_RECONCILED_DISPOSITION": "correct-outcome-disposition",
             "OUTCOME_RESULT_UNPROPAGATED": "propagate-outcome-result",
             "LINEAGE_INVALID": "repair-or-disposition-invalid-lineage",
-            "LINEAGE_RECOVERY_REQUIRED": "recover-lineage-authority",
+            "LINEAGE_RECOVERY_REQUIRED": (
+                "resolve-recursive-closure-debt"
+                if selected["observed_state"] == "recursive-closure-open"
+                else "recover-lineage-authority"
+            ),
             "CLOSURE_EVIDENCE_MISSING": "collect-required-closure-evidence",
             "CLOSURE_EVIDENCE_STALE": "refresh-required-closure-evidence",
             "CLOSURE_EVIDENCE_CHECKER_ERROR": "repair-checker-and-rerun-evidence",
@@ -971,6 +1031,7 @@ def build_parser() -> argparse.ArgumentParser:
     plan_parser.add_argument("--decision", action="append", required=True)
     plan_parser.add_argument("--rationale", required=True)
     plan_parser.add_argument("--complete-cluster", action="store_true")
+    plan_parser.add_argument("--output")
     validate_parser = commands.add_parser("history-validate")
     validate_parser.add_argument("--manifest", required=True)
     apply_parser = commands.add_parser("history-apply")
@@ -1002,6 +1063,22 @@ def main(argv: Sequence[str] | None = None) -> int:
                 rationale=args.rationale,
                 complete_cluster=args.complete_cluster,
             )
+            if args.output:
+                target = require_path_within(
+                    resolved_workspace(workspace),
+                    resolved_workspace(workspace) / args.output,
+                )
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+                result = {
+                    "schema_version": SCHEMA_VERSION,
+                    "kind": "tool-shed-loop-history-review-plan-written",
+                    "path": target.relative_to(resolved_workspace(workspace)).as_posix(),
+                    "manifest_digest": result["manifest_digest"],
+                    "manifest_token": result["manifest_token"],
+                    "decision_count": len(result["decisions"]),
+                    "writes_performed": True,
+                }
         elif args.command == "history-validate":
             result = validate_history_review(
                 workspace, load_history_review_manifest(workspace, Path(args.manifest))

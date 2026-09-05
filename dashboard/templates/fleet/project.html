@@ -7,10 +7,12 @@
   <span class="project-last-report">Last report <strong>{% if project.last_seen %}<time datetime="{{ project.last_seen|date:'c' }}" data-local-time>{{ project.last_seen|date:"M j, Y · g:i A" }}</time>{% else %}Never{% endif %}</strong></span>
   <dl class="project-summary-counts">
     <div class="project-metric metric-working{% if project.current_state.working_count %} has-value{% endif %}"><dt>Working</dt><dd>{{ project.current_state.working_count|default:0 }}</dd></div>
+    <div class="project-metric metric-ready{% if project.current_state.queued_count %} has-value{% endif %}"><dt>Queued</dt><dd>{{ project.current_state.queued_count|default:0 }}</dd></div>
     <div class="project-metric metric-blocked{% if project.current_state.blocked_count %} has-value{% endif %}"><dt>Blocked</dt><dd>{{ project.current_state.blocked_count|default:0 }}</dd></div>
     <div class="project-metric metric-open-outcomes{% if project.current_state.open_outcome_count %} has-value{% endif %}"><dt>Open outcomes</dt><dd>{{ project.current_state.open_outcome_count|default:0 }}</dd></div>
     <div class="project-metric metric-unreconciled{% if project.current_state.unreconciled_outcome_count %} has-value{% endif %}"><dt>Unreconciled</dt><dd>{{ project.current_state.unreconciled_outcome_count|default:0 }}</dd></div>
     <div class="project-metric metric-loop-findings{% if project.current_state.active_loop_finding_count %} has-value{% endif %}"><dt>Loop findings</dt><dd>{{ project.current_state.active_loop_finding_count|default:0 }}</dd></div>
+    <div class="project-metric metric-closure-debt{% if project.current_state.closure_debt_count %} has-value{% endif %}"><dt>Closure debt</dt><dd>{{ project.current_state.closure_debt_count|default:0 }}</dd></div>
   </dl>
 </section>
 <nav class="dashboard-tabs" aria-label="Project sections">

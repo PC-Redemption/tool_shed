@@ -56,7 +56,7 @@ schema 3 for normal closure-aware operation.
 ## Status and closure
 
 ```bash
-python3 scripts/closure_lineage.py --workspace . --json status <element-or-artifact-id>
+python3 scripts/closure_lineage.py --workspace . --json status <element-or-artifact-id> [--role cycle|obligation]
 
 python3 scripts/closure_lineage.py --workspace . --json close \
   --project-binding <hybrid-state-binding> --element <element-id> \
@@ -64,6 +64,8 @@ python3 scripts/closure_lineage.py --workspace . --json close \
   --evidence <reference> --authorization <reference> --actor <actor>
 ```
 
+An exact element ID always selects that element. An artifact ID or visible document ID defaults to
+the newest cycle-role element; `--role obligation` selects the newest obligation deterministically.
 `status` returns exact subject, graph, and evaluator revisions; reasons; descendant counts; and up
 to the first 100 nearest obligation-scoped blockers. Every explicit closure mutation supersedes
 the prior current record and refreshes the changed element and its indexed governing ancestors in

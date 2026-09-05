@@ -119,6 +119,40 @@ def _body_header_value(body: str, field: str) -> str | None:
     return None
 
 
+TERMINAL_DOCUMENT_LIFECYCLES = {"completed", "superseded", "archived", "terminal"}
+TERMINAL_BODY_STATUSES = {
+    "completed": {"complete", "completed"},
+    "superseded": {"superseded"},
+    "archived": {"archived"},
+    "terminal": {"complete", "completed", "terminal"},
+}
+
+
+def replace_body_header(body: str, field: str, value: str) -> str:
+    """Replace one bounded top-level document header without rewriting other content."""
+    prefix = field.casefold() + ":"
+    lines = body.splitlines(keepends=True)
+    for index, line in enumerate(lines[:80]):
+        if line.casefold().startswith(prefix):
+            ending = "\n" if line.endswith("\n") else ""
+            lines[index] = f"{field}: {value}{ending}"
+            return "".join(lines)
+    suffix = "" if body.endswith("\n") or not body else "\n"
+    return f"{body}{suffix}{field}: {value}\n"
+
+
+def _latest_cycle_for_document(connection: sqlite3.Connection, row: sqlite3.Row) -> sqlite3.Row | None:
+    return connection.execute(
+        "SELECT c.id, c.lifecycle_state FROM cycle c WHERE c.origin_artifact_id=? OR EXISTS ("
+        "SELECT 1 FROM relationship rel WHERE rel.from_artifact_id=c.origin_artifact_id "
+        "AND rel.to_artifact_id=? AND rel.relation_type='historical-overlay-for' "
+        "AND rel.retired_revision IS NULL) OR EXISTS (SELECT 1 FROM evidence_reference er "
+        "WHERE er.cycle_id=c.id AND er.kind='historical-origin' AND er.reference=?) "
+        "ORDER BY c.opened_at DESC, c.id DESC LIMIT 1",
+        (row["id"], row["id"], row["current_path"]),
+    ).fetchone()
+
+
 def _semantic_document_findings(connection: sqlite3.Connection) -> list[dict[str, Any]]:
     """Report recoverable document/domain drift without invalidating managed-write safety."""
     if not set(DOCUMENT_TABLES).issubset(_tables(connection)):
@@ -142,26 +176,23 @@ def _semantic_document_findings(connection: sqlite3.Connection) -> list[dict[str
                 "declared_type": declared_type,
                 "message": f"{row['visible_id']} stores type {row['stored_type']} but declares {declared_type}",
             })
-        idea_status = (_body_header_value(row["body_markdown"], "Status") or "").casefold()
-        if effective_type != "idea-brief" or row["lifecycle_state"] != "active" or idea_status != "promoted":
-            continue
-        cycle = connection.execute(
-            "SELECT c.id, c.lifecycle_state FROM cycle c WHERE c.origin_artifact_id=? OR EXISTS ("
-            "SELECT 1 FROM relationship rel WHERE rel.from_artifact_id=c.origin_artifact_id "
-            "AND rel.to_artifact_id=? AND rel.relation_type='historical-overlay-for' "
-            "AND rel.retired_revision IS NULL) OR EXISTS (SELECT 1 FROM evidence_reference er "
-            "WHERE er.cycle_id=c.id AND er.kind='historical-origin' AND er.reference=?) "
-            "ORDER BY c.opened_at DESC, c.id DESC LIMIT 1",
-            (row["id"], row["id"], row["current_path"]),
-        ).fetchone()
-        if cycle is None:
+        body_status = (_body_header_value(row["body_markdown"], "Status") or "").casefold()
+        cycle = _latest_cycle_for_document(connection, row)
+        if (
+            effective_type == "idea-brief"
+            and row["lifecycle_state"] == "active"
+            and body_status == "promoted"
+            and cycle is None
+        ):
             findings.append({
                 "code": "PROMOTED_IDEA_MISSING_OUTCOME",
                 "visible_id": row["visible_id"],
-                "idea_status": idea_status,
+                "idea_status": body_status,
                 "document_lifecycle": row["lifecycle_state"],
                 "message": f"{row['visible_id']} is promoted and active but has no owning outcome loop",
             })
+            continue
+        if cycle is None:
             continue
         reconciliation = connection.execute(
             "SELECT r.state, ov.disposition FROM reconciliation r "
@@ -170,16 +201,61 @@ def _semantic_document_findings(connection: sqlite3.Connection) -> list[dict[str
             (cycle["id"],),
         ).fetchone()
         if cycle["lifecycle_state"] == "terminal" and reconciliation and reconciliation["state"] == "reconciled":
-            expected = "superseded" if reconciliation["disposition"] == "superseded" else "completed"
-            findings.append({
-                "code": "PROMOTED_IDEA_LIFECYCLE_STALE",
-                "visible_id": row["visible_id"],
-                "cycle_id": cycle["id"],
-                "disposition": reconciliation["disposition"],
-                "document_lifecycle": row["lifecycle_state"],
-                "expected_lifecycle": expected,
-                "message": f"{row['visible_id']} has a terminal reconciled outcome but remains active",
-            })
+            disposition = str(reconciliation["disposition"])
+            expected = "superseded" if disposition == "superseded" else "completed"
+            closure = connection.execute(
+                "SELECT cr.effective_closed, cr.open_descendants, cr.unknown_descendants, "
+                "cr.invalid_descendants FROM closure_element ce JOIN closure_rollup cr "
+                "ON cr.element_id=ce.id WHERE ce.cycle_id=? AND ce.role='cycle' "
+                "ORDER BY ce.subject_revision DESC, ce.id LIMIT 1",
+                (cycle["id"],),
+            ).fetchone() if "closure_rollup" in _tables(connection) else None
+            effective_closed = bool(closure and closure["effective_closed"])
+            if row["lifecycle_state"] not in TERMINAL_DOCUMENT_LIFECYCLES:
+                code = (
+                    "TERMINAL_DOCUMENT_LIFECYCLE_STALE"
+                    if effective_closed
+                    else "TERMINAL_DOCUMENT_DESCENDANTS_OPEN"
+                )
+                expected_state = expected if effective_closed else "retain-open-until-recursively-closed"
+                findings.append({
+                    "code": code,
+                    "visible_id": row["visible_id"],
+                    "cycle_id": cycle["id"],
+                    "disposition": disposition,
+                    "document_lifecycle": row["lifecycle_state"],
+                    "expected_lifecycle": expected_state,
+                    "effective_closed": effective_closed,
+                    "open_descendants": int(closure["open_descendants"]) if closure else None,
+                    "message": (
+                        f"{row['visible_id']} has a terminal reconciled and recursively closed outcome "
+                        f"but remains {row['lifecycle_state']}"
+                        if effective_closed
+                        else f"{row['visible_id']} has a terminal reconciled outcome but recursive closure remains open"
+                    ),
+                })
+            elif not effective_closed:
+                findings.append({
+                    "code": "COMPLETED_DOCUMENT_CLOSURE_OPEN",
+                    "visible_id": row["visible_id"],
+                    "cycle_id": cycle["id"],
+                    "document_lifecycle": row["lifecycle_state"],
+                    "expected_lifecycle": "recursively-closed",
+                    "effective_closed": False,
+                    "open_descendants": int(closure["open_descendants"]) if closure else None,
+                    "message": f"{row['visible_id']} is complete while recursive closure remains open",
+                })
+            terminal_statuses = TERMINAL_BODY_STATUSES.get(str(row["lifecycle_state"]), set())
+            if row["lifecycle_state"] in TERMINAL_DOCUMENT_LIFECYCLES and body_status not in terminal_statuses:
+                findings.append({
+                    "code": "TERMINAL_DOCUMENT_BODY_STATUS_STALE",
+                    "visible_id": row["visible_id"],
+                    "cycle_id": cycle["id"],
+                    "document_lifecycle": row["lifecycle_state"],
+                    "body_status": body_status,
+                    "expected_body_status": expected,
+                    "message": f"{row['visible_id']} body status {body_status or '(missing)'} disagrees with {row['lifecycle_state']}",
+                })
     return findings
 
 
@@ -730,9 +806,13 @@ def set_lifecycle(workspace: Path, *, project_binding: str, identity: str, lifec
         if int(current["current_revision"]) != expected_revision:
             raise DocumentStoreError("stale document revision")
         new_revision, stamp = expected_revision + 1, hybrid_state.now()
-        connection.execute("INSERT INTO document_revision VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (str(uuid.uuid4()), current["id"], new_revision, current["title"], lifecycle, current["metadata_json"], current["body_markdown"], current["body_sha256"], actor, reason, revision, stamp))
-        connection.execute("UPDATE document SET lifecycle_state=?, current_revision=?, updated_at=? WHERE id=?", (lifecycle, new_revision, stamp, current["id"]))
-        connection.execute("UPDATE artifact SET lifecycle_state=?, updated_at=? WHERE id=?", (lifecycle, stamp, current["id"]))
+        body = str(current["body_markdown"])
+        canonical_status = "completed" if lifecycle == "terminal" else lifecycle
+        body = replace_body_header(body, "Status", canonical_status)
+        body_hash = sha256_text(body)
+        connection.execute("INSERT INTO document_revision VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (str(uuid.uuid4()), current["id"], new_revision, current["title"], lifecycle, current["metadata_json"], body, body_hash, actor, reason, revision, stamp))
+        connection.execute("UPDATE document SET lifecycle_state=?, current_revision=?, body_sha256=?, updated_at=? WHERE id=?", (lifecycle, new_revision, body_hash, stamp, current["id"]))
+        connection.execute("UPDATE artifact SET lifecycle_state=?, content_sha256=?, updated_at=? WHERE id=?", (lifecycle, body_hash, stamp, current["id"]))
         return {"artifact_id": current["id"], "visible_id": current["visible_id"], "document_revision": new_revision, "lifecycle": lifecycle}
     return managed_write(workspace, project_binding=project_binding, command="document-set-lifecycle", actor=actor, callback=apply, database=database)
 

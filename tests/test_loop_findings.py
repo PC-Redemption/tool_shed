@@ -115,7 +115,9 @@ class LoopFindingTests(unittest.TestCase):
 
         resolved = loop_findings.resolve(self.workspace, str(finding["finding_id"]))
         self.assertEqual(resolved["status"], "actionable")
-        self.assertEqual(resolved["recommended_action"], "correct-document-lifecycle")
+        self.assertEqual(
+            resolved["recommended_action"], "correct-document-lifecycle-and-body-status"
+        )
         self.assertFalse(resolved["writes_performed"])
 
         document_store.create_document(
@@ -134,6 +136,7 @@ class LoopFindingTests(unittest.TestCase):
         self.assertEqual(repeated["findings"][0]["finding_id"], finding["finding_id"])
 
     def test_lifecycle_correction_resolves_and_recurrence_reopens_same_finding(self) -> None:
+        loop_findings.migrate(self.workspace, project_binding=self.binding)
         loop_findings.migrate(self.workspace, project_binding=self.binding)
         finding_id = loop_findings.audit(self.workspace)["findings"][0]["finding_id"]
         current = document_store.show(self.workspace, str(self.idea["visible_id"]))
@@ -216,6 +219,10 @@ class LoopFindingTests(unittest.TestCase):
             document_store.show(self.workspace, str(self.idea["visible_id"]))["lifecycle"],
             "completed",
         )
+        self.assertIn(
+            "Status: completed",
+            document_store.show(self.workspace, str(self.idea["visible_id"]))["body_markdown"],
+        )
         with contextlib.closing(
             hybrid_state.connect(hybrid_state.database_path(self.workspace), writable=False)
         ) as connection:
@@ -225,6 +232,49 @@ class LoopFindingTests(unittest.TestCase):
                 (self.cycle_id,),
             ).fetchone()
         self.assertEqual(evidence["target_identity"], "apply-expected-state")
+
+    def test_open_descendant_is_closure_debt_not_an_automatic_lifecycle_repair(self) -> None:
+        loop_findings.migrate(self.workspace, project_binding=self.binding)
+        loop_findings.migrate(self.workspace, project_binding=self.binding)
+        child = document_store.create_document(
+            self.workspace,
+            project_binding=self.binding,
+            document_type="project-map",
+            title="Open child",
+            body="# Open child\n\nStatus: active\n",
+            lifecycle="active",
+            metadata={"document_type": "project-map"},
+            actor="fixture",
+            reason="open descendant fixture",
+        )["result"]
+        document_store.open_outcome(
+            self.workspace,
+            project_binding=self.binding,
+            identity=str(child["visible_id"]),
+            accepted_outcome="Child is completed.",
+            actor="fixture",
+        )
+        document_store.relate(
+            self.workspace,
+            project_binding=self.binding,
+            source=str(child["visible_id"]),
+            relation="outcome-parent",
+            target=str(self.idea["visible_id"]),
+            actor="fixture",
+        )
+        finding = next(
+            item for item in loop_findings.audit(self.workspace)["findings"]
+            if item["state"] == "active" and item["subject_id"] == self.idea["visible_id"]
+        )
+        self.assertEqual(finding["reason_code"], "LINEAGE_RECOVERY_REQUIRED")
+        self.assertEqual(finding["expected_state"], "retain-open-until-recursively-closed")
+        with self.assertRaisesRegex(loop_findings.LoopFindingError, "does not support"):
+            loop_findings.history_review_plan(
+                self.workspace,
+                decisions=[f"{finding['finding_id']}=apply-expected-state"],
+                rationale="Automatic repair must refuse open descendants.",
+                complete_cluster=False,
+            )
 
     def test_schema5_discovers_current_outcome_health_and_preserves_schema4_history(self) -> None:
         loop_findings.migrate(self.workspace, project_binding=self.binding)

@@ -141,6 +141,12 @@ class ClosureLineageTests(unittest.TestCase):
         root = closure_lineage.status(self.workspace, self.idea_cycle)
         self.assertFalse(root["effective_closed"])
         self.assertIn("LOCAL_OPEN", root["reason_codes"])
+        by_visible_id = closure_lineage.status(self.workspace, str(self.idea["visible_id"]))
+        self.assertEqual(by_visible_id["role"], "cycle")
+        obligation = closure_lineage.status(
+            self.workspace, str(self.idea["visible_id"]), role="obligation"
+        )
+        self.assertEqual(obligation["role"], "obligation")
 
         self.close(self.requirement_for(self.roadmap_cycle))
         self.close(self.roadmap_cycle)

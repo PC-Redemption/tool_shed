@@ -74,7 +74,10 @@ until the replacement content commit passes the ordinary exact-SHA gate.
 
 Reconcile the registered outcome chains from their innermost result to their Idea roots using the
 ordinary outcome-transition interface. Finalization fails closed while any registered owner is
-open, failed, partial without approval, unreconciled, or unpropagated. When multiple released
+open, failed, partial without approval, unreconciled, unpropagated, backed by a nonterminal managed
+document, or not recursively closed at its cycle-role closure element. Direct non-document owners
+retain the legacy outcome-only gate, and pre-closure schemas retain their compatibility behavior.
+When multiple released
 cohorts await parent reconciliation, select the exact cohort:
 
 ```bash
