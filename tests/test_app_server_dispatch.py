@@ -238,15 +238,21 @@ class AppServerDispatchTests(unittest.TestCase):
             "next",
             "--json",
         ]
+        def fail_after_selection(*args, **kwargs):
+            lifecycle = kwargs["lifecycle"]
+            lifecycle.selected("persistent_operator_runtime_trust")
+            lifecycle.attempted()
+            raise DispatchError(
+                "app_server_network_unavailable",
+                "sanitized",
+                recovery_action="continue",
+            )
+
         with (
             patch.object(sys, "argv", argv),
             patch(
                 "scripts.app_server_dispatch.dispatch_next",
-                side_effect=DispatchError(
-                    "app_server_network_unavailable",
-                    "sanitized",
-                    recovery_action="continue",
-                ),
+                side_effect=fail_after_selection,
             ),
             redirect_stdout(stdout),
         ):
@@ -258,8 +264,14 @@ class AppServerDispatchTests(unittest.TestCase):
         self.assertTrue(payload["fallback"]["continue_same_action"])
         self.assertFalse(payload["fallback"]["replay_app_server"])
         records = [json.loads(line) for line in events.read_text(encoding="utf-8").splitlines()]
-        self.assertEqual(["attempted", "gui_fallback"], [item["outcome"] for item in records])
-        self.assertEqual(["execution", "fallback"], [item["event_type"] for item in records])
+        self.assertEqual(
+            ["selected", "attempted", "gui_fallback"],
+            [item["outcome"] for item in records],
+        )
+        self.assertEqual(
+            ["opportunity", "execution", "terminal"],
+            [item["event_type"] for item in records],
+        )
         self.assertEqual({"passive"}, {item["source"] for item in records})
         self.assertEqual(1, len({item["correlation_id"] for item in records}))
 

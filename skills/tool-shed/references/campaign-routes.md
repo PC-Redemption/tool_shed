@@ -654,14 +654,21 @@ trust. `--gui` is a one-command override and never changes the preference. Remov
 execution option from the request passed to the worker. Discussion, brainstorming, qualification
 gates, unsupported roles, and other GUI-native routes remain GUI-native regardless of the default.
 
-Before every explicit operation, run the deterministic selector from the workspace-local shed:
+Before every explicit planning, verification, or CAMP operation, run the deterministic selector
+from the workspace-local shed:
 
 ```bash
 python3 <shed>/scripts/app_server_control.py select <plan|verify|camp-run> --json
 ```
 
-Add `--app-server` for a strict request or `--gui` for the one-command override. Surface its concise
-execution banner. Continue to App Server only when `allowed` is true. An explicit App Server request
+Add `--app-server` for a strict request or `--gui` for the one-command override. An allowed App
+Server selection durably creates a content-free 300-second dispatch lease and returns its
+`dispatch.correlation_id`. Pass that value exactly once to the immediately following
+`codex_orchestration.py` invocation as `--dispatch-correlation`; both commands must use the same
+`--events` path when a non-default path is supplied. Surface the concise execution banner. Do not
+perform the selected action in GUI or invoke orchestration without the returned correlation. The
+consumer records the attempt and exactly one terminal result under the same identity; an expired
+or already-consumed identity refuses replay. Continue to App Server only when `allowed` is true. An explicit App Server request
 fails closed; a persisted or repository-default request that cannot select App Server records a
 sanitized event, reports the reason, and continues the same action immediately in the current GUI
 without asking or stopping.
@@ -709,7 +716,8 @@ and preserve the Git journal. Return `resume_bounded_camp` when no mutation occu
 `reconcile_workspace_then_resume_bounded_camp` when it did; never replay the mutated step.
 
 For eligible `ts: next`, including the explicit form, immediately invoke the deterministic
-dispatcher once when selection chooses App Server:
+dispatcher once. Do not run the standalone selector first: this entry point owns selection,
+attempt, and terminal accounting under one correlation identity.
 
 ```bash
 python3 <shed>/scripts/app_server_dispatch.py --workspace . next --json

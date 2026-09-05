@@ -22,6 +22,7 @@ PREFERENCE_SCHEMA_VERSION = 2
 LEGACY_PREFERENCE_SCHEMA_VERSION = 1
 OPERATOR_RUNTIME_TRUST = "operator-runtime"
 EVENT_SCHEMA_VERSION = 2
+DISPATCH_LEASE_SECONDS = 300
 OWNER_PROFILE_SCHEMA_VERSION = 1
 LOCK_TIMEOUT_SECONDS = 10.0
 STALE_LOCK_SECONDS = 30.0
@@ -558,6 +559,198 @@ class AppServerEventStore:
             },
             "privacy": "content-free-controlled-fields-only",
         }
+
+    def correlation_events(self, correlation_id: str) -> list[dict[str, Any]]:
+        token = self._token(correlation_id, "unknown")
+        if token == "unknown":
+            raise AppServerUserStateError("dispatch correlation ID is invalid")
+        try:
+            lines = self.path.read_text(encoding="utf-8").splitlines()
+        except FileNotFoundError:
+            return []
+        except OSError as error:
+            raise AppServerUserStateError(
+                f"cannot read App Server event log: {error}"
+            ) from error
+        events: list[dict[str, Any]] = []
+        for line in lines:
+            try:
+                event = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if (
+                isinstance(event, dict)
+                and event.get("schema_version") == EVENT_SCHEMA_VERSION
+                and event.get("correlation_id") == token
+            ):
+                events.append(event)
+        return events
+
+
+class AppServerDispatchLifecycle:
+    """Record one in-process eligible dispatch under one correlation identity."""
+
+    TERMINAL_OUTCOMES = frozenset(
+        {"completed", "gui_fallback", "reconciliation_required", "failed"}
+    )
+
+    def __init__(
+        self,
+        *,
+        command: str,
+        role: str,
+        preference_mode: str,
+        strict_request: bool,
+        source: str,
+        path: Path | None = None,
+        correlation_id: str | None = None,
+    ) -> None:
+        self.store = AppServerEventStore(path)
+        self.command = command
+        self.role = role
+        self.preference_mode = preference_mode
+        self.strict_request = strict_request
+        self.source = source
+        self.correlation_id = AppServerEventStore._token(
+            correlation_id or uuid.uuid4().hex, "unknown"
+        )
+        if self.correlation_id == "unknown":
+            raise AppServerUserStateError("dispatch correlation ID is invalid")
+        self._selected = False
+        self._attempted = False
+        self._terminal = False
+
+    @property
+    def selection_recorded(self) -> bool:
+        return self._selected
+
+    @property
+    def attempt_recorded(self) -> bool:
+        return self._attempted
+
+    @property
+    def terminal_recorded(self) -> bool:
+        return self._terminal
+
+    @classmethod
+    def resume(
+        cls,
+        correlation_id: str,
+        *,
+        path: Path | None = None,
+    ) -> AppServerDispatchLifecycle:
+        store = AppServerEventStore(path)
+        events = store.correlation_events(correlation_id)
+        selections = [event for event in events if event.get("outcome") == "selected"]
+        attempts = [event for event in events if event.get("outcome") == "attempted"]
+        terminals = [
+            event for event in events if event.get("outcome") in cls.TERMINAL_OUTCOMES
+        ]
+        if len(selections) != 1:
+            raise AppServerUserStateError(
+                "dispatch correlation must resolve exactly one eligible selection"
+            )
+        if attempts or terminals:
+            raise AppServerUserStateError(
+                "dispatch correlation was already consumed; reconcile instead of replaying"
+            )
+        selected = selections[0]
+        try:
+            selected_epoch = datetime.fromisoformat(
+                str(selected["recorded_at"]).replace("Z", "+00:00")
+            ).timestamp()
+        except (KeyError, TypeError, ValueError) as error:
+            raise AppServerUserStateError(
+                "dispatch selection timestamp is malformed"
+            ) from error
+        if float(store.now()) - selected_epoch > DISPATCH_LEASE_SECONDS:
+            raise AppServerUserStateError(
+                "dispatch selection lease expired before execution"
+            )
+        lifecycle = cls(
+            command=str(selected.get("command", "unknown")),
+            role=str(selected.get("role", "unknown")),
+            preference_mode=str(selected.get("preference_mode", "UNKNOWN")),
+            strict_request=bool(selected.get("strict_request")),
+            source=str(selected.get("source", "unknown")),
+            path=path,
+            correlation_id=correlation_id,
+        )
+        lifecycle._selected = True
+        return lifecycle
+
+    def _record(
+        self,
+        *,
+        outcome: str,
+        category: str,
+        mutation_state: str,
+        backend: str,
+        event_type: str,
+    ) -> dict[str, Any]:
+        return self.store.record(
+            command=self.command,
+            outcome=outcome,
+            category=category,
+            mutation_state=mutation_state,
+            backend=backend,
+            preference_mode=self.preference_mode,
+            strict_request=self.strict_request,
+            source=self.source,
+            event_type=event_type,
+            role=self.role,
+            correlation_id=self.correlation_id,
+        )
+
+    def selected(self, category: str) -> dict[str, Any]:
+        if self._selected or self._attempted or self._terminal:
+            raise AppServerUserStateError("dispatch selection was already recorded")
+        event = self._record(
+            outcome="selected",
+            category=category,
+            mutation_state="none",
+            backend="app_server",
+            event_type="opportunity",
+        )
+        self._selected = True
+        return event
+
+    def attempted(self, category: str = "dispatch") -> dict[str, Any]:
+        if not self._selected:
+            raise AppServerUserStateError("dispatch attempt requires a recorded selection")
+        if self._attempted or self._terminal:
+            raise AppServerUserStateError("dispatch attempt was already recorded")
+        event = self._record(
+            outcome="attempted",
+            category=category,
+            mutation_state="none",
+            backend="app_server",
+            event_type="execution",
+        )
+        self._attempted = True
+        return event
+
+    def terminal(
+        self,
+        outcome: str,
+        *,
+        category: str,
+        mutation_state: str,
+        backend: str,
+    ) -> dict[str, Any]:
+        if outcome not in self.TERMINAL_OUTCOMES:
+            raise AppServerUserStateError(f"unsupported dispatch terminal outcome: {outcome}")
+        if self._terminal:
+            raise AppServerUserStateError("dispatch terminal result was already recorded")
+        event = self._record(
+            outcome=outcome,
+            category=category,
+            mutation_state=mutation_state,
+            backend=backend,
+            event_type="terminal",
+        )
+        self._terminal = True
+        return event
 
 
 def record_app_server_event_best_effort(

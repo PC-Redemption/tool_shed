@@ -2152,6 +2152,86 @@ class CodexExecutionTests(unittest.TestCase):
             json.loads(opportunity_report.stdout)["included_runtime_events"], 3
         )
 
+    def test_selected_read_only_route_consumes_one_correlation_end_to_end(self) -> None:
+        events = self.root / "correlated-events.jsonl"
+        selected = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "app_server_control.py"),
+                "--codex",
+                str(self.fake),
+                "--events",
+                str(events),
+                "select",
+                "plan",
+                "--app-server",
+                "--json",
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        correlation = json.loads(selected.stdout)["dispatch"]["correlation_id"]
+        executed = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "codex_orchestration.py"),
+                "--codex",
+                str(self.fake),
+                "--enable-app-server",
+                "--events",
+                str(events),
+                "--dispatch-correlation",
+                correlation,
+                "run",
+                "--role",
+                "planning",
+                "--prompt",
+                "Return a compact plan.",
+                "--cwd",
+                str(ROOT),
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual("completed", json.loads(executed.stdout)["result"]["status"])
+        records = [
+            json.loads(line) for line in events.read_text(encoding="utf-8").splitlines()
+        ]
+        chain = [item for item in records if item["correlation_id"] == correlation]
+        self.assertEqual(
+            ["selected", "attempted", "completed"],
+            [item["outcome"] for item in chain],
+        )
+        self.assertEqual(1, len({item["correlation_id"] for item in chain}))
+
+        replay = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "codex_orchestration.py"),
+                "--codex",
+                str(self.fake),
+                "--enable-app-server",
+                "--events",
+                str(events),
+                "--dispatch-correlation",
+                correlation,
+                "run",
+                "--role",
+                "planning",
+                "--prompt",
+                "Do not replay.",
+                "--cwd",
+                str(ROOT),
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(1, replay.returncode)
+        self.assertIn("already consumed", replay.stderr)
+
     def test_thread_resume_restart_and_stale_thread_classification(self) -> None:
         telemetry = self.root / "telemetry.jsonl"
         with CodexExecutionAdapter(

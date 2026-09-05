@@ -131,6 +131,13 @@ python3 scripts/app_server_control.py status
 python3 scripts/app_server_dispatch.py --workspace . next --app-server --json
 ```
 
+For `plan`, `verify`, and `camp-run`, consume the JSON selector result immediately. Its
+`dispatch.correlation_id` is a short-lived, single-use lease; pass it to the matching
+`codex_orchestration.py` command with `--dispatch-correlation`. If a non-default `--events` path is
+used for selection, supply the same path to orchestration. The consumer records the attempt and
+terminal result on that correlation and refuses expired or replayed leases. `next` is already the
+atomic dispatcher and must not be preceded by a standalone selection.
+
 The selected campaign's executable contract is explicit and reviewable:
 
 ````markdown

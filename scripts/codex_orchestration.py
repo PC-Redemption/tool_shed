@@ -21,6 +21,10 @@ from pathlib import Path
 from typing import Any, Iterator
 
 try:
+    from scripts.app_server_user_state import (
+        AppServerDispatchLifecycle,
+        AppServerUserStateError,
+    )
     from scripts.codex_app_server import AppServerError, AuthenticationError
     from scripts.codex_execution import (
         CodexExecutionAdapter,
@@ -48,6 +52,10 @@ try:
         structured_outcome_record,
     )
 except ModuleNotFoundError:  # Direct execution: python scripts/codex_orchestration.py
+    from app_server_user_state import (  # type: ignore[no-redef]
+        AppServerDispatchLifecycle,
+        AppServerUserStateError,
+    )
     from codex_app_server import AppServerError, AuthenticationError  # type: ignore[no-redef]
     from codex_execution import (  # type: ignore[no-redef]
         CodexExecutionAdapter,
@@ -1515,6 +1523,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--timeout", type=float, default=300.0)
     parser.add_argument("--telemetry", type=Path, default=default_telemetry_path())
     parser.add_argument(
+        "--dispatch-correlation",
+        help="Consume the short-lived correlation emitted by app_server_control.py select.",
+    )
+    parser.add_argument("--events", type=Path, default=None)
+    parser.add_argument(
         "--enable-app-server",
         action="store_true",
         help="Enable App Server for this invocation without changing the repository default.",
@@ -1578,7 +1591,25 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    lifecycle: AppServerDispatchLifecycle | None = None
     try:
+        if args.dispatch_correlation:
+            lifecycle = AppServerDispatchLifecycle.resume(
+                args.dispatch_correlation,
+                path=args.events,
+            )
+            expected_command = None
+            if args.command == "camp-run":
+                expected_command = "camp-run"
+            elif args.command == "run":
+                expected_command = {"planning": "plan", "verification": "verify"}.get(
+                    getattr(args, "role", "")
+                )
+            if lifecycle.command != expected_command:
+                raise AppServerUserStateError(
+                    "dispatch correlation does not match the requested operation"
+                )
+            lifecycle.attempted()
         config = AppServerFeatureConfig.load(args.config)
         enabled = True if args.enable_app_server else None
         if args.command == "route":
@@ -1634,8 +1665,22 @@ def main() -> int:
             payload: dict[str, Any] = {"route": asdict(decision)}
             if result is not None:
                 payload["result"] = asdict(result)
+                if lifecycle is not None:
+                    lifecycle.terminal(
+                        "completed",
+                        category="completed",
+                        mutation_state="none",
+                        backend="app_server",
+                    )
             else:
                 payload["fallback"] = "continue in the existing Tool Shed/Codex GUI path"
+                if lifecycle is not None:
+                    lifecycle.terminal(
+                        "gui_fallback",
+                        category=decision.reason,
+                        mutation_state="none",
+                        backend="gui",
+                    )
             print(json.dumps(payload, indent=2, sort_keys=True))
             return 0
 
@@ -1662,11 +1707,21 @@ def main() -> int:
                 "advance_to_next_camp_step",
                 "verify_before_campaign_transition",
             }
-            return (
-                0
-                if isinstance(journal, dict)
+            successful = (
+                isinstance(journal, dict)
                 and journal.get("safe")
                 and payload.get("next_action") in successful_actions
+            )
+            if lifecycle is not None:
+                lifecycle.terminal(
+                    "completed" if successful else "reconciliation_required",
+                    category="completed" if successful else "camp_reconciliation_required",
+                    mutation_state="verified" if successful else "possible",
+                    backend="app_server" if successful else "gui",
+                )
+            return (
+                0
+                if successful
                 else 2
             )
 
@@ -1748,7 +1803,29 @@ def main() -> int:
             )
         )
         return 0
-    except (AppServerError, AuthenticationError, FeatureConfigError, ModelPolicyError) as error:
+    except (
+        AppServerError,
+        AuthenticationError,
+        FeatureConfigError,
+        ModelPolicyError,
+        AppServerUserStateError,
+    ) as error:
+        if (
+            lifecycle is not None
+            and lifecycle.attempt_recorded
+            and not lifecycle.terminal_recorded
+        ):
+            possible_mutation = args.command == "camp-run"
+            lifecycle.terminal(
+                "reconciliation_required"
+                if possible_mutation
+                else "failed"
+                if lifecycle.strict_request
+                else "gui_fallback",
+                category=type(error).__name__,
+                mutation_state="possible" if possible_mutation else "none",
+                backend="app_server" if lifecycle.strict_request else "gui",
+            )
         print(json.dumps({"error": str(error)}, indent=2), file=os.sys.stderr)
         return 1
 

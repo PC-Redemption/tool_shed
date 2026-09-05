@@ -42,6 +42,7 @@ try:
         AppServerOwnerProfileStore,
         AppServerPreferenceStore,
         AppServerUserStateError,
+        DISPATCH_LEASE_SECONDS,
         default_app_server_event_path,
         default_app_server_profile_path,
         record_app_server_event_best_effort,
@@ -78,6 +79,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/app_server_contr
         AppServerOwnerProfileStore,
         AppServerPreferenceStore,
         AppServerUserStateError,
+        DISPATCH_LEASE_SECONDS,
         default_app_server_event_path,
         default_app_server_profile_path,
         record_app_server_event_best_effort,
@@ -1090,29 +1092,49 @@ def main() -> int:
                 repository_policy_path=args.repository_policy,
                 force_requalification=args.requalify,
             )
-            record_app_server_event_best_effort(
-                path=args.events,
-                command=args.command,
-                outcome=(
+            event_fields = {
+                "command": args.command,
+                "outcome": (
                     "gui_fallback" if selection.fallback_used
                     else "selected" if selection.execution == "App Server"
                     else "gui"
                 ),
-                category=selection.fallback_reason or selection.reason,
-                mutation_state="none",
-                backend="app_server" if selection.execution == "App Server" else "gui",
-                preference_mode=selection.preference_mode,
-                strict_request=selection.strict_request,
-                source="operator" if selection.strict_request else "passive",
-                event_type="opportunity",
-                role=args.command,
-                correlation_id=correlation_id,
+                "category": selection.fallback_reason or selection.reason,
+                "mutation_state": "none",
+                "backend": "app_server" if selection.execution == "App Server" else "gui",
+                "preference_mode": selection.preference_mode,
+                "strict_request": selection.strict_request,
+                "source": "operator" if selection.strict_request else "passive",
+                "event_type": "opportunity",
+                "role": selection.role,
+                "correlation_id": correlation_id,
+            }
+            accountable = selection.allowed and selection.execution == "App Server"
+            if accountable:
+                AppServerEventStore(args.events).record(**event_fields)
+            else:
+                record_app_server_event_best_effort(path=args.events, **event_fields)
+            dispatch = (
+                {
+                    "correlation_id": correlation_id,
+                    "lease_seconds": DISPATCH_LEASE_SECONDS,
+                    "required_consumer": "codex_orchestration",
+                }
+                if accountable
+                else None
             )
-            print(
-                json.dumps(asdict(selection), indent=2, sort_keys=True)
-                if args.json
-                else format_selection(selection)
-            )
+            if args.json:
+                payload = asdict(selection)
+                payload["dispatch"] = dispatch
+                print(json.dumps(payload, indent=2, sort_keys=True))
+            else:
+                rendered = format_selection(selection)
+                if dispatch is not None:
+                    rendered += (
+                        f"\nDispatch correlation: {correlation_id}"
+                        f"\nDispatch lease: {DISPATCH_LEASE_SECONDS} seconds"
+                    )
+                print(rendered)
             return 0 if selection.allowed else 2
         if args.operation == "status":
             report = control_status(

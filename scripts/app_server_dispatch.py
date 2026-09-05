@@ -13,7 +13,6 @@ import shutil
 import subprocess
 import sys
 import time
-import uuid
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from types import SimpleNamespace
@@ -41,8 +40,9 @@ try:
     from scripts.codex_app_server_compatibility import DEFAULT_QUALIFICATIONS
     from scripts.project_identity import binding_token, require_project_binding
     from scripts.app_server_user_state import (
+        AppServerDispatchLifecycle,
         AppServerPreferenceStore,
-        record_app_server_event_best_effort,
+        AppServerUserStateError,
     )
 except ModuleNotFoundError:  # Direct execution: python scripts/app_server_dispatch.py
     import campaign_queue  # type: ignore[no-redef]
@@ -71,8 +71,9 @@ except ModuleNotFoundError:  # Direct execution: python scripts/app_server_dispa
         require_project_binding,
     )
     from app_server_user_state import (  # type: ignore[no-redef]
+        AppServerDispatchLifecycle,
         AppServerPreferenceStore,
-        record_app_server_event_best_effort,
+        AppServerUserStateError,
     )
 
 
@@ -1551,6 +1552,7 @@ def dispatch_next(
     preference_path: Path | None = None,
     timeout: float = 300.0,
     telemetry_path: Path | None = None,
+    lifecycle: AppServerDispatchLifecycle | None = None,
 ) -> dict[str, Any]:
     started_at = time.monotonic()
     root = workspace.expanduser().resolve()
@@ -1620,6 +1622,9 @@ def dispatch_next(
                 else "rerun the same Tool Shed command with --gui"
             ),
         )
+    if lifecycle is not None:
+        lifecycle.selected(str(selection.reason))
+        lifecycle.attempted()
     preflight = _app_server_host_preflight(selection, timeout=timeout)
     if requires_preparation:
         planning_selection = select_command(
@@ -1821,21 +1826,14 @@ def _gui_handoff_payload(
 
 def main() -> int:
     args = build_parser().parse_args()
-    correlation_id = uuid.uuid4().hex
     preference = AppServerPreferenceStore(args.preference).status()
-    record_app_server_event_best_effort(
+    lifecycle = AppServerDispatchLifecycle(
         path=args.events,
         command="next",
-        outcome="attempted",
-        category="dispatch",
-        mutation_state="none",
-        backend="app_server",
+        role="camp_execution",
         preference_mode=preference.mode,
         strict_request=args.app_server,
         source="operator" if args.app_server else "passive",
-        event_type="execution",
-        role="camp_execution",
-        correlation_id=correlation_id,
     )
     try:
         payload = dispatch_next(
@@ -1850,28 +1848,34 @@ def main() -> int:
             preference_path=args.preference,
             timeout=args.timeout,
             telemetry_path=args.telemetry,
+            lifecycle=lifecycle,
         )
-    except (DispatchError, campaign_queue.CampaignError, OSError) as error:
+    except (
+        DispatchError,
+        campaign_queue.CampaignError,
+        AppServerUserStateError,
+        OSError,
+    ) as error:
         if isinstance(error, DispatchError):
             category = error.category
             mutation_state = error.mutation_state
         else:
             category = "dispatch_preflight_failed"
             mutation_state = "none"
-        record_app_server_event_best_effort(
-            path=args.events,
-            command="next",
-            outcome="failed" if args.app_server else "gui_fallback",
-            category=category,
-            mutation_state=mutation_state,
-            backend="gui" if not args.app_server else "app_server",
-            preference_mode=preference.mode,
-            strict_request=args.app_server,
-            source="operator" if args.app_server else "passive",
-            event_type="fallback",
-            role="camp_execution",
-            correlation_id=correlation_id,
+        terminal_outcome = (
+            "failed"
+            if args.app_server
+            else "reconciliation_required"
+            if mutation_state != "none"
+            else "gui_fallback"
         )
+        if lifecycle.selection_recorded:
+            lifecycle.terminal(
+                terminal_outcome,
+                category=category,
+                mutation_state=mutation_state,
+                backend="gui" if not args.app_server else "app_server",
+            )
         if not args.app_server:
             payload = _gui_handoff_payload(
                 category=category,
@@ -1892,19 +1896,11 @@ def main() -> int:
     if payload["status"] != "completed" and not args.app_server:
         final_state = str((payload.get("journal") or {}).get("final_state") or "stopped")
         category = f"app_server_{final_state}"
-        record_app_server_event_best_effort(
-            path=args.events,
-            command="next",
-            outcome="gui_reconciliation",
+        lifecycle.terminal(
+            "reconciliation_required",
             category=category,
             mutation_state="possible",
             backend="gui",
-            preference_mode=preference.mode,
-            strict_request=False,
-            source="passive",
-            event_type="reconciliation",
-            role="camp_execution",
-            correlation_id=correlation_id,
         )
         payload = _gui_handoff_payload(
             category=category,
@@ -1913,19 +1909,11 @@ def main() -> int:
         )
         print(json.dumps(payload, indent=2, sort_keys=True))
         return 0
-    record_app_server_event_best_effort(
-        path=args.events,
-        command="next",
-        outcome="completed" if payload["status"] == "completed" else "stopped",
+    lifecycle.terminal(
+        "completed" if payload["status"] == "completed" else "failed",
         category=str(payload["status"]),
         mutation_state="verified" if payload["status"] == "completed" else "possible",
         backend="app_server",
-        preference_mode=preference.mode,
-        strict_request=args.app_server,
-        source="operator" if args.app_server else "passive",
-        event_type="execution",
-        role="camp_execution",
-        correlation_id=correlation_id,
     )
     print(json.dumps(payload, indent=2, sort_keys=True))
     return 0 if payload["status"] == "completed" else 2

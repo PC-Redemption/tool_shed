@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 
 from scripts.app_server_user_state import (
+    AppServerDispatchLifecycle,
     AppServerEventStore,
     AppServerOwnerProfileStore,
     AppServerPreferenceStore,
@@ -212,6 +213,54 @@ class AppServerUserStateTests(unittest.TestCase):
                 strict_request=False,
             )
         )
+
+    def test_dispatch_lifecycle_resumes_one_selection_and_refuses_replay(self) -> None:
+        events = self.root / "codex" / "tool-shed" / "app-server-events.jsonl"
+        selected = AppServerDispatchLifecycle(
+            command="plan",
+            role="planning",
+            preference_mode="ON",
+            strict_request=False,
+            source="passive",
+            path=events,
+            correlation_id="one",
+        )
+        selected.selected("eligible")
+
+        resumed = AppServerDispatchLifecycle.resume("one", path=events)
+        resumed.attempted()
+        resumed.terminal(
+            "completed",
+            category="completed",
+            mutation_state="none",
+            backend="app_server",
+        )
+
+        records = AppServerEventStore(events).correlation_events("one")
+        self.assertEqual(
+            ["selected", "attempted", "completed"],
+            [event["outcome"] for event in records],
+        )
+        with self.assertRaisesRegex(AppServerUserStateError, "already consumed"):
+            AppServerDispatchLifecycle.resume("one", path=events)
+
+    def test_dispatch_lifecycle_rejects_an_expired_selection(self) -> None:
+        events = self.root / "codex" / "tool-shed" / "app-server-events.jsonl"
+        AppServerEventStore(events, now=lambda: 0.0).record(
+            command="verify",
+            outcome="selected",
+            category="eligible",
+            mutation_state="none",
+            backend="app_server",
+            preference_mode="ON",
+            strict_request=False,
+            source="passive",
+            event_type="opportunity",
+            role="verification",
+            correlation_id="expired",
+        )
+        with self.assertRaisesRegex(AppServerUserStateError, "lease expired"):
+            AppServerDispatchLifecycle.resume("expired", path=events)
 
     def test_report_groups_failures_without_exposing_raw_categories(self) -> None:
         events = self.root / "codex" / "tool-shed" / "app-server-events.jsonl"
