@@ -358,6 +358,52 @@ class DocumentStoreThinSliceTests(unittest.TestCase):
             {item["code"] for item in document_store.audit(self.workspace, self.database)["semantic_findings"]},
         )
 
+    def test_complete_outcome_updates_document_body_cycle_and_reconciliation_atomically(self) -> None:
+        campaign = document_store.create_document(
+            self.workspace,
+            project_binding=self.binding,
+            document_type="campaign",
+            title="Atomic completion",
+            body="# Atomic completion\n\nStatus: working\n",
+            lifecycle="active",
+            metadata={"document_type": "campaign"},
+            actor="fixture",
+            reason="atomic completion fixture",
+            database=self.database,
+        )["result"]
+        cycle = document_store.open_outcome(
+            self.workspace,
+            project_binding=self.binding,
+            identity=campaign["visible_id"],
+            accepted_outcome="The campaign completes coherently.",
+            actor="fixture",
+            database=self.database,
+        )["result"]["cycle_id"]
+        completed = document_store.complete_outcome(
+            self.workspace,
+            project_binding=self.binding,
+            identity=campaign["visible_id"],
+            expected_revision=1,
+            disposition="satisfied",
+            summary="Atomic completion verified.",
+            authorization="fixture",
+            actor="fixture",
+            database=self.database,
+        )["result"]
+        self.assertEqual(completed["cycle_id"], cycle)
+        shown = document_store.show(self.workspace, campaign["visible_id"], database=self.database)
+        self.assertEqual(shown["lifecycle"], "completed")
+        self.assertIn("Status: completed", shown["body_markdown"])
+        with contextlib.closing(hybrid_state.connect(self.database, writable=False)) as connection:
+            row = connection.execute(
+                "SELECT c.lifecycle_state, r.state, v.disposition FROM cycle c "
+                "JOIN reconciliation r ON r.cycle_id=c.id AND r.origin_revision=("
+                "SELECT MAX(r2.origin_revision) FROM reconciliation r2 WHERE r2.cycle_id=c.id) "
+                "JOIN outcome_verdict v ON v.id=r.verdict_id WHERE c.id=?",
+                (cycle,),
+            ).fetchone()
+        self.assertEqual(tuple(row), ("terminal", "reconciled", "satisfied"))
+
     def test_bounded_interface_and_disposable_lifecycle_views(self) -> None:
         first = document_store.create_document(
             self.workspace, project_binding=self.binding, document_type="ticket", title="Repair compact context",

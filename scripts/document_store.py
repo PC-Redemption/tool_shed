@@ -1252,6 +1252,143 @@ def open_outcome(workspace: Path, *, project_binding: str, identity: str, accept
     return managed_write(workspace, project_binding=project_binding, command="document-open-outcome", actor=actor, callback=apply, database=database)
 
 
+def complete_outcome(
+    workspace: Path,
+    *,
+    project_binding: str,
+    identity: str,
+    expected_revision: int,
+    disposition: str,
+    summary: str,
+    authorization: str,
+    actor: str,
+    database: Path | None = None,
+) -> dict[str, Any]:
+    """Atomically complete a managed document and its current outcome loop."""
+    if disposition not in {"satisfied", "satisfied-with-approved-change", "not-applicable", "superseded"}:
+        raise DocumentStoreError("complete outcome requires a supported terminal disposition")
+    if not summary.strip() or not authorization.strip():
+        raise DocumentStoreError("complete outcome requires summary and authorization")
+
+    def apply(connection: sqlite3.Connection, revision: int) -> dict[str, Any]:
+        current = _lookup(connection, identity)
+        if int(current["current_revision"]) != expected_revision:
+            raise DocumentStoreError("stale document revision")
+        cycle = connection.execute(
+            "SELECT * FROM cycle WHERE origin_artifact_id=? AND lifecycle_state<>'terminal' "
+            "ORDER BY opened_at DESC, id DESC LIMIT 1",
+            (current["id"],),
+        ).fetchone()
+        if cycle is None:
+            raise DocumentStoreError("document has no open outcome loop")
+        child_rows = connection.execute(
+            "SELECT child.id, child.display_number FROM relationship rel JOIN artifact child "
+            "ON child.id=rel.from_artifact_id WHERE rel.to_artifact_id=? "
+            "AND rel.relation_type='outcome-parent' AND rel.retired_revision IS NULL ORDER BY child.id",
+            (current["id"],),
+        ).fetchall()
+        incomplete_children: list[str] = []
+        for child in child_rows:
+            child_cycle = connection.execute(
+                "SELECT c.lifecycle_state, ov.disposition, rec.state FROM cycle c "
+                "LEFT JOIN reconciliation rec ON rec.cycle_id=c.id AND rec.origin_revision=("
+                "SELECT MAX(r2.origin_revision) FROM reconciliation r2 WHERE r2.cycle_id=c.id) "
+                "LEFT JOIN outcome_verdict ov ON ov.id=rec.verdict_id "
+                "WHERE c.origin_artifact_id=? ORDER BY c.opened_at DESC, c.id DESC LIMIT 1",
+                (child["id"],),
+            ).fetchone()
+            propagated = connection.execute(
+                "SELECT 1 FROM relationship WHERE from_artifact_id=? AND to_artifact_id=? "
+                "AND relation_type='outcome-result-propagated' AND retired_revision IS NULL",
+                (child["id"], current["id"]),
+            ).fetchone()
+            if not child_cycle or not (
+                child_cycle["lifecycle_state"] == "terminal"
+                and child_cycle["state"] == "reconciled"
+                and child_cycle["disposition"] in {
+                    "satisfied", "satisfied-with-approved-change", "not-applicable", "superseded"
+                }
+                and propagated
+            ):
+                incomplete_children.append(str(child["display_number"] or child["id"]))
+        if incomplete_children:
+            raise DocumentStoreError(
+                "document outcome has incomplete direct children: " + ", ".join(incomplete_children)
+            )
+        parent_rows = connection.execute(
+            "SELECT to_artifact_id FROM relationship WHERE from_artifact_id=? "
+            "AND relation_type='outcome-parent' AND retired_revision IS NULL ORDER BY id",
+            (current["id"],),
+        ).fetchall()
+        if len(parent_rows) > 1:
+            raise DocumentStoreError("document outcome has multiple active parents")
+        lifecycle = "superseded" if disposition == "superseded" else "completed"
+        body = replace_body_header(str(current["body_markdown"]), "Status", lifecycle)
+        body_hash = sha256_text(body)
+        stamp = hybrid_state.now()
+        document_revision = expected_revision + 1
+        connection.execute(
+            "INSERT INTO document_revision VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                str(uuid.uuid4()), current["id"], document_revision, current["title"], lifecycle,
+                current["metadata_json"], body, body_hash, actor, summary.strip(), revision, stamp,
+            ),
+        )
+        connection.execute(
+            "UPDATE document SET lifecycle_state=?, current_revision=?, body_sha256=?, updated_at=? WHERE id=?",
+            (lifecycle, document_revision, body_hash, stamp, current["id"]),
+        )
+        connection.execute(
+            "UPDATE artifact SET lifecycle_state=?, content_sha256=?, updated_at=? WHERE id=?",
+            (lifecycle, body_hash, stamp, current["id"]),
+        )
+        connection.execute(
+            "UPDATE cycle SET lifecycle_state='terminal', closed_at=? WHERE id=?",
+            (stamp, cycle["id"]),
+        )
+        verdict_id = str(uuid.uuid4())
+        connection.execute(
+            "INSERT INTO outcome_verdict VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (verdict_id, cycle["id"], current["visible_id"], disposition, summary.strip(), authorization.strip(), revision, stamp),
+        )
+        connection.execute(
+            "INSERT INTO reconciliation VALUES (?, ?, ?, ?, ?, 'reconciled', ?, '[]')",
+            (str(uuid.uuid4()), cycle["id"], revision, f"document:{current['id']}", verdict_id, stamp),
+        )
+        propagated = False
+        if parent_rows:
+            parent_id = str(parent_rows[0]["to_artifact_id"])
+            if not connection.execute(
+                "SELECT 1 FROM relationship WHERE from_artifact_id=? AND to_artifact_id=? "
+                "AND relation_type='outcome-result-propagated' AND retired_revision IS NULL",
+                (current["id"], parent_id),
+            ).fetchone():
+                connection.execute(
+                    "INSERT INTO relationship VALUES (?, ?, 'outcome-result-propagated', ?, ?, ?, NULL)",
+                    (str(uuid.uuid4()), current["id"], parent_id, "document-complete-outcome", revision),
+                )
+                propagated = True
+        return {
+            "artifact_id": current["id"],
+            "visible_id": current["visible_id"],
+            "document_revision": document_revision,
+            "cycle_id": cycle["id"],
+            "lifecycle": lifecycle,
+            "verdict": disposition,
+            "reconciliation": "reconciled",
+            "parent_result_propagated": propagated,
+        }
+
+    return managed_write(
+        workspace,
+        project_binding=project_binding,
+        command="document-complete-outcome",
+        actor=actor,
+        callback=apply,
+        database=database,
+    )
+
+
 def _slug(title: str) -> str:
     value = re.sub(r"[^a-z0-9]+", "-", title.casefold()).strip("-")
     return value[:80] or "untitled"
@@ -1500,6 +1637,7 @@ def build_parser() -> argparse.ArgumentParser:
     export_parser = commands.add_parser("export-edit"); export_parser.add_argument("identity"); export_parser.add_argument("--output", required=True)
     apply_parser = commands.add_parser("apply-edit"); apply_parser.add_argument("--project-binding", required=True); apply_parser.add_argument("--edit", required=True); apply_parser.add_argument("--actor", required=True); apply_parser.add_argument("--reason", required=True)
     lifecycle_parser = commands.add_parser("set-lifecycle"); lifecycle_parser.add_argument("identity"); lifecycle_parser.add_argument("--project-binding", required=True); lifecycle_parser.add_argument("--lifecycle", required=True); lifecycle_parser.add_argument("--expect-revision", type=int, required=True); lifecycle_parser.add_argument("--actor", required=True); lifecycle_parser.add_argument("--reason", required=True)
+    complete_parser = commands.add_parser("complete-outcome"); complete_parser.add_argument("identity"); complete_parser.add_argument("--project-binding", required=True); complete_parser.add_argument("--expect-revision", type=int, required=True); complete_parser.add_argument("--disposition", choices=("satisfied", "satisfied-with-approved-change", "not-applicable", "superseded"), required=True); complete_parser.add_argument("--summary", required=True); complete_parser.add_argument("--authorization", required=True); complete_parser.add_argument("--actor", required=True)
     type_parser = commands.add_parser("set-type"); type_parser.add_argument("identity"); type_parser.add_argument("--project-binding", required=True); type_parser.add_argument("--type", required=True); type_parser.add_argument("--expect-revision", type=int, required=True); type_parser.add_argument("--actor", required=True); type_parser.add_argument("--reason", required=True)
     history_parser = commands.add_parser("history"); history_parser.add_argument("identity")
     diff_parser = commands.add_parser("diff"); diff_parser.add_argument("identity"); diff_parser.add_argument("--from-revision", type=int, required=True); diff_parser.add_argument("--to-revision", type=int, required=True)
@@ -1534,6 +1672,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif args.command == "export-edit": result = export_edit(workspace, args.identity, Path(args.output), database=database)
         elif args.command == "apply-edit": result = apply_edit(workspace, project_binding=args.project_binding, edit=Path(args.edit), actor=args.actor, reason=args.reason, database=database)
         elif args.command == "set-lifecycle": result = set_lifecycle(workspace, project_binding=args.project_binding, identity=args.identity, lifecycle=args.lifecycle, expected_revision=args.expect_revision, actor=args.actor, reason=args.reason, database=database)
+        elif args.command == "complete-outcome": result = complete_outcome(workspace, project_binding=args.project_binding, identity=args.identity, expected_revision=args.expect_revision, disposition=args.disposition, summary=args.summary, authorization=args.authorization, actor=args.actor, database=database)
         elif args.command == "set-type": result = set_type(workspace, project_binding=args.project_binding, identity=args.identity, document_type=args.type, expected_revision=args.expect_revision, actor=args.actor, reason=args.reason, database=database)
         elif args.command == "history": result = history(workspace, args.identity, database=database)
         elif args.command == "diff": result = diff_revisions(workspace, args.identity, args.from_revision, args.to_revision, database=database)

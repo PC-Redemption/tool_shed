@@ -28,6 +28,9 @@ coherent work separately in `closure_findings`, so strict Doctor does not mislab
 debt as database corruption.
 
 Healthy progressing open outcomes remain visible work, not attention findings.
+Newly completed database-owned work should use `document_store.py complete-outcome`; it commits the
+document lifecycle and body status with the terminal verdict, reconciliation, and parent result in
+one managed transaction. The history-review utility remains for older split transitions.
 
 Findings use a stable `LOOP-…` identifier derived from the semantic condition and subject. Every
 managed Hybrid write refreshes this index. A repeated observation updates the same row; a corrected

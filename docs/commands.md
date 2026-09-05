@@ -321,6 +321,16 @@ python3 scripts/loop_findings.py --workspace . history-apply \
   --project-binding <binding> --authorization <review-evidence>
 ```
 
+Database-owned documents use one guarded terminal transition so document lifecycle, body status,
+outcome verdict, reconciliation, and parent propagation cannot be split by interruption:
+
+```text
+python3 scripts/document_store.py --workspace . complete-outcome <visible-id> \
+  --project-binding <binding> --expect-revision <revision> \
+  --disposition satisfied --summary <verified-result> \
+  --authorization <evidence-reference> --actor <actor>
+```
+
 `migrate` advances one guarded schema step, 3→4 or 4→5. `audit` and `resolve` are read-only;
 `ts: resolve loop <LOOP-id>` is the conversational route that rechecks local authority before a
 controlled local correction. Historical review accepts the controlled decisions
