@@ -1,0 +1,64 @@
+# Campaign: Repair terminal Map and PRM lifecycle drift
+
+Status: queued
+Type: campaign
+Updated: 2026-09-05
+Next Action: execute when selected from the active campaign queue
+Campaign ID: repair-terminal-map-prm-lifecycle-drift
+Campaign Number: 159
+Outcome: Tool Shed closes Map and PRM documents when their governed outcomes are conclusively terminal, satisfied, and reconciled; repairs the six known stale documents without closing unrelated IDEA-0021; and reports only genuinely active work chains to the hosted dashboard.
+Primary Focus Areas: campaign-lifecycle
+Supporting Focus Areas: qualification-release
+Depends On: none
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work5
+Completion Gate: MAP-0025, PRM-0036, MAP-0026, PRM-0037, MAP-0027, and PRM-0038 have completed document lifecycles and truthful terminal bodies; IDEA-0021 remains active; deterministic discovery and resolution cover stale Map/PRM lifecycle state without closing healthy continuing programs; focused and full regression checks pass; the exact candidate is qualified, released, production-verified, recursively reconciled, and the latest hosted report no longer presents the three completed chains as active.
+Completion Evidence: none
+Disposition: none
+Roadmap: none
+Roadmap Revision: none
+Milestone: none
+Unlocks Gate: none
+
+## Request
+
+Repair the lifecycle split exposed after the previous Work5 releases: the governed outcome cycles
+for the IDEA-0018, IDEA-0019, and IDEA-0020 chains are terminal, satisfied, and reconciled, while
+their Map and PRM documents remain active with obsolete Work3 or Work5 next actions. Preserve
+IDEA-0021 because it is an unrelated exploring Idea.
+
+Extend the controlled lifecycle-drift mechanism so equivalent current and historical Map/PRM
+conditions are detected, explained, and repaired through fresh project-bound operations. Ensure
+Work5 closeout cannot claim complete while an owned Map or PRM document remains semantically
+active after its terminal reconciled result. Keep legitimate milestone releases and intentionally
+continuing programs open.
+
+Add regression coverage across local document/outcome state, loop-finding audit and resolution,
+checkpoint/rebuild, reporter inventory, and hosted active-chain presentation. Carry the bounded
+candidate through the repository's configured Work5 lane and verify the corrected production
+projection.
+
+## App Server Preparation Contract
+
+```json
+{
+  "campaign_id": "repair-terminal-map-prm-lifecycle-drift",
+  "completion_evidence": "Six known stale Map/PRM documents are truthfully completed; future equivalent drift is detected and safely repaired; IDEA-0021 remains active; local, reporter, hosted, release, and production checks pass.",
+  "exact_resolution": "dispatch-time",
+  "execution_shape": "single-bounded-camp",
+  "inline_assets": "metadata-only",
+  "objective": "Repair terminal Map/PRM lifecycle drift and prevent completed outcome chains from remaining active on the hosted dashboard.",
+  "schema_version": 1,
+  "source_freshness": "required",
+  "verification": "orchestrator-exactly-once"
+}
+```
+
+## Completion Check
+
+Verify authoritative Hybrid state and a rebuilt checkpoint, prove the three completed chains are
+absent from the active-chain projection while IDEA-0021 remains present, run focused and full
+regression validation, and confirm the released production dashboard receives the corrected
+report without open or unreconciled outcome regressions.

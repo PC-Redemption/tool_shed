@@ -1,0 +1,46 @@
+# Campaign: Build Manifest-Driven Lifecycle Repair
+
+Status: queued
+Type: campaign
+Updated: 2026-09-05
+Next Action: execute after CAMP-0159 completes
+Campaign ID: build-manifest-driven-lifecycle-repair
+Campaign Number: 160
+Outcome: Tool Shed can inventory and safely repair established historical document/body lifecycle drift through a revision-bound, project-bound, idempotent manifest without forcing recursive closure or inventing intent.
+Primary Focus Areas: campaign-lifecycle
+Supporting Focus Areas: qualification-release
+Depends On: repair-terminal-map-prm-lifecycle-drift
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work2
+Completion Gate: A tested plan/validate/apply utility classifies safe lifecycle repair, body-only drift, residual-work review, and open-descendant review; refuses stale, foreign, ambiguous, or incomplete manifests; mutates only canonical governing authority; and proves idempotence plus checkpoint/rebuild parity on disposable fixtures.
+Completion Evidence: none
+Disposition: none
+Roadmap: lifecycle-recursive-closure-integrity-recovery
+Roadmap Revision: 1
+Roadmap Document: PRM-0040
+Milestone: M2-MANIFEST-DRIVEN-HISTORICAL-REPAIR
+Unlocks Gate: G2-MANIFEST-DRIVEN-HISTORICAL-REPAIR
+
+## Request
+
+Build the bounded historical repair mechanism after M1 freezes the state contract. The read-only
+plan must identify exact current revisions and classify each candidate as safe automatic repair,
+body-only correction, residual-work review, or open-descendant review. Validation requires a
+complete current manifest and explicit reviewed decisions for semantic cases. Apply must use normal
+managed document and outcome authorities, never direct closure-table writes.
+
+Cover no-op replay, stale revision, wrong project, partial cluster, interrupted execution, rebuild,
+and rollback behavior. Do not apply the utility to this live workspace in this campaign.
+
+## App Server Preparation Contract
+
+```json
+{"schema_version":1,"campaign_id":"build-manifest-driven-lifecycle-repair","objective":"Build a guarded manifest-driven historical lifecycle repair utility without applying live repairs.","execution_shape":"single-bounded-camp","exact_resolution":"dispatch-time","inline_assets":"metadata-only","source_freshness":"required","verification":"orchestrator-exactly-once","completion_evidence":"The utility safely classifies, validates, applies, retries, and rebuild-proves historical repairs on disposable fixtures."}
+```
+
+## Completion Check
+
+Run focused repair tests and the Work2 development lane, then register the committed candidate with
+the open PRM-0040 outcome chain. Leave current production and live historical records unchanged.

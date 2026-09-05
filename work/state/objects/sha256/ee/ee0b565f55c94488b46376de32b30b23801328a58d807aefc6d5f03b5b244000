@@ -1,0 +1,40 @@
+# Campaign: Release Lifecycle and Closure Integrity Recovery
+
+Status: queued
+Type: campaign
+Updated: 2026-09-05
+Next Action: execute only after CAMP-0163 freezes a qualified candidate
+Campaign ID: release-lifecycle-closure-integrity-recovery
+Campaign Number: 164
+Outcome: The exact qualified lifecycle/closure correction is published and production-verified, and its complete owning chain is recursively reconciled under the strengthened finalization gate.
+Primary Focus Areas: qualification-release
+Supporting Focus Areas: campaign-lifecycle, hosted-dashboard
+Depends On: qualify-lifecycle-closure-recovery
+Decision: explicit production authority remains required
+Detour For: none
+Return To: none
+Requested Endpoint: work5
+Completion Gate: The exact CAMP-0163 candidate passes the required push workflow, release publication, and production deployment; production reports truthful queue and closure state; official upgrade paths preserve repaired data; release-cohort finalization refuses injected closure debt; and CAMP-0164 plus PRM-0040 are terminal, reconciled, and effectively closed with durable evidence.
+Completion Evidence: none
+Disposition: none
+Roadmap: lifecycle-recursive-closure-integrity-recovery
+Roadmap Revision: 1
+Roadmap Document: PRM-0040
+Milestone: M6-RELEASE-AND-RECURSIVE-CLOSURE
+Unlocks Gate: G6-RELEASE-AND-RECURSIVE-CLOSURE
+
+## Request
+
+Release only the exact Work3-qualified candidate. Require the exact-SHA validation workflow before
+publication, verify production deployment and reporter/browser behavior, exercise the strengthened
+finalization refusal against controlled closure debt, and verify official Linux and Windows upgrade
+paths preserve canonical repaired state.
+
+After production evidence is current, reconcile the registered release cohort from the innermost
+result through PRM-0040. Preserve PRM-0039 and MAP-0028 as completed history rather than reopening
+or rewriting them.
+
+## Completion Check
+
+Checkpoint the post-release state and prove recursive effective closure for the complete new owner
+chain. Missing production or closure evidence keeps the campaign open.
