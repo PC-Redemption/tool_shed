@@ -286,11 +286,33 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Repair lifecycle and recursive closure integrity; add supervised historical cleanup and truthful dashboard state.",
-  "release_commit": null,
-  "release_qualification": null,
+  "notes": "Prevent lifecycle drift, add supervised historical cleanup, and expose recursive closure debt accurately.",
+  "release_commit": "18fd6b8003a5daba45fcba6e6005e5f9ade17103",
+  "release_qualification": {
+    "attested_at": "2026-09-05T16:12:31Z",
+    "client_smoke": {
+      "path": "scripts/validate_snapshot_client.py",
+      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
+    },
+    "full_validator": {
+      "path": "scripts/validate_tool_shed.py",
+      "sha256": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb"
+    },
+    "required_ci": [
+      {
+        "path": ".github/workflows/validate.yml",
+        "sha256": "81bbb1df280b8c04875d5ee96edd1c597bc74d4ce8b82a19fc01a9a619f866e5"
+      },
+      {
+        "path": ".github/workflows/release.yml",
+        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
+      }
+    ],
+    "schema_version": 1,
+    "subject_commit": "18fd6b8003a5daba45fcba6e6005e5f9ade17103"
+  },
   "release_tag": "v0.47.0",
-  "released_at": null,
+  "released_at": "2026-09-05T16:12:31Z",
   "shed_version": "0.47.0",
   "updated_at": "2026-09-05",
   "updater_mutation_paths": [
