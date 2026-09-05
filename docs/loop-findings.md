@@ -93,6 +93,9 @@ Every selected item requires one controlled decision: `apply-expected-state`, `r
 the same outcome-parent lineage. Apply records review evidence for every decision; only the
 safe recursively closed lifecycle correction or body-only status correction mutates product state.
 Open-descendant and completed-but-open closure debt is retained for descendant reconciliation.
+Residual-work text does not itself create a permanent closure descendant: terminal reconciled
+cycles close locally, while actual managed descendants and requirements continue to block their
+ancestors until they close.
 Any intervening database,
 finding, document-revision, project, digest, or cluster change makes the manifest stale. The normal
 managed-write refresh then re-audits findings, propagation/lineage authority, and checkpoint need.

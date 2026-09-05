@@ -1,0 +1,252 @@
+# Program Roadmap: Recursive Element Closure Lineage and Status Rollups
+
+Status: completed
+Type: program-roadmap
+Updated: 2026-09-04
+Next Action: run `ts: work3 IDEA-0019` to qualify exact candidate 60d78457eb8eb9817cbd34863bfb9031256455a9
+Roadmap ID: recursive-element-closure-lineage-and-status-rollups
+Roadmap Revision: 2
+Source Idea: IDEA-0019
+Source Project Map: MAP-0026
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 18
+Reviewed Body SHA256: eefb81b4fb604c9c734ebdc0fb9094e027c5b99863c24b33cdca62d9b0d9a718
+
+## Program Outcome
+
+Tool Shed can determine quickly and recoverably whether any durable actionable element and its
+complete governing subtree are closed. Versioned child envelopes and parent-owned requirements
+rebuild exact lineage; guarded database projections provide fast traversal and status; independent
+recursive evaluation detects drift; proof and recovery operations remain bounded by authority; and
+versioned verification-policy hooks preserve proportional mechanical, normal, and high-risk loop
+intent without enabling automatic lowering before comparative qualification. The result is
+qualified across hosted-development, Linux, and Windows before any later production promotion.
+
+## M1-OBSERVED-CONTRACT — Inventory and freeze the minimum implementation contract
+
+Status: completed
+Required Endpoint: Work1
+Depends on: none
+
+Outcome: Produce an evidence-backed legacy inventory of actionable element adapters, requirements,
+relationships, closure writers, protected manual-close rules, migration inputs, and status
+consumers. Freeze the minimum schema and evaluator/proof/recovery contracts justified by observed
+gaps and the provisional performance budgets. No lineage or completion is inferred.
+
+Gates:
+
+- `G1-LEGACY-INVENTORY-AND-SCHEMA`
+- Contract portion of `G2-PROOF-RUNNER-SAFETY`
+
+Candidate campaign: `inventory-and-freeze-recursive-closure-contract`.
+
+Evidence: `CAMP-0146` and `work/evidence/evidence-recursive-closure-m1-contract.md` inventory the
+live schema-2 state, every current writer/reader and missing closure surface, GitHub issues #57/#58,
+and local patch v1.0.2; freeze the minimum schema-3, proof, recovery, migration, role, status, and
+performance contract; and reconcile the result at commit `b197b4e82b9977135298c0c471757aff269de7e5`.
+
+## M2-CLOSURE-SUBSTRATE — Implement lineage, closure, proof, migration, and recovery
+
+Status: completed
+Required Endpoint: Work2 on the local development source and disposable migration fixtures
+Depends on: M1-OBSERVED-CONTRACT
+
+Outcome: Add versioned immediate-lineage envelopes, parent-owned governing requirements,
+append-only assertions, validated lineage mutations, obligation-scoped local/manual closure,
+independent recursive evaluation, transactional rollups and blockers, versioned proof recipes and
+attempts, recovery findings and queue operations, exact-manifest shadow migration, old-writer
+refusal, backup/resume/rollback, deterministic rebuild, and clean-cutover checks.
+
+Gates:
+
+- `G2-PROOF-RUNNER-SAFETY`
+- `G3-MIGRATION-RECOVERY-AND-WRITER-COMPATIBILITY`
+- `G5-RECOVERY-QUEUE-OPERATIONS`
+
+Candidate campaign: `implement-recursive-closure-substrate`.
+
+Evidence: `CAMP-0147`, candidate substrate commit
+`744deef7c7e851b504a532ddb58b765f89f54941`, and
+`work/evidence/evidence-recursive-closure-m2-substrate.md`. The focused closure suite and clean
+candidate validation passed, and the campaign outcome is terminal, satisfied, and reconciled.
+
+## M3-WORK2-DEVELOPMENT-INTEGRATION — Expose and deploy trustworthy status
+
+Status: completed
+Required Endpoint: Work2 on the split hosted-development, Linux, and Windows targets
+Depends on: M2-CLOSURE-SUBSTRATE
+
+Outcome: Integrate the four-field status and blocker detail into local commands, reporter payloads,
+and hosted dashboard projections; validate incremental-versus-recursive parity against deep, wide,
+shared-child, missing-parent, conflicting-lineage, cycle, tombstone, interruption, and concurrent
+revision fixtures; measure the provisional budgets; deploy the exact candidate to the isolated web,
+Linux, and Windows development lanes; exercise changed behavior; register the exact commit and all
+open owning cycles in the release cohort; and checkpoint recoverable state.
+
+Gate:
+
+- Work2 portion of `G4-ROLLUP-PARITY-AND-PERFORMANCE`
+
+Candidate campaign: `integrate-and-deploy-recursive-closure-status`.
+
+Evidence: `CAMP-0148`, exact candidate
+`d6a90f172dca050fc0d7deb08f2230080560704f`, and
+`work/evidence/evidence-recursive-closure-m3-work2-development.md`. The clean candidate passed
+522 tests and all repository checks, met the provisional 25,000-element/100,000-edge/depth-128
+budgets, and was deployed and exercised on hosted-development, Linux, and Windows. Report schema
+7 closure state reached the hosted development dashboard. The exact candidate and the four open
+owning cycles are registered in release cohort `9902c070-34c6-4885-9f93-115fa6f59402`.
+
+Work2 stop condition: M1, M2, and M3 are complete and reconciled with the exact development
+candidate registered for later release. `G6-CANDIDATE-BOUND-QUALIFICATION`, production migration,
+publication, and parent finalization remain open.
+
+## M3B-WORK2-POC-FIXTURE-DRIVE — Exercise recursive closure end to end
+
+Status: completed
+Required Endpoint: Work2 on the split hosted-development, Linux, and Windows targets
+Depends on: M3-WORK2-DEVELOPMENT-INTEGRATION
+
+Outcome: Drive the operator-facing blocked-to-restored loop through both disposable operating
+system fixtures and the hosted development projection before freezing a candidate. Repair any
+defect found, rerun the same matrix, register the exact candidate, and leave production unchanged.
+
+Evidence: `CAMP-0149`, exact candidate
+`aaab4807f63a2f43af572d13feec61b95241f20e`, and
+`work/evidence/evidence-recursive-closure-poc-fixture-drive.md`. The initial exercise found and the
+candidate repaired missing recovery-reason propagation. Both installed snapshots passed 522 tests,
+the Linux and Windows fixtures proved the same bounded recovery, manual-closure, proof-safety, and
+recursive-parity behavior, and schema-7 blocked and restored snapshots rendered correctly on the
+authenticated hosted-development Work pages. Production remained healthy and unchanged. The
+candidate and its four open owners are registered in release cohort
+`9902c070-34c6-4885-9f93-115fa6f59402`.
+
+Updated Work2 stop condition: M1, M2, M3, and M3B are complete and reconciled. The repaired exact
+candidate is registered for later release. Work3 freeze, `G6-CANDIDATE-BOUND-QUALIFICATION`, Git
+push, publication, production migration, production deployment, and parent finalization remain
+open.
+
+## M3C-WORK2-RISK-POLICY-HOOKS — Preserve proportional verification intent safely
+
+Status: completed
+Required Endpoint: Work2 on the split hosted-development, Linux, and Windows targets
+Depends on: M3B-WORK2-POC-FIXTURE-DRIVE
+
+Outcome: Extend the proof contract so every registered recipe and recorded attempt binds a
+versioned verification profile and policy digest, deterministic reason codes, required recipe set,
+parent/protected minimum, effective profile, and escalation history. Provide deterministic
+classification hooks for mechanical, normal, and high-risk scope, but keep automatic lowering
+disabled in the first release: unknown, mixed, protected, or contradictory scope preserves or
+escalates to the governing full-depth profile.
+
+Gate:
+
+- Work2 hooks-only portion of `G7-RISK-ADAPTIVE-VERIFICATION-POLICY`
+
+Candidate campaign: `implement-risk-adaptive-verification-hooks`.
+
+Completion Gate: focused contract and proof-attempt tests pass; policy identity changes invalidate
+prior idempotency; callers cannot lower parent or protected floors; uncertainty and unexpected
+scope escalate; exact snapshots are exercised on Linux and Windows and relevant development-web
+surfaces remain healthy; the committed candidate and open owner chain are registered for later
+release; production remains unchanged. Comparative automatic-selection savings and correctness
+qualification remain open for Work3 or a later roadmap revision.
+
+Evidence: `CAMP-0155`, exact candidate
+`60d78457eb8eb9817cbd34863bfb9031256455a9`, and
+`work/evidence/evidence-risk-adaptive-verification-hooks-work2.md`. The clean candidate, Linux,
+and Windows each passed 567 tests; all three code lanes passed the 16-test focused suite. Linux and
+Windows produced identical policy and mechanical-fixture decision digests. Hosted development is
+healthy at the exact candidate image, production remained unchanged, and automatic lowering is
+still disabled. The campaign result is terminal, satisfied, and reconciled.
+
+Updated Work2 stop condition: M1, M2, M3, M3B, and M3C are complete and reconciled. Exact candidate
+`60d78457eb8eb9817cbd34863bfb9031256455a9` is registered for later release. Work3 comparative
+qualification, automatic-lowering enablement, Git push, publication, production migration or
+deployment, and parent finalization remain open.
+
+## M4-WORK3-CANDIDATE-QUALIFICATION — Freeze and qualify one candidate
+
+Status: ready
+Required Endpoint: Work3
+Depends on: M3-WORK2-DEVELOPMENT-INTEGRATION, M3B-WORK2-POC-FIXTURE-DRIVE, and M3C-WORK2-RISK-POLICY-HOOKS
+
+Outcome: Bind one exact code commit, schema/evaluator/recipe versions, fixture digest, target
+identities, semantic results, timing distributions, fault outcomes, and rollback result. Prove the
+same result on hosted-development, Linux, and Windows without changing the frozen candidate.
+
+Gates:
+
+- Final qualification portion of `G4-ROLLUP-PARITY-AND-PERFORMANCE`
+- `G6-CANDIDATE-BOUND-QUALIFICATION`
+
+Candidate campaign: `qualify-recursive-closure-candidate`.
+
+## M5-WORK5-PROMOTION-AND-RECONCILIATION — Release intentionally
+
+Status: pending
+Required Endpoint: Work5
+Depends on: M4-WORK3-CANDIDATE-QUALIFICATION and explicit production authority
+
+Outcome: Freeze the release cohort, preserve the required production backup and rollback boundary,
+publish and deploy only the exact Work3-qualified candidate, verify released web/Linux/Windows
+behavior and current product truth, then propagate satisfied results through this PRM, MAP-0026,
+and IDEA-0019. Production failure or missing lineage leaves all owning cycles open.
+
+Candidate campaign: `promote-and-reconcile-recursive-closure-release`.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G1-LEGACY-INVENTORY-AND-SCHEMA | M1 |
+| G2-PROOF-RUNNER-SAFETY | M1 contract and M2 implementation |
+| G3-MIGRATION-RECOVERY-AND-WRITER-COMPATIBILITY | M2 |
+| G4-ROLLUP-PARITY-AND-PERFORMANCE | M3 measurement and M4 final qualification |
+| G5-RECOVERY-QUEUE-OPERATIONS | M2 |
+| G6-CANDIDATE-BOUND-QUALIFICATION | M4 and M5 handoff |
+| G7-RISK-ADAPTIVE-VERIFICATION-POLICY | M3C hooks and M4 comparative qualification or explicit continued deferral |
+
+Transfer count: 7 reviewed gates; 7 mapped gates; 0 dropped.
+
+## Program Constraints
+
+- One field has one editable authority. Current element envelopes and parent requirements are
+  authoritative; indexed graph/status structures are rebuilt projections.
+- Every mutating graph operation is guarded, revision-accounted, cycle-checked, and atomic with
+  its required projection refresh or stale marker.
+- Automatic proof uses only registered immutable checkers and predeclared recipes within the
+  current authority envelope. Production, credentialed, mutating, cross-workspace, or externally
+  costly checks still require explicit current authority.
+- Clean state and release gates require zero unresolved governing orphans, cycles, conflicting
+  lineage, unclassified commitments, or stale authoritative rollups.
+- Provisional qualification corpus: 25,000 elements, 100,000 edges, maximum depth 128. Initial
+  budgets are 20 ms summary, 50 ms first 100 blockers, 250 ms mutation through 128 ancestors,
+  60 seconds full rebuild, and 250 ms hosted API excluding network. Evidence may recommend a
+  revision, but cannot silently weaken the gate.
+- Work2 is development-only. Work3 and Work5 remain explicit separate requests.
+- Risk-policy revision 1 is hooks-only: it records profile selection inputs and fail-closed
+  escalation but does not automatically reduce verification depth. Enabling automatic lowering
+  requires comparative evidence and a new policy revision.
+
+## Verification Strategy
+
+- Compare incremental rollups with an independently implemented recursive evaluator after normal
+  mutations, migration, fault recovery, rebuild, and randomized DAG operations.
+- Exercise missing parents and requirements, unfulfilled parent requirements, shared children,
+  cycles, conflicting assertions, tombstones, stale evidence, checker errors, lease collisions,
+  superseded runs, interrupted migrations, old writers, rollback, and checkpoint rebuild.
+- Verify CLI, reporter, and hosted dashboard present the same typed status without flattening it
+  into lifecycle.
+- Record exact candidate commit, schema/evaluator/recipe versions, fixture digest, target identity,
+  timing distribution, changed-behavior observations, and recovery results.
+- Verify profile-policy digest binding, parent/protected floors, highest-risk mixed composition,
+  escalation history, and old-evidence invalidation. Compare automatic selection only when a later
+  candidate explicitly enables it.
+
+## Next Route
+
+Work2 is complete through M3C. Run `ts: work3 IDEA-0019` to freeze and qualify exact candidate
+`60d78457eb8eb9817cbd34863bfb9031256455a9` through M4. Leave automatic lowering disabled and M5
+plus all owning cycles open until a later explicit Work5 production promotion and reconciliation
+request.

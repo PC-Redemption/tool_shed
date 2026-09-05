@@ -72,11 +72,32 @@ the prior current record and refreshes the changed element and its indexed gover
 the same guarded revision. The managed authority synchronizer then performs a deterministic
 projection rebuild; the independent evaluator remains the parity oracle.
 
-A terminal, satisfied (or approved-change/not-applicable), reconciled outcome with no residual
-work records closed-loop closure for its exact current cycle and requirement subjects in that same
-managed transaction. Explicit manual or proof closure remains valid until its subject changes.
-New elements are therefore visible immediately, and a later managed write can deterministically
-recover an element missed by an interrupted older writer from the authoritative lifecycle rows.
+A terminal, reconciled outcome with an explicit terminal disposition records closed-loop closure
+for its exact current cycle and requirement subjects in that same managed transaction. Residual
+work remains explicit reconciliation and propagation context; it does not keep the bounded cycle
+locally open forever. Actual managed child cycles, requirements, evidence, and lineage still govern
+recursive closure independently. Explicit manual or proof closure remains valid until its subject
+changes. New elements are therefore visible immediately, and a later managed write can
+deterministically recover an element missed by an interrupted older writer from the authoritative
+lifecycle rows.
+
+Historical terminal cycles can be reconciled explicitly without editing their verdict or residual
+history. The plan binds every eligible cycle and element to the current database revision and
+domain digest; validation and guarded apply reject stale or foreign state:
+
+```bash
+python3 scripts/closure_lineage.py --workspace . --json terminal-reconcile-plan \
+  > work/evidence/terminal-closure-reconciliation.json
+python3 scripts/closure_lineage.py --workspace . --json terminal-reconcile-validate \
+  --manifest work/evidence/terminal-closure-reconciliation.json
+python3 scripts/closure_lineage.py --workspace . --json terminal-reconcile-apply \
+  --manifest work/evidence/terminal-closure-reconciliation.json \
+  --expect <manifest-token> --project-binding <hybrid-state-binding>
+```
+
+Apply writes only closure records and rebuilt projections derived from existing terminal,
+reconciled outcome authority. It does not rewrite residual work, disposition, relationships,
+documents, or outcome history.
 
 ## Proof recipes
 

@@ -12,7 +12,7 @@
     "adapters/codex-app-server-config.json": "9d8932269c5527f5da9b2961aec166ab50d352b730783cf1812d089414e4f57b",
     "adapters/codex-app-server-qualifications.json": "995ccd3bea135448b316045ea240c10d272f4c7e2ff65085111e0380cef947c1",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "fc419bb97fe4284ada55cd1c58b94c3c5d1847279edcc1292bcf8ecd525313c3",
+    "adapters/codex-skill-releases.json": "36ffd85d9061cf828eabc74b8d5398db99280a5f3a4883fb408a10777b1a6298",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "a16e9afbc2733b2c01b113df3f3a07fda1630b80b5a97476896123ee03bc22d2",
     "dashboard/Dockerfile": "8e9ff084f409aa81ab92b9dcbe8d9bab2416225551c837681653cab7b66786ad",
@@ -94,11 +94,11 @@
     "docs/idea-readiness-review.md": "39256514a373b299f5f8720326680fee68fbff89e4a0a3d48de5240093245f27",
     "docs/install-or-update-snapshot.md": "9360812938bce8ba2e145a991ceaa9e79003a7c754784a3864621cce8f3abb99",
     "docs/lifecycle-qualification-harness.md": "e5f8b70fe1c9aa0ce5f634d7f1595b9395e3737ba87816aa8a265e2913ae029e",
-    "docs/loop-findings.md": "3ae3277f3a9e593cdf301afe58665adc8927bab2e8e74273ec7d5d20634fe5a4",
+    "docs/loop-findings.md": "3dfa4b258056f6b341c580dcdd71ad51aebfca28515d65298df590b52422ffd5",
     "docs/operator-guide.md": "9bd7ab51ab9ff67536d564e353704d2d9f4badf378530c0807a936fb8bf56531",
     "docs/outcome-reconciliation.md": "2891cb71bac4a38ede62a18bd9c0d72cda7c9fc6806f6f63dd02f55774366195",
     "docs/provider-adapters.md": "edf50dc13fd15cb6415904981ca3dea56fd73aad32a473429ef34d1b56cea25b",
-    "docs/recursive-closure-lineage.md": "15f35c309ab72f8e180b04b21c86800a210e4b651b8e727c380f119ca2c18d71",
+    "docs/recursive-closure-lineage.md": "25447b8414875046aee004456e62792ef8e6db410b1b437cb176ff045d3e3c6d",
     "docs/release-cohort-closed-loop.md": "69149caeb7a69bb2dd99f91483024cd4dc6f081e86fbb7eda8988631f9e9ca07",
     "docs/releasing.md": "3113b25ab5d3a5b50459fdce9639b4a32d148df55059401e3b0539ab9761aa0f",
     "docs/universal-closed-loop-outcome-reconciliation.md": "52378ff394590625eccf856d6e1e413289e1b632f2ac8042f8753288bb25d467",
@@ -157,7 +157,7 @@
     "scripts/check_stale_paths.py": "b9935ff44b491b6d8afe0c396d16d0a3ad72aa15665d3a467a43b05a19fe8ae8",
     "scripts/check_work_tree.py": "efc7e954bf096f2945c7629252098124dd06fb18283892b8f6d55a845fee42c4",
     "scripts/ci_validation_policy.py": "98bc7de2ad635d6bf1d9708116ac941088c94ba161d2cc65f51c83ac063ad4b8",
-    "scripts/closure_lineage.py": "e71b5c03d8aa58ed9910dfe64145b6554353f34dee1ae6692a27894519a6089b",
+    "scripts/closure_lineage.py": "bddbf2e55b3c28356fe988d4eff29df1720aeb636ff1f9f6345a86ded1d3d69b",
     "scripts/closure_lineage_benchmark.py": "564f5751d51deddff26e2392334a6aaa0a70d94b35e335f402ef5c88ff2e4569",
     "scripts/closure_lineage_schema.py": "3c7814cba682f0e74ab435192ac1eae45d19be8dc35693dc4b36d6167d37236e",
     "scripts/codex_app_server.py": "8551db99e4ae9fb865cd04aa37b01d6b62c0e082a53e9fac1b78faa1aa31be7f",
@@ -287,34 +287,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Accept recursive-closure expected states in hosted reporter ingestion.",
-  "release_commit": "f069e51dc841437e678fa6bf0b0fff1dac0e5ae0",
-  "release_qualification": {
-    "attested_at": "2026-09-05T17:13:06Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "81bbb1df280b8c04875d5ee96edd1c597bc74d4ce8b82a19fc01a9a619f866e5"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "f069e51dc841437e678fa6bf0b0fff1dac0e5ae0"
-  },
-  "release_tag": "v0.47.2",
-  "released_at": "2026-09-05T17:13:06Z",
-  "shed_version": "0.47.2",
+  "notes": "Reconcile terminal closure state and clear false project attention",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.47.3",
+  "released_at": null,
+  "shed_version": "0.47.3",
   "updated_at": "2026-09-05",
   "updater_mutation_paths": [
     {

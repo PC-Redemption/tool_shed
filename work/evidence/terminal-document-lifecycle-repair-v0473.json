@@ -1,0 +1,57 @@
+{
+  "database_revision": 1318,
+  "decisions": [
+    {
+      "decision": "apply-expected-state",
+      "document_revision": 7,
+      "finding": {
+        "category": "semantic-lifecycle-drift",
+        "command": "ts: resolve loop LOOP-6A9D86FE61DC",
+        "expected_state": "completed",
+        "finding_id": "LOOP-6A9D86FE61DC",
+        "first_observed_at": "2026-09-05T18:15:50Z",
+        "last_observed_at": "2026-09-05T18:15:50Z",
+        "observed_state": "active",
+        "reason_code": "PROMOTED_IDEA_LIFECYCLE_STALE",
+        "recurrence_count": 0,
+        "resolved_at": null,
+        "severity": "attention",
+        "source_revision": 1318,
+        "state": "active",
+        "subject_id": "PRM-0037"
+      },
+      "subject_artifact_id": "449bdacc-b9e0-4b6c-99a5-bee43f8ac37e"
+    },
+    {
+      "decision": "apply-expected-state",
+      "document_revision": 5,
+      "finding": {
+        "category": "semantic-lifecycle-drift",
+        "command": "ts: resolve loop LOOP-C5370FC35CE0",
+        "expected_state": "completed",
+        "finding_id": "LOOP-C5370FC35CE0",
+        "first_observed_at": "2026-09-05T18:15:50Z",
+        "last_observed_at": "2026-09-05T18:15:50Z",
+        "observed_state": "active",
+        "reason_code": "PROMOTED_IDEA_LIFECYCLE_STALE",
+        "recurrence_count": 0,
+        "resolved_at": null,
+        "severity": "attention",
+        "source_revision": 1318,
+        "state": "active",
+        "subject_id": "MAP-0026"
+      },
+      "subject_artifact_id": "f0750c67-0927-47f8-b3b2-baa03a8e8c39"
+    }
+  ],
+  "discovery_version": "loop-findings-v3",
+  "domain_digest": "95552c91f0c13f327d406a11789565b3a4320363d519e7c1f3ddffe55ba594ea",
+  "kind": "tool-shed-loop-history-review-manifest",
+  "manifest_digest": "c13d645b96496e8a40afcd677989c44cb7c674ac25bf16d6fad73d2443b7f385",
+  "manifest_token": "4d263c888604d9d8",
+  "project_id": "817b6358-b2f5-48fd-bb66-bd80f936faca",
+  "rationale": "MAP-0026 and PRM-0037 are terminal, satisfied, reconciled, and recursively closed after exact terminal-closure reconciliation; their active document lifecycle is now a safe derived repair.",
+  "schema_version": 1,
+  "selection_mode": "complete-lineage-cluster",
+  "writes_performed": false
+}

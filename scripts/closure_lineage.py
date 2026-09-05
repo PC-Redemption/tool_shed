@@ -31,12 +31,29 @@ from closure_lineage_schema import (
     closure_migration_digest,
     create_closure_schema,
 )
-from project_identity import ProjectIdentityError, require_path_within, require_project_binding, resolved_workspace
+from project_identity import (
+    ProjectIdentityError,
+    load_project_identity,
+    require_path_within,
+    require_project_binding,
+    resolved_workspace,
+)
 
 
 SCHEMA_VERSION = 1
 MANIFEST_KIND = "tool-shed-closure-lineage-migration-manifest"
+TERMINAL_RECONCILIATION_KIND = "tool-shed-terminal-closure-reconciliation-manifest"
 EVALUATOR_VERSION = "recursive-closure-v1"
+CLOSED_LOOP_DISPOSITIONS = {
+    "satisfied",
+    "satisfied-with-approved-change",
+    "partial",
+    "failed",
+    "rejected",
+    "superseded",
+    "parked",
+    "not-applicable",
+}
 RELATIONSHIP_TYPES = {"fulfills", "contributes", "informs", "supersedes"}
 GOVERNING_RELATIONSHIPS = {"fulfills", "contributes"}
 PROTECTED_GATE_WORDS = {"production", "release", "security", "compliance"}
@@ -557,8 +574,8 @@ def synchronize_authority(connection: sqlite3.Connection, *, revision: int) -> d
         latest = latest_reconciliation.get(cycle_id)
         proven = (
             cycle["lifecycle_state"] == "terminal" and latest is not None
-            and latest["disposition"] in {"satisfied", "satisfied-with-approved-change", "not-applicable"}
-            and latest["state"] == "reconciled" and json.loads(latest["residual_work_json"]) == []
+            and latest["disposition"] in CLOSED_LOOP_DISPOSITIONS
+            and latest["state"] == "reconciled"
         )
         element_ids = [cycle_id, *(str(item["id"]) for item in requirements_by_cycle.get(cycle_id, []))]
         for element_id in element_ids:
@@ -601,6 +618,193 @@ def synchronize_authority(connection: sqlite3.Connection, *, revision: int) -> d
         "closed_count": closed_count,
         **rebuilt,
     }
+
+
+def _terminal_reconciliation_candidates(connection: sqlite3.Connection) -> list[dict[str, Any]]:
+    latest_reconciliation: dict[str, sqlite3.Row] = {}
+    for row in connection.execute(
+        "SELECT r.cycle_id,v.disposition,r.state,r.residual_work_json "
+        "FROM reconciliation r JOIN outcome_verdict v ON v.id=r.verdict_id "
+        "ORDER BY r.cycle_id,r.origin_revision DESC,r.id DESC"
+    ):
+        latest_reconciliation.setdefault(str(row["cycle_id"]), row)
+    current_closure = {
+        str(row["element_id"]): row
+        for row in connection.execute(
+            "SELECT * FROM closure_record WHERE superseded_revision IS NULL "
+            "ORDER BY element_id,created_revision DESC,id DESC"
+        )
+    }
+    candidates: list[dict[str, Any]] = []
+    for cycle in connection.execute("SELECT * FROM cycle ORDER BY closed_at,id"):
+        cycle_id = str(cycle["id"])
+        reconciliation = latest_reconciliation.get(cycle_id)
+        if not (
+            str(cycle["lifecycle_state"]) == "terminal"
+            and reconciliation is not None
+            and str(reconciliation["state"]) == "reconciled"
+            and str(reconciliation["disposition"]) in CLOSED_LOOP_DISPOSITIONS
+        ):
+            continue
+        expected_elements = [
+            {
+                "id": cycle_id,
+                "subject_revision": None,
+                "subject_digest": _subject_digest(cycle, "cycle"),
+            }
+        ]
+        expected_elements.extend(
+            {
+                "id": str(requirement["id"]),
+                "subject_revision": None,
+                "subject_digest": _subject_digest(requirement, "obligation"),
+            }
+            for requirement in connection.execute(
+                "SELECT * FROM requirement WHERE cycle_id=? ORDER BY id", (cycle_id,)
+            )
+        )
+        stored_elements = {
+            str(element["id"]): element
+            for element in connection.execute(
+                "SELECT ce.id,ce.subject_revision,ce.subject_digest "
+                "FROM closure_element ce WHERE ce.cycle_id=? OR ce.requirement_id IN "
+                "(SELECT id FROM requirement WHERE cycle_id=?) ORDER BY ce.id",
+                (cycle_id, cycle_id),
+            )
+        }
+        missing: list[str] = []
+        for expected in expected_elements:
+            element = stored_elements.get(expected["id"])
+            closure = current_closure.get(expected["id"])
+            if (
+                element is None
+                or closure is None
+                or int(closure["subject_revision"]) != int(element["subject_revision"])
+                or str(closure["subject_digest"]) != str(expected["subject_digest"])
+            ):
+                missing.append(expected["id"])
+        if missing:
+            candidates.append(
+                {
+                    "cycle_id": cycle_id,
+                    "disposition": str(reconciliation["disposition"]),
+                    "residual_work_count": len(json.loads(reconciliation["residual_work_json"])),
+                    "element_ids": missing,
+                }
+            )
+    return candidates
+
+
+def prepare_terminal_reconciliation(workspace: Path) -> dict[str, Any]:
+    """Plan deterministic closure repair from current terminal outcome authority."""
+    workspace = resolved_workspace(workspace)
+    with contextlib.closing(
+        hybrid_state.connect(hybrid_state.database_path(workspace), writable=False)
+    ) as connection:
+        current = audit_connection(workspace, connection)
+        if current["classification"] not in {"CLEAN", "VALID_DIRTY"}:
+            raise ClosureLineageError(
+                f"terminal reconciliation refused from {current['classification']}"
+            )
+        candidates = _terminal_reconciliation_candidates(connection)
+        manifest = {
+            "schema_version": SCHEMA_VERSION,
+            "kind": TERMINAL_RECONCILIATION_KIND,
+            "project_id": load_project_identity(workspace)["project_id"],
+            "expected_revision": int(current["current_revision"]),
+            "expected_domain_digest": str(current["domain_digest"]),
+            "candidate_cycles": candidates,
+            "candidate_cycle_count": len(candidates),
+            "candidate_element_count": sum(
+                len(item["element_ids"]) for item in candidates
+            ),
+            "writes_performed": False,
+        }
+        manifest["manifest_token"] = _manifest_token(manifest)
+        return manifest
+
+
+def validate_terminal_reconciliation(
+    workspace: Path, manifest: dict[str, Any]
+) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
+    if (
+        manifest.get("schema_version") != SCHEMA_VERSION
+        or manifest.get("kind") != TERMINAL_RECONCILIATION_KIND
+        or manifest.get("manifest_token") != _manifest_token(manifest)
+    ):
+        raise ClosureLineageError("invalid terminal reconciliation manifest")
+    current = prepare_terminal_reconciliation(workspace)
+    valid = (
+        manifest.get("project_id") == current["project_id"]
+        and manifest.get("expected_revision") == current["expected_revision"]
+        and manifest.get("expected_domain_digest") == current["expected_domain_digest"]
+        and manifest.get("candidate_cycles") == current["candidate_cycles"]
+        and manifest.get("manifest_token") == current["manifest_token"]
+    )
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "kind": "tool-shed-terminal-closure-reconciliation-validation",
+        "valid": valid,
+        "manifest_token": manifest["manifest_token"],
+        "candidate_cycle_count": int(manifest.get("candidate_cycle_count", 0)),
+        "candidate_element_count": int(manifest.get("candidate_element_count", 0)),
+        "writes_performed": False,
+    }
+
+
+def apply_terminal_reconciliation(
+    workspace: Path,
+    manifest: dict[str, Any],
+    *,
+    expected_token: str,
+    project_binding: str,
+    actor: str,
+) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
+    validation = validate_terminal_reconciliation(workspace, manifest)
+    if not validation["valid"] or expected_token != manifest["manifest_token"]:
+        raise ClosureLineageError("terminal reconciliation manifest is stale or unauthorized")
+    if not manifest["candidate_cycles"]:
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "kind": "tool-shed-terminal-closure-reconciliation",
+            "manifest_token": manifest["manifest_token"],
+            "candidate_cycle_count": 0,
+            "candidate_element_count": 0,
+            "writes_performed": False,
+        }
+
+    def apply(connection: sqlite3.Connection, revision: int) -> dict[str, Any]:
+        if int(hybrid_state.meta_row(connection)["current_revision"]) != int(
+            manifest["expected_revision"]
+        ):
+            raise ClosureLineageError("terminal reconciliation revision changed before apply")
+        if hybrid_state.domain_digest(connection) != manifest["expected_domain_digest"]:
+            raise ClosureLineageError("terminal reconciliation domain changed before apply")
+        if _terminal_reconciliation_candidates(connection) != manifest["candidate_cycles"]:
+            raise ClosureLineageError("terminal reconciliation candidates changed before apply")
+        return {
+            "manifest_token": manifest["manifest_token"],
+            "candidate_cycle_count": manifest["candidate_cycle_count"],
+            "candidate_element_count": manifest["candidate_element_count"],
+        }
+
+    result = document_store.managed_write(
+        workspace,
+        project_binding=project_binding,
+        command="terminal-closure-reconciliation",
+        actor=actor,
+        callback=apply,
+    )
+    remaining = prepare_terminal_reconciliation(workspace)
+    if remaining["candidate_cycle_count"]:
+        raise ClosureLineageError("terminal reconciliation left eligible closure elements open")
+    result["terminal_reconciliation"] = {
+        "remaining_candidate_cycle_count": 0,
+        "remaining_candidate_element_count": 0,
+    }
+    return result
 
 
 def apply_migration(
@@ -1736,6 +1940,9 @@ def build_parser() -> argparse.ArgumentParser:
     validate = commands.add_parser("migration-validate"); validate.add_argument("--manifest", required=True)
     migrate = commands.add_parser("migrate"); migrate.add_argument("--manifest", required=True); migrate.add_argument("--expect", required=True); migrate.add_argument("--project-binding", required=True)
     commands.add_parser("audit")
+    commands.add_parser("terminal-reconcile-plan")
+    terminal_validate = commands.add_parser("terminal-reconcile-validate"); terminal_validate.add_argument("--manifest", required=True)
+    terminal_apply = commands.add_parser("terminal-reconcile-apply"); terminal_apply.add_argument("--manifest", required=True); terminal_apply.add_argument("--expect", required=True); terminal_apply.add_argument("--project-binding", required=True); terminal_apply.add_argument("--actor", default="operator")
     status_parser = commands.add_parser("status"); status_parser.add_argument("identity"); status_parser.add_argument("--role", choices=("cycle", "obligation"))
     close = commands.add_parser("close"); close.add_argument("--project-binding", required=True); close.add_argument("--element", required=True); close.add_argument("--method", choices=("closed-loop", "closed-manual"), required=True); close.add_argument("--evidence-health", required=True); close.add_argument("--authorization", required=True); close.add_argument("--evidence", action="append", default=[]); close.add_argument("--actor", default="operator"); close.add_argument("--allow-protected-manual", action="store_true")
     recipe = commands.add_parser("recipe-register"); recipe.add_argument("--project-binding", required=True); recipe.add_argument("--recipe-id", required=True); recipe.add_argument("--version", type=int, required=True); recipe.add_argument("--checker-id", required=True); recipe.add_argument("--checker-digest", required=True); recipe.add_argument("--declaration", required=True); recipe.add_argument("--actor", default="operator")
@@ -1754,6 +1961,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif args.command == "migration-validate": result = validate_manifest(workspace, _read_json(workspace, args.manifest))
         elif args.command == "migrate": result = apply_migration(workspace, _read_json(workspace, args.manifest), expected_token=args.expect, project_binding=args.project_binding)
         elif args.command == "audit": result = audit(workspace)
+        elif args.command == "terminal-reconcile-plan": result = prepare_terminal_reconciliation(workspace)
+        elif args.command == "terminal-reconcile-validate": result = validate_terminal_reconciliation(workspace, _read_json(workspace, args.manifest))
+        elif args.command == "terminal-reconcile-apply": result = apply_terminal_reconciliation(workspace, _read_json(workspace, args.manifest), expected_token=args.expect, project_binding=args.project_binding, actor=args.actor)
         elif args.command == "status": result = status(workspace, args.identity, role=args.role)
         elif args.command == "close": result = close_element(workspace, project_binding=args.project_binding, element_id=args.element, method=args.method, evidence_health=args.evidence_health, authorization_ref=args.authorization, evidence=args.evidence, actor=args.actor, allow_protected_manual=args.allow_protected_manual)
         elif args.command == "recipe-register": result = register_recipe(workspace, project_binding=args.project_binding, recipe_id=args.recipe_id, version=args.version, checker_id=args.checker_id, checker_digest=args.checker_digest, declaration=_read_json(workspace, args.declaration), actor=args.actor)
@@ -1762,7 +1972,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif args.command == "recovery-retry": result = retry_recovery_case(workspace, project_binding=args.project_binding, case_id=args.case, owner_ref=args.owner, reason=args.reason, max_attempts=args.max_attempts, cooldown_seconds=args.cooldown_seconds, actor=args.actor)
         else: result = resolve_recovery_case(workspace, project_binding=args.project_binding, case_id=args.case, disposition=args.disposition, authorization_ref=args.authorization, reason=args.reason, actor=args.actor)
         print(json.dumps(result, indent=2, sort_keys=True))
-        if args.command in {"migration-validate", "audit"} and not (result.get("valid", True) and result.get("classification", "CLEAN") != "INVALID"):
+        if args.command in {"migration-validate", "terminal-reconcile-validate", "audit"} and not (result.get("valid", True) and result.get("classification", "CLEAN") != "INVALID"):
             return 1
         return 0
     except (ClosureLineageError, document_store.DocumentStoreError, hybrid_state.HybridStateError, ProjectIdentityError, OSError, ValueError, sqlite3.DatabaseError, json.JSONDecodeError) as error:

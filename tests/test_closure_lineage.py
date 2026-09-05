@@ -277,6 +277,177 @@ class ClosureLineageTests(unittest.TestCase):
             1,
         )
 
+    def test_terminal_reconciled_cycle_closes_with_explicit_residual_work(self) -> None:
+        self.migrate()
+
+        def terminalize(connection, revision):
+            stamp = hybrid_state.now()
+            verdict_id = "6542632b-6532-49c4-a169-989363c21716"
+            connection.execute(
+                "UPDATE cycle SET lifecycle_state='terminal', closed_at=? WHERE id=?",
+                (stamp, self.roadmap_cycle),
+            )
+            connection.execute(
+                "INSERT INTO outcome_verdict VALUES (?, ?, 'fixture', 'satisfied', ?, ?, ?, ?)",
+                (
+                    verdict_id,
+                    self.roadmap_cycle,
+                    "The bounded outcome is satisfied.",
+                    "fixture authorization",
+                    revision,
+                    stamp,
+                ),
+            )
+            connection.execute(
+                "INSERT INTO reconciliation VALUES (?, ?, ?, ?, ?, 'reconciled', ?, ?)",
+                (
+                    "037336fc-f98b-49ce-827f-abaa42435284",
+                    self.roadmap_cycle,
+                    revision,
+                    "fixture:product-truth",
+                    verdict_id,
+                    stamp,
+                    json.dumps(["A separate future enhancement remains open."]),
+                ),
+            )
+
+        hybrid_state.managed_write(
+            self.workspace,
+            project_binding=self.binding,
+            command="terminal-residual-fixture",
+            actor="fixture",
+            callback=terminalize,
+        )
+
+        cycle = closure_lineage.status(self.workspace, self.roadmap_cycle)
+        obligation = closure_lineage.status(
+            self.workspace, self.requirement_for(self.roadmap_cycle)
+        )
+        parent = closure_lineage.status(self.workspace, self.map_cycle)
+        self.assertEqual(cycle["local_closure"], "closed-loop")
+        self.assertTrue(cycle["effective_closed"])
+        self.assertEqual(obligation["local_closure"], "closed-loop")
+        self.assertTrue(obligation["effective_closed"])
+        self.assertFalse(parent["effective_closed"])
+        self.assertIn("LOCAL_OPEN", parent["reason_codes"])
+
+    def test_terminal_reconciled_non_success_disposition_closes_the_loop(self) -> None:
+        self.migrate()
+
+        def terminalize(connection, revision):
+            stamp = hybrid_state.now()
+            verdict_id = "151cf688-f034-47c4-a44e-0f1849300f23"
+            connection.execute(
+                "UPDATE cycle SET lifecycle_state='terminal', closed_at=? WHERE id=?",
+                (stamp, self.roadmap_cycle),
+            )
+            connection.execute(
+                "INSERT INTO outcome_verdict VALUES (?, ?, 'fixture', 'superseded', ?, ?, ?, ?)",
+                (
+                    verdict_id,
+                    self.roadmap_cycle,
+                    "The loop ended through an explicit superseding outcome.",
+                    "fixture authorization",
+                    revision,
+                    stamp,
+                ),
+            )
+            connection.execute(
+                "INSERT INTO reconciliation VALUES (?, ?, ?, ?, ?, 'reconciled', ?, '[]')",
+                (
+                    "d3e37fe8-89da-4b02-ab7c-30c99e9197f5",
+                    self.roadmap_cycle,
+                    revision,
+                    "fixture:product-truth",
+                    verdict_id,
+                    stamp,
+                ),
+            )
+
+        hybrid_state.managed_write(
+            self.workspace,
+            project_binding=self.binding,
+            command="terminal-superseded-fixture",
+            actor="fixture",
+            callback=terminalize,
+        )
+
+        self.assertTrue(
+            closure_lineage.status(self.workspace, self.roadmap_cycle)["effective_closed"]
+        )
+
+    def test_terminal_reconciliation_repairs_pre_migration_cycles_from_exact_plan(self) -> None:
+        def terminalize(connection, revision):
+            stamp = hybrid_state.now()
+            verdict_id = "4a6a3a9e-b3a5-44e3-b189-f07e4ba103bf"
+            connection.execute(
+                "UPDATE cycle SET lifecycle_state='terminal', closed_at=? WHERE id=?",
+                (stamp, self.roadmap_cycle),
+            )
+            connection.execute(
+                "INSERT INTO outcome_verdict VALUES (?, ?, 'fixture', 'satisfied', ?, ?, ?, ?)",
+                (
+                    verdict_id,
+                    self.roadmap_cycle,
+                    "The bounded outcome is satisfied.",
+                    "fixture authorization",
+                    revision,
+                    stamp,
+                ),
+            )
+            connection.execute(
+                "INSERT INTO reconciliation VALUES (?, ?, ?, ?, ?, 'reconciled', ?, ?)",
+                (
+                    "9b8a17ea-00e5-499b-a956-9593af8f177e",
+                    self.roadmap_cycle,
+                    revision,
+                    "fixture:product-truth",
+                    verdict_id,
+                    stamp,
+                    json.dumps(["A separately governed enhancement remains open."]),
+                ),
+            )
+
+        hybrid_state.managed_write(
+            self.workspace,
+            project_binding=self.binding,
+            command="pre-migration-terminal-fixture",
+            actor="fixture",
+            callback=terminalize,
+        )
+        self.migrate()
+        with self.assertRaisesRegex(closure_lineage.ClosureLineageError, "not found"):
+            closure_lineage.status(self.workspace, self.roadmap_cycle)
+
+        manifest = closure_lineage.prepare_terminal_reconciliation(self.workspace)
+        candidate = next(
+            item
+            for item in manifest["candidate_cycles"]
+            if item["cycle_id"] == self.roadmap_cycle
+        )
+        self.assertEqual(candidate["residual_work_count"], 1)
+        self.assertEqual(
+            set(candidate["element_ids"]),
+            {self.roadmap_cycle, self.requirement_for(self.roadmap_cycle)},
+        )
+        self.assertTrue(
+            closure_lineage.validate_terminal_reconciliation(self.workspace, manifest)["valid"]
+        )
+        result = closure_lineage.apply_terminal_reconciliation(
+            self.workspace,
+            manifest,
+            expected_token=manifest["manifest_token"],
+            project_binding=self.binding,
+            actor="fixture",
+        )
+        self.assertTrue(result["writes_performed"])
+        self.assertEqual(
+            result["terminal_reconciliation"]["remaining_candidate_cycle_count"], 0
+        )
+        self.assertTrue(
+            closure_lineage.status(self.workspace, self.roadmap_cycle)["effective_closed"]
+        )
+
     def test_proof_recipe_is_idempotent_and_subject_bound(self) -> None:
         self.migrate()
         requirement_id = self.requirement_for(self.roadmap_cycle)
