@@ -12,7 +12,7 @@
     "adapters/codex-app-server-config.json": "9d8932269c5527f5da9b2961aec166ab50d352b730783cf1812d089414e4f57b",
     "adapters/codex-app-server-qualifications.json": "995ccd3bea135448b316045ea240c10d272f4c7e2ff65085111e0380cef947c1",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "0722173ac087753acb47548ffcfa13e6f24e27965047b8d5d7e0a5f0fc5a41df",
+    "adapters/codex-skill-releases.json": "fc419bb97fe4284ada55cd1c58b94c3c5d1847279edcc1292bcf8ecd525313c3",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "a16e9afbc2733b2c01b113df3f3a07fda1630b80b5a97476896123ee03bc22d2",
     "dashboard/Dockerfile": "8e9ff084f409aa81ab92b9dcbe8d9bab2416225551c837681653cab7b66786ad",
@@ -27,7 +27,7 @@
     "dashboard/fleet/apps.py": "a2daa1f1b69382f0a73f0ad01cfb6ac39563d8ebc270ee93d9221b3f196779b8",
     "dashboard/fleet/auth.py": "75b1224c199bc1d1deb022903d052f02df6ae7b4829c0cae54800ec0f5752640",
     "dashboard/fleet/context.py": "518023b3e85c241d028c418acc0850c57edfd424749335a32c36fb212658c64d",
-    "dashboard/fleet/contracts.py": "57c38466e567504b34a6f84780bac499b82d8f0e8c26835e0dfeccb51009736a",
+    "dashboard/fleet/contracts.py": "8503dad68e7da57148963eb70d9816b97789597c4dc2600559e664aed65f5dc3",
     "dashboard/fleet/live.py": "257a513ae9592a0824d4ed136eb14d2eddfa9f686d157af7ea5d5d58af492eaa",
     "dashboard/fleet/management/__init__.py": "8f3063a0fc4eb9fb91014e8a2035edb0d5f98fc3b22a6bc67b8ec1a06092a468",
     "dashboard/fleet/management/commands/__init__.py": "0fdd755b9e0c22ed21b5e145f427d38e27e8313746c99c65cc9d0419c74ed6c4",
@@ -47,8 +47,9 @@
     "dashboard/fleet/migrations/0008_recursive_closure_status.py": "ebab3ad7150e31041661abf633373ce7b6a5b248fffa554bb224cade7662d72e",
     "dashboard/fleet/migrations/0009_qualification_run_namespace.py": "773afda4ef8252d742cee97f07e7bdc97102acb6419d3289a851928d039ebccb",
     "dashboard/fleet/migrations/0010_loopfindingsnapshot.py": "27334219a486a7e5aa69a0ea1eaa8979b575c983d0ad820c1b54943abb4a300e",
+    "dashboard/fleet/migrations/0011_loop_finding_expected_state_length.py": "2243563128470c0cb3a3a46e5de3eb8447cbf54e8a1fe85a2d555f2240523d8a",
     "dashboard/fleet/migrations/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "dashboard/fleet/models.py": "3e24c5828547bae6fc6aa28a3ff1b6564551e2d00a321ff5901ca7fa168d0244",
+    "dashboard/fleet/models.py": "c23ab5862bee23e71f1773c8ec8390415bab97a3121ae55ee38459e0e878ee57",
     "dashboard/fleet/services.py": "62ca59099f637827570a7f98445ad74381a3f854d11c0b088828330238e4654d",
     "dashboard/fleet/static/fleet/dashboard.css": "9211b9b501c27ec12678a664a8c3a4509ce8f4273fe88ff7c555eb905777d6e5",
     "dashboard/fleet/static/fleet/dashboard.js": "1017a3e2bf67aa11489c522bccabe70ef306d67bcb870411fe923250ad8e1ef3",
@@ -286,34 +287,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Prevent documentation bundle builds from deleting protected production state.",
-  "release_commit": "24b720992d5117a2a2be7599cd907a6d48f6ff88",
-  "release_qualification": {
-    "attested_at": "2026-09-05T16:34:56Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "81bbb1df280b8c04875d5ee96edd1c597bc74d4ce8b82a19fc01a9a619f866e5"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "24b720992d5117a2a2be7599cd907a6d48f6ff88"
-  },
-  "release_tag": "v0.47.1",
-  "released_at": "2026-09-05T16:34:56Z",
-  "shed_version": "0.47.1",
+  "notes": "Accept recursive-closure expected states in hosted reporter ingestion.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.47.2",
+  "released_at": null,
+  "shed_version": "0.47.2",
   "updated_at": "2026-09-05",
   "updater_mutation_paths": [
     {

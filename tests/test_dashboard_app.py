@@ -754,6 +754,20 @@ class DashboardApplicationTests(TestCase):
             "OUTCOME_BLOCKED",
         )
 
+        recursive_closure = self.loop_finding_report_payload()
+        recursive_closure["loop_findings"]["findings"][0][  # type: ignore[index]
+            "expected_state"
+        ] = "retain-open-until-recursively-closed"
+        self.assertEqual(
+            validate_report(recursive_closure)["loop_findings"]["findings"][0]["expected_state"],
+            "retain-open-until-recursively-closed",
+        )
+
+        oversized = self.loop_finding_report_payload()
+        oversized["loop_findings"]["findings"][0]["expected_state"] = "x" * 65  # type: ignore[index]
+        with self.assertRaisesRegex(ContractError, "expected_state"):
+            validate_report(oversized)
+
         resolved = self.loop_finding_report_payload()
         resolved["sequence"] = 2
         resolved["state"]["active_loop_finding_count"] = 0  # type: ignore[index]

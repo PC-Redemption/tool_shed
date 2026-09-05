@@ -587,7 +587,7 @@ def _loop_findings(value: Any) -> dict[str, Any]:
                 "reason_code": _choice(item.get("reason_code"), f"{label}.reason_code", LOOP_FINDING_REASON_CODES, 64),
                 "subject_id": _required_string(item.get("subject_id"), f"{label}.subject_id", 64),
                 "observed_state": _required_string(item.get("observed_state"), f"{label}.observed_state", 32),
-                "expected_state": _required_string(item.get("expected_state"), f"{label}.expected_state", 32),
+                "expected_state": _required_string(item.get("expected_state"), f"{label}.expected_state", 64),
                 "state": state,
                 "source_revision": source_revision,
                 "first_observed_at": _timestamp(item.get("first_observed_at"), f"{label}.first_observed_at"),

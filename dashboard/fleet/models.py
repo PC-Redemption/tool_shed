@@ -243,7 +243,7 @@ class LoopFindingSnapshot(models.Model):
     reason_code = models.CharField(max_length=64)
     subject_visible_id = models.CharField(max_length=64)
     observed_state = models.CharField(max_length=32)
-    expected_state = models.CharField(max_length=32)
+    expected_state = models.CharField(max_length=64)
     state = models.CharField(max_length=16)
     source_revision = models.PositiveBigIntegerField()
     first_observed_at = models.DateTimeField()
