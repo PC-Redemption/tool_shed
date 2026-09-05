@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-hosted-final-state-evidence",
+  "release_tag": "v0.47.2",
+  "reporter_instance_id": "bed3b71a-7784-43aa-a420-0f4bfac66c44",
+  "reporter_last_sequence": 10163,
+  "reporter_pending_events": 0,
+  "working_count": 0,
+  "open_outcome_count": 0,
+  "unreconciled_outcome_count": 0,
+  "closure_debt_count": 19,
+  "active_loop_finding_count": 19,
+  "prm_0040_document_lifecycle": "completed",
+  "prm_0040_outcome_lifecycle": "terminal",
+  "prm_0040_reconciliation_state": "reconciled",
+  "prm_0040_recursive_closure": true,
+  "result": "passed"
+}

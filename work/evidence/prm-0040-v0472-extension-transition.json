@@ -1,0 +1,32 @@
+{
+  "closed_at": "2026-09-05T17:32:07Z",
+  "cycle_id": "f41f9c30-96fa-42fa-a5dd-7226aebf8028",
+  "expected_domain_digest": "e65cfe2203302536dece1778ad3d2edccb205b24cbc886625e6b51e0cd941e7e",
+  "expected_revision": 1315,
+  "kind": "tool-shed-outcome-transition-manifest",
+  "lifecycle_state": "terminal",
+  "manifest_token": "57caf5b5dc6a13e3",
+  "origin_artifact_id": "d8141ea4-0e4a-4629-bf5b-cd2e048d8bd7",
+  "parent_result": null,
+  "prepared_at": "2026-09-05T17:32:07Z",
+  "project_id": "817b6358-b2f5-48fd-bb66-bd80f936faca",
+  "reconciliation": {
+    "compared_at": "2026-09-05T17:32:07Z",
+    "id": "6592fada-299d-46df-afd7-e23018e2d657",
+    "product_truth_ref": "[]",
+    "residual_work": [],
+    "state": "reconciled"
+  },
+  "schema_version": 1,
+  "supporting_cycle_ids": [
+    "5328ad7b-f08a-4d6e-88cc-2000a695bb91"
+  ],
+  "verdict": {
+    "authorization_ref": "user:ts-exe-prm-with-recommended-work-levels-end-to-end",
+    "decided_at": "2026-09-05T17:32:07Z",
+    "disposition": "satisfied",
+    "id": "9e47308f-cc24-45bd-ac91-274eb596e558",
+    "scope": "initiative",
+    "summary": "v0.47.2 production release and all required platform lanes verified."
+  }
+}

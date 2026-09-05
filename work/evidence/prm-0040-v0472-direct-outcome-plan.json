@@ -1,0 +1,124 @@
+{
+  "ambiguities": [],
+  "artifacts": [
+    {
+      "action": "create",
+      "authority_mode": "sqlite",
+      "content_sha256": "aadb624bc8b3df701b6562433cd39afb87029597a864b144961a6bb1851fb1fb",
+      "created_at": "2026-09-05T17:31:49Z",
+      "display_number": null,
+      "id": "a4bbb786-e053-49c4-9568-df92566e650c",
+      "key": "origin",
+      "lifecycle_state": "terminal",
+      "path": "sqlite/outcome-capsules/a4bbb786-e053-49c4-9568-df92566e650c",
+      "type": "direct-capsule"
+    },
+    {
+      "action": "create",
+      "authority_mode": "file",
+      "content_sha256": "2addd7313a14fe5ab0e232f352bf046ae438472d943e8e2adbdc0d1807346195",
+      "created_at": "2026-09-05T17:31:49Z",
+      "display_number": null,
+      "id": "1b327094-0a47-4a71-9302-6b45dd73c5e3",
+      "key": "product-1",
+      "lifecycle_state": "active",
+      "path": "work/evidence/release-v0.47.2-production.json",
+      "type": "file"
+    }
+  ],
+  "authorization_ref": "user:ts-exe-prm-with-recommended-work-levels-end-to-end",
+  "changes": [],
+  "cycle": {
+    "accepted_outcome": "v0.47.2 is published, deployed, reporter-reconciled, and updater-qualified on Windows and Linux.",
+    "closed_at": "2026-09-05T17:31:49Z",
+    "id": "5328ad7b-f08a-4d6e-88cc-2000a695bb91",
+    "kind": "direct-work",
+    "lifecycle_state": "terminal",
+    "opened_at": "2026-09-05T17:31:49Z",
+    "origin_artifact_id": "a4bbb786-e053-49c4-9568-df92566e650c"
+  },
+  "evidence": [
+    {
+      "collected_at": "2026-09-05T17:31:49Z",
+      "id": "56200c5c-bb32-4dad-8681-28d3e942ea87",
+      "key": "evidence-1",
+      "kind": "direct-verification",
+      "reference": "work/evidence/release-v0.47.2-production.json",
+      "sha256": "2addd7313a14fe5ab0e232f352bf046ae438472d943e8e2adbdc0d1807346195",
+      "target_identity": "a4bbb786-e053-49c4-9568-df92566e650c"
+    }
+  ],
+  "expected_domain_digest": "f48561db7ce228d542cf951d3d4fbbdc78767efec04fc14764f91053fb3af017",
+  "expected_revision": 1314,
+  "kind": "tool-shed-outcome-reconciliation-manifest",
+  "manifest_token": "7b291fba65179c39",
+  "mode": "direct",
+  "prepared_at": "2026-09-05T17:31:49Z",
+  "project_id": "817b6358-b2f5-48fd-bb66-bd80f936faca",
+  "reconciliation": {
+    "compared_at": "2026-09-05T17:31:49Z",
+    "id": "b630c169-8817-4174-a005-f77a8b3ef8c4",
+    "product_truth_artifact_ids": [
+      "1b327094-0a47-4a71-9302-6b45dd73c5e3"
+    ],
+    "residual_work": [],
+    "state": "reconciled"
+  },
+  "relationships": [
+    {
+      "from_artifact_id": "a4bbb786-e053-49c4-9568-df92566e650c",
+      "id": "a6019824-031e-419e-8798-9277d58b5cff",
+      "key": "product-1",
+      "provenance": "outcome-reconciliation-v1",
+      "relation_type": "evidenced-by",
+      "to_artifact_id": "1b327094-0a47-4a71-9302-6b45dd73c5e3"
+    },
+    {
+      "from_artifact_id": "a4bbb786-e053-49c4-9568-df92566e650c",
+      "id": "ccd581bc-6357-455d-8c75-9ac8648ed10c",
+      "key": "outcome-parent",
+      "provenance": "outcome-reconciliation-v1",
+      "relation_type": "outcome-parent",
+      "to_artifact_id": "d8141ea4-0e4a-4629-bf5b-cd2e048d8bd7"
+    },
+    {
+      "from_artifact_id": "a4bbb786-e053-49c4-9568-df92566e650c",
+      "id": "864ffd88-4ad5-4197-b2f3-848bea1dcf50",
+      "key": "outcome-result-propagated",
+      "provenance": "outcome-reconciliation-v1",
+      "relation_type": "outcome-result-propagated",
+      "to_artifact_id": "d8141ea4-0e4a-4629-bf5b-cd2e048d8bd7"
+    }
+  ],
+  "requirements": [
+    {
+      "accepted_outcome": "v0.47.2 is published, deployed, reporter-reconciled, and updater-qualified on Windows and Linux.",
+      "disposition": "accepted",
+      "evidence_gate_key": "direct-evidence",
+      "id": "73d345f4-0048-4d94-a027-f4602479352a",
+      "key": "direct-outcome",
+      "milestone_key": "direct"
+    }
+  ],
+  "schema_version": 1,
+  "verdict": {
+    "authorization_ref": "user:ts-exe-prm-with-recommended-work-levels-end-to-end",
+    "decided_at": "2026-09-05T17:31:49Z",
+    "disposition": "satisfied",
+    "id": "793b2276-adbf-4203-bde8-bb393cf11037",
+    "scope": "direct-work",
+    "summary": "v0.47.2 production verification"
+  },
+  "verifications": [
+    {
+      "command_or_test_id": "direct-evidence-1",
+      "details": null,
+      "evidence_key": "evidence-1",
+      "id": "8faf5806-50b2-4514-b18b-b338833052a9",
+      "key": "verification-1",
+      "requirement_key": "direct-outcome",
+      "status": "passed",
+      "verified_at": "2026-09-05T17:31:49Z"
+    }
+  ]
+}
