@@ -1,0 +1,41 @@
+# Campaign: Implement Dashboard Operational Trends and Bounded Exports
+
+Status: completed
+Type: campaign
+Updated: 2026-08-30
+Campaign ID: implement-dashboard-operational-trends-and-bounded-exports
+Outcome: Deliver and Work2-qualify change-only Work Efficiency trends and view-faithful bounded exports with explicit measurement limits.
+Roadmap: dashboard-operational-trends-and-bounded-exports
+Roadmap Document: PRM-0032
+Roadmap Revision: 1
+Milestone: M1-CHANGE-HISTORY, M2-TRENDS-AND-EXPORT-WORK2
+Unlocks Gate: G1-CHANGE-ONLY-TREND-HISTORY, G2-TRUTHFUL-TREND-SEMANTICS, G3-BOUNDED-VIEW-EXPORT
+Depends On: none
+Requested Endpoint: work2
+Completion Gate: semantic duplicate suppression, bounded retention, truthful window/coverage/epoch presentation, capped view-faithful CSV/JSON export, focused privacy/filter/export/rendering tests, configured-target checks, release-cohort registration, checkpoint rebuild proof, and strict Doctor all pass.
+
+## Request
+
+Build the smallest complete change-only trend and export slice on the existing hosted dashboard.
+Preserve measurement boundaries, distinguish missing coverage from no change, and export only the
+same allowlisted filtered projection shown to the operator.
+
+## Contract Decisions
+
+- Work Efficiency history stores accepted semantic changes rather than every heartbeat.
+- Retention is explicitly capped; window options are controlled and server-rendered.
+- Each trend row exposes freshness, sample count/window, platform/version, token coverage, and
+  counter epoch or reset qualification where reported.
+- Different coverage, epoch, platform, or version states are not silently compared or ranked.
+- CSV and JSON use one versioned projection, active filters, generated-at time, and a strict row cap.
+
+## Work2 Boundary
+
+Implement, run focused deduplication/retention/privacy/filter/export/rendering tests, run quick
+changed-path validation, commit the scoped candidate, deploy it to the combined `ts.rookaro.com`
+work target, check public health and authenticated browser behavior, register the candidate and
+open owning chain in the release cohort, checkpoint/rebuild-prove Hybrid state, and run strict
+Doctor.
+
+Do not push, tag, publish a version, add a general analytics API or BI platform, or mark the
+Campaign, PRM, Map, or Idea terminal at Work2.

@@ -1,0 +1,29 @@
+# Campaign: Dashboard Local Reporter Delivery
+
+Status: completed
+Type: campaign
+Updated: 2026-08-29
+Next Action: implement connect, protected credentials, durable outbox, singleton worker, telemetry aggregation, and portable tests
+Campaign ID: dashboard-local-reporter-delivery
+Outcome: Deliver a portable privacy-bounded local reporter that enrolls explicitly, persists retry-safe events, reports trustworthy current state and aggregates, and converges after missed or unmanaged changes.
+Roadmap: hosted-cross-project-tool-shed-dashboard
+Roadmap Document: PRM-0027
+Roadmap Revision: 1
+Milestone: M2-LOCAL-REPORTER-DELIVERY
+Unlocks Gates: G1-REPORTING-ALLOWLIST-PRIVACY-CONTRACT, G2-HUMAN-AUTH-AND-INSTANCE-ENROLLMENT, G3-FLEET-PLATFORM-AND-REPORTER-OPERATIONS, G4-MATERIAL-EVENT-AND-FAILURE-RETENTION
+Depends On: dashboard-contracts-trust-hosted-foundation
+Completion Gate: Connect/pairing, protected credential storage, durable outbox, atomic singleton locking, polling, heartbeat, quiescence, bounded retry, safety convergence, App Server metrics, Work Efficiency aggregates, and Linux/macOS/Windows portability tests pass.
+
+## Scope
+
+- Add `ts dashboard connect`, status, disconnect/revoke, enqueue, worker, and safety-pass surfaces.
+- Reuse protected user-local state and never copy credentials into project state or logs.
+- Report only schema-validated current state, material events, App Server counters/failure groups,
+  and Work Efficiency aggregates with counter epochs and explicit measurement coverage.
+- Prove duplicate launcher and duplicate message prevention separately.
+
+## Safety Boundaries
+
+- Outbound HTTPS only; no inbound workstation service.
+- No permanent daemon requirement and no unsupported scheduler installation mutation.
+- No raw logs, prompts, responses, source, paths, commands, or credentials in payloads.

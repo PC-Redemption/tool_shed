@@ -1,0 +1,155 @@
+# Program Roadmap: Private Development Site Before Public Release
+
+Status: completed
+Type: program-roadmap
+Updated: 2026-09-02
+Next Action: explicitly authorize Work5 for release cohort 9902c070-34c6-4885-9f93-115fa6f59402 to complete M3 production promotion and recovery proof
+Roadmap ID: private-development-site-before-public-release
+Roadmap Revision: 1
+Source Idea: IDEA-0018
+Source Project Map: MAP-0025
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 9
+Reviewed Body SHA256: 04a31a68d350fe820a3a40d8dd5bd07511f07e8f5ef5323a451ea712548955ba
+
+## Program Outcome
+
+Tool Shed website and dashboard changes are developed and proven on a private, production-like
+site before intentional public promotion. The development stack is isolated from production on
+the shared `sup.local` Docker host, is reachable only from approved LAN clients and a Workpc
+localhost tunnel, communicates continuously with dedicated Linux and Windows development project
+identities, and supports exact-commit promotion with recovery evidence across explicit web,
+Windows-installation, and Linux-installation delivery lanes from one canonical source.
+
+## M1-ISOLATED-PRIVATE-DEVELOPMENT — Establish the development target
+
+Status: completed
+Required Endpoint: Work2 to a verified split development target
+Depends on: none
+
+Outcome: Create and verify the separate development filesystem and Compose project, independent
+services and writable resources, plain-HTTP LAN endpoint on port `8443`, synthetic seed data,
+resource limits, unmistakable environment identity, LAN test-bed access, and persistent
+localhost-only Workpc tunnel. Production remains healthy and unchanged.
+
+Gates:
+
+- `G1-DEVELOPMENT-ISOLATION`
+- `G3-PRIVATE-ACCESS`
+
+Candidate campaign: `establish-isolated-private-development-site`.
+
+Execution boundary: the current `combined` Work2 target must not be used for bootstrap. First bind
+the exact development root and deployment commands, keep every Compose operation scoped to the
+development project, and retain the combined declaration until the new target is actually healthy.
+Development-secret or authentication creation remains an explicit protected boundary.
+
+Evidence: `CAMP-0145` and `EVD-0081` prove the isolated development root, Compose project,
+services, data boundaries, LAN endpoint, Workpc tunnel, production noninterference, exact Work2
+candidate registration, checkpoint rebuild, and strict Doctor. Current development and production
+health checks remain successful.
+
+## M2-DEVELOPMENT-COMMUNICATION — Exercise the real development integration
+
+Status: completed
+Required Endpoint: Work2 to the verified development target and both dedicated test-bed identities
+Depends on: M1-ISOLATED-PRIVATE-DEVELOPMENT
+
+Outcome: Dedicated Linux and Windows development project identities enroll with development-only
+credentials, complete one manual report handshake, then operate persistent reporter workers and
+safety schedulers against the development dashboard. Reports and bounded telemetry converge
+without redirecting or reusing a production-connected identity.
+
+Gate:
+
+- `G2-DEVELOPMENT-COMMUNICATION`
+
+Candidate campaign: `connect-dedicated-development-reporters`.
+
+Execution boundary: credential issuance, TOTP/authentication changes, and host-local scheduler
+installation require explicit protected authority at the time of action. Production reporter
+state, queues, credentials, and destinations remain untouched.
+
+Evidence: the protected reporter enrollments and scheduler installations were explicitly approved
+and completed within `CAMP-0145`. `EVD-0081` records distinct Linux and Windows development
+identities, successful scheduler results, delivered reports, zero pending events, and healthy
+test-bed state. Fresh status checks on 2026-09-02 confirm both reporters remain connected with zero
+pending events and both strict Doctors remain `HEALTHY`.
+
+## M3-PROMOTION-AND-RECOVERY-PROOF — Prove the public promotion path
+
+Status: in-progress
+Required Endpoint: Work5 for one explicitly selected development-tested commit
+Depends on: M1-ISOLATED-PRIVATE-DEVELOPMENT, M2-DEVELOPMENT-COMMUNICATION
+
+Outcome: Implement and prove project-only lane enforcement without changing portable work-level
+definitions; prove migrations and recovery on non-production data; pass login, MFA, dashboard,
+enrollment, Workpc, and required web/Windows/Linux lane checks; confirm development has no public
+route; back up production before any migration-bearing promotion; promote the exact tested commit;
+and verify production health, released installations, parent reconciliation, and a practical
+rollback path.
+
+Gate:
+
+- `G4-PROMOTION-RECOVERY`
+
+Candidate campaign: `qualify-and-promote-development-tested-commit`.
+
+Execution boundary: this roadmap authorizes the local project-specific validator and configuration
+work but not a production release. Work3 keeps its standard default and binds the final candidate
+only in its after-action. This project's Work5 uses `run_default: false`; its required replacement
+action must preserve every standard Work5 obligation while interleaving required-lane evidence
+before release-cohort or parent finalization. Actual promotion starts only from an explicit Work5
+request after protected production controls, backup, and rollback readiness are satisfied.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G1-DEVELOPMENT-ISOLATION | M1 / same gate |
+| G2-DEVELOPMENT-COMMUNICATION | M2 / same gate |
+| G3-PRIVATE-ACCESS | M1 / same gate |
+| G4-PROMOTION-RECOVERY | M3 / same gate |
+
+Transfer count: 4 reviewed gates; 4 mapped gates; 0 dropped.
+
+## Program Constraints
+
+- Production remains the public promotion target and is not an ordinary development environment.
+- Development uses plain HTTP only on the LAN and Workpc localhost forward; production HTTPS
+  controls remain intact.
+- No production data, credentials, enrollments, sessions, writable mounts, or scheduler state is
+  copied or redirected.
+- The shared host and Docker daemon are accepted infrastructure boundaries; development container
+  and web-service restarts must not restart production services.
+- Exact implementation choices for the development root and Workpc tunnel service must preserve
+  the transferred gates and remain recoverable.
+- `work/tool-shed.yaml` changes to `split` only after M1 proves the development target and its
+  operating contract.
+- Portable Work1 through Work5 definitions remain unchanged. Project-only customization may
+  extend Work3 and replace only this repository's Work5 endpoint when the complete standard
+  sequence is preserved.
+
+## Verification Strategy
+
+- Capture container, network, volume, bind-mount, database, environment, port, route, and
+  production-health evidence before and after development deployment.
+- Exercise direct LAN access from both test beds and localhost-only access from Workpc.
+- Use manual enrollment/report handshakes before installing persistent development schedulers.
+- Use deterministic synthetic data for migration, reset, and recovery tests.
+- Bind promotion to the exact development-tested commit and recheck production health after it.
+- Require a revision/digest-guarded lane manifest. Work3 after binds the resulting candidate SHA;
+  Work5 preflight verifies development closure; the replacement sequence records production and
+  released-install evidence before recursively reconciling owners.
+
+## Next Route
+
+M1 and M2 are complete. Work3 has bound candidate
+`bb95a6aa1ad3d2ae44656a006f50200449436109` and verified its development web, Windows installation,
+and Linux installation lanes. M3 remains the only open milestone and is now waiting at the explicit
+production boundary. When production promotion is intended, invoke Work5 for `IDEA-0018` or active
+release cohort `9902c070-34c6-4885-9f93-115fa6f59402`. That replacement sequence must freeze the
+complete candidate set, qualify migration and recovery, back up production before any
+migration-bearing promotion, publish the exact frozen content, verify every required
+production/install lane and rollback, and only then reconcile the cohort through `PRM-0036`,
+`MAP-0025`, and `IDEA-0018`.

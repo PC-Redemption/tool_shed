@@ -1,0 +1,64 @@
+# Campaign: Implement Hosted Dashboard Work Lifecycle and History
+
+Status: completed
+Type: campaign
+Updated: 2026-08-30
+Campaign ID: implement-hosted-dashboard-work-lifecycle-and-history
+Outcome: Deliver and Work2-qualify a bounded per-instance lifecycle inventory, artifact-specific change-only history, and useful Work/History project views for Ideas, Maps, PRMs, and Campaigns.
+Roadmap: hosted-dashboard-work-lifecycle-and-history
+Roadmap Document: PRM-0028
+Roadmap Revision: 1
+Milestone: M1-CONTRACT-AND-PERSISTENCE, M2-PROJECT-EXPERIENCE-WORK2
+Unlocks Gate: G1-LIFECYCLE-TRUTH-MODEL, G2-MULTI-INSTANCE-SNAPSHOT-AUTHORITY, G3-BOUNDED-DISCLOSURE-AND-RETENTION, G4-HISTORY-FIDELITY-AND-LIVE-REFRESH
+Depends On: none
+Requested Endpoint: work2
+Completion Gate: schema-v1 compatibility, bounded schema-v2 reporter inventory, per-instance atomic persistence, explicit truncation/divergence, lifecycle-state separation, change-only idempotent history, useful Work/History rendering, semantic SSE behavior, focused tests, configured-target deployment checks, release-cohort registration, checkpoint rebuild proof, and strict Doctor all pass.
+
+## Request
+
+Extend the existing dashboard vertical slice without creating a second authority. Read the current
+Hybrid document, relationship, cycle, verdict, and reconciliation tables into a bounded reporter
+projection. Accept old schema-v1 reports while schema-v2 reports atomically replace one instance's
+bounded inventory and append only real artifact transitions. Render per-instance Work and History
+surfaces with stable IDs, sanitized titles, lifecycle distinctions, relationship context,
+freshness, explicit partial-state and divergence warnings, and semantic SSE refresh.
+
+## Contract Decisions
+
+- Project Maps are first-class; the visible chain is Idea → Map → PRM → Campaign.
+- Stable UUIDs and visible IDs are canonical; titles are sanitized and capped at 160 characters.
+- Document lifecycle, outcome lifecycle, outcome disposition, and reconciliation are separate.
+- Snapshot ownership is per instance. Divergent instances are displayed, never silently merged.
+- Inventory is capped at 500 artifacts with `total_count` and `truncated`; a partial snapshot is
+  labelled and does not claim complete project truth.
+- Transition payloads are capped at 50 events and hosted retention remains 90 days.
+- The first schema-v2 snapshot creates inventory but no invented transition history.
+- Unchanged reports and heartbeats do not append lifecycle history or trigger semantic refresh.
+- Existing generic material events remain supported as a separate operational supplement.
+
+## Work2 Boundary
+
+Implement, run the quickest meaningful changed-path validation, commit the scoped candidate,
+deploy it to the configured combined `ts.rookaro.com` work target, check public health plus
+authenticated/API behavior with safe fixtures or the deployed service, register the candidate and
+its open owning chain in the release cohort, checkpoint and rebuild-prove Hybrid state, and run
+strict Doctor.
+
+Do not push, tag, publish a Tool Shed release, synchronize disconnected clients, or mark the
+Campaign, PRM, Map, or Idea terminal at Work2.
+
+## App Server Preparation Contract
+
+```json
+{
+  "campaign_id": "implement-hosted-dashboard-work-lifecycle-and-history",
+  "completion_evidence": "Focused lifecycle contract, ingestion, rendering, migration, SSE, live deployment, release-cohort, checkpoint, rebuild, and strict Doctor evidence pass.",
+  "exact_resolution": "dispatch-time",
+  "execution_shape": "single-bounded-camp",
+  "inline_assets": "metadata-only",
+  "objective": "Deliver a bounded per-instance lifecycle inventory and change-only history on the hosted dashboard project page through Work2.",
+  "schema_version": 1,
+  "source_freshness": "required",
+  "verification": "orchestrator-exactly-once"
+}
+```

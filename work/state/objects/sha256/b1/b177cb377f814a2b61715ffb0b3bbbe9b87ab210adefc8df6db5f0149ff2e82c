@@ -1,0 +1,45 @@
+# Campaign: Correct Lifecycle and Closure Projections
+
+Status: completed
+Type: campaign
+Updated: 2026-09-05
+Next Action: verify reporter schema 9 and hosted development presentation
+Campaign ID: correct-lifecycle-closure-projections
+Campaign Number: 162
+Outcome: Local CLI, reporter payloads, dashboard summaries, and work-chain views distinguish queued, working, completed, outcome-open, and closure-blocked states consistently and select the intended closure role deterministically.
+Primary Focus Areas: hosted-dashboard
+Supporting Focus Areas: campaign-lifecycle
+Depends On: repair-terminal-map-prm-lifecycle-drift
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work2
+Completion Gate: Queued campaigns are not counted as working; closure debt has a separate bounded signal; active-chain presentation follows the frozen M1 state contract; visible-ID status selects or requires an explicit closure role deterministically; reporter and hosted schemas remain privacy bounded; and focused API, view-model, and browser tests pass in development.
+Completion Evidence: none
+Disposition: none
+Roadmap: lifecycle-recursive-closure-integrity-recovery
+Roadmap Revision: 1
+Roadmap Document: PRM-0040
+Milestone: M4-TRUTHFUL-PROJECTION
+Unlocks Gate: G4-TRUTHFUL-PROJECTION
+
+## Request
+
+Correct projection semantics without changing canonical historical truth. Replace the dashboard's
+active-campaign-document count with real queue/readiness state, expose recursive closure debt
+separately from open outcomes and loop findings, and ensure closure status for a visible artifact
+cannot return an arbitrary obligation when the caller expects the artifact cycle.
+
+Exercise local inventory, reporter contract, hosted ingestion/storage/view models, and browser
+presentation. Maintain the one-way advisory boundary; the hosted service never repairs local state.
+
+## App Server Preparation Contract
+
+```json
+{"schema_version":1,"campaign_id":"correct-lifecycle-closure-projections","objective":"Make local and hosted lifecycle/closure projections truthful and deterministic.","execution_shape":"single-bounded-camp","exact_resolution":"dispatch-time","inline_assets":"metadata-only","source_freshness":"required","verification":"orchestrator-exactly-once","completion_evidence":"Queued/working and closure states agree across CLI, reporter, hosted storage, view models, and development browser behavior."}
+```
+
+## Completion Check
+
+Prove exact local-to-hosted development parity for the controlled fields and browser-visible labels,
+register the Work2 candidate, and stop without production release.

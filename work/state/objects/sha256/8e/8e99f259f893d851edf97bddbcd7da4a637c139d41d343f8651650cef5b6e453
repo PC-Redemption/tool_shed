@@ -1,0 +1,66 @@
+# Campaign: Repair terminal Map and PRM lifecycle drift
+
+Status: completed
+Type: campaign
+Updated: 2026-09-05
+Next Action: complete state-contract implementation and Work2 verification
+Campaign ID: repair-terminal-map-prm-lifecycle-drift
+Campaign Number: 159
+Outcome: Tool Shed defines and enforces a coherent document, outcome, reconciliation, and recursive-closure state contract; detects equivalent lifecycle drift across durable document types; and prevents Work5 from making completion claims that its governed state does not support.
+Primary Focus Areas: campaign-lifecycle
+Supporting Focus Areas: qualification-release
+Depends On: none
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work2
+Completion Gate: The allowed state matrix is explicit and tested; current-state discovery covers terminal/reconciled lifecycle drift for applicable durable document types; lifecycle/body transitions cannot silently diverge; Work5 finalization enforces its required document and recursive-closure conditions; fixtures distinguish four safely closed known examples from MAP-0026 and PRM-0037 with open descendants; focused tests and the Work2 development lane pass without applying historical repairs or changing production.
+Completion Evidence: none
+Disposition: none
+Roadmap: lifecycle-recursive-closure-integrity-recovery
+Roadmap Revision: 1
+Roadmap Document: PRM-0040
+Milestone: M1-STATE-CONTRACT-AND-PREVENTION
+Unlocks Gate: G1-STATE-CONTRACT-AND-PREVENTION
+
+## Request
+
+Freeze the state semantics exposed by the previous Work5 releases. Document lifecycle, outcome
+disposition, reconciliation, and recursive closure remain separate dimensions, but closeout gates
+and user-facing claims must not imply convergence that has not occurred.
+
+Extend controlled discovery beyond promoted Ideas so equivalent Map, PRM, campaign, and other
+applicable document drift is detected with stable reason codes. Make the normal terminal transition
+path update or validate the corresponding document lifecycle and body status coherently, including
+safe recovery from interruption. Strengthen release finalization to check the recursive-closure and
+document conditions required by the owning scope.
+
+Use the six observed Map/PRM rows as classification fixtures: MAP-0025, MAP-0027, PRM-0036, and
+PRM-0038 are terminal, reconciled, and effectively closed; MAP-0026 and PRM-0037 remain recursively
+open and must not be treated as equivalent automatic repairs. Preserve IDEA-0021. This campaign
+implements prevention and detection only; CAMP-0160 and CAMP-0161 own utility construction and
+historical application, CAMP-0162 owns projections, and later milestones own qualification and
+release.
+
+## App Server Preparation Contract
+
+```json
+{
+  "campaign_id": "repair-terminal-map-prm-lifecycle-drift",
+  "completion_evidence": "The state contract, lifecycle transition path, expanded discovery, and strengthened closeout gate pass focused tests and the Work2 development lane without historical or production mutation.",
+  "exact_resolution": "dispatch-time",
+  "execution_shape": "single-bounded-camp",
+  "inline_assets": "metadata-only",
+  "objective": "Define and enforce lifecycle and recursive-closure invariants that prevent recurrence and distinguish safe drift from genuinely open descendants.",
+  "schema_version": 1,
+  "source_freshness": "required",
+  "verification": "orchestrator-exactly-once"
+}
+```
+
+## Completion Check
+
+Verify focused state-matrix, transition, discovery, release-gate, interruption, and rebuild tests;
+deploy and check only the configured development target; register the Work2 candidate with the
+PRM-0040 outcome chain; and stop before historical application, Work3 qualification, publication,
+or production promotion.

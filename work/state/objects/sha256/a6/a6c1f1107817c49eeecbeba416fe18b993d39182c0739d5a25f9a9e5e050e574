@@ -1,0 +1,718 @@
+# Idea Brief: Hosted Cross-Project Tool Shed Dashboard
+
+Status: completed
+Type: idea-brief
+Updated: 2026-08-29
+Next Action: execute MAP-0016 and PRM-0027 through Work5 release and reconciliation
+Produces: MAP-0016, PRM-0027
+
+## Current Synthesis
+
+### Idea
+
+Add an organized web dashboard whose canonical landing page is
+`https://ts.rookaro.com/dashboard/`. It receives sanitized status reports from multiple local Tool
+Shed instances and lets the operator move quickly among projects. Each local instance remains
+authoritative for its own work state; the hosted service is an advisory reporting and presentation
+layer, not a remote controller or replacement work database.
+
+The site should establish one reusable dashboard application shell: a persistent header and
+minimal footer, a left navigation pane for fleet and project selection, and a right content pane
+for the selected scope. Long project pages should be divided into one level of URL-addressable tabs
+so summary and attention information stays visible without forcing the operator through a single
+large document.
+
+The current public site's visual presentation is a compatibility contract. Its header, footer,
+typography, colors, spacing, responsive behavior, public routes, and documentation behavior must
+remain intact. The implementation stack may change when the change produces a concrete functional,
+reliability, performance, security, deployment, or recovery benefit. The selected hosted direction
+keeps nginx as the single exposed gateway, continues serving the existing documentation as static
+content, and adds one Django application plus PostgreSQL for the authenticated dashboard and
+reporting API.
+
+An installation does not receive reporting trust automatically. The proposed
+`ts dashboard connect` action initiates a short-lived device-style pairing request, the dashboard
+notifies an authenticated operator, and only explicit approval converts that request into one
+revocable instance credential. The local client polls for the decision over outbound HTTPS, so the
+server never needs an inbound path to a workstation.
+
+Each Tool Shed instance should use one singleton background reporting worker. Local update triggers
+durably enqueue a sanitized event and invoke a lightweight launcher. The launcher starts the worker
+when absent; if the singleton lock is already held, it exits because the active worker polls the
+outbox every second. While active, the worker drains the outbox, sends changes, and emits a heartbeat
+every one minute. It declares itself quiescent and exits after two hours with no activity and an
+empty outbox. A periodic safety check recovers missed triggers, direct database changes, crashes,
+and unsent events.
+
+App Server operability should be visible across the fleet rather than inferred from occasional
+campaign evidence. Every reporting instance should maintain durable cumulative counts for App
+Server execution attempts and App Server failures, plus the minimum status needed to interpret
+them: enabled/configured state, qualification or availability state, last successful use, last
+failure, client/App Server version, and fallback outcome. A failure means the App Server path itself
+failed or was unusable; a campaign, test, or product failure after a healthy App Server execution
+must not inflate the App Server failure count.
+
+The dashboard should have a dedicated fleet-level App Server screen with per-project and
+per-instance drilldown. It should show adoption and health state, usage and failure totals, failure
+rate, recent failure time, fallback count, affected versions/platforms, and sanitized failure
+groups. The web site remains informational: it does not invoke mitigation, send commands, or mutate
+an instance. When the screen reveals a problem, the operator goes to the Tool Shed maintainer,
+requests the selected server report through a maintainer-side read-only command, and performs any
+diagnosis or mitigation through the maintainer's governed local workflow.
+
+Tool Shed work efficiency should also be visible by project. Each reporting instance should send a
+versioned aggregate produced by IDEA-0011's local workflow journal: exact
+`remedial_tokens_actual` only for provider-measured phases, `remedial_token_coverage`, and separate
+remedial interaction, output-byte, duration, and retry proxies for all supported provider paths.
+The dashboard should provide a fleet-level Work Efficiency view with one row per project and
+project/instance drilldown. It must place coverage, measurement window, freshness, and counter
+epoch beside token totals, display missing usage as unknown rather than zero, and never rank or
+compare projects as if partial token coverage were complete.
+
+### Why It Matters
+
+VS Code presents only the current workspace and does not give the operator a useful portfolio view
+while several projects are progressing in parallel. The operator needs one surface that exposes
+what needs attention, what is working, what recently completed, what has an open outcome loop, and
+which instances are stale without opening each repository or navigating a large generated file
+tree.
+
+Immediate update triggers make the hosted view responsive, while a short-lived resident worker
+provides heartbeats and retry behavior without requiring every production install to run a
+permanent daemon. Singleton coordination prevents duplicate launch attempts from accumulating
+background processes.
+
+### Desired Outcome
+
+The operator opens `https://ts.rookaro.com/dashboard/` and, after authentication, sees every
+reporting Tool Shed project ordered by operational relevance. Selecting a project changes the
+right pane without losing fleet navigation. Important state remains above the content tabs, and
+each detailed section has a stable URL suitable for refresh, browser history, and direct linking.
+
+The operator can also open a dedicated App Server fleet screen to see which instances actually use
+App Server, how often they use it, how many App Server-path failures occurred, which failure groups
+are recurring, and where GUI fallback is masking a reliability problem. The operator can select a
+bounded cohort or failure group, then request that exact informational report from the maintainer
+without copying raw database content or treating the hosted dashboard as a repair authority.
+
+The operator can open a Work Efficiency screen to compare per-project remedial work. Projects with
+measured provider tokens show exact remedial tokens and coverage; GUI-native or partially measured
+projects show clearly separated tool-call, output, duration, and retry proxies. The screen supports
+trend windows and project drilldown without uploading prompts, source, paths, commands, or raw
+diagnostics, and it identifies stale, incompatible, or reset counter epochs instead of joining them
+into misleading totals.
+
+Existing visitors continue to receive the same visual public site at `/`, `/guide/`, `/help/`, and
+`/ref/`. The dashboard reuses that design language without making the public documentation require
+authentication or a dynamic application round trip.
+
+Local changes become visible promptly. During an active work session, the server normally receives
+a heartbeat every minute. A duplicate reporter launch observes the held singleton lock and exits;
+the existing worker reads the new event on its next one-second outbox poll. Network outages, worker
+crashes, direct SQLite access, and retries do not lose events or create duplicate server state. An
+idle worker exits cleanly after two hours, and the server distinguishes intentional quiescence from
+an overdue or incompatible client.
+
+## First-Release Boundary
+
+The first release is intentionally one deployable vertical slice:
+
+- Preserve the existing public site's static presentation and nginx gateway.
+- Add one Django application and one PostgreSQL instance, without replicas or high-availability
+  orchestration.
+- Support one authenticated maintainer. Reuse an existing OIDC provider when available; otherwise
+  use a maintained Django-compatible login with MFA. Do not deploy a new identity provider solely
+  for this dashboard.
+- Support device-style instance enrollment, approval, rejection, revocation, and re-pairing. Store
+  the resulting scoped token in Tool Shed's existing protected user-local credential state.
+- Provide a project list ordered by attention plus Overview, Current Work, Outcome Reconciliation,
+  and Health tabs.
+- Provide one dedicated fleet-level App Server screen with per-instance health, cumulative use and
+  failure counts, fallback counts, recent failure state, version/platform grouping, and bounded
+  sanitized failure details suitable for later maintainer-side review.
+- Provide one fleet-level Work Efficiency screen with per-project and per-instance drilldown for
+  exact measured remedial tokens, measurement coverage, and separately labelled remedial
+  interactions, output bytes, duration, and retries. Unknown or partial token coverage must remain
+  visually explicit.
+- Provide a maintainer-side read-only report request that retrieves a selected App Server cohort or
+  failure group from the hosted service. Diagnosis, code changes, release, deployment, and instance
+  mutation remain outside the web application.
+- Retain current reported state, `last_seen`, quiescent state, and material state-change events. Do
+  not retain or roll up one-minute heartbeat history.
+- Use the durable local outbox, one singleton worker, an atomic lock, one-second outbox polling, a
+  one-minute active heartbeat, a two-hour idle exit, and a periodic safety pass.
+- Qualify representative public desktop and mobile views plus authentication, ingestion, health,
+  backup, restore, migration, and rollback.
+
+Defer until measured need or operator evidence justifies expansion:
+
+- Pinned projects, custom groups or tags, advanced filters, detailed Roadmap & Gates views, and
+  general Activity/History browsing.
+- Remote mitigation, dashboard-triggered diagnostics, server-to-instance commands, and automatic
+  failure repair.
+- Server-sent events; use bounded browser polling in the first release.
+- Heartbeat-history storage or rollups and operating-system-specific keyring integrations beyond
+  the existing protected user-local credential mechanism.
+- A new identity-provider service, mutual TLS, custom request signing, PostgreSQL replicas or HA,
+  blue-green or multi-region deployment, Redis, Celery, Kubernetes, a message broker, a full SPA,
+  and remote work control.
+
+## PRM Handoff And Closed-Loop Governance
+
+Promotion must open a governed outcome loop rooted in the immutable identity and accepted revision
+of `IDEA-0007`; changing a title, path, map, roadmap, or campaign must not replace that origin. The
+project map, Program Roadmap, milestones, and campaigns become related child loops whose results
+propagate to the idea outcome.
+
+The PRM handoff must carry:
+
+- the accepted first-release outcome and every requirement derived from this brief;
+- every later material change to outcome, scope, behavior, target, acceptance, authority, privacy,
+  or safety, including authorization and the evidence that must be rerun;
+- current product-truth references for source, build, released client, hosted application,
+  PostgreSQL schema, and the deployed `ts.rookaro.com` target;
+- endpoint-appropriate evidence for tests, visual compatibility, authentication, ingestion,
+  upgrade, backup/restore, rollback, deployment, and a disconnected installed-client canary; and
+- an explicit final verdict, reconciliation state, residual-work disposition, and upward
+  propagation through every owning loop.
+
+A completed campaign, terminal roadmap, successful HTTP request, deployed server, or empty queue is
+not sufficient closure. `IDEA-0007` closes only after the accepted idea is reconciled against
+authorized changes, current product truth, target evidence, and residual work.
+
+PRM should freeze the reporting allowlist/privacy contract, human authentication choice,
+first-release fleet and supported-platform qualification target, safety-check cadence, material
+event retention, and backup/restore acceptance targets before their dependent implementation or
+production gates. These are roadmap decisions and evidence gates, not blockers to promotion.
+
+## Dashboard Template
+
+### Header
+
+- Tool Shed brand plus an explicit Dashboard marker.
+- Global project search or project switcher.
+- Reporting freshness or connection summary.
+- Authenticated account and sign-out controls.
+- Persistent or sticky positioning where it does not obscure content.
+
+### Left Navigation Pane
+
+- All projects, needs attention, working, and stale/offline.
+- A dedicated App Server fleet destination with unhealthy and recurring-failure attention counts.
+- Searchable project list with state counts. Pinned projects and custom groups or tags are deferred.
+- Clear separation between portfolio navigation and the section tabs inside the right pane.
+- Collapsible layout on desktop and a drawer on narrow screens.
+
+### Right Content Pane
+
+- Selected fleet or project title, current state, last report time, and any attention condition.
+- Compact summary cards above the tabs so blocked, stale, or unreconciled state is never hidden.
+- First-release project tabs: Overview, Current Work, Outcome Reconciliation, and Health. Detailed
+  Roadmap & Gates and Activity/History views are deferred.
+- First-release fleet tabs may specialize the same content area for Overview, Needs Attention,
+  Working, and Stale views.
+- The dedicated App Server screen should support fleet, project, instance, version/platform, and
+  sanitized failure-group views without nesting another tab hierarchy.
+- One tab level only. Long lists use paging or incremental loading; record details use a drawer or
+  focused detail route rather than nested tabs.
+- Sticky tab and table headers where useful. On narrow screens, tabs scroll horizontally or become
+  an accessible compact selector.
+
+### Footer
+
+- Dashboard/server version, reporting API status, documentation, privacy/retention information,
+  and support or source links.
+- No primary operational controls in the footer.
+
+### Navigation And Accessibility Contract
+
+- Render tabs as stable routes such as `/dashboard/projects/{project-id}/outcomes`, with progressive
+  enhancement rather than JavaScript-only hidden state.
+- Preserve browser back/forward behavior, reload, direct links, focus state, and keyboard operation.
+- Fetch or mount only the active tab's detailed data, while keeping shared summary and attention
+  state visible.
+- Do not use tabs for information that must be compared simultaneously.
+
+## Hosted Service Architecture
+
+### Source, GitHub, And Deployment Authority
+
+- Keep first-release public-site and dashboard source in the existing
+  `PC-Redemption/tool_shed` GitHub repository. Track canonical public pages and assets under `site/`,
+  the Django application and migrations in a repository-owned source directory selected during
+  PRM, versioned API and payload contracts, deployment templates, tests, and operator documentation.
+- Keep `build/ts.rookaro.com/` generated and ignored. The deployed
+  `/home/jon/docker/ts.rookaro.com/` directory on `sup` is also a generated release copy, not a Git
+  working tree or a second source repository.
+- Never commit the live PostgreSQL database, database storage, backups, reporter credentials,
+  Django secrets, host-local configuration, logs, runtime status, or enrollment tokens. Track only
+  safe examples, schemas, migrations, and operational contracts.
+- Keep the Rookaro router configuration under its existing separate production ownership. This
+  repository may document the required `ts.rookaro.com` route, but it does not take editable
+  authority over `/home/jon/docker/rookaro.com` or production credentials.
+- Split the dashboard into a separate GitHub repository only if measured independent release
+  cadence, ownership, access-control, or deployment needs outweigh the coordination cost. A second
+  repository is not part of the first-release design.
+
+### Request Boundary
+
+- Preserve the existing Rookaro hostname route and host port. The `ts.rookaro.com` Compose project
+  continues to expose only one nginx gateway.
+- Serve `/`, `/guide/`, `/help/`, `/ref/`, and shared public assets directly from nginx.
+- Reverse proxy `/dashboard/` to the authenticated application and `/api/v1/` to the versioned
+  instance-reporting API over the internal Compose network.
+- Keep the dashboard and API same-origin with the public site to avoid unnecessary CORS and browser
+  credential complexity.
+
+### Application And Data
+
+- Use one Django application for server-rendered dashboard pages, sessions, CSRF protection,
+  migrations, data access, and the reporting API rather than assembling separate UI, auth, ORM, and
+  API services.
+- Use PostgreSQL as the hosted reporting store so concurrent instance ingestion, dashboard reads,
+  schema migration, retention, and backup do not depend on one application process. Local Tool Shed
+  SQLite databases remain unchanged and authoritative for their own project state. The first
+  release operates one PostgreSQL instance and does not add replicas or HA orchestration.
+- Store registered projects and instances, current reported state, last heartbeat, quiescent state,
+  sanitized state-change events, sequence/idempotency records, client/protocol versions, and
+  credential metadata. Store the latest App Server health snapshot and cumulative counter epoch,
+  execution-attempt count, failure count, fallback count, last-success/last-failure timestamps, and
+  bounded sanitized failure groups. Store the latest per-project Work Efficiency aggregate with its
+  schema version, measurement window, counter epoch, freshness, token-coverage numerator and
+  denominator, exact measured remedial-token totals, and separate proxy totals. Update `last_seen`
+  and current presence in place, retain only material state-change, App Server failure, and bounded
+  Work Efficiency window changes, and do not build heartbeat-history or granular model-activity
+  storage in the first release.
+- Use server-rendered HTML with small, dependency-light JavaScript enhancements. Server-sent events
+  are deferred; bounded browser polling refreshes first-release views. A large client-side SPA is
+  not required.
+
+### Authentication And Secrets
+
+- Keep human dashboard authentication separate from machine reporter authentication.
+- Reuse an existing OIDC identity provider for human login when one is available. Otherwise use a
+  maintained MFA-capable Django-compatible mechanism for the single maintainer. Do not stand up a
+  new identity-provider service solely for the dashboard.
+- Give each reporting instance a revocable, scoped machine credential. A reporter credential cannot
+  create a browser session, and a browser session cannot impersonate a reporter.
+- Keep production secrets in protected host-local secret files or the platform's secret mechanism,
+  never in Git, images, generated bundles, database exports, or reporting payloads.
+
+### Instance Enrollment And Trust
+
+Use an explicit lifecycle: `unregistered` → `pending` → `trusted`, with `rejected`, `expired`, and
+`revoked` terminal branches and credential rotation available only from `trusted`.
+
+1. The operator runs the proposed `ts dashboard connect` action. Enrollment must never start merely
+   because Tool Shed launches, upgrades, or discovers that no credential exists.
+2. The installation creates a stable user-local instance ID, separate from the project ID, and
+   sends a sanitized request to `/api/v1/enrollments`. The request may include an operator-facing
+   label, project ID, instance ID, Tool Shed/client protocol versions, general platform, and exact
+   requested reporting scopes. It sends no paths, usernames, document bodies, source, logs, or
+   credentials.
+3. The server creates an untrusted pending record and returns a high-entropy device code, a short
+   human verification code, `https://ts.rookaro.com/dashboard/` as the verification entry point, a
+   short expiration such as ten minutes, and a minimum polling interval.
+4. The authenticated dashboard shows a pending-instance notification. Before approval, the operator
+   compares the locally displayed code and reviews the project label and ID, instance ID, version,
+   platform, and requested scopes. Approval and rejection are explicit, audited actions.
+5. The instance polls the enrollment result with the high-entropy device code until approval,
+   rejection, or expiration. The server does not call back into the local installation.
+6. Approval returns a randomly generated 256-bit opaque reporter token exactly once. The server
+   stores only a strong verifier or hash. In the first release, the client stores the token through
+   Tool Shed's existing protected user-local credential mechanism outside the repository, project
+   SQLite database, Tool Shed snapshot, logs, and generated views. Operating-system-specific
+   keyring integrations are deferred.
+7. The reporter token is scoped only to heartbeat and sanitized state reporting for its instance.
+   It cannot authenticate a human dashboard session, read other projects, mutate local or hosted
+   work, or approve another instance.
+8. Ordinary requests use HTTPS plus the scoped credential, instance and project IDs, monotonic
+   sequence, idempotency key, timestamp, and protocol version. Token authentication and message
+   deduplication remain separate controls.
+9. The dashboard exposes pending, trusted, expired, rejected, and revoked instances with last seen,
+   credential age, client version, audit history, rename, reject, rotate, and immediate revoke
+   controls. Rotation uses a bounded overlap window; lost or revoked credentials require pairing
+   again.
+
+The same project may have several approved instances, but each installation has its own instance ID
+and credential. Copying project files must not copy instance trust. A reinstall or credential-state
+loss produces a new pending request rather than silently reclaiming an earlier identity.
+
+Protect the unauthenticated enrollment endpoint with TLS, request-size limits, expiration,
+single-use codes, bounded polling, per-source and global rate limits, and a cap on visible pending
+requests. Notifications should collect in a dashboard badge or queue rather than create an
+unbounded interrupt stream. Approval should require a recent authenticated human session and the
+matching short code.
+
+### Deployment And Operations
+
+- Compose services should be limited initially to `gateway`, `dashboard`, `database`, and a
+  one-shot `migrate` action. Use a host scheduler or bounded one-shot command for backups and
+  retention; do not add Redis, Celery, Kubernetes, or a permanent queue service without measured
+  need.
+- Expose only nginx on host port `8087`; keep the application and PostgreSQL on an internal network,
+  with no published database port.
+- Provide separate gateway liveness, application liveness, and database/schema readiness checks.
+- Build versioned immutable application and static-site artifacts, record application/API/schema
+  versions, run backward-compatible migrations before cutover, and retain the preceding release
+  plus a verified database backup for rollback.
+- Back up through PostgreSQL-aware tooling rather than copying live database storage, define
+  retention, and prove restoration before claiming production readiness.
+- Preserve the current public route while validating the new stack; activate `/dashboard/` only
+  after internal health, authentication, ingestion, rendering, backup, and rollback gates pass.
+
+### Presentation Qualification
+
+- Capture desktop and mobile reference screenshots for representative public routes before the
+  stack migration.
+- Reuse the current semantic shell and shared visual tokens. Namespace dashboard-only CSS and
+  JavaScript so they cannot silently restyle public documentation.
+- Add visual-regression, route, internal-link, accessibility, and asset-cache tests for the existing
+  site as deployment gates.
+- Treat an unchanged HTTP status as insufficient: compare rendered presentation and interaction at
+  representative desktop and mobile widths.
+
+## Instance Reporting Contract
+
+### Local Pipeline
+
+1. A relevant Tool Shed mutation records a sanitized reporting event in a durable local outbox.
+2. A lightweight launcher obtains an atomic lock keyed by stable Tool Shed instance identity.
+3. If the lock is already held, the launcher exits; the active worker discovers the event on its
+   next one-second outbox poll.
+4. Otherwise the launcher starts one detached worker for that instance while retaining the lock.
+5. The worker polls the outbox every second, drains queued events, acknowledges successful
+   delivery, and sends a heartbeat every one minute.
+6. Failed delivery uses bounded exponential backoff with jitter and never creates a launch storm.
+7. After two idle hours with an empty outbox, the worker sends `quiescent` and exits.
+8. A scheduler or equivalent safety mechanism runs a low-cost periodic check to detect missed
+   triggers, direct database changes, stale locks, crashes, and pending events.
+
+### Duplicate And Ordering Protection
+
+- Use an atomic operating-system lock; do not trust a PID file alone. A control socket is not part
+  of the first release because one-second outbox polling provides the required wakeup bound.
+- Recover stale locks and verify process identity before replacing local coordination state.
+- Give every update an instance-scoped monotonic sequence and idempotency key.
+- Make server ingestion idempotent so retries and out-of-order delivery cannot duplicate or regress
+  reported state.
+- Keep one worker per Tool Shed instance. A global multi-project daemon is not required initially.
+
+### Server Presence States
+
+- `active`: last heartbeat is within two minutes.
+- `delayed`: an active client has missed expected heartbeats for two to five minutes or reports
+  queued delivery retries.
+- `stale`: no expected heartbeat or safety report arrives after five minutes and the instance did
+  not declare quiescence.
+- `quiescent`: the worker intentionally stopped after the two-hour inactivity window.
+- `incompatible`: the client and server cannot safely exchange their protocol versions.
+
+The exact stale presentation may later account for a declared `next_check_at` safety interval so an
+intentionally sleeping installation is not shown as failed.
+
+### Heartbeat Payload
+
+Keep active heartbeats small: stable instance ID, project ID, status, sequence, timestamp, client
+version, and protocol version. Do not resend full project state every minute. Send detailed state
+only when its export revision changes or when the server requests an authorized resynchronization.
+
+### App Server Health And Failure Payload
+
+- Report one monotonic counter epoch plus cumulative App Server execution-attempt, App Server
+  failure, and GUI-fallback counts. A reinstall, explicit counter reset, or incompatible local
+  telemetry migration starts a new epoch rather than making counters appear to move backward.
+- Report enabled/configured state, local qualification or availability state, client/App Server
+  version, general platform, last-success and last-failure time, and a bounded sanitized failure
+  category/signature. Send a new snapshot only when these values change or during the periodic
+  safety report; do not attach it to every one-minute heartbeat.
+- Classify App Server transport, startup, protocol, authentication, compatibility, timeout, and
+  unavailable-path failures separately from campaign, tool, test, or product-result failures.
+- Deduplicate repeated occurrences locally and server-side while preserving occurrence count,
+  first/last observed time, affected version/platform cohort, and whether GUI fallback succeeded.
+- Never upload prompts, source, tool arguments, absolute paths, raw stdout/stderr, stack traces,
+  credentials, or unrestricted logs. Any retained example must be produced by a versioned local
+  sanitizer and bounded by an explicit allowlist.
+- Expose a maintainer-authenticated read-only query/export for selected instances, versions,
+  periods, or failure groups. The result is diagnostic input; it does not authorize or execute a
+  mitigation.
+
+### Remedial Work And Token-Efficiency Payload
+
+- Accept only the deterministic aggregate emitted by the local IDEA-0011 measurement contract. The
+  payload identifies project and instance, schema version, measurement window, counter epoch,
+  generated time, journal freshness, and provider surface.
+- Report exact `remedial_tokens_actual` only as the sum of model-turn token deltas attached to
+  locally classified remedial phases whose provider exposed usage. Report the measured-operation
+  numerator and eligible-operation denominator as `remedial_token_coverage`; missing token usage is
+  unknown and never converted to zero or an estimate.
+- Report remedial tool calls, output bytes, duration, retry count, and classified phase counts as
+  independent portable proxies. Do not add actual tokens and proxies together or use a weighted
+  proxy as if it were an actual-token total.
+- Send aggregate snapshots on material change or the periodic safety pass, not every one-minute
+  heartbeat. Preserve idempotency and monotonic counter or window semantics across retries.
+- Never upload prompts, model responses, command text, tool arguments, source, absolute paths, raw
+  stdout/stderr, stack traces, or journal entries. The server stores only allowlisted aggregates
+  needed for per-project presentation and bounded trend windows.
+
+## Authority, Privacy, And Reliability Boundaries
+
+- Local SQLite remains authoritative. The hosted dashboard is advisory and read-only in the first
+  release; it cannot mutate campaigns, roadmaps, outcomes, or project files.
+- Send only allowlisted status fields. Do not upload source, prompts, logs, credentials, local
+  absolute paths, full databases, owner-authored document bodies, or raw evidence.
+- Treat App Server counters and sanitized failure groups as operational telemetry with explicit
+  retention, access, reset/epoch, and deletion rules. The dashboard must identify incomplete or
+  stale telemetry instead of presenting missing reports as zero failures.
+- Treat remedial-work aggregates as operational measurements, not productivity scores or project
+  truth. Always present token coverage, freshness, provider surface, window, and epoch with the
+  totals; do not compare partial and complete coverage as equivalent.
+- Use stable project and instance identities so several installations and projects do not collide.
+- Authenticate outbound HTTPS reports with a revocable instance-specific credential stored outside
+  tracked project state.
+- Network or dashboard failure must never block ordinary Tool Shed work.
+- Bound and compact the local outbox while retaining the newest complete state needed for recovery.
+- Include client/server protocol negotiation, rate limits, retry guidance, retention policy, and
+  observable last-success/last-error state.
+- GitHub and an initialized Git repository are not production runtime requirements.
+
+## Upgrade Contract
+
+- A running worker should finish or safely retain its current delivery, then exit when it detects a
+  newer installed reporter version. The next trigger starts the new version.
+- Pending outbox records must remain readable across supported upgrades, with explicit migrations
+  and rollback evidence for incompatible schema changes.
+- Upgrades must not replace a live worker underneath an unacknowledged delivery without recovery.
+- The server accepts a bounded compatibility window and reports `incompatible` rather than silently
+  misinterpreting an old payload.
+- App Server counter epochs and failure-category schema versions must survive supported upgrades;
+  incompatible telemetry is reported as unknown/incompatible rather than merged into misleading
+  totals.
+- Remedial-work aggregate schema, counter epochs, coverage semantics, and reporting windows must
+  survive supported upgrades; incompatible or reset series remain visibly separate.
+- The maintainer workspace and ordinary installed instances require separate qualification because
+  their upgrade paths differ.
+
+## Constraints And Non-Goals
+
+- Preserve the existing `ts.rookaro.com` public presentation intact as an explicit compatibility
+  requirement, while keeping public documentation navigation separate from the authenticated
+  dashboard application shell.
+- Use `https://ts.rookaro.com/dashboard/` as the canonical dashboard landing page. A versioned
+  reporting API uses `/api/v1/` behind the same nginx gateway.
+- Stack replacement is permitted only when it provides a concrete functionality, reliability,
+  speed, security, deployment, or recovery benefit and preserves qualified public presentation.
+- Do not make the hosted server an authority for local work state.
+- Do not add remote command execution, campaign control, file editing, or server-to-instance
+  mutation in the first release.
+- Do not put a mitigation button on the hosted App Server screen. Mitigation begins only after the
+  operator enters the Tool Shed maintainer, requests the relevant hosted report, and authorizes the
+  resulting local work through normal Tool Shed governance.
+- Do not require an always-running process after the two-hour idle window.
+- Do not equate intentional quiescence with failure.
+- Do not interpret deferred presentation, identity, database, or streaming options as first-release
+  requirements without new evidence and an explicit scope decision.
+- Do not support both SQLite and PostgreSQL as hosted-server database choices in the first release;
+  PostgreSQL is the single hosted store while SQLite remains local Tool Shed authority.
+- Do not reuse deferred completion-watcher/email scope as if it were this dashboard's approved
+  direction; use that work only as relevant protocol, auth, privacy, and failure-model evidence.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Singleton event-driven worker with two-hour idle timeout | Immediate changes, active heartbeat, bounded resident lifetime | Needs robust locking, wakeup, detachment, and crash recovery | Selected direction |
+| Permanent per-instance daemon | Simplest continuous heartbeat semantics | Persistent installation and supervision burden | Not selected initially |
+| One-shot report on every mutation | Very simple lifecycle | Repeated startup, weak retry coordination, no active heartbeat | Insufficient alone |
+| Scheduled one-shot safety reporter | Recovers missed triggers and sleeping clients | Updates are not immediate by itself | Required backstop |
+| Server polls each installation | Central scheduling | Requires inbound reachability and expands local attack surface | Rejected |
+| Read-only advisory dashboard | Keeps local authority and limits blast radius | Cannot manage work remotely | Required first-release boundary |
+| Remote dashboard control | Could centralize operations | Authentication, authorization, replay, conflict, and safety risk | Explicitly deferred |
+| Retain static nginx-only deployment | No application migration and excellent public-doc speed | Cannot provide authenticated dynamic views, ingestion, sessions, or durable multi-instance state | Insufficient for the dashboard |
+| Nginx gateway plus Django and PostgreSQL | Keeps public pages fast while adding mature sessions, migrations, API handling, concurrency, and recovery | Adds two managed services and database operations | Selected hosted direction |
+| Rewrite the whole site as a client-side SPA | One frontend runtime | High presentation-regression, accessibility, caching, and dependency cost with no public-doc benefit | Rejected |
+| Add Redis, Celery, or Kubernetes initially | Supports broader scale and asynchronous orchestration | Operational complexity without demonstrated load | Deferred until measured need |
+| Instance-initiated device-style pairing | No inbound workstation route; operator sees and approves exact trust request | Requires expiring codes, bounded polling, notification-abuse controls, and credential lifecycle | Selected enrollment direction |
+| Dashboard creates a token for manual copy | Simple server implementation | Copy/paste exposure, unclear instance binding, and avoidable operator handling | Rejected as the normal path |
+| Mutual TLS or custom request signing in v1 | Strong key-bound identity | Certificate/signature lifecycle and proxy complexity before the threat model proves need | Deferred; do not invent custom cryptography |
+| Bounded browser polling | Simple same-origin refresh with few moving parts | Updates are periodic rather than pushed | Selected for first release; reconsider SSE only with evidence |
+
+## Open Questions
+
+- Which existing OIDC provider should authenticate human dashboard sessions, or which maintained
+  MFA-capable fallback should be selected if no provider is available?
+- What observed threat, deployment scale, or credential-loss evidence would justify replacing the
+  initial opaque reporter token with a standard key-bound or mutual-TLS mechanism?
+- Which exact sanitized fields and derived status categories make up reporting API v1?
+- Should the safety check default to 15 or 30 minutes, and how should it run across Linux, macOS,
+  and Windows without making one scheduler mandatory?
+- How should the server group instances that report the same project ID from different machines?
+- What retention window is useful for material state-change events?
+- What retention window and occurrence cap preserve useful App Server failure groupings without
+  turning the dashboard into a raw log collector?
+- Which exact local events increment App Server attempt, failure, and fallback counters, and where
+  should their durable counter epoch live so upgrades and reinstalls remain unambiguous?
+- What maintainer-side command and report format should retrieve a selected server cohort while
+  keeping hosted credentials and diagnostic results out of project state and logs?
+- What fleet size and heartbeat load must the first deployment support?
+- Which existing completion-watcher protocol and failure-model results can be reused without
+  importing its deferred email scope?
+- What backup cadence, retention window, recovery-time target, and restoration evidence should gate
+  the PostgreSQL production cutover?
+
+## Decisions
+
+- Build one centralized, authenticated, cross-project status dashboard with the canonical landing
+  page `https://ts.rookaro.com/dashboard/`.
+- Preserve the current public site's visual presentation, responsive behavior, routes, and static
+  documentation performance as a compatibility contract.
+- Permit stack changes when they provide a concrete benefit and pass public-presentation regression
+  qualification.
+- Keep nginx as the only externally exposed `ts.rookaro.com` service and route static public pages,
+  `/dashboard/`, and `/api/v1/` inside the existing hostname boundary.
+- Keep first-release dashboard and public-site source in the existing
+  `PC-Redemption/tool_shed` GitHub repository. Treat generated builds and the `sup` deployment copy
+  as release outputs, and keep live state and secrets outside Git.
+- Use one Django application for the authenticated dashboard and reporting API, backed by
+  one PostgreSQL instance without first-release HA or replicas. Keep local Tool Shed SQLite state
+  authoritative and do not offer server-side SQLite as an alternate deployment mode.
+- Limit first-release project detail to Overview, Current Work, Outcome Reconciliation, and Health;
+  defer pinned/grouped navigation, advanced filters, detailed roadmap/history views, and SSE.
+- Reuse existing OIDC when available; otherwise use maintained Django-compatible MFA for the single
+  maintainer rather than introducing a new identity-provider service.
+- Keep human session authentication and instance reporter credentials separate and revocable.
+- Use instance-initiated, operator-approved, device-style enrollment with expiring short codes and
+  outbound client polling; the enrollment request itself grants no trust.
+- Issue one scoped 256-bit opaque reporter token after approval, store only its verifier server-side,
+  and keep the client token in protected user-local credential storage outside project state.
+- Support audited approval, rejection, expiration, rotation, and immediate revocation. Require new
+  pairing after reinstall, credential loss, or revocation.
+- Do not add Redis, Celery, Kubernetes, a message broker, or a full SPA without measured need.
+- Keep each local Tool Shed instance authoritative and make the hosted service advisory/read-only
+  for the first release.
+- Add a dedicated informational App Server fleet screen with per-instance cumulative use, failure,
+  and fallback counts; current health and qualification state; version/platform cohorts; and
+  sanitized, deduplicated failure groups.
+- Add an informational Work Efficiency screen grouped by project, with exact measured remedial
+  tokens plus coverage and separately labelled interaction/output/duration/retry proxies; never
+  infer GUI token usage or hide partial measurement.
+- Keep App Server telemetry out of one-minute heartbeat history. Report monotonic counter epochs and
+  health snapshots only on material change or the periodic safety pass.
+- Keep mitigation in the Tool Shed maintainer. The hosted site supplies information only; a
+  maintainer-side read-only request retrieves the selected server report before governed local
+  diagnosis or mitigation.
+- Establish a reusable header, footer, left navigation pane, and right content pane template.
+- Use one level of URL-addressable content tabs to mitigate long pages.
+- Keep attention state and summary cards visible above the tabs.
+- Use one singleton background reporting worker per Tool Shed instance.
+- Reuse an active worker by letting a duplicate launcher exit when the atomic lock is held; the
+  worker polls the durable outbox every second, so no first-release control socket is required.
+- Emit active heartbeats every one minute.
+- Exit after two hours without activity only when the durable outbox is empty, after declaring
+  quiescence.
+- Add a periodic safety check so direct database writes, missed triggers, and crashes converge.
+- Use durable outbox delivery, idempotency keys, monotonic sequence numbers, bounded retry with
+  jitter, and server-side deduplication.
+- Update current presence and `last_seen` in place and retain material state changes only; do not
+  build heartbeat-history or rollup machinery in the first release.
+- Open the PRM outcome loop from `IDEA-0007` and require origin-to-product reconciliation; child
+  lifecycle completion does not by itself close the idea.
+
+## Don't Forget
+
+- One-minute heartbeats should be tiny presence messages, not full-state uploads.
+- Missing or stale App Server telemetry is unknown, not a zero-use or zero-failure result.
+- Count App Server-path failures separately from failures in work executed successfully through App
+  Server; otherwise the health screen will punish healthy transport for product/test failures.
+- A successful GUI fallback preserves work continuity but remains visible because it may conceal an
+  App Server reliability regression.
+- Failure collection must aggregate sanitized signatures and counts, not upload raw logs for later
+  cleanup.
+- The server should update current presence in place rather than retain heartbeat history.
+- A successful HTTP response proves ingestion, not that the dashboard reflects correct local
+  outcome truth; reconciliation and projection checks still matter.
+- Duplicate-process prevention and duplicate-message prevention are separate requirements.
+- Direct SQLite access should not corrupt reporting. The next managed trigger or scheduled safety
+  pass must detect and report the resulting state change.
+- The operator's primary workflow is rapidly switching among many concurrently active projects.
+- Dashboard alerts must prioritize actionable state instead of turning every sleeping project into
+  noise.
+- Public presentation preservation needs visual evidence, not only successful status codes or unit
+  tests.
+- The static public site, authenticated dashboard, reporting API, and PostgreSQL data each need an
+  independently observable health and rollback boundary.
+- Database migration rollback and application rollback are not equivalent; migrations must remain
+  backward-compatible through the cutover window.
+- A pending enrollment record is untrusted data and must never appear as an active reporting
+  instance until the authenticated operator approves the matching code.
+- Project identity and instance identity are different: one project may have multiple independently
+  trusted installations, and repository copies must not carry machine credentials.
+- Enrollment notification spam is part of the security model; expiry, rate limits, pending caps,
+  and an in-dashboard queue are required from the first release.
+
+## Related Existing Work
+
+- `ADR-0001`, `MAP-0002`, `CAMP-0035`, `CAMP-0039`, `CHK-0001`, and `SPK-0001` contain potentially
+  reusable hosted-notification, authentication, privacy, retry, and failure-model evidence.
+- This brief is a new product direction. Those records do not authorize dashboard implementation,
+  email scope, or remote control.
+
+## Exploration Log
+
+### 2026-08-29
+
+- Idea Brief created from the operator's need to monitor several Tool Shed projects from one web
+  dashboard rather than one VS Code workspace at a time.
+- Discussion selected a standard application shell with header, footer, portfolio navigation on the
+  left, project content on the right, and one level of URL-addressable tabs for long-page control.
+- Discussion selected a local-to-hosted reporting boundary in which local SQLite stays authoritative
+  and the first hosted dashboard is advisory/read-only.
+- The reporter design settled on one instance-scoped singleton worker, immediate event-triggered
+  wakeup, durable outbox delivery, one-minute active heartbeats, a two-hour idle exit, and a
+  periodic safety check for missed or unmanaged changes.
+- Existing hosted watcher work was recognized as related evidence but not treated as the same idea
+  or inherited scope.
+- Owner set `https://ts.rookaro.com/dashboard/` as the canonical dashboard landing page.
+- Owner made the current public site's visual presentation an explicit compatibility requirement
+  and authorized beneficial stack changes rather than requiring nginx-only implementation.
+- Discovery selected nginx as the single external gateway, static delivery for existing public
+  documentation, one Django dashboard/API application, and PostgreSQL hosted state. It rejected a
+  whole-site SPA rewrite and deferred Redis, Celery, Kubernetes, and a broker until measured need.
+- Deployment discovery added visual regression baselines, isolated health checks, PostgreSQL-aware
+  backup and restoration, backward-compatible migrations, versioned releases, and a retained
+  rollback boundary as production gates.
+- Owner selected instance-initiated enrollment in which a local Tool Shed request creates a pending
+  dashboard notification and explicit dashboard approval establishes trust.
+- Discovery refined that model into a device-style pairing flow with a short matching code,
+  outbound polling, ten-minute expiry, a one-time scoped reporter token, protected local storage,
+  server-side token verification, separate project and instance identities, audit history,
+  rotation, revocation, and enrollment-abuse controls.
+- Owner approved a KISS pass that bounds the first release to one nginx gateway, one Django app,
+  one PostgreSQL instance, one maintainer, four project tabs, device enrollment, current presence,
+  material state changes, a durable outbox, and a singleton polling worker. Optional navigation,
+  history, SSE, keyring-specific integrations, new identity infrastructure, database HA, and
+  distributed-service machinery remain evidence-gated deferred work.
+- Owner approved the promotion-readiness recommendations. The brief now requires a governed
+  `IDEA-0007` origin-to-product outcome loop, material-change capture, endpoint evidence, residual
+  disposition, and upward reconciliation rather than treating campaign or queue completion as
+  closure.
+- Discovery retained the public site and first dashboard implementation in the existing
+  `PC-Redemption/tool_shed` GitHub repository for the first release. Canonical source, migrations,
+  contracts, tests, and safe deployment templates are tracked there; generated builds, the `sup`
+  deployment copy, live data, backups, secrets, logs, and credentials remain outside Git. A
+  separate repository is evidence-gated rather than assumed.
+- Owner added fleet-level App Server observability. Each reporting instance should publish durable
+  cumulative App Server use and failure counts plus bounded health/failure context, and the web
+  dashboard should provide a dedicated App Server screen for project, instance, version/platform,
+  and recurring-failure review.
+- Owner clarified that the hosted site supplies information only. The operator enters the Tool Shed
+  maintainer, requests the relevant server report there, and performs diagnosis or mitigation
+  through normal maintainer governance; the dashboard does not remotely invoke mitigation.
+- Owner required the direct remedial-token measurement from IDEA-0011 to be visible on the web by
+  project. The dashboard now receives only versioned sanitized aggregates, shows actual tokens with
+  measurement coverage, uses separate proxies for unmeasured GUI work, and keeps granular model
+  activity local.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

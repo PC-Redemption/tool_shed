@@ -1,0 +1,30 @@
+# Campaign: Dashboard Contracts, Trust, and Hosted Foundation
+
+Status: completed
+Type: campaign
+Updated: 2026-08-29
+Next Action: implement the versioned privacy contract, Django/PostgreSQL domain, enrollment lifecycle, and API tests
+Campaign ID: dashboard-contracts-trust-hosted-foundation
+Outcome: Freeze the first-release reporting, privacy, identity, authentication, enrollment, retention, scale, and recovery contracts and implement the tested hosted domain/API foundation.
+Roadmap: hosted-cross-project-tool-shed-dashboard
+Roadmap Document: PRM-0027
+Roadmap Revision: 1
+Milestone: M1-CONTRACTS-TRUST-HOSTED-FOUNDATION
+Unlocks Gates: G1-REPORTING-ALLOWLIST-PRIVACY-CONTRACT, G2-HUMAN-AUTH-AND-INSTANCE-ENROLLMENT, G3-FLEET-PLATFORM-AND-REPORTER-OPERATIONS, G4-MATERIAL-EVENT-AND-FAILURE-RETENTION
+Depends On: none
+Completion Gate: Versioned contracts, Django/PostgreSQL models and migrations, enrollment/token lifecycle, authenticated ingestion/query APIs, retention behavior, and focused security/API tests pass with no prohibited field accepted or retained.
+
+## Scope
+
+- Add the minimum Django/PostgreSQL application and configuration needed for the dashboard/API.
+- Encode explicit v1 payload allowlists and unknown/partial/incompatible semantics.
+- Model projects, instances, enrollment, reporter credentials, current state, material events,
+  App Server counters/failure groups, Work Efficiency aggregates, idempotency, and counter epochs.
+- Implement pending enrollment, approval/rejection/expiry, verifier-only tokens, revocation, and rotation.
+- Keep production authentication configurable and fail closed when neither OIDC nor MFA-capable local auth is configured.
+
+## Safety Boundaries
+
+- No secrets, credentials, live databases, backups, logs, raw diagnostics, prompts, source, paths, or commands in Git.
+- No remote control or local-state mutation from the hosted service.
+- No deployment or publication before the later Work5 campaign.

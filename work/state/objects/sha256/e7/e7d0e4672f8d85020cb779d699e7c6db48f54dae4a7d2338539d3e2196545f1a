@@ -1,0 +1,46 @@
+# Campaign: Reconcile Inherited Lifecycle and Closure State
+
+Status: completed
+Type: campaign
+Updated: 2026-09-05
+Next Action: confirm the supervised manifest left zero unexplained lifecycle drift
+Campaign ID: reconcile-inherited-lifecycle-and-closure-state
+Campaign Number: 161
+Outcome: This workspace has zero unexplained lifecycle, outcome, reconciliation, body, or recursive-closure inconsistencies while legitimate residual work and IDEA-0021 remain visible and open.
+Primary Focus Areas: campaign-lifecycle
+Supporting Focus Areas: qualification-release
+Depends On: build-manifest-driven-lifecycle-repair
+Decision: reviewed dispositions are required for semantic historical cases
+Detour For: none
+Return To: none
+Requested Endpoint: work2
+Completion Gate: A complete current inventory is reviewed; safe lifecycle and body corrections are applied; every residual-work or open-descendant case is explicitly repaired, retained, or routed; closure and checkpoint projections rebuild cleanly; loop discovery reports no unexplained condition; and the resulting development report matches canonical state without changing production.
+Completion Evidence: none
+Disposition: none
+Roadmap: lifecycle-recursive-closure-integrity-recovery
+Roadmap Revision: 1
+Roadmap Document: PRM-0040
+Milestone: M3-SUPERVISED-HISTORICAL-CONVERGENCE
+Unlocks Gate: G3-SUPERVISED-HISTORICAL-CONVERGENCE
+
+## Request
+
+Use the M2 utility to produce one complete revision-bound inventory for the current workspace.
+Automatically apply only cases allowed by the frozen M1 contract. Preserve all ambiguous cases for
+explicit reviewed dispositions, including non-empty residual work and genuinely open descendants.
+Do not equate an empty generic finding count with convergence; compare document bodies and
+lifecycles, outcome cycles, reconciliation, recursive closure, and relationships directly.
+
+IDEA-0021 remains outside this repair. Publish no release and make no direct hosted mutation; the
+normal development reporter is the only web convergence path.
+
+## App Server Preparation Contract
+
+```json
+{"schema_version":1,"campaign_id":"reconcile-inherited-lifecycle-and-closure-state","objective":"Apply a complete supervised repair manifest and eliminate unexplained inherited state without forced closure.","execution_shape":"single-bounded-camp","exact_resolution":"dispatch-time","inline_assets":"metadata-only","source_freshness":"required","verification":"orchestrator-exactly-once","completion_evidence":"Every detected historical condition has a verified repair or explicit retained/routed disposition, and rebuilt local projections agree."}
+```
+
+## Completion Check
+
+Re-audit authoritative state, rebuild and verify the checkpoint, deliver a development report, and
+record a bounded reviewed manifest plus evidence summary. Stop before production.

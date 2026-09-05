@@ -1,0 +1,85 @@
+# Project Map: Hosted Dashboard Work Lifecycle and History
+
+Status: completed
+Type: project-map
+Updated: 2026-08-30
+Source Idea: IDEA-0012
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 2
+Reviewed Body SHA256: f08fadcd614ab5ceae79e6c70c2761cdc712aa48cb3f08f4e21dc8974dda21d7
+Program Roadmap: pending
+
+## Purpose
+
+Make the authenticated hosted project page show durable Tool Shed work instead of becoming empty
+when open counts reach zero. Preserve local Hybrid SQLite as authority while projecting a bounded,
+read-only lifecycle inventory and change-only history through the existing reporter, PostgreSQL,
+dashboard, and semantic SSE path.
+
+## Desired Outcome
+
+An operator can inspect Ideas, Project Maps, Program Roadmaps, and Campaigns; see active and
+terminal states; follow Idea → Map → PRM → Campaign ownership; distinguish document lifecycle from
+outcome verdict and reconciliation; identify the reporting instance and freshness; and review real
+artifact transitions without one-minute duplicate rows.
+
+## First Useful Boundary
+
+- Freeze one versioned, privacy-bounded lifecycle snapshot and transition-event contract.
+- Replace each accepted instance snapshot atomically and reject stale sequences.
+- Keep per-instance truth visible and show disagreement instead of synthesizing a merged project.
+- Render a filterable Work inventory and recent change-only History on the project page.
+- Reuse semantic SSE invalidation so accepted lifecycle changes refresh the page and heartbeats do not.
+- Qualify and deploy the complete slice through Work2, then retain formal release as a later Work5 gate.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Reporter contract | Bounded artifacts, relationships, source sequence, and change-only transitions | current Hybrid document/outcome schema |
+| Hosted persistence | Atomic per-instance snapshots, retained transition history, and explicit truncation | frozen reporter contract |
+| Project experience | Work and History views with filters, relationship context, freshness, and divergence | accepted hosted projection |
+| Qualification | Focused contract, ingestion, rendering, SSE, migration, deployment, and browser evidence | complete vertical slice |
+
+## Readiness Gate Transfer
+
+1. `G1-LIFECYCLE-TRUTH-MODEL` keeps document lifecycle, outcome verdict, reconciliation, and
+   disposition separate; Maps are first-class; missing or legacy links remain unknown.
+2. `G2-MULTI-INSTANCE-SNAPSHOT-AUTHORITY` requires atomic idempotent per-instance replacement,
+   sequence ordering, source/freshness display, and explicit divergence without silent merge.
+3. `G3-BOUNDED-DISCLOSURE-AND-RETENTION` requires stable IDs, sanitized titles, allowlisted fields,
+   payload/cardinality limits, explicit truncation, durable terminal inventory, and bounded history.
+4. `G4-HISTORY-FIDELITY-AND-LIVE-REFRESH` requires artifact-specific change identity, no invented
+   backfill, no unchanged-report rows, and SSE refresh only for newly accepted semantic state.
+
+## Constraints
+
+- Local Tool Shed state remains authoritative; hosted state is authenticated and advisory.
+- Stable IDs are canonical. Display titles are sanitized and length-bounded for usability.
+- Current inventory and retained transition history remain separate data products.
+- Counts derive from the accepted inventory whenever that inventory is complete.
+- Existing schema-v1 reporters remain accepted during rolling upgrade.
+- Public documentation routes and the existing dashboard authentication shell remain compatible.
+
+## Non-Goals
+
+- Remote approval, artifact editing, mitigation, lifecycle mutation, or local command execution.
+- A full SQLite or document-body mirror.
+- Cross-project search, attention workflows, trends, and exports owned by IDEA-0013 through IDEA-0016.
+- Fabricated pre-contract transition history.
+
+## Navigation
+
+Do next:
+
+- Execute the approved roadmap through its Work2 lifecycle-history campaign.
+
+Avoid for now:
+
+- Expanding the reporter allowlist beyond the fields needed for lifecycle visibility.
+- Treating a successful live Work2 deployment as a published Tool Shed release.
+
+## Related Artifacts
+
+- Source Idea Brief: IDEA-0012
+- Readiness result digest: 2002f304003467290f9a5ab5cd9b944faa286f9f1a2ae71dd545deef697ae14d

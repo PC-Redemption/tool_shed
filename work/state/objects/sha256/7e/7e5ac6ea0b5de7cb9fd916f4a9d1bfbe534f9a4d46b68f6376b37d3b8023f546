@@ -1,0 +1,84 @@
+# Project Map: Actionable Dashboard Attention and Recent Changes
+
+Status: completed
+Type: project-map
+Updated: 2026-08-30
+Source Idea: IDEA-0013
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 2
+Reviewed Body SHA256: 7b759008361ba20a2e0edb035c948dbbc592fd23bca55cefe83000b16181c031
+Program Roadmap: PRM-0029
+
+## Purpose
+
+Turn dashboard warning counts into an explainable daily-review surface. Derive controlled
+attention conditions and recent changes from already accepted, privacy-bounded reports while local
+Tool Shed state remains authoritative and the hosted service remains advisory and read-only.
+
+## Desired Outcome
+
+An operator can see why a project or instance needs attention, when the condition began or became
+stale, its affected source, and a safe local Tool Shed investigation route. A combined recent feed
+shows lifecycle and controlled operational changes once, highlights entries since the browser's
+last visit, and never converts repeated reports or heartbeats into history.
+
+## First Useful Boundary
+
+- Derive a stable controlled attention registry from blocked work, unreconciled outcomes,
+  reporter/App Server failures, and stale instances.
+- Keep active and resolved attention distinct; unresolved conditions cannot be acknowledged away.
+- Render fleet-level and project-level attention with severity, source, age/freshness, detail
+  links, and server-owned local investigation guidance.
+- Combine existing lifecycle and material events into a bounded, change-only recent feed.
+- Store the last-visit marker only in browser local storage and use it solely for presentation.
+- Reuse semantic SSE refresh and the existing 90-day event retention.
+- Implement and deploy the complete slice through Work2; formal release remains a later Work5 gate.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Attention truth | Stable controlled reasons, deterministic activation/clearing, timestamps, severity, and safe route mapping | current report state and freshness |
+| Recent changes | One normalized lifecycle/material/attention feed with stable change identity and browser-local visit highlighting | existing change-only event stores |
+| Dashboard experience | Fleet and project attention cards, useful links, source/freshness context, and accessible new-change treatment | attention and recent-change projections |
+| Qualification | Focused derivation, ingestion, rendering, privacy, SSE, migration, deployment, and browser evidence | complete vertical slice |
+
+## Readiness Gate Transfer
+
+1. `G1-ATTENTION-CONTRACT` requires bounded reason, severity, source, freshness, deduplication, and
+   deterministic clearing without arbitrary reporter text.
+2. `G2-RECENT-CHANGE-SEMANTICS` requires a change-only recent feed and a privacy-safe visit boundary
+   that never acknowledges or hides unresolved attention.
+3. `G3-ACTIONABLE-ADVISORY-UI` requires controlled reasons, affected sources, age/freshness, hosted
+   detail links, and safe local investigation routes while preserving read-only advisory hosting.
+
+## Constraints
+
+- Use controlled server-owned labels and routes only; never render reporter-supplied arbitrary text.
+- Preserve per-instance freshness and do not let one current instance hide another stale source.
+- Do not add server-side page-view tracking, remote acknowledgement, or remote command execution.
+- Reuse the existing material/lifecycle stores and bounded retention rather than creating a second
+  telemetry or notification system.
+- Keep public documentation routes and dashboard authentication compatible.
+
+## Non-Goals
+
+- Email, paging, webhooks, or outbound notification delivery.
+- Remote mitigation, acknowledgement that hides unresolved state, or lifecycle mutation.
+- Raw logs, paths, commands, diagnostics, credentials, or free-form summaries.
+- Historical reconstruction before controlled events existed.
+
+## Navigation
+
+Do next:
+
+- Execute CAMP-0137 through the approved PRM-0029 Work2 boundary.
+
+Avoid for now:
+
+- Expanding the reporter contract or adding notification infrastructure without observed need.
+
+## Related Artifacts
+
+- Source Idea Brief: IDEA-0013
+- Readiness result digest: 9c6d2295457695b152cd4387d0c54159737ff693f72b3d448a2f10504f9473e7

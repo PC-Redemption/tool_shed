@@ -1,0 +1,79 @@
+# Program Roadmap: Dashboard Release Reporter and Instance Health
+
+Status: completed
+Type: program-roadmap
+Updated: 2026-08-30
+Roadmap ID: dashboard-release-reporter-and-instance-health
+Roadmap Revision: 1
+Source Idea: IDEA-0014
+Source Project Map: MAP-0019
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 2
+Reviewed Body SHA256: 633362eb8ae993ad7bcb1028d5c4d5c43f7df8025949ff1c1fd4628494f2851e
+
+## Program Outcome
+
+The hosted dashboard exposes privacy-bounded per-instance reporter and release health, identifies
+divergent installations without inventing consensus, and makes every project summary's source and
+freshness visible while remaining advisory and read-only.
+
+## M1-REPORTER-AND-RELEASE-TRUTH — Extend the bounded contract
+
+Status: active
+Depends on: none
+
+Outcome: Report and persist the smallest controlled set of per-instance health, semantic digest,
+and release-provenance facts already known by the local instance.
+
+Gates:
+
+- `G1-REPORTER-HEALTH-CONTRACT`: strict allowlisting, bounded codes and counts, explicit heartbeat,
+  delivery, and quiescence semantics, and no paths, logs, scheduler definitions, credentials, raw
+  diagnostics, or arbitrary text.
+- `G2-RELEASE-PROVENANCE`: installed, stable, candidate/pending, and production-verified release
+  states name their controlled source, observation time, and unknown behavior.
+
+Candidate campaign: `implement-dashboard-release-reporter-and-instance-health`.
+
+## M2-INSTANCE-HEALTH-WORK2 — Present and qualify fleet trust
+
+Status: active
+Depends on: M1
+
+Outcome: Show a compact readable project trust summary and per-instance health table that preserves
+independent source truth and highlights deterministic semantic divergence.
+
+Gate:
+
+- `G3-INSTANCE-DIVERGENCE-UI`: release posture, freshness, reporting condition, and divergence are
+  visible per instance; project aggregation never merges conflicting lifecycle snapshots; the
+  authenticated hosted UI remains advisory, read-only, and live through semantic SSE.
+
+Candidate campaign: `implement-dashboard-release-reporter-and-instance-health`.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G1-REPORTER-HEALTH-CONTRACT | M1 / same gate |
+| G2-RELEASE-PROVENANCE | M1 / same gate |
+| G3-INSTANCE-DIVERGENCE-UI | M2 / same gate |
+
+Transfer count: 3 reviewed gates; 3 mapped gates; 0 dropped.
+
+## Work2 Boundary
+
+Work2 includes implementation, migration and focused reporter/ingestion/rendering/privacy/SSE tests,
+quick changed-path validation, a scoped product commit, deployment to the configured combined
+`ts.rookaro.com` target, authenticated browser and health checks, release-cohort registration,
+logical checkpoint/rebuild proof, and strict Doctor.
+
+Work2 does not push Git, tag or publish a Tool Shed version, synchronize disconnected installs, or
+close IDEA-0014, its map, this PRM, or its campaign. Those remain awaiting formal Work5 release
+evidence and upward reconciliation.
+
+## Deferred Scope
+
+- Remote repair, update, restart, deployment, reconciliation, and credential operations.
+- Modified-client detection without a separately approved privacy-safe contract.
+- External notification delivery or a second telemetry subsystem.
