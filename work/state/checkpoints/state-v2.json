@@ -1,8 +1,8 @@
 {
   "envelope": {
-    "created_at": "2026-09-05T16:50:33Z",
-    "database_revision": 1311,
-    "digest": "d941418f2f11c35a0301c8f855a0645c43a7864110c9c412d56fda34dab77cb5",
+    "created_at": "2026-09-05T17:00:51Z",
+    "database_revision": 1312,
+    "digest": "5600b88eed1f0b940a4f59327f61aa13c321834ff6ad4cb77b2ffca0d1b8d2c4",
     "hybrid_schema": 5,
     "objects": [
       "work/state/objects/sha256/00/0082fd1d60de8f37c6d2972dac5637d8c894d2c8f1124c5061aeb74ba0c18b75",
@@ -5404,6 +5404,17 @@
       },
       {
         "authority_mode": "sqlite",
+        "content_sha256": "c6b1027da95ac2a16694df658b0ba713a5f18b6faacaec5aba594b9343b13be8",
+        "created_at": "2026-09-05T16:56:56Z",
+        "current_path": "sqlite/outcome-capsules/d8141ea4-0e4a-4629-bf5b-cd2e048d8bd7",
+        "display_number": null,
+        "id": "d8141ea4-0e4a-4629-bf5b-cd2e048d8bd7",
+        "lifecycle_state": "working",
+        "type": "direct-work",
+        "updated_at": "2026-09-05T16:56:56Z"
+      },
+      {
+        "authority_mode": "sqlite",
         "content_sha256": "d9dc4c501b147d372a49f78b5c4f58b2a167f84d8c2f726135a26f22791525d3",
         "created_at": "2026-08-30T11:36:19Z",
         "current_path": "sqlite/documents/MAP-0017",
@@ -5665,6 +5676,17 @@
         "lifecycle_state": "superseded",
         "type": "program-roadmap",
         "updated_at": "2026-08-29T01:27:42Z"
+      },
+      {
+        "authority_mode": "sqlite",
+        "content_sha256": "83ce55f8443a87944eeaecf036cb7f91ccdba2c809c0c2ab61d8667fab4e2af4",
+        "created_at": "2026-09-05T16:56:56Z",
+        "current_path": "sqlite/release-cohorts/e1d475e1-a772-4bae-9786-5a3fbe235b7a",
+        "display_number": null,
+        "id": "e1d475e1-a772-4bae-9786-5a3fbe235b7a",
+        "lifecycle_state": "working",
+        "type": "release-cohort",
+        "updated_at": "2026-09-05T16:56:56Z"
       },
       {
         "authority_mode": "sqlite",
@@ -10911,6 +10933,14 @@
         "shortest_depth": 1
       },
       {
+        "ancestor_element_id": "e6f49c50-12c5-4613-925f-d9336d5f32d5",
+        "descendant_element_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "graph_revision": 1312,
+        "id": "9426096d-1ac6-5e2f-9cc1-8d212fbacc60",
+        "path_count": 1,
+        "shortest_depth": 1
+      },
+      {
         "ancestor_element_id": "8e564535-8500-4af3-b9da-c0edf1c3a685",
         "descendant_element_id": "a26739f0-2f94-59ed-b833-5958a0068971",
         "graph_revision": 1190,
@@ -14627,6 +14657,16 @@
         "reason_code": "UNFULFILLED_REQUIREMENT"
       },
       {
+        "ancestor_element_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "blocking_element_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "blocking_obligation_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "depth": 0,
+        "governing_requirement_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "graph_revision": 50,
+        "id": "2ac32c16-8ae4-5711-bd79-0d42c5b44448",
+        "reason_code": "UNFULFILLED_REQUIREMENT"
+      },
+      {
         "ancestor_element_id": "cad8edc2-7743-4b97-ac97-11c7798147a1",
         "blocking_element_id": "d090a5af-59d0-490b-98d6-9226d64112d6",
         "blocking_obligation_id": "30741fd4-2232-43ab-93e0-dd127e4f8768",
@@ -14945,6 +14985,16 @@
         "graph_revision": 3,
         "id": "40725a97-a3c8-5afa-9e78-3259c7407a32",
         "reason_code": "UNFULFILLED_REQUIREMENT"
+      },
+      {
+        "ancestor_element_id": "e6f49c50-12c5-4613-925f-d9336d5f32d5",
+        "blocking_element_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "blocking_obligation_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "depth": 1,
+        "governing_requirement_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "graph_revision": 50,
+        "id": "413b6113-efee-5684-a159-f06986f61fda",
+        "reason_code": "LOCAL_OPEN"
       },
       {
         "ancestor_element_id": "87a1f9f0-30f7-49ed-9a91-5e3ebded70d6",
@@ -15497,6 +15547,16 @@
         "reason_code": "LOCAL_OPEN"
       },
       {
+        "ancestor_element_id": "f41f9c30-96fa-42fa-a5dd-7226aebf8028",
+        "blocking_element_id": "f41f9c30-96fa-42fa-a5dd-7226aebf8028",
+        "blocking_obligation_id": null,
+        "depth": 0,
+        "governing_requirement_id": null,
+        "graph_revision": 50,
+        "id": "6a201019-ca42-5fc0-87e5-701f1d8a4ce1",
+        "reason_code": "LOCAL_OPEN"
+      },
+      {
         "ancestor_element_id": "4b934a81-282d-4765-919d-2e2a70d6447a",
         "blocking_element_id": "744c0003-ad72-43a3-adf2-948b7d57892e",
         "blocking_obligation_id": "82b18eeb-c0af-41db-abde-d4442bef035c",
@@ -15907,6 +15967,16 @@
         "reason_code": "LOCAL_OPEN"
       },
       {
+        "ancestor_element_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "blocking_element_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "blocking_obligation_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "depth": 0,
+        "governing_requirement_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "graph_revision": 50,
+        "id": "8a883e52-6880-577c-a91f-d6f579287417",
+        "reason_code": "LOCAL_OPEN"
+      },
+      {
         "ancestor_element_id": "bcb9d000-3848-4f22-848e-1dca5d791767",
         "blocking_element_id": "d090a5af-59d0-490b-98d6-9226d64112d6",
         "blocking_obligation_id": "30741fd4-2232-43ab-93e0-dd127e4f8768",
@@ -15985,6 +16055,16 @@
         "graph_revision": 3,
         "id": "91bf53b9-3472-5bc8-a0ab-42ba5082ae91",
         "reason_code": "LOCAL_OPEN"
+      },
+      {
+        "ancestor_element_id": "e6f49c50-12c5-4613-925f-d9336d5f32d5",
+        "blocking_element_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "blocking_obligation_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "depth": 1,
+        "governing_requirement_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "graph_revision": 50,
+        "id": "92aabeb7-ea1c-5866-887c-4cf1ee3a64a7",
+        "reason_code": "UNFULFILLED_REQUIREMENT"
       },
       {
         "ancestor_element_id": "82b18eeb-c0af-41db-abde-d4442bef035c",
@@ -17334,6 +17414,16 @@
         "governing_requirement_id": "cce9cfda-aab5-4fc8-ad59-9dc52047a3c6",
         "graph_revision": 3,
         "id": "f78664f1-0878-517a-a6b3-84402b1ec64b",
+        "reason_code": "LOCAL_OPEN"
+      },
+      {
+        "ancestor_element_id": "e6f49c50-12c5-4613-925f-d9336d5f32d5",
+        "blocking_element_id": "e6f49c50-12c5-4613-925f-d9336d5f32d5",
+        "blocking_obligation_id": null,
+        "depth": 0,
+        "governing_requirement_id": null,
+        "graph_revision": 50,
+        "id": "f7b82ff2-0b84-5717-8f8f-bafd1118cee4",
         "reason_code": "LOCAL_OPEN"
       },
       {
@@ -20201,6 +20291,20 @@
         "subject_digest": "8bc873dcf90bb60abf3a3b1eaed97676904e183aef8b90d80c48147f01c715f4",
         "subject_revision": 1190,
         "updated_revision": 1190
+      },
+      {
+        "artifact_id": "d8141ea4-0e4a-4629-bf5b-cd2e048d8bd7",
+        "created_revision": 1312,
+        "cycle_id": null,
+        "element_kind": "requirement",
+        "envelope_digest": "ff460519c17ad91ed9a2ea38af06ec130b72d4d15799e689a7560617fa529cea",
+        "envelope_json": "{\"element_id\": \"69ae306b-268c-5b42-ae37-3a76a806cd20\", \"element_kind\": \"requirement\", \"element_revision\": 1312, \"lineage_claims\": [{\"claim_id\": \"ab5ef7fa-db85-547e-bc1e-de58ac0f87bd\", \"observed_parent_revision\": 1312, \"observed_requirement_digest\": \"43946cd9182e18a5dbd21e926f112bb59b8887a2e1a2f9ff2a10938e6e1a1d97\", \"parent_element_id\": \"e6f49c50-12c5-4613-925f-d9336d5f32d5\", \"parent_kind\": \"release-cohort\", \"parent_requirement_id\": \"69ae306b-268c-5b42-ae37-3a76a806cd20\", \"parent_visible_id\": null, \"relationship_type\": \"contributes\"}], \"schema_version\": 1, \"subject_digest\": \"43946cd9182e18a5dbd21e926f112bb59b8887a2e1a2f9ff2a10938e6e1a1d97\"}",
+        "id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "requirement_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "role": "obligation",
+        "subject_digest": "43946cd9182e18a5dbd21e926f112bb59b8887a2e1a2f9ff2a10938e6e1a1d97",
+        "subject_revision": 1312,
+        "updated_revision": 1312
       },
       {
         "artifact_id": "e407c857-8996-47cd-a07c-3216b844837b",
@@ -23843,6 +23947,20 @@
         "updated_revision": 1190
       },
       {
+        "artifact_id": "e1d475e1-a772-4bae-9786-5a3fbe235b7a",
+        "created_revision": 1312,
+        "cycle_id": "e6f49c50-12c5-4613-925f-d9336d5f32d5",
+        "element_kind": "release-cohort",
+        "envelope_digest": "ee88d54272962d914384286778651db16a5c3e9b476ed61dfa67b72e540bbdb7",
+        "envelope_json": "{\"element_id\": \"e6f49c50-12c5-4613-925f-d9336d5f32d5\", \"element_kind\": \"release-cohort\", \"element_revision\": 1312, \"lineage_claims\": [], \"schema_version\": 1, \"subject_digest\": \"ecec3cae7e1bdef86e0cab734c5f155f4d78043b6774685a1addeae395ffb0a1\"}",
+        "id": "e6f49c50-12c5-4613-925f-d9336d5f32d5",
+        "requirement_id": null,
+        "role": "cycle",
+        "subject_digest": "ecec3cae7e1bdef86e0cab734c5f155f4d78043b6774685a1addeae395ffb0a1",
+        "subject_revision": 1312,
+        "updated_revision": 1312
+      },
+      {
         "artifact_id": "a787bc8b-1558-4475-9985-fd2ff691b1d9",
         "created_revision": 1190,
         "cycle_id": null,
@@ -24277,6 +24395,20 @@
         "updated_revision": 1190
       },
       {
+        "artifact_id": "d8141ea4-0e4a-4629-bf5b-cd2e048d8bd7",
+        "created_revision": 1312,
+        "cycle_id": "f41f9c30-96fa-42fa-a5dd-7226aebf8028",
+        "element_kind": "direct-work",
+        "envelope_digest": "33eb88878bc786d7888847f1e072a980886e10b23b967ffd1366958d7fc04607",
+        "envelope_json": "{\"element_id\": \"f41f9c30-96fa-42fa-a5dd-7226aebf8028\", \"element_kind\": \"direct-work\", \"element_revision\": 1312, \"lineage_claims\": [], \"schema_version\": 1, \"subject_digest\": \"83c6899ea2ae6fca88aaeb7700ae04c1fda3d327da155bb47bb3b9f4f53715dd\"}",
+        "id": "f41f9c30-96fa-42fa-a5dd-7226aebf8028",
+        "requirement_id": null,
+        "role": "cycle",
+        "subject_digest": "83c6899ea2ae6fca88aaeb7700ae04c1fda3d327da155bb47bb3b9f4f53715dd",
+        "subject_revision": 1312,
+        "updated_revision": 1312
+      },
+      {
         "artifact_id": "974ada73-585e-4527-8921-90dd5aff2c97",
         "created_revision": 1190,
         "cycle_id": "f474cfe2-7d8a-41cd-860e-571bcfa4ca7b",
@@ -24644,11 +24776,11 @@
     "closure_graph_meta": [
       {
         "evaluator_version": "recursive-closure-v1",
-        "graph_revision": 49,
+        "graph_revision": 50,
         "id": 1,
         "schema_version": 1,
-        "source_digest": "e92d81d2d2d03918771300d198f5e1bafd80d36929688944965d1bcd2d88fa35",
-        "updated_at": "2026-09-05T16:50:13Z"
+        "source_digest": "26512d8a30e444df2cf127f814120c143f9ba815d76ece1f7484089a836e6c35",
+        "updated_at": "2026-09-05T16:56:57Z"
       }
     ],
     "closure_record": [
@@ -30695,6 +30827,22 @@
         "unknown_descendants": 0
       },
       {
+        "effective_closed": 0,
+        "element_id": "e6f49c50-12c5-4613-925f-d9336d5f32d5",
+        "evaluated_at": "2026-09-05T16:56:57Z",
+        "evaluator_version": "recursive-closure-v1",
+        "evidence_health": "not-required",
+        "graph_health": "valid",
+        "graph_revision": 50,
+        "id": "06c9da55-ac79-521e-8a26-33d41d4be089",
+        "invalid_descendants": 0,
+        "local_closure": "open",
+        "open_descendants": 1,
+        "reason_codes_json": "[\"DESCENDANT_OPEN\", \"LOCAL_OPEN\"]",
+        "subject_revision": 1312,
+        "unknown_descendants": 0
+      },
+      {
         "effective_closed": 1,
         "element_id": "916954a0-c4c4-4361-bf0b-f4a6eea6e432",
         "evaluated_at": "2026-09-04T15:06:03Z",
@@ -31764,6 +31912,22 @@
         "open_descendants": 0,
         "reason_codes_json": "[]",
         "subject_revision": 1190,
+        "unknown_descendants": 0
+      },
+      {
+        "effective_closed": 0,
+        "element_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "evaluated_at": "2026-09-05T16:56:57Z",
+        "evaluator_version": "recursive-closure-v1",
+        "evidence_health": "not-required",
+        "graph_health": "valid",
+        "graph_revision": 50,
+        "id": "27c9fa75-0341-5804-9c70-257dba3d642e",
+        "invalid_descendants": 0,
+        "local_closure": "open",
+        "open_descendants": 0,
+        "reason_codes_json": "[\"LOCAL_OPEN\", \"UNFULFILLED_REQUIREMENT\"]",
+        "subject_revision": 1312,
         "unknown_descendants": 0
       },
       {
@@ -36775,6 +36939,22 @@
         "unknown_descendants": 0
       },
       {
+        "effective_closed": 0,
+        "element_id": "f41f9c30-96fa-42fa-a5dd-7226aebf8028",
+        "evaluated_at": "2026-09-05T16:56:57Z",
+        "evaluator_version": "recursive-closure-v1",
+        "evidence_health": "not-required",
+        "graph_health": "valid",
+        "graph_revision": 50,
+        "id": "bea8784d-b8e0-5a3d-948c-f9bee696ff73",
+        "invalid_descendants": 0,
+        "local_closure": "open",
+        "open_descendants": 0,
+        "reason_codes_json": "[\"LOCAL_OPEN\"]",
+        "subject_revision": 1312,
+        "unknown_descendants": 0
+      },
+      {
         "effective_closed": 1,
         "element_id": "940f1c83-b6f4-5d41-9ac5-ba19720cd2c4",
         "evaluated_at": "2026-09-04T15:06:03Z",
@@ -40278,6 +40458,15 @@
         "origin_artifact_id": "479198f6-c395-4f60-9f96-b5e1d9a0eaf3"
       },
       {
+        "accepted_outcome": "Release and production-verify every registered Work2 candidate after v0.47.1.",
+        "closed_at": null,
+        "id": "e6f49c50-12c5-4613-925f-d9336d5f32d5",
+        "kind": "release-cohort",
+        "lifecycle_state": "working",
+        "opened_at": "2026-09-05T16:56:56Z",
+        "origin_artifact_id": "e1d475e1-a772-4bae-9786-5a3fbe235b7a"
+      },
+      {
         "accepted_outcome": "Retain a qualified, released, provider-neutral local completion watcher through the accepted local-release boundary.",
         "closed_at": "2026-08-29T11:03:47Z",
         "id": "e72603ab-7b6c-4df5-a527-17173db543ce",
@@ -40384,6 +40573,15 @@
         "lifecycle_state": "terminal",
         "opened_at": "2026-08-29T22:06:41Z",
         "origin_artifact_id": "e4e5e76c-1840-483d-9abf-c8a3dc60370e"
+      },
+      {
+        "accepted_outcome": "Production-release and reconcile prior Work2 outcome: Tool Shed prevents contradictory lifecycle and recursive-closure closeout claims, safely reconciles inherited state, and reports the result truthfully on fresh and upgraded installations.",
+        "closed_at": null,
+        "id": "f41f9c30-96fa-42fa-a5dd-7226aebf8028",
+        "kind": "direct-work",
+        "lifecycle_state": "working",
+        "opened_at": "2026-09-05T16:56:56Z",
+        "origin_artifact_id": "d8141ea4-0e4a-4629-bf5b-cd2e048d8bd7"
       },
       {
         "accepted_outcome": "Turn IDEA-0010 into a qualified, portable App Server dogfooding implementation with durable consent, trustworthy opportunity evidence, safe fallback, release proof, and closed-loop reconciliation.",
@@ -62462,6 +62660,16 @@
         "revision": 1310
       },
       {
+        "entity_id": "e6f49c50-12c5-4613-925f-d9336d5f32d5",
+        "entity_type": "closure_element",
+        "id": "01c559ed-5278-40eb-a37f-fb80b01b5118",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_element\"}",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "491b7265-5332-5e93-9246-716b5fdefe22",
         "entity_type": "loop_finding",
         "id": "01d54252-ba19-483a-9d2b-237118c150f8",
@@ -65152,6 +65360,16 @@
         "revision": 1308
       },
       {
+        "entity_id": "f7b82ff2-0b84-5717-8f8f-bafd1118cee4",
+        "entity_type": "closure_blocker",
+        "id": "075f334a-53ce-4533-9a58-eeed5f5a3e54",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_blocker\"}",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "03ba79b0-ca35-57a2-ba02-df08b0cecc2a",
         "entity_type": "closure_blocker",
         "id": "0763a307-4e0c-4299-a4bd-277ead9f6d25",
@@ -65550,6 +65768,16 @@
         "payload_json": "{\"operation\":\"delete\",\"table\":\"closure_blocker\"}",
         "recorded_at": "2026-09-04T17:30:16Z",
         "revision": 1230
+      },
+      {
+        "entity_id": "d98eaf5e-6237-5e18-8088-1b2209d5fc9e",
+        "entity_type": "loop_finding",
+        "id": "0809fe87-52d6-4cf7-ad49-5c7a424710c7",
+        "kind": "structural-update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"loop_finding\"}",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312
       },
       {
         "entity_id": "2cd3a5a5-663e-5025-b9d4-284cb78f62d4",
@@ -73482,6 +73710,16 @@
         "revision": 1255
       },
       {
+        "entity_id": "f347c071-6cab-5933-8158-ce6a19b7b3f7",
+        "entity_type": "loop_finding",
+        "id": "166f26a6-512d-4cc7-90d3-2f1f8e78ee4a",
+        "kind": "structural-update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"loop_finding\"}",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "b9517495-fedb-568a-a96a-30269839e750",
         "entity_type": "loop_finding",
         "id": "166f9ef6-4a14-4fae-814e-c694e0821421",
@@ -74890,6 +75128,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_blocker\"}",
         "recorded_at": "2026-09-04T18:45:46Z",
         "revision": 1244
+      },
+      {
+        "entity_id": "bc050c56-3354-54f2-9a8d-dad3b72babb7",
+        "entity_type": "loop_finding",
+        "id": "1913bf75-2d73-43cb-bfd1-6a3b32b765e1",
+        "kind": "structural-update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"loop_finding\"}",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312
       },
       {
         "entity_id": "5f321ec7-76c4-5fd6-b577-b2d90d6c1363",
@@ -83152,6 +83400,16 @@
         "revision": 1182
       },
       {
+        "entity_id": "248cf75d-2b8c-5755-88d5-94ef739fd111",
+        "entity_type": "loop_finding",
+        "id": "28ef4014-4225-4007-9472-27b105836a8b",
+        "kind": "structural-update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"loop_finding\"}",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "e5cfc4f2-ff00-40b1-bc4c-289b352a26d8",
         "entity_type": "outcome_verdict",
         "id": "28f22768-9272-48c7-aff4-bd0756c04061",
@@ -83790,6 +84048,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_ancestor_path\"}",
         "recorded_at": "2026-09-04T15:06:03Z",
         "revision": 1190
+      },
+      {
+        "entity_id": "413b6113-efee-5684-a159-f06986f61fda",
+        "entity_type": "closure_blocker",
+        "id": "2a2c6021-a3ce-4932-8d59-8421110a2718",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_blocker\"}",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312
       },
       {
         "entity_id": "3b8442e2-a5ab-5c14-981f-71de2ece8436",
@@ -86592,6 +86860,16 @@
         "revision": 1311
       },
       {
+        "entity_id": "d8141ea4-0e4a-4629-bf5b-cd2e048d8bd7",
+        "entity_type": "artifact",
+        "id": "2f99bebb-fa07-48aa-a423-566f05ff79dd",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "f47086eb-9f79-47e5-83e1-7453e0d44c73",
         "entity_type": "artifact",
         "id": "2fba416b-3aed-41fc-9ef3-fc9c4cee3945",
@@ -87662,6 +87940,16 @@
         "revision": 176
       },
       {
+        "entity_id": "1dc3a81f-cdb6-5059-ac92-641144645a99",
+        "entity_type": "loop_finding",
+        "id": "31f65367-929b-42f6-bae8-a639046b3286",
+        "kind": "structural-update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"loop_finding\"}",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "c2d6e364-fbdf-47bc-ac4d-3e6526dc474c",
         "entity_type": "outcome_verdict",
         "id": "3200d913-b85b-46b1-af45-9fc3c191b6e9",
@@ -88680,6 +88968,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
         "recorded_at": "2026-08-28T21:26:13Z",
         "revision": 47
+      },
+      {
+        "entity_id": "d536a2ef-6b96-5289-a9ec-7cec3db3dec9",
+        "entity_type": "loop_finding",
+        "id": "3401610f-e14e-48c1-a914-e15dd1106476",
+        "kind": "structural-update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"loop_finding\"}",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312
       },
       {
         "entity_id": "c9c5e962-d8bc-444d-b9dc-62be35880a4a",
@@ -91002,6 +91300,16 @@
         "revision": 793
       },
       {
+        "entity_id": "1",
+        "entity_type": "loop_finding_meta",
+        "id": "3800687c-90af-4b65-81c8-139f350b80cc",
+        "kind": "structural-update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"loop_finding_meta\"}",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "61596d54-5a3b-4b5b-959e-314601c41f93",
         "entity_type": "artifact",
         "id": "3806615b-919a-4987-a1a7-6c7494116da3",
@@ -93110,6 +93418,16 @@
         "payload_json": "{\"operation\":\"delete\",\"table\":\"closure_blocker\"}",
         "recorded_at": "2026-09-04T19:00:37Z",
         "revision": 1260
+      },
+      {
+        "entity_id": "2ac32c16-8ae4-5711-bd79-0d42c5b44448",
+        "entity_type": "closure_blocker",
+        "id": "3bf98dc7-1cb5-4d37-b1dd-b7637a25595f",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_blocker\"}",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312
       },
       {
         "entity_id": "a3567a1e-a30a-5e12-b3d7-8cf47ceffd5b",
@@ -95752,6 +96070,16 @@
         "revision": 1098
       },
       {
+        "entity_id": "bcc2f2dc-0f72-4248-b9a0-626c80929f5b",
+        "entity_type": "relationship",
+        "id": "40768ce3-f230-41e9-a3bb-2bc3d22e7b94",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "79777ee0-e535-4a94-9fc4-2b366f93348a",
         "entity_type": "relationship",
         "id": "408cd388-5727-479a-8d38-3c110486b18a",
@@ -97560,6 +97888,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"reconciliation\"}",
         "recorded_at": "2026-08-30T16:40:38Z",
         "revision": 846
+      },
+      {
+        "entity_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "entity_type": "requirement",
+        "id": "44674089-a706-45f1-8cf6-02dd823b1e17",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"requirement\"}",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312
       },
       {
         "entity_id": "dd13763a-8ac7-4e55-bb0c-d57b34411f0b",
@@ -99640,6 +99978,16 @@
         "payload_json": "{\"operation\":\"delete\",\"table\":\"closure_ancestor_path\"}",
         "recorded_at": "2026-09-04T19:00:09Z",
         "revision": 1258
+      },
+      {
+        "entity_id": "bef71c5c-8b98-5c48-acea-a1efcf225557",
+        "entity_type": "loop_finding",
+        "id": "48497d9a-108e-4798-8988-1243a37399ce",
+        "kind": "structural-update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"loop_finding\"}",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312
       },
       {
         "entity_id": "7a83f292-4790-4bf2-886c-e810f44a8ab6",
@@ -101782,6 +102130,16 @@
         "revision": 555
       },
       {
+        "entity_id": "e1d475e1-a772-4bae-9786-5a3fbe235b7a",
+        "entity_type": "artifact",
+        "id": "4cc301db-2091-4b62-aba8-60415a98ea78",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"artifact\"}",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "93ecb00c-305c-53e6-a1e6-c45707e4256e",
         "entity_type": "closure_blocker",
         "id": "4ccaad7b-1caf-497b-9b3d-a8a4f9afecb5",
@@ -102512,6 +102870,16 @@
         "revision": 1190
       },
       {
+        "entity_id": "a3535dde-9184-5e6b-b139-7fe00a6c862d",
+        "entity_type": "loop_finding",
+        "id": "4e3a765c-6fd4-4235-8cd2-e8c03f860050",
+        "kind": "structural-update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"loop_finding\"}",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "0c871aab-4bbb-4025-9f52-c7286c3dd6d7",
         "entity_type": "closure_record",
         "id": "4e42f184-ca34-419b-9666-17da38a7f3b3",
@@ -102800,6 +103168,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
         "recorded_at": "2026-08-28T21:15:35Z",
         "revision": 44
+      },
+      {
+        "entity_id": "f41f9c30-96fa-42fa-a5dd-7226aebf8028",
+        "entity_type": "closure_element",
+        "id": "4ed7117a-4cc2-4531-b882-58a40adc1292",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_element\"}",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312
       },
       {
         "entity_id": "843cd4d4-d53f-5e82-b73e-e26e6cd8ddee",
@@ -107712,6 +108090,16 @@
         "revision": 1067
       },
       {
+        "entity_id": "a9c664c7-f832-4db2-8c7c-4470abb65ac1",
+        "entity_type": "evidence_reference",
+        "id": "57b43f67-6420-42c6-9d9a-d914102bcda2",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "659becc6-4f88-5627-8253-7e51e7df25e1",
         "entity_type": "evidence_reference",
         "id": "57b6103e-5217-496f-88d8-12563be7c8af",
@@ -109272,6 +109660,16 @@
         "revision": 1255
       },
       {
+        "entity_id": "c0e22daa-9177-563e-9c8b-7ac8835a683f",
+        "entity_type": "loop_finding",
+        "id": "5a5328a3-2627-4b4b-a355-b3f7fb7d8de9",
+        "kind": "structural-update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"loop_finding\"}",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "c8edafc9-2409-40f0-9d53-1e1d9b1fbedb",
         "entity_type": "artifact",
         "id": "5a536f68-4fec-4396-adaf-1eca5046b709",
@@ -110490,6 +110888,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_ancestor_path\"}",
         "recorded_at": "2026-09-04T15:06:03Z",
         "revision": 1190
+      },
+      {
+        "entity_id": "1",
+        "entity_type": "closure_graph_meta",
+        "id": "5c4eb088-0fbd-4aed-bf94-7c8a8fa1c046",
+        "kind": "structural-update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"closure_graph_meta\"}",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312
       },
       {
         "entity_id": "325b92fa-5059-44dc-8cbf-a1649a9679a8",
@@ -116102,6 +116510,16 @@
         "revision": 1137
       },
       {
+        "entity_id": "e3d93ade-86df-5895-82af-00e80e5b2a63",
+        "entity_type": "loop_finding",
+        "id": "67a8652f-da03-4f30-ae9b-f136ffae3c50",
+        "kind": "structural-update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"loop_finding\"}",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "d536a2ef-6b96-5289-a9ec-7cec3db3dec9",
         "entity_type": "loop_finding",
         "id": "67b08b8c-f1e3-4212-b8f6-5fa14c57eee2",
@@ -116220,6 +116638,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_ancestor_path\"}",
         "recorded_at": "2026-09-04T15:40:31Z",
         "revision": 1210
+      },
+      {
+        "entity_id": "2d62000c-2e3a-4f5d-85d5-faa500b68b23",
+        "entity_type": "relationship",
+        "id": "67cd6d8f-934f-4e42-b1e7-156801f0a32e",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"relationship\"}",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312
       },
       {
         "entity_id": "0177ba93-771b-5c46-9b73-3c2eef3d70c0",
@@ -123862,6 +124290,16 @@
         "revision": 1190
       },
       {
+        "entity_id": "491b7265-5332-5e93-9246-716b5fdefe22",
+        "entity_type": "loop_finding",
+        "id": "771d706c-2f02-4fef-97de-bdf431d95848",
+        "kind": "structural-update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"loop_finding\"}",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "82b0eb30-f0d0-572a-b503-1da6b95522dc",
         "entity_type": "closure_element",
         "id": "772e37df-9142-44e6-a6bd-43087a43b72f",
@@ -125900,6 +126338,16 @@
         "payload_json": "{\"operation\":\"delete\",\"table\":\"closure_blocker\"}",
         "recorded_at": "2026-09-05T15:05:18Z",
         "revision": 1300
+      },
+      {
+        "entity_id": "17f72599-907a-5523-b816-2948a5c5c84f",
+        "entity_type": "loop_finding",
+        "id": "7afa218b-e212-4b5f-b028-5f0287f1dab9",
+        "kind": "structural-update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"loop_finding\"}",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312
       },
       {
         "entity_id": "0747bfc9-5031-44b4-95ec-a85ea08879dd",
@@ -131022,6 +131470,16 @@
         "revision": 1190
       },
       {
+        "entity_id": "398aec30-57c5-50eb-a2ce-712b47ab3e26",
+        "entity_type": "loop_finding",
+        "id": "856564f8-af4e-47cc-9bad-cf5f6002d1e8",
+        "kind": "structural-update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"loop_finding\"}",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "b7b2771c-04e7-48bb-ae3b-acb1897f0daa",
         "entity_type": "artifact",
         "id": "856a414d-83c8-4494-84e3-00da84ad1717",
@@ -135512,6 +135970,16 @@
         "revision": 984
       },
       {
+        "entity_id": "26ffc2aa-e874-4bd2-a808-f657f7cd7c77",
+        "entity_type": "reconciliation",
+        "id": "8e168acd-de8d-4227-8de9-a9677b8a7777",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"reconciliation\"}",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "d20c9abe-e79d-5006-96e9-a3468f25c4ac",
         "entity_type": "closure_blocker",
         "id": "8e1fdf18-5173-493e-8cd8-682a4672ccc9",
@@ -136310,6 +136778,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_rollup\"}",
         "recorded_at": "2026-09-04T15:06:03Z",
         "revision": 1190
+      },
+      {
+        "entity_id": "8a883e52-6880-577c-a91f-d6f579287417",
+        "entity_type": "closure_blocker",
+        "id": "8fa3c3b8-af60-4790-a8d6-0c561a7cf9a3",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_blocker\"}",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312
       },
       {
         "entity_id": "1",
@@ -137270,6 +137748,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"import_record\"}",
         "recorded_at": "2026-08-28T20:33:28Z",
         "revision": 31
+      },
+      {
+        "entity_id": "bea8784d-b8e0-5a3d-948c-f9bee696ff73",
+        "entity_type": "closure_rollup",
+        "id": "9142f87e-dbc0-420a-a178-4e9877767cb3",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_rollup\"}",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312
       },
       {
         "entity_id": "95b22071-ec88-4342-b501-2042fe288592",
@@ -139340,6 +139828,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"document_path_alias\"}",
         "recorded_at": "2026-08-30T17:57:26Z",
         "revision": 885
+      },
+      {
+        "entity_id": "92aabeb7-ea1c-5866-887c-4cf1ee3a64a7",
+        "entity_type": "closure_blocker",
+        "id": "9518d69c-be31-4e65-a2fb-b561d8b7421b",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_blocker\"}",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312
       },
       {
         "entity_id": "dbb110b0-4f34-5b57-a796-4fcc56af3f7e",
@@ -142542,6 +143040,16 @@
         "revision": 1288
       },
       {
+        "entity_id": "f520c3af-96e9-593a-9de6-1fd14f1ecb0a",
+        "entity_type": "loop_finding",
+        "id": "9bbf8917-b02e-40a1-899e-2b44934bded6",
+        "kind": "structural-update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"loop_finding\"}",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "248cf75d-2b8c-5755-88d5-94ef739fd111",
         "entity_type": "loop_finding",
         "id": "9bcbaa66-d44b-4ded-ac4d-98a3e244ca68",
@@ -143460,6 +143968,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"document_revision\"}",
         "recorded_at": "2026-09-01T21:18:24Z",
         "revision": 991
+      },
+      {
+        "entity_id": "6a201019-ca42-5fc0-87e5-701f1d8a4ce1",
+        "entity_type": "closure_blocker",
+        "id": "9da77fe2-882f-4709-920b-f666d044ca43",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_blocker\"}",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312
       },
       {
         "entity_id": "ab7f8eb4-da98-442f-bc27-43b65edbaeba",
@@ -156412,6 +156930,16 @@
         "revision": 225
       },
       {
+        "entity_id": "27c9fa75-0341-5804-9c70-257dba3d642e",
+        "entity_type": "closure_rollup",
+        "id": "b605606f-703f-4af7-b59d-427e898c2eb3",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_rollup\"}",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "a7df0119-b011-427d-a4ac-45268c603b41",
         "entity_type": "reconciliation",
         "id": "b6065e9f-6dcd-4a1e-bdbf-6f309aab80d4",
@@ -159602,6 +160130,16 @@
         "revision": 1248
       },
       {
+        "entity_id": "84a83856-bd18-5006-8b77-8e50dc8bae22",
+        "entity_type": "loop_finding",
+        "id": "bb56f885-6f4c-4879-a5f6-9ccb04e11c25",
+        "kind": "structural-update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"loop_finding\"}",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "2f6ddce8-4861-484f-925e-dd1ea68e8395",
         "entity_type": "artifact",
         "id": "bb5a51ba-69ec-48a2-b6d0-7adbdcb1bde7",
@@ -160020,6 +160558,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_blocker\"}",
         "recorded_at": "2026-09-04T15:06:03Z",
         "revision": 1190
+      },
+      {
+        "entity_id": "a8b5b4d9-9696-512d-90fe-ec2f22ac54c9",
+        "entity_type": "loop_finding",
+        "id": "bc557d58-2804-4b5e-bfb2-79c78fc2f9ae",
+        "kind": "structural-update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"loop_finding\"}",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312
       },
       {
         "entity_id": "9b9e7860-62bd-4df1-8a31-2e16ac6312fc",
@@ -160730,6 +161278,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"lineage_claim\"}",
         "recorded_at": "2026-09-04T15:06:02Z",
         "revision": 1190
+      },
+      {
+        "entity_id": "f41f9c30-96fa-42fa-a5dd-7226aebf8028",
+        "entity_type": "cycle",
+        "id": "bd94e2af-fe51-4730-aebb-5e68922365eb",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"cycle\"}",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312
       },
       {
         "entity_id": "c12ed040-ee4e-4940-91ba-578ccb449b12",
@@ -161730,6 +162288,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_record\"}",
         "recorded_at": "2026-09-04T15:06:03Z",
         "revision": 1190
+      },
+      {
+        "entity_id": "06c9da55-ac79-521e-8a26-33d41d4be089",
+        "entity_type": "closure_rollup",
+        "id": "bf7a419c-ad73-4b68-9134-2408d99bcda1",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_rollup\"}",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312
       },
       {
         "entity_id": "894c640f-cc6e-51f4-aa0e-e277c52d9bdc",
@@ -165862,6 +166430,16 @@
         "revision": 1190
       },
       {
+        "entity_id": "fe29b727-1c3d-5a08-af9b-e0abf24fc8cf",
+        "entity_type": "loop_finding",
+        "id": "c747fc29-61a6-44e7-95b3-662b337d71a2",
+        "kind": "structural-update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"loop_finding\"}",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "c0dfed41-e108-5ddd-a206-8c1444b39dde",
         "entity_type": "closure_rollup",
         "id": "c748e6de-0ade-4c46-9c85-deb53688f132",
@@ -165910,6 +166488,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"artifact\"}",
         "recorded_at": "2026-09-04T14:25:47Z",
         "revision": 1173
+      },
+      {
+        "entity_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "entity_type": "closure_element",
+        "id": "c762a7be-89c2-4c49-bb1b-0efb6bbe7783",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_element\"}",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312
       },
       {
         "entity_id": "82da755c-aaec-44d7-a1b9-a35201c05ef2",
@@ -166060,6 +166648,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_rollup\"}",
         "recorded_at": "2026-09-04T18:45:46Z",
         "revision": 1244
+      },
+      {
+        "entity_id": "40198521-5775-5583-9101-1307a15bf3cc",
+        "entity_type": "verification_result",
+        "id": "c7d1b692-3085-45a9-b15d-da406d10dc5c",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"verification_result\"}",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312
       },
       {
         "entity_id": "55e9abc2-885a-55e1-a451-931285a7ce0d",
@@ -167400,6 +167998,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_blocker\"}",
         "recorded_at": "2026-09-04T17:43:25Z",
         "revision": 1232
+      },
+      {
+        "entity_id": "01801c1c-015d-48c0-a615-0ec9b4082c67",
+        "entity_type": "outcome_verdict",
+        "id": "ca246492-8ffc-4983-a63d-5da9281c6363",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"outcome_verdict\"}",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312
       },
       {
         "entity_id": "CAMP",
@@ -173692,6 +174300,16 @@
         "revision": 971
       },
       {
+        "entity_id": "0744948b-2374-5ad4-b6e8-20673c44b5be",
+        "entity_type": "loop_finding",
+        "id": "d6f88da0-9932-47a6-8e4d-6dd98f84b45d",
+        "kind": "structural-update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"loop_finding\"}",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "bec9c6a6-1db3-45de-8ec9-eeefa377539e",
         "entity_type": "reconciliation",
         "id": "d6fbf2e7-434d-42b6-a642-b3cadbcb66dc",
@@ -174550,6 +175168,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_blocker\"}",
         "recorded_at": "2026-09-04T15:06:03Z",
         "revision": 1190
+      },
+      {
+        "entity_id": "b0c45c1a-cd00-51a4-8028-a64135a921a1",
+        "entity_type": "loop_finding",
+        "id": "d871258c-46ce-43ff-898b-6a2dcbd0be05",
+        "kind": "structural-update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"update\",\"table\":\"loop_finding\"}",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312
       },
       {
         "entity_id": "2effac01-ff12-5706-9be5-8ff2a1385a53",
@@ -179162,6 +179790,16 @@
         "revision": 1190
       },
       {
+        "entity_id": "6b0930e0-bcb4-4b85-917a-4354bb226f0d",
+        "entity_type": "evidence_reference",
+        "id": "e0e9c5e2-f5e0-4eff-816c-ad18ea198b40",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "484006ef-137a-4bf2-ab53-f3aaeae9ce6c",
         "entity_type": "reconciliation",
         "id": "e0eb7c38-fb71-4698-8e26-951d846dca01",
@@ -179570,6 +180208,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_record\"}",
         "recorded_at": "2026-09-04T15:06:03Z",
         "revision": 1190
+      },
+      {
+        "entity_id": "c12c75f2-9826-4636-a87c-50a21c3ecc14",
+        "entity_type": "outcome_verdict",
+        "id": "e18e7e37-2030-4c89-ae67-5d828a1317c6",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"outcome_verdict\"}",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312
       },
       {
         "entity_id": "17e2dc37-8345-5e41-b2e9-67a799581c86",
@@ -185162,6 +185810,16 @@
         "revision": 899
       },
       {
+        "entity_id": "9426096d-1ac6-5e2f-9cc1-8d212fbacc60",
+        "entity_type": "closure_ancestor_path",
+        "id": "ec1a5cc3-2eed-4d61-bcbd-d37aaa37a2a9",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"closure_ancestor_path\"}",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "ee64e15a-5729-4788-86e9-a0acbc0f63d8",
         "entity_type": "document",
         "id": "ec1d1083-963d-412d-8748-a592438b3bd5",
@@ -186600,6 +187258,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"cycle\"}",
         "recorded_at": "2026-09-05T14:46:12Z",
         "revision": 1296
+      },
+      {
+        "entity_id": "e6f49c50-12c5-4613-925f-d9336d5f32d5",
+        "entity_type": "cycle",
+        "id": "ef28530e-452e-46ea-93ae-99aade6b34ab",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"cycle\"}",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312
       },
       {
         "entity_id": "19ee67e6-de6a-46f1-a25f-c43ab3192a7b",
@@ -189430,6 +190098,16 @@
         "payload_json": "{\"operation\":\"update\",\"table\":\"requirement\"}",
         "recorded_at": "2026-09-04T14:25:47Z",
         "revision": 1173
+      },
+      {
+        "entity_id": "8fb886cf-407b-55cd-bab4-56bdc9ed7d54",
+        "entity_type": "evidence_reference",
+        "id": "f4609efe-0141-4f43-9a3a-fc8c7523c3db",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"evidence_reference\"}",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312
       },
       {
         "entity_id": "31143cf0-9ffa-4dd7-9d59-508831ca5990",
@@ -193102,6 +193780,16 @@
         "revision": 1190
       },
       {
+        "entity_id": "ab5ef7fa-db85-547e-bc1e-de58ac0f87bd",
+        "entity_type": "lineage_claim",
+        "id": "fb9e9d0b-8b77-4694-b343-81ccf5eae490",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"lineage_claim\"}",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312
+      },
+      {
         "entity_id": "0a044569-9d8f-5194-a3fd-249988437adb",
         "entity_type": "closure_blocker",
         "id": "fbacef3a-7674-4f72-a48d-7b2e149545b2",
@@ -194450,6 +195138,16 @@
         "payload_json": "{\"operation\":\"insert\",\"table\":\"document_conversion\"}",
         "recorded_at": "2026-08-29T01:27:39Z",
         "revision": 242
+      },
+      {
+        "entity_id": "5b7d8768-20b1-4dc5-afc7-81f89b63465d",
+        "entity_type": "reconciliation",
+        "id": "fe6d81e7-0cd2-4052-987a-9643228f94df",
+        "kind": "structural-insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_json": "{\"operation\":\"insert\",\"table\":\"reconciliation\"}",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312
       },
       {
         "entity_id": "05c50862-661f-5914-a104-c80f87801ab2",
@@ -196606,6 +197304,15 @@
         "target_identity": "v0.43.0"
       },
       {
+        "collected_at": "2026-09-05T16:56:56Z",
+        "cycle_id": "f41f9c30-96fa-42fa-a5dd-7226aebf8028",
+        "id": "6b0930e0-bcb4-4b85-917a-4354bb226f0d",
+        "kind": "prior-work2-outcome",
+        "reference": "cycle:d8d229e6-5952-4452-bdae-eed521848d7f",
+        "sha256": null,
+        "target_identity": "d8d229e6-5952-4452-bdae-eed521848d7f"
+      },
+      {
         "collected_at": "2026-08-30T16:36:32Z",
         "cycle_id": "2b71917c-d1c0-40c8-80af-f8bca3511377",
         "id": "6b62f876-4eca-5b97-8d72-4b93559e36f0",
@@ -197119,6 +197826,15 @@
         "target_identity": "Publish and synchronize persistent autonomy levels"
       },
       {
+        "collected_at": "2026-09-05T16:56:56Z",
+        "cycle_id": "e6f49c50-12c5-4613-925f-d9336d5f32d5",
+        "id": "8fb886cf-407b-55cd-bab4-56bdc9ed7d54",
+        "kind": "work2-checkpoint",
+        "reference": "git:4872bc86bb7ccca69e2cc04509ae3c0d03661dbc",
+        "sha256": null,
+        "target_identity": "f41f9c30-96fa-42fa-a5dd-7226aebf8028"
+      },
+      {
         "collected_at": "2026-09-04T18:02:49Z",
         "cycle_id": "19ce5d9c-3bd3-4d51-8a5f-0e4694afa788",
         "id": "8fc1f4d9-8f83-5235-a267-016f5aaf1882",
@@ -197450,6 +198166,15 @@
         "reference": "work/evidence/generated/idea0020-m3/linux-qh007-final8-result.json",
         "sha256": "a2195e1279a192f73a1247ad74e8ea890198a032e6883127f8f4217c38e18785",
         "target_identity": "67f474d0-ff3d-4afa-bf22-b14f0a1c5713"
+      },
+      {
+        "collected_at": "2026-09-05T16:56:56Z",
+        "cycle_id": "e6f49c50-12c5-4613-925f-d9336d5f32d5",
+        "id": "a9c664c7-f832-4db2-8c7c-4470abb65ac1",
+        "kind": "release-base-tag",
+        "reference": "v0.47.1",
+        "sha256": null,
+        "target_identity": "e6f49c50-12c5-4613-925f-d9336d5f32d5"
       },
       {
         "collected_at": "2026-09-02T21:41:30Z",
@@ -203665,6 +204390,18 @@
         "retired_revision": null
       },
       {
+        "child_element_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "created_revision": 1312,
+        "envelope_digest": "ff460519c17ad91ed9a2ea38af06ec130b72d4d15799e689a7560617fa529cea",
+        "id": "ab5ef7fa-db85-547e-bc1e-de58ac0f87bd",
+        "observed_parent_revision": 1312,
+        "observed_requirement_digest": "43946cd9182e18a5dbd21e926f112bb59b8887a2e1a2f9ff2a10938e6e1a1d97",
+        "parent_element_id": "e6f49c50-12c5-4613-925f-d9336d5f32d5",
+        "parent_requirement_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "relationship_type": "contributes",
+        "retired_revision": null
+      },
+      {
         "child_element_id": "7c2587c4-42be-465f-a8c7-da7664d39f94",
         "created_revision": 1190,
         "envelope_digest": "b59a72964b5624f02e6aecaeb6bc126914383d44d21ef6075e7d15a5269da082",
@@ -205394,13 +206131,13 @@
         "finding_key": "9352c07686217c917e4a5301f125a5fe27cace386504eb1321e093daed5fcb16",
         "first_observed_at": "2026-09-05T14:04:16Z",
         "id": "0744948b-2374-5ad4-b6e8-20673c44b5be",
-        "last_observed_at": "2026-09-05T16:50:15Z",
+        "last_observed_at": "2026-09-05T16:56:59Z",
         "observed_state": "recursive-closure-open",
         "reason_code": "LINEAGE_RECOVERY_REQUIRED",
         "recurrence_count": 0,
         "resolved_at": null,
         "severity": "attention",
-        "source_revision": 1311,
+        "source_revision": 1312,
         "state": "active",
         "subject_artifact_id": "88b046c1-a037-46eb-b254-40a960f9868a",
         "subject_visible_id": "MAP-0001",
@@ -205470,13 +206207,13 @@
         "finding_key": "05637a89399b825ad7249c1f02da0edcf4717d870185b65f2b3ad252c4ae4040",
         "first_observed_at": "2026-09-05T14:04:16Z",
         "id": "17f72599-907a-5523-b816-2948a5c5c84f",
-        "last_observed_at": "2026-09-05T16:50:15Z",
+        "last_observed_at": "2026-09-05T16:56:59Z",
         "observed_state": "recursive-closure-open",
         "reason_code": "LINEAGE_RECOVERY_REQUIRED",
         "recurrence_count": 0,
         "resolved_at": null,
         "severity": "attention",
-        "source_revision": 1311,
+        "source_revision": 1312,
         "state": "active",
         "subject_artifact_id": "3d1c8ed6-028b-5ca1-9258-40c11bb5398e",
         "subject_visible_id": "IDEA-0003",
@@ -205508,13 +206245,13 @@
         "finding_key": "349db997bc6422a574c1cc339badd95ea2f36209ddc851f3d3bca42eba1b4876",
         "first_observed_at": "2026-09-05T14:04:16Z",
         "id": "1dc3a81f-cdb6-5059-ac92-641144645a99",
-        "last_observed_at": "2026-09-05T16:50:15Z",
+        "last_observed_at": "2026-09-05T16:56:59Z",
         "observed_state": "recursive-closure-open",
         "reason_code": "LINEAGE_RECOVERY_REQUIRED",
         "recurrence_count": 0,
         "resolved_at": null,
         "severity": "attention",
-        "source_revision": 1311,
+        "source_revision": 1312,
         "state": "active",
         "subject_artifact_id": "961fcaee-fd8d-4840-8fbf-8f6f8fcabbeb",
         "subject_visible_id": "MAP-0028",
@@ -205527,13 +206264,13 @@
         "finding_key": "6f8760fdb01f95bb1e4186dcb29363052c359fe221c741ef585f7941967d2dfc",
         "first_observed_at": "2026-09-05T14:04:16Z",
         "id": "248cf75d-2b8c-5755-88d5-94ef739fd111",
-        "last_observed_at": "2026-09-05T16:50:15Z",
+        "last_observed_at": "2026-09-05T16:56:59Z",
         "observed_state": "recursive-closure-open",
         "reason_code": "LINEAGE_RECOVERY_REQUIRED",
         "recurrence_count": 0,
         "resolved_at": null,
         "severity": "attention",
-        "source_revision": 1311,
+        "source_revision": 1312,
         "state": "active",
         "subject_artifact_id": "8dc477eb-6c26-48d1-9918-a55785cb4c32",
         "subject_visible_id": "CAMP-0157",
@@ -205679,13 +206416,13 @@
         "finding_key": "aca68a3aeb6911c860bf6879cc89ed491d0b62213dfb2e85ed40505e310bb0b8",
         "first_observed_at": "2026-09-05T14:04:16Z",
         "id": "398aec30-57c5-50eb-a2ce-712b47ab3e26",
-        "last_observed_at": "2026-09-05T16:50:15Z",
+        "last_observed_at": "2026-09-05T16:56:59Z",
         "observed_state": "recursive-closure-open",
         "reason_code": "LINEAGE_RECOVERY_REQUIRED",
         "recurrence_count": 0,
         "resolved_at": null,
         "severity": "attention",
-        "source_revision": 1311,
+        "source_revision": 1312,
         "state": "active",
         "subject_artifact_id": "62c8b1e9-282a-4e09-bd28-5a4627ad4d34",
         "subject_visible_id": "IDEA-0022",
@@ -205698,13 +206435,13 @@
         "finding_key": "4b2d6a5cf834670e39c64e31b725b0e30e8772b6c717cc657165ff390e01dcec",
         "first_observed_at": "2026-09-05T14:04:16Z",
         "id": "491b7265-5332-5e93-9246-716b5fdefe22",
-        "last_observed_at": "2026-09-05T16:50:15Z",
+        "last_observed_at": "2026-09-05T16:56:59Z",
         "observed_state": "recursive-closure-open",
         "reason_code": "LINEAGE_RECOVERY_REQUIRED",
         "recurrence_count": 0,
         "resolved_at": null,
         "severity": "attention",
-        "source_revision": 1311,
+        "source_revision": 1312,
         "state": "active",
         "subject_artifact_id": "3f09a414-2a7f-4f08-b5f7-bf00c6421301",
         "subject_visible_id": "CAMP-0156",
@@ -205850,13 +206587,13 @@
         "finding_key": "e638d65a5b59d086ba2cbae8b5fa37c643a9aa602a1d104b77858a8509d044c8",
         "first_observed_at": "2026-09-05T14:04:16Z",
         "id": "84a83856-bd18-5006-8b77-8e50dc8bae22",
-        "last_observed_at": "2026-09-05T16:50:15Z",
+        "last_observed_at": "2026-09-05T16:56:59Z",
         "observed_state": "recursive-closure-open",
         "reason_code": "LINEAGE_RECOVERY_REQUIRED",
         "recurrence_count": 0,
         "resolved_at": null,
         "severity": "attention",
-        "source_revision": 1311,
+        "source_revision": 1312,
         "state": "active",
         "subject_artifact_id": "3ff5c009-8bb9-4b1a-8e91-efa441da274c",
         "subject_visible_id": "PRM-0023",
@@ -205945,13 +206682,13 @@
         "finding_key": "50e7bb9e49cca246ba6e73519cd1ae41309b27e067d914ff96b88535b0526438",
         "first_observed_at": "2026-09-05T14:04:16Z",
         "id": "a3535dde-9184-5e6b-b139-7fe00a6c862d",
-        "last_observed_at": "2026-09-05T16:50:15Z",
+        "last_observed_at": "2026-09-05T16:56:59Z",
         "observed_state": "recursive-closure-open",
         "reason_code": "LINEAGE_RECOVERY_REQUIRED",
         "recurrence_count": 0,
         "resolved_at": null,
         "severity": "attention",
-        "source_revision": 1311,
+        "source_revision": 1312,
         "state": "active",
         "subject_artifact_id": "3b79775e-8045-41f3-ba3c-1e0908f2118e",
         "subject_visible_id": "IDEA-0008",
@@ -206002,13 +206739,13 @@
         "finding_key": "3c06f5f7fb4a69801e1a4d9eb3405821885f5a746713dd41a3b252fdb3e1c1b6",
         "first_observed_at": "2026-09-05T14:04:16Z",
         "id": "a8b5b4d9-9696-512d-90fe-ec2f22ac54c9",
-        "last_observed_at": "2026-09-05T16:50:15Z",
+        "last_observed_at": "2026-09-05T16:56:59Z",
         "observed_state": "recursive-closure-open",
         "reason_code": "LINEAGE_RECOVERY_REQUIRED",
         "recurrence_count": 0,
         "resolved_at": null,
         "severity": "attention",
-        "source_revision": 1311,
+        "source_revision": 1312,
         "state": "active",
         "subject_artifact_id": "fdeecdba-5e35-4ae3-adc7-0f3f694985e8",
         "subject_visible_id": "PRM-0003",
@@ -206040,13 +206777,13 @@
         "finding_key": "13b01c49004e8d46de312970ebd870de29bab751154b617a63c91d48c4c23dea",
         "first_observed_at": "2026-09-05T14:04:16Z",
         "id": "b0c45c1a-cd00-51a4-8028-a64135a921a1",
-        "last_observed_at": "2026-09-05T16:50:15Z",
+        "last_observed_at": "2026-09-05T16:56:59Z",
         "observed_state": "recursive-closure-open",
         "reason_code": "LINEAGE_RECOVERY_REQUIRED",
         "recurrence_count": 0,
         "resolved_at": null,
         "severity": "attention",
-        "source_revision": 1311,
+        "source_revision": 1312,
         "state": "active",
         "subject_artifact_id": "99ff5d99-3ae1-4de2-acbb-606357366844",
         "subject_visible_id": "CAMP-0118",
@@ -206116,13 +206853,13 @@
         "finding_key": "afbdf9365a8c66f399a61c49c284318eea9e81d625170910237d44630d258be5",
         "first_observed_at": "2026-09-05T14:04:16Z",
         "id": "bc050c56-3354-54f2-9a8d-dad3b72babb7",
-        "last_observed_at": "2026-09-05T16:50:15Z",
+        "last_observed_at": "2026-09-05T16:56:59Z",
         "observed_state": "recursive-closure-open",
         "reason_code": "LINEAGE_RECOVERY_REQUIRED",
         "recurrence_count": 0,
         "resolved_at": null,
         "severity": "attention",
-        "source_revision": 1311,
+        "source_revision": 1312,
         "state": "active",
         "subject_artifact_id": "2f6ddce8-4861-484f-925e-dd1ea68e8395",
         "subject_visible_id": "IDEA-0019",
@@ -206135,13 +206872,13 @@
         "finding_key": "25603abb60962fabbf245651b68d444ff4a4530b912b83786aeeb2803706578b",
         "first_observed_at": "2026-09-05T14:04:16Z",
         "id": "bef71c5c-8b98-5c48-acea-a1efcf225557",
-        "last_observed_at": "2026-09-05T16:50:15Z",
+        "last_observed_at": "2026-09-05T16:56:59Z",
         "observed_state": "recursive-closure-open",
         "reason_code": "LINEAGE_RECOVERY_REQUIRED",
         "recurrence_count": 0,
         "resolved_at": null,
         "severity": "attention",
-        "source_revision": 1311,
+        "source_revision": 1312,
         "state": "active",
         "subject_artifact_id": "42ffcb71-c934-4761-be19-93151e503766",
         "subject_visible_id": "CAMP-0155",
@@ -206154,13 +206891,13 @@
         "finding_key": "0e54480dc278448b7079c581a75d4a460bd6b43a04b6588ab0ebd2d3f3af2fdd",
         "first_observed_at": "2026-09-05T14:04:16Z",
         "id": "c0e22daa-9177-563e-9c8b-7ac8835a683f",
-        "last_observed_at": "2026-09-05T16:50:15Z",
+        "last_observed_at": "2026-09-05T16:56:59Z",
         "observed_state": "recursive-closure-open",
         "reason_code": "LINEAGE_RECOVERY_REQUIRED",
         "recurrence_count": 0,
         "resolved_at": null,
         "severity": "attention",
-        "source_revision": 1311,
+        "source_revision": 1312,
         "state": "active",
         "subject_artifact_id": "58ad29f0-dc11-42df-88de-adf7ca5fe9f1",
         "subject_visible_id": "CAMP-0122",
@@ -206230,13 +206967,13 @@
         "finding_key": "282542c55e73ead845a835cbababe18b7760137ebf23932c9bdd0575e6363dca",
         "first_observed_at": "2026-09-05T14:04:16Z",
         "id": "d536a2ef-6b96-5289-a9ec-7cec3db3dec9",
-        "last_observed_at": "2026-09-05T16:50:15Z",
+        "last_observed_at": "2026-09-05T16:56:59Z",
         "observed_state": "recursive-closure-open",
         "reason_code": "LINEAGE_RECOVERY_REQUIRED",
         "recurrence_count": 0,
         "resolved_at": null,
         "severity": "attention",
-        "source_revision": 1311,
+        "source_revision": 1312,
         "state": "active",
         "subject_artifact_id": "ee64e15a-5729-4788-86e9-a0acbc0f63d8",
         "subject_visible_id": "PRM-0039",
@@ -206287,13 +207024,13 @@
         "finding_key": "68f71fc4bf1d922689261cf5ade19240981fca59978f49458c24bf5ffcfc591b",
         "first_observed_at": "2026-09-05T14:04:16Z",
         "id": "d98eaf5e-6237-5e18-8088-1b2209d5fc9e",
-        "last_observed_at": "2026-09-05T16:50:15Z",
+        "last_observed_at": "2026-09-05T16:56:59Z",
         "observed_state": "recursive-closure-open",
         "reason_code": "LINEAGE_RECOVERY_REQUIRED",
         "recurrence_count": 0,
         "resolved_at": null,
         "severity": "attention",
-        "source_revision": 1311,
+        "source_revision": 1312,
         "state": "active",
         "subject_artifact_id": "c562503e-3f2f-498e-a556-27aa4f790f6d",
         "subject_visible_id": "IDEA-0001",
@@ -206306,13 +207043,13 @@
         "finding_key": "8249be7a05fc615953613a4dcd0c3d221bc9a363c75b3ae19966f50a3a5902a5",
         "first_observed_at": "2026-09-05T14:04:16Z",
         "id": "e3d93ade-86df-5895-82af-00e80e5b2a63",
-        "last_observed_at": "2026-09-05T16:50:15Z",
+        "last_observed_at": "2026-09-05T16:56:59Z",
         "observed_state": "recursive-closure-open",
         "reason_code": "LINEAGE_RECOVERY_REQUIRED",
         "recurrence_count": 0,
         "resolved_at": null,
         "severity": "attention",
-        "source_revision": 1311,
+        "source_revision": 1312,
         "state": "active",
         "subject_artifact_id": "596fc233-15b8-4a9c-95af-0822c89d2d7b",
         "subject_visible_id": "MAP-0012",
@@ -206382,13 +207119,13 @@
         "finding_key": "7189e0be61cfa743f679564ae553193d9f1d06489945b7f64b50af85daa751f5",
         "first_observed_at": "2026-09-05T14:04:16Z",
         "id": "f347c071-6cab-5933-8158-ce6a19b7b3f7",
-        "last_observed_at": "2026-09-05T16:50:15Z",
+        "last_observed_at": "2026-09-05T16:56:59Z",
         "observed_state": "recursive-closure-open",
         "reason_code": "LINEAGE_RECOVERY_REQUIRED",
         "recurrence_count": 0,
         "resolved_at": null,
         "severity": "attention",
-        "source_revision": 1311,
+        "source_revision": 1312,
         "state": "active",
         "subject_artifact_id": "f0750c67-0927-47f8-b3b2-baa03a8e8c39",
         "subject_visible_id": "MAP-0026",
@@ -206401,13 +207138,13 @@
         "finding_key": "17c07dfb95c363870b7952cadde9ee2e152baed7d569d5ecffd191f68eec8151",
         "first_observed_at": "2026-09-05T14:04:16Z",
         "id": "f520c3af-96e9-593a-9de6-1fd14f1ecb0a",
-        "last_observed_at": "2026-09-05T16:50:15Z",
+        "last_observed_at": "2026-09-05T16:56:59Z",
         "observed_state": "recursive-closure-open",
         "reason_code": "LINEAGE_RECOVERY_REQUIRED",
         "recurrence_count": 0,
         "resolved_at": null,
         "severity": "attention",
-        "source_revision": 1311,
+        "source_revision": 1312,
         "state": "active",
         "subject_artifact_id": "449bdacc-b9e0-4b6c-99a5-bee43f8ac37e",
         "subject_visible_id": "PRM-0037",
@@ -206439,13 +207176,13 @@
         "finding_key": "eeb8b56b8d13707908b60ef22365942db0d69be9504f6fe96e43ed10a9baeace",
         "first_observed_at": "2026-09-05T14:04:16Z",
         "id": "fe29b727-1c3d-5a08-af9b-e0abf24fc8cf",
-        "last_observed_at": "2026-09-05T16:50:15Z",
+        "last_observed_at": "2026-09-05T16:56:59Z",
         "observed_state": "recursive-closure-open",
         "reason_code": "LINEAGE_RECOVERY_REQUIRED",
         "recurrence_count": 0,
         "resolved_at": null,
         "severity": "attention",
-        "source_revision": 1311,
+        "source_revision": 1312,
         "state": "active",
         "subject_artifact_id": "2c8445d7-c4ea-41fd-abd8-276acfc45986",
         "subject_visible_id": "PRM-0005",
@@ -206457,9 +207194,9 @@
         "discovery_version": "loop-findings-v3",
         "id": 1,
         "last_source_digest": "2a9b597e83a16ab0f9454fc1bb64e0b29feb5db448b9aad658c5715d1b6f54e0",
-        "last_source_revision": 1311,
+        "last_source_revision": 1312,
         "schema_version": 2,
-        "updated_at": "2026-09-05T16:50:15Z"
+        "updated_at": "2026-09-05T16:56:59Z"
       }
     ],
     "managed_operation": [
@@ -220533,6 +221270,17 @@
         "status": "complete"
       },
       {
+        "actor": "release-cohort",
+        "actual_writes": 50,
+        "command": "register-work2-release-candidate",
+        "committed_at": "2026-09-05T16:56:59Z",
+        "expected_writes": null,
+        "id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "revision": 1312,
+        "started_at": "2026-09-05T16:56:56Z",
+        "status": "complete"
+      },
+      {
         "actor": "codex-reconciliation",
         "actual_writes": 1,
         "command": "document-relate",
@@ -221350,6 +222098,16 @@
         "id": "014c757e-36aa-4f32-a484-9698f1a3af31",
         "scope": "CAMP-0164",
         "summary": "Published v0.47.1 after exact-SHA 33-job CI, production-verified the web image and official Linux/Windows updater paths, restored and validated backup protection, and recorded all three production lanes."
+      },
+      {
+        "authorization_ref": "work2-release-cohort",
+        "cycle_id": "f41f9c30-96fa-42fa-a5dd-7226aebf8028",
+        "decided_at": "2026-09-05T16:56:56Z",
+        "decided_revision": 1312,
+        "disposition": "open",
+        "id": "01801c1c-015d-48c0-a615-0ec9b4082c67",
+        "scope": "direct-work",
+        "summary": "Release extension for terminal pre-cohort outcome d8d229e6-5952-4452-bdae-eed521848d7f."
       },
       {
         "authorization_ref": "ts:work5 user authorization; v0.38.1 verified",
@@ -223662,6 +224420,16 @@
         "summary": "The roadmap is approved; all milestone implementation, evidence, and reconciliation remain open."
       },
       {
+        "authorization_ref": "work2-release-cohort",
+        "cycle_id": "e6f49c50-12c5-4613-925f-d9336d5f32d5",
+        "decided_at": "2026-09-05T16:56:56Z",
+        "decided_revision": 1312,
+        "disposition": "open",
+        "id": "c12c75f2-9826-4636-a87c-50a21c3ecc14",
+        "scope": "release-cohort",
+        "summary": "Accumulated unreleased Work2 candidate cohort."
+      },
+      {
         "authorization_ref": "Owner request on 2026-08-29 to mitigate out-of-sync Tool Shed database information",
         "cycle_id": "c6ac2b2c-cafe-4bd9-a795-7821bc45a001",
         "decided_at": "2026-08-29T21:06:32Z",
@@ -224666,6 +225434,16 @@
         "verdict_id": "689121d3-fb79-4333-b293-18a6771bb78c"
       },
       {
+        "compared_at": "2026-09-05T16:56:56Z",
+        "cycle_id": "f41f9c30-96fa-42fa-a5dd-7226aebf8028",
+        "id": "26ffc2aa-e874-4bd2-a808-f657f7cd7c77",
+        "origin_revision": 1312,
+        "product_truth_ref": "[]",
+        "residual_work_json": "[]",
+        "state": "open",
+        "verdict_id": "01801c1c-015d-48c0-a615-0ec9b4082c67"
+      },
+      {
         "compared_at": "2026-08-30T20:59:09Z",
         "cycle_id": "cb99952a-8b27-42d6-9107-5f99531b3c9b",
         "id": "2757b475-219d-4f8a-8dbe-9ff4224555c7",
@@ -225324,6 +226102,16 @@
         "residual_work_json": "[]",
         "state": "open",
         "verdict_id": "8bc89655-f320-496b-b25d-9155a0830bf7"
+      },
+      {
+        "compared_at": "2026-09-05T16:56:56Z",
+        "cycle_id": "e6f49c50-12c5-4613-925f-d9336d5f32d5",
+        "id": "5b7d8768-20b1-4dc5-afc7-81f89b63465d",
+        "origin_revision": 1312,
+        "product_truth_ref": "[]",
+        "residual_work_json": "[]",
+        "state": "open",
+        "verdict_id": "c12c75f2-9826-4636-a87c-50a21c3ecc14"
       },
       {
         "compared_at": "2026-09-02T20:22:35Z",
@@ -228163,6 +228951,15 @@
         "relation_type": "release-candidate-member",
         "retired_revision": null,
         "to_artifact_id": "c8edafc9-2409-40f0-9d53-1e1d9b1fbedb"
+      },
+      {
+        "created_revision": 1312,
+        "from_artifact_id": "d8141ea4-0e4a-4629-bf5b-cd2e048d8bd7",
+        "id": "2d62000c-2e3a-4f5d-85d5-faa500b68b23",
+        "provenance": "release-cohort-v1",
+        "relation_type": "release-candidate-member",
+        "retired_revision": null,
+        "to_artifact_id": "e1d475e1-a772-4bae-9786-5a3fbe235b7a"
       },
       {
         "created_revision": 40,
@@ -231315,6 +232112,15 @@
         "to_artifact_id": "961fcaee-fd8d-4840-8fbf-8f6f8fcabbeb"
       },
       {
+        "created_revision": 1312,
+        "from_artifact_id": "d8141ea4-0e4a-4629-bf5b-cd2e048d8bd7",
+        "id": "bcc2f2dc-0f72-4248-b9a0-626c80929f5b",
+        "provenance": "release-cohort-v1",
+        "relation_type": "release-extension-of",
+        "retired_revision": null,
+        "to_artifact_id": "794047cf-e7fe-49b3-8695-18734761d44e"
+      },
+      {
         "created_revision": 859,
         "from_artifact_id": "9012bcee-b9fa-44ed-b8a0-771c60c19bf8",
         "id": "bce6b4c0-b735-43a5-97f1-1ff7cb145ee2",
@@ -234226,6 +235032,16 @@
         "id": "68f6a0e4-d911-5c8e-8a4f-ae0997d4f61d",
         "milestone_key": "work2:49cd25f60cfff45accef00843b964975c05ed60d",
         "origin_artifact_id": "3f09a414-2a7f-4f08-b5f7-bf00c6421301"
+      },
+      {
+        "accepted_outcome": "Production-release Work2 outcome: sqlite/outcome-capsules/d8141ea4-0e4a-4629-bf5b-cd2e048d8bd7",
+        "accepted_revision": 1312,
+        "cycle_id": "e6f49c50-12c5-4613-925f-d9336d5f32d5",
+        "disposition": "awaiting-release",
+        "evidence_gate_key": "work5-production-release",
+        "id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "milestone_key": "work2:4872bc86bb7ccca69e2cc04509ae3c0d03661dbc",
+        "origin_artifact_id": "d8141ea4-0e4a-4629-bf5b-cd2e048d8bd7"
       },
       {
         "accepted_outcome": "Production-release Work2 outcome: sqlite/documents/CAMP-0144",
@@ -237749,6 +238565,17 @@
         "table_name": "verification_result"
       },
       {
+        "id": "02ac1c4d-4e2f-43e9-9d85-4ba35b3c9324",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "01023f74e78c7655c836c57655a3e990cf6661e226bb16a5cbe913823a181666",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312,
+        "row_id": "f41f9c30-96fa-42fa-a5dd-7226aebf8028",
+        "table_name": "closure_element"
+      },
+      {
         "id": "02aee446-4f82-4b9b-b82d-44c5b9b3f065",
         "managed": 1,
         "operation": "insert",
@@ -238000,6 +238827,17 @@
         "revision": 1190,
         "row_id": "0902c7a1-18fb-561d-973d-437573ceb4aa",
         "table_name": "closure_ancestor_path"
+      },
+      {
+        "id": "030fd1fb-8a7c-4956-a53d-eea6d9474e5c",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "8979b68603733b35084420d67a5fb74840d2e32694f70f6277f5a96412be3350",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312,
+        "row_id": "a9c664c7-f832-4db2-8c7c-4470abb65ac1",
+        "table_name": "evidence_reference"
       },
       {
         "id": "0312e366-a063-48a5-ad0a-3afc349b0df2",
@@ -240576,6 +241414,17 @@
         "table_name": "requirement"
       },
       {
+        "id": "07f11f8f-d28f-4f79-a203-6ebe29efddc9",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "a36a2fa9bd94d007e59335e0242adbb716239c71155efab5047fa4d53a151add",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312,
+        "row_id": "f41f9c30-96fa-42fa-a5dd-7226aebf8028",
+        "table_name": "cycle"
+      },
+      {
         "id": "07f3bbf6-7db4-441c-a5e9-d5841258567e",
         "managed": 1,
         "operation": "update",
@@ -241971,6 +242820,17 @@
         "revision": 866,
         "row_id": "9d263bb4-8d10-4301-b52f-00663039a024",
         "table_name": "requirement"
+      },
+      {
+        "id": "0a43eaf1-94b9-43cf-8896-aeb5999aaae9",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "92a93dcf9c506f2b29490cf56b00ab5f9661ba3349847bec0195442ddc83648f",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312,
+        "row_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "table_name": "closure_element"
       },
       {
         "id": "0a48c2fe-dff8-4f0c-aa2f-6dd7b97581be",
@@ -244800,6 +245660,17 @@
         "table_name": "closure_ancestor_path"
       },
       {
+        "id": "0f2d4992-3a9c-46fd-b304-d14f28a7687c",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "ae1ea3885430f1cf6358a882ef8da8bc964b4c18839187836e74b6243d724952",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312,
+        "row_id": "c12c75f2-9826-4636-a87c-50a21c3ecc14",
+        "table_name": "outcome_verdict"
+      },
+      {
         "id": "0f2fec72-ef05-4b66-8a40-d093a34a553f",
         "managed": 1,
         "operation": "insert",
@@ -244963,6 +245834,17 @@
         "revision": 116,
         "row_id": "2920ec0b-56ec-4f24-a64e-6f35e0808661",
         "table_name": "document_revision"
+      },
+      {
+        "id": "0f888077-ddce-4cfe-ae67-29df9941e882",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "4c5aeb8c707eb7b01a6d6f7596152d30b94f0f26c7921eba9ae8be761b3516c7",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312,
+        "row_id": "2ac32c16-8ae4-5711-bd79-0d42c5b44448",
+        "table_name": "closure_blocker"
       },
       {
         "id": "0f88db51-271c-4d87-8564-66549403c918",
@@ -255151,6 +256033,17 @@
         "table_name": "outcome_verdict"
       },
       {
+        "id": "20963fc7-76be-4566-8561-21984b44826a",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "3c7aa20b1c5adf09fd1fc4698d0e18cf4cecabc9d7c88824a3fe215b903631c5",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312,
+        "row_id": "d536a2ef-6b96-5289-a9ec-7cec3db3dec9",
+        "table_name": "loop_finding"
+      },
+      {
         "id": "2096f9a0-8812-4597-af6a-c14b4c334253",
         "managed": 1,
         "operation": "insert",
@@ -255490,6 +256383,17 @@
         "revision": 1025,
         "row_id": "f0750c67-0927-47f8-b3b2-baa03a8e8c39",
         "table_name": "artifact"
+      },
+      {
+        "id": "215a8944-eeb2-499c-bd64-6b5c3126a031",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "03decc1f8bda13d8b7783a8e828509809ca7fba1ef2556da9d8d103e0c9cb3f5",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312,
+        "row_id": "40198521-5775-5583-9101-1307a15bf3cc",
+        "table_name": "verification_result"
       },
       {
         "id": "215df68f-0817-46bc-bb1c-54904172b659",
@@ -257943,6 +258847,17 @@
         "revision": 1238,
         "row_id": "2790d460-4b6b-598c-986a-30a85a7de270",
         "table_name": "closure_ancestor_path"
+      },
+      {
+        "id": "25b22066-5a12-4055-addd-a89af34f0c63",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "90cc4911c054836cb2e626bc660624f1ab819bf5a5bb86a911d6d952deb94d8a",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312,
+        "row_id": "6a201019-ca42-5fc0-87e5-701f1d8a4ce1",
+        "table_name": "closure_blocker"
       },
       {
         "id": "25b7648a-df1b-4e22-bf63-7be86da273d1",
@@ -262092,6 +263007,17 @@
         "table_name": "outcome_verdict"
       },
       {
+        "id": "2d856e0f-7282-4942-91bc-3a6882fe4117",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "ae403246645726985c5f78b10bb9d7439d02e70a97c4ae7bbf4599a4c1b82758",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312,
+        "row_id": "5b7d8768-20b1-4dc5-afc7-81f89b63465d",
+        "table_name": "reconciliation"
+      },
+      {
         "id": "2d8639db-bb47-4805-a8cb-8782bde29f42",
         "managed": 1,
         "operation": "insert",
@@ -263907,6 +264833,17 @@
         "table_name": "document_conversion"
       },
       {
+        "id": "30d667bc-cdcb-44a1-9364-dd2d3d9b1e8e",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "91a797373d789e24bbf8dbcdb098b558fc403c187695864f1e67cde3dfc942ce",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312,
+        "row_id": "ab5ef7fa-db85-547e-bc1e-de58ac0f87bd",
+        "table_name": "lineage_claim"
+      },
+      {
         "id": "30d9f212-07ea-4922-86e2-026d6cce0b29",
         "managed": 1,
         "operation": "delete",
@@ -265271,6 +266208,17 @@
         "table_name": "document_conversion"
       },
       {
+        "id": "336abecf-8993-456e-8502-268a3f3096f8",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "8955091a58deb8db9806e7b25791bd83f3e1cf99af47d324ff1091eaba66fa74",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312,
+        "row_id": "1",
+        "table_name": "loop_finding_meta"
+      },
+      {
         "id": "336fe302-2ed2-49a0-aeba-0a716bed46a7",
         "managed": 1,
         "operation": "insert",
@@ -266281,6 +267229,17 @@
         "revision": 1190,
         "row_id": "cb63c5df-fd35-4d2d-b828-d68cb5967d64",
         "table_name": "closure_element"
+      },
+      {
+        "id": "35448ba5-bdd4-4469-bb4d-caf247306c9a",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "526abf53f3c04a9d64c5ca633c3c31ee0a08f42c68db4d068cb056f93dc3f842",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312,
+        "row_id": "1",
+        "table_name": "closure_graph_meta"
       },
       {
         "id": "3549e00f-8edf-479c-a389-6703b68f99ef",
@@ -268912,6 +269871,17 @@
         "table_name": "closure_rollup"
       },
       {
+        "id": "39ca8fe4-9a53-4733-8b06-2a517b58a53b",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "2d82e70df4e1ab509cefbdcefa9702d66f711c67ede8432fd95d519794201a05",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312,
+        "row_id": "bef71c5c-8b98-5c48-acea-a1efcf225557",
+        "table_name": "loop_finding"
+      },
+      {
         "id": "39cc4017-3760-430c-a929-8767aa9a2a7f",
         "managed": 1,
         "operation": "insert",
@@ -269220,6 +270190,17 @@
         "table_name": "loop_finding"
       },
       {
+        "id": "3a42d6cc-5068-4333-8d00-35662822ec59",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "f82a3d35210120111a3d9930333c4c7de25f352bc723f3cf4ad22b7cb7bca647",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312,
+        "row_id": "bcc2f2dc-0f72-4248-b9a0-626c80929f5b",
+        "table_name": "relationship"
+      },
+      {
         "id": "3a47f11b-270c-4a95-b777-5962e2fc834f",
         "managed": 1,
         "operation": "insert",
@@ -269493,6 +270474,17 @@
         "revision": 794,
         "row_id": "8eed108d-3dc9-475a-b497-06cec0e5e186",
         "table_name": "relationship"
+      },
+      {
+        "id": "3ac19351-475b-481f-b463-f65cbaaff6f4",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "83ddfda35f0e05ea960129014a58ff65099c817df9e0401ac016e2652bc927da",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312,
+        "row_id": "27c9fa75-0341-5804-9c70-257dba3d642e",
+        "table_name": "closure_rollup"
       },
       {
         "id": "3ac2ea01-42ba-448c-9e17-71d18eb0d4d1",
@@ -270857,6 +271849,17 @@
         "revision": 1310,
         "row_id": "b5ecc990-6d1a-5740-bd29-145d82ccebeb",
         "table_name": "closure_blocker"
+      },
+      {
+        "id": "3cd5381c-ebe9-4024-8214-cafe4e25b478",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "f6dfe198e5564e3df91f076cb51945bd35136fd4af012584b2dc44ce3b196102",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312,
+        "row_id": "8fb886cf-407b-55cd-bab4-56bdc9ed7d54",
+        "table_name": "evidence_reference"
       },
       {
         "id": "3cd770e2-e48d-4c79-9c79-b1de950ba6cd",
@@ -275732,6 +276735,17 @@
         "table_name": "document"
       },
       {
+        "id": "44dc399c-5822-40dc-b2d2-2ae06a7d08a6",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "e46d6b0c811bbc6015458a9ba542bf7ace1d4a51a461afd52254b70c6bc1d7d1",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312,
+        "row_id": "92aabeb7-ea1c-5866-887c-4cf1ee3a64a7",
+        "table_name": "closure_blocker"
+      },
+      {
         "id": "44dcf2b3-ae7b-4749-b5c6-a32f76388cce",
         "managed": 1,
         "operation": "insert",
@@ -276236,6 +277250,17 @@
         "revision": 1258,
         "row_id": "0ea0aa8d-9fde-5617-a77b-e415efc159c3",
         "table_name": "closure_ancestor_path"
+      },
+      {
+        "id": "45941c67-5cf3-477e-bd66-37c1fa26922d",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "7e82a4ed234167788e9d49124370a8d7b84350afb187f8df178235e4f785ad36",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312,
+        "row_id": "f7b82ff2-0b84-5717-8f8f-bafd1118cee4",
+        "table_name": "closure_blocker"
       },
       {
         "id": "45941e5b-d3e1-4b33-ba8b-9d180bd2c62f",
@@ -277325,6 +278350,17 @@
         "revision": 1063,
         "row_id": "6d0d5887-49e6-4ea3-9bf8-ea58a78725e9",
         "table_name": "document_revision"
+      },
+      {
+        "id": "47e04b99-be6d-4be0-9ad5-fd78c2316bb7",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "849ee9bbf7d75b807e6954a01f85c6f669de86ddec0a7f53af671785ca3b3685",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312,
+        "row_id": "e3d93ade-86df-5895-82af-00e80e5b2a63",
+        "table_name": "loop_finding"
       },
       {
         "id": "47e2a446-b387-4f2b-8894-416865c9f059",
@@ -279118,6 +280154,17 @@
         "revision": 1297,
         "row_id": "f520c3af-96e9-593a-9de6-1fd14f1ecb0a",
         "table_name": "loop_finding"
+      },
+      {
+        "id": "4ac3cf67-0ae5-41a9-9026-400958cbc63a",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "fee1c6c3c8d8bac88c0b0c6660e4a687ebb5ca4e1694e10b172557c0731566a1",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312,
+        "row_id": "d8141ea4-0e4a-4629-bf5b-cd2e048d8bd7",
+        "table_name": "artifact"
       },
       {
         "id": "4ac5ce9c-322f-46e9-b856-5412903eb2cf",
@@ -281758,6 +282805,17 @@
         "revision": 1256,
         "row_id": "0cfd7a4e-a22d-5143-8edf-51a30b6f726c",
         "table_name": "closure_blocker"
+      },
+      {
+        "id": "4fc18289-75e2-4a7c-a234-ba8f5cef510a",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "d492e8d09d0525a8470796a8642f629de825d2754b848155c446fe27bf56b765",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312,
+        "row_id": "17f72599-907a-5523-b816-2948a5c5c84f",
+        "table_name": "loop_finding"
       },
       {
         "id": "4fc78526-bcc7-4a7a-8ab5-3ab584f4e881",
@@ -295884,6 +296942,17 @@
         "table_name": "outcome_verdict"
       },
       {
+        "id": "683dbfa5-f74b-4b01-b2eb-89b162dcf378",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "2b0a3b7dfe23f0ae96e62677f856b840002a08452a5873d9d91c067e22377e81",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312,
+        "row_id": "b0c45c1a-cd00-51a4-8028-a64135a921a1",
+        "table_name": "loop_finding"
+      },
+      {
         "id": "6843a8c8-d7b9-4c38-965f-a854d275104c",
         "managed": 1,
         "operation": "insert",
@@ -300009,6 +301078,17 @@
         "table_name": "closure_ancestor_path"
       },
       {
+        "id": "6ef4a4bb-5e62-42f9-b8f5-860d11f53a07",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "213588562999f3b12be4515eb363bc2a98fbb151d9bee1281d2c008efe96a854",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312,
+        "row_id": "491b7265-5332-5e93-9246-716b5fdefe22",
+        "table_name": "loop_finding"
+      },
+      {
         "id": "6ef4d799-f6e4-4015-8dc2-5dfbd780f8f4",
         "managed": 1,
         "operation": "insert",
@@ -302537,6 +303617,17 @@
         "revision": 945,
         "row_id": "a9cadac0-6700-4208-a02a-adf2ccd67a07",
         "table_name": "document_revision"
+      },
+      {
+        "id": "73416d45-2a0a-4b38-be80-6bda9ff3bece",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "4ab08ad66387f62609fb0460eeebc1a8ef7af397f7a36e3cf6834694a69b005b",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312,
+        "row_id": "01801c1c-015d-48c0-a615-0ec9b4082c67",
+        "table_name": "outcome_verdict"
       },
       {
         "id": "7347c2c2-0fef-45e5-9e4d-8443cbd8fe44",
@@ -309744,6 +310835,17 @@
         "table_name": "artifact"
       },
       {
+        "id": "7fd553bf-0d32-48bb-b419-1fe07b8f51f5",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "ac2433771e06f2d2f2635f6f71aab510340a8dbc34da6dac944cc1881011ca49",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312,
+        "row_id": "f520c3af-96e9-593a-9de6-1fd14f1ecb0a",
+        "table_name": "loop_finding"
+      },
+      {
         "id": "7fd5b4d3-c28b-4389-95d7-5be036ccb69f",
         "managed": 1,
         "operation": "update",
@@ -310215,6 +311317,17 @@
         "revision": 336,
         "row_id": "192606c8-a219-498e-8759-e3df355fddb7",
         "table_name": "document_revision"
+      },
+      {
+        "id": "80a9fc2b-6356-449f-9442-48290e52936a",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "91038e936021925e96f41d3693c9596f6c11ef8c5353df2dbc089493fb4f3166",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312,
+        "row_id": "6b0930e0-bcb4-4b85-917a-4354bb226f0d",
+        "table_name": "evidence_reference"
       },
       {
         "id": "80ac4871-9a2e-407d-ae7e-5aa4da46a733",
@@ -321327,6 +322440,17 @@
         "table_name": "loop_finding"
       },
       {
+        "id": "93d5838e-e5ab-4b3c-91dd-970620a75679",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "9fa591be75ea14198387089f26241cdb81ba3058a65aa9752028c0ee9170c40b",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312,
+        "row_id": "a3535dde-9184-5e6b-b139-7fe00a6c862d",
+        "table_name": "loop_finding"
+      },
+      {
         "id": "93d73a7a-7b88-49b4-ad76-bb5ce4304498",
         "managed": 1,
         "operation": "insert",
@@ -327190,6 +328314,17 @@
         "table_name": "closure_rollup"
       },
       {
+        "id": "9e02caa2-8a63-440d-830b-165dac4a63d7",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "d53633213b9c2738df756c95a48c3a5b752116c100510c409aba2624cb3a4fa3",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312,
+        "row_id": "f347c071-6cab-5933-8158-ce6a19b7b3f7",
+        "table_name": "loop_finding"
+      },
+      {
         "id": "9e0849f0-4fd4-4578-adf6-1d11b4f1169d",
         "managed": 1,
         "operation": "delete",
@@ -328408,6 +329543,17 @@
         "recorded_at": "2026-09-04T18:45:58Z",
         "revision": 1245,
         "row_id": "e688e3d4-af37-50e0-aa99-9af6f2e29e7e",
+        "table_name": "closure_blocker"
+      },
+      {
+        "id": "a072cd12-8b07-4e86-9609-8a9d58fd3cf8",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "8f4c03af71eb25862d2818ec38fbfa063590742dde9814c4bccb306da7e3a657",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312,
+        "row_id": "8a883e52-6880-577c-a91f-d6f579287417",
         "table_name": "closure_blocker"
       },
       {
@@ -330840,6 +331986,17 @@
         "revision": 1190,
         "row_id": "13370ab3-141f-5621-bc50-c9e6ac8c349c",
         "table_name": "lineage_claim"
+      },
+      {
+        "id": "a4cf1274-d1ff-4dc8-b39a-6bf7283d65d1",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "4d6f2685acc0e0c8bbc43cf573ab7b08610792a8b6b77199a31d217aa862b271",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312,
+        "row_id": "bc050c56-3354-54f2-9a8d-dad3b72babb7",
+        "table_name": "loop_finding"
       },
       {
         "id": "a4d93c3a-1d49-4833-b4e2-652976334c5a",
@@ -334384,6 +335541,17 @@
         "table_name": "closure_element"
       },
       {
+        "id": "ab597afd-9d3d-49d4-8cde-4b7f2f607074",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "fc03369db53950195b7fc1ea8d0a5293a61b8d2e9169f43161935c6a47c48a6f",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312,
+        "row_id": "c0e22daa-9177-563e-9c8b-7ac8835a683f",
+        "table_name": "loop_finding"
+      },
+      {
         "id": "ab5a58a4-ce10-444e-9981-c246b7e931ea",
         "managed": 1,
         "operation": "insert",
@@ -337836,6 +339004,17 @@
         "revision": 201,
         "row_id": "ac2ad05f-bb2c-46f6-b8d5-4a4b69176646",
         "table_name": "document_path_alias"
+      },
+      {
+        "id": "b0c7b336-f5b2-458d-8822-1c21859947af",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "a977e15a9158c946b15629179c31037d9ca648b3b54027cd0b9b8fddc0cd2a67",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312,
+        "row_id": "26ffc2aa-e874-4bd2-a808-f657f7cd7c77",
+        "table_name": "reconciliation"
       },
       {
         "id": "b0c8beb3-eb05-4c64-a8ae-db2861ca7c7f",
@@ -347188,6 +348367,17 @@
         "table_name": "verification_result"
       },
       {
+        "id": "c0165c00-a3cc-4073-9680-59cca4961c9d",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "661a383f0e72ad6ce11a9718a685cb7608d36df2dfda6db5af70ce8b40a64a0d",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312,
+        "row_id": "e6f49c50-12c5-4613-925f-d9336d5f32d5",
+        "table_name": "closure_element"
+      },
+      {
         "id": "c016feb0-1a5b-4db8-8eec-50ac4a28c214",
         "managed": 1,
         "operation": "insert",
@@ -347384,6 +348574,17 @@
         "revision": 707,
         "row_id": "83044daa-2a11-498f-83a6-5e115e896827",
         "table_name": "outcome_verdict"
+      },
+      {
+        "id": "c07540a1-f6c8-4162-9bc7-72f32d2e8c8c",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "ef730faaa341230f5535937098566d5efa684720b6b703ca42191e85b0ce92e3",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312,
+        "row_id": "d98eaf5e-6237-5e18-8088-1b2209d5fc9e",
+        "table_name": "loop_finding"
       },
       {
         "id": "c07adea4-afef-4f45-984e-6eb038b46b16",
@@ -348934,6 +350135,17 @@
         "recorded_at": "2026-09-04T15:06:03Z",
         "revision": 1190,
         "row_id": "68b6826c-737e-5407-82a0-97cf51c7c2da",
+        "table_name": "closure_blocker"
+      },
+      {
+        "id": "c330e91f-373f-4245-83d3-58c43acfe8bd",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "dd1ad017c2c9d9f76bb60e673369c913e8a8a5757b1cb9846eca3aa52171978b",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312,
+        "row_id": "413b6113-efee-5684-a159-f06986f61fda",
         "table_name": "closure_blocker"
       },
       {
@@ -351005,6 +352217,17 @@
         "table_name": "closure_ancestor_path"
       },
       {
+        "id": "c68e473b-4fcd-49a0-ba88-76d71b51fba6",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "fffffef7eb33f0386d12a6fd81f53179fb5bda571f64ea91660d2b0b5949149c",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312,
+        "row_id": "bea8784d-b8e0-5a3d-948c-f9bee696ff73",
+        "table_name": "closure_rollup"
+      },
+      {
         "id": "c69184f7-e48e-4c67-b04e-8f200c887a69",
         "managed": 1,
         "operation": "update",
@@ -351390,6 +352613,17 @@
         "table_name": "closure_blocker"
       },
       {
+        "id": "c73bd99c-095f-424c-bd02-5e6795a2d20a",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "189beda2667d58763bbefa8c675c870829472e63e25cf7df04462383c976c812",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312,
+        "row_id": "e6f49c50-12c5-4613-925f-d9336d5f32d5",
+        "table_name": "cycle"
+      },
+      {
         "id": "c73eea90-d495-4636-bf4d-8b8f059dcde3",
         "managed": 1,
         "operation": "delete",
@@ -351487,6 +352721,17 @@
         "revision": 1170,
         "row_id": "1f5c323f-794c-5da6-b203-5ea303296cea",
         "table_name": "verification_result"
+      },
+      {
+        "id": "c765360c-892b-4ff8-ad47-17473fc72ca7",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "a1c1333d5b576280155bb4b8c879bea752dee580e36d419539d55b9509727e84",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312,
+        "row_id": "fe29b727-1c3d-5a08-af9b-e0abf24fc8cf",
+        "table_name": "loop_finding"
       },
       {
         "id": "c77c2107-3df0-4093-9fc2-f18a7ba600a5",
@@ -359420,6 +360665,17 @@
         "table_name": "cycle"
       },
       {
+        "id": "d5c08b22-08db-403e-9316-a793cdac9df0",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "e5be84013800535042772a5997e81ded51697a86275c15686ce44f25b8d3ab29",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312,
+        "row_id": "e1d475e1-a772-4bae-9786-5a3fbe235b7a",
+        "table_name": "artifact"
+      },
+      {
         "id": "d5c7c0ce-73ef-4a73-91c4-e531e0270ac6",
         "managed": 1,
         "operation": "insert",
@@ -360353,6 +361609,17 @@
         "revision": 259,
         "row_id": "EVD",
         "table_name": "document_namespace"
+      },
+      {
+        "id": "d74c857e-ae6e-40c0-b731-211b26ae0253",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "d031cad12c9f42587d9c79dc4ae952332a747826d7a23bdc8028627ac4732434",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312,
+        "row_id": "06c9da55-ac79-521e-8a26-33d41d4be089",
+        "table_name": "closure_rollup"
       },
       {
         "id": "d74ed913-56e7-42a1-84c1-6c660d023b1b",
@@ -361356,6 +362623,17 @@
         "table_name": "loop_finding_meta"
       },
       {
+        "id": "d9046587-4bb5-45c9-8c8a-78b4c5d7860b",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "b43510bd4aab7f6df229a968465c5e6e0d94fe0e73887c4b3bf77d19d7b841d7",
+        "recorded_at": "2026-09-05T16:56:57Z",
+        "revision": 1312,
+        "row_id": "9426096d-1ac6-5e2f-9cc1-8d212fbacc60",
+        "table_name": "closure_ancestor_path"
+      },
+      {
         "id": "d90aa795-e21f-474b-9461-0468231047ea",
         "managed": 1,
         "operation": "insert",
@@ -361739,6 +363017,17 @@
         "revision": 1289,
         "row_id": "2e6e1825-8e40-5ff9-bbaa-53aa6561ebce",
         "table_name": "evidence_reference"
+      },
+      {
+        "id": "d9b35e01-eba6-4d04-9a91-96190851d8e1",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "aee3d2644fc40c34ec7a4baaee84eef023b069f82a9605642b35fda1ea0aa191",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312,
+        "row_id": "1dc3a81f-cdb6-5059-ac92-641144645a99",
+        "table_name": "loop_finding"
       },
       {
         "id": "d9b64fb2-cf80-434f-bc68-f36fbe1d1fd0",
@@ -363015,6 +364304,17 @@
         "revision": 1190,
         "row_id": "8a5d3f21-7c6c-585f-b3b0-c719c6eef92b",
         "table_name": "lineage_claim"
+      },
+      {
+        "id": "dbb5db79-0098-4b8f-bf93-7c78f32d00a1",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "6ec746279f7eafb4fc531b35dc83d409af46f9e4b1576a0624c49d67bd11d3d4",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312,
+        "row_id": "248cf75d-2b8c-5755-88d5-94ef739fd111",
+        "table_name": "loop_finding"
       },
       {
         "id": "dbc1eee7-5a0a-4cc4-8f66-d7a00728c54e",
@@ -365745,6 +367045,17 @@
         "table_name": "verification_result"
       },
       {
+        "id": "e0bfb676-1f3a-4da0-a1a1-bd1381f025a5",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "3f35563cbfe62ae0d063ce81dbcbcba8efca9ec3bb14c81c3b100b29518ce2db",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312,
+        "row_id": "2d62000c-2e3a-4f5d-85d5-faa500b68b23",
+        "table_name": "relationship"
+      },
+      {
         "id": "e0bff758-68a8-445f-b5aa-f65b07b172d0",
         "managed": 1,
         "operation": "insert",
@@ -366656,6 +367967,17 @@
         "revision": 319,
         "row_id": "3df1da19-cd19-455c-8e00-11163e2d9914",
         "table_name": "document_path_alias"
+      },
+      {
+        "id": "e2507f8a-beeb-4919-95e0-0fbd68417a44",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "39a43dcaef71423e1670ddcfce598506ac1726cce64e7b27a13e14f7a735a066",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312,
+        "row_id": "a8b5b4d9-9696-512d-90fe-ec2f22ac54c9",
+        "table_name": "loop_finding"
       },
       {
         "id": "e251bcbb-3c2b-43e1-a211-1cf41e783993",
@@ -369386,6 +370708,17 @@
         "table_name": "artifact"
       },
       {
+        "id": "e76bb32a-554f-43c6-a023-85863b13224a",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "0748944fda4f54e6dd964fa0cb76c152799f080678932c28e99a57efb76250e9",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312,
+        "row_id": "84a83856-bd18-5006-8b77-8e50dc8bae22",
+        "table_name": "loop_finding"
+      },
+      {
         "id": "e7794140-1fdd-46c3-90b4-afa5af27d111",
         "managed": 1,
         "operation": "update",
@@ -370099,6 +371432,17 @@
         "revision": 1231,
         "row_id": "77002c58-9b2f-4535-bb74-ee9fb8a044cb",
         "table_name": "cycle"
+      },
+      {
+        "id": "e902c51c-7148-419b-906b-bbd75a3eed50",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "a93f46046daa8526bec69837ca7b7e859a3aba859121e8211999efc468d59b49",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312,
+        "row_id": "0744948b-2374-5ad4-b6e8-20673c44b5be",
+        "table_name": "loop_finding"
       },
       {
         "id": "e90439b8-db3d-4d38-a7be-baf6923305f3",
@@ -371828,6 +373172,17 @@
         "table_name": "closure_record"
       },
       {
+        "id": "ec456767-f027-4b6c-8300-b451c7fb7359",
+        "managed": 1,
+        "operation": "update",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "2cf4e377b97ae105ec4e7904970418a97d571828bad1a2f392912e62920d1502",
+        "recorded_at": "2026-09-05T16:56:59Z",
+        "revision": 1312,
+        "row_id": "398aec30-57c5-50eb-a2ce-712b47ab3e26",
+        "table_name": "loop_finding"
+      },
+      {
         "id": "ec45b6c6-3493-4103-b7a2-e672a856db34",
         "managed": 1,
         "operation": "insert",
@@ -371958,6 +373313,17 @@
         "revision": 1138,
         "row_id": "2a4cbae3-769c-43a6-85ab-2fc1709881eb",
         "table_name": "relationship"
+      },
+      {
+        "id": "ec889758-6962-495f-b493-c2d879a18863",
+        "managed": 1,
+        "operation": "insert",
+        "operation_id": "fa4c0d39-8261-44d1-9398-e1d19c537b27",
+        "payload_digest": "4d48ffc33e7fd1608c23bedac249927d551dc02a90737bfeeb6f1185c2b38dcc",
+        "recorded_at": "2026-09-05T16:56:56Z",
+        "revision": 1312,
+        "row_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "table_name": "requirement"
       },
       {
         "id": "ec8ed856-0c94-4f8e-8510-1542b22cc247",
@@ -383927,6 +385293,16 @@
         "source_revision": 1,
         "status": "pending",
         "verified_at": "2026-08-28T17:38:29Z"
+      },
+      {
+        "command_or_test_id": "work2-checkpoint",
+        "details_json": "{\"commit\": \"4872bc86bb7ccca69e2cc04509ae3c0d03661dbc\", \"work_level\": \"work2\"}",
+        "evidence_id": "8fb886cf-407b-55cd-bab4-56bdc9ed7d54",
+        "id": "40198521-5775-5583-9101-1307a15bf3cc",
+        "requirement_id": "69ae306b-268c-5b42-ae37-3a76a806cd20",
+        "source_revision": 1312,
+        "status": "passed",
+        "verified_at": "2026-09-05T16:56:56Z"
       },
       {
         "command_or_test_id": "work2-checkpoint",
