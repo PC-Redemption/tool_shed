@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-production-release-evidence",
+  "release": {
+    "version": "0.47.3",
+    "tag": "v0.47.3",
+    "content_commit": "2882cef5903a91fe2dff09b809a239258cdaae3b",
+    "provenance_commit": "69862e30d0acea77ed6b6c0805cc839767ac00c6",
+    "url": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.47.3"
+  },
+  "qualification": {
+    "local_full_validation": "586 of 586 tests passed",
+    "validate_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/33983993814",
+    "validate_jobs": 33,
+    "publish_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/33984269785",
+    "result": "passed"
+  },
+  "web_production": {
+    "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com",
+    "image": "tool-shed-dashboard:v0.47.3",
+    "image_sha256": "f7ab56d9cbf0b950f6205ea69567ca25b512f824d2d103307f83a0ee96f0a4af",
+    "readiness": "healthy",
+    "public_root_status": 200,
+    "public_dashboard_status": 302,
+    "local_health_status": 200,
+    "router": "ts.rookaro.com",
+    "pre_deploy_backup": "dashboard-daily-20260905T183103Z.dump.age",
+    "post_deploy_backup": "dashboard-daily-20260905T183506Z.dump.age",
+    "rollback_bundle": "release-backups/pre-v0.47.3-20260905T1831Z",
+    "staging_bundle": "release-backups/staged-v0.47.3-20260905T1831Z"
+  },
+  "hosted_reconciliation": {
+    "reporter_instance_id": "bed3b71a-7784-43aa-a420-0f4bfac66c44",
+    "reporter_sequence": 10186,
+    "reporter_pending_events": 0,
+    "client_version": "0.47.3",
+    "project_attention_state": "healthy",
+    "active_attention_conditions": 0,
+    "active_loop_findings": 0,
+    "closure_debt": 0,
+    "unreconciled_outcomes": 0,
+    "result": "passed"
+  },
+  "installed_codex_client": {
+    "source": "/home/jon/docker/tool_shed/skills/tool-shed",
+    "target": "/home/jon/.codex/skills/tool-shed",
+    "backup": "/home/jon/.codex/skills/tool-shed.backup-20260905T1833Z",
+    "source_validation": "passed",
+    "staged_validation": "passed",
+    "installed_validation": "passed",
+    "exact_diff": "empty"
+  },
+  "linux_production": {
+    "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed",
+    "installed_version": "0.47.3",
+    "validation_mode": "attested-focused-smoke",
+    "transaction_id": "7206d815ed152d1d302e5a9d",
+    "work_preserved": true,
+    "hybrid_state_preserved": true
+  },
+  "windows_production": {
+    "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed",
+    "installed_version": "0.47.3",
+    "validation_mode": "attested-focused-smoke",
+    "transaction_id": "2e514d60fef0d829c2b4a400",
+    "work_preserved": true,
+    "hybrid_state_preserved": true
+  },
+  "result": "passed"
+}

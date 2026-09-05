@@ -1,6 +1,23 @@
 {
   "artifacts": [
     {
+      "campaign": null,
+      "campaign_reason": null,
+      "canonical_truth": null,
+      "disposition": null,
+      "next_action": null,
+      "parent": null,
+      "path": "work/evidence/closure-red-dot-recovery-v0473.md",
+      "produces": null,
+      "project_map": null,
+      "status": null,
+      "superseded_by": null,
+      "supersedes": null,
+      "title": "Closure red-dot recovery evidence",
+      "type": null,
+      "updated": null
+    },
+    {
       "campaign": "`CAMP-0150`",
       "campaign_reason": null,
       "canonical_truth": null,
@@ -337,6 +354,6 @@
   "summary": {
     "active_artifacts": 0,
     "completed_or_decided_artifacts": 1,
-    "total_artifacts": 18
+    "total_artifacts": 19
   }
 }

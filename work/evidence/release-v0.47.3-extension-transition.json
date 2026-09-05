@@ -1,0 +1,32 @@
+{
+  "closed_at": "2026-09-05T18:38:53Z",
+  "cycle_id": "c36e5aed-ab29-4668-a278-52d59d69ae2f",
+  "expected_domain_digest": "447c4913f5287b547f28ff6517a7fa658e15e0437fc29c1da8511ec53337a61a",
+  "expected_revision": 1324,
+  "kind": "tool-shed-outcome-transition-manifest",
+  "lifecycle_state": "terminal",
+  "manifest_token": "5df72882e82c2714",
+  "origin_artifact_id": "134b030a-0815-40f2-a228-7f35d31f1c87",
+  "parent_result": null,
+  "prepared_at": "2026-09-05T18:38:53Z",
+  "project_id": "817b6358-b2f5-48fd-bb66-bd80f936faca",
+  "reconciliation": {
+    "compared_at": "2026-09-05T18:38:53Z",
+    "id": "fb65f978-797d-40ef-a6ca-70e09e22fc9a",
+    "product_truth_ref": "[]",
+    "residual_work": [],
+    "state": "reconciled"
+  },
+  "schema_version": 1,
+  "supporting_cycle_ids": [
+    "b6e7249d-4dd4-45b3-a966-8b07756c6322"
+  ],
+  "verdict": {
+    "authorization_ref": "work/evidence/release-v0.47.3-production.json",
+    "decided_at": "2026-09-05T18:38:53Z",
+    "disposition": "satisfied",
+    "id": "fb2e1a4f-c10a-40c9-8f85-7e432b215c71",
+    "scope": "initiative",
+    "summary": "v0.47.3 release-extension obligation is satisfied by production publication, deployment, updater qualification, and hosted project-level healthy status."
+  }
+}

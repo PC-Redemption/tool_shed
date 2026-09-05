@@ -10,6 +10,7 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 
 | Artifact | Type | Status | Updated | Next Action | Parent / Canonical Truth |
 | --- | --- | --- | --- | --- | --- |
+| [work/evidence/closure-red-dot-recovery-v0473.md](work/evidence/closure-red-dot-recovery-v0473.md) | - | - | - | - | - |
 | [work/evidence/evidence-lifecycle-qualification-m1.md](work/evidence/evidence-lifecycle-qualification-m1.md) | - | passed | - | - | - |
 | [work/evidence/evidence-lifecycle-qualification-m2.md](work/evidence/evidence-lifecycle-qualification-m2.md) | - | passed | - | - | - |
 | [work/evidence/evidence-lifecycle-qualification-m3.md](work/evidence/evidence-lifecycle-qualification-m3.md) | - | passed | - | - | - |
@@ -37,6 +38,6 @@ Lifecycle status in this index is file-authoritative. Outcome verdict and reconc
 
 ## Summary
 
-- Total artifacts: 18
+- Total artifacts: 19
 - Active artifacts: 0
 - Completed/decided artifacts: 1

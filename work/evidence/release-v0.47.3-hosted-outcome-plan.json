@@ -1,0 +1,124 @@
+{
+  "ambiguities": [],
+  "artifacts": [
+    {
+      "action": "create",
+      "authority_mode": "sqlite",
+      "content_sha256": "9e67fe6f8ad8ba6e0eb7b279781e146fa98f0c45d5964ed243bfa23251b8fd73",
+      "created_at": "2026-09-05T18:37:57Z",
+      "display_number": null,
+      "id": "02af547b-38f5-43be-8ce0-a25d1ac7efb5",
+      "key": "origin",
+      "lifecycle_state": "terminal",
+      "path": "sqlite/outcome-capsules/02af547b-38f5-43be-8ce0-a25d1ac7efb5",
+      "type": "direct-capsule"
+    },
+    {
+      "action": "create",
+      "authority_mode": "file",
+      "content_sha256": "b964c4cb7ec3d38ac41f2a9d15bb3b1bd94277d2afce12279a152c22f8ae3a0d",
+      "created_at": "2026-09-05T18:37:57Z",
+      "display_number": null,
+      "id": "3950d718-ea68-428f-9fda-71f724131a62",
+      "key": "product-1",
+      "lifecycle_state": "active",
+      "path": "work/evidence/release-v0.47.3-production.json",
+      "type": "file"
+    }
+  ],
+  "authorization_ref": "Owner-directed end-to-end Tool Shed PRM execution on 2026-09-05",
+  "changes": [],
+  "cycle": {
+    "accepted_outcome": "Verify v0.47.3 publication, deployment, client updates, and hosted tool_shed project-level health after historical closure reconciliation.",
+    "closed_at": "2026-09-05T18:37:57Z",
+    "id": "b6e7249d-4dd4-45b3-a966-8b07756c6322",
+    "kind": "direct-work",
+    "lifecycle_state": "terminal",
+    "opened_at": "2026-09-05T18:37:57Z",
+    "origin_artifact_id": "02af547b-38f5-43be-8ce0-a25d1ac7efb5"
+  },
+  "evidence": [
+    {
+      "collected_at": "2026-09-05T18:37:57Z",
+      "id": "9bf9e9c0-1cac-40b8-9c1b-3f99cd6572d9",
+      "key": "evidence-1",
+      "kind": "direct-verification",
+      "reference": "work/evidence/release-v0.47.3-production.json",
+      "sha256": "b964c4cb7ec3d38ac41f2a9d15bb3b1bd94277d2afce12279a152c22f8ae3a0d",
+      "target_identity": "02af547b-38f5-43be-8ce0-a25d1ac7efb5"
+    }
+  ],
+  "expected_domain_digest": "ece12d200f2513c7892cf6379c9e77506c0b30483efc4093149bbc570be82f8b",
+  "expected_revision": 1323,
+  "kind": "tool-shed-outcome-reconciliation-manifest",
+  "manifest_token": "ce767548bdfd1cdd",
+  "mode": "direct",
+  "prepared_at": "2026-09-05T18:37:57Z",
+  "project_id": "817b6358-b2f5-48fd-bb66-bd80f936faca",
+  "reconciliation": {
+    "compared_at": "2026-09-05T18:37:57Z",
+    "id": "0be548a0-08ce-4738-8f16-bce4e841d437",
+    "product_truth_artifact_ids": [
+      "3950d718-ea68-428f-9fda-71f724131a62"
+    ],
+    "residual_work": [],
+    "state": "reconciled"
+  },
+  "relationships": [
+    {
+      "from_artifact_id": "02af547b-38f5-43be-8ce0-a25d1ac7efb5",
+      "id": "9a2a8d8a-8300-4a8b-87bd-feacc1d892b3",
+      "key": "product-1",
+      "provenance": "outcome-reconciliation-v1",
+      "relation_type": "evidenced-by",
+      "to_artifact_id": "3950d718-ea68-428f-9fda-71f724131a62"
+    },
+    {
+      "from_artifact_id": "02af547b-38f5-43be-8ce0-a25d1ac7efb5",
+      "id": "21f3cf8a-f3fc-4b42-aea3-d165d3ebb1ca",
+      "key": "outcome-parent",
+      "provenance": "outcome-reconciliation-v1",
+      "relation_type": "outcome-parent",
+      "to_artifact_id": "134b030a-0815-40f2-a228-7f35d31f1c87"
+    },
+    {
+      "from_artifact_id": "02af547b-38f5-43be-8ce0-a25d1ac7efb5",
+      "id": "aa67b906-2d64-4c00-b7e0-2843cbde7c40",
+      "key": "outcome-result-propagated",
+      "provenance": "outcome-reconciliation-v1",
+      "relation_type": "outcome-result-propagated",
+      "to_artifact_id": "134b030a-0815-40f2-a228-7f35d31f1c87"
+    }
+  ],
+  "requirements": [
+    {
+      "accepted_outcome": "Verify v0.47.3 publication, deployment, client updates, and hosted tool_shed project-level health after historical closure reconciliation.",
+      "disposition": "accepted",
+      "evidence_gate_key": "direct-evidence",
+      "id": "2d3d2a9d-7107-4f5c-9e0c-6ad9d492716b",
+      "key": "direct-outcome",
+      "milestone_key": "direct"
+    }
+  ],
+  "schema_version": 1,
+  "verdict": {
+    "authorization_ref": "Owner-directed end-to-end Tool Shed PRM execution on 2026-09-05",
+    "decided_at": "2026-09-05T18:37:57Z",
+    "disposition": "satisfied",
+    "id": "467b9253-4e45-4f24-8b2e-43efd51646b0",
+    "scope": "direct-work",
+    "summary": "v0.47.3 production closure red-dot verification"
+  },
+  "verifications": [
+    {
+      "command_or_test_id": "direct-evidence-1",
+      "details": null,
+      "evidence_key": "evidence-1",
+      "id": "1c4ea421-1cf0-4889-9a65-4e63e078966a",
+      "key": "verification-1",
+      "requirement_key": "direct-outcome",
+      "status": "passed",
+      "verified_at": "2026-09-05T18:37:57Z"
+    }
+  ]
+}

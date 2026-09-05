@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-hosted-final-verification",
+  "observed_at": "2026-09-05T18:41:28Z",
+  "release": {
+    "tag": "v0.47.3",
+    "dashboard_image": "tool-shed-dashboard:v0.47.3",
+    "dashboard_container_state": "running",
+    "dashboard_container_health": "healthy",
+    "public_healthz": "healthy"
+  },
+  "local_authority": {
+    "revision": 1326,
+    "checkpoint_revision": 1326,
+    "document_audit": "CLEAN",
+    "outcome_open_count": 0,
+    "terminal_unreconciled_count": 0,
+    "unpropagated_outcome_count": 0,
+    "invalid_outcome_count": 0,
+    "active_release_cohort_count": 0,
+    "active_loop_finding_count": 0,
+    "closure_graph_finding_count": 0
+  },
+  "reporter": {
+    "instance_id": "bed3b71a-7784-43aa-a420-0f4bfac66c44",
+    "connection": "connected",
+    "delivered_sequence": 10189,
+    "pending_event_count": 0
+  },
+  "hosted_project": {
+    "name": "tool_shed",
+    "attention_state": "healthy",
+    "client_version": "0.47.3",
+    "instance_sequence": 10189,
+    "working_count": 0,
+    "queued_count": 0,
+    "blocked_count": 0,
+    "open_outcome_count": 0,
+    "unreconciled_outcome_count": 0,
+    "active_loop_finding_count": 0,
+    "closure_debt_count": 0,
+    "active_attention_condition_count": 0,
+    "active_loop_row_count": 0,
+    "active_idea_count": 1,
+    "active_idea_note": "IDEA-0021 remains intentionally active and is not an attention condition."
+  },
+  "result": "passed"
+}
