@@ -1,0 +1,68 @@
+# Project Map: Enforced App Server Dispatch and Closure
+
+Status: active
+Type: project-map
+Updated: 2026-09-05
+Next Action: execute the two-milestone corrective PRM
+Corrective Source: PRM-0026
+
+## Purpose
+
+Close the enforcement gap that allowed eligible Tool Shed work to select App Server, record only
+an opportunity event, continue through GUI execution, and still reach campaign or PRM completion.
+
+## Desired Outcome
+
+Every eligible App Server selection belongs to one correlated dispatch lifecycle that reaches one
+controlled terminal result: completed, pre-mutation GUI fallback, or post-mutation reconciliation
+required. An orphaned or expired selection is visible immediately and prevents applicable campaign,
+PRM, and Work5 completion until resolved. GUI-native and unsupported work remain explicitly exempt.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Atomic dispatch | Selection and execution use one entry point, correlation identity, and bounded lease | existing selector, dispatcher, and JSONL events |
+| Closure enforcement | Reports, Doctor, and closeout reject unresolved eligible dispatches | atomic dispatch |
+| Qualification and release | Fresh, fallback, interruption, bypass, upgrade, and real-use paths are proven end to end | both implementation workstreams |
+
+## Evidence Driving The Correction
+
+- The 2026-09-05 owner session recorded an eligible App Server selection but no execution attempt,
+  completion, fallback, or reconciliation terminal event.
+- The selector and dispatcher mint independent correlation IDs and can be invoked separately.
+- Existing campaign, PRM, and release closeout did not reject that orphaned selection.
+- A later planning attempt correctly selected App Server but exceeded the 100 KB inline-context
+  boundary before mutation, demonstrating the controlled pre-mutation fallback case this correction
+  must preserve.
+
+## Constraints
+
+- Reuse `app_server_control.py`, `app_server_dispatch.py`, orchestration telemetry, Doctor, Hybrid
+  outcome reconciliation, and existing closeout gates.
+- Keep telemetry content-free and privacy bounded; never retain prompts, responses, paths, source,
+  raw diagnostics, credentials, or secrets.
+- Preserve immediate GUI continuation for recorded default-mode failures before mutation.
+- Preserve fail-closed explicit `--app-server` behavior and no-replay reconciliation after possible
+  mutation.
+- Keep discussion, brainstorming, unsupported roles, and other declared GUI-native work exempt.
+
+## Non-Goals
+
+- A new service, database, queue, daemon, or hosted execution channel.
+- Removing safe GUI fallback or forcing App Server onto unsupported work.
+- Retrospective estimation of unavailable GUI token usage.
+- Reopening completed historical outcomes solely because older telemetry lacks the new contract.
+
+## Program Shape
+
+1. Build atomic correlated dispatch and terminal-event accounting as a Work2 candidate.
+2. Enforce the invariant at reporting and closure boundaries, qualify it on supported targets, and
+   release only after one real eligible operation proves the full chain.
+
+## Completion Boundary
+
+The correction is complete only when a real eligible selection cannot be silently bypassed, every
+allowed terminal branch is proven, unresolved dispatch debt blocks applicable closeout, supported
+fresh and upgraded installations pass, production is verified, and this owning outcome chain is
+terminal, reconciled, and recursively closed.
