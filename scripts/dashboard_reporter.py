@@ -377,15 +377,13 @@ def _dashboard_state(workspace: Path) -> dict[str, Any]:
                 "WHERE r.cycle_id = c.id ORDER BY r.compared_at DESC, r.id DESC LIMIT 1), 'open') <> 'reconciled')"
             ).fetchone()[0]
         )
-        has_closure = bool(connection.execute(
-            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='closure_rollup'"
-        ).fetchone())
-        closure_debt = int(connection.execute(
-            "SELECT COUNT(DISTINCT d.id) FROM document d JOIN cycle c ON c.origin_artifact_id=d.id "
-            "JOIN closure_element ce ON ce.cycle_id=c.id AND ce.role='cycle' "
-            "JOIN closure_rollup cr ON cr.element_id=ce.id WHERE c.lifecycle_state='terminal' "
-            "AND cr.effective_closed=0"
-        ).fetchone()[0]) if has_documents and has_closure else 0
+        closure_debt = sum(
+            item["code"] in {
+                "TERMINAL_DOCUMENT_DESCENDANTS_OPEN",
+                "COMPLETED_DOCUMENT_CLOSURE_OPEN",
+            }
+            for item in document_store._semantic_document_findings(connection)
+        ) if has_documents else 0
     finding_count = loop_findings.report_projection(workspace)["total_active_count"]
     return {
         "working_count": working_campaigns,

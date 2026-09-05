@@ -171,7 +171,7 @@
     "scripts/complete_workpackage.py": "a74d1fac326d2ba3813bf00270afe698a3d276ba62f7b53067761f2892c7a0fb",
     "scripts/completion_watcher.py": "d94ba056b5628a477028c8568e284da95bd78466d3839b5e126a89163d16d7a3",
     "scripts/dashboard_browser_probe.js": "a7181e0635f4dcbe89fe097ded3e8dd7c191f3cae3ead1406c1a0172b8da318f",
-    "scripts/dashboard_reporter.py": "b99d27b9a0059183c82253bad976cc2ce0a18c79731d24ea90a00ec641c1844e",
+    "scripts/dashboard_reporter.py": "d68043a04aff1bcae6742d870839bd81698f9b59daf43415c1c7ea2791365a30",
     "scripts/development_site.py": "9e33d7d57f3f42a8995b656ffa69fe9bc98f743b697faff6190668276c20542a",
     "scripts/doctor.py": "c02f9006ebfdc394e79537da7ade8b9cef4c2ffb918d16632edfdc2103d93b14",
     "scripts/document_contract.py": "2b540582141065b7e7c84294142a15ddf01f255a58f844e08abaf9634b30d411",
