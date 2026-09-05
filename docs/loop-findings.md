@@ -72,9 +72,9 @@ managed-document revisions:
 ```bash
 python3 scripts/loop_findings.py --workspace . audit --history --source IDEA-0001
 python3 scripts/loop_findings.py --workspace . history-plan \
-  --decision LOOP-ABC123DEF456=apply-expected-state \
+  --all-current \
   --rationale "The terminal reconciled outcome proves the promoted Idea is complete." \
-  --complete-cluster
+  --complete-cluster --output work/evidence/lifecycle-history-review.json
 python3 scripts/loop_findings.py --workspace . history-validate \
   --manifest <review-manifest.json>
 python3 scripts/loop_findings.py --workspace . history-apply \
@@ -90,3 +90,7 @@ Open-descendant and completed-but-open closure debt is retained for descendant r
 Any intervening database,
 finding, document-revision, project, digest, or cluster change makes the manifest stale. The normal
 managed-write refresh then re-audits findings, propagation/lineage authority, and checkpoint need.
+`--all-current` is the bounded cleanup utility: it selects `apply-expected-state` only for the safe
+classes above, selects `retain-open` for recursive closure debt, and routes every other finding to
+`requires-evidence`. It never writes until the manifest is separately validated and applied with
+an exact token, project binding, and authorization reference.

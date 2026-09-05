@@ -178,6 +178,10 @@ class LoopFindingTests(unittest.TestCase):
         )
         self.assertEqual(selected["selected_count"], 1)
         self.assertEqual(selected["findings"][0]["finding_id"], finding["finding_id"])
+        self.assertIn(
+            f"{finding['finding_id']}=apply-expected-state",
+            loop_findings.default_history_decisions(self.workspace),
+        )
 
         first = loop_findings.history_review_plan(
             self.workspace,
@@ -268,6 +272,10 @@ class LoopFindingTests(unittest.TestCase):
         )
         self.assertEqual(finding["reason_code"], "LINEAGE_RECOVERY_REQUIRED")
         self.assertEqual(finding["expected_state"], "retain-open-until-recursively-closed")
+        self.assertIn(
+            f"{finding['finding_id']}=retain-open",
+            loop_findings.default_history_decisions(self.workspace),
+        )
         with self.assertRaisesRegex(loop_findings.LoopFindingError, "does not support"):
             loop_findings.history_review_plan(
                 self.workspace,

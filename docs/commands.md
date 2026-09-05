@@ -313,7 +313,8 @@ python3 scripts/loop_findings.py --workspace . audit
 python3 scripts/loop_findings.py --workspace . audit --history [--source <selector>]
 python3 scripts/loop_findings.py --workspace . resolve <LOOP-id>
 python3 scripts/loop_findings.py --workspace . history-plan \
-  --decision <LOOP-id>=<decision> --rationale <review-rationale> [--complete-cluster]
+  (--decision <LOOP-id>=<decision> | --all-current) --rationale <review-rationale> \
+  [--complete-cluster] [--output <manifest.json>]
 python3 scripts/loop_findings.py --workspace . history-validate --manifest <manifest.json>
 python3 scripts/loop_findings.py --workspace . history-apply \
   --manifest <manifest.json> --expect <manifest-token> \

@@ -608,6 +608,32 @@ def history_review_plan(
     return payload
 
 
+def default_history_decisions(workspace: Path) -> list[str]:
+    """Classify every current finding without inferring recursive closure or evidence."""
+    result = audit(resolved_workspace(workspace))
+    decisions: list[str] = []
+    for finding in result["findings"]:
+        if finding["state"] != "active":
+            continue
+        if (
+            finding["reason_code"] == "PROMOTED_IDEA_LIFECYCLE_STALE"
+            and (
+                finding["expected_state"] in document_store.LIFECYCLES
+                or str(finding["expected_state"]).startswith("body-status:")
+            )
+        ):
+            decision = "apply-expected-state"
+        elif (
+            finding["reason_code"] == "LINEAGE_RECOVERY_REQUIRED"
+            and finding["observed_state"] == "recursive-closure-open"
+        ):
+            decision = "retain-open"
+        else:
+            decision = "requires-evidence"
+        decisions.append(f"{finding['finding_id']}={decision}")
+    return decisions
+
+
 def load_history_review_manifest(workspace: Path, supplied: Path) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
     path = require_path_within(
@@ -1028,7 +1054,8 @@ def build_parser() -> argparse.ArgumentParser:
     resolve_parser = commands.add_parser("resolve")
     resolve_parser.add_argument("finding_id")
     plan_parser = commands.add_parser("history-plan")
-    plan_parser.add_argument("--decision", action="append", required=True)
+    plan_parser.add_argument("--decision", action="append", default=[])
+    plan_parser.add_argument("--all-current", action="store_true")
     plan_parser.add_argument("--rationale", required=True)
     plan_parser.add_argument("--complete-cluster", action="store_true")
     plan_parser.add_argument("--output")
@@ -1057,9 +1084,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif args.command == "resolve":
             result = resolve(workspace, args.finding_id)
         elif args.command == "history-plan":
+            if args.all_current and args.decision:
+                raise LoopFindingError("history plan accepts --all-current or explicit decisions, not both")
+            decisions = default_history_decisions(workspace) if args.all_current else args.decision
             result = history_review_plan(
                 workspace,
-                decisions=args.decision,
+                decisions=decisions,
                 rationale=args.rationale,
                 complete_cluster=args.complete_cluster,
             )
