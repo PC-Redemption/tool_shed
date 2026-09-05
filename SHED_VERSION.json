@@ -12,7 +12,7 @@
     "adapters/codex-app-server-config.json": "9d8932269c5527f5da9b2961aec166ab50d352b730783cf1812d089414e4f57b",
     "adapters/codex-app-server-qualifications.json": "995ccd3bea135448b316045ea240c10d272f4c7e2ff65085111e0380cef947c1",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "26acfe412a229aaf92da49c5b967959ac9051cc6334a5226471ab4d401286d5c",
+    "adapters/codex-skill-releases.json": "0722173ac087753acb47548ffcfa13e6f24e27965047b8d5d7e0a5f0fc5a41df",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "a16e9afbc2733b2c01b113df3f3a07fda1630b80b5a97476896123ee03bc22d2",
     "dashboard/Dockerfile": "8e9ff084f409aa81ab92b9dcbe8d9bab2416225551c837681653cab7b66786ad",
@@ -81,7 +81,7 @@
     "docs/completion-watcher-hosted-recovery-rollout.md": "62d85676540ccbc318dbd908df10ef0b405957e07989a844553b71c0aef448e1",
     "docs/completion-watcher-hosted-status-surface.md": "e8ca0e6e81cdda1a4af7a3e5d7331fa7d64cd1d5d832cf06caba34c104097f60",
     "docs/completion-watcher-protocol.md": "2fb0057ead6f1524a22a17833b448f419312588858553b0ad68ddf0c873e10bb",
-    "docs/dashboard.md": "e9609564d9fc9a3a824b45662deee0142cd77ef773b9e05166877ebdde9f794e",
+    "docs/dashboard.md": "540fc080ceeefbda7f570f9e7293664d984d6ec7884bd8b588f82187d7ea3341",
     "docs/database-owned-work-collateral-conversion.md": "ee131fe6e232369c752a1be35e6a0e3c1438e2ee14aef47b50677f1fa5bbd98a",
     "docs/database-owned-work-collateral-v1-contract.md": "b7f04d49d1a6ba4b6a7db8130122f5b4e6b23d329d68ed14823ad09c73b3e6ab",
     "docs/database-owned-work-collateral.md": "01ff20af1a16818989f6988612482cb59508d8567f3c362dfa86a22bce9d885b",
@@ -149,7 +149,7 @@
     "scripts/autonomy_control.py": "fc262a79191a3cb3208393de8db64d20e27205de806b67f2f273fb3d6e2fd859",
     "scripts/benchmark_validation.py": "3fcfd9e42e34e5e430c511736aaf51336e0f3b6e7310f565a5f4e6598d39dc0b",
     "scripts/bootstrap_closure.py": "24b0d62acd5cbb30d976c01e0b510505ce93dfd6f74d17681eb2c9e7ad039a39",
-    "scripts/build_docs_site.py": "f450b59c4c2674903981abe00292b5c151293452c41ebb0734deb9715fbba6ac",
+    "scripts/build_docs_site.py": "85e9dba66774bdbb24cd3085e7910fed9664d66e8672f203f2e03a657b6c8a5e",
     "scripts/campaign_queue.py": "93484f5a8bba6b59357a340f292aab1235f97b4f83475d243a0baea764e57fcd",
     "scripts/check_provider_adapters.py": "f48fe55322bfba4924f0c8d39bae31d954b2e950eb3abe5df0e1773ca1217925",
     "scripts/check_shed_version.py": "dc4b75b2f9bb7fb6e3f376fef0ed8cc1fbb537077ca16d1cc961effb171a8743",
@@ -286,34 +286,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Prevent lifecycle drift, add supervised historical cleanup, and expose recursive closure debt accurately.",
-  "release_commit": "18fd6b8003a5daba45fcba6e6005e5f9ade17103",
-  "release_qualification": {
-    "attested_at": "2026-09-05T16:12:31Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "81bbb1df280b8c04875d5ee96edd1c597bc74d4ce8b82a19fc01a9a619f866e5"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "18fd6b8003a5daba45fcba6e6005e5f9ade17103"
-  },
-  "release_tag": "v0.47.0",
-  "released_at": "2026-09-05T16:12:31Z",
-  "shed_version": "0.47.0",
+  "notes": "Prevent documentation bundle builds from deleting protected production state.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.47.1",
+  "released_at": null,
+  "shed_version": "0.47.1",
   "updated_at": "2026-09-05",
   "updater_mutation_paths": [
     {

@@ -150,18 +150,26 @@ commands.
 - optional `TOOL_SHED_DASHBOARD_AUTH_MODE`: `local-mfa` by default, or `local-password` for
   ordinary username/password authentication.
 
-Do not commit the deployment environment. From the exact release checkout, build the immutable
-dashboard image and public site, then stage `docker-compose.yml`, `nginx.conf`, and the generated
-`public/` tree in the production deployment directory. Set `TOOL_SHED_DASHBOARD_IMAGE_TAG` there to
-the exact release tag. Start without rebuilding from a mutable production directory:
+Do not commit the deployment environment. The site builder replaces its entire output directory;
+it refuses directories that contain recognized deployment state, but it must still target a fresh
+staging directory rather than the live production root. From the exact release checkout, build the
+immutable dashboard image and site bundle, then synchronize only `docker-compose.yml`,
+`nginx.conf`, and the generated `public/` tree into production. Set
+`TOOL_SHED_DASHBOARD_IMAGE_TAG` there to the exact release tag. Start without rebuilding from a
+mutable production directory:
 
 ```bash
 docker build -f dashboard/Dockerfile -t tool-shed-dashboard:<release-tag> .
-python3 scripts/build_docs_site.py --output <production-directory>
+site_staging=$(mktemp -d)
+python3 scripts/build_docs_site.py --output "$site_staging/bundle"
+install -m 0644 "$site_staging/bundle/docker-compose.yml" <production-directory>/docker-compose.yml
+install -m 0644 "$site_staging/bundle/nginx.conf" <production-directory>/nginx.conf
+rsync -a --delete "$site_staging/bundle/public/" <production-directory>/public/
 docker compose --project-directory <production-directory> \
   -f <production-directory>/docker-compose.yml up -d --no-build
 docker compose --project-directory <production-directory> \
   -f <production-directory>/docker-compose.yml ps
+rm -rf -- "$site_staging"
 ```
 
 The dashboard runs migrations and static collection before Gunicorn. Nginx rate-limits API

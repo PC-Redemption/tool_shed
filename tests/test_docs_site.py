@@ -18,6 +18,34 @@ SPEC.loader.exec_module(SITE_BUILDER)
 
 
 class DocumentationSiteTests(unittest.TestCase):
+    def test_build_refuses_to_delete_protected_deployment_state(self) -> None:
+        for protected_name in SITE_BUILDER.PROTECTED_OUTPUT_ENTRIES:
+            with self.subTest(protected_name=protected_name), tempfile.TemporaryDirectory() as temporary:
+                output = Path(temporary) / "production"
+                output.mkdir()
+                protected = output / protected_name
+                if "." in protected_name:
+                    protected.write_text("protected", encoding="utf-8")
+                else:
+                    protected.mkdir()
+
+                with self.assertRaisesRegex(ValueError, "protected deployment state"):
+                    SITE_BUILDER.build(output)
+
+                self.assertTrue(protected.exists())
+
+    def test_build_can_replace_an_ordinary_generated_bundle(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "bundle"
+            output.mkdir()
+            obsolete = output / "obsolete.txt"
+            obsolete.write_text("old", encoding="utf-8")
+
+            public, _ = SITE_BUILDER.build(output)
+
+            self.assertFalse(obsolete.exists())
+            self.assertTrue((public / "index.html").is_file())
+
     def test_asset_revision_is_independent_of_asset_creation_order(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

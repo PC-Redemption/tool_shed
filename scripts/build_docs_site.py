@@ -22,6 +22,13 @@ SITE = ROOT / "site"
 COMMANDS = ROOT / "docs" / "commands.md"
 DEFAULT_OUTPUT = ROOT / "build" / "ts.rookaro.com"
 PUBLIC_SOURCE = "https://github.com/PC-Redemption/tool_shed/blob/main/docs/commands.md"
+PROTECTED_OUTPUT_ENTRIES = (
+    ".env",
+    ".backup.env",
+    ".backup-age-identity.txt",
+    "backups",
+    "release-backups",
+)
 
 
 def asset_revision(assets: Path | None = None) -> str:
@@ -356,7 +363,21 @@ def validate_site(public: Path, commands: list[Command]) -> list[str]:
     return errors
 
 
+def refuse_protected_output(output: Path) -> None:
+    """Prevent a generated bundle refresh from deleting deployment-owned state."""
+    if not output.is_dir():
+        return
+    protected = [name for name in PROTECTED_OUTPUT_ENTRIES if (output / name).exists()]
+    if protected:
+        joined = ", ".join(protected)
+        raise ValueError(
+            "refusing to replace an output directory containing protected deployment state "
+            f"({joined}); build into a fresh staging directory and deploy only the generated bundle"
+        )
+
+
 def build(output: Path) -> tuple[Path, list[Command]]:
+    refuse_protected_output(output)
     if output.exists():
         shutil.rmtree(output)
     public = output / "public"
