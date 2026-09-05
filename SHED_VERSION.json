@@ -190,7 +190,7 @@
     "scripts/lifecycle_qualification_scenarios.py": "9e5a4c5fe1929f8914ed4df05c985607c5bf7b77a1020b80ef8d65607b29f620",
     "scripts/lifecycle_route_smoke.py": "a33dd783b312e8dca9322614bbaae8607291c3eb914ab8e21d174d88441b3250",
     "scripts/lifecycle_scale_qualification.py": "50b72c5075a11d8c8cfbb8409a47c64efbe3ad43f282c80271cf9600b18a12e3",
-    "scripts/loop_findings.py": "996ba48d50f0b75a6c97d1fda0be348c4a0eb12cb58ee0d6b184844dd9eeb51b",
+    "scripts/loop_findings.py": "2606f717a627e2954fdd360c2f25dff706d769e52fff51fcf255596def818922",
     "scripts/loop_findings_schema.py": "664c7ddd76b42cb35095900a82560f47656f7855ddb016aefe0506a9be450fa9",
     "scripts/maintainer_hybrid_conversion.py": "1090daee442522f8ab0895de97251260414b5128531af7d7db45da7dfbf763ea",
     "scripts/migrate_generated_evidence.py": "c160078098ffee910b683108cbe32bd24acec63cbb195ddef85b5ba3a3b0475e",

@@ -740,6 +740,14 @@ def _subject_cycle_id(connection: sqlite3.Connection, artifact_id: str) -> str:
             (artifact_id,),
         ).fetchone()
     if row is None:
+        row = connection.execute(
+            "SELECT c.id FROM artifact a JOIN evidence_reference er "
+            "ON er.kind='historical-origin' AND er.reference=a.current_path "
+            "JOIN cycle c ON c.id=er.cycle_id WHERE a.id=? "
+            "ORDER BY c.opened_at DESC, c.id DESC LIMIT 1",
+            (artifact_id,),
+        ).fetchone()
+    if row is None:
         raise LoopFindingError("history finding subject has no outcome cycle")
     return str(row["id"])
 
