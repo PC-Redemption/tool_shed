@@ -1,0 +1,54 @@
+# Campaign: Enforce and Qualify App Server Dispatch Closure
+
+Status: working
+Type: campaign
+Updated: 2026-09-05
+Next Action: after M1, enforce dispatch debt at every applicable closeout and qualify the release end to end
+Campaign ID: enforce-and-qualify-app-server-dispatch-closure
+Campaign Number: 166
+Outcome: Orphaned, expired, malformed, or contradictory eligible App Server dispatches are visible and block applicable Tool Shed closure; the correction is qualified, released, production-verified, and recursively reconciled.
+Primary Focus Areas: campaign-lifecycle
+Supporting Focus Areas: provider-portability, qualification-release
+Depends On: build-atomic-correlated-app-server-dispatch
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work5
+Completion Gate: Bounded reporting and strict Doctor detect dispatch debt; campaign, PRM, release-cohort, and Work5 closure reject unresolved eligible debt while controlled GUI-native exemptions remain valid; legacy events remain bounded and unmodified; fresh and upgraded Linux and Windows qualification, full validation, exact-SHA CI, release provenance, production verification, one real eligible correlated App Server operation, and recursive outcome closure all pass.
+Completion Evidence: none
+Disposition: none
+Roadmap: enforced-app-server-dispatch-and-closure
+Roadmap Revision: 1
+Roadmap Document: PRM-0041
+Milestone: M2-CLOSEOUT-ENFORCEMENT-AND-RELEASE
+Unlocks Gate: G2-CLOSEOUT-ENFORCEMENT-QUALIFIED-AND-RELEASED
+
+## Request
+
+Consume the M1 dispatch lifecycle as the only authority for eligible App Server execution evidence.
+Extend the bounded report and strict Doctor to identify orphaned, expired, duplicated, malformed,
+and contradictory lifecycles. Integrate the same invariant into applicable campaign, PRM,
+release-cohort, and Work5 closeout so a missing terminal dispatch record cannot coexist with a
+successful completion claim.
+
+Keep GUI-native and unsupported work exempt only through explicit controlled source/type/role and
+reason codes. Keep privacy limits and legacy schema evidence intact. Prove default pre-mutation GUI
+fallback, explicit fail-closed operation, post-mutation reconciliation, no replay, and crash recovery.
+Qualify clean install and upgrade behavior on the disposable Linux and Windows test beds, freeze one
+candidate, publish only after exact-SHA validation, verify production, perform one real eligible
+App Server operation, and reconcile the complete MAP-0029 → PRM-0041 → campaign outcome chain.
+
+## App Server Preparation Contract
+
+```json
+{"schema_version":1,"campaign_id":"enforce-and-qualify-app-server-dispatch-closure","objective":"Enforce correlated App Server dispatch debt at Tool Shed closeout boundaries and qualify, release, and reconcile the correction end to end.","execution_shape":"multi-stage-bounded-camp","exact_resolution":"dispatch-time","inline_assets":"metadata-only","source_freshness":"required","verification":"orchestrator-exactly-once","completion_evidence":"Reporting, Doctor, all applicable closeout gates, supported-platform qualification, release provenance, production verification, real eligible execution, and recursive outcome closure pass."}
+```
+
+## Completion Check
+
+Run focused debt-detection and closeout tests, full repository validation, checkpoint/rebuild, clean
+and upgraded disposable Linux and Windows qualification, and the release profile. Freeze and push
+one exact candidate, require its exact-SHA CI success, publish and verify production, then perform a
+real eligible App Server route that produces one correlation from selection through terminal state.
+Audit zero unresolved applicable dispatch debt and close the campaign, PRM, and map only after their
+outcomes are satisfied, reconciled, propagated, and recursively closed.
