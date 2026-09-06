@@ -359,6 +359,28 @@ class AppServerUserStateTests(unittest.TestCase):
         records = AppServerEventStore(events).correlation_events("interrupted")
         self.assertEqual(3, len(records))
 
+    def test_pre_mutation_recovery_closes_dispatch_debt_without_an_attempt(self) -> None:
+        events = self.root / "codex" / "tool-shed" / "app-server-events.jsonl"
+        lifecycle = AppServerDispatchLifecycle(
+            command="next",
+            role="camp_execution",
+            preference_mode="ON",
+            strict_request=False,
+            source="passive",
+            path=events,
+            correlation_id="pre-mutation-loss",
+        )
+        lifecycle.selected("eligible")
+
+        recovered = AppServerDispatchLifecycle.recover(
+            "pre-mutation-loss", disposition="pre-mutation", path=events
+        )
+
+        self.assertEqual("gui_fallback", recovered["outcome"])
+        self.assertEqual(0, AppServerEventStore(events).report(hours=1)["dispatch_debt"])
+        records = AppServerEventStore(events).correlation_events("pre-mutation-loss")
+        self.assertEqual(["selected", "gui_fallback"], [item["outcome"] for item in records])
+
     def test_report_groups_failures_without_exposing_raw_categories(self) -> None:
         events = self.root / "codex" / "tool-shed" / "app-server-events.jsonl"
         store = AppServerEventStore(events, now=lambda: 100.0)

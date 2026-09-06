@@ -609,9 +609,16 @@ class AppServerEventStore:
                 if event.get("event_type") == "terminal"
                 and event.get("outcome") in terminal_outcomes
             ]
+            pre_mutation_recovery = (
+                len(terminals) == 1
+                and not attempts
+                and terminals[0].get("category") == "process_loss_pre_mutation"
+                and terminals[0].get("mutation_state") == "none"
+                and terminals[0].get("outcome") in {"gui_fallback", "failed"}
+            )
             if len(selections) != 1:
                 codes.add("missing_selection" if not selections else "duplicate_selection")
-            if len(attempts) != 1:
+            if len(attempts) != 1 and not pre_mutation_recovery:
                 codes.add("missing_attempt" if not attempts else "duplicate_attempt")
             if len(terminals) != 1:
                 codes.add("missing_terminal" if not terminals else "duplicate_terminal")
@@ -633,11 +640,12 @@ class AppServerEventStore:
                 for event in chain[1:]
             ):
                 codes.add("metadata_mismatch")
-            if [event.get("outcome") for event in chain] != [
-                "selected",
-                "attempted",
-                *([terminals[0].get("outcome")] if len(terminals) == 1 else []),
-            ]:
+            expected_sequence = ["selected"]
+            if not pre_mutation_recovery:
+                expected_sequence.append("attempted")
+            if len(terminals) == 1:
+                expected_sequence.append(str(terminals[0].get("outcome")))
+            if [event.get("outcome") for event in chain] != expected_sequence:
                 codes.add("sequence_invalid")
 
             if len(terminals) == 1:
