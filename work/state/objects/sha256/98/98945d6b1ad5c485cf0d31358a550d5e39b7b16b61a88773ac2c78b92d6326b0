@@ -1,0 +1,32 @@
+# Campaign: Qualify Release and Converge Remaining Work Hierarchy
+
+Status: completed
+Type: campaign
+Updated: 2026-09-06
+Next Action: wait for the M1 candidate, then run the complete Work5 release route
+Campaign ID: qualify-release-and-converge-remaining-work-hierarchy
+Campaign Number: 170
+Outcome: The exact remaining-work hierarchy candidate is qualified, released, deployed, immediately visible in production, and recursively reconciled.
+Primary Focus Areas: qualification-release
+Supporting Focus Areas: operator-experience, dashboard-reporting, campaign-lifecycle
+Depends On: CAMP-0169
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work5
+Completion Gate: Focused and full tests, strict Doctor, development web, clean and upgraded Linux and Windows, exact-SHA CI, provenance and release, all configured production lanes, fresh-report immediate dashboard convergence, GitHub issue review, and recursive outcome reconciliation all pass.
+Completion Evidence: none
+Disposition: none
+Roadmap: recommended-remaining-work-hierarchy
+Roadmap Revision: 1
+Roadmap Document: PRM-0043
+Milestone: M2-PORTABLE-RELEASE-AND-CONVERGENCE
+Unlocks Gates: G1-REMAINING-PLACEMENT-CONTRACT, G2-HIERARCHY-ORDER-CONTEXT, G3-DEFAULT-TREE-LIST-PARITY, G4-BOUNDED-COMMAND-MENUS, G5-CROSS-LANE-PRODUCTION-PROOF
+
+## Request
+
+Re-run all M1 gates against the exact candidate, qualify installation and reporting behavior on the
+disposable Linux and Windows lanes, publish and verify the release, deploy the hosted service, then
+force a fresh production report and prove the live Work page immediately shows the current
+IDEA-0023 hierarchy in recommended order. Review GitHub issues and close the full outcome chain only
+after every release and reconciliation invariant is satisfied.

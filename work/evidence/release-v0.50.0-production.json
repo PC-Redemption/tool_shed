@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-production-release-evidence",
+  "release": {
+    "version": "0.50.0",
+    "tag": "v0.50.0",
+    "content_commit": "880eb6bd705b632d6fd19d42b2c354c00620e7bf",
+    "provenance_commit": "f4d5ad8d332306b4053983f86a579b1dabe7ece0",
+    "published_at": "2026-09-06T19:13:18Z",
+    "url": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.50.0"
+  },
+  "qualification": {
+    "local_release_validation": "620 of 620 tests passed",
+    "linux_development_tests": "83 of 83 targeted tests passed",
+    "windows_development_tests": "83 of 83 targeted tests passed",
+    "validate_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34053856250",
+    "publish_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34054186989",
+    "result": "passed"
+  },
+  "web_production": {
+    "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com",
+    "image": "tool-shed-dashboard:v0.50.0",
+    "image_sha256": "8dac13d91e71e3bbef3616a34418a5ed5bf3da5ad8398ce5000b02d47800409b",
+    "database_backup": "/home/jon/docker/ts.rookaro.com/backups/dashboard-daily-20260906T191425Z.dump.age",
+    "rollback_bundle": "/home/jon/docker/ts.rookaro.com/release-backups/pre-v0.50.0-20260906T1913Z",
+    "public_health_status": 200,
+    "public_dashboard_health_status": 200,
+    "router": "ts.rookaro.com",
+    "production_readiness": "healthy",
+    "result": "passed"
+  },
+  "linux_production": {
+    "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed",
+    "installed_version": "0.50.0",
+    "content_commit": "880eb6bd705b632d6fd19d42b2c354c00620e7bf",
+    "backup": "/home/jon/dev/ts_linux_test_bed/tool_shed.backup-20260906T191531Z.tar",
+    "validation_mode": "attested-focused-smoke",
+    "work_preserved": true,
+    "post_install_doctor": "healthy",
+    "result": "passed"
+  },
+  "windows_production": {
+    "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed",
+    "installed_version": "0.50.0",
+    "content_commit": "880eb6bd705b632d6fd19d42b2c354c00620e7bf",
+    "backup": "E:\\dev\\ts_windows_test_bed\\tool_shed.backup-20260906T191537Z.tar",
+    "validation_mode": "attested-focused-smoke",
+    "work_preserved": true,
+    "post_install_doctor": "healthy",
+    "result": "passed"
+  },
+  "dashboard_auto_convergence": {
+    "trigger": "explicit v0.50.0 production convergence enqueue",
+    "event_sequence": 10586,
+    "event_created_at": "2026-09-06T19:16:54.779649Z",
+    "local_delivered_at": "2026-09-06T19:17:02.729986Z",
+    "delivery_seconds_from_event_creation": 7.95,
+    "delivery_attempts": 0,
+    "second_user_event_used": false,
+    "manual_worker_used": false,
+    "safety_pass_used": false,
+    "local_pending_after_delivery": 0,
+    "hosted_verified_sequence": 10600,
+    "hosted_client_version": "0.50.0",
+    "hosted_work_inventory_total": 267,
+    "hosted_work_inventory_truncated": false,
+    "hosted_hierarchy": "IDEA-0023 > MAP-0031 > PRM-0043 > CAMP-0169,CAMP-0170",
+    "hosted_next": "CAMP-0170",
+    "hosted_needs_placement": false,
+    "post_reconciliation_event_sequence": 10600,
+    "post_reconciliation_event_created_at": "2026-09-06T19:26:55.938698Z",
+    "post_reconciliation_delivered_at": "2026-09-06T19:26:57.724863Z",
+    "post_reconciliation_delivery_seconds": 1.786,
+    "post_reconciliation_delivery_attempts": 0,
+    "post_reconciliation_pending_events": 0,
+    "post_reconciliation_default_remaining_contains_idea23_chain": false,
+    "post_reconciliation_all_list_contains_idea23_chain": true,
+    "post_reconciliation_chain_state": "completed-satisfied-reconciled",
+    "result": "passed"
+  },
+  "github_issue_review": {
+    "repository": "PC-Redemption/tool_shed",
+    "direct_issue": 57,
+    "comment": "https://github.com/PC-Redemption/tool_shed/issues/57#issuecomment-5561559808",
+    "action": "documented the v0.50.0 subset and kept the broader semantic-fidelity issue open",
+    "result": "reviewed"
+  },
+  "result": "passed"
+}

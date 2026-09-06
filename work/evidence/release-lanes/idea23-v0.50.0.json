@@ -18,14 +18,16 @@
         "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed"
       },
       "production": {
-        "actor": null,
-        "artifact": null,
+        "actor": "codex",
+        "artifact": "github-release:v0.50.0@880eb6bd705b632d6fd19d42b2c354c00620e7bf",
         "authorization_ref": null,
-        "evidence": [],
+        "evidence": [
+          "work/evidence/idea23-v0.50.0-work5.md"
+        ],
         "reason": null,
-        "recorded_at": null,
-        "source_commit": null,
-        "status": "open",
+        "recorded_at": "2026-09-06T19:20:19Z",
+        "source_commit": "880eb6bd705b632d6fd19d42b2c354c00620e7bf",
+        "status": "verified",
         "target": "github-release:tool-shed-linux-install-client"
       }
     },
@@ -44,14 +46,16 @@
         "target": "tsrookarocom-dev@sup.local:/home/jon/docker/ts.rookaro.com-dev"
       },
       "production": {
-        "actor": null,
-        "artifact": null,
+        "actor": "codex",
+        "artifact": "tool-shed-dashboard:v0.50.0@sha256:8dac13d91e71e3bbef3616a34418a5ed5bf3da5ad8398ce5000b02d47800409b",
         "authorization_ref": null,
-        "evidence": [],
+        "evidence": [
+          "work/evidence/idea23-v0.50.0-work5.md"
+        ],
         "reason": null,
-        "recorded_at": null,
-        "source_commit": null,
-        "status": "open",
+        "recorded_at": "2026-09-06T19:20:19Z",
+        "source_commit": "880eb6bd705b632d6fd19d42b2c354c00620e7bf",
+        "status": "verified",
         "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com"
       }
     },
@@ -70,14 +74,16 @@
         "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed"
       },
       "production": {
-        "actor": null,
-        "artifact": null,
+        "actor": "codex",
+        "artifact": "github-release:v0.50.0@880eb6bd705b632d6fd19d42b2c354c00620e7bf",
         "authorization_ref": null,
-        "evidence": [],
+        "evidence": [
+          "work/evidence/idea23-v0.50.0-work5.md"
+        ],
         "reason": null,
-        "recorded_at": null,
-        "source_commit": null,
-        "status": "open",
+        "recorded_at": "2026-09-06T19:20:19Z",
+        "source_commit": "880eb6bd705b632d6fd19d42b2c354c00620e7bf",
+        "status": "verified",
         "target": "github-release:tool-shed-windows-install-client"
       }
     }
@@ -88,7 +94,7 @@
     "windows",
     "linux"
   ],
-  "revision": 5,
+  "revision": 8,
   "schema_version": 1,
-  "updated_at": "2026-09-06T19:05:36Z"
+  "updated_at": "2026-09-06T19:20:19Z"
 }

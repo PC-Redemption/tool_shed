@@ -1,0 +1,53 @@
+# Project Map: Recommended Remaining Work Hierarchy
+
+Status: completed
+Type: project-map
+Updated: 2026-09-06
+Next Action: execute the two-milestone roadmap through Work5
+Source Idea: IDEA-0023
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 2
+Reviewed Body SHA256: e212586b5a03419fd96cf6f8ffd8694ba1089230a580241f0ad21927534f01c1
+
+## Purpose
+
+Make the hosted Work tab a fast operational answer to what remains, where every item belongs, and
+what should be done next, while preserving the flat ledger as an explicit audit view.
+
+## Desired Outcome
+
+The dashboard opens on a deterministic Remaining Tree projected from locally authoritative
+relationships and order. Every visible governed item appears once as a root or owned child;
+invalid placement is explicit, filters retain ancestry, whole roots stay intact, one honest Next
+marker guides execution, and safe row menus copy allowlisted Tool Shed commands without executing
+them.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Projection contract | Exact remaining membership, canonical placement, order, ancestry, and root pagination | reported work inventory |
+| Operator presentation | Default expandable tree, explicit list audit mode, state columns, counts, and safe command menus | projection contract |
+| Portable release | Focused, full, Linux, Windows, release, production, and immediate-convergence evidence | both implementation workstreams |
+
+## Readiness Gate Transfer
+
+1. `G1-REMAINING-PLACEMENT-CONTRACT` — exact remaining membership and one canonical placement.
+2. `G2-HIERARCHY-ORDER-CONTEXT` — deterministic order, ancestry under narrowing, truthful Next,
+   and root-preserving pagination.
+3. `G3-DEFAULT-TREE-LIST-PARITY` — useful default tree, retained ledger, state, and accessibility.
+4. `G4-BOUNDED-COMMAND-MENUS` — descriptive, allowlisted, clipboard-only artifact actions.
+5. `G5-CROSS-LANE-PRODUCTION-PROOF` — Linux, Windows, release, deployment, and immediate
+   production convergence.
+
+## Program Shape
+
+1. Build and prove the projection and interaction as a Work2 candidate.
+2. Qualify every gate cross-platform, release the exact candidate, deploy production, verify the
+   live IDEA-0023 chain immediately, and recursively reconcile through Work5.
+
+## Completion Boundary
+
+The map is complete only when all five readiness gates are satisfied by one released exact commit,
+all configured production lanes converge, and Campaign, PRM, Map, and Idea outcomes are closed and
+reconciled.
