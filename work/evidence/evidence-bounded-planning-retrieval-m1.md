@@ -1,11 +1,11 @@
 # Evidence: Bounded App Server Planning Retrieval — M1
 
-Status: candidate-ready
+Status: completed
 Type: evidence
 Updated: 2026-09-06
 Campaign: CAMP-0167
 Roadmap: PRM-0042 / M1-BOUNDED-RETRIEVAL-CORE
-Candidate: the Work2 content commit containing this evidence
+Candidate: `c745b684ee3c847755ef78ffda2f245fdd825874`
 
 ## Result
 
@@ -29,32 +29,35 @@ The bounded retrieval core satisfies `G-RETRIEVAL-CONTRACT` and the implementati
 
 - `python3 -m unittest tests.test_context_retrieval tests.test_app_server_dispatch
   tests.test_codex_execution`: 95 tests passed.
-- `.venv/bin/python scripts/validate_tool_shed.py --profile full --jobs 8`: 613 tests passed and
-  every full development check passed in 35.212 seconds after current Hybrid views were rendered.
+- `.venv/bin/python scripts/validate_tool_shed.py --profile full --jobs 8`: 615 tests passed and
+  every full development check passed after current Hybrid views were rendered.
 - Snapshot/client slice: 238 tests passed, including disconnected snapshot validation and warm
   upgrade installation.
 - `git diff --check`: passed.
+- Linux (`sup`, `/home/jon/dev/ts_linux_test_bed`): 615/615 tests, verified snapshot integrity,
+  strict Doctor `HEALTHY`, and a clean committed qualification fixture.
+- Windows (`gogetter`, `E:\dev\ts_windows_test_bed`): 615/615 tests under Python 3.14, verified
+  snapshot integrity, strict Doctor `HEALTHY`, and a clean committed qualification fixture.
+- Windows exposed and now covers CRLF normalization before line-range and returned-byte-budget
+  accounting; exact source bytes remain digest-bound for tamper detection.
+- Development web staged and deployed exact commit `c745b684ee3c847755ef78ffda2f245fdd825874`;
+  documentation, dashboard, and production-isolation health checks passed.
 
 ## Live App Server Protocol Proof
 
-The installed Codex App Server completed a real read-only preparation turn against `README.md`:
+Installed Codex App Servers completed real read-only preparation turns against `README.md`:
 
-- route: `app-server`
-- status: `completed`
-- tool calls: 1
-- tool type: `dynamicToolCall`
-- manifest digest: `3f99acb08747864f135fb157c1d1b387231d61c78763254daf2cc192387e9d9a`
-- returned range: `README.md` lines 1–8, 514 bytes
-- refused calls: 0
-- content retained: false
-- structured answer: first heading `tool_shed`, `used_read_context: true`
+- Canonical/Linux Codex 0.149.0 and Windows Codex 0.153.0 each returned `completed` with exactly one
+  `dynamicToolCall`.
+- Linux returned `README.md` lines 1–19 (874 bytes); Windows returned lines 1–19 (869 bytes).
+- Both runs recorded zero refused calls and `content_retained: false`.
+- Linux manifest: `fa0c78ad036845459917fd0f8498526b1dc1a02e8e8925c5c19b91091f03e2c7`.
+- Windows manifest: `a8d9f53ce7c5d705aaec708148f800dfde07fdbac343c1030f35858f44bf1df8`.
 
 The prompt-free local smoke telemetry is retained under the ignored operator evidence path
 `.tool-shed/idea-0021-retrieval-smoke.jsonl`; it contains no retrieved source text.
 
 ## Remaining Work5 Boundary
 
-M2 owns exact-candidate release validation, fresh and upgraded disposable Linux and Windows
-qualification, hosted-development verification, exact-SHA CI, release provenance, all production
+M2 owns the final frozen-candidate repetition, exact-SHA CI, release provenance, all production
 lanes, immediate dashboard convergence, and recursive reconciliation.
-

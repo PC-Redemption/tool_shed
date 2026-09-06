@@ -1,0 +1,95 @@
+# Program Roadmap: Bounded Reference and Retrieval Context for App Server Planning
+
+Status: active
+Type: program-roadmap
+Updated: 2026-09-06
+Next Action: execute M1 through the bounded retrieval core campaign
+Roadmap ID: bounded-reference-and-retrieval-context-for-app-server-planning
+Roadmap Revision: 1
+Source Idea: IDEA-0021
+Source Project Map: MAP-0030
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 2
+Reviewed Body SHA256: 472640c1fa8eeb3f1e8a8f82e1215baca44a85c86f41e01a5d21ebcec4306dc6
+
+## Program Outcome
+
+App Server planning can safely prepare large Tool Shed work from a compact deterministic manifest
+and bounded retrieval of declared source ranges. It cannot read outside the snapshot, exceed
+per-read or cumulative budgets, silently plan from insufficient context, or lose content-free
+retrieval evidence. The exact behavior is qualified, released, production-verified, and recursively
+reconciled.
+
+## M1-BOUNDED-RETRIEVAL-CORE — Build the safe reference path
+
+Status: ready
+Required Endpoint: Work2
+Depends on: none
+
+Outcome: Define a versioned digest-bound manifest over the focused planning snapshot, expose a
+narrow allowlisted line-range reader, integrate it into the preparation prompt and App Server tool
+loop, enforce path and source integrity, and retain bounded content-free retrieval evidence.
+
+Gates:
+
+- `G-RETRIEVAL-CONTRACT`
+- Core portion of `G-CORRECTNESS-BUDGETS`
+
+Candidate campaign: `build-bounded-app-server-planning-retrieval`.
+
+## M2-BUDGET-PORTABILITY-AND-RELEASE — Prove limits and ship the contract
+
+Status: waiting
+Required Endpoint: Work5
+Depends on: M1-BOUNDED-RETRIEVAL-CORE
+
+Outcome: Prove per-read and cumulative exhaustion, incomplete-context signaling, successful plans
+whose available context exceeds the old inline cap, source-change refusal, portable path behavior,
+fresh and upgraded Linux and Windows installations, full validation, exact-SHA CI, release
+provenance, all production lanes, immediate dashboard convergence, and recursive outcome closure.
+
+Gates:
+
+- Remaining `G-CORRECTNESS-BUDGETS`
+- `G-PORTABLE-RELEASE`
+
+Candidate campaign: `qualify-and-release-bounded-planning-retrieval`.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G-RETRIEVAL-CONTRACT | M1 |
+| G-CORRECTNESS-BUDGETS | M1 core and M2 completion |
+| G-PORTABLE-RELEASE | M2 |
+
+Transfer count: 3 reviewed gates; 3 mapped gates; 0 dropped.
+
+## Recovery Contract
+
+- A missing, changed, invalid, or escaping reference fails before mutation with a controlled
+  preparation error.
+- Exhausted retrieval budget returns explicit insufficient-context evidence; it never invents a
+  complete plan.
+- Possible post-mutation execution failures retain the existing reconciliation-required and
+  no-replay behavior.
+- Failed platform, CI, release, or production evidence leaves the owning outcome chain open.
+
+## Program Constraints
+
+- No unrestricted shell, network, parent workspace access, mutable reference, or new hosted
+  retrieval service.
+- No increase to the global inline-context cap as the primary solution.
+- Telemetry records identity, digest, counts, byte totals, and result categories, never retrieved
+  source content.
+- Work2 modifies development lanes only; Work5 publication follows the complete configured route.
+
+## Verification Strategy
+
+- Unit-test manifest determinism, digest validation, path normalization, symlink and traversal
+  refusal, range bounds, byte budgets, cumulative budgets, evidence, and fallback.
+- Exercise a preparation whose declared context is larger than the inline ceiling but whose actual
+  bounded reads succeed.
+- Run full repository validation, development web checks, clean and upgraded disposable Linux and
+  Windows qualification, exact-SHA CI, release provenance, every production lane, and immediate
+  dashboard convergence.

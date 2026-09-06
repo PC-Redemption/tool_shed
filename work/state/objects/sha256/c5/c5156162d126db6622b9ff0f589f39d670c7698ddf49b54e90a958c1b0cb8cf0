@@ -1,0 +1,42 @@
+# Campaign: Build Bounded App Server Planning Retrieval
+
+Status: active
+Type: campaign
+Updated: 2026-09-06
+Next Action: implement the digest-bound manifest, allowlisted range reader, and focused Work2 proof
+Campaign ID: build-bounded-app-server-planning-retrieval
+Campaign Number: 167
+Outcome: App Server planning can retrieve only declared immutable source ranges from its focused snapshot under explicit limits, with content-free evidence and controlled failure.
+Primary Focus Areas: provider-portability
+Supporting Focus Areas: qualification-release, campaign-lifecycle
+Depends On: none
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work2
+Completion Gate: A deterministic digest-bound reference manifest and allowlisted read-only range tool are integrated into App Server preparation; traversal, symlinks, source changes, undeclared reads, and budget excess fail safely; focused tests and the configured development lane pass; and the exact candidate is registered without publication.
+Completion Evidence: none
+Disposition: none
+Roadmap: bounded-reference-and-retrieval-context-for-app-server-planning
+Roadmap Revision: 1
+Roadmap Document: PRM-0042
+Milestone: M1-BOUNDED-RETRIEVAL-CORE
+Unlocks Gates: G-RETRIEVAL-CONTRACT, G-CORRECTNESS-BUDGETS
+
+## Request
+
+Implement the smallest safe reference-delivery path for App Server planning. Generate a compact,
+deterministic manifest over the already isolated focused snapshot. Allow the preparation turn to
+read only declared regular-file line ranges, bind requests to the manifest digest, and enforce
+per-read plus cumulative budgets. Retain only content-free access evidence.
+
+Preserve all existing source freshness, sandbox, fallback, and mutation boundaries. Stop this
+milestone at a registered Work2 development candidate; cross-platform publication and production
+belong to M2.
+
+## Completion Check
+
+Prove deterministic manifests, path containment, symlink/traversal refusal, source digest checks,
+range semantics, budgets, evidence, and a successful plan using a source set larger than the
+inline cap. Run focused tests, the development target, strict Doctor, and candidate registration.
+
