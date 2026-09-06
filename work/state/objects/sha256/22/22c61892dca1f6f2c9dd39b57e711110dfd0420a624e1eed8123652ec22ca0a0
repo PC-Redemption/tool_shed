@@ -1,0 +1,109 @@
+# Program Roadmap: Enforced App Server Dispatch and Closure
+
+Status: completed
+Type: program-roadmap
+Updated: 2026-09-05
+Next Action: execute M1 through the atomic-dispatch campaign
+Roadmap ID: enforced-app-server-dispatch-and-closure
+Roadmap Revision: 1
+Corrective Source: PRM-0026
+Source Project Map: MAP-0029
+
+## Program Outcome
+
+Eligible Tool Shed App Server work cannot be silently executed outside its selected backend. Every
+selection uses one correlated dispatch lifecycle and reaches completed, controlled pre-mutation
+fallback, or reconciliation-required state. Unresolved eligible dispatch debt is visible and blocks
+applicable campaign, PRM, and Work5 closure. The behavior is qualified on fresh and upgraded
+supported targets, released, production-verified, and recursively reconciled.
+
+## M1-ATOMIC-CORRELATED-DISPATCH — Make selection inseparable from accountable execution
+
+Status: ready
+Required Endpoint: Work2
+Depends on: none
+
+Outcome: Replace advisory select-then-trust behavior with one normal dispatch entry point or a
+bounded dispatch lease. Carry one content-free correlation ID through opportunity, attempt, and a
+terminal completion, fallback, or reconciliation-required event. Preserve strict and default-mode
+failure semantics without replay after possible mutation.
+
+Gate: `G1-ATOMIC-CORRELATED-DISPATCH`
+
+Candidate campaign: `build-atomic-correlated-app-server-dispatch`.
+
+## M2-CLOSEOUT-ENFORCEMENT-AND-RELEASE — Prevent bypass and prove the full contract
+
+Status: waiting
+Required Endpoint: Work5
+Depends on: M1-ATOMIC-CORRELATED-DISPATCH
+
+Outcome: Detect orphaned or expired selections in bounded reporting and Doctor, prevent applicable
+campaign, PRM, release-cohort, and Work5 completion while dispatch debt remains, prove controlled
+fallback and post-mutation reconciliation, qualify fresh and upgraded installations on supported
+Linux and Windows targets, and release only after one real eligible operation produces a complete
+correlated chain.
+
+Gate: `G2-CLOSEOUT-ENFORCEMENT-QUALIFIED-AND-RELEASED`
+
+Candidate campaign: `enforce-and-qualify-app-server-dispatch-closure`.
+
+## Acceptance Gates
+
+### G1-ATOMIC-CORRELATED-DISPATCH
+
+- The supported eligible routes cannot record `selected` and then proceed through an unaccounted
+  GUI implementation path.
+- Opportunity, attempt, completion, fallback, and reconciliation handoff use one correlation ID.
+- Every selection reaches exactly one controlled terminal state or remains explicit pending debt.
+- Default-mode pre-mutation failure records a controlled category and continues the same GUI action.
+- Explicit `--app-server` failure remains fail-closed.
+- Possible post-mutation failure never replays work and requires workspace reconciliation.
+
+### G2-CLOSEOUT-ENFORCEMENT-QUALIFIED-AND-RELEASED
+
+- Bounded reporting and strict Doctor detect orphaned, expired, duplicated, malformed, and
+  contradictory dispatch lifecycles without retaining content.
+- Applicable campaign, PRM, release-cohort, and Work5 closeout refuse unresolved dispatch debt.
+- GUI-native and unsupported roles remain exempt through controlled reason codes.
+- Tests cover selected-to-completed, selected-to-fallback, mutation-uncertain reconciliation,
+  attempted bypass, crash/lease expiry, idempotent recovery, and legacy-event compatibility.
+- Fresh and upgraded Linux and Windows qualification, full repository validation, checkpoint/rebuild,
+  exact-SHA release gates, production verification, and one real eligible App Server operation pass.
+- The campaign, roadmap, and project-map outcome chain is terminal, satisfied, reconciled, and
+  recursively closed after release evidence exists.
+
+## Recovery Contract
+
+- Before mutation, a controlled App Server failure may fall back immediately in default mode and
+  must close the same correlation as `fallback`.
+- After possible mutation, record `reconciliation-required`, inspect the existing Git and mutation
+  journal, reconcile once in GUI, and never replay the App Server step.
+- On process loss, an expired lease becomes explicit dispatch debt; recovery either resumes the
+  still-safe dispatch or records the appropriate terminal disposition without inventing execution.
+- Legacy schema events remain bounded historical evidence and are not rewritten into false chains.
+
+## Program Constraints
+
+- Reuse the existing selector, dispatcher, orchestration, JSONL events, Doctor, Hybrid outcome
+  reconciliation, release cohort, and closeout mechanisms.
+- Add no server, database, daemon, hosted mutation route, or content-bearing telemetry.
+- Keep discussion, brainstorming, qualification gates, unsupported roles, and other declared
+  GUI-native work outside App Server execution.
+- Do not infer unavailable GUI token usage or treat token reporting as the enforcement boundary.
+- Keep the two campaigns independently verifiable and stop M1 at Work2 before publication.
+
+## Verification Strategy
+
+- Use focused selector, dispatcher, telemetry, crash-recovery, Doctor, closeout, and reconciliation
+  tests for M1 and M2.
+- Reproduce the observed orphan-selection bypass and prove closeout rejects it.
+- Reproduce the observed over-budget planning context as a controlled pre-mutation fallback.
+- Qualify clean install and historical upgrade behavior on the disposable Linux and Windows test
+  beds before the exact candidate is released.
+- Require exact-SHA CI, release provenance, production observation, and recursive outcome audit.
+
+## Next Route
+
+Execute `build-atomic-correlated-app-server-dispatch` as the bounded M1 Work2 campaign. Do not add
+closeout enforcement, cross-platform release qualification, publication, or production delivery to M1.

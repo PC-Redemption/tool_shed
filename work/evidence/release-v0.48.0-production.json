@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-production-release-evidence",
+  "release": {
+    "version": "0.48.0",
+    "tag": "v0.48.0",
+    "content_commit": "53ff794e25d7787203eddaaa6d99b90ba305bb16",
+    "provenance_commit": "b903719da9ed3fbbb4e2de9a18445d0ca5b8ed56",
+    "url": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.48.0"
+  },
+  "qualification": {
+    "local_full_validation": "597 of 597 tests passed",
+    "linux_disconnected_snapshot": "597 of 597 tests passed",
+    "windows_disconnected_snapshot": "597 of 597 tests passed",
+    "validate_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34038099901",
+    "publish_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34038375628",
+    "result": "passed"
+  },
+  "web_production": {
+    "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com",
+    "image": "tool-shed-dashboard:v0.48.0",
+    "image_sha256": "f7ab56d9cbf0b950f6205ea69567ca25b512f824d2d103307f83a0ee96f0a4af",
+    "public_health_status": 200,
+    "public_dashboard_health_status": 200,
+    "result": "passed"
+  },
+  "linux_production": {
+    "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed",
+    "installed_version": "0.48.0",
+    "content_commit": "53ff794e25d7787203eddaaa6d99b90ba305bb16",
+    "transaction_id": "9b983b81d7f1f526f547d872",
+    "work_preserved": true,
+    "hybrid_state_preflight": "clean",
+    "result": "passed"
+  },
+  "windows_production": {
+    "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed",
+    "installed_version": "0.48.0",
+    "content_commit": "53ff794e25d7787203eddaaa6d99b90ba305bb16",
+    "transaction_id": "eece54a98a1e8e500286bc97",
+    "work_preserved": true,
+    "hybrid_state_preflight": "clean",
+    "result": "passed"
+  },
+  "live_app_server_verification": {
+    "correlation_id": "f26e004bd7c94fa6a55bb82e92e2b1d5",
+    "role": "verification",
+    "run_id": "247f7ceb-4705-4f41-83e5-57b31fa57ea0",
+    "outcome": "completed",
+    "dispatch_debt": 0,
+    "result": "passed"
+  },
+  "installed_codex_client": {
+    "source": "/home/jon/docker/tool_shed/skills/tool-shed",
+    "target": "/home/jon/.codex/skills/tool-shed",
+    "backup": "/home/jon/.codex/skills/tool-shed.backup-20260906T141953Z",
+    "source_validation": "passed",
+    "staged_validation": "passed",
+    "installed_validation": "passed",
+    "exact_diff": "empty"
+  },
+  "result": "passed"
+}
