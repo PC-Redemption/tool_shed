@@ -1,0 +1,36 @@
+{
+  "ambiguities": [],
+  "artifacts": [
+    {"action":"create","authority_mode":"sqlite","content_sha256":"01c5ddeede33cc0ab04c2adcfee4ef7c4d18e0f5a1211a322c234fc7d26675e7","created_at":"2026-09-06T15:42:39Z","display_number":null,"id":"fda0b817-14b1-49ff-b6ae-6fcd7efdcb18","key":"origin","lifecycle_state":"terminal","path":"sqlite/outcome-capsules/fda0b817-14b1-49ff-b6ae-6fcd7efdcb18","type":"direct-capsule"},
+    {"action":"update","authority_mode":"file","content_sha256":"9124913a932beb8f827f828a6724365069aac62bf3e9757945d8e467c72af4db","created_at":"2026-08-29T23:12:41Z","display_number":null,"id":"f73f63a2-cbaa-403e-83ff-ba4cc38bb262","key":"product-1","lifecycle_state":"active","path":"scripts/dashboard_reporter.py","type":"file"},
+    {"action":"create","authority_mode":"file","content_sha256":"f5dcd98c7e6f752b66edf27ece6c1505a7e749361d682c65efd2cf18ac2da701","created_at":"2026-09-06T15:42:39Z","display_number":null,"id":"219f1810-4b11-4f46-86d3-c4ab6f8815b8","key":"product-2","lifecycle_state":"active","path":"tests/test_dashboard_reporter.py","type":"file"}
+  ],
+  "authorization_ref": "work/evidence/release-v0.48.1-production.json",
+  "changes": [],
+  "cycle": {"accepted_outcome":"A single queued event replaces an unexpired dead worker claim and reaches the production dashboard immediately without another event, a manual report, or the safety pass.","closed_at":"2026-09-06T15:42:39Z","id":"f9cc4164-40b1-4cf4-9eae-ed44544674f9","kind":"direct-work","lifecycle_state":"terminal","opened_at":"2026-09-06T15:42:39Z","origin_artifact_id":"fda0b817-14b1-49ff-b6ae-6fcd7efdcb18"},
+  "evidence": [
+    {"collected_at":"2026-09-06T15:42:39Z","id":"58b0ef1f-b869-4571-ad0c-af3cd388fede","key":"evidence-1","kind":"direct-verification","reference":"work/evidence/dashboard-reporter-v0.48.1-work3.md","sha256":"443049dc95aff6a5e379eb0d68925b50bbec0042683aa409272491d470229b07","target_identity":"fda0b817-14b1-49ff-b6ae-6fcd7efdcb18"},
+    {"collected_at":"2026-09-06T15:42:39Z","id":"bb17eaba-47cc-4687-97d2-78d4a9dbfc29","key":"evidence-2","kind":"direct-verification","reference":"work/evidence/release-v0.48.1-production.json","sha256":"7a9333fbc6eb15566210e97e6ea93e44656629a5716aee272405ec1172fed008","target_identity":"fda0b817-14b1-49ff-b6ae-6fcd7efdcb18"}
+  ],
+  "expected_domain_digest": "fdadff3552d17b0ba9ccca4a170684cfc0e3c66f880c0d9d593fba3a15c8f849",
+  "expected_revision": 1355,
+  "kind": "tool-shed-outcome-reconciliation-manifest",
+  "manifest_token": "a79f98218186fc6d",
+  "mode": "direct",
+  "prepared_at": "2026-09-06T15:42:39Z",
+  "project_id": "817b6358-b2f5-48fd-bb66-bd80f936faca",
+  "reconciliation": {"compared_at":"2026-09-06T15:42:39Z","id":"89ee8414-265d-444d-8d9a-7d4b2270728d","product_truth_artifact_ids":["f73f63a2-cbaa-403e-83ff-ba4cc38bb262","219f1810-4b11-4f46-86d3-c4ab6f8815b8"],"residual_work":[],"state":"reconciled"},
+  "relationships": [
+    {"from_artifact_id":"fda0b817-14b1-49ff-b6ae-6fcd7efdcb18","id":"78141473-5040-4e9d-b89d-bdb4adc2952b","key":"product-1","provenance":"outcome-reconciliation-v1","relation_type":"evidenced-by","to_artifact_id":"f73f63a2-cbaa-403e-83ff-ba4cc38bb262"},
+    {"from_artifact_id":"fda0b817-14b1-49ff-b6ae-6fcd7efdcb18","id":"06ee8043-d4bc-4403-98d2-e6b261e05235","key":"product-2","provenance":"outcome-reconciliation-v1","relation_type":"evidenced-by","to_artifact_id":"219f1810-4b11-4f46-86d3-c4ab6f8815b8"},
+    {"from_artifact_id":"fda0b817-14b1-49ff-b6ae-6fcd7efdcb18","id":"659a7998-2fb9-4e04-8802-b6cfa5240a01","key":"outcome-parent","provenance":"outcome-reconciliation-v1","relation_type":"outcome-parent","to_artifact_id":"608f5767-dd42-4a4c-93c4-e99457c9cac5"},
+    {"from_artifact_id":"fda0b817-14b1-49ff-b6ae-6fcd7efdcb18","id":"1fbec2b9-a8d9-4d98-8202-9b96d38fef23","key":"outcome-result-propagated","provenance":"outcome-reconciliation-v1","relation_type":"outcome-result-propagated","to_artifact_id":"608f5767-dd42-4a4c-93c4-e99457c9cac5"}
+  ],
+  "requirements": [{"accepted_outcome":"A single queued event replaces an unexpired dead worker claim and reaches the production dashboard immediately without another event, a manual report, or the safety pass.","disposition":"accepted","evidence_gate_key":"direct-evidence","id":"c0bf4d26-96d2-401b-9864-13f0a10091db","key":"direct-outcome","milestone_key":"direct"}],
+  "schema_version": 1,
+  "verdict": {"authorization_ref":"work/evidence/release-v0.48.1-production.json","decided_at":"2026-09-06T15:42:39Z","disposition":"satisfied","id":"7fb7984f-3e34-4758-a597-472329ccd1d6","scope":"direct-work","summary":"Production verification of dashboard reporter autonomous recovery"},
+  "verifications": [
+    {"command_or_test_id":"direct-evidence-1","details":null,"evidence_key":"evidence-1","id":"c871ec13-3294-48f1-80ec-c336c7428dff","key":"verification-1","requirement_key":"direct-outcome","status":"passed","verified_at":"2026-09-06T15:42:39Z"},
+    {"command_or_test_id":"direct-evidence-2","details":null,"evidence_key":"evidence-2","id":"5f578e24-8609-44fb-ac6d-b48a99001610","key":"verification-2","requirement_key":"direct-outcome","status":"passed","verified_at":"2026-09-06T15:42:39Z"}
+  ]
+}

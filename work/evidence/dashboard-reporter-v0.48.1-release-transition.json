@@ -1,0 +1,30 @@
+{
+  "closed_at": "2026-09-06T15:43:39Z",
+  "cycle_id": "d8607e8b-164e-4eb1-bac0-d9904f99d955",
+  "expected_domain_digest": "a500afc8813a3e2da66c3b3695f9e50e925fda84debab5dc32d8b0d08e01cdfa",
+  "expected_revision": 1356,
+  "kind": "tool-shed-outcome-transition-manifest",
+  "lifecycle_state": "terminal",
+  "manifest_token": "4fc08cf85bac317f",
+  "origin_artifact_id": "608f5767-dd42-4a4c-93c4-e99457c9cac5",
+  "parent_result": null,
+  "prepared_at": "2026-09-06T15:43:39Z",
+  "project_id": "817b6358-b2f5-48fd-bb66-bd80f936faca",
+  "reconciliation": {
+    "compared_at": "2026-09-06T15:43:39Z",
+    "id": "5e51f542-02d6-4218-85f0-ae4e26e2ee9c",
+    "product_truth_ref": "[]",
+    "residual_work": [],
+    "state": "reconciled"
+  },
+  "schema_version": 1,
+  "supporting_cycle_ids": ["f9cc4164-40b1-4cf4-9eae-ed44544674f9"],
+  "verdict": {
+    "authorization_ref": "work/evidence/release-v0.48.1-production.json",
+    "decided_at": "2026-09-06T15:43:39Z",
+    "disposition": "satisfied",
+    "id": "85f6dcae-e903-49c9-9fbe-b0fa4fa010e1",
+    "scope": "initiative",
+    "summary": "v0.48.1 is published and deployed; Linux and Windows clients run the exact released content; the isolated dead-claim event reached the production dashboard in 1.96 seconds with no second event, manual report, or safety pass."
+  }
+}
