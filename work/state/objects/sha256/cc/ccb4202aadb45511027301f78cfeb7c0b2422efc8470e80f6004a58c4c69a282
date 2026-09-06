@@ -1,0 +1,63 @@
+# Project Map: Bounded Reference and Retrieval Context for App Server Planning
+
+Status: completed
+Type: project-map
+Updated: 2026-09-06
+Next Action: execute the two-milestone roadmap through Work5
+Source Idea: IDEA-0021
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 2
+Reviewed Body SHA256: 472640c1fa8eeb3f1e8a8f82e1215baca44a85c86f41e01a5d21ebcec4306dc6
+
+## Purpose
+
+Replace all-inclusive App Server planning context with a deterministic, digest-bound reference
+manifest and narrowly allowlisted read-only retrieval so large plans can be prepared without
+raising the global inline-context ceiling.
+
+## Desired Outcome
+
+App Server planning receives the smallest useful inline manifest, retrieves only named source
+ranges through a bounded contract, records content-free evidence of what was read, and returns a
+controlled insufficient-context result when its budgets cannot support a safe plan. The behavior
+is equivalent on Linux and Windows and is released and verified on every configured production
+lane.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Retrieval contract | A digest-bound allowlist exposes only declared regular files and ranges from an isolated snapshot | existing planning snapshot |
+| Correctness and budgets | Per-read and cumulative limits, evidence, and controlled insufficient-context fallback are enforced | retrieval contract |
+| Portable release | Focused, full, Linux, Windows, upgrade, CI, release, and production checks prove the exact candidate | both implementation workstreams |
+
+## Readiness Gate Transfer
+
+1. `G-RETRIEVAL-CONTRACT` — digest-bound manifest and allowlisted read-only retrieval with no
+   unrestricted shell, network, or parent-directory access.
+2. `G-CORRECTNESS-BUDGETS` — per-read and cumulative limits, retrieval evidence, controlled
+   insufficient-context fallback, and successful planning beyond the inline cap.
+3. `G-PORTABLE-RELEASE` — full validation, Linux and Windows qualification, exact release, all
+   configured production lanes, and released behavior.
+
+## Constraints
+
+- Reuse the isolated focused snapshot and App Server orchestration path.
+- Bind every reference to the manifest digest and reject undeclared, changed, non-regular, or
+  escaping paths.
+- Keep retrieval read-only, bounded, deterministic, and content-free in retained telemetry.
+- Preserve the existing source binding, pre-mutation fallback, no-replay, and no-network contracts.
+- Do not introduce a general retrieval service or cross-run summary cache.
+
+## Program Shape
+
+1. Build the reference manifest, allowlisted range reader, planning integration, and focused proof
+   as a Work2 candidate.
+2. Complete budget/fallback coverage, cross-platform qualification, release, production
+   convergence, and recursive reconciliation through Work5.
+
+## Completion Boundary
+
+The map is complete only when all readiness gates are demonstrated by one released exact commit,
+all configured production lanes converge immediately, and the campaign, roadmap, map, and Idea
+outcomes are satisfied and reconciled.

@@ -1,0 +1,39 @@
+# Campaign: Qualify and Release Bounded Planning Retrieval
+
+Status: completed
+Type: campaign
+Updated: 2026-09-06
+Next Action: after M1, complete fallback coverage, qualify both platforms, release, and reconcile
+Campaign ID: qualify-and-release-bounded-planning-retrieval
+Campaign Number: 168
+Outcome: Bounded planning retrieval is correct under exhaustion and source races, portable on Linux and Windows, released on every production lane, immediately convergent, and recursively reconciled.
+Primary Focus Areas: qualification-release
+Supporting Focus Areas: provider-portability, campaign-lifecycle
+Depends On: build-bounded-app-server-planning-retrieval
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work5
+Completion Gate: Controlled insufficient-context behavior, large-context success, source-race refusal, full validation, development web, fresh and upgraded Linux and Windows qualification, exact-SHA CI, release provenance, all configured production lanes, immediate dashboard convergence, and recursive outcome closure all pass.
+Completion Evidence: none
+Disposition: none
+Roadmap: bounded-reference-and-retrieval-context-for-app-server-planning
+Roadmap Revision: 1
+Roadmap Document: PRM-0042
+Milestone: M2-BUDGET-PORTABILITY-AND-RELEASE
+Unlocks Gates: G-CORRECTNESS-BUDGETS, G-PORTABLE-RELEASE
+
+## Request
+
+Finish the bounded retrieval contract by testing exhaustion, insufficient context, digest races,
+large declared sources, portable path handling, and recovery behavior. Qualify one frozen candidate
+through every configured development and production lane, release only after exact-SHA CI, verify
+immediate dashboard convergence, then reconcile the full IDEA-0021 outcome chain.
+
+## Completion Check
+
+Run focused and full tests, checkpoint/rebuild, hosted development, clean and upgraded disposable
+Linux and Windows checks, exact-SHA CI, release and provenance verification, all production lanes,
+and immediate dashboard reporting. Close the campaign, roadmap, map, and Idea only after their
+outcomes are satisfied, reconciled, and propagated.
+

@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-production-release-evidence",
+  "release": {
+    "version": "0.49.0",
+    "tag": "v0.49.0",
+    "content_commit": "f0b6045e2bf80fd08c4eb79bb18933d95b4e6cdb",
+    "provenance_commit": "2b9beeed409e0dee7d586af9b8de88539ba9e137",
+    "published_at": "2026-09-06T17:49:56Z",
+    "url": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.49.0"
+  },
+  "qualification": {
+    "local_full_validation": "615 of 615 tests passed",
+    "linux_disconnected_snapshot": "615 of 615 tests passed",
+    "windows_disconnected_snapshot": "615 of 615 tests passed",
+    "linux_live_app_server": "Codex 0.149.0; one dynamicToolCall; no refusals; no retrieved content retained",
+    "windows_live_app_server": "Codex 0.153.0; one dynamicToolCall; no refusals; no retrieved content retained",
+    "validate_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34049562356",
+    "publish_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34049829380",
+    "result": "passed"
+  },
+  "web_production": {
+    "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com",
+    "image": "tool-shed-dashboard:v0.49.0",
+    "image_sha256": "f7ab56d9cbf0b950f6205ea69567ca25b512f824d2d103307f83a0ee96f0a4af",
+    "database_backup": "/home/jon/docker/ts.rookaro.com/backups/dashboard-daily-20260906T175053Z.dump.age",
+    "rollback_bundle": "/home/jon/docker/ts.rookaro.com.rollback-v0.48.1-20260906T1751Z",
+    "public_health_status": 200,
+    "public_dashboard_health_status": 200,
+    "production_readiness": "healthy",
+    "result": "passed"
+  },
+  "linux_production": {
+    "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed",
+    "installed_version": "0.49.0",
+    "content_commit": "f0b6045e2bf80fd08c4eb79bb18933d95b4e6cdb",
+    "backup": "/home/jon/dev/ts_linux_test_bed/tool_shed.backup-20260906T175211Z.tar",
+    "work_preserved": true,
+    "hybrid_state_preflight": "clean",
+    "post_install_doctor": "healthy",
+    "result": "passed"
+  },
+  "windows_production": {
+    "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed",
+    "installed_version": "0.49.0",
+    "content_commit": "f0b6045e2bf80fd08c4eb79bb18933d95b4e6cdb",
+    "backup": "E:\\dev\\ts_windows_test_bed\\tool_shed.backup-20260906T175250Z.tar",
+    "work_preserved": true,
+    "hybrid_state_preflight": "clean",
+    "post_install_doctor": "healthy",
+    "result": "passed"
+  },
+  "dashboard_auto_convergence": {
+    "trigger": "IDEA-0021 terminal lifecycle event from the guarded document completion",
+    "event_sequence": 10500,
+    "event_created_at": "2026-09-06T18:02:19.126612Z",
+    "local_delivered_at": "2026-09-06T18:02:24.733743Z",
+    "delivery_seconds_from_event_creation": 5.607,
+    "delivery_attempts": 0,
+    "second_user_event_used": false,
+    "manual_report_used": false,
+    "safety_pass_used": false,
+    "local_pending_after_delivery": 0,
+    "hosted_verified_sequence": 10504,
+    "hosted_client_version": "0.49.0",
+    "hosted_idea_state": "completed/terminal/satisfied/reconciled",
+    "hosted_release_state": "stable v0.49.0 / production v0.49.0 / qualified / compatible",
+    "hosted_awaiting_work5_chain_count": 0,
+    "result": "passed"
+  },
+  "github_issue_review": {
+    "repository": "PC-Redemption/tool_shed",
+    "direct_idea_21_issue_found": false,
+    "adjacent_open_issues": [53, 57, 58],
+    "action": "no issue state changed; their remaining acceptance criteria are outside Idea 21",
+    "result": "reviewed"
+  },
+  "installed_codex_client": {
+    "source": "/home/jon/docker/tool_shed/skills/tool-shed",
+    "target": "/home/jon/.codex/skills/tool-shed",
+    "source_validation": "passed",
+    "backup": "/home/jon/.codex/skills/tool-shed.backup-20260906T180528Z",
+    "staged_validation": "passed",
+    "installed_validation": "passed",
+    "exact_diff": "empty",
+    "fresh_task_required": true
+  },
+  "result": "passed"
+}
