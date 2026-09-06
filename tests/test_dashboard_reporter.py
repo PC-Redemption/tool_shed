@@ -9,6 +9,7 @@ import sqlite3
 import stat
 import sys
 import tempfile
+import time
 import unittest
 import uuid
 from pathlib import Path
@@ -46,6 +47,28 @@ class DashboardReporterTests(unittest.TestCase):
         if os.name != "nt":
             self.assertEqual(stat.S_IMODE(target.stat().st_mode), 0o600)
         self.assertEqual(json.loads(target.read_text(encoding="utf-8"))["credential"], "secret")
+
+    def test_existing_outbox_adds_worker_process_pid_for_dead_claim_recovery(self) -> None:
+        database = dashboard_reporter.outbox_path(self.workspace)
+        with contextlib.closing(sqlite3.connect(database)) as connection:
+            connection.execute(
+                "CREATE TABLE worker_process (id INTEGER PRIMARY KEY CHECK(id=1), owner TEXT NOT NULL, expires_at REAL NOT NULL)"
+            )
+            connection.execute(
+                "INSERT INTO worker_process VALUES (1, 'legacy', ?)",
+                (time.time() - 1,),
+            )
+            connection.commit()
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            columns = {
+                row["name"] for row in connection.execute("PRAGMA table_info(worker_process)")
+            }
+            claim = connection.execute(
+                "SELECT owner, pid FROM worker_process WHERE id=1"
+            ).fetchone()
+        self.assertIn("pid", columns)
+        self.assertEqual(claim["owner"], "legacy")
+        self.assertIsNone(claim["pid"])
 
     def test_windows_private_connection_state_applies_user_acl(self) -> None:
         target = self.workspace / "protected/state.json"
@@ -126,6 +149,24 @@ class DashboardReporterTests(unittest.TestCase):
         self.assertIsNone(event["delivered_at"])
         self.assertEqual(lease, 0)
 
+    def test_sqlite_delivery_contention_releases_worker_lease_for_immediate_retry(self) -> None:
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            connection.execute(
+                "INSERT INTO outbox VALUES (?, 1, ?, 0, 0, ?, NULL)",
+                (str(uuid.uuid4()), json.dumps({"sequence": 1}), dashboard_reporter.stamp()),
+            )
+        with mock.patch.object(
+            dashboard_reporter, "load_connection", return_value=self.connected()
+        ), mock.patch.object(
+            dashboard_reporter,
+            "_request",
+            side_effect=sqlite3.OperationalError("database is locked"),
+        ):
+            with self.assertRaisesRegex(sqlite3.OperationalError, "database is locked"):
+                dashboard_reporter.worker_once(self.workspace)
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            self.assertEqual(connection.execute("SELECT COUNT(*) FROM worker_lease").fetchone()[0], 0)
+
     def test_worker_retires_only_exact_stale_sequence_conflicts(self) -> None:
         with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
             event_id = str(uuid.uuid4())
@@ -173,8 +214,8 @@ class DashboardReporterTests(unittest.TestCase):
     def test_continuous_worker_refuses_a_second_live_process(self) -> None:
         with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
             connection.execute(
-                "INSERT INTO worker_process VALUES (1, 'existing', ?)",
-                (__import__("time").time() + 30,),
+                "INSERT INTO worker_process (id, owner, expires_at, pid) VALUES (1, 'existing', ?, ?)",
+                (__import__("time").time() + 30, os.getpid()),
             )
         with mock.patch.object(dashboard_reporter, "require_project_binding"):
             result = dashboard_reporter.worker(self.workspace, project_binding="fixture", max_cycles=1)
@@ -224,6 +265,82 @@ class DashboardReporterTests(unittest.TestCase):
             quiescent=True,
         )
         self.assertEqual(worker_once.call_count, 2)
+
+    def test_worker_keeps_claim_and_retries_transient_sqlite_contention(self) -> None:
+        current = time.time()
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            dashboard_reporter._set_meta(connection, "last_activity", str(current))
+            dashboard_reporter._set_meta(connection, "last_heartbeat", str(current))
+
+        claims_during_delivery: list[sqlite3.Row | None] = []
+        drain_attempts = 0
+
+        def delivered_after_lock(workspace):
+            nonlocal drain_attempts
+            drain_attempts += 1
+            if drain_attempts == 1:
+                raise sqlite3.OperationalError("database is locked")
+            with contextlib.closing(dashboard_reporter._outbox(workspace)) as connection:
+                claims_during_delivery.append(
+                    connection.execute("SELECT owner, expires_at FROM worker_process WHERE id=1").fetchone()
+                )
+            return {"status": "delivered"}
+
+        with mock.patch.object(
+            dashboard_reporter, "require_project_binding"
+        ), mock.patch.object(
+            dashboard_reporter,
+            "worker_once",
+            side_effect=delivered_after_lock,
+        ) as worker_once, mock.patch.object(
+            dashboard_reporter.time, "sleep"
+        ) as sleep:
+            result = dashboard_reporter.worker(
+                self.workspace, project_binding="fixture", max_cycles=2
+            )
+
+        self.assertEqual(result["status"], "bounded-stop")
+        self.assertEqual(worker_once.call_count, 2)
+        self.assertEqual(len(claims_during_delivery), 1)
+        self.assertIsNotNone(claims_during_delivery[0])
+        self.assertGreater(float(claims_during_delivery[0]["expires_at"]), current)
+        self.assertGreaterEqual(sleep.call_count, 1)
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            self.assertEqual(connection.execute("SELECT COUNT(*) FROM worker_process").fetchone()[0], 0)
+
+    def test_enqueue_builds_report_before_taking_outbox_write_lock(self) -> None:
+        inventory = {"total_count": 0, "truncated": False, "artifacts": []}
+
+        def build_report(workspace, **kwargs):
+            with contextlib.closing(dashboard_reporter._outbox(workspace)) as connection:
+                connection.execute("BEGIN IMMEDIATE")
+                dashboard_reporter._set_meta(connection, "payload_probe", "built")
+                connection.commit()
+            return {
+                "sequence": kwargs["sequence"],
+                "observed_at": dashboard_reporter.stamp(),
+                "lifecycle_events": kwargs["lifecycle_events"],
+            }
+
+        with mock.patch.object(
+            dashboard_reporter, "load_connection", return_value=self.connected()
+        ), mock.patch.object(
+            dashboard_reporter, "_work_inventory", return_value=inventory
+        ), mock.patch.object(
+            dashboard_reporter, "report_payload", side_effect=build_report
+        ), mock.patch.object(
+            dashboard_reporter, "_lifecycle_events", return_value=[{"kind": "changed"}]
+        ):
+            result = dashboard_reporter._enqueue_connected(
+                self.workspace, reason="managed-update"
+            )
+
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            row = connection.execute("SELECT payload_json FROM outbox").fetchone()
+            payload = json.loads(row["payload_json"])
+            self.assertEqual(dashboard_reporter._meta(connection, "payload_probe"), "built")
+        self.assertEqual(payload["sequence"], result["sequence"])
+        self.assertEqual(payload["lifecycle_events"], [{"kind": "changed"}])
 
     def test_safety_pass_main_activates_windowless_subprocess_context(self) -> None:
         def safety(*args, **kwargs):
@@ -400,8 +517,8 @@ class DashboardReporterTests(unittest.TestCase):
     def test_live_launch_claim_prevents_another_popen(self) -> None:
         with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
             connection.execute(
-                "INSERT INTO worker_process VALUES (1, 'live', ?)",
-                (__import__("time").time() + 30,),
+                "INSERT INTO worker_process (id, owner, expires_at, pid) VALUES (1, 'live', ?, ?)",
+                (__import__("time").time() + 30, os.getpid()),
             )
         with mock.patch.object(
             dashboard_reporter, "load_connection", return_value=self.connected()
@@ -416,10 +533,39 @@ class DashboardReporterTests(unittest.TestCase):
         self.assertEqual(result, {"sequence": 1})
         popen.assert_not_called()
 
+    def test_dead_process_claim_is_replaced_without_waiting_for_expiry(self) -> None:
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            connection.execute(
+                "INSERT INTO worker_process (id, owner, expires_at, pid) VALUES (1, 'dead', ?, 999999999)",
+                (__import__("time").time() + 30,),
+            )
+        with mock.patch.object(
+            dashboard_reporter, "load_connection", return_value=self.connected()
+        ), mock.patch.object(
+            dashboard_reporter, "_enqueue_connected", return_value={"sequence": 1}
+        ), mock.patch.object(
+            dashboard_reporter, "binding_token", return_value="binding"
+        ), mock.patch.object(
+            dashboard_reporter.subprocess_launch, "background_python_executable", return_value="python"
+        ), mock.patch.object(
+            dashboard_reporter.subprocess_launch, "popen"
+        ) as popen:
+            result = dashboard_reporter.enqueue_if_connected(
+                self.workspace, reason="managed-update"
+            )
+        self.assertEqual(result, {"sequence": 1})
+        popen.assert_called_once()
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            row = connection.execute(
+                "SELECT owner, expires_at, pid FROM worker_process WHERE id=1"
+            ).fetchone()
+        self.assertNotEqual(row["owner"], "dead")
+        self.assertIsNone(row["pid"])
+
     def test_stale_launch_claim_is_replaced_and_exact_claim_is_required(self) -> None:
         with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
             connection.execute(
-                "INSERT INTO worker_process VALUES (1, 'stale', ?)",
+                "INSERT INTO worker_process (id, owner, expires_at) VALUES (1, 'stale', ?)",
                 (__import__("time").time() - 1,),
             )
         claim = dashboard_reporter._claim_worker_launch(self.workspace)

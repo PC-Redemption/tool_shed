@@ -656,10 +656,11 @@ service has no remote-control surface.
 | `ts: dashboard scheduler remove` | Disable and remove the verified current project's safety scheduler. |
 
 Managed Tool Shed document writes enqueue a report when the project is connected. A singleton
-worker retries an idempotent SQLite outbox, heartbeats while active, and reports quiescence after
-two idle hours. The 15-minute safety pass compares a local domain digest so direct or missed writes
-eventually converge. Reporter files are private and user-local; payloads reject unknown fields,
-uncontrolled text, source paths, prompts, raw diagnostics, credentials, and secrets.
+worker immediately retries transient SQLite contention, replaces claims owned by exited processes,
+heartbeats while active, and reports quiescence after two idle hours. Report construction does not
+hold the outbox write lock. The 15-minute safety pass compares a local domain digest so direct or
+missed writes eventually converge. Reporter files are private and user-local; payloads reject
+unknown fields, uncontrolled text, source paths, prompts, raw diagnostics, credentials, and secrets.
 
 Enrollment approval and every hosted dashboard page require an authenticated maintainer. The
 default `local-mfa` mode also requires TOTP; `local-password` uses username and password only.

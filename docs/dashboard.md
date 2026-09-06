@@ -65,9 +65,12 @@ Managed database writes enqueue a controlled event and wake a detached singleton
 SQLite outbox preserves ordered idempotent delivery, bounded exponential backoff, one-minute
 heartbeats, and a final quiescent report after two idle hours. When the server proves an older
 queued sequence has already been superseded, the worker retires only that exact conflict so stale
-history cannot block newer state. The independent safety pass runs every 15 minutes, drains ready
-pending events, delivers a convergence report when the local domain digest changes, and otherwise
-sends a content-free heartbeat so an installed scheduler remains visibly fresh:
+history cannot block newer state. Report construction happens outside the outbox write transaction;
+transient SQLite contention keeps the worker alive for immediate retry, and a live-expiry claim
+whose recorded process has exited is replaced by the event that encounters it. The independent
+safety pass runs every 15 minutes, drains ready pending events, delivers a convergence report when
+the local domain digest changes, and otherwise sends a content-free heartbeat so an installed
+scheduler remains visibly fresh:
 
 ```bash
 python3 scripts/dashboard_reporter.py --workspace . scheduler-plan
@@ -83,7 +86,8 @@ Remove the safety scheduler with `scheduler-remove` when disconnecting the proje
 On Windows, the scheduler and persistent worker prefer `pythonw.exe`, and every console child in
 the background reporting call graph receives `CREATE_NO_WINDOW`. The launch claim is recorded
 atomically before the worker is created, so a managed-write burst creates one persistent process;
-failed launches release their claim and abandoned claims expire.
+failed launches release their claim, dead-process claims are replaced immediately, and abandoned
+pre-adoption claims expire.
 
 Qualify the installed scheduled task and a real ten-write burst from Windows PowerShell. The
 observer records console-window show events and process starts, requires successful delivery and

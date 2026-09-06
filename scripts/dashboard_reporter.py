@@ -56,6 +56,8 @@ HEARTBEAT_SECONDS = 60
 IDLE_EXIT_SECONDS = 7_200
 IDLE_POLL_SECONDS = 60
 SAFETY_DRAIN_LIMIT = 64
+SQLITE_CONTENTION_RETRY_SECONDS = 120
+SQLITE_CONTENTION_RETRY_MAX_SLEEP = 1.0
 
 
 class DashboardReporterError(RuntimeError):
@@ -329,8 +331,18 @@ def _outbox(workspace: Path) -> sqlite3.Connection:
         "CREATE TABLE IF NOT EXISTS worker_lease (id INTEGER PRIMARY KEY CHECK(id=1), owner TEXT NOT NULL, expires_at REAL NOT NULL)"
     )
     connection.execute(
-        "CREATE TABLE IF NOT EXISTS worker_process (id INTEGER PRIMARY KEY CHECK(id=1), owner TEXT NOT NULL, expires_at REAL NOT NULL)"
+        "CREATE TABLE IF NOT EXISTS worker_process (id INTEGER PRIMARY KEY CHECK(id=1), owner TEXT NOT NULL, "
+        "expires_at REAL NOT NULL, pid INTEGER)"
     )
+    worker_process_columns = {
+        str(row["name"]) for row in connection.execute("PRAGMA table_info(worker_process)")
+    }
+    if "pid" not in worker_process_columns:
+        try:
+            connection.execute("ALTER TABLE worker_process ADD COLUMN pid INTEGER")
+        except sqlite3.OperationalError as error:
+            if "duplicate column name" not in str(error).lower():
+                raise
     return connection
 
 
@@ -347,6 +359,35 @@ def _next_sequence(connection: sqlite3.Connection) -> int:
     value = int(_meta(connection, "sequence", "0") or 0) + 1
     _set_meta(connection, "sequence", str(value))
     return value
+
+
+def _is_sqlite_contention(error: sqlite3.DatabaseError) -> bool:
+    code = getattr(error, "sqlite_errorcode", None)
+    if code in {
+        getattr(sqlite3, "SQLITE_BUSY", -1),
+        getattr(sqlite3, "SQLITE_LOCKED", -1),
+    }:
+        return True
+    detail = str(error).lower()
+    return "database is locked" in detail or "database table is locked" in detail
+
+
+def _sqlite_contention_sleep(attempt: int) -> None:
+    time.sleep(min(SQLITE_CONTENTION_RETRY_MAX_SLEEP, 0.05 * (2 ** min(attempt, 5))))
+
+
+def _pid_is_running(pid: int) -> bool:
+    if pid <= 0:
+        return False
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    except OSError:
+        return False
+    return True
 
 
 def _dashboard_state(workspace: Path) -> dict[str, Any]:
@@ -1016,16 +1057,26 @@ def _enqueue_connected(workspace: Path, *, reason: str, quiescent: bool = False)
     state = load_connection(workspace)
     if state["status"] != "connected":
         raise DashboardReporterError("dashboard connection is awaiting approval")
+    # Report construction reads the project database and may take several seconds. Keep it
+    # outside the outbox write transaction so a managed write cannot starve the active worker.
+    inventory = _work_inventory(workspace)
+    payload = report_payload(
+        workspace,
+        sequence=0,
+        reason=reason,
+        quiescent=quiescent,
+        work_inventory=inventory,
+        lifecycle_events=[],
+    )
     with contextlib.closing(_outbox(workspace)) as connection:
         connection.execute("BEGIN IMMEDIATE")
         sequence = _next_sequence(connection)
-        inventory = _work_inventory(workspace)
         previous_raw = _meta(connection, "work_inventory_v2")
         try:
             previous = json.loads(previous_raw) if previous_raw else None
         except json.JSONDecodeError:
             previous = None
-        observed = stamp()
+        observed = str(payload["observed_at"])
         lifecycle_events = _lifecycle_events(
             previous,
             inventory,
@@ -1033,14 +1084,8 @@ def _enqueue_connected(workspace: Path, *, reason: str, quiescent: bool = False)
             sequence=sequence,
             occurred_at=observed,
         )
-        payload = report_payload(
-            workspace,
-            sequence=sequence,
-            reason=reason,
-            quiescent=quiescent,
-            work_inventory=inventory,
-            lifecycle_events=lifecycle_events,
-        )
+        payload["sequence"] = sequence
+        payload["lifecycle_events"] = lifecycle_events
         event_id = str(uuid.uuid4())
         connection.execute(
             "INSERT INTO outbox VALUES (?, ?, ?, 0, ?, ?, NULL)",
@@ -1122,57 +1167,105 @@ def _claim_worker_launch(workspace: Path) -> str | None:
     """Atomically reserve the persistent-worker slot before spawning."""
 
     owner = str(uuid.uuid4())
-    current = time.time()
-    with contextlib.closing(_outbox(workspace)) as connection:
-        connection.execute("BEGIN IMMEDIATE")
-        row = connection.execute(
-            "SELECT owner, expires_at FROM worker_process WHERE id=1"
-        ).fetchone()
-        if row and float(row["expires_at"]) > current:
-            connection.rollback()
-            return None
-        connection.execute(
-            "INSERT INTO worker_process VALUES (1, ?, ?) "
-            "ON CONFLICT(id) DO UPDATE SET owner=excluded.owner, expires_at=excluded.expires_at",
-            (owner, current + LAUNCH_LOCK_SECONDS),
-        )
-        connection.commit()
-    return owner
+    deadline = time.monotonic() + SQLITE_CONTENTION_RETRY_SECONDS
+    contention_attempt = 0
+    while True:
+        current = time.time()
+        try:
+            with contextlib.closing(_outbox(workspace)) as connection:
+                connection.execute("BEGIN IMMEDIATE")
+                row = connection.execute(
+                    "SELECT owner, expires_at, pid FROM worker_process WHERE id=1"
+                ).fetchone()
+                if (
+                    row
+                    and float(row["expires_at"]) > current
+                    and (row["pid"] is None or _pid_is_running(int(row["pid"])))
+                ):
+                    connection.rollback()
+                    return None
+                connection.execute(
+                    "INSERT INTO worker_process (id, owner, expires_at, pid) VALUES (1, ?, ?, NULL) "
+                    "ON CONFLICT(id) DO UPDATE SET owner=excluded.owner, expires_at=excluded.expires_at, pid=NULL",
+                    (owner, current + LAUNCH_LOCK_SECONDS),
+                )
+                connection.commit()
+            return owner
+        except sqlite3.DatabaseError as error:
+            if not _is_sqlite_contention(error) or time.monotonic() >= deadline:
+                raise
+            contention_attempt += 1
+            _sqlite_contention_sleep(contention_attempt)
 
 
 def _adopt_worker_process(workspace: Path, launch_claim: str | None) -> str | None:
     """Adopt an exact live launch claim or directly claim an idle worker slot."""
 
     owner = launch_claim or str(uuid.uuid4())
-    current = time.time()
-    with contextlib.closing(_outbox(workspace)) as connection:
-        connection.execute("BEGIN IMMEDIATE")
-        row = connection.execute(
-            "SELECT owner, expires_at FROM worker_process WHERE id=1"
-        ).fetchone()
-        if launch_claim is not None:
-            if (
-                row is None
-                or str(row["owner"]) != launch_claim
-                or float(row["expires_at"]) <= current
-            ):
-                connection.rollback()
-                return None
-        elif row and float(row["expires_at"]) > current:
-            connection.rollback()
-            return None
-        connection.execute(
-            "INSERT INTO worker_process VALUES (1, ?, ?) "
-            "ON CONFLICT(id) DO UPDATE SET owner=excluded.owner, expires_at=excluded.expires_at",
-            (owner, current + PROCESS_LOCK_SECONDS),
-        )
-        connection.commit()
-    return owner
+    deadline = time.monotonic() + SQLITE_CONTENTION_RETRY_SECONDS
+    contention_attempt = 0
+    while True:
+        current = time.time()
+        try:
+            with contextlib.closing(_outbox(workspace)) as connection:
+                connection.execute("BEGIN IMMEDIATE")
+                row = connection.execute(
+                    "SELECT owner, expires_at, pid FROM worker_process WHERE id=1"
+                ).fetchone()
+                if launch_claim is not None:
+                    if (
+                        row is None
+                        or str(row["owner"]) != launch_claim
+                        or float(row["expires_at"]) <= current
+                    ):
+                        connection.rollback()
+                        return None
+                elif (
+                    row
+                    and float(row["expires_at"]) > current
+                    and (row["pid"] is None or _pid_is_running(int(row["pid"])))
+                ):
+                    connection.rollback()
+                    return None
+                connection.execute(
+                    "INSERT INTO worker_process (id, owner, expires_at, pid) VALUES (1, ?, ?, ?) "
+                    "ON CONFLICT(id) DO UPDATE SET owner=excluded.owner, expires_at=excluded.expires_at, pid=excluded.pid",
+                    (owner, current + PROCESS_LOCK_SECONDS, os.getpid()),
+                )
+                connection.commit()
+            return owner
+        except sqlite3.DatabaseError as error:
+            if not _is_sqlite_contention(error) or time.monotonic() >= deadline:
+                raise
+            contention_attempt += 1
+            _sqlite_contention_sleep(contention_attempt)
 
 
 def _release_worker_process(workspace: Path, owner: str) -> None:
-    with contextlib.closing(_outbox(workspace)) as connection:
-        connection.execute("DELETE FROM worker_process WHERE id=1 AND owner=?", (owner,))
+    contention_attempt = 0
+    while True:
+        try:
+            with contextlib.closing(_outbox(workspace)) as connection:
+                connection.execute("DELETE FROM worker_process WHERE id=1 AND owner=?", (owner,))
+            return
+        except sqlite3.DatabaseError as error:
+            if not _is_sqlite_contention(error):
+                raise
+            contention_attempt += 1
+            _sqlite_contention_sleep(contention_attempt)
+
+
+def _release_worker_lease(connection: sqlite3.Connection, owner: str) -> None:
+    contention_attempt = 0
+    while True:
+        try:
+            connection.execute("DELETE FROM worker_lease WHERE id=1 AND owner=?", (owner,))
+            return
+        except sqlite3.DatabaseError as error:
+            if not _is_sqlite_contention(error):
+                raise
+            contention_attempt += 1
+            _sqlite_contention_sleep(contention_attempt)
 
 
 def worker_once(workspace: Path) -> dict[str, Any]:
@@ -1183,65 +1276,63 @@ def worker_once(workspace: Path) -> dict[str, Any]:
     with contextlib.closing(_outbox(workspace)) as connection:
         if not _lease(connection, owner):
             return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-worker", "status": "singleton-active", "writes_performed": False}
-        row = connection.execute(
-            "SELECT * FROM outbox WHERE delivered_at IS NULL AND next_attempt <= ? ORDER BY sequence LIMIT 1",
-            (time.time(),),
-        ).fetchone()
-        if row is None:
-            connection.execute("DELETE FROM worker_lease WHERE id=1 AND owner=?", (owner,))
-            return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-worker", "status": "idle", "writes_performed": False}
-        payload = json.loads(row["payload_json"])
         try:
-            result = _request(
-                report_endpoint(state),
-                payload=payload,
-                headers={"Authorization": "Bearer " + state["reporter_token"]},
-            )
-            if result.get("status") not in {"accepted", "duplicate"}:
-                raise DashboardReporterError("dashboard did not accept the report")
-        except DashboardHTTPError as error:
-            if error.status_code == 409 and error.detail == "report sequence is stale":
-                retired = connection.execute(
-                    "UPDATE outbox SET delivered_at=? WHERE delivered_at IS NULL AND sequence <= ?",
-                    (stamp(), row["sequence"]),
+            row = connection.execute(
+                "SELECT * FROM outbox WHERE delivered_at IS NULL AND next_attempt <= ? ORDER BY sequence LIMIT 1",
+                (time.time(),),
+            ).fetchone()
+            if row is None:
+                return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-worker", "status": "idle", "writes_performed": False}
+            payload = json.loads(row["payload_json"])
+            try:
+                result = _request(
+                    report_endpoint(state),
+                    payload=payload,
+                    headers={"Authorization": "Bearer " + state["reporter_token"]},
                 )
-                connection.execute("DELETE FROM worker_lease WHERE id=1 AND owner=?", (owner,))
-                return {
-                    "schema_version": SCHEMA_VERSION,
-                    "kind": "tool-shed-dashboard-worker",
-                    "status": "superseded",
-                    "sequence": row["sequence"],
-                    "superseded_count": retired.rowcount,
-                    "writes_performed": True,
-                }
-            attempts = int(row["attempts"]) + 1
-            delay = min(300, 2 ** min(attempts, 8)) + random.random()
-            connection.execute(
-                "UPDATE outbox SET attempts=?, next_attempt=? WHERE id=?",
-                (attempts, time.time() + delay, row["id"]),
+                if result.get("status") not in {"accepted", "duplicate"}:
+                    raise DashboardReporterError("dashboard did not accept the report")
+            except DashboardHTTPError as error:
+                if error.status_code == 409 and error.detail == "report sequence is stale":
+                    retired = connection.execute(
+                        "UPDATE outbox SET delivered_at=? WHERE delivered_at IS NULL AND sequence <= ?",
+                        (stamp(), row["sequence"]),
+                    )
+                    return {
+                        "schema_version": SCHEMA_VERSION,
+                        "kind": "tool-shed-dashboard-worker",
+                        "status": "superseded",
+                        "sequence": row["sequence"],
+                        "superseded_count": retired.rowcount,
+                        "writes_performed": True,
+                    }
+                attempts = int(row["attempts"]) + 1
+                delay = min(300, 2 ** min(attempts, 8)) + random.random()
+                connection.execute(
+                    "UPDATE outbox SET attempts=?, next_attempt=? WHERE id=?",
+                    (attempts, time.time() + delay, row["id"]),
+                )
+                raise
+            except DashboardReporterError:
+                attempts = int(row["attempts"]) + 1
+                delay = min(300, 2 ** min(attempts, 8)) + random.random()
+                connection.execute("UPDATE outbox SET attempts=?, next_attempt=? WHERE id=?", (attempts, time.time() + delay, row["id"]))
+                raise
+            retired = connection.execute(
+                "UPDATE outbox SET delivered_at=? WHERE delivered_at IS NULL AND sequence <= ?",
+                (stamp(), row["sequence"]),
             )
-            connection.execute("DELETE FROM worker_lease WHERE id=1 AND owner=?", (owner,))
-            raise
-        except DashboardReporterError:
-            attempts = int(row["attempts"]) + 1
-            delay = min(300, 2 ** min(attempts, 8)) + random.random()
-            connection.execute("UPDATE outbox SET attempts=?, next_attempt=? WHERE id=?", (attempts, time.time() + delay, row["id"]))
-            connection.execute("DELETE FROM worker_lease WHERE id=1 AND owner=?", (owner,))
-            raise
-        retired = connection.execute(
-            "UPDATE outbox SET delivered_at=? WHERE delivered_at IS NULL AND sequence <= ?",
-            (stamp(), row["sequence"]),
-        )
-        _set_meta(connection, "last_delivery", str(time.time()))
-        connection.execute("DELETE FROM worker_lease WHERE id=1 AND owner=?", (owner,))
-        return {
-            "schema_version": SCHEMA_VERSION,
-            "kind": "tool-shed-dashboard-worker",
-            "status": "delivered",
-            "sequence": row["sequence"],
-            "superseded_count": max(0, retired.rowcount - 1),
-            "writes_performed": True,
-        }
+            _set_meta(connection, "last_delivery", str(time.time()))
+            return {
+                "schema_version": SCHEMA_VERSION,
+                "kind": "tool-shed-dashboard-worker",
+                "status": "delivered",
+                "sequence": row["sequence"],
+                "superseded_count": max(0, retired.rowcount - 1),
+                "writes_performed": True,
+            }
+        finally:
+            _release_worker_lease(connection, owner)
 
 
 def _worker_sleep_seconds(
@@ -1282,27 +1373,38 @@ def worker(
             "writes_performed": False,
         }
     cycles = 0
+    contention_attempt = 0
     try:
         while True:
             cycles += 1
-            with contextlib.closing(_outbox(workspace)) as connection:
-                current = time.time()
-                connection.execute(
-                    "UPDATE worker_process SET expires_at=? WHERE id=1 AND owner=?",
-                    (current + PROCESS_LOCK_SECONDS, owner),
-                )
-                last_activity = float(_meta(connection, "last_activity", str(current)) or current)
-                last_heartbeat = float(_meta(connection, "last_heartbeat", "0") or 0)
-                pending = int(connection.execute("SELECT COUNT(*) FROM outbox WHERE delivered_at IS NULL").fetchone()[0])
-            if current - last_heartbeat >= HEARTBEAT_SECONDS:
-                enqueue(workspace, project_binding=project_binding, reason="heartbeat")
-                with contextlib.closing(_outbox(workspace)) as connection:
-                    _set_meta(connection, "last_heartbeat", str(current))
-                last_heartbeat = current
             try:
-                worker_once(workspace)
-            except DashboardReporterError:
-                pass
+                with contextlib.closing(_outbox(workspace)) as connection:
+                    current = time.time()
+                    connection.execute(
+                        "UPDATE worker_process SET expires_at=? WHERE id=1 AND owner=?",
+                        (current + PROCESS_LOCK_SECONDS, owner),
+                    )
+                    last_activity = float(_meta(connection, "last_activity", str(current)) or current)
+                    last_heartbeat = float(_meta(connection, "last_heartbeat", "0") or 0)
+                    pending = int(connection.execute("SELECT COUNT(*) FROM outbox WHERE delivered_at IS NULL").fetchone()[0])
+                if current - last_heartbeat >= HEARTBEAT_SECONDS:
+                    enqueue(workspace, project_binding=project_binding, reason="heartbeat")
+                    with contextlib.closing(_outbox(workspace)) as connection:
+                        _set_meta(connection, "last_heartbeat", str(current))
+                    last_heartbeat = current
+                try:
+                    worker_once(workspace)
+                except DashboardReporterError:
+                    pass
+                contention_attempt = 0
+            except sqlite3.DatabaseError as error:
+                if not _is_sqlite_contention(error):
+                    raise
+                contention_attempt += 1
+                if max_cycles is not None and cycles >= max_cycles:
+                    return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-worker", "status": "bounded-stop", "cycles": cycles, "writes_performed": True}
+                _sqlite_contention_sleep(contention_attempt)
+                continue
             if current - last_activity >= IDLE_EXIT_SECONDS and pending == 0:
                 enqueue(workspace, project_binding=project_binding, reason="quiescent", quiescent=True)
                 worker_once(workspace)

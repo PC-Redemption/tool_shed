@@ -635,10 +635,11 @@ ts: dashboard scheduler install
 ```
 
 Use `ts: dashboard status` to inspect connection and outbox state without revealing the credential.
-Managed writes wake one singleton background worker, and the project-scoped 15-minute safety pass
-converges missed events. Hosted failure never blocks local work. Use `ts: dashboard disconnect` to
-revoke the reporter. Deployment, privacy, authentication, backup, and recovery details are in
-[`dashboard.md`](dashboard.md).
+Managed writes wake one singleton background worker. Transient SQLite contention is retried by the
+same worker, and an event replaces an unexpired claim when its recorded process has exited. The
+project-scoped 15-minute safety pass remains a fallback for missed events. Hosted failure never
+blocks local work. Use `ts: dashboard disconnect` to revoke the reporter. Deployment, privacy,
+authentication, backup, and recovery details are in [`dashboard.md`](dashboard.md).
 
 ### Passively dogfood the qualified App Server path
 
