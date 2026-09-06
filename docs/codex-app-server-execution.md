@@ -138,6 +138,17 @@ used for selection, supply the same path to orchestration. The consumer records 
 terminal result on that correlation and refuses expired or replayed leases. `next` is already the
 atomic dispatcher and must not be preceded by a standalone selection.
 
+The bounded event report classifies current-schema chains as complete, pending, expired, or
+invalid. Strict Doctor and Tool Shed closeout gates reject any pending, expired, duplicate,
+malformed, or contradictory eligible chain. Events from pre-contract schemas remain historical
+telemetry and do not become fabricated dispatch debt.
+
+After process loss, inspect Git and the mutation journal before recovery. Use
+`app_server_control.py resolve <correlation> --disposition pre-mutation --json` only when no
+attempt occurred. When an attempt occurred and absence of mutation is not proven, use
+`--disposition mutation-uncertain`; it records reconciliation-required and never replays the
+worker. Repeating the same recovery is idempotent.
+
 The selected campaign's executable contract is explicit and reviewable:
 
 ````markdown

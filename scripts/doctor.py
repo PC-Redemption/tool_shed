@@ -31,6 +31,7 @@ import release_cohort
 import review_work_state
 import update_work_index
 import workspace_preflight
+from app_server_user_state import AppServerEventStore, AppServerUserStateError
 from project_identity import (
     ProjectIdentityError,
     bind_state_token,
@@ -377,6 +378,15 @@ def inspect(workspace: Path) -> dict[str, Any]:
     stale_paths = check_stale_paths.scan(root)
     work_findings = review_work_state.review(root, stale_days=30, today=date.today())
     external_evidence = external_evidence_state(root)
+    try:
+        app_server_dispatch = AppServerEventStore().report(hours=24 * 365)
+    except AppServerUserStateError as error:
+        app_server_dispatch = {
+            "dispatch_debt": 1,
+            "dispatch_ready": False,
+            "error": type(error).__name__,
+            "dispatch_lifecycles": {"debt_count": 1, "findings": []},
+        }
     findings: list[Finding] = []
 
     if database_documents and database_documents["audit"]["classification"] not in {
@@ -506,6 +516,18 @@ def inspect(workspace: Path) -> dict[str, Any]:
             "Run `python3 scripts/release_cohort.py --workspace . --json status`; repair ownership or lifecycle state before Work5.",
             count=release_cohorts["finding_count"],
         ))
+    if int(app_server_dispatch.get("dispatch_debt", 0)):
+        debt = int(app_server_dispatch["dispatch_debt"])
+        lifecycle_findings = app_server_dispatch.get("dispatch_lifecycles", {}).get(
+            "findings", []
+        )
+        findings.append(_finding(
+            "APP_SERVER_DISPATCH_DEBT", "error",
+            f"App Server dispatch accounting has {debt} unresolved eligible lifecycle(s).",
+            "Run `python3 scripts/app_server_control.py report --hours 8760 --json`; complete a still-valid lease or record the controlled fallback/reconciliation disposition without replay.",
+            paths=[str(item.get("correlation_id", "unknown")) for item in lifecycle_findings],
+            count=debt,
+        ))
     unsupported = external_evidence["unsupported_claims"]
     if external_evidence["unsupported_claim_count"]:
         findings.append(_finding(
@@ -560,6 +582,7 @@ def inspect(workspace: Path) -> dict[str, Any]:
         },
         "outcome_reconciliation": outcome_reconciliation,
         "release_cohorts": release_cohorts,
+        "app_server_dispatch": app_server_dispatch,
         "document_authority": database_documents["audit"] if database_documents else {"available": False},
         "external_evidence": external_evidence,
     }

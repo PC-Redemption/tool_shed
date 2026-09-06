@@ -31,6 +31,7 @@ except ModuleNotFoundError:  # Direct execution: python work/runbooks/release_la
     import subprocess_launch  # type: ignore[no-redef]
 
 from project_identity import require_project_binding, resolved_workspace
+from app_server_user_state import AppServerEventStore, AppServerUserStateError
 
 
 SCHEMA_VERSION = 1
@@ -353,6 +354,17 @@ def _blockers(
             blockers.append(f"{lane}.development source commit does not match candidate")
     resolved_release: str | None = None
     if phase in {"work5-preflight", "work5-complete"}:
+        try:
+            dispatch_debt = int(
+                AppServerEventStore().report(hours=24 * 365).get("dispatch_debt", 0)
+            )
+        except AppServerUserStateError:
+            blockers.append("App Server dispatch accounting is unavailable")
+        else:
+            if dispatch_debt:
+                blockers.append(
+                    f"{dispatch_debt} unresolved App Server dispatch lifecycle(s)"
+                )
         if release_commit is None:
             blockers.append("release commit is required for Work5 verification")
         else:

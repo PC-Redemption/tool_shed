@@ -90,6 +90,40 @@ class DocumentStoreThinSliceTests(unittest.TestCase):
         )["aliases"]
         self.assertEqual(aliases[0]["path"], "work/evidence/canonical-alias.md")
 
+    def test_document_completion_refuses_unresolved_app_server_dispatch(self) -> None:
+        created = document_store.create_document(
+            self.workspace,
+            project_binding=self.binding,
+            document_type="campaign",
+            title="Dispatch gate",
+            lifecycle="working",
+            body="# Campaign: Dispatch gate\n\nStatus: working\n",
+            metadata={"document_type": "campaign"},
+            actor="test",
+            reason="fixture",
+            database=self.database,
+        )["result"]
+        with mock.patch.object(
+            document_store,
+            "require_no_app_server_dispatch_debt",
+            side_effect=document_store.AppServerUserStateError("dispatch debt"),
+        ):
+            with self.assertRaisesRegex(document_store.DocumentStoreError, "dispatch debt"):
+                document_store.set_lifecycle(
+                    self.workspace,
+                    project_binding=self.binding,
+                    identity=created["visible_id"],
+                    lifecycle="completed",
+                    expected_revision=1,
+                    actor="test",
+                    reason="must block",
+                    database=self.database,
+                )
+        current = document_store.show(
+            self.workspace, created["visible_id"], database=self.database
+        )
+        self.assertEqual("working", current["lifecycle"])
+
     def test_managed_writes_reuse_physical_audit_only_while_database_is_unchanged(self) -> None:
         hybrid_state._PHYSICAL_AUDIT_CACHE.pop(str(self.database.resolve()), None)
         document_store._MANAGED_AUDIT_CACHE.pop(

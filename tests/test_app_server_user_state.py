@@ -262,6 +262,103 @@ class AppServerUserStateTests(unittest.TestCase):
         with self.assertRaisesRegex(AppServerUserStateError, "lease expired"):
             AppServerDispatchLifecycle.resume("expired", path=events)
 
+    def test_report_classifies_pending_expired_and_invalid_dispatch_debt(self) -> None:
+        events = self.root / "codex" / "tool-shed" / "app-server-events.jsonl"
+
+        def record(now: float, correlation: str, outcome: str, event_type: str, **overrides):
+            fields = {
+                "command": "plan",
+                "outcome": outcome,
+                "category": "dispatch",
+                "mutation_state": "none",
+                "backend": "app_server",
+                "preference_mode": "ON",
+                "strict_request": False,
+                "source": "passive",
+                "event_type": event_type,
+                "role": "planning",
+                "correlation_id": correlation,
+            }
+            fields.update(overrides)
+            AppServerEventStore(events, now=lambda: now).record(**fields)
+
+        record(1000.0, "complete", "selected", "opportunity")
+        record(1000.0, "complete", "attempted", "execution")
+        record(1000.0, "complete", "completed", "terminal")
+        record(1000.0, "pending", "selected", "opportunity")
+        record(0.0, "expired", "selected", "opportunity")
+        record(1000.0, "invalid", "selected", "opportunity")
+        record(1000.0, "invalid", "attempted", "execution")
+        record(
+            1000.0,
+            "invalid",
+            "gui_fallback",
+            "terminal",
+            strict_request=True,
+            backend="gui",
+        )
+
+        report = AppServerEventStore(events, now=lambda: 1000.0).report(hours=1)
+        dispatch = report["dispatch_lifecycles"]
+        self.assertEqual(1, dispatch["complete_count"])
+        self.assertEqual(1, dispatch["pending_count"])
+        self.assertEqual(1, dispatch["expired_count"])
+        self.assertEqual(1, dispatch["invalid_count"])
+        self.assertEqual(3, report["dispatch_debt"])
+        by_id = {item["correlation_id"]: item for item in dispatch["findings"]}
+        self.assertIn("lease_expired", by_id["expired"]["codes"])
+        self.assertIn("metadata_mismatch", by_id["invalid"]["codes"])
+
+    def test_report_excludes_pre_contract_schema_two_lifecycles(self) -> None:
+        events = self.root / "codex" / "tool-shed" / "app-server-events.jsonl"
+        event = AppServerEventStore(events, now=lambda: 100.0).record(
+            command="plan",
+            outcome="selected",
+            category="eligible",
+            mutation_state="none",
+            backend="app_server",
+            preference_mode="ON",
+            strict_request=False,
+            source="passive",
+            event_type="opportunity",
+            role="planning",
+            correlation_id="legacy",
+        )
+        event["schema_version"] = 2
+        events.write_text(json.dumps(event) + "\n", encoding="utf-8")
+        report = AppServerEventStore(events, now=lambda: 100.0).report(hours=1)
+        self.assertEqual(1, report["excluded_legacy_events"])
+        self.assertEqual(0, report["dispatch_debt"])
+
+    def test_interrupted_dispatch_recovery_is_terminal_and_idempotent(self) -> None:
+        events = self.root / "codex" / "tool-shed" / "app-server-events.jsonl"
+        lifecycle = AppServerDispatchLifecycle(
+            command="camp-run",
+            role="camp_execution",
+            preference_mode="ON",
+            strict_request=False,
+            source="passive",
+            path=events,
+            correlation_id="interrupted",
+        )
+        lifecycle.selected("eligible")
+        lifecycle.attempted()
+
+        first = AppServerDispatchLifecycle.recover(
+            "interrupted", disposition="mutation-uncertain", path=events
+        )
+        second = AppServerDispatchLifecycle.recover(
+            "interrupted", disposition="mutation-uncertain", path=events
+        )
+        self.assertTrue(first["writes_performed"])
+        self.assertFalse(first["idempotent"])
+        self.assertTrue(second["idempotent"])
+        self.assertEqual("reconciliation_required", second["outcome"])
+        report = AppServerEventStore(events).report(hours=1)
+        self.assertEqual(0, report["dispatch_debt"])
+        records = AppServerEventStore(events).correlation_events("interrupted")
+        self.assertEqual(3, len(records))
+
     def test_report_groups_failures_without_exposing_raw_categories(self) -> None:
         events = self.root / "codex" / "tool-shed" / "app-server-events.jsonl"
         store = AppServerEventStore(events, now=lambda: 100.0)

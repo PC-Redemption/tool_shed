@@ -8,6 +8,7 @@ import tempfile
 import unittest
 import uuid
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -84,6 +85,20 @@ class ReleaseCohortTests(unittest.TestCase):
             callback=write,
             expected_writes=3,
         )
+
+    def test_work5_freeze_refuses_unresolved_app_server_dispatch(self) -> None:
+        with mock.patch.object(
+            release_cohort,
+            "require_no_app_server_dispatch_debt",
+            side_effect=release_cohort.AppServerUserStateError("dispatch debt"),
+        ):
+            with self.assertRaisesRegex(release_cohort.ReleaseCohortError, "dispatch debt"):
+                release_cohort.freeze(
+                    self.workspace,
+                    expected="unused",
+                    project_binding=self.binding,
+                    content_commitish="HEAD",
+                )
 
     def test_work2_registration_release_and_final_reconciliation_are_persistent(self) -> None:
         initial = release_cohort.status(self.workspace)

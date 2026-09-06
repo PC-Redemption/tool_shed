@@ -1,0 +1,166 @@
+# Idea Brief: Dashboard Hierarchy and Artifact Command Menus
+
+Status: exploring
+Type: idea-brief
+Updated: 2026-09-06
+Next Action: settle the command allowlist and filtered-tree behavior, then continue brainstorming or promote with `ts: prm idea <idea-id-or-path>`
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces:
+
+## Current Synthesis
+
+### Idea
+
+Replace the hosted dashboard Work tab's basic artifact list with a familiar folder-style hierarchy
+derived from the established Idea, Map, PRM, and Campaign parent/child relationships. This is an
+indented expandable tree inside the existing work table, not a node-and-arrow diagram. Each artifact
+remains a row and retains the useful Document, Closure, Release, Outcome, and Reconciliation state.
+
+Give every tree entry a small square command button. Clicking the button opens a compact,
+state-aware menu whose entries use clear human descriptions such as **Continue this campaign** or
+**Investigate the blocker**. Selecting an entry copies the exact corresponding `ts:` command to the
+browser clipboard for the operator to paste into Codex. It does not execute the command, submit an
+action to the hosted service, or mutate local Tool Shed state.
+
+### Why It Matters
+
+The current newest-first table makes the operator mentally reconstruct lineage from a Relationships
+column and can make sibling Campaigns look sequential. A folder tree makes ownership, branching,
+and current context visible immediately. The command menu then turns each visible artifact into a
+safe starting point for local Codex work without requiring the operator to remember command syntax
+or granting the hosted dashboard control over the local workspace.
+
+This extends two completed directions without reopening them: `IDEA-0012` established the bounded
+relationship-aware hosted Work inventory, and `IDEA-0022` established descriptive clipboard-copy
+commands as a safe bridge from advisory hosted state to locally authoritative Tool Shed actions.
+
+### Desired Outcome
+
+The Work tab presents each reporting instance's current artifacts as one or more expandable,
+folder-style trees. Roots and children are ordered predictably, indentation and chevrons expose the
+parent/child structure, and the first column no longer requires a separate prose Relationships
+column for ordinary lineage. Existing state columns remain available for row-level inspection.
+
+Every displayed Idea, Map, PRM, and Campaign has a compact square command-menu button. Its menu is
+generated from a controlled local allowlist using only the artifact type, stable visible ID,
+lifecycle, current blocker or finding state, and applicable release posture. Menu labels and short
+descriptions explain the effect in plain language; the underlying exact command may remain
+secondary or hidden. Selecting an item copies the command, gives accessible confirmation, and
+never executes it.
+
+Menus include common continuation and inspection routes appropriate to the artifact. Blocked work
+adds commands that inspect or mitigate the blocker and, where valid, unblock the Campaign. A current
+actionable loop finding may offer its exact `ts: resolve loop <LOOP-id>` route. Commands use stable
+public IDs and force Codex to re-read authoritative local state after paste; they never contain
+credentials, local paths, state tokens, raw diagnostic text, or pre-authorized mutations.
+
+### Candidate Interaction
+
+```text
+▾ MAP-0029  Enforced App Server Dispatch and Closure                         [>_]
+  ▾ PRM-0041  Enforced App Server Dispatch and Closure                     [>_]
+      CAMP-0165  Build Atomic Correlated App Server Dispatch                  [>_]
+      CAMP-0166  Enforce and Qualify App Server Dispatch Closure              [>_]
+```
+
+Selecting `[>_]` on `CAMP-0166` could show descriptive choices such as:
+
+- **Continue this campaign** — resume the exact Campaign from its current step.
+- **Review current status** — explain progress, blockers, evidence, and the next safe action.
+- **Investigate the blocker** — diagnose what prevents progress and recommend the smallest mitigation.
+- **Return it to the queue** — clear a valid blocked state without starting execution.
+
+Clicking a choice copies only its exact allowlisted `ts:` command and briefly confirms which action
+was copied.
+
+## Constraints And Non-Goals
+
+- Local Tool Shed state remains authoritative; the hosted dashboard remains an advisory projection.
+- The interface is a folder-style indented tree/table, not a graphical node-and-edge diagram.
+- Preserve existing useful state dimensions rather than hiding them in the tree.
+- Use reported stable relationships; do not infer hierarchy from titles, timestamps, or ID prefixes.
+- Preserve reporting-instance boundaries and freshness; do not merge divergent instance trees.
+- Command menus are built from a product-defined allowlist, controlled state, and stable public IDs.
+- A click copies text to the clipboard only. It does not execute, enqueue, approve, or remotely
+  deliver an action.
+- Codex must resolve current project identity, state, authority, and safety after the command is pasted.
+- Never copy credentials, filesystem paths, prompts, source text, transient tokens, raw diagnostics,
+  shell commands, or unrestricted operator-authored text.
+- History-only or resolved entries receive no mutation command. Read-only inspection may remain.
+- Explicit non-goal: add a hosted-to-local action-intent channel, polling agent, or remote-control API.
+- Explicit non-goal: duplicate lifecycle, blocker, reconciliation, PRM, Campaign, or release logic in
+  the dashboard.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Folder-style tree table as the default Work view | Makes ancestry and sibling branches obvious while preserving aligned state columns | Requires deterministic root, child, expansion, and filter behavior | Selected direction |
+| Replace the table with nested cards or a node graph | Visually emphasizes hierarchy | Loses scan-friendly column alignment and does not match the requested familiar folder-tree interaction | Rejected |
+| Keep an optional flat List view | Preserves global sorting and column comparison for audits | Adds a small view-mode control and another presentation path to test | Candidate complement |
+| One square command button per artifact | Keeps commands discoverable without widening every row | Needs accessible labeling, keyboard behavior, and compact popover placement | Selected direction |
+| Descriptive menu labels with hidden exact commands | Lets operators choose by intent instead of memorizing syntax | Copy confirmation must make the selected action unambiguous | Selected direction |
+| State-aware allowlisted commands | Offers continuation, review, blocker, mitigation, and release actions only when relevant | Requires one canonical mapping from artifact type/state to safe command templates | Selected direction |
+| A uniform `ts: continue <artifact-id>` route | Makes every menu predictable and keeps copied text short | Would add a new canonical dispatcher that must resolve type and state deterministically | Open option |
+| Existing type-specific commands only | Reuses established Tool Shed routes | Some Maps and PRMs lack one concise ID-targeted continuation command | Open option |
+
+## Open Questions
+
+- Should the flat List view remain available as a toggle, or should the tree table fully replace it?
+- What is the exact canonical command allowlist for each Idea, Map, PRM, and Campaign lifecycle state?
+- Should Tool Shed add a uniform `ts: continue <artifact-id>` route or expose only existing typed routes?
+- When filters match a descendant but not its parent, should ancestors appear as dimmed context rows?
+- What deterministic order should apply to roots and siblings: planning order, Campaign queue order,
+  most recent descendant activity, or a controlled combination?
+- Should trees initially expand all active branches and collapse completed branches, with the choice
+  remembered only in the browser?
+- Which blocked states support direct `unblock`, which require read-only diagnosis, and which can
+  expose an exact current `ts: resolve loop <LOOP-id>` command?
+- When a malformed or legacy item has more than one reported parent, should the UI show one canonical
+  placement plus an **also linked to** reference, or surface it as a lineage finding?
+- Should the copied command be available as optional secondary text in the menu for operator review,
+  or remain hidden until the copy confirmation?
+
+## Decisions
+
+- Use a familiar folder-style tree with indentation and expand/collapse controls.
+- Keep each artifact as a row with its existing operational state columns.
+- Put one small square command-menu button on every displayed entry.
+- Describe menu actions in plain language; the description does not need to expose the raw command.
+- Clicking an action copies its exact command to the clipboard for manual paste into Codex.
+- The dashboard does not execute or remotely deliver copied commands.
+- Make menus specific to artifact type and current state.
+- Blocked entries should offer applicable unblock or mitigation-oriented commands.
+- Reuse the established local-authority and privacy boundary from prior dashboard work.
+
+## Don't Forget
+
+- Avoid repeating chain-level release badges on every ancestor when one tree-level rollup can explain it.
+- Preserve row-specific lifecycle state so a completed Campaign awaiting Work5 is distinguishable from
+  a currently working sibling.
+- Keep essential menu labels and confirmation accessible to keyboard and assistive-technology users.
+- Provide a clipboard fallback when the Clipboard API is unavailable.
+- Prevent filtered results from becoming misleading orphan rows with no visible ancestry.
+- Validate copied commands against current canonical Tool Shed syntax; never generate arbitrary text
+  from titles or descriptions.
+- Use concise confirmation such as **Continue campaign command copied** without implying execution.
+
+## Exploration Log
+
+### 2026-09-06
+
+- Owner proposed switching the Work tab from a basic newest-first list to a tree now that explicit
+  parent/child relationships are established.
+- Clarified that the desired presentation is a familiar folder tree with chevrons and indentation,
+  not a node-and-arrow visualization.
+- Owner requested a small square command button on every entry. Its menu describes common actions for
+  that exact Idea, Map, PRM, or Campaign and copies the selected command for manual paste into Codex.
+- Owner clarified that action descriptions need not display the raw command.
+- Blocked entries should expose applicable unblock and mitigation commands.
+- Existing completed Ideas were reviewed: `IDEA-0012` supplies the relationship-aware Work inventory
+  foundation, while `IDEA-0022` supplies the clipboard-only local-command safety pattern. This brief
+  captures their new combined interaction rather than reopening either delivered outcome.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

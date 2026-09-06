@@ -25,6 +25,10 @@ from pathlib import Path
 from typing import Any, Callable, Sequence
 
 import hybrid_state
+from app_server_user_state import (
+    AppServerUserStateError,
+    require_no_app_server_dispatch_debt,
+)
 from document_contract import GENERATED
 from document_store_schema import (
     DOCUMENT_PORTABLE_TABLES,
@@ -813,6 +817,11 @@ def create_document(workspace: Path, *, project_binding: str, document_type: str
 def set_lifecycle(workspace: Path, *, project_binding: str, identity: str, lifecycle: str, expected_revision: int, actor: str, reason: str, database: Path | None = None) -> dict[str, Any]:
     if lifecycle not in LIFECYCLES:
         raise DocumentStoreError(f"unsupported lifecycle: {lifecycle}")
+    if lifecycle == "completed":
+        try:
+            require_no_app_server_dispatch_debt(operation="document completion")
+        except AppServerUserStateError as error:
+            raise DocumentStoreError(str(error)) from error
     def apply(connection: sqlite3.Connection, revision: int) -> dict[str, Any]:
         current = _lookup(connection, identity)
         if int(current["current_revision"]) != expected_revision:
@@ -1269,6 +1278,10 @@ def complete_outcome(
         raise DocumentStoreError("complete outcome requires a supported terminal disposition")
     if not summary.strip() or not authorization.strip():
         raise DocumentStoreError("complete outcome requires summary and authorization")
+    try:
+        require_no_app_server_dispatch_debt(operation="document outcome completion")
+    except AppServerUserStateError as error:
+        raise DocumentStoreError(str(error)) from error
 
     def apply(connection: sqlite3.Connection, revision: int) -> dict[str, Any]:
         current = _lookup(connection, identity)

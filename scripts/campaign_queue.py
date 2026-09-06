@@ -24,6 +24,10 @@ from project_identity import (
     require_project_binding,
     target_capsule,
 )
+from app_server_user_state import (
+    AppServerUserStateError,
+    require_no_app_server_dispatch_debt,
+)
 
 
 ROOT_NAME = "00-campaigns"
@@ -1385,6 +1389,10 @@ def mutate_campaign(args: argparse.Namespace, workspace: Path) -> None:
             raise CampaignError("only an active campaign can complete")
         if not args.gate_passed:
             raise CampaignError("completion requires --gate-passed")
+        try:
+            require_no_app_server_dispatch_debt(operation="campaign completion")
+        except AppServerUserStateError as error:
+            raise CampaignError(str(error)) from error
         item.fields["Status"] = "complete"
         item.fields["Completion Evidence"] = args.evidence
         item.fields["Completion Date"] = date.today().isoformat()

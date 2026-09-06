@@ -1824,7 +1824,11 @@ def main() -> int:
                 else "gui_fallback",
                 category=type(error).__name__,
                 mutation_state="possible" if possible_mutation else "none",
-                backend="app_server" if lifecycle.strict_request else "gui",
+                backend=(
+                    "gui"
+                    if possible_mutation or not lifecycle.strict_request
+                    else "app_server"
+                ),
             )
         print(json.dumps({"error": str(error)}, indent=2), file=os.sys.stderr)
         return 1

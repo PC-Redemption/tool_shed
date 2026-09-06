@@ -21,7 +21,7 @@ from typing import Any, Callable, Iterator, Mapping
 PREFERENCE_SCHEMA_VERSION = 2
 LEGACY_PREFERENCE_SCHEMA_VERSION = 1
 OPERATOR_RUNTIME_TRUST = "operator-runtime"
-EVENT_SCHEMA_VERSION = 2
+EVENT_SCHEMA_VERSION = 3
 DISPATCH_LEASE_SECONDS = 300
 OWNER_PROFILE_SCHEMA_VERSION = 1
 LOCK_TIMEOUT_SECONDS = 10.0
@@ -454,7 +454,7 @@ class AppServerEventStore:
         counters: dict[str, Counter[str]] = {
             key: Counter() for key in ("source", "event_type", "role", "outcome", "category")
         }
-        included = legacy = malformed = 0
+        included = legacy = malformed = malformed_current = 0
         included_events: list[dict[str, Any]] = []
         try:
             lines = self.path.read_text(encoding="utf-8").splitlines()
@@ -478,6 +478,7 @@ class AppServerEventStore:
                 recorded = datetime.fromisoformat(str(event["recorded_at"]).replace("Z", "+00:00")).timestamp()
             except (KeyError, TypeError, ValueError):
                 malformed += 1
+                malformed_current += 1
                 continue
             if recorded < cutoff:
                 continue
@@ -531,6 +532,11 @@ class AppServerEventStore:
             group["count"] += 1
             group["first_seen"] = min(group["first_seen"], recorded_at)
             group["last_seen"] = max(group["last_seen"], recorded_at)
+        dispatch = self._dispatch_report(
+            included_events,
+            now_epoch=float(self.now()),
+            malformed_current=malformed_current,
+        )
         return {
             "schema_version": 1,
             "kind": "tool-shed-app-server-opportunity-report",
@@ -545,6 +551,9 @@ class AppServerEventStore:
             "gui_fallbacks": outcomes["gui_fallback"],
             "reconciliations": outcomes["gui_reconciliation"],
             "skipped_opportunities": outcomes["gui"],
+            "dispatch_debt": dispatch["debt_count"],
+            "dispatch_ready": dispatch["debt_count"] == 0,
+            "dispatch_lifecycles": dispatch,
             "counts": {key: dict(sorted(counter.items())) for key, counter in counters.items()},
             "last_success": max(successes) if successes else None,
             "last_failure": max((str(event["recorded_at"]) for event in failures), default=None),
@@ -558,6 +567,171 @@ class AppServerEventStore:
                 "coverage": "not-recorded-by-opportunity-events",
             },
             "privacy": "content-free-controlled-fields-only",
+        }
+
+    @staticmethod
+    def _dispatch_report(
+        events: list[dict[str, Any]],
+        *,
+        now_epoch: float,
+        malformed_current: int,
+    ) -> dict[str, Any]:
+        terminal_outcomes = AppServerDispatchLifecycle.TERMINAL_OUTCOMES
+        lifecycle_events = [
+            event
+            for event in events
+            if event.get("outcome") in {"selected", "attempted"}
+            or (
+                event.get("event_type") == "terminal"
+                and event.get("outcome") in terminal_outcomes
+            )
+        ]
+        grouped: dict[str, list[dict[str, Any]]] = {}
+        for event in lifecycle_events:
+            correlation = str(event.get("correlation_id", "unknown"))
+            grouped.setdefault(correlation, []).append(event)
+
+        findings: list[dict[str, Any]] = []
+        completed = pending = expired = 0
+        command_roles = {
+            "plan": "planning",
+            "verify": "verification",
+            "camp-run": "camp_execution",
+            "next": "camp_execution",
+        }
+        for correlation, chain in sorted(grouped.items()):
+            codes: set[str] = set()
+            selections = [event for event in chain if event.get("outcome") == "selected"]
+            attempts = [event for event in chain if event.get("outcome") == "attempted"]
+            terminals = [
+                event
+                for event in chain
+                if event.get("event_type") == "terminal"
+                and event.get("outcome") in terminal_outcomes
+            ]
+            if len(selections) != 1:
+                codes.add("missing_selection" if not selections else "duplicate_selection")
+            if len(attempts) != 1:
+                codes.add("missing_attempt" if not attempts else "duplicate_attempt")
+            if len(terminals) != 1:
+                codes.add("missing_terminal" if not terminals else "duplicate_terminal")
+
+            anchor = selections[0] if selections else chain[0]
+            command = str(anchor.get("command", "unknown"))
+            role = str(anchor.get("role", "unknown"))
+            if command_roles.get(command) != role:
+                codes.add("role_command_mismatch")
+            identity_fields = (
+                "command",
+                "role",
+                "preference_mode",
+                "strict_request",
+                "source",
+            )
+            if any(
+                any(event.get(field) != anchor.get(field) for field in identity_fields)
+                for event in chain[1:]
+            ):
+                codes.add("metadata_mismatch")
+            if [event.get("outcome") for event in chain] != [
+                "selected",
+                "attempted",
+                *([terminals[0].get("outcome")] if len(terminals) == 1 else []),
+            ]:
+                codes.add("sequence_invalid")
+
+            if len(terminals) == 1:
+                terminal = terminals[0]
+                outcome = terminal.get("outcome")
+                backend = terminal.get("backend")
+                mutation = terminal.get("mutation_state")
+                strict = bool(anchor.get("strict_request"))
+                valid_terminal = (
+                    outcome == "completed"
+                    and backend == "app_server"
+                    and mutation in {"none", "verified"}
+                ) or (
+                    outcome == "gui_fallback"
+                    and not strict
+                    and backend == "gui"
+                    and mutation == "none"
+                ) or (
+                    outcome == "reconciliation_required"
+                    and backend == "gui"
+                    and mutation in {"possible", "unknown"}
+                ) or (
+                    outcome == "failed"
+                    and strict
+                    and backend == "app_server"
+                    and mutation == "none"
+                )
+                if not valid_terminal:
+                    codes.add("terminal_contract_invalid")
+
+            try:
+                anchor_epoch = datetime.fromisoformat(
+                    str(anchor["recorded_at"]).replace("Z", "+00:00")
+                ).timestamp()
+            except (KeyError, TypeError, ValueError):
+                anchor_epoch = now_epoch
+                codes.add("malformed_event")
+            age_seconds = max(0, int(now_epoch - anchor_epoch))
+            incomplete = bool(
+                {"missing_attempt", "missing_terminal"}.intersection(codes)
+            )
+            pending_shape = (
+                len(selections) == 1
+                and not terminals
+                and len(attempts) <= 1
+                and codes <= {"missing_attempt", "missing_terminal", "sequence_invalid"}
+            )
+            if not codes:
+                status = "complete"
+                completed += 1
+            elif incomplete and pending_shape and age_seconds <= DISPATCH_LEASE_SECONDS:
+                status = "pending"
+                pending += 1
+            elif incomplete and pending_shape:
+                status = "expired"
+                expired += 1
+                codes.add("lease_expired")
+            else:
+                status = "invalid"
+            findings.append(
+                {
+                    "correlation_id": correlation,
+                    "status": status,
+                    "codes": sorted(codes),
+                    "command": command,
+                    "role": role,
+                    "age_seconds": age_seconds,
+                }
+            )
+
+        debt = [item for item in findings if item["status"] != "complete"]
+        if malformed_current:
+            debt.append(
+                {
+                    "correlation_id": "malformed",
+                    "status": "invalid",
+                    "codes": ["malformed_current_event"],
+                    "command": "unknown",
+                    "role": "unknown",
+                    "age_seconds": 0,
+                }
+            )
+        return {
+            "schema_version": 1,
+            "lease_seconds": DISPATCH_LEASE_SECONDS,
+            "observed_count": len(grouped),
+            "complete_count": completed,
+            "pending_count": pending,
+            "expired_count": expired,
+            "invalid_count": sum(item["status"] == "invalid" for item in debt),
+            "malformed_current_events": malformed_current,
+            "debt_count": len(debt),
+            "findings": debt[:50],
+            "truncated": len(debt) > 50,
         }
 
     def correlation_events(self, correlation_id: str) -> list[dict[str, Any]]:
@@ -679,6 +853,88 @@ class AppServerDispatchLifecycle:
         lifecycle._selected = True
         return lifecycle
 
+    @classmethod
+    def recover(
+        cls,
+        correlation_id: str,
+        *,
+        disposition: str,
+        path: Path | None = None,
+    ) -> dict[str, Any]:
+        if disposition not in {"pre-mutation", "mutation-uncertain"}:
+            raise AppServerUserStateError("unsupported dispatch recovery disposition")
+        store = AppServerEventStore(path)
+        events = store.correlation_events(correlation_id)
+        selections = [event for event in events if event.get("outcome") == "selected"]
+        attempts = [event for event in events if event.get("outcome") == "attempted"]
+        terminals = [
+            event for event in events if event.get("outcome") in cls.TERMINAL_OUTCOMES
+        ]
+        if len(selections) != 1 or len(attempts) > 1 or len(terminals) > 1:
+            raise AppServerUserStateError(
+                "dispatch recovery requires one unambiguous current-schema lifecycle"
+            )
+        selected = selections[0]
+        if disposition == "pre-mutation" and attempts:
+            raise AppServerUserStateError(
+                "an attempted dispatch requires mutation-uncertain reconciliation"
+            )
+        if disposition == "mutation-uncertain" and not attempts:
+            raise AppServerUserStateError(
+                "mutation-uncertain recovery requires a recorded execution attempt"
+            )
+        strict = bool(selected.get("strict_request"))
+        expected_outcome = (
+            "reconciliation_required"
+            if disposition == "mutation-uncertain"
+            else "failed"
+            if strict
+            else "gui_fallback"
+        )
+        if terminals:
+            terminal = terminals[0]
+            if terminal.get("outcome") != expected_outcome:
+                raise AppServerUserStateError(
+                    "dispatch recovery conflicts with the existing terminal disposition"
+                )
+            return {
+                "correlation_id": correlation_id,
+                "outcome": expected_outcome,
+                "idempotent": True,
+                "writes_performed": False,
+            }
+        lifecycle = cls(
+            command=str(selected.get("command", "unknown")),
+            role=str(selected.get("role", "unknown")),
+            preference_mode=str(selected.get("preference_mode", "UNKNOWN")),
+            strict_request=strict,
+            source=str(selected.get("source", "unknown")),
+            path=path,
+            correlation_id=correlation_id,
+        )
+        lifecycle._selected = True
+        lifecycle._attempted = bool(attempts)
+        lifecycle.terminal(
+            expected_outcome,
+            category=(
+                "process_loss_mutation_uncertain"
+                if disposition == "mutation-uncertain"
+                else "process_loss_pre_mutation"
+            ),
+            mutation_state="possible" if disposition == "mutation-uncertain" else "none",
+            backend=(
+                "gui"
+                if disposition == "mutation-uncertain" or not strict
+                else "app_server"
+            ),
+        )
+        return {
+            "correlation_id": correlation_id,
+            "outcome": expected_outcome,
+            "idempotent": False,
+            "writes_performed": True,
+        }
+
     def _record(
         self,
         *,
@@ -763,3 +1019,29 @@ def record_app_server_event_best_effort(
     except (AppServerUserStateError, OSError, TypeError, ValueError):
         return False
     return True
+
+
+def require_no_app_server_dispatch_debt(
+    *,
+    path: Path | None = None,
+    operation: str,
+) -> dict[str, Any]:
+    """Fail a closure boundary while a current-schema eligible dispatch is unresolved."""
+
+    report = AppServerEventStore(path).report(hours=24 * 365)
+    debt = int(report.get("dispatch_debt", 0))
+    if debt:
+        findings = report.get("dispatch_lifecycles", {}).get("findings", [])
+        codes = sorted(
+            {
+                str(code)
+                for finding in findings
+                for code in (finding.get("codes") or [])
+            }
+        )
+        summary = ", ".join(codes[:8]) or "unknown"
+        raise AppServerUserStateError(
+            f"{operation} is blocked by {debt} unresolved App Server dispatch "
+            f"lifecycle(s): {summary}"
+        )
+    return report

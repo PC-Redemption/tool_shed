@@ -672,6 +672,19 @@ or already-consumed identity refuses replay. Continue to App Server only when `a
 fails closed; a persisted or repository-default request that cannot select App Server records a
 sanitized event, reports the reason, and continues the same action immediately in the current GUI
 without asking or stopping.
+
+If a process ends after selection or attempt without a terminal record, inspect the workspace and
+the compact mutation journal first. Resolve a proven pre-mutation loss with
+`app_server_control.py resolve <correlation> --disposition pre-mutation --json`. Resolve an
+attempt whose mutation state is not proven absent with `--disposition mutation-uncertain`; this
+records reconciliation-required and never replays the worker. Recovery is single-write and
+idempotent. Do not use pre-mutation disposition after an attempt.
+
+Current-schema pending, expired, duplicated, malformed, or contradictory dispatch lifecycles are
+dispatch debt. Strict Doctor and campaign/document completion, Work5 lane verification, and
+release-cohort freeze/publication/finalization fail closed while debt exists. Pre-contract event
+schemas remain bounded historical telemetry and are not rewritten into invented lifecycles.
+
 Fresh schema-v2 `ts: app-server on` consent selects `operator-runtime` trust for every supported
 local role, including CAMP. In that mode, version and executable hash are telemetry, and missing
 positive qualification or dirty-read evidence never blocks admission. The actual App Server

@@ -22,6 +22,10 @@ from typing import Any, Sequence
 
 import document_store
 import hybrid_state
+from app_server_user_state import (
+    AppServerUserStateError,
+    require_no_app_server_dispatch_debt,
+)
 try:
     from scripts import subprocess_launch
 except ModuleNotFoundError:  # Direct execution: python scripts/release_cohort.py
@@ -608,6 +612,10 @@ def freeze(
     failure_evidence: str | None = None,
 ) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
+    try:
+        require_no_app_server_dispatch_debt(operation="release cohort freeze")
+    except AppServerUserStateError as error:
+        raise ReleaseCohortError(str(error)) from error
     snapshot = _require_snapshot(workspace, expected)
     mutable = [
         item for item in snapshot["active"]
@@ -707,6 +715,10 @@ def record_release(
     evidence: str,
 ) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
+    try:
+        require_no_app_server_dispatch_debt(operation="release publication recording")
+    except AppServerUserStateError as error:
+        raise ReleaseCohortError(str(error)) from error
     snapshot = _require_snapshot(workspace, expected)
     frozen = [
         item for item in snapshot["active"] if item["lifecycle_state"] == "frozen"
@@ -813,6 +825,10 @@ def finalize(
     cohort_id: str | None = None,
 ) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
+    try:
+        require_no_app_server_dispatch_debt(operation="release cohort finalization")
+    except AppServerUserStateError as error:
+        raise ReleaseCohortError(str(error)) from error
     snapshot = _require_snapshot(workspace, expected)
     pending_cohorts = [
         item for item in snapshot["active"]

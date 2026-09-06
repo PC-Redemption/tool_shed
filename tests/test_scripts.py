@@ -12,7 +12,7 @@ import tarfile
 import tempfile
 import time
 import unittest
-from datetime import date
+from datetime import UTC, date, datetime
 from pathlib import Path
 from unittest import mock
 
@@ -93,7 +93,7 @@ def run_script(
     if arguments and Path(arguments[0]).name == "update_snapshot.py":
         environment.setdefault(
             "TOOL_SHED_STATE_ROOT",
-            str(run_cwd / ".git" / "tool-shed-test-state"),
+            str(run_cwd.parent / ".tool-shed-test-state"),
         )
     return subprocess.run(
         [sys.executable, *arguments],
@@ -1958,6 +1958,83 @@ Next Action: keep going
             self.assertTrue((workspace / "work" / "00-campaigns" / "completed" / "001-first.md").is_file())
             active_queue = (workspace / "work" / "00-campaigns" / "active-queue.md").read_text(encoding="utf-8")
             self.assertIn("Detour and return point: second", active_queue)
+
+    def test_campaign_completion_refuses_pending_app_server_dispatch(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+            status = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace),
+                    "status", "--json",
+                ).stdout
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace),
+                "add", "dispatch-debt", "Dispatch debt",
+                "--outcome", "prove closure gating",
+                "--completion-gate", "dispatch debt is clear",
+                "--expect", status["state_token"],
+            )
+            status = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace),
+                    "status", "--json",
+                ).stdout
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace),
+                "start", "dispatch-debt", "--expect", status["state_token"],
+            )
+            state_root = workspace / "operator-state"
+            event_path = state_root / "tool-shed" / "app-server-events.jsonl"
+            event_path.parent.mkdir(parents=True)
+            event_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": 3,
+                        "recorded_at": datetime.now(UTC).isoformat(),
+                        "command": "plan",
+                        "outcome": "selected",
+                        "category": "eligible",
+                        "mutation_state": "none",
+                        "backend": "app_server",
+                        "preference_mode": "ON",
+                        "strict_request": False,
+                        "source": "passive",
+                        "event_type": "opportunity",
+                        "role": "planning",
+                        "correlation_id": "pending-campaign",
+                    },
+                    sort_keys=True,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            status = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace),
+                    "status", "--json",
+                ).stdout
+            )
+            environment = dict(os.environ)
+            environment["TOOL_SHED_STATE_ROOT"] = str(state_root)
+            blocked = run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace),
+                "complete", "dispatch-debt", "--gate-passed",
+                "--evidence", "tests:dispatch-debt", "--expect", status["state_token"],
+                check=False,
+                env=environment,
+            )
+            self.assertEqual(2, blocked.returncode)
+            self.assertIn("unresolved App Server dispatch", blocked.stderr)
+            current = json.loads(
+                run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace),
+                    "status", "--json",
+                ).stdout
+            )
+            self.assertEqual(["dispatch-debt"], current["working"])
 
     def test_project_identity_is_distinct_stable_and_root_bound(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

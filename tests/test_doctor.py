@@ -171,6 +171,33 @@ class DoctorTests(unittest.TestCase):
             self.assertNotIn("WORK_INDEX_STALE", repaired_codes)
             self.assertIn("DIRTY_CAMPAIGN_STATE", repaired_codes)
 
+    def test_detects_unresolved_app_server_dispatch_debt(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary)
+            self.install_workspace(workspace)
+            app_report = {
+                "dispatch_debt": 1,
+                "dispatch_ready": False,
+                "dispatch_lifecycles": {
+                    "debt_count": 1,
+                    "findings": [
+                        {
+                            "correlation_id": "pending-one",
+                            "status": "pending",
+                            "codes": ["missing_attempt", "missing_terminal"],
+                        }
+                    ],
+                },
+            }
+            with mock.patch.object(
+                doctor.AppServerEventStore, "report", return_value=app_report
+            ):
+                report = doctor.inspect(workspace)
+            findings = {item["code"]: item for item in report["findings"]}
+            self.assertIn("APP_SERVER_DISPATCH_DEBT", findings)
+            self.assertEqual("error", findings["APP_SERVER_DISPATCH_DEBT"]["classification"])
+            self.assertEqual(1, report["checks"]["app_server_dispatch"]["dispatch_debt"])
+
     def test_external_runtime_claim_requires_a_durable_workspace_record(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             workspace = Path(temporary)

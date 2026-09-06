@@ -38,6 +38,7 @@ try:
         FeatureConfigError,
     )
     from scripts.app_server_user_state import (
+        AppServerDispatchLifecycle,
         AppServerEventStore,
         AppServerOwnerProfileStore,
         AppServerPreferenceStore,
@@ -75,6 +76,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/app_server_contr
         FeatureConfigError,
     )
     from app_server_user_state import (  # type: ignore[no-redef]
+        AppServerDispatchLifecycle,
         AppServerEventStore,
         AppServerOwnerProfileStore,
         AppServerPreferenceStore,
@@ -1071,6 +1073,16 @@ def parse_args() -> argparse.Namespace:
     )
     report.add_argument("--hours", type=float, default=24.0)
     report.add_argument("--json", action="store_true")
+    resolve = subparsers.add_parser(
+        "resolve", help="Disposition one interrupted dispatch without replaying it."
+    )
+    resolve.add_argument("correlation_id")
+    resolve.add_argument(
+        "--disposition",
+        choices=("pre-mutation", "mutation-uncertain"),
+        required=True,
+    )
+    resolve.add_argument("--json", action="store_true")
     return parser.parse_args()
 
 
@@ -1153,6 +1165,14 @@ def main() -> int:
                 if args.json
                 else format_control_status(report)
             )
+            return 0
+        if args.operation == "resolve":
+            result = AppServerDispatchLifecycle.recover(
+                args.correlation_id,
+                disposition=args.disposition,
+                path=args.events,
+            )
+            print(json.dumps(result, indent=2, sort_keys=True))
             return 0
         if args.operation == "report":
             report = AppServerEventStore(args.events).report(hours=args.hours)
