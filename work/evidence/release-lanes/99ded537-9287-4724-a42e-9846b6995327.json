@@ -1,18 +1,20 @@
 {
-  "candidate_commit": null,
+  "candidate_commit": "2538636e6101d3be5723ebfb3b7dbf93f39ffecf",
   "created_at": "2026-09-06T14:54:10Z",
   "kind": "tool-shed-project-release-lanes",
   "lanes": {
     "linux": {
       "development": {
-        "actor": null,
-        "artifact": null,
+        "actor": "codex",
+        "artifact": "sha256:ee26d1d5cfe70081e38ae5f9f8a20510c6444962f55fbd7b8d9c8e2f4529a549",
         "authorization_ref": null,
-        "evidence": [],
+        "evidence": [
+          "work/evidence/dashboard-reporter-v0.48.1-work3.md"
+        ],
         "reason": null,
-        "recorded_at": null,
-        "source_commit": null,
-        "status": "open",
+        "recorded_at": "2026-09-06T15:03:11Z",
+        "source_commit": "2538636e6101d3be5723ebfb3b7dbf93f39ffecf",
+        "status": "verified",
         "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed"
       },
       "production": {
@@ -29,14 +31,16 @@
     },
     "web": {
       "development": {
-        "actor": null,
-        "artifact": null,
+        "actor": "codex",
+        "artifact": "tool-shed-dashboard:dev-2538636e6101@sha256:ee46c6666c790b4d7bbbce0aa079a9788a2aba07d6095dfeb0e8104b9a912ab1",
         "authorization_ref": null,
-        "evidence": [],
+        "evidence": [
+          "work/evidence/dashboard-reporter-v0.48.1-work3.md"
+        ],
         "reason": null,
-        "recorded_at": null,
-        "source_commit": null,
-        "status": "open",
+        "recorded_at": "2026-09-06T15:03:02Z",
+        "source_commit": "2538636e6101d3be5723ebfb3b7dbf93f39ffecf",
+        "status": "verified",
         "target": "tsrookarocom-dev@sup.local:/home/jon/docker/ts.rookaro.com-dev"
       },
       "production": {
@@ -53,14 +57,16 @@
     },
     "windows": {
       "development": {
-        "actor": null,
-        "artifact": null,
+        "actor": "codex",
+        "artifact": "sha256:ee26d1d5cfe70081e38ae5f9f8a20510c6444962f55fbd7b8d9c8e2f4529a549",
         "authorization_ref": null,
-        "evidence": [],
+        "evidence": [
+          "work/evidence/dashboard-reporter-v0.48.1-work3.md"
+        ],
         "reason": null,
-        "recorded_at": null,
-        "source_commit": null,
-        "status": "open",
+        "recorded_at": "2026-09-06T15:03:22Z",
+        "source_commit": "2538636e6101d3be5723ebfb3b7dbf93f39ffecf",
+        "status": "verified",
         "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed"
       },
       "production": {
@@ -82,7 +88,7 @@
     "windows",
     "linux"
   ],
-  "revision": 1,
+  "revision": 5,
   "schema_version": 1,
-  "updated_at": "2026-09-06T14:54:10Z"
+  "updated_at": "2026-09-06T15:03:22Z"
 }
