@@ -1,0 +1,84 @@
+# Program Roadmap: Recommended Remaining Work Hierarchy
+
+Status: active
+Type: program-roadmap
+Updated: 2026-09-06
+Next Action: execute M1 through the Work2 implementation campaign
+Roadmap ID: recommended-remaining-work-hierarchy
+Roadmap Revision: 1
+Source Idea: IDEA-0023
+Source Project Map: MAP-0031
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 2
+Reviewed Body SHA256: e212586b5a03419fd96cf6f8ffd8694ba1089230a580241f0ad21927534f01c1
+
+## Program Outcome
+
+The hosted dashboard presents the complete unfinished workload in locally recommended order with
+its hierarchy intact. The projection is deterministic and fail-visible, the flat ledger remains
+available, row commands remain clipboard-only, and the exact released behavior is verified on
+Linux, Windows, and production before recursive closure.
+
+## M1-REMAINING-TREE-CANDIDATE — Build the operational presentation
+
+Status: ready
+Required Endpoint: Work2
+Depends on: none
+
+Outcome: Define remaining membership and canonical placement, project deterministically ordered
+root trees with context ancestors and one Next marker, render Remaining plus Tree by default,
+retain All plus List, and add accessible allowlisted clipboard menus with focused regression proof.
+
+Gates:
+
+- `G1-REMAINING-PLACEMENT-CONTRACT`
+- `G2-HIERARCHY-ORDER-CONTEXT`
+- `G3-DEFAULT-TREE-LIST-PARITY`
+- `G4-BOUNDED-COMMAND-MENUS`
+
+Candidate campaign: `build-recommended-remaining-work-hierarchy`.
+
+## M2-PORTABLE-RELEASE-AND-CONVERGENCE — Qualify and ship the hierarchy
+
+Status: waiting
+Required Endpoint: Work5
+Depends on: M1-REMAINING-TREE-CANDIDATE
+
+Outcome: Prove focused and full behavior, compatibility and immediate reporting on disposable
+Linux and Windows installations, exact-SHA CI and provenance, the hosted production deployment,
+and immediate live dashboard convergence before recursive outcome reconciliation.
+
+Gates:
+
+- Reconfirm `G1` through `G4` on the release candidate.
+- `G5-CROSS-LANE-PRODUCTION-PROOF`
+
+Candidate campaign: `qualify-release-and-converge-remaining-work-hierarchy`.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G1-REMAINING-PLACEMENT-CONTRACT | M1 and M2 regression |
+| G2-HIERARCHY-ORDER-CONTEXT | M1 and M2 regression |
+| G3-DEFAULT-TREE-LIST-PARITY | M1 and M2 regression |
+| G4-BOUNDED-COMMAND-MENUS | M1 and M2 regression |
+| G5-CROSS-LANE-PRODUCTION-PROOF | M2 |
+
+Transfer count: 5 reviewed gates; 5 mapped gates; 0 dropped.
+
+## Recovery Contract
+
+- Missing, multiple, or cyclic parentage is surfaced under Needs placement and never guessed.
+- Narrowing retains context ancestors and never reports them as matching remaining work.
+- Reporter or hosted-version incompatibility keeps the release chain open and visibly stale.
+- Failed platform, CI, release, deployment, or convergence evidence leaves the owning outcome open.
+
+## Verification Strategy
+
+- Unit-test membership, placement, cycles, ordering, filtering, ancestry, whole-root pagination,
+  Next selection, allowlisted commands, clipboard fallback, and accessible interaction.
+- Exercise malformed and multi-linked synthetic trees without duplicating or silently placing rows.
+- Run strict Doctor, the full repository validator, development web checks, clean and upgraded
+  Linux and Windows qualification, exact-SHA CI, release provenance, production deployment, and a
+  fresh report whose hosted page renders the current IDEA-0023 chain immediately.

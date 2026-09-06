@@ -1,0 +1,223 @@
+# Idea Brief: Dashboard Remaining Work Hierarchy and Artifact Commands
+
+Status: ready-for-prm
+Type: idea-brief
+Updated: 2026-09-06
+Next Action: carry the settled remaining-work tree through PRM and Work5
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces:
+
+## Current Synthesis
+
+### Idea
+
+Make the hosted dashboard Work tab answer one primary operator question immediately: **what work
+remains, in what recommended order, and where does each item belong?** Its default presentation is
+an indented, expandable folder-style hierarchy derived from Tool Shed's established ownership and
+parent/child relationships, not a newest-first ledger or node-and-arrow diagram.
+
+Every dashboard-visible governed work item has exactly one canonical tree placement: it is either a
+root or a child of one owning parent. Additional relationships remain secondary links and never
+duplicate a subtree. Missing or ambiguous placement is surfaced in a bounded **Needs placement**
+group rather than guessed. New governed work enters this hierarchy as soon as its authoritative
+relationship is reported.
+
+The default `Remaining` filter includes every item with an unfinished obligation: active, queued,
+working, waiting, blocked, open or unreconciled outcome, closure debt, or completed work awaiting
+Work5. It excludes an item only when it is terminal, recursively closed, reconciled, and carries no
+remaining release obligation. Root chains are ordered by the locally reported planning order;
+children preserve hierarchy and use dependency, milestone, Campaign queue, and stable fallback order.
+Filtering never produces misleading orphans: matching descendants retain their ancestors as context.
+
+Keep the existing flat list as an explicit audit/history view. Each tree row retains the useful
+Document, Closure, Release, Outcome, and Reconciliation state. The command menu remains valuable but
+secondary to this at-a-glance work-navigation outcome.
+
+Give every tree entry a small square command button. Clicking the button opens a compact,
+state-aware menu whose entries use clear human descriptions such as **Continue this campaign** or
+**Investigate the blocker**. Selecting an entry copies the exact corresponding `ts:` command to the
+browser clipboard for the operator to paste into Codex. It does not execute the command, submit an
+action to the hosted service, or mutate local Tool Shed state.
+
+### Why It Matters
+
+The Overview summarizes one current node per chain, so it hides much of the remaining branch. The
+current Work table shows the complete ledger newest-first, so completed history overwhelms current
+work and the operator must reconstruct lineage from a Relationships column. Neither provides a
+quick, ordered presentation of the complete remaining workload with its hierarchy intact.
+
+A remaining-work tree makes ownership, branching, waiting siblings, release obligations, and the
+next executable item visible together. The command menu then turns each row into a safe starting
+point for local Codex work without requiring the operator to remember syntax or granting the hosted
+dashboard control over the local workspace.
+
+This extends two completed directions without reopening them: `IDEA-0012` established the bounded
+relationship-aware hosted Work inventory, and `IDEA-0022` established descriptive clipboard-copy
+commands as a safe bridge from advisory hosted state to locally authoritative Tool Shed actions.
+
+### Desired Outcome
+
+The Work tab opens on `Remaining` plus `Tree`. It presents the latest reporting instance's complete
+unfinished workload as one or more expandable folder-style trees in recommended order. A concise
+header reports remaining item and root-chain counts. Indentation and chevrons expose ownership;
+one visible **Next** marker identifies the first executable item without hiding blocked or waiting
+siblings. Existing state columns remain available for row-level inspection.
+
+The tree is a projection, not a new authority. Root order follows the verified local planning
+projection, then actionable lifecycle/readiness and stable ID. Within a root, semantic parent/child
+placement always wins over global sorting; siblings use explicit dependency or milestone/Campaign
+queue order when available and stable type/ID fallback otherwise. Completed ancestors required to
+explain an unfinished descendant remain visible as subdued context. Pagination, when needed, keeps
+whole roots together.
+
+The filter offers `Remaining` by default, narrower operational states such as `Working`, `Blocked`,
+and `Awaiting Work5`, plus explicit `All` history. A `Tree`/`List` view control keeps the flat ledger
+available for global sorting and audit. Search and type filters preserve matching ancestors in Tree
+view and clearly distinguish matching rows from context rows.
+
+Every displayed Idea, Map, PRM, and Campaign has a compact square command-menu button. Its menu is
+generated from a controlled local allowlist using only the artifact type, stable visible ID,
+lifecycle, current blocker or finding state, and applicable release posture. Menu labels and short
+descriptions explain the effect in plain language; the underlying exact command may remain
+secondary or hidden. Selecting an item copies the command, gives accessible confirmation, and
+never executes it.
+
+Menus include common continuation and inspection routes appropriate to the artifact. Blocked work
+adds commands that inspect or mitigate the blocker and, where valid, unblock the Campaign. A current
+actionable loop finding may offer its exact `ts: resolve loop <LOOP-id>` route. Commands use stable
+public IDs and force Codex to re-read authoritative local state after paste; they never contain
+credentials, local paths, state tokens, raw diagnostic text, or pre-authorized mutations.
+
+### Candidate Interaction
+
+```text
+Work                                      7 remaining items · 2 root chains
+[Remaining ▾]  [Tree | List]  [All types ▾]
+
+1  ▾ IDEA      Dashboard hierarchy and artifact commands
+     ▾ MAP      Remaining-work dashboard direction
+        ▾ PRM   Deliver the ordered hierarchy
+           ● CAMP   Build remaining-work tree                         NEXT  [>_]
+           ○ CAMP   Qualify and release                               Waiting [>_]
+
+Needs placement
+   ! Governed work with no valid canonical parent/root classification
+```
+
+Selecting `[>_]` on `CAMP-0166` could show descriptive choices such as:
+
+- **Continue this campaign** — resume the exact Campaign from its current step.
+- **Review current status** — explain progress, blockers, evidence, and the next safe action.
+- **Investigate the blocker** — diagnose what prevents progress and recommend the smallest mitigation.
+- **Return it to the queue** — clear a valid blocked state without starting execution.
+
+Clicking a choice copies only its exact allowlisted `ts:` command and briefly confirms which action
+was copied.
+
+## Constraints And Non-Goals
+
+- Local Tool Shed state remains authoritative; the hosted dashboard remains an advisory projection.
+- The interface is a folder-style indented tree/table, not a graphical node-and-edge diagram.
+- Preserve existing useful state dimensions rather than hiding them in the tree.
+- Use reported stable relationships; do not infer hierarchy from titles, timestamps, or ID prefixes.
+- Every displayed governed item has one canonical owning parent or is explicitly a root. Do not
+  duplicate multi-linked work under several parents.
+- Missing, cyclic, or ambiguous placement is visible and actionable; it never silently falls back to
+  a plausible-looking hierarchy.
+- Preserve hierarchy under filtering, searching, and pagination. Context ancestors must not inflate
+  the reported matching-work count.
+- Recommended order is locally derived and reported; the hosted dashboard cannot reorder work.
+- Preserve reporting-instance boundaries and freshness; do not merge divergent instance trees.
+- Command menus are built from a product-defined allowlist, controlled state, and stable public IDs.
+- A click copies text to the clipboard only. It does not execute, enqueue, approve, or remotely
+  deliver an action.
+- Codex must resolve current project identity, state, authority, and safety after the command is pasted.
+- Never copy credentials, filesystem paths, prompts, source text, transient tokens, raw diagnostics,
+  shell commands, or unrestricted operator-authored text.
+- History-only or resolved entries receive no mutation command. Read-only inspection may remain.
+- Explicit non-goal: add a hosted-to-local action-intent channel, polling agent, or remote-control API.
+- Explicit non-goal: duplicate lifecycle, blocker, reconciliation, PRM, Campaign, or release logic in
+  the dashboard.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Remaining-work folder tree as the default Work view | Answers what remains and what is next while preserving lineage and state columns | Requires a precise remaining predicate, placement invariant, and deterministic order | Selected direction |
+| Replace the table with nested cards or a node graph | Visually emphasizes hierarchy | Loses scan-friendly column alignment and does not match the requested familiar folder-tree interaction | Rejected |
+| Keep an optional flat List view | Preserves global sorting and column comparison for audits | Adds a small view-mode control and another presentation path to test | Selected complement |
+| One square command button per artifact | Keeps commands discoverable without widening every row | Needs accessible labeling, keyboard behavior, and compact popover placement | Selected direction |
+| Descriptive menu labels with hidden exact commands | Lets operators choose by intent instead of memorizing syntax | Copy confirmation must make the selected action unambiguous | Selected direction |
+| State-aware allowlisted commands | Offers continuation, review, blocker, mitigation, and release actions only when relevant | Requires one canonical mapping from artifact type/state to safe command templates | Selected direction |
+| A uniform `ts: continue <artifact-id>` route | Makes every menu predictable and keeps copied text short | Would add a new canonical dispatcher that must resolve type and state deterministically | Open option |
+| Existing type-specific commands only | Reuses established Tool Shed routes | Some Maps and PRMs lack one concise ID-targeted continuation command | Open option |
+
+## Open Questions
+
+- Which additional non-document governed cycle kinds need their own visible row in the first release,
+  rather than appearing through their owning Idea, Map, PRM, or Campaign and release state?
+- Which existing exact Tool Shed inspection/continuation commands form the smallest useful first
+  command allowlist without adding a new generic dispatcher?
+
+## Decisions
+
+- Use a familiar folder-style tree with indentation and expand/collapse controls.
+- Make `Work → Remaining → Tree` the default operational presentation.
+- Define remaining work from unfinished lifecycle, outcome, reconciliation, closure, or release
+  obligations; exclude only fully terminal and recursively closed work.
+- Keep `All → List` as an explicit history/audit presentation rather than the default.
+- Require one canonical tree placement per item: one owning parent or one root. Surface invalid or
+  ambiguous placement under **Needs placement**.
+- Preserve ancestors as subdued context when a filter or search matches only a descendant.
+- Order root chains by the reported local planning projection and order siblings by explicit
+  dependency/milestone/Campaign order with a deterministic stable fallback.
+- Mark the first executable item as **Next** while keeping blocked, waiting, and release-pending work
+  visible in its branch.
+- Keep each artifact as a row with its existing operational state columns.
+- Put one small square command-menu button on every displayed entry.
+- Describe menu actions in plain language; the description does not need to expose the raw command.
+- Clicking an action copies its exact command to the clipboard for manual paste into Codex.
+- The dashboard does not execute or remotely deliver copied commands.
+- Make menus specific to artifact type and current state.
+- Blocked entries should offer applicable unblock or mitigation-oriented commands.
+- Reuse the established local-authority and privacy boundary from prior dashboard work.
+
+## Don't Forget
+
+- Avoid repeating chain-level release badges on every ancestor when one tree-level rollup can explain it.
+- Preserve row-specific lifecycle state so a completed Campaign awaiting Work5 is distinguishable from
+  a currently working sibling.
+- Keep essential menu labels and confirmation accessible to keyboard and assistive-technology users.
+- Provide a clipboard fallback when the Clipboard API is unavailable.
+- Prevent filtered results from becoming misleading orphan rows with no visible ancestry.
+- Show matching-work and root-chain counts; do not count context-only ancestors as remaining matches.
+- Keep whole root trees together across pagination.
+- Validate copied commands against current canonical Tool Shed syntax; never generate arbitrary text
+  from titles or descriptions.
+- Use concise confirmation such as **Continue campaign command copied** without implying execution.
+
+## Exploration Log
+
+### 2026-09-06
+
+- Owner proposed switching the Work tab from a basic newest-first list to a tree now that explicit
+  parent/child relationships are established.
+- Clarified that the desired presentation is a familiar folder tree with chevrons and indentation,
+  not a node-and-arrow visualization.
+- Owner requested a small square command button on every entry. Its menu describes common actions for
+  that exact Idea, Map, PRM, or Campaign and copies the selected command for manual paste into Codex.
+- Owner clarified that action descriptions need not display the raw command.
+- Blocked entries should expose applicable unblock and mitigation commands.
+- Existing completed Ideas were reviewed: `IDEA-0012` supplies the relationship-aware Work inventory
+  foundation, while `IDEA-0022` supplies the clipboard-only local-command safety pattern. This brief
+  captures their new combined interaction rather than reopening either delivered outcome.
+- Owner clarified that the primary need is a quick presentation of all work remaining, in recommended
+  order, with hierarchy intact. The Overview and newest-first Work ledger both miss that outcome.
+- Settled the Work tab's default as `Remaining` plus `Tree`, retained `All` plus flat `List` for audit,
+  required ancestor context under filters, and made command menus secondary.
+- Settled a canonical placement rule: every displayed governed item is one root or one child; invalid,
+  cyclic, missing, or ambiguous placement is surfaced rather than inferred or duplicated.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

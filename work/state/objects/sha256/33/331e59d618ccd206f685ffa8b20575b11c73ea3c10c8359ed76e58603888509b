@@ -1,0 +1,34 @@
+# Campaign: Build Recommended Remaining Work Hierarchy
+
+Status: completed
+Type: campaign
+Updated: 2026-09-06
+Next Action: implement the Remaining Tree projection, list parity, and safe row commands
+Campaign ID: build-recommended-remaining-work-hierarchy
+Campaign Number: 169
+Outcome: The Work tab has a tested deterministic Remaining Tree default that preserves hierarchy, recommended order, state, audit access, and clipboard-only commands.
+Primary Focus Areas: operator-experience
+Supporting Focus Areas: dashboard-reporting, qualification-release, campaign-lifecycle
+Depends On: none
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work2
+Completion Gate: Exact remaining and placement predicates, ordered whole-root projection, context-preserving filters, one Next marker, Tree/List presentation, accessible expansion, and allowlisted clipboard commands pass focused tests and the configured development lane; the exact candidate is registered without publication.
+Completion Evidence: none
+Disposition: none
+Roadmap: recommended-remaining-work-hierarchy
+Roadmap Revision: 1
+Roadmap Document: PRM-0043
+Milestone: M1-REMAINING-TREE-CANDIDATE
+Unlocks Gates: G1-REMAINING-PLACEMENT-CONTRACT, G2-HIERARCHY-ORDER-CONTEXT, G3-DEFAULT-TREE-LIST-PARITY, G4-BOUNDED-COMMAND-MENUS
+
+## Request
+
+Implement the smallest complete operational tree. Treat reported relationship and planning data as
+projection input, place every dashboard-visible governed item once, retain context ancestors under
+narrowing, paginate complete roots, identify one executable Next item, and retain the flat ledger.
+Add descriptive artifact-specific command menus that only copy canonical Tool Shed commands.
+
+Stop at a registered Work2 development candidate after focused regression proof, strict Doctor,
+and the configured development web lane pass.
