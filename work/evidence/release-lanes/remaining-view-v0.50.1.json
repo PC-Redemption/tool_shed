@@ -18,14 +18,16 @@
         "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed"
       },
       "production": {
-        "actor": null,
-        "artifact": null,
+        "actor": "codex",
+        "artifact": "v0.50.1@9b41ed0bf135a11b39024ec95eb87ce6587d084a",
         "authorization_ref": null,
-        "evidence": [],
+        "evidence": [
+          "work/evidence/remaining-view-v0.50.1-work5.md"
+        ],
         "reason": null,
-        "recorded_at": null,
-        "source_commit": null,
-        "status": "open",
+        "recorded_at": "2026-09-06T22:43:19Z",
+        "source_commit": "c39480b492070270ba9835a67cae6672d8690a56",
+        "status": "verified",
         "target": "github-release:tool-shed-linux-install-client"
       }
     },
@@ -44,14 +46,16 @@
         "target": "tsrookarocom-dev@sup.local:/home/jon/docker/ts.rookaro.com-dev"
       },
       "production": {
-        "actor": null,
-        "artifact": null,
+        "actor": "codex",
+        "artifact": "tool-shed-dashboard:v0.50.1@sha256:6176c7617322966ba95bf46689c212dd92527cf9d8fb322edfe623ca040d6dd6",
         "authorization_ref": null,
-        "evidence": [],
+        "evidence": [
+          "work/evidence/remaining-view-v0.50.1-work5.md"
+        ],
         "reason": null,
-        "recorded_at": null,
-        "source_commit": null,
-        "status": "open",
+        "recorded_at": "2026-09-06T22:43:19Z",
+        "source_commit": "c39480b492070270ba9835a67cae6672d8690a56",
+        "status": "verified",
         "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com"
       }
     },
@@ -70,14 +74,16 @@
         "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed"
       },
       "production": {
-        "actor": null,
-        "artifact": null,
+        "actor": "codex",
+        "artifact": "v0.50.1@9b41ed0bf135a11b39024ec95eb87ce6587d084a",
         "authorization_ref": null,
-        "evidence": [],
+        "evidence": [
+          "work/evidence/remaining-view-v0.50.1-work5.md"
+        ],
         "reason": null,
-        "recorded_at": null,
-        "source_commit": null,
-        "status": "open",
+        "recorded_at": "2026-09-06T22:43:19Z",
+        "source_commit": "c39480b492070270ba9835a67cae6672d8690a56",
+        "status": "verified",
         "target": "github-release:tool-shed-windows-install-client"
       }
     }
@@ -88,7 +94,7 @@
     "windows",
     "linux"
   ],
-  "revision": 5,
+  "revision": 8,
   "schema_version": 1,
-  "updated_at": "2026-09-06T22:28:53Z"
+  "updated_at": "2026-09-06T22:43:19Z"
 }

@@ -40,5 +40,28 @@ subdued tree context when it owns a genuinely remaining descendant.
   the maintained qualification environment (Django 5.2.17), strict snapshot integrity was
   verified, strict Doctor was healthy, and the parent repository remained clean.
 
-Exact-SHA CI, publication, production promotion, clean unfiltered dashboard verification,
-automatic reporter convergence, and direct-outcome reconciliation remain required.
+### Release and production lanes
+
+- Frozen content commit `c39480b492070270ba9835a67cae6672d8690a56` passed the full GitHub
+  Validate matrix: 33/33 jobs completed successfully with zero failures
+  ([run 34064368612](https://github.com/PC-Redemption/tool_shed/actions/runs/34064368612)).
+- Provenance commit `9b41ed0bf135a11b39024ec95eb87ce6587d084a` is tagged `v0.50.1`; the
+  GitHub Release was published by
+  [run 34064662674](https://github.com/PC-Redemption/tool_shed/actions/runs/34064662674).
+- Web: a validated encrypted PostgreSQL backup
+  `dashboard-daily-20260906T224050Z.dump.age` and filesystem rollback copy
+  `release-backups/pre-v0.50.1-20260906T2239Z` preceded promotion. Production is healthy on
+  `tool-shed-dashboard:v0.50.1` at image digest
+  `sha256:6176c7617322966ba95bf46689c212dd92527cf9d8fb322edfe623ca040d6dd6`; public dashboard and
+  documentation health returned HTTP 200.
+- The production `tool_shed` inventory contains 267 rows. A direct, unfiltered production render
+  selected Remaining/Tree and returned 0 matching items and 0 roots. Representative legacy rows
+  `MAP-0002`, `MAP-0004`, `MAP-0006`, and `MAP-0008` occurred zero times in that default response
+  and remained present in the All/List response.
+- Linux and Windows test beds both completed the official stable updater to `v0.50.1`, with the
+  installed provenance bound to frozen content commit `c39480b492070270ba9835a67cae6672d8690a56`.
+  Strict snapshot verification and the 54 focused regressions passed on each platform; both parent
+  repositories remained clean.
+
+Release-cohort recording, automatic reporter convergence, direct-outcome reconciliation, final
+checkpoint, and after-action issue review remain required.

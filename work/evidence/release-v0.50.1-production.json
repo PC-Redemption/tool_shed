@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-production-release-evidence",
+  "release": {
+    "version": "0.50.1",
+    "tag": "v0.50.1",
+    "content_commit": "c39480b492070270ba9835a67cae6672d8690a56",
+    "provenance_commit": "9b41ed0bf135a11b39024ec95eb87ce6587d084a",
+    "published_at": "2026-09-06T22:39:50Z",
+    "url": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.50.1"
+  },
+  "qualification": {
+    "local_release_validation": "624 of 624 tests passed",
+    "linux_development_tests": "54 of 54 focused tests passed",
+    "windows_development_tests": "54 of 54 focused tests passed",
+    "validate_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34064368612",
+    "validate_jobs": "33 of 33 passed",
+    "publish_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34064662674",
+    "result": "passed"
+  },
+  "web_production": {
+    "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com",
+    "image": "tool-shed-dashboard:v0.50.1",
+    "image_sha256": "6176c7617322966ba95bf46689c212dd92527cf9d8fb322edfe623ca040d6dd6",
+    "database_backup": "/home/jon/docker/ts.rookaro.com/backups/dashboard-daily-20260906T224050Z.dump.age",
+    "rollback_bundle": "/home/jon/docker/ts.rookaro.com/release-backups/pre-v0.50.1-20260906T2239Z",
+    "public_dashboard_health_status": 200,
+    "public_docs_health_status": 200,
+    "production_readiness": "healthy",
+    "result": "passed"
+  },
+  "default_remaining_view": {
+    "project": "tool_shed",
+    "inventory_total": 267,
+    "query_parameters": {},
+    "selected_view": "tree",
+    "selected_scope": "remaining",
+    "status_filter_applied": false,
+    "matching_items": 0,
+    "root_chains": 0,
+    "legacy_default_occurrences": {
+      "MAP-0002": 0,
+      "MAP-0004": 0,
+      "MAP-0006": 0,
+      "MAP-0008": 0
+    },
+    "legacy_all_list_available": true,
+    "result": "passed"
+  },
+  "linux_production": {
+    "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed",
+    "installed_version": "0.50.1",
+    "content_commit": "c39480b492070270ba9835a67cae6672d8690a56",
+    "backup": "/home/jon/dev/ts_linux_test_bed/tool_shed.backup-20260906T224152Z.tar",
+    "validation_mode": "attested-focused-smoke plus 54 focused tests",
+    "work_preserved": true,
+    "post_install_doctor": "healthy",
+    "parent_repository": "clean",
+    "result": "passed"
+  },
+  "windows_production": {
+    "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed",
+    "installed_version": "0.50.1",
+    "content_commit": "c39480b492070270ba9835a67cae6672d8690a56",
+    "backup": "E:\\dev\\ts_windows_test_bed\\tool_shed.backup-20260906T224215Z.tar",
+    "validation_mode": "attested-focused-smoke plus 54 focused tests",
+    "work_preserved": true,
+    "post_install_doctor": "healthy",
+    "parent_repository": "clean",
+    "result": "passed"
+  },
+  "dashboard_auto_convergence": {
+    "event_sequence": 10759,
+    "event_created_at": "2026-09-06T22:46:06.954110Z",
+    "local_delivered_at": "2026-09-06T22:46:08.786406Z",
+    "delivery_seconds_from_event_creation": 1.832296,
+    "delivery_attempts": 0,
+    "manual_worker_used": false,
+    "safety_pass_used": false,
+    "local_pending_after_delivery": 0,
+    "hosted_verified_sequence": 10759,
+    "hosted_client_version": "0.50.1",
+    "hosted_work_inventory_total": 267,
+    "hosted_work_inventory_truncated": false,
+    "result": "passed"
+  },
+  "github_issue_review": {
+    "repository": "PC-Redemption/tool_shed",
+    "direct_issue": 57,
+    "comment": "https://github.com/PC-Redemption/tool_shed/issues/57#issuecomment-5562718969",
+    "action": "documented the v0.50.1 Remaining-view subset and kept the broader semantic-fidelity issue open",
+    "result": "reviewed"
+  },
+  "result": "passed"
+}
