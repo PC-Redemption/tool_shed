@@ -9,6 +9,7 @@ _runtime_sys.dont_write_bytecode = True
 
 import argparse
 import contextlib
+import ctypes
 import gzip
 import hashlib
 import html
@@ -379,6 +380,8 @@ def _sqlite_contention_sleep(attempt: int) -> None:
 def _pid_is_running(pid: int) -> bool:
     if pid <= 0:
         return False
+    if platform.system().lower() == "windows":
+        return _windows_pid_is_running(pid)
     try:
         os.kill(pid, 0)
     except ProcessLookupError:
@@ -388,6 +391,33 @@ def _pid_is_running(pid: int) -> bool:
     except OSError:
         return False
     return True
+
+
+def _windows_pid_is_running(pid: int) -> bool:
+    # On Windows, os.kill(pid, 0) broadcasts CTRL_C_EVENT rather than performing the
+    # POSIX existence check. Query the process handle without signaling its console group.
+    from ctypes import wintypes
+
+    process_query_limited_information = 0x1000
+    still_active = 259
+    access_denied = 5
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    kernel32.OpenProcess.restype = wintypes.HANDLE
+    kernel32.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+    kernel32.GetExitCodeProcess.restype = wintypes.BOOL
+    kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+    kernel32.CloseHandle.restype = wintypes.BOOL
+    handle = kernel32.OpenProcess(process_query_limited_information, False, pid)
+    if not handle:
+        return ctypes.get_last_error() == access_denied
+    try:
+        exit_code = wintypes.DWORD()
+        if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)):
+            return False
+        return exit_code.value == still_active
+    finally:
+        kernel32.CloseHandle(handle)
 
 
 def _dashboard_state(workspace: Path) -> dict[str, Any]:

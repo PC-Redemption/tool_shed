@@ -562,6 +562,18 @@ class DashboardReporterTests(unittest.TestCase):
         self.assertNotEqual(row["owner"], "dead")
         self.assertIsNone(row["pid"])
 
+    def test_windows_pid_probe_never_uses_console_control_signal(self) -> None:
+        with mock.patch.object(
+            dashboard_reporter.platform, "system", return_value="Windows"
+        ), mock.patch.object(
+            dashboard_reporter, "_windows_pid_is_running", return_value=True
+        ) as windows_probe, mock.patch.object(
+            dashboard_reporter.os, "kill"
+        ) as kill:
+            self.assertTrue(dashboard_reporter._pid_is_running(1234))
+        windows_probe.assert_called_once_with(1234)
+        kill.assert_not_called()
+
     def test_stale_launch_claim_is_replaced_and_exact_claim_is_required(self) -> None:
         with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
             connection.execute(
