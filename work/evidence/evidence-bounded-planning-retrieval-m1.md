@@ -61,3 +61,20 @@ The prompt-free local smoke telemetry is retained under the ignored operator evi
 
 M2 owns the final frozen-candidate repetition, exact-SHA CI, release provenance, all production
 lanes, immediate dashboard convergence, and recursive reconciliation.
+
+## Work3 Exact-Candidate Replay
+
+The tracked Work3 candidate `de7a6cd9f57edfdc1df654f8fd6fd74cc3ea5b06` adds only this
+evidence, the CAMP-0167 Hybrid checkpoint, and the initial release-lane record to the qualified
+source commit. Its exported Tool Shed snapshot has archive SHA-256
+`f4b64116b2f083437c82a16667e2da961d79d2908c5e1d5ab17df8b7302367d4`.
+
+- Web: staged exact `de7a6cd9f57edfdc1df654f8fd6fd74cc3ea5b06`; documentation and
+  dashboard endpoints were healthy, all isolated development containers were healthy, and the
+  production health endpoint remained healthy.
+- Linux: exact exported snapshot verified as 0.49.0, the focused retrieval suite passed 8/8, the
+  Git fixture remained clean, and strict Doctor returned `HEALTHY`.
+- Windows: the same exact exported snapshot verified as 0.49.0, the focused retrieval suite passed
+  8/8 under Python 3.14, the Git fixture remained clean, and strict Doctor returned `HEALTHY`.
+- Release-lane Work3 verification passed with web, Windows, and Linux development lanes recorded
+  `verified` against the exact candidate.
