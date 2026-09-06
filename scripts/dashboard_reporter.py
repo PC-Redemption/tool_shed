@@ -484,6 +484,7 @@ def _work_inventory(workspace: Path) -> dict[str, Any]:
         rows = connection.execute(
             """
             SELECT d.id, d.visible_id, d.namespace, d.title, d.lifecycle_state, d.updated_at,
+                   dr.body_markdown,
                    COALESCE((
                        SELECT c.lifecycle_state FROM cycle AS c
                        WHERE c.origin_artifact_id = d.id
@@ -506,6 +507,8 @@ def _work_inventory(workspace: Path) -> dict[str, Any]:
                        SELECT 1 FROM cycle AS c WHERE c.origin_artifact_id = d.id
                    ) THEN 'open' ELSE 'unknown' END) AS reconciliation_state
             FROM document AS d
+            JOIN document_revision AS dr
+              ON dr.document_id = d.id AND dr.revision_number = d.current_revision
             WHERE d.namespace IN ('IDEA','MAP','PRM','CAMP')
             ORDER BY d.visible_id
             LIMIT 500
@@ -615,6 +618,11 @@ def _work_inventory(workspace: Path) -> dict[str, Any]:
         artifact_id = str(row["id"])
         artifact_type = type_by_namespace[str(row["namespace"])]
         planning = planning_items.get(artifact_id)
+        campaign_readiness = (
+            loop_findings._body_status(str(row["body_markdown"]))
+            if artifact_type == "campaign"
+            else None
+        )
         title = " ".join(str(row["title"]).split())[:160] or str(row["visible_id"])
         artifacts.append(
             {
@@ -633,12 +641,16 @@ def _work_inventory(workspace: Path) -> dict[str, Any]:
                     planning["order_source"]
                     if planning
                     else "derived"
-                    if artifact_type in planning_order.SUPPORTED_TYPES
+                    if artifact_type in planning_order.SUPPORTED_TYPES or artifact_type == "campaign"
                     else "not-applicable"
                 ),
                 "planning_readiness": (
                     planning["readiness"]
                     if planning
+                    else "terminal"
+                    if artifact_type == "campaign" and str(row["lifecycle_state"]) in planning_order.TERMINAL_DOCUMENT_STATES
+                    else campaign_readiness
+                    if campaign_readiness in planning_order.READINESS_RANK
                     else "terminal"
                     if artifact_type in planning_order.SUPPORTED_TYPES
                     else "not-applicable"

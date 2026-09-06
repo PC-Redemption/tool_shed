@@ -914,7 +914,7 @@ class DashboardApplicationTests(TestCase):
             )
         url = reverse("fleet:project-tab", args=(project.id, "work"))
 
-        first = self.client.get(url)
+        first = self.client.get(url, {"view": "list", "scope": "all"})
         self.assertContains(first, '<option value="20" selected>20</option>', html=True)
         self.assertEqual(first.content.count(b'class="artifact-id"'), 20)
         self.assertContains(first, "CAMP-0025")
@@ -935,21 +935,21 @@ class DashboardApplicationTests(TestCase):
         self.assertContains(first, 'aria-label="Work table pages (top)"', count=1)
         self.assertContains(first, 'aria-label="Work table pages (bottom)"', count=1)
 
-        second = self.client.get(url, {"page": 2})
+        second = self.client.get(url, {"view": "list", "scope": "all", "page": 2})
         self.assertContains(second, 'aria-current="page">2</span>')
         self.assertContains(second, "CAMP-0005")
         self.assertNotContains(second, "CAMP-0025")
 
-        ten = self.client.get(url, {"rows": "10"})
+        ten = self.client.get(url, {"view": "list", "scope": "all", "rows": "10"})
         self.assertEqual(ten.content.count(b'class="artifact-id"'), 10)
         self.assertContains(ten, "Showing 1–10 of 25")
 
-        all_rows = self.client.get(url, {"rows": "all"})
+        all_rows = self.client.get(url, {"view": "list", "scope": "all", "rows": "all"})
         self.assertEqual(all_rows.content.count(b'class="artifact-id"'), 25)
         self.assertContains(all_rows, "CAMP-0001")
         self.assertContains(all_rows, "Showing all 25")
 
-        invalid = self.client.get(url, {"rows": "500"})
+        invalid = self.client.get(url, {"view": "list", "scope": "all", "rows": "500"})
         self.assertContains(invalid, '<option value="20" selected>20</option>', html=True)
 
     def test_idea_planning_order_is_reported_by_local_instance_and_read_only(self) -> None:
@@ -982,13 +982,101 @@ class DashboardApplicationTests(TestCase):
                 snapshot_sequence=1,
             )
         url = reverse("fleet:project-tab", args=(project.id, "work"))
-        response = self.client.get(url, {"type": "idea-brief"})
+        response = self.client.get(
+            url, {"view": "list", "scope": "all", "type": "idea-brief"}
+        )
         self.assertEqual(response.status_code, 200)
         self.assertLess(response.content.index(b"IDEA-0002"), response.content.index(b"IDEA-0001"))
         self.assertContains(response, "Local planning order")
         self.assertContains(response, "Owner · Ready")
-        self.assertContains(response, "this dashboard cannot change execution priority")
+        self.assertContains(response, "This dashboard cannot change execution priority")
         self.assertNotContains(response, "Reset to suggested")
+
+    def test_work_defaults_to_remaining_hierarchy_with_context_next_and_safe_commands(self) -> None:
+        user = get_user_model().objects.create_user("tree-viewer", password="fixture")
+        self.client.force_login(user)
+        project = Project.objects.create(external_id=uuid.uuid4(), name="Remaining hierarchy")
+        instance = Instance.objects.create(
+            project=project,
+            external_id=uuid.uuid4(),
+            platform="linux",
+            client_version="0.50.0",
+            report_schema_version=9,
+            work_inventory_total=6,
+        )
+        observed = timezone.now()
+        closed = {
+            "local_closure": "closed-loop",
+            "evidence_health": "current",
+            "graph_health": "valid",
+            "effective_closed": True,
+            "reason_codes": [],
+            "counts": {"open": 0, "unknown": 0, "invalid": 0},
+        }
+        rows = (
+            ("IDEA-0200", "idea-brief", "Root", "active", "working", "open", "open", [], ["MAP-0200"], 1, "working", {}),
+            ("MAP-0200", "project-map", "Completed context", "completed", "terminal", "satisfied", "reconciled", ["IDEA-0200"], ["PRM-0200"], None, "not-applicable", closed),
+            ("PRM-0200", "program-roadmap", "Roadmap", "active", "working", "open", "open", ["MAP-0200"], ["CAMP-0200", "CAMP-0201"], 1, "working", {}),
+            ("CAMP-0200", "campaign", "Build", "active", "working", "open", "open", ["PRM-0200"], [], None, "ready", {}),
+            ("CAMP-0201", "campaign", "Release", "active", "working", "open", "open", ["PRM-0200"], [], None, "waiting", {}),
+            ("CAMP-0299", "campaign", "Bad placement", "active", "working", "open", "open", ["PRM-MISSING"], [], None, "ready", {}),
+        )
+        for index, row in enumerate(rows):
+            (
+                visible_id, artifact_type, title, lifecycle, outcome_lifecycle,
+                disposition, reconciliation, parents, produces, position, readiness, closure,
+            ) = row
+            WorkArtifactSnapshot.objects.create(
+                project=project,
+                instance=instance,
+                artifact_external_id=uuid.uuid4(),
+                visible_id=visible_id,
+                artifact_type=artifact_type,
+                title=title,
+                document_lifecycle=lifecycle,
+                outcome_lifecycle=outcome_lifecycle,
+                outcome_disposition=disposition,
+                reconciliation_state=reconciliation,
+                parent_ids=parents,
+                produces_ids=produces,
+                planning_position=position,
+                planning_order_source="derived",
+                planning_readiness=readiness,
+                closure_status=closure,
+                source_updated_at=observed + timedelta(minutes=index),
+                observed_at=observed,
+                snapshot_sequence=1,
+            )
+        url = reverse("fleet:project-tab", args=(project.id, "work"))
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '<option value="remaining" selected>Remaining</option>', html=True)
+        self.assertContains(response, 'class="work-table work-tree has-release-stage"')
+        self.assertContains(response, "5</strong><span>matching items")
+        self.assertContains(response, "2</strong><span>root chains")
+        self.assertContains(response, "Needs placement")
+        self.assertContains(response, "missing parent PRM-MISSING")
+        for visible_id in ("IDEA-0200", "MAP-0200", "PRM-0200", "CAMP-0200", "CAMP-0201", "CAMP-0299"):
+            self.assertContains(response, visible_id)
+        self.assertLess(response.content.index(b"IDEA-0200"), response.content.index(b"MAP-0200"))
+        self.assertLess(response.content.index(b"MAP-0200"), response.content.index(b"PRM-0200"))
+        self.assertLess(response.content.index(b"CAMP-0200"), response.content.index(b"CAMP-0201"))
+        self.assertContains(response, '<span class="tree-next">Next</span>', count=1, html=True)
+        self.assertContains(response, 'data-copy-command="ts: next camp 0200"')
+        self.assertContains(response, "Continue this campaign")
+        self.assertContains(response, 'data-tree-toggle')
+
+        campaigns = self.client.get(url, {"type": "campaign"})
+        self.assertContains(campaigns, "3</strong><span>matching items")
+        self.assertContains(campaigns, "Completed context")
+        self.assertContains(campaigns, '<span class="tree-context-label">Context</span>', count=3, html=True)
+        self.assertContains(campaigns, "Bad placement")
+
+        ledger = self.client.get(url, {"view": "list", "scope": "all"})
+        self.assertContains(ledger, 'class="work-table has-release-stage"')
+        self.assertContains(ledger, "Showing 1–6 of 6")
+        self.assertLess(ledger.content.index(b"CAMP-0299"), ledger.content.index(b"IDEA-0200"))
 
     def test_history_table_is_newest_first_and_uses_work_paging_model(self) -> None:
         user = get_user_model().objects.create_user("history-table-viewer", password="fixture")
@@ -1464,11 +1552,11 @@ class DashboardApplicationTests(TestCase):
 
         work = self.client.get(
             reverse("fleet:project-tab", args=(project.id, "work")),
-            {"release_stage": "awaiting-work5"},
+            {"view": "list", "scope": "all", "release_stage": "awaiting-work5"},
         )
         self.assertEqual(work.status_code, 200)
         self.assertContains(work, "Release stage")
-        self.assertContains(work, "Awaiting Work5", count=5)
+        self.assertContains(work, 'class="table-state release-stage-awaiting-work5"', count=4)
         self.assertContains(work, "IDEA-0100")
 
     def test_project_activity_changes_only_for_material_report_updates(self) -> None:

@@ -115,11 +115,20 @@ open outcomes, lifecycle posture, recent material changes, reporter health, and 
 awaiting Work5. Candidate commits and audit registrations remain separate counts so retained
 ownership evidence is not mistaken for additional operator work.
 
-The Work view presents the current bounded inventory newest-first with consistent pagination,
-type/status/release-stage filters, and an optional locally reported planning order. History contains
-actual lifecycle changes rather than repeated snapshots. Fleet navigation sorts projects by latest
-material activity and supports active/all and hide/show controls. Search and exports remain bounded;
-the hosted dashboard has no lifecycle, planning-order, or release mutation operation.
+The Work view opens on `Remaining` plus `Tree`: a folder-style projection of the current bounded
+inventory in locally reported planning and readiness order. Each document is placed once under its
+single reported owner or as a root. Missing, multiple, or cyclic parentage is shown under **Needs
+placement** rather than guessed. Narrow filters retain subdued context ancestors, the count excludes
+those context rows, one executable row is marked **Next**, and pagination keeps complete root trees
+together. `All` plus `List` retains the newest-first ledger for audit and global comparison.
+
+Each Work row has an accessible command menu built from fixed templates and stable public IDs.
+Actions copy descriptive, canonical `ts:` commands to the clipboard with a fallback; they never
+execute an action or send an intent to a local client. Campaign ready/waiting state is reported from
+local authority so siblings remain in operational order. History contains actual lifecycle changes
+rather than repeated snapshots. Fleet navigation sorts projects by latest material activity and
+supports active/all and hide/show controls. Search and exports remain bounded; the hosted dashboard
+has no lifecycle, planning-order, or release mutation operation.
 
 Outcome Reconciliation presents active, locally discovered loop findings grouped by reporting
 instance. Each card explains the controlled mismatch and copies its exact `ts: resolve loop …`
@@ -129,9 +138,9 @@ never retain a copy control. The browser never writes an action intent to the cl
 service has no local-execution channel. See
 [Outcome Loop Findings](loop-findings.md).
 
-The same reusable copy control appears on Overview and Needs Attention for exact built-in status
-routes, on Work for active findings attached to the displayed artifact, and on Health for current
-reporter or compatibility diagnostics. Navigation and history remain ordinary links unless a
+The same clipboard boundary appears on Overview and Needs Attention for exact built-in status
+routes, on Work for artifact continuation and active findings, and on Health for current reporter
+or compatibility diagnostics. Navigation and history remain ordinary links unless a
 current supported local route is present. App Server readiness failures likewise copy the exact
 `ts: app-server status` route. Work Efficiency has no local command because its controls are hosted
 report filters and exports, not Tool Shed actions.

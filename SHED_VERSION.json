@@ -12,7 +12,7 @@
     "adapters/codex-app-server-config.json": "4dfe4a99d7d85d7ac414a25fba9f65c4c5bdb4f0a1918ef9a8733c6f341653bb",
     "adapters/codex-app-server-qualifications.json": "995ccd3bea135448b316045ea240c10d272f4c7e2ff65085111e0380cef947c1",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "2b0830f7d0b95c18474ae5b8f43c4b8184228fa71e597531296f81a850f27e41",
+    "adapters/codex-skill-releases.json": "9cd36307c259af1ea5abee0668a80086dea325cf389fd6aaf5adf5478ba10205",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "a16e9afbc2733b2c01b113df3f3a07fda1630b80b5a97476896123ee03bc22d2",
     "dashboard/Dockerfile": "8e9ff084f409aa81ab92b9dcbe8d9bab2416225551c837681653cab7b66786ad",
@@ -51,18 +51,20 @@
     "dashboard/fleet/migrations/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "dashboard/fleet/models.py": "c23ab5862bee23e71f1773c8ec8390415bab97a3121ae55ee38459e0e878ee57",
     "dashboard/fleet/services.py": "62ca59099f637827570a7f98445ad74381a3f854d11c0b088828330238e4654d",
-    "dashboard/fleet/static/fleet/dashboard.css": "9211b9b501c27ec12678a664a8c3a4509ce8f4273fe88ff7c555eb905777d6e5",
-    "dashboard/fleet/static/fleet/dashboard.js": "1017a3e2bf67aa11489c522bccabe70ef306d67bcb870411fe923250ad8e1ef3",
+    "dashboard/fleet/static/fleet/dashboard.css": "e804b8c2247bc741c16062dcd6c210f560e1c88eaf1e8bf27345a0c1d85e27ea",
+    "dashboard/fleet/static/fleet/dashboard.js": "618acbeddcf724f36d9b9bc2f1da617ea25cc203849dfbd85d9882fdd0adc3d4",
     "dashboard/fleet/urls.py": "8b7035634bca35e250676ae4530b06cba3e56f405b616b4bd0f900d0a9ec13bb",
-    "dashboard/fleet/views.py": "803c0128638d79e3b98b533afa6fa18ceaac5b7db7bfddbea7fcb77c9dd7a8ba",
+    "dashboard/fleet/views.py": "7b8119b839ecba3eaf9449653d96e33b7d8e7f720651f967223a1f736fc50661",
+    "dashboard/fleet/work_projection.py": "2ee1de648a8d611400bd3c8b726ba9908eb97161aadd3a068aacb389e9445e47",
     "dashboard/manage.py": "ff58b8b875751efba447b1db2988ba24a8f78799ed60c9a47e143af431def104",
     "dashboard/templates/fleet/app_server.html": "b0d2dfb73abb9c1f808f12b23e0c1b484386dd9e28d9172df3cb09823b66ffd9",
     "dashboard/templates/fleet/base.html": "1d2a09c2715b8e485658e39435de5c4825122af69fd6ce6e4717f9f38d33fb72",
     "dashboard/templates/fleet/enrollments.html": "d4cb14cd8339957228ccd0de00410be0a74b01788ad12b3c119f0f9243caa6e6",
+    "dashboard/templates/fleet/includes/artifact_command_menu.html": "47edff4dc74ea2856508a517b178dbd4ece3c13552b3a505cbd575dcf0c769a6",
     "dashboard/templates/fleet/includes/local_command.html": "c81a2c1fd0bb6b3e271bc3a437e924c7179bd82623ca77d3f095871349c21117",
     "dashboard/templates/fleet/includes/table_pagination.html": "6f85bfb263c4217d67918171c0254532307426f7b8b379ec27e4cd59df1ab783",
     "dashboard/templates/fleet/overview.html": "875d3b48ac0f3125804679bcfb400139903847671fb1a8cbf10d4d92a3764301",
-    "dashboard/templates/fleet/project.html": "edac93aeaf215fa334a0a7795d5d9b180bbc87808350ac26bec5ec7c6cc2147e",
+    "dashboard/templates/fleet/project.html": "5867cad52121d64d455dae2888c4be7341d24ed426c019deb16279a82f08c830",
     "dashboard/templates/fleet/qualification_runs.html": "3fd53d60ac2a6e31522802c8ca92d5445716977badd86719919d3f765ae75fc5",
     "dashboard/templates/fleet/work_efficiency.html": "8c4d0bfae660e84005592fa9650429d8a79ddc8298c90c3141efb8cfc271615a",
     "dashboard/templates/registration/login.html": "b5028ba0df97d857394dfd417da0f23e5f69df45322dd52e0ca6754e3849bce2",
@@ -82,7 +84,7 @@
     "docs/completion-watcher-hosted-recovery-rollout.md": "62d85676540ccbc318dbd908df10ef0b405957e07989a844553b71c0aef448e1",
     "docs/completion-watcher-hosted-status-surface.md": "e8ca0e6e81cdda1a4af7a3e5d7331fa7d64cd1d5d832cf06caba34c104097f60",
     "docs/completion-watcher-protocol.md": "2fb0057ead6f1524a22a17833b448f419312588858553b0ad68ddf0c873e10bb",
-    "docs/dashboard.md": "2634d6b8daaebc03ae706dd4d556f0f3ea185ca4533f13028795f485336f1d1f",
+    "docs/dashboard.md": "72f93e83e1d363eced8fe7a7cc4c1e8bf1094597e03ac20244d6d7791950fdfb",
     "docs/database-owned-work-collateral-conversion.md": "ee131fe6e232369c752a1be35e6a0e3c1438e2ee14aef47b50677f1fa5bbd98a",
     "docs/database-owned-work-collateral-v1-contract.md": "b7f04d49d1a6ba4b6a7db8130122f5b4e6b23d329d68ed14823ad09c73b3e6ab",
     "docs/database-owned-work-collateral.md": "01ff20af1a16818989f6988612482cb59508d8567f3c362dfa86a22bce9d885b",
@@ -173,7 +175,7 @@
     "scripts/completion_watcher.py": "d94ba056b5628a477028c8568e284da95bd78466d3839b5e126a89163d16d7a3",
     "scripts/context_retrieval.py": "1bf2fe6ccdb7e09cf185ae9e24d4b2580d38dc29453027e57a69587cfaf09e65",
     "scripts/dashboard_browser_probe.js": "a7181e0635f4dcbe89fe097ded3e8dd7c191f3cae3ead1406c1a0172b8da318f",
-    "scripts/dashboard_reporter.py": "9124913a932beb8f827f828a6724365069aac62bf3e9757945d8e467c72af4db",
+    "scripts/dashboard_reporter.py": "da3d4babf1c1ef87f65ce310e9faca97480f5c7159e07789e9bd3dea2f07b79f",
     "scripts/development_site.py": "9e33d7d57f3f42a8995b656ffa69fe9bc98f743b697faff6190668276c20542a",
     "scripts/doctor.py": "abef9f061df8e9f4b5842f013d33cdb33b3b94c20ad775b63b926dd37034a5de",
     "scripts/document_contract.py": "2b540582141065b7e7c84294142a15ddf01f255a58f844e08abaf9634b30d411",
@@ -288,34 +290,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Add digest-bound, budgeted App Server planning retrieval with portable Linux and Windows behavior.",
-  "release_commit": "f0b6045e2bf80fd08c4eb79bb18933d95b4e6cdb",
-  "release_qualification": {
-    "attested_at": "2026-09-06T17:49:56Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "81bbb1df280b8c04875d5ee96edd1c597bc74d4ce8b82a19fc01a9a619f866e5"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "f0b6045e2bf80fd08c4eb79bb18933d95b4e6cdb"
-  },
-  "release_tag": "v0.49.0",
-  "released_at": "2026-09-06T17:49:56Z",
-  "shed_version": "0.49.0",
+  "notes": "Make Remaining Tree the default dashboard Work view with deterministic hierarchy, local recommended order, safe artifact commands, and List audit parity.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.50.0",
+  "released_at": null,
+  "shed_version": "0.50.0",
   "updated_at": "2026-09-06",
   "updater_mutation_paths": [
     {

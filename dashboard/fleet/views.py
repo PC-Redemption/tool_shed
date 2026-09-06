@@ -44,6 +44,7 @@ from .services import (
     poll_enrollment,
     recent_changes,
 )
+from .work_projection import build_tree, command_actions, matches_scope
 
 
 MAX_REQUEST_BYTES = 262_144
@@ -882,6 +883,14 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
     )
     artifact_type = request.GET.get("type", "").strip()
     status = request.GET.get("status", "").strip()
+    selected_view = request.GET.get("view", "tree").strip()
+    if selected_view not in {"tree", "list"}:
+        selected_view = "tree"
+    selected_scope = request.GET.get(
+        "scope", "remaining" if selected_view == "tree" else "all"
+    ).strip()
+    if selected_scope not in {"remaining", "working", "blocked", "awaiting-work5", "all"}:
+        selected_scope = "remaining" if selected_view == "tree" else "all"
     release_stage = request.GET.get("release_stage", "").strip()
     if release_stage not in {"", "awaiting-work5", "released", "reconciled"}:
         release_stage = ""
@@ -898,6 +907,8 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
     snapshot_by_instance: dict[object, list[WorkArtifactSnapshot]] = {}
     work_page = None
     work_result_count = 0
+    work_root_count = 0
+    work_placement_count = 0
     page_links: list[dict[str, object]] = []
     previous_page_url = None
     next_page_url = None
@@ -909,7 +920,12 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
     outcome_groups = []
 
     def work_url(page: int) -> str:
-        values = {"rows": selected_rows, "page": page}
+        values = {
+            "rows": selected_rows,
+            "page": page,
+            "scope": selected_scope,
+            "view": selected_view,
+        }
         if artifact_type:
             values["type"] = artifact_type
         if status:
@@ -921,18 +937,7 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
         return "?" + urlencode(values)
 
     if tab == "work":
-        snapshots = WorkArtifactSnapshot.objects.filter(project=project).select_related("instance")
-        if artifact_type:
-            snapshots = snapshots.filter(artifact_type=artifact_type)
-        if status:
-            snapshots = snapshots.filter(
-                Q(document_lifecycle=status)
-                | Q(outcome_lifecycle=status)
-                | Q(outcome_disposition=status)
-                | Q(reconciliation_state=status)
-            )
         release_chain_by_instance: dict[object, dict[str, dict[str, object]]] = {}
-        release_filter = Q()
         for instance in instances:
             health = instance.health_state if isinstance(instance.health_state, dict) else {}
             release = health.get("release") if isinstance(health.get("release"), dict) else {}
@@ -945,59 +950,16 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
                     if chain.get(field):
                         visible_index[str(chain[field])] = chain
             release_chain_by_instance[instance.id] = visible_index
-            if release_stage:
-                matching_ids = [
-                    visible_id
-                    for visible_id, chain in visible_index.items()
-                    if chain.get("stage") == release_stage
-                ]
-                if matching_ids:
-                    release_filter |= Q(instance_id=instance.id, visible_id__in=matching_ids)
-        if release_stage:
-            snapshots = snapshots.filter(release_filter) if release_filter else snapshots.none()
-        if selected_order == "planned":
-            snapshots = snapshots.order_by(
-                F("planning_position").asc(nulls_last=True),
-                "-source_updated_at",
-                "-visible_id",
-                "instance_id",
-            )
-        else:
-            snapshots = snapshots.order_by("-source_updated_at", "-visible_id", "instance_id")
-        if selected_rows == "all":
-            page_snapshots = list(snapshots)
-            work_result_count = len(page_snapshots)
-        else:
-            paginator = Paginator(snapshots, int(selected_rows))
-            work_page = paginator.get_page(request.GET.get("page", "1"))
-            page_snapshots = list(work_page.object_list)
-            work_result_count = paginator.count
-            if work_page.has_previous():
-                previous_page_url = work_url(work_page.previous_page_number())
-            if work_page.has_next():
-                next_page_url = work_url(work_page.next_page_number())
-            for page_number in paginator.get_elided_page_range(
-                work_page.number, on_each_side=2, on_ends=1
-            ):
-                if page_number == Paginator.ELLIPSIS:
-                    page_links.append({"ellipsis": True})
-                else:
-                    page_links.append(
-                        {
-                            "number": page_number,
-                            "url": work_url(int(page_number)),
-                            "current": int(page_number) == work_page.number,
-                        }
-                    )
-        for snapshot in page_snapshots:
-            snapshot.release_chain = release_chain_by_instance.get(snapshot.instance_id, {}).get(
-                snapshot.visible_id
-            )
-            snapshot_by_instance.setdefault(snapshot.instance_id, []).append(snapshot)
+
+        snapshots = list(
+            WorkArtifactSnapshot.objects.filter(project=project)
+            .select_related("instance")
+            .order_by("-source_updated_at", "-visible_id", "instance_id")
+        )
         finding_rows = LoopFindingSnapshot.objects.filter(
             project=project,
             state="active",
-            subject_visible_id__in=[item.visible_id for item in page_snapshots],
+            subject_visible_id__in=[item.visible_id for item in snapshots],
         ).order_by("instance_id", "subject_visible_id", "finding_external_id")
         finding_map: dict[tuple[object, str], list[LoopFindingSnapshot]] = {}
         for finding in finding_rows:
@@ -1007,10 +969,110 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
             finding_map.setdefault(
                 (finding.instance_id, finding.subject_visible_id), []
             ).append(finding)
-        for snapshot in page_snapshots:
+        for snapshot in snapshots:
+            snapshot.release_chain = release_chain_by_instance.get(snapshot.instance_id, {}).get(
+                snapshot.visible_id
+            )
             snapshot.local_findings = finding_map.get(
                 (snapshot.instance_id, snapshot.visible_id), []
             )
+
+        if selected_view == "tree":
+            roots: list[tuple[object, dict[str, object]]] = []
+            for instance in instances:
+                projection = build_tree(
+                    (item for item in snapshots if item.instance_id == instance.id),
+                    scope=selected_scope,
+                    artifact_type=artifact_type,
+                    status=status,
+                    release_stage=release_stage,
+                )
+                work_result_count += int(projection["match_count"])
+                work_root_count += int(projection["root_count"])
+                work_placement_count += int(projection["placement_count"])
+                roots.extend((instance.id, root) for root in projection["root_groups"])
+            if selected_rows == "all":
+                page_roots = roots
+            else:
+                paginator = Paginator(roots, int(selected_rows))
+                work_page = paginator.get_page(request.GET.get("page", "1"))
+                page_roots = list(work_page.object_list)
+                if work_page.has_previous():
+                    previous_page_url = work_url(work_page.previous_page_number())
+                if work_page.has_next():
+                    next_page_url = work_url(work_page.next_page_number())
+                for page_number in paginator.get_elided_page_range(
+                    work_page.number, on_each_side=2, on_ends=1
+                ):
+                    if page_number == Paginator.ELLIPSIS:
+                        page_links.append({"ellipsis": True})
+                    else:
+                        page_links.append(
+                            {
+                                "number": page_number,
+                                "url": work_url(int(page_number)),
+                                "current": int(page_number) == work_page.number,
+                            }
+                        )
+            for instance_id, root in page_roots:
+                snapshot_by_instance.setdefault(instance_id, []).extend(root["rows"])
+        else:
+            filtered = [
+                item
+                for item in snapshots
+                if matches_scope(item, selected_scope)
+                and (not artifact_type or item.artifact_type == artifact_type)
+                and (
+                    not status
+                    or status
+                    in {
+                        item.document_lifecycle,
+                        item.outcome_lifecycle,
+                        item.outcome_disposition,
+                        item.reconciliation_state,
+                    }
+                )
+                and (
+                    not release_stage
+                    or (item.release_chain or {}).get("stage") == release_stage
+                )
+            ]
+            if selected_order == "planned":
+                filtered.sort(
+                    key=lambda item: (
+                        item.planning_position is None,
+                        item.planning_position or 1_000_000,
+                        -item.source_updated_at.timestamp(),
+                        item.visible_id,
+                    )
+                )
+            work_result_count = len(filtered)
+            if selected_rows == "all":
+                page_snapshots = filtered
+            else:
+                paginator = Paginator(filtered, int(selected_rows))
+                work_page = paginator.get_page(request.GET.get("page", "1"))
+                page_snapshots = list(work_page.object_list)
+                if work_page.has_previous():
+                    previous_page_url = work_url(work_page.previous_page_number())
+                if work_page.has_next():
+                    next_page_url = work_url(work_page.next_page_number())
+                for page_number in paginator.get_elided_page_range(
+                    work_page.number, on_each_side=2, on_ends=1
+                ):
+                    if page_number == Paginator.ELLIPSIS:
+                        page_links.append({"ellipsis": True})
+                    else:
+                        page_links.append(
+                            {
+                                "number": page_number,
+                                "url": work_url(int(page_number)),
+                                "current": int(page_number) == work_page.number,
+                            }
+                        )
+            for snapshot in page_snapshots:
+                snapshot.tree_actions = command_actions(snapshot)
+                snapshot_by_instance.setdefault(snapshot.instance_id, []).append(snapshot)
     if tab == "outcomes":
         for instance in instances:
             findings = list(
@@ -1095,12 +1157,16 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
             "overview": overview,
             "selected_type": artifact_type,
             "selected_status": status,
+            "selected_scope": selected_scope,
+            "selected_view": selected_view,
             "selected_release_stage": release_stage,
             "selected_rows": selected_rows,
             "selected_order": selected_order,
             "planning_supported": planning_supported,
             "work_page": work_page,
             "work_result_count": work_result_count,
+            "work_root_count": work_root_count,
+            "work_placement_count": work_placement_count,
             "page_links": page_links,
             "previous_page_url": previous_page_url,
             "next_page_url": next_page_url,

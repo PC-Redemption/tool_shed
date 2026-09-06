@@ -127,7 +127,21 @@
 <section class="dashboard-panel compact-table-panel">
   <h2 class="sr-only">Work</h2>
   <div class="table-toolbar">
-  <form method="get" class="work-filters" aria-label="Filter work table">
+  <div class="work-view-switch" aria-label="Work presentation">
+    <a href="?view=tree&amp;scope=remaining&amp;rows={{ selected_rows }}" {% if selected_view == 'tree' %}aria-current="page"{% endif %}>Tree</a>
+    <a href="?view=list&amp;scope=all&amp;rows={{ selected_rows }}" {% if selected_view == 'list' %}aria-current="page"{% endif %}>List</a>
+  </div>
+  <form method="get" class="work-filters" aria-label="Filter work">
+    <input type="hidden" name="view" value="{{ selected_view }}">
+    <label>Work
+      <select name="scope" data-auto-submit>
+        <option value="remaining" {% if selected_scope == 'remaining' %}selected{% endif %}>Remaining</option>
+        <option value="working" {% if selected_scope == 'working' %}selected{% endif %}>Working</option>
+        <option value="blocked" {% if selected_scope == 'blocked' %}selected{% endif %}>Blocked</option>
+        <option value="awaiting-work5" {% if selected_scope == 'awaiting-work5' %}selected{% endif %}>Awaiting Work5</option>
+        <option value="all" {% if selected_scope == 'all' %}selected{% endif %}>All</option>
+      </select>
+    </label>
     <label>Type
       <select name="type" data-auto-submit>
         <option value="">All</option>
@@ -146,7 +160,7 @@
         <option value="reconciled" {% if selected_release_stage == 'reconciled' %}selected{% endif %}>Reconciled</option>
       </select>
     </label>
-    <label>Rows
+    <label>{% if selected_view == 'tree' %}Root chains{% else %}Rows{% endif %}
       <select name="rows" data-auto-submit>
         <option value="10" {% if selected_rows == '10' %}selected{% endif %}>10</option>
         <option value="20" {% if selected_rows == '20' %}selected{% endif %}>20</option>
@@ -155,20 +169,24 @@
         <option value="all" {% if selected_rows == 'all' %}selected{% endif %}>All</option>
       </select>
     </label>
-    {% if planning_supported %}<label>Order
+    {% if selected_view == 'list' and planning_supported %}<label>Order
       <select name="order" data-auto-submit>
         <option value="newest" {% if selected_order == 'newest' %}selected{% endif %}>Newest first</option>
         <option value="planned" {% if selected_order == 'planned' %}selected{% endif %}>Planning order</option>
       </select>
     </label>{% endif %}
     <button type="submit">Apply status</button>
-    {% if selected_type or selected_status or selected_release_stage %}<a href="{% url 'fleet:project-tab' project.id 'work' %}?rows={{ selected_rows }}">Clear filters</a>{% endif %}
+    {% if selected_type or selected_status or selected_release_stage or selected_scope != 'remaining' %}<a href="{% url 'fleet:project-tab' project.id 'work' %}?view=tree&amp;scope=remaining&amp;rows={{ selected_rows }}">Clear filters</a>{% endif %}
   </form>
   <div class="table-toolbar-meta">
+    {% if selected_view == 'tree' %}
+    <div class="work-result-summary"><span>Recommended local order</span><span aria-hidden="true">·</span><strong>{{ work_result_count }}</strong><span>matching item{{ work_result_count|pluralize }}</span><span aria-hidden="true">·</span><strong>{{ work_root_count }}</strong><span>root chain{{ work_root_count|pluralize }}</span>{% if work_placement_count %}<span aria-hidden="true">·</span><strong>{{ work_placement_count }}</strong><span>need{{ work_placement_count|pluralize:"s," }} placement</span>{% endif %}</div>
+    {% else %}
     <div class="work-result-summary"><span>{% if selected_order == 'planned' %}Local planning order{% else %}Newest first{% endif %}</span><span aria-hidden="true">·</span>{% if work_page %}<span>Showing {{ work_page.start_index }}–{{ work_page.end_index }} of {{ work_result_count }}</span>{% else %}<span>Showing all {{ work_result_count }}</span>{% endif %}</div>
+    {% endif %}
     {% include "fleet/includes/table_pagination.html" with page=work_page links=page_links previous_url=previous_page_url next_url=next_page_url label="Work table pages" position="top" %}
   </div>
-  {% if selected_order == 'planned' %}<div class="planning-order-note">Reported by the local Tool Shed instance. Owner overrides are applied locally; this dashboard cannot change execution priority.</div>{% endif %}
+  {% if selected_view == 'tree' or selected_order == 'planned' %}<div class="planning-order-note">Hierarchy and recommended order are reported by the local Tool Shed instance. This dashboard cannot change execution priority.</div>{% endif %}
   </div>
   {% if inventory_diverged %}<p class="dashboard-warning">Instance snapshots differ; each source is shown independently.</p>{% endif %}
   {% for group in instance_groups %}
@@ -178,13 +196,20 @@
       <span class="snapshot-meta">Observed {% if group.instance.work_inventory_observed_at %}<time datetime="{{ group.instance.work_inventory_observed_at|date:'c' }}" data-local-time>{{ group.instance.work_inventory_observed_at|date:"M j, Y · g:i A" }}</time>{% else %}Never{% endif %} · {{ group.instance.work_inventory_total }} total{% if group.instance.work_inventory_truncated %} · partial snapshot{% endif %}</span>
     </div>
     {% if group.artifacts %}
-    <div class="table-scroll"><table class="work-table{% if selected_order == 'planned' %} planning-enabled{% endif %} has-release-stage"><thead><tr><th>Artifact</th>{% if selected_order == 'planned' %}<th>Plan</th>{% endif %}<th>Document</th><th>Closure</th><th>Release</th><th>Outcome</th><th>Reconciliation</th><th>Relationships</th><th>Updated</th></tr></thead><tbody>
-      {% for artifact in group.artifacts %}<tr>
-        <th class="artifact-cell"><span class="artifact-id">{{ artifact.visible_id }}</span><span class="artifact-title" title="{{ artifact.title }}">{{ artifact.title }}</span>{% for finding in artifact.local_findings %}{% include "fleet/includes/local_command.html" with command=finding.command label="Copy action" aria_label="Copy Tool Shed command for finding" %}{% endfor %}</th>
-        {% if selected_order == 'planned' %}<td class="planning-order-cell">{% if artifact.planning_position %}<span class="planning-position">{{ artifact.planning_position }}</span><small>{{ artifact.planning_order_source|capfirst }} · {{ artifact.planning_readiness|capfirst }}</small>{% else %}<span class="dashboard-note">—</span><small>{{ artifact.planning_readiness|capfirst }}</small>{% endif %}</td>{% endif %}
+    <div class="table-scroll"><table class="work-table{% if selected_view == 'tree' %} work-tree{% elif selected_order == 'planned' %} planning-enabled{% endif %} has-release-stage"><thead><tr><th>Artifact</th>{% if selected_view == 'list' and selected_order == 'planned' %}<th>Plan</th>{% endif %}<th>Document</th><th>Closure</th><th>Release</th><th>Outcome</th><th>Reconciliation</th><th>Relationships</th><th>Updated</th></tr></thead><tbody>
+      {% for artifact in group.artifacts %}
+      {% if selected_view == 'tree' %}{% ifchanged artifact.tree_root_id %}{% if artifact.tree_root_id == 'needs-placement' %}<tr class="tree-placement-heading"><th colspan="8">Needs placement <small>Reported parentage is missing, ambiguous, or cyclic.</small></th></tr>{% endif %}{% endifchanged %}{% endif %}
+      <tr{% if selected_view == 'tree' %} data-tree-row data-tree-id="{{ artifact.visible_id }}" data-tree-parent="{{ artifact.tree_parent_id }}" class="tree-row{% if artifact.tree_context %} tree-context{% endif %}{% if artifact.tree_placement_reason %} tree-placement-invalid{% endif %}"{% endif %}>
+        <th class="artifact-cell{% if selected_view == 'tree' %} tree-artifact-cell{% endif %}"{% if selected_view == 'tree' %} style="--tree-depth: {{ artifact.tree_depth }}"{% endif %}>
+          {% if selected_view == 'tree' %}{% if artifact.tree_has_children %}<button type="button" class="tree-toggle" data-tree-toggle aria-expanded="true" aria-label="Collapse {{ artifact.visible_id }} descendants">⌄</button>{% else %}<span class="tree-toggle-spacer" aria-hidden="true"></span>{% endif %}<span class="artifact-kind">{{ artifact.artifact_type }}</span>{% endif %}
+          <span class="artifact-id">{{ artifact.visible_id }}</span><span class="artifact-title" title="{{ artifact.title }}">{{ artifact.title }}</span>
+          {% if artifact.tree_next %}<span class="tree-next">Next</span>{% endif %}{% if artifact.tree_context %}<span class="tree-context-label">Context</span>{% endif %}{% if artifact.tree_placement_reason %}<small class="tree-placement-reason">{{ artifact.tree_placement_reason }}</small>{% endif %}
+          {% include "fleet/includes/artifact_command_menu.html" with artifact=artifact %}
+        </th>
+        {% if selected_view == 'list' and selected_order == 'planned' %}<td class="planning-order-cell">{% if artifact.planning_position %}<span class="planning-position">{{ artifact.planning_position }}</span><small>{{ artifact.planning_order_source|capfirst }} · {{ artifact.planning_readiness|capfirst }}</small>{% else %}<span class="dashboard-note">—</span><small>{{ artifact.planning_readiness|capfirst }}</small>{% endif %}</td>{% endif %}
         <td><span class="state-badge state-{{ artifact.document_lifecycle }}">{{ artifact.document_lifecycle }}</span></td>
         <td>{% if artifact.closure_status %}<span class="table-state table-state-{% if artifact.closure_status.effective_closed %}terminal{% else %}working{% endif %}">{% if artifact.closure_status.effective_closed %}Closed{% else %}Open{% endif %}</span><small>{{ artifact.closure_status.local_closure }} · {{ artifact.closure_status.evidence_health }} · {{ artifact.closure_status.graph_health }}</small>{% if artifact.closure_status.counts.open or artifact.closure_status.counts.unknown or artifact.closure_status.counts.invalid %}<small>{{ artifact.closure_status.counts.open }} open · {{ artifact.closure_status.counts.unknown }} unknown · {{ artifact.closure_status.counts.invalid }} invalid</small>{% endif %}{% if artifact.closure_status.reason_codes %}<small>{{ artifact.closure_status.reason_codes|join:", " }}</small>{% endif %}{% else %}<span class="table-state table-state-unknown">Not reported</span>{% endif %}</td>
-        <td>{% if artifact.release_chain %}<span class="table-state release-stage-{{ artifact.release_chain.stage }}">Awaiting Work5</span><small>{{ artifact.release_chain.candidate_count }} commit{{ artifact.release_chain.candidate_count|pluralize }}</small>{% else %}<span class="dashboard-note">—</span>{% endif %}</td>
+        <td>{% if artifact.release_chain %}<span class="table-state release-stage-{{ artifact.release_chain.stage }}">{% if artifact.release_chain.stage == 'awaiting-work5' %}Awaiting Work5{% elif artifact.release_chain.stage == 'released' %}Released · parent open{% else %}Reconciled{% endif %}</span><small>{{ artifact.release_chain.candidate_count }} commit{{ artifact.release_chain.candidate_count|pluralize }}</small>{% else %}<span class="dashboard-note">—</span>{% endif %}</td>
         <td>{% if artifact.outcome_lifecycle == 'unknown' and artifact.outcome_disposition == 'unknown' %}<span class="table-state table-state-unknown">Unknown</span>{% else %}<span class="table-state table-state-{{ artifact.outcome_lifecycle }}">{{ artifact.outcome_lifecycle|capfirst }}</span>{% if artifact.outcome_disposition != artifact.outcome_lifecycle %}<small class="cell-detail">{% if artifact.outcome_disposition == 'satisfied-with-approved-change' %}Approved change{% else %}{{ artifact.outcome_disposition|capfirst }}{% endif %}</small>{% endif %}{% endif %}</td>
         <td>{% if artifact.reconciliation_state == 'unknown' %}<span class="table-state table-state-unknown">Unknown</span>{% else %}<span class="table-state table-state-{{ artifact.reconciliation_state }}">{{ artifact.reconciliation_state|capfirst }}</span>{% endif %}</td>
         <td>{% if artifact.parent_ids %}<small>Parent: {{ artifact.parent_ids|join:", " }}</small>{% endif %}{% if artifact.produces_ids %}<small>Produces: {{ artifact.produces_ids|join:", " }}</small>{% endif %}{% if not artifact.parent_ids and not artifact.produces_ids %}<span class="dashboard-note">—</span>{% endif %}</td>

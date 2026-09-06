@@ -1,0 +1,12 @@
+<details class="artifact-command-menu">
+  <summary aria-label="Commands for {{ artifact.visible_id }}" title="Commands for {{ artifact.visible_id }}"><span aria-hidden="true">&gt;_</span></summary>
+  <div class="artifact-command-popover" role="group" aria-label="Available Tool Shed commands">
+    {% for action in artifact.tree_actions %}
+    <button type="button" data-copy-command="{{ action.command }}" data-copy-feedback="{{ action.feedback }}">
+      <strong>{{ action.label }}</strong>
+      <span>{{ action.description }}</span>
+    </button>
+    {% endfor %}
+    <span class="copy-feedback" role="status" aria-live="polite"></span>
+  </div>
+</details>

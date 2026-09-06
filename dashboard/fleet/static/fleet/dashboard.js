@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-copy-command]").forEach((button) => {
     button.addEventListener("click", async () => {
       const command = button.dataset.copyCommand || "";
-      const feedback = button.parentElement?.querySelector(".copy-feedback");
+      const feedback = button.closest(".artifact-command-menu, .local-command")?.querySelector(".copy-feedback");
       let copied = false;
       try {
         if (navigator.clipboard?.writeText) {
@@ -58,7 +58,52 @@ document.addEventListener("DOMContentLoaded", () => {
         copied = document.execCommand("copy");
         field.remove();
       }
-      if (feedback) feedback.textContent = copied ? "Copied" : "Select and copy the command shown.";
+      if (feedback) {
+        feedback.textContent = copied
+          ? button.dataset.copyFeedback || "Command copied"
+          : "Clipboard unavailable; select and copy the command shown.";
+      }
+    });
+  });
+
+  const treeRows = Array.from(document.querySelectorAll("[data-tree-row]"));
+  const treeRowsByParent = new Map();
+  treeRows.forEach((row) => {
+    const parent = row.dataset.treeParent || "";
+    if (!treeRowsByParent.has(parent)) treeRowsByParent.set(parent, []);
+    treeRowsByParent.get(parent).push(row);
+  });
+  const setDescendantsHidden = (parentId, hidden) => {
+    (treeRowsByParent.get(parentId) || []).forEach((row) => {
+      row.hidden = hidden;
+      if (hidden) {
+        setDescendantsHidden(row.dataset.treeId || "", true);
+        return;
+      }
+      const childToggle = row.querySelector("[data-tree-toggle]");
+      if (!childToggle || childToggle.getAttribute("aria-expanded") === "true") {
+        setDescendantsHidden(row.dataset.treeId || "", false);
+      }
+    });
+  };
+  document.querySelectorAll("[data-tree-toggle]").forEach((toggle) => {
+    toggle.addEventListener("click", () => {
+      const expanded = toggle.getAttribute("aria-expanded") === "true";
+      toggle.setAttribute("aria-expanded", String(!expanded));
+      toggle.setAttribute(
+        "aria-label",
+        `${expanded ? "Expand" : "Collapse"} ${toggle.closest("[data-tree-row]")?.dataset.treeId || "item"} descendants`,
+      );
+      setDescendantsHidden(toggle.closest("[data-tree-row]")?.dataset.treeId || "", expanded);
+    });
+  });
+
+  document.querySelectorAll(".artifact-command-menu").forEach((menu) => {
+    menu.addEventListener("toggle", () => {
+      if (!menu.open) return;
+      document.querySelectorAll(".artifact-command-menu[open]").forEach((other) => {
+        if (other !== menu) other.open = false;
+      });
     });
   });
 

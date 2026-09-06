@@ -159,6 +159,34 @@
 .artifact-cell .artifact-id::after { content: "·"; margin: 0 .48rem; color: #7890aa; }
 .artifact-title { color: var(--dashboard-muted); font-weight: 400; white-space: nowrap; }
 .artifact-cell .artifact-title { display: inline-block; max-width: calc(100% - 6.5rem); overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
+.work-view-switch { display: inline-flex; align-self: end; padding: .18rem; border: 1px solid var(--dashboard-border); border-radius: .5rem; background: rgba(7, 17, 31, .5); }
+.work-view-switch a { padding: .38rem .68rem; border-radius: .34rem; color: var(--dashboard-muted); text-decoration: none; }
+.work-view-switch a[aria-current="page"] { color: #07111f; background: var(--dashboard-accent); font-weight: 750; }
+.work-tree { min-width: 76rem; }
+.tree-row[hidden] { display: none; }
+.tree-row.tree-context { opacity: .66; }
+.tree-row.tree-placement-invalid { background: rgba(141, 106, 38, .12); }
+.tree-artifact-cell { position: relative; padding-left: calc(.62rem + (var(--tree-depth) * 1.45rem)) !important; overflow: visible; white-space: nowrap; }
+.tree-toggle, .tree-toggle-spacer { display: inline-grid; width: 1.25rem; height: 1.25rem; margin-right: .25rem; place-items: center; vertical-align: middle; }
+.tree-toggle { padding: 0; border: 1px solid rgba(128, 153, 180, .34); border-radius: .25rem; color: #dce8f7; background: rgba(18, 38, 59, .82); cursor: pointer; font: inherit; }
+.tree-toggle[aria-expanded="false"] { transform: rotate(-90deg); }
+.artifact-kind { display: inline-block; width: 4.6rem; overflow: hidden; color: #7890aa; font-size: .66rem; font-weight: 700; text-overflow: ellipsis; text-transform: uppercase; vertical-align: middle; }
+.tree-next, .tree-context-label { display: inline-flex; margin-left: .45rem; padding: .1rem .32rem; border-radius: .3rem; font-size: .64rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.tree-next { color: #07111f; background: var(--dashboard-accent); }
+.tree-context-label { color: var(--dashboard-muted); border: 1px solid rgba(128, 153, 180, .3); }
+.tree-placement-heading th { padding: .6rem .72rem !important; color: #f7d787; text-align: left; background: rgba(89, 68, 25, .2); }
+.tree-placement-heading small { margin-left: .5rem; color: var(--dashboard-muted); font-weight: 400; }
+.tree-placement-reason { display: block; margin: .2rem 0 0 6.35rem; color: #f7d787; }
+.artifact-command-menu { position: relative; display: inline-block; float: right; margin-left: .45rem; }
+.artifact-command-menu summary { display: grid; width: 1.65rem; height: 1.65rem; border: 1px solid rgba(99, 215, 198, .45); border-radius: .32rem; place-items: center; color: var(--dashboard-accent); background: #10273a; cursor: pointer; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .68rem; list-style: none; }
+.artifact-command-menu summary::-webkit-details-marker { display: none; }
+.artifact-command-menu[open] summary { color: #07111f; background: var(--dashboard-accent); }
+.artifact-command-popover { position: absolute; z-index: 20; top: calc(100% + .35rem); right: 0; display: grid; width: min(21rem, 75vw); padding: .38rem; border: 1px solid var(--dashboard-border); border-radius: .55rem; box-shadow: 0 .7rem 2rem rgba(0, 0, 0, .42); background: #0b1a2b; white-space: normal; }
+.artifact-command-popover button { display: grid; gap: .15rem; padding: .55rem .6rem; border: 0; border-radius: .38rem; color: #edf4ff; background: transparent; text-align: left; cursor: pointer; }
+.artifact-command-popover button:hover, .artifact-command-popover button:focus-visible { outline: none; background: rgba(99, 215, 198, .1); }
+.artifact-command-popover button strong { font-size: .8rem; }
+.artifact-command-popover button span { color: var(--dashboard-muted); font-size: .7rem; font-weight: 400; line-height: 1.35; }
+.artifact-command-popover .copy-feedback { min-height: 1rem; padding: .25rem .6rem .1rem; color: var(--dashboard-accent); font-size: .68rem; font-weight: 500; }
 .work-table .state-badge { padding: .18rem .4rem; font-size: .78rem; }
 .table-state { display: inline-flex; padding: .14rem .38rem; border: 1px solid rgba(128, 153, 180, .28); border-radius: 999px; color: #dce8f7; background: rgba(27, 51, 76, .7); font-size: .78rem; line-height: 1.15; }
 .table-state-working { color: #bcecff; background: rgba(23, 68, 91, .8); }
