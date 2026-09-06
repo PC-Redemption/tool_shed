@@ -14,23 +14,44 @@ TERMINAL_OUTCOME_DISPOSITIONS = {
     "rejected",
     "failed",
 }
+ACTIVE_DOCUMENT_STATES = {
+    "active",
+    "blocked",
+    "exploring",
+    "promoted",
+    "queued",
+    "ready",
+    "ready-for-prm",
+    "waiting",
+    "working",
+}
+ACTIVE_OUTCOME_STATES = {"blocked", "frozen", "working"}
 READINESS_RANK = {"working": 0, "ready": 1, "active": 1, "waiting": 2, "blocked": 3, "terminal": 4}
 TYPE_RANK = {"idea-brief": 0, "project-map": 1, "program-roadmap": 2, "campaign": 3}
 
 
 def is_remaining(item: object) -> bool:
-    """Return true until every reported obligation is explicitly terminal."""
+    """Return true only when the report carries an explicit unfinished obligation."""
     release = getattr(item, "release_chain", None) or {}
     if release.get("stage") in {"awaiting-work5", "released"}:
         return True
+
+    document_lifecycle = str(getattr(item, "document_lifecycle", "unknown"))
+    outcome_lifecycle = str(getattr(item, "outcome_lifecycle", "unknown"))
+    outcome_disposition = str(getattr(item, "outcome_disposition", "unknown"))
+    reconciliation = str(getattr(item, "reconciliation_state", "unknown"))
     closure = getattr(item, "closure_status", None) or {}
-    closure_complete = not closure or closure.get("effective_closed") is True
-    return not (
-        str(getattr(item, "document_lifecycle", "unknown")) in TERMINAL_DOCUMENT_STATES
-        and str(getattr(item, "outcome_lifecycle", "unknown")) == "terminal"
-        and str(getattr(item, "outcome_disposition", "unknown")) in TERMINAL_OUTCOME_DISPOSITIONS
-        and str(getattr(item, "reconciliation_state", "unknown")) == "reconciled"
-        and closure_complete
+    counts = closure.get("counts") if isinstance(closure.get("counts"), dict) else {}
+    closure_debt = any(
+        int(counts.get(key) or 0) > 0
+        for key in ("open", "invalid")
+    )
+    return (
+        document_lifecycle in ACTIVE_DOCUMENT_STATES
+        or outcome_lifecycle in ACTIVE_OUTCOME_STATES
+        or outcome_disposition == "open"
+        or reconciliation == "open"
+        or closure_debt
     )
 
 

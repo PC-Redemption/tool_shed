@@ -12,7 +12,7 @@
     "adapters/codex-app-server-config.json": "4dfe4a99d7d85d7ac414a25fba9f65c4c5bdb4f0a1918ef9a8733c6f341653bb",
     "adapters/codex-app-server-qualifications.json": "995ccd3bea135448b316045ea240c10d272f4c7e2ff65085111e0380cef947c1",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "9cd36307c259af1ea5abee0668a80086dea325cf389fd6aaf5adf5478ba10205",
+    "adapters/codex-skill-releases.json": "893685f1b76c8f4b139aff8bdb4f12559a87ee1eb086467658209d0d3eefa8cd",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "a16e9afbc2733b2c01b113df3f3a07fda1630b80b5a97476896123ee03bc22d2",
     "dashboard/Dockerfile": "8e9ff084f409aa81ab92b9dcbe8d9bab2416225551c837681653cab7b66786ad",
@@ -55,7 +55,7 @@
     "dashboard/fleet/static/fleet/dashboard.js": "618acbeddcf724f36d9b9bc2f1da617ea25cc203849dfbd85d9882fdd0adc3d4",
     "dashboard/fleet/urls.py": "8b7035634bca35e250676ae4530b06cba3e56f405b616b4bd0f900d0a9ec13bb",
     "dashboard/fleet/views.py": "7b8119b839ecba3eaf9449653d96e33b7d8e7f720651f967223a1f736fc50661",
-    "dashboard/fleet/work_projection.py": "2ee1de648a8d611400bd3c8b726ba9908eb97161aadd3a068aacb389e9445e47",
+    "dashboard/fleet/work_projection.py": "07873be360c2187a440f7adecad1d3b51fa5ba87cc2c099329b97ebe639a1c3a",
     "dashboard/manage.py": "ff58b8b875751efba447b1db2988ba24a8f78799ed60c9a47e143af431def104",
     "dashboard/templates/fleet/app_server.html": "b0d2dfb73abb9c1f808f12b23e0c1b484386dd9e28d9172df3cb09823b66ffd9",
     "dashboard/templates/fleet/base.html": "1d2a09c2715b8e485658e39435de5c4825122af69fd6ce6e4717f9f38d33fb72",
@@ -290,34 +290,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Make Remaining Tree the default dashboard Work view with deterministic hierarchy, local recommended order, safe artifact commands, and List audit parity.",
-  "release_commit": "880eb6bd705b632d6fd19d42b2c354c00620e7bf",
-  "release_qualification": {
-    "attested_at": "2026-09-06T19:12:38Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "81bbb1df280b8c04875d5ee96edd1c597bc74d4ce8b82a19fc01a9a619f866e5"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "880eb6bd705b632d6fd19d42b2c354c00620e7bf"
-  },
-  "release_tag": "v0.50.0",
-  "released_at": "2026-09-06T19:12:38Z",
-  "shed_version": "0.50.0",
+  "notes": "Correct Remaining work to require explicit unfinished obligations while retaining legacy history only in All/List and completed ancestors as tree context.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.50.1",
+  "released_at": null,
+  "shed_version": "0.50.1",
   "updated_at": "2026-09-06",
   "updater_mutation_paths": [
     {

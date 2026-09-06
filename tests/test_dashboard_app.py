@@ -1078,6 +1078,59 @@ class DashboardApplicationTests(TestCase):
         self.assertContains(ledger, "Showing 1–6 of 6")
         self.assertLess(ledger.content.index(b"CAMP-0299"), ledger.content.index(b"IDEA-0200"))
 
+    def test_remaining_default_excludes_unknown_legacy_history_without_status_filter(self) -> None:
+        user = get_user_model().objects.create_user("legacy-history-viewer", password="fixture")
+        self.client.force_login(user)
+        project = Project.objects.create(external_id=uuid.uuid4(), name="Legacy history regression")
+        instance = Instance.objects.create(
+            project=project,
+            external_id=uuid.uuid4(),
+            platform="linux",
+            client_version="0.50.0",
+            report_schema_version=9,
+            work_inventory_total=4,
+        )
+        observed = timezone.now()
+        unavailable = {
+            "local_closure": "unknown",
+            "evidence_health": "unknown",
+            "graph_health": "unknown",
+            "effective_closed": False,
+            "reason_codes": ["CLOSURE_NOT_AVAILABLE"],
+            "counts": {"open": 0, "unknown": 1, "invalid": 0},
+        }
+        for index, lifecycle in enumerate(("completed", "superseded", "abandoned", "deferred")):
+            WorkArtifactSnapshot.objects.create(
+                project=project,
+                instance=instance,
+                artifact_external_id=uuid.uuid4(),
+                visible_id=f"MAP-09{index:02d}",
+                artifact_type="project-map",
+                title=f"Legacy {lifecycle}",
+                document_lifecycle=lifecycle,
+                outcome_lifecycle="unknown",
+                outcome_disposition="unknown",
+                reconciliation_state="unknown",
+                closure_status=unavailable,
+                source_updated_at=observed + timedelta(minutes=index),
+                observed_at=observed,
+                snapshot_sequence=1,
+            )
+        url = reverse("fleet:project-tab", args=(project.id, "work"))
+
+        remaining = self.client.get(url)
+        self.assertEqual(remaining.status_code, 200)
+        self.assertContains(remaining, '<option value="remaining" selected>Remaining</option>', html=True)
+        self.assertContains(remaining, "0</strong><span>matching items")
+        self.assertNotContains(remaining, "Legacy completed")
+        self.assertNotContains(remaining, "Legacy superseded")
+        self.assertNotContains(remaining, "Legacy abandoned")
+        self.assertNotContains(remaining, "Legacy deferred")
+
+        history = self.client.get(url, {"view": "list", "scope": "all", "rows": "all"})
+        for lifecycle in ("completed", "superseded", "abandoned", "deferred"):
+            self.assertContains(history, f"Legacy {lifecycle}")
+
     def test_history_table_is_newest_first_and_uses_work_paging_model(self) -> None:
         user = get_user_model().objects.create_user("history-table-viewer", password="fixture")
         self.client.force_login(user)
