@@ -115,7 +115,10 @@ AUTO_PREPARATION_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
     "properties": {
-        "status": {"type": "string", "enum": ["prepared", "blocked"]},
+        "status": {
+            "type": "string",
+            "enum": ["prepared", "needs_more_context", "blocked"],
+        },
         "reason": {"type": "string"},
         "schema_version": {"type": "integer"},
         "campaign_id": {"type": "string"},
@@ -682,9 +685,11 @@ def _automatic_preparation_prompt(
 ) -> str:
     return f"""Prepare exactly one bounded implementation CAMP for campaign {campaign.campaign_id!r}.
 
-Use only the supplied deterministic campaign, instruction, Git-status, relevant-file inventory,
-and bounded source excerpts to identify a coherent first implementation boundary. Do not call
-tools or read any other files. Return the strict structured object requested by the output schema.
+Use the supplied deterministic campaign, instruction, Git-status, relevant-file inventory, and
+bounded source excerpts to identify a coherent first implementation boundary. You may call only
+the supplied read_context function for allowlisted ranges under its manifest and budgets. Do not
+call shell, built-in file tools, or any other capability. Return the strict structured object
+requested by the output schema.
 
 If a safe bounded CAMP can be prepared, set status to prepared and:
 - use schema_version 1 and the exact campaign_id {campaign.campaign_id!r};
@@ -725,11 +730,12 @@ If a safe bounded CAMP can be prepared, set status to prepared and:
 - exclude work/00-campaigns, Tool Shed snapshot machinery, Git metadata, deployment, production,
   credentials, generated outputs not owned by the worker, and unrelated cleanup.
 
-If exact mutation paths or safe deterministic verification cannot be established without an owner
-decision, protected action, or broader planning, set status to blocked, explain the limiting
-condition in reason, and return schema_version 1, the exact campaign_id, and empty camp, prompt,
-expected_paths, context_files, and verification_commands, execution_shape blocked, and zero for
-both estimates. Do not guess or broaden authority.
+If more allowlisted context is required or the retrieval budget is exhausted before a safe plan is
+possible, set status to needs_more_context. If an owner decision, protected action, or broader
+planning is required, set status to blocked. In either case explain the limiting condition in
+reason and return schema_version 1, the exact campaign_id, and empty camp, prompt, expected_paths,
+context_files, and verification_commands, execution_shape blocked, and zero for both estimates.
+Do not guess or broaden authority.
 """
 
 
@@ -948,6 +954,68 @@ def _automatic_preparation_context(
         sections.append(block)
         total += size
     return "\n".join(sections).rstrip() + "\n"
+
+
+def _automatic_preparation_reference_files(
+    workspace: Path,
+    campaign: campaign_queue.Campaign,
+) -> tuple[Path, ...]:
+    """Select deterministic text candidates for the private retrieval snapshot."""
+
+    completed = subprocess.run(
+        ["git", "-C", str(workspace), "ls-files", "--cached", "--others", "--exclude-standard"],
+        text=True,
+        encoding="utf-8",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise DispatchError(
+            "automatic_preparation_failed",
+            "automatic CAMP preparation could not inventory retrieval references",
+            recovery_action="repair Git workspace access before retrying",
+        )
+    keywords = _preparation_keywords(campaign)
+    referenced = _referenced_workspace_files(workspace, campaign)
+    preferred = {Path("AGENTS.md"), Path("README.md"), Path("docs/script_index.md")}
+    candidates: list[tuple[int, Path]] = []
+    for raw in completed.stdout.splitlines():
+        pure = PurePosixPath(raw)
+        if (
+            pure.is_absolute()
+            or any(part in {"", ".", ".."} for part in pure.parts)
+            or pure.parts[0] in {".git", "tool_shed", "work"}
+        ):
+            continue
+        relative = Path(*pure.parts)
+        absolute = workspace / relative
+        if not absolute.is_file() or absolute.is_symlink():
+            continue
+        try:
+            raw_bytes = absolute.read_bytes()
+            if b"\0" in raw_bytes:
+                continue
+            raw_bytes.decode("utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        lowered = relative.as_posix().lower()
+        score = sum(1 for keyword in keywords if keyword in lowered)
+        if relative in referenced:
+            score += 100
+        if relative in preferred:
+            score += 50
+        candidates.append((score, relative))
+    candidates.sort(key=lambda item: (-item[0], item[1].as_posix()))
+    threshold = 2 if referenced else 1
+    selected = [
+        path
+        for score, path in candidates
+        if score >= threshold or path in referenced or path in preferred
+    ]
+    if not selected:
+        selected = [path for _, path in candidates[:200]]
+    return tuple(selected[:200])
 
 
 def _normalize_automatic_verification_commands(
@@ -1222,6 +1290,7 @@ def _parse_automatic_preparation(
     result: Any,
     *,
     max_context_bytes: int = AUTO_PREPARATION_MAX_CONTEXT_BYTES,
+    allowed_context_files: set[Path] | None = None,
 ) -> tuple[ExecutionCapsule, str]:
     if result is None or result.status != "completed":
         raise DispatchError(
@@ -1235,7 +1304,12 @@ def _parse_automatic_preparation(
             "automatic CAMP preparation exceeded the focused context warning threshold",
             recovery_action="reduce the campaign preparation scope before retrying",
         )
-    if result.mutation_events:
+    unsafe_events = [
+        event
+        for event in result.mutation_events
+        if event.get("type") != "dynamicToolCall"
+    ]
+    if unsafe_events:
         raise DispatchError(
             "automatic_preparation_unsafe",
             "read-only automatic CAMP preparation reported mutation events",
@@ -1280,10 +1354,19 @@ def _parse_automatic_preparation(
                 "blocked automatic preparation did not return the bounded empty estimate contract",
                 recovery_action="repair the App Server planning output contract before retrying",
             )
+        needs_more_context = payload.get("status") == "needs_more_context"
         raise DispatchError(
-            "automatic_preparation_blocked",
+            (
+                "automatic_preparation_needs_more_context"
+                if needs_more_context
+                else "automatic_preparation_blocked"
+            ),
             reason or "automatic CAMP preparation could not establish a safe bounded execution",
-            recovery_action="resolve the reported campaign preparation condition, then rerun once",
+            recovery_action=(
+                "expand the bounded allowlist or continue through the GUI route"
+                if needs_more_context
+                else "resolve the reported campaign preparation condition, then rerun once"
+            ),
         )
     capsule_payload = {
         key: payload[key]
@@ -1301,6 +1384,14 @@ def _parse_automatic_preparation(
         capsule,
         max_context_bytes=max_context_bytes,
     )
+    if allowed_context_files is not None and not set(capsule.context_files).issubset(
+        allowed_context_files
+    ):
+        raise DispatchError(
+            "automatic_preparation_context_not_retrieved",
+            "automatic CAMP preparation selected context outside its reference manifest",
+            recovery_action="rerun preparation with the required source in the bounded allowlist",
+        )
     if len(capsule.expected_paths) > AUTO_PREPARATION_MAX_EXPECTED_PATHS:
         raise DispatchError(
             "automatic_preparation_non_atomic",
@@ -1652,6 +1743,7 @@ def dispatch_next(
             planning_selection,
             timeout=timeout,
         )
+        preparation_references = _automatic_preparation_reference_files(root, campaign)
         _, preparation_result = execute_preparation_if_enabled(
             _automatic_preparation_prompt(
                 campaign,
@@ -1664,6 +1756,7 @@ def dispatch_next(
                 campaign,
                 max_context_bytes=automatic_context_bytes,
             ),
+            reference_files=preparation_references,
             output_schema=AUTO_PREPARATION_SCHEMA,
             enable_override=True,
             config=execution_config,
@@ -1672,11 +1765,26 @@ def dispatch_next(
             timeout=timeout,
             telemetry_path=telemetry_path,
         )
+        retrieval_summary = (
+            preparation_result.context_scope.get("reference_retrieval")
+            if isinstance(getattr(preparation_result, "context_scope", None), dict)
+            else None
+        )
+        allowlisted_paths = (
+            retrieval_summary.get("allowlisted_paths")
+            if isinstance(retrieval_summary, dict)
+            else None
+        )
         capsule, preparation_reason = _parse_automatic_preparation(
             root,
             campaign,
             preparation_result,
             max_context_bytes=automatic_context_bytes,
+            allowed_context_files=(
+                {Path(path) for path in allowlisted_paths}
+                if isinstance(allowlisted_paths, list)
+                else None
+            ),
         )
         _validate_prelaunch_capsule(
             root,
@@ -1699,6 +1807,7 @@ def dispatch_next(
             "model_turns": preparation_result.model_turns,
             "duration_seconds": preparation_result.duration_seconds,
             "reason": preparation_reason,
+            "reference_retrieval": retrieval_summary,
             "execution_shape": capsule.execution_shape,
             "estimated_model_turns": capsule.estimated_model_turns,
             "estimated_max_tool_result_bytes": capsule.estimated_max_tool_result_bytes,

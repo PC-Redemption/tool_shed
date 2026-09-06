@@ -30,6 +30,7 @@ try:
         AppServerError,
         AuthenticationError,
         CodexAppServerClient,
+        DynamicToolHandler,
         TurnResult,
     )
     from scripts.codex_cli_resolver import CodexCliResolver, CodexReadiness
@@ -38,6 +39,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/codex_execution.
         AppServerError,
         AuthenticationError,
         CodexAppServerClient,
+        DynamicToolHandler,
         TurnResult,
     )
     from codex_cli_resolver import CodexCliResolver, CodexReadiness  # type: ignore[no-redef]
@@ -348,6 +350,7 @@ class CodexExecutionAdapter:
         timeout: float = 300.0,
         telemetry_path: Path | None = None,
         approval_bridge: ApprovalBridge | None = None,
+        dynamic_tool_handler: DynamicToolHandler | None = None,
     ) -> None:
         self.policy = policy or ModelPolicy.load()
         self.approval_bridge = approval_bridge or ApprovalBridge()
@@ -358,6 +361,7 @@ class CodexExecutionAdapter:
             client_title="Tool Shed Execution Adapter",
             client_version="0.1.0",
             approval_handler=self.approval_bridge,
+            dynamic_tool_handler=dynamic_tool_handler,
         )
         self.telemetry = TelemetryRecorder(telemetry_path or default_telemetry_path())
         self.account: dict[str, Any] | None = None
@@ -386,6 +390,7 @@ class CodexExecutionAdapter:
         sandbox: str = "read-only",
         permission_profile: str | None = None,
         ephemeral: bool = False,
+        dynamic_tools: list[dict[str, Any]] | None = None,
     ) -> tuple[ModelSelection, dict[str, Any]]:
         selection = self.policy.select(role)
         thread = self.client.start_thread(
@@ -395,6 +400,7 @@ class CodexExecutionAdapter:
             sandbox=sandbox,
             permission_profile=permission_profile,
             ephemeral=ephemeral,
+            dynamic_tools=dynamic_tools,
         )
         return selection, thread
 
@@ -441,6 +447,7 @@ class CodexExecutionAdapter:
         warning_input_tokens: int | None = None,
         usage_budget: dict[str, int] | None = None,
         disallow_command_execution: bool = False,
+        allowed_tool_call_types: frozenset[str] | None = None,
         stop_after_file_change: bool = False,
         restricted_read: bool = False,
         permission_profile: str | None = None,
@@ -452,6 +459,7 @@ class CodexExecutionAdapter:
         summary_source_files: tuple[Path, ...] = (),
         additional_context_requested: bool | None = None,
         output_schema: dict[str, Any] | None = None,
+        dynamic_tools: list[dict[str, Any]] | None = None,
     ) -> ExecutionResult:
         if self.account is None:
             self.start()
@@ -475,6 +483,7 @@ class CodexExecutionAdapter:
                 sandbox=sandbox,
                 permission_profile=permission_profile,
                 ephemeral=ephemeral,
+                dynamic_tools=dynamic_tools,
             )
         active_thread_id = str(thread["id"])
         context_scope = describe_context_scope(
@@ -516,6 +525,7 @@ class CodexExecutionAdapter:
                 turn_id,
                 usage_budget=usage_budget,
                 disallow_command_execution=disallow_command_execution,
+                allowed_tool_call_types=allowed_tool_call_types,
                 stop_after_file_change=stop_after_file_change,
             )
             actual_model = (
@@ -652,6 +662,7 @@ class CodexExecutionAdapter:
         summary_source_files: tuple[Path, ...] = (),
         additional_context_requested: bool | None = None,
         output_schema: dict[str, Any] | None = None,
+        dynamic_tools: list[dict[str, Any]] | None = None,
     ) -> ExecutionResult:
         source = self.policy.select(source_role)
         if source.model_class != "workhorse":
@@ -688,6 +699,7 @@ class CodexExecutionAdapter:
             summary_source_files=summary_source_files,
             additional_context_requested=additional_context_requested,
             output_schema=output_schema,
+            dynamic_tools=dynamic_tools,
         )
 
     def cancel(

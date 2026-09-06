@@ -21,6 +21,7 @@ from scripts.app_server_dispatch import (
     _gui_handoff_payload,
     _automatic_preparation_context,
     _automatic_preparation_prompt,
+    _automatic_preparation_reference_files,
     _capsule_source_is_stale,
     _execution_capsule_from_payload,
     _include_existing_expected_context,
@@ -846,6 +847,96 @@ class AppServerDispatchTests(unittest.TestCase):
 
         self.assertEqual("automatic_preparation_context_limit", raised.exception.category)
         self.assertIn("selected 65 context bytes; limit is 64", str(raised.exception))
+
+    def test_automatic_preparation_accepts_only_manifest_context_and_dynamic_reads(self) -> None:
+        path = self.add_campaign("dispatch-proof", with_capsule=False)
+        campaign = campaign_queue.parse_campaign(path)
+        source = self.workspace / "source.py"
+        source.write_text("proof = True\n", encoding="utf-8")
+        prepared = {
+            "status": "prepared",
+            "reason": "retrieved bounded source",
+            "execution_shape": "atomic",
+            "estimated_model_turns": 2,
+            "estimated_max_tool_result_bytes": 2048,
+            "schema_version": 1,
+            "campaign_id": "dispatch-proof",
+            "camp": "create-proof",
+            "prompt": "Create proof.txt and return camp_ready_for_verification.",
+            "expected_paths": ["proof.txt"],
+            "context_files": ["source.py"],
+            "verification_commands": [["python3", "-c", "assert True"]],
+        }
+        result = SimpleNamespace(
+            status="completed",
+            text=json.dumps(prepared),
+            context_warning=None,
+            mutation_events=({"type": "dynamicToolCall"},),
+        )
+
+        capsule_value, _ = _parse_automatic_preparation(
+            self.workspace,
+            campaign,
+            result,
+            allowed_context_files={Path("source.py")},
+        )
+        self.assertEqual((Path("source.py"),), capsule_value.context_files)
+
+        with self.assertRaises(DispatchError) as raised:
+            _parse_automatic_preparation(
+                self.workspace,
+                campaign,
+                result,
+                allowed_context_files=set(),
+            )
+        self.assertEqual("automatic_preparation_context_not_retrieved", raised.exception.category)
+
+    def test_needs_more_context_is_a_controlled_pre_mutation_result(self) -> None:
+        path = self.add_campaign("dispatch-proof", with_capsule=False)
+        campaign = campaign_queue.parse_campaign(path)
+        payload = {
+            "status": "needs_more_context",
+            "reason": "cumulative retrieval budget exhausted",
+            "execution_shape": "blocked",
+            "estimated_model_turns": 0,
+            "estimated_max_tool_result_bytes": 0,
+            "schema_version": 1,
+            "campaign_id": "dispatch-proof",
+            "camp": "",
+            "prompt": "",
+            "expected_paths": [],
+            "context_files": [],
+            "verification_commands": [],
+        }
+        result = SimpleNamespace(
+            status="completed",
+            text=json.dumps(payload),
+            context_warning=None,
+            mutation_events=({"type": "dynamicToolCall"},),
+        )
+
+        with self.assertRaises(DispatchError) as raised:
+            _parse_automatic_preparation(self.workspace, campaign, result)
+
+        self.assertEqual("automatic_preparation_needs_more_context", raised.exception.category)
+        self.assertEqual("none", raised.exception.mutation_state)
+
+    def test_reference_inventory_excludes_protected_work_and_admits_large_sources(self) -> None:
+        path = self.add_campaign("dispatch-proof", with_capsule=False)
+        source = self.workspace / "scripts" / "dispatch_reference.py"
+        source.parent.mkdir(exist_ok=True)
+        source.write_text("reference = True\n" * 8_000, encoding="utf-8")
+        protected = self.workspace / "work" / "secret.md"
+        protected.parent.mkdir(exist_ok=True)
+        protected.write_text("secret\n", encoding="utf-8")
+
+        selected = _automatic_preparation_reference_files(
+            self.workspace, campaign_queue.parse_campaign(path)
+        )
+
+        self.assertIn(Path("scripts/dispatch_reference.py"), selected)
+        self.assertNotIn(Path("work/secret.md"), selected)
+        self.assertGreater(source.stat().st_size, 100_000)
 
     def test_blocked_automatic_preparation_does_not_mutate_or_execute(self) -> None:
         path = self.add_campaign("dispatch-proof", with_capsule=False)

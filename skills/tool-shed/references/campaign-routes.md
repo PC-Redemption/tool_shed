@@ -743,9 +743,13 @@ forwarding preference, not an App Server role. Reuse a selected CAMP's single va
 materialization record one compact `## App Server Preparation Contract` containing stable semantic
 intent while reserving exact paths, commands, executables, and budgets for dispatch-time
 resolution. When a ready campaign has no capsule, or when an automatically persisted capsule is
-stale, assemble a deterministic focused snapshot from the campaign, project instructions, Git state,
-relevant file inventory, and bounded source excerpts. Give only that isolated snapshot to the
-existing qualified read-only App Server planning role, with no tool access, to return a strict
+stale, assemble deterministic inline context from the campaign, project instructions, Git state,
+relevant file inventory, and bounded source excerpts plus a digest-bound reference manifest. Give
+that compact context to the existing qualified read-only App Server planning role. Its only tool is
+Tool Shed's `read_context` dynamic function, which reads allowlisted UTF-8 line ranges from a private
+immutable snapshot outside the model sandbox. Bind every call to the manifest and live source
+digests; reject traversal, symlinks, undeclared paths, source changes, per-read excess, and
+cumulative excess. Retain only content-free path/digest/range/byte/refusal evidence. Return a strict
 structured schema-version-1 capsule with matching campaign/CAMP IDs, prompt, repository-relative
 expected paths and context files, and shell-free deterministic verification argv arrays. Validate
 the CAMP role and host before spending planning tokens. Include actual file byte sizes and the
@@ -763,7 +767,7 @@ launch, require an atomic or independently verifiable bounded slice, available p
 executables, quiet scoped verification, no more than eight expected paths and four verification
 commands, at most three estimated worker turns, and at most 12,288 bytes for the estimated largest
 tool result. Unsafe or oversized work must be reduced before acceptance. Unsafe, indeterminate,
-invalid, or over-budget preparation fails closed
+invalid, changed-source, `needs_more_context`, or over-budget preparation fails closed
 before mutation. The CAMP path retains `gpt-5.6-terra` with `medium` reasoning; preparation uses the
 centralized planning policy. Emit compact separate preparation and execution usage, journal,
 verification, and recovery fields. The deterministic dispatcher uses zero model tokens and reports

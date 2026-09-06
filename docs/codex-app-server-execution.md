@@ -101,21 +101,28 @@ resolution, required source freshness, metadata-only inline asset handling, and 
 exactly-once verification. It intentionally does not guess exact paths or commands early.
 
 When a ready campaign has no capsule, or its automatically persisted capsule no longer matches its
-source-state token, the dispatcher assembles a deterministic focused snapshot from the campaign,
-project instructions, Git state, relevant file inventory, and bounded source excerpts. The
-supported read-only planning role receives only that isolated snapshot, has no tool access, and
-returns strict structured preparation. The dispatcher deterministically validates exact paths,
+source-state token, the dispatcher assembles deterministic inline context from the campaign,
+project instructions, Git state, relevant file inventory, and bounded source excerpts, plus a
+digest-bound reference manifest. The supported read-only planning role may use only Tool Shed's
+`read_context` dynamic function, which serves allowlisted UTF-8 line ranges from a private immutable
+copy outside the model sandbox. Every call binds the manifest digest and live source digest;
+traversal, symlinks, undeclared paths, and changed sources are refused. The planner then returns
+strict structured preparation. The dispatcher deterministically validates exact paths,
 focused context, installed executables, quiet scoped verification, expected turn and tool-result
 headroom, and an atomic or independently verifiable bounded slice. It performs the existing
 preparation checks before spending planning tokens; the real role operation performs the runtime
-handshake.
-Automatic context files may total at most the smaller of the configured inline limit and 64,000
-actual bytes; automatic preparation is further limited to eight expected paths, four verification
-commands, three estimated worker turns, and a 12,288-byte estimated largest tool result. Unsafe or
-oversized work must be reduced before the result is accepted. The dispatcher persists the
+handshake. The manifest defaults to 12,000 inline bytes; one retrieval to 12,288 source bytes;
+64,000 source bytes cumulatively; 200 lines per call; and a 2,000,000-byte private snapshot.
+Automatic worker context files may total at most the smaller of the configured inline limit and
+64,000 actual bytes. Preparation is further limited to eight expected paths, four verification
+commands, three estimated worker turns, and a 12,288-byte estimated largest tool result. A planner
+that cannot establish a safe boundary returns `needs_more_context`; Tool Shed does not guess or
+advance lifecycle. Unsafe or oversized work must be reduced before the result is accepted. The dispatcher persists the
 source-bound capsule through the guarded campaign transaction, reloads it, and continues to the
 existing bounded Terra/medium `camp-run` in the same invocation. Invalid, unsafe, ambiguous, stale,
-or over-budget preparation stops before workspace or lifecycle mutation. A selected discussion,
+changed-source, insufficient-context, or over-budget preparation stops before workspace or
+lifecycle mutation. Reference retrieval evidence retains only manifest/source digests, paths,
+ranges, byte counts, and refusal categories—never retrieved source text. A selected discussion,
 decision, blocker, external gate, GUI-native action, or unsupported role remains on its natural
 route. Compatibility failure remains fail-closed for strict explicit selection. A
 repository-default failure falls back to the current GUI, and the selector is not retained for

@@ -33,6 +33,7 @@ class AuthenticationError(AppServerError):
 
 
 ApprovalHandler = Callable[[str, dict[str, Any]], dict[str, Any]]
+DynamicToolHandler = Callable[[dict[str, Any]], dict[str, Any]]
 
 
 @dataclass(frozen=True)
@@ -126,6 +127,7 @@ class CodexAppServerClient:
         client_title: str = "Tool Shed",
         client_version: str = "0.1.0",
         approval_handler: ApprovalHandler | None = None,
+        dynamic_tool_handler: DynamicToolHandler | None = None,
     ) -> None:
         if timeout <= 0:
             raise ValueError("timeout must be greater than zero")
@@ -139,6 +141,7 @@ class CodexAppServerClient:
             "version": client_version,
         }
         self.approval_handler = approval_handler
+        self.dynamic_tool_handler = dynamic_tool_handler
         self.process: subprocess.Popen[str] | None = None
         self.user_agent = "unknown"
         self._messages: queue.Queue[dict[str, Any] | None] = queue.Queue()
@@ -338,6 +341,27 @@ class CodexAppServerClient:
             "execCommandApproval",
             "item/permissions/requestApproval",
         }
+        if method == "item/tool/call":
+            if self.dynamic_tool_handler is None:
+                self._send(
+                    {
+                        "id": message["id"],
+                        "error": {"code": -32000, "message": "dynamic tools are disabled"},
+                    }
+                )
+                return
+            try:
+                result = self.dynamic_tool_handler(params)
+            except Exception as error:
+                self._stderr.append(f"dynamic tool handler failed closed: {error}")
+                result = {
+                    "success": False,
+                    "contentItems": [
+                        {"type": "inputText", "text": '{"code":"handler_failed"}'}
+                    ],
+                }
+            self._send({"id": message["id"], "result": result})
+            return
         if method not in approval_methods:
             self._send(
                 {
@@ -432,6 +456,7 @@ class CodexAppServerClient:
         sandbox: str,
         permission_profile: str | None = None,
         ephemeral: bool = False,
+        dynamic_tools: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         params: dict[str, Any] = {
             "model": model,
@@ -440,6 +465,8 @@ class CodexAppServerClient:
             "ephemeral": ephemeral,
             "serviceName": "tool_shed",
         }
+        if dynamic_tools is not None:
+            params["dynamicTools"] = dynamic_tools
         if permission_profile:
             params["permissions"] = permission_profile
         else:
@@ -563,6 +590,7 @@ class CodexAppServerClient:
         timeout: float | None = None,
         usage_budget: dict[str, int] | None = None,
         disallow_command_execution: bool = False,
+        allowed_tool_call_types: frozenset[str] | None = None,
         stop_after_file_change: bool = False,
     ) -> TurnResult:
         started = time.monotonic()
@@ -673,12 +701,28 @@ class CodexAppServerClient:
                     deltas.append(params["delta"])
                 elif method == "item/started":
                     item = params.get("item")
+                    tool_item_types = {
+                        "commandExecution",
+                        "fileChange",
+                        "mcpToolCall",
+                        "dynamicToolCall",
+                        "webSearch",
+                        "imageView",
+                        "imageGeneration",
+                    }
                     if (
                         disallow_command_execution
                         and isinstance(item, dict)
                         and item.get("type") == "commandExecution"
                     ):
                         request_control_stop("worker_command_execution_disallowed", item)
+                    elif (
+                        allowed_tool_call_types is not None
+                        and isinstance(item, dict)
+                        and item.get("type") in tool_item_types
+                        and item.get("type") not in allowed_tool_call_types
+                    ):
+                        request_control_stop("worker_tool_call_disallowed", item)
                 elif method == "item/completed":
                     item = params.get("item")
                     if isinstance(item, dict):

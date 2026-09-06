@@ -361,12 +361,17 @@ overrides it once, while the four `--app-server` forms remain strict, per-comman
 nested `codex exec`—to perform ordinary `next` selection. An existing strict execution capsule is
 reused. When the selected ready campaign has no capsule, one read-only App Server planning turn
 receives a deterministic focused snapshot assembled from the campaign, project instructions, Git
-state, relevant file inventory, and bounded source excerpts. It returns strict structured
-preparation, which the dispatcher validates and persists through the guarded campaign transaction
-before continuing in the same invocation. Existing capsule and containment checks happen before
-that planning turn; the actual App Server operation performs the runtime handshake. Automatically
-selected inline context is limited to the smaller of the configured
-limit and 64,000 bytes; over-budget results fail before persistence or lifecycle mutation.
+state, relevant file inventory, bounded source excerpts, and a digest-bound reference manifest.
+The planner may use only Tool Shed's `read_context` dynamic function to retrieve allowlisted UTF-8
+line ranges from a private immutable snapshot; shell, built-in file access, network, and parent
+paths remain unavailable. Per-read and cumulative byte limits are configured independently, and
+telemetry retains only path, digest, range, byte count, and refusal category. It returns strict
+structured preparation, which the dispatcher validates and persists through the guarded campaign
+transaction before continuing in the same invocation. Existing capsule and containment checks
+happen before that planning turn; the actual App Server operation performs the runtime handshake.
+Automatically selected worker context remains limited to the smaller of the configured limit and
+64,000 bytes. A changed source, undeclared file, exhausted retrieval budget, or
+`needs_more_context` result stops before persistence or lifecycle mutation and can hand off to GUI.
 Unsafe or indeterminate preparation stops before mutation. CAMP execution reuses the existing
 Terra/medium runner. `next` itself is not an App Server role.
 Unflagged eligible commands follow the preference and `ts: discuss` is always GUI-native. In normal

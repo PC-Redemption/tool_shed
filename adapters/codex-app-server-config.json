@@ -44,6 +44,10 @@
     "restricted_read": false,
     "max_snapshot_bytes": 2000000,
     "max_inline_bytes": 100000,
+    "max_reference_manifest_bytes": 12000,
+    "max_reference_read_bytes": 12288,
+    "max_reference_total_bytes": 64000,
+    "max_reference_lines": 200,
     "max_tool_result_bytes": 16384,
     "warning_input_tokens": {
       "planning": 50000,

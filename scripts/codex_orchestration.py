@@ -39,6 +39,7 @@ try:
         sandbox_policy,
         resolve_codex_executable,
     )
+    from scripts.context_retrieval import BoundedContextReader, ContextRetrievalError
     from scripts.codex_camp_execution import (
         CAMP_OUTCOME_SCHEMA,
         CAMP_VERIFICATION_HANDOFF_OUTCOMES,
@@ -69,6 +70,10 @@ except ModuleNotFoundError:  # Direct execution: python scripts/codex_orchestrat
         last_token_usage,
         sandbox_policy,
         resolve_codex_executable,
+    )
+    from context_retrieval import (  # type: ignore[no-redef]
+        BoundedContextReader,
+        ContextRetrievalError,
     )
     from codex_camp_execution import (  # type: ignore[no-redef]
         CAMP_OUTCOME_SCHEMA,
@@ -260,6 +265,25 @@ class AppServerFeatureConfig:
             raise FeatureConfigError(
                 "qualification.dirty_read_cache_max_age_seconds must be a positive integer"
             )
+        context = self.payload.get("context")
+        if not isinstance(context, dict):
+            raise FeatureConfigError("context must be an object")
+        reference_limits = {
+            "max_reference_manifest_bytes",
+            "max_reference_read_bytes",
+            "max_reference_total_bytes",
+            "max_reference_lines",
+        }
+        for key in reference_limits:
+            value = context.get(key)
+            if value is not None and (
+                isinstance(value, bool) or not isinstance(value, int) or value <= 0
+            ):
+                raise FeatureConfigError(f"context.{key} must be a positive integer")
+        if self.max_reference_read_bytes > self.max_reference_total_bytes:
+            raise FeatureConfigError(
+                "context.max_reference_read_bytes cannot exceed max_reference_total_bytes"
+            )
         thread_policy = self.payload.get("thread_policy")
         if not isinstance(thread_policy, dict):
             raise FeatureConfigError("thread_policy must be an object")
@@ -396,6 +420,30 @@ class AppServerFeatureConfig:
         context = self.payload.get("context")
         value = context.get("max_tool_result_bytes") if isinstance(context, dict) else None
         return int(value) if isinstance(value, int) and value > 0 else 100_000
+
+    @property
+    def max_reference_manifest_bytes(self) -> int:
+        context = self.payload.get("context")
+        value = context.get("max_reference_manifest_bytes") if isinstance(context, dict) else None
+        return int(value) if isinstance(value, int) and value > 0 else 12_000
+
+    @property
+    def max_reference_read_bytes(self) -> int:
+        context = self.payload.get("context")
+        value = context.get("max_reference_read_bytes") if isinstance(context, dict) else None
+        return int(value) if isinstance(value, int) and value > 0 else 12_288
+
+    @property
+    def max_reference_total_bytes(self) -> int:
+        context = self.payload.get("context")
+        value = context.get("max_reference_total_bytes") if isinstance(context, dict) else None
+        return int(value) if isinstance(value, int) and value > 0 else 64_000
+
+    @property
+    def max_reference_lines(self) -> int:
+        context = self.payload.get("context")
+        value = context.get("max_reference_lines") if isinstance(context, dict) else None
+        return int(value) if isinstance(value, int) and value > 0 else 200
 
     @property
     def camp_usage_budget(self) -> dict[str, int]:
@@ -1164,6 +1212,7 @@ def execute_bounded(
     summary_source_files: tuple[Path, ...] = (),
     additional_context_requested: bool | None = None,
     output_schema: dict[str, Any] | None = None,
+    dynamic_tools: list[dict[str, Any]] | None = None,
 ) -> ExecutionResult:
     """Run at most two workhorse attempts, then one explicit Sol escalation."""
 
@@ -1197,6 +1246,7 @@ def execute_bounded(
                 summary_source_files=summary_source_files,
                 additional_context_requested=additional_context_requested,
                 output_schema=output_schema,
+                dynamic_tools=dynamic_tools,
             )
         except AppServerError as error:
             last_error = error
@@ -1231,6 +1281,7 @@ def execute_bounded(
         summary_source_files=summary_source_files,
         additional_context_requested=additional_context_requested,
         output_schema=output_schema,
+        dynamic_tools=dynamic_tools,
     )
 
 
@@ -1240,6 +1291,7 @@ def execute_preparation_if_enabled(
     cwd: Path,
     campaign: str,
     preparation_context: str,
+    reference_files: tuple[Path, ...] = (),
     output_schema: dict[str, Any],
     enable_override: bool | None = None,
     config: AppServerFeatureConfig | None = None,
@@ -1266,75 +1318,104 @@ def execute_preparation_if_enabled(
         print(f"WARNING: {warning}", file=os.sys.stderr)
     selected_policy = policy or ModelPolicy.load()
     features.validate_model_policy(selected_policy)
-    encoded = preparation_context.encode("utf-8")
-    if len(encoded) > features.max_inline_bytes:
-        raise FeatureConfigError(
-            f"automatic preparation context exceeds {features.max_inline_bytes} bytes"
-        )
-    effective_prompt = (
-        "Use only the complete deterministic context below. Do not call tools, read skills, "
-        "or inspect any other files.\n\n"
-        + preparation_context
-        + "\n\nREQUEST\n"
-        + prompt
-    )
     with tempfile.TemporaryDirectory(prefix="tool-shed-auto-preparation-") as temporary_name:
         temporary = Path(temporary_name).resolve()
         instructions = temporary / "AGENTS.md"
         instructions.write_text(
             "# Focused automatic CAMP preparation\n\n"
-            "Use only context supplied in the request. Do not use tools, read external skills or "
-            "files, modify state, or broaden authority. Return only the requested structured "
-            "result.\n",
+            "Use only context supplied in the request and the Tool Shed read_context function. "
+            "Do not use shell, built-in file tools, external skills, network, or parent paths; "
+            "do not modify state or broaden authority. Return only the requested structured result.\n",
             encoding="utf-8",
             newline="\n",
         )
         instructions.chmod(0o400)
-        with CodexExecutionAdapter(
-            policy=selected_policy,
-            codex=resolved_codex,
-            timeout=timeout,
-            telemetry_path=telemetry_path,
-        ) as adapter:
-            permission_profile: str | None = None
-            try:
-                profiles = adapter.client.list_permission_profiles(cwd=temporary)
-            except AppServerError as error:
-                details = error.details if isinstance(error.details, dict) else {}
-                message = str(details.get("message") or error).lower()
-                if details.get("code") != -32601 and "method not found" not in message:
-                    raise
-            else:
-                allowed_profiles = {
-                    str(item.get("id"))
-                    for item in profiles
-                    if item.get("allowed") is True and isinstance(item.get("id"), str)
-                }
-                if ":read-only" not in allowed_profiles:
-                    raise AppServerError(
-                        "Codex app-server exposes permission profiles but no allowed "
-                        ":read-only profile",
-                        details={"allowed_profiles": sorted(allowed_profiles)},
-                        kind="read_only_permission_profile_unavailable",
-                    )
-                permission_profile = ":read-only"
-            result = adapter.execute(
-                effective_prompt,
-                role="planning",
-                cwd=temporary,
-                sandbox="read-only",
-                campaign=campaign,
-                operation="automatic_camp_preparation",
-                explicit_files=(),
-                context_mode="focused_automatic_preparation",
-                context_delivery="inline_deterministic_context",
-                warning_input_tokens=features.warning_threshold("planning"),
-                restricted_read=True,
-                permission_profile=permission_profile,
-                ephemeral=True,
-                source_cwd=cwd.resolve(),
-                sandbox_root=temporary,
-                output_schema=output_schema,
+        try:
+            reader_context = BoundedContextReader(
+                cwd,
+                reference_files,
+                max_snapshot_bytes=features.max_snapshot_bytes,
+                max_manifest_bytes=features.max_reference_manifest_bytes,
+                max_read_bytes=features.max_reference_read_bytes,
+                max_total_bytes=features.max_reference_total_bytes,
+                max_lines=features.max_reference_lines,
+            )
+        except ContextRetrievalError as error:
+            raise FeatureConfigError(str(error)) from error
+        with reader_context as reader:
+            manifest = json.dumps(reader.manifest, sort_keys=True, separators=(",", ":"))
+            effective_prompt = (
+                "Use only the deterministic inline context and digest-bound reference manifest "
+                "below. The only allowed retrieval is read_context with the exact manifest digest. "
+                "Do not call shell or built-in file tools. If the allowlist or remaining budget "
+                "cannot establish a safe plan, return status needs_more_context with the blocked "
+                "empty-capsule shape.\n\nREFERENCE MANIFEST\n"
+                + manifest
+                + "\n\nDETERMINISTIC CONTEXT\n"
+                + preparation_context
+                + "\n\nREQUEST\n"
+                + prompt
+            )
+            if len(effective_prompt.encode("utf-8")) > features.max_inline_bytes:
+                raise FeatureConfigError(
+                    f"automatic preparation context exceeds {features.max_inline_bytes} bytes"
+                )
+            with CodexExecutionAdapter(
+                policy=selected_policy,
+                codex=resolved_codex,
+                timeout=timeout,
+                telemetry_path=telemetry_path,
+                dynamic_tool_handler=reader.handle,
+            ) as adapter:
+                permission_profile: str | None = None
+                try:
+                    profiles = adapter.client.list_permission_profiles(cwd=temporary)
+                except AppServerError as error:
+                    details = error.details if isinstance(error.details, dict) else {}
+                    message = str(details.get("message") or error).lower()
+                    if details.get("code") != -32601 and "method not found" not in message:
+                        raise
+                else:
+                    allowed_profiles = {
+                        str(item.get("id"))
+                        for item in profiles
+                        if item.get("allowed") is True and isinstance(item.get("id"), str)
+                    }
+                    if ":read-only" not in allowed_profiles:
+                        raise AppServerError(
+                            "Codex app-server exposes permission profiles but no allowed "
+                            ":read-only profile",
+                            details={"allowed_profiles": sorted(allowed_profiles)},
+                            kind="read_only_permission_profile_unavailable",
+                        )
+                    permission_profile = ":read-only"
+                result = adapter.execute(
+                    effective_prompt,
+                    role="planning",
+                    cwd=temporary,
+                    sandbox="read-only",
+                    campaign=campaign,
+                    operation="automatic_camp_preparation",
+                    explicit_files=(),
+                    context_mode="focused_automatic_preparation",
+                    context_delivery="bounded_reference_retrieval",
+                    warning_input_tokens=features.warning_threshold("planning"),
+                    restricted_read=True,
+                    disallow_command_execution=True,
+                    allowed_tool_call_types=frozenset({"dynamicToolCall"}),
+                    permission_profile=permission_profile,
+                    ephemeral=True,
+                    source_cwd=cwd.resolve(),
+                    sandbox_root=temporary,
+                    output_schema=output_schema,
+                    dynamic_tools=reader.dynamic_tools,
+                )
+            result = replace(
+                result,
+                context_scope={
+                    **result.context_scope,
+                    "reference_retrieval": reader.evidence_summary(),
+                },
             )
     return decision, result
 

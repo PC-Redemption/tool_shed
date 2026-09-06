@@ -683,12 +683,16 @@ The GUI must run that command directly, never through `codex exec` or another ag
 selects exactly what unflagged `ts: next` would select. It reuses a valid strict campaign execution
 capsule when present. If the ready campaign is unprepared, the dispatcher assembles a deterministic
 focused snapshot from the campaign, project instructions, Git state, relevant file inventory, and
-bounded source excerpts. One isolated read-only App Server planning turn receives only that
-snapshot, without tools, and returns a structured capsule declaring the matching IDs, prompt,
+bounded source excerpts. One isolated read-only App Server planning turn receives that compact
+snapshot plus a digest-bound manifest. Its only tool is Tool Shed's `read_context` function, which
+serves allowlisted UTF-8 line ranges under per-read and cumulative budgets from a private immutable
+copy outside the model sandbox. It returns a structured capsule declaring the matching IDs, prompt,
 relative allowed paths, focused context, and shell-free verification argv. The dispatcher validates
 the CAMP role before spending planning tokens, exposes actual inventory sizes to planning, limits
 automatic inline context to the smaller of 64,000 bytes and the configured inline limit, and
-rejects an over-budget result before persistence. It then preflights planning and validates the
+rejects an undeclared context file, source race, `needs_more_context`, or over-budget result before
+persistence. Retrieval telemetry retains only digests, paths, ranges, counts, and refusal
+categories—not source text. It then preflights planning and validates the
 result, persists the capsule through the guarded
 campaign transaction, and continues with the existing Terra/medium runner in the same invocation.
 Unsafe, ambiguous, invalid, or over-budget preparation stops before mutation. Discussion, owner

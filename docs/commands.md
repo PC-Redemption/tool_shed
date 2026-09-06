@@ -690,7 +690,7 @@ action or `--app-server` for a strict one-command App Server request:
 | `ts: plan <request> --app-server` | App Server planning with `gpt-5.6-sol` / `high` |
 | `ts: verify <request> --app-server` | App Server verification with `gpt-5.6-terra` / `low` |
 | `ts: camp run <camp> --app-server` | Existing bounded App Server CAMP path with `gpt-5.6-terra` / `medium` |
-| `ts: next --app-server` | Invoke one deterministic dispatcher that reuses normal `next` selection, preflights CAMP before planning, automatically prepares an unprepared ready campaign with at most 64,000 bytes of inline context through read-only App Server planning, and continues to the existing Terra/medium CAMP path; never launch a nested Codex agent. |
+| `ts: next --app-server` | Invoke one deterministic dispatcher that reuses normal `next` selection, preflights CAMP before planning, automatically prepares an unprepared ready campaign from compact inline context plus digest-bound bounded `read_context` retrieval, and continues to the existing Terra/medium CAMP path; never launch a nested Codex agent. |
 | `ts: app-server on` | Persistently trust the resolved App Server for supported local roles, including bounded CAMP. `appserver` is an alias. |
 | `ts: app-server off` | Persist a user-local GUI override of the repository App Server default. |
 | `ts: app-server status` | Read-only operator-trust, runtime-readiness, observed-safety, and optional-certification status. |
@@ -721,12 +721,15 @@ not wrap that command in `codex exec` or another agent. Executable CAMP work use
 campaign-local JSON execution capsule with the matching campaign/CAMP IDs, prompt, relative path
 allowlists, focused context, and shell-free verification argv. If that capsule is absent, the same
 invocation assembles a deterministic focused snapshot from the campaign, project instructions, Git
-state, relevant file inventory, and bounded source excerpts. Read-only App Server planning receives
-only that isolated snapshot, without tools, and returns strict structured preparation. The
-dispatcher preflights CAMP before the planning turn, validates the returned context against the
-smaller of 64,000 bytes and the configured inline limit, and persists it through the
+state, relevant file inventory, bounded source excerpts, and a digest-bound reference manifest.
+Read-only App Server planning may call only Tool Shed's `read_context` dynamic function for
+allowlisted UTF-8 line ranges under per-read and cumulative budgets; source text is not retained in
+telemetry. The dispatcher preflights CAMP before the planning turn, validates that every selected
+worker context file was in the manifest and remains within the smaller of 64,000 bytes and the
+configured inline limit, and persists it through the
 guarded campaign transaction before continuing to the existing `camp-run` safety path. Unsafe,
-ambiguous, invalid, or over-budget preparation stops before mutation. Existing valid capsules skip
+ambiguous, invalid, changed-source, `needs_more_context`, or over-budget preparation stops before
+mutation. Existing valid capsules skip
 planning. Discussion, decisions, blocked work, external gates, and unsupported roles remain on
 their ordinary route. Explicit `--app-server` remains strict. A persisted selection that cannot
 qualify reports a compact category and continues the same action immediately in GUI. Pre-mutation
@@ -825,6 +828,7 @@ The AI routes normally operate these deterministic scripts from the workspace-lo
 scripts/campaign_queue.py
 scripts/app_server_control.py
 scripts/app_server_dispatch.py
+scripts/context_retrieval.py
 scripts/check_work_tree.py
 scripts/doctor.py
 scripts/check_shed_version.py
