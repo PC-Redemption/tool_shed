@@ -227,7 +227,13 @@ class BoundedContextReader:
             return self._failure("snapshot_digest_mismatch", label, start, count)
         if len(raw) != entry["bytes"] or hashlib.sha256(raw).hexdigest() != entry["sha256"]:
             return self._failure("snapshot_digest_mismatch", label, start, count)
-        lines = raw.decode("utf-8").splitlines(keepends=True)
+        # Tool results use one portable newline contract.  The snapshot and its
+        # digest retain the exact source bytes, while returned UTF-8 text is
+        # normalized to LF before ranges and delivery-byte budgets are applied.
+        # This keeps the same manifest/range request behavior on POSIX and
+        # Windows without weakening live-source tamper detection.
+        portable_text = raw.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n")
+        lines = portable_text.splitlines(keepends=True)
         if start > len(lines) and not (start == 1 and not lines):
             return self._failure("range_out_of_bounds", label, start, count)
         selected = "".join(lines[start - 1 : start - 1 + count])

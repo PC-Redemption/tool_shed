@@ -72,6 +72,19 @@ class BoundedContextReaderTests(unittest.TestCase):
             self.assertFalse(refused["success"])
             self.assertEqual("manifest_digest_mismatch", summary_code(refused))
 
+    def test_read_normalizes_crlf_before_range_and_byte_budget_accounting(self) -> None:
+        windows_text = self.root / "src" / "windows.txt"
+        windows_text.write_bytes(b"one\r\ntwo\r\nthree\r\nfour\r\n")
+        with self.reader((Path("src/windows.txt"),)) as reader:
+            request = self.request(reader, path="src/windows.txt")
+            response = reader.handle(request)
+
+            self.assertTrue(response["success"])
+            payload = json.loads(response["contentItems"][0]["text"])
+            self.assertEqual("two\nthree\n", payload["content"])
+            self.assertEqual(10, payload["returned_bytes"])
+            self.assertEqual(23, reader.evidence_summary()["snapshot_bytes"])
+
     def test_source_change_and_each_budget_fail_closed(self) -> None:
         with self.reader() as reader:
             (self.root / "src" / "alpha.py").write_text("changed\n", encoding="utf-8")
