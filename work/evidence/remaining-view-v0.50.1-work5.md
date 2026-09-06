@@ -22,6 +22,23 @@ subdued tree context when it owns a genuinely remaining descendant.
 
 ## Remaining Work5 Proof
 
-Full release validation, development web/Linux/Windows qualification, exact-SHA CI, publication,
-production promotion, clean unfiltered dashboard verification, automatic reporter convergence,
-and direct-outcome reconciliation remain required.
+### Development lanes
+
+- Web: exact candidate `689b81132a48f5f28c84846ca7a03b961cf53d80` built as
+  `tool-shed-dashboard:dev-689b81132a48` with image digest
+  `sha256:6176c7617322966ba95bf46689c212dd92527cf9d8fb322edfe623ca040d6dd6`.
+  The development stack and HTTP health endpoint were healthy. An in-container production-shape
+  probe returned `False` for completed, superseded, abandoned, and deferred legacy rows with
+  unknown lifecycle fields, and `True` for the same row carrying an explicit open disposition.
+- Linux: the clean candidate archive (SHA-256
+  `a7a0cde0d590a20d8777bc534d14ba7262acb50040d3ddb72c5282aea7d28c83`) was installed in the
+  authorized `sup:/home/jon/dev/ts_linux_test_bed` test bed. The 54 focused tests passed under
+  Python 3.13, strict snapshot integrity was verified, strict Doctor was healthy, and the parent
+  repository remained clean.
+- Windows: the same archive was installed in the authorized
+  `GOGETTER:E:\dev\ts_windows_test_bed` test bed. The 54 focused tests passed under Windows using
+  the maintained qualification environment (Django 5.2.17), strict snapshot integrity was
+  verified, strict Doctor was healthy, and the parent repository remained clean.
+
+Exact-SHA CI, publication, production promotion, clean unfiltered dashboard verification,
+automatic reporter convergence, and direct-outcome reconciliation remain required.
