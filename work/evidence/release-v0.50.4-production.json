@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-production-release-evidence",
+  "release": {
+    "version": "0.50.4",
+    "tag": "v0.50.4",
+    "content_commit": "1256ac40cc9413f3cc829a6d0a3592af6167e6f3",
+    "provenance_commit": "78a6ba712209922bb266b608c4d3182520672200",
+    "published_at": "2026-09-07T17:14:56Z",
+    "url": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.50.4"
+  },
+  "qualification": {
+    "local_release_validation": "630 of 630 tests passed",
+    "linux_development_tests": "67 of 67 focused tests passed",
+    "windows_development_tests": "67 of 67 focused tests passed; one elevation-dependent symlink test skipped",
+    "validate_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34146340147",
+    "validate_jobs": "33 of 33 passed",
+    "publish_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34146745608",
+    "result": "passed"
+  },
+  "codex_app_server_0_153_0": {
+    "global_disposition": "qualified_with_blockers",
+    "linux_executable_sha256": "fce635028842bfe9257140e8b7d53162732945e2f356fc35225be0702b4974be",
+    "windows_executable_sha256": "0f8ed9678bca539aa6517adb0c8d50ad9a94ff5df4d21e149ae700d219fff69d",
+    "windows_workspace_write_strategy": "read-only App Server thread plus controller-owned one-shot digest-bound writer",
+    "planning": "exact-qualified",
+    "verification": "exact-qualified",
+    "camp_execution": "exact-qualified",
+    "native_windows_workspace_write": "unusable and not claimed",
+    "gui_fallback_used": false,
+    "global_codex_settings_changed": false,
+    "result": "passed"
+  },
+  "web_production": {
+    "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com",
+    "image": "tool-shed-dashboard:v0.50.4",
+    "image_sha256": "feecce6ea7394c2ba9eabace287dcd405779443ed3aceb61c16d6a9fa3cd9c10",
+    "database_backup": "/home/jon/docker/ts.rookaro.com/backups/dashboard-daily-20260907T171557Z.dump.age",
+    "rollback_bundle": "/home/jon/docker/ts.rookaro.com/release-backups/pre-v0.50.4-20260907T1715Z",
+    "public_dashboard_status": 302,
+    "public_docs_status": 200,
+    "production_readiness": "healthy",
+    "result": "passed"
+  },
+  "linux_production": {
+    "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed",
+    "installed_version": "0.50.4",
+    "content_commit": "1256ac40cc9413f3cc829a6d0a3592af6167e6f3",
+    "backup": "/home/jon/dev/ts_linux_test_bed/tool_shed.backup-20260907T171655Z.tar",
+    "work_preserved": true,
+    "result": "passed"
+  },
+  "windows_production": {
+    "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed",
+    "installed_version": "0.50.4",
+    "content_commit": "1256ac40cc9413f3cc829a6d0a3592af6167e6f3",
+    "backup": "E:\\dev\\ts_windows_test_bed\\tool_shed.backup-20260907T171740Z.tar",
+    "work_preserved": true,
+    "installed_app_server_status": "exact-qualified",
+    "result": "passed"
+  },
+  "live_7520553_smi_fw": {
+    "target": "workpc@SH-06172402:E:\\dev\\high_point\\7520553_SMI_FW",
+    "project_id": "caf70625-5f07-41fc-b7de-c3134f48e7da",
+    "instance_id": "b6f95c0a-af75-4855-bab9-f96567882b43",
+    "installed_version": "0.50.4",
+    "content_commit": "1256ac40cc9413f3cc829a6d0a3592af6167e6f3",
+    "backup": "E:\\dev\\high_point\\7520553_SMI_FW\\tool_shed.backup-20260907T172150Z.tar",
+    "preserved_dirty_paths": [
+      "AGENTS.md",
+      "work/index.json",
+      "work/index.md"
+    ],
+    "local_app_server_qualification_state": "exact-qualified",
+    "local_write_qualification_state": "exact-qualified",
+    "local_pending_events": 0,
+    "automatic_event_sequence": 5532,
+    "event_created_at": "2026-09-07T17:24:48.752374Z",
+    "event_delivered_at": "2026-09-07T17:24:50.151755Z",
+    "delivery_seconds": 1.399381,
+    "delivery_attempts": 0,
+    "manual_report_used": false,
+    "manual_worker_used": false,
+    "safety_pass_used": false,
+    "hosted_verified_sequence": 5532,
+    "final_hosted_verified_sequence": 5548,
+    "final_hosted_observed_at": "2026-09-07T17:41:12.659520+00:00",
+    "hosted_app_server_availability": "available",
+    "hosted_codex_version": "0.153.0",
+    "hosted_active_attention_conditions": [],
+    "hosted_app_server_failure_active": false,
+    "project_attention_state": "working (unrelated project work remains)",
+    "result": "passed"
+  },
+  "release_review": {
+    "reviewed_open_issues": true,
+    "completed_issue_matches": [],
+    "remaining_gap_issue": "https://github.com/PC-Redemption/tool_shed/issues/61",
+    "remaining_gap": "Windows updater closing guidance can retain a stale UNQUALIFIED VERSION message after authoritative installed status becomes exact-qualified.",
+    "release_blocking": false,
+    "result": "passed"
+  },
+  "result": "passed"
+}

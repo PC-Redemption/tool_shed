@@ -1,0 +1,41 @@
+# Campaign: Repair and Qualify Codex App Server 0.153.0 on Windows
+
+Status: active
+Type: campaign
+Updated: 2026-09-07
+Next Action: none
+Campaign ID: repair-qualify-codex-app-server-0-153-0-windows
+Outcome: Codex App Server 0.153.0 is genuinely qualified for Tool Shed's supported read-only and bounded CAMP roles on Linux and Windows, released, installed in 7520553_SMI_FW, and no longer produces an App Server qualification attention condition on the production dashboard.
+Primary Focus Areas: qualification-release
+Supporting Focus Areas: provider-portability, workspace-safety
+Depends On: CAMP-0171
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work5
+Completion Gate: Reproduce the exact 0.153.0 Windows failure using the bundled executable and disposable GOGETTER testbed; identify and repair the bounded Tool Shed compatibility defect without expanding the intended writable root, weakening approval or sandbox policy, enabling API-key fallback, or granting broader App Server roles; prove read-only planning and verification plus bounded workspace-write CAMP execution on unchanged exact Linux and Windows executables; record matching exact executable SHA-256 evidence and set the 0.153.0 registry status to qualified only after both platforms pass; run focused and full release validation; freeze an exact content commit; pass the configured development and production lanes plus exact-SHA CI; publish and install the stable release; run fulltsupgrade in 7520553_SMI_FW while preserving its existing owner changes; allow its reporter to converge automatically; and verify the hosted App Server aggregate is available with the app-server-failure attention condition resolved. An unqualified, unsupported, safely denied, GUI-fallback-only, or evidence-only verdict does not satisfy this campaign.
+Completion Evidence: work/evidence/camp-0172-v0.50.4-work5.md; work/evidence/release-v0.50.4-production.json; work/evidence/camp-0172-codex-app-server-0.153.0-linux.json; work/evidence/camp-0172-codex-app-server-0.153.0-windows.json; GitHub release v0.50.4
+Disposition: satisfied — Tool Shed v0.50.4 qualified the unchanged Codex App Server 0.153.0 executable on Linux and Windows, upgraded 7520553_SMI_FW, and its automatic report cleared the production app-server-failure condition.
+
+## Problem
+
+CAMP-0171 was closed after producing a truthful `unqualified` verdict instead of achieving the
+operator's requested usable qualification. Tool Shed v0.50.3 therefore denies App Server 0.153.0
+in normal mode and the `7520553_SMI_FW` dashboard correctly raises `app-server-failure` attention.
+That is safe behavior, but it is not the requested product outcome.
+
+## Required Result
+
+Fix the Windows compatibility boundary that prevented the exact App Server 0.153.0 executable from
+reading and mutating a fresh allowed workspace fixture. Re-run the complete cross-platform
+qualification. Only a passing Linux and Windows result may change the registry to `qualified`.
+Release that result, upgrade the affected project, and prove the red qualification banner clears
+from production without manually falsifying or suppressing the reported state.
+
+## Non-goals
+
+- Do not hide, downgrade, acknowledge away, or special-case the dashboard attention condition.
+- Do not treat operator-runtime consent as qualification evidence.
+- Do not replace the exact-version test with a newer Codex build.
+- Do not weaken workspace containment, approvals, authentication, deterministic verification, or
+  no-replay recovery to force a pass.
