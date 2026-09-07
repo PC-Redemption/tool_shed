@@ -1,18 +1,20 @@
 {
-  "candidate_commit": null,
+  "candidate_commit": "baac68f1c914584cc806d7b8d310ccc0074d850f",
   "created_at": "2026-09-07T13:21:56Z",
   "kind": "tool-shed-project-release-lanes",
   "lanes": {
     "linux": {
       "development": {
-        "actor": null,
-        "artifact": null,
+        "actor": "codex",
+        "artifact": "tool-shed-v0.50.3-candidate.tar.gz@sha256:95b0b4bfbf701ed7625847eb9f5ff08cead2e7050ee68c70d539912a61a4eb51",
         "authorization_ref": null,
-        "evidence": [],
+        "evidence": [
+          "work/evidence/camp-0171-v0.50.3-work5.md"
+        ],
         "reason": null,
-        "recorded_at": null,
-        "source_commit": null,
-        "status": "open",
+        "recorded_at": "2026-09-07T13:35:40Z",
+        "source_commit": "baac68f1c914584cc806d7b8d310ccc0074d850f",
+        "status": "verified",
         "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed"
       },
       "production": {
@@ -29,14 +31,16 @@
     },
     "web": {
       "development": {
-        "actor": null,
-        "artifact": null,
+        "actor": "codex",
+        "artifact": "tool-shed-dashboard:dev-baac68f1c914@sha256:211195346e5727e171a18c441db3cf8bf7acc2982a12163073adb284985232f2",
         "authorization_ref": null,
-        "evidence": [],
+        "evidence": [
+          "work/evidence/camp-0171-v0.50.3-work5.md"
+        ],
         "reason": null,
-        "recorded_at": null,
-        "source_commit": null,
-        "status": "open",
+        "recorded_at": "2026-09-07T13:35:27Z",
+        "source_commit": "baac68f1c914584cc806d7b8d310ccc0074d850f",
+        "status": "verified",
         "target": "tsrookarocom-dev@sup.local:/home/jon/docker/ts.rookaro.com-dev"
       },
       "production": {
@@ -53,14 +57,16 @@
     },
     "windows": {
       "development": {
-        "actor": null,
-        "artifact": null,
+        "actor": "codex",
+        "artifact": "tool-shed-v0.50.3-candidate.tar.gz@sha256:95b0b4bfbf701ed7625847eb9f5ff08cead2e7050ee68c70d539912a61a4eb51",
         "authorization_ref": null,
-        "evidence": [],
+        "evidence": [
+          "work/evidence/camp-0171-v0.50.3-work5.md"
+        ],
         "reason": null,
-        "recorded_at": null,
-        "source_commit": null,
-        "status": "open",
+        "recorded_at": "2026-09-07T13:35:54Z",
+        "source_commit": "baac68f1c914584cc806d7b8d310ccc0074d850f",
+        "status": "verified",
         "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed"
       },
       "production": {
@@ -82,7 +88,7 @@
     "windows",
     "linux"
   ],
-  "revision": 1,
+  "revision": 5,
   "schema_version": 1,
-  "updated_at": "2026-09-07T13:21:56Z"
+  "updated_at": "2026-09-07T13:35:54Z"
 }
