@@ -293,7 +293,7 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Qualify Codex App Server 0.153.0 on Windows with bounded controller-owned CAMP writes.",
+  "notes": "Qualify Codex App Server 0.153.0 Windows bounded CAMP execution.",
   "release_commit": null,
   "release_qualification": null,
   "release_tag": "v0.50.4",

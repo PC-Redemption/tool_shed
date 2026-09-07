@@ -38,7 +38,7 @@ class BoundedWorkspaceWriterTests(unittest.TestCase):
         target.write_text("before\n", encoding="utf-8")
         target.chmod(0o640)
         writer = BoundedWorkspaceWriter(self.root, (Path("target.txt"),))
-        digest = hashlib.sha256(b"before\n").hexdigest()
+        digest = hashlib.sha256(target.read_bytes()).hexdigest()
 
         result = call(writer, "target.txt", digest, "after\n")
 
@@ -63,7 +63,7 @@ class BoundedWorkspaceWriterTests(unittest.TestCase):
         writer = BoundedWorkspaceWriter(
             self.root, (Path("target.txt"),), max_write_bytes=8
         )
-        digest = hashlib.sha256(b"before\n").hexdigest()
+        digest = hashlib.sha256(target.read_bytes()).hexdigest()
 
         self.assertFalse(call(writer, "../outside.txt", "absent", "x")["success"])
         self.assertFalse(call(writer, "target.txt", digest, "123456789")["success"])
@@ -71,7 +71,7 @@ class BoundedWorkspaceWriterTests(unittest.TestCase):
         self.assertFalse(call(writer, "target.txt", digest, "worker\n")["success"])
 
         replay = BoundedWorkspaceWriter(self.root, (Path("target.txt"),))
-        current = hashlib.sha256(b"controller\n").hexdigest()
+        current = hashlib.sha256(target.read_bytes()).hexdigest()
         self.assertTrue(call(replay, "target.txt", current, "first\n")["success"])
         self.assertFalse(call(replay, "target.txt", current, "second\n")["success"])
         self.assertEqual("first\n", target.read_text(encoding="utf-8"))

@@ -268,6 +268,16 @@ class CodexExecutionTests(unittest.TestCase):
             {"TOOL_SHED_STATE_ROOT": str(self.root / "state")},
         )
         self.state_root_patch.start()
+        self.native_camp_patch = (
+            patch(
+                "scripts.codex_orchestration.use_bounded_workspace_writer",
+                return_value=False,
+            )
+            if os.name == "nt"
+            else None
+        )
+        if self.native_camp_patch is not None:
+            self.native_camp_patch.start()
         script = self.root / "fake-codex.py"
         script.write_text(FAKE_CODEX, encoding="utf-8", newline="\n")
         if os.name == "nt":
@@ -283,6 +293,8 @@ class CodexExecutionTests(unittest.TestCase):
         self.policy = ModelPolicy.load(ROOT / "adapters" / "codex-model-policy.json")
 
     def tearDown(self) -> None:
+        if self.native_camp_patch is not None:
+            self.native_camp_patch.stop()
         self.state_root_patch.stop()
         self.temporary.cleanup()
 
