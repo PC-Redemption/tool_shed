@@ -10,9 +10,9 @@
     "README.md": "60b54898b6b22aaf424e2570a805a09956af255532899f9539da22e343082b53",
     "adapters/codex-app-server-benchmarks.json": "20ef4ef6d7e3964e01791ea2623e16091a5c5bd85ddae84179952ba31872dbe3",
     "adapters/codex-app-server-config.json": "4dfe4a99d7d85d7ac414a25fba9f65c4c5bdb4f0a1918ef9a8733c6f341653bb",
-    "adapters/codex-app-server-qualifications.json": "995ccd3bea135448b316045ea240c10d272f4c7e2ff65085111e0380cef947c1",
+    "adapters/codex-app-server-qualifications.json": "d579140bdf7cc941684aa254d6a2ab77d3fca969891e0ff854e64cf78b0d566e",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "1a213513545b6d4fa737175bf2650a3aea08ee8411b40cd93cbc63ac63f53a52",
+    "adapters/codex-skill-releases.json": "7500d23048f1758676348cfa385a013433c88e5760efb566cf4281f1e598ef2e",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "a16e9afbc2733b2c01b113df3f3a07fda1630b80b5a97476896123ee03bc22d2",
     "dashboard/Dockerfile": "8e9ff084f409aa81ab92b9dcbe8d9bab2416225551c837681653cab7b66786ad",
@@ -72,9 +72,10 @@
     "docs/codex-app-server-camp-token-baseline-2026-08-20.md": "5148859c74dc0b79a7f3dd1b86b8085f03091a3268bf95dfe769337fe3fdccc9",
     "docs/codex-app-server-camp-token-optimization-2026-08-20.md": "7c28ad01af86288141bf94b6f9b9d048ed69424075c762d44d421f82330b0235",
     "docs/codex-app-server-execution.md": "321f6e589189f4d8989822db0d5670e7079c75b1028fbd8c3495f59f5f3f1071",
-    "docs/codex-app-server-maintainer-note.md": "9512fb232c9771f1080374e70523253e4ff447fbc08a8a785f59df49285cc005",
+    "docs/codex-app-server-maintainer-note.md": "a1df90858cd5c84c584ccc5815abd3f29b94c8631e3aee18d874b84836d1c3ac",
     "docs/codex-app-server-qualification-2026-08-20.md": "d4d70d0a51bb6be1ed69ce45ce63124b16f4d1acca35e9072d926b4d43b79c31",
     "docs/codex-app-server-requalification-2026-08-21.md": "9aacfac50f3debb8ccff2b3b06d33f6b52c6354e7df5b7bc9c5f2114f85663b4",
+    "docs/codex-app-server-requalification-2026-09-07.md": "08348b1e95581719538296edb75a4c91d6eb9e3d1eb2f755998d77e68b643596",
     "docs/codex-app-server-write-qualification-2026-08-20.md": "db297ad88feb73f46a46178ae92304445afc2fb2447c2543d3bec84609af3923",
     "docs/codex-app-server-write-qualification-alpha-2026-08-25.md": "95d22eeb2b8d80fc884962fe30e93c5b2af4c63063970fb6ab30b55f292d40c8",
     "docs/commands.md": "92784d91e855eedcf00d79786721fa72df59e03288956511989164c331f46dc6",
@@ -163,8 +164,8 @@
     "scripts/closure_lineage_benchmark.py": "564f5751d51deddff26e2392334a6aaa0a70d94b35e335f402ef5c88ff2e4569",
     "scripts/closure_lineage_schema.py": "3c7814cba682f0e74ab435192ac1eae45d19be8dc35693dc4b36d6167d37236e",
     "scripts/codex_app_server.py": "61600e7cccc191ef9a86fed15c5faaf15ebedf56992e87b31916e873cd2358bd",
-    "scripts/codex_app_server_compatibility.py": "42bb4dc4fc076119bca0355f8be84bdcceadf604702c9ebe296508067a920968",
-    "scripts/codex_app_server_write_qualification.py": "dae8cd30568a7b92929702f98ca9d059bc6e3436d0ef1b982e0f22d253f59637",
+    "scripts/codex_app_server_compatibility.py": "bdc60a0eb32f6818ec84b3f1cd41693e9bc79e72c71b8e81445df5ccefcdfb41",
+    "scripts/codex_app_server_write_qualification.py": "9fbbe30e135e5f430e49c7257c26616cfc3cb4e956e6da73cd353a6e4baa26d3",
     "scripts/codex_camp_execution.py": "b4262ab572b4e0bf2cfc74acc575b10a21700a4c50e269fc43182dde2ec6a0a7",
     "scripts/codex_cli_resolver.py": "a75f3fa7e36bcb60b8761dadfd5c2a91a8120a16f2f737bdd18d8ab38a5de854",
     "scripts/codex_execution.py": "8b8c4f101a486f0251a43f2921a96a2c93b9ed72c1ab348ea50d2aec348f3376",
@@ -290,34 +291,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Add instant tree-depth controls for root-only, two-level, three-level, and full hierarchy views.",
-  "release_commit": "0cd14bb0b509a31ddae54918718c4a94caac64a3",
-  "release_qualification": {
-    "attested_at": "2026-09-07T11:50:30Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "81bbb1df280b8c04875d5ee96edd1c597bc74d4ce8b82a19fc01a9a619f866e5"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "0cd14bb0b509a31ddae54918718c4a94caac64a3"
-  },
-  "release_tag": "v0.50.2",
-  "released_at": "2026-09-07T11:50:30Z",
-  "shed_version": "0.50.2",
+  "notes": "Record Codex App Server 0.153.0 qualification, fail closed on the Windows workspace-write blocker, and harden cross-platform qualification probes.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.50.3",
+  "released_at": null,
+  "shed_version": "0.50.3",
   "updated_at": "2026-09-07",
   "updater_mutation_paths": [
     {

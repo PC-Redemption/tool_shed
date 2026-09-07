@@ -404,6 +404,70 @@
       ],
       "evidence": "docs/codex-app-server-requalification-2026-08-21.md",
       "workspace_write_evidence": "docs/codex-app-server-requalification-2026-08-21.md"
+    },
+    {
+      "codex_version": "0.153.0",
+      "qualified_at": "2026-09-07",
+      "status": "unqualified",
+      "operating_mode": "exact_version_denylisted_pending_windows_workspace_fix",
+      "transport": "stdio",
+      "authentication": {
+        "chatgpt": true,
+        "api_key_fallback": false
+      },
+      "routing": {
+        "planning": {
+          "model": "gpt-5.6-sol",
+          "reasoning": "high",
+          "qualified": false
+        },
+        "verification": {
+          "model": "gpt-5.6-terra",
+          "reasoning": "low",
+          "qualified": false
+        },
+        "camp_execution": {
+          "model": "gpt-5.6-terra",
+          "reasoning": "medium",
+          "sandbox": "workspace-write",
+          "qualified": false,
+          "scope": "denied globally until Windows workspace access is repaired and requalified"
+        }
+      },
+      "read_only": true,
+      "cancellation_safe": true,
+      "gui_approval_bridge": false,
+      "restricted_read_consistent": true,
+      "workspace_writing": false,
+      "platform_results": {
+        "linux_x86_64": {
+          "status": "qualified_with_blockers",
+          "executable_sha256": "fce635028842bfe9257140e8b7d53162732945e2f356fc35225be0702b4974be",
+          "read_only": true,
+          "workspace_writing": true,
+          "cancellation": "acknowledged_and_reconciled_interrupted",
+          "journal_safe": true,
+          "unexpected_paths": []
+        },
+        "windows_x86_64": {
+          "status": "unqualified",
+          "executable_sha256": "0f8ed9678bca539aa6517adb0c8d50ad9a94ff5df4d21e149ae700d219fff69d",
+          "read_only": true,
+          "workspace_writing": false,
+          "cancellation": "acknowledged_and_reconciled_interrupted",
+          "journal_safe": true,
+          "blocker": "workspace-write turns could not read or mutate the disposable workspace under either the legacy workspaceWrite policy or the allowed :workspace profile"
+        }
+      },
+      "production_supported": false,
+      "known_blockers": [
+        "Windows workspace-write filesystem access denied under legacy and named-profile paths",
+        "Windows command/exec rejects the hardened split writable-root policy",
+        "GUI approval bridge unavailable",
+        "Tool Shed has not qualified App Server for production workloads"
+      ],
+      "evidence": "docs/codex-app-server-requalification-2026-09-07.md",
+      "workspace_write_evidence": "work/evidence/camp-0171-codex-app-server-0.153.0.json"
     }
   ]
 }

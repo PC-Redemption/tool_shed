@@ -184,6 +184,7 @@ for raw in sys.stdin:
         if "ACTIVE_CANCELLATION_PROBE" in prompt:
             active_turn_id = turn_id
             active_thread_id = params["threadId"]
+            print(json.dumps({"method": "turn/started", "params": {"threadId": params["threadId"], "turn": {"id": turn_id, "status": "inProgress", "items": []}}}), flush=True)
             continue
         if os.environ.get("FAKE_CODEX_EXIT_ON_TURN") == "1":
             sys.exit(7)
@@ -1443,6 +1444,7 @@ class CodexExecutionTests(unittest.TestCase):
             by_name = {item["name"]: item for item in report["checks"]}
             self.assertEqual(by_name["read_only_workspace_unchanged"]["status"], "pass")
             self.assertEqual(by_name["read_only_no_mutation_events"]["status"], "pass")
+            self.assertEqual(by_name["cancellation_turn_started"]["status"], "pass")
             self.assertEqual(by_name["cancellation_reconciliation"]["status"], "pass")
 
     def test_dirty_read_qualification_classifies_transient_and_unsafe_failures(self) -> None:
@@ -2649,7 +2651,8 @@ class CodexExecutionTests(unittest.TestCase):
         qualifications = load_qualifications(
             ROOT / "adapters" / "codex-app-server-qualifications.json"
         )
-        self.assertEqual(qualifications[-1]["codex_version"], "0.149.0")
+        self.assertEqual(qualifications[-1]["codex_version"], "0.153.0")
+        self.assertEqual(qualifications[-1]["status"], "unqualified")
         status = status_report(codex=str(self.fake))
         self.assertEqual(status["status"], "DEFAULT-ON")
         self.assertEqual(status["global_default"], "enabled")

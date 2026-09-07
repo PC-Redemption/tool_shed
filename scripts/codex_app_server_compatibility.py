@@ -924,6 +924,28 @@ def smoke_report(
                     sandbox_policy=sandbox_policy("read-only", smoke_cwd),
                     permission_profile=permission_profile,
                 )
+                cancellation_started = adapter.client.wait_for_notification(
+                    lambda message: (
+                        message.get("method") == "turn/started"
+                        and isinstance(message.get("params"), dict)
+                        and message["params"].get("threadId") in {None, str(thread["id"])}
+                        and isinstance(message["params"].get("turn"), dict)
+                        and message["params"]["turn"].get("id") == turn_id
+                    ),
+                    timeout=min(timeout, 5.0),
+                )
+                checks.append(
+                    check(
+                        "cancellation_turn_started",
+                        cancellation_started is not None,
+                        {
+                            "thread_id": str(thread["id"]),
+                            "turn_id": turn_id,
+                            "observed": cancellation_started is not None,
+                        },
+                        blocker=cancellation_started is None,
+                    )
+                )
                 cancellation = adapter.cancel(
                     str(thread["id"]),
                     turn_id,

@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-codex-app-server-version-qualification",
+  "campaign": "CAMP-0171",
+  "observed_at": "2026-09-07",
+  "codex_version": "0.153.0",
+  "decision": "unqualified",
+  "decision_reason": "Linux passed the supported local roles, but Windows workspace-write turns could not access the disposable workspace; Tool Shed denies the exact version globally until that supported role is repaired and requalified.",
+  "distribution": {
+    "package": "@openai/codex@0.153.0",
+    "tarball": "https://registry.npmjs.org/@openai/codex/-/codex-0.153.0.tgz",
+    "integrity": "sha512-k55kUZaclNi5ceUStSVuyW834ruA6AEdzTK7Xi3M1mOyXokUmq1sJLXm1RJ3XD2S7bRPeF1EXNsYB5Qxwus0mw=="
+  },
+  "linux_x86_64": {
+    "host": "sup",
+    "testbed": "/home/jon/dev/ts_linux_test_bed",
+    "executable": "/home/jon/dev/ts_linux_test_bed/.tool-shed/qualification/camp0171-codex-0.153.0-linux/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+    "sha256": "fce635028842bfe9257140e8b7d53162732945e2f356fc35225be0702b4974be",
+    "read_only_smoke": {
+      "outcome": "qualified",
+      "authentication": "chatgpt",
+      "api_key_fallback": false,
+      "planning": "gpt-5.6-sol/high completed",
+      "verification": "gpt-5.6-terra/low completed",
+      "permission_profile": ":read-only",
+      "workspace_unchanged": true,
+      "cancellation": "acknowledged and reconciled to interrupted"
+    },
+    "workspace_write": {
+      "qualified": true,
+      "duration_seconds": 51.016,
+      "deterministic_boundary_passed": true,
+      "hardened_temp_boundary_passed": true,
+      "minimal_terra_medium": {
+        "status": "completed",
+        "model_turns": 4,
+        "tool_calls": 3,
+        "input_tokens": 68253,
+        "cached_input_tokens": 48384,
+        "output_tokens": 430,
+        "journal_safe": true,
+        "unexpected_paths": [],
+        "focused_test_exit_code": 0
+      },
+      "approval_denial_passed": true,
+      "interruption_no_replay_passed": true
+    }
+  },
+  "windows_x86_64": {
+    "host": "GOGETTER",
+    "controller_testbed": "E:\\dev\\ts_windows_test_bed",
+    "execution_surface": "logged-in interactive console scheduled task",
+    "executable": "C:\\Users\\jon\\.vscode\\extensions\\openai.chatgpt-26.901.22334-win32-x64\\bin\\windows-x86_64\\codex.exe",
+    "sha256": "0f8ed9678bca539aa6517adb0c8d50ad9a94ff5df4d21e149ae700d219fff69d",
+    "path_lookup": "absent by design",
+    "read_only_smoke": {
+      "outcome": "qualified",
+      "authentication": "chatgpt",
+      "api_key_fallback": false,
+      "planning": "gpt-5.6-sol/high completed",
+      "verification": "gpt-5.6-terra/low completed",
+      "permission_profile": ":read-only",
+      "workspace_unchanged": true,
+      "cancellation": "acknowledged and reconciled to interrupted"
+    },
+    "workspace_write": {
+      "qualified": false,
+      "legacy_workspace_write": "filesystem access denied",
+      "named_workspace_profile": "allowed by permissionProfile/list but filesystem access denied",
+      "locations_tested": [
+        "E:\\dev\\ts_windows_test_bed\\.tool-shed\\qualification",
+        "E:\\dev\\ts_windows_test_bed\\camp0171-runs",
+        "C:\\Users\\jon\\AppData\\Local\\Temp\\tool-shed-camp0171-runs"
+      ],
+      "command_exec_hardened_policy": "unsupported split writable-root sets",
+      "minimal_terra_medium": {
+        "status": "completed",
+        "outcome": "recoverable_failure",
+        "file_modified": false,
+        "focused_test_exit_code": 1,
+        "journal_safe": true,
+        "unexpected_paths": []
+      },
+      "approval_denial_passed": true,
+      "interruption_status": "interrupted",
+      "partial_write_detected": false,
+      "delayed_write_absent": true,
+      "read_only_resume_preserved_boundary": true,
+      "preexisting_testbed_index_diff_preserved": true
+    }
+  },
+  "compatibility_repairs": {
+    "cancellation_probe": "wait for the matching turn/started notification before requesting interruption",
+    "windows_harness": "use native PowerShell and Python commands, retain Windows-locked disposable directories until App Server exits, and record command/exec platform limits instead of crashing"
+  },
+  "privacy": {
+    "committed_evidence_contains_prompts": false,
+    "committed_evidence_contains_tool_output": false,
+    "raw_output_retention": "ignored testbed qualification directories only"
+  }
+}
