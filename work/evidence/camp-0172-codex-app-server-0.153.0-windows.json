@@ -1,0 +1,419 @@
+{
+  "app_server_user_agent": "tool_shed_write_qualification/0.153.0 (Windows 10.0.26200; x86_64) unknown (tool_shed_write_qualification; 0.1.0)",
+  "authentication": {
+    "api_key_fallback": false,
+    "plan_type": "pro",
+    "type": "chatgpt"
+  },
+  "campaign": "app-server-write-qualification-and-camp-execution",
+  "cancellation_and_resume": {
+    "delayed_write_absent": true,
+    "first_write": {
+      "contentItems": [
+        {
+          "text": "{\"bytes\":8,\"path\":\"partial.txt\",\"result_sha256\":\"95aebb28195b8d737effe0df18d71d39c8d8ba6569286fd3930fbc9f9767181e\",\"starting_sha256\":\"a6456ed3bde94789512c42c563637b929da22b9b5611962bd2c8ff63343d8195\",\"status\":\"written\"}",
+          "type": "inputText"
+        }
+      ],
+      "success": true
+    },
+    "journal": {
+      "camp": "bounded-interruption-no-replay",
+      "campaign": "app-server-write-qualification-and-camp-execution",
+      "cancelled_or_interrupted": true,
+      "commands_executed": [],
+      "expected_paths": [
+        "partial.txt",
+        "after-sleep.txt"
+      ],
+      "files_created": [],
+      "files_deleted": [],
+      "files_modified": [
+        "partial.txt"
+      ],
+      "final_state": "safe_unverified",
+      "preexisting_dirty_drift": [],
+      "preexisting_dirty_preserved": true,
+      "recovery_action": "reconcile_workspace_before_retry",
+      "repository_root": "E:\\dev\\ts_windows_test_bed\\camp0172-runs\\tool-shed-partial-cancel-7yvh39rw",
+      "safe": true,
+      "schema_version": 1,
+      "start_commit": "a20420ebfa0218c9c89b48bec6a01947c46520a9",
+      "start_state_identifier": "b93df478f038e5b16c6af7690c06de2f6cc68d1ff3f918505ac220f513fcc68d",
+      "start_status": {},
+      "thread_id": "bounded-writer",
+      "turn_id": "interrupted-after-mutation",
+      "turn_status": "interrupted",
+      "unexpected_paths": [],
+      "workspace_root": "E:\\dev\\ts_windows_test_bed\\camp0172-runs\\tool-shed-partial-cancel-7yvh39rw"
+    },
+    "partial_preserved": true,
+    "passed": true,
+    "replay_attempt": {
+      "contentItems": [
+        {
+          "text": "{\"code\":\"mutation_already_performed\",\"path\":\"after-sleep.txt\",\"status\":\"refused\"}",
+          "type": "inputText"
+        }
+      ],
+      "success": false
+    },
+    "supported_path": "one-shot bounded mutation with journal reconciliation"
+  },
+  "codex_version": "0.153.0",
+  "denial": {
+    "approval_events": [
+      {
+        "command": "\"c:\\\\program files\\\\powershell\\\\7\\\\pwsh.exe\" -Command 'Set-Content -LiteralPath should-not-exist.txt -Value denied-test'",
+        "cwd": "E:\\dev\\ts_windows_test_bed\\camp0172-runs\\tool-shed-command-denial-e3tdjapa",
+        "grant_root": null,
+        "item_id": "exec-21a84964-96ed-437c-a6f8-395c9445d3b6",
+        "method": "item/commandExecution/requestApproval",
+        "thread_id": "01a07cb1-dfb7-77a0-a018-6585877b985d",
+        "turn_id": "01a07cb1-dfff-7431-bd0c-6dbdf73d37bb"
+      }
+    ],
+    "approval_request_observed": true,
+    "outcome": {
+      "details": "The exact command was denied. I did not retry or use another tool.",
+      "evidence": [
+        "CreateProcess rejected: \"rejected by user\""
+      ],
+      "outcome": "blocked"
+    },
+    "passed": true,
+    "runtime_mismatch": null,
+    "target_absent": true,
+    "turn": {
+      "error": null,
+      "model_turns": 2,
+      "mutation_events": [
+        {
+          "command": "\"c:\\\\program files\\\\powershell\\\\7\\\\pwsh.exe\" -Command 'Set-Content -LiteralPath should-not-exist.txt -Value denied-test'",
+          "cwd": "E:\\dev\\ts_windows_test_bed\\camp0172-runs\\tool-shed-command-denial-e3tdjapa",
+          "exit_code": null,
+          "item_id": "exec-21a84964-96ed-437c-a6f8-395c9445d3b6",
+          "result_bytes": 567,
+          "status": "declined",
+          "type": "commandExecution"
+        }
+      ],
+      "status": "completed",
+      "thread_id": "01a07cb1-dfb7-77a0-a018-6585877b985d",
+      "tokens": {
+        "cached_input": 31232,
+        "input": 36395,
+        "output": 175,
+        "reasoning_output": 0,
+        "total": 36570
+      },
+      "tool_call_types": [
+        "commandExecution"
+      ],
+      "tool_calls": 1,
+      "turn_id": "01a07cb1-dfff-7431-bd0c-6dbdf73d37bb"
+    }
+  },
+  "deterministic_boundary": {
+    "checks": {
+      "create": {
+        "contentItems": [
+          {
+            "text": "{\"bytes\":8,\"path\":\"created.txt\",\"result_sha256\":\"59134a4054b27a3fc30e1ac81d9b9168dc0561f65982151324a021fe8ce88d06\",\"starting_sha256\":\"absent\",\"status\":\"written\"}",
+            "type": "inputText"
+          }
+        ],
+        "success": true
+      },
+      "first_write": {
+        "contentItems": [
+          {
+            "text": "{\"bytes\":6,\"path\":\"replay.txt\",\"result_sha256\":\"b640e840b19d378660b32fb51ae18d67dccb4a8596a29e7bd72c1b2ae5928f41\",\"starting_sha256\":\"d16a143cfed1b61559d7320cd858997ec13094f00c119c63a7fe674745c744e9\",\"status\":\"written\"}",
+            "type": "inputText"
+          }
+        ],
+        "success": true
+      },
+      "modify": {
+        "contentItems": [
+          {
+            "text": "{\"bytes\":6,\"path\":\"existing.txt\",\"result_sha256\":\"7b9a72466d3960eb2aacccfc848939453490db0678bd4725def3f789b891c919\",\"starting_sha256\":\"a6456ed3bde94789512c42c563637b929da22b9b5611962bd2c8ff63343d8195\",\"status\":\"written\"}",
+            "type": "inputText"
+          }
+        ],
+        "success": true
+      },
+      "outside_refused": {
+        "contentItems": [
+          {
+            "text": "{\"code\":\"path_not_allowlisted\",\"path\":\"../outside/forbidden.txt\",\"status\":\"refused\"}",
+            "type": "inputText"
+          }
+        ],
+        "success": false
+      },
+      "replay_refused": {
+        "contentItems": [
+          {
+            "text": "{\"code\":\"mutation_already_performed\",\"path\":\"replay.txt\",\"status\":\"refused\"}",
+            "type": "inputText"
+          }
+        ],
+        "success": false
+      },
+      "stale_digest_refused": {
+        "contentItems": [
+          {
+            "text": "{\"code\":\"live_digest_mismatch\",\"path\":\"stale.txt\",\"status\":\"refused\"}",
+            "type": "inputText"
+          }
+        ],
+        "success": false
+      }
+    },
+    "native_workspace_write_applicable": false,
+    "native_workspace_write_limit": "Codex 0.153.0 native Windows workspace-write cannot initialize reliably on this host; Tool Shed does not use it for CAMP execution",
+    "passed": true,
+    "supported_path": "read-only App Server plus controller-owned bounded writer"
+  },
+  "duration_seconds": 31.597,
+  "global_default_changed": false,
+  "minimal_terra_write": {
+    "bounded_writer": [
+      {
+        "bytes": 26,
+        "path": "sample.py",
+        "result_sha256": "d3fe37235936f63ebabd6ba2bb8d3cf67404555d856dc63b0611fe9b6231ec13",
+        "starting_sha256": "5d080563b57287276f589c2b2714ef499269efe7405a288b3c1474f5a92bf271",
+        "status": "written"
+      }
+    ],
+    "focused_test": {
+      "command": [
+        "C:\\Python314\\python.exe",
+        "-m",
+        "unittest",
+        "-v",
+        "test_sample.py"
+      ],
+      "exit_code": 0,
+      "stderr": "test_value (test_sample.TestValue.test_value) ... ok\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+      "stdout": ""
+    },
+    "journal": {
+      "camp": "minimal-terra-write",
+      "campaign": "app-server-write-qualification-and-camp-execution",
+      "cancelled_or_interrupted": false,
+      "commands_executed": [],
+      "expected_paths": [
+        "sample.py"
+      ],
+      "files_created": [],
+      "files_deleted": [],
+      "files_modified": [
+        "sample.py"
+      ],
+      "final_state": "safe_unverified",
+      "preexisting_dirty_drift": [],
+      "preexisting_dirty_preserved": true,
+      "recovery_action": "none",
+      "repository_root": "E:\\dev\\ts_windows_test_bed\\camp0172-runs\\tool-shed-terra-write-yo9jxf4h\\repo",
+      "safe": true,
+      "schema_version": 1,
+      "start_commit": "f8c5d564cf1fca562328862823ec230eca64c50d",
+      "start_state_identifier": "f556b4ac476f8faf2db79d6e8273070084f8858c9baa33c4559d0ac994a216ea",
+      "start_status": {},
+      "thread_id": "01a07cb1-b156-72e3-af7f-e8964678ca9d",
+      "turn_id": "01a07cb1-b1a5-74e0-af2c-238ebbe6c6fc",
+      "turn_status": "completed",
+      "unexpected_paths": [],
+      "workspace_root": "E:\\dev\\ts_windows_test_bed\\camp0172-runs\\tool-shed-terra-write-yo9jxf4h\\repo"
+    },
+    "model": "gpt-5.6-terra",
+    "outcome": {
+      "details": "Replaced sample.py so value() returns 2.",
+      "evidence": [
+        "write_workspace_file succeeded; resulting SHA-256: d3fe37235936f63ebabd6ba2bb8d3cf67404555d856dc63b0611fe9b6231ec13"
+      ],
+      "outcome": "step_ready_for_verification"
+    },
+    "passed": true,
+    "reasoning": "medium",
+    "turn": {
+      "error": null,
+      "model_turns": 2,
+      "mutation_events": [
+        {
+          "item_id": "exec-6676a35d-46ac-40b6-bb52-8d23d19f57f5",
+          "result_bytes": 616,
+          "status": "completed",
+          "type": "dynamicToolCall"
+        }
+      ],
+      "status": "completed",
+      "thread_id": "01a07cb1-b156-72e3-af7f-e8964678ca9d",
+      "tokens": {
+        "cached_input": 30208,
+        "input": 32786,
+        "output": 338,
+        "reasoning_output": 132,
+        "total": 33124
+      },
+      "tool_call_types": [
+        "dynamicToolCall"
+      ],
+      "tool_calls": 1,
+      "turn_id": "01a07cb1-b1a5-74e0-af2c-238ebbe6c6fc"
+    }
+  },
+  "orchestrated_camp": {
+    "bounded_writer": {
+      "boundary": {
+        "files": [
+          {
+            "path": "sample.py",
+            "sha256": "5d080563b57287276f589c2b2714ef499269efe7405a288b3c1474f5a92bf271",
+            "state": "existing"
+          }
+        ],
+        "kind": "tool-shed-bounded-workspace-write",
+        "max_write_bytes": 65536,
+        "schema_version": 1
+      },
+      "evidence": [
+        {
+          "bytes": 26,
+          "path": "sample.py",
+          "result_sha256": "d3fe37235936f63ebabd6ba2bb8d3cf67404555d856dc63b0611fe9b6231ec13",
+          "starting_sha256": "5d080563b57287276f589c2b2714ef499269efe7405a288b3c1474f5a92bf271",
+          "status": "written"
+        }
+      ],
+      "mutation_count": 1
+    },
+    "mutation_journal": {
+      "bounded_workspace_writer": {
+        "boundary": {
+          "files": [
+            {
+              "path": "sample.py",
+              "sha256": "5d080563b57287276f589c2b2714ef499269efe7405a288b3c1474f5a92bf271",
+              "state": "existing"
+            }
+          ],
+          "kind": "tool-shed-bounded-workspace-write",
+          "max_write_bytes": 65536,
+          "schema_version": 1
+        },
+        "evidence": [
+          {
+            "bytes": 26,
+            "path": "sample.py",
+            "result_sha256": "d3fe37235936f63ebabd6ba2bb8d3cf67404555d856dc63b0611fe9b6231ec13",
+            "starting_sha256": "5d080563b57287276f589c2b2714ef499269efe7405a288b3c1474f5a92bf271",
+            "status": "written"
+          }
+        ],
+        "mutation_count": 1
+      },
+      "camp": "orchestrated-exact-version-write",
+      "campaign": "app-server-write-qualification-and-camp-execution",
+      "cancelled_or_interrupted": false,
+      "commands_executed": [
+        [
+          "C:\\Python314\\python.exe",
+          "-m",
+          "unittest",
+          "-v",
+          "test_sample.py"
+        ]
+      ],
+      "control_stop": null,
+      "deterministic_verification": {
+        "commands_run": 1,
+        "passed": true,
+        "required": true
+      },
+      "expected_paths": [
+        "sample.py"
+      ],
+      "files_created": [],
+      "files_deleted": [],
+      "files_modified": [
+        "sample.py"
+      ],
+      "final_state": "verified",
+      "focused_context": {
+        "enforcement": "none",
+        "input_token_warning": null,
+        "max_tool_result_bytes": 16384,
+        "oversized_tool_results": [],
+        "schema_version": 1,
+        "total_tool_result_bytes": 616,
+        "within_budget": true
+      },
+      "preexisting_dirty_drift": [],
+      "preexisting_dirty_preserved": true,
+      "recovery_action": "none",
+      "repository_root": "E:\\dev\\ts_windows_test_bed\\camp0172-runs\\tool-shed-orchestrated-camp-ed1e5c1dab0b47349cf7b13117ef6bdb\\repo",
+      "safe": true,
+      "schema_version": 1,
+      "start_commit": "c96d47fb2f16464dc4ed38dd887d2abc1b3b53f1",
+      "start_state_identifier": "60a8853d18cb8baf062480edb345b51eb08e44d1f4d47b0735f7195ec1a13ed3",
+      "start_status": {},
+      "thread_id": "01a07cb2-05bd-7531-8245-b5b77b360037",
+      "turn_id": "01a07cb2-061a-7952-bbfb-f287c50d8494",
+      "turn_status": "completed",
+      "unexpected_paths": [],
+      "usage_budget": null,
+      "workspace_root": "E:\\dev\\ts_windows_test_bed\\camp0172-runs\\tool-shed-orchestrated-camp-ed1e5c1dab0b47349cf7b13117ef6bdb\\repo"
+    },
+    "next_action": "advance_to_next_camp_step",
+    "passed": true,
+    "structured_outcome": {
+      "details": "Updated sample.py so value() returns 2.",
+      "evidence": [
+        "write_workspace_file completed: sample.py (26 bytes), result SHA-256 d3fe37235936f63ebabd6ba2bb8d3cf67404555d856dc63b0611fe9b6231ec13."
+      ],
+      "outcome": "step_ready_for_verification"
+    },
+    "verification": [
+      {
+        "command": [
+          "C:\\Python314\\python.exe",
+          "-m",
+          "unittest",
+          "-v",
+          "test_sample.py"
+        ],
+        "exit_code": 0,
+        "output_retained": false,
+        "passed": true,
+        "schema_version": 1,
+        "sequence": 1,
+        "stderr_bytes": 150,
+        "stderr_sha256": "0cd1f7aedd5e318fe7da5d6daa5a897833c289a48d43071e4ea3936ec8898313",
+        "stdout_bytes": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "test_count": 1
+      }
+    ]
+  },
+  "platform": "windows",
+  "qualified": true,
+  "schema_version": 1,
+  "temp_default_probe": {
+    "passed": true,
+    "supported_path": "controller-owned bounded writer",
+    "target_absent": true,
+    "temporary_path_refused": {
+      "contentItems": [
+        {
+          "text": "{\"code\":\"path_not_allowlisted\",\"path\":\"C:\\\\Users\\\\jon\\\\AppData\\\\Local\\\\Temp\\\\tool-shed-app-server-9ca45bd0d4544e84b618e136d49679cc.txt\",\"status\":\"refused\"}",
+          "type": "inputText"
+        }
+      ],
+      "success": false
+    }
+  }
+}

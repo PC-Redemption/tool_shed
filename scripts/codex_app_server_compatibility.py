@@ -492,11 +492,15 @@ def status_report(
         )
     )
     if camp_enabled:
+        recorded_camp = ((record or {}).get("routing") or {}).get("camp_execution")
+        recorded_camp = recorded_camp if isinstance(recorded_camp, dict) else {}
         enabled_roles["camp_execution"] = {
             "model": camp_execution.model,
             "reasoning": camp_execution.reasoning,
-            "sandbox": "workspace-write",
-            "scope": "explicit paths with Git mutation journal",
+            "sandbox": recorded_camp.get("sandbox", "workspace-write"),
+            "scope": recorded_camp.get(
+                "scope", "explicit paths with Git mutation journal"
+            ),
             **(
                 {
                     "admission": "operator-runtime",

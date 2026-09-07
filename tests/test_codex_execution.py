@@ -41,6 +41,7 @@ from scripts.codex_app_server_compatibility import (
 from scripts.codex_execution import (
     ApprovalBridge,
     CodexExecutionAdapter,
+    ExecutionResult,
     ModelPolicy,
     ModelPolicyError,
     activity_report,
@@ -853,7 +854,7 @@ class CodexExecutionTests(unittest.TestCase):
                 "C:/gui/codex.exe",
                 "sandbox",
                 "--permission-profile",
-                ":read-only",
+                "tool-shed-verification",
                 "-C",
                 str(self.root.resolve()),
                 "python",
@@ -863,8 +864,143 @@ class CodexExecutionTests(unittest.TestCase):
         )
         self.assertEqual("1", run.call_args.kwargs["env"]["PYTHONDONTWRITEBYTECODE"])
         self.assertEqual("1", run.call_args.kwargs["env"]["PYTHONUTF8"])
+        self.assertIn("CODEX_HOME", run.call_args.kwargs["env"])
         self.assertEqual("utf-8", run.call_args.kwargs["encoding"])
         self.assertEqual("replace", run.call_args.kwargs["errors"])
+
+    def test_windows_camp_uses_read_only_app_server_and_one_bounded_write(self) -> None:
+        repository = self.root / "windows-bounded-camp"
+        repository.mkdir()
+        subprocess.run(["git", "init", "-q", str(repository)], check=True)
+        subprocess.run(
+            ["git", "-C", str(repository), "config", "user.email", "test@example.com"],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(repository), "config", "user.name", "Tool Shed Test"],
+            check=True,
+        )
+        target = repository / "target.txt"
+        target.write_text("before\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(repository), "add", "target.txt"], check=True)
+        subprocess.run(
+            ["git", "-C", str(repository), "commit", "-qm", "baseline"], check=True
+        )
+        observed: dict[str, object] = {}
+
+        class FakeAdapter:
+            def __init__(self, **kwargs):
+                observed["adapter"] = kwargs
+                self.handler = kwargs["dynamic_tool_handler"]
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return None
+
+            def execute(self, _prompt, **kwargs):
+                observed["execute"] = kwargs
+                tool = kwargs["dynamic_tools"][0]
+                digest = next(
+                    item["sha256"]
+                    for item in json.loads(
+                        _prompt.split("Windows write boundary: ", 1)[1].split(
+                            ". Use write_workspace_file", 1
+                        )[0]
+                    )["files"]
+                    if item["path"] == "target.txt"
+                )
+                response = self.handler(
+                    {
+                        "tool": tool["name"],
+                        "arguments": {
+                            "path": "target.txt",
+                            "expected_sha256": digest,
+                            "content": "after\n",
+                        },
+                    }
+                )
+                self.assert_success = response["success"]
+                return ExecutionResult(
+                    run_id="run",
+                    role="camp_execution",
+                    model_class="workhorse",
+                    requested_model="gpt-5.6-terra",
+                    actual_model="gpt-5.6-terra",
+                    reasoning="medium",
+                    thread_id="thread",
+                    turn_id="turn",
+                    status="completed",
+                    text=json.dumps(
+                        {
+                            "outcome": "step_ready_for_verification",
+                            "details": "bounded edit complete",
+                            "evidence": [],
+                        }
+                    ),
+                    token_usage=None,
+                    rerouted=False,
+                    escalation=False,
+                    escalation_reason=None,
+                    thread_reused=False,
+                    context_scope={},
+                    recovery_action="none",
+                    context_warning=None,
+                    attempt=1,
+                    duration_seconds=0.1,
+                    model_turns=1,
+                    model_turns_metric="observed",
+                    model_turn_events=(),
+                    tool_calls=1,
+                    tool_call_types=("dynamicToolCall",),
+                    mutation_events=({"type": "dynamicToolCall", "status": "completed"},),
+                    usage_budget=None,
+                    control_stop=None,
+                    weighted_usage={},
+                    app_server_user_agent="codex_cli_rs/0.153.0",
+                )
+
+            def record_control_event(self, **kwargs):
+                observed["control"] = kwargs
+
+        with (
+            patch("scripts.codex_orchestration.use_bounded_workspace_writer", return_value=True),
+            patch("scripts.codex_orchestration.CodexExecutionAdapter", FakeAdapter),
+            patch(
+                "scripts.codex_orchestration.execute_deterministic_verification",
+                return_value={"exitCode": 0, "stdout": "Ran 1 test in 0.001s\n", "stderr": ""},
+            ),
+        ):
+            payload = execute_camp_if_enabled(
+                "Replace before with after.",
+                cwd=repository,
+                campaign="campaign-windows-bounded",
+                camp="bounded-edit",
+                expected_paths=(Path("target.txt"),),
+                explicit_files=(Path("target.txt"),),
+                verification_commands=(("python", "verify.py"),),
+                enable_override=True,
+                config=AppServerFeatureConfig.load(
+                    ROOT / "adapters" / "codex-app-server-config.json"
+                ),
+                policy=self.policy,
+                codex=str(self.fake),
+                telemetry_path=self.root / "windows-bounded-telemetry.jsonl",
+            )
+
+        execute = observed["execute"]
+        assert isinstance(execute, dict)
+        self.assertEqual("read-only", execute["sandbox"])
+        self.assertEqual(":read-only", execute["permission_profile"])
+        self.assertEqual(frozenset({"dynamicToolCall"}), execute["allowed_tool_call_types"])
+        self.assertFalse(execute["stop_after_file_change"])
+        self.assertEqual("after\n", target.read_text(encoding="utf-8"))
+        self.assertEqual("verified", payload["mutation_journal"]["final_state"])
+        self.assertEqual(
+            1, payload["mutation_journal"]["bounded_workspace_writer"]["mutation_count"]
+        )
+        self.assertEqual("advance_to_next_camp_step", payload["next_action"])
 
     def test_failed_deterministic_verification_requires_reconciliation(self) -> None:
         repository = self.root / "failed-camp-repo"
@@ -1192,11 +1328,11 @@ class CodexExecutionTests(unittest.TestCase):
         )
         self.assertEqual(
             config.qualified_codex_versions,
-            ("0.149.0", "0.149.0-alpha.4.3"),
+            ("0.153.0", "0.149.0", "0.149.0-alpha.4.3"),
         )
         self.assertEqual(
             config.qualified_write_codex_versions,
-            ("0.149.0", "0.149.0-alpha.4.3"),
+            ("0.153.0", "0.149.0", "0.149.0-alpha.4.3"),
         )
         self.assertEqual(config.minimum_dirty_read_codex_version, "0.146.0")
         self.assertIsNone(config.compatibility_warning(str(self.fake)))
@@ -1206,7 +1342,7 @@ class CodexExecutionTests(unittest.TestCase):
         finally:
             os.environ.pop("FAKE_CODEX_VERSION", None)
         self.assertIn(
-            "Qualified versions: 0.149.0, 0.149.0-alpha.4.3",
+            "Qualified versions: 0.153.0, 0.149.0, 0.149.0-alpha.4.3",
             warning or "",
         )
         self.assertIn("Installed version: 0.200.0", warning or "")
@@ -2652,7 +2788,7 @@ class CodexExecutionTests(unittest.TestCase):
             ROOT / "adapters" / "codex-app-server-qualifications.json"
         )
         self.assertEqual(qualifications[-1]["codex_version"], "0.153.0")
-        self.assertEqual(qualifications[-1]["status"], "unqualified")
+        self.assertEqual(qualifications[-1]["status"], "qualified_with_blockers")
         status = status_report(codex=str(self.fake))
         self.assertEqual(status["status"], "DEFAULT-ON")
         self.assertEqual(status["global_default"], "enabled")
@@ -2668,7 +2804,10 @@ class CodexExecutionTests(unittest.TestCase):
                 "model": "gpt-5.6-terra",
                 "reasoning": "medium",
                 "sandbox": "workspace-write",
-                "scope": "explicit paths with Git mutation journal",
+                "scope": (
+                    "one explicitly bounded CAMP step with exact path allowlist "
+                    "and Git mutation journal"
+                ),
                 "qualification": "exact-qualified",
             },
         )

@@ -1,0 +1,444 @@
+{
+  "app_server_user_agent": "codex_vscode/0.153.0 (Debian 13.0.0; x86_64) dumb (tool_shed_write_qualification; 0.1.0)",
+  "authentication": {
+    "api_key_fallback": false,
+    "plan_type": "pro",
+    "type": "chatgpt"
+  },
+  "campaign": "app-server-write-qualification-and-camp-execution",
+  "cancellation_and_resume": {
+    "after_sleep_absent": true,
+    "command_started": true,
+    "interrupt_error": null,
+    "interrupted_turn": {
+      "error": null,
+      "model_turns": 1,
+      "mutation_events": [],
+      "status": "interrupted",
+      "thread_id": "01a07cb5-0c45-7c63-a176-4b4d433a5c8f",
+      "tokens": {
+        "cached_input": 11008,
+        "input": 17244,
+        "output": 143,
+        "reasoning_output": 34,
+        "total": 17387
+      },
+      "tool_call_types": [],
+      "tool_calls": 0,
+      "turn_id": "01a07cb5-0cb6-7680-ac52-df8183ca413b"
+    },
+    "journal": {
+      "camp": "partial-write-cancellation",
+      "campaign": "app-server-write-qualification-and-camp-execution",
+      "cancelled_or_interrupted": true,
+      "commands_executed": [],
+      "expected_paths": [
+        "partial.txt",
+        "after-sleep.txt"
+      ],
+      "files_created": [
+        "partial.txt"
+      ],
+      "files_deleted": [],
+      "files_modified": [],
+      "final_state": "safe_unverified",
+      "preexisting_dirty_drift": [],
+      "preexisting_dirty_preserved": true,
+      "recovery_action": "inspect_and_resume",
+      "repository_root": "/home/jon/dev/ts_linux_test_bed/tool-shed-partial-cancel-fd0ubz8e",
+      "safe": true,
+      "schema_version": 1,
+      "start_commit": "8920f4c18e0b38d19bdbedcc5ba0d3c1781546ff",
+      "start_state_identifier": "a5af387af18809a38a6738ad12a2f645e7fcb018b9981386afb9623ff93ea9a7",
+      "start_status": {},
+      "thread_id": "01a07cb5-0c45-7c63-a176-4b4d433a5c8f",
+      "turn_id": "01a07cb5-0cb6-7680-ac52-df8183ca413b",
+      "turn_status": "interrupted",
+      "unexpected_paths": [],
+      "workspace_root": "/home/jon/dev/ts_linux_test_bed/tool-shed-partial-cancel-fd0ubz8e"
+    },
+    "partial_exists": true,
+    "partial_seen_before_interrupt": true,
+    "passed": true,
+    "resume_outcome": {
+      "details": "Interrupted work must not be marked complete. The requested resume-write attempt was made exactly once and was denied by the read-only filesystem.",
+      "evidence": [
+        "git status --short: ?? partial.txt",
+        "partial.txt exists (7 bytes); after-sleep.txt is absent",
+        "touch resume-write-forbidden.txt failed: Read-only file system"
+      ],
+      "outcome": "needs_user_intervention"
+    },
+    "resume_turn": {
+      "error": null,
+      "model_turns": 3,
+      "mutation_events": [
+        {
+          "command": "/bin/bash -lc 'git status --short && ls -l partial.txt after-sleep.txt'",
+          "cwd": "/home/jon/dev/ts_linux_test_bed/tool-shed-partial-cancel-fd0ubz8e",
+          "exit_code": 2,
+          "item_id": "exec-e4fca1d0-252f-4129-9c8a-ae0fdbb6ff84",
+          "result_bytes": 621,
+          "status": "failed",
+          "type": "commandExecution"
+        }
+      ],
+      "status": "completed",
+      "thread_id": "01a07cb5-0c45-7c63-a176-4b4d433a5c8f",
+      "tokens": {
+        "cached_input": 34304,
+        "input": 54029,
+        "output": 381,
+        "reasoning_output": 87,
+        "total": 54410
+      },
+      "tool_call_types": [
+        "commandExecution"
+      ],
+      "tool_calls": 1,
+      "turn_id": "01a07cb5-2290-7dd1-a6af-cd7692f83eb6"
+    },
+    "resume_write_absent": true
+  },
+  "codex_version": "0.153.0",
+  "denial": {
+    "approval_events": [
+      {
+        "command": "/bin/bash -lc 'printf denied-test > should-not-exist.txt'",
+        "cwd": "/home/jon/dev/ts_linux_test_bed/tool-shed-command-denial-gw7gvhni",
+        "grant_root": null,
+        "item_id": "exec-11d4af3f-575f-408c-adb3-11154e8826fc",
+        "method": "item/commandExecution/requestApproval",
+        "thread_id": "01a07cb4-e9b8-7a22-9374-10f942cd7062",
+        "turn_id": "01a07cb4-e9fb-7243-9495-3442c1b8de1e"
+      }
+    ],
+    "approval_request_observed": true,
+    "outcome": {
+      "details": "The single requested command was denied and was not retried.",
+      "evidence": [
+        "CreateProcess rejected the command: \"rejected by user\"."
+      ],
+      "outcome": "blocked"
+    },
+    "passed": true,
+    "runtime_mismatch": null,
+    "target_absent": true,
+    "turn": {
+      "error": null,
+      "model_turns": 2,
+      "mutation_events": [
+        {
+          "command": "/bin/bash -lc 'printf denied-test > should-not-exist.txt'",
+          "cwd": "/home/jon/dev/ts_linux_test_bed/tool-shed-command-denial-gw7gvhni",
+          "exit_code": null,
+          "item_id": "exec-11d4af3f-575f-408c-adb3-11154e8826fc",
+          "result_bytes": 458,
+          "status": "declined",
+          "type": "commandExecution"
+        }
+      ],
+      "status": "completed",
+      "thread_id": "01a07cb4-e9b8-7a22-9374-10f942cd7062",
+      "tokens": {
+        "cached_input": 17152,
+        "input": 34859,
+        "output": 177,
+        "reasoning_output": 18,
+        "total": 35036
+      },
+      "tool_call_types": [
+        "commandExecution"
+      ],
+      "tool_calls": 1,
+      "turn_id": "01a07cb4-e9fb-7243-9495-3442c1b8de1e"
+    }
+  },
+  "deterministic_boundary": {
+    "commands": {
+      "create": {
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "create_directory": {
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "delete": {
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "harmless_command": {
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "ok\n"
+      },
+      "modify": {
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "network": {
+        "exit_code": 6,
+        "stderr": "curl: (6) Could not resolve host: example.com\n",
+        "stdout": ""
+      },
+      "outside_destructive": {
+        "exit_code": 1,
+        "stderr": "rm: cannot remove '/home/jon/dev/ts_linux_test_bed/tool-shed-write-boundary-mmope304/outside/protected.txt': Read-only file system\n",
+        "stdout": ""
+      },
+      "outside_write": {
+        "exit_code": 1,
+        "stderr": "touch: cannot touch '/home/jon/dev/ts_linux_test_bed/tool-shed-write-boundary-mmope304/outside/forbidden.txt': Read-only file system\n",
+        "stdout": ""
+      },
+      "privileged_write": {
+        "exit_code": 1,
+        "stderr": "touch: cannot touch '/usr/local/tool-shed-app-server-qualification-forbidden': Read-only file system\n",
+        "stdout": ""
+      },
+      "read": {
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "before\n"
+      },
+      "test_command": {
+        "exit_code": 0,
+        "stderr": "test_ok (test_sample.T.test_ok) ... ok\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+        "stdout": ""
+      }
+    },
+    "passed": true,
+    "policy": {
+      "excludeSlashTmp": true,
+      "excludeTmpdirEnvVar": true,
+      "networkAccess": false,
+      "type": "workspaceWrite",
+      "writableRoots": [
+        "/home/jon/dev/ts_linux_test_bed/tool-shed-write-boundary-mmope304/authorized"
+      ]
+    },
+    "post_state": {
+      "created": true,
+      "deleted": true,
+      "directory_created": true,
+      "modified": true,
+      "network_blocked": true,
+      "outside_destructive_blocked": true,
+      "outside_write_blocked": true,
+      "privileged_write_blocked": true
+    }
+  },
+  "duration_seconds": 47.872,
+  "global_default_changed": false,
+  "minimal_terra_write": {
+    "bounded_writer": null,
+    "focused_test": {
+      "command": [
+        "/usr/bin/python3",
+        "-m",
+        "unittest",
+        "-v",
+        "test_sample.py"
+      ],
+      "exit_code": 0,
+      "stderr": "test_value (test_sample.TestValue.test_value) ... ok\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+      "stdout": ""
+    },
+    "journal": {
+      "camp": "minimal-terra-write",
+      "campaign": "app-server-write-qualification-and-camp-execution",
+      "cancelled_or_interrupted": false,
+      "commands_executed": [],
+      "expected_paths": [
+        "sample.py"
+      ],
+      "files_created": [],
+      "files_deleted": [],
+      "files_modified": [
+        "sample.py"
+      ],
+      "final_state": "safe_unverified",
+      "preexisting_dirty_drift": [],
+      "preexisting_dirty_preserved": true,
+      "recovery_action": "none",
+      "repository_root": "/home/jon/dev/ts_linux_test_bed/tool-shed-terra-write-1avf2_me/repo",
+      "safe": true,
+      "schema_version": 1,
+      "start_commit": "a08baf9061c2fa3f7d778bd6018abcb341481baf",
+      "start_state_identifier": "746f12edeb094e5ea20f0b36975989dfaec955fea035b7705b0d45e0d64906b1",
+      "start_status": {},
+      "thread_id": "01a07cb4-be88-7f53-8c33-71662a39ee85",
+      "turn_id": "01a07cb4-bee8-7953-b90e-8c9f1afd00ef",
+      "turn_status": "completed",
+      "unexpected_paths": [],
+      "workspace_root": "/home/jon/dev/ts_linux_test_bed/tool-shed-terra-write-1avf2_me/repo"
+    },
+    "model": "gpt-5.6-terra",
+    "outcome": {
+      "details": "Updated sample.py so value() returns 2.",
+      "evidence": [
+        "Applied exactly one patch targeting only sample.py."
+      ],
+      "outcome": "step_ready_for_verification"
+    },
+    "passed": true,
+    "reasoning": "medium",
+    "turn": {
+      "error": null,
+      "model_turns": 2,
+      "mutation_events": [
+        {
+          "changes": [
+            {
+              "kind": {
+                "move_path": null,
+                "type": "update"
+              },
+              "path": "/home/jon/dev/ts_linux_test_bed/tool-shed-terra-write-1avf2_me/repo/sample.py"
+            }
+          ],
+          "item_id": "exec-0ae7d860-9c3e-4dcf-8e36-fdc55dd93c22",
+          "result_bytes": 306,
+          "status": "completed",
+          "type": "fileChange"
+        }
+      ],
+      "status": "completed",
+      "thread_id": "01a07cb4-be88-7f53-8c33-71662a39ee85",
+      "tokens": {
+        "cached_input": 16128,
+        "input": 33827,
+        "output": 212,
+        "reasoning_output": 65,
+        "total": 34039
+      },
+      "tool_call_types": [
+        "fileChange"
+      ],
+      "tool_calls": 1,
+      "turn_id": "01a07cb4-bee8-7953-b90e-8c9f1afd00ef"
+    }
+  },
+  "orchestrated_camp": {
+    "bounded_writer": null,
+    "mutation_journal": {
+      "bounded_workspace_writer": null,
+      "camp": "orchestrated-exact-version-write",
+      "campaign": "app-server-write-qualification-and-camp-execution",
+      "cancelled_or_interrupted": true,
+      "commands_executed": [
+        [
+          "/usr/bin/python3",
+          "-B",
+          "-m",
+          "unittest",
+          "-v",
+          "test_sample.py"
+        ]
+      ],
+      "control_stop": {
+        "interrupt_acknowledged": true,
+        "interrupt_error_kind": null,
+        "interrupt_requested": true,
+        "item_id": "exec-26b1facd-ef4d-4683-82b8-cf8c25890da5",
+        "item_type": "fileChange",
+        "kind": "worker_file_change_ready",
+        "output_retained": false,
+        "schema_version": 1
+      },
+      "deterministic_verification": {
+        "commands_run": 1,
+        "passed": true,
+        "required": true
+      },
+      "expected_paths": [
+        "sample.py"
+      ],
+      "files_created": [],
+      "files_deleted": [],
+      "files_modified": [
+        "sample.py"
+      ],
+      "final_state": "verified",
+      "focused_context": {
+        "enforcement": "none",
+        "input_token_warning": null,
+        "max_tool_result_bytes": 16384,
+        "oversized_tool_results": [],
+        "schema_version": 1,
+        "total_tool_result_bytes": 312,
+        "within_budget": true
+      },
+      "preexisting_dirty_drift": [],
+      "preexisting_dirty_preserved": true,
+      "recovery_action": "none",
+      "repository_root": "/home/jon/dev/ts_linux_test_bed/tool-shed-orchestrated-camp-4g2ksosf/repo",
+      "safe": true,
+      "schema_version": 1,
+      "start_commit": "3ca19b7416ae8cba8e1df4a88eac0cb1ff1e8491",
+      "start_state_identifier": "87a6e59c596fcc0334b6031575ac4534bd42dd11bcd5bf7556fce8d45d6ba50a",
+      "start_status": {},
+      "thread_id": "01a07cb5-5eab-7f81-862d-65c67a8e59e6",
+      "turn_id": "01a07cb5-5f01-7bc3-abdf-c7c37d9c6007",
+      "turn_status": "interrupted",
+      "unexpected_paths": [],
+      "usage_budget": null,
+      "workspace_root": "/home/jon/dev/ts_linux_test_bed/tool-shed-orchestrated-camp-4g2ksosf/repo"
+    },
+    "next_action": "advance_to_next_camp_step",
+    "passed": true,
+    "structured_outcome": {
+      "details": "Tool Shed stopped the worker after its first completed file change.",
+      "evidence": [],
+      "outcome": "step_ready_for_verification"
+    },
+    "verification": [
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-B",
+          "-m",
+          "unittest",
+          "-v",
+          "test_sample.py"
+        ],
+        "exit_code": 0,
+        "output_retained": false,
+        "passed": true,
+        "schema_version": 1,
+        "sequence": 1,
+        "stderr_bytes": 150,
+        "stderr_sha256": "0cd1f7aedd5e318fe7da5d6daa5a897833c289a48d43071e4ea3936ec8898313",
+        "stdout_bytes": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "test_count": 1
+      }
+    ]
+  },
+  "platform": "linux",
+  "qualified": true,
+  "schema_version": 1,
+  "temp_default_probe": {
+    "finding": "schema defaults allow /tmp; Tool Shed must set both temp exclusions",
+    "passed": true,
+    "results": [
+      {
+        "created": true,
+        "exit_code": 0,
+        "policy": "schema_defaults",
+        "stderr": ""
+      },
+      {
+        "created": false,
+        "exit_code": 1,
+        "policy": "hardened",
+        "stderr": "touch: cannot touch '/tmp/tool-shed-app-server-634bd566af4f4f37babb8f1d116f32c6.txt': Read-only file system\n"
+      }
+    ]
+  }
+}

@@ -408,8 +408,8 @@
     {
       "codex_version": "0.153.0",
       "qualified_at": "2026-09-07",
-      "status": "unqualified",
-      "operating_mode": "exact_version_denylisted_pending_windows_workspace_fix",
+      "status": "qualified_with_blockers",
+      "operating_mode": "local_read_only_roles_and_bounded_camp_execution",
       "transport": "stdio",
       "authentication": {
         "chatgpt": true,
@@ -419,26 +419,26 @@
         "planning": {
           "model": "gpt-5.6-sol",
           "reasoning": "high",
-          "qualified": false
+          "qualified": true
         },
         "verification": {
           "model": "gpt-5.6-terra",
           "reasoning": "low",
-          "qualified": false
+          "qualified": true
         },
         "camp_execution": {
           "model": "gpt-5.6-terra",
           "reasoning": "medium",
-          "sandbox": "workspace-write",
-          "qualified": false,
-          "scope": "denied globally until Windows workspace access is repaired and requalified"
+          "sandbox": "platform-specific bounded write",
+          "qualified": true,
+          "scope": "one explicitly bounded CAMP step; native workspace-write on Linux, read-only App Server plus controller-owned digest-bound writer on Windows"
         }
       },
       "read_only": true,
       "cancellation_safe": true,
       "gui_approval_bridge": false,
       "restricted_read_consistent": true,
-      "workspace_writing": false,
+      "workspace_writing": true,
       "platform_results": {
         "linux_x86_64": {
           "status": "qualified_with_blockers",
@@ -450,24 +450,26 @@
           "unexpected_paths": []
         },
         "windows_x86_64": {
-          "status": "unqualified",
+          "status": "qualified_with_blockers",
           "executable_sha256": "0f8ed9678bca539aa6517adb0c8d50ad9a94ff5df4d21e149ae700d219fff69d",
           "read_only": true,
-          "workspace_writing": false,
-          "cancellation": "acknowledged_and_reconciled_interrupted",
+          "workspace_writing": true,
+          "workspace_write_strategy": "read-only App Server thread plus controller-owned one-shot digest-bound write_workspace_file function",
+          "native_workspace_write": false,
+          "deterministic_verification": "custom root-read-only network-disabled Codex sandbox profile",
+          "cancellation": "one-shot mutation journaled; second, stale, and post-interruption replay refused",
           "journal_safe": true,
-          "blocker": "workspace-write turns could not read or mutate the disposable workspace under either the legacy workspaceWrite policy or the allowed :workspace profile"
+          "unexpected_paths": []
         }
       },
       "production_supported": false,
       "known_blockers": [
-        "Windows workspace-write filesystem access denied under legacy and named-profile paths",
-        "Windows command/exec rejects the hardened split writable-root policy",
+        "Codex 0.153.0 native Windows workspace-write remains unusable; Tool Shed CAMP execution uses the qualified controller-owned bounded writer",
         "GUI approval bridge unavailable",
         "Tool Shed has not qualified App Server for production workloads"
       ],
-      "evidence": "docs/codex-app-server-requalification-2026-09-07.md",
-      "workspace_write_evidence": "work/evidence/camp-0171-codex-app-server-0.153.0.json"
+      "evidence": "docs/codex-app-server-requalification-2026-09-07-camp-0172.md",
+      "workspace_write_evidence": "work/evidence/camp-0172-codex-app-server-0.153.0-windows.json"
     }
   ]
 }

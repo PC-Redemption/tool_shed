@@ -26,6 +26,7 @@ try:
         AppServerUserStateError,
     )
     from scripts.codex_app_server import AppServerError, AuthenticationError
+    from scripts.bounded_workspace_writer import BoundedWorkspaceWriter
     from scripts.codex_execution import (
         CodexExecutionAdapter,
         ExecutionResult,
@@ -58,6 +59,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/codex_orchestrat
         AppServerUserStateError,
     )
     from codex_app_server import AppServerError, AuthenticationError  # type: ignore[no-redef]
+    from bounded_workspace_writer import BoundedWorkspaceWriter  # type: ignore[no-redef]
     from codex_execution import (  # type: ignore[no-redef]
         CodexExecutionAdapter,
         ExecutionResult,
@@ -814,32 +816,46 @@ def execute_deterministic_verification(
     environment = dict(os.environ)
     environment["PYTHONDONTWRITEBYTECODE"] = "1"
     environment["PYTHONUTF8"] = "1"
-    try:
-        completed = subprocess.run(
-            [
-                codex,
-                "sandbox",
-                "--permission-profile",
-                ":read-only",
-                "-C",
-                str(resolved_cwd),
-                *command,
-            ],
-            cwd=resolved_cwd,
-            env=environment,
-            capture_output=True,
-            text=True,
+    with tempfile.TemporaryDirectory(
+        prefix=".tool-shed-codex-verification-", dir=resolved_cwd.parent
+    ) as name:
+        codex_home = Path(name)
+        (codex_home / "config.toml").write_text(
+            'default_permissions = "tool-shed-verification"\n'
+            "[permissions.tool-shed-verification.filesystem]\n"
+            '":root" = "read"\n'
+            "[permissions.tool-shed-verification.network]\n"
+            "enabled = false\n",
             encoding="utf-8",
-            errors="replace",
-            timeout=timeout,
-            check=False,
+            newline="\n",
         )
-    except (OSError, subprocess.TimeoutExpired) as error:
-        raise AppServerError(
-            "Windows deterministic verification sandbox failed",
-            details=type(error).__name__,
-            kind="windows_verification_sandbox_failed",
-        ) from error
+        environment["CODEX_HOME"] = str(codex_home)
+        try:
+            completed = subprocess.run(
+                [
+                    codex,
+                    "sandbox",
+                    "--permission-profile",
+                    "tool-shed-verification",
+                    "-C",
+                    str(resolved_cwd),
+                    *command,
+                ],
+                cwd=resolved_cwd,
+                env=environment,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=timeout,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired) as error:
+            raise AppServerError(
+                "Windows deterministic verification sandbox failed",
+                details=type(error).__name__,
+                kind="windows_verification_sandbox_failed",
+            ) from error
     return {
         "exitCode": completed.returncode,
         "stdout": completed.stdout,
@@ -865,6 +881,12 @@ def expected_path_start_states(journal: GitMutationJournal) -> dict[str, str]:
             state = "absent-authorized-creation"
         states[relative] = state
     return states
+
+
+def use_bounded_workspace_writer() -> bool:
+    """Return whether CAMP writes need the Windows controller-owned compatibility path."""
+
+    return sys.platform == "win32"
 
 
 def execute_camp_if_enabled(
@@ -915,7 +937,21 @@ def execute_camp_if_enabled(
         workspace=cwd,
         expected_paths=expected_paths,
     )
+    bounded_writer = (
+        BoundedWorkspaceWriter(cwd, expected_paths)
+        if use_bounded_workspace_writer()
+        else None
+    )
     expected_start_states = expected_path_start_states(journal)
+    worker_write_contract = (
+        "Windows write boundary: "
+        + json.dumps(bounded_writer.boundary, sort_keys=True, separators=(",", ":"))
+        + ". Use write_workspace_file exactly once with the declared path, starting digest, "
+        "and complete replacement content. The worker has read-only filesystem permissions; "
+        "only this controller-owned function can perform the declared mutation. "
+        if bounded_writer is not None
+        else "Use exactly one native file-change operation within the declared mutation scope. "
+    )
     effective_prompt = inline_context_prompt(
         features,
         cwd,
@@ -934,14 +970,14 @@ def execute_camp_if_enabled(
             + json.dumps(expected_start_states, sort_keys=True, separators=(",", ":"))
             + ". A path marked absent-authorized-creation has no prior content to preserve and "
             "may be created as part of the declared mutation. "
+            + worker_write_contract
             + "Deterministic verification reserved for the enclosing orchestrator: "
             + json.dumps([list(command) for command in verification_commands], separators=(",", ":"))
             + ". Do not alter lifecycle files or claim a state transition. The orchestrator will "
             "run the declared deterministic verification commands, verify the Git journal, "
             "and choose the next action. Do not run tests or other verification commands "
-            "yourself. Treat the first completed file-change operation as the verification "
-            "handoff; Tool Shed interrupts the worker at that event and does not require another "
-            "model message. Treat the capsule prompt and supplied inline context as complete for "
+            "yourself. Return step_ready_for_verification immediately after the one authorized "
+            "mutation. Treat the capsule prompt and supplied inline context as complete for "
             "that mutation. Do not call commandExecution at any point in this worker turn. If the "
             "context is insufficient, return unknown without mutation instead of exploring. The "
             "live usage ceiling is "
@@ -960,6 +996,7 @@ def execute_camp_if_enabled(
         codex=codex,
         timeout=timeout,
         telemetry_path=telemetry_path,
+        dynamic_tool_handler=bounded_writer.handle if bounded_writer is not None else None,
     ) as adapter:
         try:
             result = adapter.execute(
@@ -967,7 +1004,7 @@ def execute_camp_if_enabled(
                 role="camp_execution",
                 cwd=target.execution_cwd,
                 approval_policy="never",
-                sandbox="workspace-write",
+                sandbox="read-only" if bounded_writer is not None else "workspace-write",
                 program=None,
                 camp=camp,
                 campaign=campaign,
@@ -978,13 +1015,20 @@ def execute_camp_if_enabled(
                 warning_input_tokens=features.warning_threshold("camp_execution"),
                 usage_budget=features.camp_usage_budget,
                 disallow_command_execution=True,
-                stop_after_file_change=True,
+                allowed_tool_call_types=(
+                    frozenset({"dynamicToolCall"}) if bounded_writer is not None else None
+                ),
+                stop_after_file_change=bounded_writer is None,
                 restricted_read=False,
+                permission_profile=":read-only" if bounded_writer is not None else None,
                 attempt=attempt,
                 ephemeral=target.ephemeral,
                 source_cwd=target.source_cwd,
                 sandbox_root=cwd.resolve(),
                 output_schema=CAMP_OUTCOME_SCHEMA,
+                dynamic_tools=(
+                    bounded_writer.dynamic_tools if bounded_writer is not None else None
+                ),
             )
         except Exception:
             failed_journal = journal.finalize(
@@ -1098,6 +1142,15 @@ def execute_camp_if_enabled(
         journal_record["focused_context"] = context_finding
         journal_record["usage_budget"] = result.usage_budget
         journal_record["control_stop"] = result.control_stop
+        journal_record["bounded_workspace_writer"] = (
+            {
+                "boundary": bounded_writer.boundary,
+                "mutation_count": bounded_writer.mutation_count,
+                "evidence": bounded_writer.evidence,
+            }
+            if bounded_writer is not None
+            else None
+        )
         if result.usage_budget is not None:
             context_finding["within_budget"] = False
             context_finding["enforcement"] = "interrupted_before_lifecycle_advance"

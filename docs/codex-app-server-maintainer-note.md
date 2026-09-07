@@ -156,12 +156,12 @@ release qualification and regression investigation, not every version update. Re
 engineering only for a concrete CLI, support-status, cancellation, restricted-read, approval,
 token-efficiency, or production-contract change.
 
-The current positive reviewed versions are Codex CLI 0.149.0 and 0.149.0-alpha.4.3. Codex CLI
-0.153.0 has an exact reviewed `unqualified` record: Linux passed all supported local roles, but
-Windows workspace-write turns could not access fresh disposable workspaces under either the legacy
-policy or the allowed `:workspace` profile. Tool Shed therefore returns 0.153.0 App Server actions
-to the GUI until Windows is repaired and requalified; see
-[`codex-app-server-requalification-2026-09-07.md`](codex-app-server-requalification-2026-09-07.md).
+The current positive reviewed versions include Codex CLI 0.153.0, 0.149.0, and
+0.149.0-alpha.4.3. CAMP-0172 superseded 0.153.0's earlier global `unqualified` record after exact
+Linux and Windows qualification. Windows bounded CAMP execution uses a read-only App Server thread
+plus Tool Shed's controller-owned, one-shot digest-bound writer because the native 0.153.0 Windows
+workspace-write path remains unusable; see
+[`codex-app-server-requalification-2026-09-07-camp-0172.md`](codex-app-server-requalification-2026-09-07-camp-0172.md).
 Stable 0.149.0 retains
 explicit planning, verification, and CAMP roles with blockers after its smoke and disposable write
 qualification; see

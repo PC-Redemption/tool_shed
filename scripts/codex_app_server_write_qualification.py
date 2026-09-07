@@ -11,26 +11,32 @@ import argparse
 import json
 import os
 import platform
+import shutil
 import subprocess
 import tempfile
 import time
 import uuid
 from pathlib import Path
-from typing import Any
+from contextlib import contextmanager
+from typing import Any, Iterator
 
 try:
     from scripts.codex_app_server import AppServerError, CodexAppServerClient, TurnResult
     from scripts.codex_camp_execution import (
         CAMP_OUTCOME_SCHEMA,
+        CAMP_STEP_HANDOFF_OUTCOMES,
         GitMutationJournal,
         parse_camp_outcome,
         structured_outcome_record,
     )
     from scripts.codex_execution import detect_codex_version, flatten_token_usage, resolve_codex_executable, sandbox_policy
+    from scripts.bounded_workspace_writer import BoundedWorkspaceWriter
+    from scripts.codex_orchestration import AppServerFeatureConfig, execute_camp_if_enabled
 except ModuleNotFoundError:  # Direct execution: python scripts/codex_app_server_write_qualification.py
     from codex_app_server import AppServerError, CodexAppServerClient, TurnResult  # type: ignore[no-redef]
     from codex_camp_execution import (  # type: ignore[no-redef]
         CAMP_OUTCOME_SCHEMA,
+        CAMP_STEP_HANDOFF_OUTCOMES,
         GitMutationJournal,
         parse_camp_outcome,
         structured_outcome_record,
@@ -41,9 +47,30 @@ except ModuleNotFoundError:  # Direct execution: python scripts/codex_app_server
         resolve_codex_executable,
         sandbox_policy,
     )
+    from bounded_workspace_writer import BoundedWorkspaceWriter  # type: ignore[no-redef]
+    from codex_orchestration import (  # type: ignore[no-redef]
+        AppServerFeatureConfig,
+        execute_camp_if_enabled,
+    )
 
 
 CAMPAIGN = "app-server-write-qualification-and-camp-execution"
+
+
+@contextmanager
+def _qualification_directory(prefix: str, base_dir: Path) -> Iterator[Path]:
+    """Create a disposable directory whose inherited ACL remains sandbox-readable."""
+
+    if os.name != "nt":
+        with tempfile.TemporaryDirectory(prefix=prefix, dir=base_dir) as name:
+            yield Path(name)
+        return
+    target = base_dir / f"{prefix}{uuid.uuid4().hex}"
+    target.mkdir()
+    try:
+        yield target
+    finally:
+        shutil.rmtree(target, ignore_errors=True)
 
 
 def _powershell(script: str) -> list[str]:
@@ -146,60 +173,124 @@ class WriteQualificationHarness:
                 encoding="utf-8",
             )
             (outside / "protected.txt").write_text("keep\n", encoding="utf-8")
-            policy = sandbox_policy("workspace-write", workspace)
             if os.name == "nt":
-                privileged_target = Path(
-                    r"C:\Windows\System32\tool-shed-app-server-qualification-forbidden"
+                existing_writer = BoundedWorkspaceWriter(
+                    workspace, (Path("existing.txt"),)
                 )
-                commands = {
-                    "read": _powershell("Get-Content -LiteralPath existing.txt -Raw"),
-                    "create": _powershell(
-                        "Set-Content -LiteralPath created.txt -Value created -Encoding UTF8"
+                existing_digest = existing_writer.boundary["files"][0]["sha256"]
+                modified = existing_writer.handle(
+                    {
+                        "tool": BoundedWorkspaceWriter.TOOL_NAME,
+                        "arguments": {
+                            "path": "existing.txt",
+                            "expected_sha256": existing_digest,
+                            "content": "after\n",
+                        },
+                    }
+                )
+                create_writer = BoundedWorkspaceWriter(
+                    workspace, (Path("created.txt"),)
+                )
+                created = create_writer.handle(
+                    {
+                        "tool": BoundedWorkspaceWriter.TOOL_NAME,
+                        "arguments": {
+                            "path": "created.txt",
+                            "expected_sha256": "absent",
+                            "content": "created\n",
+                        },
+                    }
+                )
+                refusal_writer = BoundedWorkspaceWriter(
+                    workspace, (Path("test_sample.py"),)
+                )
+                refused_outside = refusal_writer.handle(
+                    {
+                        "tool": BoundedWorkspaceWriter.TOOL_NAME,
+                        "arguments": {
+                            "path": "../outside/forbidden.txt",
+                            "expected_sha256": "absent",
+                            "content": "forbidden\n",
+                        },
+                    }
+                )
+                stale_path = workspace / "stale.txt"
+                stale_path.write_text("start\n", encoding="utf-8")
+                stale_writer = BoundedWorkspaceWriter(workspace, (Path("stale.txt"),))
+                stale_digest = stale_writer.boundary["files"][0]["sha256"]
+                stale_path.write_text("controller-change\n", encoding="utf-8")
+                refused_stale = stale_writer.handle(
+                    {
+                        "tool": BoundedWorkspaceWriter.TOOL_NAME,
+                        "arguments": {
+                            "path": "stale.txt",
+                            "expected_sha256": stale_digest,
+                            "content": "worker-change\n",
+                        },
+                    }
+                )
+                replay_path = workspace / "replay.txt"
+                replay_path.write_text("start\n", encoding="utf-8")
+                replay_writer = BoundedWorkspaceWriter(workspace, (Path("replay.txt"),))
+                replay_digest = replay_writer.boundary["files"][0]["sha256"]
+                first = replay_writer.handle(
+                    {
+                        "tool": BoundedWorkspaceWriter.TOOL_NAME,
+                        "arguments": {
+                            "path": "replay.txt",
+                            "expected_sha256": replay_digest,
+                            "content": "first\n",
+                        },
+                    }
+                )
+                replay = replay_writer.handle(
+                    {
+                        "tool": BoundedWorkspaceWriter.TOOL_NAME,
+                        "arguments": {
+                            "path": "replay.txt",
+                            "expected_sha256": replay_digest,
+                            "content": "replayed\n",
+                        },
+                    }
+                )
+                passed = all(
+                    (
+                        modified["success"],
+                        created["success"],
+                        not refused_outside["success"],
+                        not refused_stale["success"],
+                        first["success"],
+                        not replay["success"],
+                        (workspace / "existing.txt").read_text(encoding="utf-8") == "after\n",
+                        (workspace / "created.txt").read_text(encoding="utf-8") == "created\n",
+                        stale_path.read_text(encoding="utf-8") == "controller-change\n",
+                        replay_path.read_text(encoding="utf-8") == "first\n",
+                        not (outside / "forbidden.txt").exists(),
+                        (outside / "protected.txt").read_text(encoding="utf-8") == "keep\n",
+                    )
+                )
+                return {
+                    "supported_path": "read-only App Server plus controller-owned bounded writer",
+                    "native_workspace_write_applicable": False,
+                    "native_workspace_write_limit": (
+                        "Codex 0.153.0 native Windows workspace-write cannot initialize "
+                        "reliably on this host; Tool Shed does not use it for CAMP execution"
                     ),
-                    "modify": _powershell(
-                        "[System.IO.File]::AppendAllText((Join-Path (Get-Location) "
-                        "'existing.txt'), \"after`n\", [System.Text.UTF8Encoding]::new($false))"
-                    ),
-                    "delete": _powershell("Remove-Item -LiteralPath delete-me.txt"),
-                    "create_directory": _powershell(
-                        "New-Item -ItemType Directory -Path new-dir | Out-Null"
-                    ),
-                    "harmless_command": _powershell("Write-Output ok"),
-                    "test_command": [
-                        _runtime_sys.executable,
-                        "-m",
-                        "unittest",
-                        "discover",
-                        "-v",
-                    ],
-                    "outside_write": _powershell(
-                        "New-Item -ItemType File -Path "
-                        + _powershell_literal(outside / "forbidden.txt")
-                        + " | Out-Null"
-                    ),
-                    "outside_destructive": _powershell(
-                        "Remove-Item -LiteralPath "
-                        + _powershell_literal(outside)
-                        + " -Recurse -Force"
-                    ),
-                    "privileged_write": _powershell(
-                        "New-Item -ItemType File -Path "
-                        + _powershell_literal(privileged_target)
-                        + " | Out-Null"
-                    ),
-                    "network": [
-                        "curl.exe",
-                        "--max-time",
-                        "2",
-                        "-sS",
-                        "https://example.com",
-                    ],
+                    "checks": {
+                        "modify": modified,
+                        "create": created,
+                        "outside_refused": refused_outside,
+                        "stale_digest_refused": refused_stale,
+                        "first_write": first,
+                        "replay_refused": replay,
+                    },
+                    "passed": passed,
                 }
-            else:
-                privileged_target = Path(
-                    "/usr/local/tool-shed-app-server-qualification-forbidden"
-                )
-                commands = {
+            policy = sandbox_policy("workspace-write", workspace)
+            privileged_target = Path(
+                "/usr/local/tool-shed-app-server-qualification-forbidden"
+            )
+            commands = {
                     "read": ["cat", "existing.txt"],
                     "create": ["sh", "-c", "printf 'created\\n' > created.txt"],
                     "modify": ["sh", "-c", "printf 'after\\n' >> existing.txt"],
@@ -221,7 +312,7 @@ class WriteQualificationHarness:
                         "-sS",
                         "https://example.com",
                     ],
-                }
+            }
             results: dict[str, Any] = {}
             for name, command in commands.items():
                 try:
@@ -293,6 +384,26 @@ class WriteQualificationHarness:
             target = (
                 Path(tempfile.gettempdir()) if os.name == "nt" else Path("/tmp")
             ) / f"tool-shed-app-server-{uuid.uuid4().hex}.txt"
+            if os.name == "nt":
+                local = workspace / "allowed.txt"
+                local.write_text("allowed\n", encoding="utf-8")
+                writer = BoundedWorkspaceWriter(workspace, (Path("allowed.txt"),))
+                refused = writer.handle(
+                    {
+                        "tool": BoundedWorkspaceWriter.TOOL_NAME,
+                        "arguments": {
+                            "path": str(target),
+                            "expected_sha256": "absent",
+                            "content": "forbidden\n",
+                        },
+                    }
+                )
+                return {
+                    "supported_path": "controller-owned bounded writer",
+                    "temporary_path_refused": refused,
+                    "target_absent": not target.exists(),
+                    "passed": not refused["success"] and not target.exists(),
+                }
             default_policy = {
                 "type": "workspaceWrite",
                 "writableRoots": [str(workspace)],
@@ -354,7 +465,9 @@ class WriteQualificationHarness:
             dir=self.base_dir,
             ignore_cleanup_errors=os.name == "nt",
         ) as name:
-            repo = Path(name)
+            root = Path(name)
+            repo = root / "repo"
+            repo.mkdir()
             _init_repo(
                 repo,
                 {
@@ -372,38 +485,58 @@ class WriteQualificationHarness:
                 workspace=repo,
                 expected_paths=(Path("sample.py"),),
             )
-            workspace_profile = None
-            thread = client.start_thread(
-                model="gpt-5.6-terra",
-                cwd=repo,
-                approval_policy="never",
-                sandbox="workspace-write",
-                permission_profile=workspace_profile,
-                ephemeral=True,
-            )
-            test_command = (
-                "python.exe -m unittest -v test_sample.py"
+            writer = (
+                BoundedWorkspaceWriter(repo, (Path("sample.py"),))
                 if os.name == "nt"
-                else "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest -v test_sample.py"
+                else None
             )
-            prompt = (
-                "This is a disposable write qualification. Work only in the current Git workspace. "
-                "Change sample.py so value() returns 2, then run exactly "
-                f"`{test_command}`. "
-                "Do not modify any other file. Return step_complete only if that exact test passes."
-            )
-            turn_id = client.start_turn(
-                str(thread["id"]),
-                prompt,
-                model="gpt-5.6-terra",
-                effort="medium",
-                cwd=repo,
-                approval_policy="never",
-                sandbox_policy=sandbox_policy("workspace-write", repo),
-                permission_profile=workspace_profile,
-                output_schema=CAMP_OUTCOME_SCHEMA,
-            )
-            turn = client.wait_for_turn(str(thread["id"]), turn_id, timeout=self.timeout)
+            workspace_profile = ":read-only" if writer else None
+            previous_handler = client.dynamic_tool_handler
+            try:
+                if writer:
+                    client.dynamic_tool_handler = writer.handle
+                thread = client.start_thread(
+                    model="gpt-5.6-terra",
+                    cwd=repo,
+                    approval_policy="never",
+                    sandbox="read-only" if writer else "workspace-write",
+                    permission_profile=workspace_profile,
+                    ephemeral=True,
+                    dynamic_tools=writer.dynamic_tools if writer else None,
+                )
+                boundary = json.dumps(writer.boundary, sort_keys=True) if writer else "native sandbox"
+                prompt = (
+                    "This is a disposable write qualification. Work only in the current Git workspace. "
+                    "The complete content of sample.py is `def value():\\n    return 1\\n`. "
+                    f"The write boundary is {boundary}. "
+                    + (
+                        "Use write_workspace_file exactly once to replace sample.py so value() returns 2. "
+                        if writer
+                        else "Use the apply_patch tool exactly once to change only sample.py so value() returns 2. "
+                    )
+                    + "Do not read files, run commands, or run tests; deterministic verification is reserved "
+                    "for the controller. Return step_ready_for_verification when the patch is applied."
+                )
+                turn_id = client.start_turn(
+                    str(thread["id"]),
+                    prompt,
+                    model="gpt-5.6-terra",
+                    effort="medium",
+                    cwd=repo,
+                    approval_policy="never",
+                    sandbox_policy=sandbox_policy("read-only" if writer else "workspace-write", repo),
+                    permission_profile=workspace_profile,
+                    output_schema=CAMP_OUTCOME_SCHEMA,
+                )
+                turn = client.wait_for_turn(
+                    str(thread["id"]),
+                    turn_id,
+                    timeout=self.timeout,
+                    disallow_command_execution=writer is not None,
+                    allowed_tool_call_types=frozenset({"dynamicToolCall"}) if writer else None,
+                )
+            finally:
+                client.dynamic_tool_handler = previous_handler
             outcome = parse_camp_outcome(turn.text)
             journal_record = journal.finalize(
                 thread_id=turn.thread_id,
@@ -425,10 +558,12 @@ class WriteQualificationHarness:
                 "outcome": structured_outcome_record(outcome),
                 "journal": journal_record,
                 "focused_test": focused_test,
+                "bounded_writer": writer.evidence if writer else None,
                 "passed": (
                     turn.status == "completed"
-                    and outcome.outcome == "step_complete"
+                    and outcome.outcome in CAMP_STEP_HANDOFF_OUTCOMES
                     and journal_record["safe"]
+                    and (writer is None or writer.mutation_count == 1)
                     and focused_test["exit_code"] == 0
                 ),
             }
@@ -485,6 +620,71 @@ class WriteQualificationHarness:
                 ),
             }
 
+    def orchestrated_camp(self) -> dict[str, Any]:
+        """Exercise the same CAMP entrypoint and controller verification used in production."""
+
+        with _qualification_directory(
+            "tool-shed-orchestrated-camp-", self.base_dir
+        ) as root:
+            repo = root / "repo"
+            repo.mkdir()
+            _init_repo(
+                repo,
+                {
+                    "sample.py": "def value():\n    return 1\n",
+                    "test_sample.py": (
+                        "import unittest\nfrom sample import value\n"
+                        "class TestValue(unittest.TestCase):\n"
+                        "    def test_value(self): self.assertEqual(value(), 2)\n"
+                    ),
+                },
+            )
+            payload = execute_camp_if_enabled(
+                "Change sample.py so value() returns 2.",
+                cwd=repo,
+                campaign=CAMPAIGN,
+                camp="orchestrated-exact-version-write",
+                expected_paths=(Path("sample.py"),),
+                explicit_files=(Path("sample.py"),),
+                verification_commands=(
+                    (
+                        _runtime_sys.executable,
+                        "-B",
+                        "-m",
+                        "unittest",
+                        "-v",
+                        "test_sample.py",
+                    ),
+                ),
+                enable_override=True,
+                config=AppServerFeatureConfig.load(),
+                codex=self.codex,
+                timeout=self.timeout,
+                telemetry_path=root / "telemetry.jsonl",
+            )
+            writer = payload["mutation_journal"].get("bounded_workspace_writer")
+            return {
+                "next_action": payload["next_action"],
+                "structured_outcome": payload["structured_outcome"],
+                "verification": payload["verification"],
+                "mutation_journal": payload["mutation_journal"],
+                "bounded_writer": writer,
+                "passed": (
+                    payload["next_action"] == "advance_to_next_camp_step"
+                    and payload["mutation_journal"]["final_state"] == "verified"
+                    and (
+                        (
+                            os.name == "nt"
+                            and isinstance(writer, dict)
+                            and writer.get("mutation_count") == 1
+                        )
+                        or (os.name != "nt" and writer is None)
+                    )
+                    and (repo / "sample.py").read_text(encoding="utf-8")
+                    == "def value():\n    return 2\n"
+                ),
+            }
+
     def cancellation_and_resume(self, client: CodexAppServerClient) -> dict[str, Any]:
         with tempfile.TemporaryDirectory(
             prefix="tool-shed-partial-cancel-",
@@ -493,6 +693,70 @@ class WriteQualificationHarness:
         ) as name:
             repo = Path(name)
             _init_repo(repo, {"baseline.txt": "baseline\n"})
+            if os.name == "nt":
+                target = repo / "partial.txt"
+                target.write_text("before\n", encoding="utf-8")
+                subprocess.run(["git", "-C", str(repo), "add", "partial.txt"], check=True)
+                subprocess.run(
+                    ["git", "-C", str(repo), "commit", "-qm", "bounded target"],
+                    check=True,
+                )
+                journal = GitMutationJournal.begin(
+                    campaign=CAMPAIGN,
+                    camp="bounded-interruption-no-replay",
+                    workspace=repo,
+                    expected_paths=(Path("partial.txt"), Path("after-sleep.txt")),
+                )
+                writer = BoundedWorkspaceWriter(
+                    repo, (Path("partial.txt"), Path("after-sleep.txt"))
+                )
+                digest = next(
+                    item["sha256"]
+                    for item in writer.boundary["files"]
+                    if item["path"] == "partial.txt"
+                )
+                first = writer.handle(
+                    {
+                        "tool": BoundedWorkspaceWriter.TOOL_NAME,
+                        "arguments": {
+                            "path": "partial.txt",
+                            "expected_sha256": digest,
+                            "content": "partial\n",
+                        },
+                    }
+                )
+                replay = writer.handle(
+                    {
+                        "tool": BoundedWorkspaceWriter.TOOL_NAME,
+                        "arguments": {
+                            "path": "after-sleep.txt",
+                            "expected_sha256": "absent",
+                            "content": "replayed\n",
+                        },
+                    }
+                )
+                journal_record = journal.finalize(
+                    thread_id="bounded-writer",
+                    turn_id="interrupted-after-mutation",
+                    turn_status="interrupted",
+                    cancelled_or_interrupted=True,
+                    recovery_action="reconcile_workspace_before_retry",
+                )
+                return {
+                    "supported_path": "one-shot bounded mutation with journal reconciliation",
+                    "first_write": first,
+                    "replay_attempt": replay,
+                    "journal": journal_record,
+                    "partial_preserved": target.read_text(encoding="utf-8") == "partial\n",
+                    "delayed_write_absent": not (repo / "after-sleep.txt").exists(),
+                    "passed": (
+                        first["success"]
+                        and not replay["success"]
+                        and journal_record["safe"]
+                        and target.read_text(encoding="utf-8") == "partial\n"
+                        and not (repo / "after-sleep.txt").exists()
+                    ),
+                }
             journal = GitMutationJournal.begin(
                 campaign=CAMPAIGN,
                 camp="partial-write-cancellation",
@@ -639,6 +903,7 @@ class WriteQualificationHarness:
                 report["minimal_terra_write"] = self.minimal_terra_write(client)
                 report["denial"] = self.denial(client)
                 report["cancellation_and_resume"] = self.cancellation_and_resume(client)
+                report["orchestrated_camp"] = self.orchestrated_camp()
             checks = [
                 value.get("passed")
                 for key, value in report.items()
@@ -648,6 +913,7 @@ class WriteQualificationHarness:
                     "minimal_terra_write",
                     "denial",
                     "cancellation_and_resume",
+                    "orchestrated_camp",
                 }
                 and isinstance(value, dict)
             ]
