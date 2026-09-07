@@ -18,14 +18,16 @@
         "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed"
       },
       "production": {
-        "actor": null,
-        "artifact": null,
+        "actor": "codex",
+        "artifact": "v0.50.2@1372f7dd7e0ea61d78243ce4ec0d0fa24d7a081c",
         "authorization_ref": null,
-        "evidence": [],
+        "evidence": [
+          "work/evidence/release-v0.50.2-production.json"
+        ],
         "reason": null,
-        "recorded_at": null,
-        "source_commit": null,
-        "status": "open",
+        "recorded_at": "2026-09-07T12:02:00Z",
+        "source_commit": "0cd14bb0b509a31ddae54918718c4a94caac64a3",
+        "status": "verified",
         "target": "github-release:tool-shed-linux-install-client"
       }
     },
@@ -44,14 +46,16 @@
         "target": "tsrookarocom-dev@sup.local:/home/jon/docker/ts.rookaro.com-dev"
       },
       "production": {
-        "actor": null,
-        "artifact": null,
+        "actor": "codex",
+        "artifact": "tool-shed-dashboard:v0.50.2@sha256:211195346e5727e171a18c441db3cf8bf7acc2982a12163073adb284985232f2",
         "authorization_ref": null,
-        "evidence": [],
+        "evidence": [
+          "work/evidence/release-v0.50.2-production.json"
+        ],
         "reason": null,
-        "recorded_at": null,
-        "source_commit": null,
-        "status": "open",
+        "recorded_at": "2026-09-07T12:01:48Z",
+        "source_commit": "0cd14bb0b509a31ddae54918718c4a94caac64a3",
+        "status": "verified",
         "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com"
       }
     },
@@ -70,14 +74,16 @@
         "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed"
       },
       "production": {
-        "actor": null,
-        "artifact": null,
+        "actor": "codex",
+        "artifact": "v0.50.2@1372f7dd7e0ea61d78243ce4ec0d0fa24d7a081c",
         "authorization_ref": null,
-        "evidence": [],
+        "evidence": [
+          "work/evidence/release-v0.50.2-production.json"
+        ],
         "reason": null,
-        "recorded_at": null,
-        "source_commit": null,
-        "status": "open",
+        "recorded_at": "2026-09-07T12:02:13Z",
+        "source_commit": "0cd14bb0b509a31ddae54918718c4a94caac64a3",
+        "status": "verified",
         "target": "github-release:tool-shed-windows-install-client"
       }
     }
@@ -88,7 +94,7 @@
     "windows",
     "linux"
   ],
-  "revision": 5,
+  "revision": 8,
   "schema_version": 1,
-  "updated_at": "2026-09-07T11:37:38Z"
+  "updated_at": "2026-09-07T12:02:13Z"
 }

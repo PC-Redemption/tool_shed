@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-production-release-evidence",
+  "release": {
+    "version": "0.50.2",
+    "tag": "v0.50.2",
+    "content_commit": "0cd14bb0b509a31ddae54918718c4a94caac64a3",
+    "provenance_commit": "1372f7dd7e0ea61d78243ce4ec0d0fa24d7a081c",
+    "published_at": "2026-09-07T11:51:06Z",
+    "url": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.50.2"
+  },
+  "qualification": {
+    "local_release_validation": "624 of 624 tests passed",
+    "linux_development_tests": "54 of 54 focused tests passed",
+    "windows_development_tests": "54 of 54 focused tests passed",
+    "validate_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34118293320",
+    "validate_jobs": "33 of 33 passed",
+    "publish_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34118726446",
+    "result": "passed"
+  },
+  "web_production": {
+    "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com",
+    "image": "tool-shed-dashboard:v0.50.2",
+    "image_sha256": "211195346e5727e171a18c441db3cf8bf7acc2982a12163073adb284985232f2",
+    "database_backup": "/home/jon/docker/ts.rookaro.com/backups/dashboard-daily-20260907T115201Z.dump.age",
+    "rollback_bundle": "/home/jon/docker/ts.rookaro.com/release-backups/pre-v0.50.2-20260907T1152Z",
+    "public_dashboard_health_status": 200,
+    "public_docs_health_status": 200,
+    "rendered_tree_controls": ["1", "2", "3", "All"],
+    "rendered_tree_rows": 8,
+    "list_view_controls_absent": true,
+    "production_readiness": "healthy",
+    "result": "passed"
+  },
+  "browser_behavior": {
+    "target": "isolated development dashboard on the production image digest",
+    "browser": "Chrome on GOGETTER",
+    "initial_all_rows": 5,
+    "level_1_rows": 2,
+    "level_2_rows": 3,
+    "level_3_rows": 4,
+    "all_restored_rows": 5,
+    "maximum_depth": 3,
+    "pressed_state_correct": true,
+    "manual_chevron_cleared_preset": true,
+    "result": "passed"
+  },
+  "linux_production": {
+    "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed",
+    "installed_version": "0.50.2",
+    "content_commit": "0cd14bb0b509a31ddae54918718c4a94caac64a3",
+    "backup": "/home/jon/dev/ts_linux_test_bed/tool_shed.backup-20260907T115545Z.tar",
+    "validation_mode": "attested-focused-smoke plus 54 focused tests",
+    "work_preserved": true,
+    "post_install_doctor": "accepted with only deterministic index-date refresh warning",
+    "result": "passed"
+  },
+  "windows_production": {
+    "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed",
+    "installed_version": "0.50.2",
+    "content_commit": "0cd14bb0b509a31ddae54918718c4a94caac64a3",
+    "backup": "E:\\dev\\ts_windows_test_bed\\tool_shed.backup-20260907T115804Z.tar",
+    "validation_mode": "attested-focused-smoke plus 54 focused tests",
+    "work_preserved": true,
+    "post_install_doctor": "accepted with only deterministic index-date refresh warning",
+    "result": "passed"
+  },
+  "dashboard_auto_convergence": {
+    "event_sequence": 11391,
+    "event_created_at": "2026-09-07T12:07:23.880387Z",
+    "local_delivered_at": "2026-09-07T12:07:25.862800Z",
+    "delivery_seconds_from_event_creation": 1.983011,
+    "delivery_attempts": 0,
+    "manual_worker_used": false,
+    "safety_pass_used": false,
+    "local_pending_after_delivery": 0,
+    "hosted_verified_sequence": 11391,
+    "hosted_client_version": "0.50.2",
+    "hosted_work_inventory_total": 267,
+    "hosted_work_inventory_truncated": false,
+    "hosted_working_count": 0,
+    "hosted_queued_count": 0,
+    "hosted_open_outcome_count": 0,
+    "hosted_unreconciled_outcome_count": 0,
+    "hosted_closure_debt_count": 0,
+    "result": "passed"
+  },
+  "github_issue_review": {
+    "repository": "PC-Redemption/tool_shed",
+    "direct_issue": 57,
+    "comment": "https://github.com/PC-Redemption/tool_shed/issues/57#issuecomment-5570400822",
+    "action": "documented the v0.50.2 hierarchy-navigation subset and kept the broader semantic-fidelity issue open",
+    "result": "reviewed"
+  },
+  "result": "passed"
+}
