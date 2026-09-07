@@ -1,0 +1,94 @@
+{
+  "candidate_commit": "b598088a75096779baba79e720b3f292cbca0b79",
+  "created_at": "2026-09-07T17:01:57Z",
+  "kind": "tool-shed-project-release-lanes",
+  "lanes": {
+    "linux": {
+      "development": {
+        "actor": "codex",
+        "artifact": "snapshot-sha256:dd2cff541d192c19181aafee0e9b44616977ffbd2b026b869e809ee92463ca59",
+        "authorization_ref": null,
+        "evidence": [
+          "work/evidence/camp-0172-v0.50.4-work5.md"
+        ],
+        "reason": null,
+        "recorded_at": "2026-09-07T17:06:42Z",
+        "source_commit": "b598088a75096779baba79e720b3f292cbca0b79",
+        "status": "verified",
+        "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed"
+      },
+      "production": {
+        "actor": null,
+        "artifact": null,
+        "authorization_ref": null,
+        "evidence": [],
+        "reason": null,
+        "recorded_at": null,
+        "source_commit": null,
+        "status": "open",
+        "target": "github-release:tool-shed-linux-install-client"
+      }
+    },
+    "web": {
+      "development": {
+        "actor": "codex",
+        "artifact": "image-sha256:feecce6ea7394c2ba9eabace287dcd405779443ed3aceb61c16d6a9fa3cd9c10",
+        "authorization_ref": null,
+        "evidence": [
+          "work/evidence/camp-0172-v0.50.4-work5.md"
+        ],
+        "reason": null,
+        "recorded_at": "2026-09-07T17:06:42Z",
+        "source_commit": "b598088a75096779baba79e720b3f292cbca0b79",
+        "status": "verified",
+        "target": "tsrookarocom-dev@sup.local:/home/jon/docker/ts.rookaro.com-dev"
+      },
+      "production": {
+        "actor": null,
+        "artifact": null,
+        "authorization_ref": null,
+        "evidence": [],
+        "reason": null,
+        "recorded_at": null,
+        "source_commit": null,
+        "status": "open",
+        "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com"
+      }
+    },
+    "windows": {
+      "development": {
+        "actor": "codex",
+        "artifact": "snapshot-sha256:dd2cff541d192c19181aafee0e9b44616977ffbd2b026b869e809ee92463ca59",
+        "authorization_ref": null,
+        "evidence": [
+          "work/evidence/camp-0172-v0.50.4-work5.md"
+        ],
+        "reason": null,
+        "recorded_at": "2026-09-07T17:06:42Z",
+        "source_commit": "b598088a75096779baba79e720b3f292cbca0b79",
+        "status": "verified",
+        "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed"
+      },
+      "production": {
+        "actor": null,
+        "artifact": null,
+        "authorization_ref": null,
+        "evidence": [],
+        "reason": null,
+        "recorded_at": null,
+        "source_commit": null,
+        "status": "open",
+        "target": "github-release:tool-shed-windows-install-client"
+      }
+    }
+  },
+  "release_id": "camp0172-v0.50.4",
+  "required_lanes": [
+    "web",
+    "windows",
+    "linux"
+  ],
+  "revision": 5,
+  "schema_version": 1,
+  "updated_at": "2026-09-07T17:06:42Z"
+}
