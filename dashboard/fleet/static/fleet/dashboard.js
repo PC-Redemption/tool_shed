@@ -67,6 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   const treeRows = Array.from(document.querySelectorAll("[data-tree-row]"));
+  const treeDepthControls = Array.from(document.querySelectorAll("[data-tree-depth-control]"));
   const treeRowsByParent = new Map();
   treeRows.forEach((row) => {
     const parent = row.dataset.treeParent || "";
@@ -86,15 +87,37 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   };
+  const setTreeToggleExpanded = (toggle, expanded) => {
+    toggle.setAttribute("aria-expanded", String(expanded));
+    toggle.setAttribute(
+      "aria-label",
+      `${expanded ? "Collapse" : "Expand"} ${toggle.closest("[data-tree-row]")?.dataset.treeId || "item"} descendants`,
+    );
+  };
+  const clearTreeDepthPreset = () => {
+    treeDepthControls.forEach((control) => control.setAttribute("aria-pressed", "false"));
+  };
+  const applyTreeDepth = (requestedDepth) => {
+    const maximumRowDepth = requestedDepth === "all" ? Number.POSITIVE_INFINITY : Number(requestedDepth) - 1;
+    treeRows.forEach((row) => {
+      const rowDepth = Number(row.dataset.treeDepth || 0);
+      row.hidden = rowDepth > maximumRowDepth;
+      const toggle = row.querySelector("[data-tree-toggle]");
+      if (toggle) setTreeToggleExpanded(toggle, rowDepth < maximumRowDepth);
+    });
+    treeDepthControls.forEach((control) => {
+      control.setAttribute("aria-pressed", String(control.dataset.treeDepthControl === requestedDepth));
+    });
+  };
+  treeDepthControls.forEach((control) => {
+    control.addEventListener("click", () => applyTreeDepth(control.dataset.treeDepthControl || "all"));
+  });
   document.querySelectorAll("[data-tree-toggle]").forEach((toggle) => {
     toggle.addEventListener("click", () => {
       const expanded = toggle.getAttribute("aria-expanded") === "true";
-      toggle.setAttribute("aria-expanded", String(!expanded));
-      toggle.setAttribute(
-        "aria-label",
-        `${expanded ? "Expand" : "Collapse"} ${toggle.closest("[data-tree-row]")?.dataset.treeId || "item"} descendants`,
-      );
+      setTreeToggleExpanded(toggle, !expanded);
       setDescendantsHidden(toggle.closest("[data-tree-row]")?.dataset.treeId || "", expanded);
+      clearTreeDepthPreset();
     });
   });
 

@@ -131,6 +131,13 @@
     <a href="?view=tree&amp;scope=remaining&amp;rows={{ selected_rows }}" {% if selected_view == 'tree' %}aria-current="page"{% endif %}>Tree</a>
     <a href="?view=list&amp;scope=all&amp;rows={{ selected_rows }}" {% if selected_view == 'list' %}aria-current="page"{% endif %}>List</a>
   </div>
+  {% if selected_view == 'tree' %}<div class="tree-depth-control" data-tree-depth-controls role="group" aria-label="Tree levels shown">
+    <span>Levels</span>
+    <button type="button" data-tree-depth-control="1" aria-pressed="false" aria-label="Show root parents only" title="Show root parents only">1</button>
+    <button type="button" data-tree-depth-control="2" aria-pressed="false" aria-label="Show two hierarchy levels" title="Show roots and their children">2</button>
+    <button type="button" data-tree-depth-control="3" aria-pressed="false" aria-label="Show three hierarchy levels" title="Show three hierarchy levels">3</button>
+    <button type="button" data-tree-depth-control="all" aria-pressed="true" aria-label="Show all hierarchy levels" title="Show the full hierarchy">All</button>
+  </div>{% endif %}
   <form method="get" class="work-filters" aria-label="Filter work">
     <input type="hidden" name="view" value="{{ selected_view }}">
     <label>Work
@@ -199,7 +206,7 @@
     <div class="table-scroll"><table class="work-table{% if selected_view == 'tree' %} work-tree{% elif selected_order == 'planned' %} planning-enabled{% endif %} has-release-stage"><thead><tr><th>Artifact</th>{% if selected_view == 'list' and selected_order == 'planned' %}<th>Plan</th>{% endif %}<th>Document</th><th>Closure</th><th>Release</th><th>Outcome</th><th>Reconciliation</th><th>Relationships</th><th>Updated</th></tr></thead><tbody>
       {% for artifact in group.artifacts %}
       {% if selected_view == 'tree' %}{% ifchanged artifact.tree_root_id %}{% if artifact.tree_root_id == 'needs-placement' %}<tr class="tree-placement-heading"><th colspan="8">Needs placement <small>Reported parentage is missing, ambiguous, or cyclic.</small></th></tr>{% endif %}{% endifchanged %}{% endif %}
-      <tr{% if selected_view == 'tree' %} data-tree-row data-tree-id="{{ artifact.visible_id }}" data-tree-parent="{{ artifact.tree_parent_id }}" class="tree-row{% if artifact.tree_context %} tree-context{% endif %}{% if artifact.tree_placement_reason %} tree-placement-invalid{% endif %}"{% endif %}>
+      <tr{% if selected_view == 'tree' %} data-tree-row data-tree-id="{{ artifact.visible_id }}" data-tree-parent="{{ artifact.tree_parent_id }}" data-tree-depth="{{ artifact.tree_depth }}" class="tree-row{% if artifact.tree_context %} tree-context{% endif %}{% if artifact.tree_placement_reason %} tree-placement-invalid{% endif %}"{% endif %}>
         <th class="artifact-cell{% if selected_view == 'tree' %} tree-artifact-cell{% endif %}"{% if selected_view == 'tree' %} style="--tree-depth: {{ artifact.tree_depth }}"{% endif %}>
           {% if selected_view == 'tree' %}{% if artifact.tree_has_children %}<button type="button" class="tree-toggle" data-tree-toggle aria-expanded="true" aria-label="Collapse {{ artifact.visible_id }} descendants">⌄</button>{% else %}<span class="tree-toggle-spacer" aria-hidden="true"></span>{% endif %}<span class="artifact-kind">{{ artifact.artifact_type }}</span>{% endif %}
           <span class="artifact-id">{{ artifact.visible_id }}</span><span class="artifact-title" title="{{ artifact.title }}">{{ artifact.title }}</span>

@@ -1066,6 +1066,15 @@ class DashboardApplicationTests(TestCase):
         self.assertContains(response, 'data-copy-command="ts: next camp 0200"')
         self.assertContains(response, "Continue this campaign")
         self.assertContains(response, 'data-tree-toggle')
+        self.assertContains(response, 'data-tree-depth-controls')
+        self.assertContains(response, 'data-tree-depth-control="1"')
+        self.assertContains(response, 'data-tree-depth-control="2"')
+        self.assertContains(response, 'data-tree-depth-control="3"')
+        self.assertContains(response, 'data-tree-depth-control="all" aria-pressed="true"')
+        self.assertContains(response, 'data-tree-depth="0"')
+        self.assertContains(response, 'data-tree-depth="1"')
+        self.assertContains(response, 'data-tree-depth="2"')
+        self.assertContains(response, 'data-tree-depth="3"')
 
         campaigns = self.client.get(url, {"type": "campaign"})
         self.assertContains(campaigns, "3</strong><span>matching items")
@@ -1075,6 +1084,7 @@ class DashboardApplicationTests(TestCase):
 
         ledger = self.client.get(url, {"view": "list", "scope": "all"})
         self.assertContains(ledger, 'class="work-table has-release-stage"')
+        self.assertNotContains(ledger, "data-tree-depth-controls")
         self.assertContains(ledger, "Showing 1–6 of 6")
         self.assertLess(ledger.content.index(b"CAMP-0299"), ledger.content.index(b"IDEA-0200"))
 
@@ -1802,6 +1812,9 @@ class DashboardApplicationTests(TestCase):
         self.assertIn("const viewerTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone", script)
         self.assertEqual(script.count("timeZone: viewerTimeZone"), 3)
         self.assertIn("localDateTime.format(instant)", script)
+        self.assertIn('document.querySelectorAll("[data-tree-depth-control]")', script)
+        self.assertIn("const applyTreeDepth = (requestedDepth) =>", script)
+        self.assertIn("row.hidden = rowDepth > maximumRowDepth", script)
 
     def test_contract_rejects_uncontrolled_summary_and_non_boolean_flags(self) -> None:
         payload = self.report_payload()

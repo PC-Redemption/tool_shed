@@ -162,6 +162,11 @@
 .work-view-switch { display: inline-flex; align-self: end; padding: .18rem; border: 1px solid var(--dashboard-border); border-radius: .5rem; background: rgba(7, 17, 31, .5); }
 .work-view-switch a { padding: .38rem .68rem; border-radius: .34rem; color: var(--dashboard-muted); text-decoration: none; }
 .work-view-switch a[aria-current="page"] { color: #07111f; background: var(--dashboard-accent); font-weight: 750; }
+.tree-depth-control { display: inline-flex; align-self: end; align-items: center; gap: .18rem; padding: .18rem; border: 1px solid var(--dashboard-border); border-radius: .5rem; background: rgba(7, 17, 31, .5); }
+.tree-depth-control span { padding: 0 .42rem; color: var(--dashboard-muted); font-size: .72rem; font-weight: 650; text-transform: uppercase; }
+.tree-depth-control button { min-width: 2rem; min-height: 2rem; padding: .35rem .48rem; border: 0; border-radius: .34rem; color: var(--dashboard-muted); background: transparent; cursor: pointer; font: inherit; }
+.tree-depth-control button[aria-pressed="true"] { color: #07111f; background: var(--dashboard-accent); font-weight: 800; }
+.tree-depth-control button:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
 .work-tree { min-width: 76rem; }
 .tree-row[hidden] { display: none; }
 .tree-row.tree-context { opacity: .66; }

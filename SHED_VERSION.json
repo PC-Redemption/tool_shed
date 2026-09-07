@@ -12,7 +12,7 @@
     "adapters/codex-app-server-config.json": "4dfe4a99d7d85d7ac414a25fba9f65c4c5bdb4f0a1918ef9a8733c6f341653bb",
     "adapters/codex-app-server-qualifications.json": "995ccd3bea135448b316045ea240c10d272f4c7e2ff65085111e0380cef947c1",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "893685f1b76c8f4b139aff8bdb4f12559a87ee1eb086467658209d0d3eefa8cd",
+    "adapters/codex-skill-releases.json": "1a213513545b6d4fa737175bf2650a3aea08ee8411b40cd93cbc63ac63f53a52",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "a16e9afbc2733b2c01b113df3f3a07fda1630b80b5a97476896123ee03bc22d2",
     "dashboard/Dockerfile": "8e9ff084f409aa81ab92b9dcbe8d9bab2416225551c837681653cab7b66786ad",
@@ -51,8 +51,8 @@
     "dashboard/fleet/migrations/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "dashboard/fleet/models.py": "c23ab5862bee23e71f1773c8ec8390415bab97a3121ae55ee38459e0e878ee57",
     "dashboard/fleet/services.py": "62ca59099f637827570a7f98445ad74381a3f854d11c0b088828330238e4654d",
-    "dashboard/fleet/static/fleet/dashboard.css": "e804b8c2247bc741c16062dcd6c210f560e1c88eaf1e8bf27345a0c1d85e27ea",
-    "dashboard/fleet/static/fleet/dashboard.js": "618acbeddcf724f36d9b9bc2f1da617ea25cc203849dfbd85d9882fdd0adc3d4",
+    "dashboard/fleet/static/fleet/dashboard.css": "a50cff7ad3cfbf008ace83aad387b0138236c861c0c89555c352239cd8a5110c",
+    "dashboard/fleet/static/fleet/dashboard.js": "712447739f2fa161b46c780c40b4fc65a8f63836c83adffc6d285a1f6f0ea158",
     "dashboard/fleet/urls.py": "8b7035634bca35e250676ae4530b06cba3e56f405b616b4bd0f900d0a9ec13bb",
     "dashboard/fleet/views.py": "7b8119b839ecba3eaf9449653d96e33b7d8e7f720651f967223a1f736fc50661",
     "dashboard/fleet/work_projection.py": "07873be360c2187a440f7adecad1d3b51fa5ba87cc2c099329b97ebe639a1c3a",
@@ -64,7 +64,7 @@
     "dashboard/templates/fleet/includes/local_command.html": "c81a2c1fd0bb6b3e271bc3a437e924c7179bd82623ca77d3f095871349c21117",
     "dashboard/templates/fleet/includes/table_pagination.html": "6f85bfb263c4217d67918171c0254532307426f7b8b379ec27e4cd59df1ab783",
     "dashboard/templates/fleet/overview.html": "875d3b48ac0f3125804679bcfb400139903847671fb1a8cbf10d4d92a3764301",
-    "dashboard/templates/fleet/project.html": "5867cad52121d64d455dae2888c4be7341d24ed426c019deb16279a82f08c830",
+    "dashboard/templates/fleet/project.html": "4ac8df7879a33693b4cbce5da286a48adb62683824fa983882cc5b6808ddd63e",
     "dashboard/templates/fleet/qualification_runs.html": "3fd53d60ac2a6e31522802c8ca92d5445716977badd86719919d3f765ae75fc5",
     "dashboard/templates/fleet/work_efficiency.html": "8c4d0bfae660e84005592fa9650429d8a79ddc8298c90c3141efb8cfc271615a",
     "dashboard/templates/registration/login.html": "b5028ba0df97d857394dfd417da0f23e5f69df45322dd52e0ca6754e3849bce2",
@@ -290,35 +290,13 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Correct Remaining work to require explicit unfinished obligations while retaining legacy history only in All/List and completed ancestors as tree context.",
-  "release_commit": "c39480b492070270ba9835a67cae6672d8690a56",
-  "release_qualification": {
-    "attested_at": "2026-09-06T22:39:20Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "81bbb1df280b8c04875d5ee96edd1c597bc74d4ce8b82a19fc01a9a619f866e5"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "c39480b492070270ba9835a67cae6672d8690a56"
-  },
-  "release_tag": "v0.50.1",
-  "released_at": "2026-09-06T22:39:20Z",
-  "shed_version": "0.50.1",
-  "updated_at": "2026-09-06",
+  "notes": "Add instant tree-depth controls for root-only, two-level, three-level, and full hierarchy views.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.50.2",
+  "released_at": null,
+  "shed_version": "0.50.2",
+  "updated_at": "2026-09-07",
   "updater_mutation_paths": [
     {
       "mode": "tree",
