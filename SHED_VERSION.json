@@ -291,10 +291,32 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
   "notes": "Add instant tree-depth controls for root-only, two-level, three-level, and full hierarchy views.",
-  "release_commit": null,
-  "release_qualification": null,
+  "release_commit": "0cd14bb0b509a31ddae54918718c4a94caac64a3",
+  "release_qualification": {
+    "attested_at": "2026-09-07T11:50:30Z",
+    "client_smoke": {
+      "path": "scripts/validate_snapshot_client.py",
+      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
+    },
+    "full_validator": {
+      "path": "scripts/validate_tool_shed.py",
+      "sha256": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb"
+    },
+    "required_ci": [
+      {
+        "path": ".github/workflows/validate.yml",
+        "sha256": "81bbb1df280b8c04875d5ee96edd1c597bc74d4ce8b82a19fc01a9a619f866e5"
+      },
+      {
+        "path": ".github/workflows/release.yml",
+        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
+      }
+    ],
+    "schema_version": 1,
+    "subject_commit": "0cd14bb0b509a31ddae54918718c4a94caac64a3"
+  },
   "release_tag": "v0.50.2",
-  "released_at": null,
+  "released_at": "2026-09-07T11:50:30Z",
   "shed_version": "0.50.2",
   "updated_at": "2026-09-07",
   "updater_mutation_paths": [
