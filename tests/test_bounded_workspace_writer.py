@@ -37,6 +37,7 @@ class BoundedWorkspaceWriterTests(unittest.TestCase):
         target = self.root / "target.txt"
         target.write_text("before\n", encoding="utf-8")
         target.chmod(0o640)
+        original_mode = target.stat().st_mode & 0o777
         writer = BoundedWorkspaceWriter(self.root, (Path("target.txt"),))
         digest = hashlib.sha256(target.read_bytes()).hexdigest()
 
@@ -44,7 +45,7 @@ class BoundedWorkspaceWriterTests(unittest.TestCase):
 
         self.assertTrue(result["success"])
         self.assertEqual("after\n", target.read_text(encoding="utf-8"))
-        self.assertEqual(0o640, target.stat().st_mode & 0o777)
+        self.assertEqual(original_mode, target.stat().st_mode & 0o777)
         self.assertEqual(1, writer.mutation_count)
         self.assertEqual("written", writer.evidence[0]["status"])
         self.assertNotIn("after", str(writer.evidence))
