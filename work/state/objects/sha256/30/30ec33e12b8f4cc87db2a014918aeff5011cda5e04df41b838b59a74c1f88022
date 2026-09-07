@@ -1,0 +1,44 @@
+# Campaign: Qualify Codex App Server 0.153.0
+
+Status: ready
+Type: campaign
+Updated: 2026-09-07
+Next Action: qualify the exact 0.153.0 executable on the disposable Linux and Windows lanes
+Campaign ID: qualify-codex-app-server-0-153-0
+Campaign Number: 171
+Outcome: Codex App Server 0.153.0 has durable, exact-version qualification evidence for Tool Shed's supported local planning, verification, and bounded CAMP roles on Linux and Windows, with blockers and platform limits stated truthfully.
+Primary Focus Areas: qualification-release
+Supporting Focus Areas: provider-portability, workspace-safety
+Depends On: none
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work3
+Completion Gate: Exact 0.153.0 executable identity and SHA-256 are recorded per qualified platform; startup, managed ChatGPT authentication, required model/reasoning selection, isolated read-only planning and verification, cancellation and fail-closed approval behavior, bounded workspace-write CAMP execution, expected-path enforcement, deterministic controller-owned verification, mutation-journal/no-replay recovery, privacy limits, and full applicable validation pass on the disposable Linux and Windows test beds; the qualification registry and maintainer documentation state the supported roles, blockers, platform scope, and non-production boundary without weakening operator-runtime or strict-certification policy.
+Completion Evidence: none
+Disposition: none
+
+## Request
+
+Qualify the exact Codex App Server `0.153.0` runtime as a separate campaign. Preserve the existing
+operator-runtime trust contract: positive qualification is reviewed diagnostic and optional strict-
+certification evidence, not a new normal-mode admission gate. Use the disposable Tool Shed Linux and
+Windows test beds, and do not infer one platform's result from the other.
+
+Exercise the supported Sol/high planning, Terra/low verification, and Terra/medium bounded CAMP
+roles through their real App Server paths. Record exact executable identities and content-free
+evidence. Treat unavailable packages, protocol differences, unsafe mutation, unexpected paths,
+failed deterministic verification, missing terminal dispatch state, or authentication/model
+failures as explicit blockers rather than inherited qualification.
+
+If qualification exposes a Tool Shed or Codex compatibility defect, preserve the evidence and
+route the repair as separately scoped work before changing product behavior. This campaign does not
+authorize deployment, publication, release, API-key fallback, broader writing roles, or production
+workloads.
+
+## Completion Check
+
+The exact-version evidence, qualification registry, and maintainer documentation agree; focused
+qualification checks and the full applicable validator pass on unchanged final inputs; strict
+Doctor is healthy; and both supported platform results are explicit. Stop at the local Work3
+checkpoint without push, tag, release, deployment, or client synchronization.
