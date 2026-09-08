@@ -356,6 +356,48 @@ class DashboardApplicationTests(TestCase):
         )
         return payload
 
+    def complete_release_projection_payload(self) -> dict[str, object]:
+        payload = self.loop_finding_report_payload()
+        payload["schema_version"] = 10
+        payload["state"]["queued_count"] = payload["state"]["ready_count"]  # type: ignore[index]
+        payload["state"]["closure_debt_count"] = 0  # type: ignore[index]
+        release = payload["instance_health"]["release"]  # type: ignore[index]
+        release.update(
+            {
+                "projection_contract_version": 1,
+                "projection_state": "complete",
+                "projection_source_revision": 42,
+                "projection_source_digest": "f" * 64,
+                "awaiting_work5_chain_count": 3,
+                "registration_count": 7,
+                "owning_chain_count": 3,
+                "display_group_count": 2,
+            }
+        )
+        release["release_chains"][0].update(  # type: ignore[index]
+            {
+                "group_kind": "document-chain",
+                "registration_count": 2,
+                "owning_chain_count": 1,
+            }
+        )
+        release["release_chains"].append(  # type: ignore[index]
+            {
+                "group_kind": "direct-work2",
+                "root_id": "DIRECT-WORK2",
+                "idea_id": None,
+                "map_id": None,
+                "prm_id": None,
+                "campaign_id": None,
+                "stage": "awaiting-work5",
+                "latest_commit": "b" * 40,
+                "candidate_count": 5,
+                "registration_count": 5,
+                "owning_chain_count": 2,
+            }
+        )
+        return payload
+
     def enroll_and_issue(self) -> str:
         created = self.client.post(
             reverse("fleet:enrollment-request"),
@@ -880,6 +922,43 @@ class DashboardApplicationTests(TestCase):
         second.health_state["reporter_state"] = "quiescent"
         second.save(update_fields=("health_state", "updated_at"))
         self.assertNotEqual(dashboard_revision(), before)
+
+    def test_schema_ten_requires_complete_privacy_safe_release_partition(self) -> None:
+        payload = self.complete_release_projection_payload()
+        release = validate_report(payload)["instance_health"]["release"]
+        self.assertEqual(release["registration_count"], 7)
+        self.assertEqual(release["owning_chain_count"], 3)
+        self.assertEqual(release["release_chains"][1]["group_kind"], "direct-work2")
+
+        incomplete = self.complete_release_projection_payload()
+        incomplete["instance_health"]["release"]["registration_count"] = 6  # type: ignore[index]
+        with self.assertRaisesRegex(ContractError, "registration partition is incomplete"):
+            validate_report(incomplete)
+
+        unsafe = self.complete_release_projection_payload()
+        unsafe["instance_health"]["release"]["release_chains"][1]["origin_path"] = "/private/work"  # type: ignore[index]
+        with self.assertRaisesRegex(ContractError, "unsupported fields"):
+            validate_report(unsafe)
+
+        token = self.enroll_and_issue()
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        instance = Instance.objects.get()
+        self.client.force_login(get_user_model().objects.get(username="operator"))
+        overview = self.client.get(reverse("fleet:project", args=(instance.project_id,)))
+        self.assertContains(overview, "Direct Work2 outcomes")
+        self.assertContains(overview, "report schema 10")
+        work = self.client.get(
+            reverse("fleet:project-tab", args=(instance.project_id, "work")),
+            {"scope": "awaiting-work5", "release_stage": "awaiting-work5"},
+        )
+        self.assertContains(work, "Direct Work2 outcomes")
+        self.assertContains(work, "5 registrations")
 
     def test_work_table_is_newest_first_and_supports_bounded_page_sizes(self) -> None:
         user = get_user_model().objects.create_user("work-table-viewer", password="fixture")
@@ -1609,7 +1688,7 @@ class DashboardApplicationTests(TestCase):
         self.assertContains(response, "Owner")
         self.assertContains(response, "Snapshot from")
         self.assertContains(response, "document-lifecycle: queued → working")
-        self.assertContains(response, "1</strong><span>Idea chains")
+        self.assertContains(response, "1</strong><span>Owning chains awaiting Work5")
         self.assertContains(response, "2</strong><span>Candidate commits")
         self.assertContains(response, "4</strong><span>Audit registrations")
 

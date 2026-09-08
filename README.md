@@ -275,8 +275,9 @@ Hybrid schema 4 adds persisted, deduplicated outcome-loop findings; schema 5 exp
 discovery to blocked or stalled outcomes, reconciliation and result-propagation gaps, invalid
 lineage, missing, stale, or failed closure evidence, and lifecycle/body drift across durable work
 documents. Local audit and supervised history repair remain authoritative. Dashboard report schema
-9 projects a bounded read-only list plus separate queued, working, and closure-debt counts, and applicable hosted
-pages copy controlled local Tool Shed commands for use in chat. See
+10 adds a complete release-registration partition with document chains, a controlled Direct Work2
+aggregate, and totals-preserving overflow while retaining schema 9's separate queued, working, and
+closure-debt counts. Applicable hosted pages copy controlled local Tool Shed commands for use in chat. See
 [`docs/loop-findings.md`](docs/loop-findings.md).
 
 Before a long campaign, run:

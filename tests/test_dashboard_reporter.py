@@ -855,7 +855,7 @@ class DashboardReporterTests(unittest.TestCase):
         self.assertEqual(payload["app_server"]["attempts"], 3)
         self.assertEqual(payload["app_server"]["performance"]["default_window"], "7d")
         self.assertIsNone(payload["work_efficiency"]["remedial_tokens_actual"])
-        self.assertEqual(payload["schema_version"], 9)
+        self.assertEqual(payload["schema_version"], 10)
         self.assertEqual(
             payload["loop_findings"],
             {"total_active_count": 0, "total_resolved_count": 0, "truncated": False, "findings": []},
@@ -897,11 +897,12 @@ class DashboardReporterTests(unittest.TestCase):
             candidates.append(
                 {"origin_path": f"sqlite/documents/{visible_id}", "commit": commits[-1]}
             )
-        # These are retained for audit but are intentionally not operator-facing document chains.
+        # Direct registrations remain document-free but are operator-visible as one safe group.
         for value in range(4):
             candidates.append(
                 {
                     "origin_path": f"sqlite/outcome-capsules/{value}",
+                    "origin_cycle_id": f"direct-{value}",
                     "commit": commits[-1],
                 }
             )
@@ -909,10 +910,20 @@ class DashboardReporterTests(unittest.TestCase):
             {"active": [{"candidates": candidates}]},
             {"artifacts": artifacts},
         )
-        self.assertEqual(projection["awaiting_work5_chain_count"], 5)
+        self.assertEqual(projection["awaiting_work5_chain_count"], 9)
         self.assertEqual(projection["candidate_commit_count"], 6)
-        self.assertEqual(projection["registration_count"], 24)
-        self.assertEqual(len(projection["release_chains"]), 5)
+        self.assertEqual(projection["registration_count"], 28)
+        self.assertEqual(projection["owning_chain_count"], 9)
+        self.assertEqual(len(projection["release_chains"]), 6)
+        direct = next(
+            group for group in projection["release_chains"]
+            if group["group_kind"] == "direct-work2"
+        )
+        self.assertEqual(direct["registration_count"], 4)
+        self.assertEqual(direct["owning_chain_count"], 4)
+        self.assertEqual(
+            sum(group["registration_count"] for group in projection["release_chains"]), 28
+        )
         first = next(
             chain for chain in projection["release_chains"] if chain["root_id"] == "IDEA-0001"
         )
@@ -935,6 +946,55 @@ class DashboardReporterTests(unittest.TestCase):
         self.assertEqual(
             {chain["stage"] for chain in released["release_chains"]}, {"released"}
         )
+
+    def test_release_projection_preserves_shared_commits_and_overflow_totals(self) -> None:
+        commits = [f"{value:040x}" for value in range(1, 7)]
+        candidates = [
+            {
+                "origin_path": "sqlite/documents/IDEA-0001",
+                "origin_cycle_id": "document-owner",
+                "commit": commits[0],
+            },
+            {
+                "origin_path": "sqlite/documents/IDEA-0001",
+                "origin_cycle_id": "document-owner",
+                "commit": commits[1],
+            },
+            *[
+                {
+                    "origin_path": f"sqlite/outcome-capsules/{index}",
+                    "origin_cycle_id": f"direct-owner-{index}",
+                    "commit": commits[index + 1],
+                }
+                for index in range(5)
+            ],
+        ]
+        projection = dashboard_reporter._release_chain_projection(
+            {"active": [{"cycle_id": "cohort", "candidates": candidates}]},
+            {"artifacts": [{"visible_id": "IDEA-0001", "artifact_type": "idea-brief", "parent_ids": [], "produces_ids": []}]},
+        )
+        self.assertEqual(projection["registration_count"], 7)
+        self.assertEqual(projection["candidate_commit_count"], 6)
+        self.assertEqual(projection["owning_chain_count"], 6)
+        self.assertEqual(projection["display_group_count"], 2)
+
+        overflow_candidates = [
+            {
+                "origin_path": f"sqlite/documents/IDEA-{index:04d}",
+                "origin_cycle_id": f"owner-{index}",
+                "commit": f"{index + 1:040x}",
+            }
+            for index in range(55)
+        ]
+        overflow = dashboard_reporter._release_chain_projection(
+            {"active": [{"cycle_id": "cohort", "candidates": overflow_candidates}]},
+            {"artifacts": []},
+        )
+        self.assertTrue(overflow["release_chains_truncated"])
+        self.assertEqual(len(overflow["release_chains"]), 50)
+        self.assertEqual(overflow["release_chains"][-1]["group_kind"], "additional-obligations")
+        self.assertEqual(sum(item["registration_count"] for item in overflow["release_chains"]), 55)
+        self.assertEqual(sum(item["owning_chain_count"] for item in overflow["release_chains"]), 55)
 
     def test_lifecycle_events_are_change_only_and_first_snapshot_is_a_baseline(self) -> None:
         artifact_id = str(uuid.uuid4())

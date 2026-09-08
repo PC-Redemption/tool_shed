@@ -746,10 +746,15 @@ def _project_overview_context(
             release_by_visible_id[node_id] = chain
         root_id = str(chain.get("root_id") or (node_ids[0] if node_ids else ""))
         root_artifact = by_visible_id.get(root_id)
+        group_kind = str(chain.get("group_kind") or "document-chain")
+        controlled_title = {
+            "direct-work2": "Direct Work2 outcomes",
+            "additional-obligations": "Additional release obligations",
+        }.get(group_kind)
         presented_release_chains.append(
             {
                 **chain,
-                "title": root_artifact.title if root_artifact else root_id,
+                "title": controlled_title or (root_artifact.title if root_artifact else root_id),
                 "node_ids": node_ids,
                 "short_commit": str(chain.get("latest_commit") or "")[:8],
             }
@@ -858,6 +863,16 @@ def _project_overview_context(
             or source_release.get("pending_candidate_count")
             or 0
         ),
+        "owning_chain_count": int(source_release.get("owning_chain_count") or 0),
+        "display_group_count": int(source_release.get("display_group_count") or len(release_chains)),
+        "projection_state": str(
+            source_release.get("projection_state")
+            or ("legacy-unverified" if release_chains else "grouping-unavailable")
+        ),
+        "projection_contract_version": source_release.get("projection_contract_version"),
+        "projection_source_revision": source_release.get("projection_source_revision"),
+        "projection_source_digest": source_release.get("projection_source_digest"),
+        "source_schema_version": source_instance.report_schema_version if source_instance else None,
     }
 
 
@@ -918,6 +933,7 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
     history_previous_page_url = None
     history_next_page_url = None
     outcome_groups = []
+    release_obligation_groups = []
 
     def work_url(page: int) -> str:
         values = {
@@ -942,6 +958,27 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
             health = instance.health_state if isinstance(instance.health_state, dict) else {}
             release = health.get("release") if isinstance(health.get("release"), dict) else {}
             chains = release.get("release_chains") if isinstance(release.get("release_chains"), list) else []
+            direct_groups = [
+                chain for chain in chains
+                if isinstance(chain, dict)
+                and chain.get("group_kind") in {"direct-work2", "additional-obligations"}
+                and (not release_stage or chain.get("stage") == release_stage)
+                and (
+                    selected_scope in {"all", "remaining"}
+                    or (
+                        selected_scope == "awaiting-work5"
+                        and chain.get("stage") == "awaiting-work5"
+                    )
+                )
+            ] if not artifact_type and not status else []
+            if direct_groups:
+                release_obligation_groups.append(
+                    {
+                        "instance": instance,
+                        "groups": direct_groups,
+                        "projection_state": release.get("projection_state", "legacy-unverified"),
+                    }
+                )
             visible_index: dict[str, dict[str, object]] = {}
             for chain in chains:
                 if not isinstance(chain, dict):
@@ -1167,6 +1204,7 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
             "work_result_count": work_result_count,
             "work_root_count": work_root_count,
             "work_placement_count": work_placement_count,
+            "release_obligation_groups": release_obligation_groups,
             "page_links": page_links,
             "previous_page_url": previous_page_url,
             "next_page_url": next_page_url,

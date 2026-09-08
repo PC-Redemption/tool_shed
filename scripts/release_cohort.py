@@ -22,6 +22,7 @@ from typing import Any, Sequence
 
 import document_store
 import hybrid_state
+import release_projection
 from app_server_user_state import (
     AppServerUserStateError,
     require_no_app_server_dispatch_debt,
@@ -44,7 +45,7 @@ TERMINAL_DISPOSITIONS = {
     "satisfied-with-approved-change",
     "not-applicable",
 }
-SEMVER_TAG = re.compile(r"^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
+SEMVER_TAG = re.compile(r"^v([0-9]+)\.([0-9]+)\.([0-9]+)$")
 
 
 class ReleaseCohortError(RuntimeError):
@@ -92,17 +93,52 @@ def _is_ancestor(workspace: Path, older: str, newer: str) -> bool:
 
 
 def _base_tag(workspace: Path, commit: str) -> str:
-    candidates: list[tuple[tuple[int, int, int], str]] = []
+    candidates: dict[tuple[int, int, int], list[str]] = {}
     for tag in _git(workspace, "tag", "--merged", commit, "--list", "v[0-9]*").splitlines():
         match = SEMVER_TAG.fullmatch(tag.strip())
         if match:
-            candidates.append((tuple(int(value) for value in match.groups()), tag.strip()))
+            candidates.setdefault(tuple(int(value) for value in match.groups()), []).append(tag.strip())
     if candidates:
-        return max(candidates)[1]
+        version = max(candidates)
+        exact_tags = sorted(set(candidates[version]))
+        if len(exact_tags) != 1:
+            raise ReleaseCohortError(
+                "release tags normalize to the same version: " + ", ".join(exact_tags)
+            )
+        return exact_tags[0]
     roots = _git(workspace, "rev-list", "--max-parents=0", commit).splitlines()
     if not roots:
         raise ReleaseCohortError("repository has no reachable root commit")
     return f"root:{roots[0]}"
+
+
+def _semver_tuple(tag: str) -> tuple[int, int, int]:
+    match = SEMVER_TAG.fullmatch(tag)
+    if not match:
+        raise ReleaseCohortError("release tag must contain three digit-only version segments")
+    return tuple(int(value) for value in match.groups())
+
+
+def _require_unambiguous_tag(workspace: Path, tag: str) -> str:
+    version = _semver_tuple(tag)
+    aliases = sorted(
+        candidate
+        for candidate in _git(workspace, "tag", "--list", "v[0-9]*").splitlines()
+        if SEMVER_TAG.fullmatch(candidate) and _semver_tuple(candidate) == version
+    )
+    if tag not in aliases:
+        raise ReleaseCohortError(f"release tag does not exist: {tag}")
+    if len(aliases) != 1:
+        raise ReleaseCohortError(
+            "release tags normalize to the same version: " + ", ".join(aliases)
+        )
+    return _commit(workspace, f"refs/tags/{tag}")
+
+
+def _base_commit(workspace: Path, reference: str) -> str:
+    if reference.startswith("root:"):
+        return _commit(workspace, reference.removeprefix("root:"))
+    return _require_unambiguous_tag(workspace, reference)
 
 
 def _latest_outcome(connection: sqlite3.Connection, cycle_id: str) -> dict[str, Any]:
@@ -208,9 +244,47 @@ def _candidate_rows(connection: sqlite3.Connection, cohort_id: str) -> list[dict
     return results
 
 
+def _projection_inventory(connection: sqlite3.Connection) -> dict[str, Any]:
+    """Return the complete ID-only document graph needed for release grouping."""
+    if connection.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='document'"
+    ).fetchone() is None:
+        return {"artifacts": []}
+    rows = connection.execute(
+        "SELECT a.id, d.visible_id, a.type FROM artifact a JOIN document d ON d.id=a.id "
+        "WHERE a.current_path LIKE 'sqlite/documents/%' ORDER BY d.visible_id"
+    ).fetchall()
+    visible_by_id = {str(row["id"]): str(row["visible_id"]) for row in rows}
+    artifacts = {
+        str(row["id"]): {
+            "visible_id": str(row["visible_id"]),
+            "artifact_type": str(row["type"]),
+            "parent_ids": [],
+            "produces_ids": [],
+        }
+        for row in rows
+    }
+    if artifacts:
+        for relation in connection.execute(
+            "SELECT from_artifact_id, relation_type, to_artifact_id FROM relationship "
+            "WHERE retired_revision IS NULL AND relation_type IN ('outcome-parent','produces')"
+        ):
+            source = str(relation["from_artifact_id"])
+            target = str(relation["to_artifact_id"])
+            if source not in artifacts or target not in artifacts:
+                continue
+            if relation["relation_type"] == "outcome-parent":
+                artifacts[source]["parent_ids"].append(visible_by_id[target])
+            else:
+                artifacts[source]["produces_ids"].append(visible_by_id[target])
+                artifacts[target]["parent_ids"].append(visible_by_id[source])
+    return {"artifacts": list(artifacts.values())}
+
+
 def _cohort_capsule(connection: sqlite3.Connection, row: sqlite3.Row) -> dict[str, Any]:
     cycle_id = str(row["cycle_id"])
     base = _cohort_evidence(connection, cycle_id, "release-base-tag")
+    corrections = _cohort_evidence(connection, cycle_id, "release-base-tag-correction")
     frozen = _cohort_evidence(connection, cycle_id, "release-content-commit")
     publication = _cohort_evidence(connection, cycle_id, "release-publication")
     return {
@@ -218,7 +292,9 @@ def _cohort_capsule(connection: sqlite3.Connection, row: sqlite3.Row) -> dict[st
         "origin_artifact_id": str(row["origin_artifact_id"]),
         "lifecycle_state": str(row["lifecycle_state"]),
         "accepted_outcome": str(row["accepted_outcome"]),
-        "base_tag": str(base[-1]["reference"]) if base else None,
+        "base_tag": str((corrections or base)[-1]["reference"]) if (corrections or base) else None,
+        "original_base_tag": str(base[-1]["reference"]) if base else None,
+        "base_correction_count": len(corrections),
         "content_commit": str(frozen[-1]["reference"]).removeprefix("git:") if frozen else None,
         "release_tag": str(publication[-1]["target_identity"]) if publication else None,
         "release_evidence": str(publication[-1]["reference"]) if publication else None,
@@ -242,6 +318,7 @@ def status(workspace: Path) -> dict[str, Any]:
             (COHORT_KIND,),
         ).fetchall()
         terminal = [_cohort_capsule(connection, row) for row in terminal_rows]
+        projection_inventory = _projection_inventory(connection)
     findings: list[str] = []
     mutable = [item for item in active if item["lifecycle_state"] in MUTABLE_STATES]
     if len(mutable) > 1:
@@ -249,6 +326,13 @@ def status(workspace: Path) -> dict[str, Any]:
     for cohort in active:
         if not cohort["base_tag"]:
             findings.append(f"cohort {cohort['cycle_id']} lacks a base tag")
+            cohort["base_commit"] = None
+        else:
+            try:
+                cohort["base_commit"] = _base_commit(workspace, str(cohort["base_tag"]))
+            except ReleaseCohortError as error:
+                cohort["base_commit"] = None
+                findings.append(f"cohort {cohort['cycle_id']} has invalid base evidence: {error}")
         if not cohort["candidates"]:
             findings.append(f"cohort {cohort['cycle_id']} has no Work2 candidates")
         if cohort["lifecycle_state"] in {"frozen", "released-pending-reconciliation"} and not cohort["content_commit"]:
@@ -259,6 +343,12 @@ def status(workspace: Path) -> dict[str, Any]:
             if not _is_ancestor(workspace, item["commit"], head):
                 findings.append(
                     f"candidate {item['requirement_id']} commit is not reachable from HEAD"
+                )
+            if cohort.get("base_commit") and not _is_ancestor(
+                workspace, str(cohort["base_commit"]), item["commit"]
+            ):
+                findings.append(
+                    f"cohort {cohort['cycle_id']} base is not an ancestor of candidate {item['requirement_id']}"
                 )
     payload: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
@@ -271,6 +361,9 @@ def status(workspace: Path) -> dict[str, Any]:
         "recent_terminal": terminal,
         "findings": findings,
         "finding_count": len(findings),
+        "projection": release_projection.build(
+            {"active": active}, projection_inventory
+        ),
         "writes_performed": False,
     }
     token_material = dict(payload)
@@ -286,6 +379,131 @@ def _require_snapshot(workspace: Path, expected: str) -> dict[str, Any]:
     if current["findings"]:
         raise ReleaseCohortError("release cohort state is invalid: " + "; ".join(current["findings"]))
     return current
+
+
+def preview_base_repair(
+    workspace: Path, *, tag: str, cohort_id: str | None = None
+) -> dict[str, Any]:
+    """Build a read-only, state-bound correction plan for one working cohort."""
+    workspace = resolved_workspace(workspace)
+    snapshot = status(workspace)
+    cohorts = [
+        item for item in snapshot["active"]
+        if (cohort_id is None or item["cycle_id"] == cohort_id)
+    ]
+    if len(cohorts) != 1:
+        raise ReleaseCohortError("base repair preview requires exactly one selected active cohort")
+    cohort = cohorts[0]
+    if cohort["lifecycle_state"] != "working":
+        raise ReleaseCohortError("base correction is allowed only while a cohort is working")
+    unrelated_findings = [
+        finding for finding in snapshot["findings"]
+        if f"cohort {cohort['cycle_id']} base" not in finding
+        and f"cohort {cohort['cycle_id']} has invalid base evidence" not in finding
+    ]
+    if unrelated_findings:
+        raise ReleaseCohortError(
+            "release cohort has unrelated findings: " + "; ".join(unrelated_findings)
+        )
+    proposed_commit = _require_unambiguous_tag(workspace, tag)
+    current_tag = str(cohort.get("base_tag") or "")
+    if not current_tag:
+        raise ReleaseCohortError("working cohort has no existing base evidence to correct")
+    if current_tag == tag:
+        raise ReleaseCohortError("proposed base tag already is the effective cohort base")
+    if not current_tag.startswith("root:") and _semver_tuple(tag) <= _semver_tuple(current_tag):
+        raise ReleaseCohortError("corrected base tag must be numerically newer than the effective base")
+    if not _is_ancestor(workspace, proposed_commit, snapshot["head"]):
+        raise ReleaseCohortError("proposed base tag is not an ancestor of HEAD")
+    for candidate in cohort["candidates"]:
+        if not _is_ancestor(workspace, proposed_commit, candidate["commit"]):
+            raise ReleaseCohortError(
+                f"proposed base tag is not an ancestor of candidate {candidate['requirement_id']}"
+            )
+    material = {
+        "schema_version": 1,
+        "kind": "tool-shed-release-base-repair-plan",
+        "cohort_id": cohort["cycle_id"],
+        "expected_revision": snapshot["revision"],
+        "expected_state_token": snapshot["state_token"],
+        "current_base_tag": current_tag,
+        "current_base_commit": cohort.get("base_commit"),
+        "proposed_base_tag": tag,
+        "proposed_base_commit": proposed_commit,
+        "candidate_membership_digest": _sha(
+            sorted(
+                (item["requirement_id"], item["origin_cycle_id"], item["commit"])
+                for item in cohort["candidates"]
+            )
+        ),
+        "candidate_count": len(cohort["candidates"]),
+        "writes_performed": False,
+    }
+    material["plan_token"] = bind_state_token(
+        workspace, "release-base-repair", _sha(material)
+    )
+    return material
+
+
+def repair_base(
+    workspace: Path,
+    *,
+    project_binding: str,
+    expected_plan_token: str,
+    manifest: dict[str, Any],
+) -> dict[str, Any]:
+    """Apply an exact previewed correction by appending immutable evidence."""
+    workspace = resolved_workspace(workspace)
+    if manifest.get("kind") != "tool-shed-release-base-repair-plan":
+        raise ReleaseCohortError("base repair manifest has the wrong kind")
+    preview = preview_base_repair(
+        workspace,
+        tag=str(manifest.get("proposed_base_tag") or ""),
+        cohort_id=str(manifest.get("cohort_id") or ""),
+    )
+    if manifest != preview:
+        raise ReleaseCohortError("base repair manifest is stale or does not match current authority")
+    if expected_plan_token != preview["plan_token"]:
+        raise ReleaseCohortError("base repair plan token does not match")
+
+    def write(connection: sqlite3.Connection, revision: int) -> dict[str, Any]:
+        if hybrid_state.meta_row(connection)["current_revision"] != preview["expected_revision"]:
+            raise ReleaseCohortError("release cohort revision changed before base correction")
+        row = connection.execute(
+            "SELECT lifecycle_state FROM cycle WHERE id=?", (preview["cohort_id"],)
+        ).fetchone()
+        if row is None or row["lifecycle_state"] != "working":
+            raise ReleaseCohortError("base correction target is no longer a working cohort")
+        connection.execute(
+            "INSERT INTO evidence_reference VALUES (?, ?, 'release-base-tag-correction', ?, NULL, ?, ?)",
+            (
+                hybrid_state.random_uuid(),
+                preview["cohort_id"],
+                preview["proposed_base_tag"],
+                preview["proposed_base_commit"],
+                _next_evidence_time(
+                    connection, preview["cohort_id"], "release-base-tag-correction"
+                ),
+            ),
+        )
+        return {
+            "cohort_id": preview["cohort_id"],
+            "previous_base_tag": preview["current_base_tag"],
+            "base_tag": preview["proposed_base_tag"],
+            "base_commit": preview["proposed_base_commit"],
+            "candidate_membership_digest": preview["candidate_membership_digest"],
+        }
+
+    result = hybrid_state.managed_write(
+        workspace,
+        project_binding=project_binding,
+        command="repair-release-cohort-base",
+        actor="release-cohort",
+        callback=write,
+        expected_writes=1,
+    )
+    result["status"] = status(workspace)
+    return result
 
 
 def _parent_cycles(connection: sqlite3.Connection, cycle_id: str) -> list[str]:
@@ -693,9 +911,7 @@ def freeze(
 
 
 def _verify_release_tag(workspace: Path, tag: str, content_commit: str) -> dict[str, str]:
-    if not SEMVER_TAG.fullmatch(tag):
-        raise ReleaseCohortError("release tag must be a stable vMAJOR.MINOR.PATCH tag")
-    tag_commit = _commit(workspace, f"refs/tags/{tag}")
+    tag_commit = _require_unambiguous_tag(workspace, tag)
     if tag_commit == content_commit:
         mode = "tagged-content-commit"
     else:
@@ -933,6 +1149,17 @@ def build_parser() -> argparse.ArgumentParser:
     register_parser.add_argument("--origin-cycle", action="append", default=[])
     register_parser.add_argument("--accepted-outcome")
     register_parser.add_argument("--summary")
+    preview_parser = commands.add_parser(
+        "preview-base-repair", help="Preview an exact append-only working-cohort base correction."
+    )
+    preview_parser.add_argument("--tag", required=True)
+    preview_parser.add_argument("--cohort-id")
+    repair_parser = commands.add_parser(
+        "repair-base", help="Apply a previously previewed base-correction manifest."
+    )
+    repair_parser.add_argument("--manifest", required=True)
+    repair_parser.add_argument("--expect", required=True)
+    repair_parser.add_argument("--project-binding", required=True)
     freeze_parser = commands.add_parser("freeze", help="Freeze the exact Work5 content commit.")
     freeze_parser.add_argument("--expect", required=True)
     freeze_parser.add_argument("--project-binding", required=True)
@@ -960,6 +1187,7 @@ def _print(result: dict[str, Any], as_json: bool) -> None:
         print(json.dumps(result, indent=2, sort_keys=True))
         return
     if result.get("kind") == KIND:
+        projection = result["projection"]
         print(
             f"Release cohort: {len(result['active'])} active, "
             f"{len(result['recent_terminal'])} recent terminal, {result['finding_count']} finding(s)"
@@ -967,8 +1195,32 @@ def _print(result: dict[str, Any], as_json: bool) -> None:
         for cohort in result["active"]:
             print(
                 f"- {cohort['cycle_id']} — {cohort['lifecycle_state']} — "
-                f"{len(cohort['candidates'])} candidate(s) — base {cohort['base_tag']}"
+                f"{len(cohort['candidates'])} registration(s) — base {cohort['base_tag']} "
+                f"({cohort.get('base_commit') or 'unresolved'})"
             )
+        print(
+            "Projection: "
+            f"{projection['projection_state']} — {projection['registration_count']} registrations, "
+            f"{projection['candidate_commit_count']} unique commits, "
+            f"{projection['owning_chain_count']} owning chains, "
+            f"{projection['display_group_count']} displayed groups"
+        )
+        for group in projection["release_chains"]:
+            labels = {
+                "document-chain": group["root_id"],
+                "direct-work2": "Direct Work2 outcomes",
+                "additional-obligations": "Additional release obligations",
+            }
+            print(
+                f"  - {labels[group['group_kind']]} — {group['stage']} — "
+                f"{group['registration_count']} registrations, "
+                f"{group['owning_chain_count']} owning chains, "
+                f"{group['candidate_count']} unique commits"
+            )
+        if result["findings"]:
+            print("Cohort health:")
+            for finding in result["findings"]:
+                print(f"  - {finding}")
         print(f"State token: {result['state_token']}")
     else:
         print(json.dumps(result, indent=2, sort_keys=True))
@@ -997,6 +1249,26 @@ def main(argv: Sequence[str] | None = None) -> int:
                 project_binding=args.project_binding,
                 content_commitish=args.content_commit,
                 failure_evidence=args.failure_evidence,
+            )
+        elif args.command == "preview-base-repair":
+            result = preview_base_repair(
+                workspace, tag=args.tag, cohort_id=args.cohort_id
+            )
+        elif args.command == "repair-base":
+            manifest_path = Path(args.manifest).resolve()
+            if not manifest_path.is_relative_to(workspace):
+                raise ReleaseCohortError("base repair manifest must be inside the workspace")
+            try:
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as error:
+                raise ReleaseCohortError(f"cannot read base repair manifest: {error}") from error
+            if not isinstance(manifest, dict):
+                raise ReleaseCohortError("base repair manifest must be a JSON object")
+            result = repair_base(
+                workspace,
+                project_binding=args.project_binding,
+                expected_plan_token=args.expect,
+                manifest=manifest,
             )
         elif args.command == "record-release":
             result = record_release(

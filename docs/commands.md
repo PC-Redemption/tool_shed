@@ -177,8 +177,9 @@ through their originating Ideas. Inspect the deterministic surface with:
 python3 scripts/release_cohort.py --workspace . status
 ```
 
-Mutations use `register`, `freeze`, `record-release`, and `finalize` with the fresh reported state
-token and the `hybrid-state` project binding. See
+Mutations use `register`, `repair-base`, `freeze`, `record-release`, and `finalize` with fresh
+state-bound evidence and the `hybrid-state` project binding. `preview-base-repair` is read-only;
+its exact manifest and plan token are required by `repair-base`. See
 [`release-cohort-closed-loop.md`](release-cohort-closed-loop.md).
 
 Validation-only route:

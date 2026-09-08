@@ -1,0 +1,54 @@
+# Project Map: Reliable Deferred Work5 Backlog
+
+Status: active
+Type: project-map
+Updated: 2026-09-08
+Next Action: execute the approved roadmap through the complete Work5 release
+Source Idea: IDEA-0024
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 3
+Reviewed Body SHA256: 77bd922c7eb707d37e4d85140325a8f7a45b3088546c01bc0446682bafbd958f
+
+## Purpose
+
+Make prolonged Work1 and Work2 development safe by ensuring every authoritative release-cohort
+registration remains durably visible and is selected by one later complete Work5 release.
+
+## Desired Outcome
+
+One local partition starts from all authoritative registrations, preserves document chain rollups,
+represents document-free work as controlled Direct Work2 outcomes, retains exact totals under
+bounding, and supplies consistent local status, hosted Overview, and Work/Awaiting Work5 views.
+Fixed-width release tags resolve consistently, incorrect working-cohort anchors have an exact
+append-only repair path, and release selection remains complete and anti-narrowing.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Cohort projection | Complete registration partition, owning-chain grouping, direct and overflow groups, exact count invariants | Hybrid release cohort |
+| Reporting and operator views | New strictly allowlisted schema plus honest legacy/mixed-version behavior across Overview, Work, and local status | cohort projection |
+| Base-anchor integrity | Fixed-width numeric tags, ambiguity refusal, findings, and guarded working-cohort correction | Git and cohort evidence |
+| Qualification and release | Representative topology, privacy, compatibility, cross-platform lanes, exact-SHA publication, and production convergence | all implementation workstreams |
+
+## Readiness Gate Transfer
+
+1. `G1-AUTHORITATIVE-REGISTRATION-PARTITION` — complete, disjoint registration coverage.
+2. `G2-COUNT-AND-PRIVACY-CONTRACT` — separate exact counts and strict disclosure.
+3. `G3-OPERATOR-SURFACE-PARITY` — one projection across local and hosted surfaces.
+4. `G4-BASE-ANCHOR-RESOLUTION-AND-RECOVERY` — fixed-width resolution and guarded correction.
+5. `G5-RELEASE-SELECTION-AND-STATE-SEPARATION` — unchanged Work5 selection and honest states.
+6. `G6-CROSS-LANE-RELEASE-CLOSURE` — representative, platform, production, and closure proof.
+
+## Program Shape
+
+1. Build and prove the complete local/reporter/hosted projection and base-anchor behavior as one
+   registered Work2 candidate.
+2. Reconfirm all six gates in the configured web, Windows, and Linux lanes; publish the exact
+   candidate; verify production convergence; and reconcile only the registered outcome chain.
+
+## Completion Boundary
+
+This map completes only when all six gates are satisfied by one released exact content commit, all
+configured production lanes are verified, the installed Codex client matches the published source,
+and Campaign, PRM, Map, and Idea outcomes are terminal, reconciled, and fully propagated.

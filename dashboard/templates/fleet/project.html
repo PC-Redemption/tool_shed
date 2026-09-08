@@ -45,18 +45,20 @@
       <a href="{% url 'fleet:project-tab' project.id 'work' %}?release_stage=awaiting-work5">View release work</a>
     </div>
     <div class="release-gate-summary" aria-label="Work awaiting release summary">
-      <div><strong>{{ overview.awaiting_work5_chain_count }}</strong><span>Idea chains</span></div>
+      <div><strong>{{ overview.awaiting_work5_chain_count }}</strong><span>Owning chains awaiting Work5</span></div>
       <div><strong>{{ overview.candidate_commit_count }}</strong><span>Candidate commits</span></div>
       <div><strong>{{ overview.registration_count }}</strong><span>Audit registrations</span></div>
     </div>
     {% if overview.release_chains %}<div class="release-chain-list">
       {% for chain in overview.release_chains %}<article>
-        <div><strong>{{ chain.root_id }}</strong><span title="{{ chain.title }}">{{ chain.title }}</span></div>
-        <div class="release-chain-path">{% for node_id in chain.node_ids %}<code>{{ node_id }}</code>{% if not forloop.last %}<span aria-hidden="true">→</span>{% endif %}{% endfor %}</div>
-        <div class="release-chain-meta"><span class="table-state release-stage-{{ chain.stage }}">{% if chain.stage == 'awaiting-work5' %}Awaiting Work5{% elif chain.stage == 'released' %}Released · parent open{% else %}Reconciled{% endif %}</span><span>{{ chain.candidate_count }} candidate commit{{ chain.candidate_count|pluralize }} · <code>{{ chain.short_commit }}</code></span></div>
+        <div><strong>{% if chain.group_kind == 'direct-work2' %}Direct Work2 outcomes{% elif chain.group_kind == 'additional-obligations' %}Additional release obligations{% else %}{{ chain.root_id }}{% endif %}</strong><span title="{{ chain.title }}">{{ chain.title }}</span></div>
+        {% if chain.node_ids %}<div class="release-chain-path">{% for node_id in chain.node_ids %}<code>{{ node_id }}</code>{% if not forloop.last %}<span aria-hidden="true">→</span>{% endif %}{% endfor %}</div>{% endif %}
+        <div class="release-chain-meta"><span class="table-state release-stage-{{ chain.stage }}">{% if chain.stage == 'awaiting-work5' %}Awaiting Work5{% elif chain.stage == 'released' %}Released · parent open{% else %}Reconciled{% endif %}</span><span>{% if overview.projection_contract_version %}{{ chain.registration_count }} registration{{ chain.registration_count|pluralize }} · {{ chain.owning_chain_count }} owning chain{{ chain.owning_chain_count|pluralize }} · {% endif %}{{ chain.candidate_count }} candidate commit{{ chain.candidate_count|pluralize }} · <code>{{ chain.short_commit }}</code></span></div>
       </article>{% endfor %}
-    </div>{% else %}<p class="dashboard-empty">No locally reported chains are awaiting Work5.</p>{% endif %}
-    {% if overview.release_chains_truncated %}<p class="overview-more">The local reporter bounded this list; the chain total above remains authoritative.</p>{% endif %}
+    </div>{% elif overview.registration_count %}<p class="dashboard-warning">Release registrations are pending, but this reporter schema did not prove their grouping.</p>{% else %}<p class="dashboard-empty">No locally reported obligations are awaiting Work5.</p>{% endif %}
+    {% if overview.projection_state == 'legacy-unverified' %}<p class="dashboard-note">Legacy/unverified grouping from the selected source instance.</p>{% elif overview.projection_state == 'grouping-unavailable' and overview.registration_count %}<p class="dashboard-note">Grouping unavailable from the selected source instance.</p>{% endif %}
+    {% if overview.source_instance %}<p class="dashboard-note">Source {{ overview.source_instance.external_id }} · report schema {{ overview.source_schema_version }}{% if overview.projection_source_revision %} · local revision {{ overview.projection_source_revision }}{% endif %}</p>{% endif %}
+    {% if overview.release_chains_truncated %}<p class="overview-more">Older detailed groups were combined into the controlled remainder row; the totals remain complete.</p>{% endif %}
   </section>
 
   <section class="dashboard-panel overview-card overview-wide">
@@ -196,6 +198,14 @@
   {% if selected_view == 'tree' or selected_order == 'planned' %}<div class="planning-order-note">Hierarchy and recommended order are reported by the local Tool Shed instance. This dashboard cannot change execution priority.</div>{% endif %}
   </div>
   {% if inventory_diverged %}<p class="dashboard-warning">Instance snapshots differ; each source is shown independently.</p>{% endif %}
+  {% if release_obligation_groups %}
+  <section class="release-chain-list" aria-label="Document-free release obligations">
+    {% for source in release_obligation_groups %}{% for group in source.groups %}<article>
+      <div><strong>{% if group.group_kind == 'direct-work2' %}Direct Work2 outcomes{% else %}Additional release obligations{% endif %}</strong><span>{{ source.instance.external_id }} · schema {{ source.instance.report_schema_version }} · {{ source.projection_state }}</span></div>
+      <div class="release-chain-meta"><span class="table-state release-stage-{{ group.stage }}">{% if group.stage == 'awaiting-work5' %}Awaiting Work5{% else %}Released · parent open{% endif %}</span><span>{{ group.registration_count }} registration{{ group.registration_count|pluralize }} · {{ group.owning_chain_count }} owning chain{{ group.owning_chain_count|pluralize }} · {{ group.candidate_count }} unique commit{{ group.candidate_count|pluralize }}</span></div>
+    </article>{% endfor %}{% endfor %}
+  </section>
+  {% endif %}
   {% for group in instance_groups %}
   <section class="instance-snapshot">
     <div class="instance-heading">

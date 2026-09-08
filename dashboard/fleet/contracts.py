@@ -188,6 +188,14 @@ RELEASE_FIELDS_V5 = RELEASE_FIELDS | {
     "release_chains",
     "release_chains_truncated",
 }
+RELEASE_FIELDS_V10 = RELEASE_FIELDS_V5 | {
+    "projection_contract_version",
+    "projection_state",
+    "projection_source_revision",
+    "projection_source_digest",
+    "owning_chain_count",
+    "display_group_count",
+}
 RELEASE_CHAIN_FIELDS = {
     "root_id",
     "idea_id",
@@ -197,6 +205,11 @@ RELEASE_CHAIN_FIELDS = {
     "stage",
     "latest_commit",
     "candidate_count",
+}
+RELEASE_CHAIN_FIELDS_V10 = RELEASE_CHAIN_FIELDS | {
+    "group_kind",
+    "registration_count",
+    "owning_chain_count",
 }
 EVENT_KINDS = {"state-change", "outcome-change", "campaign-change", "client-change"}
 ATTENTION_STATES = {"healthy", "working", "attention", "blocked", "stale", "unknown"}
@@ -627,7 +640,7 @@ def _instance_health(value: Any, *, schema_version: int) -> dict[str, Any]:
     release = _object(
         supplied.get("release"),
         "instance_health.release",
-        RELEASE_FIELDS_V5 if schema_version >= 5 else RELEASE_FIELDS,
+        RELEASE_FIELDS_V10 if schema_version >= 10 else RELEASE_FIELDS_V5 if schema_version >= 5 else RELEASE_FIELDS,
     )
     digest = _required_string(supplied.get("semantic_digest"), "instance_health.semantic_digest", 64)
     if len(digest) != 64 or any(character not in "0123456789abcdef" for character in digest):
@@ -685,12 +698,15 @@ def _instance_health(value: Any, *, schema_version: int) -> dict[str, Any]:
         chains = []
         for index, raw_chain in enumerate(raw_chains, start=1):
             label = f"release chain {index}"
-            chain = _object(raw_chain, label, RELEASE_CHAIN_FIELDS)
+            chain = _object(
+                raw_chain,
+                label,
+                RELEASE_CHAIN_FIELDS_V10 if schema_version >= 10 else RELEASE_CHAIN_FIELDS,
+            )
             commit = _required_string(chain.get("latest_commit"), f"{label}.latest_commit", 40)
             if len(commit) != 40 or any(character not in "0123456789abcdef" for character in commit):
                 raise ContractError(f"{label}.latest_commit must be a lowercase Git commit")
-            chains.append(
-                {
+            normalized_chain = {
                     "root_id": _required_string(chain.get("root_id"), f"{label}.root_id", 64),
                     "idea_id": _optional_string(chain.get("idea_id"), f"{label}.idea_id", 64),
                     "map_id": _optional_string(chain.get("map_id"), f"{label}.map_id", 64),
@@ -698,9 +714,28 @@ def _instance_health(value: Any, *, schema_version: int) -> dict[str, Any]:
                     "campaign_id": _optional_string(chain.get("campaign_id"), f"{label}.campaign_id", 64),
                     "stage": _choice(chain.get("stage"), f"{label}.stage", RELEASE_CHAIN_STAGES, 24),
                     "latest_commit": commit,
-                    "candidate_count": _bounded_counter(chain.get("candidate_count"), f"{label}.candidate_count", 100),
+                    "candidate_count": _bounded_counter(
+                        chain.get("candidate_count"), f"{label}.candidate_count", 10_000 if schema_version >= 10 else 100
+                    ),
                 }
-            )
+            if schema_version >= 10:
+                normalized_chain.update(
+                    {
+                        "group_kind": _choice(
+                            chain.get("group_kind"),
+                            f"{label}.group_kind",
+                            {"document-chain", "direct-work2", "additional-obligations"},
+                            32,
+                        ),
+                        "registration_count": _bounded_counter(
+                            chain.get("registration_count"), f"{label}.registration_count", 10_000
+                        ),
+                        "owning_chain_count": _bounded_counter(
+                            chain.get("owning_chain_count"), f"{label}.owning_chain_count", 10_000
+                        ),
+                    }
+                )
+            chains.append(normalized_chain)
         chain_count = _bounded_counter(
             release.get("awaiting_work5_chain_count"),
             "instance_health.release.awaiting_work5_chain_count",
@@ -711,7 +746,9 @@ def _instance_health(value: Any, *, schema_version: int) -> dict[str, Any]:
             "instance_health.release.release_chains_truncated",
         )
         reported_awaiting = sum(item["stage"] == "awaiting-work5" for item in chains)
-        if chain_count < reported_awaiting or (not truncated and chain_count != reported_awaiting):
+        if schema_version < 10 and (
+            chain_count < reported_awaiting or (not truncated and chain_count != reported_awaiting)
+        ):
             raise ContractError("instance_health.release.awaiting_work5_chain_count does not match awaiting chains")
         release_result.update(
             {
@@ -730,6 +767,67 @@ def _instance_health(value: Any, *, schema_version: int) -> dict[str, Any]:
                 "release_chains_truncated": truncated,
             }
         )
+        if schema_version >= 10:
+            projection_contract_version = _bounded_counter(
+                release.get("projection_contract_version"),
+                "instance_health.release.projection_contract_version",
+                100,
+            )
+            if projection_contract_version != 1:
+                raise ContractError("instance_health.release.projection_contract_version must be 1")
+            projection_state = _choice(
+                release.get("projection_state"),
+                "instance_health.release.projection_state",
+                {"complete"},
+                16,
+            )
+            projection_source_revision = _counter(
+                release.get("projection_source_revision"),
+                "instance_health.release.projection_source_revision",
+            )
+            projection_source_digest = _required_string(
+                release.get("projection_source_digest"),
+                "instance_health.release.projection_source_digest",
+                64,
+            )
+            if len(projection_source_digest) != 64 or any(
+                character not in "0123456789abcdef" for character in projection_source_digest
+            ):
+                raise ContractError("instance_health.release.projection_source_digest must be a lowercase SHA-256")
+            owning_chain_count = _bounded_counter(
+                release.get("owning_chain_count"),
+                "instance_health.release.owning_chain_count",
+                10_000,
+            )
+            display_group_count = _bounded_counter(
+                release.get("display_group_count"),
+                "instance_health.release.display_group_count",
+                50,
+            )
+            if display_group_count != len(chains):
+                raise ContractError("instance_health.release.display_group_count must match release_chains")
+            registration_count = int(release_result["registration_count"])
+            if registration_count != sum(int(item["registration_count"]) for item in chains):
+                raise ContractError("instance_health.release registration partition is incomplete")
+            if owning_chain_count != sum(int(item["owning_chain_count"]) for item in chains):
+                raise ContractError("instance_health.release owning-chain partition is incomplete")
+            reported_awaiting_owners = sum(
+                int(item["owning_chain_count"])
+                for item in chains
+                if item["stage"] == "awaiting-work5"
+            )
+            if chain_count != reported_awaiting_owners:
+                raise ContractError("instance_health.release awaiting Work5 owning-chain total is incomplete")
+            release_result.update(
+                {
+                    "projection_contract_version": projection_contract_version,
+                    "projection_state": projection_state,
+                    "projection_source_revision": projection_source_revision,
+                    "projection_source_digest": projection_source_digest,
+                    "owning_chain_count": owning_chain_count,
+                    "display_group_count": display_group_count,
+                }
+            )
     return {
         "reporter_state": _choice(
             supplied.get("reporter_state"), "instance_health.reporter_state", REPORTER_STATES, 24
@@ -748,8 +846,8 @@ def _instance_health(value: Any, *, schema_version: int) -> dict[str, Any]:
 def validate_report(payload: Any) -> dict[str, Any]:
     root = _object(payload, "report", ROOT_FIELDS)
     schema_version = root.get("schema_version")
-    if schema_version not in {1, 2, 3, 4, 5, 6, 7, 8, 9}:
-        raise ContractError("report.schema_version must be between 1 and 9")
+    if schema_version not in {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}:
+        raise ContractError("report.schema_version must be between 1 and 10")
     if schema_version == 1 and ({"work_inventory", "lifecycle_events"} & set(root)):
         raise ContractError("report schema 1 does not support lifecycle projection fields")
     if schema_version < 4 and "instance_health" in root:

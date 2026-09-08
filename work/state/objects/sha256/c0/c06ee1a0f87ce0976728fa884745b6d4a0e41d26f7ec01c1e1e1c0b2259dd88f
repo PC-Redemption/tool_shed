@@ -1,0 +1,40 @@
+# Campaign: Build Complete Release Backlog Visibility
+
+Status: queued
+Type: campaign
+Updated: 2026-09-08
+Next Action: implement the registration-first projection and guarded base-anchor behavior
+Campaign ID: build-complete-release-backlog-visibility
+Campaign Number: 173
+Outcome: Every authoritative Work2 release registration is represented in a tested privacy-safe local and hosted backlog projection, and fixed-width base anchors resolve and recover safely.
+Primary Focus Areas: qualification-release
+Supporting Focus Areas: campaign-lifecycle, provider-portability, workspace-safety
+Depends On: none
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work2
+Completion Gate: The seven-registration fixture, complete partition invariant, direct and remainder groups, count semantics, schema compatibility, privacy rejection, Overview/Work/local-status parity, fixed-width tag resolution, ambiguity refusal, guarded working-cohort repair, cohort state separation, and unchanged Work5 selection pass focused checks and the configured development lane; the exact candidate is registered without publication.
+Completion Evidence: none
+Disposition: none
+Roadmap: reliable-deferred-work5-backlog
+Roadmap Revision: 1
+Roadmap Document: PRM-0044
+Milestone: M1-COMPLETE-RELEASE-BACKLOG-CANDIDATE
+Unlocks Gates: G1-AUTHORITATIVE-REGISTRATION-PARTITION, G2-COUNT-AND-PRIVACY-CONTRACT, G3-OPERATOR-SURFACE-PARITY, G4-BASE-ANCHOR-RESOLUTION-AND-RECOVERY, G5-RELEASE-SELECTION-AND-STATE-SEPARATION
+
+## Request
+
+Implement the smallest complete registration-first projection. Preserve document chains, aggregate
+valid document-free origins under the controlled Direct Work2 outcomes label, reserve bounded
+overflow representation, and prove every authoritative registration is assigned once. Introduce
+honest legacy/mixed-schema presentation and drive hosted and local operator surfaces from the same
+semantics.
+
+Accept numeric fixed-width release tags while preserving exact tag spelling and rejecting
+normalized ambiguity. Add a read-only, exact, append-only correction flow only for working cohorts;
+frozen and later states fail closed. Do not change authoritative Work5 membership or narrowing
+rules.
+
+Stop only after focused proof, strict Doctor, configured development-lane verification, exact
+candidate registration, and a durable Hybrid checkpoint.

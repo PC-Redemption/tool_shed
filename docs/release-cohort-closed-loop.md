@@ -30,6 +30,12 @@ The live SQLite database remains the operational authority. Normal Hybrid checkp
 cohort in tracked state and rebuild it exactly. The freeze mutation may occur after the final
 content commit to avoid a commit-SHA self-reference; post-release reconciliation is checkpointed.
 
+`status` derives one complete privacy-safe projection from all registrations before applying its
+50-row display bound. Document-backed registrations retain their connected Idea/Map/PRM/Campaign
+chain; valid document-free registrations aggregate as **Direct Work2 outcomes** per cohort and
+stage. A final **Additional release obligations** row preserves totals when detail is bounded.
+Registrations, globally unique commits, owning chains, and display groups are distinct counts.
+
 ## Guarded interface
 
 Read current state and retain its project-bound token:
@@ -49,6 +55,23 @@ python3 scripts/release_cohort.py --workspace . register \
 
 For direct work without an existing owner, replace `--origin-cycle` with `--accepted-outcome` and
 `--summary`. Exact repeated registration does not advance the database revision.
+
+Numeric fixed-width tags such as `v00.04.11` are valid anchors and retain their exact spelling.
+Ordering is numeric; two exact tags that normalize to the same three-part version fail closed.
+If a working cohort recorded the wrong base, create a read-only state-bound plan and then apply
+that exact manifest:
+
+```bash
+python3 scripts/release_cohort.py --workspace . --json preview-base-repair \
+  --tag <existing-tag> [--cohort-id <cycle-uuid>]
+python3 scripts/release_cohort.py --workspace . repair-base \
+  --manifest <workspace-json-path> --expect <plan-token> \
+  --project-binding <hybrid-state-binding>
+```
+
+The apply step revalidates the cohort revision, tag commit, ancestry, candidate membership, and
+normalized-tag uniqueness, then appends correction evidence without replacing the original base.
+Frozen, released, and terminal cohorts cannot use this repair path.
 
 When a pre-cohort Work2 result was already given a terminal local verdict, registration does not
 reopen or rewrite it. The guarded command creates one open direct release extension related by

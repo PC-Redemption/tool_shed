@@ -12,6 +12,10 @@ content-free App Server aggregates and failure signatures, Work Efficiency aggre
 measured-token coverage, bounded lifecycle inventory, and per-instance health made only from
 controlled states, versions, timestamps, digests, capped counts, and a bounded chain-level release
 projection derived by the local instance from its authoritative relationships and release cohort.
+Schema v10 proves that every authoritative registration belongs to exactly one displayed document
+chain, Direct Work2 aggregate, or totals-preserving remainder group. It reports registrations,
+globally distinct commits, owning chains, display groups, source revision/digest, and completeness
+separately; older schemas remain explicitly legacy/unverified and are never rewritten or merged.
 It rejects paths, prompts, source text, uncontrolled commands, raw output, exception messages,
 credentials, secrets, scheduler definitions, diagnostic logs, and uncontrolled event summaries.
 The one command-shaped schema-v8 field is restricted to the exact local route
@@ -108,6 +112,11 @@ For release acceptance, also observe an unforced 15-minute scheduler interval:
 ```
 
 ## Operator presentation
+
+The Overview release card and Work/Awaiting Work5 view consume the same per-instance group list.
+Document-free work appears as **Direct Work2 outcomes** without fabricating planning artifacts.
+When detail exceeds the 50-row bound, **Additional release obligations** preserves registration and
+owning-chain totals. The selected source instance and report schema remain visible.
 
 The project Overview uses the newest reporting instance without merging independent inventories.
 It presents active Idea → Map → PRM → Campaign chains, locally derived Idea and PRM planning order,

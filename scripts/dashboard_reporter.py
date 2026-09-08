@@ -37,6 +37,7 @@ import hybrid_state
 import loop_findings
 import planning_order
 import release_cohort
+import release_projection
 import work_orchestration
 from project_identity import ProjectIdentityError, binding_token, load_project_identity, require_project_binding, resolved_workspace
 try:
@@ -46,7 +47,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/dashboard_report
 
 
 SCHEMA_VERSION = 1
-REPORT_SCHEMA_VERSION = 9
+REPORT_SCHEMA_VERSION = 10
 OUTBOX_RELATIVE = Path(".tool-shed/dashboard/outbox.sqlite3")
 MAX_RESPONSE_BYTES = 65_536
 MAX_REQUEST_BYTES = 262_144
@@ -723,139 +724,8 @@ def _lifecycle_events(
 def _release_chain_projection(
     status: dict[str, Any], inventory: dict[str, Any]
 ) -> dict[str, Any]:
-    """Roll release registrations up to operator-facing Idea chains.
-
-    The release cohort intentionally retains one registration per owning outcome.  The
-    dashboard needs the distinct chain count, so derive connected components from the
-    locally authoritative reported relationships without sending paths or document bodies.
-    """
-    registrations: list[tuple[str, str, str, int]] = []
-    for cohort in status.get("active", []):
-        stage = (
-            "released"
-            if cohort.get("lifecycle_state") == "released-pending-reconciliation"
-            else "awaiting-work5"
-        )
-        for candidate in cohort.get("candidates", []):
-            origin_path = candidate.get("origin_path")
-            commit = candidate.get("commit")
-            if not isinstance(origin_path, str) or not origin_path.startswith("sqlite/documents/"):
-                continue
-            visible_id = origin_path.removeprefix("sqlite/documents/")
-            if not visible_id or "/" in visible_id or len(visible_id) > 64:
-                continue
-            if not isinstance(commit, str) or len(commit) != 40:
-                continue
-            registrations.append((visible_id, commit, stage, len(registrations)))
-
-    artifacts = {
-        str(item.get("visible_id")): item
-        for item in inventory.get("artifacts", [])
-        if isinstance(item, dict) and item.get("visible_id")
-    }
-    graph = {visible_id: set() for visible_id in artifacts}
-    for visible_id, artifact in artifacts.items():
-        for related_id in [
-            *artifact.get("parent_ids", []),
-            *artifact.get("produces_ids", []),
-        ]:
-            if related_id in graph:
-                graph[visible_id].add(related_id)
-                graph[related_id].add(visible_id)
-
-    component_by_id: dict[str, set[str]] = {}
-    visited: set[str] = set()
-    for visible_id in graph:
-        if visible_id in visited:
-            continue
-        component: set[str] = set()
-        pending = [visible_id]
-        while pending:
-            current = pending.pop()
-            if current in visited:
-                continue
-            visited.add(current)
-            component.add(current)
-            pending.extend(graph[current] - visited)
-        for member in component:
-            component_by_id[member] = component
-
-    registered_ids = {visible_id for visible_id, _, _, _ in registrations}
-    components: dict[str, set[str]] = {}
-    for visible_id in registered_ids:
-        component = component_by_id.get(visible_id, {visible_id})
-        key = min(component)
-        components[key] = component
-
-    artifact_type_fields = {
-        "idea-brief": "idea_id",
-        "project-map": "map_id",
-        "program-roadmap": "prm_id",
-        "campaign": "campaign_id",
-    }
-    prefix_fields = {
-        "IDEA-": "idea_id",
-        "MAP-": "map_id",
-        "PRM-": "prm_id",
-        "CAMP-": "campaign_id",
-    }
-    chains: list[tuple[int, dict[str, Any]]] = []
-    for component in components.values():
-        component_registrations = [
-            (visible_id, commit, stage, ordinal)
-            for visible_id, commit, stage, ordinal in registrations
-            if visible_id in component
-        ]
-        if not component_registrations:
-            continue
-        ids: dict[str, str | None] = {
-            "idea_id": None,
-            "map_id": None,
-            "prm_id": None,
-            "campaign_id": None,
-        }
-        for visible_id in sorted(component):
-            artifact = artifacts.get(visible_id)
-            field = artifact_type_fields.get(str(artifact.get("artifact_type"))) if artifact else None
-            if field is None:
-                field = next(
-                    (candidate for prefix, candidate in prefix_fields.items() if visible_id.startswith(prefix)),
-                    None,
-                )
-            if field and ids[field] is None:
-                ids[field] = visible_id
-        latest_visible_id, latest_commit, latest_stage, latest_ordinal = max(
-            component_registrations, key=lambda item: item[3]
-        )
-        root_id = next(
-            (ids[field] for field in ("idea_id", "map_id", "prm_id", "campaign_id") if ids[field]),
-            latest_visible_id,
-        )
-        chains.append(
-            (
-                latest_ordinal,
-                {
-                    "root_id": root_id,
-                    **ids,
-                    "stage": latest_stage,
-                    "latest_commit": latest_commit,
-                    "candidate_count": len(
-                        {commit for _, commit, _, _ in component_registrations}
-                    ),
-                },
-            )
-        )
-    chains.sort(key=lambda item: (item[0], str(item[1]["root_id"])), reverse=True)
-    bounded = [item for _, item in chains[:50]]
-    return {
-        "awaiting_work5_chain_count": sum(
-            item[1]["stage"] == "awaiting-work5" for item in chains
-        ),
-        "candidate_commit_count": len({commit for _, commit, _, _ in registrations}),
-        "registration_count": len(registrations),
-        "release_chains": bounded,
-        "release_chains_truncated": len(chains) > len(bounded),
-    }
+    """Compatibility entry point for the shared complete projection."""
+    return release_projection.build(status, inventory)
 
 
 def _release_posture(
@@ -869,9 +739,15 @@ def _release_posture(
     production_version = None
     production_source = "unknown"
     projection = {
+        "projection_contract_version": release_projection.PROJECTION_CONTRACT_VERSION,
+        "projection_state": "complete",
+        "projection_source_revision": 0,
+        "projection_source_digest": hashlib.sha256(b"[]").hexdigest(),
         "awaiting_work5_chain_count": 0,
         "candidate_commit_count": 0,
         "registration_count": 0,
+        "owning_chain_count": 0,
+        "display_group_count": 0,
         "release_chains": [],
         "release_chains_truncated": False,
     }
@@ -912,11 +788,12 @@ def _release_posture(
         )
         if production_version:
             production_source = "release-cohort"
-        projection = _release_chain_projection(status, inventory)
+        projection = status.get("projection") or _release_chain_projection(status, inventory)
     except (
         OSError,
         ProjectIdentityError,
         release_cohort.ReleaseCohortError,
+        release_projection.ReleaseProjectionError,
         hybrid_state.HybridStateError,
     ):
         pass

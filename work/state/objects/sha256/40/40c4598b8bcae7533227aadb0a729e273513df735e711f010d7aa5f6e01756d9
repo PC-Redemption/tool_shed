@@ -1,0 +1,32 @@
+# Campaign: Qualify and Release Complete Work5 Backlog
+
+Status: waiting
+Type: campaign
+Updated: 2026-09-08
+Next Action: wait for CAMP-0173, then qualify and ship its complete accumulated cohort
+Campaign ID: qualify-and-release-complete-work5-backlog
+Campaign Number: 174
+Outcome: The complete release-backlog behavior is published as one traceable Tool Shed release, verified across web, Windows, Linux, hosted production, and the installed Codex client, with all registered outcomes reconciled.
+Primary Focus Areas: qualification-release
+Supporting Focus Areas: snapshot-delivery, provider-portability, workspace-safety
+Depends On: CAMP-0173
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work5
+Completion Gate: All six readiness gates pass on one clean frozen content commit; release-profile validation and exact-SHA GitHub CI succeed; provenance, stable tag, and GitHub Release agree; configured web, Windows, and Linux production lanes are verified against that commit; hosted reporting converges; installed Codex skill matches published source; the release cohort and registered Idea/Map/PRM/Campaign outcomes are reconciled and finalized.
+Completion Evidence: none
+Disposition: none
+Roadmap: reliable-deferred-work5-backlog
+Roadmap Revision: 1
+Roadmap Document: PRM-0044
+Milestone: M2-CROSS-LANE-WORK5-RELEASE
+Unlocks Gates: G1-AUTHORITATIVE-REGISTRATION-PARTITION, G2-COUNT-AND-PRIVACY-CONTRACT, G3-OPERATOR-SURFACE-PARITY, G4-BASE-ANCHOR-RESOLUTION-AND-RECOVERY, G5-RELEASE-SELECTION-AND-STATE-SEPARATION, G6-CROSS-LANE-RELEASE-CLOSURE
+
+## Request
+
+Reconfirm the complete projection, privacy, compatibility, base-anchor, and Work5 selection
+contracts on the frozen candidate. Follow the repository's three-lane Work5 replacement, exact-SHA
+CI and provenance rules, publish and verify production, synchronize the installed Codex client,
+and reconcile only the registered governing chain. Stop at the first failed evidence gate rather
+than narrowing or waiving it.

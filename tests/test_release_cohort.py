@@ -100,6 +100,69 @@ class ReleaseCohortTests(unittest.TestCase):
                     content_commitish="HEAD",
                 )
 
+    def test_fixed_width_tags_resolve_exactly_and_normalized_aliases_fail(self) -> None:
+        subprocess.run(["git", "tag", "-d", "v1.0.0"], cwd=self.workspace, check=True, stdout=subprocess.DEVNULL)
+        baseline = subprocess.run(
+            ["git", "rev-parse", "HEAD^"], cwd=self.workspace, check=True, text=True, capture_output=True
+        ).stdout.strip()
+        subprocess.run(["git", "tag", "v01.00.00", baseline], cwd=self.workspace, check=True)
+        self.assertEqual(release_cohort.status(self.workspace)["current_base_tag"], "v01.00.00")
+        subprocess.run(["git", "tag", "v1.0.0", baseline], cwd=self.workspace, check=True)
+        with self.assertRaisesRegex(release_cohort.ReleaseCohortError, "normalize to the same version"):
+            release_cohort.status(self.workspace)
+
+    def test_working_base_repair_is_previewed_exact_and_append_only(self) -> None:
+        registered = release_cohort.register(
+            self.workspace,
+            expected=release_cohort.status(self.workspace)["state_token"],
+            project_binding=self.binding,
+            commitish="HEAD",
+            origin_cycles=[],
+            accepted_outcome="Ship the fixed-width base repair.",
+            summary="Base repair fixture.",
+        )
+        subprocess.run(["git", "tag", "v01.01.00", "HEAD"], cwd=self.workspace, check=True)
+        plan = release_cohort.preview_base_repair(self.workspace, tag="v01.01.00")
+        self.assertFalse(plan["writes_performed"])
+        repaired = release_cohort.repair_base(
+            self.workspace,
+            project_binding=self.binding,
+            expected_plan_token=plan["plan_token"],
+            manifest=plan,
+        )
+        cohort = repaired["status"]["active"][0]
+        self.assertEqual(cohort["original_base_tag"], "v1.0.0")
+        self.assertEqual(cohort["base_tag"], "v01.01.00")
+        self.assertEqual(cohort["base_correction_count"], 1)
+        self.assertEqual(len(cohort["candidates"]), 1)
+        with contextlib.closing(
+            hybrid_state.connect(hybrid_state.database_path(self.workspace), writable=False)
+        ) as connection:
+            self.assertEqual(
+                connection.execute(
+                    "SELECT COUNT(*) FROM evidence_reference WHERE cycle_id=? AND kind='release-base-tag'",
+                    (cohort["cycle_id"],),
+                ).fetchone()[0],
+                1,
+            )
+            self.assertEqual(
+                connection.execute(
+                    "SELECT COUNT(*) FROM evidence_reference WHERE cycle_id=? AND kind='release-base-tag-correction'",
+                    (cohort["cycle_id"],),
+                ).fetchone()[0],
+                1,
+            )
+        frozen = release_cohort.freeze(
+            self.workspace,
+            expected=repaired["status"]["state_token"],
+            project_binding=self.binding,
+            content_commitish="HEAD",
+        )
+        with self.assertRaisesRegex(release_cohort.ReleaseCohortError, "only while a cohort is working"):
+            release_cohort.preview_base_repair(
+                self.workspace, tag="v01.01.00", cohort_id=frozen["status"]["active"][0]["cycle_id"]
+            )
+
     def test_work2_registration_release_and_final_reconciliation_are_persistent(self) -> None:
         initial = release_cohort.status(self.workspace)
         registered = release_cohort.register(
