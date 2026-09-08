@@ -215,7 +215,7 @@
     "scripts/read_ask_inbox.py": "b949cff0e33431744195790aa035aaa2d80dfba4589cf0403c46b68bdb4b0cea",
     "scripts/reasoning_catalog.py": "668c60b60afdd80e3348ca5a2a71ab225c67c39e613f7da4adc93d792876465c",
     "scripts/reconcile_campaign_queue.py": "5e6af99304a741d668ffc31bc6ad3b993a675284269213cdc316014b20e95889",
-    "scripts/release_cohort.py": "f2e054b709becd6c6358a2aa62d58399719a1d8dda5029664ae63617d054bc5e",
+    "scripts/release_cohort.py": "db0e625a053403e544cf83d16cd8aa887ca0cf9f7cdde8a2606ce745b6004f6b",
     "scripts/release_projection.py": "bac127bbb3892f8c291028670c4e5801b33341fff4cb7ebb032eac47492f352f",
     "scripts/repository_policy.py": "7037bc56621a961f63266d93f37f3533c5d281359afeef87da872570f28f6c44",
     "scripts/review_work_state.py": "a99d6dad719d40f627ae2e6e02e2dbf36fc79b32a40202e1743cf87a37549a95",

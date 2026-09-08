@@ -362,7 +362,12 @@ def status(workspace: Path) -> dict[str, Any]:
         "findings": findings,
         "finding_count": len(findings),
         "projection": release_projection.build(
-            {"active": active}, projection_inventory
+            {
+                "active": active,
+                "revision": audit["current_revision"],
+                "domain_digest": audit["domain_digest"],
+            },
+            projection_inventory,
         ),
         "writes_performed": False,
     }

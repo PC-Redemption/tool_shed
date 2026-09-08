@@ -176,6 +176,8 @@ class ReleaseCohortTests(unittest.TestCase):
         )
         direct_cycle = registered["result"]["created_direct_cycle"]
         current = registered["status"]
+        self.assertEqual(current["projection"]["projection_source_revision"], current["revision"])
+        self.assertEqual(current["projection"]["projection_source_digest"], current["domain_digest"])
         self.assertEqual(current["active"][0]["base_tag"], "v1.0.0")
         self.assertEqual(len(current["active"][0]["candidates"]), 1)
         self.assertEqual(
