@@ -1,0 +1,62 @@
+# Campaign: Implement Project-Configurable Release Identity
+
+Status: completed
+Type: campaign
+Updated: 2026-09-08
+Next Action: implement the bounded policy contract and shared release-baseline evaluator
+Campaign ID: implement-project-configurable-release-identity
+Campaign Number: 175
+Outcome: Every release-cohort command uses one project-bound declarative release-identity policy and deterministic reachable baseline evaluator while preserving strict-SemVer defaults and exact Git tags.
+Primary Focus Areas: qualification-release
+Supporting Focus Areas: provider-portability, snapshot-delivery, workspace-safety
+Depends On: none
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work2
+Completion Gate: A validated repository policy supports v00.05.00 without installed-snapshot modification; absent configuration preserves strict SemVer; one evaluator governs status, register, freeze, record-release, and finalize; finalized-cohort continuity, reachable fallback selection, ambiguity refusal, actionable diagnostics, malformed policy, no eligible tag, multiple eligible tags, and unreachable tags pass focused tests; the configured development lane and strict Doctor pass; and the exact candidate is registered without publication.
+Completion Evidence: none
+Disposition: none
+Roadmap: repository-policy-release-identity-terminal-reconciliation
+Roadmap Revision: 1
+Roadmap Document: PRM-0045
+Milestone: M1-RELEASE-IDENTITY-POLICY
+Unlocks Gates: G1-RELEASE-POLICY-CONTRACT, G2-DETERMINISTIC-RELEASE-BASELINE
+
+## Request
+
+Add the smallest complete project-configurable release-identity contract. Extend the existing
+repository policy surface with strict SemVer as the unchanged default and one bounded fixed-width
+dotted-numeric profile sufficient for `v00.05.00`; reject arbitrary regex and executable hooks.
+
+Centralize tag eligibility, exact identity preservation, Git reachability, usable finalized-cohort
+predecessor preference, deterministic bootstrap fallback, normalized-alias ambiguity, and
+actionable rejection diagnostics. Route every release-cohort operation through that evaluator.
+Treat completed PRM-0044 as historical regression evidence and do not reopen or rewrite it.
+
+Stop after focused implementation proof, strict Doctor, configured development-lane verification,
+the exact Work2 candidate registration, and a durable Hybrid checkpoint. Do not publish, tag,
+release, close GitHub issues, or begin M2 in this campaign.
+
+## App Server Preparation Contract
+
+```json
+{
+  "campaign_id": "implement-project-configurable-release-identity",
+  "completion_evidence": "The project policy, shared evaluator, exact-tag and reachability rules, diagnostics, strict-default compatibility, fixed-width fixture, and every cohort command pass focused tests, strict Doctor, and the configured Work2 development lane; the exact candidate is registered without publication.",
+  "exact_resolution": "dispatch-time",
+  "execution_shape": "single-bounded-camp",
+  "inline_assets": "metadata-only",
+  "objective": "Make release identity validation project-configurable and deterministic without weakening exact-tag, ancestry, evidence, or snapshot-integrity gates.",
+  "schema_version": 1,
+  "source_freshness": "required",
+  "verification": "orchestrator-exactly-once"
+}
+```
+
+## Completion Check
+
+Verify the policy schema and loader, shared evaluator use by all five cohort operations,
+strict-SemVer and fixed-width fixtures, predecessor and topology behavior, rejected-tag diagnostics,
+ambiguity and stale-state refusal, snapshot integrity, focused tests, strict Doctor, development
+deployment/checks, Work2 registration, and checkpoint persistence.
