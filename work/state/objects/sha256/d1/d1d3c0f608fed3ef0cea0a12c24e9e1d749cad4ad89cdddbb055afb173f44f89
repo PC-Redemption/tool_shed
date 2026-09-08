@@ -1,0 +1,268 @@
+# Idea Brief: Reliable Deferred Work5 Backlog and Complete Release-Cohort Visibility
+
+Status: completed
+Type: idea-brief
+Updated: 2026-09-08
+Next Action: execute PRM-0044 through CAMP-0173 and CAMP-0174 to Work5
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces: MAP-0032
+
+## Current Synthesis
+
+### Idea
+
+Make the Hybrid release cohort a reliable deferred Work5 backlog. Work1 and Work2 may continue for
+weeks without forcing Work3, Work4, or Work5 merely to preserve visibility. Every authoritative
+release registration must be partitioned into one locally derived, privacy-safe operator group
+before any list is bounded or transmitted. Document-backed registrations retain their Idea → Map →
+PRM → Campaign rollups. Direct Work2 registrations remain document-free by design and appear in a
+controlled **Direct Work2 outcomes** group rather than disappearing or being mislabeled as broken
+planning.
+
+The same projection contract should feed local status, the hosted Overview release section, and
+the Work view's Awaiting Work5 filter. It is a read model over the existing authoritative cohort,
+not a second queue. Bare `ts:work5` / `ts:ship` continues to select the complete accumulated cohort
+and must still reject narrowing that would strand any registered owner or commit.
+
+### Promotion
+
+Formal readiness passed with all six gates accepted. MAP-0032 and PRM-0044 preserve those gates,
+and CAMP-0173 plus CAMP-0174 materialize the implementation and cross-lane release work.
+
+### Provisional Model
+
+- A **registration** is one authoritative cohort requirement binding one owning outcome to one
+  candidate commit. It is the audit cardinality and may legitimately exceed the commit count.
+- A **candidate commit** is one distinct Git commit across all selected registrations. The same
+  commit registered to multiple owners counts once here and once per owner under registrations.
+- An **owning chain** is one stage- and cohort-scoped connected component derived locally from
+  registered origins and a versioned allowlist of authoritative ownership/lineage relationships.
+  Unknown or invalid relationships never cause silent merging.
+- A **display group** is a privacy-safe projection row. A document chain normally maps one owning
+  chain to one row. Direct-only owning chains may be aggregated by cohort and stage into one
+  controlled Direct Work2 row whose `owning_chain_count` preserves the underlying cardinality.
+- If bounding would omit rows, the final available slot becomes a controlled **Additional release
+  obligations** aggregate. The complete partition is built first; bounding only changes detail,
+  never totals or whether registrations are represented.
+
+The local completeness invariant is stronger than a display count: assign every authoritative
+registration an internal ordinal, require the displayed-group membership sets to be pairwise
+disjoint, and require their union to equal the complete authoritative ordinal set. Report
+construction fails closed if any ordinal is absent or duplicated. The hosted contract then checks
+the privacy-safe arithmetic:
+
+`registration_count == sum(group.registration_count)`
+
+`owning_chain_count == sum(group.owning_chain_count)`
+
+`candidate_commit_count` remains a separately computed global distinct count because one commit
+may occur in more than one group and per-group distinct counts are not safely additive. The report
+also carries a controlled projection-contract version, source revision/digest, and completeness
+state. A truncation aggregate preserves the two additive equalities.
+
+### Why It Matters
+
+The current projection can report seven pending registrations while showing only one chain,
+because `_release_chain_projection()` discards every origin whose path does not begin with
+`sqlite/documents/`. Six direct Work2 obligations in the reproduced SMI cohort therefore remain
+authoritative for Work5 selection but vanish from the visible backlog. That mismatch makes a clean
+local cohort look untrustworthy and pressures the maintainer toward premature qualification and
+release cycles.
+
+The defect is architectural rather than merely cosmetic: a document inventory cannot be the
+enumeration source for obligations that deliberately require no document. Trust requires one
+projection boundary that starts from every cohort registration, classifies each registration, and
+only then enriches the document-backed subset with document lineage.
+
+### Desired Outcome
+
+A maintainer can accumulate verified Work2 candidates, dogfood them, and later perform one
+deliberate complete Work5 release with confidence that:
+
+- local authority, local human-readable status, and hosted reporting agree on registrations,
+  unique commits, owning chains, stages, and projection completeness;
+- every valid registration appears in exactly one document-chain, Direct Work2, or bounded
+  remainder group;
+- document-chain rollups remain useful while direct work remains free of forced Ideas, Maps, PRMs,
+  or Campaigns;
+- the Overview and Work/Awaiting Work5 surfaces use the same source projection and cannot disagree
+  through separate filtering logic;
+- privacy remains allowlist-based and the hosted service receives no paths, prompts, source bodies,
+  arbitrary outcomes, commit subjects, credentials, state tokens, or raw diagnostics;
+- pending delivery, cohort corruption, base-anchor defects, and post-release closure or
+  reconciliation debt are visibly distinct states; and
+- Work5 cohort selection and anti-narrowing behavior remain unchanged.
+
+## Constraints And Non-Goals
+
+- Hybrid SQLite and the release cohort remain authoritative; projections never authorize release
+  or mutate cohort membership.
+- Do not add a manual release queue, ledger, database, synthetic document, or campaign.
+- Keep the owner campaign queue separate from release obligations and do not reopen completed
+  campaigns merely because Work5 remains pending.
+- Direct work remains possible without any Idea, Map, PRM, Campaign, or other document.
+- Hosted reporting remains advisory, privacy-bounded, read-only, per-instance, and strictly
+  allowlisted. Independent instances are not merged into invented consensus.
+- Do not change Work1–Work5 endpoints, force routine Work4 pushes, or force early Work5 releases.
+- Do not make per-group unique-commit counts additive; cross-group commit sharing makes that
+  mathematically false.
+- Do not silently repair, rewrite, or rebase an active cohort's recorded base anchor.
+- Do not reinterpret a valid direct origin as an unlinked/error condition. Missing, corrupt, or
+  unknown origins are a separate cohort-health error class.
+- This Idea does not implement, publish, deploy, increment a version, create a release, or modify
+  downstream project workspaces.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Partition from all cohort registrations, then enrich document-backed components | Completeness is independent of document presence; preserves existing authority | Requires one shared grouping/projection helper rather than the current reporter-only filter | Preferred architecture |
+| Keep document chains and add one Direct Work2 aggregate per cohort/stage | Strong privacy, simple UI, preserves direct chain cardinality through `owning_chain_count` | Does not expose each direct outcome separately | Preferred first release |
+| Emit one pseudonymous row per direct owning chain | More granular recurrence/history without raw UUIDs | Stable digests add linkability and complexity and still reveal workload shape | Defer unless a demonstrated operator need outweighs privacy cost |
+| Label direct work “Unlinked release obligations” | Makes absence of documents obvious | Incorrectly implies direct work is defective and pressures artifact creation | Reject for valid direct work; reserve an error label for invalid origins |
+| Build groups from the bounded document inventory | Reuses current implementation | Cannot prove completeness and reproduces the defect | Reject |
+| Bound only after building the full partition, with a final remainder aggregate | Exact totals and complete representation survive payload limits | Some older groups lose individual detail | Preferred |
+| Increase or remove the 50-row limit | Preserves more detail | Payload/flooding risk and does not establish completeness | Reject as the primary fix |
+| Add report-schema fields in a new schema while retaining old readers | Enforceable new invariant with honest legacy behavior | Requires client/server/UI qualification across mixed versions | Preferred compatibility path |
+| Rewrite stored old reports into the new shape | Makes storage superficially uniform | Invents detail that old reporters never supplied | Reject |
+| Accept fixed-width numeric release tags while preserving exact spelling | Supports existing tags such as `v00.04.11`; numeric ordering still works | These are not strict SemVer spellings; normalized duplicates can be ambiguous | Preferred direction, guarded by an ambiguity check/policy |
+| Append an exact base-anchor correction record | Preserves audit history and permits guarded recovery | Requires resolver, lifecycle, and freeze-invalidation rules | Preferred over updating prior evidence in place |
+
+## Open Questions
+
+- Which relationship kinds constitute one owning chain in the first version? The allowlist must
+  connect genuine document/outcome lineage without merging merely related work or allowing an
+  unknown relation type to alter release grouping.
+- Should direct-only components always aggregate into one row per cohort/stage, or is a controlled
+  sub-classification (for example direct work versus release extension) useful enough to justify
+  another enum?
+- Should the Overview headline call `registration_count` “release obligations” while retaining
+  the exact technical term in details, to reduce confusion with unique commits?
+- Should a new schema expose both `awaiting_registration_count` and
+  `released_pending_reconciliation_registration_count`, or rely on stage-partitioned group sums?
+- How should a compact `ts: status` cap its rows while still offering a complete human-readable
+  local audit—an automatic remainder row plus `ts: status release`, pagination, or both?
+- What is the approved workspace policy for non-strict-SemVer fixed-width tags? If both
+  `v0.4.11` and `v00.04.11` are reachable and normalize to the same numeric tuple, should the
+  resolver fail for an explicit choice rather than select lexically?
+- May a base correction apply only while a cohort is `working`, with frozen cohorts requiring an
+  explicit recovery/re-freeze route and released cohorts remaining immutable? This is the safest
+  provisional boundary but needs PRM review.
+- Does an incorrect historical root anchor warrant a health finding when every candidate remains
+  reachable, or only when it changes the content range or qualification subject?
+
+## Decisions
+
+- Start projection from the complete authoritative registration set. Document presence is
+  enrichment/classification input, never an inclusion filter.
+- Use **Direct Work2 outcomes** as the controlled operator label for valid document-free origins.
+  Use a distinct error state for unknown, missing, corrupt, or unsupported origins.
+- Preserve three different top-level counts: registrations, globally unique candidate commits,
+  and distinct owning chains. Also distinguish display-row count from owning-chain count whenever
+  direct or overflow aggregation occurs.
+- Derive Overview and Work/Awaiting Work5 from the same reported group list. The Work view should
+  render direct/overflow release-obligation rows separately from document snapshots rather than
+  fabricating documents solely to satisfy its current artifact-only filter.
+- Build and validate the complete partition before applying bounds. A final controlled remainder
+  group keeps all registrations visibly accounted for.
+- Treat a healthy `working` or `frozen` cohort as pending release, not an error. Treat invalid
+  membership/reachability, missing base evidence, multiple mutable cohorts, or incomplete frozen
+  state as cohort errors. Treat `released-pending-reconciliation` as closure/reconciliation debt,
+  not pending publication.
+- Preserve old report schemas and stored reports as versioned historical observations. Never claim
+  complete grouping for a schema that did not prove the partition invariant.
+- Keep Work5 selection based on authoritative cohort membership and retain strict refusal of any
+  narrowed selection that strands registrations.
+
+## Don't Forget
+
+- Current code confirms that `SEMVER_TAG` rejects fixed-width segments, so `v00.04.11` is skipped
+  and `_base_tag()` can fall back to `root:<sha>` even when that tag is reachable. The hosted
+  version parser already compares digit-only segments numerically, so tag parsing is inconsistent
+  across surfaces.
+- Base resolution must compare numeric versions but preserve the exact Git tag. Normalized
+  duplicates, missing tag objects, non-ancestor tags, and malformed policy must fail visibly.
+- A guarded base-repair design should have a read-only preview plus exact apply, bind the cohort
+  revision/state token and old/new tag commits, prove the new base is an ancestor of HEAD and every
+  candidate, and append correction evidence instead of editing history. Preview never writes.
+- A working-cohort correction must not change candidate membership. A frozen correction changes
+  the qualification subject and therefore cannot silently preserve frozen evidence. A released or
+  terminal cohort should remain immutable except for an explicit recorded diagnostic/recovery
+  process.
+- For report schemas before chain projection, show the authoritative legacy pending count with
+  “grouping unavailable,” not “no chains.” For existing chain schemas that lack the new invariant,
+  show “legacy/unverified grouping”; if their totals contradict one another, show an incomplete
+  projection warning rather than trusting the smaller visible list.
+- A new reporter schema should be additive and strictly allowlisted; the server should continue to
+  accept old schemas, retain each instance's reported schema, and avoid rewriting stored reports.
+  Mixed-version project views must name the source instance/schema and never merge their totals.
+- The local `ts: status` / `ts: queue` capsule should show cohort lifecycle, exact base tag and
+  resolved commit, projection completeness, registrations, unique commits, owning chains, stage
+  counts, each controlled group, and cohort-health or reconciliation findings in separate blocks.
+  It should provide a complete human-readable release audit path without requiring raw JSON.
+
+## Compatibility And Migration Considerations
+
+1. Introduce the new group shape under the next report schema rather than changing schema 5–9
+   semantics in place. Keep legacy validation and presentation paths.
+2. Compute new projections entirely from existing cohort, cycle, artifact, relationship, and
+   document authority. No data migration or new release ledger should be required.
+3. Treat legacy stored reports as observations with `grouping unavailable` or
+   `legacy/unverified`; do not infer direct groups retroactively.
+4. Upgrade local reporter and hosted contract/UI together, then qualify mixed old/new clients and
+   a newer report followed by a stale older-instance report. Per-instance provenance remains
+   visible.
+5. Add base-tag parsing/policy independently from any cohort correction. Existing incorrect
+   anchors remain explicit until a guarded preview/apply flow is approved and exercised.
+
+## Representative Acceptance Scenario For Later Planning
+
+A fixture has seven authoritative registrations over six unique commits: six registrations owned
+by direct outcome capsules, one document-backed registration, multiple commits under one owner,
+and one commit registered to multiple owners. It must prove all of the following:
+
+- the authoritative cohort still contains seven registrations and Work5 selects all seven;
+- the projection reports six globally unique candidate commits;
+- every registration ordinal appears in exactly one document-chain, Direct Work2, or remainder
+  group, with no duplicates, and group registration counts sum to seven;
+- distinct owning-chain and displayed-group counts retain their separate meanings;
+- the document-backed component retains its Idea/Map/PRM/Campaign rollup where present;
+- direct outcomes are visibly represented without any path, origin UUID, prompt, source body,
+  arbitrary outcome or summary, commit subject, state token, or raw diagnostic;
+- Overview, Work/Awaiting Work5, reporter payload, hosted validation, and local human status show
+  consistent totals and stages;
+- truncation preserves complete totals and adds a remainder group rather than dropping work;
+- old schemas and mixed-version instances display honest degraded coverage instead of false zero;
+- fixed-width tag resolution, normalized-tag ambiguity, guarded base-repair preview, stale-token
+  refusal, lifecycle restrictions, and append-only correction evidence are covered; and
+- bare Work5 selection and anti-narrowing tests remain unchanged and passing.
+
+Additional regression coverage should include a property-style partition test across randomized
+owner/commit multiplicity, privacy allowlist rejection, document/direct mixed components, invalid
+origin classification, more than 50 display rows, released-pending-reconciliation separation, and
+UI parity between Overview, Work, and local status.
+
+## Exploration Log
+
+### 2026-09-08
+
+- Idea Brief created.
+- Confirmed that adjacent completed Ideas cover dashboard release health and general outcome-loop
+  management but not complete document-free release-registration visibility; created this focused
+  follow-on rather than reopening delivered scope.
+- Confirmed the immediate filter defect in `_release_chain_projection()`: only
+  `sqlite/documents/<visible-id>` origins enter the registration list, and the existing regression
+  test explicitly treats outcome-capsule origins as non-operator-facing.
+- Confirmed the fixed-width tag defect: the current release-tag regular expression rejects leading
+  zeros, while `_base_tag()` otherwise selects the numerically greatest reachable accepted tag and
+  falls back to the repository root.
+- Developed the provisional partition, count, privacy, bounded-list, UI parity, legacy-schema, and
+  guarded base-correction directions above. Kept the Idea in `exploring` because the relationship
+  allowlist, direct aggregation granularity, fixed-width tag policy, and frozen-cohort correction
+  boundary remain material design choices for readiness review.
+- Owner selected `ts: prm idea IDEA-0024` followed by `ts:ship`; the Idea entered the Plan Cycle
+  with those unresolved choices preserved as explicit readiness gates rather than silently fixed.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

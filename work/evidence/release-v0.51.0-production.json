@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-production-release-evidence",
+  "release": {
+    "version": "0.51.0",
+    "tag": "v0.51.0",
+    "content_commit": "df08cbd735850800e6155f2cfa39282461bf678b",
+    "provenance_commit": "f5b6e2ae22a6a7cc40f3e8f50b5da5152f730d08",
+    "published_at": "2026-09-08T15:58:30Z",
+    "url": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.51.0"
+  },
+  "qualification": {
+    "local_release_validation": "634 of 634 tests passed",
+    "validate_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34246996449",
+    "validate_jobs": "33 of 33 passed; one Windows current-Python timing shard passed on failed-job rerun against the unchanged frozen commit",
+    "publish_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34248146678",
+    "result": "passed"
+  },
+  "web_production": {
+    "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com",
+    "image": "tool-shed-dashboard:v0.51.0",
+    "image_sha256": "4a4944ccb7c6ffa383e890ed6829bc520ea0cdc8dfe1ab17428a5dc551fb77cb",
+    "database_backup": "/home/jon/docker/ts.rookaro.com/backups/dashboard-daily-20260908T160220Z.dump.age",
+    "rollback_bundle": "/home/jon/docker/ts.rookaro.com/release-backups/pre-v0.51.0-20260908T160324Z",
+    "public_dashboard_status": 302,
+    "public_docs_status": 200,
+    "router_identity": "ts.rookaro.com",
+    "production_readiness": "healthy",
+    "result": "passed"
+  },
+  "linux_production": {
+    "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed",
+    "installed_version": "0.51.0",
+    "content_commit": "df08cbd735850800e6155f2cfa39282461bf678b",
+    "backup": "/home/jon/dev/ts_linux_test_bed/tool_shed.backup-20260908T160629Z.tar",
+    "updater_validation": "attested-focused-smoke",
+    "work_preserved": true,
+    "result": "passed"
+  },
+  "windows_production": {
+    "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed",
+    "installed_version": "0.51.0",
+    "content_commit": "df08cbd735850800e6155f2cfa39282461bf678b",
+    "backup": "E:\\dev\\ts_windows_test_bed\\tool_shed.backup-20260908T160731Z.tar",
+    "updater_validation": "attested-focused-smoke",
+    "work_preserved": true,
+    "result": "passed"
+  },
+  "release_review": {
+    "reviewed_open_issues": true,
+    "completed_issue_matches": [],
+    "remaining_gap_issue": "https://github.com/PC-Redemption/tool_shed/issues/62",
+    "remaining_gap": "A fixed one-second lifecycle timing ceiling can fail transiently on a shared Windows current-Python runner even when all semantic checks pass.",
+    "release_blocking": false,
+    "result": "passed"
+  },
+  "result": "passed"
+}

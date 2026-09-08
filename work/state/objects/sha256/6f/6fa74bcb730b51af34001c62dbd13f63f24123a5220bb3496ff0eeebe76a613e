@@ -1,0 +1,95 @@
+# Program Roadmap: Reliable Deferred Work5 Backlog
+
+Status: completed
+Type: program-roadmap
+Updated: 2026-09-08
+Next Action: execute M1 through its Work2 implementation campaign
+Roadmap ID: reliable-deferred-work5-backlog
+Roadmap Revision: 1
+Source Idea: IDEA-0024
+Source Project Map: MAP-0032
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 3
+Reviewed Body SHA256: 77bd922c7eb707d37e4d85140325a8f7a45b3088546c01bc0446682bafbd958f
+
+## Program Outcome
+
+Every valid Work2 release obligation remains authoritative and visibly accounted for during long
+deferred-development periods. Local status and hosted views agree on complete privacy-safe groups
+and exact counts, fixed-width release anchors resolve safely, and one deliberate Work5 release
+selects, qualifies, publishes, and reconciles the whole accumulated cohort.
+
+## M1-COMPLETE-RELEASE-BACKLOG-CANDIDATE — Build the trustworthy projection
+
+Status: ready
+Required Endpoint: Work2
+Depends on: none
+
+Outcome: Centralize registration-first grouping, exact partition/count checks, controlled direct and
+overflow groups, the next strictly allowlisted report schema with legacy degradation, shared
+Overview/Work/local-status presentation, fixed-width tag resolution, and guarded working-cohort
+base correction. Prove the representative topology and register the exact candidate without
+publication.
+
+Gates:
+
+- `G1-AUTHORITATIVE-REGISTRATION-PARTITION`
+- `G2-COUNT-AND-PRIVACY-CONTRACT`
+- `G3-OPERATOR-SURFACE-PARITY`
+- `G4-BASE-ANCHOR-RESOLUTION-AND-RECOVERY`
+- `G5-RELEASE-SELECTION-AND-STATE-SEPARATION`
+
+Candidate campaign: `build-complete-release-backlog-visibility`.
+
+## M2-CROSS-LANE-WORK5-RELEASE — Qualify and ship the complete backlog
+
+Status: waiting
+Required Endpoint: Work5
+Depends on: M1-COMPLETE-RELEASE-BACKLOG-CANDIDATE
+
+Outcome: Reconfirm all behavior and privacy gates on the frozen candidate, satisfy the configured
+web, Windows, and Linux development and production lanes, require exact-SHA CI, publish one
+traceable Tool Shed release, verify hosted convergence and installed-client synchronization, and
+reconcile only the registered chain.
+
+Gates:
+
+- Reconfirm `G1` through `G5` on the frozen candidate.
+- `G6-CROSS-LANE-RELEASE-CLOSURE`
+
+Candidate campaign: `qualify-and-release-complete-work5-backlog`.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G1-AUTHORITATIVE-REGISTRATION-PARTITION | M1 and M2 regression |
+| G2-COUNT-AND-PRIVACY-CONTRACT | M1 and M2 regression |
+| G3-OPERATOR-SURFACE-PARITY | M1 and M2 regression |
+| G4-BASE-ANCHOR-RESOLUTION-AND-RECOVERY | M1 and M2 regression |
+| G5-RELEASE-SELECTION-AND-STATE-SEPARATION | M1 and M2 regression |
+| G6-CROSS-LANE-RELEASE-CLOSURE | M2 |
+
+Transfer count: 6 reviewed gates; 6 mapped gates; 0 dropped.
+
+## Recovery Contract
+
+- Missing or duplicated registration assignment fails report construction and blocks release.
+- Unknown origins remain cohort errors; valid direct origins remain controlled Direct Work2 work.
+- Legacy reports show unavailable or unverified grouping rather than a false empty backlog.
+- Normalized-equivalent release tags fail for explicit resolution.
+- Base correction is preview-only until an exact working-cohort manifest is applied; frozen and
+  later cohorts refuse correction.
+- Any failed local, CI, platform, publication, production, dashboard, or client-sync check leaves
+  the governing outcome and cohort open.
+
+## Verification Strategy
+
+- Unit and property-style tests for partition completeness, overlapping commits, direct/document
+  mixtures, overflow aggregation, schema compatibility, privacy allowlists, and state separation.
+- Focused reporter, hosted contract/view, local status, release-cohort, tag, repair, and Work5
+  selection tests.
+- Strict Doctor and full release-profile validation.
+- Configured development and production web, Windows, and Linux lane evidence.
+- Exact content-SHA GitHub CI, provenance/tag/Release verification, hosted convergence, and exact
+  installed-client source parity.
