@@ -16,6 +16,7 @@ import sqlite3
 import subprocess
 import sys
 import uuid
+from collections import deque
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Sequence
@@ -45,7 +46,12 @@ TERMINAL_DISPOSITIONS = {
     "satisfied-with-approved-change",
     "not-applicable",
 }
-SEMVER_TAG = re.compile(r"^v([0-9]+)\.([0-9]+)\.([0-9]+)$")
+POLICY_FILE = ".tool-shed-policy.json"
+STRICT_SEMVER = re.compile(
+    r"^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$"
+)
+FIXED_WIDTH_POLICY = "fixed-width-dotted-numeric"
+STRICT_POLICY = "strict-semver"
 
 
 class ReleaseCohortError(RuntimeError):
@@ -92,47 +98,248 @@ def _is_ancestor(workspace: Path, older: str, newer: str) -> bool:
     return result.returncode == 0
 
 
-def _base_tag(workspace: Path, commit: str) -> str:
-    candidates: dict[tuple[int, int, int], list[str]] = {}
-    for tag in _git(workspace, "tag", "--merged", commit, "--list", "v[0-9]*").splitlines():
-        match = SEMVER_TAG.fullmatch(tag.strip())
-        if match:
-            candidates.setdefault(tuple(int(value) for value in match.groups()), []).append(tag.strip())
-    if candidates:
-        version = max(candidates)
-        exact_tags = sorted(set(candidates[version]))
-        if len(exact_tags) != 1:
+def _release_identity_policy(workspace: Path) -> dict[str, Any]:
+    """Load one bounded project-local release identity policy."""
+    path = workspace / POLICY_FILE
+    if not path.exists():
+        return {
+            "schema_version": 1,
+            "policy": STRICT_POLICY,
+            "prefix": "v",
+            "segment_widths": None,
+            "source": "default",
+            "policy_sha256": None,
+        }
+    if not path.is_file():
+        raise ReleaseCohortError(f"{POLICY_FILE} is not a regular file")
+    if path.is_symlink() or path.stat().st_size > 65536:
+        raise ReleaseCohortError(
+            f"{POLICY_FILE} must be a project-root regular file no larger than 65536 bytes"
+        )
+    try:
+        raw_bytes = path.read_bytes()
+        document = json.loads(raw_bytes)
+    except (OSError, json.JSONDecodeError) as error:
+        raise ReleaseCohortError(f"invalid {POLICY_FILE}: {error}") from error
+    if not isinstance(document, dict) or document.get("schema_version") != 1:
+        raise ReleaseCohortError(f"{POLICY_FILE} must be a schema-version 1 object")
+    if "release_identity" not in document:
+        return {
+            "schema_version": 1,
+            "policy": STRICT_POLICY,
+            "prefix": "v",
+            "segment_widths": None,
+            "source": "default",
+            "policy_sha256": None,
+        }
+    raw = document.get("release_identity")
+    if not isinstance(raw, dict):
+        raise ReleaseCohortError(
+            f"{POLICY_FILE}.release_identity must be an object when the policy file exists"
+        )
+    policy = raw.get("policy")
+    if raw.get("schema_version") != 1:
+        raise ReleaseCohortError("release_identity.schema_version must be 1")
+    if policy == STRICT_POLICY:
+        unexpected = sorted(set(raw) - {"schema_version", "policy"})
+        if unexpected:
             raise ReleaseCohortError(
-                "release tags normalize to the same version: " + ", ".join(exact_tags)
+                "strict-semver release_identity has unsupported fields: "
+                + ", ".join(unexpected)
             )
-        return exact_tags[0]
-    roots = _git(workspace, "rev-list", "--max-parents=0", commit).splitlines()
-    if not roots:
-        raise ReleaseCohortError("repository has no reachable root commit")
-    return f"root:{roots[0]}"
+        prefix, widths = "v", None
+    elif policy == FIXED_WIDTH_POLICY:
+        unexpected = sorted(
+            set(raw) - {"schema_version", "policy", "prefix", "segment_widths"}
+        )
+        if unexpected:
+            raise ReleaseCohortError(
+                "fixed-width release_identity has unsupported fields: "
+                + ", ".join(unexpected)
+            )
+        prefix = raw.get("prefix")
+        widths = raw.get("segment_widths")
+        if (
+            not isinstance(prefix, str)
+            or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,31}", prefix)
+            or ".." in prefix
+            or prefix.endswith(".")
+        ):
+            raise ReleaseCohortError(
+                "fixed-width release_identity.prefix must be a safe 1-32 character tag prefix"
+            )
+        if (
+            not isinstance(widths, list)
+            or len(widths) != 3
+            or any(isinstance(value, bool) or not isinstance(value, int) for value in widths)
+            or any(value < 1 or value > 12 for value in widths)
+        ):
+            raise ReleaseCohortError(
+                "fixed-width release_identity.segment_widths must contain three integers from 1 to 12"
+            )
+    else:
+        raise ReleaseCohortError(
+            "release_identity.policy must be strict-semver or fixed-width-dotted-numeric"
+        )
+    return {
+        "schema_version": 1,
+        "policy": policy,
+        "prefix": prefix,
+        "segment_widths": widths,
+        "source": POLICY_FILE,
+        "policy_sha256": hashlib.sha256(raw_bytes).hexdigest(),
+    }
 
 
-def _semver_tuple(tag: str) -> tuple[int, int, int]:
-    match = SEMVER_TAG.fullmatch(tag)
-    if not match:
-        raise ReleaseCohortError("release tag must contain three digit-only version segments")
-    return tuple(int(value) for value in match.groups())
+def _tag_rejection(policy: dict[str, Any], tag: str) -> str | None:
+    if policy["policy"] == STRICT_POLICY:
+        if STRICT_SEMVER.fullmatch(tag):
+            return None
+        return "not a stable vMAJOR.MINOR.PATCH tag with canonical non-leading-zero segments"
+    widths = policy["segment_widths"]
+    pattern = re.compile(
+        "^"
+        + re.escape(str(policy["prefix"]))
+        + r"([0-9]{" + str(widths[0]) + r"})\."
+        + r"([0-9]{" + str(widths[1]) + r"})\."
+        + r"([0-9]{" + str(widths[2]) + r"})$"
+    )
+    if pattern.fullmatch(tag):
+        return None
+    return (
+        f"does not match prefix {policy['prefix']!r} with fixed segment widths "
+        + ".".join(str(value) for value in widths)
+    )
+
+
+def _eligible_tag_records(
+    workspace: Path, policy: dict[str, Any], relevant_commit: str
+) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
+    parents: dict[str, list[str]] = {}
+    for line in _git(workspace, "rev-list", "--parents", relevant_commit).splitlines():
+        values = line.split()
+        parents[values[0]] = values[1:]
+    distances = {relevant_commit: 0}
+    pending = deque([relevant_commit])
+    while pending:
+        child = pending.popleft()
+        for parent in parents.get(child, []):
+            distance = distances[child] + 1
+            if parent not in distances or distance < distances[parent]:
+                distances[parent] = distance
+                pending.append(parent)
+    eligible: list[dict[str, Any]] = []
+    rejected: list[dict[str, str]] = []
+    for tag in sorted(set(_git(workspace, "tag", "--list").splitlines())):
+        reason = _tag_rejection(policy, tag)
+        if reason:
+            rejected.append({"tag": tag, "reason": reason})
+            continue
+        try:
+            commit = _commit(workspace, f"refs/tags/{tag}")
+        except ReleaseCohortError:
+            rejected.append(
+                {"tag": tag, "reason": "eligible identity does not resolve to a Git commit"}
+            )
+            continue
+        if commit not in distances:
+            rejected.append(
+                {"tag": tag, "reason": "eligible identity is not reachable from the relevant commit"}
+            )
+            continue
+        eligible.append({"tag": tag, "commit": commit, "distance": distances[commit]})
+    return eligible, rejected
+
+
+def _require_single_identity_on_commit(
+    records: list[dict[str, Any]], selected: dict[str, Any]
+) -> None:
+    aliases = sorted(
+        item["tag"] for item in records if item["commit"] == selected["commit"]
+    )
+    if len(aliases) != 1:
+        raise ReleaseCohortError(
+            "multiple eligible release identities select the same commit: " + ", ".join(aliases)
+        )
+
+
+def _release_identity_status(
+    workspace: Path, relevant_commit: str, preferred_tags: list[str]
+) -> dict[str, Any]:
+    relevant_commit = _commit(workspace, relevant_commit)
+    policy = _release_identity_policy(workspace)
+    eligible, rejected = _eligible_tag_records(workspace, policy, relevant_commit)
+    visible = sorted(set(_git(workspace, "tag", "--list").splitlines()))
+    visible_set = set(visible)
+    by_tag = {item["tag"]: item for item in eligible}
+    diagnostics: list[str] = []
+    selected: dict[str, Any] | None = None
+    selection_source = "topology-fallback"
+    for preferred in dict.fromkeys(preferred_tags):
+        candidate = by_tag.get(preferred)
+        if candidate is not None:
+            selected = candidate
+            selection_source = "finalized-cohort"
+            break
+        if preferred not in visible_set:
+            diagnostics.append(f"finalized cohort tag {preferred!r} no longer exists")
+        else:
+            reason = _tag_rejection(policy, preferred)
+            diagnostics.append(
+                f"finalized cohort tag {preferred!r} is unusable: "
+                + (reason or "not reachable from the relevant commit")
+            )
+    if selected is None and eligible:
+        selected = min(eligible, key=lambda item: (item["distance"], item["commit"]))
+    if selected is not None:
+        _require_single_identity_on_commit(eligible, selected)
+        baseline_reference = str(selected["tag"])
+        selected_tag = str(selected["tag"])
+        selected_commit = str(selected["commit"])
+        distance = int(selected["distance"])
+    else:
+        roots = sorted(_git(workspace, "rev-list", "--max-parents=0", relevant_commit).splitlines())
+        if not roots:
+            raise ReleaseCohortError("repository has no reachable root commit")
+        baseline_reference = f"root:{roots[0]}"
+        selected_tag = None
+        selected_commit = roots[0]
+        distance = int(_git(workspace, "rev-list", "--count", f"{roots[0]}..{relevant_commit}"))
+        selection_source = "repository-root"
+        diagnostics.append("no eligible reachable release tag; using the reachable repository root")
+    return {
+        "policy": policy,
+        "relevant_commit": relevant_commit,
+        "selected_tag": selected_tag,
+        "selected_commit": selected_commit,
+        "baseline_reference": baseline_reference,
+        "selection_source": selection_source,
+        "topology_distance": distance,
+        "eligible_tags": [item["tag"] for item in eligible],
+        "rejected_tags": rejected,
+        "diagnostics": diagnostics,
+        "tag_state_digest": _sha(
+            _git(workspace, "show-ref", "--tags", "-d", check=False).splitlines()
+        ),
+    }
+
+
+def _base_tag(workspace: Path, commit: str) -> str:
+    return str(_release_identity_status(workspace, commit, [])["baseline_reference"])
 
 
 def _require_unambiguous_tag(workspace: Path, tag: str) -> str:
-    version = _semver_tuple(tag)
-    aliases = sorted(
-        candidate
-        for candidate in _git(workspace, "tag", "--list", "v[0-9]*").splitlines()
-        if SEMVER_TAG.fullmatch(candidate) and _semver_tuple(candidate) == version
-    )
-    if tag not in aliases:
+    policy = _release_identity_policy(workspace)
+    reason = _tag_rejection(policy, tag)
+    if reason:
+        raise ReleaseCohortError(f"release tag is ineligible under {policy['policy']}: {reason}")
+    if tag not in set(_git(workspace, "tag", "--list").splitlines()):
         raise ReleaseCohortError(f"release tag does not exist: {tag}")
-    if len(aliases) != 1:
-        raise ReleaseCohortError(
-            "release tags normalize to the same version: " + ", ".join(aliases)
-        )
-    return _commit(workspace, f"refs/tags/{tag}")
+    commit = _commit(workspace, f"refs/tags/{tag}")
+    eligible, _ = _eligible_tag_records(workspace, policy, commit)
+    selected = next(item for item in eligible if item["tag"] == tag)
+    _require_single_identity_on_commit(eligible, selected)
+    return commit
 
 
 def _base_commit(workspace: Path, reference: str) -> str:
@@ -302,6 +509,17 @@ def _cohort_capsule(connection: sqlite3.Connection, row: sqlite3.Row) -> dict[st
     }
 
 
+def _finalized_release_tags(connection: sqlite3.Connection) -> list[str]:
+    rows = connection.execute(
+        "SELECT e.target_identity FROM cycle c JOIN evidence_reference e ON e.cycle_id=c.id "
+        "WHERE c.kind=? AND c.lifecycle_state='terminal' AND e.kind='release-publication' "
+        "AND e.target_identity IS NOT NULL "
+        "ORDER BY c.closed_at DESC, e.collected_at DESC, e.id DESC",
+        (COHORT_KIND,),
+    ).fetchall()
+    return list(dict.fromkeys(str(row["target_identity"]) for row in rows))
+
+
 def status(workspace: Path) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
     audit = hybrid_state.audit(workspace)
@@ -318,7 +536,9 @@ def status(workspace: Path) -> dict[str, Any]:
             (COHORT_KIND,),
         ).fetchall()
         terminal = [_cohort_capsule(connection, row) for row in terminal_rows]
+        finalized_release_tags = _finalized_release_tags(connection)
         projection_inventory = _projection_inventory(connection)
+    release_identity = _release_identity_status(workspace, head, finalized_release_tags)
     findings: list[str] = []
     mutable = [item for item in active if item["lifecycle_state"] in MUTABLE_STATES]
     if len(mutable) > 1:
@@ -356,7 +576,8 @@ def status(workspace: Path) -> dict[str, Any]:
         "revision": audit["current_revision"],
         "domain_digest": audit["domain_digest"],
         "head": head,
-        "current_base_tag": _base_tag(workspace, head),
+        "current_base_tag": release_identity["baseline_reference"],
+        "release_identity": release_identity,
         "active": active,
         "recent_terminal": terminal,
         "findings": findings,
@@ -416,8 +637,18 @@ def preview_base_repair(
         raise ReleaseCohortError("working cohort has no existing base evidence to correct")
     if current_tag == tag:
         raise ReleaseCohortError("proposed base tag already is the effective cohort base")
-    if not current_tag.startswith("root:") and _semver_tuple(tag) <= _semver_tuple(current_tag):
-        raise ReleaseCohortError("corrected base tag must be numerically newer than the effective base")
+    current_commit = (
+        _commit(workspace, current_tag.removeprefix("root:"))
+        if current_tag.startswith("root:")
+        else _commit(workspace, f"refs/tags/{current_tag}")
+    )
+    if (
+        not _is_ancestor(workspace, current_commit, proposed_commit)
+        or current_commit == proposed_commit
+    ):
+        raise ReleaseCohortError(
+            "corrected base tag must identify a strictly newer reachable commit than the effective base"
+        )
     if not _is_ancestor(workspace, proposed_commit, snapshot["head"]):
         raise ReleaseCohortError("proposed base tag is not an ancestor of HEAD")
     for candidate in cohort["candidates"]:
@@ -612,11 +843,23 @@ def register(
         raise ReleaseCohortError("register requires origin cycle(s) or one direct accepted outcome")
     if accepted_outcome and not (summary or "").strip():
         raise ReleaseCohortError("direct Work2 registration requires --summary")
+    with contextlib.closing(
+        hybrid_state.connect(hybrid_state.database_path(workspace), writable=False)
+    ) as connection:
+        candidate_release_identity = _release_identity_status(
+            workspace, commit, _finalized_release_tags(connection)
+        )
 
     mutable = [
         item for item in snapshot["active"]
         if item["lifecycle_state"] in MUTABLE_STATES
     ]
+    if (
+        len(mutable) == 1
+        and mutable[0].get("base_commit")
+        and not _is_ancestor(workspace, str(mutable[0]["base_commit"]), commit)
+    ):
+        raise ReleaseCohortError("release cohort base is not reachable from the Work2 commit")
     if origin_cycles and len(mutable) == 1 and mutable[0]["lifecycle_state"] == "working":
         cohort_id = mutable[0]["cycle_id"]
         project_id = load_project_identity(workspace)["project_id"]
@@ -662,6 +905,12 @@ def register(
     def write(connection: sqlite3.Connection, revision: int) -> dict[str, Any]:
         if hybrid_state.meta_row(connection)["current_revision"] != snapshot["revision"]:
             raise ReleaseCohortError("release cohort revision changed before registration")
+        if _release_identity_status(
+            workspace, commit, _finalized_release_tags(connection)
+        ) != candidate_release_identity:
+            raise ReleaseCohortError(
+                "release identity policy or Git tag state changed before registration"
+            )
         rows = _active_cohort_rows(connection)
         mutable_rows = [row for row in rows if row["lifecycle_state"] in MUTABLE_STATES]
         if len(mutable_rows) > 1:
@@ -679,7 +928,7 @@ def register(
                 kind=COHORT_KIND,
                 accepted_outcome=(
                     f"Release and production-verify every registered Work2 candidate after "
-                    f"{snapshot['current_base_tag']}."
+                    f"{candidate_release_identity['baseline_reference']}."
                 ),
                 summary="Accumulated unreleased Work2 candidate cohort.",
                 path_prefix="release-cohorts",
@@ -687,7 +936,8 @@ def register(
             connection.execute(
                 "INSERT INTO evidence_reference VALUES (?, ?, 'release-base-tag', ?, NULL, ?, ?)",
                 (
-                    hybrid_state.random_uuid(), cohort_id, snapshot["current_base_tag"],
+                    hybrid_state.random_uuid(), cohort_id,
+                    candidate_release_identity["baseline_reference"],
                     cohort_id, hybrid_state.now(),
                 ),
             )

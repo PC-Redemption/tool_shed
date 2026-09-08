@@ -56,8 +56,43 @@ python3 scripts/release_cohort.py --workspace . register \
 For direct work without an existing owner, replace `--origin-cycle` with `--accepted-outcome` and
 `--summary`. Exact repeated registration does not advance the database revision.
 
-Numeric fixed-width tags such as `v00.04.11` are valid anchors and retain their exact spelling.
-Ordering is numeric; two exact tags that normalize to the same three-part version fail closed.
+Release identity is project-configurable without modifying the installed Tool Shed snapshot. With
+no `release_identity` configuration, the default accepts only stable canonical
+`vMAJOR.MINOR.PATCH` tags; numeric segments with leading zeroes are not strict SemVer. A repository
+that uses fixed-width dotted numeric tags declares the bounded alternative in its root
+`.tool-shed-policy.json`:
+
+```json
+{
+  "schema_version": 1,
+  "release_identity": {
+    "schema_version": 1,
+    "policy": "fixed-width-dotted-numeric",
+    "prefix": "v",
+    "segment_widths": [2, 2, 2]
+  }
+}
+```
+
+That example accepts and preserves an exact tag such as `v00.05.00`. Prefixes are limited to 32
+safe literal characters and each of the three widths must be from 1 through 12. Arbitrary regular
+expressions, code hooks, and extra policy fields are rejected. A policy file used for unrelated
+Tool Shed settings may omit `release_identity` and retain the strict default.
+
+`status`, registration, freeze, publication recording, finalization, and base repair all evaluate
+the same current project policy. Status reports the active policy, exact selected tag and commit,
+selection source, and each visible tag rejected for formatting or reachability. The most recent
+usable finalized-cohort tag wins to preserve release continuity. Otherwise, reachable eligible tag
+commits are ranked by shortest parent-edge distance through the relevant commit's Git ancestry and
+then commit SHA. This is a topology rule, not version-number ordering. Multiple eligible release
+identities on the selected commit fail closed.
+
+The active policy projection (including configured policy bytes) and complete Git tag-ref state
+participate in the release-cohort state token. A relevant policy edit, tag creation, deletion, or
+move therefore makes an earlier mutation token stale. Registration repeats the evaluator against
+the exact candidate commit inside the guarded transaction, so a tag reachable only from a newer
+`HEAD` cannot become that candidate's base.
+
 If a working cohort recorded the wrong base, create a read-only state-bound plan and then apply
 that exact manifest:
 
@@ -69,8 +104,9 @@ python3 scripts/release_cohort.py --workspace . repair-base \
   --project-binding <hybrid-state-binding>
 ```
 
-The apply step revalidates the cohort revision, tag commit, ancestry, candidate membership, and
-normalized-tag uniqueness, then appends correction evidence without replacing the original base.
+The apply step revalidates the cohort revision, tag commit, policy, strict forward ancestry,
+candidate membership, and selected-commit uniqueness, then appends correction evidence without
+replacing the original base.
 Frozen, released, and terminal cohorts cannot use this repair path.
 
 When a pre-cohort Work2 result was already given a terminal local verdict, registration does not
@@ -87,7 +123,7 @@ python3 scripts/release_cohort.py --workspace . freeze \
   --content-commit <sha>
 python3 scripts/release_cohort.py --workspace . record-release \
   --expect <fresh-token> --project-binding <hybrid-state-binding> \
-  --tag <vMAJOR.MINOR.PATCH> --evidence <durable-reference>
+  --tag <exact-project-release-tag> --evidence <durable-reference>
 ```
 
 If exact-SHA CI rejects a frozen content commit, correct the candidate and run `freeze` again with

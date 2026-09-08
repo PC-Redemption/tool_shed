@@ -60,6 +60,31 @@ class ReleaseCohortTests(unittest.TestCase):
     def tearDown(self) -> None:
         self.temporary.cleanup()
 
+    def _write_release_policy(
+        self,
+        *,
+        policy: str = "fixed-width-dotted-numeric",
+        prefix: str = "v",
+        widths: list[int] | None = None,
+    ) -> None:
+        release_identity: dict[str, object] = {
+            "schema_version": 1,
+            "policy": policy,
+        }
+        if policy == "fixed-width-dotted-numeric":
+            release_identity.update(
+                {"prefix": prefix, "segment_widths": widths or [2, 2, 2]}
+            )
+        (self.workspace / ".tool-shed-policy.json").write_text(
+            json.dumps(
+                {"schema_version": 1, "release_identity": release_identity},
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
     def _close_cycle(self, cycle_id: str) -> None:
         def write(connection, revision):
             stamp = hybrid_state.now()
@@ -100,18 +125,127 @@ class ReleaseCohortTests(unittest.TestCase):
                     content_commitish="HEAD",
                 )
 
-    def test_fixed_width_tags_resolve_exactly_and_normalized_aliases_fail(self) -> None:
+    def test_default_policy_rejects_leading_zero_release_tags(self) -> None:
         subprocess.run(["git", "tag", "-d", "v1.0.0"], cwd=self.workspace, check=True, stdout=subprocess.DEVNULL)
         baseline = subprocess.run(
             ["git", "rev-parse", "HEAD^"], cwd=self.workspace, check=True, text=True, capture_output=True
         ).stdout.strip()
         subprocess.run(["git", "tag", "v01.00.00", baseline], cwd=self.workspace, check=True)
-        self.assertEqual(release_cohort.status(self.workspace)["current_base_tag"], "v01.00.00")
-        subprocess.run(["git", "tag", "v1.0.0", baseline], cwd=self.workspace, check=True)
-        with self.assertRaisesRegex(release_cohort.ReleaseCohortError, "normalize to the same version"):
+        current = release_cohort.status(self.workspace)
+        self.assertTrue(current["current_base_tag"].startswith("root:"))
+        self.assertEqual(current["release_identity"]["policy"]["policy"], "strict-semver")
+        self.assertEqual(current["release_identity"]["selected_tag"], None)
+        self.assertEqual(
+            current["release_identity"]["rejected_tags"][0]["tag"], "v01.00.00"
+        )
+
+    def test_fixed_width_policy_preserves_exact_tag(self) -> None:
+        subprocess.run(
+            ["git", "tag", "-d", "v1.0.0"],
+            cwd=self.workspace,
+            check=True,
+            stdout=subprocess.DEVNULL,
+        )
+        baseline = subprocess.run(
+            ["git", "rev-parse", "HEAD^"],
+            cwd=self.workspace,
+            check=True,
+            text=True,
+            capture_output=True,
+        ).stdout.strip()
+        subprocess.run(["git", "tag", "v00.05.00", baseline], cwd=self.workspace, check=True)
+        self._write_release_policy()
+        current = release_cohort.status(self.workspace)
+        self.assertEqual(current["current_base_tag"], "v00.05.00")
+        self.assertEqual(current["release_identity"]["selected_tag"], "v00.05.00")
+        self.assertEqual(
+            current["release_identity"]["policy"]["policy"],
+            "fixed-width-dotted-numeric",
+        )
+        self.assertEqual(current["release_identity"]["policy"]["source"], ".tool-shed-policy.json")
+
+    def test_release_policy_rejects_unsafe_or_executable_extensions(self) -> None:
+        self._write_release_policy(prefix="release/", widths=[2, 2, 2])
+        with self.assertRaisesRegex(release_cohort.ReleaseCohortError, "safe 1-32"):
+            release_cohort.status(self.workspace)
+        payload = {
+            "schema_version": 1,
+            "release_identity": {
+                "schema_version": 1,
+                "policy": "strict-semver",
+                "validator": "./repository-hook",
+            },
+        }
+        (self.workspace / ".tool-shed-policy.json").write_text(
+            json.dumps(payload), encoding="utf-8"
+        )
+        with self.assertRaisesRegex(release_cohort.ReleaseCohortError, "unsupported fields"):
             release_cohort.status(self.workspace)
 
-    def test_working_base_repair_is_previewed_exact_and_append_only(self) -> None:
+    def test_topology_fallback_ignores_numeric_order_and_finalized_preference_wins(self) -> None:
+        subprocess.run(
+            ["git", "tag", "-d", "v1.0.0"],
+            cwd=self.workspace,
+            check=True,
+            stdout=subprocess.DEVNULL,
+        )
+        subprocess.run(["git", "tag", "v9.0.0", "HEAD^"], cwd=self.workspace, check=True)
+        subprocess.run(["git", "tag", "v1.1.0", "HEAD"], cwd=self.workspace, check=True)
+        fallback = release_cohort._release_identity_status(
+            self.workspace, release_cohort._commit(self.workspace, "HEAD"), []
+        )
+        self.assertEqual(fallback["selected_tag"], "v1.1.0")
+        preferred = release_cohort._release_identity_status(
+            self.workspace,
+            release_cohort._commit(self.workspace, "HEAD"),
+            ["v9.0.0"],
+        )
+        self.assertEqual(preferred["selected_tag"], "v9.0.0")
+        self.assertEqual(preferred["selection_source"], "finalized-cohort")
+
+    def test_unreachable_eligible_tag_is_reported_and_not_selected(self) -> None:
+        subprocess.run(["git", "checkout", "--orphan", "unreachable"], cwd=self.workspace, check=True, stdout=subprocess.DEVNULL)
+        (self.workspace / "orphan.txt").write_text("orphan\n", encoding="utf-8")
+        subprocess.run(["git", "add", "orphan.txt"], cwd=self.workspace, check=True)
+        subprocess.run(["git", "commit", "--quiet", "-m", "orphan"], cwd=self.workspace, check=True)
+        subprocess.run(["git", "tag", "v2.0.0"], cwd=self.workspace, check=True)
+        subprocess.run(["git", "checkout", "master"], cwd=self.workspace, check=True, stdout=subprocess.DEVNULL)
+        current = release_cohort.status(self.workspace)
+        rejection = next(
+            item for item in current["release_identity"]["rejected_tags"]
+            if item["tag"] == "v2.0.0"
+        )
+        self.assertIn("not reachable", rejection["reason"])
+        self.assertEqual(current["current_base_tag"], "v1.0.0")
+
+    def test_multiple_eligible_tags_on_selected_commit_fail_closed(self) -> None:
+        subprocess.run(["git", "tag", "v1.0.1", "HEAD^"], cwd=self.workspace, check=True)
+        with self.assertRaisesRegex(release_cohort.ReleaseCohortError, "multiple eligible"):
+            release_cohort.status(self.workspace)
+
+    def test_registration_selects_a_base_reachable_from_the_candidate(self) -> None:
+        subprocess.run(["git", "tag", "v1.1.0", "HEAD"], cwd=self.workspace, check=True)
+        candidate = subprocess.run(
+            ["git", "rev-parse", "HEAD^"],
+            cwd=self.workspace,
+            check=True,
+            text=True,
+            capture_output=True,
+        ).stdout.strip()
+        initial = release_cohort.status(self.workspace)
+        self.assertEqual(initial["current_base_tag"], "v1.1.0")
+        registered = release_cohort.register(
+            self.workspace,
+            expected=initial["state_token"],
+            project_binding=self.binding,
+            commitish=candidate,
+            origin_cycles=[],
+            accepted_outcome="Release the older reachable candidate.",
+            summary="Candidate-specific baseline fixture.",
+        )
+        self.assertEqual(registered["status"]["active"][0]["base_tag"], "v1.0.0")
+
+    def test_working_base_repair_is_topology_guarded_and_append_only(self) -> None:
         registered = release_cohort.register(
             self.workspace,
             expected=release_cohort.status(self.workspace)["state_token"],
@@ -121,8 +255,8 @@ class ReleaseCohortTests(unittest.TestCase):
             accepted_outcome="Ship the fixed-width base repair.",
             summary="Base repair fixture.",
         )
-        subprocess.run(["git", "tag", "v01.01.00", "HEAD"], cwd=self.workspace, check=True)
-        plan = release_cohort.preview_base_repair(self.workspace, tag="v01.01.00")
+        subprocess.run(["git", "tag", "v1.1.0", "HEAD"], cwd=self.workspace, check=True)
+        plan = release_cohort.preview_base_repair(self.workspace, tag="v1.1.0")
         self.assertFalse(plan["writes_performed"])
         repaired = release_cohort.repair_base(
             self.workspace,
@@ -132,7 +266,7 @@ class ReleaseCohortTests(unittest.TestCase):
         )
         cohort = repaired["status"]["active"][0]
         self.assertEqual(cohort["original_base_tag"], "v1.0.0")
-        self.assertEqual(cohort["base_tag"], "v01.01.00")
+        self.assertEqual(cohort["base_tag"], "v1.1.0")
         self.assertEqual(cohort["base_correction_count"], 1)
         self.assertEqual(len(cohort["candidates"]), 1)
         with contextlib.closing(

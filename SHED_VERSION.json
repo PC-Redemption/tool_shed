@@ -12,7 +12,7 @@
     "adapters/codex-app-server-config.json": "52e8e0aff51108c93e18c334fafd46ee979d45f392380da86329bbc0521d52c0",
     "adapters/codex-app-server-qualifications.json": "1b621d969c7391870be8feeaaba64fd2cc2c45d29b2beaa78a9a07105d656f9d",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "c978c91e3779f84e00fadea7e1e6ed106e13edb206393f4c4892e5a5aaf77e36",
+    "adapters/codex-skill-releases.json": "c01221aa35769f772923aae1d9d760c3d2cbd6b25bd346ac2278d1466408f86c",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "a16e9afbc2733b2c01b113df3f3a07fda1630b80b5a97476896123ee03bc22d2",
     "dashboard/Dockerfile": "8e9ff084f409aa81ab92b9dcbe8d9bab2416225551c837681653cab7b66786ad",
@@ -103,7 +103,7 @@
     "docs/outcome-reconciliation.md": "2891cb71bac4a38ede62a18bd9c0d72cda7c9fc6806f6f63dd02f55774366195",
     "docs/provider-adapters.md": "edf50dc13fd15cb6415904981ca3dea56fd73aad32a473429ef34d1b56cea25b",
     "docs/recursive-closure-lineage.md": "25447b8414875046aee004456e62792ef8e6db410b1b437cb176ff045d3e3c6d",
-    "docs/release-cohort-closed-loop.md": "307893414e8c8dd840aaaaa7ee446d5baade00029c94d1d9381c9d76c3f8dec2",
+    "docs/release-cohort-closed-loop.md": "758cbbff6a33aecabf609648a9cd4bff047a923ad358c1a9ee26c723fde843f5",
     "docs/releasing.md": "3113b25ab5d3a5b50459fdce9639b4a32d148df55059401e3b0539ab9761aa0f",
     "docs/universal-closed-loop-outcome-reconciliation.md": "52378ff394590625eccf856d6e1e413289e1b632f2ac8042f8753288bb25d467",
     "docs/work-level-customization.md": "d110b51c461b3edc73ee2682269641d3bdb97ce76d4ae53eae10341e77aa8a70",
@@ -215,7 +215,7 @@
     "scripts/read_ask_inbox.py": "b949cff0e33431744195790aa035aaa2d80dfba4589cf0403c46b68bdb4b0cea",
     "scripts/reasoning_catalog.py": "668c60b60afdd80e3348ca5a2a71ab225c67c39e613f7da4adc93d792876465c",
     "scripts/reconcile_campaign_queue.py": "5e6af99304a741d668ffc31bc6ad3b993a675284269213cdc316014b20e95889",
-    "scripts/release_cohort.py": "db0e625a053403e544cf83d16cd8aa887ca0cf9f7cdde8a2606ce745b6004f6b",
+    "scripts/release_cohort.py": "74abf9c9bf5df2162e180acb9eadfdddf55a7194105b5060da0e1c952718b0db",
     "scripts/release_projection.py": "bac127bbb3892f8c291028670c4e5801b33341fff4cb7ebb032eac47492f352f",
     "scripts/repository_policy.py": "7037bc56621a961f63266d93f37f3533c5d281359afeef87da872570f28f6c44",
     "scripts/review_work_state.py": "a99d6dad719d40f627ae2e6e02e2dbf36fc79b32a40202e1743cf87a37549a95",
@@ -294,34 +294,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Make every deferred Work5 registration visible and add guarded base-anchor repair.",
-  "release_commit": "df08cbd735850800e6155f2cfa39282461bf678b",
-  "release_qualification": {
-    "attested_at": "2026-09-08T15:57:56Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "81bbb1df280b8c04875d5ee96edd1c597bc74d4ce8b82a19fc01a9a619f866e5"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "df08cbd735850800e6155f2cfa39282461bf678b"
-  },
-  "release_tag": "v0.51.0",
-  "released_at": "2026-09-08T15:57:56Z",
-  "shed_version": "0.51.0",
+  "notes": "Make release identity project-configurable and add terminal campaign reconciliation.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.52.0",
+  "released_at": null,
+  "shed_version": "0.52.0",
   "updated_at": "2026-09-08",
   "updater_mutation_paths": [
     {
