@@ -150,6 +150,11 @@ class CampaignExecutionTests(unittest.TestCase):
         self.assertTrue(manifest["applicable"])
         self.assertEqual(2, manifest["counts"]["retirable_assignments"])
         self.assertEqual("mixed", manifest["execution_result"])
+        before_reconciliation = next(
+            item for item in dashboard_reporter._work_inventory(self.workspace)["artifacts"]
+            if item["visible_id"] == self.campaign["visible_id"]
+        )
+        self.assertIsNone(before_reconciliation["terminal_reason"])
 
         result = self.apply(manifest)
         self.assertFalse(result["result"]["idempotent"])

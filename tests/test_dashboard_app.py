@@ -497,6 +497,11 @@ class DashboardApplicationTests(TestCase):
         payload = self.complete_release_projection_payload()
         payload["schema_version"] = 11
         artifact = payload["work_inventory"]["artifacts"][0]  # type: ignore[index]
+        artifact["terminal_reason"] = ""
+        validated_legacy = validate_report(payload)
+        self.assertIsNone(
+            validated_legacy["work_inventory"]["artifacts"][0]["terminal_reason"]
+        )
         artifact.update(
             {
                 "visible_id": "CAMP-0123",

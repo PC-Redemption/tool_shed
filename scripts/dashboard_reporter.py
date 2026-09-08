@@ -648,7 +648,7 @@ def _work_inventory(workspace: Path) -> dict[str, Any]:
                 "outcome_lifecycle": str(row["outcome_lifecycle"]),
                 "outcome_disposition": str(row["outcome_disposition"]),
                 "reconciliation_state": str(row["reconciliation_state"]),
-                "terminal_reason": terminal_reasons.get(artifact_id, ""),
+                "terminal_reason": terminal_reasons.get(artifact_id),
                 "parent_ids": sorted(set(parent_ids[artifact_id]))[:16],
                 "produces_ids": sorted(set(produces_ids[artifact_id]))[:16],
                 "planning_position": planning["position"] if planning else None,

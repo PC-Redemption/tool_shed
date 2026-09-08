@@ -537,7 +537,9 @@ def _work_inventory(value: Any, *, schema_version: int) -> dict[str, Any]:
                 "outcome_disposition": _choice(item.get("outcome_disposition", "unknown"), f"{label}.outcome_disposition", OUTCOME_DISPOSITIONS),
                 "reconciliation_state": _choice(item.get("reconciliation_state", "unknown"), f"{label}.reconciliation_state", RECONCILIATION_STATES, 32),
                 "terminal_reason": _optional_string(
-                    item.get("terminal_reason"), f"{label}.terminal_reason", 240
+                    None if item.get("terminal_reason") == "" else item.get("terminal_reason"),
+                    f"{label}.terminal_reason",
+                    240,
                 ) if schema_version >= 11 else None,
                 "parent_ids": _string_list(item.get("parent_ids", []), f"{label}.parent_ids"),
                 "produces_ids": _string_list(item.get("produces_ids", []), f"{label}.produces_ids"),
