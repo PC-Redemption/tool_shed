@@ -515,6 +515,15 @@ Completion requires the request's explicit completion gate and applicable verifi
 the request and updates both queue views through a recoverable operation. Blocked work stays
 active. Deferral and abandonment require explicit lifecycle reasons.
 
+When all execution is terminal but stale assignments keep a Hybrid campaign active, do not use
+`blocked` as administrative cleanup and do not infer successful completion. Run the schema-6
+`campaign_execution.py status` and `plan` route, choose an explicit
+`administratively-reconciled`, `not-satisfied`, or `superseded` disposition, then apply the exact
+manifest with the fresh project binding. Any runnable assignment or nonterminal run/operation
+refuses the transition. The atomic result retires only classified stale assignments and projects
+the terminal reason consistently; see
+[Terminal Campaign Reconciliation](terminal-campaign-reconciliation.md).
+
 Active queue entries render as cards with icon-plus-text readiness states: `WORKING`, `READY`,
 `WAITING`, `BLOCKED`, or `COMPLETE`. `next`, status, queue rendering, and reconciliation all use the
 same dependency-and-decision calculation, so the visual state cannot silently disagree with

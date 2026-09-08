@@ -416,6 +416,14 @@ target capsule, and pass its `--project-binding` together with the fresh project
   product truth, evidence, disposition, and authorization, inspect the exact token, and apply it
   through the guarded generic route. If that second transaction fails, report the campaign as
   terminal-unreconciled and recover from `audit`; never silently claim the owning outcome complete.
+- Terminal administrative reconciliation: when a Hybrid campaign is held active only by stale
+  execution assignments, run `campaign_execution.py status` first. Use read-only `plan` with an
+  explicit `administratively-reconciled`, `not-satisfied`, or `superseded` disposition, reason,
+  actor, and authorization reference. Apply the exact manifest with the fresh `hybrid-state`
+  project binding. Refuse any runnable assignment, nonterminal run or operation, missing stale
+  classification, stale token, or changed source version. Never substitute this route for normal
+  evidence-backed completion, genuine blocking, deferral, or abandonment. Report the preserved
+  execution result and administrative disposition separately.
 
 In owner-queue requests, `camp` is shorthand for `campaign`. `que N` means the campaign at the
 mutable 1-based position N in the current ordered queue. A heading such as `1. (004) Title`

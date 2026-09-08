@@ -493,6 +493,50 @@ class DashboardApplicationTests(TestCase):
             "terminal",
         )
 
+    def test_schema_eleven_projects_terminal_reconciliation_reason_without_dispatch_action(self) -> None:
+        payload = self.complete_release_projection_payload()
+        payload["schema_version"] = 11
+        artifact = payload["work_inventory"]["artifacts"][0]  # type: ignore[index]
+        artifact.update(
+            {
+                "visible_id": "CAMP-0123",
+                "artifact_type": "campaign",
+                "document_lifecycle": "terminal",
+                "outcome_lifecycle": "terminal",
+                "outcome_disposition": "administratively-reconciled",
+                "reconciliation_state": "reconciled",
+                "planning_readiness": "terminal",
+                "terminal_reason": "All execution was terminal; two expired leases were retired.",
+            }
+        )
+        validated = validate_report(payload)
+        self.assertEqual(
+            "All execution was terminal; two expired leases were retired.",
+            validated["work_inventory"]["artifacts"][0]["terminal_reason"],
+        )
+
+        token = self.enroll_and_issue()
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(200, response.status_code, response.content)
+        stored = WorkArtifactSnapshot.objects.get(visible_id=artifact["visible_id"])
+        self.assertEqual("administratively-reconciled", stored.outcome_disposition)
+        self.assertIn("expired leases", stored.terminal_reason)
+
+        viewer = get_user_model().objects.create_user("terminal-viewer", password="fixture")
+        self.client.force_login(viewer)
+        page = self.client.get(
+            reverse("fleet:project-tab", args=(stored.project_id, "work")),
+            {"view": "list", "scope": "all"},
+        )
+        self.assertContains(page, "Administratively reconciled")
+        self.assertContains(page, "two expired leases")
+        self.assertNotContains(page, "Continue this campaign")
+
     def test_enrollment_issues_one_revocable_verifier_only_token(self) -> None:
         token = self.enroll_and_issue()
         credential = ReporterCredential.objects.get()

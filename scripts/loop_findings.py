@@ -297,7 +297,7 @@ def candidate_digest(candidates: list[dict[str, Any]]) -> str:
 def synchronize_findings(connection: sqlite3.Connection, *, revision: int) -> dict[str, Any]:
     """Refresh persisted findings inside the caller's managed transaction."""
     hybrid_schema = int(connection.execute("PRAGMA user_version").fetchone()[0])
-    if hybrid_schema not in {4, 5}:
+    if hybrid_schema not in {4, 5, 6}:
         return {"applicable": False, "active_count": 0, "resolved_count": 0, "recurrence_count": 0}
     if not set(LOOP_FINDING_TABLES) <= _tables(connection):
         raise LoopFindingError(f"schema {hybrid_schema} is missing loop-finding authority tables")
@@ -401,8 +401,8 @@ def audit(workspace: Path, *, database: Path | None = None) -> dict[str, Any]:
     path = database or hybrid_state.database_path(workspace)
     with contextlib.closing(hybrid_state.connect(path, writable=False)) as connection:
         version = int(connection.execute("PRAGMA user_version").fetchone()[0])
-        if version not in {4, 5} or not set(LOOP_FINDING_TABLES) <= _tables(connection):
-            raise LoopFindingError(f"loop findings require Hybrid schema 4 or 5; found {version}")
+        if version not in {4, 5, 6} or not set(LOOP_FINDING_TABLES) <= _tables(connection):
+            raise LoopFindingError(f"loop findings require Hybrid schema 4, 5, or 6; found {version}")
         meta = connection.execute("SELECT * FROM loop_finding_meta WHERE id=1").fetchone()
         candidates = discover_candidates(connection)
         rows = list(

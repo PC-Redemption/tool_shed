@@ -277,7 +277,8 @@ lineage, missing, stale, or failed closure evidence, and lifecycle/body drift ac
 documents. Local audit and supervised history repair remain authoritative. Dashboard report schema
 10 adds a complete release-registration partition with document chains, a controlled Direct Work2
 aggregate, and totals-preserving overflow while retaining schema 9's separate queued, working, and
-closure-debt counts. Applicable hosted pages copy controlled local Tool Shed commands for use in chat. See
+closure-debt counts. Schema 11 adds the bounded terminal-reconciliation reason to the same work
+projection. Applicable hosted pages copy controlled local Tool Shed commands for use in chat. See
 [`docs/loop-findings.md`](docs/loop-findings.md).
 
 Before a long campaign, run:
@@ -615,6 +616,13 @@ preserving any working campaign; `--dry-run` is read-only. Unresolved artifacts 
 require an exact current manifest, a stale-write token covering the scanned work surface, and
 authority-envelope evaluation; it never silently resolves semantic decisions, and terminal
 operations preserve lifecycle history.
+
+Hybrid schema 6 adds `campaign_execution.py` for the narrower case where every run and operation
+is terminal but stale scheduler assignments keep a campaign active. Its read-only plan classifies
+every pending assignment; guarded apply rechecks exact state, atomically retires only proven stale
+assignments, preserves execution history, and closes with an explicit
+`administratively-reconciled`, `not-satisfied`, or `superseded` disposition. It never infers
+accepted-outcome success. See [Terminal Campaign Reconciliation](docs/terminal-campaign-reconciliation.md).
 
 ## Planned Completion Watchers
 

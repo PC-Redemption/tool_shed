@@ -53,6 +53,8 @@ CLOSED_LOOP_DISPOSITIONS = {
     "superseded",
     "parked",
     "not-applicable",
+    "administratively-reconciled",
+    "not-satisfied",
 }
 RELATIONSHIP_TYPES = {"fulfills", "contributes", "informs", "supersedes"}
 GOVERNING_RELATIONSHIPS = {"fulfills", "contributes"}

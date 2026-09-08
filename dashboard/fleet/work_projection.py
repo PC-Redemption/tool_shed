@@ -13,6 +13,8 @@ TERMINAL_OUTCOME_DISPOSITIONS = {
     "parked",
     "rejected",
     "failed",
+    "administratively-reconciled",
+    "not-satisfied",
 }
 ACTIVE_DOCUMENT_STATES = {
     "active",
@@ -98,7 +100,13 @@ def command_actions(item: object) -> list[dict[str, str]]:
             "feedback": "Status command copied",
         }
     ]
-    if artifact_type == "campaign" and visible_id.startswith("CAMP-") and is_remaining(item):
+    if (
+        artifact_type == "campaign"
+        and visible_id.startswith("CAMP-")
+        and is_remaining(item)
+        and str(getattr(item, "document_lifecycle", "")) not in TERMINAL_DOCUMENT_STATES
+        and str(getattr(item, "outcome_disposition", "")) not in TERMINAL_OUTCOME_DISPOSITIONS
+    ):
         number = visible_id.removeprefix("CAMP-")
         actions.insert(
             0,

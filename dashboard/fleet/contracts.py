@@ -143,6 +143,7 @@ WORK_ARTIFACT_FIELDS = {
     "updated_at",
 }
 WORK_ARTIFACT_FIELDS_V7 = WORK_ARTIFACT_FIELDS | {"closure_status"}
+WORK_ARTIFACT_FIELDS_V11 = WORK_ARTIFACT_FIELDS_V7 | {"terminal_reason"}
 CLOSURE_STATUS_FIELDS = {
     "local_closure", "evidence_health", "graph_health", "effective_closed", "reason_codes",
     "counts", "blockers", "subject_revision", "graph_revision", "evaluator_version", "evaluated_at",
@@ -261,6 +262,8 @@ OUTCOME_DISPOSITIONS = {
     "parked",
     "not-applicable",
     "unknown",
+    "administratively-reconciled",
+    "not-satisfied",
 }
 RECONCILIATION_STATES = {"open", "reconciliation-required", "reconciled", "unknown"}
 TRANSITIONS = {"created", "document-lifecycle", "outcome-lifecycle", "outcome-disposition", "reconciliation"}
@@ -490,7 +493,13 @@ def _work_inventory(value: Any, *, schema_version: int) -> dict[str, Any]:
     seen: set[uuid.UUID] = set()
     for index, raw in enumerate(raw_artifacts, start=1):
         label = f"work artifact {index}"
-        item = _object(raw, label, WORK_ARTIFACT_FIELDS_V7 if schema_version >= 7 else WORK_ARTIFACT_FIELDS)
+        item = _object(
+            raw,
+            label,
+            WORK_ARTIFACT_FIELDS_V11 if schema_version >= 11
+            else WORK_ARTIFACT_FIELDS_V7 if schema_version >= 7
+            else WORK_ARTIFACT_FIELDS,
+        )
         artifact_id = _uuid(item.get("artifact_id"), f"{label}.artifact_id")
         if artifact_id in seen:
             raise ContractError("work_inventory.artifacts contains duplicate artifact_id values")
@@ -527,6 +536,9 @@ def _work_inventory(value: Any, *, schema_version: int) -> dict[str, Any]:
                 "outcome_lifecycle": _choice(item.get("outcome_lifecycle", "unknown"), f"{label}.outcome_lifecycle", OUTCOME_LIFECYCLES, 32),
                 "outcome_disposition": _choice(item.get("outcome_disposition", "unknown"), f"{label}.outcome_disposition", OUTCOME_DISPOSITIONS),
                 "reconciliation_state": _choice(item.get("reconciliation_state", "unknown"), f"{label}.reconciliation_state", RECONCILIATION_STATES, 32),
+                "terminal_reason": _optional_string(
+                    item.get("terminal_reason"), f"{label}.terminal_reason", 240
+                ) if schema_version >= 11 else None,
                 "parent_ids": _string_list(item.get("parent_ids", []), f"{label}.parent_ids"),
                 "produces_ids": _string_list(item.get("produces_ids", []), f"{label}.produces_ids"),
                 "planning_position": planning_position,
@@ -846,8 +858,8 @@ def _instance_health(value: Any, *, schema_version: int) -> dict[str, Any]:
 def validate_report(payload: Any) -> dict[str, Any]:
     root = _object(payload, "report", ROOT_FIELDS)
     schema_version = root.get("schema_version")
-    if schema_version not in {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}:
-        raise ContractError("report.schema_version must be between 1 and 10")
+    if schema_version not in {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}:
+        raise ContractError("report.schema_version must be between 1 and 11")
     if schema_version == 1 and ({"work_inventory", "lifecycle_events"} & set(root)):
         raise ContractError("report schema 1 does not support lifecycle projection fields")
     if schema_version < 4 and "instance_health" in root:

@@ -332,7 +332,8 @@ python3 scripts/document_store.py --workspace . complete-outcome <visible-id> \
   --authorization <evidence-reference> --actor <actor>
 ```
 
-`migrate` advances one guarded schema step, 3→4 or 4→5. `audit` and `resolve` are read-only;
+`migrate` advances one guarded schema step, 3→4 or 4→5. Hybrid schema 6 is added separately
+by `campaign_execution.py migrate`. `audit` and `resolve` are read-only;
 `ts: resolve loop <LOOP-id>` is the conversational route that rechecks local authority before a
 controlled local correction. Historical review accepts the controlled decisions
 `apply-expected-state`, `retain-open`, and `requires-evidence`; every apply is bound to the exact
@@ -356,6 +357,23 @@ and does not require a planning artifact.
 `transition-plan` refuses a satisfied parent unless every named supporting cycle is terminal,
 reconciled, satisfactory, and explicitly propagated to that parent. `transition-apply` appends the
 new verdict and comparison revision instead of rewriting historical decisions.
+
+For execution-terminal campaigns held open only by stale scheduler assignments, use the distinct
+schema-6 route:
+
+```text
+python3 scripts/campaign_execution.py --workspace . --json status <CAMP-id>
+python3 scripts/campaign_execution.py --workspace . --json plan <CAMP-id> \
+  --disposition administratively-reconciled --reason <reason> \
+  --actor <actor> --authorization <authorization-reference>
+python3 scripts/campaign_execution.py --workspace . --json apply \
+  --manifest <terminal-reconciliation.json> --project-binding <hybrid-state-binding>
+```
+
+The plan is inapplicable if any run or operation is nonterminal, any assignment is runnable, or a
+pending assignment lacks an explicit stale classification. Apply rechecks all facts atomically,
+preserves execution and assignment history, and records a non-success terminal disposition. See
+[Terminal Campaign Reconciliation](terminal-campaign-reconciliation.md).
 
 The preserved HPT2 compatibility and qualification surface is:
 

@@ -213,6 +213,7 @@ class WorkArtifactSnapshot(models.Model):
     outcome_lifecycle = models.CharField(max_length=32, default="unknown")
     outcome_disposition = models.CharField(max_length=48, default="unknown")
     reconciliation_state = models.CharField(max_length=32, default="unknown")
+    terminal_reason = models.CharField(max_length=240, blank=True)
     parent_ids = models.JSONField(default=list)
     produces_ids = models.JSONField(default=list)
     planning_position = models.PositiveIntegerField(null=True, blank=True)

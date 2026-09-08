@@ -34,7 +34,7 @@ TYPE_ALIASES = {
     "prms": "program-roadmap",
     "program-roadmap": "program-roadmap",
 }
-TERMINAL_DOCUMENT_STATES = {"completed", "abandoned", "superseded"}
+TERMINAL_DOCUMENT_STATES = {"completed", "abandoned", "superseded", "terminal"}
 READINESS_RANK = {"working": 0, "ready": 1, "waiting": 2, "blocked": 3}
 
 

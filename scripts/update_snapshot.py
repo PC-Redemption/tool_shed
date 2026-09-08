@@ -282,7 +282,7 @@ def protocol4_hybrid_preflight(
                 timeout=timeout,
             )
             rebuilt = legacy_rebuilt
-        elif schema_version in {2, 3, 4, 5}:
+        elif schema_version in {2, 3, 4, 5, 6}:
             document_checkpoint = workspace / "work" / "state" / "checkpoints" / "state-v2.json"
             if not document_checkpoint.is_file():
                 raise UpdateError(
@@ -321,7 +321,7 @@ def protocol4_hybrid_preflight(
         "shadow_rebuild": rebuilt,
         "recovery_rebuilds": {
             "state_v1": legacy_rebuilt,
-            "state_v2": rebuilt if audit.get("schema_version") in {2, 3, 4, 5} else None,
+            "state_v2": rebuilt if audit.get("schema_version") in {2, 3, 4, 5, 6} else None,
         },
         "writes_performed": True,
     }

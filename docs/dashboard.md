@@ -16,6 +16,9 @@ Schema v10 proves that every authoritative registration belongs to exactly one d
 chain, Direct Work2 aggregate, or totals-preserving remainder group. It reports registrations,
 globally distinct commits, owning chains, display groups, source revision/digest, and completeness
 separately; older schemas remain explicitly legacy/unverified and are never rewritten or merged.
+Schema v11 adds only the bounded terminal-reconciliation reason for a work artifact, allowing the
+dashboard to distinguish administrative closure from successful outcome completion without
+receiving run, operation, or assignment details.
 It rejects paths, prompts, source text, uncontrolled commands, raw output, exception messages,
 credentials, secrets, scheduler definitions, diagnostic logs, and uncontrolled event summaries.
 The one command-shaped schema-v8 field is restricted to the exact local route

@@ -845,6 +845,7 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
                     outcome_lifecycle=item["outcome_lifecycle"],
                     outcome_disposition=item["outcome_disposition"],
                     reconciliation_state=item["reconciliation_state"],
+                    terminal_reason=item.get("terminal_reason") or "",
                     parent_ids=item["parent_ids"],
                     produces_ids=item["produces_ids"],
                     planning_position=item["planning_position"],

@@ -49,10 +49,10 @@ except ModuleNotFoundError:  # Direct execution: python scripts/document_store.p
 OPERATION = "hybrid-state"
 CHECKPOINT_KIND = "tool-shed-document-state-checkpoint"
 CHECKPOINT_FORMAT = 2
-DOCUMENT_HYBRID_SCHEMAS = {HYBRID_SCHEMA_VERSION, 3, 4, 5}
+DOCUMENT_HYBRID_SCHEMAS = {HYBRID_SCHEMA_VERSION, 3, 4, 5, 6}
 VISIBLE_ID = re.compile(r"^(?P<namespace>[A-Z]{2,5})-(?P<number>[0-9]{4,})$")
 EDIT_HEADER = "tool_shed_document: 1"
-LIFECYCLES = ("active", "working", "blocked", "parked", "deferred", "completed", "abandoned", "superseded")
+LIFECYCLES = ("active", "working", "blocked", "parked", "deferred", "completed", "abandoned", "superseded", "terminal")
 _MANAGED_AUDIT_CACHE: dict[tuple[str, str], dict[str, Any]] = {}
 
 
@@ -84,9 +84,14 @@ def domain_tables(connection: sqlite3.Connection) -> tuple[str, ...]:
         from loop_findings_schema import LOOP_FINDING_DOMAIN_TABLES
 
         finding_tables = LOOP_FINDING_DOMAIN_TABLES
+    execution_tables: tuple[str, ...] = ()
+    if "campaign_execution" in present:
+        from campaign_execution_schema import CAMPAIGN_EXECUTION_DOMAIN_TABLES
+
+        execution_tables = CAMPAIGN_EXECUTION_DOMAIN_TABLES
     return tuple(
         table
-        for table in (*hybrid_state.DOMAIN_TABLES, *DOCUMENT_TABLES, *closure_tables, *finding_tables)
+        for table in (*hybrid_state.DOMAIN_TABLES, *DOCUMENT_TABLES, *closure_tables, *finding_tables, *execution_tables)
         if table in present
     )
 
@@ -103,9 +108,14 @@ def portable_tables(connection: sqlite3.Connection) -> tuple[str, ...]:
         from loop_findings_schema import LOOP_FINDING_PORTABLE_TABLES
 
         finding_tables = LOOP_FINDING_PORTABLE_TABLES
+    execution_tables: tuple[str, ...] = ()
+    if "campaign_execution" in present:
+        from campaign_execution_schema import CAMPAIGN_EXECUTION_PORTABLE_TABLES
+
+        execution_tables = CAMPAIGN_EXECUTION_PORTABLE_TABLES
     return tuple(
         table
-        for table in (*PORTABLE_TABLES, *DOCUMENT_PORTABLE_TABLES, *closure_tables, *finding_tables)
+        for table in (*PORTABLE_TABLES, *DOCUMENT_PORTABLE_TABLES, *closure_tables, *finding_tables, *execution_tables)
         if table in present
     )
 
@@ -128,7 +138,7 @@ TERMINAL_BODY_STATUSES = {
     "completed": {"complete", "completed"},
     "superseded": {"superseded"},
     "archived": {"archived"},
-    "terminal": {"complete", "completed", "terminal"},
+    "terminal": {"complete", "completed", "terminal", "reconciled-terminal", "not-satisfied"},
 }
 
 
@@ -206,7 +216,11 @@ def _semantic_document_findings(connection: sqlite3.Connection) -> list[dict[str
         ).fetchone()
         if cycle["lifecycle_state"] == "terminal" and reconciliation and reconciliation["state"] == "reconciled":
             disposition = str(reconciliation["disposition"])
-            expected = "superseded" if disposition == "superseded" else "completed"
+            expected = (
+                "superseded" if disposition == "superseded"
+                else "terminal" if disposition in {"administratively-reconciled", "not-satisfied"}
+                else "completed"
+            )
             closure = connection.execute(
                 "SELECT cr.effective_closed, cr.open_descendants, cr.unknown_descendants, "
                 "cr.invalid_descendants FROM closure_element ce JOIN closure_rollup cr "
@@ -1319,7 +1333,8 @@ def complete_outcome(
                 child_cycle["lifecycle_state"] == "terminal"
                 and child_cycle["state"] == "reconciled"
                 and child_cycle["disposition"] in {
-                    "satisfied", "satisfied-with-approved-change", "not-applicable", "superseded"
+                    "satisfied", "satisfied-with-approved-change", "not-applicable", "superseded",
+                    "administratively-reconciled", "not-satisfied"
                 }
                 and propagated
             ):
@@ -1553,11 +1568,11 @@ def rebuild(workspace: Path, *, project_binding: str, checkpoint: Path, output: 
             raise DocumentStoreError(f"unsupported checkpoint Hybrid schema: {hybrid_schema}")
         hybrid_state.create_schema(connection, include_triggers=False)
         create_document_schema(connection, include_triggers=False)
-        if hybrid_schema in {3, 4, 5}:
+        if hybrid_schema in {3, 4, 5, 6}:
             from closure_lineage_schema import create_closure_schema
 
             create_closure_schema(connection, include_triggers=False)
-        if hybrid_schema in {4, 5}:
+        if hybrid_schema in {4, 5, 6}:
             from loop_findings_schema import create_loop_finding_schema
 
             create_loop_finding_schema(
@@ -1565,20 +1580,28 @@ def rebuild(workspace: Path, *, project_binding: str, checkpoint: Path, output: 
                 include_triggers=False,
                 schema_version=1 if hybrid_schema == 4 else 2,
             )
+        if hybrid_schema == 6:
+            from campaign_execution_schema import create_campaign_execution_schema
+
+            create_campaign_execution_schema(connection, include_triggers=False)
         meta_source = tables.pop("state_meta", None)
         connection.execute(
             "INSERT INTO state_meta VALUES (1, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, ?, ?, ?)",
             (hybrid_schema, envelope["project_id"], hybrid_state.stable_uuid(envelope["project_id"], f"workspace:{workspace.resolve()}"), envelope["storage_mode"], envelope["database_revision"], envelope["database_revision"], envelope["database_revision"], hybrid_state.EMPTY_SHA256, envelope["digest"], hybrid_state.EMPTY_SHA256),
         )
         ordered_portable = [*PORTABLE_TABLES, *DOCUMENT_PORTABLE_TABLES]
-        if hybrid_schema in {3, 4, 5}:
+        if hybrid_schema in {3, 4, 5, 6}:
             from closure_lineage_schema import CLOSURE_PORTABLE_TABLES
 
             ordered_portable.extend(CLOSURE_PORTABLE_TABLES)
-        if hybrid_schema in {4, 5}:
+        if hybrid_schema in {4, 5, 6}:
             from loop_findings_schema import LOOP_FINDING_PORTABLE_TABLES
 
             ordered_portable.extend(LOOP_FINDING_PORTABLE_TABLES)
+        if hybrid_schema == 6:
+            from campaign_execution_schema import CAMPAIGN_EXECUTION_PORTABLE_TABLES
+
+            ordered_portable.extend(CAMPAIGN_EXECUTION_PORTABLE_TABLES)
         for table in ordered_portable:
             if table == "workspace":
                 continue
@@ -1600,14 +1623,18 @@ def rebuild(workspace: Path, *, project_binding: str, checkpoint: Path, output: 
         hybrid_state.create_triggers(connection)
         from document_store_schema import document_trigger_sql
         connection.executescript(document_trigger_sql())
-        if hybrid_schema in {3, 4, 5}:
+        if hybrid_schema in {3, 4, 5, 6}:
             from closure_lineage_schema import closure_trigger_sql
 
             connection.executescript(closure_trigger_sql())
-        if hybrid_schema in {4, 5}:
+        if hybrid_schema in {4, 5, 6}:
             from loop_findings_schema import loop_finding_trigger_sql
 
             connection.executescript(loop_finding_trigger_sql())
+        if hybrid_schema == 6:
+            from campaign_execution_schema import trigger_sql as campaign_execution_trigger_sql
+
+            connection.executescript(campaign_execution_trigger_sql())
         connection.execute("UPDATE state_meta SET source_digest=?, schema_trigger_digest=? WHERE id=1", (domain_digest(connection), hybrid_state.schema_digest(connection)))
         connection.execute(f"PRAGMA user_version={hybrid_schema}")
         connection.commit()

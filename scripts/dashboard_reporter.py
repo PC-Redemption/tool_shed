@@ -47,7 +47,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/dashboard_report
 
 
 SCHEMA_VERSION = 1
-REPORT_SCHEMA_VERSION = 10
+REPORT_SCHEMA_VERSION = 11
 OUTBOX_RELATIVE = Path(".tool-shed/dashboard/outbox.sqlite3")
 MAX_RESPONSE_BYTES = 65_536
 MAX_REQUEST_BYTES = 262_144
@@ -495,7 +495,7 @@ def _work_inventory(workspace: Path) -> dict[str, Any]:
                        SELECT v.disposition FROM outcome_verdict AS v
                        JOIN cycle AS c ON c.id = v.cycle_id
                        WHERE c.origin_artifact_id = d.id
-                       ORDER BY c.opened_at DESC, v.decided_at DESC, v.id DESC LIMIT 1
+                       ORDER BY c.opened_at DESC, v.decided_revision DESC, v.id DESC LIMIT 1
                    ), CASE WHEN EXISTS (
                        SELECT 1 FROM cycle AS c WHERE c.origin_artifact_id = d.id
                    ) THEN 'open' ELSE 'unknown' END) AS outcome_disposition,
@@ -503,7 +503,7 @@ def _work_inventory(workspace: Path) -> dict[str, Any]:
                        SELECT r.state FROM reconciliation AS r
                        JOIN cycle AS c ON c.id = r.cycle_id
                        WHERE c.origin_artifact_id = d.id
-                       ORDER BY c.opened_at DESC, r.compared_at DESC, r.id DESC LIMIT 1
+                       ORDER BY c.opened_at DESC, r.origin_revision DESC, r.id DESC LIMIT 1
                    ), CASE WHEN EXISTS (
                        SELECT 1 FROM cycle AS c WHERE c.origin_artifact_id = d.id
                    ) THEN 'open' ELSE 'unknown' END) AS reconciliation_state
@@ -515,6 +515,19 @@ def _work_inventory(workspace: Path) -> dict[str, Any]:
             LIMIT 500
             """
         ).fetchall()
+        terminal_reasons: dict[str, str] = {}
+        if connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='campaign_reconciliation_audit'"
+        ).fetchone():
+            terminal_reasons = {
+                str(row["artifact_id"]): str(row["reason"])[:240]
+                for row in connection.execute(
+                    "SELECT c.origin_artifact_id AS artifact_id, cra.reason FROM campaign_reconciliation_audit cra "
+                    "JOIN cycle c ON c.id=cra.cycle_id WHERE cra.recorded_revision=("
+                    "SELECT MAX(newer.recorded_revision) FROM campaign_reconciliation_audit newer "
+                    "WHERE newer.cycle_id=cra.cycle_id) ORDER BY c.origin_artifact_id"
+                )
+            }
         try:
             planning_items = {
                 item["artifact_id"]: item
@@ -635,6 +648,7 @@ def _work_inventory(workspace: Path) -> dict[str, Any]:
                 "outcome_lifecycle": str(row["outcome_lifecycle"]),
                 "outcome_disposition": str(row["outcome_disposition"]),
                 "reconciliation_state": str(row["reconciliation_state"]),
+                "terminal_reason": terminal_reasons.get(artifact_id, ""),
                 "parent_ids": sorted(set(parent_ids[artifact_id]))[:16],
                 "produces_ids": sorted(set(produces_ids[artifact_id]))[:16],
                 "planning_position": planning["position"] if planning else None,
