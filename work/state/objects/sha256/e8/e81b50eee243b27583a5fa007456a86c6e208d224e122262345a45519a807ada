@@ -1,0 +1,64 @@
+# Campaign: Add Terminal Campaign Reconciliation
+
+Status: completed
+Type: campaign
+Updated: 2026-09-08
+Next Action: implement the guarded stale-assignment reconciliation contract and projection parity
+Campaign ID: add-terminal-campaign-reconciliation
+Campaign Number: 176
+Outcome: A campaign with wholly terminal execution and only proven stale pending assignments can close into an explicit administratively reconciled terminal result without fabricating outcome success.
+Primary Focus Areas: campaign-lifecycle
+Supporting Focus Areas: workspace-safety, provider-portability, qualification-release
+Depends On: implement-project-configurable-release-identity
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work2
+Completion Gate: One read-only plan and exact guarded apply require project binding, fresh state token, authorization, reason, actor, and explicit terminal disposition; recheck zero runnable or nonterminal runs and operations; classify every pending assignment and retire only proven stale entries; atomically close the campaign and record prior state, counts, reason, actor, authorization, handoff or superseding reference, and disposition; preserve execution history; distinguish normal success, administrative reconciliation, unsatisfied or superseded outcome, and active blocking; make repeated apply idempotent and concurrent/new-runnable work fail closed; expose identical non-dispatchable state and reason in queue, status, API, dashboard, and rebuild; pass focused tests, the configured development lane, strict Doctor, and exact Work2 registration without publication.
+Completion Evidence: none
+Disposition: none
+Roadmap: repository-policy-release-identity-terminal-reconciliation
+Roadmap Revision: 1
+Roadmap Document: PRM-0045
+Milestone: M2-TERMINAL-CAMPAIGN-RECONCILIATION
+Unlocks Gates: G3-TERMINAL-RECONCILIATION-SEMANTICS, G4-ATOMIC-AUDITED-PROJECTION-PARITY
+
+## Request
+
+Add the smallest repository-neutral terminal reconciliation route for campaigns whose execution is
+fully terminal but whose lifecycle remains running because stale assignments still project as
+pending. Reuse the existing campaign lifecycle, assignment, audit, API, dashboard, queue, and
+prepare/apply mechanisms. Keep outcome satisfaction separate from administrative closure.
+
+The plan must classify every pending assignment. Apply must recheck the exact project and state,
+prove there is no runnable or nonterminal run or operation, retire only assignments proven stale
+or non-runnable by the documented rule, preserve all history, record the explicit terminal
+disposition and reason, and close atomically. New runnable work or an unclassified assignment must
+fail without partial mutation.
+
+Stop after focused implementation proof, strict Doctor, configured development-lane verification,
+the exact Work2 candidate registration, and a durable Hybrid checkpoint. Do not publish, tag,
+release, close GitHub issues, or begin M3 in this campaign.
+
+## App Server Preparation Contract
+
+```json
+{
+  "campaign_id": "add-terminal-campaign-reconciliation",
+  "completion_evidence": "The guarded plan/apply route, stale classification, zero-runnable proof, atomic audit, idempotency, race refusal, terminal disposition, projection parity, and rebuild persistence pass focused tests, strict Doctor, and the configured Work2 development lane; the exact candidate is registered without publication.",
+  "exact_resolution": "dispatch-time",
+  "execution_shape": "single-bounded-camp",
+  "inline_assets": "metadata-only",
+  "objective": "Close fully terminal but administratively stale campaigns truthfully without fabricating accepted-outcome success.",
+  "schema_version": 1,
+  "source_freshness": "required",
+  "verification": "orchestrator-exactly-once"
+}
+```
+
+## Completion Check
+
+Verify stale and runnable assignments, zero and nonzero nonterminal execution, mixed terminal
+results, concurrent newly runnable work, repeated apply, durable audit history, handoff or
+superseding references, queue/status/API/dashboard parity, checkpoint rebuild, focused tests,
+strict Doctor, all configured development targets, Work2 registration, and no publication.

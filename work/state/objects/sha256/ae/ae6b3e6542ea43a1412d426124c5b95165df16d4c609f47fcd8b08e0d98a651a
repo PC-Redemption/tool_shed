@@ -1,0 +1,139 @@
+# Program Roadmap: Repository-Policy Release Identity and Terminal Campaign Reconciliation
+
+Status: active
+Type: program-roadmap
+Updated: 2026-09-08
+Next Action: none — v0.52.0 is published, production-verified, and client-synchronized
+Roadmap ID: repository-policy-release-identity-terminal-reconciliation
+Roadmap Revision: 1
+Source Idea: IDEA-0025
+Source Project Map: MAP-0033
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 4
+Reviewed Body SHA256: bdd8b4d20449d21df6356d58e8b43312e9f13f392d669d00f59bda5de6fc59fa
+
+## Program Outcome
+
+Tool Shed derives release baselines from a repository's bounded declared identity policy and
+reachable exact Git history, never from a hidden universal formatting assumption. Campaigns whose
+execution is wholly terminal but whose assignments are administratively stale can be reconciled
+through one guarded atomic route into a truthful non-success terminal result. The complete behavior
+is portable, documented, cross-platform qualified, released, production-verified, and recursively
+reconciled.
+
+## M1-RELEASE-IDENTITY-POLICY — Make release baseline truth project-configurable
+
+Status: completed
+Required Endpoint: Work2
+Depends on: none
+
+Outcome: Add the bounded repository policy, central shared evaluator, exact-tag preservation,
+finalized-cohort continuity, deterministic reachable-tag fallback, ambiguity refusal, actionable
+rejection diagnostics, and focused regression coverage. Reconcile the acceptance gap left by
+PRM-0044 without reopening or rewriting its completed history, then register the exact Work2
+candidate without release.
+
+Gates:
+
+- `G1-RELEASE-POLICY-CONTRACT`
+- `G2-DETERMINISTIC-RELEASE-BASELINE`
+
+Candidate campaign: `implement-project-configurable-release-identity`.
+
+## M2-TERMINAL-CAMPAIGN-RECONCILIATION — Close stale campaigns truthfully
+
+Status: completed
+Required Endpoint: Work2
+Depends on: M1-RELEASE-IDENTITY-POLICY
+
+Outcome: Define the administrative terminal disposition and per-assignment stale-proof contract;
+add read-only planning and exact guarded apply; atomically recheck execution, retire only proven
+stale assignments, close the campaign, preserve history, and emit durable audit evidence; expose
+the result consistently across local and hosted projections. Register the independently verified
+Work2 candidate without release.
+
+Gates:
+
+- `G3-TERMINAL-RECONCILIATION-SEMANTICS`
+- `G4-ATOMIC-AUDITED-PROJECTION-PARITY`
+
+Candidate campaign: `add-terminal-campaign-reconciliation`.
+
+## M3-CROSS-PLATFORM-RELEASE-CLOSURE — Qualify and ship both slices
+
+Status: completed
+Required Endpoint: Work5
+Depends on: M1-RELEASE-IDENTITY-POLICY, M2-TERMINAL-CAMPAIGN-RECONCILIATION
+
+Outcome: Reconfirm all behavior and migration gates under strict-SemVer and fixed-width project
+fixtures; exercise stale, mixed-result, idempotency, race, audit, and rebuild cases; pass the full
+release profile on Linux and Windows; align documentation and portable skill; freeze the complete
+registered cohort, require exact-SHA CI, publish one traceable release, synchronize clients, verify
+production behavior, and reconcile only the IDEA-0025 chain.
+
+Gates:
+
+- Reconfirm `G1` through `G4` on the frozen candidate.
+- `G5-CROSS-PLATFORM-RELEASE-PROOF`
+
+Candidate campaign: `qualify-and-release-release-identity-and-terminal-reconciliation`.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G1-RELEASE-POLICY-CONTRACT | M1 contract and M3 regression |
+| G2-DETERMINISTIC-RELEASE-BASELINE | M1 implementation and M3 regression |
+| G3-TERMINAL-RECONCILIATION-SEMANTICS | M2 contract and M3 regression |
+| G4-ATOMIC-AUDITED-PROJECTION-PARITY | M2 implementation and M3 regression |
+| G5-CROSS-PLATFORM-RELEASE-PROOF | M3 |
+
+Transfer count: 5 reviewed gates; 5 mapped gates; 0 dropped.
+
+## Decision Record
+
+- Policy home: repository-root `.tool-shed-policy.json`, validated as one project-bound document.
+- Initial profiles: absent or `strict-semver`; bounded `fixed-width-dotted-numeric` with declarative
+  prefix and segment widths sufficient for `v00.05.00`. No arbitrary regex or executable hook.
+- Baseline continuity: valid reachable finalized-cohort release evidence first; otherwise choose
+  among eligible reachable tag commits by the settled deterministic topology rule. Duplicate exact
+  identities on the selected commit fail closed.
+- Terminal model: cycle lifecycle `terminal` plus a distinct administrative reconciliation
+  disposition and operator display state; outcome satisfaction remains independent.
+- Mutation model: prepare/validate/apply with project binding, fresh state token, explicit
+  authorization and disposition, complete per-assignment classification, atomic write, and
+  idempotent repeat behavior.
+
+## Recovery Contract
+
+- Missing, malformed, unsupported, or unsafe release policy fails visibly and never falls back to
+  permissive tag matching. An absent policy alone selects strict SemVer.
+- An ineligible, missing, unreachable, ambiguous, or policy-incompatible predecessor tag is
+  reported; bootstrap discovery never rewrites prior evidence.
+- Any cohort command observing a different policy, Git graph, tag set, or state revision than its
+  prepared token fails closed and requires a fresh status or plan.
+- Terminal reconciliation refuses any runnable or nonterminal run or operation, any unclassified
+  pending assignment, a concurrent state change, or a disposition that would fabricate success.
+- Failed local, platform, CI, release, production, upgrade, documentation, or recursive closure
+  proof leaves the governing outcome open at its exact resume point.
+
+## Verification Strategy
+
+- Unit and integration fixtures for policy validation, exact identity preservation, strict SemVer,
+  `v00.05.00`, predecessor continuity, no eligible tag, multiple tags, normalized aliases,
+  unreachable tags, topology ordering, and every release-cohort command.
+- Lifecycle fixtures for stale and runnable assignments, zero/nonzero nonterminal execution,
+  mixed terminal outcomes, newly runnable races, repeat apply, audit event completeness, queue and
+  dashboard parity, and checkpoint/rebuild preservation.
+- Focused changed-behavior checks for each Work2 candidate, then strict Doctor and full release
+  validation for the combined frozen cohort.
+- Linux and Windows install/update/runtime qualification, exact content-SHA GitHub CI, provenance
+  and release verification, production convergence, and installed-client source parity.
+
+## Authority Boundaries
+
+This roadmap authorizes faithful planning, source changes, tests, local checkpoints, known
+development deployment, collaboration, and known production delivery under the current level-5
+project preference. It does not authorize credentials, destructive or cross-workspace recovery,
+unknown targets, arbitrary release tag acceptance, external issue closure without verified
+delivery, or scope beyond GitHub issues #63 and #64 and their necessary shared contract.

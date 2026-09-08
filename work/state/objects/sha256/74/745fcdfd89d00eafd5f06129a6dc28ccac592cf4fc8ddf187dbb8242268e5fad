@@ -1,0 +1,59 @@
+# Campaign: Qualify and Release Release Identity and Terminal Reconciliation
+
+Status: working
+Type: campaign
+Updated: 2026-09-08
+Next Action: qualify, freeze, publish, deploy, synchronize, and close the approved release cohort
+Campaign ID: qualify-and-release-release-identity-and-terminal-reconciliation
+Campaign Number: 177
+Outcome: The independently registered M1 and M2 slices ship together as one traceable Tool Shed release with exact-SHA CI, cross-platform proof, production convergence, synchronized portable clients, and recursively satisfied owner outcomes.
+Primary Focus Areas: qualification-release
+Supporting Focus Areas: provider-portability, snapshot-delivery, campaign-lifecycle, workspace-safety
+Depends On: add-terminal-campaign-reconciliation
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work5
+Completion Gate: Reconfirm G1 through G4 on the frozen cohort; pass the full release profile and focused policy/reconciliation tests on Linux and Windows; verify migrations, documentation, and portable-skill parity; freeze the complete registered cohort; require exact-SHA CI; publish v0.52.0 with provenance; deploy and verify production without disturbing development; synchronize approved clients and the installed Codex skill; close GitHub issues #63 and #64 only after verified delivery; and recursively satisfy CAMP-0177, PRM-0045, MAP-0033, and IDEA-0025 with a final healthy authoritative checkpoint.
+Completion Evidence: none
+Disposition: none
+Roadmap: repository-policy-release-identity-terminal-reconciliation
+Roadmap Revision: 1
+Roadmap Document: PRM-0045
+Milestone: M3-CROSS-PLATFORM-RELEASE-CLOSURE
+Unlocks Gates: G1-RELEASE-POLICY-CONTRACT, G2-DETERMINISTIC-RELEASE-BASELINE, G3-TERMINAL-RECONCILIATION-SEMANTICS, G4-ATOMIC-AUDITED-PROJECTION-PARITY, G5-CROSS-PLATFORM-RELEASE-PROOF
+
+## Request
+
+Qualify and ship the two exact Work2 candidates already registered by CAMP-0175 and CAMP-0176.
+Reconfirm strict-SemVer and fixed-width release identity, deterministic reachable baselines,
+terminal reconciliation refusal and success paths, migration safety, audit persistence, rebuild,
+and hosted projection parity. Preserve the existing candidate commits and release-cohort evidence.
+
+Freeze only after all canonical and disposable Linux/Windows checks pass. Require exact candidate
+CI, publish one traceable release, converge production, synchronize approved client snapshots and
+the installed user skill, verify parity and health, then close only GitHub issues #63 and #64 and
+the IDEA-0025 lineage.
+
+## App Server Preparation Contract
+
+```json
+{
+  "campaign_id": "qualify-and-release-release-identity-and-terminal-reconciliation",
+  "completion_evidence": "The frozen combined cohort passes the canonical release profile, Linux and Windows qualification, exact-SHA CI, publication/provenance checks, production health, client and installed-skill parity, GitHub issue closure, strict Doctor, and recursive owner-outcome reconciliation.",
+  "exact_resolution": "dispatch-time",
+  "execution_shape": "single-bounded-camp",
+  "inline_assets": "metadata-only",
+  "objective": "Release and operationally close the verified release-identity and terminal-reconciliation slices.",
+  "schema_version": 1,
+  "source_freshness": "required",
+  "verification": "orchestrator-exactly-once"
+}
+```
+
+## Completion Check
+
+Verify the frozen cohort, all five readiness gates, the full canonical release profile, Linux and
+Windows focused and release checks, migrations, exact-SHA GitHub CI, release provenance,
+production docs/dashboard health, approved client and installed-skill parity, issues #63/#64,
+checkpoint/rebuild, strict Doctor, and recursive closure of only the IDEA-0025 lineage.

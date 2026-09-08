@@ -1,0 +1,157 @@
+# Idea Brief: Repository-Policy Release Identity and Terminal Campaign Reconciliation
+
+Status: completed
+Type: idea-brief
+Updated: 2026-09-08
+Next Action: execute PRM-0045 from M1-RELEASE-IDENTITY-POLICY
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces: MAP-0033
+
+## Current Synthesis
+
+### Idea
+
+Close two related control-plane truth gaps exposed by field reconciliation:
+
+1. Release cohorts currently hard-code strict `vMAJOR.MINOR.PATCH` parsing as both release-tag
+   eligibility and baseline ordering. A repository with a valid fixed-width tag such as
+   `v00.05.00` can therefore fall back to the root commit even after the exact production release
+   was recorded.
+2. A campaign whose runs and operations are all terminal can remain `RUNNING` because stale
+   assignments still look pending. `BLOCKED` stops dispatch but misstates an administrative
+   reconciliation problem as unfinished project work.
+
+Explore a repository-neutral extension that separates exact identity from policy validation,
+Git reachability from version formatting, execution terminality from outcome satisfaction, and
+campaign closure from assignment cleanup.
+
+### Why It Matters
+
+The release gap can silently enlarge a cohort by selecting the wrong accumulated baseline. The
+campaign gap leaves phantom work running, obscures the observed execution result, and risks later
+redispatch. Editing an installed snapshot is not a viable workaround because the integrity check
+correctly rejects the modification. Both defects undermine Tool Shed's promise that durable state
+and projections tell the same project-bound truth.
+
+### Desired Outcome
+
+- A workspace can select a bounded declarative release-identity policy while unchanged workspaces
+  retain strict SemVer.
+- One shared evaluator is used by release-cohort `status`, `register`, `freeze`, `record-release`,
+  and `finalize`; it preserves the selected tag verbatim, reports rejected visible tags, and
+  chooses only eligible tags reachable from the relevant commit with documented deterministic
+  tie-breaking.
+- A guarded terminal-reconciliation route proves that no runnable or nonterminal execution
+  remains, classifies each pending assignment, atomically retires only proven stale assignments,
+  and closes the campaign with an explicit disposition and reason.
+- Normal completion, administratively reconciled terminal execution, unsatisfied or superseded
+  outcomes, and genuinely blocked active work remain visibly distinct across queue, status, API,
+  dashboard, audit history, and rebuilt projections.
+
+## Constraints And Non-Goals
+
+- Strict SemVer remains the zero-configuration default.
+- Policy must be project-bound, schema-validated, deterministic, and incapable of executing
+  repository-supplied code.
+- Exact tags, commits, evidence, project binding, fresh state/version tokens, authorization, and
+  reconciliation gates remain strict.
+- Installed Tool Shed snapshots remain immutable; configuration belongs to the project-controlled
+  surface.
+- Terminal reconciliation is atomic, idempotent, and fail-closed if state changes or work becomes
+  runnable.
+- The design must be repository-neutral and must not add firmware-specific branches or meanings.
+- Non-goal: accept arbitrary Git tags as releases or order release content solely by parsed version.
+- Non-goal: infer accepted-outcome success from terminal execution counts.
+- Non-goal: delete assignments or execution history to clean up projections.
+- Non-goal: relabel genuinely blocked runnable work as terminal.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Named release-policy profiles: `strict-semver` plus a bounded `fixed-width-numeric` profile | Small, auditable first slice; safe default; straightforward fixtures and diagnostics | A new profile may be needed for each materially different convention | Preferred starting direction; #63 explicitly requires strict SemVer and fixed-width numeric support |
+| Schema-driven release grammar with bounded prefix, segment count, widths, and optional suffix rules | Covers more repositories without code changes | More validation states, ambiguous normalization, and harder upgrade compatibility | Plausible later extension if named profiles prove too narrow |
+| Repository-supplied anchored regex | Flexible and superficially simple | Eligibility alone does not define deterministic selection; regex safety and normalization ambiguity expand the trust surface | Avoid for the initial design unless constrained by a safe grammar and independent ordering rules |
+| Prefer the most recent finalized cohort's recorded exact tag when it is eligible and reachable; discover tags only for bootstrap or recovery | Uses existing durable release truth, avoids unrelated-tag ambiguity, and preserves continuity across cohorts | Historical cohort state can be absent, stale, or governed by an older policy; fallback and policy-change behavior must fail closed | Preferred primary baseline source because #63 reports that the prior cohort already recorded the correct production tag |
+| Select a baseline by reachable Git topology, then use an exact-tag tie-break independent of policy parsing | Keeps formatting limited to eligibility and makes inclusion ancestry-based | Merge histories can produce multiple incomparable eligible ancestors; the ranking rule must be explicit | Strong fit with #63; candidate rules include maximal reachable ancestor, graph distance, then bytewise exact tag |
+| Reuse terminal cycle state with a separate `administratively-reconciled` disposition | Preserves separation between lifecycle, execution result, outcome verdict, and reconciliation | Every projection must render the two-dimensional state correctly | Preferred semantic direction; avoids treating reconciliation as success |
+| Add a dedicated campaign lifecycle such as `reconciled-terminal` | Easy for queue/status consumers to recognize | Risks collapsing outcome disposition into lifecycle and proliferating terminal states | Keep only if existing lifecycle plus disposition cannot produce an unambiguous operator state |
+| Guarded prepare/apply reconciliation manifest | Natural home for project binding, state token, per-assignment proof, authorization, audit payload, and atomic apply | Adds a planning payload and compatibility surface | Preferred mutation shape; mirrors existing guarded Tool Shed transactions |
+
+## Open Questions
+
+- Should the release policy live in repository-root `.tool-shed-policy.json`, or in another
+  project-bound configuration surface with a stronger ownership contract?
+- Is the first fixed-width profile exactly `v` plus three two-digit numeric segments, or should
+  prefix and segment widths be bounded parameters from day one?
+- What topology-first baseline order is least surprising for merge histories: maximal reachable
+  release ancestor, shortest graph distance to the candidate, first-parent distance, or an
+  explicitly recorded prior release when it is reachable?
+- When a finalized cohort's recorded tag is eligible and reachable, should that durable fact be
+  authoritative over fresh tag discovery, with discovery limited to first-use and repair paths?
+- If two exact tags normalize to the same numeric value, should all affected operations reject the
+  ambiguity or should a documented bytewise tie-break select one?
+- Can the existing terminal lifecycle plus outcome/reconciliation dispositions express
+  “administratively reconciled” cleanly, or is a new lifecycle state required?
+- What constitutes proof that an assignment is stale or non-runnable, especially when terminal
+  runs have mixed results or a superseding outcome owns the remaining intent?
+- How should optional handoff evidence and superseding outcome references be represented without
+  becoming release- or software-specific?
+- Should #63 and #64 ship as separate milestones under one PRM, or as one schema/projection change
+  with two independently releasable slices?
+
+## Decisions
+
+- Preserve every exact release identity verbatim; validation policy and baseline selection are
+  separate concerns.
+- Use Git ancestry to establish inclusion; policy parsing only establishes tag eligibility.
+- Keep strict SemVer as the backward-compatible default and support fixed-width dotted numeric
+  tags declaratively.
+- Do not permit arbitrary repository code as policy.
+- Reconciliation requires an explicit terminal disposition and never fabricates outcome success.
+- Preserve execution and assignment history, with a durable audit event for any retirement and
+  closure.
+- Keep normal completion, administrative reconciliation, unsatisfied/superseded outcomes, and
+  blocking distinct in operator-facing projections.
+
+## Don't Forget
+
+- Cover `v00.05.00`, strict-SemVer defaults, no eligible tags, multiple eligible tags, and
+  unreachable tags in fixtures.
+- Report the active policy, chosen exact tag, and actionable rejection reasons in status output.
+- Exercise the same release policy through every cohort command rather than patching `_base_tag`
+  alone.
+- Test a newly runnable assignment appearing between reconciliation preparation and apply.
+- Cover mixed terminal outcomes, repeated reconciliation, audit history, and projection rebuilds.
+- Record prior campaign state, run/operation/assignment counts, actor, reason, authorization
+  reference, and optional handoff or superseding reference in the atomic audit event.
+- Update documentation and portable Tool Shed route instructions as part of eventual delivery.
+
+## Exploration Log
+
+### 2026-09-08
+
+- Readiness passed as `READY-WITH-PRM-GATES`; approved MAP-0033 and PRM-0045 preserve all five
+  gates. The Idea is now promoted immutable origin history for that outcome chain.
+- Owner selected `ts: prm idea 25`; the brief entered the Plan Cycle as `ready-for-prm`.
+- Idea Brief created from [GitHub issue #63](https://github.com/PC-Redemption/tool_shed/issues/63)
+  and [GitHub issue #64](https://github.com/PC-Redemption/tool_shed/issues/64).
+- Current code evidence: `scripts/release_cohort.py` owns a hard-coded `SEMVER_TAG`; `_base_tag`
+  filters reachable `v[0-9]*` tags, chooses the maximum parsed tuple, and falls back to a reachable
+  root when none qualify. `_require_unambiguous_tag` also applies the same built-in parser, while
+  `status` rescans `HEAD` and a newly created cohort records that computed value as base evidence.
+- Preferred continuity option: first reuse the most recent finalized cohort's exact recorded tag
+  when policy validation and ancestry both accept it; use deterministic Git-tag discovery only
+  when no usable durable predecessor exists or an explicit guarded repair supersedes it.
+- Observed #64 evidence records 72 terminal runs and 136 terminal operations while two stale
+  assignments kept the campaign running; `BLOCKED` was a safe containment but not truthful
+  terminal disposition.
+- The issues remain separate implementation slices inside one brief. Their shared architectural
+  invariant is that project policy, authoritative execution facts, outcome judgment, and operator
+  projections must not be collapsed into one convenience state.
+- Next useful brainstorming step: settle the release-policy schema, topology tie-break, terminal
+  disposition taxonomy, and per-assignment stale-proof rule before readiness review.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

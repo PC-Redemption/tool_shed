@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-production-release-evidence",
+  "release": {
+    "version": "0.52.0",
+    "tag": "v0.52.0",
+    "content_commit": "4c27a96e986ebdc73dfcf2181cff069cc8b77a96",
+    "provenance_commit": "04e24a02de791c4bc08d0ec7a52d6888193b22ef",
+    "published_at": "2026-09-08T20:56:55Z",
+    "url": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.52.0"
+  },
+  "qualification": {
+    "canonical_release_validation": "646 of 646 tests passed",
+    "linux_release_validation": "646 of 646 tests passed",
+    "windows_release_validation": "646 of 646 tests passed under Python 3.14.6 and Django 5.2.17",
+    "validate_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34277151724",
+    "validate_jobs": "33 of 33 passed for the exact content commit",
+    "publish_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34277713600",
+    "result": "passed"
+  },
+  "web_production": {
+    "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com",
+    "image": "tool-shed-dashboard:v0.52.0",
+    "image_sha256": "f5f15ceb138c591893e1050d6f6b3ba1cb9aa51f0295b2fce4d2e2ea2f3bd06d",
+    "database_backup": "/home/jon/docker/ts.rookaro.com/backups/dashboard-daily-20260908T160220Z.dump.age",
+    "rollback_bundle": "/home/jon/docker/ts.rookaro.com.rollback-v0.51.0-20260908T2057Z",
+    "public_docs_status": 200,
+    "public_dashboard_health_status": 200,
+    "router_identity": "ts.rookaro.com",
+    "migration": "fleet.0012_work_artifact_terminal_reason applied",
+    "production_readiness": "healthy",
+    "result": "passed"
+  },
+  "linux_production": {
+    "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed",
+    "installed_version": "0.52.0",
+    "content_commit": "4c27a96e986ebdc73dfcf2181cff069cc8b77a96",
+    "backup": "/home/jon/dev/ts_linux_test_bed/tool_shed.backup-20260908T210255Z.tar",
+    "transaction_id": "c58712814f3a8e506c33dc1c",
+    "updater_validation": "attested-focused-smoke",
+    "work_preserved": true,
+    "recovery_note": "An initial attempt rolled back because a disposable invalid snapshot copy introduced stale-path findings; moving that copy outside the test-bed root made the guarded retry pass without product changes.",
+    "result": "passed"
+  },
+  "windows_production": {
+    "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed",
+    "installed_version": "0.52.0",
+    "content_commit": "4c27a96e986ebdc73dfcf2181cff069cc8b77a96",
+    "backup": "E:\\dev\\ts_windows_test_bed\\tool_shed.backup-20260908T210008Z.tar",
+    "transaction_id": "c73528f8723245a923f50277",
+    "updater_validation": "attested-focused-smoke",
+    "work_preserved": true,
+    "result": "passed"
+  },
+  "installed_codex_skill": {
+    "source": "/home/jon/docker/tool_shed/skills/tool-shed",
+    "target": "/home/jon/.codex/skills/tool-shed",
+    "backup": "/home/jon/.codex/skills/tool-shed.backup-20260908T210029Z",
+    "validation": "source, staged, and installed quick validation passed; recursive diff is empty",
+    "fresh_session_required": true,
+    "result": "passed"
+  },
+  "release_review": {
+    "reviewed_open_issues": true,
+    "completed_issue_matches": [
+      "https://github.com/PC-Redemption/tool_shed/issues/63",
+      "https://github.com/PC-Redemption/tool_shed/issues/64"
+    ],
+    "remaining_gap_issue": null,
+    "release_blocking": false,
+    "result": "passed"
+  },
+  "result": "passed"
+}
