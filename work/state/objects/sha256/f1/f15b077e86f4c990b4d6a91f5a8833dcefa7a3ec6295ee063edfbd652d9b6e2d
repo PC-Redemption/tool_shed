@@ -1,0 +1,110 @@
+# Project Map: Repository-Policy Release Identity and Terminal Campaign Reconciliation
+
+Status: proposed
+Type: project-map
+Updated: 2026-09-08
+Next Action: validate readiness-gate transfer and accept this project direction
+Source Idea: IDEA-0025
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 4
+Reviewed Body SHA256: bdd8b4d20449d21df6356d58e8b43312e9f13f392d669d00f59bda5de6fc59fa
+
+## Purpose
+
+Correct two field-exposed gaps where Tool Shed's convenience projections can disagree with
+authoritative repository or execution truth: hard-coded release-tag formatting can select the
+wrong cohort baseline, and stale campaign assignments can keep wholly terminal execution looking
+active. Preserve completed PRM-0044 as historical delivery evidence; this is a focused follow-on
+that makes release identity genuinely project-configurable and adds truthful terminal
+administrative reconciliation.
+
+## Desired Outcome
+
+Repositories select a bounded declarative release-identity policy without modifying an installed
+snapshot. Every release-cohort command shares one exact-tag-preserving, reachability-aware baseline
+evaluator. Separately, campaigns with no runnable or nonterminal execution can use an explicit
+guarded route that retires only proven stale assignments and closes into a distinct
+administratively reconciled terminal result without claiming accepted-outcome success.
+
+## Visual Map
+
+```mermaid
+flowchart TD
+  I[IDEA-0025: authoritative release and lifecycle truth] --> R[Release identity policy]
+  I --> T[Terminal campaign reconciliation]
+  R --> RP[Project policy schema and shared evaluator]
+  RP --> RB[Reachable deterministic baseline and diagnostics]
+  T --> TS[Terminal/disposition and stale-proof contract]
+  TS --> TA[Atomic guarded retirement and closure]
+  RB --> Q[Cross-platform integration and release proof]
+  TA --> Q
+```
+
+## Settled Direction
+
+- Extend repository-root `.tool-shed-policy.json` with one versioned `release_identity` object.
+  Absence means the unchanged strict-SemVer policy. The first alternative is a bounded
+  fixed-width dotted-numeric profile sufficient for `v00.05.00`; arbitrary regex and executable
+  hooks remain out of scope.
+- Centralize eligibility, exact identity, reachability, predecessor continuity, selection, and
+  diagnostics in one release-identity evaluator consumed by every cohort operation.
+- Prefer the most recent finalized cohort's recorded exact release tag when it remains eligible
+  under the current project policy and reachable from the relevant commit. For bootstrap or
+  unusable-history recovery, rank reachable eligible tag commits by deterministic Git topology;
+  normalized aliases on one selected commit fail closed rather than silently changing identity.
+- Keep the existing terminal cycle lifecycle and add an explicit administrative terminal
+  disposition/projection unless implementation evidence proves this cannot remain unambiguous.
+  Outcome success remains a separate verdict.
+- Implement terminal cleanup as read-only planning plus exact guarded apply. The apply transaction
+  rechecks every run, operation, and assignment; retires only assignments proven stale by the
+  settled rule; closes the campaign; and writes one complete audit event atomically.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Release policy contract | Project-bound named policy profiles, strict default, fixed-width support, validation, upgrade behavior | existing repository policy loader |
+| Baseline continuity | One exact-tag evaluator, predecessor preference, topology fallback, ambiguity refusal, actionable diagnostics | release policy contract |
+| Terminal semantics | Distinct lifecycle, execution, outcome, reconciliation, and operator presentation with exact stale-proof rules | existing Hybrid lifecycle and execution schema |
+| Atomic reconciliation | Fresh-token prepare/apply, per-assignment classification, idempotent transaction, durable audit, projection parity | terminal semantics |
+| Qualification and delivery | Focused and full tests, Linux and Windows proof, immutable snapshot upgrade, docs/skill, exact release and production verification | all implementation workstreams |
+
+## Readiness Gate Transfer
+
+1. `G1-RELEASE-POLICY-CONTRACT` — release identity policy is bounded and project-configurable.
+2. `G2-DETERMINISTIC-RELEASE-BASELINE` — every cohort command shares one deterministic evaluator.
+3. `G3-TERMINAL-RECONCILIATION-SEMANTICS` — administrative closure cannot fabricate success.
+4. `G4-ATOMIC-AUDITED-PROJECTION-PARITY` — reconciliation is guarded, atomic, idempotent, and
+   consistently projected.
+5. `G5-CROSS-PLATFORM-RELEASE-PROOF` — compatibility and the complete contract are
+   release-qualified.
+
+## Program Shape
+
+1. Deliver the release-policy schema and shared deterministic baseline evaluator as one focused
+   candidate, including regression coverage for the previously delivered PRM-0044 behavior.
+2. Deliver terminal campaign reconciliation semantics and its atomic guarded route as a separate
+   focused candidate.
+3. Reconfirm all five gates across full validation and the configured Linux, Windows, release,
+   documentation, upgrade, and production lanes; publish and recursively reconcile only this
+   outcome chain.
+
+## Constraints And Non-Goals
+
+- Preserve strict SemVer by default, exact Git tags and commits, installed snapshot integrity,
+  project binding, state tokens, authorization, evidence, and reconciliation gates.
+- Keep release identity policy repository-neutral; do not add a firmware branch.
+- Do not treat every tag as a release, order content solely by parsed version, or execute
+  repository-supplied validation code.
+- Do not infer outcome satisfaction from terminal run counts, delete history, or use `BLOCKED` as
+  administrative cleanup.
+- Do not reopen or rewrite completed IDEA-0024 / MAP-0032 / PRM-0044 state; use it as regression
+  and provenance evidence.
+
+## Completion Boundary
+
+The map completes only when all five transferred gates are satisfied by released exact source,
+strict-SemVer defaults and configured fixed-width tags both work without snapshot modification,
+terminal reconciliation survives concurrency and rebuild tests, Linux and Windows clients are
+qualified, documentation and portable routes match behavior, production is verified, and the
+Campaign, PRM, Map, and Idea outcomes are terminal, reconciled, and fully propagated.
