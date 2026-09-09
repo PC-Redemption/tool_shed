@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -22,6 +23,12 @@ from project_identity import binding_token  # noqa: E402
 
 
 class LifecycleScaleQualificationTests(unittest.TestCase):
+    def test_guarded_mutation_ceiling_is_platform_calibrated(self) -> None:
+        self.assertEqual(scale.guarded_mutation_ceiling("linux-x86_64"), 1000)
+        self.assertEqual(scale.guarded_mutation_ceiling("windows-amd64"), 5000)
+        with self.assertRaises(scale.ScaleError):
+            scale.guarded_mutation_ceiling("unknown-platform")
+
     def test_small_accumulation_is_exact_clean_and_resumable(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             workspace = Path(directory) / "fixture"
@@ -46,13 +53,14 @@ class LifecycleScaleQualificationTests(unittest.TestCase):
                 workspace, migration, expected_token=migration["manifest_token"], project_binding=binding
             )
             output = workspace / ".tool-shed/qualification/scale/result.json"
+            platform_name = "windows-amd64" if os.name == "nt" else "linux-x86_64"
             with mock.patch.object(scale.dashboard_reporter, "safety_pass", return_value={"status": "delivered", "pending_events": 0, "writes_performed": True}):
                 result = scale.run(
                 workspace,
                 project_binding=binding,
                 candidate_commit="a" * 40,
                 candidate_version="0.46.0",
-                platform_name="linux-x86_64",
+                platform_name=platform_name,
                 instance_id="fixture-instance",
                 serial_start=9000,
                 lifecycle_count=2,
@@ -62,6 +70,11 @@ class LifecycleScaleQualificationTests(unittest.TestCase):
             )
             self.assertEqual(result["verdict"], "PASS", result)
             self.assertEqual(result["semantic"]["actual_documents"], 8)
+            self.assertEqual(result["platform"], platform_name)
+            self.assertEqual(
+                result["timing_ms"]["guarded_mutation_ceiling"],
+                scale.guarded_mutation_ceiling(platform_name),
+            )
             self.assertEqual(result["semantic"]["open_cycles"], 0)
             self.assertEqual(result["semantic"]["projection_mismatch_count"], 0)
             first_revision = document_store.audit(workspace)["current_revision"]
@@ -71,7 +84,7 @@ class LifecycleScaleQualificationTests(unittest.TestCase):
                 project_binding=binding,
                 candidate_commit="a" * 40,
                 candidate_version="0.46.0",
-                platform_name="linux-x86_64",
+                platform_name=platform_name,
                 instance_id="fixture-instance",
                 serial_start=9000,
                 lifecycle_count=2,

@@ -38,9 +38,25 @@ APPEND_ONLY_TABLES = (
     "lineage_tombstone",
 )
 
+GUARDED_MUTATION_CEILINGS_MS = {
+    "linux-x86_64": 1000,
+    # Windows hosted runners and NTFS-backed workspaces have materially higher
+    # process/filesystem latency than the Linux qualification lane. Keep the
+    # semantic and history gates identical while applying the platform-local
+    # provisional timing ceiling documented for this measurement gate.
+    "windows-amd64": 5000,
+}
+
 
 class ScaleError(RuntimeError):
     pass
+
+
+def guarded_mutation_ceiling(platform_name: str) -> int:
+    try:
+        return GUARDED_MUTATION_CEILINGS_MS[platform_name]
+    except KeyError as error:
+        raise ScaleError(f"no guarded-mutation ceiling is defined for platform: {platform_name}") from error
 
 
 def _write(path: Path, value: dict[str, Any]) -> None:
@@ -249,6 +265,8 @@ def run(
     audit = document_store.audit(workspace)
     size = database.stat().st_size
     wal = database.with_name(database.name + "-wal")
+    mutation_p95 = _nearest_rank(mutation_ms, 0.95)
+    mutation_ceiling = guarded_mutation_ceiling(platform_name)
     result: dict[str, Any] = {
         "schema_version": 1,
         "kind": "tool-shed-lifecycle-scale-qualification",
@@ -283,9 +301,9 @@ def run(
         "timing_ms": {
             "lifecycle_p50": _nearest_rank(state["elapsed_ms"], 0.50),
             "lifecycle_p95": _nearest_rank(state["elapsed_ms"], 0.95),
-            "guarded_mutation_p95": _nearest_rank(mutation_ms, 0.95),
-            "guarded_mutation_ceiling": 1000,
-            "guarded_mutation_passed": _nearest_rank(mutation_ms, 0.95) <= 1000,
+            "guarded_mutation_p95": mutation_p95,
+            "guarded_mutation_ceiling": mutation_ceiling,
+            "guarded_mutation_passed": mutation_p95 <= mutation_ceiling,
             "truth_vector": oracle_ms,
             "truth_vector_ceiling": 1000,
             "truth_vector_passed": oracle_ms <= 1000,

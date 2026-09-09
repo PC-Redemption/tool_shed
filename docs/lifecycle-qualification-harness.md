@@ -244,7 +244,10 @@ python3 scripts/lifecycle_scale_qualification.py \
 The driver seals each serial against the immediately preceding database digest, resumes from its
 ignored state record, and retains all completed Idea→Map→PRM→Campaign histories. It requires exact
 run-owned cardinality, terminal reconciliation, independent-oracle parity, zero open recovery
-cases, and the provisional guarded-mutation and truth-vector ceilings. The 1,000-lifecycle tier uses
+cases, and the provisional guarded-mutation and truth-vector ceilings. The guarded-mutation ceiling
+is platform-calibrated (1 second on Linux and 5 seconds on Windows) to account for the materially
+higher filesystem and process latency of NTFS-backed hosted runners without weakening the semantic,
+history, or independent-oracle gates. The 1,000-lifecycle tier uses
 the same command with `--minimum-history-delta 100000`; it is a measurement gate rather than a new
 semantic path. Results include table counts, database/WAL size, query plans, and timing samples.
 
