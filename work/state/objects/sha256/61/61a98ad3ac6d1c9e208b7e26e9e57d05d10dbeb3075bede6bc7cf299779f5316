@@ -1,0 +1,125 @@
+# Project Map: Convergent Install and Upgrade Authority
+
+Status: complete
+Type: project-map
+Updated: 2026-09-09
+Next Action: none
+Source Idea: IDEA-0026
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 4
+Reviewed Body SHA256: dfdc6d80c34d41123f62bb778212912d47bf745e47126e8b515973f92b040a40
+
+## Purpose
+
+Make every Tool Shed installation and upgrade tell one coherent truth about what the selected
+release can actually do. Correct the split-authority state from GitHub issue #66, then use the
+`workpc` field migration as a durable acceptance fixture for runtime capability, failure
+diagnostics, relationship preservation, semantic-operation boundaries, and complete convergence.
+
+## Desired Outcome
+
+Every install and supported update entry point evaluates the current workspace against the
+selected release, applies all safe guarded convergence steps, and leaves either a fully enabled
+workspace or one functional, explicitly limited authority mode with exact recovery actions. All
+consumers agree on authority and inventory; configured runtimes prove guarded-write capability;
+conversion preserves semantic state; and the result is qualified on Linux and Windows before
+release and recursive outcome closure.
+
+## Visual Map
+
+```mermaid
+flowchart TD
+  I[IDEA-0026: field-backed convergence contract] --> A[Shared authority resolver]
+  A --> F[Consistent file/shadow fallback]
+  F --> C[Release capability inventory and convergence planner]
+  C --> J[Guarded steps, durable journal, exact recovery]
+  C --> R[Interactive and scheduler runtime probes]
+  C --> S[Semantic parity and relationship extraction]
+  J --> Q[Linux and Windows qualification]
+  R --> Q
+  S --> Q
+  Q --> D[Release, client sync, production verification]
+```
+
+## Settled Direction
+
+- Introduce one canonical release-aware authority resolver for absent database, file authority,
+  shadow import, qualified shadow, Hybrid authority, and recovery. Route every relevant consumer
+  through its normalized authority and feature-availability result.
+- Restore coherent file-authoritative compatibility first so existing schema-2 shadow workspaces
+  cannot make valid work disappear while guarded conversion remains pending.
+- Add one versioned release-capability inventory and a thin convergence planner/orchestrator that
+  invokes existing guarded domain migrations. It owns ordering, bounded result classification,
+  resume state, and post-check agreement—not domain mutation logic or a second state authority.
+- Probe concrete SQLite mutation capabilities under every configured interactive and background
+  interpreter before mutation. Doctor exposes read health separately from mutation readiness and
+  cannot report full health when required guarded writes fail.
+- Extend conversion proof from document bytes and rendered views to stable identity, resolvable
+  immutable-ID relationships, lifecycle, planning order, campaign state, outcome state,
+  checkpoint/rebuild, rollback, and idempotence.
+- Keep structural migration, required compatibility backfill, and optional readiness or historical
+  outcome enrichment as distinct named action classes with their own authority requirements.
+- Use the exact issue #66 and `workpc` states as field-derived fixtures, while preserving normal
+  App Server fallback such as `needs_more_context` as a non-error path.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Authority compatibility | Shared resolver, normalized capsule, coherent file/shadow fallback, cross-consumer contract tests | current storage-mode and document authority mechanisms |
+| Release convergence | Versioned capabilities, prerequisite planning, guarded operation composition, durable journal, idempotent resume, machine and operator summaries | authority compatibility |
+| Runtime truth | Disposable mutation probes, interpreter/scheduler parity, Doctor read-vs-write health, bounded actionable diagnostics | authority compatibility |
+| Semantic integrity | Relationship extraction, parity and ambiguity findings, lifecycle/planning/campaign/outcome preservation, semantic-action separation | authority compatibility and convergence planner |
+| Qualification and delivery | Full state matrix, Linux/Windows fixtures, issue #66 and workpc reproduction, docs/skill parity, release and production verification | all implementation workstreams |
+
+## Readiness Gate Transfer
+
+1. `G1-AUTHORITY-COMPATIBILITY-CONTRACT` — all consumers share one release-aware authority and
+   fallback contract.
+2. `G2-RELEASE-CONVERGENCE-ORCHESTRATION` — every install and upgrade path converges through one
+   guarded resumable plan.
+3. `G3-RUNTIME-CAPABILITY-AND-DIAGNOSTICS` — interactive and background runtimes prove mutation
+   capability and actionable failure truth.
+4. `G4-SEMANTIC-MIGRATION-INTEGRITY` — conversion preserves semantic state and separates required
+   migration from enrichment.
+5. `G5-CROSS-PLATFORM-UPGRADE-AND-RELEASE-PROOF` — the complete contract is qualified across
+   supported states and shipped clients.
+
+## Program Shape
+
+1. Deliver the shared authority resolver and coherent file/shadow compatibility as the smallest
+   focused Work2 candidate, closing the immediate split-brain regression without forcing cutover.
+2. Deliver the release-convergence planner, capability probes, durable diagnostics and journal,
+   and semantic migration integrity as a second Work2 candidate over the shared authority contract.
+3. Reconfirm all five gates across the full Linux and Windows state matrix; reproduce issue #66 and
+   the `workpc` sequence; align documentation and portable skill; release, synchronize clients,
+   verify production, and recursively reconcile only this outcome chain.
+
+## Constraints And Non-Goals
+
+- Preserve guarded archives, project identity, fresh tokens, explicit cutover authority, rollback,
+  installed-snapshot integrity, and existing domain migration guards.
+- Do not force authority cutover, create semantic planning history as a smoke test, or treat code
+  presence and schema number as proof that a feature is available.
+- Do not add command-local authority heuristics, a second migration engine, or uncontrolled raw
+  failure retention.
+- Keep the design repository-neutral. Field paths, firmware content, and unrelated workspace work
+  are fixtures and evidence, not product-specific branches or mutation targets.
+- Credentials, unknown targets, destructive recovery, and material scope expansion remain outside
+  this accepted planning direction.
+
+## Completion Boundary
+
+The map completes only when all five transferred gates are satisfied by released exact source;
+all supported install/update paths either converge or report a coherent bounded fallback; Linux
+and Windows qualification includes the issue #66 and `workpc` failure modes; documentation and
+portable clients match behavior; production verification passes; and Campaign, PRM, Map, and Idea
+outcomes are terminal, reconciled, and fully propagated.
+
+## Result
+
+The mapped direction shipped in Tool Shed v0.53.0. The shared resolver, guarded convergence,
+runtime diagnostics, semantic migration integrity, and cross-platform delivery workstreams all
+passed their transferred gates. Exact-SHA CI, the published release, all three production lanes,
+official Linux and Windows client updates, installed-skill parity, workpc reproduction, and issue
+#66 closure are recorded in `work/evidence/release-v0.53.0-production.json`.

@@ -1,0 +1,50 @@
+# Campaign: Qualify and Release Convergent Install and Upgrade
+
+Status: completed
+Type: campaign
+Updated: 2026-09-09
+Next Action: none
+Campaign ID: qualify-and-release-convergent-install-upgrade
+Outcome: The complete authority and convergence contract is qualified across Linux, Windows, and the workpc reproduction, published as one traceable release, promoted and verified on every required production lane, synchronized to installed clients, and recursively reconciled through IDEA-0026.
+Primary Focus Areas: qualification-release
+Supporting Focus Areas: snapshot-delivery, provider-portability, workspace-safety, artifact-workflows, campaign-lifecycle
+Depends On: CAMP-0178, CAMP-0179
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work5
+Completion Gate: The active cohort is frozen to a clean content commit; release validation and the exact-SHA Ubuntu/Windows Python matrix pass; v0.53.0 provenance, tag, and GitHub Release agree; web, Windows, and Linux production lanes are verified against the frozen content; the workpc issue #66 sequence is reproduced without firmware mutation; the installed Codex skill matches the published source; issue #66 is closed with evidence; and CAMP-0180, PRM-0046, MAP-0034, and IDEA-0026 are terminal, satisfied, recursively closed, and reconciled before the release cohort is finalized.
+Roadmap: convergent-install-upgrade-authority
+Roadmap Revision: 1
+Roadmap Document: PRM-0046
+Milestone: M3-CROSS-PLATFORM-RELEASE-CLOSURE
+Unlocks Gates: G1-AUTHORITY-COMPATIBILITY-CONTRACT, G2-RELEASE-CONVERGENCE-ORCHESTRATION, G3-RUNTIME-CAPABILITY-AND-DIAGNOSTICS, G4-SEMANTIC-MIGRATION-INTEGRITY, G5-CROSS-PLATFORM-UPGRADE-AND-RELEASE-PROOF
+
+## Request
+
+Execute the complete active release cohort through the project three-lane Work5 replacement. Reconfirm authority, convergence, runtime, diagnostic, relationship, semantic, rollback, and idempotence behavior across the supported Linux and Windows matrices. Reproduce the issue #66 `workpc` sequence read-only against the firmware workspace while validating Tool Shed behavior in approved disposable targets.
+
+Freeze one exact clean content commit, require its successful GitHub push validation matrix, publish v0.53.0 through the two-commit provenance contract, and verify the GitHub Release. Promote and verify web, Windows, and Linux production lanes, synchronize the installed Codex skill only after publication, close issue #66 with evidence, then complete and reconcile only the registered IDEA-0026 chain and finalize the release cohort.
+
+## Completion Check
+
+Require strict local Doctor and release validation, exact-SHA GitHub Actions success, reproducible disconnected snapshot integrity, all three development and production lane records, web health, Linux and Windows installation/runtime checks, the bounded `workpc` incompatibility classification and remediation, published manifest/tag/release agreement, exact installed-skill parity, recursive outcome closure, clean checkpoint rebuild, and a clean repository.
+
+## Result
+
+Tool Shed v0.53.0 shipped from exact content commit `08519fa285243c50c0f82de67a4ea4d0e4430542`
+and provenance commit `d954acbeeb8d1e0b423a2e7804dd2f014160ebeb`. The complete 33-job
+Ubuntu/Windows Python 3.11/current matrix passed with no skipped jobs. Web production is healthy;
+the approved Linux and Windows clients upgraded through the official release updater with preserved
+work, clean schema-6 state, rebuild parity, and verified rollback archives; and the installed Codex
+skill is byte-identical to the published source.
+
+The workpc firmware workspace was not mutated. Its original Python 3.11.2 / SQLite 3.39.4 runtime
+now receives the actionable `SQLITE_TRUSTED_SCHEMA_TRIGGER_UNSAFE` diagnostic, while its installed
+Python 3.13.1 / SQLite 3.45.3 runtime proved interactive and background mutation readiness. GitHub
+issue #66 was closed against the production evidence. Issues #61 and #62 retain the independently
+verified next-revision residuals discovered during this release.
+
+Evidence: `work/evidence/prm0046-m3-development-qualification.json`,
+`work/evidence/release-v0.53.0-production.json`, and
+`work/evidence/release-lanes/prm0046-v0.53.0.json`.
