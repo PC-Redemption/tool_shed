@@ -11,6 +11,7 @@ import argparse
 import contextlib
 import hashlib
 import json
+import re
 import sqlite3
 import sys
 import uuid
@@ -19,6 +20,8 @@ from typing import Any, Sequence
 
 import document_store
 import hybrid_state
+import authority_resolver
+import update_work_index
 from project_identity import ProjectIdentityError, require_path_within, resolved_workspace
 
 
@@ -194,12 +197,80 @@ def projection_for_connection(connection: sqlite3.Connection, artifact_type: str
 
 def status(workspace: Path, artifact_type: str, *, database: Path | None = None) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
+    authority = authority_resolver.resolve(workspace, database=database)
+    if authority["authority"] == "file":
+        return file_projection(workspace, artifact_type, authority=authority)
+    if authority["authority"] != "sqlite":
+        raise PlanningOrderError(authority["reason"])
     path = require_path_within(workspace, database or hybrid_state.database_path(workspace))
     with contextlib.closing(hybrid_state.connect(path, writable=False)) as connection:
         checked = document_store.audit_connection(workspace, connection)
         if checked["classification"] in {"INVALID", "UNJOURNALED", "UNMANAGED_REVIEW"}:
             raise PlanningOrderError(f"planning order read refused from {checked['classification']}")
         return projection_for_connection(connection, artifact_type)
+
+
+def file_projection(
+    workspace: Path,
+    artifact_type: str,
+    *,
+    authority: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Derive a read-only planning projection from retained authoritative files."""
+    artifact_type = normalize_type(artifact_type)
+    work = workspace / "work"
+    artifacts = update_work_index.discover_artifacts(work) if work.is_dir() else []
+    rows: list[dict[str, Any]] = []
+    for artifact in artifacts:
+        if artifact.kind() != artifact_type or not artifact.is_active():
+            continue
+        relative = artifact.path.as_posix()
+        status_value = artifact.status().casefold()
+        readiness = (
+            "blocked" if status_value == "blocked" else
+            "working" if status_value == "working" else
+            "waiting" if status_value in {"parked", "deferred"} else
+            "ready"
+        )
+        namespace = "IDEA" if artifact_type == "idea-brief" else "PRM"
+        match = re.search(rf"\b{namespace}-\d{{4,}}\b", artifact.title + " " + relative, re.I)
+        visible_id = match.group(0).upper() if match else relative
+        rows.append(
+            {
+                "artifact_id": authority_resolver.file_artifact_id(workspace, relative),
+                "visible_id": visible_id,
+                "title": artifact.title,
+                "artifact_type": artifact_type,
+                "position": 0,
+                "order_source": "derived",
+                "readiness": readiness,
+                "updated_at": artifact.fields.get("Updated", ""),
+                "path": relative,
+            }
+        )
+    rows.sort(key=lambda item: item["path"])
+    rows.sort(key=lambda item: item["updated_at"], reverse=True)
+    rows.sort(key=lambda item: READINESS_RANK[item["readiness"]])
+    for position, row in enumerate(rows, start=1):
+        row["position"] = position
+    material = [
+        [row["path"], row["updated_at"], row["readiness"], row["title"]]
+        for row in rows
+    ]
+    return {
+        "schema_version": 1,
+        "kind": "tool-shed-planning-order",
+        "artifact_type": artifact_type,
+        "state_token": hashlib.sha256(
+            json.dumps(material, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest(),
+        "database_revision": None,
+        "override_active": False,
+        "authority": authority or {"authority": "file", "state": "file-only"},
+        "feature_limits": ["planning-order-overrides-unavailable"],
+        "items": rows,
+        "writes_performed": False,
+    }
 
 
 def _retire_override_edges(
@@ -228,6 +299,8 @@ def set_order(
     actor: str,
     database: Path | None = None,
 ) -> dict[str, Any]:
+    if not document_store.is_authoritative(workspace, database):
+        raise PlanningOrderError("planning-order overrides require authoritative Hybrid document state")
     artifact_type = normalize_type(artifact_type)
     if len(ordered_ids) != len(set(ordered_ids)):
         raise PlanningOrderError("owner planning order contains duplicate IDs")
@@ -274,6 +347,8 @@ def reset_order(
     actor: str,
     database: Path | None = None,
 ) -> dict[str, Any]:
+    if not document_store.is_authoritative(workspace, database):
+        raise PlanningOrderError("planning-order overrides require authoritative Hybrid document state")
     artifact_type = normalize_type(artifact_type)
 
     def existing(connection: sqlite3.Connection) -> dict[str, Any] | None:

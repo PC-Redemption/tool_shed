@@ -31,6 +31,8 @@ from typing import Any, Sequence
 
 import app_server_user_state
 import app_server_control
+import authority_resolver
+import campaign_queue
 import codex_execution
 import document_store
 import hybrid_state
@@ -38,6 +40,7 @@ import loop_findings
 import planning_order
 import release_cohort
 import release_projection
+import update_work_index
 import work_orchestration
 from project_identity import ProjectIdentityError, binding_token, load_project_identity, require_project_binding, resolved_workspace
 try:
@@ -422,6 +425,30 @@ def _windows_pid_is_running(pid: int) -> bool:
 
 
 def _dashboard_state(workspace: Path) -> dict[str, Any]:
+    authority = authority_resolver.resolve(workspace)
+    if authority["authority"] == "file":
+        work = workspace / "work"
+        artifacts = update_work_index.discover_artifacts(work) if work.is_dir() else []
+        ideas = [item for item in artifacts if item.kind() == "idea-brief" and item.is_active()]
+        campaigns = list(campaign_queue.load_all(workspace).values())
+        active = [item for item in campaigns if item.status not in {"complete", "completed", "abandoned", "deferred"}]
+        return {
+            "working_count": sum(item.status == "working" for item in active),
+            "ready_count": sum(item.status in {"queued", "ready"} for item in active),
+            "queued_count": sum(item.status in {"queued", "ready"} for item in active),
+            "blocked_count": sum(item.status == "blocked" for item in active),
+            "closure_debt_count": 0,
+            "active_idea_count": len(ideas),
+            "open_outcome_count": 0,
+            "unreconciled_outcome_count": 0,
+            "active_loop_finding_count": 0,
+            "last_completed_id": next(
+                (item.campaign_id for item in campaigns if item.status in {"complete", "completed"}),
+                None,
+            ),
+        }
+    if authority["authority"] != "sqlite":
+        raise DashboardReporterError(authority["reason"])
     ideas = document_store.list_documents(workspace, lifecycle="active", document_type="idea-brief", limit=500)["documents"]
     completed = document_store.list_documents(workspace, lifecycle="completed", document_type="campaign", limit=500)["documents"]
     with contextlib.closing(hybrid_state.connect(hybrid_state.database_path(workspace), writable=False)) as connection:
@@ -473,6 +500,82 @@ def _dashboard_state(workspace: Path) -> dict[str, Any]:
 
 def _work_inventory(workspace: Path) -> dict[str, Any]:
     """Build a bounded, privacy-safe lifecycle projection from canonical state."""
+    authority = authority_resolver.resolve(workspace)
+    if authority["authority"] == "file":
+        work = workspace / "work"
+        discovered = update_work_index.discover_artifacts(work) if work.is_dir() else []
+        allowed = {"idea-brief": "IDEA", "project-map": "MAP", "program-roadmap": "PRM", "campaign": "CAMP"}
+        selected = [item for item in discovered if item.kind() in allowed]
+        planning_items = {
+            item["path"]: item
+            for artifact_type in ("idea-brief", "program-roadmap")
+            for item in planning_order.file_projection(workspace, artifact_type, authority=authority)["items"]
+        }
+        artifacts = []
+        for item in selected[:500]:
+            relative = item.path.as_posix()
+            artifact_type = item.kind()
+            namespace = allowed[artifact_type]
+            match = re.search(rf"\b{namespace}-\d{{4,}}\b", item.title + " " + relative, re.I)
+            visible_id = match.group(0).upper() if match else relative
+            planning = planning_items.get(relative)
+            status_value = item.status().casefold() or "unknown"
+            terminal = status_value in {"complete", "completed", "abandoned", "superseded", "terminal"}
+            document_lifecycle = (
+                "completed" if status_value == "complete" else status_value
+                if status_value in {
+                    "active", "working", "blocked", "parked", "deferred", "completed",
+                    "abandoned", "superseded", "terminal",
+                }
+                else "active"
+            )
+            updated_at = item.fields.get("Updated", "")
+            if re.fullmatch(r"\d{4}-\d{2}-\d{2}", updated_at):
+                updated_at += "T00:00:00Z"
+            elif not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})", updated_at):
+                updated_at = "1970-01-01T00:00:00Z"
+            parent = item.fields.get("Parent") or item.fields.get("Project Map") or item.fields.get("Source Project Map")
+            produces = [value.strip() for value in item.fields.get("Produces", "").split(",") if value.strip()]
+            artifacts.append(
+                {
+                    "artifact_id": authority_resolver.file_artifact_id(workspace, relative),
+                    "visible_id": visible_id,
+                    "artifact_type": artifact_type,
+                    "title": " ".join(item.title.split())[:160] or visible_id,
+                    "document_lifecycle": document_lifecycle,
+                    "outcome_lifecycle": "unknown",
+                    "outcome_disposition": "unknown",
+                    "reconciliation_state": "unknown",
+                    "terminal_reason": None,
+                    "parent_ids": [parent] if parent else [],
+                    "produces_ids": produces[:16],
+                    "planning_position": planning["position"] if planning else None,
+                    "planning_order_source": planning["order_source"] if planning else "derived",
+                    "planning_readiness": (
+                        planning["readiness"] if planning else "terminal" if terminal else
+                        "blocked" if status_value == "blocked" else
+                        "working" if status_value == "working" else
+                        "waiting" if status_value in {"deferred", "parked"} else "ready"
+                    ),
+                    "closure_status": {
+                        "local_closure": "unknown",
+                        "evidence_health": "unknown",
+                        "graph_health": "unknown",
+                        "effective_closed": False,
+                        "reason_codes": ["HYBRID_OUTCOME_UNAVAILABLE"],
+                        "counts": {"open": 0, "unknown": 1, "invalid": 0},
+                        "blockers": [],
+                        "subject_revision": 0,
+                        "graph_revision": 0,
+                        "evaluator_version": "not-available",
+                        "evaluated_at": updated_at,
+                    },
+                    "updated_at": updated_at,
+                }
+            )
+        return {"total_count": len(selected), "truncated": len(selected) > len(artifacts), "artifacts": artifacts}
+    if authority["authority"] != "sqlite":
+        raise DashboardReporterError(authority["reason"])
     database = hybrid_state.database_path(workspace)
     with contextlib.closing(hybrid_state.connect(database, writable=False)) as connection:
         if connection.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='document'").fetchone() is None:

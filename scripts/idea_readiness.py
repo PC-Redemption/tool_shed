@@ -19,6 +19,8 @@ from pathlib import Path
 from typing import Any, Sequence
 
 import hybrid_state
+import authority_resolver
+import update_work_index
 from project_identity import ProjectIdentityError, require_path_within, resolved_workspace
 
 
@@ -126,6 +128,35 @@ def _document(
         raise IdeaReadinessError(f"readiness review requires an Idea Brief, found {document['type']}", code="wrong-document-type")
     document["metadata"] = json.loads(document.pop("metadata_json"))
     return document
+
+
+def _file_idea(workspace: Path, identity: str) -> dict[str, Any] | None:
+    """Resolve an Idea Brief from retained file authority without inventing a database ID."""
+    work = workspace / "work"
+    if not work.is_dir():
+        return None
+    candidates = [item for item in update_work_index.discover_artifacts(work) if item.kind() == "idea-brief"]
+    supplied = identity.replace("\\", "/")
+    matches = [
+        item for item in candidates
+        if supplied in {item.path.as_posix(), item.path.name, item.path.stem, item.title}
+        or supplied.casefold() in {item.path.as_posix().casefold(), item.path.name.casefold(), item.path.stem.casefold(), item.title.casefold()}
+    ]
+    if len(matches) != 1:
+        return None
+    artifact = matches[0]
+    path = workspace / artifact.path
+    body = path.read_bytes()
+    relative = artifact.path.as_posix()
+    return {
+        "artifact_id": authority_resolver.file_artifact_id(workspace, relative),
+        "visible_id": relative,
+        "document_revision": None,
+        "body_sha256": hashlib.sha256(body).hexdigest(),
+        "path": relative,
+        "title": artifact.title,
+        "status": artifact.status(),
+    }
 
 
 def _review_events(connection: sqlite3.Connection, artifact_id: str) -> list[dict[str, Any]]:
@@ -240,6 +271,19 @@ def _load_json(workspace: Path, supplied: Path, label: str) -> dict[str, Any]:
 
 def prepare(workspace: Path, identity: str, source: Path, *, database: Path | None = None) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
+    if database is not None and not _database(workspace, database).is_file():
+        raise IdeaReadinessError("Hybrid database is not available", code="database-unavailable", unavailable=True)
+    authority = authority_resolver.resolve(workspace, database=database)
+    if authority["authority"] == "file":
+        file_idea = _file_idea(workspace, identity)
+        if file_idea is not None:
+            raise IdeaReadinessError(
+                "Idea Brief is file-authoritative; readiness persistence requires guarded Hybrid cutover",
+                code="file-authority-review-persistence-unavailable",
+                unavailable=True,
+            )
+    elif authority["authority"] != "sqlite":
+        raise IdeaReadinessError(authority["reason"], code="authority-indeterminate", unavailable=True)
     review_input = validate_input(_load_json(workspace, source, "readiness input"))
     import document_store
 
@@ -411,6 +455,30 @@ def apply(
 
 def status(workspace: Path, identity: str, *, database: Path | None = None) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
+    if database is not None and not _database(workspace, database).is_file():
+        raise IdeaReadinessError("Hybrid database is not available", code="database-unavailable", unavailable=True)
+    authority = authority_resolver.resolve(workspace, database=database)
+    if authority["authority"] == "file":
+        idea = _file_idea(workspace, identity)
+        if idea is None:
+            raise IdeaReadinessError(f"Idea Brief does not exist in file authority: {identity}", code="idea-not-found")
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "kind": STATUS_KIND,
+            "idea": idea,
+            "review_contract_version": CONTRACT_VERSION,
+            "state": "FILE-AUTHORITY",
+            "verdict": None,
+            "promotion_allowed": False,
+            "review_required": True,
+            "latest_review": None,
+            "authority": authority,
+            "feature_limits": ["idea-readiness-persistence-unavailable"],
+            "next_action": "complete guarded document conversion and authority cutover, then rerun readiness review",
+            "writes_performed": False,
+        }
+    if authority["authority"] != "sqlite":
+        raise IdeaReadinessError(authority["reason"], code="authority-indeterminate", unavailable=True)
     with contextlib.closing(_connection(workspace, database)) as connection:
         idea = _document(connection, identity)
         events = _review_events(connection, idea["artifact_id"])

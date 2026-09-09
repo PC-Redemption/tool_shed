@@ -54,6 +54,9 @@ class IdeaReadinessTests(unittest.TestCase):
         self.database = self.workspace / ".tool-shed/state.sqlite3"
         hybrid_state.initialize(self.workspace, project_binding=self.binding, target=self.database)
         document_store.migrate(self.workspace, project_binding=self.binding, database=self.database)
+        with contextlib.closing(hybrid_state.connect(self.database)) as connection:
+            connection.execute("UPDATE state_meta SET storage_mode='hybrid' WHERE id=1")
+            connection.commit()
         self.idea = document_store.import_document(
             self.workspace,
             project_binding=self.binding,

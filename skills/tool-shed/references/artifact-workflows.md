@@ -4,12 +4,16 @@ Read this reference for artifact selection, creation, onboarding, completion, or
 
 ## Database-authority dispatch
 
-Before using the file commands below, audit the workspace database. If it is Hybrid schema 2 with
-`storage_mode: hybrid`, use `scripts/document_store.py` instead: compact reads through
+Before using the file commands below, run `scripts/authority_resolver.py --workspace . --json` and
+audit the workspace database. If it reports `authority: sqlite`, use `scripts/document_store.py`
+instead: compact reads through
 `list`/`show`/`search`/`context`, creation through `create` or the database-aware
 `new_artifact.py --project-binding`, guarded revisions through `export-edit` plus `apply-edit`, and
 lifecycle changes through `set-lifecycle`. Render `.tool-shed/views/work/` when an operator needs a
-browsable tree. The original `work/` files are retained sources, not writable authority.
+browsable tree. The original `work/` files are retained sources, not writable authority. If the
+resolver reports `authority: file`, including `storage_mode: shadow`, retained `work/` artifacts
+stay authoritative and its feature limits must be surfaced. An `unavailable` result is not
+permission to guess an authority.
 
 ## Select
 

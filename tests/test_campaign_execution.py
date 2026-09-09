@@ -43,6 +43,9 @@ class CampaignExecutionTests(unittest.TestCase):
         self.binding = binding_token(self.workspace, operation="hybrid-state")
         hybrid_state.initialize(self.workspace, project_binding=self.binding)
         document_store.migrate(self.workspace, project_binding=self.binding)
+        with contextlib.closing(hybrid_state.connect(hybrid_state.database_path(self.workspace))) as connection:
+            connection.execute("UPDATE state_meta SET storage_mode='hybrid' WHERE id=1")
+            connection.commit()
         closure_lineage.apply_migration(
             self.workspace,
             (closure_manifest := closure_lineage.prepare_migration(self.workspace)),

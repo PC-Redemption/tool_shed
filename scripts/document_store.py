@@ -24,6 +24,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Callable, Sequence
 
+import authority_resolver
 import hybrid_state
 from app_server_user_state import (
     AppServerUserStateError,
@@ -394,15 +395,7 @@ def audit(workspace: Path, database: Path | None = None) -> dict[str, Any]:
 
 def is_authoritative(workspace: Path, database: Path | None = None) -> bool:
     """Return whether generated-document write authority has cut over to schema 2."""
-    workspace = resolved_workspace(workspace)
-    path = require_path_within(workspace, database or hybrid_state.database_path(workspace))
-    if not path.is_file():
-        return False
-    with contextlib.closing(hybrid_state.connect(path, writable=False)) as connection:
-        if int(connection.execute("PRAGMA user_version").fetchone()[0]) not in DOCUMENT_HYBRID_SCHEMAS:
-            return False
-        meta = hybrid_state.meta_row(connection)
-        return str(meta["storage_mode"]) == "hybrid"
+    return authority_resolver.resolve(workspace, database=database)["authority"] == "sqlite"
 
 
 def _replace_file(source: Path, destination: Path) -> None:

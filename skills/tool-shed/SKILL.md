@@ -248,15 +248,20 @@ repository-boundary, or product questions; `existing-projects.md` for onboarding
 
 ## Core Rules
 
-- At the first Tool Shed work-artifact read or write, audit `.tool-shed/state.sqlite3` when it
-  exists. When it reports schema 2 with `storage_mode: hybrid`, SQLite owns generated documents:
+- At the first Tool Shed work-artifact read or write, resolve authority with
+  `scripts/authority_resolver.py --workspace . --json` and audit `.tool-shed/state.sqlite3` when it
+  exists. When the resolver reports `authority: sqlite` (`storage_mode: hybrid` at schema 2 or
+  later), SQLite owns generated documents:
   use `scripts/document_store.py` for list/show/search/context/create/edit/lifecycle/relationship
   operations and rebuild `.tool-shed/views/work/` for browsing. Treat files below `work/` as
   retained conversion sources, file-owned inputs, or projections according to the document
   contract; do not mutate a retained generated source through legacy artifact, campaign, roadmap,
   reconciliation, or index scripts.
-- When the database is absent or remains schema 1, continue using the file-authority routes in this
-  skill. Never infer cutover merely from the presence of SQLite.
+- When the resolver reports `authority: file`, including an absent database, schema 1, or
+  `storage_mode: shadow` (including `state: qualified-shadow`), continue using the file-authority
+  routes in this skill and surface its bounded feature limits. Never infer cutover merely from the
+  presence, schema, or successful qualification of SQLite. An
+  `unavailable` authority result fails closed and requires the reported recovery action.
 - Choose the smallest artifact that fits the immediate work.
 - Apply KISS as minimum sufficient complexity across planning, roadmaps, milestones, execution,
   testing, and recovery.

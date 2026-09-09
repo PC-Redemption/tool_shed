@@ -6,12 +6,16 @@ explicit App Server controls, `ts: help`, `ts: commands`, and `ts:ask`.
 ## Database-authority dispatch
 
 The file-backed campaign and Program Roadmap commands in this reference apply only while generated
-documents remain file-authoritative. When `document_store.py audit` reports Hybrid schema 2 and
-`storage_mode: hybrid`, inspect campaigns and roadmaps with bounded document-store reads, make
+documents remain file-authoritative. Resolve that state through
+`authority_resolver.py --workspace . --json`. When it reports `authority: sqlite`, inspect
+campaigns and roadmaps with bounded document-store reads, make
 revisions through guarded edit projections, change lifecycle through `set-lifecycle`, and render
 the disposable lifecycle view for operator browsing. Legacy campaign/roadmap commands deliberately
 refuse after cutover so retained sources cannot become a second authority. Preserve outcome-cycle
-IDs and propagate/reconcile results through the managed Hybrid outcome interface.
+IDs and propagate/reconcile results through the managed Hybrid outcome interface. When the resolver
+reports `authority: file`, including a schema-2-or-later shadow database, retain file campaign,
+roadmap, and index behavior and surface the bounded unavailable Hybrid features. Never select
+SQLite authority from database presence or schema alone.
 
 ## Persistent Autonomy Route
 

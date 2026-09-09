@@ -26,6 +26,7 @@ import check_shed_version
 import check_stale_paths
 import check_work_tree
 import document_store
+import authority_resolver
 import reconcile_campaign_queue
 import release_cohort
 import review_work_state
@@ -227,7 +228,12 @@ def database_document_state(workspace: Path) -> dict[str, Any] | None:
     database = workspace / ".tool-shed" / "state.sqlite3"
     if not database.is_file():
         return None
+    authority = authority_resolver.resolve(workspace, database=database)
+    if authority["authority"] == "file":
+        return None
     audit = document_store.audit(workspace, database=database)
+    if authority["authority"] == "unavailable" and audit.get("storage_mode") is not None:
+        raise RuntimeError(authority["reason"])
     if audit.get("hybrid_schema") not in document_store.DOCUMENT_HYBRID_SCHEMAS:
         return None
     documents = document_store.list_documents(workspace, limit=500, database=database)

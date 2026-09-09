@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import subprocess
@@ -67,6 +68,9 @@ class LocalPlanningOrderTests(unittest.TestCase):
         document_store.migrate(
             self.workspace, project_binding=self.binding, database=self.database
         )
+        with contextlib.closing(hybrid_state.connect(self.database)) as connection:
+            connection.execute("UPDATE state_meta SET storage_mode='hybrid' WHERE id=1")
+            connection.commit()
 
     def tearDown(self) -> None:
         self.temporary.cleanup()

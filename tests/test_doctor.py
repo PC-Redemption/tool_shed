@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import shutil
@@ -281,6 +282,9 @@ class DoctorTests(unittest.TestCase):
                 database=database,
                 actor="fixture",
             )
+            with contextlib.closing(hybrid_state.connect(database)) as connection:
+                connection.execute("UPDATE state_meta SET storage_mode='hybrid' WHERE id=1")
+                connection.commit()
             campaign = document_store.list_documents(
                 workspace, document_type="campaign", database=database
             )["documents"][0]
@@ -331,6 +335,9 @@ class DoctorTests(unittest.TestCase):
                 reason="semantic Doctor fixture",
                 database=database,
             )
+            with contextlib.closing(hybrid_state.connect(database)) as connection:
+                connection.execute("UPDATE state_meta SET storage_mode='hybrid' WHERE id=1")
+                connection.commit()
 
             report = doctor.inspect(workspace)
             findings = {item["code"]: item for item in report["findings"]}

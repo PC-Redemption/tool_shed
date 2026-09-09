@@ -828,7 +828,11 @@ class DashboardReporterTests(unittest.TestCase):
             self.assertLessEqual(limit, 500)
             return documents[(lifecycle, document_type)]
 
-        with mock.patch.object(dashboard_reporter, "load_project_identity", return_value={"project_id": connection_state["project_id"], "project_name": "Fixture"}), mock.patch.object(
+        with mock.patch.object(
+            dashboard_reporter.authority_resolver,
+            "resolve",
+            return_value={"authority": "sqlite", "state": "hybrid", "reason": "fixture"},
+        ), mock.patch.object(dashboard_reporter, "load_project_identity", return_value={"project_id": connection_state["project_id"], "project_name": "Fixture"}), mock.patch.object(
             dashboard_reporter, "load_connection", return_value=connection_state
         ), mock.patch.object(dashboard_reporter.document_store, "list_documents", side_effect=listed), mock.patch.object(
             dashboard_reporter.hybrid_state, "database_path", return_value=database
