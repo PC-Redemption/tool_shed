@@ -49,6 +49,12 @@ ts: help version
 ts: help providers
 ```
 
+Release installation and update also run guarded capability convergence. Use `ts: convergence` to
+inspect the inventory, interactive/background mutation readiness, pending compatibility backfills,
+and the explicit document-authority decision. Safe schema and compatibility steps run
+automatically; document authority and optional semantic enrichment do not. See
+[Release capability convergence](release-convergence.md).
+
 ## Discuss A Campaign Before Planning
 
 Use discussion when an idea is still forming:

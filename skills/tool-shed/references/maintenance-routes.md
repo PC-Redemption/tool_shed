@@ -103,6 +103,16 @@ Supported provider IDs come from `<shed>/adapters/providers.json`. Repeat `--pro
 already runs the selected release's full installer for auto-detected or explicitly selected
 providers; do not run it again merely to finish an update.
 
+The selected release's installer also invokes its versioned release-capability inventory. It
+applies only guarded schema migrations and required unambiguous compatibility backfills, and
+always reports the bounded convergence summary. `ts: convergence` is the read-only inspection
+route. Before any apply, use a fresh plan token and the `hybrid-state` project binding.
+
+Convergence probes both the interactive and configured background Python runtime for real guarded
+SQLite writes, not just reads. Treat the reported document-authority conversion as one explicit
+decision: require its verified archive outside the workspace and do not infer approval from an
+install or update request. Optional semantic enrichment is never automatic.
+
 ## Codex Reasoning Extension
 
 This section applies only when the current product is Codex and the request explicitly targets

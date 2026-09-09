@@ -333,15 +333,36 @@ def protocol4_hybrid_post_install(
     before: dict[str, Any],
     *,
     timeout: float,
+    allow_convergence: bool = False,
 ) -> dict[str, Any]:
     database = workspace / ".tool-shed" / "state.sqlite3"
     if before.get("database") == "absent":
-        if database.exists() or is_filesystem_link(database):
+        if not database.exists():
+            return {"database": "absent", "preserved": True}
+        if is_filesystem_link(database):
             raise UpdateError("protocol 4 snapshot update unexpectedly created hybrid state")
-        return {"database": "absent", "preserved": True}
+        if not allow_convergence:
+            raise UpdateError("protocol 4 snapshot update unexpectedly created hybrid state")
+        after = _protocol4_hybrid_command(
+            snapshot, workspace, "--json", "audit", timeout=timeout
+        )
+        if (
+            after.get("classification") not in {"CLEAN", "VALID_DIRTY", "CHECKPOINT_DUE"}
+            or after.get("storage_mode") != "shadow"
+            or after.get("unmanaged_write_detected")
+        ):
+            raise UpdateError("release convergence created invalid or authoritative hybrid state")
+        return {
+            "database": "present",
+            "preserved": False,
+            "converged_from_absent": True,
+            "audit": after,
+        }
     if not database.is_file() or is_filesystem_link(database):
         raise UpdateError("protocol 4 snapshot update lost the hybrid state database")
-    after = protocol4_hybrid_audit(workspace, snapshot, timeout=timeout)
+    after = _protocol4_hybrid_command(
+        snapshot, workspace, "--json", "audit", timeout=timeout
+    )
     prior = before.get("audit")
     if not isinstance(prior, dict):
         raise UpdateError("protocol 4 preflight audit is missing")
@@ -354,7 +375,18 @@ def protocol4_hybrid_post_install(
         "schema_trigger_digest",
     )
     changed = [field for field in compared if prior.get(field) != after.get(field)]
-    if changed:
+    if allow_convergence:
+        invalid = (
+            after.get("classification") not in {"CLEAN", "VALID_DIRTY", "CHECKPOINT_DUE"}
+            or after.get("project_id") != prior.get("project_id")
+            or after.get("storage_mode") != prior.get("storage_mode")
+            or int(after.get("schema_version", -1)) < int(prior.get("schema_version", -1))
+            or int(after.get("current_revision", -1)) < int(prior.get("current_revision", -1))
+            or after.get("unmanaged_write_detected")
+        )
+        if invalid:
+            raise UpdateError("release convergence left invalid, regressed, or unmanaged hybrid state")
+    elif changed:
         raise UpdateError(
             "protocol 4 snapshot update changed hybrid state: " + ", ".join(changed)
         )
@@ -370,7 +402,71 @@ def protocol4_hybrid_post_install(
         or hashlib.sha256((workspace / relative).read_bytes()).hexdigest() != digest
     ):
         raise UpdateError("protocol 4 verified hybrid backup is missing or changed")
-    return {"database": "present", "preserved": True, "audit": after, "backup": backup}
+    return {
+        "database": "present",
+        "preserved": not changed,
+        "convergence_changes": changed if allow_convergence else [],
+        "audit": after,
+        "backup": backup,
+    }
+
+
+def protocol4_hybrid_rollback(
+    workspace: Path,
+    snapshot: Path,
+    before: dict[str, Any],
+    *,
+    timeout: float,
+) -> dict[str, Any]:
+    """Restore the exact pre-update Hybrid database after convergence failure."""
+    database = workspace / ".tool-shed" / "state.sqlite3"
+    if before.get("database") == "absent":
+        if not database.exists():
+            return {"database": "absent", "restored": True}
+        if is_filesystem_link(database) or not database.is_file():
+            raise UpdateError("cannot roll back unexpected Hybrid state object")
+        audit = _protocol4_hybrid_command(
+            snapshot, workspace, "--json", "audit", timeout=timeout
+        )
+        if (
+            audit.get("classification") not in {"CLEAN", "VALID_DIRTY", "CHECKPOINT_DUE"}
+            or audit.get("storage_mode") != "shadow"
+            or audit.get("unmanaged_write_detected")
+        ):
+            raise UpdateError("cannot remove invalid or authoritative convergence state")
+        for candidate in (
+            database,
+            Path(str(database) + "-wal"),
+            Path(str(database) + "-shm"),
+        ):
+            candidate.unlink(missing_ok=True)
+        return {"database": "absent", "restored": True}
+
+    backup = before.get("backup")
+    prior = before.get("audit")
+    if not isinstance(backup, dict) or not isinstance(prior, dict):
+        raise UpdateError("Hybrid rollback is missing its verified preflight state")
+    current = _protocol4_hybrid_command(
+        snapshot, workspace, "--json", "audit", timeout=timeout
+    )
+    result = _protocol4_hybrid_command(
+        snapshot,
+        workspace,
+        "--json",
+        "restore",
+        "--project-binding",
+        binding_token(workspace, operation="hybrid-state"),
+        "--backup",
+        str(backup.get("backup") or ""),
+        "--expect-sha256",
+        str(backup.get("sha256") or ""),
+        "--expect-current-revision",
+        str(current.get("current_revision")),
+        timeout=timeout,
+    )
+    if result.get("domain_digest") != prior.get("domain_digest"):
+        raise UpdateError("Hybrid rollback did not restore the pre-update domain digest")
+    return {"database": "present", "restored": True, "audit": result}
 
 
 def version_check_command(script: str, shed: str, protocol: int, *, snapshot: bool) -> list[str]:
@@ -1367,6 +1463,46 @@ def campaign_convergence_report(
     return report
 
 
+def release_convergence_report(
+    workspace: Path,
+    target: Path,
+    *,
+    timeout: float | None = None,
+) -> dict[str, object]:
+    command = target / "scripts" / "release_convergence.py"
+    if not command.is_file():
+        return {
+            "available": False,
+            "needs_automatic": False,
+            "reason": "selected release does not ship release convergence",
+        }
+    result = run(
+        [
+            sys.executable,
+            "-B",
+            str(command),
+            "--workspace",
+            str(workspace),
+            "--json",
+            "status",
+        ],
+        cwd=workspace,
+        timeout=timeout,
+        timeout_option="--validation-timeout" if timeout is not None else None,
+    )
+    payload = json.loads(result.stdout)
+    actions = payload.get("actions")
+    if not isinstance(actions, list) or not isinstance(payload.get("summary"), dict):
+        raise UpdateError("release convergence returned an invalid summary")
+    payload["available"] = True
+    payload["needs_automatic"] = any(
+        bool(item.get("automatic")) and item.get("state") == "ready"
+        for item in actions
+        if isinstance(item, dict)
+    )
+    return payload
+
+
 def post_install_checks(
     workspace: Path,
     target: Path,
@@ -1423,6 +1559,9 @@ def post_install_checks(
             guidance = guidance_path.read_text(encoding="utf-8")
             if "BEGIN TOOL SHED ROUTING GUIDANCE" not in guidance:
                 raise UpdateError(f"provider guidance is missing portable routing: {guidance_path}")
+    results["release_convergence"] = release_convergence_report(
+        workspace, target, timeout=validation_timeout
+    )
     campaign_before = campaign_convergence_report(workspace, target, include_plan=True)
     campaign_result: dict[str, object] = {"before": campaign_before, "applied": False}
     allowed_campaign_mutations = {
@@ -1501,6 +1640,7 @@ def post_install_checks(
             target,
             hybrid_runtime_before,
             timeout=validation_timeout,
+            allow_convergence=True,
         )
         closure_tool = target / "scripts" / "bootstrap_closure.py"
         if not closure_tool.is_file():
@@ -2185,12 +2325,17 @@ def main() -> int:
                         + str(codex_skill.get("detail") or codex_skill.get("state"))
                     )
             current_campaigns = campaign_convergence_report(workspace, target)
+            current_release_convergence = release_convergence_report(
+                workspace, target, timeout=args.validation_timeout
+            )
+            payload["release_convergence"] = current_release_convergence
             if (
                 previous_version == selected_version
                 and target.is_dir()
                 and snapshot_fingerprint(target) == snapshot_fingerprint(staged)
                 and not args.sync_codex_skill
                 and not current_campaigns["needed"]
+                and not current_release_convergence["needs_automatic"]
                 and identity_exists
             ):
                 payload["installed_version"] = selected_version
@@ -2223,6 +2368,16 @@ def main() -> int:
                     print(json.dumps(payload, indent=2, sort_keys=True))
                 else:
                     print(f"Tool Shed {selected_version} is already current; no backup was created.")
+                    convergence_summary = current_release_convergence.get("summary")
+                    if isinstance(convergence_summary, dict):
+                        print(
+                            "Release convergence: "
+                            f"{str(convergence_summary.get('state', 'unknown')).upper()} — "
+                            f"{convergence_summary.get('satisfied', 0)} satisfied, "
+                            f"{convergence_summary.get('ready', 0)} ready, "
+                            f"{convergence_summary.get('deferred', 0)} deferred, "
+                            f"{convergence_summary.get('blocked', 0)} blocked."
+                        )
                     if "codex_cli_readiness" in payload:
                         print_codex_cli_readiness(payload["codex_cli_readiness"])
                 return 0
@@ -2410,6 +2565,12 @@ def main() -> int:
                     if retired is not None and retired.exists():
                         shutil.rmtree(retired)
                     if selected_protocol >= 4 and hybrid_runtime_before is not None:
+                        payload["hybrid_state_rollback"] = protocol4_hybrid_rollback(
+                            workspace,
+                            clone,
+                            hybrid_runtime_before,
+                            timeout=args.validation_timeout,
+                        )
                         payload["hybrid_state_rollback_verification"] = protocol4_hybrid_post_install(
                             workspace,
                             clone,

@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-release-capability-inventory",
+  "release_contract": "0.53",
+  "target_hybrid_schema": 6,
+  "capabilities": [
+    {
+      "id": "hybrid-substrate",
+      "action_class": "schema-migration",
+      "automatic": true,
+      "from_schema": 0,
+      "to_schema": 1,
+      "command": "hybrid_state.py init"
+    },
+    {
+      "id": "database-documents",
+      "action_class": "schema-migration",
+      "automatic": true,
+      "from_schema": 1,
+      "to_schema": 2,
+      "command": "document_store.py migrate"
+    },
+    {
+      "id": "recursive-closure",
+      "action_class": "schema-migration",
+      "automatic": true,
+      "from_schema": 2,
+      "to_schema": 3,
+      "command": "closure_lineage.py migration-plan/migrate"
+    },
+    {
+      "id": "loop-findings-base",
+      "action_class": "schema-migration",
+      "automatic": true,
+      "from_schema": 3,
+      "to_schema": 4,
+      "command": "loop_findings.py migrate"
+    },
+    {
+      "id": "loop-findings-complete",
+      "action_class": "schema-migration",
+      "automatic": true,
+      "from_schema": 4,
+      "to_schema": 5,
+      "command": "loop_findings.py migrate"
+    },
+    {
+      "id": "campaign-execution",
+      "action_class": "schema-migration",
+      "automatic": true,
+      "from_schema": 5,
+      "to_schema": 6,
+      "command": "campaign_execution.py migrate"
+    },
+    {
+      "id": "document-authority",
+      "action_class": "required-compatibility-backfill",
+      "automatic": false,
+      "minimum_schema": 2,
+      "command": "release_convergence.py apply --allow document-authority --archive <outside-workspace-path>"
+    },
+    {
+      "id": "document-relationships",
+      "action_class": "required-compatibility-backfill",
+      "automatic": true,
+      "minimum_schema": 2,
+      "command": "document_conversion.py relationships-plan/relationships-apply"
+    },
+    {
+      "id": "historical-outcome-enrichment",
+      "action_class": "optional-semantic-enrichment",
+      "automatic": false,
+      "minimum_schema": 5,
+      "command": "outcome_reconciliation.py backfill-plan/backfill-apply"
+    }
+  ]
+}

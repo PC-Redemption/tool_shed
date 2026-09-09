@@ -165,6 +165,7 @@ class ScriptTests(unittest.TestCase):
                 if source.is_file() and source.suffix in {".py", ".js", ".ps1", ".sh"}:
                     shutil.copyfile(source, repository / "scripts" / source.name)
             shutil.copytree(ROOT / "adapters", repository / "adapters")
+            shutil.copytree(ROOT / "schemas", repository / "schemas")
             shutil.copytree(ROOT / "skills", repository / "skills")
             (repository / "adapters" / "codex-skill-releases.json").write_text(
                 json.dumps(
@@ -201,7 +202,11 @@ class ScriptTests(unittest.TestCase):
         if include_provider_adapter:
             hashed_paths.extend(
                 path.relative_to(repository).as_posix()
-                for directory in (repository / "adapters", repository / "skills")
+                for directory in (
+                    repository / "adapters",
+                    repository / "schemas",
+                    repository / "skills",
+                )
                 for path in directory.rglob("*")
                 if path.is_file()
             )
@@ -4377,7 +4382,7 @@ work_levels:
                 "work/evidence/generated",
             )
 
-    def test_protocol4_update_without_database_preserves_file_authority(self) -> None:
+    def test_protocol4_update_without_database_creates_release_shadow_state(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             release = self.create_test_release(
@@ -4409,8 +4414,50 @@ work_levels:
             self.assertEqual(result.returncode, 0, payload)
             self.assertEqual(payload["state"], "installed")
             self.assertEqual(payload["hybrid_state_preflight"]["database"], "absent")
-            self.assertEqual(payload["post_install"]["hybrid_state"]["database"], "absent")
-            self.assertTrue(payload["post_install"]["hybrid_state"]["preserved"])
+            hybrid = payload["post_install"]["hybrid_state"]
+            self.assertEqual(hybrid["database"], "present")
+            self.assertTrue(hybrid["converged_from_absent"])
+            self.assertEqual(hybrid["audit"]["schema_version"], 6)
+            self.assertEqual(hybrid["audit"]["storage_mode"], "shadow")
+            self.assertTrue((workspace / ".tool-shed" / "state.sqlite3").is_file())
+
+    def test_protocol4_new_shadow_state_is_removed_on_post_install_rollback(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            release = self.create_test_release(
+                root,
+                include_provider_adapter=True,
+                minimum_updater_protocol=4,
+            )
+            workspace = self.create_update_workspace(root)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+            subprocess.run(["git", "add", "work"], cwd=workspace, check=True)
+            subprocess.run(
+                ["git", "commit", "-q", "-m", "Initialize Tool Shed work"],
+                cwd=workspace,
+                check=True,
+            )
+
+            result = run_script(
+                str(ROOT / "scripts" / "update_snapshot.py"),
+                "--workspace",
+                str(workspace),
+                "--repository",
+                str(release),
+                "--inject-post-install-failure",
+                "--json",
+                cwd=workspace,
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertTrue(payload["rollback"])
+            self.assertTrue(payload["hybrid_state_rollback"]["restored"])
+            self.assertEqual(
+                payload["hybrid_state_rollback_verification"]["database"],
+                "absent",
+            )
             self.assertFalse((workspace / ".tool-shed" / "state.sqlite3").exists())
 
     def test_snapshot_upgrade_standardizes_legacy_campaign_files_and_preserves_content(self) -> None:

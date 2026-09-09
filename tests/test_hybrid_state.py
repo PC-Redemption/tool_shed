@@ -418,6 +418,39 @@ class HybridStateTests(unittest.TestCase):
         self.assertTrue(verified["preserved"])
         self.assertEqual(verified["audit"]["domain_digest"], before["domain_digest"])
 
+    def test_protocol4_rollback_restores_pre_convergence_database(self) -> None:
+        self.initialize()
+        imported = self.import_pair()
+        identifiers = [item["artifact_id"] for item in imported["result"]]
+        hybrid_state.write_checkpoint(self.workspace, project_binding=self.binding)
+        before = hybrid_state.audit(self.workspace)
+        protected = update_snapshot.protocol4_hybrid_preflight(
+            self.workspace,
+            ROOT,
+            timeout=30,
+        )
+        hybrid_state.add_relationship(
+            self.workspace,
+            project_binding=self.binding,
+            from_artifact_id=identifiers[0],
+            relation_type="produces",
+            to_artifact_id=identifiers[1],
+            provenance="post-preflight fixture",
+        )
+
+        restored = update_snapshot.protocol4_hybrid_rollback(
+            self.workspace,
+            ROOT,
+            protected,
+            timeout=30,
+        )
+
+        self.assertTrue(restored["restored"])
+        after = hybrid_state.audit(self.workspace)
+        self.assertEqual(after["current_revision"], before["current_revision"])
+        self.assertEqual(after["domain_digest"], before["domain_digest"])
+        self.assertEqual(after["classification"], before["classification"])
+
 
 if __name__ == "__main__":
     unittest.main()

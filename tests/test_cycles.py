@@ -349,7 +349,6 @@ class CycleStateTests(unittest.TestCase):
 
             binding = binding_token(workspace, operation="hybrid-state")
             (workspace / ".gitignore").write_text("/.tool-shed/\n", encoding="utf-8")
-            hybrid_state.initialize(workspace, project_binding=binding)
             origin = workspace / "work/ideas/idea-governed-demo.md"
             origin.parent.mkdir(parents=True, exist_ok=True)
             origin.write_text("# Governed demo\n", encoding="utf-8")

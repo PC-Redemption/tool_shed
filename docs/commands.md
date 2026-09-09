@@ -621,6 +621,7 @@ does not change the request's natural coordination level.
 | --- | --- |
 | `ts: doctor` | Audit the complete supported workspace surface read-only and return one health verdict with exact next actions. Use `--json` for stable automation output or `--strict` to fail unless fully healthy. |
 | `ts: doctor --repair` | Regenerate stale deterministic work indexes only after campaign source validates and exact current doctor state and project-binding tokens are supplied. It never chooses semantic truth or changes campaign lifecycle state. |
+| `ts: convergence` | Inspect the release capability inventory, interactive/background mutation readiness, guarded migration state, compatibility backfills, and any explicit authority decision. Read-only unless the same request authorizes apply. |
 | `ts: fulltsupgrade` | Upgrade the current existing Tool Shed installation end-to-end from the latest verified published GitHub release, including guarded backup/update, provider convergence, attested focused client validation with fail-closed full-validation fallback, installed Codex skill synchronization when applicable, exact verification, and rollback. |
 | `ts: upgrade report [latest\|<transaction-id>]` | Render one protected local snapshot-upgrade transaction as sanitized maintainer-ready Markdown without publishing it. Use `--json` for structured output. |
 | `ts: version` | Verify the local Tool Shed snapshot and report its version without network access. |
@@ -641,6 +642,12 @@ python3 tool_shed/scripts/doctor.py --workspace . --json --strict
 `warning`, `owner-decision-required`, and `external-evidence-required`; compact counts and samples
 avoid raw generated-evidence diffs. A repair requires the report's exact `state_token` and the
 binding returned by `project_identity.py identity --operation doctor-repair`.
+
+Release convergence calls the existing guarded domain migrations from a versioned inventory.
+Installation and update apply schema steps and required unambiguous compatibility backfills, then
+always report matching human/machine counts. Document-authority conversion remains an explicit
+archived decision, and optional semantic enrichment is never automatic. See
+[Release capability convergence](release-convergence.md).
 
 After a schema-2 document-authority cutover, Doctor reads campaign lifecycle and whole-work
 authority from SQLite. Retained campaign, queue, and `work/index` files remain recovery sources or

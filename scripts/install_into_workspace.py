@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 from codex_cli_resolver import CodexCliResolver, CodexReadiness
 from codex_skill_sync import inspect_codex_skill, load_release_skill_digests
@@ -20,7 +21,9 @@ from project_identity import (
     ensure_project_identity,
     load_project_identity,
     require_project_binding,
+    binding_token,
 )
+import release_convergence
 from repository_policy import POLICY_FILE, format_bytes, inspect_snapshot_ignore, inspect_work_ignore
 from work_level_config import WorkLevelConfigError, validate_workspace_config
 from work_tree import ensure_work_tree
@@ -615,6 +618,32 @@ def report_codex_cli_readiness() -> dict[str, Any]:
     return report
 
 
+def converge_release_capabilities(root: Path) -> dict[str, Any]:
+    """Apply safe release convergence and always return the bounded final summary."""
+    try:
+        plan = release_convergence.build_plan(root)
+        ready = [
+            item for item in plan["actions"]
+            if item["automatic"] and item["state"] == "ready"
+        ]
+        if not ready:
+            return plan
+        return release_convergence.apply_plan(
+            root,
+            supplied_plan=plan,
+            expected_token=plan["plan_token"],
+            project_binding=binding_token(root, operation="hybrid-state"),
+            actor="workspace-install",
+        )["final_plan"]
+    except release_convergence.ConvergenceError:
+        raise
+    except Exception as error:
+        raise release_convergence.ConvergenceError(
+            "guarded release capability convergence did not complete "
+            f"({type(error).__name__.upper()})"
+        ) from error
+
+
 def main() -> int:
     args = parse_args()
     root = Path(args.workspace).expanduser().resolve()
@@ -704,6 +733,12 @@ def main() -> int:
             check=True,
             stdout=subprocess.DEVNULL,
         )
+    try:
+        convergence = converge_release_capabilities(root)
+    except release_convergence.ConvergenceError as error:
+        print(f"Release capability convergence failed: {error}", file=sys.stderr)
+        return 1
+    print(release_convergence.render_human(convergence))
 
     print(f"Initialized work tree under {root / 'work'}")
     identity_state = "created" if identity_created else "preserved"

@@ -272,6 +272,7 @@ class DoctorTests(unittest.TestCase):
                 + b"\0hybrid-state\0"
             ).hexdigest()[:24]
             database = workspace / ".tool-shed/state.sqlite3"
+            database.unlink()
             hybrid_state.initialize(workspace, project_binding=binding, target=database)
             document_store.migrate(workspace, project_binding=binding, database=database)
             plan = document_conversion.build_plan(workspace, database=database)
@@ -321,6 +322,7 @@ class DoctorTests(unittest.TestCase):
                 + b"\0hybrid-state\0"
             ).hexdigest()[:24]
             database = workspace / ".tool-shed/state.sqlite3"
+            database.unlink()
             hybrid_state.initialize(workspace, project_binding=binding, target=database)
             document_store.migrate(workspace, project_binding=binding, database=database)
             document_store.create_document(

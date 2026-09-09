@@ -79,6 +79,22 @@ def _uuid(value: object, label: str) -> str:
     return str(value)
 
 
+def _artifact_uuid(value: object, label: str) -> str:
+    """Accept immutable document identities produced by guarded conversion.
+
+    Outcome-domain row identities remain UUIDv4. Artifact identities may also be
+    deterministic UUIDv5 values because document conversion deliberately uses
+    project-bound UUIDv5 identities for stable cross-run references.
+    """
+    try:
+        parsed = uuid.UUID(str(value))
+    except (ValueError, AttributeError) as error:
+        raise OutcomeLoopError(f"{label} must be a canonical UUIDv4 or UUIDv5") from error
+    if parsed.version not in {4, 5} or str(parsed) != value:
+        raise OutcomeLoopError(f"{label} must be a canonical UUIDv4 or UUIDv5")
+    return str(value)
+
+
 def _new_uuid(value: object | None, label: str) -> str:
     return _uuid(value, label) if value else str(uuid.uuid4())
 
@@ -276,7 +292,7 @@ def prepare(workspace: Path, source_path: Path, *, mode: str | None = None) -> d
                 parent_id = raw.get("to_artifact_id")
                 if not parent_id:
                     raise OutcomeLoopError(f"relationship references unknown artifact: {to_key}")
-                _uuid(parent_id, f"relationship {index} target")
+                _artifact_uuid(parent_id, f"relationship {index} target")
             else:
                 parent_id = artifact_by_key[to_key]["id"]
             relationships.append(
@@ -640,7 +656,6 @@ def validate_manifest(workspace: Path, manifest: dict[str, Any], *, check_state:
     cycle = manifest.get("cycle") or {}
     for label, value in (
         ("cycle id", cycle.get("id")),
-        ("cycle origin_artifact_id", cycle.get("origin_artifact_id")),
         ("verdict id", (manifest.get("verdict") or {}).get("id")),
         ("reconciliation id", (manifest.get("reconciliation") or {}).get("id")),
     ):
@@ -648,6 +663,10 @@ def validate_manifest(workspace: Path, manifest: dict[str, Any], *, check_state:
             _uuid(value, label)
         except OutcomeLoopError as error:
             errors.append(str(error))
+    try:
+        _artifact_uuid(cycle.get("origin_artifact_id"), "cycle origin_artifact_id")
+    except OutcomeLoopError as error:
+        errors.append(str(error))
     if not cycle.get("accepted_outcome"):
         errors.append("cycle accepted_outcome is required")
     lifecycle = cycle.get("lifecycle_state")
@@ -670,7 +689,8 @@ def validate_manifest(workspace: Path, manifest: dict[str, Any], *, check_state:
     for group in ("artifacts", "requirements", "changes", "evidence", "verifications", "relationships"):
         for index, item in enumerate(manifest.get(group, []), start=1):
             try:
-                identifiers.append(_uuid(item.get("id"), f"{group} item {index} id"))
+                validator = _artifact_uuid if group == "artifacts" else _uuid
+                identifiers.append(validator(item.get("id"), f"{group} item {index} id"))
             except OutcomeLoopError as error:
                 errors.append(str(error))
     identifiers.extend(value for value in (cycle.get("id"), verdict.get("id"), reconciliation.get("id")) if value)

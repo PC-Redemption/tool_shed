@@ -75,19 +75,24 @@ stop before snapshot mutation with the supported external-updater command. The c
 updater supplies its protocol explicitly, retains transactional work-tree convergence, and adds
 database-aware preflight and post-install validation.
 
-The Hybrid SQLite state contract assigns protocol 4 to the first database-aware release. Before
+The Hybrid SQLite state contract assigns protocol 4 to database-aware releases. Before
 snapshot mutation it locks the workspace, audits CLEAN state, checkpoints WAL, creates a verified
 SQLite backup, and proves disposable recovery rebuilds. A schema-1 database must reproduce its
 tracked `state-v1` checkpoint exactly. A schema-2 database must retain and successfully rebuild the
 schema-1 recovery checkpoint, then reproduce its current full domain digest from the tracked
 `state-v2` checkpoint and content objects. A missing, invalid, or mismatched checkpoint fails before
-snapshot replacement. After installation the updater requires exact database parity, validates
+snapshot replacement. After installation the updater allows only the selected release's guarded,
+monotonic capability convergence, then validates the resulting database and verified preflight
+backup. A workspace without a database receives schema-current shadow state; file authority is
+preserved until the separately reported document-authority decision is explicitly approved.
+Existing state cannot regress schema or revision, change project identity or authority mode, or
+contain unmanaged writes. The updater also validates
 each bootstrap manifest structurally, and rejects an INVALID doctor verdict. The sole bounded
 exception is a Doctor result containing only `DIRTY_CAMPAIGN_STATE`
 when every dirty campaign path was clean at transaction entrance, was created by the updater, and
 is one of the exact declared queue/convergence mutation paths; the transaction records that
 disposition and still rejects pre-existing or unexpected campaign dirt. A workspace without
-hybrid state remains file-authoritative and no database is created.
+hybrid state remains file-authoritative even though a shadow database is created.
 Protocol 3 and older refuse a protocol-4 release before backup or workspace mutation.
 
 Every shipped Python CLI disables bytecode writes before importing Tool Shed modules. Normal
@@ -245,6 +250,10 @@ Post-install verification for either path:
     submodule, and is ignored by the parent repository.
 17. Run, when present in the installed release:
     - python3 tool_shed/scripts/install_into_workspace.py . --provider <detected>
+    - the selected release's guarded capability convergence; apply schema migrations and required
+      unambiguous compatibility backfills, always report its human/machine summary, and preserve
+      file authority unless the operator separately approves document-authority conversion with a
+      verified archive outside the workspace
     - read-only campaign validation; when it reports legacy numbering or filenames, accept exact
       supported legacy projections (including a valid empty pre-numbering queue), preview numbered
       renames and inbound artifact-reference updates, run the exact-token guarded campaign

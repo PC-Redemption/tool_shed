@@ -29,6 +29,7 @@ import document_store
 import authority_resolver
 import reconcile_campaign_queue
 import release_cohort
+import release_convergence
 import review_work_state
 import update_work_index
 import workspace_preflight
@@ -384,6 +385,7 @@ def inspect(workspace: Path) -> dict[str, Any]:
     stale_paths = check_stale_paths.scan(root)
     work_findings = review_work_state.review(root, stale_days=30, today=date.today())
     external_evidence = external_evidence_state(root)
+    convergence = release_convergence.build_plan(root)
     try:
         app_server_dispatch = AppServerEventStore().report(hours=24 * 365)
     except AppServerUserStateError as error:
@@ -394,6 +396,57 @@ def inspect(workspace: Path) -> dict[str, Any]:
             "dispatch_lifecycles": {"debt_count": 1, "findings": []},
         }
     findings: list[Finding] = []
+
+    runtime_capability = convergence["runtime_capability"]
+    if not runtime_capability["read_healthy"]:
+        findings.append(_finding(
+            "RUNTIME_READ_UNHEALTHY", "error",
+            "At least one configured Tool Shed runtime failed its disposable SQLite read probe.",
+            "Run the release-convergence probe and repair the named interactive or background interpreter.",
+            paths=[
+                item["role"] for item in runtime_capability["probes"]
+                if not item["read_healthy"]
+            ],
+        ))
+    elif not runtime_capability["mutation_ready"]:
+        findings.append(_finding(
+            "RUNTIME_MUTATION_UNAVAILABLE", "error",
+            "SQLite reads succeed, but at least one configured runtime cannot execute guarded Tool Shed writes.",
+            "Run the release-convergence probe and select the newer compatible interpreter named by the bounded diagnostic before mutation.",
+            paths=[
+                item["role"] for item in runtime_capability["probes"]
+                if not item["mutation_ready"]
+            ],
+        ))
+    convergence_ready = [
+        item for item in convergence["actions"]
+        if item["state"] == "ready" and item["automatic"]
+    ]
+    convergence_blocked = [
+        item for item in convergence["actions"] if item["state"] == "blocked"
+    ]
+    if convergence_blocked:
+        findings.append(_finding(
+            "RELEASE_CONVERGENCE_BLOCKED", "owner-decision-required",
+            f"Release convergence has {len(convergence_blocked)} blocked capability step(s).",
+            "Inspect release-convergence status; resolve the named ambiguity or runtime boundary and prepare a fresh plan.",
+            paths=[item["id"] for item in convergence_blocked],
+            count=len(convergence_blocked),
+        ))
+    elif convergence_ready:
+        findings.append(_finding(
+            "RELEASE_CONVERGENCE_PENDING", "warning",
+            f"Release convergence has {len(convergence_ready)} safe guarded step(s) ready.",
+            "Prepare a release-convergence plan, then apply its exact token and hybrid-state project binding.",
+            paths=[item["id"] for item in convergence_ready],
+            count=len(convergence_ready),
+        ))
+    elif convergence["decisions"]:
+        findings.append(_finding(
+            "RELEASE_CONVERGENCE_DECISION", "owner-decision-required",
+            "Full release convergence requires one bounded document-authority decision.",
+            convergence["decisions"][0]["continuation_command"],
+        ))
 
     if database_documents and database_documents["audit"]["classification"] not in {
         "CLEAN", "VALID_DIRTY", "CHECKPOINT_DUE"
@@ -590,6 +643,7 @@ def inspect(workspace: Path) -> dict[str, Any]:
         "release_cohorts": release_cohorts,
         "app_server_dispatch": app_server_dispatch,
         "document_authority": database_documents["audit"] if database_documents else {"available": False},
+        "release_convergence": convergence,
         "external_evidence": external_evidence,
     }
     report = {
@@ -721,6 +775,7 @@ def main() -> int:
         DoctorError,
         ProjectIdentityError,
         campaign_queue.CampaignError,
+        release_convergence.ConvergenceError,
         OSError,
         json.JSONDecodeError,
     ) as error:

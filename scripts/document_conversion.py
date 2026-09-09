@@ -12,6 +12,7 @@ import contextlib
 import hashlib
 import json
 import os
+import re
 import shutil
 import sqlite3
 import sys
@@ -261,6 +262,183 @@ def qualify(workspace: Path, *, manifest: dict[str, Any], database: Path) -> dic
     return {"schema_version": 1, "kind": "tool-shed-document-conversion-qualification", "manifest_token": manifest["manifest_token"], "counts": counts, "baseline": {"artifact_bindings": len(manifest["baseline"]["artifact_bindings"]), "relationships": len(manifest["baseline"]["relationships"]), "history_rows": len(manifest["baseline"]["history_rows"])}, "findings": findings, "passed": not findings, "database_digest": checked["domain_digest"], "writes_performed": False}
 
 
+RELATIONSHIP_HEADERS = {
+    "Parent": "document-parent",
+    "Project Map": "document-project-map",
+    "Source Idea": "document-source",
+    "Source Project Map": "document-source",
+    "Roadmap Document": "document-roadmap",
+}
+
+
+def _relationship_reference(value: str) -> str:
+    """Normalize one explicit document header reference without guessing semantics."""
+    reference = value.strip().strip("`")
+    match = re.fullmatch(r"\[[^]]+\]\(([^)]+)\)", reference)
+    if match:
+        reference = match.group(1).strip()
+    return reference
+
+
+def _relationship_targets(connection: sqlite3.Connection, reference: str) -> list[str]:
+    rows = connection.execute(
+        "SELECT id FROM document WHERE visible_id=? COLLATE NOCASE UNION "
+        "SELECT id FROM artifact WHERE current_path=? UNION "
+        "SELECT document_id AS id FROM document_path_alias WHERE path=? AND retired_revision IS NULL",
+        (reference, reference, reference),
+    ).fetchall()
+    return sorted({str(row["id"]) for row in rows})
+
+
+def build_relationship_plan(workspace: Path, *, database: Path | None = None) -> dict[str, Any]:
+    """Extract only unambiguous, explicit document-header relationships."""
+    workspace = resolved_workspace(workspace)
+    database_path = database or hybrid_state.database_path(workspace)
+    with contextlib.closing(hybrid_state.connect(database_path, writable=False)) as connection:
+        checked = document_store.audit_connection(workspace, connection)
+        if checked["classification"] not in {"CLEAN", "VALID_DIRTY", "CHECKPOINT_DUE"}:
+            raise ConversionError(
+                f"relationship planning refused from {checked['classification']}"
+            )
+        if int(connection.execute("PRAGMA user_version").fetchone()[0]) < 2:
+            raise ConversionError("relationship planning requires Hybrid schema 2 or newer")
+        identity = load_project_identity(workspace)
+        candidates: list[dict[str, Any]] = []
+        findings: list[dict[str, Any]] = []
+        rows = connection.execute(
+            "SELECT d.id, d.visible_id, r.body_markdown FROM document d "
+            "JOIN document_revision r ON r.document_id=d.id "
+            "AND r.revision_number=d.current_revision "
+            "JOIN document_conversion dc ON dc.artifact_id=d.id "
+            "AND dc.classification='generated' ORDER BY d.visible_id"
+        ).fetchall()
+        for row in rows:
+            for header, relation_type in RELATIONSHIP_HEADERS.items():
+                raw = _header_value(str(row["body_markdown"]), header)
+                if not raw or raw.casefold() in {"none", "n/a", "unknown"}:
+                    continue
+                reference = _relationship_reference(raw)
+                targets = _relationship_targets(connection, reference)
+                if len(targets) != 1 or targets[0] == str(row["id"]):
+                    findings.append(
+                        {
+                            "code": "AMBIGUOUS_DOCUMENT_RELATIONSHIP"
+                            if len(targets) > 1
+                            else "UNRESOLVED_DOCUMENT_RELATIONSHIP",
+                            "source_artifact_id": str(row["id"]),
+                            "source_visible_id": str(row["visible_id"]),
+                            "header": header,
+                            "reference": reference,
+                            "candidate_count": len(targets),
+                        }
+                    )
+                    continue
+                target = targets[0]
+                existing = connection.execute(
+                    "SELECT id FROM relationship WHERE from_artifact_id=? AND relation_type=? "
+                    "AND to_artifact_id=? AND retired_revision IS NULL",
+                    (row["id"], relation_type, target),
+                ).fetchone()
+                if existing:
+                    continue
+                relation_id = str(
+                    uuid.uuid5(
+                        uuid.UUID(str(identity["project_id"])),
+                        f"document-relationship:{row['id']}:{relation_type}:{target}",
+                    )
+                )
+                candidates.append(
+                    {
+                        "id": relation_id,
+                        "from_artifact_id": str(row["id"]),
+                        "from_visible_id": str(row["visible_id"]),
+                        "relation_type": relation_type,
+                        "to_artifact_id": target,
+                        "header": header,
+                        "reference": reference,
+                    }
+                )
+    payload = {
+        "schema_version": 1,
+        "kind": "tool-shed-document-relationship-manifest",
+        "project_id": identity["project_id"],
+        "expected_revision": checked["current_revision"],
+        "expected_domain_digest": checked["domain_digest"],
+        "candidates": candidates,
+        "findings": findings,
+        "prepared_at": hybrid_state.now(),
+        "manifest_token": "",
+    }
+    payload["manifest_token"] = manifest_token(payload)
+    return payload
+
+
+def apply_relationship_plan(
+    workspace: Path,
+    *,
+    project_binding: str,
+    manifest: dict[str, Any],
+    actor: str,
+    database: Path | None = None,
+) -> dict[str, Any]:
+    workspace = resolved_workspace(workspace)
+    if (
+        manifest.get("schema_version") != 1
+        or manifest.get("kind") != "tool-shed-document-relationship-manifest"
+        or manifest.get("project_id") != load_project_identity(workspace)["project_id"]
+        or manifest.get("manifest_token") != manifest_token(manifest)
+    ):
+        raise ConversionError("document relationship manifest is invalid")
+
+    def apply(connection: sqlite3.Connection, revision: int) -> dict[str, Any]:
+        current_revision = int(hybrid_state.meta_row(connection)["current_revision"])
+        if current_revision != int(manifest["expected_revision"]):
+            raise ConversionError("document relationship manifest revision is stale")
+        if document_store.domain_digest(connection) != manifest["expected_domain_digest"]:
+            raise ConversionError("document relationship manifest domain is stale")
+        applied: list[str] = []
+        idempotent: list[str] = []
+        for candidate in manifest["candidates"]:
+            existing = connection.execute(
+                "SELECT id FROM relationship WHERE from_artifact_id=? AND relation_type=? "
+                "AND to_artifact_id=? AND retired_revision IS NULL",
+                (
+                    candidate["from_artifact_id"],
+                    candidate["relation_type"],
+                    candidate["to_artifact_id"],
+                ),
+            ).fetchone()
+            if existing:
+                idempotent.append(str(existing["id"]))
+                continue
+            connection.execute(
+                "INSERT INTO relationship VALUES (?, ?, ?, ?, 'document-header-v1', ?, NULL)",
+                (
+                    candidate["id"],
+                    candidate["from_artifact_id"],
+                    candidate["relation_type"],
+                    candidate["to_artifact_id"],
+                    revision,
+                ),
+            )
+            applied.append(str(candidate["id"]))
+        return {
+            "manifest_token": manifest["manifest_token"],
+            "applied": applied,
+            "idempotent": idempotent,
+            "finding_count": len(manifest["findings"]),
+        }
+
+    return document_store.managed_write(
+        workspace,
+        project_binding=project_binding,
+        command="document-relationship-backfill",
+        actor=actor,
+        callback=apply,
+        database=database,
+    )
+
+
 def rollback_export(workspace: Path, *, manifest: dict[str, Any], database: Path, output: Path) -> dict[str, Any]:
     workspace = resolved_workspace(workspace)
     target = require_path_within(workspace, output if output.is_absolute() else workspace / output)
@@ -338,6 +516,8 @@ def build_parser() -> argparse.ArgumentParser:
     archive = commands.add_parser("archive"); archive.add_argument("--manifest", required=True); archive.add_argument("--output", required=True)
     apply = commands.add_parser("apply"); apply.add_argument("--manifest", required=True); apply.add_argument("--database", required=True); apply.add_argument("--project-binding", required=True); apply.add_argument("--actor", required=True)
     qualify_parser = commands.add_parser("qualify"); qualify_parser.add_argument("--manifest", required=True); qualify_parser.add_argument("--database", required=True)
+    relationship_plan = commands.add_parser("relationships-plan"); relationship_plan.add_argument("--database"); relationship_plan.add_argument("--output")
+    relationship_apply = commands.add_parser("relationships-apply"); relationship_apply.add_argument("--manifest", required=True); relationship_apply.add_argument("--database"); relationship_apply.add_argument("--project-binding", required=True); relationship_apply.add_argument("--actor", required=True)
     rollback = commands.add_parser("rollback-export"); rollback.add_argument("--manifest", required=True); rollback.add_argument("--database", required=True); rollback.add_argument("--output", required=True)
     return parser
 
@@ -352,6 +532,25 @@ def main(argv: Sequence[str] | None = None) -> int:
                 output = require_path_within(workspace, workspace / args.output)
                 output.parent.mkdir(parents=True, exist_ok=True)
                 output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        elif args.command == "relationships-plan":
+            result = build_relationship_plan(
+                workspace, database=(workspace / args.database) if args.database else None
+            )
+            if args.output:
+                output = require_path_within(workspace, workspace / args.output)
+                output.parent.mkdir(parents=True, exist_ok=True)
+                output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        elif args.command == "relationships-apply":
+            manifest = json.loads(
+                require_path_within(workspace, workspace / args.manifest).read_text(encoding="utf-8")
+            )
+            result = apply_relationship_plan(
+                workspace,
+                project_binding=args.project_binding,
+                manifest=manifest,
+                actor=args.actor,
+                database=(workspace / args.database) if args.database else None,
+            )
         else:
             manifest = load_plan(workspace, Path(args.manifest))
             if args.command == "archive": result = create_archive(workspace, manifest=manifest, destination=Path(args.output))
