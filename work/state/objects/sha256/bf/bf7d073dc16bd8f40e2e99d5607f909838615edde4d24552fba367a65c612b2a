@@ -1,0 +1,66 @@
+# Campaign: Unify Authority Resolution and Shadow Fallback
+
+Status: working
+Type: campaign
+Updated: 2026-09-09
+Next Action: implement the shared resolver and coherent file/shadow compatibility slice
+Campaign ID: unify-authority-resolution-and-shadow-fallback
+Campaign Number: 178
+Outcome: Every relevant Tool Shed consumer resolves the same release-aware authority and preserves usable file-authoritative behavior until guarded Hybrid cutover succeeds.
+Primary Focus Areas: snapshot-delivery
+Supporting Focus Areas: artifact-workflows, campaign-lifecycle, provider-portability, qualification-release, workspace-safety
+Depends On: none
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work2
+Completion Gate: One canonical tested resolver covers absent database, file authority, empty and populated schema-2 shadow, qualified shadow, Hybrid authority, and recovery; document, readiness, planning-order, Doctor, dashboard, PRM, campaign, index, and reporting paths agree on authority, stable identity, inventory, and feature limits; the exact issue #66 empty-shadow regression passes without forced cutover; incompatible or ambiguous states fail visibly with an exact next action; focused tests, strict Doctor, and the configured development lane pass; and the exact Work2 candidate is registered without publication.
+Completion Evidence: none
+Disposition: none
+Roadmap: convergent-install-upgrade-authority
+Roadmap Revision: 1
+Roadmap Document: PRM-0046
+Milestone: M1-AUTHORITY-COMPATIBILITY
+Unlocks Gates: G1-AUTHORITY-COMPATIBILITY-CONTRACT
+
+## Request
+
+Add the smallest complete shared authority compatibility contract. Define one normalized resolver
+for absent database, file authority, shadow import, qualified shadow, Hybrid authority, and recovery.
+Route all consumers that currently infer authority from database presence or schema support through
+that contract, including readiness, planning order, Doctor, dashboard/reporting, PRM, campaign, and
+index behavior.
+
+Make file-authoritative fallback fully coherent before adding the broader convergence orchestrator.
+Reproduce GitHub issue #66 with a released-style 0.52.1 empty schema-2 shadow and a file-backed
+`ready-for-prm` Idea Brief; assert that every relevant consumer sees the same authority, identity,
+artifact count, and bounded feature limits. Include a populated unqualified shadow fixture so
+compatibility never silently trusts imported database content.
+
+Stop after focused implementation proof, strict Doctor, configured development-lane verification,
+the exact Work2 candidate registration, and a durable Hybrid checkpoint. Do not force conversion or
+cutover, publish, tag, release, synchronize clients, close issue #66, begin M2, or mutate the
+`workpc` firmware workspace in this campaign.
+
+## App Server Preparation Contract
+
+```json
+{
+  "campaign_id": "unify-authority-resolution-and-shadow-fallback",
+  "completion_evidence": "The shared resolver and every routed consumer agree in absent, file, empty/populated shadow, qualified shadow, Hybrid, and recovery fixtures; issue #66 is reproduced and fixed without forced cutover; focused tests, strict Doctor, and the configured Work2 lane pass; the exact candidate is registered without publication.",
+  "exact_resolution": "dispatch-time",
+  "execution_shape": "single-bounded-camp",
+  "inline_assets": "metadata-only",
+  "objective": "Eliminate split-brain authority behavior by making every consumer use one release-aware resolver with coherent file/shadow fallback.",
+  "schema_version": 1,
+  "source_freshness": "required",
+  "verification": "orchestrator-exactly-once"
+}
+```
+
+## Completion Check
+
+Verify the authority state machine, normalized resolver, every consumer migration, identity and
+inventory agreement, feature-limit reporting, issue #66 and populated-shadow fixtures, stale and
+ambiguous state refusal, existing Hybrid behavior, focused tests, strict Doctor, development
+deployment/checks, Work2 registration, and checkpoint persistence.

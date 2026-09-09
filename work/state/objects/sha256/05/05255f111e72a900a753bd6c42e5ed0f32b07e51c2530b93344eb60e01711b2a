@@ -1,0 +1,150 @@
+# Program Roadmap: Convergent Install and Upgrade Authority
+
+Status: proposed
+Type: program-roadmap
+Updated: 2026-09-09
+Next Action: validate readiness-gate transfer and approve this roadmap
+Roadmap ID: convergent-install-upgrade-authority
+Roadmap Revision: 1
+Source Idea: IDEA-0026
+Source Project Map: MAP-0034
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 4
+Reviewed Body SHA256: dfdc6d80c34d41123f62bb778212912d47bf745e47126e8b515973f92b040a40
+
+## Program Outcome
+
+Every Tool Shed installation and supported upgrade path converges the workspace to the selected
+release's complete safely reachable feature set, or preserves one coherent fallback authority and
+reports exact unavailable capabilities and recovery actions. Authority, runtime mutation ability,
+document relationships, semantic state, and feature availability agree across all consumers. The
+contract is field-reproduced, cross-platform qualified, released, synchronized to clients,
+production-verified, and recursively reconciled.
+
+## M1-AUTHORITY-COMPATIBILITY — Remove split-brain authority behavior
+
+Status: ready
+Required Endpoint: Work2
+Depends on: none
+
+Outcome: Define one release-aware authority state machine and normalized resolver; route every
+relevant document, readiness, planning-order, Doctor, dashboard, PRM, campaign, index, and reporting
+consumer through it; provide coherent file-authoritative behavior for absent, empty schema-2
+shadow, populated shadow, qualified shadow, Hybrid, and recovery states; reproduce issue #66; and
+register the exact Work2 candidate without forcing conversion or release.
+
+Gates:
+
+- `G1-AUTHORITY-COMPATIBILITY-CONTRACT`
+
+Candidate campaign: `unify-authority-resolution-and-shadow-fallback`.
+
+## M2-CONVERGENCE-AND-INTEGRITY — Make release features safely reachable
+
+Status: waiting
+Required Endpoint: Work2
+Depends on: M1-AUTHORITY-COMPATIBILITY
+
+Outcome: Add the versioned release-capability inventory and thin convergence orchestrator over
+existing guarded domain migrations; durable bounded success/failure/defer/resume journaling;
+matching operator and machine summaries; disposable interactive and background runtime mutation
+probes; Doctor read-versus-write health; actionable diagnostics; relationship extraction and
+semantic parity checks; and explicit separation of schema migration, required compatibility
+backfill, and optional semantic enrichment. Prove interruption, rollback, stale-state refusal, and
+idempotent resume, then register the exact Work2 candidate without release.
+
+Gates:
+
+- `G2-RELEASE-CONVERGENCE-ORCHESTRATION`
+- `G3-RUNTIME-CAPABILITY-AND-DIAGNOSTICS`
+- `G4-SEMANTIC-MIGRATION-INTEGRITY`
+
+Candidate campaign: `build-release-convergence-and-semantic-integrity`.
+
+## M3-CROSS-PLATFORM-RELEASE-CLOSURE — Qualify and ship the complete contract
+
+Status: waiting
+Required Endpoint: Work5
+Depends on: M1-AUTHORITY-COMPATIBILITY, M2-CONVERGENCE-AND-INTEGRITY
+
+Outcome: Reconfirm all authority, convergence, runtime, diagnostic, relationship, semantic,
+rollback, and idempotence behavior across the complete supported state matrix on Linux and
+Windows. Reproduce the issue #66 and `workpc` sequences; qualify fresh install and every supported
+upgrade entry point plus scheduler/runtime parity; align docs and portable skill; freeze the
+complete cohort, require exact-SHA CI, publish one traceable release, synchronize installed
+clients, verify production behavior, and reconcile only the IDEA-0026 chain.
+
+Gates:
+
+- Reconfirm `G1` through `G4` on the frozen candidate.
+- `G5-CROSS-PLATFORM-UPGRADE-AND-RELEASE-PROOF`
+
+Candidate campaign: `qualify-and-release-convergent-install-upgrade`.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G1-AUTHORITY-COMPATIBILITY-CONTRACT | M1 implementation and M3 regression |
+| G2-RELEASE-CONVERGENCE-ORCHESTRATION | M2 implementation and M3 regression |
+| G3-RUNTIME-CAPABILITY-AND-DIAGNOSTICS | M2 implementation and M3 regression |
+| G4-SEMANTIC-MIGRATION-INTEGRITY | M2 implementation and M3 regression |
+| G5-CROSS-PLATFORM-UPGRADE-AND-RELEASE-PROOF | M3 |
+
+Transfer count: 5 reviewed gates; 5 mapped gates; 0 dropped.
+
+## Decision Record
+
+- Authority contract: one canonical resolver whose state machine includes storage mode,
+  qualification, recovery, and feature limits; schema support and database presence are inputs,
+  never authority conclusions.
+- Compatibility order: make all consumers agree in the existing file/shadow state before adding
+  automatic convergence, so partial or refused migration still leaves a usable project.
+- Convergence model: one declarative release-capability inventory plus a thin planner that invokes
+  existing guarded operations and owns only ordering, result journaling, resume, and agreement
+  verification.
+- Runtime model: capability probes execute disposable representative guarded writes under each
+  configured interpreter; Doctor surfaces read and mutation health separately.
+- Semantic model: resolvable legacy links become immutable-ID relationships; ambiguity is a
+  finding; structural migration, required compatibility backfill, and optional semantic
+  enrichment remain separate actions.
+
+## Recovery Contract
+
+- Unsupported or inconsistent authority state keeps the last proven single authority active,
+  reports exact feature limits, and never accepts database content merely because it exists.
+- A changed workspace, capability inventory, archive, parity digest, runtime, schema, or state token
+  invalidates a prepared convergence step and requires fresh planning rather than replay.
+- An interrupted operation resumes only from durable guarded evidence; uncertain mutation state
+  requires audit/reconciliation before another attempt; rollback preserves prior authority.
+- Missing mutation capability blocks only the affected convergence steps, distinguishes read health
+  from write readiness, and names the interpreter or scheduler remediation without raw errors.
+- Unresolved semantic relationships remain explicit and cannot be silently counted as parity;
+  optional readiness or historical outcome enrichment is never fabricated to satisfy smoke tests.
+- Failed local, platform, CI, release, synchronization, production, or recursive closure proof
+  leaves the governing outcome open at its exact resume point.
+
+## Verification Strategy
+
+- Unit and integration fixtures for every authority state and consumer, especially the empty and
+  populated schema-2 shadow cases from issue #66.
+- Planner fixtures for fresh install, each upgrade entry point, prerequisite ordering, safe
+  auto-apply, explicit decisions, repeated invocation, interruption, durable failure/resume,
+  rollback, dirty state, stale tokens, and matching JSON/operator summaries.
+- Runtime fixtures for supported and read-only-incompatible SQLite environments, including Python
+  3.11.2/SQLite 3.39.4 guarded-write rejection and scheduler executable parity.
+- Semantic fixtures for four-document conversion, resolvable `Parent:` relationships, ambiguity,
+  lifecycle/planning/campaign/outcome preservation, checkpoint/rebuild, and no probe-created
+  readiness or historical outcome state.
+- Full Linux and Windows qualification, exact issue #66 and `workpc` reproduction, snapshot and
+  installed-skill parity, strict Doctor, exact-content CI, release provenance, synchronized-client
+  verification, and production convergence.
+
+## Authority Boundaries
+
+This roadmap authorizes faithful planning, source changes, tests, local checkpoints, known
+development deployment, collaboration, and known production delivery under the current level-5
+project preference. It does not authorize credentials, destructive or cross-workspace recovery,
+unknown targets, unsafe implicit cutover, mutation of unrelated firmware work, external issue
+closure without verified delivery, or scope beyond GitHub issue #66 and the necessary general
+convergence contract.

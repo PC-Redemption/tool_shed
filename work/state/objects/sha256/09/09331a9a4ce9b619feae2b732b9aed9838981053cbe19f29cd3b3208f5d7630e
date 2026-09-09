@@ -1,0 +1,219 @@
+# Idea Brief: Convergent Install and Upgrade Authority
+
+Status: exploring
+Type: idea-brief
+Updated: 2026-09-09
+Next Action: continue brainstorming or promote this brief with `ts: prm idea <idea-id-or-path>`
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces:
+
+## Current Synthesis
+
+### Idea
+
+Make installation and every upgrade path converge the workspace toward the complete feature set of
+the selected Tool Shed release while preserving one internally consistent authority model at every
+intermediate state. Treat a partial migration as an explicit, diagnosable operating mode rather
+than a nominally successful installation whose commands silently choose different sources of truth.
+
+The immediate trigger is [GitHub issue #66](https://github.com/PC-Redemption/tool_shed/issues/66):
+a released `0.52.1` client could contain a schema-2 database in `shadow` mode with no imported
+documents while file-backed `work/` remained authoritative. File campaign and roadmap commands
+continued to work, but readiness, planning order, Doctor, and dashboard paths treated database
+presence or schema level as authority and saw an empty project.
+
+A subsequent field convergence at `workpc:E:\dev\high_point\7520708_DispTest_FW` confirmed the
+failure shape and exposed additional boundaries. The workspace ultimately reached a clean,
+checkpoint-current schema-6 Hybrid state, but only after a multi-step manual sequence. It spent
+roughly four and a half hours at schema 2 in `shadow` mode before four documents were imported,
+authority was cut over, schemas 3 through 6 were applied, outcome/readiness state was populated,
+views were rendered, and the result was committed. That is a successful recovery, not evidence that
+the released installer supplied convergence.
+
+### Why It Matters
+
+Shipping code for a feature is not useful when the installed workspace cannot safely reach the
+state that enables it. Worse, split authority produces credible but contradictory answers: a valid
+Idea Brief can disappear from one command, artifact counts can become zero in another, and newer
+outcome capabilities can remain unavailable without the install summary saying so. This weakens
+operator trust and makes an upgrade look complete when it has only updated executable files.
+
+### Desired Outcome
+
+- Installation and upgrade evaluate the current workspace against the selected release's complete
+  migration and feature requirements, apply every safe automatic convergence step, and report the
+  applied, deferred, and blocked results.
+- A single authoritative state contract selects file, shadow, or Hybrid behavior for every
+  consumer. Database presence and schema number alone never imply document authority.
+- Until guarded cutover succeeds, readiness, planning order, Doctor, dashboard, PRM, campaign, and
+  index behavior all use a working file-authoritative fallback and agree on identities and counts.
+- When convergence needs owner authority, the operation emits one bounded decision that states the
+  impact, unavailable features, rollback path, and exact continuation command.
+- Approved conversion preserves documents, stable identities, relationships, lifecycle, planning
+  order, campaign state, and outcome state while migrating through every supported schema step.
+- Post-install verification proves that all relevant commands agree on authority, inventory, and
+  feature availability; no path reports unconditional success without that concise summary.
+- Runtime prerequisites are verified by capability, not merely by Python version. A read-capable
+  interpreter that cannot execute Tool Shed's guarded SQLite writes is reported as degraded or
+  blocked and cannot receive a `HEALTHY` mutation-capable verdict.
+- Conversion proves semantic relationship parity as well as body-byte parity. Resolvable legacy
+  parent/project-map/output links become immutable-ID relationships; ambiguous links remain
+  explicit findings rather than silently surviving only as path text.
+- Convergence records failed as well as successful steps with bounded diagnostic codes and exact
+  recovery actions, so a later review does not depend on console or chat history.
+- Structural/schema convergence, semantic historical backfill, and readiness judgment are separate
+  action classes. Install verification does not create semantic planning state merely to prove a
+  feature can run.
+
+## Constraints And Non-Goals
+
+- Existing guarded archive, project identity, parity, idempotence, checkpoint/rebuild, rollback,
+  stale-state, and authority-cutover requirements remain intact.
+- Dirty state, interrupted conversion, unsupported environments, credentials, and protected
+  boundaries must fail safely without converting a split state into accepted authority.
+- New workspaces, file-only workspaces, empty and populated schema-2 shadows, older authoritative
+  Hybrid schemas, interrupted conversions, and rollback paths all need deterministic coverage.
+- Compatibility must be release-aware: a workspace may legitimately remain file-authoritative,
+  but every shipped command must honor that same state and report its feature limits.
+- The solution should reuse migration and audit mechanisms already present instead of creating a
+  second installer, tracker, or authority database.
+- Interpreter, SQLite feature support, scheduled-task executable identity, and other runtime-bound
+  consumers are part of the feature-availability contract; a workspace-local instruction pin is a
+  mitigation, not proof of portable convergence.
+- Explicit non-goal: perform an unsafe implicit authority switch merely to make the installation
+  appear fully converged.
+- Explicit non-goal: implement separate ad-hoc authority checks in each command.
+- Explicit non-goal: claim feature availability because code exists when its required state or
+  migration has not been established.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| One shared authority resolver plus file-compatible consumers | Removes divergent heuristics and restores current file/shadow workspaces quickly | Every consumer must route through the contract; compatibility logic may live longer than desired | Required foundation; issue evidence identifies multiple commands that currently infer authority differently |
+| Declarative release convergence registry and ordered migration planner | Makes the selected release's feature prerequisites, safe automatic steps, blockers, and next actions explicit | Requires a versioned dependency model and careful idempotence across install/update entry points | Strong candidate for preventing future shipped-but-unreachable features |
+| One transactional convergence orchestrator used by install and all upgrade paths | Produces a uniform summary and bounded decision surface; centralizes resume and post-check behavior | Can become too broad if it absorbs domain-specific migration logic | Prefer a thin orchestrator over existing guarded domain migrations |
+| Eagerly convert and cut over every workspace during update | Minimizes compatibility duration when successful | Violates explicit authority boundaries and increases data-loss/rollback risk | Rejected as a universal default |
+| Report degradation without attempting safe migrations | Simple and transparent | Leaves avoidable feature gaps and does not meet the convergence requirement | Useful only as the fallback after safe automatic steps are exhausted |
+| Patch only the commands named in #66 | Small immediate change | Future consumers can recreate split authority; does not address migration reachability or install truth | Insufficient except as an early compatibility slice |
+| Capability-based runtime preflight using a disposable SQLite probe | Detects whether required JSON checks/triggers and hardened pragmas can execute before workspace mutation | Must remain side-effect-free and version-independent; needs Windows coverage | Required by the field failure: Python 3.11.2/SQLite 3.39.4 could read the final database but rejected guarded trigger writes |
+| Durable convergence journal covering success, failure, deferment, and resume | Makes partial progress and exact recovery inspectable across sessions | Must not become a second authority or retain unsafe raw exception data | Preferred replacement for the opaque `TSU-801 / unknown` field report and scattered migration files |
+| Relationship-parity extraction during document conversion | Converts resolvable legacy path links to immutable-ID edges and makes context retrieval complete | Header/link vocabularies need explicit mappings; ambiguous links require review | Required by the field fixture where `INV-0001` retained a `Parent:` header but the relationship table and `related/context` results were empty |
+| Disposable or read-only conformance checks for semantic features | Proves readiness/outcome commands are callable without changing live planning meaning | Some paths may require purpose-built validation modes or fixtures | Preferred over creating readiness reviews or historical outcome state as an installation smoke test |
+
+## Open Questions
+
+- What is the canonical authority-resolution API and minimal state machine for absent database,
+  file authority, shadow import, qualified shadow, Hybrid authority, and recovery states?
+- Should feature prerequisites be declared in one release manifest, derived from migration/schema
+  registries, or assembled from domain-owned capability checks behind a common interface?
+- Which current convergence steps are provably safe and automatic, and exactly where is explicit
+  owner authority still required (conversion, cutover, retirement, or all three)?
+- How should every install/update entry point persist and resume a partially completed convergence
+  plan without letting the plan itself become a second authority surface?
+- What is the smallest file-authoritative compatibility adapter for readiness and planning order
+  that preserves stable identity and avoids duplicating future database semantics?
+- Should dashboard and Doctor consume the same normalized authority/inventory capsule as CLI
+  commands, or call the resolver independently with a shared conformance suite?
+- What exact feature-availability vocabulary distinguishes available, compatible fallback,
+  degraded, awaiting decision, blocked, and unsupported without overwhelming routine installs?
+- How are sequential schema upgrades ordered when document, campaign, closure-lineage,
+  loop-finding, and persistent-execution schemas have different prerequisites or rollback scopes?
+- What constitutes post-install agreement: identical authority ID and artifact counts only, or also
+  identity/relationship/lifecycle digests and outcome-state invariants?
+- How should an interrupted operation prove whether to resume, roll back, or retain the previous
+  authority without trusting partially written progress markers?
+- Which concrete SQLite capabilities must be probed for every shipped schema and mutation family,
+  and can one disposable probe faithfully cover document, closure, loop-finding, and campaign
+  execution triggers on every supported runtime?
+- Should Doctor expose separate read-health and mutation-readiness verdicts, or should a failed
+  disposable mutation-capability probe make the overall result `DEGRADED` with an exact runtime
+  remediation?
+- What bounded diagnostic fields would have made the field `TSU-801 / unknown` preflight failure
+  actionable without storing paths, exception text, prompts, or secrets?
+- Which legacy Markdown relationships are unambiguous enough to migrate automatically, and how
+  should unresolved parent/output references affect cutover and Doctor?
+- Which semantic backfills are required for compatibility versus optional enrichment, and what
+  explicit owner decision is needed before each class is applied?
+- How should the installer verify and, when authorized, converge scheduler/service interpreters so
+  background consumers cannot use a different SQLite capability set from interactive commands?
+
+## Decisions
+
+- Authority selection is a shared product contract, not a command-local heuristic.
+- `storage_mode` participates in authority selection; schema support or database existence alone is
+  never sufficient.
+- Safe automatic convergence is the default, but conversion and cutover remain guarded when their
+  established authority requirements demand it.
+- A partial result must preserve a functional single-authority fallback and truthfully enumerate
+  every unavailable or degraded feature with an exact next action.
+- Install and update are responsible for state convergence and feature truth, not only file
+  replacement.
+- Domain migrations may remain independently testable; orchestration should compose them rather
+  than replace their guards and rollback contracts.
+- Feature availability includes mutation capability under every configured interactive and
+  background runtime; successful read-only audit is not sufficient.
+- A convergence ledger must retain bounded failure classification and resume state in addition to
+  the existing successful migration ledger.
+- Post-install checks must not manufacture readiness reviews, verdicts, relationships, or
+  historical outcome truth solely as probes.
+- Relationship parity includes durable immutable-ID edges, not only preserved Markdown bytes.
+
+## Don't Forget
+
+- Reproduce the exact `0.52.1` empty schema-2 `shadow` state with a file-backed
+  `ready-for-prm` Idea Brief and assert every consumer sees the same authority before and after
+  conversion.
+- Include a populated shadow fixture so compatibility does not accidentally read unqualified
+  imported content.
+- Verify installation summaries in both machine-readable and concise operator-facing forms.
+- Exercise fresh install, every supported upgrade entry point, repeated invocation, interruption,
+  rollback, and dirty-worktree refusal or fallback.
+- Validate that later schemas for closure lineage, loop findings, and persistent campaign execution
+  are reached or explicitly reported unavailable rather than merely shipped.
+- Keep GitHub issue #66 as the external problem and acceptance-criteria source.
+- Add the `workpc` fixture to coverage: successful `0.52.1` update under CPython 3.11.2, schema-2
+  shadow pause, conversion under pyenv 3.13.1, four verified document imports, sequential 2→3→4→5→6
+  migration, checkpoint/rebuild, and exact snapshot/installed-skill parity.
+- Assert that Doctor does not report full mutation-capable health when run with an interpreter that
+  can read the database but cannot execute its accounting-trigger writes.
+- Assert that an inventory with a resolvable `Parent:` map link produces an immutable-ID relation
+  and that `document_store related/context` returns it after conversion.
+- Preserve normal-fallback distinctions: the observed App Server `needs_more_context` GUI fallback
+  completed without dispatch debt and should not be classified as a convergence error.
+
+## Exploration Log
+
+### 2026-09-09
+
+- Idea Brief created from [GitHub issue #66](https://github.com/PC-Redemption/tool_shed/issues/66).
+- The issue's observed split-brain state was reframed as two coupled design needs: one shared
+  authority resolver for consistent fallback, and a release-aware convergence plan that makes
+  every shipped feature reachable or explicitly unavailable.
+- Initial direction favors a thin install/update orchestrator over existing guarded migrations,
+  backed by a declarative feature/prerequisite inventory and one cross-command conformance suite.
+- Read-only field review of `workpc:E:\dev\high_point\7520708_DispTest_FW` found the final state
+  clean at Hybrid schema 6, revision 11, with four database-owned documents, current checkpoint,
+  reconciled outcome state, connected dashboard, no pending events, and exact workspace/installed
+  skill parity. Existing firmware work remained outside Tool Shed's mutation surface.
+- The protected updater history contained an initial `TSU-801 / unknown` failure at
+  `workspace-preflight` with no actionable cause or continuation guidance; a retry about thirty
+  seconds later installed `0.52.1` successfully. This is direct evidence that bounded failure
+  reporting needs more diagnostic resolution.
+- The successful updater ran under CPython 3.11.2, but later Hybrid work required pyenv 3.13.1
+  because the older bundled SQLite 3.39.4 rejects Tool Shed accounting-trigger JSON functions with
+  `trusted_schema=OFF`. The project added a manual instruction and dashboard-scheduler interpreter
+  pin. Doctor still reported `HEALTHY` under the read-capable 3.11.2 runtime, revealing that current
+  health checks do not prove mutation compatibility.
+- The final checkpoint retained `INV-0001` with a resolvable `Parent:` path to `MAP-0001`, while the
+  database relationship table remained empty and `document_store related/context` returned no
+  relationship. Byte/render parity therefore did not establish relationship parity.
+- The convergence also applied a readiness review and historical outcome backfill. These may have
+  been intentional in that run, but they demonstrate why schema conversion, required semantic
+  migration, and optional semantic enrichment must be separately inventoried and authorized.
+- No implementation, migration, cutover, release, or publication is authorized by this
+  brainstorming route.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.
