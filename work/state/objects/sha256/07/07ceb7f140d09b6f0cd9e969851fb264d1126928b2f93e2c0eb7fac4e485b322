@@ -1,0 +1,123 @@
+# Campaign: Build Release Convergence and Semantic Integrity
+
+Status: completed
+Type: campaign
+Updated: 2026-09-09
+Next Action: return to PRM-0046 for M3 cross-platform release closure
+Campaign ID: build-release-convergence-and-semantic-integrity
+Campaign Number: 179
+Outcome: Every install and supported upgrade path can plan and resume the selected release's safely reachable capabilities, distinguish runtime read health from guarded-write readiness, and prove semantic migration integrity without fabricating optional state.
+Primary Focus Areas: snapshot-delivery
+Supporting Focus Areas: artifact-workflows, campaign-lifecycle, provider-portability, qualification-release, workspace-safety
+Depends On: CAMP-0178
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work2
+Completion Gate: A versioned release-capability inventory and thin orchestrator order existing guarded domain migrations, persist bounded success/failure/defer/resume facts, refuse stale state, resume idempotently after interruption, and emit matching operator and machine summaries; disposable probes report interactive and background read versus mutation capability with actionable bounded diagnostics; Doctor exposes read health separately from write readiness; conversion extracts unambiguous immutable-ID relationships and reports ambiguity; schema migration, required compatibility backfill, and optional semantic enrichment are explicit action classes; rollback preserves prior authority; issue #66 runtime and deterministic imported-ID cases pass; focused tests, strict Doctor, and the configured development lane pass; and the exact Work2 candidate is registered without publication.
+Completion Evidence: commit 3c39ebb971c7bbf6061d34c1a3f4ca89d8a9b5c6; Work2 checkpoint 3fa5fccfc55f0a1cc38445a8b830392afd44ca65; 605/605 release-profile tests; strict Doctor HEALTHY; exact development web, Linux, and Windows qualification passed
+Disposition: satisfied
+Roadmap: convergent-install-upgrade-authority
+Roadmap Revision: 1
+Roadmap Document: PRM-0046
+Milestone: M2-CONVERGENCE-AND-INTEGRITY
+Unlocks Gates: G2-RELEASE-CONVERGENCE-ORCHESTRATION, G3-RUNTIME-CAPABILITY-AND-DIAGNOSTICS, G4-SEMANTIC-MIGRATION-INTEGRITY
+
+## Request
+
+Build one declarative release-capability inventory and a thin convergence planner over existing
+guarded domain operations. The planner owns dependency ordering, action classification, stale-state
+refusal, durable bounded journaling, idempotent resume, and agreement verification. It must not
+become a second migration engine or weaken the authority, archive, approval, rollback, or token
+contracts delivered by M1 and existing domain migrations.
+
+Add disposable representative SQLite probes for configured interactive and background Python
+runtimes. Report read health separately from guarded mutation readiness, including the issue #66
+Python 3.11.2 / SQLite 3.39.4 `trusted_schema=OFF` trigger failure as a controlled incompatibility
+with the exact interpreter remediation. Feed that truth into Doctor and convergence summaries.
+
+Extend conversion integrity to unambiguous relationship extraction and immutable-ID compatibility.
+Imported deterministic UUIDv5 document identities must be valid outcome and relationship targets;
+ambiguity must remain an explicit finding. Keep schema migration, required compatibility backfill,
+and optional semantic enrichment as separate named action classes, and never create readiness,
+planning history, or historical outcomes merely to make validation pass.
+
+Prove fresh, partial, failed, deferred, interrupted, resumed, repeated, stale-token, rollback, and
+dirty-state behavior in disposable fixtures. Stop after focused implementation proof, strict Doctor,
+configured development-lane verification, exact Work2 candidate registration, and a durable Hybrid
+checkpoint. Do not publish, tag, release, synchronize installed clients, close issue #66, begin M3,
+or mutate the `workpc` firmware workspace in this campaign.
+
+## App Server Preparation Contract
+
+```json
+{
+  "campaign_id": "build-release-convergence-and-semantic-integrity",
+  "completion_evidence": "Release capabilities are planned and resumed through guarded operations with durable bounded results; runtime mutation truth and semantic parity are explicit; issue #66 runtime and imported-ID cases pass; focused tests, strict Doctor, and Work2 pass; the exact candidate is registered without publication.",
+  "exact_resolution": "dispatch-time",
+  "execution_shape": "single-bounded-camp",
+  "inline_assets": "metadata-only",
+  "objective": "Make every safely reachable release capability convergent while preserving one coherent fallback, actionable runtime truth, and semantic integrity.",
+  "schema_version": 1,
+  "source_freshness": "required",
+  "verification": "orchestrator-exactly-once"
+}
+```
+
+## Completion Check
+
+Verify inventory versioning and dependencies, guarded planning and apply boundaries, durable bounded
+journal replay, interruption and idempotent resume, stale and dirty refusal, rollback authority,
+matching JSON and operator summaries, interactive/background mutation probes, Doctor read/write
+separation, relationship extraction and ambiguity, UUIDv5 imported-origin compatibility, explicit
+action classes, absence of fabricated optional state, issue #66 fixtures, focused tests, strict
+Doctor, development deployment/checks, Work2 registration, and checkpoint persistence.
+
+## Result
+
+The 0.53.0 candidate now ships a versioned release-capability inventory and a thin planner that
+orders the existing guarded schema migrations, required compatibility backfills, and optional
+semantic enrichment without becoming another migration engine. Fresh and existing eligible Git
+workspaces converge through the installer and updater; non-Git paths remain coherently deferred.
+Plans bind project, release inventory, authority, database revision and digest, runtimes, work
+content, and Git state, while a bounded hash-chained journal supports idempotent resume.
+
+Disposable probes distinguish read health from actual guarded writes for both interactive and
+background runtimes. The issue #66 Python 3.11.2 / SQLite 3.39.4 trusted-schema trigger failure is
+now classified as SQLITE_TRUSTED_SCHEMA_TRIGGER_UNSAFE with an interpreter-upgrade action. Doctor
+reports read and mutation readiness separately. Updater rollback restores the exact prior Hybrid
+database or removes a newly created shadow database.
+
+Conversion now extracts only unambiguous explicit document-header relationships using stable
+identities. Deterministic UUIDv5 imported artifacts are accepted as outcome origins and
+relationship targets while outcome-domain row identities remain UUIDv4. The canonical workspace
+backfilled 71 relationships with zero findings and repeated planning reported complete parity.
+Document-authority conversion remains one explicit archived decision, and no readiness, planning
+history, or historical outcome is fabricated.
+
+## Verification
+
+- Candidate commit 3c39ebb971c7bbf6061d34c1a3f4ca89d8a9b5c6; unpublished version 0.53.0;
+  disconnected archive
+  sha256:b211c999b4a8ae2e92265610dcf6a6517d22b31e4484f4aa7a38308981b45a3e.
+- Work2 preparation passed all five phases, including the 605/605 isolated release-profile suite.
+  The first system-Python preparation lacked Django and exposed one installer-era cycle fixture;
+  neither was treated as passing evidence. The repository Work2 environment and corrected fixture
+  then passed.
+- Focused local suites passed: 45 convergence, conversion, outcome, Doctor, and Hybrid tests; all
+  136 script integration tests also passed.
+- Development web runs exact image tool-shed-dashboard:dev-3c39ebb971c7; documentation and
+  dashboard health returned HTTP 200. Production remained healthy and unchanged.
+- Linux development at sup:/home/jon/dev/ts_linux_test_bed verified the exact archive, passed
+  14/14 focused tests, and reported Python 3.13.5 / SQLite 3.46.1 read-healthy and mutation-ready
+  for interactive and background roles.
+- Windows development at GOGETTER:E:\\dev\\ts_windows_test_bed verified the same archive,
+  passed 14/14 focused tests, and reported Python 3.14.6 / SQLite 3.50.4 read-healthy and
+  mutation-ready for python.exe and pythonw.exe. Both disposable clients reached schema 6 with no
+  automatic work remaining and retained file authority at the explicit cutover decision.
+- Work2 closeout passed all seven phases, registered the exact candidate against cycle
+  658d6c55-4392-446a-9ecb-80bb4b32abac, proved checkpoint rebuild parity, committed checkpoint
+  3fa5fccfc55f0a1cc38445a8b830392afd44ca65, and ended with strict Doctor HEALTHY.
+
+No push, release, tag publication, production deployment, installed Codex skill synchronization,
+GitHub issue closure, M3 execution, or mutation of the workpc firmware workspace occurred.
