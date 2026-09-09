@@ -1,0 +1,32 @@
+# Campaign: Qualify and Release Convergent Install and Upgrade
+
+Status: working
+Type: campaign
+Updated: 2026-09-09
+Next Action: qualify and freeze the complete v0.53.0 cohort through the three-lane Work5 release
+Campaign ID: qualify-and-release-convergent-install-upgrade
+Outcome: The complete authority and convergence contract is qualified across Linux, Windows, and the workpc reproduction, published as one traceable release, promoted and verified on every required production lane, synchronized to installed clients, and recursively reconciled through IDEA-0026.
+Primary Focus Areas: qualification-release
+Supporting Focus Areas: snapshot-delivery, provider-portability, workspace-safety, artifact-workflows, campaign-lifecycle
+Depends On: CAMP-0178, CAMP-0179
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work5
+Completion Gate: The active cohort is frozen to a clean content commit; release validation and the exact-SHA Ubuntu/Windows Python matrix pass; v0.53.0 provenance, tag, and GitHub Release agree; web, Windows, and Linux production lanes are verified against the frozen content; the workpc issue #66 sequence is reproduced without firmware mutation; the installed Codex skill matches the published source; issue #66 is closed with evidence; and CAMP-0180, PRM-0046, MAP-0034, and IDEA-0026 are terminal, satisfied, recursively closed, and reconciled before the release cohort is finalized.
+Roadmap: convergent-install-upgrade-authority
+Roadmap Revision: 1
+Roadmap Document: PRM-0046
+Milestone: M3-CROSS-PLATFORM-RELEASE-CLOSURE
+Unlocks Gates: G1-AUTHORITY-COMPATIBILITY-CONTRACT, G2-RELEASE-CONVERGENCE-ORCHESTRATION, G3-RUNTIME-CAPABILITY-AND-DIAGNOSTICS, G4-SEMANTIC-MIGRATION-INTEGRITY, G5-CROSS-PLATFORM-UPGRADE-AND-RELEASE-PROOF
+
+## Request
+
+Execute the complete active release cohort through the project three-lane Work5 replacement. Reconfirm authority, convergence, runtime, diagnostic, relationship, semantic, rollback, and idempotence behavior across the supported Linux and Windows matrices. Reproduce the issue #66 `workpc` sequence read-only against the firmware workspace while validating Tool Shed behavior in approved disposable targets.
+
+Freeze one exact clean content commit, require its successful GitHub push validation matrix, publish v0.53.0 through the two-commit provenance contract, and verify the GitHub Release. Promote and verify web, Windows, and Linux production lanes, synchronize the installed Codex skill only after publication, close issue #66 with evidence, then complete and reconcile only the registered IDEA-0026 chain and finalize the release cohort.
+
+## Completion Check
+
+Require strict local Doctor and release validation, exact-SHA GitHub Actions success, reproducible disconnected snapshot integrity, all three development and production lane records, web health, Linux and Windows installation/runtime checks, the bounded `workpc` incompatibility classification and remediation, published manifest/tag/release agreement, exact installed-skill parity, recursive outcome closure, clean checkpoint rebuild, and a clean repository.
+

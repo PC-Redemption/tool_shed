@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-prm0046-m3-development-qualification",
+  "recorded_at": "2026-09-09T19:47:13Z",
+  "candidate_commit": "b8e977c68ac4282562f3158bf704670ec983589f",
+  "candidate_version": "0.53.0",
+  "archive": {
+    "name": "tool-shed-prm0046-b8e977c.tar",
+    "sha256": "fe78db17379da1e51c093f0840721b791e0a32fcf5e9d0ffa1aab10f7fbf068b",
+    "snapshot_integrity": "verified"
+  },
+  "web": {
+    "target": "tsrookarocom-dev@sup.local:/home/jon/docker/ts.rookaro.com-dev",
+    "image": "tool-shed-dashboard:dev-b8e977c68ac4",
+    "source_commit": "b8e977c68ac4282562f3158bf704670ec983589f",
+    "documentation_health_http": 200,
+    "dashboard_health_http": 200,
+    "production_health_observed": "healthy-and-unchanged"
+  },
+  "linux": {
+    "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed",
+    "focused_tests": "3/3 passed",
+    "python": "3.13.5",
+    "sqlite": "3.46.1",
+    "interactive_mutation_ready": true,
+    "background_mutation_ready": true,
+    "convergence": "7 satisfied; document-authority conversion explicitly deferred",
+    "doctor": "NEEDS_DECISION with no errors; explicit authority decision plus expected disposable tracked drift"
+  },
+  "windows": {
+    "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed",
+    "focused_tests": "3/3 passed",
+    "python": "3.14.6",
+    "sqlite": "3.50.4",
+    "interactive_mutation_ready": true,
+    "background_mutation_ready": true,
+    "convergence": "7 satisfied; document-authority conversion explicitly deferred",
+    "doctor": "NEEDS_DECISION with no errors; explicit authority decision plus expected disposable tracked drift"
+  },
+  "workpc_reproduction": {
+    "target": "SH-06172402:E:\\dev\\high_point\\7520708_DispTest_FW",
+    "workspace_mutated": false,
+    "installed_snapshot": "0.52.1",
+    "candidate_probe_source": "b8e977c68ac4282562f3158bf704670ec983589f",
+    "python_3_11_2_sqlite_3_39_4": {
+      "interactive": "SQLITE_TRUSTED_SCHEMA_TRIGGER_UNSAFE",
+      "background": "SQLITE_TRUSTED_SCHEMA_TRIGGER_UNSAFE",
+      "read_healthy": true,
+      "mutation_ready": false
+    },
+    "python_3_13_1_sqlite_3_45_3": {
+      "interactive": "ready",
+      "background": "ready",
+      "read_healthy": true,
+      "mutation_ready": true
+    },
+    "workspace_plan": "7 satisfied; 1 required automatic compatibility action ready; 1 optional enrichment available; no decision"
+  }
+}
