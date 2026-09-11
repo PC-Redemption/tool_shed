@@ -818,23 +818,34 @@ class DashboardReporterTests(unittest.TestCase):
             "excluded_malformed_records": 0,
             "privacy": "content-free-controlled-aggregate-only",
         }
-        documents = {
-            ("active", "campaign"): {"documents": [{"visible_id": "CAMP-0001"}]},
-            ("active", "idea-brief"): {"documents": [{"visible_id": "IDEA-0001"}]},
-            ("completed", "campaign"): {"documents": [{"visible_id": "CAMP-0000"}]},
+        projection = {
+            "state": {
+                "working_count": 1,
+                "ready_count": 0,
+                "queued_count": 0,
+                "blocked_count": 0,
+                "closure_debt_count": 0,
+                "active_idea_count": 1,
+                "open_outcome_count": 1,
+                "unreconciled_outcome_count": 0,
+                "active_loop_finding_count": 0,
+                "last_completed_id": "CAMP-0000",
+            },
+            "work_inventory": {"total_count": 0, "truncated": False, "artifacts": []},
         }
 
-        def listed(workspace, *, lifecycle, document_type, limit):
-            self.assertLessEqual(limit, 500)
-            return documents[(lifecycle, document_type)]
-
         with mock.patch.object(
-            dashboard_reporter.authority_resolver,
-            "resolve",
-            return_value={"authority": "sqlite", "state": "hybrid", "reason": "fixture"},
-        ), mock.patch.object(dashboard_reporter, "load_project_identity", return_value={"project_id": connection_state["project_id"], "project_name": "Fixture"}), mock.patch.object(
+            dashboard_reporter, "_project_projection", return_value=projection
+        ) as projected, mock.patch.object(
+            dashboard_reporter,
+            "load_project_identity",
+            return_value={
+                "project_id": connection_state["project_id"],
+                "project_name": "Fixture",
+            },
+        ), mock.patch.object(
             dashboard_reporter, "load_connection", return_value=connection_state
-        ), mock.patch.object(dashboard_reporter.document_store, "list_documents", side_effect=listed), mock.patch.object(
+        ), mock.patch.object(
             dashboard_reporter.hybrid_state, "database_path", return_value=database
         ), mock.patch.object(dashboard_reporter.work_orchestration, "efficiency_report", return_value=efficiency), mock.patch.object(
             dashboard_reporter.app_server_user_state.AppServerEventStore, "report", return_value=app
@@ -850,6 +861,7 @@ class DashboardReporterTests(unittest.TestCase):
             return_value={"app_server_available": True, "enabled_roles": {"planning": {}}, "installed_codex": "0.200.0"},
         ):
             payload = dashboard_reporter.report_payload(self.workspace, sequence=4, reason="managed-update")
+        projected.assert_called_once_with(self.workspace)
         serialized = json.dumps(payload)
         for prohibited in ("prompt", "source_path", "command", "credential", "raw_diagnostic"):
             self.assertNotIn(prohibited, serialized)

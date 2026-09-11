@@ -12,7 +12,7 @@
     "adapters/codex-app-server-config.json": "52e8e0aff51108c93e18c334fafd46ee979d45f392380da86329bbc0521d52c0",
     "adapters/codex-app-server-qualifications.json": "1b621d969c7391870be8feeaaba64fd2cc2c45d29b2beaa78a9a07105d656f9d",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "3d55e89cd69a75a144f1d85f44b3196414b9ead97cff0c56ccc2c99dcb5ba9d5",
+    "adapters/codex-skill-releases.json": "f50951bbb1094951076930d6e937eea54d96e4c58f5b6338a34718f6a024fd43",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "a16e9afbc2733b2c01b113df3f3a07fda1630b80b5a97476896123ee03bc22d2",
     "dashboard/Dockerfile": "8e9ff084f409aa81ab92b9dcbe8d9bab2416225551c837681653cab7b66786ad",
@@ -108,6 +108,7 @@
     "docs/release-convergence.md": "38dcbf9691bb37558bd66f2af4496e7feb4e304dc1c1cb0f3ebd4bdc567077c9",
     "docs/releasing.md": "3113b25ab5d3a5b50459fdce9639b4a32d148df55059401e3b0539ab9761aa0f",
     "docs/terminal-campaign-reconciliation.md": "663919b7e74a2a4dc12f98b6d1a2c128e80e0220017dbefe3318a2c05f63ba38",
+    "docs/tool-shed-consolidation-contract.md": "d3b2ac541b7212ac11993b653eb0129af0553a14084fe15307b2e1607558c854",
     "docs/universal-closed-loop-outcome-reconciliation.md": "52378ff394590625eccf856d6e1e413289e1b632f2ac8042f8753288bb25d467",
     "docs/work-level-customization.md": "d110b51c461b3edc73ee2682269641d3bdb97ce76d4ae53eae10341e77aa8a70",
     "docs/work-orchestration.md": "b31421baac2f6e6e2c842024c6ca400126a0c571acfe2154894100fbeb494081",
@@ -185,7 +186,7 @@
     "scripts/completion_watcher.py": "d94ba056b5628a477028c8568e284da95bd78466d3839b5e126a89163d16d7a3",
     "scripts/context_retrieval.py": "1bf2fe6ccdb7e09cf185ae9e24d4b2580d38dc29453027e57a69587cfaf09e65",
     "scripts/dashboard_browser_probe.js": "a7181e0635f4dcbe89fe097ded3e8dd7c191f3cae3ead1406c1a0172b8da318f",
-    "scripts/dashboard_reporter.py": "446fd8aae64d40ba354763f9352e8cf648ba24a0d1085a2710fdaa9542dfac63",
+    "scripts/dashboard_reporter.py": "718726749006700a0eef63014c096d9c0e4412d66834d646c43ddb3e0b271a31",
     "scripts/development_site.py": "9e33d7d57f3f42a8995b656ffa69fe9bc98f743b697faff6190668276c20542a",
     "scripts/doctor.py": "7dacb1b67215dec82545aefd888def254f9b16ad3d01d8cdc3aeb30dd5c8f41e",
     "scripts/document_contract.py": "2b540582141065b7e7c84294142a15ddf01f255a58f844e08abaf9634b30d411",
@@ -217,6 +218,7 @@
     "scripts/profile_workspace_performance.py": "51421cce2dbf2f657f7bd193879664008e7a1718a32a9c6aeae26e7102c8e68e",
     "scripts/program_roadmap.py": "efd1f6380c14f296262b9e1d7c45c7baaf1e75c8b9830194db681d4c189483b2",
     "scripts/project_identity.py": "287b94c2e1019c28825a50888f3651a4eea602e26885d8195c76b32f17c477e6",
+    "scripts/project_projection.py": "9755f06e52b4baab8a22c3d291afd8fbab4aa65eccf28364fd5b54d77a071ae0",
     "scripts/provider_adapters.py": "674a0b54fd573fe48882fe3e04ffc5b36602877abf1a2c7e2bdf8bfab043b807",
     "scripts/qualify_windows_dashboard.ps1": "56ebc5147a3ede711449db7cbab63c1af46a38739834064a05ac478feae62c47",
     "scripts/read_ask_inbox.py": "b949cff0e33431744195790aa035aaa2d80dfba4589cf0403c46b68bdb4b0cea",
@@ -302,35 +304,13 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Converge every safely reachable release capability with actionable runtime diagnostics and semantic migration integrity.",
-  "release_commit": "08519fa285243c50c0f82de67a4ea4d0e4430542",
-  "release_qualification": {
-    "attested_at": "2026-09-09T20:26:51Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "81bbb1df280b8c04875d5ee96edd1c597bc74d4ce8b82a19fc01a9a619f866e5"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "08519fa285243c50c0f82de67a4ea4d0e4430542"
-  },
-  "release_tag": "v0.53.0",
-  "released_at": "2026-09-09T20:26:51Z",
-  "shed_version": "0.53.0",
-  "updated_at": "2026-09-09",
+  "notes": "Consolidate project-world projection and establish the architecture boundary required before the 100k executive view.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.54.0",
+  "released_at": null,
+  "shed_version": "0.54.0",
+  "updated_at": "2026-09-11",
   "updater_mutation_paths": [
     {
       "mode": "tree",
