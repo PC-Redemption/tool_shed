@@ -1,0 +1,98 @@
+# Program Roadmap: Simplify and Consolidate Tool Shed
+
+Status: accepted
+Type: program-roadmap
+Updated: 2026-09-11
+Next Action: execute M1-CONSOLIDATION-FOUNDATION through Work2
+Roadmap ID: simplify-consolidate-tool-shed
+Roadmap Revision: 1
+Source Idea: IDEA-0027
+Source Project Map: MAP-0035
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 2
+Reviewed Body SHA256: a12a3f5ca9cd8d7fceb4ac8897e15bb9182f70948304e80b96405a20d598350c
+
+## Program Outcome
+
+Tool Shed's retained capability surface, ownership layers, and reduction rules are explicit, and
+one authority-aware project projection supplies both executive state and exhaustive lifecycle
+inventory. The dashboard consumes that seam without wire drift or duplicate state construction;
+the exact Work2 candidate passes protected-invariant, Linux, and Windows development proof; and the
+later 100k feature has one required input contract and a documented replacement boundary.
+
+## M1-CONSOLIDATION-FOUNDATION — Replace duplicate project-world interpretation
+
+Status: active
+Required Endpoint: Work2
+Depends on: none
+
+Outcome: Record the capability/disposition and reduction contract; implement one reusable project
+projection for file and SQLite authority; route dashboard state and inventory through it while
+preserving payload compatibility; prove one projection construction per report, lifecycle and
+planning parity, privacy boundaries, and protected invariants; deploy the exact candidate to all
+configured development targets; register it without publication; checkpoint the chain; and leave
+IDEA-0028 ready for a separate 100k design review.
+
+Gates:
+
+- `G1-CAPABILITY-DISPOSITION-AND-BASELINE`
+- `G2-ONE-PROJECT-PROJECTION`
+- `G3-PARITY-AND-SAFETY`
+- `G4-100K-HANDOFF-BOUNDARY`
+
+Candidate campaign: `consolidate-project-world-projection`.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G1-CAPABILITY-DISPOSITION-AND-BASELINE | M1 architecture contract and baseline evidence |
+| G2-ONE-PROJECT-PROJECTION | M1 implementation and consumer convergence |
+| G3-PARITY-AND-SAFETY | M1 local and configured development qualification |
+| G4-100K-HANDOFF-BOUNDARY | M1 downstream dependency record and completion review |
+
+Transfer count: 4 reviewed gates; 4 mapped gates; 0 dropped.
+
+## Decision Record
+
+- Capability families, not files, are the unit of product architecture and disposition.
+- One read-side project projection owns the shared interpretation of authority, planning,
+  lifecycle, outcomes, reconciliation, closure, and bounded executive counts.
+- Existing dashboard report fields remain stable; compatibility wrappers are allowed only while
+  they delegate to the canonical builder and contain no interpretation logic.
+- New feature proposals must state the existing surface they consume, replace, or retire and must
+  report runtime-code delta. Unjustified parallel state models fail the reduction contract.
+- The 100k presentation and operator loop are excluded from this roadmap; their Idea must consume
+  this projection and consolidate existing overview/status/dashboard overlap.
+
+## Recovery Contract
+
+- Unknown or inconsistent authority continues to fail through the established resolver; the
+  projection does not select or mutate authority.
+- File and SQLite sources remain independently testable. A projection error cannot alter planning,
+  lifecycle, outcome, relationship, or closure state.
+- Wire-contract mismatch, privacy leakage, duplicate projection construction, failing focused
+  checks, target mismatch, or stale exact-commit evidence leaves the campaign open at Work2.
+- Broad command retirement and compatibility removal require separate usage evidence and explicit
+  scope; they are not inferred from this consolidation candidate.
+
+## Verification Strategy
+
+- Contract tests for one projection envelope containing summary and exhaustive ledger.
+- Existing authority, planning-order, campaign execution, and dashboard reporter tests rerouted
+  through the shared seam, plus an explicit one-build-per-report regression.
+- Source inventory and runtime-code delta report proving the candidate does not hide moved-line
+  growth or a second project model.
+- Strict Doctor and focused local suite, followed by exact-commit web, Linux, and Windows Work2
+  deployment and checks through the repository orchestrator.
+- Release-cohort registration against the governing campaign cycle and durable checkpoint/rebuild
+  parity, with no push, publication, production deployment, or client synchronization.
+
+## Authority Boundaries
+
+This roadmap authorizes faithful planning, source and test changes, local commits, known
+development deployment, focused qualification, release-cohort registration, and checkpointing at
+Work2 under the current project preference. It does not authorize credentials, destructive
+recovery, unknown targets, production delivery, a release, client synchronization, public command
+removal, or implementation of IDEA-0028.
+

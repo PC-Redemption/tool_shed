@@ -1,0 +1,125 @@
+# Idea Brief: Simplify and Consolidate Tool Shed
+
+Status: exploring
+Type: idea-brief
+Updated: 2026-09-11
+Next Action: inventory essential capabilities and overlapping mechanisms, then settle a reduced architecture before re-reviewing IDEA-0028
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces:
+Companion Idea: IDEA-0028
+
+## Current Synthesis
+
+### Idea
+
+Simplify and consolidate Tool Shed before adding the first-class 100k Project Executive View.
+Preserve Tool Shed's useful behavior while reducing maintained concepts, duplicated execution
+paths, public surface area, installed footprint, and code that implements the same underlying
+authority, lifecycle, reconciliation, projection, or compatibility behavior more than once.
+
+This Idea owns the architectural prerequisite. The companion `IDEA-0028` owns the 100k operator
+capability and must be re-reviewed against the architecture settled here.
+
+### Why It Matters
+
+Tool Shed has grown through successful additions, but each independently correct feature adds
+maintenance, validation, documentation, migration, and operator-understanding cost. A current
+repository inspection found 86 top-level Python scripts with about 57,000 lines, roughly 27,000
+test lines, several core modules between 1,500 and 2,700 lines, and a broad command surface.
+
+The 100k view could otherwise become another authority, lifecycle, renderer, report, and command
+family. Consolidating first creates a stable seam so 100k can replace overlapping surfaces rather
+than merely joining them.
+
+### Desired Outcome
+
+Tool Shed retains its observable capabilities and safety boundaries through a smaller coherent
+architecture with fewer independently maintained concepts and paths. One evidence-backed
+capability disposition records what is kept, merged, moved, replaced, or retired. Everyday project
+runtime, optional integrations, upgrade/recovery machinery, and maintainer-only qualification are
+separated where that reduces installed and cognitive weight without removing functionality.
+
+One shared project projection and lifecycle/closure foundation is available for existing status,
+overview, dashboard, and future 100k consumers. The relevant foundation is implemented before
+100k coding begins, while unrelated cleanup may continue independently.
+
+## Constraints And Non-Goals
+
+- Preserve current authority, identity, stale-write, recovery, recursive-closure, evidence, privacy,
+  cross-platform, and provider-portability guarantees unless an explicit superseding decision is
+  accepted and qualified.
+- Preserve useful functionality; reduction must not be achieved by silently dropping behavior or
+  weakening validation.
+- Prefer incremental convergence and deletion of replaced paths over a high-risk rewrite.
+- Measure reduction in maintained concepts, public routes, production paths, installed footprint,
+  cross-module coupling, and validation cost; raw line count alone is not the objective.
+- Keep tests that protect behavior. Consolidate test boilerplate only when coverage and failure
+  attribution remain at least as strong.
+- Do not design or implement the 100k feature here beyond establishing the reusable architectural
+  seam and explicit dependency.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| One authority/outcome/closure kernel | Removes competing interpretations and gives every surface the same truth | Broad refactoring could disturb mature safety rules | Explore incrementally from existing document, relationship, cycle, and closure services |
+| One shared project projection | Lets overview, status, dashboard, and 100k consume one model | Projection must preserve privacy and legacy semantics | Strong candidate and direct prerequisite for IDEA-0028 |
+| Runtime/integration/maintainer distribution layers | Shrinks ordinary installed snapshots while retaining canonical functionality | Packaging and updater compatibility need explicit proof | Inventory what clients actually require before selecting boundaries |
+| Declarative command registry and generated reference | Reduces help, routing, and documentation drift | Migration could affect aliases and provider adapters | Compare current routes and parser registrations before design |
+| Defined compatibility retirement policy | Stops legacy branches from accumulating forever | Older workspaces need a supported migration path | Keep converters available without keeping every legacy path in everyday runtime |
+| Strangler-style consolidation | Delivers bounded reductions with parity evidence | Temporary duplication exists during migration | Prefer over a whole-system rewrite |
+
+## Open Questions
+
+- Which Tool Shed capabilities are essential core behavior, optional integration behavior,
+  maintainer behavior, or historical compatibility?
+- Which scripts and commands are distinct capabilities, and which are duplicate mechanisms or
+  aliases over the same concept?
+- What single project projection can serve local overview, status, dashboard reporting, and 100k?
+- Which project map, focus-area, index, overview, and navigation responsibilities should be merged
+  or narrowed when 100k is introduced?
+- Which compatibility versions and paths still have real consumers, and what evidence permits
+  isolation or retirement?
+- What reduction measures and parity gates are strong enough to prevent cosmetic simplification?
+- How much of the maintainer qualification and release surface must ship inside every disconnected
+  project snapshot?
+
+## Decisions
+
+- Keep consolidation and the 100k Executive View as separate Idea Briefs with an explicit
+  dependency.
+- Settle the consolidation architecture before finalizing the 100k design.
+- Implement the shared projection and lifecycle foundation needed by 100k before coding the 100k
+  feature itself; unrelated reductions need not block later 100k discovery.
+- Require 100k to retire or consolidate overlapping surfaces rather than ship as an additional
+  parallel planning system.
+- Preserve capabilities through consolidation; do not use reduced test coverage as a size metric.
+
+## Don't Forget
+
+- Companion operator-capability brief: `IDEA-0028`.
+- [ ] Define Tool Shed's essential capability inventory.
+- [ ] Classify every affected capability or mechanism as keep, merge, move, replace, or retire.
+- [ ] Establish current baselines for production code, installed footprint, public concepts,
+  validation time, and relevant coupling.
+- [ ] Settle the reduced target architecture and migration boundaries.
+- [ ] Define one shared project projection for existing and future operator surfaces.
+- [ ] Implement and qualify the projection/lifecycle foundation needed by IDEA-0028.
+- [ ] Preserve behavioral and safety parity through focused and cross-platform evidence.
+- [ ] Re-review IDEA-0028 against the delivered foundation before its promotion.
+- [ ] Record which existing surfaces IDEA-0028 must replace or consolidate.
+
+## Exploration Log
+
+### 2026-09-11
+
+- Idea Brief created.
+- Discussion identified codebase and operator-surface growth as a design constraint on the proposed
+  100k view. The owner chose to explore simplification first and retain 100k as a separately
+  tracked dependent Idea so neither outcome is lost halfway through.
+- Initial direction favors fewer authorities, lifecycle interpretations, projections, command
+  definitions, and installed components rather than line-count reduction by itself.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

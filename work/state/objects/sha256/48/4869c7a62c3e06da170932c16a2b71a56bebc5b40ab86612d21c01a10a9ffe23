@@ -1,0 +1,67 @@
+# Campaign: Consolidate Project World Projection
+
+Status: working
+Type: campaign
+Updated: 2026-09-11
+Next Action: implement and qualify the shared projection through Work2
+Campaign ID: consolidate-project-world-projection
+Campaign Number: 181
+Outcome: Tool Shed has one measured consolidation contract and one reusable authority-aware project projection supplying both executive summary and exhaustive lifecycle inventory, with dashboard parity and an explicit 100k handoff.
+Primary Focus Areas: artifact-workflows
+Supporting Focus Areas: campaign-lifecycle, provider-portability, qualification-release, snapshot-delivery, workspace-safety
+Depends On: none
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work2
+Completion Gate: Capability families and dispositions, current baselines, protected invariants, and reduction rules are durable; one canonical file/SQLite projection produces summary and ledger; dashboard report construction uses it once while preserving its wire and privacy contracts; focused tests and strict Doctor pass; the exact commit is deployed and checked on configured development web, Linux, and Windows targets; the exact candidate is registered without publication; the Hybrid checkpoint is current; and IDEA-0028's downstream consumption/replacement boundary is recorded without implementing 100k.
+Completion Evidence: pending
+Disposition: pending
+Roadmap: simplify-consolidate-tool-shed
+Roadmap Revision: 1
+Roadmap Document: PRM-0047
+Milestone: M1-CONSOLIDATION-FOUNDATION
+Unlocks Gates: G1-CAPABILITY-DISPOSITION-AND-BASELINE, G2-ONE-PROJECT-PROJECTION, G3-PARITY-AND-SAFETY, G4-100K-HANDOFF-BOUNDARY
+
+## Request
+
+Create a durable consolidation contract from current repository evidence: capability families,
+layer ownership, keep/merge/move/replace/retire dispositions, runtime and test baselines, protected
+invariants, and a rule requiring future features to consume, replace, or retire an existing surface
+or explicitly justify net-new runtime growth.
+
+Implement one bounded read-side project projection that resolves authority once and produces both
+the dashboard's executive state and its exhaustive lifecycle inventory. Move the dashboard to this
+seam without changing hosted payload fields or privacy behavior, retain thin private wrappers for
+compatibility, and prove a report constructs the project world only once.
+
+Use that seam as the only foundation delivered for IDEA-0028. Record which overview/status/dashboard
+surfaces 100k must absorb or replace; do not implement the 100k presentation, add another state
+authority, remove public commands, release, publish, or synchronize clients in this campaign.
+
+Stop after focused implementation proof, strict Doctor, configured development deployment/checks,
+exact Work2 release-cohort registration, and a durable Hybrid checkpoint.
+
+## App Server Preparation Contract
+
+```json
+{
+  "campaign_id": "consolidate-project-world-projection",
+  "completion_evidence": "The capability/disposition contract and one canonical project projection are committed; dashboard summary and ledger retain parity with one build per report; focused tests, strict Doctor, and all configured Work2 development targets pass; the exact candidate is registered and checkpointed without publication.",
+  "exact_resolution": "dispatch-time",
+  "execution_shape": "single-bounded-camp",
+  "inline_assets": "metadata-only",
+  "objective": "Reduce duplicate Tool Shed project-state interpretation and establish the measured architecture seam required before 100k work.",
+  "schema_version": 1,
+  "source_freshness": "required",
+  "verification": "orchestrator-exactly-once"
+}
+```
+
+## Completion Check
+
+Verify capability disposition and baselines, runtime-code delta, protected invariants, the shared
+projection contract, file/SQLite parity, one-build report construction, dashboard schema/privacy
+compatibility, focused tests, strict Doctor, exact configured development targets, Work2 candidate
+registration, checkpoint/rebuild parity, and the IDEA-0028 handoff boundary.
+
