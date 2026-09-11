@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-target-evidence",
+  "endpoint": "work2",
+  "target": "web at tsrookarocom-dev on sup.local, Windows at PC-Redemption/ts_windows_test_bed on GOGETTER, and Linux at PC-Redemption/ts_linux_test_bed on sup.local",
+  "checked_at": "2026-09-11T23:52:27Z",
+  "recorded_at": "2026-09-11T23:52:27Z",
+  "campaign": "CAMP-0181",
+  "origin_cycle": "1e5802ba-de95-491a-b32e-154b6ece796e",
+  "candidate_commit": "d2ab641dea8ed17dcb3dae5b38cf4257e69687a9",
+  "candidate_version": "0.54.0",
+  "checks": [
+    {
+      "id": "local-release-profile",
+      "status": "passed",
+      "reference": "release-profile validation passed in 47.904s; 46/46 focused tests; strict Doctor HEALTHY"
+    },
+    {
+      "id": "projection-parity-and-reduction",
+      "status": "passed",
+      "reference": "291/291 state and inventory parity against b9c58e8; loop-finding reads per normal report reduced from three to one; runtime lines changed from baseline 57,154 to 57,152"
+    },
+    {
+      "id": "web-development",
+      "status": "passed",
+      "reference": "tsrookarocom-dev image dev-d2ab641dea8e; docs and health HTTP 200; dashboard readiness healthy; production health HTTP 200 unchanged"
+    },
+    {
+      "id": "linux-development",
+      "status": "passed",
+      "reference": "sup:/home/jon/dev/ts_linux_test_bed exact archive sha256:0a05fc18dc3ece8e8a15af8bc953e9573d7c5f14d73658aeb3473f8df654c582; 46/46 focused tests; schema-2 file-authority smoke passed"
+    },
+    {
+      "id": "windows-development",
+      "status": "passed",
+      "reference": "GOGETTER:E:\\dev\\ts_windows_test_bed exact archive sha256:0a05fc18dc3ece8e8a15af8bc953e9573d7c5f14d73658aeb3473f8df654c582; 46/46 focused tests; schema-2 file-authority smoke passed"
+    }
+  ],
+  "result": {
+    "contract": "docs/tool-shed-consolidation-contract.md",
+    "canonical_projection": "scripts/project_projection.py",
+    "projection_schema_version": 2,
+    "current_artifact_count": 291,
+    "state_parity": true,
+    "inventory_parity": true,
+    "loop_finding_projection_calls_before": 3,
+    "loop_finding_projection_calls_after": 1,
+    "dashboard_reporter_lines": 1420,
+    "project_projection_lines": 361,
+    "affected_runtime_lines_vs_baseline": -2,
+    "repository_runtime_lines_vs_baseline": -2,
+    "foundation_debt": "repaid"
+  },
+  "archive": {
+    "name": "tool-shed-idea0027-d2ab641.tar.gz",
+    "sha256": "0a05fc18dc3ece8e8a15af8bc953e9573d7c5f14d73658aeb3473f8df654c582",
+    "git_metadata_present": false,
+    "project_work_tree_present": false,
+    "snapshot_integrity": "verified unpublished 0.54.0"
+  },
+  "web_development": {
+    "host": "sup",
+    "target": "/home/jon/docker/ts.rookaro.com-dev",
+    "compose_project": "tsrookarocom-dev",
+    "source_commit": "d2ab641dea8ed17dcb3dae5b38cf4257e69687a9",
+    "image": "tool-shed-dashboard:dev-d2ab641dea8e",
+    "containers": "docs, dashboard, and postgres running healthy",
+    "documentation_health_http": 200,
+    "dashboard_health_http": 200,
+    "dashboard_development_check": "healthy",
+    "production_health_http": 200,
+    "production_changed": false
+  },
+  "linux_development": {
+    "host": "sup",
+    "workspace": "/home/jon/dev/ts_linux_test_bed",
+    "repository": "PC-Redemption/ts_linux_test_bed",
+    "snapshot": "/home/jon/dev/ts_linux_test_bed/tool_shed",
+    "rollback": "/home/jon/dev/ts_linux_test_bed/tool_shed.before-idea0027-d2ab641",
+    "archive_sha256": "0a05fc18dc3ece8e8a15af8bc953e9573d7c5f14d73658aeb3473f8df654c582",
+    "snapshot_integrity": "verified after qualification",
+    "focused_projection_suite": "46/46 tests passed",
+    "authority": "qualified-shadow file authority",
+    "feature_limits_preserved": 4
+  },
+  "windows_development": {
+    "host": "GOGETTER",
+    "workspace": "E:\\dev\\ts_windows_test_bed",
+    "repository": "PC-Redemption/ts_windows_test_bed",
+    "snapshot": "E:\\dev\\ts_windows_test_bed\\tool_shed",
+    "rollback": "E:\\dev\\ts_windows_test_bed\\tool_shed.before-idea0027-d2ab641",
+    "archive_sha256": "0a05fc18dc3ece8e8a15af8bc953e9573d7c5f14d73658aeb3473f8df654c582",
+    "python": "3.14.6",
+    "snapshot_integrity": "verified after qualification",
+    "focused_projection_suite": "46/46 tests passed",
+    "authority": "qualified-shadow file authority",
+    "feature_limits_preserved": 4
+  },
+  "boundaries": {
+    "source_push": false,
+    "tag_created": false,
+    "release_published": false,
+    "production_deployed": false,
+    "installed_user_skill_synchronized": false,
+    "idea_0028_implemented": false
+  }
+}
