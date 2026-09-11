@@ -14,10 +14,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-import dashboard_reporter  # noqa: E402
 import document_store  # noqa: E402
 import hybrid_state  # noqa: E402
 import planning_order  # noqa: E402
+import project_projection  # noqa: E402
 
 
 def binding(workspace: Path) -> str:
@@ -127,7 +127,7 @@ class LocalPlanningOrderTests(unittest.TestCase):
         )
         self.assertEqual(extended["items"][-1]["order_source"], "derived")
 
-        inventory = dashboard_reporter._work_inventory(self.workspace)
+        inventory = project_projection.build(self.workspace)["work_inventory"]
         projected = {item["visible_id"]: item for item in inventory["artifacts"]}
         self.assertEqual(projected[first]["planning_position"], 1)
         self.assertEqual(projected[first]["planning_order_source"], "owner")

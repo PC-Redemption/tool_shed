@@ -15,9 +15,9 @@ sys.path.insert(0, str(SCRIPTS))
 import campaign_execution  # noqa: E402
 import closure_lineage  # noqa: E402
 import document_store  # noqa: E402
-import dashboard_reporter  # noqa: E402
 import hybrid_state  # noqa: E402
 import loop_findings  # noqa: E402
+import project_projection  # noqa: E402
 from project_identity import binding_token  # noqa: E402
 
 
@@ -154,7 +154,7 @@ class CampaignExecutionTests(unittest.TestCase):
         self.assertEqual(2, manifest["counts"]["retirable_assignments"])
         self.assertEqual("mixed", manifest["execution_result"])
         before_reconciliation = next(
-            item for item in dashboard_reporter._work_inventory(self.workspace)["artifacts"]
+            item for item in project_projection.build(self.workspace)["work_inventory"]["artifacts"]
             if item["visible_id"] == self.campaign["visible_id"]
         )
         self.assertIsNone(before_reconciliation["terminal_reason"])
@@ -172,7 +172,7 @@ class CampaignExecutionTests(unittest.TestCase):
         self.assertEqual("administratively-reconciled", status["terminal_reconciliation"]["terminal_disposition"])
         self.assertFalse(status["reconciliation_ready"])
         projected = next(
-            item for item in dashboard_reporter._work_inventory(self.workspace)["artifacts"]
+            item for item in project_projection.build(self.workspace)["work_inventory"]["artifacts"]
             if item["visible_id"] == self.campaign["visible_id"]
         )
         self.assertEqual("administratively-reconciled", projected["outcome_disposition"])

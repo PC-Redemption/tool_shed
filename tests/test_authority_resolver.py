@@ -15,12 +15,12 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import authority_resolver  # noqa: E402
-import dashboard_reporter  # noqa: E402
 import doctor  # noqa: E402
 import document_store  # noqa: E402
 import hybrid_state  # noqa: E402
 import idea_readiness  # noqa: E402
 import planning_order  # noqa: E402
+import project_projection  # noqa: E402
 
 class ShadowAuthorityFallbackTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -115,10 +115,11 @@ class ShadowAuthorityFallbackTests(unittest.TestCase):
         self.assertIn("idea-readiness-persistence-unavailable", readiness["feature_limits"])
 
         self.assertIsNone(doctor.database_document_state(self.workspace))
-        dashboard = dashboard_reporter._dashboard_state(self.workspace)
+        projection = project_projection.build(self.workspace)
+        dashboard = projection["state"]
         self.assertEqual(dashboard["active_idea_count"], 1)
         self.assertEqual(dashboard["ready_count"], 1)
-        inventory = dashboard_reporter._work_inventory(self.workspace)
+        inventory = projection["work_inventory"]
         self.assertEqual(inventory["total_count"], 3)
         paths = {item["visible_id"] for item in inventory["artifacts"]}
         self.assertIn("work/ideas/idea-shadow.md", paths)

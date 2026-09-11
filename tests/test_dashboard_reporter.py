@@ -325,7 +325,7 @@ class DashboardReporterTests(unittest.TestCase):
         with mock.patch.object(
             dashboard_reporter, "load_connection", return_value=self.connected()
         ), mock.patch.object(
-            dashboard_reporter, "_work_inventory", return_value=inventory
+            dashboard_reporter, "_project_projection", return_value={"work_inventory": inventory}
         ), mock.patch.object(
             dashboard_reporter, "report_payload", side_effect=build_report
         ), mock.patch.object(
@@ -832,6 +832,12 @@ class DashboardReporterTests(unittest.TestCase):
                 "last_completed_id": "CAMP-0000",
             },
             "work_inventory": {"total_count": 0, "truncated": False, "artifacts": []},
+            "loop_findings": {
+                "total_active_count": 0,
+                "total_resolved_count": 0,
+                "truncated": False,
+                "findings": [],
+            },
         }
 
         with mock.patch.object(

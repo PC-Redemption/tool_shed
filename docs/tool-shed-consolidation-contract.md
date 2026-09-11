@@ -32,6 +32,15 @@ debt, not a claimed line-count reduction. The debt must be reclaimed or explicit
 larger measured removal before IDEA-0028 starts implementation. On the current 291-artifact
 workspace, complete projection construction improved from approximately 18.0 seconds to 4.7 seconds.
 
+The second Work2 slice repays that debt. It removes the now-unused dashboard-only state and inventory
+wrappers, makes the version-2 project projection own the bounded loop-finding projection, and reuses
+that same result for both the report body and semantic health digest. A normal dashboard report now
+performs one loop-finding projection instead of three. The current measurement is 87 script files and
+57,152 script lines—two fewer than the 57,154-line baseline. The affected responsibility is also two
+lines smaller in aggregate: `dashboard_reporter.py` is 1,420 lines and `project_projection.py` is 361,
+versus the baseline reporter's 1,783 lines. There are no retained dashboard compatibility shims for
+state or inventory; in-repository consumers use the canonical projection directly.
+
 ## Capability Disposition
 
 | Capability family | Canonical owner or boundary | Disposition | Consolidation direction |
@@ -105,12 +114,12 @@ that weakens one of these is not a simplification.
 - the authority state and bounded feature limits;
 - `state`, the concise executive counts used by the dashboard;
 - `work_inventory`, the exhaustive bounded lifecycle ledger used for navigation, events, closure,
-  planning, and release-chain presentation.
+  planning, and release-chain presentation;
+- `loop_findings`, the bounded active/recent-resolved finding projection used in both report content
+  and semantic health.
 
 The projection is read-only. It does not choose work, mutate lifecycle, manufacture outcomes, or
-store presentation state. `dashboard_reporter.py` retains private compatibility wrappers, but they
-delegate without interpretation. Normal report construction builds the projection once and reuses
-both layers.
+store presentation state. Normal report construction builds it once and reuses all three layers.
 
 ## 100k Handoff
 
@@ -137,7 +146,7 @@ must either become projections of 100k or have an explicit retirement plan.
 - [x] One canonical project-projection contract implemented.
 - [x] Dashboard summary and ledger routed through that contract.
 - [x] Repeated audited reads and closure-blocker N+1 query removed from the operator path.
-- [ ] Exact local, web-development, Linux-development, and Windows-development evidence attached.
-- [ ] Exact candidate registered in the release cohort and Hybrid state checkpointed.
-- [ ] The +85-line foundation debt reclaimed or explicitly superseded before IDEA-0028 coding.
+- [x] Exact local, web-development, Linux-development, and Windows-development evidence attached.
+- [x] Exact candidate registered in the release cohort and Hybrid state checkpointed.
+- [x] The +85-line foundation debt reclaimed before IDEA-0028 coding.
 - [x] 100k consumption and replacement boundary recorded.

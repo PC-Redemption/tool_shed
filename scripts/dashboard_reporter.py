@@ -34,7 +34,6 @@ import app_server_control
 import codex_execution
 import document_store
 import hybrid_state
-import loop_findings
 import project_projection
 import release_cohort
 import release_projection
@@ -429,16 +428,6 @@ def _project_projection(workspace: Path) -> dict[str, Any]:
         raise DashboardReporterError(str(error)) from error
 
 
-def _dashboard_state(workspace: Path) -> dict[str, Any]:
-    """Compatibility entry point for callers that need only executive state."""
-    return _project_projection(workspace)["state"]
-
-
-def _work_inventory(workspace: Path) -> dict[str, Any]:
-    """Compatibility entry point for callers that need only the lifecycle ledger."""
-    return _project_projection(workspace)["work_inventory"]
-
-
 def _lifecycle_events(
     previous: dict[str, Any] | None,
     current: dict[str, Any],
@@ -584,6 +573,7 @@ def _instance_health(
     *,
     state: dict[str, Any],
     inventory: dict[str, Any],
+    loop_projection: dict[str, Any],
     quiescent: bool,
     observed_at: str,
 ) -> dict[str, Any]:
@@ -611,7 +601,7 @@ def _instance_health(
             {
                 "state": state,
                 "work_inventory": inventory,
-                "loop_findings": loop_findings.report_projection(workspace),
+                "loop_findings": loop_projection,
             },
             sort_keys=True,
             separators=(",", ":"),
@@ -634,8 +624,7 @@ def report_payload(
     sequence: int,
     reason: str | None = None,
     quiescent: bool = False,
-    project_state: dict[str, Any] | None = None,
-    work_inventory: dict[str, Any] | None = None,
+    projection: dict[str, Any] | None = None,
     lifecycle_events: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     identity = load_project_identity(workspace)
@@ -681,13 +670,9 @@ def report_payload(
     }
     summary_code = reason if reason in allowed_reasons else "managed-update"
     events = [] if not reason or reason == "heartbeat" else [{"kind": "state-change", "summary_code": summary_code, "occurred_at": observed}]
-    if project_state is None and work_inventory is None:
-        projection = _project_projection(workspace)
-        dashboard_state = projection["state"]
-        inventory = projection["work_inventory"]
-    else:
-        dashboard_state = project_state if project_state is not None else _dashboard_state(workspace)
-        inventory = work_inventory if work_inventory is not None else _work_inventory(workspace)
+    projection = projection or _project_projection(workspace)
+    dashboard_state = projection["state"]
+    inventory = projection["work_inventory"]
     return {
         "schema_version": REPORT_SCHEMA_VERSION,
         "idempotency_key": str(uuid.uuid4()),
@@ -727,12 +712,13 @@ def report_payload(
             "remedial_retries": efficiency["remedial_proxy"]["retry_count"],
         },
         "work_inventory": inventory,
-        "loop_findings": loop_findings.report_projection(workspace),
+        "loop_findings": projection["loop_findings"],
         "lifecycle_events": lifecycle_events or [],
         "instance_health": _instance_health(
             workspace,
             state=dashboard_state,
             inventory=inventory,
+            loop_projection=projection["loop_findings"],
             quiescent=quiescent,
             observed_at=observed,
         ),
@@ -752,8 +738,7 @@ def _enqueue_connected(workspace: Path, *, reason: str, quiescent: bool = False)
         sequence=0,
         reason=reason,
         quiescent=quiescent,
-        project_state=projection["state"],
-        work_inventory=inventory,
+        projection=projection,
         lifecycle_events=[],
     )
     with contextlib.closing(_outbox(workspace)) as connection:

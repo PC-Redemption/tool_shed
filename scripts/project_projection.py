@@ -17,95 +17,98 @@ import planning_order
 import update_work_index
 
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
+TYPE_BY_NAMESPACE = {"IDEA": "idea-brief", "MAP": "project-map", "PRM": "program-roadmap", "CAMP": "campaign"}
+NAMESPACE_BY_TYPE = {value: key for key, value in TYPE_BY_NAMESPACE.items()}
 
 
 class ProjectProjectionError(RuntimeError):
     pass
 
 
-def _summary(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
-    if authority["authority"] == "file":
-        work = workspace / "work"
-        artifacts = update_work_index.discover_artifacts(work) if work.is_dir() else []
-        ideas = [item for item in artifacts if item.kind() == "idea-brief" and item.is_active()]
-        campaigns = list(campaign_queue.load_all(workspace).values())
-        active = [item for item in campaigns if item.status not in {"complete", "completed", "abandoned", "deferred"}]
-        return {
-            "working_count": sum(item.status == "working" for item in active),
-            "ready_count": sum(item.status in {"queued", "ready"} for item in active),
-            "queued_count": sum(item.status in {"queued", "ready"} for item in active),
-            "blocked_count": sum(item.status == "blocked" for item in active),
-            "closure_debt_count": 0,
-            "active_idea_count": len(ideas),
-            "open_outcome_count": 0,
-            "unreconciled_outcome_count": 0,
-            "active_loop_finding_count": 0,
-            "last_completed_id": next(
-                (item.campaign_id for item in campaigns if item.status in {"complete", "completed"}),
-                None,
-            ),
-        }
-    if authority["authority"] != "sqlite":
-        raise ProjectProjectionError(authority["reason"])
-    with contextlib.closing(hybrid_state.connect(hybrid_state.database_path(workspace), writable=False)) as connection:
-        has_documents = bool(connection.execute(
-            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='document'"
-        ).fetchone())
-        has_closure = bool(connection.execute(
-            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='closure_rollup'"
-        ).fetchone())
-        campaign_rows = connection.execute(
-            "SELECT d.lifecycle_state, r.body_markdown FROM document d JOIN artifact a ON a.id=d.id "
-            "JOIN document_revision r ON r.document_id=d.id AND r.revision_number=d.current_revision "
-            "WHERE a.type='campaign' AND d.lifecycle_state IN ('active','working','blocked')"
-        ).fetchall() if has_documents else []
-        active_idea_count = int(connection.execute(
-            "SELECT COUNT(*) FROM document WHERE namespace='IDEA' AND lifecycle_state='active'"
-        ).fetchone()[0]) if has_documents else 0
-        last_completed = connection.execute(
-            "SELECT visible_id FROM document WHERE namespace='CAMP' AND lifecycle_state='completed' "
-            "ORDER BY visible_id DESC LIMIT 1"
-        ).fetchone() if has_documents else None
-        work_states = [loop_findings._body_status(str(row["body_markdown"])) for row in campaign_rows]
-        blocked_campaigns = sum(
-            str(row["lifecycle_state"]) == "blocked" or state == "blocked"
-            for row, state in zip(campaign_rows, work_states)
-        )
-        queued_campaigns = sum(state in {"queued", "ready"} for state in work_states)
-        working_campaigns = len(campaign_rows) - blocked_campaigns - queued_campaigns
-        open_outcomes = int(connection.execute("SELECT COUNT(*) FROM cycle WHERE lifecycle_state <> 'terminal'").fetchone()[0])
-        unreconciled = int(
-            connection.execute(
-                "SELECT COUNT(*) FROM cycle AS c WHERE COALESCE((SELECT r.state FROM reconciliation AS r "
-                "WHERE r.cycle_id = c.id ORDER BY r.compared_at DESC, r.id DESC LIMIT 1), 'open') = 'reconciliation-required' "
-                "OR (c.lifecycle_state = 'terminal' AND COALESCE((SELECT r.state FROM reconciliation AS r "
-                "WHERE r.cycle_id = c.id ORDER BY r.compared_at DESC, r.id DESC LIMIT 1), 'open') <> 'reconciled')"
-            ).fetchone()[0]
-        )
-        closure_debt = int(connection.execute(
-            "SELECT COUNT(*) FROM document d JOIN cycle c ON c.origin_artifact_id=d.id "
-            "WHERE c.lifecycle_state='terminal' AND c.id=(SELECT newer.id FROM cycle newer "
-            "WHERE newer.origin_artifact_id=d.id ORDER BY newer.opened_at DESC, newer.id DESC LIMIT 1) "
-            "AND 'reconciled'=(SELECT r.state FROM reconciliation r WHERE r.cycle_id=c.id "
-            "ORDER BY r.compared_at DESC, r.id DESC LIMIT 1) AND COALESCE((SELECT cr.effective_closed "
-            "FROM closure_element ce JOIN closure_rollup cr ON cr.element_id=ce.id "
-            "WHERE ce.cycle_id=c.id AND ce.role='cycle' "
-            "ORDER BY ce.subject_revision DESC, ce.id LIMIT 1), 0)=0"
-        ).fetchone()[0]) if has_documents and has_closure else 0
-    finding_count = loop_findings.report_projection(workspace)["total_active_count"]
+def _unknown_closure(reason: str, evaluated_at: str) -> dict[str, Any]:
     return {
-        "working_count": working_campaigns,
-        "ready_count": queued_campaigns,
-        "queued_count": queued_campaigns,
-        "blocked_count": blocked_campaigns,
-        "closure_debt_count": closure_debt,
-        "active_idea_count": active_idea_count,
-        "open_outcome_count": open_outcomes,
-        "unreconciled_outcome_count": unreconciled,
-        "active_loop_finding_count": finding_count,
-        "last_completed_id": str(last_completed["visible_id"]) if last_completed else None,
+        "local_closure": "unknown", "evidence_health": "unknown", "graph_health": "unknown",
+        "effective_closed": False,
+        "reason_codes": [reason],
+        "counts": {"open": 0, "unknown": 1, "invalid": 0},
+        "blockers": [], "subject_revision": 0, "graph_revision": 0,
+        "evaluator_version": "not-available", "evaluated_at": evaluated_at,
     }
+
+
+def _state(
+    campaigns: list[tuple[str, str]],
+    *,
+    closure_debt: int = 0,
+    active_ideas: int = 0,
+    open_outcomes: int = 0,
+    unreconciled: int = 0,
+    active_findings: int = 0,
+    last_completed: str | None = None,
+) -> dict[str, Any]:
+    blocked = sum(lifecycle == "blocked" or status == "blocked" for lifecycle, status in campaigns)
+    queued = sum(status in {"queued", "ready"} for _, status in campaigns)
+    return {
+        "working_count": len(campaigns) - blocked - queued,
+        "ready_count": queued, "queued_count": queued, "blocked_count": blocked,
+        "closure_debt_count": closure_debt, "active_idea_count": active_ideas,
+        "open_outcome_count": open_outcomes, "unreconciled_outcome_count": unreconciled,
+        "active_loop_finding_count": active_findings, "last_completed_id": last_completed,
+    }
+
+
+def _file_summary(workspace: Path) -> dict[str, Any]:
+    work = workspace / "work"
+    artifacts = update_work_index.discover_artifacts(work) if work.is_dir() else []
+    all_campaigns = list(campaign_queue.load_all(workspace).values())
+    active = [
+        item for item in all_campaigns
+        if item.status not in {"complete", "completed", "abandoned", "deferred"}
+    ]
+    return _state(
+        [(item.status, item.status) for item in active],
+        active_ideas=sum(item.kind() == "idea-brief" and item.is_active() for item in artifacts),
+        last_completed=next(
+            (item.campaign_id for item in all_campaigns if item.status in {"complete", "completed"}), None
+        ),
+    )
+
+
+def _sqlite_summary(connection: Any, active_findings: int) -> dict[str, Any]:
+    rows = connection.execute(
+        "SELECT d.lifecycle_state, r.body_markdown FROM document d JOIN artifact a ON a.id=d.id "
+        "JOIN document_revision r ON r.document_id=d.id AND r.revision_number=d.current_revision "
+        "WHERE a.type='campaign' AND d.lifecycle_state IN ('active','working','blocked')"
+    ).fetchall()
+    counts = connection.execute(
+        "SELECT (SELECT COUNT(*) FROM document WHERE namespace='IDEA' AND lifecycle_state='active'), "
+        "(SELECT COUNT(*) FROM cycle WHERE lifecycle_state <> 'terminal'), "
+        "(SELECT COUNT(*) FROM cycle c WHERE COALESCE((SELECT r.state FROM reconciliation r WHERE "
+        "r.cycle_id=c.id ORDER BY r.compared_at DESC,r.id DESC LIMIT 1),'open')='reconciliation-required' "
+        "OR (c.lifecycle_state='terminal' AND COALESCE((SELECT r.state FROM reconciliation r WHERE "
+        "r.cycle_id=c.id ORDER BY r.compared_at DESC,r.id DESC LIMIT 1),'open')<>'reconciled')), "
+        "(SELECT visible_id FROM document WHERE namespace='CAMP' AND lifecycle_state='completed' "
+        "ORDER BY visible_id DESC LIMIT 1)"
+    ).fetchone()
+    has_closure = connection.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='closure_rollup'"
+    ).fetchone()
+    closure_debt = int(connection.execute(
+        "SELECT COUNT(*) FROM document d JOIN cycle c ON c.origin_artifact_id=d.id "
+        "WHERE c.lifecycle_state='terminal' AND c.id=(SELECT newer.id FROM cycle newer WHERE "
+        "newer.origin_artifact_id=d.id ORDER BY newer.opened_at DESC,newer.id DESC LIMIT 1) AND "
+        "'reconciled'=(SELECT r.state FROM reconciliation r WHERE r.cycle_id=c.id ORDER BY "
+        "r.compared_at DESC,r.id DESC LIMIT 1) AND COALESCE((SELECT cr.effective_closed FROM "
+        "closure_element ce JOIN closure_rollup cr ON cr.element_id=ce.id WHERE ce.cycle_id=c.id "
+        "AND ce.role='cycle' ORDER BY ce.subject_revision DESC,ce.id LIMIT 1),0)=0"
+    ).fetchone()[0]) if has_closure else 0
+    campaigns = [(str(row["lifecycle_state"]), loop_findings._body_status(str(row["body_markdown"]))) for row in rows]
+    return _state(
+        campaigns, closure_debt=closure_debt, active_ideas=int(counts[0]),
+        open_outcomes=int(counts[1]), unreconciled=int(counts[2]),
+        active_findings=active_findings, last_completed=str(counts[3]) if counts[3] else None,
+    )
 
 
 def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
@@ -113,8 +116,7 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
     if authority["authority"] == "file":
         work = workspace / "work"
         discovered = update_work_index.discover_artifacts(work) if work.is_dir() else []
-        allowed = {"idea-brief": "IDEA", "project-map": "MAP", "program-roadmap": "PRM", "campaign": "CAMP"}
-        selected = [item for item in discovered if item.kind() in allowed]
+        selected = [item for item in discovered if item.kind() in NAMESPACE_BY_TYPE]
         planning_items = {
             item["path"]: item
             for artifact_type in ("idea-brief", "program-roadmap")
@@ -124,7 +126,7 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
         for item in selected[:500]:
             relative = item.path.as_posix()
             artifact_type = item.kind()
-            namespace = allowed[artifact_type]
+            namespace = NAMESPACE_BY_TYPE[artifact_type]
             match = re.search(rf"\b{namespace}-\d{{4,}}\b", item.title + " " + relative, re.I)
             visible_id = match.group(0).upper() if match else relative
             planning = planning_items.get(relative)
@@ -148,14 +150,11 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
             artifacts.append(
                 {
                     "artifact_id": authority_resolver.file_artifact_id(workspace, relative),
-                    "visible_id": visible_id,
-                    "artifact_type": artifact_type,
+                    "visible_id": visible_id, "artifact_type": artifact_type,
                     "title": " ".join(item.title.split())[:160] or visible_id,
                     "document_lifecycle": document_lifecycle,
-                    "outcome_lifecycle": "unknown",
-                    "outcome_disposition": "unknown",
-                    "reconciliation_state": "unknown",
-                    "terminal_reason": None,
+                    "outcome_lifecycle": "unknown", "outcome_disposition": "unknown",
+                    "reconciliation_state": "unknown", "terminal_reason": None,
                     "parent_ids": [parent] if parent else [],
                     "produces_ids": produces[:16],
                     "planning_position": planning["position"] if planning else None,
@@ -166,20 +165,7 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
                         "working" if status_value == "working" else
                         "waiting" if status_value in {"deferred", "parked"} else "ready"
                     ),
-                    "closure_status": {
-                        "local_closure": "unknown",
-                        "evidence_health": "unknown",
-                        "graph_health": "unknown",
-                        "effective_closed": False,
-                        "reason_codes": ["HYBRID_OUTCOME_UNAVAILABLE"],
-                        "counts": {"open": 0, "unknown": 1, "invalid": 0},
-                        "blockers": [],
-                        "subject_revision": 0,
-                        "graph_revision": 0,
-                        "evaluator_version": "not-available",
-                        "evaluated_at": updated_at,
-                    },
-                    "updated_at": updated_at,
+                    "closure_status": _unknown_closure("HYBRID_OUTCOME_UNAVAILABLE", updated_at), "updated_at": updated_at,
                 }
             )
         return {"total_count": len(selected), "truncated": len(selected) > len(artifacts), "artifacts": artifacts}
@@ -198,27 +184,16 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
             """
             SELECT d.id, d.visible_id, d.namespace, d.title, d.lifecycle_state, d.updated_at,
                    dr.body_markdown,
-                   COALESCE((
-                       SELECT c.lifecycle_state FROM cycle AS c
-                       WHERE c.origin_artifact_id = d.id
-                       ORDER BY c.opened_at DESC, c.id DESC LIMIT 1
-                   ), 'unknown') AS outcome_lifecycle,
-                   COALESCE((
-                       SELECT v.disposition FROM outcome_verdict AS v
-                       JOIN cycle AS c ON c.id = v.cycle_id
-                       WHERE c.origin_artifact_id = d.id
-                       ORDER BY c.opened_at DESC, v.decided_revision DESC, v.id DESC LIMIT 1
-                   ), CASE WHEN EXISTS (
-                       SELECT 1 FROM cycle AS c WHERE c.origin_artifact_id = d.id
-                   ) THEN 'open' ELSE 'unknown' END) AS outcome_disposition,
-                   COALESCE((
-                       SELECT r.state FROM reconciliation AS r
-                       JOIN cycle AS c ON c.id = r.cycle_id
-                       WHERE c.origin_artifact_id = d.id
-                       ORDER BY c.opened_at DESC, r.origin_revision DESC, r.id DESC LIMIT 1
-                   ), CASE WHEN EXISTS (
-                       SELECT 1 FROM cycle AS c WHERE c.origin_artifact_id = d.id
-                   ) THEN 'open' ELSE 'unknown' END) AS reconciliation_state
+                   COALESCE((SELECT c.lifecycle_state FROM cycle c WHERE c.origin_artifact_id=d.id
+                       ORDER BY c.opened_at DESC,c.id DESC LIMIT 1), 'unknown') AS outcome_lifecycle,
+                   COALESCE((SELECT v.disposition FROM outcome_verdict v JOIN cycle c ON c.id=v.cycle_id
+                       WHERE c.origin_artifact_id=d.id ORDER BY c.opened_at DESC,v.decided_revision DESC,v.id DESC LIMIT 1),
+                       CASE WHEN EXISTS (SELECT 1 FROM cycle c WHERE c.origin_artifact_id=d.id)
+                       THEN 'open' ELSE 'unknown' END) AS outcome_disposition,
+                   COALESCE((SELECT r.state FROM reconciliation r JOIN cycle c ON c.id=r.cycle_id
+                       WHERE c.origin_artifact_id=d.id ORDER BY c.opened_at DESC,r.origin_revision DESC,r.id DESC LIMIT 1),
+                       CASE WHEN EXISTS (SELECT 1 FROM cycle c WHERE c.origin_artifact_id=d.id)
+                       THEN 'open' ELSE 'unknown' END) AS reconciliation_state
             FROM document AS d
             JOIN document_revision AS dr
               ON dr.document_id = d.id AND dr.revision_number = d.current_revision
@@ -227,25 +202,18 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
             LIMIT 500
             """
         ).fetchall()
-        terminal_reasons: dict[str, str] = {}
-        if connection.execute(
-            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='campaign_reconciliation_audit'"
-        ).fetchone():
-            terminal_reasons = {
-                str(row["artifact_id"]): str(row["reason"])[:240]
-                for row in connection.execute(
-                    "SELECT c.origin_artifact_id AS artifact_id, cra.reason FROM campaign_reconciliation_audit cra "
-                    "JOIN cycle c ON c.id=cra.cycle_id WHERE cra.recorded_revision=("
-                    "SELECT MAX(newer.recorded_revision) FROM campaign_reconciliation_audit newer "
-                    "WHERE newer.cycle_id=cra.cycle_id) ORDER BY c.origin_artifact_id"
-                )
-            }
+        terminal_reasons = {}
+        if connection.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='campaign_reconciliation_audit'").fetchone():
+            reason_rows = connection.execute(
+                "SELECT c.origin_artifact_id AS artifact_id, cra.reason FROM campaign_reconciliation_audit cra "
+                "JOIN cycle c ON c.id=cra.cycle_id WHERE cra.recorded_revision=(SELECT MAX(newer.recorded_revision) "
+                "FROM campaign_reconciliation_audit newer WHERE newer.cycle_id=cra.cycle_id) ORDER BY c.origin_artifact_id"
+            )
+            terminal_reasons = {str(row["artifact_id"]): str(row["reason"])[:240] for row in reason_rows}
         try:
-            planning_items = {
-                item["artifact_id"]: item
-                for artifact_type in ("idea-brief", "program-roadmap")
-                for item in planning_order.projection_for_connection(connection, artifact_type)["items"]
-            }
+            planning_items = {item["artifact_id"]: item
+                              for artifact_type in ("idea-brief", "program-roadmap")
+                              for item in planning_order.projection_for_connection(connection, artifact_type)["items"]}
         except planning_order.PlanningOrderError as error:
             raise ProjectProjectionError(f"local planning order is invalid: {error}") from error
         artifact_ids = [str(row["id"]) for row in rows]
@@ -261,17 +229,13 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
                 f"AND (from_artifact_id IN ({placeholders}) OR to_artifact_id IN ({placeholders}))",
                 (*artifact_ids, *artifact_ids),
             ).fetchall()
-            related_ids = {
-                str(value)
-                for relation in relations
-                for value in (relation["from_artifact_id"], relation["to_artifact_id"])
-                if str(value) not in visible_by_id
-            }
+            related_ids = {str(value) for relation in relations
+                           for value in (relation["from_artifact_id"], relation["to_artifact_id"])
+                           if str(value) not in visible_by_id}
             if related_ids:
                 related_placeholders = ",".join("?" for _ in related_ids)
                 for related in connection.execute(
-                    f"SELECT id, visible_id FROM document WHERE id IN ({related_placeholders})",
-                    tuple(sorted(related_ids)),
+                    f"SELECT id, visible_id FROM document WHERE id IN ({related_placeholders})", tuple(sorted(related_ids))
                 ):
                     visible_by_id[str(related["id"])] = str(related["visible_id"])
             for relation in relations:
@@ -304,25 +268,19 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
                     continue
                 closure_by_artifact[artifact_id] = {
                     "_element_id": str(closure["element_id"]),
-                    "local_closure": str(closure["local_closure"]),
-                    "evidence_health": str(closure["evidence_health"]),
+                    "local_closure": str(closure["local_closure"]), "evidence_health": str(closure["evidence_health"]),
                     "graph_health": str(closure["graph_health"]),
                     "effective_closed": bool(closure["effective_closed"]),
                     "reason_codes": json.loads(closure["reason_codes_json"]),
                     "counts": {
-                        "open": int(closure["open_descendants"]),
-                        "unknown": int(closure["unknown_descendants"]),
+                        "open": int(closure["open_descendants"]), "unknown": int(closure["unknown_descendants"]),
                         "invalid": int(closure["invalid_descendants"]),
                     },
-                    "blockers": [],
-                    "subject_revision": int(closure["subject_revision"]),
-                    "graph_revision": int(closure["graph_revision"]),
-                    "evaluator_version": str(closure["evaluator_version"]),
+                    "blockers": [], "subject_revision": int(closure["subject_revision"]),
+                    "graph_revision": int(closure["graph_revision"]), "evaluator_version": str(closure["evaluator_version"]),
                     "evaluated_at": str(closure["evaluated_at"]),
                 }
-            element_to_closure = {
-                str(value["_element_id"]): value for value in closure_by_artifact.values()
-            }
+            element_to_closure = {str(value["_element_id"]): value for value in closure_by_artifact.values()}
             if element_to_closure:
                 blocker_placeholders = ",".join("?" for _ in element_to_closure)
                 for item in connection.execute(
@@ -334,80 +292,41 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
                 ):
                     projected = element_to_closure[str(item["ancestor_element_id"])]["blockers"]
                     if len(projected) < 20:
-                        projected.append(
-                            {
-                                "blocking_element_id": item["blocking_element_id"],
-                                "blocking_obligation_id": item["blocking_obligation_id"],
-                                "reason_code": item["reason_code"],
-                                "depth": int(item["depth"]),
-                            }
-                        )
+                        projected.append({
+                            "blocking_element_id": item["blocking_element_id"],
+                            "blocking_obligation_id": item["blocking_obligation_id"],
+                            "reason_code": item["reason_code"], "depth": int(item["depth"]),
+                        })
             for value in closure_by_artifact.values():
                 value.pop("_element_id")
-    type_by_namespace = {
-        "IDEA": "idea-brief",
-        "MAP": "project-map",
-        "PRM": "program-roadmap",
-        "CAMP": "campaign",
-    }
     artifacts = []
     for row in rows:
         artifact_id = str(row["id"])
-        artifact_type = type_by_namespace[str(row["namespace"])]
+        artifact_type = TYPE_BY_NAMESPACE[str(row["namespace"])]
         planning = planning_items.get(artifact_id)
-        campaign_readiness = (
-            loop_findings._body_status(str(row["body_markdown"]))
-            if artifact_type == "campaign"
-            else None
-        )
+        campaign_readiness = loop_findings._body_status(str(row["body_markdown"])) if artifact_type == "campaign" else None
         title = " ".join(str(row["title"]).split())[:160] or str(row["visible_id"])
         artifacts.append(
             {
                 "artifact_id": artifact_id,
-                "visible_id": str(row["visible_id"]),
-                "artifact_type": artifact_type,
-                "title": title,
+                "visible_id": str(row["visible_id"]), "artifact_type": artifact_type, "title": title,
                 "document_lifecycle": str(row["lifecycle_state"]),
-                "outcome_lifecycle": str(row["outcome_lifecycle"]),
-                "outcome_disposition": str(row["outcome_disposition"]),
+                "outcome_lifecycle": str(row["outcome_lifecycle"]), "outcome_disposition": str(row["outcome_disposition"]),
                 "reconciliation_state": str(row["reconciliation_state"]),
                 "terminal_reason": terminal_reasons.get(artifact_id),
-                "parent_ids": sorted(set(parent_ids[artifact_id]))[:16],
-                "produces_ids": sorted(set(produces_ids[artifact_id]))[:16],
+                "parent_ids": sorted(set(parent_ids[artifact_id]))[:16], "produces_ids": sorted(set(produces_ids[artifact_id]))[:16],
                 "planning_position": planning["position"] if planning else None,
-                "planning_order_source": (
-                    planning["order_source"]
-                    if planning
-                    else "derived"
-                    if artifact_type in planning_order.SUPPORTED_TYPES or artifact_type == "campaign"
-                    else "not-applicable"
+                "planning_order_source": planning["order_source"] if planning else (
+                    "derived" if artifact_type in planning_order.SUPPORTED_TYPES or artifact_type == "campaign" else "not-applicable"
                 ),
                 "planning_readiness": (
-                    planning["readiness"]
-                    if planning
-                    else "terminal"
-                    if artifact_type == "campaign" and str(row["lifecycle_state"]) in planning_order.TERMINAL_DOCUMENT_STATES
-                    else campaign_readiness
-                    if campaign_readiness in planning_order.READINESS_RANK
-                    else "terminal"
-                    if artifact_type in planning_order.SUPPORTED_TYPES
-                    else "not-applicable"
+                    planning["readiness"] if planning else "terminal"
+                    if (artifact_type == "campaign" and str(row["lifecycle_state"]) in planning_order.TERMINAL_DOCUMENT_STATES)
+                    or artifact_type in planning_order.SUPPORTED_TYPES
+                    else campaign_readiness if campaign_readiness in planning_order.READINESS_RANK else "not-applicable"
                 ),
                 "closure_status": closure_by_artifact.get(
-                    artifact_id,
-                    {
-                        "local_closure": "unknown",
-                        "evidence_health": "unknown",
-                        "graph_health": "unknown",
-                        "effective_closed": False,
-                        "reason_codes": ["CLOSURE_NOT_AVAILABLE"],
-                        "counts": {"open": 0, "unknown": 1, "invalid": 0},
-                        "blockers": [],
-                        "subject_revision": 0,
-                        "graph_revision": 0,
-                        "evaluator_version": "not-available",
-                        "evaluated_at": str(row["updated_at"]),
-                    },
+                    artifact_id, _unknown_closure("CLOSURE_NOT_AVAILABLE", str(row["updated_at"]))
                 ),
                 "updated_at": str(row["updated_at"]),
             }
@@ -419,6 +338,14 @@ def build(workspace: Path) -> dict[str, Any]:
     authority = authority_resolver.resolve(workspace)
     if authority["authority"] not in {"file", "sqlite"}:
         raise ProjectProjectionError(authority["reason"])
+    loop_projection = loop_findings.report_projection(workspace)
+    if authority["authority"] == "file":
+        state = _file_summary(workspace)
+    else:
+        with contextlib.closing(
+            hybrid_state.connect(hybrid_state.database_path(workspace), writable=False)
+        ) as connection:
+            state = _sqlite_summary(connection, loop_projection["total_active_count"])
     return {
         "schema_version": SCHEMA_VERSION,
         "kind": "tool-shed-project-projection",
@@ -427,7 +354,8 @@ def build(workspace: Path) -> dict[str, Any]:
             "authority": authority["authority"],
             "feature_limits": list(authority.get("feature_limits", [])),
         },
-        "state": _summary(workspace, authority),
+        "state": state,
         "work_inventory": _inventory(workspace, authority),
+        "loop_findings": loop_projection,
         "writes_performed": False,
     }
