@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-target-evidence",
+  "endpoint": "work2",
+  "target": "web at tsrookarocom-dev on sup.local, Windows at PC-Redemption/ts_windows_test_bed on GOGETTER, and Linux at PC-Redemption/ts_linux_test_bed on sup.local",
+  "checked_at": "2026-09-11T22:12:39Z",
+  "recorded_at": "2026-09-11T22:12:39Z",
+  "campaign": "CAMP-0181",
+  "origin_cycle": "1e5802ba-de95-491a-b32e-154b6ece796e",
+  "candidate_commit": "b9c58e8ea300400613abc44665f188ce5212a901",
+  "candidate_version": "0.54.0",
+  "checks": [
+    {
+      "id": "local-release-profile",
+      "status": "passed",
+      "reference": "657/657 tests and strict Doctor HEALTHY at b9c58e8ea300400613abc44665f188ce5212a901"
+    },
+    {
+      "id": "projection-parity-and-performance",
+      "status": "passed",
+      "reference": "291/291 artifact parity; 18.049s before and 4.548s after"
+    },
+    {
+      "id": "web-development",
+      "status": "passed",
+      "reference": "tsrookarocom-dev image dev-b9c58e8ea300; docs and dashboard HTTP 200; production HTTP 200 unchanged"
+    },
+    {
+      "id": "linux-development",
+      "status": "passed",
+      "reference": "sup:/home/jon/dev/ts_linux_test_bed exact archive sha256:5a438e9cb32b7e95124164213ac55ace5c1d8121aa62ca9222425f771cf06dc5; 46/46 focused tests"
+    },
+    {
+      "id": "windows-development",
+      "status": "passed",
+      "reference": "GOGETTER:E:\\dev\\ts_windows_test_bed exact archive sha256:5a438e9cb32b7e95124164213ac55ace5c1d8121aa62ca9222425f771cf06dc5; 46/46 focused tests"
+    }
+  ],
+  "result": {
+    "contract": "docs/tool-shed-consolidation-contract.md",
+    "canonical_projection": "scripts/project_projection.py",
+    "dashboard_transport": "scripts/dashboard_reporter.py",
+    "authority_decisions_per_projection": 1,
+    "current_artifact_count": 291,
+    "state_parity": true,
+    "inventory_parity": true,
+    "before_seconds": 18.049,
+    "after_seconds": 4.548,
+    "latency_reduction_percent": 74.8,
+    "dashboard_reporter_line_delta": -351,
+    "repository_runtime_line_delta": 85,
+    "foundation_debt": "Reclaim or explicitly supersede 85 runtime lines before IDEA-0028 implementation."
+  },
+  "local": {
+    "release_profile": "657/657 tests passed",
+    "focused_projection_suite": "46/46 tests passed",
+    "doctor": "HEALTHY with no findings",
+    "manifest": "299 tracked snapshot files verified",
+    "projection_parity": "Executive state and exhaustive inventory equal the pre-candidate implementation for all 291 projected artifacts."
+  },
+  "archive": {
+    "name": "tool-shed-idea0027-b9c58e8ea300.tar.gz",
+    "sha256": "5a438e9cb32b7e95124164213ac55ace5c1d8121aa62ca9222425f771cf06dc5",
+    "git_metadata_present": false,
+    "project_work_tree_present": false,
+    "snapshot_integrity": "verified unpublished 0.54.0"
+  },
+  "web_development": {
+    "host": "sup",
+    "target": "/home/jon/docker/ts.rookaro.com-dev",
+    "compose_project": "tsrookarocom-dev",
+    "source_commit": "b9c58e8ea300400613abc44665f188ce5212a901",
+    "image": "tool-shed-dashboard:dev-b9c58e8ea300",
+    "containers": "docs, dashboard, and postgres running healthy",
+    "documentation_health_http": 200,
+    "dashboard_health_http": 200,
+    "dashboard_development_check": "healthy",
+    "production_health_http": 200,
+    "production_changed": false,
+    "predeployment_refusal": "The first deploy refused before mutation because the protected development environment still named the prior image tag; only TOOL_SHED_DASHBOARD_IMAGE_TAG was aligned to the staged exact candidate before the successful deploy."
+  },
+  "linux_development": {
+    "host": "sup",
+    "workspace": "/home/jon/dev/ts_linux_test_bed",
+    "repository": "PC-Redemption/ts_linux_test_bed",
+    "snapshot": "/home/jon/dev/ts_linux_test_bed/tool_shed",
+    "rollback": "/home/jon/dev/ts_linux_test_bed/tool_shed.before-idea0027-b9c58e8",
+    "archive_sha256": "5a438e9cb32b7e95124164213ac55ace5c1d8121aa62ca9222425f771cf06dc5",
+    "snapshot_integrity": "verified after qualification",
+    "focused_projection_suite": "46/46 tests passed",
+    "authority": "qualified-shadow file authority",
+    "feature_limits_preserved": 4,
+    "generated_test_cache": "moved outside the active snapshot before final strict integrity verification"
+  },
+  "windows_development": {
+    "host": "GOGETTER",
+    "workspace": "E:\\dev\\ts_windows_test_bed",
+    "repository": "PC-Redemption/ts_windows_test_bed",
+    "snapshot": "E:\\dev\\ts_windows_test_bed\\tool_shed",
+    "rollback": "E:\\dev\\ts_windows_test_bed\\tool_shed.before-idea0027-b9c58e8",
+    "archive_sha256": "5a438e9cb32b7e95124164213ac55ace5c1d8121aa62ca9222425f771cf06dc5",
+    "python": "3.14.6",
+    "snapshot_integrity": "verified after qualification",
+    "focused_projection_suite": "46/46 tests passed",
+    "generated_test_cache": "moved outside the active snapshot before final strict integrity verification"
+  },
+  "boundaries": {
+    "source_push": false,
+    "tag_created": false,
+    "release_published": false,
+    "production_deployed": false,
+    "installed_user_skill_synchronized": false,
+    "idea_0028_implemented": false
+  }
+}
