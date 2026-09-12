@@ -1,0 +1,93 @@
+# Program Roadmap: First-Class 100k Project Executive View
+
+Status: approved
+Type: program-roadmap
+Updated: 2026-09-11
+Next Action: execute M1-FIRST-CLASS-100K through Work2
+Roadmap ID: first-class-100k-project-executive-view
+Roadmap Revision: 1
+Source Idea: IDEA-0028
+Source Project Map: MAP-0036
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 3
+Reviewed Body SHA256: 4d54b660c76a74f6a964e8f311b3cb5ee92772aaa9c7409e36428fa0fc049473
+
+## Program Outcome
+
+Tool Shed provides one standard, deterministic Project Executive View at `work/100k.md`. It gives
+the operator a concise project-world review, controlled attention and change signals, recommended
+next cycles, and an exhaustive accountability ledger from the released canonical projection. The
+view is read-only, refreshable, checkable, portable across file and SQLite authority, and proven on
+the exact configured Work2 development targets.
+
+## M1-FIRST-CLASS-100K — Deliver the standard executive review
+
+Status: active
+Required Endpoint: Work2
+Depends on: Tool Shed v0.54.0 / IDEA-0027
+
+Outcome: Extend the canonical project projection only with existing facts required by the
+executive review; render one deterministic `work/100k.md` containing a concise first page and the
+complete bounded ledger; expose refresh and fail-closed check behavior without introducing another
+authority or lifecycle; make it the documented normal operator review while retaining existing
+commands as drill-down; prove file/SQLite parity, change detection, coverage signals, checkpoint
+rebuild, and exact web/Linux/Windows development behavior; register and checkpoint the candidate.
+
+Gates:
+
+- `G1-EXECUTIVE-CONTRACT-AND-ENTRY`
+- `G2-COMPLETE-ACCOUNTING`
+- `G3-OPERATOR-SURFACE-CONVERGENCE`
+- `G4-PARITY-RECOVERY-AND-PORTABILITY`
+
+Candidate campaign: `deliver-first-class-100k-project-executive-view`.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G1-EXECUTIVE-CONTRACT-AND-ENTRY | M1 contract, command, and `work/100k.md` entry point |
+| G2-COMPLETE-ACCOUNTING | M1 exhaustive ledger and controlled attention findings |
+| G3-OPERATOR-SURFACE-CONVERGENCE | M1 operator docs and replacement boundary |
+| G4-PARITY-RECOVERY-AND-PORTABILITY | M1 local, rebuild, and configured development proof |
+
+Transfer count: 4 reviewed gates; 4 mapped gates; 0 dropped.
+
+## Decision Record
+
+- Extend `project_projection.py`; do not create a second project-world builder.
+- Generate and track `work/100k.md` as a deterministic read-only orientation surface comparable to
+  the existing indexes. Authoritative edits continue through current Tool Shed artifacts and state.
+- Use existing artifact identity and outcome/closure semantics as the accountability ledger. Do not
+  invent 100k item IDs or dispositions.
+- Compute recommendations from existing planning order and campaign/cycle state; never invent an
+  owner priority or silently perform the recommended cycle.
+- Treat existing overview, queue, planning-order, and loop commands as drill-down machine APIs.
+- Keep DisplayTest migration and hosted write-back out of this milestone.
+
+## Recovery Contract
+
+- Rendering is atomic and deterministic. A failed refresh leaves the prior `work/100k.md` intact.
+- Check mode compares exact expected bytes and fails on stale or manually edited projection content.
+- Unknown authority, malformed focus-area or project state, projection truncation that would hide
+  required accounting, or invalid relationships fails closed with a controlled diagnostic.
+- The renderer performs no lifecycle, planning, relationship, outcome, release, or hosted mutation.
+- Work2 deployment uses only the configured development targets and preserves their project work.
+
+## Verification Strategy
+
+- Focused tests for concise sections, exhaustive identity coverage, attention and change signals,
+  deterministic bytes, atomic refresh, stale detection, and read-only behavior.
+- File- and SQLite-authority fixtures proving the same contract and explicit feature limits.
+- Existing project-projection, dashboard, planning, campaign, loop, work-state, and manifest checks.
+- Repository validator, strict Doctor, and checkpoint/rebuild parity.
+- Exact-candidate web-development deployment plus released-snapshot update and changed-behavior
+  checks in the approved Linux and Windows test beds, followed by release-cohort registration.
+
+## Authority Boundaries
+
+This roadmap authorizes faithful planning, source/test/documentation changes, local commits, known
+development deployment, focused qualification, release-cohort registration, and checkpointing at
+Work2 under the current project preference. It does not authorize production promotion, release,
+publication, credentials, destructive recovery, unknown targets, DisplayTest mutation, hosted
+write-back, or retirement of the drill-down machine APIs.

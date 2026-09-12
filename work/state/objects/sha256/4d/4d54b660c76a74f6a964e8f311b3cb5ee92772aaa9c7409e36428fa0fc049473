@@ -1,0 +1,152 @@
+# Idea Brief: First-Class 100k Project Executive View
+
+Status: ready-for-prm
+Type: idea-brief
+Updated: 2026-09-11
+Next Action: deliver one first-class 100k Project Executive View through Work2 on the released shared project projection
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces:
+Depends On: IDEA-0027
+
+## Current Synthesis
+
+### Idea
+
+Make the 100k view a first-class Tool Shed Project Executive View: the easy-to-find, easy-to-read
+whole-project control surface that captures how the project's world picture changes, lets the
+operator choose which cycles to undertake next, feeds selected outcomes into Ideas, direct work,
+PRMs, and campaigns, and requires every material concern to remain accounted for until explicitly
+resolved or dispositioned.
+
+The operator is the CEO; the 100k view is the CEO's control surface. It sits above individual
+Ideas and PRMs and reconciles their contribution to the project's current definition of
+completion.
+
+### Why It Matters
+
+Projects can accumulate many Ideas, project maps, PRMs, campaigns, direct outcomes, evidence
+records, and deferred obligations that all intend to advance the project. Existing indexes and
+cycle views expose those records but do not provide one clear world view explaining the target
+state, current landscape, material changes, strategic gaps, competing priorities, and best next
+cycles. Important work can therefore be overlooked, duplicated, or considered complete merely
+because it moved into another artifact.
+
+The manually maintained `100,000-Foot View` in the DisplayTest firmware workspace demonstrates the
+operator value of a North Star, landscape, ordered priority board, Idea Radar, deliberate non-goals,
+realized outcomes, and review triggers. Its use also shows that a standard implementation must
+prevent drift with existing Tool Shed state.
+
+### Desired Outcome
+
+Every Tool Shed project that needs strategic coordination can maintain one active Executive View
+with a concise executive page and a complete underlying strategic ledger. The view shows why the
+project exists, its current completion horizon, health by enduring responsibility, material
+changes, current priorities, decisions needed, recommended next cycles, active strategic
+descendants, deferred obligations, and realized outcomes.
+
+Every material 100k item has a stable identity and explicit disposition or downstream relationship.
+Every strategic Idea, PRM, campaign, or direct outcome maps back to the view or is explicitly
+classified outside its scope. Completion results and residual gaps return to the view. A review
+revision cannot be reconciled while an item, relationship, result, or material project area has
+been silently skipped.
+
+## Constraints And Non-Goals
+
+- Architectural prerequisite: `IDEA-0027` delivered the schema-version-2 shared project projection,
+  dashboard consumer convergence, measured line-debt repayment, and explicit 100k replacement
+  boundary in Tool Shed v0.54.0. The 100k implementation must consume that released seam.
+- The feature must reuse existing identity, document revision, relationship, outcome-cycle,
+  recursive-closure, evidence, finding, and project-projection mechanisms wherever adequate.
+- It must replace or consolidate overlapping project-map, focus-area, overview, status, navigation,
+  or dashboard assembly rather than create another independent authority or reporting family.
+- Keep the executive page short and readable while retaining an exhaustive, machine-checkable
+  ledger beneath or behind it.
+- The operator selects direction. Tool Shed may identify gaps, conflicts, and safe next choices but
+  must not invent priorities or material decisions.
+- Promotion into an Idea or PRM is not completion. The originating 100k item remains open or
+  in-cycle until results and remaining gaps return.
+- An explicit deferral, decline, supersession, or monitoring condition is valid accounting; forcing
+  complete accounting must not force implementation of every possible idea.
+- Settled product truth remains in project docs, README files, and code. The Executive View is
+  evolving project direction under `work/`.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Concise executive page plus exhaustive strategic ledger | Keeps the normal review readable without sacrificing complete accounting | Requires careful separation of synthesis from source facts | Preferred product shape |
+| Focus areas as the coverage partition | Gives “whole picture” a bounded, project-specific completeness basis | Focus-area boundaries may be incomplete or stale | Reuse and potentially absorb the existing focus-area presentation |
+| Bidirectional artifact reconciliation | Prevents 100k items or active strategic work from disappearing | Scope must exclude irrelevant low-level tasks | Reuse existing relationships, findings, and closure machinery |
+| Current completion horizon within a permanent view | Allows releases or target states to finish even when the product continues | Horizon changes require explicit operator decisions | Preferred lifecycle model |
+| One shared project projection for local and hosted surfaces | Reduces drift and can delete duplicate overview assembly | Depends on IDEA-0027 architecture | Required simplification dependency |
+| Standardize the DisplayTest document directly | Builds on observed operator value | Copying its long narrative unchanged could create an encyclopedia | Use as a dogfood source, not an unquestioned universal template |
+
+## Open Questions
+
+- How should existing project strategy documents be imported without creating dual authority or
+  silently retiring owner material? This is deferred from the first Work2 slice: the DisplayTest
+  source remains unchanged, and migration requires direct source access plus its own no-loss review.
+
+## Decisions
+
+- Treat the operator as CEO and the 100k view as the CEO's project control surface.
+- Treat 100k as a distinct first-class product role above individual Ideas and PRMs, while requiring
+  implementation reuse rather than a separate subsystem.
+- Use `Project Executive View` as the formal product name and `100k` as its stable operator command,
+  nickname, and easy-to-find `work/100k.md` projection.
+- Make `work/100k.md` a deterministic read-only projection, not another authority. Operator intent,
+  priorities, and dispositions remain in existing project maps, focus areas, Ideas, PRMs, campaigns,
+  outcomes, and decisions; the view detects and exposes incomplete accounting across them.
+- Reuse existing document lifecycles, relationships, outcomes, reconciliation, recursive closure,
+  planning order, and loop findings as the item state model. Do not create a 100k-specific lifecycle
+  engine or free-standing strategic backlog.
+- Absorb the human-facing summary responsibilities of overview, queue status/next, planning order,
+  focus-area coverage, and loop-finding views into one executive page while retaining their machine
+  APIs as drill-down and automation surfaces.
+- Treat source revision, domain digest, active lifecycle changes, planning-order changes, focus-area
+  coverage drift, outcome/reconciliation changes, and loop findings as review-change signals.
+- Keep the Executive View permanently active; reconcile individual review revisions or completion
+  horizons instead of terminally completing the living view.
+- Use a two-layer presentation: concise executive page first, complete strategic ledger second.
+- Require explicit result feedback and residual-work disposition before a promoted item can close.
+- Track this capability separately from, and make it dependent on, `IDEA-0027`.
+
+## Don't Forget
+
+- Architectural prerequisite and companion brief: `IDEA-0027`.
+- [x] Re-review this synthesis after IDEA-0027 settles the target architecture.
+- [ ] Define the current completion-horizon contract for finite and continuing projects.
+- [ ] Define stable item identity, states, dispositions, and review-revision semantics.
+- [ ] Prove coverage across every approved enduring focus area or equivalent project partition.
+- [ ] Require every material 100k item to have a disposition or linked downstream cycle.
+- [ ] Require every in-scope strategic Idea, PRM, campaign, and direct outcome to map back to 100k.
+- [ ] Require completed descendants to return results and remaining gaps before parent closure.
+- [x] Identify the existing human-facing summary responsibilities this feature absorbs while
+  retaining their machine APIs as drill-down surfaces.
+- [ ] Keep the executive page to a quickly scannable operator review while preserving the complete
+  ledger and change history.
+- [ ] Dogfood migration and ongoing review against the DisplayTest 100,000-Foot View without
+  mutating or retiring its current source prematurely.
+- [ ] Qualify both SQLite-authoritative and file-authoritative workspace behavior.
+
+## Exploration Log
+
+### 2026-09-11
+
+- Idea Brief created.
+- Discussion established the missing capability as a whole-project world view above numerous Ideas,
+  PRMs, campaigns, and outcomes. Its purpose is to help the operator select the next cycles and to
+  force complete accounting so material work cannot be skipped during promotion or execution.
+- The owner chose to preserve this as a separate Idea dependent on Tool Shed simplification and
+  consolidation, preventing either half of the combined direction from being forgotten.
+- Re-reviewed after the IDEA-0027 Work5 release. Tool Shed v0.54.0 supplies one authority-aware
+  project projection for executive counts, the exhaustive lifecycle ledger, and loop findings;
+  dashboard report construction consumes it once, and the consolidation line debt is repaid.
+- Settled the first implementation boundary: generate a standard read-only `work/100k.md` from that
+  projection, reuse existing lifecycle and outcome concepts, converge operator summaries into the
+  executive page, retain machine APIs for drill-down, and defer DisplayTest source migration until
+  direct no-loss evidence is available.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

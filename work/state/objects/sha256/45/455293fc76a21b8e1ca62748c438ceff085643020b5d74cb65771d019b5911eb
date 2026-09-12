@@ -1,0 +1,67 @@
+# Campaign: Deliver First-Class 100k Project Executive View
+
+Status: working
+Type: campaign
+Updated: 2026-09-11
+Next Action: implement and qualify the standard Project Executive View through Work2
+Campaign ID: deliver-first-class-100k-project-executive-view
+Campaign Number: 182
+Outcome: Tool Shed has one standard read-only `work/100k.md` executive review, produced from the canonical project projection, that recommends next cycles and exposes complete strategic accounting without creating another authority or lifecycle.
+Primary Focus Areas: artifact-workflows
+Supporting Focus Areas: campaign-lifecycle, provider-portability, qualification-release, snapshot-delivery, workspace-safety
+Depends On: none
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work2
+Completion Gate: The executive-view contract and deterministic `work/100k.md` entry are durable; the concise review, complete ledger, coverage/attention signals, recommendations, refresh/check behavior, and existing drill-down boundary are implemented on the canonical projection; file and SQLite fixtures, focused tests, repository validation, strict Doctor, and checkpoint/rebuild parity pass; the exact commit is deployed and checked on configured development web, Linux, and Windows targets; and the exact candidate plus complete owning chain is registered and checkpointed without publication.
+Completion Evidence: pending
+Disposition: pending
+Roadmap: first-class-100k-project-executive-view
+Roadmap Revision: 1
+Roadmap Document: PRM-0048
+Milestone: M1-FIRST-CLASS-100K
+Unlocks Gates: G1-EXECUTIVE-CONTRACT-AND-ENTRY, G2-COMPLETE-ACCOUNTING, G3-OPERATOR-SURFACE-CONVERGENCE, G4-PARITY-RECOVERY-AND-PORTABILITY
+
+## Request
+
+Extend the existing canonical project projection with the minimum current-state fields needed for
+an operator executive review. Add deterministic render and check behavior for a tracked,
+easy-to-find `work/100k.md` projection containing a short executive section and a complete bounded
+strategic ledger. Surface authoritative identity/lifecycle, planning order and readiness, outcomes,
+reconciliation, recursive closure, loop findings, focus-area coverage, recent material changes,
+decisions or attention needed, and safe next-cycle recommendations from existing state.
+
+Do not add a 100k-specific database, lifecycle, queue, item identity, or hidden priority model.
+Retain existing status, overview, queue, planning-order, and loop commands as drill-down and machine
+APIs; document 100k as the normal operator review. Treat manual edits to the generated view as
+stale projection content and explain where authoritative changes belong.
+
+Stop after focused implementation proof, repository validation, strict Doctor, configured
+development deployment/checks, exact Work2 release-cohort registration, and a durable Hybrid
+checkpoint. Do not push, release, publish, promote production, mutate DisplayTest, or synchronize
+installed production clients.
+
+## App Server Preparation Contract
+
+```json
+{
+  "campaign_id": "deliver-first-class-100k-project-executive-view",
+  "completion_evidence": "The standard work/100k.md projection is committed; concise and exhaustive accounting, deterministic refresh/check, file/SQLite parity, focused tests, repository validation, strict Doctor, configured development targets, exact candidate registration, and checkpoint/rebuild parity pass.",
+  "exact_resolution": "dispatch-time",
+  "execution_shape": "single-bounded-camp",
+  "inline_assets": "metadata-only",
+  "objective": "Deliver one canonical, easy-to-review 100k control surface without adding another project authority or lifecycle.",
+  "schema_version": 1,
+  "source_freshness": "required",
+  "verification": "orchestrator-exactly-once"
+}
+```
+
+## Completion Check
+
+Verify the executive contract, stable work entry, concise readability, exhaustive identity
+coverage, controlled attention and change signals, safe next-cycle recommendation, deterministic
+bytes, atomic refresh, stale detection, no state mutation, file/SQLite authority behavior,
+existing-project-projection and dashboard parity, documentation, strict health, exact configured
+development targets, Work2 cohort registration, and checkpoint/rebuild parity.

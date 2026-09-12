@@ -1,0 +1,92 @@
+# Project Map: First-Class 100k Project Executive View
+
+Status: active
+Type: project-map
+Updated: 2026-09-11
+Next Action: execute the one-milestone Project Executive View roadmap through Work2
+Source Idea: IDEA-0028
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 3
+Reviewed Body SHA256: 4d54b660c76a74f6a964e8f311b3cb5ee92772aaa9c7409e36428fa0fc049473
+
+## Purpose
+
+Make `100k` the standard CEO-level project control surface: a concise, easy-to-find review that
+shows the whole current project picture, explains what changed, recommends the next safe cycles,
+and exposes a complete ledger so material work cannot disappear during promotion or completion.
+
+## Desired Outcome
+
+Every installed Tool Shed can deterministically render `work/100k.md` from its one canonical
+project-world projection. The page presents executive state, coverage and attention signals,
+recommended next cycles, recently changed direction, and an exhaustive lifecycle ledger. It is a
+read-only projection: current intent and dispositions remain in the existing authoritative project
+maps, focus areas, Ideas, PRMs, campaigns, outcomes, relationships, and decisions.
+
+## Visual Map
+
+```mermaid
+flowchart TD
+  A[Authoritative project state] --> P[project_projection.build]
+  P --> E[100k executive review]
+  P --> L[complete strategic ledger]
+  E --> N[recommended next cycles]
+  L --> C[coverage and no-skip checks]
+  N --> O[operator selects direction]
+  O --> A
+```
+
+## Settled Direction
+
+- Formal name: Project Executive View. Stable operator name and command: `100k`.
+- Stable human entry point: generated `work/100k.md` with an explicit read-only header and refresh
+  command. No manually edited parallel copy is introduced.
+- Canonical input: `project_projection.build(workspace)`, extended only where executive consumers
+  require an existing project-world fact not already represented.
+- Item state: reuse document lifecycle, planning order/readiness, typed relationships, outcome
+  lifecycle/disposition, reconciliation, recursive closure, and loop findings.
+- Coverage: include every Idea, project map, PRM, and campaign in the bounded canonical inventory;
+  call out active records without an accountable parent/output or with open closure/findings.
+- Operator convergence: 100k becomes the normal human review; existing status, overview, planning
+  order, queue, and loop commands remain deterministic drill-down and automation APIs.
+- The living view itself does not complete. Its finite Work2 implementation campaign can complete;
+  later project horizons remain visible through current authoritative artifacts and outcomes.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Executive contract | Stable sections, no-skip accounting rules, refresh/check behavior, and read-only authority label | v0.54.0 consolidation contract |
+| Projection and renderer | One canonical build supplies executive review plus complete ledger at `work/100k.md` | `project_projection.py` |
+| Operator convergence | Commands and docs make 100k the standard review and retain existing APIs as drill-down | renderer |
+| Qualification | File/SQLite fixtures, deterministic stale detection, recovery parity, and exact development lanes | all prior workstreams |
+
+## Readiness Gate Transfer
+
+1. `G1-EXECUTIVE-CONTRACT-AND-ENTRY` — contract and stable `work/100k.md` entry point.
+2. `G2-COMPLETE-ACCOUNTING` — exhaustive ledger and controlled attention/coverage findings.
+3. `G3-OPERATOR-SURFACE-CONVERGENCE` — one operator review with existing APIs retained as drill-down.
+4. `G4-PARITY-RECOVERY-AND-PORTABILITY` — deterministic, recovery-safe cross-platform Work2 proof.
+
+## Program Shape
+
+Deliver one bounded Work2 candidate. Implement and document the local executive projection, prove
+its deterministic refresh and no-skip behavior under file and SQLite authority, update shipped
+manifest coverage, deploy the exact commit to configured development web/Linux/Windows targets,
+register the complete owner chain, and checkpoint. Do not publish or promote production.
+
+## Constraints And Non-Goals
+
+- No new database, document type, lifecycle engine, queue, hosted write-back, or second project
+  projection.
+- No migration or mutation of the DisplayTest source without direct access and separate no-loss
+  evidence.
+- No forced implementation of every idea; explicit deferral, decline, supersession, exclusion, or
+  monitoring remains valid accounting.
+- No production release, production deployment, or installed-client synchronization at Work2.
+
+## Completion Boundary
+
+This map is complete when all four gates pass and the exact Work2 candidate is registered and
+checkpointed after configured development verification. Publication, DisplayTest migration, and
+future hosted interaction remain separate outcomes.
