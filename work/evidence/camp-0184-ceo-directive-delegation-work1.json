@@ -18,7 +18,13 @@
     "domain_digest": "f3cab1db1f811b1ea495920c08f694ca7a8e02a43b83a12bf64549c32964a325",
     "rebuild_domain_digest": "f3cab1db1f811b1ea495920c08f694ca7a8e02a43b83a12bf64549c32964a325",
     "checkpoint_rebuild_parity": true,
-    "strict_doctor_after_closure": null
+    "strict_doctor_after_closure": {
+      "verdict": "HEALTHY",
+      "fully_healthy": true,
+      "finding_count": 0,
+      "state_token": "25c69a66499cc6ef",
+      "verified_commit": "66c7c68f32221323d5b614acb64334b1635639ab"
+    }
   },
   "external_changes": {
     "push": false,
