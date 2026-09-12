@@ -455,6 +455,14 @@ Work origin is separate: `direct` has no queue record, `owner-originated` was de
 work may remain Direct and stop at work1. Likewise Direct, Guided, Coordinated, or Deep describes
 structure; work1–work5 describes the endpoint; cycle state says which loop owns the next move.
 
+`ts: 100k` is the standard operator review when you need the whole project in one place. Its stable
+`work/100k.md` entry starts with a concise executive review and ends with every canonical Idea,
+Project Map, Program Roadmap, and Campaign. It is generated from existing authority: edit the named
+source artifact or lifecycle surface, then refresh with
+`python3 scripts/project_projection.py --workspace . render-100k`. Use `check-100k` to test exact
+freshness. Manual edits are intentionally rejected or reported stale, so 100k cannot become a
+second authority. The suggested next-cycle list is decision support; the operator still chooses.
+
 `ts: overview`, `ts: status`, and `ts: next` render one shared Cycle State Capsule in human and
 JSON output. With no ready campaign, it checks Dangler Resolution, a persisted exact campaign plan
 awaiting authority evaluation, incomplete milestone/gate state, a derivable milestone, roadmap

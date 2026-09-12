@@ -27,6 +27,7 @@ import check_stale_paths
 import check_work_tree
 import document_store
 import authority_resolver
+import project_projection
 import reconcile_campaign_queue
 import release_cohort
 import release_convergence
@@ -382,6 +383,7 @@ def inspect(workspace: Path) -> dict[str, Any]:
         }
     )
     indexes = database_documents["indexes"] if database_documents else index_state(root)
+    executive_view = project_projection.check_executive(root)
     stale_paths = check_stale_paths.scan(root)
     work_findings = review_work_state.review(root, stale_days=30, today=date.today())
     external_evidence = external_evidence_state(root)
@@ -509,6 +511,13 @@ def inspect(workspace: Path) -> dict[str, Any]:
             "Run `ts: doctor --repair --expect <state-token> --project-binding <doctor-repair-binding>` to regenerate indexes only.",
             paths=list(indexes["stale_paths"]), count=len(indexes["stale_paths"]),
         ))
+    if not executive_view["valid"]:
+        findings.append(_finding(
+            "PROJECT_EXECUTIVE_VIEW_STALE", "error",
+            f"The standard 100k Project Executive View is {executive_view['state']}.",
+            "Run `python3 scripts/project_projection.py --workspace . render-100k` after authoritative project-state changes.",
+            paths=[executive_view["path"]],
+        ))
     if git["campaign_dirty_count"]:
         findings.append(_finding(
             "DIRTY_CAMPAIGN_STATE", "error",
@@ -626,6 +635,7 @@ def inspect(workspace: Path) -> dict[str, Any]:
             "authority": campaign_status.get("authority", "file"),
         },
         "indexes": {key: value for key, value in indexes.items() if not key.startswith("expected_")},
+        "project_executive_view": executive_view,
         "stale_paths": {"finding_count": len(stale_paths)},
         "work_state": {
             "finding_count": len(work_findings),

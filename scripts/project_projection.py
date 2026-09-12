@@ -3,11 +3,20 @@
 
 from __future__ import annotations
 
+import sys as _runtime_sys
+
+_runtime_sys.dont_write_bytecode = True
+
+import argparse
 import contextlib
+import hashlib
 import json
+import os
 import re
+import sys
+import tempfile
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 import authority_resolver
 import campaign_queue
@@ -18,6 +27,9 @@ import update_work_index
 
 
 SCHEMA_VERSION = 2
+EXECUTIVE_SCHEMA_VERSION = 1
+EXECUTIVE_RELATIVE = Path("work/100k.md")
+EXECUTIVE_MARKER = "<!-- GENERATED: TOOL-SHED-PROJECT-EXECUTIVE-VIEW-V1; DO NOT EDIT -->"
 TYPE_BY_NAMESPACE = {"IDEA": "idea-brief", "MAP": "project-map", "PRM": "program-roadmap", "CAMP": "campaign"}
 NAMESPACE_BY_TYPE = {value: key for key, value in TYPE_BY_NAMESPACE.items()}
 
@@ -359,3 +371,428 @@ def build(workspace: Path) -> dict[str, Any]:
         "loop_findings": loop_projection,
         "writes_performed": False,
     }
+
+
+def _canonical(value: object) -> bytes:
+    return json.dumps(
+        value, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+
+
+def _focus_coverage(
+    workspace: Path, authority: dict[str, Any], artifacts: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Project approved focus areas onto active campaigns without changing dashboard fields."""
+    catalog = campaign_queue.load_focus_area_catalog(workspace)
+    approved = catalog is not None and catalog.status == "approved"
+    names = {key: value.name for key, value in catalog.areas.items()} if approved and catalog else {}
+    assignments: dict[str, list[str]] = {}
+    decisions_needed: list[dict[str, str]] = []
+    if authority["authority"] == "sqlite":
+        with contextlib.closing(
+            hybrid_state.connect(hybrid_state.database_path(workspace), writable=False)
+        ) as connection:
+            rows = connection.execute(
+                "SELECT d.visible_id,d.metadata_json,r.body_markdown FROM document d "
+                "JOIN document_revision r ON r.document_id=d.id AND r.revision_number=d.current_revision "
+                "WHERE d.namespace='CAMP' AND d.lifecycle_state IN ('active','working','blocked')"
+            ).fetchall()
+        for row in rows:
+            metadata = json.loads(str(row["metadata_json"]))
+            values = [
+                *metadata.get("primary_focus_areas", []),
+                *metadata.get("supporting_focus_areas", []),
+            ]
+            assignments[str(row["visible_id"])] = sorted(set(map(str, values)))
+            match = re.search(r"(?m)^Decision:\s*(.+?)\s*$", str(row["body_markdown"]))
+            if match and match.group(1).casefold() not in {"none", "n/a", "pending"}:
+                decisions_needed.append({"campaign_id": str(row["visible_id"]), "decision": match.group(1)})
+    else:
+        for item in campaign_queue.load_all(workspace).values():
+            if item.status not in {"complete", "completed", "abandoned", "deferred"}:
+                assignments[item.campaign_id] = sorted(
+                    set([*item.primary_focus_areas, *item.supporting_focus_areas])
+                )
+                decision = item.fields.get("Decision", "")
+                if decision.casefold() not in {"", "none", "n/a", "pending"}:
+                    decisions_needed.append({"campaign_id": item.campaign_id, "decision": decision})
+    active_ids = {
+        item["visible_id"] for item in artifacts
+        if item["artifact_type"] == "campaign"
+        and item["document_lifecycle"] in {"active", "working", "blocked"}
+    }
+    areas = [
+        {
+            "focus_area_id": area_id,
+            "name": names[area_id],
+            "active_campaigns": sorted(
+                campaign_id for campaign_id in active_ids
+                if area_id in assignments.get(campaign_id, [])
+            ),
+        }
+        for area_id in sorted(names)
+    ]
+    return {
+        "catalog_state": "approved" if approved else "unavailable",
+        "areas": areas,
+        "unassigned_campaigns": sorted(
+            campaign_id for campaign_id in active_ids if not assignments.get(campaign_id)
+        ) if approved else [],
+        "decisions_needed": sorted(decisions_needed, key=lambda item: item["campaign_id"]),
+    }
+
+
+def _release_horizon(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
+    if authority["authority"] != "sqlite":
+        return {"available": False, "base_tag": None, "active_cohorts": []}
+    # Lazy import prevents the dashboard projection from acquiring release-cohort coupling.
+    import release_cohort
+
+    status = release_cohort.status(workspace)
+    return {
+        "available": True,
+        "base_tag": status["current_base_tag"],
+        "active_cohorts": [
+            {
+                "cycle_id": item["cycle_id"],
+                "lifecycle_state": item["lifecycle_state"],
+                "candidate_count": len(item["candidates"]),
+            }
+            for item in status["active"]
+        ],
+        "finding_count": status["finding_count"],
+    }
+
+
+def executive(workspace: Path) -> dict[str, Any]:
+    """Build the deterministic operator-facing 100k contract from canonical projections."""
+    workspace = workspace.resolve()
+    projection = build(workspace)
+    inventory = projection["work_inventory"]
+    artifacts = inventory["artifacts"]
+    authority = projection["authority"]
+    focus = _focus_coverage(workspace, authority, artifacts)
+    release = _release_horizon(workspace, authority)
+    if authority["authority"] == "sqlite":
+        audit = hybrid_state.audit(workspace)
+        source_revision = audit["current_revision"]
+        source_digest = audit["domain_digest"]
+    else:
+        source_revision = None
+        source_digest = hashlib.sha256(_canonical(projection)).hexdigest()
+
+    working = [
+        item for item in artifacts
+        if item["document_lifecycle"] == "working"
+    ]
+    ready_campaigns = [
+        item for item in artifacts
+        if item["artifact_type"] == "campaign"
+        and item["document_lifecycle"] in {"active", "working"}
+        and item["planning_readiness"] in {"ready", "working"}
+    ]
+    planned = [
+        item for item in artifacts
+        if item["artifact_type"] in {"program-roadmap", "idea-brief"}
+        and item["document_lifecycle"] == "active"
+        and item["planning_readiness"] in {"ready", "working"}
+    ]
+    recommendations = sorted(
+        [*working, *ready_campaigns, *planned],
+        key=lambda item: (
+            0 if item["document_lifecycle"] == "working" else 1,
+            item["planning_position"] if item["planning_position"] is not None else 10**9,
+            item["visible_id"],
+        ),
+    )
+    deduplicated: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for item in recommendations:
+        if item["artifact_id"] not in seen:
+            seen.add(item["artifact_id"])
+            deduplicated.append(item)
+
+    attention: list[dict[str, str]] = []
+    if inventory["truncated"]:
+        attention.append({
+            "code": "INVENTORY_TRUNCATED",
+            "summary": "The strategic ledger exceeded its safety bound and is not complete.",
+        })
+    if focus["unassigned_campaigns"]:
+        attention.append({
+            "code": "FOCUS_AREA_UNASSIGNED",
+            "summary": "Active campaigns lack an approved focus-area assignment: "
+            + ", ".join(focus["unassigned_campaigns"]),
+        })
+    for decision in focus["decisions_needed"]:
+        attention.append({
+            "code": "DECISION_NEEDED",
+            "summary": f"{decision['campaign_id']}: {decision['decision']}",
+        })
+    state = projection["state"]
+    for key, code, label in (
+        ("blocked_count", "BLOCKED_WORK", "blocked campaign(s)"),
+        ("closure_debt_count", "CLOSURE_DEBT", "closure debt item(s)"),
+        ("unreconciled_outcome_count", "OUTCOME_UNRECONCILED", "unreconciled outcome(s)"),
+        ("active_loop_finding_count", "LOOP_FINDINGS", "active loop finding(s)"),
+    ):
+        if state.get(key):
+            attention.append({"code": code, "summary": f"{state[key]} {label} require attention."})
+    if release.get("finding_count"):
+        attention.append({"code": "RELEASE_COHORT_INVALID", "summary": "Release cohort findings require attention."})
+
+    recent = sorted(
+        artifacts, key=lambda item: (item["updated_at"], item["visible_id"]), reverse=True
+    )[:10]
+    material = {
+        "projection": projection,
+        "source_revision": source_revision,
+        "source_digest": source_digest,
+        "focus_coverage": focus,
+        "release_horizon": release,
+        "attention": attention,
+        "recommendations": [item["artifact_id"] for item in deduplicated[:8]],
+        "recent": [item["artifact_id"] for item in recent],
+    }
+    return {
+        "schema_version": EXECUTIVE_SCHEMA_VERSION,
+        "kind": "tool-shed-project-executive-view",
+        "authority": authority,
+        "source_revision": source_revision,
+        "source_digest": source_digest,
+        "state_digest": hashlib.sha256(_canonical(material)).hexdigest(),
+        "latest_source_update": max((item["updated_at"] for item in artifacts), default=None),
+        "state": state,
+        "complete_accounting": not inventory["truncated"],
+        "inventory": inventory,
+        "focus_coverage": focus,
+        "release_horizon": release,
+        "attention": attention,
+        "recommendations": deduplicated[:8],
+        "recent_changes": recent,
+        "loop_findings": projection["loop_findings"],
+        "writes_performed": False,
+    }
+
+
+def _cell(value: object) -> str:
+    return str(value if value not in {None, ""} else "—").replace("|", "\\|").replace("\n", " ")
+
+
+def render_executive(view: dict[str, Any]) -> str:
+    state = view["state"]
+    lines = [
+        EXECUTIVE_MARKER,
+        "# 100k Project Executive View",
+        "",
+        "> This file is a deterministic, read-only projection. Do not edit it. Change Ideas, maps,",
+        "> PRMs, campaigns, outcomes, focus areas, or decisions in their authoritative Tool Shed",
+        "> surfaces, then refresh this view.",
+        "",
+        "## Executive Review",
+        "",
+        f"- Authority: `{view['authority']['authority']}` ({view['authority']['state']})",
+        f"- Source revision: `{_cell(view['source_revision'])}`",
+        f"- Source digest: `{view['source_digest']}`",
+        f"- View state digest: `{view['state_digest']}`",
+        f"- Latest material source update: `{_cell(view['latest_source_update'])}`",
+        f"- Accounting: **{'complete' if view['complete_accounting'] else 'INCOMPLETE'}** "
+        f"({view['inventory']['total_count']} strategic artifacts)",
+        "",
+        "The project direction remains in the current Project Maps and their owner-approved source",
+        "decisions. This view reports that world; it does not invent a strategy or choose work.",
+        "",
+        "### Project Health",
+        "",
+        "| Working | Ready | Blocked | Active ideas | Open outcomes | Unreconciled | Closure debt | Loop findings |",
+        "| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        f"| {state['working_count']} | {state['ready_count']} | {state['blocked_count']} | "
+        f"{state['active_idea_count']} | {state['open_outcome_count']} | "
+        f"{state['unreconciled_outcome_count']} | {state['closure_debt_count']} | "
+        f"{state['active_loop_finding_count']} |",
+        "",
+        "### Completion Horizon",
+        "",
+    ]
+    release = view["release_horizon"]
+    if not release["available"]:
+        lines.append("- Release cohort state is unavailable under file authority.")
+    else:
+        lines.append(f"- Current release base: `{_cell(release['base_tag'])}`")
+        if release["active_cohorts"]:
+            for cohort in release["active_cohorts"]:
+                lines.append(
+                    f"- Cohort `{cohort['cycle_id']}`: {cohort['lifecycle_state']}; "
+                    f"{cohort['candidate_count']} candidate(s); next governed transition is Work5."
+                )
+        else:
+            lines.append("- No active release cohort; no Work2 candidate is awaiting Work5.")
+    lines.extend(["", "### Recommended Next-Cycle Review", ""])
+    if view["recommendations"]:
+        for item in view["recommendations"]:
+            position = f"planning position {item['planning_position']}" if item["planning_position"] else "derived order"
+            lines.append(
+                f"- `{item['visible_id']}` — {item['title']} ({item['document_lifecycle']}; "
+                f"{item['planning_readiness']}; {position})"
+            )
+        lines.append("- Operator decision remains required before selecting or changing the next cycle.")
+    else:
+        lines.append("- No ready or working strategic cycle is currently projected.")
+    lines.extend(["", "### Attention", ""])
+    if view["attention"]:
+        lines.extend(f"- **{item['code']}**: {item['summary']}" for item in view["attention"])
+    else:
+        lines.append("- No projected accounting, focus, outcome, closure, loop, or cohort attention signal.")
+    lines.extend(["", "### Recent Material Changes", ""])
+    for item in view["recent_changes"]:
+        lines.append(
+            f"- `{item['updated_at']}` `{item['visible_id']}` — {item['title']} "
+            f"({item['document_lifecycle']})"
+        )
+    if not view["recent_changes"]:
+        lines.append("- None.")
+    lines.extend(["", "## Focus-Area Coverage", ""])
+    focus = view["focus_coverage"]
+    if focus["catalog_state"] != "approved":
+        lines.append("- No approved focus-area catalog is available.")
+    else:
+        lines.extend(["| Focus area | Active campaigns |", "| --- | --- |"])
+        for area in focus["areas"]:
+            campaigns = ", ".join(f"`{value}`" for value in area["active_campaigns"]) or "—"
+            lines.append(f"| `{area['focus_area_id']}` — {area['name']} | {campaigns} |")
+    lines.extend([
+        "", "## Complete Strategic Ledger", "",
+        "Every canonical Idea, Project Map, Program Roadmap, and Campaign appears below. Use the",
+        "existing status, overview, order, relationship, outcome, and loop commands for drill-down.",
+        "",
+        "| ID | Type | Lifecycle | Readiness/order | Outcome | Reconciliation | Closure | Parents | Produces | Title |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    ])
+    for item in view["inventory"]["artifacts"]:
+        planning = item["planning_readiness"]
+        if item["planning_position"] is not None:
+            planning += f"/{item['planning_position']}"
+        closure = item["closure_status"]
+        closure_text = "closed" if closure["effective_closed"] else closure["local_closure"]
+        lines.append(
+            "| " + " | ".join(_cell(value) for value in (
+                f"`{item['visible_id']}`", item["artifact_type"], item["document_lifecycle"],
+                planning, f"{item['outcome_lifecycle']}/{item['outcome_disposition']}",
+                item["reconciliation_state"], closure_text,
+                ", ".join(item["parent_ids"]), ", ".join(item["produces_ids"]), item["title"],
+            )) + " |"
+        )
+    lines.extend([
+        "", "## Active Loop Findings", "",
+        f"Active findings: {view['loop_findings']['total_active_count']}", "",
+    ])
+    findings = view["loop_findings"].get("findings", [])
+    if findings:
+        for item in findings:
+            lines.append(f"- `{_cell(item.get('finding_id') or item.get('id'))}` — {_cell(item.get('summary') or item.get('finding_class'))}")
+    else:
+        lines.append("- None.")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def expected_executive_markdown(workspace: Path) -> tuple[dict[str, Any], str]:
+    view = executive(workspace)
+    return view, render_executive(view)
+
+
+def check_executive(workspace: Path, output: Path = EXECUTIVE_RELATIVE) -> dict[str, Any]:
+    workspace = workspace.resolve()
+    absolute = authority_resolver.require_path_within(workspace, workspace / output)
+    view, expected = expected_executive_markdown(workspace)
+    observed = absolute.read_bytes() if absolute.is_file() else None
+    expected_bytes = expected.encode("utf-8")
+    state = "missing" if observed is None else "current" if observed == expected_bytes else "stale"
+    if not view["complete_accounting"]:
+        state = "incomplete"
+    return {
+        "schema_version": EXECUTIVE_SCHEMA_VERSION,
+        "kind": "tool-shed-project-executive-check",
+        "path": absolute.relative_to(workspace).as_posix(),
+        "state": state,
+        "valid": state == "current",
+        "complete_accounting": view["complete_accounting"],
+        "source_revision": view["source_revision"],
+        "source_digest": view["source_digest"],
+        "state_digest": view["state_digest"],
+        "expected_sha256": hashlib.sha256(expected_bytes).hexdigest(),
+        "observed_sha256": hashlib.sha256(observed).hexdigest() if observed is not None else None,
+        "writes_performed": False,
+    }
+
+
+def refresh_executive(workspace: Path, output: Path = EXECUTIVE_RELATIVE) -> dict[str, Any]:
+    workspace = workspace.resolve()
+    absolute = authority_resolver.require_path_within(workspace, workspace / output)
+    if absolute.is_file() and not absolute.read_text(encoding="utf-8").startswith(EXECUTIVE_MARKER):
+        raise ProjectProjectionError(
+            f"refusing to overwrite non-generated executive view: {absolute.relative_to(workspace)}"
+        )
+    view, content = expected_executive_markdown(workspace)
+    absolute.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary_name = tempfile.mkstemp(prefix=f".{absolute.name}.", dir=absolute.parent)
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as handle:
+            handle.write(content)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, absolute)
+    finally:
+        temporary.unlink(missing_ok=True)
+    return {
+        "schema_version": EXECUTIVE_SCHEMA_VERSION,
+        "kind": "tool-shed-project-executive-refresh",
+        "path": absolute.relative_to(workspace).as_posix(),
+        "source_revision": view["source_revision"],
+        "source_digest": view["source_digest"],
+        "state_digest": view["state_digest"],
+        "sha256": hashlib.sha256(content.encode("utf-8")).hexdigest(),
+        "complete_accounting": view["complete_accounting"],
+        "writes_performed": True,
+    }
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--workspace", default=".")
+    parser.add_argument("--json", action="store_true")
+    commands = parser.add_subparsers(dest="command", required=True)
+    commands.add_parser("100k")
+    refresh = commands.add_parser("render-100k")
+    refresh.add_argument("--output", type=Path, default=EXECUTIVE_RELATIVE)
+    check = commands.add_parser("check-100k")
+    check.add_argument("--output", type=Path, default=EXECUTIVE_RELATIVE)
+    return parser
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    workspace = Path(args.workspace).expanduser().resolve()
+    try:
+        if args.command == "100k":
+            view, markdown = expected_executive_markdown(workspace)
+            if args.json:
+                print(json.dumps(view, indent=2, sort_keys=True))
+            else:
+                print(markdown, end="")
+            return 0 if view["complete_accounting"] else 1
+        if args.command == "render-100k":
+            result = refresh_executive(workspace, args.output)
+        else:
+            result = check_executive(workspace, args.output)
+        print(json.dumps(result, indent=2, sort_keys=True) if args.json else (
+            f"100k executive view: {result.get('state', 'refreshed')} ({result['path']})"
+        ))
+        return 0 if result.get("valid", result["complete_accounting"]) else 1
+    except (ProjectProjectionError, OSError, ValueError, json.JSONDecodeError) as error:
+        print(f"Project executive view failed: {error}", file=sys.stderr)
+        return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

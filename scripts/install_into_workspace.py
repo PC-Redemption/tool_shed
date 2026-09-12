@@ -739,6 +739,13 @@ def main() -> int:
         print(f"Release capability convergence failed: {error}", file=sys.stderr)
         return 1
     print(release_convergence.render_human(convergence))
+    executive_script = Path(__file__).resolve().with_name("project_projection.py")
+    if executive_script.is_file():
+        subprocess.run(
+            [sys.executable, str(executive_script), "--workspace", str(root), "render-100k"],
+            check=True,
+            stdout=subprocess.DEVNULL,
+        )
 
     print(f"Initialized work tree under {root / 'work'}")
     identity_state = "created" if identity_created else "preserved"

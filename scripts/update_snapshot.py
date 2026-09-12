@@ -102,6 +102,7 @@ WORK_MUTABLE_FILES = (
     "work/README.md",
     "work/index.md",
     "work/index.json",
+    "work/100k.md",
     "work/00-campaigns/active-queue.md",
     "work/00-campaigns/completed-queue.md",
 )
@@ -1665,6 +1666,16 @@ def post_install_checks(
             )
             closure_results.append(json.loads(verified.stdout))
         results["bootstrap_closures"] = closure_results
+        executive = target / "scripts" / "project_projection.py"
+        if not executive.is_file():
+            raise UpdateError("protocol 4 release is missing scripts/project_projection.py")
+        executive_result = run(
+            [sys.executable, "-B", str(executive), "--workspace", str(workspace), "--json", "render-100k"],
+            cwd=workspace,
+            timeout=validation_timeout,
+            timeout_option="--validation-timeout",
+        )
+        results["project_executive_view"] = json.loads(executive_result.stdout)
         doctor = target / "scripts" / "doctor.py"
         if not doctor.is_file():
             raise UpdateError("updater protocol 4 release is missing scripts/doctor.py")

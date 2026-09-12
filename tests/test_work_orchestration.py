@@ -428,6 +428,25 @@ class WorkOrchestrationTests(unittest.TestCase):
         with self.assertRaisesRegex(work_orchestration.WorkOrchestrationError, "unrelated"):
             work_orchestration._checkpoint_commit(self.workspace, "must refuse")
 
+    def test_checkpoint_commit_includes_refreshed_100k_projection(self) -> None:
+        hybrid_binding = binding_token(self.workspace, operation="hybrid-state")
+        work_orchestration._logical_checkpoint(
+            self.workspace, project_binding=hybrid_binding
+        )
+        executive = self.workspace / work_orchestration.project_projection.EXECUTIVE_RELATIVE
+        executive.write_text("generated fixture\n", encoding="utf-8")
+        result = work_orchestration._checkpoint_commit(
+            self.workspace, "Checkpoint executive view"
+        )
+        tracked = subprocess.run(
+            ["git", "show", "--pretty=format:", "--name-only", result["commit"]],
+            cwd=self.workspace,
+            text=True,
+            stdout=subprocess.PIPE,
+            check=True,
+        ).stdout.splitlines()
+        self.assertIn("work/100k.md", tracked)
+
     def test_strict_doctor_failure_is_an_exception(self) -> None:
         with mock.patch.object(
             work_orchestration.doctor,

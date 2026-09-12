@@ -28,6 +28,7 @@ import ci_validation_policy
 import document_store
 import doctor
 import hybrid_state
+import project_projection
 import release_cohort
 import work_level_config
 try:
@@ -775,7 +776,7 @@ def _checkpoint_commit(workspace: Path, message: str) -> dict[str, Any]:
         raise WorkOrchestrationError("logical checkpoint file does not exist")
     payload = json.loads(checkpoint.read_text(encoding="utf-8"))
     referenced = set(payload.get("envelope", {}).get("objects", []))
-    allowed = {relative, *referenced}
+    allowed = {relative, project_projection.EXECUTIVE_RELATIVE.as_posix(), *referenced}
     status = _git(workspace, "status", "--porcelain=v1", "--untracked-files=all").stdout.splitlines()
     changed = [line[3:] for line in status]
     unrelated = [path for path in changed if path not in allowed]
@@ -913,6 +914,21 @@ def closeout(
                     accepted_outcome=None,
                     summary=None,
                 ),
+                resume=resume,
+            )
+            phases.append(result)
+
+            executive_before = release_cohort.status(workspace)
+            result, _ = _run_phase(
+                workspace,
+                run_id=run_id,
+                phase_id="refresh-project-executive-view",
+                input_material={
+                    "revision": executive_before["revision"],
+                    "domain_digest": executive_before["domain_digest"],
+                    "cohort_state_token": executive_before["state_token"],
+                },
+                action=lambda: project_projection.refresh_executive(workspace),
                 resume=resume,
             )
             phases.append(result)

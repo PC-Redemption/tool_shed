@@ -271,6 +271,13 @@ one exact content SHA, attaches verified publication evidence to every registere
 finalize until each recorded chain reconciles through its originating Idea. See
 [`docs/release-cohort-closed-loop.md`](docs/release-cohort-closed-loop.md).
 
+The standard `work/100k.md` Project Executive View turns that same canonical project world into one
+easy-to-find operator review: concise direction, health, completion horizon, attention, changes,
+next-cycle candidates, focus coverage, and an exhaustive Idea/Map/PRM/Campaign ledger. It is a
+deterministic projection, not another authority or queue. Use `ts: 100k` to read it and
+`scripts/project_projection.py` to render or check it. See the
+[`100k Project Executive View contract`](docs/project-executive-view.md).
+
 Hybrid schema 4 adds persisted, deduplicated outcome-loop findings; schema 5 expands current-state
 discovery to blocked or stalled outcomes, reconciliation and result-propagation gaps, invalid
 lineage, missing, stale, or failed closure evidence, and lifecycle/body drift across durable work
@@ -586,7 +593,8 @@ During installation or upgrade, Tool Shed copies and byte-verifies every file fr
 `work/q&a/` and root `q&a/` into `work/01-q&a/`. Name collisions are preserved with
 source-specific filenames; the old folders are removed only after verification.
 
-Use `ts: status`, `ts: next`, `ts: add <idea>`, `ts: unblock <campaign>`, `ts: defer <campaign>`,
+Use `ts: 100k` for the standard whole-project review. Use `ts: status`, `ts: next`,
+`ts: add <idea>`, `ts: unblock <campaign>`, `ts: defer <campaign>`,
 `ts: abandon <campaign>`, `ts: reconcile campaigns`, and `ts: completed`. Deterministic mutations
 require the current project binding plus current project-and-root-bound state token and reject
 stale or foreign-project writes. In owner-queue requests, `camp` aliases `campaign`, while `que N`

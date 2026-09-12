@@ -80,6 +80,22 @@ project truth. If the runner fails, diagnose and record the failure, then use th
 callable underlying command only as an explicit bounded fallback; never interpret runner failure as
 permission to skip the check. See `docs/work-orchestration.md`.
 
+## 100k Project Executive View
+
+Treat `ts: 100k` as the standard read-only operator review of the whole local project. Run
+`scripts/project_projection.py --workspace . 100k` and present its concise executive section before
+the exhaustive ledger. The projection recommends candidates for the next cycle but never selects,
+starts, prioritizes, or completes work. Existing status, overview, order, relationship, outcome,
+and loop commands remain the machine and drill-down interfaces.
+
+`work/100k.md` is a tracked deterministic projection, never document authority. Use `render-100k`
+to refresh it atomically and `check-100k` to detect missing, stale, manually edited, or incomplete
+content. The renderer refuses to overwrite a file without its exact generated marker. Refresh the
+view after authoritative Idea, map, PRM, campaign, outcome, reconciliation, closure, focus-area, or
+release-cohort changes and before a checkpoint. Strict Doctor reports stale 100k state as an error;
+Work2 closeout refreshes it after release-cohort registration so the committed checkpoint describes
+the actual completion horizon.
+
 Work3 documentation alignment is limited to the requested candidate scope. Preserve unrelated
 owner documentation and historical records; delete documentation only when the coded change makes
 it obsolete and the deletion is within the authorized scope.

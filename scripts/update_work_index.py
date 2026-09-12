@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 
-SKIP_NAMES = {"README.md", "index.md", "active-queue.md", "completed-queue.md"}
+SKIP_NAMES = {"README.md", "100k.md", "index.md", "active-queue.md", "completed-queue.md"}
 HEADER_KEYS = {
     "Status",
     "Type",
