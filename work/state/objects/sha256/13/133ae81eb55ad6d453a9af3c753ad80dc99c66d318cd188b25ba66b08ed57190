@@ -1,0 +1,96 @@
+# Project Map: Simplify and Consolidate Tool Shed
+
+Status: completed
+Type: project-map
+Updated: 2026-09-11
+Next Action: execute the consolidation-foundation roadmap through Work2
+Source Idea: IDEA-0027
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 2
+Reviewed Body SHA256: a12a3f5ca9cd8d7fceb4ac8897e15bb9182f70948304e80b96405a20d598350c
+
+## Purpose
+
+Reduce Tool Shed's conceptual and implementation surface before making the 100k view a standard
+feature. Preserve the mature authority, lifecycle, outcome, recovery, portability, and delivery
+contracts while replacing duplicated project-world interpretation with one reusable projection.
+
+## Desired Outcome
+
+Tool Shed has an explicit capability/disposition inventory, measured reduction rules, and one
+authority-aware project projection that produces both the concise executive state and exhaustive
+lifecycle ledger. Existing dashboard behavior remains compatible, the seam is proven on Linux and
+Windows at the exact Work2 candidate, and IDEA-0028 can consume the projection without adding a
+second project model or duplicating current overview/status surfaces.
+
+## Visual Map
+
+```mermaid
+flowchart TD
+  I[IDEA-0027: simplify first] --> C[Capability and disposition contract]
+  C --> B[Measured reduction budget]
+  C --> P[One canonical project projection]
+  P --> S[Executive summary]
+  P --> L[Exhaustive lifecycle ledger]
+  S --> D[Existing dashboard compatibility]
+  L --> D
+  D --> Q[Linux and Windows Work2 proof]
+  Q --> K[IDEA-0028 100k handoff]
+```
+
+## Settled Direction
+
+- Inventory capability families, ownership layers, and disposition rather than optimizing raw
+  script count. Narrow guarded entry points may remain when they make safety boundaries clearer.
+- Introduce one pure read-side project projection contract. It resolves authority once and returns
+  the executive summary and exhaustive lifecycle inventory from the same canonical interpretation.
+- Keep dashboard wire formats compatible while routing its state and inventory through the shared
+  projection. Retain temporary private wrappers only as compatibility shims for existing callers.
+- Treat runtime-code growth as a budget: a new feature must reuse, replace, or retire an overlapping
+  surface, or explicitly justify and test a net-new capability.
+- Protect identity, authority, lifecycle, outcomes, planning order, closure, privacy, recovery,
+  stale-state refusal, and provider portability. This is incremental convergence, not a rewrite.
+- Keep the operator-facing 100k document and workflow in IDEA-0028. This map supplies its canonical
+  input contract and records the surfaces it must replace or absorb.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Capability architecture | Capability-family inventory, layer ownership, disposition, baselines, reduction rules | current repository evidence |
+| Project projection | One authority-aware builder for executive summary and lifecycle ledger | authority resolver, document and outcome stores |
+| Consumer convergence | Dashboard consumes the shared projection with wire compatibility and one project-state read per report | project projection |
+| Qualification and handoff | Focused parity, strict health, exact Linux/Windows Work2 proof, and explicit 100k replacement boundary | all prior workstreams |
+
+## Readiness Gate Transfer
+
+1. `G1-CAPABILITY-DISPOSITION-AND-BASELINE` — inventory and measured reduction contract.
+2. `G2-ONE-PROJECT-PROJECTION` — canonical executive-summary plus lifecycle-ledger projection.
+3. `G3-PARITY-AND-SAFETY` — behavior, invariant, privacy, and cross-platform proof.
+4. `G4-100K-HANDOFF-BOUNDARY` — downstream consumption and replacement constraints for IDEA-0028.
+
+## Program Shape
+
+Deliver one bounded Work2 candidate: establish the contract, implement the projection seam, move
+the dashboard consumer, prove parity and one-read construction, deploy the exact commit to every
+configured development target, register the release cohort, and checkpoint the governing chain.
+Broader command retirement remains a later evidence-driven consolidation cycle, not hidden scope.
+
+## Constraints And Non-Goals
+
+- No wholesale rewrite, authority migration, public command removal, production release, or client
+  synchronization in this Work2 cycle.
+- Do not count moved lines as reduction. Report runtime-code delta, eliminated duplicate
+  interpretations, number of canonical project-state builders, and retained compatibility shims.
+- Do not let a presentation concern become authority. The projection is derived, bounded, and
+  privacy-safe; SQLite/file state and established lifecycle mechanisms remain authoritative.
+- Do not implement the 100k user experience here. IDEA-0028 remains the owning brief for that work.
+
+## Completion Boundary
+
+This map is complete when all four transferred gates pass: the consolidation contract is durable;
+the dashboard uses one canonical projection for summary and inventory without contract drift; file
+and SQLite fixtures plus strict health and configured Linux/Windows development checks pass at the
+exact commit; the candidate is registered and checkpointed; and IDEA-0028's dependency/handoff is
+updated without starting its implementation.
+

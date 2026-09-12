@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-production-release-evidence",
+  "release": {
+    "version": "0.54.0",
+    "tag": "v0.54.0",
+    "content_commit": "1e242ec09675cacea4353378bb63d122406e49e7",
+    "provenance_commit": "b33751811ae648473fc65bc82216f7ce6b029cc4",
+    "published_at": "2026-09-12T00:33:54Z",
+    "url": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.54.0"
+  },
+  "qualification": {
+    "canonical_release_validation": "657 of 657 tests passed",
+    "validate_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34661669093",
+    "validate_jobs": "33 of 33 passed for the exact content commit; none failed",
+    "publish_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34662044191",
+    "result": "passed"
+  },
+  "web_production": {
+    "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com",
+    "image": "tool-shed-dashboard:v0.54.0",
+    "image_sha256": "b1c5275d09b155ca4d179bfc0fc41f572a79d1a26cff57466c72df79870d9446",
+    "database_backup": "/home/jon/docker/ts.rookaro.com/backups/dashboard-daily-20260912T003532Z.dump.age",
+    "rollback_bundle": "/home/jon/docker/ts.rookaro.com.rollback-v0.53.0-20260912T0035Z",
+    "public_routes": "8 representative documentation, reference, and dashboard health routes returned HTTP 200",
+    "router_identity": "ts.rookaro.com",
+    "production_readiness": "healthy",
+    "result": "passed"
+  },
+  "linux_production": {
+    "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed",
+    "installed_version": "0.54.0",
+    "content_commit": "1e242ec09675cacea4353378bb63d122406e49e7",
+    "provenance_commit": "b33751811ae648473fc65bc82216f7ce6b029cc4",
+    "backup": "/home/jon/dev/ts_linux_test_bed/tool_shed.backup-20260912T003717Z.tar",
+    "transaction_id": "bbba694e2e720173e0061c48",
+    "updater_validation": "attested-focused-smoke",
+    "hybrid_state": "CLEAN at schema 6 revision 31",
+    "work_preserved": true,
+    "result": "passed"
+  },
+  "windows_production": {
+    "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed",
+    "installed_version": "0.54.0",
+    "content_commit": "1e242ec09675cacea4353378bb63d122406e49e7",
+    "provenance_commit": "b33751811ae648473fc65bc82216f7ce6b029cc4",
+    "backup": "E:\\dev\\ts_windows_test_bed\\tool_shed.backup-20260912T003830Z.tar",
+    "transaction_id": "4e005e21ac07a42e231e5df8",
+    "updater_validation": "attested-focused-smoke cache hit under Python 3.14.6",
+    "hybrid_state": "CLEAN at schema 6 revision 27",
+    "installed_codex_skill": "current and synchronized",
+    "work_preserved": true,
+    "result": "passed"
+  },
+  "installed_codex_skill": {
+    "source": "/home/jon/docker/tool_shed/skills/tool-shed",
+    "target": "/home/jon/.codex/skills/tool-shed",
+    "validation": "canonical and installed quick validation passed; recursive exact diff is empty",
+    "changed": false,
+    "result": "passed"
+  },
+  "release_learnings": [
+    {
+      "classification": "local-environment",
+      "symptom": "the first local release invocation used system Python without the dashboard dependency",
+      "mitigation": "reran the complete release profile with the repository .venv; 657 of 657 tests passed"
+    },
+    {
+      "classification": "deterministic-projection",
+      "symptom": "release validation detected stale disposable database-owned lifecycle views",
+      "mitigation": "regenerated the views from Hybrid revision 1602 and reran the full release profile successfully"
+    }
+  ],
+  "result": "passed"
+}
