@@ -39,18 +39,42 @@ guarded route for the selected source.
 
 ```bash
 python3 scripts/project_projection.py --workspace . 100k
+python3 scripts/project_projection.py --workspace . 100k setup
 python3 scripts/project_projection.py --workspace . 100k ledger
 python3 scripts/project_projection.py --workspace . render-100k
 python3 scripts/project_projection.py --workspace . check-100k
 ```
 
-The first command renders the concise view without writing. The ledger form renders exhaustive
+The first command renders the concise view without writing. The setup form renders a bounded,
+read-only evidence packet and seven-section proposal scaffold. It lists conventional owner
+orientation documents and current/recent canonical artifact identities but does not interpret,
+accept, or persist strategy. The ledger form renders exhaustive
 Idea/Map/PRM/Campaign lifecycle, planning, outcome, reconciliation, closure, parent, and produces
 state without writing. `render-100k` atomically refreshes the tracked main view and refuses to
 overwrite content that lacks the generated marker. `check-100k` compares exact expected bytes and
 fails for missing, stale, manually edited, or truncated accounting. Strict Doctor applies the same
 freshness gate. Installation, snapshot update, and Work2 release-cohort registration refresh the
 projection at their controlled checkpoints.
+
+## Guided First-Run Setup
+
+When executive intent is missing or incomplete, the main view names `ts: 100k setup` as its next
+route. The guided route:
+
+1. runs the deterministic setup projection;
+2. inspects the named README/architecture/strategy/vision/goals/roadmap/project sources and the
+   relevant canonical artifacts;
+3. presents one exact proposal covering all seven executive-intent sections while leaving
+   uncertainties visible;
+4. asks the owner to accept or revise the proposal; and
+5. only after explicit acceptance, persists the proposal through the active authority and refreshes
+   `work/100k.md`.
+
+A bare review, installer, or snapshot upgrade never performs step 5. Under file authority, upgrade
+discovery recursively recognizes `work/**/*.md` documents with a supported Tool Shed `Type:`. Under
+SQLite authority, it reads managed `IDEA`, `MAP`, `PRM`, and `CAMP` documents and their current
+operational state. Other project documentation remains evidence, not an implicitly converted
+artifact or accepted strategy.
 
 Rendering is deterministic: it contains source timestamps and digests, not the current wall clock.
 Under Hybrid authority it reads the active intent decision, database-owned documents, and outcome

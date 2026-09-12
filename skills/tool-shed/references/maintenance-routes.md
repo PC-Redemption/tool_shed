@@ -113,6 +113,14 @@ SQLite writes, not just reads. Treat the reported document-authority conversion 
 decision: require its verified archive outside the workspace and do not infer approval from an
 install or update request. Optional semantic enrichment is never automatic.
 
+After installation or snapshot update, the selected release regenerates `work/100k.md`. Its
+project projection automatically discovers supported `idea-brief`, `project-map`,
+`program-roadmap`, and `campaign` artifacts from preserved `work/**/*.md` under file authority, or
+managed `IDEA`, `MAP`, `PRM`, and `CAMP` documents under SQLite authority. It never converts
+arbitrary project documentation into artifacts. When executive intent is missing or incomplete,
+the generated view points to the separate read-only `ts: 100k setup` guided proposal route; upgrade
+authorization alone never accepts or persists that semantic proposal.
+
 ## Codex Reasoning Extension
 
 This section applies only when the current product is Codex and the request explicitly targets

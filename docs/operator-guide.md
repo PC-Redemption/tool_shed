@@ -464,6 +464,11 @@ the named intent or operational source, then refresh with
 `python3 scripts/project_projection.py --workspace . render-100k`. Use `check-100k` to test exact
 freshness. Manual edits are intentionally rejected or reported stale, so 100k cannot become a
 second authority. The suggested next-cycle list is decision support; the operator still chooses.
+When intent is missing or incomplete, `ts: 100k` points to `ts: 100k setup`. Setup discovers a
+bounded list of conventional orientation documents and canonical artifact evidence, preserves any
+existing intent sections, and presents one exact seven-section proposal. It performs no write.
+Only an explicit owner acceptance authorizes persisting that proposal through the current file or
+SQLite authority and refreshing the view.
 Use `ts: 100k ledger` or `python3 scripts/project_projection.py --workspace . 100k ledger` for the
 exhaustive deterministic Idea/Map/PRM/Campaign accounting drill-down; it is not part of the main
 executive view.
@@ -475,6 +480,12 @@ metadata role `project-executive-intent-v1` and preferred path
 maps, PRMs, campaigns, decisions, relationships, outcomes, evidence, and closure retain their
 existing authority. Missing or incomplete intent appears as an owner decision. Multiple active
 intent sources fail closed.
+
+Installation and snapshot upgrades preserve owner-authored `work/`, then regenerate 100k. Under
+file authority, discovery recursively recognizes Markdown artifacts declaring `Type: idea-brief`,
+`project-map`, `program-roadmap`, or `campaign`. Under SQLite authority, it reads the managed
+`IDEA`, `MAP`, `PRM`, and `CAMP` namespaces. Arbitrary documentation is not silently converted into
+Tool Shed artifacts, and an upgrade never accepts or persists inferred executive intent.
 
 `ts: overview`, `ts: status`, and `ts: next` render one shared Cycle State Capsule in human and
 JSON output. With no ready campaign, it checks Dangler Resolution, a persisted exact campaign plan

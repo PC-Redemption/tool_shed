@@ -165,6 +165,37 @@ class ProjectProjectionTests(unittest.TestCase):
             with self.assertRaisesRegex(project_projection.ProjectProjectionError, "must declare"):
                 project_projection._executive_intent(workspace, {"authority": "file"})
 
+    def test_file_inventory_rediscovers_supported_existing_project_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary)
+            work = workspace / "work"
+            (work / "maps").mkdir(parents=True)
+            (work / "maps" / "map-0007-existing.md").write_text(
+                "# MAP-0007 Existing Direction\n\n"
+                "Status: active\nType: project-map\nUpdated: 2026-09-12\n",
+                encoding="utf-8",
+            )
+            (work / "notes.md").write_text(
+                "# Notes\n\nStatus: active\nType: checklist\nUpdated: 2026-09-12\n",
+                encoding="utf-8",
+            )
+            with mock.patch.object(
+                project_projection.planning_order,
+                "file_projection",
+                return_value={"items": []},
+            ), mock.patch.object(
+                project_projection.authority_resolver,
+                "file_artifact_id",
+                return_value="artifact-map-7",
+            ):
+                inventory = project_projection._inventory(
+                    workspace, {"authority": "file"}
+                )
+
+        self.assertEqual(1, inventory["total_count"])
+        self.assertEqual("MAP-0007", inventory["artifacts"][0]["visible_id"])
+        self.assertEqual("project-map", inventory["artifacts"][0]["artifact_type"])
+
     def test_sqlite_executive_intent_reuses_managed_decision_document(self) -> None:
         connection = sqlite3.connect(":memory:")
         connection.row_factory = sqlite3.Row
@@ -205,6 +236,8 @@ class ProjectProjectionTests(unittest.TestCase):
             ):
                 refreshed = project_projection.refresh_executive(workspace)
                 self.assertTrue(refreshed["writes_performed"])
+                self.assertEqual("current", refreshed["executive_intent_state"])
+                self.assertIsNone(refreshed["next_route"])
                 self.assertEqual("current", project_projection.check_executive(workspace)["state"])
                 path = workspace / project_projection.EXECUTIVE_RELATIVE
                 path.write_text(expected + "manual\n", encoding="utf-8")
@@ -233,23 +266,90 @@ class ProjectProjectionTests(unittest.TestCase):
                 project_projection.refresh_executive(workspace)
             self.assertEqual(expected, path.read_text(encoding="utf-8"))
 
+    def test_refresh_surfaces_setup_route_when_intent_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary)
+            view = self.executive_fixture()
+            view["executive_intent"] = project_projection._missing_executive_intent()
+            expected = project_projection.render_executive(view)
+            with mock.patch.object(
+                project_projection,
+                "expected_executive_markdown",
+                return_value=(view, expected),
+            ):
+                refreshed = project_projection.refresh_executive(workspace)
+                checked = project_projection.check_executive(workspace)
+        self.assertEqual("missing", refreshed["executive_intent_state"])
+        self.assertEqual("ts: 100k setup", refreshed["next_route"])
+        self.assertEqual("ts: 100k setup", checked["next_route"])
+
     def test_missing_intent_is_an_explicit_decision_signal(self) -> None:
         view = self.executive_fixture()
-        view["executive_intent"] = {
-            "state": "missing", "identity": None, "revision": None,
-            "updated_at": None, "north_star": None, "completion_horizon": None,
-            "strategic_context": None, "priorities": [], "non_goals": [],
-            "decisions_needed": [], "review_triggers": [], "missing_sections": [],
-        }
+        view["executive_intent"] = project_projection._missing_executive_intent()
         rendered = project_projection.render_executive(view)
         self.assertIn("EXECUTIVE_INTENT_MISSING", rendered)
         self.assertIn("**Not established.**", rendered)
+        self.assertIn("`ts: 100k setup`", rendered)
+
+    def test_setup_discovers_evidence_but_requires_owner_acceptance(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary)
+            (workspace / "README.md").write_text("# Fixture\n", encoding="utf-8")
+            (workspace / "docs").mkdir()
+            (workspace / "docs" / "strategy.md").write_text("# Strategy\n", encoding="utf-8")
+            view = self.executive_fixture()
+            view["executive_intent"] = project_projection._missing_executive_intent()
+            before = sorted(path.relative_to(workspace) for path in workspace.rglob("*"))
+            setup = project_projection.executive_intent_setup(workspace, view)
+            rendered = project_projection.render_intent_setup(setup)
+            after = sorted(path.relative_to(workspace) for path in workspace.rglob("*"))
+
+        self.assertEqual(before, after)
+        self.assertEqual("owner-review-required", setup["state"])
+        self.assertTrue(setup["owner_acceptance_required"])
+        self.assertEqual(
+            [heading for _, heading in project_projection.EXECUTIVE_INTENT_SECTIONS],
+            setup["missing_sections"],
+        )
+        self.assertEqual(["README.md", "docs/strategy.md"], setup["orientation_sources"])
+        self.assertEqual("CAMP-0001", setup["artifact_evidence"][0]["visible_id"])
+        self.assertIn("## Acceptance Boundary", rendered)
+        self.assertIn("A workspace upgrade or bare `ts: 100k` read never performs step 4.", rendered)
+
+    def test_setup_reports_existing_intent_without_requesting_a_replacement(self) -> None:
+        setup = project_projection.executive_intent_setup(
+            Path("/fixture"), self.executive_fixture()
+        )
+        self.assertEqual("already-established", setup["state"])
+        self.assertFalse(setup["owner_acceptance_required"])
+        self.assertEqual([], setup["missing_sections"])
+
+    def test_setup_preserves_existing_sections_and_proposes_only_incomplete_gaps(self) -> None:
+        view = self.executive_fixture()
+        intent = dict(view["executive_intent"])
+        intent.update({
+            "state": "incomplete",
+            "decisions_needed": [],
+            "missing_sections": ["Decisions Needed"],
+        })
+        view["executive_intent"] = intent
+        setup = project_projection.executive_intent_setup(Path("/fixture"), view)
+        rendered = project_projection.render_intent_setup(setup)
+        self.assertEqual(["Decisions Needed"], setup["missing_sections"])
+        self.assertEqual(
+            "Keep the whole project pointed at the owner outcome.",
+            setup["existing_values"]["north_star"],
+        )
+        self.assertIn("Keep the whole project pointed at the owner outcome.", rendered)
+        self.assertIn("### Decisions Needed\n\n- [Owner decision required", rendered)
 
     def test_parser_routes_ledger_as_an_explicit_drill_down(self) -> None:
         review = project_projection.build_parser().parse_args(["100k"])
         ledger = project_projection.build_parser().parse_args(["100k", "ledger"])
+        setup = project_projection.build_parser().parse_args(["100k", "setup"])
         self.assertEqual("review", review.section)
         self.assertEqual("ledger", ledger.section)
+        self.assertEqual("setup", setup.section)
 
 
 if __name__ == "__main__":

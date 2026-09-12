@@ -99,6 +99,15 @@ The role owns only that executive framing; existing artifacts and outcome state 
 execution, evidence, and completion truth. Missing or incomplete intent is a decision signal.
 Multiple active intent documents or a malformed file-authority identity fail closed.
 
+When the intent state is missing or incomplete, bare `ts: 100k` remains read-only and points to
+`ts: 100k setup`. For that guided route, run
+`scripts/project_projection.py --workspace . 100k setup`. Inspect only the bounded conventional
+orientation sources and relevant canonical artifacts named by the result, then present one exact
+proposal containing all seven sections while preserving existing sections and visible uncertainty.
+Ask the owner to accept or revise the proposal. Only explicit acceptance authorizes creation or
+revision at the active authority-specific destination; then refresh 100k. Setup never auto-accepts,
+creates an Idea/map/PRM/campaign, changes planning order, or treats an upgrade as semantic consent.
+
 The exhaustive ledger is not part of the main Project Executive View. For `ts: 100k ledger`, run
 `scripts/project_projection.py --workspace . 100k ledger`. It is a deterministic read-only
 drill-down from the same projection; existing status, overview, order, relationship, outcome, and

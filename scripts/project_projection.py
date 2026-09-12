@@ -35,6 +35,15 @@ LEGACY_EXECUTIVE_MARKERS = (
 )
 EXECUTIVE_INTENT_RELATIVE = Path("work/project-executive-intent.md")
 EXECUTIVE_INTENT_ROLE = "project-executive-intent-v1"
+EXECUTIVE_INTENT_SECTIONS = (
+    ("north_star", "North Star"),
+    ("completion_horizon", "Current Completion Horizon"),
+    ("strategic_context", "Strategic Context"),
+    ("priorities", "Current Priorities"),
+    ("non_goals", "Deliberate Non-Goals"),
+    ("decisions_needed", "Decisions Needed"),
+    ("review_triggers", "Review Triggers"),
+)
 TYPE_BY_NAMESPACE = {"IDEA": "idea-brief", "MAP": "project-map", "PRM": "program-roadmap", "CAMP": "campaign"}
 NAMESPACE_BY_TYPE = {value: key for key, value in TYPE_BY_NAMESPACE.items()}
 
@@ -457,6 +466,16 @@ def _parse_executive_intent(
     return result
 
 
+def _missing_executive_intent() -> dict[str, Any]:
+    return {
+        "state": "missing", "identity": None, "revision": None,
+        "updated_at": None, "north_star": None, "completion_horizon": None,
+        "strategic_context": None, "priorities": [], "non_goals": [],
+        "decisions_needed": [], "review_triggers": [],
+        "missing_sections": [heading for _, heading in EXECUTIVE_INTENT_SECTIONS],
+    }
+
+
 def _executive_intent(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
     """Read the one narrowly authoritative project executive-intent document."""
     if authority["authority"] == "sqlite":
@@ -480,12 +499,7 @@ def _executive_intent(workspace: Path, authority: dict[str, Any]) -> dict[str, A
                 f"multiple active project executive-intent documents: {identities}"
             )
         if not matches:
-            return {
-                "state": "missing", "identity": None, "revision": None,
-                "updated_at": None, "north_star": None, "completion_horizon": None,
-                "strategic_context": None, "priorities": [], "non_goals": [],
-                "decisions_needed": [], "review_triggers": [], "missing_sections": [],
-            }
+            return _missing_executive_intent()
         selected = matches[0]
         return _parse_executive_intent(
             str(selected["body_markdown"]),
@@ -496,12 +510,7 @@ def _executive_intent(workspace: Path, authority: dict[str, Any]) -> dict[str, A
 
     path = workspace / EXECUTIVE_INTENT_RELATIVE
     if not path.is_file():
-        return {
-            "state": "missing", "identity": None, "revision": None,
-            "updated_at": None, "north_star": None, "completion_horizon": None,
-            "strategic_context": None, "priorities": [], "non_goals": [],
-            "decisions_needed": [], "review_triggers": [], "missing_sections": [],
-        }
+        return _missing_executive_intent()
     body = path.read_text(encoding="utf-8")
     headers = _markdown_headers(body)
     if headers.get("Type") != "decision" or headers.get("Role") != EXECUTIVE_INTENT_ROLE:
@@ -729,6 +738,150 @@ def _cell(value: object) -> str:
     return str(value if value not in {None, ""} else "—").replace("|", "\\|").replace("\n", " ")
 
 
+def _orientation_sources(workspace: Path) -> list[str]:
+    """List a bounded set of likely owner-orientation sources without interpreting them."""
+    names = {"readme", "architecture", "strategy", "vision", "goals", "roadmap", "project"}
+    sources: list[str] = []
+    for directory in (workspace, workspace / "docs"):
+        if not directory.is_dir():
+            continue
+        for path in sorted(directory.iterdir(), key=lambda candidate: candidate.name.casefold()):
+            if len(sources) >= 20:
+                return sources
+            if (
+                not path.is_file()
+                or path.is_symlink()
+                or path.suffix.casefold() not in {".md", ".rst", ".txt"}
+                or path.stem.casefold() not in names
+            ):
+                continue
+            sources.append(path.relative_to(workspace).as_posix())
+    return sources
+
+
+def executive_intent_setup(workspace: Path, view: dict[str, Any]) -> dict[str, Any]:
+    """Build a read-only evidence packet for an owner-reviewed intent proposal."""
+    intent = view.get("executive_intent") or _missing_executive_intent()
+    evidence: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    active = [
+        item for item in view["inventory"]["artifacts"]
+        if item["document_lifecycle"] not in {
+            "completed", "terminal", "abandoned", "superseded", "deferred", "parked",
+        }
+    ]
+    for item in [*view.get("recommendations", []), *active, *view.get("recent_changes", [])]:
+        identity = str(item["artifact_id"])
+        if identity in seen:
+            continue
+        seen.add(identity)
+        evidence.append({
+            "visible_id": item["visible_id"],
+            "artifact_type": item["artifact_type"],
+            "title": item["title"],
+            "lifecycle": item["document_lifecycle"],
+            "planning_readiness": item["planning_readiness"],
+        })
+        if len(evidence) >= 12:
+            break
+    existing = {
+        key: intent.get(key)
+        for key, _ in EXECUTIVE_INTENT_SECTIONS
+    }
+    missing = list(intent.get("missing_sections", []))
+    if intent.get("state") == "missing":
+        missing = [heading for _, heading in EXECUTIVE_INTENT_SECTIONS]
+    authority = view["authority"]["authority"]
+    destination = (
+        "one active managed decision with metadata role "
+        f"{EXECUTIVE_INTENT_ROLE} and preferred path {EXECUTIVE_INTENT_RELATIVE.as_posix()}"
+        if authority == "sqlite"
+        else f"{EXECUTIVE_INTENT_RELATIVE.as_posix()} with Type: decision and Role: {EXECUTIVE_INTENT_ROLE}"
+    )
+    needs_proposal = intent.get("state") in {"missing", "incomplete"}
+    return {
+        "schema_version": EXECUTIVE_SCHEMA_VERSION,
+        "kind": "tool-shed-project-executive-intent-setup",
+        "state": "owner-review-required" if needs_proposal else "already-established",
+        "authority": view["authority"],
+        "intent_state": intent.get("state"),
+        "intent_identity": intent.get("identity"),
+        "destination": destination,
+        "required_sections": [heading for _, heading in EXECUTIVE_INTENT_SECTIONS],
+        "missing_sections": missing,
+        "existing_values": existing,
+        "orientation_sources": _orientation_sources(workspace),
+        "artifact_evidence": evidence,
+        "artifact_count": view["inventory"]["total_count"],
+        "complete_accounting": view["complete_accounting"],
+        "owner_acceptance_required": needs_proposal,
+        "writes_performed": False,
+    }
+
+
+def render_intent_setup(setup: dict[str, Any]) -> str:
+    """Render the read-only guided setup packet and proposal scaffold."""
+    lines = [
+        "# 100k Executive Intent Setup",
+        "",
+        "> Read-only discovery and proposal scaffold. It never infers, accepts, or persists owner",
+        "> strategy. Review the evidence, revise the proposal, and explicitly accept it before write.",
+        "",
+        "## Setup Status",
+        "",
+        f"- State: **{setup['state']}**",
+        f"- Existing intent: **{setup['intent_state']}**",
+        f"- Destination after acceptance: `{setup['destination']}`",
+        f"- Artifact accounting: **{'complete' if setup['complete_accounting'] else 'INCOMPLETE'}** "
+        f"({setup['artifact_count']} artifacts)",
+        "",
+        "## Discovered Orientation Sources",
+        "",
+    ]
+    if setup["orientation_sources"]:
+        lines.extend(f"- `{path}`" for path in setup["orientation_sources"])
+    else:
+        lines.append("- No conventional README, architecture, strategy, vision, goals, roadmap, or project document was found.")
+    lines.extend([
+        "",
+        "## Canonical Artifact Evidence",
+        "",
+        "| ID | Type | Lifecycle | Readiness | Title |",
+        "| --- | --- | --- | --- | --- |",
+    ])
+    for item in setup["artifact_evidence"]:
+        lines.append(
+            "| " + " | ".join(_cell(value) for value in (
+                f"`{item['visible_id']}`", item["artifact_type"], item["lifecycle"],
+                item["planning_readiness"], item["title"],
+            )) + " |"
+        )
+    if not setup["artifact_evidence"]:
+        lines.append("| — | — | — | — | No canonical artifact evidence was discovered. |")
+    lines.extend(["", "## Proposal Scaffold", ""])
+    for key, heading in EXECUTIVE_INTENT_SECTIONS:
+        lines.extend([f"### {heading}", ""])
+        value = setup["existing_values"].get(key)
+        if isinstance(value, list):
+            lines.extend(f"- {item}" for item in value)
+            if not value:
+                lines.append("- [Owner decision required after evidence review.]")
+        else:
+            lines.append(str(value) if value else "[Owner decision required after evidence review.]")
+        lines.append("")
+    lines.extend([
+        "## Acceptance Boundary",
+        "",
+        "1. Inspect the named orientation sources and relevant canonical artifacts.",
+        "2. Present one exact seven-section proposal, with uncertainties left visible.",
+        "3. Ask the owner to accept or revise that proposal.",
+        "4. Only after explicit acceptance, persist it at the authority-specific destination and refresh `100k`.",
+        "",
+        "A workspace upgrade or bare `ts: 100k` read never performs step 4.",
+    ])
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def render_ledger(view: dict[str, Any]) -> str:
     state = view["state"]
     lines = [
@@ -845,12 +998,7 @@ def render_ledger(view: dict[str, Any]) -> str:
 def render_executive(view: dict[str, Any]) -> str:
     """Render the concise owner cockpit; exhaustive accounting stays in render_ledger."""
     state = view["state"]
-    intent = view.get("executive_intent") or {
-        "state": "missing", "identity": None, "revision": None,
-        "updated_at": None, "north_star": None, "completion_horizon": None,
-        "strategic_context": None, "priorities": [], "non_goals": [],
-        "decisions_needed": [], "review_triggers": [], "missing_sections": [],
-    }
+    intent = view.get("executive_intent") or _missing_executive_intent()
     lines = [
         EXECUTIVE_MARKER,
         "# 100k Project Executive View",
@@ -939,13 +1087,14 @@ def render_executive(view: dict[str, Any]) -> str:
     if intent["state"] == "missing":
         decisions.append(
             "**EXECUTIVE_INTENT_MISSING:** Establish the North Star, completion horizon, strategic "
-            "context, priorities, deliberate non-goals, decisions, and review triggers."
+            "context, priorities, deliberate non-goals, decisions, and review triggers. Run "
+            "`ts: 100k setup` for a read-only evidence packet and owner-reviewed proposal."
         )
     elif intent["state"] == "incomplete":
         decisions.append(
             "**EXECUTIVE_INTENT_INCOMPLETE:** Complete: "
             + ", ".join(intent.get("missing_sections", []))
-            + "."
+            + ". Run `ts: 100k setup` to preserve existing sections and propose only the gaps."
         )
     decisions.extend(str(item) for item in intent.get("decisions_needed", []))
     decisions.extend(f"**{item['code']}:** {item['summary']}" for item in view["attention"])
@@ -1040,6 +1189,12 @@ def check_executive(workspace: Path, output: Path = EXECUTIVE_RELATIVE) -> dict[
         "state": state,
         "valid": state == "current",
         "complete_accounting": view["complete_accounting"],
+        "executive_intent_state": view["executive_intent"]["state"],
+        "next_route": (
+            "ts: 100k setup"
+            if view["executive_intent"]["state"] in {"missing", "incomplete"}
+            else None
+        ),
         "source_revision": view["source_revision"],
         "source_digest": view["source_digest"],
         "state_digest": view["state_digest"],
@@ -1080,6 +1235,12 @@ def refresh_executive(workspace: Path, output: Path = EXECUTIVE_RELATIVE) -> dic
         "state_digest": view["state_digest"],
         "sha256": hashlib.sha256(content.encode("utf-8")).hexdigest(),
         "complete_accounting": view["complete_accounting"],
+        "executive_intent_state": view["executive_intent"]["state"],
+        "next_route": (
+            "ts: 100k setup"
+            if view["executive_intent"]["state"] in {"missing", "incomplete"}
+            else None
+        ),
         "writes_performed": True,
     }
 
@@ -1090,7 +1251,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--json", action="store_true")
     commands = parser.add_subparsers(dest="command", required=True)
     review = commands.add_parser("100k")
-    review.add_argument("section", nargs="?", choices=("review", "ledger"), default="review")
+    review.add_argument("section", nargs="?", choices=("review", "ledger", "setup"), default="review")
     refresh = commands.add_parser("render-100k")
     refresh.add_argument("--output", type=Path, default=EXECUTIVE_RELATIVE)
     check = commands.add_parser("check-100k")
@@ -1104,8 +1265,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         if args.command == "100k":
             view, markdown = expected_executive_markdown(workspace)
+            setup = executive_intent_setup(workspace, view) if args.section == "setup" else None
             if args.json:
-                payload = view if args.section == "review" else {
+                payload = view if args.section == "review" else setup if setup is not None else {
                     "schema_version": EXECUTIVE_SCHEMA_VERSION,
                     "kind": "tool-shed-project-executive-ledger",
                     "source_revision": view["source_revision"],
@@ -1118,7 +1280,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                 }
                 print(json.dumps(payload, indent=2, sort_keys=True))
             else:
-                print(markdown if args.section == "review" else render_ledger(view), end="")
+                output = (
+                    markdown if args.section == "review" else
+                    render_intent_setup(setup) if setup is not None else
+                    render_ledger(view)
+                )
+                print(output, end="")
             return 0 if view["complete_accounting"] else 1
         if args.command == "render-100k":
             result = refresh_executive(workspace, args.output)

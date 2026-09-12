@@ -59,6 +59,13 @@ python3 tool_shed/scripts/new_artifact.py project-map "Project name" --workspace
 python3 tool_shed/scripts/new_artifact.py existing-project-inventory "Project name surfaces" --workspace .
 ```
 
+Then run `ts: 100k`. The generated view automatically discovers supported Tool Shed artifacts from
+the active authority. If it reports missing or incomplete executive intent, run `ts: 100k setup`.
+Review its bounded orientation sources and canonical artifact evidence, revise the proposed North
+Star, completion horizon, context, priorities, non-goals, decisions, and review triggers, and
+explicitly accept the exact proposal before it is persisted. Installation and upgrade never infer
+or accept those owner decisions automatically.
+
 5. Refresh the work indexes:
 
 ```bash

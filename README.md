@@ -276,8 +276,11 @@ record with that canonical project world. Its concise strategic cockpit shows th
 completion horizon, context, priorities, landscape, decisions, changes, realized outcomes,
 next-cycle candidates, non-goals, and review triggers. It remains a deterministic read-only
 projection, not another queue or lifecycle. Use `ts: 100k` to read it, `ts: 100k ledger` for the
-exhaustive deterministic accounting drill-down, and `scripts/project_projection.py` to render or
-check it. See the
+exhaustive deterministic accounting drill-down, and `ts: 100k setup` for a read-only evidence
+packet when executive intent is missing or incomplete. Setup proposes; only explicit owner
+acceptance may persist intent. Existing-project upgrades preserve `work/`, rediscover recognized
+Ideas/Maps/PRMs/Campaigns from the active authority, and regenerate the view without inventing
+strategy. Use `scripts/project_projection.py` to render or check it. See the
 [`100k Project Executive View contract`](docs/project-executive-view.md).
 
 Hybrid schema 4 adds persisted, deduplicated outcome-loop findings; schema 5 expands current-state
