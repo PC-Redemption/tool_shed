@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-production-release-evidence",
+  "release": {
+    "version": "0.57.0",
+    "tag": "v0.57.0",
+    "content_commit": "eda5f37e058143864a35f7e4cf36c2123c63c36e",
+    "provenance_commit": "42c59e795658dfa25fb000c5ff35604a3f220ac3",
+    "published_at": "2026-09-12T15:57:15Z",
+    "url": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.57.0"
+  },
+  "qualification": {
+    "canonical_release_validation": "675 of 675 tests passed locally",
+    "validate_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34703386255",
+    "validate_jobs": "33 of 33 passed for the exact frozen content commit; none failed or skipped",
+    "publish_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34703757078",
+    "canonical_version_relation": "canonical manifest matched; version 0.57.0; relation current; integrity verified",
+    "result": "passed"
+  },
+  "web_production": {
+    "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com",
+    "image": "tool-shed-dashboard:v0.57.0",
+    "image_sha256": "61f20227936fb89531429eea5a73f986ec7e8310cdb2eeafba8c8a9b6e31d2cb",
+    "database_backup": "/home/jon/docker/ts.rookaro.com/backups/dashboard-daily-20260912T155807Z.dump.age",
+    "rollback_bundle": "/home/jon/docker/ts.rookaro.com.rollback-v0.56.0-20260912T1558Z",
+    "public_routes": "8 representative documentation, guide, reference, and dashboard health routes returned HTTP 200; the public router selected ts.rookaro.com",
+    "production_readiness": "healthy",
+    "project_executive_view": "schema 12 stored the canonical DEC-0006 executive projection with two exact copyable CEO directives",
+    "result": "passed"
+  },
+  "linux_production": {
+    "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed",
+    "installed_version": "0.57.0",
+    "content_commit": "eda5f37e058143864a35f7e4cf36c2123c63c36e",
+    "provenance_commit": "42c59e795658dfa25fb000c5ff35604a3f220ac3",
+    "backup": "/home/jon/dev/ts_linux_test_bed/tool_shed.backup-20260912T160030Z.tar",
+    "transaction_id": "4f12e5026c002eaa959bb84b",
+    "updater_validation": "attested-focused-smoke cache stored under Python 3.13.5",
+    "hybrid_state": "CLEAN at schema 6 revision 31",
+    "project_executive_view": "current",
+    "canonical_version_relation": "current with verified integrity and matching canonical manifest",
+    "work_preserved": true,
+    "result": "passed"
+  },
+  "windows_production": {
+    "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed",
+    "installed_version": "0.57.0",
+    "content_commit": "eda5f37e058143864a35f7e4cf36c2123c63c36e",
+    "provenance_commit": "42c59e795658dfa25fb000c5ff35604a3f220ac3",
+    "backup": "E:\\dev\\ts_windows_test_bed\\tool_shed.backup-20260912T160101Z.tar",
+    "transaction_id": "0c1920a83545b4a800b7e6d7",
+    "updater_validation": "attested-focused-smoke cache stored under Python 3.14.6",
+    "hybrid_state": "CLEAN at schema 6 revision 27",
+    "project_executive_view": "current",
+    "canonical_version_relation": "current with verified integrity and matching canonical manifest",
+    "installed_codex_skill": "current and recursively identical to the released snapshot skill",
+    "work_preserved": true,
+    "result": "passed"
+  },
+  "installed_codex_skill": {
+    "source": "/home/jon/docker/tool_shed/skills/tool-shed",
+    "target": "/home/jon/.codex/skills/tool-shed",
+    "backup": "/home/jon/.codex/skills/tool-shed.backup-20260912T160139Z",
+    "validation": "canonical, staged, and installed skills passed quick_validate; recursive exact diff is empty",
+    "changed": true,
+    "restart_required": true,
+    "result": "passed"
+  },
+  "final_dashboard_convergence": {
+    "report_sequence": 15955,
+    "report_schema_version": 12,
+    "source_revision": 1726,
+    "source_digest": "dce5de95fd47767e9a1180696db3e313b3422f4a24378a28d5b3e57ec7523739",
+    "intent_identity": "DEC-0006",
+    "intent_revision": 7,
+    "directive_count": 2,
+    "active_release_cohorts": 0,
+    "pending_events": 0,
+    "result": "passed"
+  },
+  "release_learnings": [
+    {
+      "classification": "environment-selection",
+      "symptom": "the first release-profile invocation used system Python, which lacked dashboard dependencies",
+      "mitigation": "reran through the repository virtual environment; the complete 675-test release profile passed"
+    },
+    {
+      "classification": "deterministic-projection",
+      "symptom": "release-cohort registration made database-owned lifecycle views stale",
+      "mitigation": "regenerated the views from Hybrid revision 1720 and reran the complete release profile successfully"
+    },
+    {
+      "classification": "candidate-archive-scope",
+      "symptom": "the first development client archive included manifest-owned files but omitted the focused test harness",
+      "mitigation": "restaged the same exact candidate with the complete portable repository tree excluding canonical work; Linux and Windows focused validation passed"
+    }
+  ],
+  "after_action_issue_review": {
+    "reviewed_open_issues": 17,
+    "completed_behavior_issue_closures": [],
+    "updated_issues": [
+      "https://github.com/PC-Redemption/tool_shed/issues/57#issuecomment-5647049073",
+      "https://github.com/PC-Redemption/tool_shed/issues/47#issuecomment-5647049139"
+    ],
+    "created_issues": [
+      "https://github.com/PC-Redemption/tool_shed/issues/68"
+    ],
+    "result": "passed"
+  },
+  "verified_at": "2026-09-12T16:14:51Z",
+  "result": "passed"
+}
