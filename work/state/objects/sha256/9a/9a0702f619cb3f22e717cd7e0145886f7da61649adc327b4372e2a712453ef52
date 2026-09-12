@@ -1,0 +1,35 @@
+# Executive Directive: tab before overview called ceo, it should list the same info as /home/jon/docker/tool\_shed/work/100k.md and have copy paste button for ts command to run each directive so the operator can click it and paste into codex.
+
+Status: ready-for-prm
+Type: idea-brief
+Role: project-executive-directive-v1
+Updated: 2026-09-12
+Next Action: delegate to the Plan Cycle through `ts: prm idea <idea-id-or-path>`
+Readiness Review: performed by the receiving Plan Cycle; ask the CEO only about material ambiguity
+Produces:
+
+## CEO Directive
+
+tab before overview called ceo, it should list the same info as /home/jon/docker/tool\_shed/work/100k.md and have copy paste button for ts command to run each directive so the operator can click it and paste into codex.
+
+## Desired Outcome
+
+Make the directive true through the smallest coherent set of subordinate cycles.
+
+## Authority And Delivery Boundary
+
+- Preserve any endpoint, target, timing, non-goal, or authority language stated in the directive.
+- Without explicit delivery language, source-changing work stops at a verified Work1 candidate.
+- Interrupt only for a genuine material decision or authority boundary.
+
+## Delegation Contract
+
+The Plan Cycle interprets this directive, the Roadmap Cycle organizes it when needed, the Milestone
+Cycle materializes bounded campaigns, Campaign Cycles execute, and Evidence/Outcome Cycles report
+the result back to 100k. The CEO is not required to select those internal mechanics.
+
+## Exploration Log
+
+### 2026-09-12
+
+- Directive issued by the project owner through the 100k command surface.

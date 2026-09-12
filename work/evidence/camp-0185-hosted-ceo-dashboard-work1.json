@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "campaign": "CAMP-0185",
+  "directive": "tab before overview called ceo, it should list the same info as /home/jon/docker/tool\\_shed/work/100k.md and have copy paste button for ts command to run each directive so the operator can click it and paste into codex.",
+  "requested_endpoint": "Work1",
+  "candidate_version": "0.57.0",
+  "released_baseline": "v0.56.0",
+  "product_commit": "6c6ef51",
+  "results": {
+    "canonical_projection": "Dashboard schema 12 selects a bounded structured CEO payload from project_projection.executive(); it never parses work/100k.md.",
+    "hosted_persistence": "The validated projection is stored per reporting instance in Instance.executive_state; older reporters remain accepted and render an explicit unavailable state.",
+    "ceo_tab": "The project page places CEO before Overview and renders every owner-facing 100k section from the newest single reporting instance.",
+    "directive_commands": "Each projected directive includes an exact ts: directive <directive text> value validated by the server and rendered through the existing accessible copy-only control.",
+    "focused_validation": "101 dashboard reporter, project projection, contract, ingest, migration, and UI tests passed.",
+    "full_unit_validation": "675 of 675 unit tests passed after the product commit.",
+    "manifest": "SHED_VERSION.json verifies 302 tracked Tool Shed files as unpublished v0.57.0.",
+    "checkpoint_digest": "616bdbace2568c6eb920362aa4d9309c38fcde1d3c35feb2236e548484b96c1a",
+    "checkpoint_revision": 1719,
+    "domain_digest": "ccf3c438f5afc44a02e4f5dddf641e21f64420d6685dd1750525c7148b8aa6b7",
+    "rebuild_domain_digest": "ccf3c438f5afc44a02e4f5dddf641e21f64420d6685dd1750525c7148b8aa6b7",
+    "checkpoint_rebuild_parity": true
+  },
+  "external_changes": {
+    "push": false,
+    "release": false,
+    "deployment": false,
+    "client_sync": false
+  }
+}

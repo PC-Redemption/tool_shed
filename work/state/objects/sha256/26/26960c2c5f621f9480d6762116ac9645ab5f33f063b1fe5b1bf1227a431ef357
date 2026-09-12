@@ -1,0 +1,40 @@
+# Program Roadmap: Hosted CEO Dashboard View
+
+Status: active
+Type: program-roadmap
+Updated: 2026-09-12
+Next Action: execute M1-HOSTED-CEO-TAB through Work1
+Roadmap ID: hosted-ceo-dashboard-view
+Roadmap Revision: 1
+Source Idea: IDEA-0031
+Source Project Map: MAP-0039
+
+## Program Outcome
+
+The hosted project page starts with a read-only CEO tab containing the same owner-facing strategic
+information as the canonical local 100k view, including copyable commands for directive continuity.
+
+## M1-HOSTED-CEO-TAB — Deliver the local candidate
+
+Status: active
+Required Endpoint: Work1
+
+Outcome: Extend the reporter contract, persist a bounded per-instance executive projection, render
+the CEO tab before Overview, reuse accessible copy controls, update current documentation, and
+checkpoint a verified local candidate.
+
+Gates:
+
+- `G1-CANONICAL-EXECUTIVE-PROJECTION` — the payload derives from the same executive projection as `work/100k.md`.
+- `G2-CEO-TAB-PARITY` — all owner-facing 100k sections appear in the CEO tab.
+- `G3-COPYABLE-DIRECTIVE-COMMANDS` — every directive displays an exact copyable resume command.
+- `G4-COMPATIBILITY-AND-TESTS` — schema, ingest, legacy, template, and reporter verification pass.
+
+Candidate campaign: `hosted-ceo-dashboard-view`.
+
+## Authority Boundaries
+
+This roadmap authorizes local source, migration, template, style, documentation, test, managed
+artifact, checkpoint, and commit changes. It does not authorize deployment, push, release,
+production reporting, credential changes, or installed-client synchronization.
+

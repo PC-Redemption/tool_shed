@@ -1,0 +1,45 @@
+# Campaign: Hosted CEO Dashboard View
+
+Status: completed
+Type: campaign
+Updated: 2026-09-12
+Next Action: none; Work1 candidate complete
+Campaign ID: hosted-ceo-dashboard-view
+Campaign Number: 185
+Outcome: The hosted project dashboard presents the canonical 100k owner cockpit on a CEO tab before Overview and offers a copyable Tool Shed command for each directive.
+Primary Focus Areas: artifact-workflows
+Supporting Focus Areas: provider-portability, qualification-release, workspace-safety
+Depends On: none
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work1
+Completion Gate: Canonical structured CEO data is bounded and schema-validated; ingest persists it per reporting instance; the CEO tab precedes Overview and renders every 100k section; directive rows reuse the accessible clipboard control with exact stable commands; legacy reports remain usable; focused and full validation, manifest integrity, strict Doctor, checkpoint/rebuild parity, and scoped local commits pass.
+Completion Evidence: work/evidence/camp-0185-hosted-ceo-dashboard-work1.json; product commit 6c6ef51
+Completion Date: 2026-09-12
+Disposition: satisfied
+Roadmap: hosted-ceo-dashboard-view
+Roadmap Revision: 1
+Roadmap Document: PRM-0051
+Milestone: M1-HOSTED-CEO-TAB
+Unlocks Gates: G1-CANONICAL-EXECUTIVE-PROJECTION, G2-CEO-TAB-PARITY, G3-COPYABLE-DIRECTIVE-COMMANDS, G4-COMPATIBILITY-AND-TESTS
+
+## Request
+
+Implement the CEO dashboard tab requested by IDEA-0031 without making hosted state authoritative or
+adding a remote execution channel. The command control copies text only; the operator remains the
+one who pastes it into Codex.
+
+## Completion Check
+
+Verify the reporter and hosted contract together, report ingestion and replacement semantics,
+legacy empty state, tab placement, full section rendering, clipboard markup and feedback, local
+responsive styling, and the Work1 boundary.
+
+## Result
+
+Schema 12 now carries a bounded projection from the canonical 100k builder into per-instance hosted
+state. The project page places CEO before Overview, renders the complete owner-facing cockpit, and
+uses the existing accessible copy control for each exact directive command. Focused tests and all
+675 unit tests pass. No deployment, release, push, production report, or client synchronization was
+performed.

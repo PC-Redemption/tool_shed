@@ -1,0 +1,53 @@
+# Tool Shed Project Executive Intent
+
+Status: active
+Type: decision
+Role: project-executive-intent-v1
+Updated: 2026-09-12
+
+## North Star
+
+Provide a provider-portable collaboration toolkit that helps a human and AI assistant choose the
+right structure, preserve intent, execute safely, and close outcomes without cluttering project
+code or creating unnecessary infrastructure.
+
+## Current Completion Horizon
+
+Tool Shed v0.56.0 is released and verified across the web, Windows, and Linux production lanes.
+The v0.57.0 CEO-directive and hosted CEO-view capabilities are locally implemented and verified at
+Work1. The hosted project page now starts with a CEO tab derived from canonical 100k truth, with
+copyable commands for every directive. The candidate remains unpublished; release, deployment, and
+installed-client synchronization require a later directive.
+
+## Strategic Context
+
+Tool Shed v0.56.0 restored the returning-owner cockpit, but the post-release review exposed a
+command-model gap: the CEO still had to choose internal artifact mechanics. The v0.57.0 Work1
+candidate closes that gap while preserving the read-only cockpit and delegating directives through
+the existing Plan, Roadmap, Milestone, Campaign, Evidence, and Outcome cycles. The hosted CEO tab
+now gives the operator the same executive information and a copy-to-Codex bridge without giving the
+dashboard local execution or lifecycle authority.
+
+## Current Priorities
+
+- Use `ts: 100k add <directive>` as the CEO command surface and let subordinate cycles choose the internal mechanics.
+- Keep executive intent, directive state, and subordinate handoff visible in both the local and hosted read-only CEO cockpits from canonical lifecycle truth.
+- Let the operator copy each exact `ts: directive <directive text>` command from the hosted CEO tab and paste it into Codex for governed execution.
+- Preserve the unpublished Work1 boundary until the CEO explicitly requests a release or broader delivery endpoint.
+
+## Deliberate Non-Goals
+
+- Do not deploy, publish, release, or synchronize installed clients for the current Work1 horizon.
+- Do not import or mutate the DisplayTest 100,000-Foot View without direct source access and a separate no-loss review.
+- Do not make bare 100k review mutating or infer a directive from passive reading.
+- Do not introduce a second project-world builder, database, lifecycle engine, queue, or 100k-specific backlog.
+
+## Decisions Needed
+
+- No executive decision is currently required; the hosted CEO-tab directive is complete at Work1 and no subordinate cycle remains open.
+
+## Review Triggers
+
+- Review when the CEO issues the next directive or requests release of the v0.57.0 candidate.
+- Review when a material outcome, priority, non-goal, or completion horizon changes.
+- Review when 100k accounting, authority, recovery, or owner-orientation evidence diverges.

@@ -1,0 +1,42 @@
+# Project Map: Hosted CEO Dashboard View
+
+Status: completed
+Type: project-map
+Updated: 2026-09-12
+Next Action: none; PRM-0051 completed the mapped outcome at Work1
+Source Idea: IDEA-0031
+Source Directive: tab before overview called ceo, it should list the same info as /home/jon/docker/tool\_shed/work/100k.md and have copy paste button for ts command to run each directive so the operator can click it and paste into codex.
+
+## Purpose
+
+Put the same canonical owner information as `work/100k.md` into the hosted project dashboard on a
+CEO tab before Overview. Keep the hosted service advisory and read-only while making every
+directive actionable through a copyable Tool Shed command that the operator pastes into Codex.
+
+## Settled Direction
+
+- Derive one bounded structured CEO payload from `project_projection.executive()`; never parse the generated Markdown.
+- Version the reporter contract and retain compatibility with older reports that lack CEO data.
+- Persist the newest per-instance CEO projection without creating hosted lifecycle authority.
+- Render all 100k sections on a CEO tab placed before Overview.
+- Reuse the existing accessible clipboard control and copy a stable resume command for each directive.
+- Stop at a locally verified Work1 commit; do not deploy or report the candidate externally.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Reporter contract | Bounded schema-12 CEO projection derived from canonical 100k truth | project projection |
+| Hosted persistence | Per-instance CEO state survives ingest without changing local authority | reporter contract |
+| CEO experience | Tab parity, directive commands, responsive layout, and empty/legacy states | hosted persistence |
+| Proof | Contract, ingest, view, template, and full validation evidence | prior workstreams |
+
+## Completion Boundary
+
+Complete when the local reporter, ingest model, view context, dashboard template, styles, docs, and
+tests prove the CEO tab mirrors the 100k owner surface and copies exact directive resume commands.
+
+## Result
+
+The mapped reporter, persistence, presentation, and proof workstreams are complete. See
+`work/evidence/camp-0185-hosted-ceo-dashboard-work1.json` and product commit `6c6ef51`.
