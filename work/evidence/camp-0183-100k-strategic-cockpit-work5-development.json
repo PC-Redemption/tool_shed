@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-target-evidence",
+  "endpoint": "work5-development",
+  "target": "web at tsrookarocom-dev on sup.local, Windows at PC-Redemption/ts_windows_test_bed on GOGETTER, and Linux at PC-Redemption/ts_linux_test_bed on sup.local",
+  "checked_at": "2026-09-12T13:12:49Z",
+  "campaign": "CAMP-0183",
+  "origin_cycle": "f480728f-c209-4398-8af0-b8cc9ec76f2d",
+  "candidate_commit": "010ab7c3ec1d9dde42a305c4afceef9e7c4104e3",
+  "candidate_version": "0.56.0",
+  "checks": [
+    {
+      "id": "local-release-profile-and-doctor",
+      "status": "passed",
+      "reference": "exact candidate 010ab7c passed 670/670 release-profile tests in 51.067s; strict Doctor reported HEALTHY with zero findings; Hybrid document state was CLEAN at schema 6 revision 1660"
+    },
+    {
+      "id": "strategic-cockpit-and-guided-setup",
+      "status": "passed",
+      "reference": "managed executive intent, concise 100k rendering, deterministic ledger drill-down, missing-intent detection, read-only seven-section setup proposal, explicit acceptance boundary, stale detection, and file/SQLite portability passed the focused and full local suite"
+    },
+    {
+      "id": "web-development",
+      "status": "passed",
+      "reference": "tsrookarocom-dev staged exact commit 010ab7c3ec1d9dde42a305c4afceef9e7c4104e3 as tool-shed-dashboard:dev-010ab7c3ec1d; root, reference, and dashboard health routes returned HTTP 200; reference rendered ts: 100k setup; dashboard development readiness was healthy; production remained healthy and on v0.55.0"
+    },
+    {
+      "id": "linux-development",
+      "status": "passed",
+      "reference": "sup:/home/jon/dev/ts_linux_test_bed installed the exact manifest-defined v0.56.0 candidate snapshot sha256:ccc3465e4e915227c1a6a4da194130b76ff5a8bc6bb9ae51a5b69426ab6cc7ca under Python 3.13.5; snapshot integrity and 100k freshness passed; missing intent produced the bounded read-only owner-review-required setup proposal without fabricating strategy"
+    },
+    {
+      "id": "windows-development",
+      "status": "passed",
+      "reference": "GOGETTER:E:\\dev\\ts_windows_test_bed installed the exact manifest-defined v0.56.0 candidate snapshot sha256:ccc3465e4e915227c1a6a4da194130b76ff5a8bc6bb9ae51a5b69426ab6cc7ca under Python 3.14.6; snapshot integrity and 100k freshness passed; missing intent produced the bounded read-only owner-review-required setup proposal without fabricating strategy"
+    },
+    {
+      "id": "testbed-boundaries-and-recovery",
+      "status": "passed",
+      "reference": "remote host and exact disposable workspace identities were verified before replacement; prior snapshots were moved to recoverable sibling directories; archives contained neither Git metadata nor embedded work; owner work and project identities were preserved"
+    }
+  ]
+}
