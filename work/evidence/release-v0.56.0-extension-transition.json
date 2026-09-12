@@ -1,0 +1,32 @@
+{
+  "closed_at": "2026-09-12T13:39:30Z",
+  "cycle_id": "2654fd41-4c51-446f-9de9-2b4efafdbf16",
+  "expected_domain_digest": "9cd01b9e8d2412330f1a6a4622b1c45df33bd5fde59d4fe5da7a882d479deafa",
+  "expected_revision": 1664,
+  "kind": "tool-shed-outcome-transition-manifest",
+  "lifecycle_state": "terminal",
+  "manifest_token": "5a032c52f2f81934",
+  "origin_artifact_id": "4dae4447-0c22-4ad2-a294-a05e28027a7a",
+  "parent_result": null,
+  "prepared_at": "2026-09-12T13:39:30Z",
+  "project_id": "817b6358-b2f5-48fd-bb66-bd80f936faca",
+  "reconciliation": {
+    "compared_at": "2026-09-12T13:39:30Z",
+    "id": "29d180c1-d11e-432c-80a3-1d6884b3885d",
+    "product_truth_ref": "[]",
+    "residual_work": [],
+    "state": "reconciled"
+  },
+  "schema_version": 1,
+  "supporting_cycle_ids": [
+    "31f9260e-2a2c-43b3-b68d-40014c3082b5"
+  ],
+  "verdict": {
+    "authorization_ref": "work/evidence/release-v0.56.0-production.json",
+    "decided_at": "2026-09-12T13:39:30Z",
+    "disposition": "satisfied",
+    "id": "8b9bcb93-f45c-456e-9044-d02e8fbcf9f5",
+    "scope": "initiative",
+    "summary": "Tool Shed v0.56.0 was published and production-verified across web, Windows, and Linux with canonical version relation current."
+  }
+}

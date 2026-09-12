@@ -1,0 +1,124 @@
+{
+  "ambiguities": [],
+  "artifacts": [
+    {
+      "action": "create",
+      "authority_mode": "sqlite",
+      "content_sha256": "7c5523b2682fe7e6c0510c5502f6deb3602f1d6cf0913862a3e2ade6d2565798",
+      "created_at": "2026-09-12T13:38:11Z",
+      "display_number": null,
+      "id": "30d1e5f1-15fc-4dab-a919-c3b84c7892b6",
+      "key": "origin",
+      "lifecycle_state": "terminal",
+      "path": "sqlite/outcome-capsules/30d1e5f1-15fc-4dab-a919-c3b84c7892b6",
+      "type": "direct-capsule"
+    },
+    {
+      "action": "create",
+      "authority_mode": "file",
+      "content_sha256": "f5239bcf93b1fe0605186b3d0bc238bd6a1621df0768f97817538bd2b507a78f",
+      "created_at": "2026-09-12T13:38:11Z",
+      "display_number": null,
+      "id": "6aef1071-283d-408e-9b1c-5383fd44fadd",
+      "key": "product-1",
+      "lifecycle_state": "active",
+      "path": "work/evidence/release-v0.56.0-production.json",
+      "type": "file"
+    }
+  ],
+  "authorization_ref": "ts: ship v0.56.0",
+  "changes": [],
+  "cycle": {
+    "accepted_outcome": "Verify v0.56.0 publication, web deployment, Windows and Linux client updates, canonical version relation, and installed Codex skill synchronization.",
+    "closed_at": "2026-09-12T13:38:11Z",
+    "id": "31f9260e-2a2c-43b3-b68d-40014c3082b5",
+    "kind": "direct-work",
+    "lifecycle_state": "terminal",
+    "opened_at": "2026-09-12T13:38:11Z",
+    "origin_artifact_id": "30d1e5f1-15fc-4dab-a919-c3b84c7892b6"
+  },
+  "evidence": [
+    {
+      "collected_at": "2026-09-12T13:38:11Z",
+      "id": "a4c77ebf-f36d-45fa-9b09-ed8a912a350e",
+      "key": "evidence-1",
+      "kind": "direct-verification",
+      "reference": "work/evidence/release-v0.56.0-production.json",
+      "sha256": "f5239bcf93b1fe0605186b3d0bc238bd6a1621df0768f97817538bd2b507a78f",
+      "target_identity": "30d1e5f1-15fc-4dab-a919-c3b84c7892b6"
+    }
+  ],
+  "expected_domain_digest": "2e82f2fd5196514a209434b31da5a98a6ad08118eda13d265baacef92e91599f",
+  "expected_revision": 1663,
+  "kind": "tool-shed-outcome-reconciliation-manifest",
+  "manifest_token": "ca943c7a7d81ec4e",
+  "mode": "direct",
+  "prepared_at": "2026-09-12T13:38:11Z",
+  "project_id": "817b6358-b2f5-48fd-bb66-bd80f936faca",
+  "reconciliation": {
+    "compared_at": "2026-09-12T13:38:11Z",
+    "id": "966a70af-05d5-46c8-888c-6792987a733c",
+    "product_truth_artifact_ids": [
+      "6aef1071-283d-408e-9b1c-5383fd44fadd"
+    ],
+    "residual_work": [],
+    "state": "reconciled"
+  },
+  "relationships": [
+    {
+      "from_artifact_id": "30d1e5f1-15fc-4dab-a919-c3b84c7892b6",
+      "id": "6ef4f8bd-f195-4e65-afc8-656c03c6ebd4",
+      "key": "product-1",
+      "provenance": "outcome-reconciliation-v1",
+      "relation_type": "evidenced-by",
+      "to_artifact_id": "6aef1071-283d-408e-9b1c-5383fd44fadd"
+    },
+    {
+      "from_artifact_id": "30d1e5f1-15fc-4dab-a919-c3b84c7892b6",
+      "id": "eea96267-d05f-4c06-8b8b-9ba44a87c51a",
+      "key": "outcome-parent",
+      "provenance": "outcome-reconciliation-v1",
+      "relation_type": "outcome-parent",
+      "to_artifact_id": "4dae4447-0c22-4ad2-a294-a05e28027a7a"
+    },
+    {
+      "from_artifact_id": "30d1e5f1-15fc-4dab-a919-c3b84c7892b6",
+      "id": "54b8cb98-29bb-4ae5-a0c0-a9992392c82a",
+      "key": "outcome-result-propagated",
+      "provenance": "outcome-reconciliation-v1",
+      "relation_type": "outcome-result-propagated",
+      "to_artifact_id": "4dae4447-0c22-4ad2-a294-a05e28027a7a"
+    }
+  ],
+  "requirements": [
+    {
+      "accepted_outcome": "Verify v0.56.0 publication, web deployment, Windows and Linux client updates, canonical version relation, and installed Codex skill synchronization.",
+      "disposition": "accepted",
+      "evidence_gate_key": "direct-evidence",
+      "id": "016d0bde-eb25-4662-b5fa-672fcebe9adc",
+      "key": "direct-outcome",
+      "milestone_key": "direct"
+    }
+  ],
+  "schema_version": 1,
+  "verdict": {
+    "authorization_ref": "ts: ship v0.56.0",
+    "decided_at": "2026-09-12T13:38:11Z",
+    "disposition": "satisfied",
+    "id": "80c4f31f-2f8e-4de2-b9db-19f8f4e7dede",
+    "scope": "direct-work",
+    "summary": "Tool Shed v0.56.0 production closure verification"
+  },
+  "verifications": [
+    {
+      "command_or_test_id": "direct-evidence-1",
+      "details": null,
+      "evidence_key": "evidence-1",
+      "id": "994c8064-a1a7-424e-85d9-0dfd7ecf8abb",
+      "key": "verification-1",
+      "requirement_key": "direct-outcome",
+      "status": "passed",
+      "verified_at": "2026-09-12T13:38:11Z"
+    }
+  ]
+}

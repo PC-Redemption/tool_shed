@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-production-release-evidence",
+  "release": {
+    "version": "0.56.0",
+    "tag": "v0.56.0",
+    "content_commit": "1b8cae39bfae75a48831a2cc9aedd6c6be304b5b",
+    "provenance_commit": "730a511050cd260b9526feb17908a971c7285cb2",
+    "published_at": "2026-09-12T13:28:47Z",
+    "url": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.56.0"
+  },
+  "qualification": {
+    "canonical_release_validation": "670 of 670 tests passed locally",
+    "validate_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34696182236",
+    "validate_jobs": "33 of 33 passed for the exact frozen content commit; none failed or skipped",
+    "publish_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34696530127",
+    "canonical_version_relation": "canonical manifest matched; version 0.56.0; relation current; integrity verified",
+    "result": "passed"
+  },
+  "web_production": {
+    "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com",
+    "image": "tool-shed-dashboard:v0.56.0",
+    "image_sha256": "b1c5275d09b155ca4d179bfc0fc41f572a79d1a26cff57466c72df79870d9446",
+    "database_backup": "/home/jon/docker/ts.rookaro.com/backups/dashboard-daily-20260912T132945Z.dump.age",
+    "rollback_bundle": "/home/jon/docker/ts.rookaro.com.rollback-v0.55.0-20260912T1329Z",
+    "public_routes": "8 representative documentation, reference, and dashboard health routes returned HTTP 200; reference rendered ts: 100k setup",
+    "production_readiness": "healthy",
+    "result": "passed"
+  },
+  "linux_production": {
+    "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed",
+    "installed_version": "0.56.0",
+    "content_commit": "1b8cae39bfae75a48831a2cc9aedd6c6be304b5b",
+    "provenance_commit": "730a511050cd260b9526feb17908a971c7285cb2",
+    "backup": "/home/jon/dev/ts_linux_test_bed/tool_shed.backup-20260912T133140Z.tar",
+    "development_snapshot_archive": "/home/jon/dev/ts_linux_test_bed/tool_shed.development-v056-010ab7c",
+    "transaction_id": "f16de56168fffaf201cb34a7",
+    "updater_validation": "attested-focused-smoke cache stored under Python 3.13.5",
+    "hybrid_state": "CLEAN at schema 6 revision 31",
+    "project_executive_view": "complete and current; missing intent correctly routes to ts: 100k setup",
+    "canonical_version_relation": "current with verified integrity and matching canonical manifest",
+    "work_preserved": true,
+    "result": "passed"
+  },
+  "windows_production": {
+    "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed",
+    "installed_version": "0.56.0",
+    "content_commit": "1b8cae39bfae75a48831a2cc9aedd6c6be304b5b",
+    "provenance_commit": "730a511050cd260b9526feb17908a971c7285cb2",
+    "backup": "E:\\dev\\ts_windows_test_bed\\tool_shed.backup-20260912T133305Z.tar",
+    "development_snapshot_archive": "E:\\dev\\ts_windows_test_bed\\tool_shed.development-v056-010ab7c",
+    "transaction_id": "bf8fa73476bdb3c7c3418acf",
+    "updater_validation": "attested-focused-smoke cache stored under Python 3.14.6",
+    "hybrid_state": "CLEAN at schema 6 revision 27",
+    "project_executive_view": "complete and current; missing intent correctly routes to ts: 100k setup",
+    "canonical_version_relation": "current with verified integrity and matching canonical manifest",
+    "installed_codex_skill": "current and recursively identical to the released snapshot skill",
+    "work_preserved": true,
+    "result": "passed"
+  },
+  "installed_codex_skill": {
+    "source": "/home/jon/docker/tool_shed/skills/tool-shed",
+    "target": "/home/jon/.codex/skills/tool-shed",
+    "validation": "canonical and installed skills both passed quick_validate; recursive exact diff is empty",
+    "changed": false,
+    "restart_required": true,
+    "result": "passed"
+  },
+  "release_learnings": [
+    {
+      "classification": "deterministic-projection",
+      "symptom": "the first local release-profile invocation detected stale database-owned lifecycle views after release-cohort registration",
+      "mitigation": "regenerated views from Hybrid revision 1661 and reran the complete 670-test release profile successfully"
+    },
+    {
+      "classification": "windows-closing-guidance",
+      "symptom": "the Windows updater captured stale-released and UNQUALIFIED VERSION text during post-install convergence even though final version, state, and skill checks were current",
+      "mitigation": "verified the final canonical relation, Hybrid audit, 100k projection, and exact skill diff independently; updated existing issue 61"
+    },
+    {
+      "classification": "release-validation-efficiency",
+      "symptom": "the provenance-only release commit started a redundant full Validate matrix after the exact content SHA had already passed 33 of 33 jobs",
+      "mitigation": "release publication remained gated on the exact content run; updated existing issue 47 with v0.56.0 evidence"
+    }
+  ],
+  "after_action_issue_review": {
+    "reviewed_open_issues": 17,
+    "completed_behavior_issue_closures": [],
+    "updated_issues": [
+      "https://github.com/PC-Redemption/tool_shed/issues/47#issuecomment-5646209535",
+      "https://github.com/PC-Redemption/tool_shed/issues/61#issuecomment-5646209603"
+    ],
+    "created_issues": [],
+    "result": "passed"
+  },
+  "verified_at": "2026-09-12T13:34:00Z",
+  "result": "passed"
+}
