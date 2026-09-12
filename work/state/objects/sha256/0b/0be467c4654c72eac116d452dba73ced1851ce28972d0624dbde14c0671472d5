@@ -1,0 +1,51 @@
+# Program Roadmap: Durable CEO Directive Intake
+
+Status: completed
+Type: program-roadmap
+Updated: 2026-09-12
+Next Action: none; M1-DURABLE-CEO-INTAKE is satisfied at Work1
+Roadmap ID: durable-ceo-directive-intake
+Roadmap Revision: 1
+Source Idea: IDEA-0032
+Source Project Map: MAP-0040
+
+## Program Outcome
+
+CEO directives can accumulate durably before implementation and can be added while another
+directive is executing, while existing planning order and subordinate cycles remain the only
+scheduling and execution authorities.
+
+## M1-DURABLE-CEO-INTAKE — Deliver the local candidate
+
+Status: completed
+Required Endpoint: Work1
+
+Outcome: Make new directive commands capture-only, make exact active matches delegate or resume,
+preserve non-preemptive planning order, expose active-first directive state locally and on the
+hosted CEO tab, and checkpoint a verified local candidate.
+
+Gates:
+
+- `G1-DURABLE-BATCH-INTAKE` — repeated unmatched CEO commands create separate durable Idea/outcome
+  records without starting subordinate implementation.
+- `G2-NON-PREEMPTIVE-ORDER` — new directives append through canonical planning order and never
+  displace a working subordinate cycle absent an explicit CEO priority change.
+- `G3-SUBORDINATE-EXECUTION` — an exact active match delegates or resumes through the existing Plan
+  Cycle, PRM, campaign, evidence, and outcome chain without a CEO-side execution queue.
+- `G4-CEO-VISIBILITY-RECOVERY` — local and hosted CEO views distinguish queued, working, and
+  completed directives; active directives are retained inside a bounded, explicitly truncated
+  contract; focused checks, full validation, and checkpoint/rebuild parity pass.
+
+Candidate campaign: `durable-ceo-directive-intake`.
+
+## Authority Boundaries
+
+This roadmap authorizes local source, contract, template, documentation, test, managed artifact,
+checkpoint, manifest, and commit changes. It does not authorize deployment, push, release,
+production reporting, credential changes, or installed-client synchronization.
+
+## Completion Evidence
+
+- `work/evidence/camp-0186-durable-ceo-directive-intake-work1.json`
+- Product commit `e8fb170`
+- Disposition: satisfied on 2026-09-12

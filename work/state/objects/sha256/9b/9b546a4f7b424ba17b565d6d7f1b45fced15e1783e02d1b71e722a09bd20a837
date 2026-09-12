@@ -1,0 +1,47 @@
+# Campaign: Durable CEO Directive Intake
+
+Status: completed
+Type: campaign
+Updated: 2026-09-12
+Next Action: none; Work1 candidate complete
+Campaign ID: durable-ceo-directive-intake
+Campaign Number: 186
+Outcome: CEO directives support durable batch intake and non-preemptive interleaving through canonical planning order and subordinate cycles.
+Primary Focus Areas: artifact-workflows
+Supporting Focus Areas: campaign-lifecycle, dashboard-reporting, provider-portability, workspace-safety
+Depends On: none
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work1
+Completion Gate: New directives are durably captured without automatic implementation; exact active matches delegate or resume; new intake cannot preempt working subordinate execution; canonical planning order remains the only queue; local and hosted CEO views expose active-first position and explicit bounded truncation; focused and full validation, manifest integrity, strict Doctor, checkpoint/rebuild parity, and a scoped local commit pass.
+Completion Evidence: work/evidence/camp-0186-durable-ceo-directive-intake-work1.json; product commit e8fb170
+Completion Date: 2026-09-12
+Disposition: satisfied
+Roadmap: durable-ceo-directive-intake
+Roadmap Revision: 1
+Roadmap Document: PRM-0052
+Milestone: M1-DURABLE-CEO-INTAKE
+Unlocks Gates: G1-DURABLE-BATCH-INTAKE, G2-NON-PREEMPTIVE-ORDER, G3-SUBORDINATE-EXECUTION, G4-CEO-VISIBILITY-RECOVERY
+
+## Request
+
+Implement the CEO directive intake and interleaving contract from IDEA-0032. Preserve exact CEO
+wording and existing outcome lineage. Do not create a parallel CEO queue, scheduler, worker, or
+hosted execution channel.
+
+## Completion Check
+
+Verify repeated capture before implementation, capture during a working campaign, exact-match
+resume behavior, planning-position stability, active-first bounded projection, report compatibility,
+CEO rendering, route synchronization, and the Work1 boundary.
+
+## Result
+
+Previously unseen CEO directives now persist as capture-only Ideas in canonical planning order;
+reissuing an exact active directive delegates or resumes its existing subordinate chain without
+preempting another working campaign. Project executive projection v4 and dashboard report schema
+13 show active directives first with planning state and explicit bounded truncation while schema 12
+remains compatible. Focused checks and all 677 unit tests pass, as does the full repository
+validator. No deployment, push, release, production report, or installed-client synchronization
+was performed.

@@ -1,0 +1,42 @@
+# Executive Directive: Make CEO directives support durable batch intake and non-preemptive interleaving through existing planning order and subordinate cycles
+
+Status: completed
+Type: idea-brief
+Role: project-executive-directive-v1
+Updated: 2026-09-12
+Next Action: none; directive satisfied at Work1
+Readiness Review: performed by the receiving Plan Cycle; ask the CEO only about material ambiguity
+Produces: MAP-0040
+
+## CEO Directive
+
+Make CEO directives support durable batch intake and non-preemptive interleaving through existing planning order and subordinate cycles
+
+## Desired Outcome
+
+Make the directive true through the smallest coherent set of subordinate cycles.
+
+## Authority And Delivery Boundary
+
+- Preserve any endpoint, target, timing, non-goal, or authority language stated in the directive.
+- Without explicit delivery language, source-changing work stops at a verified Work1 candidate.
+- Interrupt only for a genuine material decision or authority boundary.
+
+## Delegation Contract
+
+The Plan Cycle interprets this directive, the Roadmap Cycle organizes it when needed, the Milestone
+Cycle materializes bounded campaigns, Campaign Cycles execute, and Evidence/Outcome Cycles report
+the result back to 100k. The CEO is not required to select those internal mechanics.
+
+## Exploration Log
+
+### 2026-09-12
+
+- Directive issued by the project owner through the 100k command surface.
+
+## Result
+
+MAP-0040, PRM-0052, and CAMP-0186 delivered the directive at Work1. New CEO directives now support
+durable capture batches, exact-match delegation/resume, non-preemptive interleaving through
+canonical planning order, and active-first bounded CEO visibility. Evidence:
+`work/evidence/camp-0186-durable-ceo-directive-intake-work1.json`; product commit `e8fb170`.

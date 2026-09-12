@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-campaign-completion-evidence",
+  "campaign": "CAMP-0186",
+  "campaign_id": "durable-ceo-directive-intake",
+  "roadmap": "PRM-0052",
+  "milestone": "M1-DURABLE-CEO-INTAKE",
+  "endpoint": "work1",
+  "candidate_version": "0.58.0",
+  "product_commit": "e8fb170",
+  "result": "passed",
+  "gates": {
+    "G1-DURABLE-BATCH-INTAKE": {
+      "result": "passed",
+      "evidence": "The authoritative Tool Shed route and executive-directive template make previously unseen commands capture-only, preserve exact text, open the governed Idea outcome, append through canonical planning order, checkpoint, and stop. Repeated commands therefore persist independently before implementation."
+    },
+    "G2-NON-PREEMPTIVE-ORDER": {
+      "result": "passed",
+      "evidence": "The route requires a fresh planning/campaign read, preserves a different working subordinate campaign, and recognizes only the existing guarded ts: order bs move route as an explicit priority change. No CEO queue, scheduler, worker, table, or preemption path was added."
+    },
+    "G3-SUBORDINATE-EXECUTION": {
+      "result": "passed",
+      "evidence": "An exact active directive match is the explicit delegation/resume signal and continues through the existing Plan, Project Map, PRM, campaign, evidence, outcome, reconciliation, and closure machinery."
+    },
+    "G4-CEO-VISIBILITY-RECOVERY": {
+      "result": "passed",
+      "evidence": "Project executive projection v4 and dashboard report schema 13 list active directives first in canonical planning order, distinguish queued/working/completed state, carry planning position/readiness, retain up to 50 entries, and report counts and truncation explicitly. Schema 12 remains accepted."
+    }
+  },
+  "verification": {
+    "focused_tests": "104 passed",
+    "repository_unit_tests": "677 of 677 passed",
+    "full_validator": "post-closure pass in 50.338s",
+    "provider_adapter_conformance": "passed",
+    "program_roadmaps": "valid; zero findings",
+    "bootstrap_closure": "valid; zero findings",
+    "manifest": "SHED_VERSION.json matches 302 tracked files",
+    "generated_views": "database-owned lifecycle views refreshed; work/100k.md current",
+    "hybrid_checkpoint": "revision 1750; checkpoint digest 303abf75c417b5664b5e33b537c50d85db9fc59697cc7406ec11567e145cfc4a",
+    "rebuild_parity": "domain digest 912183388cd5e287ae5db58e15ede465205a7111229aa3b697d91f425e7fbd5f"
+  },
+  "authority_boundary": {
+    "deployment": false,
+    "push": false,
+    "release": false,
+    "production_report": false,
+    "installed_client_sync": false
+  }
+}

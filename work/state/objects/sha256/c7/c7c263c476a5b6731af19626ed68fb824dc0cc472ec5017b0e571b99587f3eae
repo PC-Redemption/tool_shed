@@ -1,0 +1,50 @@
+# Project Map: Durable CEO Directive Intake
+
+Status: completed
+Type: project-map
+Updated: 2026-09-12
+Next Action: none; PRM-0052 completed the mapped outcome at Work1
+Source Idea: IDEA-0032
+Source Directive: Make CEO directives support durable batch intake and non-preemptive interleaving through existing planning order and subordinate cycles
+
+## Purpose
+
+Let the CEO issue several durable directives before choosing one for implementation, and let new
+directives arrive while implementation is underway without displacing the working subordinate
+cycle. Reuse the canonical Idea planning order and outcome lineage instead of introducing a second
+queue or a second source of scheduling authority.
+
+## Settled Direction
+
+- A previously unseen `ts: 100k add` or `ts: directive` command performs intake only: preserve the
+  exact directive as an executive Idea, open its outcome, append it to existing planning order, and
+  stop after a durable checkpoint.
+- Reissuing the exact command for an active stored directive is the explicit delegation/resume
+  action and continues through the existing Plan Cycle, PRM, campaign, evidence, and outcome chain.
+- If another subordinate campaign is working, intake and resume requests do not preempt it. The
+  requested directive remains queued in planning order unless the CEO explicitly changes order.
+- The CEO projection is active-first in planning order, reports queue position and inventory
+  truncation explicitly, and retains recent completed directives only after active directives.
+- The bounded hosted payload remains advisory and read-only; local Tool Shed state stays canonical.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Route semantics | Separate durable intake from exact-match delegation/resume | existing directive route |
+| Planning semantics | Preserve append order and the one-working-campaign invariant | canonical planning order |
+| CEO projection | Active-first bounded inventory with position and explicit truncation | project projection |
+| Hosted contract | Backward-compatible schema update for the richer directive inventory | CEO projection |
+| Proof | Route, ordering, projection, contract, dashboard, and repository validation | prior workstreams |
+
+## Completion Boundary
+
+Complete at Work1 when local source, contracts, documentation, tests, generated views, and Hybrid
+checkpoint prove durable multi-directive intake, exact-match delegation, non-preemptive
+interleaving, and bounded active-directive visibility. Do not deploy, push, release, report the
+candidate externally, or synchronize installed clients.
+
+## Result
+
+The mapped intake, planning, projection, hosted-contract, and proof workstreams are complete. See
+`work/evidence/camp-0186-durable-ceo-directive-intake-work1.json` and product commit `e8fb170`.

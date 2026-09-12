@@ -1,0 +1,37 @@
+# Campaign: Durable CEO Directive Intake
+
+Status: queued
+Type: campaign
+Updated: 2026-09-12
+Next Action: implement and verify the Work1 candidate
+Campaign ID: durable-ceo-directive-intake
+Campaign Number: 186
+Outcome: CEO directives support durable batch intake and non-preemptive interleaving through canonical planning order and subordinate cycles.
+Primary Focus Areas: artifact-workflows
+Supporting Focus Areas: campaign-lifecycle, dashboard-reporting, provider-portability, workspace-safety
+Depends On: none
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work1
+Completion Gate: New directives are durably captured without automatic implementation; exact active matches delegate or resume; new intake cannot preempt working subordinate execution; canonical planning order remains the only queue; local and hosted CEO views expose active-first position and explicit bounded truncation; focused and full validation, manifest integrity, strict Doctor, checkpoint/rebuild parity, and a scoped local commit pass.
+Completion Evidence: pending
+Completion Date: pending
+Disposition: pending
+Roadmap: durable-ceo-directive-intake
+Roadmap Revision: 1
+Roadmap Document: PRM-0052
+Milestone: M1-DURABLE-CEO-INTAKE
+Unlocks Gates: G1-DURABLE-BATCH-INTAKE, G2-NON-PREEMPTIVE-ORDER, G3-SUBORDINATE-EXECUTION, G4-CEO-VISIBILITY-RECOVERY
+
+## Request
+
+Implement the CEO directive intake and interleaving contract from IDEA-0032. Preserve exact CEO
+wording and existing outcome lineage. Do not create a parallel CEO queue, scheduler, worker, or
+hosted execution channel.
+
+## Completion Check
+
+Verify repeated capture before implementation, capture during a working campaign, exact-match
+resume behavior, planning-position stability, active-first bounded projection, report compatibility,
+CEO rendering, route synchronization, and the Work1 boundary.
