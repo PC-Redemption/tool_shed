@@ -271,11 +271,13 @@ one exact content SHA, attaches verified publication evidence to every registere
 finalize until each recorded chain reconciles through its originating Idea. See
 [`docs/release-cohort-closed-loop.md`](docs/release-cohort-closed-loop.md).
 
-The standard `work/100k.md` Project Executive View turns that same canonical project world into one
-easy-to-find operator review: concise direction, health, completion horizon, attention, changes,
-next-cycle candidates, focus coverage, and an exhaustive Idea/Map/PRM/Campaign ledger. It is a
-deterministic projection, not another authority or queue. Use `ts: 100k` to read it and
-`scripts/project_projection.py` to render or check it. See the
+The standard `work/100k.md` Project Executive View joins one narrowly authoritative owner intent
+record with that canonical project world. Its concise strategic cockpit shows the North Star,
+completion horizon, context, priorities, landscape, decisions, changes, realized outcomes,
+next-cycle candidates, non-goals, and review triggers. It remains a deterministic read-only
+projection, not another queue or lifecycle. Use `ts: 100k` to read it, `ts: 100k ledger` for the
+exhaustive deterministic accounting drill-down, and `scripts/project_projection.py` to render or
+check it. See the
 [`100k Project Executive View contract`](docs/project-executive-view.md).
 
 Hybrid schema 4 adds persisted, deduplicated outcome-loop findings; schema 5 expands current-state

@@ -455,13 +455,26 @@ Work origin is separate: `direct` has no queue record, `owner-originated` was de
 work may remain Direct and stop at work1. Likewise Direct, Guided, Coordinated, or Deep describes
 structure; work1–work5 describes the endpoint; cycle state says which loop owns the next move.
 
-`ts: 100k` is the standard operator review when you need the whole project in one place. Its stable
-`work/100k.md` entry starts with a concise executive review and ends with every canonical Idea,
-Project Map, Program Roadmap, and Campaign. It is generated from existing authority: edit the named
-source artifact or lifecycle surface, then refresh with
+`ts: 100k` is the standard owner review when you need to reorient and steer the whole project. Its
+stable `work/100k.md` entry is a concise strategic cockpit joining the canonical Project Executive
+Intent with current operational truth. It shows the North Star, completion horizon, strategic
+context, priorities, landscape, decisions, material changes, realized outcomes, recommended next
+cycles, deliberate non-goals, and review triggers. It is generated from existing authority: edit
+the named intent or operational source, then refresh with
 `python3 scripts/project_projection.py --workspace . render-100k`. Use `check-100k` to test exact
 freshness. Manual edits are intentionally rejected or reported stale, so 100k cannot become a
 second authority. The suggested next-cycle list is decision support; the operator still chooses.
+Use `ts: 100k ledger` or `python3 scripts/project_projection.py --workspace . 100k ledger` for the
+exhaustive deterministic Idea/Map/PRM/Campaign accounting drill-down; it is not part of the main
+executive view.
+
+Under SQLite authority, Project Executive Intent is one active managed `decision` document with
+metadata role `project-executive-intent-v1` and preferred path
+`work/project-executive-intent.md`. Under file authority, that exact file declares
+`Type: decision` and `Role: project-executive-intent-v1`. It owns only executive framing; Ideas,
+maps, PRMs, campaigns, decisions, relationships, outcomes, evidence, and closure retain their
+existing authority. Missing or incomplete intent appears as an owner decision. Multiple active
+intent sources fail closed.
 
 `ts: overview`, `ts: status`, and `ts: next` render one shared Cycle State Capsule in human and
 JSON output. With no ready campaign, it checks Dangler Resolution, a persisted exact campaign plan

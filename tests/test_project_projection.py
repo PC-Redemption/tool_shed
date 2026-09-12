@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 from unittest import mock
+import json
+import sqlite3
 import tempfile
 import sys
 import unittest
@@ -26,7 +28,7 @@ class ProjectProjectionTests(unittest.TestCase):
             "updated_at": "2026-09-11T00:00:00Z",
         }
         return {
-            "schema_version": 1, "kind": "tool-shed-project-executive-view",
+            "schema_version": 2, "kind": "tool-shed-project-executive-view",
             "authority": {"authority": "sqlite", "state": "hybrid"},
             "source_revision": 4, "source_digest": "source", "state_digest": "state",
             "latest_source_update": "2026-09-11T00:00:00Z",
@@ -38,6 +40,18 @@ class ProjectProjectionTests(unittest.TestCase):
             },
             "complete_accounting": True,
             "inventory": {"total_count": 1, "truncated": False, "artifacts": [artifact]},
+            "executive_intent": {
+                "state": "current", "identity": "DEC-0001", "revision": 2,
+                "updated_at": "2026-09-10T00:00:00Z",
+                "north_star": "Keep the whole project pointed at the owner outcome.",
+                "completion_horizon": "Finish the current reliable release.",
+                "strategic_context": "Reliability is the limiting condition.",
+                "priorities": ["Finish the view."],
+                "non_goals": ["Do not start unrelated work."],
+                "decisions_needed": ["Choose the next release candidate."],
+                "review_triggers": ["Review after each release."],
+                "missing_sections": [],
+            },
             "focus_coverage": {
                 "catalog_state": "approved", "areas": [], "unassigned_campaigns": [],
                 "decisions_needed": [],
@@ -102,16 +116,83 @@ class ProjectProjectionTests(unittest.TestCase):
         summarized.assert_not_called()
         inventoried.assert_not_called()
 
-    def test_render_is_deterministic_and_contains_concise_and_complete_sections(self) -> None:
+    def test_render_is_deterministic_and_keeps_complete_ledger_as_drill_down(self) -> None:
         view = self.executive_fixture()
         first = project_projection.render_executive(view)
         second = project_projection.render_executive(view)
         self.assertEqual(first, second)
         self.assertTrue(first.startswith(project_projection.EXECUTIVE_MARKER))
         self.assertIn("## Executive Review", first)
-        self.assertIn("## Complete Strategic Ledger", first)
+        self.assertIn("## North Star", first)
+        self.assertIn("## Decisions And Attention", first)
+        self.assertIn("## Accounting And Drill-Down", first)
+        self.assertNotIn("## Complete Strategic Ledger", first)
         self.assertIn("`CAMP-0001`", first)
         self.assertNotIn("Generated at", first)
+        ledger = project_projection.render_ledger(view)
+        self.assertIn("## Complete Strategic Ledger", ledger)
+        self.assertIn("`CAMP-0001`", ledger)
+        self.assertNotIn(project_projection.EXECUTIVE_MARKER, ledger)
+
+    @staticmethod
+    def intent_body(*, role: bool = True) -> str:
+        role_header = f"Role: {project_projection.EXECUTIVE_INTENT_ROLE}\n" if role else ""
+        return (
+            "# Project Executive Intent\n\nStatus: active\nType: decision\n"
+            f"{role_header}Updated: 2026-09-12\n\n"
+            "## North Star\n\nMake the owner outcome visible.\n\n"
+            "## Current Completion Horizon\n\nFinish the trusted cockpit.\n\n"
+            "## Strategic Context\n\nThe report currently hides intent.\n\n"
+            "## Current Priorities\n\n- Restore orientation.\n\n"
+            "## Deliberate Non-Goals\n\n- Do not invent strategy.\n\n"
+            "## Decisions Needed\n\n- Confirm the next horizon.\n\n"
+            "## Review Triggers\n\n- Review after material outcomes.\n"
+        )
+
+    def test_file_executive_intent_uses_fixed_role_and_path(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary)
+            path = workspace / project_projection.EXECUTIVE_INTENT_RELATIVE
+            path.parent.mkdir(parents=True)
+            path.write_text(self.intent_body(), encoding="utf-8")
+            result = project_projection._executive_intent(
+                workspace, {"authority": "file"}
+            )
+            self.assertEqual("current", result["state"])
+            self.assertEqual("Make the owner outcome visible.", result["north_star"])
+            self.assertEqual(["Restore orientation."], result["priorities"])
+            path.write_text(self.intent_body(role=False), encoding="utf-8")
+            with self.assertRaisesRegex(project_projection.ProjectProjectionError, "must declare"):
+                project_projection._executive_intent(workspace, {"authority": "file"})
+
+    def test_sqlite_executive_intent_reuses_managed_decision_document(self) -> None:
+        connection = sqlite3.connect(":memory:")
+        connection.row_factory = sqlite3.Row
+        connection.execute("CREATE TABLE artifact (id TEXT, type TEXT)")
+        connection.execute(
+            "CREATE TABLE document (id TEXT, visible_id TEXT, current_revision INTEGER, "
+            "updated_at TEXT, metadata_json TEXT, lifecycle_state TEXT)"
+        )
+        connection.execute(
+            "CREATE TABLE document_revision (document_id TEXT, revision_number INTEGER, body_markdown TEXT)"
+        )
+        connection.execute("INSERT INTO artifact VALUES ('a', 'decision')")
+        connection.execute(
+            "INSERT INTO document VALUES ('a','DEC-0001',2,'2026-09-12T00:00:00Z',?, 'active')",
+            (json.dumps({"role": project_projection.EXECUTIVE_INTENT_ROLE}),),
+        )
+        connection.execute(
+            "INSERT INTO document_revision VALUES ('a',2,?)", (self.intent_body(),)
+        )
+        with mock.patch.object(
+            project_projection.hybrid_state, "database_path", return_value=Path("/fixture/state.sqlite3")
+        ), mock.patch.object(project_projection.hybrid_state, "connect", return_value=connection):
+            result = project_projection._executive_intent(
+                Path("/fixture"), {"authority": "sqlite"}
+            )
+        self.assertEqual("DEC-0001", result["identity"])
+        self.assertEqual(2, result["revision"])
+        self.assertEqual("current", result["state"])
 
     def test_refresh_check_and_manual_edit_protection(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -133,6 +214,42 @@ class ProjectProjectionTests(unittest.TestCase):
                     project_projection.ProjectProjectionError, "non-generated"
                 ):
                     project_projection.refresh_executive(workspace)
+
+    def test_refresh_migrates_the_generated_v1_view(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary)
+            path = workspace / project_projection.EXECUTIVE_RELATIVE
+            path.parent.mkdir(parents=True)
+            path.write_text(
+                project_projection.LEGACY_EXECUTIVE_MARKERS[0] + "\nlegacy\n",
+                encoding="utf-8",
+            )
+            expected = project_projection.render_executive(self.executive_fixture())
+            with mock.patch.object(
+                project_projection,
+                "expected_executive_markdown",
+                return_value=(self.executive_fixture(), expected),
+            ):
+                project_projection.refresh_executive(workspace)
+            self.assertEqual(expected, path.read_text(encoding="utf-8"))
+
+    def test_missing_intent_is_an_explicit_decision_signal(self) -> None:
+        view = self.executive_fixture()
+        view["executive_intent"] = {
+            "state": "missing", "identity": None, "revision": None,
+            "updated_at": None, "north_star": None, "completion_horizon": None,
+            "strategic_context": None, "priorities": [], "non_goals": [],
+            "decisions_needed": [], "review_triggers": [], "missing_sections": [],
+        }
+        rendered = project_projection.render_executive(view)
+        self.assertIn("EXECUTIVE_INTENT_MISSING", rendered)
+        self.assertIn("**Not established.**", rendered)
+
+    def test_parser_routes_ledger_as_an_explicit_drill_down(self) -> None:
+        review = project_projection.build_parser().parse_args(["100k"])
+        ledger = project_projection.build_parser().parse_args(["100k", "ledger"])
+        self.assertEqual("review", review.section)
+        self.assertEqual("ledger", ledger.section)
 
 
 if __name__ == "__main__":

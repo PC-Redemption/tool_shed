@@ -27,9 +27,14 @@ import update_work_index
 
 
 SCHEMA_VERSION = 2
-EXECUTIVE_SCHEMA_VERSION = 1
+EXECUTIVE_SCHEMA_VERSION = 2
 EXECUTIVE_RELATIVE = Path("work/100k.md")
-EXECUTIVE_MARKER = "<!-- GENERATED: TOOL-SHED-PROJECT-EXECUTIVE-VIEW-V1; DO NOT EDIT -->"
+EXECUTIVE_MARKER = "<!-- GENERATED: TOOL-SHED-PROJECT-EXECUTIVE-VIEW-V2; DO NOT EDIT -->"
+LEGACY_EXECUTIVE_MARKERS = (
+    "<!-- GENERATED: TOOL-SHED-PROJECT-EXECUTIVE-VIEW-V1; DO NOT EDIT -->",
+)
+EXECUTIVE_INTENT_RELATIVE = Path("work/project-executive-intent.md")
+EXECUTIVE_INTENT_ROLE = "project-executive-intent-v1"
 TYPE_BY_NAMESPACE = {"IDEA": "idea-brief", "MAP": "project-map", "PRM": "program-roadmap", "CAMP": "campaign"}
 NAMESPACE_BY_TYPE = {value: key for key, value in TYPE_BY_NAMESPACE.items()}
 
@@ -379,6 +384,139 @@ def _canonical(value: object) -> bytes:
     ).encode("utf-8")
 
 
+def _markdown_headers(body: str) -> dict[str, str]:
+    headers: dict[str, str] = {}
+    for raw in body.splitlines()[:80]:
+        line = raw.strip()
+        if not line or line.startswith("#") or ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        headers[key.strip()] = value.strip()
+    return headers
+
+
+def _markdown_sections(body: str) -> dict[str, str]:
+    sections: dict[str, list[str]] = {}
+    current: str | None = None
+    for raw in body.splitlines():
+        if raw.startswith("## "):
+            current = raw[3:].strip()
+            sections.setdefault(current, [])
+        elif current is not None:
+            sections[current].append(raw)
+    return {key: "\n".join(value).strip() for key, value in sections.items()}
+
+
+def _section_items(value: str) -> list[str]:
+    return [
+        line[2:].strip()
+        for line in value.splitlines()
+        if line.startswith("- ") and line[2:].strip()
+    ]
+
+
+def _parse_executive_intent(
+    body: str,
+    *,
+    identity: str,
+    revision: int | None,
+    updated_at: str | None,
+) -> dict[str, Any]:
+    sections = _markdown_sections(body)
+    scalar_sections = {
+        "north_star": "North Star",
+        "completion_horizon": "Current Completion Horizon",
+        "strategic_context": "Strategic Context",
+    }
+    list_sections = {
+        "priorities": "Current Priorities",
+        "non_goals": "Deliberate Non-Goals",
+        "decisions_needed": "Decisions Needed",
+        "review_triggers": "Review Triggers",
+    }
+    result: dict[str, Any] = {
+        "state": "current",
+        "identity": identity,
+        "revision": revision,
+        "updated_at": updated_at,
+    }
+    missing: list[str] = []
+    for key, heading in scalar_sections.items():
+        value = sections.get(heading, "").strip()
+        result[key] = value or None
+        if not value:
+            missing.append(heading)
+    for key, heading in list_sections.items():
+        value = _section_items(sections.get(heading, ""))
+        result[key] = value
+        if not value:
+            missing.append(heading)
+    result["missing_sections"] = missing
+    if missing:
+        result["state"] = "incomplete"
+    return result
+
+
+def _executive_intent(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
+    """Read the one narrowly authoritative project executive-intent document."""
+    if authority["authority"] == "sqlite":
+        with contextlib.closing(
+            hybrid_state.connect(hybrid_state.database_path(workspace), writable=False)
+        ) as connection:
+            rows = connection.execute(
+                "SELECT d.visible_id,d.current_revision,d.updated_at,d.metadata_json,r.body_markdown "
+                "FROM document d JOIN artifact a ON a.id=d.id JOIN document_revision r ON "
+                "r.document_id=d.id AND r.revision_number=d.current_revision WHERE a.type='decision' "
+                "AND d.lifecycle_state IN ('active','working') ORDER BY d.visible_id"
+            ).fetchall()
+        matches = []
+        for row in rows:
+            metadata = json.loads(str(row["metadata_json"]))
+            if metadata.get("role") == EXECUTIVE_INTENT_ROLE:
+                matches.append(row)
+        if len(matches) > 1:
+            identities = ", ".join(str(row["visible_id"]) for row in matches)
+            raise ProjectProjectionError(
+                f"multiple active project executive-intent documents: {identities}"
+            )
+        if not matches:
+            return {
+                "state": "missing", "identity": None, "revision": None,
+                "updated_at": None, "north_star": None, "completion_horizon": None,
+                "strategic_context": None, "priorities": [], "non_goals": [],
+                "decisions_needed": [], "review_triggers": [], "missing_sections": [],
+            }
+        selected = matches[0]
+        return _parse_executive_intent(
+            str(selected["body_markdown"]),
+            identity=str(selected["visible_id"]),
+            revision=int(selected["current_revision"]),
+            updated_at=str(selected["updated_at"]),
+        )
+
+    path = workspace / EXECUTIVE_INTENT_RELATIVE
+    if not path.is_file():
+        return {
+            "state": "missing", "identity": None, "revision": None,
+            "updated_at": None, "north_star": None, "completion_horizon": None,
+            "strategic_context": None, "priorities": [], "non_goals": [],
+            "decisions_needed": [], "review_triggers": [], "missing_sections": [],
+        }
+    body = path.read_text(encoding="utf-8")
+    headers = _markdown_headers(body)
+    if headers.get("Type") != "decision" or headers.get("Role") != EXECUTIVE_INTENT_ROLE:
+        raise ProjectProjectionError(
+            f"{EXECUTIVE_INTENT_RELATIVE.as_posix()} must declare Type: decision and "
+            f"Role: {EXECUTIVE_INTENT_ROLE}"
+        )
+    return _parse_executive_intent(
+        body,
+        identity=EXECUTIVE_INTENT_RELATIVE.as_posix(),
+        revision=None,
+        updated_at=headers.get("Updated"),
+    )
+
+
 def _focus_coverage(
     workspace: Path, authority: dict[str, Any], artifacts: list[dict[str, Any]]
 ) -> dict[str, Any]:
@@ -471,6 +609,7 @@ def executive(workspace: Path) -> dict[str, Any]:
     inventory = projection["work_inventory"]
     artifacts = inventory["artifacts"]
     authority = projection["authority"]
+    intent = _executive_intent(workspace, authority)
     focus = _focus_coverage(workspace, authority, artifacts)
     release = _release_horizon(workspace, authority)
     if authority["authority"] == "sqlite":
@@ -479,7 +618,10 @@ def executive(workspace: Path) -> dict[str, Any]:
         source_digest = audit["domain_digest"]
     else:
         source_revision = None
-        source_digest = hashlib.sha256(_canonical(projection)).hexdigest()
+        source_digest = hashlib.sha256(_canonical({
+            "projection": projection,
+            "executive_intent": intent,
+        })).hexdigest()
 
     working = [
         item for item in artifacts
@@ -489,7 +631,7 @@ def executive(workspace: Path) -> dict[str, Any]:
         item for item in artifacts
         if item["artifact_type"] == "campaign"
         and item["document_lifecycle"] in {"active", "working"}
-        and item["planning_readiness"] in {"ready", "working"}
+        and item["planning_readiness"] in {"queued", "ready", "working"}
     ]
     planned = [
         item for item in artifacts
@@ -546,6 +688,7 @@ def executive(workspace: Path) -> dict[str, Any]:
     )[:10]
     material = {
         "projection": projection,
+        "executive_intent": intent,
         "source_revision": source_revision,
         "source_digest": source_digest,
         "focus_coverage": focus,
@@ -561,10 +704,17 @@ def executive(workspace: Path) -> dict[str, Any]:
         "source_revision": source_revision,
         "source_digest": source_digest,
         "state_digest": hashlib.sha256(_canonical(material)).hexdigest(),
-        "latest_source_update": max((item["updated_at"] for item in artifacts), default=None),
+        "latest_source_update": max(
+            [
+                *(item["updated_at"] for item in artifacts),
+                *([intent["updated_at"]] if intent.get("updated_at") else []),
+            ],
+            default=None,
+        ),
         "state": state,
         "complete_accounting": not inventory["truncated"],
         "inventory": inventory,
+        "executive_intent": intent,
         "focus_coverage": focus,
         "release_horizon": release,
         "attention": attention,
@@ -579,15 +729,12 @@ def _cell(value: object) -> str:
     return str(value if value not in {None, ""} else "—").replace("|", "\\|").replace("\n", " ")
 
 
-def render_executive(view: dict[str, Any]) -> str:
+def render_ledger(view: dict[str, Any]) -> str:
     state = view["state"]
     lines = [
-        EXECUTIVE_MARKER,
-        "# 100k Project Executive View",
+        "# 100k Complete Strategic Ledger",
         "",
-        "> This file is a deterministic, read-only projection. Do not edit it. Change Ideas, maps,",
-        "> PRMs, campaigns, outcomes, focus areas, or decisions in their authoritative Tool Shed",
-        "> surfaces, then refresh this view.",
+        "> Deterministic read-only drill-down from the same project projection as `work/100k.md`.",
         "",
         "## Executive Review",
         "",
@@ -695,6 +842,183 @@ def render_executive(view: dict[str, Any]) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
+def render_executive(view: dict[str, Any]) -> str:
+    """Render the concise owner cockpit; exhaustive accounting stays in render_ledger."""
+    state = view["state"]
+    intent = view.get("executive_intent") or {
+        "state": "missing", "identity": None, "revision": None,
+        "updated_at": None, "north_star": None, "completion_horizon": None,
+        "strategic_context": None, "priorities": [], "non_goals": [],
+        "decisions_needed": [], "review_triggers": [], "missing_sections": [],
+    }
+    lines = [
+        EXECUTIVE_MARKER,
+        "# 100k Project Executive View",
+        "",
+        "> This file is a deterministic, read-only strategic cockpit. Do not edit it. Change",
+        "> executive intent or the named Tool Shed source artifact, then refresh this view.",
+        "",
+        "## Executive Review",
+        "",
+        f"- Executive intent: **{intent['state']}**"
+        + (f" (`{intent['identity']}`, revision {_cell(intent['revision'])})" if intent.get("identity") else ""),
+        f"- Operational accounting: **{'complete' if view['complete_accounting'] else 'INCOMPLETE'}** "
+        f"({view['inventory']['total_count']} strategic artifacts)",
+        f"- Latest material update: `{_cell(view['latest_source_update'])}`",
+        "",
+        "Executive intent supplies direction; Ideas, maps, PRMs, campaigns, decisions, outcomes,",
+        "and evidence retain execution truth. Reading this view never selects, prioritizes, starts,",
+        "or completes work.",
+        "",
+        "## North Star",
+        "",
+    ]
+    if intent.get("north_star"):
+        lines.append(str(intent["north_star"]))
+    else:
+        lines.append(
+            "**Not established.** Capture the project's enduring purpose before treating "
+            "operational quiet as strategic completion."
+        )
+
+    lines.extend(["", "## Current Completion Horizon", ""])
+    if intent.get("completion_horizon"):
+        lines.append(str(intent["completion_horizon"]))
+    else:
+        lines.append(
+            "**Not established.** Define what done-for-now means and what should trigger the next review."
+        )
+    release = view["release_horizon"]
+    if release["available"]:
+        lines.append(f"- Current release base: `{_cell(release['base_tag'])}`")
+        if release["active_cohorts"]:
+            for cohort in release["active_cohorts"]:
+                lines.append(
+                    f"- Release cohort `{cohort['cycle_id']}` is {cohort['lifecycle_state']} with "
+                    f"{cohort['candidate_count']} candidate(s)."
+                )
+        else:
+            lines.append("- No Work2 candidate is currently awaiting Work5.")
+    else:
+        lines.append("- Release-cohort state is unavailable under file authority.")
+
+    lines.extend(["", "## Strategic Context", ""])
+    lines.append(
+        str(intent["strategic_context"])
+        if intent.get("strategic_context")
+        else "- No owner-authored strategic context is currently recorded."
+    )
+
+    lines.extend(["", "## Current Priorities", ""])
+    priorities = list(intent.get("priorities", []))
+    lines.extend(f"- {item}" for item in priorities)
+    if not priorities:
+        lines.append("- No owner-authored strategic priority order is currently recorded.")
+
+    lines.extend([
+        "", "## Project Landscape", "",
+        "| Working | Ready | Blocked | Active ideas | Open outcomes | Unreconciled | Closure debt | Loop findings |",
+        "| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        f"| {state['working_count']} | {state['ready_count']} | {state['blocked_count']} | "
+        f"{state['active_idea_count']} | {state['open_outcome_count']} | "
+        f"{state['unreconciled_outcome_count']} | {state['closure_debt_count']} | "
+        f"{state['active_loop_finding_count']} |",
+        "",
+    ])
+    focus = view["focus_coverage"]
+    if focus["catalog_state"] != "approved":
+        lines.append("- No approved focus-area catalog is available.")
+    else:
+        lines.extend(["| Enduring focus area | Active campaigns |", "| --- | --- |"])
+        for area in focus["areas"]:
+            campaigns = ", ".join(f"`{value}`" for value in area["active_campaigns"]) or "—"
+            lines.append(f"| `{area['focus_area_id']}` — {area['name']} | {campaigns} |")
+
+    lines.extend(["", "## Decisions And Attention", ""])
+    decisions: list[str] = []
+    if intent["state"] == "missing":
+        decisions.append(
+            "**EXECUTIVE_INTENT_MISSING:** Establish the North Star, completion horizon, strategic "
+            "context, priorities, deliberate non-goals, decisions, and review triggers."
+        )
+    elif intent["state"] == "incomplete":
+        decisions.append(
+            "**EXECUTIVE_INTENT_INCOMPLETE:** Complete: "
+            + ", ".join(intent.get("missing_sections", []))
+            + "."
+        )
+    decisions.extend(str(item) for item in intent.get("decisions_needed", []))
+    decisions.extend(f"**{item['code']}:** {item['summary']}" for item in view["attention"])
+    if not view["recommendations"] and intent.get("completion_horizon"):
+        decisions.append(
+            "No working or ready strategic cycle is projected; confirm whether the current horizon "
+            "is satisfied or choose the next outcome."
+        )
+    if decisions:
+        lines.extend(f"- {item}" for item in decisions)
+    else:
+        lines.append("- No decision or attention signal.")
+
+    lines.extend(["", "## Recommended Next Cycles", ""])
+    if view["recommendations"]:
+        for item in view["recommendations"]:
+            position = (
+                f"planning position {item['planning_position']}"
+                if item["planning_position"] is not None else "derived order"
+            )
+            lines.append(
+                f"- `{item['visible_id']}` — {item['title']} ({item['document_lifecycle']}; "
+                f"{item['planning_readiness']}; {position})"
+            )
+        lines.append("- The operator must explicitly choose or change the next cycle.")
+    else:
+        lines.append("- No working or ready strategic cycle is currently projected.")
+
+    lines.extend(["", "## What Changed", ""])
+    for item in view["recent_changes"][:5]:
+        lines.append(
+            f"- `{item['updated_at']}` `{item['visible_id']}` — {item['title']} "
+            f"({item['document_lifecycle']})"
+        )
+    if not view["recent_changes"]:
+        lines.append("- No material artifact changes are projected.")
+
+    realized = [
+        item for item in view["recent_changes"]
+        if item["document_lifecycle"] in {"completed", "terminal"}
+    ][:5]
+    lines.extend(["", "## Realized Outcomes", ""])
+    if realized:
+        lines.extend(f"- `{item['visible_id']}` — {item['title']}" for item in realized)
+    else:
+        lines.append("- No recently realized strategic outcome is projected.")
+
+    lines.extend(["", "## Deliberate Non-Goals", ""])
+    non_goals = list(intent.get("non_goals", []))
+    lines.extend(f"- {item}" for item in non_goals)
+    if not non_goals:
+        lines.append("- No deliberate non-goals are currently recorded.")
+
+    lines.extend(["", "## Review Triggers", ""])
+    triggers = list(intent.get("review_triggers", []))
+    lines.extend(f"- {item}" for item in triggers)
+    if not triggers:
+        lines.append("- No owner-authored review triggers are currently recorded.")
+
+    lines.extend([
+        "", "## Accounting And Drill-Down", "",
+        f"- Accounting is **{'complete' if view['complete_accounting'] else 'INCOMPLETE'}** across "
+        f"{view['inventory']['total_count']} canonical Ideas, Project Maps, Program Roadmaps, and Campaigns.",
+        "- Review the exhaustive deterministic ledger with "
+        "`python3 scripts/project_projection.py --workspace . 100k ledger`.",
+        "- Use status, overview, order, relationship, outcome, and loop commands for focused detail.",
+        f"- Authority: `{view['authority']['authority']}` ({view['authority']['state']}); "
+        f"source revision `{_cell(view['source_revision'])}`; source digest `{view['source_digest']}`; "
+        f"view digest `{view['state_digest']}`.",
+    ])
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def expected_executive_markdown(workspace: Path) -> tuple[dict[str, Any], str]:
     view = executive(workspace)
     return view, render_executive(view)
@@ -728,10 +1052,13 @@ def check_executive(workspace: Path, output: Path = EXECUTIVE_RELATIVE) -> dict[
 def refresh_executive(workspace: Path, output: Path = EXECUTIVE_RELATIVE) -> dict[str, Any]:
     workspace = workspace.resolve()
     absolute = authority_resolver.require_path_within(workspace, workspace / output)
-    if absolute.is_file() and not absolute.read_text(encoding="utf-8").startswith(EXECUTIVE_MARKER):
-        raise ProjectProjectionError(
-            f"refusing to overwrite non-generated executive view: {absolute.relative_to(workspace)}"
-        )
+    if absolute.is_file():
+        observed = absolute.read_text(encoding="utf-8")
+        generated_markers = (EXECUTIVE_MARKER, *LEGACY_EXECUTIVE_MARKERS)
+        if not observed.startswith(generated_markers):
+            raise ProjectProjectionError(
+                f"refusing to overwrite non-generated executive view: {absolute.relative_to(workspace)}"
+            )
     view, content = expected_executive_markdown(workspace)
     absolute.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary_name = tempfile.mkstemp(prefix=f".{absolute.name}.", dir=absolute.parent)
@@ -762,7 +1089,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--workspace", default=".")
     parser.add_argument("--json", action="store_true")
     commands = parser.add_subparsers(dest="command", required=True)
-    commands.add_parser("100k")
+    review = commands.add_parser("100k")
+    review.add_argument("section", nargs="?", choices=("review", "ledger"), default="review")
     refresh = commands.add_parser("render-100k")
     refresh.add_argument("--output", type=Path, default=EXECUTIVE_RELATIVE)
     check = commands.add_parser("check-100k")
@@ -777,9 +1105,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.command == "100k":
             view, markdown = expected_executive_markdown(workspace)
             if args.json:
-                print(json.dumps(view, indent=2, sort_keys=True))
+                payload = view if args.section == "review" else {
+                    "schema_version": EXECUTIVE_SCHEMA_VERSION,
+                    "kind": "tool-shed-project-executive-ledger",
+                    "source_revision": view["source_revision"],
+                    "source_digest": view["source_digest"],
+                    "state_digest": view["state_digest"],
+                    "complete_accounting": view["complete_accounting"],
+                    "inventory": view["inventory"],
+                    "loop_findings": view["loop_findings"],
+                    "writes_performed": False,
+                }
+                print(json.dumps(payload, indent=2, sort_keys=True))
             else:
-                print(markdown, end="")
+                print(markdown if args.section == "review" else render_ledger(view), end="")
             return 0 if view["complete_accounting"] else 1
         if args.command == "render-100k":
             result = refresh_executive(workspace, args.output)

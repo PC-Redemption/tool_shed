@@ -90,7 +90,8 @@ protection. Every interrupt explains impact, blast radius, rollback, and recomme
 | `ts: build focus areas` | Inspect existing workspace sources and produce a project-specific focus-area catalog and active-campaign assignments. Faithful reversible results may apply under planning autonomy; material responsibility choices require a decision. |
 | `ts: develop roadmap` | Read project evidence and clarify an opt-in Program Roadmap without mutation. |
 | `ts: overview` | Combine maps, approved roadmaps, gates, focus areas, campaign state, and drift. Read-only. |
-| `ts: 100k` | Review direction, health, completion horizon, attention, recent changes, next-cycle candidates, focus coverage, and the complete strategic ledger. Read-only. |
+| `ts: 100k` | Review the owner North Star, completion horizon, context, priorities, landscape, decisions, changes, outcomes, next-cycle candidates, non-goals, and review triggers. Read-only. |
+| `ts: 100k ledger` | Inspect the exhaustive deterministic Idea/Map/PRM/Campaign accounting ledger behind the concise 100k view. Read-only. |
 
 `discussion: <topic>` is also accepted as an informal, read-only discussion signal.
 

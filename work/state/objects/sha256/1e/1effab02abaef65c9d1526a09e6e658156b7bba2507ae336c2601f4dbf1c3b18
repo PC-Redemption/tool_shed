@@ -1,0 +1,114 @@
+# Idea Brief: Restore Strategic-Cockpit Semantics to 100k
+
+Status: ready-for-prm
+Type: idea-brief
+Updated: 2026-09-12
+Next Action: carry this correction through PRM to a verified local Work1 candidate
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces:
+
+## Current Synthesis
+
+### Idea
+
+Restore `100k` as the project owner's strategic cockpit. Preserve its deterministic operational
+projection, but add the missing owner-authored executive intent and make the normal `ts: 100k`
+experience support orientation, strategic review, and selection of the next cycle.
+
+The completed IDEA-0028 implementation optimized complete accounting and avoidance of duplicate
+authority until the result became primarily an audit report. This correction preserves that useful
+substrate while delivering the executive operating experience IDEA-0028 originally described.
+
+### Why It Matters
+
+The current view can prove that 294 artifacts are accounted for, yet an owner returning to the
+project cannot learn its North Star, current strategic horizon, priority landscape, deliberate
+non-goals, decisions needed, or why a next cycle is recommended. In an all-terminal project it
+shows an apparently healthy field of zeroes followed by a very long ledger. That presentation is
+trustworthy but strategically misleading and caused direct operator confusion.
+
+### Desired Outcome
+
+Opening `work/100k.md` or invoking `ts: 100k` lets an owner quickly understand why the project
+exists, what "done for now" means, what materially changed, what remains important, which choices
+need attention, and which next cycles are credible. The view joins a canonical revisioned
+executive-intent source with the existing operational projection.
+
+The main executive view remains concise. Complete accounting remains available through an explicit
+ledger drill-down, but the exhaustive ledger is removed from the main `work/100k.md`. An explicit
+operator choice routes into existing Ideas, maps, PRMs, campaigns, decisions, outcomes, or planning
+order, and resulting evidence and residual gaps return to later executive reviews.
+
+## Constraints And Non-Goals
+
+- Preserve SQLite and file-authority portability and the existing deterministic refresh/check
+  safety contract.
+- Reuse managed documents, revisions, relationships, outcomes, decisions, planning order, focus
+  areas, and the shared project projection rather than introducing another database or lifecycle
+  engine.
+- Give executive intent a narrow, non-overlapping authority boundary: North Star, current horizon,
+  strategic framing, priorities, deliberate non-goals, and review triggers. Existing artifacts
+  continue to own execution and lifecycle truth.
+- Keep bare `ts: 100k` read-only. Subsequent explicit owner choices may invoke existing guarded
+  mutation routes; reading the view alone never selects or starts work.
+- Preserve IDEA-0028 and its release as history. Record this work as a residual product correction,
+  not a rewritten historical verdict.
+- Do not retain the exhaustive Complete Strategic Ledger table in the main executive document.
+- Do not make `work/100k.md` manually editable or create a free-standing 100k backlog.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Canonical executive-intent record plus generated view | Restores owner authorship without weakening deterministic operational truth | Requires a small new managed document role and clear field ownership | Selected |
+| Infer all strategy from existing maps | Avoids a new document role | Completed initiative maps do not provide one living project-level North Star or horizon | Rejected as insufficient |
+| Make `work/100k.md` editable | Simple authoring experience | Reintroduces drift and mixed authority | Rejected |
+| Keep the full ledger in the main view | One-file completeness | Buries executive meaning beneath hundreds of terminal rows | Rejected; retain as drill-down |
+
+## Open Questions
+
+- Exact command spelling and physical format for the ledger drill-down are implementation details;
+  prefer reuse of the existing JSON projection or one deterministic bounded output over a new
+  subsystem.
+- Determine the smallest schema-compatible representation for the singleton executive-intent
+  document during planning; do not add a table if the managed document store can express it.
+
+## Decisions
+
+- The main 100k view is a living strategic cockpit, not a comprehensive artifact dump.
+- Add one canonical revisioned Project Executive Intent source with narrow authority.
+- Keep `work/100k.md` deterministic and read-only.
+- Remove the Complete Strategic Ledger section from the main view while retaining explicit
+  drill-down access and complete machine-checkable accounting.
+- Make the empty/all-terminal state request a new executive horizon rather than imply there is
+  nothing strategically important to decide.
+- Treat the month-away orientation scenario as the primary experience acceptance test.
+- Preserve IDEA-0028 as history and link this correction back to its unmet original intent.
+
+## Don't Forget
+
+- [ ] Define the executive-intent managed-document contract and authority boundary.
+- [ ] Add deterministic intent retrieval to the shared executive projection.
+- [ ] Redesign the main Markdown around North Star, horizon, landscape, priorities, decisions,
+  outcomes, residual gaps, next-cycle choices, and review triggers.
+- [ ] Move the exhaustive ledger behind a bounded drill-down without losing accounting checks.
+- [ ] Update the `ts: 100k` skill, command, operator, and product documentation.
+- [ ] Add owner-oriented acceptance scenarios for populated, empty, stale, file-authority, and
+  SQLite-authority workspaces.
+- [ ] Run focused validation and the repository validator before the Work1 checkpoint.
+
+## Exploration Log
+
+### 2026-09-12
+
+- Idea Brief created.
+- The owner confirmed that IDEA-0028's delivered projection did not match the intended way of
+  using 100k and accepted the proposed correction.
+- Settled the authority split: executive intent owns strategic framing; existing artifacts own
+  execution; the generated view joins both.
+- Settled removal of the Complete Strategic Ledger section from the main Project Executive View,
+  while preserving the ledger as explicit drill-down and machine-checkable accounting.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

@@ -132,10 +132,13 @@ projection and must absorb or replace operator overlap in these surfaces:
 - Idea and Program Roadmap planning-order views;
 - active loop findings and unresolved closure blockers.
 
-100k may add synthesis, direction, completion horizon, and operator decisions. It may not add a
-second artifact ledger, lifecycle model, queue, authority resolver, or hidden source of project
-truth. Existing machine APIs can remain for automation, but duplicate operator-facing summaries
-must either become projections of 100k or have an explicit retirement plan.
+100k may add one narrowly authoritative executive-intent source for synthesis, North Star,
+completion horizon, strategic framing, priorities, deliberate non-goals, decisions, and review
+triggers. It may not add a second execution artifact ledger, lifecycle model, queue, authority
+resolver, or hidden source of project truth. The exhaustive artifact ledger remains a deterministic
+drill-down from the shared projection rather than part of the main executive view. Existing machine
+APIs can remain for automation, but duplicate operator-facing summaries must either become
+projections of 100k or have an explicit retirement plan.
 
 ## Checkpoint Checklist
 

@@ -1,0 +1,50 @@
+# Tool Shed Project Executive Intent
+
+Status: active
+Type: decision
+Role: project-executive-intent-v1
+Updated: 2026-09-12
+
+## North Star
+
+Provide a provider-portable collaboration toolkit that helps a human and AI assistant choose the
+right structure, preserve intent, execute safely, and close outcomes without cluttering project
+code or creating unnecessary infrastructure.
+
+## Current Completion Horizon
+
+Restore `100k` as a concise strategic cockpit in one locally verified Work1 candidate. Preserve the
+trusted shared projection and accounting guarantees, remove the exhaustive ledger from the main
+view, retain it as explicit drill-down, checkpoint the exact corrective work, and stop without
+deployment or release.
+
+## Strategic Context
+
+Tool Shed v0.55.0 delivered a deterministic and complete 100k accounting projection, but the result
+functions primarily as an audit report. It does not give the returning owner a North Star, current
+horizon, strategic framing, priorities, non-goals, decisions, or a useful next-cycle orientation.
+The correction must restore that owner experience without weakening authority, portability,
+recovery, or no-skip guarantees.
+
+## Current Priorities
+
+- Complete the governed IDEA-0029 → MAP-0037 → PRM-0049 → CAMP-0183 Work1 correction.
+- Preserve one-field/one-authority boundaries, deterministic refresh/check behavior, and file/SQLite portability.
+- Prove the month-away owner-orientation scenario as well as machine accounting and recovery.
+
+## Deliberate Non-Goals
+
+- Do not deploy, publish, release, or synchronize installed clients in the current horizon.
+- Do not import or mutate the DisplayTest 100,000-Foot View without direct source access and a separate no-loss review.
+- Do not let a read-only 100k review autonomously choose priorities or start work.
+- Do not introduce a second project-world builder, database, lifecycle engine, or 100k-specific backlog.
+
+## Decisions Needed
+
+- After the Work1 candidate passes, decide whether and how to field-test and deliver the correction.
+
+## Review Triggers
+
+- Review when the current Work1 completion gate passes or fails materially.
+- Review when a material outcome, priority, non-goal, or completion horizon changes.
+- Review when 100k accounting, authority, recovery, or owner-orientation evidence diverges.

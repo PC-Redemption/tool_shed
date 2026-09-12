@@ -82,19 +82,35 @@ permission to skip the check. See `docs/work-orchestration.md`.
 
 ## 100k Project Executive View
 
-Treat `ts: 100k` as the standard read-only operator review of the whole local project. Run
-`scripts/project_projection.py --workspace . 100k` and present its concise executive section before
-the exhaustive ledger. The projection recommends candidates for the next cycle but never selects,
-starts, prioritizes, or completes work. Existing status, overview, order, relationship, outcome,
-and loop commands remain the machine and drill-down interfaces.
+Treat `ts: 100k` as the standard read-only owner strategic review of the whole local project. Run
+`scripts/project_projection.py --workspace . 100k` and present its concise cockpit: North Star,
+current completion horizon, strategic context, owner priorities, project landscape, decisions and
+attention, recommended next cycles, material changes, realized outcomes, deliberate non-goals, and
+review triggers. The projection recommends candidates but never selects, starts, prioritizes, or
+completes work. A subsequent explicit owner choice routes through the existing Idea, map, PRM,
+campaign, decision, outcome, or planning-order operation and its normal authority boundary.
+
+Executive intent has one narrow editable authority. Under SQLite authority, use one active managed
+`decision` document whose metadata role is `project-executive-intent-v1` and whose preferred path is
+`work/project-executive-intent.md`. Under file authority, use that exact path with `Type: decision`
+and `Role: project-executive-intent-v1`. Its sections are North Star, Current Completion Horizon,
+Strategic Context, Current Priorities, Deliberate Non-Goals, Decisions Needed, and Review Triggers.
+The role owns only that executive framing; existing artifacts and outcome state retain lifecycle,
+execution, evidence, and completion truth. Missing or incomplete intent is a decision signal.
+Multiple active intent documents or a malformed file-authority identity fail closed.
+
+The exhaustive ledger is not part of the main Project Executive View. For `ts: 100k ledger`, run
+`scripts/project_projection.py --workspace . 100k ledger`. It is a deterministic read-only
+drill-down from the same projection; existing status, overview, order, relationship, outcome, and
+loop commands remain the focused machine interfaces.
 
 `work/100k.md` is a tracked deterministic projection, never document authority. Use `render-100k`
 to refresh it atomically and `check-100k` to detect missing, stale, manually edited, or incomplete
 content. The renderer refuses to overwrite a file without its exact generated marker. Refresh the
-view after authoritative Idea, map, PRM, campaign, outcome, reconciliation, closure, focus-area, or
-release-cohort changes and before a checkpoint. Strict Doctor reports stale 100k state as an error;
-Work2 closeout refreshes it after release-cohort registration so the committed checkpoint describes
-the actual completion horizon.
+view after authoritative executive-intent, Idea, map, PRM, campaign, outcome, reconciliation,
+closure, focus-area, or release-cohort changes and before a checkpoint. Strict Doctor reports stale
+100k state as an error; Work2 closeout refreshes it after release-cohort registration so the
+committed checkpoint describes the actual completion horizon.
 
 Work3 documentation alignment is limited to the requested candidate scope. Preserve unrelated
 owner documentation and historical records; delete documentation only when the coded change makes

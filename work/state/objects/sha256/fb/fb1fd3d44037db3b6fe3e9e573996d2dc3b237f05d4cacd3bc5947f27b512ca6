@@ -1,0 +1,93 @@
+# Project Map: Restore Strategic-Cockpit Semantics to 100k
+
+Status: active
+Type: project-map
+Updated: 2026-09-12
+Next Action: execute the one-milestone corrective roadmap through Work1
+Source Idea: IDEA-0029
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 2
+Reviewed Body SHA256: 1effab02abaef65c9d1526a09e6e658156b7bba2507ae336c2601f4dbf1c3b18
+
+## Purpose
+
+Correct the released 100k experience so it functions as the project owner's strategic cockpit,
+while preserving the deterministic shared projection and complete-accounting guarantees delivered
+by IDEA-0028.
+
+## Desired Outcome
+
+The normal `work/100k.md` and `ts: 100k` experience answers why the project exists, what completion
+currently means, what changed, what matters now, which decisions need attention, and which next
+cycles are credible. One narrowly authoritative executive-intent document supplies owner-authored
+strategy; existing Tool Shed artifacts retain execution authority; the generated view joins both.
+
+The main view no longer contains the exhaustive Complete Strategic Ledger. Complete accounting
+remains deterministic and available through explicit drill-down.
+
+## Visual Map
+
+```mermaid
+flowchart TD
+  O[Owner] --> I[Project Executive Intent]
+  A[Ideas maps PRMs campaigns outcomes decisions] --> P[Shared project projection]
+  I --> V[Concise 100k strategic cockpit]
+  P --> V
+  P --> L[Explicit complete-ledger drill-down]
+  V --> C[Owner chooses a next cycle]
+  C --> A
+  A --> R[Results and residual gaps]
+  R --> V
+```
+
+## Settled Direction
+
+- Introduce one singleton managed `project-executive-intent` document per project using existing
+  document revision primitives; add no new database table or lifecycle engine.
+- Executive intent owns only the North Star, current horizon, strategic framing, priorities,
+  deliberate non-goals, decisions, and review triggers.
+- Existing Ideas, maps, PRMs, campaigns, outcomes, relationships, evidence, and planning order own
+  execution and lifecycle truth.
+- Keep `work/100k.md` and bare `ts: 100k` deterministic and read-only.
+- Remove the Complete Strategic Ledger section from the main Markdown. Retain complete accounting
+  through an explicit bounded deterministic ledger command/output.
+- Treat missing executive intent and all-terminal operational state as an executive decision signal,
+  not proof that no strategic work remains.
+- Subsequent explicit owner choices route through existing guarded mutations; reading 100k never
+  changes priority or starts work.
+- Preserve IDEA-0028 and v0.55.0 as history. This map owns the residual experience correction.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Intent authority | Minimal managed executive-intent document contract and deterministic retrieval | existing document store |
+| Cockpit and ledger | Concise main view plus explicit exhaustive drill-down | intent authority and shared projection |
+| Operating route and proof | Correct skill/docs behavior and owner-oriented compatibility tests | prior workstreams |
+
+## Readiness Gate Transfer
+
+1. `G1-EXECUTIVE-INTENT-AUTHORITY` — narrow singleton intent source with no duplicate execution authority.
+2. `G2-STRATEGIC-COCKPIT-EXPERIENCE` — concise decision surface and explicit ledger drill-down.
+3. `G3-PARITY-RECOVERY-AND-OWNER-ACCEPTANCE` — deterministic portable behavior and owner scenarios.
+
+## Program Shape
+
+Deliver one bounded Work1 candidate. Implement the managed intent contract, revise the executive
+projection and command interface, remove the main ledger, update docs and the portable skill, run
+focused and full local validation, checkpoint only the corrective work, and stop without deployment
+or release.
+
+## Constraints And Non-Goals
+
+- No production publication, remote deployment, hosted write-back, or client synchronization.
+- No DisplayTest migration without its directly available source and a separate no-loss review.
+- No manual editing of generated `work/100k.md`.
+- No autonomous strategy selection from a read-only review.
+- No second project-world builder, strategic backlog, database, or lifecycle system.
+
+## Completion Boundary
+
+This map is complete when all three transferred gates pass in one locally verified Work1 candidate
+and the candidate is checkpointed with IDEA-0029's outcome chain still open for any later delivery
+or field evidence.
