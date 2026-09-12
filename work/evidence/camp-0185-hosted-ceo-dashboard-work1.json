@@ -18,7 +18,15 @@
     "checkpoint_revision": 1719,
     "domain_digest": "ccf3c438f5afc44a02e4f5dddf641e21f64420d6685dd1750525c7148b8aa6b7",
     "rebuild_domain_digest": "ccf3c438f5afc44a02e4f5dddf641e21f64420d6685dd1750525c7148b8aa6b7",
-    "checkpoint_rebuild_parity": true
+    "checkpoint_rebuild_parity": true,
+    "full_validation": "tool_shed full validation passed in 49.132 seconds, including 675 of 675 tests and all structural gates.",
+    "strict_doctor_after_closure": {
+      "verdict": "HEALTHY",
+      "fully_healthy": true,
+      "finding_count": 0,
+      "state_token": "0e595db1b6f65b0c",
+      "verified_commit": "039597e3db61d3ad80d30b569a3e4bf358e01cc4"
+    }
   },
   "external_changes": {
     "push": false,
