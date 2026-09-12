@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-target-evidence",
+  "endpoint": "work5-development",
+  "target": "web at tsrookarocom-dev on sup.local, Windows at PC-Redemption/ts_windows_test_bed on GOGETTER, and Linux at PC-Redemption/ts_linux_test_bed on sup.local",
+  "checked_at": "2026-09-12T15:44:59Z",
+  "campaign": "CAMP-0185",
+  "origin_cycle": "830b7a09-0f4f-4a6f-8f3e-73d53dc6b45d",
+  "candidate_commit": "fdf2697779155efff547961e5de53f67b57cc8bf",
+  "candidate_version": "0.57.0",
+  "checks": [
+    {
+      "id": "canonical-work1-qualification",
+      "status": "passed",
+      "reference": "exact candidate fdf2697 includes the locally verified schema-12 reporter projection, hosted CEO tab, exact copyable ts: directive commands, schema-11 compatibility, 675-test suite, strict Doctor, and clean Hybrid checkpoint"
+    },
+    {
+      "id": "web-development",
+      "status": "passed",
+      "reference": "tsrookarocom-dev staged exact commit fdf2697779155efff547961e5de53f67b57cc8bf as tool-shed-dashboard:dev-fdf269777915 with image sha256:7dfe92ccf7756b8695f0d2642dbdb68df68b39f9299b074277014aed2ce0c8a7; development docs and dashboard health returned HTTP 200; check_dashboard_development reported healthy; production remained healthy and unchanged"
+    },
+    {
+      "id": "linux-development",
+      "status": "passed",
+      "reference": "sup:/home/jon/dev/ts_linux_test_bed installed the exact portable candidate archive sha256:62d4888d6d7b19f604a67d53f629f447321c4544cde1461ba83e84804bf73af9; strict local manifest integrity, focused validation 8/8, current 100k projection, and CLEAN Hybrid revision 31 passed; rollback snapshot tool_shed.development-v057-fdf2697 retained"
+    },
+    {
+      "id": "windows-development",
+      "status": "passed",
+      "reference": "GOGETTER:E:\\dev\\ts_windows_test_bed installed the exact portable candidate archive sha256:62d4888d6d7b19f604a67d53f629f447321c4544cde1461ba83e84804bf73af9; strict local manifest integrity, focused validation 8/8, current 100k projection, and CLEAN Hybrid revision 27 passed; rollback snapshot tool_shed.development-v057-fdf2697 retained"
+    },
+    {
+      "id": "target-boundaries",
+      "status": "passed",
+      "reference": "host identities and exact disposable workspace roots were verified before replacement; archives exclude Git metadata and canonical work; parent project work and identities were preserved"
+    }
+  ]
+}
