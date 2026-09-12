@@ -1,0 +1,53 @@
+# Tool Shed Project Executive Intent
+
+Status: active
+Type: decision
+Role: project-executive-intent-v1
+Updated: 2026-09-12
+
+## North Star
+
+Provide a provider-portable collaboration toolkit that helps a human and AI assistant choose the
+right structure, preserve intent, execute safely, and close outcomes without cluttering project
+code or creating unnecessary infrastructure.
+
+## Current Completion Horizon
+
+Tool Shed v0.58.0 is released and verified across the web, Windows, and Linux production lanes.
+CEO directives now support durable batch intake and non-preemptive interleaving through canonical
+Idea planning order and subordinate cycles. Reporter schema 13 has converged the production CEO
+view, released clients are current, the installed Codex skill is synchronized, and no Work5 release
+cycle remains.
+
+## Strategic Context
+
+Tool Shed v0.58.0 makes the CEO-directive model durable across the operator's actual cadence: the
+CEO can add multiple directives before implementation and interleave new directives between
+implementations. Canonical Idea planning order retains them while the one-working-campaign
+invariant prevents preemption; subordinate Plan, Roadmap, Milestone, Campaign, Evidence, and
+Outcome cycles choose and execute the internal mechanics. The hosted CEO tab remains a read-only
+copy-to-Codex bridge into that locally governed lifecycle.
+
+## Current Priorities
+
+- Use `ts: 100k add <directive>` as the CEO command surface for durable batch intake and let subordinate cycles choose the internal mechanics.
+- Keep executive intent, directive state, and subordinate handoff visible in both the local and hosted read-only CEO cockpits from canonical lifecycle truth.
+- Let the operator copy each exact `ts: directive <directive text>` command from the hosted CEO tab and paste it into Codex for governed execution.
+- Keep v0.58.0 production surfaces converged and require a separate explicit directive for any future release or broader delivery endpoint.
+
+## Deliberate Non-Goals
+
+- Do not give the hosted dashboard execution, write-back, prioritization, or lifecycle authority.
+- Do not import or mutate the DisplayTest 100,000-Foot View without direct source access and a separate no-loss review.
+- Do not make bare 100k review mutating or infer a directive from passive reading.
+- Do not introduce a second project-world builder, database, lifecycle engine, queue, or 100k-specific backlog.
+
+## Decisions Needed
+
+- No executive decision is currently required; v0.58.0 is released, production-verified, and reconciled with no subordinate cycle open.
+
+## Review Triggers
+
+- Review when the CEO issues the next directive, changes planning order, or requests another release or broader delivery endpoint.
+- Review when a material outcome, priority, non-goal, or completion horizon changes.
+- Review when 100k accounting, authority, recovery, or owner-orientation evidence diverges.
