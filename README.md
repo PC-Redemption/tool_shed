@@ -283,6 +283,12 @@ Ideas/Maps/PRMs/Campaigns from the active authority, and regenerate the view wit
 strategy. Use `scripts/project_projection.py` to render or check it. See the
 [`100k Project Executive View contract`](docs/project-executive-view.md).
 
+The explicit CEO command surface is `ts: 100k add <directive>` (or concise alias
+`ts: directive <directive>`). It preserves the directive through the existing Idea/outcome model
+and hands it to the Plan Cycle; subordinate Roadmap, Milestone, Campaign, Evidence, and Outcome
+cycles materialize, execute, and report it within the stated delivery and autonomy boundaries.
+Bare `ts: 100k` remains a read-only review.
+
 Hybrid schema 4 adds persisted, deduplicated outcome-loop findings; schema 5 expands current-state
 discovery to blocked or stalled outcomes, reconciliation and result-propagation gaps, invalid
 lineage, missing, stale, or failed closure evidence, and lifecycle/body drift across durable work

@@ -54,6 +54,10 @@ python3 scripts/document_store.py --workspace . create \
   --project-binding <binding> --type ticket --title "Example" \
   --body-file .tool-shed/edits/new-ticket.md --preferred-path work/tickets/ticket-example.md \
   --actor codex --reason "Create accepted work"
+
+# Open the created document's existing governed outcome loop when the route requires one.
+python3 scripts/document_store.py --workspace . open-outcome IDEA-0001 \
+  --project-binding <binding> --accepted-outcome "The accepted outcome" --actor codex
 ```
 
 ## Disposable views

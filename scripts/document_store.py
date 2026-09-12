@@ -1662,6 +1662,7 @@ def build_parser() -> argparse.ArgumentParser:
     import_parser = commands.add_parser("import-apply")
     import_parser.add_argument("--project-binding", required=True); import_parser.add_argument("--source", required=True); import_parser.add_argument("--type", required=True); import_parser.add_argument("--lifecycle", default="active"); import_parser.add_argument("--actor", required=True); import_parser.add_argument("--reason", required=True); import_parser.add_argument("--assigned-number", type=int)
     create_parser = commands.add_parser("create"); create_parser.add_argument("--project-binding", required=True); create_parser.add_argument("--type", required=True); create_parser.add_argument("--title", required=True); create_body = create_parser.add_mutually_exclusive_group(required=True); create_body.add_argument("--body"); create_body.add_argument("--body-file"); create_parser.add_argument("--lifecycle", default="active"); create_parser.add_argument("--metadata-json", default="{}"); create_parser.add_argument("--preferred-path"); create_parser.add_argument("--actor", required=True); create_parser.add_argument("--reason", required=True)
+    outcome_parser = commands.add_parser("open-outcome"); outcome_parser.add_argument("identity"); outcome_parser.add_argument("--project-binding", required=True); outcome_parser.add_argument("--accepted-outcome", required=True); outcome_parser.add_argument("--actor", required=True)
     list_parser = commands.add_parser("list"); list_parser.add_argument("--lifecycle"); list_parser.add_argument("--type"); list_parser.add_argument("--limit", type=int, default=100)
     show_parser = commands.add_parser("show"); show_parser.add_argument("identity")
     search_parser = commands.add_parser("search"); search_parser.add_argument("query"); search_parser.add_argument("--limit", type=int, default=20)
@@ -1697,6 +1698,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif args.command == "create":
             body = args.body if args.body is not None else require_path_within(workspace, workspace / args.body_file).read_text(encoding="utf-8")
             result = create_document(workspace, project_binding=args.project_binding, document_type=args.type, title=args.title, body=body, lifecycle=args.lifecycle, metadata=json.loads(args.metadata_json), actor=args.actor, reason=args.reason, preferred_path=args.preferred_path, database=database)
+        elif args.command == "open-outcome": result = open_outcome(workspace, project_binding=args.project_binding, identity=args.identity, accepted_outcome=args.accepted_outcome, actor=args.actor, database=database)
         elif args.command == "list": result = list_documents(workspace, lifecycle=args.lifecycle, document_type=args.type, limit=args.limit, database=database)
         elif args.command == "show": result = show(workspace, args.identity, database=database)
         elif args.command == "search": result = search(workspace, args.query, limit=args.limit, database=database)

@@ -37,6 +37,23 @@ authority. `work/100k.md` remains a deterministic read-only projection. Bare `ts
 selects, prioritizes, starts, or completes work. A later explicit owner choice uses the existing
 guarded route for the selected source.
 
+## CEO Directives And Subordinate Cycles
+
+`ts: 100k add <directive>` is the explicit write route beside the read-only cockpit;
+`ts: directive <directive>` is its concise alias. It preserves the CEO's wording in an existing
+Idea Brief marked `Role: project-executive-directive-v1`, opens the normal governed outcome under
+Hybrid authority, and delegates immediately to the Plan Cycle. The route then continues through
+Roadmap, Milestone, Campaign, Evidence, and Outcome cycles as the active authority envelope allows.
+
+The CEO supplies the desired outcome, constraints, priority, and delivery boundary. The subordinate
+cycles select internal artifact mechanics. A source-changing directive without delivery language
+defaults to a verified Work1 candidate; push, deployment, release, credentials, destructive
+recovery, and other authority expansions are never inferred.
+
+100k projects directive state and its current subordinate handoff from existing Idea, relationship,
+outcome, reconciliation, and closure authority. Directives do not create another backlog, queue,
+table, or lifecycle engine. Bare 100k review and deterministic rendering remain non-mutating.
+
 ```bash
 python3 scripts/project_projection.py --workspace . 100k
 python3 scripts/project_projection.py --workspace . 100k setup

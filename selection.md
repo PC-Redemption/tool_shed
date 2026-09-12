@@ -20,6 +20,11 @@ Use an Idea Brief when:
 - the owner wants a durable synthesis that can later become PRM input
 - exploration is not yet approval to create a project map, roadmap, campaigns, or product changes
 
+Use the executive-directive Idea Brief variant when the project owner is acting as CEO: the
+directive is settled enough to hand to the Plan Cycle, its exact wording must be preserved, and the
+owner should not need to select subordinate artifact mechanics. This is still an Idea Brief and
+uses the existing PRM and outcome lifecycle.
+
 Use a checklist when:
 
 - the work is bounded
@@ -115,6 +120,7 @@ Use a decision matrix when:
 ## Fast Rule
 
 - Idea Brief for durable pre-PRM brainstorming.
+- Executive directive for CEO-issued, ready-for-Plan-Cycle intent using the existing Idea model.
 - Checklist for bounded execution.
 - Ticket for specific behavior change.
 - Project map for visual coordination across moving parts.

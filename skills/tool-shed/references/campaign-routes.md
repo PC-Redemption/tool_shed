@@ -90,6 +90,33 @@ review triggers. The projection recommends candidates but never selects, starts,
 completes work. A subsequent explicit owner choice routes through the existing Idea, map, PRM,
 campaign, decision, outcome, or planning-order operation and its normal authority boundary.
 
+Treat `ts: 100k add <directive>` as the explicit CEO command-and-delegation route and
+`ts: directive <directive>` as its exact concise alias. Bare `ts: 100k` remains read-only. For the
+write route:
+
+1. Preserve the operator's directive text exactly and compare it with active executive directives
+   for one clear material match. Resume that directive when one matches; ask one concise choice
+   only when several match.
+2. Obtain the project-bound mutation identity and create one Idea Brief with
+   `new_artifact.py executive-directive`, role `project-executive-directive-v1`, and status
+   `ready-for-prm`. This role changes the CEO-facing entry surface, not Idea or outcome lifecycle
+   authority. Under SQLite authority, open the document's governed outcome with
+   `document_store.py open-outcome`.
+3. Hand the directive immediately to the Plan Cycle and continue as `ts: prm idea <id>`. The CEO
+   does not choose project-map, roadmap, milestone, campaign, evidence, or outcome mechanics.
+   Subordinate cycles select the smallest sufficient structure, materialize it, execute within the
+   directive and active autonomy envelope, and propagate evidence back to 100k.
+4. Preserve explicit endpoint, target, timing, constraint, and non-goal language from the
+   directive. Without delivery language, a source-changing directive defaults to a verified Work1
+   candidate. Never infer push, deployment, release, credentials, destructive recovery, or another
+   authority expansion.
+5. Refresh 100k after each authoritative lifecycle checkpoint. Interrupt only for material
+   ambiguity, conflicting directives, or a genuine authority boundary—not to expose internal
+   artifact selection to the CEO.
+
+Executive directives reuse the existing Idea, relationship, outcome, reconciliation, closure, and
+PRM substrate. Do not add a 100k-specific backlog, queue, database table, or lifecycle engine.
+
 Executive intent has one narrow editable authority. Under SQLite authority, use one active managed
 `decision` document whose metadata role is `project-executive-intent-v1` and whose preferred path is
 `work/project-executive-intent.md`. Under file authority, use that exact path with `Type: decision`

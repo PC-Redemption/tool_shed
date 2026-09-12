@@ -146,6 +146,11 @@ execution. `ts: prm idea <idea-id-or-path>` selects one brief as the PRM source.
 active authority envelope; later faithful planning and lifecycle transitions may continue
 automatically when that envelope covers them. Preserve the brief as provenance.
 
+`ts: 100k add <directive>` and `ts: directive <directive>` create the executive-directive variant
+with `Type: idea-brief`, `Role: project-executive-directive-v1`, and `Status: ready-for-prm`.
+It preserves the CEO's exact directive and is immediately handed to the Plan Cycle. It remains an
+Idea Brief governed by the existing PRM and outcome machinery, not a second backlog or lifecycle.
+
 ## Owner Campaign Lifecycle
 
 `work/00-campaigns/` is the first-sorted owner control surface:

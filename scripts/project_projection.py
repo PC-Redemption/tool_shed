@@ -27,14 +27,16 @@ import update_work_index
 
 
 SCHEMA_VERSION = 2
-EXECUTIVE_SCHEMA_VERSION = 2
+EXECUTIVE_SCHEMA_VERSION = 3
 EXECUTIVE_RELATIVE = Path("work/100k.md")
-EXECUTIVE_MARKER = "<!-- GENERATED: TOOL-SHED-PROJECT-EXECUTIVE-VIEW-V2; DO NOT EDIT -->"
+EXECUTIVE_MARKER = "<!-- GENERATED: TOOL-SHED-PROJECT-EXECUTIVE-VIEW-V3; DO NOT EDIT -->"
 LEGACY_EXECUTIVE_MARKERS = (
+    "<!-- GENERATED: TOOL-SHED-PROJECT-EXECUTIVE-VIEW-V2; DO NOT EDIT -->",
     "<!-- GENERATED: TOOL-SHED-PROJECT-EXECUTIVE-VIEW-V1; DO NOT EDIT -->",
 )
 EXECUTIVE_INTENT_RELATIVE = Path("work/project-executive-intent.md")
 EXECUTIVE_INTENT_ROLE = "project-executive-intent-v1"
+EXECUTIVE_DIRECTIVE_ROLE = "project-executive-directive-v1"
 EXECUTIVE_INTENT_SECTIONS = (
     ("north_star", "North Star"),
     ("completion_horizon", "Current Completion Horizon"),
@@ -178,6 +180,7 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
                     "artifact_id": authority_resolver.file_artifact_id(workspace, relative),
                     "visible_id": visible_id, "artifact_type": artifact_type,
                     "title": " ".join(item.title.split())[:160] or visible_id,
+                    "metadata_role": item.fields.get("Role"),
                     "document_lifecycle": document_lifecycle,
                     "outcome_lifecycle": "unknown", "outcome_disposition": "unknown",
                     "reconciliation_state": "unknown", "terminal_reason": None,
@@ -209,7 +212,7 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
         rows = connection.execute(
             """
             SELECT d.id, d.visible_id, d.namespace, d.title, d.lifecycle_state, d.updated_at,
-                   dr.body_markdown,
+                   d.metadata_json, dr.body_markdown,
                    COALESCE((SELECT c.lifecycle_state FROM cycle c WHERE c.origin_artifact_id=d.id
                        ORDER BY c.opened_at DESC,c.id DESC LIMIT 1), 'unknown') AS outcome_lifecycle,
                    COALESCE((SELECT v.disposition FROM outcome_verdict v JOIN cycle c ON c.id=v.cycle_id
@@ -329,6 +332,7 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
     for row in rows:
         artifact_id = str(row["id"])
         artifact_type = TYPE_BY_NAMESPACE[str(row["namespace"])]
+        metadata = json.loads(str(row["metadata_json"]))
         planning = planning_items.get(artifact_id)
         campaign_readiness = loop_findings._body_status(str(row["body_markdown"])) if artifact_type == "campaign" else None
         title = " ".join(str(row["title"]).split())[:160] or str(row["visible_id"])
@@ -336,6 +340,7 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
             {
                 "artifact_id": artifact_id,
                 "visible_id": str(row["visible_id"]), "artifact_type": artifact_type, "title": title,
+                "metadata_role": metadata.get("role"),
                 "document_lifecycle": str(row["lifecycle_state"]),
                 "outcome_lifecycle": str(row["outcome_lifecycle"]), "outcome_disposition": str(row["outcome_disposition"]),
                 "reconciliation_state": str(row["reconciliation_state"]),
@@ -663,6 +668,31 @@ def executive(workspace: Path) -> dict[str, Any]:
             seen.add(item["artifact_id"])
             deduplicated.append(item)
 
+    executive_directives = []
+    for item in sorted(
+        (
+            item for item in artifacts
+            if item.get("metadata_role") == EXECUTIVE_DIRECTIVE_ROLE
+        ),
+        key=lambda item: (item["updated_at"], item["visible_id"]),
+        reverse=True,
+    )[:8]:
+        if item["document_lifecycle"] in {"completed", "terminal"}:
+            stage = "completed"
+        elif item["outcome_disposition"] not in {"unknown", "open"}:
+            stage = item["outcome_disposition"]
+        elif item["produces_ids"]:
+            stage = "delegated"
+        elif item["outcome_lifecycle"] == "working":
+            stage = "plan-cycle"
+        else:
+            stage = "issued"
+        executive_directives.append({
+            **item,
+            "directive_stage": stage,
+            "subordinate_handoff": item["produces_ids"] or ["Plan Cycle"],
+        })
+
     attention: list[dict[str, str]] = []
     if inventory["truncated"]:
         attention.append({
@@ -704,6 +734,7 @@ def executive(workspace: Path) -> dict[str, Any]:
         "release_horizon": release,
         "attention": attention,
         "recommendations": [item["artifact_id"] for item in deduplicated[:8]],
+        "executive_directives": [item["artifact_id"] for item in executive_directives],
         "recent": [item["artifact_id"] for item in recent],
     }
     return {
@@ -728,6 +759,7 @@ def executive(workspace: Path) -> dict[str, Any]:
         "release_horizon": release,
         "attention": attention,
         "recommendations": deduplicated[:8],
+        "executive_directives": executive_directives,
         "recent_changes": recent,
         "loop_findings": projection["loop_findings"],
         "writes_performed": False,
@@ -1063,6 +1095,28 @@ def render_executive(view: dict[str, Any]) -> str:
     if not priorities:
         lines.append("- No owner-authored strategic priority order is currently recorded.")
 
+    lines.extend(["", "## Executive Directives", ""])
+    directives = list(view.get("executive_directives", []))
+    if directives:
+        lines.extend([
+            "| Directive | State | Subordinate handoff |",
+            "| --- | --- | --- |",
+        ])
+        for item in directives:
+            handoff = ", ".join(
+                f"`{value}`" if re.fullmatch(r"[A-Z]+-\d+", value) else value
+                for value in item["subordinate_handoff"]
+            )
+            lines.append(
+                f"| `{item['visible_id']}` — {_cell(item['title'])} | "
+                f"{_cell(item['directive_stage'])} | {handoff} |"
+            )
+    else:
+        lines.append(
+            "- No executive directive is currently recorded. Issue one with "
+            "`ts: 100k add <directive>`; Tool Shed will hand it to the Plan Cycle."
+        )
+
     lines.extend([
         "", "## Project Landscape", "",
         "| Working | Ready | Blocked | Active ideas | Open outcomes | Unreconciled | Closure debt | Loop findings |",
@@ -1119,7 +1173,16 @@ def render_executive(view: dict[str, Any]) -> str:
                 f"- `{item['visible_id']}` — {item['title']} ({item['document_lifecycle']}; "
                 f"{item['planning_readiness']}; {position})"
             )
-        lines.append("- The operator must explicitly choose or change the next cycle.")
+        if any(
+            item["document_lifecycle"] not in {"completed", "terminal"}
+            for item in directives
+        ):
+            lines.append(
+                "- The active CEO directive owns the outcome; subordinate cycles continue under "
+                "its authority envelope."
+            )
+        else:
+            lines.append("- The operator must explicitly choose or change the next cycle.")
     else:
         lines.append("- No working or ready strategic cycle is currently projected.")
 

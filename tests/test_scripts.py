@@ -3685,6 +3685,33 @@ Active workpackage: `work/wp/active/wp-demo.md`.
                 for item in reconciliation["whole_work"]["findings"]
             ))
 
+    def test_executive_directive_preserves_ceo_text_as_ready_prm_input(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            directive = "Make release evidence obvious to a returning CEO"
+
+            run_script(
+                "scripts/new_artifact.py",
+                "executive-directive",
+                directive,
+                "--workspace",
+                str(workspace),
+                "--shed",
+                str(ROOT),
+            )
+
+            artifact = (
+                workspace / "work/ideas/directive-make-release-evidence-obvious-to-a-returning-ceo.md"
+            )
+            text = artifact.read_text(encoding="utf-8")
+            self.assertIn(f"# Executive Directive: {directive}", text)
+            self.assertIn("Status: ready-for-prm", text)
+            self.assertIn("Role: project-executive-directive-v1", text)
+            self.assertIn(f"## CEO Directive\n\n{directive}", text)
+            payload = json.loads((workspace / "work/index.json").read_text(encoding="utf-8"))
+            entry = next(item for item in payload["artifacts"] if item["path"] == artifact.relative_to(workspace).as_posix())
+            self.assertEqual("idea-brief", entry["type"])
+
     def test_new_artifact_creates_deep_research_spike_and_indexes_it(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)

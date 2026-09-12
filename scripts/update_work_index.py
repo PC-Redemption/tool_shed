@@ -18,6 +18,7 @@ SKIP_NAMES = {"README.md", "100k.md", "index.md", "active-queue.md", "completed-
 HEADER_KEYS = {
     "Status",
     "Type",
+    "Role",
     "Updated",
     "Next Action",
     "Parent",
@@ -72,6 +73,7 @@ class Artifact:
             "path": self.path.as_posix(),
             "title": self.title,
             "type": self.kind() or None,
+            "role": self.fields.get("Role") or None,
             "status": self.status() or None,
             "updated": self.fields.get("Updated") or None,
             "next_action": self.fields.get("Next Action") or None,

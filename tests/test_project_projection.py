@@ -20,6 +20,7 @@ class ProjectProjectionTests(unittest.TestCase):
         artifact = {
             "artifact_id": "artifact-1", "visible_id": "CAMP-0001",
             "artifact_type": "campaign", "title": "Finish the view",
+            "metadata_role": None,
             "document_lifecycle": "working", "outcome_lifecycle": "open",
             "outcome_disposition": "open", "reconciliation_state": "open",
             "parent_ids": ["PRM-0001"], "produces_ids": [],
@@ -28,7 +29,7 @@ class ProjectProjectionTests(unittest.TestCase):
             "updated_at": "2026-09-11T00:00:00Z",
         }
         return {
-            "schema_version": 2, "kind": "tool-shed-project-executive-view",
+            "schema_version": 3, "kind": "tool-shed-project-executive-view",
             "authority": {"authority": "sqlite", "state": "hybrid"},
             "source_revision": 4, "source_digest": "source", "state_digest": "state",
             "latest_source_update": "2026-09-11T00:00:00Z",
@@ -57,7 +58,8 @@ class ProjectProjectionTests(unittest.TestCase):
                 "decisions_needed": [],
             },
             "release_horizon": {"available": True, "base_tag": "v1.0.0", "active_cohorts": []},
-            "attention": [], "recommendations": [artifact], "recent_changes": [artifact],
+            "attention": [], "recommendations": [artifact], "executive_directives": [],
+            "recent_changes": [artifact],
             "loop_findings": {"total_active_count": 0, "findings": []},
             "writes_performed": False,
         }
@@ -124,6 +126,8 @@ class ProjectProjectionTests(unittest.TestCase):
         self.assertTrue(first.startswith(project_projection.EXECUTIVE_MARKER))
         self.assertIn("## Executive Review", first)
         self.assertIn("## North Star", first)
+        self.assertIn("## Executive Directives", first)
+        self.assertIn("`ts: 100k add <directive>`", first)
         self.assertIn("## Decisions And Attention", first)
         self.assertIn("## Accounting And Drill-Down", first)
         self.assertNotIn("## Complete Strategic Ledger", first)
@@ -133,6 +137,64 @@ class ProjectProjectionTests(unittest.TestCase):
         self.assertIn("## Complete Strategic Ledger", ledger)
         self.assertIn("`CAMP-0001`", ledger)
         self.assertNotIn(project_projection.EXECUTIVE_MARKER, ledger)
+
+    def test_render_shows_ceo_directive_and_subordinate_handoff(self) -> None:
+        view = self.executive_fixture()
+        directive = {
+            "artifact_id": "directive-1",
+            "visible_id": "IDEA-0030",
+            "artifact_type": "idea-brief",
+            "title": "Make releases boring",
+            "metadata_role": project_projection.EXECUTIVE_DIRECTIVE_ROLE,
+            "document_lifecycle": "active",
+            "outcome_lifecycle": "working",
+            "outcome_disposition": "open",
+            "reconciliation_state": "open",
+            "parent_ids": [],
+            "produces_ids": ["MAP-0038"],
+            "planning_position": 1,
+            "planning_readiness": "working",
+            "closure_status": {"effective_closed": False, "local_closure": "open"},
+            "updated_at": "2026-09-12T00:00:00Z",
+            "directive_stage": "delegated",
+            "subordinate_handoff": ["MAP-0038"],
+        }
+        view["executive_directives"] = [directive]
+        rendered = project_projection.render_executive(view)
+        self.assertIn("`IDEA-0030` — Make releases boring", rendered)
+        self.assertIn("delegated", rendered)
+        self.assertIn("`MAP-0038`", rendered)
+        self.assertIn("subordinate cycles continue", rendered)
+        self.assertNotIn("operator must explicitly choose", rendered)
+
+    def test_file_inventory_marks_executive_directive_role(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary)
+            path = workspace / "work/ideas/directive-reliable-release.md"
+            path.parent.mkdir(parents=True)
+            path.write_text(
+                "# Executive Directive: Reliable release\n\n"
+                "Status: ready-for-prm\nType: idea-brief\n"
+                f"Role: {project_projection.EXECUTIVE_DIRECTIVE_ROLE}\n"
+                "Updated: 2026-09-12\n",
+                encoding="utf-8",
+            )
+            with mock.patch.object(
+                project_projection.planning_order,
+                "file_projection",
+                return_value={"items": []},
+            ), mock.patch.object(
+                project_projection.authority_resolver,
+                "file_artifact_id",
+                return_value="directive-1",
+            ):
+                inventory = project_projection._inventory(
+                    workspace, {"authority": "file"}
+                )
+        self.assertEqual(
+            project_projection.EXECUTIVE_DIRECTIVE_ROLE,
+            inventory["artifacts"][0]["metadata_role"],
+        )
 
     @staticmethod
     def intent_body(*, role: bool = True) -> str:

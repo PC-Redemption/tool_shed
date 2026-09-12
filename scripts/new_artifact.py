@@ -22,6 +22,9 @@ except ModuleNotFoundError:  # Older partial snapshots retain file authority.
 ARTIFACTS = {
     "idea": ("templates/idea-brief.md", "work/ideas", "idea"),
     "idea-brief": ("templates/idea-brief.md", "work/ideas", "idea"),
+    "executive-directive": (
+        "templates/executive-directive.md", "work/ideas", "directive"
+    ),
     "checklist": ("templates/checklist.md", "work/checklists", "checklist"),
     "ticket": ("templates/ticket.md", "work/tickets", "ticket"),
     "map": ("templates/project-map.md", "work/maps", "map"),
@@ -44,7 +47,8 @@ ARTIFACTS = {
 }
 
 DATABASE_TYPES = {
-    "idea": "idea-brief", "idea-brief": "idea-brief", "checklist": "checklist", "ticket": "ticket",
+    "idea": "idea-brief", "idea-brief": "idea-brief", "executive-directive": "idea-brief",
+    "checklist": "checklist", "ticket": "ticket",
     "map": "project-map", "project-map": "project-map", "coordination-map": "project-map",
     "wp": "workpackage", "workpackage": "workpackage", "adr": "adr", "runbook": "runbook",
     "incident": "incident", "spike": "spike", "deep-research": "spike", "deep-research-spike": "spike",
@@ -52,11 +56,13 @@ DATABASE_TYPES = {
     "level-2-inventory": "inventory", "decision": "decision", "decision-matrix": "decision",
 }
 
+EXECUTIVE_DIRECTIVE_ROLE = "project-executive-directive-v1"
+
 
 def slugify(value: str) -> str:
     lowered = value.strip().lower()
     slug = re.sub(r"[^a-z0-9]+", "-", lowered).strip("-")
-    return slug or "untitled"
+    return slug[:80].rstrip("-") or "untitled"
 
 
 def render_template(template: str, *, title: str) -> str:
@@ -105,6 +111,16 @@ def main() -> int:
         lifecycle = {"complete": "completed", "promoted": "active", "approved": "active", "proposed": "active"}.get(status, status)
         if lifecycle not in document_store.LIFECYCLES:
             lifecycle = "active"
+        metadata = {
+            "document_type": DATABASE_TYPES[args.kind],
+            "logical_path": destination.relative_to(workspace).as_posix(),
+        }
+        if args.kind == "executive-directive":
+            metadata.update({
+                "role": EXECUTIVE_DIRECTIVE_ROLE,
+                "directive_text": args.title.strip(),
+                "source_route": "ts: 100k add",
+            })
         result = document_store.create_document(
             workspace,
             project_binding=args.project_binding,
@@ -112,7 +128,7 @@ def main() -> int:
             title=args.title,
             body=rendered,
             lifecycle=lifecycle,
-            metadata={"document_type": DATABASE_TYPES[args.kind], "logical_path": destination.relative_to(workspace).as_posix()},
+            metadata=metadata,
             actor=args.actor,
             reason="create Tool Shed artifact",
             preferred_path=destination.relative_to(workspace).as_posix(),

@@ -463,7 +463,9 @@ cycles, deliberate non-goals, and review triggers. It is generated from existing
 the named intent or operational source, then refresh with
 `python3 scripts/project_projection.py --workspace . render-100k`. Use `check-100k` to test exact
 freshness. Manual edits are intentionally rejected or reported stale, so 100k cannot become a
-second authority. The suggested next-cycle list is decision support; the operator still chooses.
+second authority. The suggested next-cycle list is decision support; without an active CEO
+directive the operator still chooses, while an active directive delegates that choice to its
+subordinate cycles within the authority envelope.
 When intent is missing or incomplete, `ts: 100k` points to `ts: 100k setup`. Setup discovers a
 bounded list of conventional orientation documents and canonical artifact evidence, preserves any
 existing intent sections, and presents one exact seven-section proposal. It performs no write.
@@ -472,6 +474,23 @@ SQLite authority and refreshing the view.
 Use `ts: 100k ledger` or `python3 scripts/project_projection.py --workspace . 100k ledger` for the
 exhaustive deterministic Idea/Map/PRM/Campaign accounting drill-down; it is not part of the main
 executive view.
+
+The owner acts as CEO through a separate explicit write route:
+
+```text
+ts: 100k add Make release evidence obvious and trustworthy
+```
+
+`ts: directive <directive>` is the concise alias. Tool Shed preserves the directive exactly as an
+Idea Brief with role `project-executive-directive-v1`, opens its governed outcome under Hybrid
+authority, and hands it directly to the Plan Cycle. The Plan, Roadmap, Milestone, Campaign,
+Evidence, and Outcome cycles are subordinates: they choose and execute the internal mechanics while
+the CEO supplies outcome, constraints, priority, and any delivery boundary. Covered work continues
+under the autonomy envelope; absent delivery language, source-changing work stops at Work1.
+
+The 100k cockpit projects each directive's canonical state and current subordinate handoff. This
+does not make 100k another queue or lifecycle owner. Bare `ts: 100k` and generated
+`work/100k.md` remain read-only.
 
 Under SQLite authority, Project Executive Intent is one active managed `decision` document with
 metadata role `project-executive-intent-v1` and preferred path
