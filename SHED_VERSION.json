@@ -242,7 +242,7 @@
     "scripts/validate_tool_shed.py": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb",
     "scripts/verification_policy.py": "0b896f4854aa7b277ae00b4bfbca043ea9fc78d13c619a5b4ba4f249d4b484da",
     "scripts/work_level_config.py": "d482693c0f4deb547e90855cff7d3d5d5d320cbb2bdae7c8c5a3159d476743ae",
-    "scripts/work_orchestration.py": "7a4a9313e5dcd420aca7497fa7dc2d106fe13349304195cf7a581c5744d51a09",
+    "scripts/work_orchestration.py": "fddc61566359fd312e73e789b5e2986df0d7474c004a4e086697eda51c13d2e7",
     "scripts/work_tree.py": "84245e2d6441556ffd417ec884bdb4cdd727520cb3d10e2fdcfd5459c773eb8e",
     "scripts/workpc_development_tunnel.ps1": "76a1bebb3c1023064d73bb6bfbab2198b7ac28409d9187a7ce541823f98b4430",
     "scripts/workspace_preflight.py": "d9482b21dc552c9ce73ee1395d23ea6bdd3646fcf3cd904b51937f47d3bab271",

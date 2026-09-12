@@ -87,6 +87,9 @@ class WorkOrchestrationTests(unittest.TestCase):
         )
         phase_classes = {item["id"]: item["skip_class"] for item in plan["phases"]}
         self.assertEqual(phase_classes["target-evidence"], "current-external-evidence")
+        self.assertEqual(
+            phase_classes["refresh-project-executive-view"], "exact-local-digest"
+        )
         self.assertEqual(phase_classes["strict-doctor"], "always-run")
         self.assertIn("declare an owning outcome satisfied", plan["authority"]["script_may_not"])
         self.assertFalse(plan["writes_performed"])

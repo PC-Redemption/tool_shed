@@ -250,7 +250,10 @@ def build_plan(
                 else []
             ),
             *(
-                [{"id": "release-cohort-register", "skip_class": "exact-local-digest"}]
+                [
+                    {"id": "release-cohort-register", "skip_class": "exact-local-digest"},
+                    {"id": "refresh-project-executive-view", "skip_class": "exact-local-digest"},
+                ]
                 if endpoint == "work2"
                 else []
             ),
