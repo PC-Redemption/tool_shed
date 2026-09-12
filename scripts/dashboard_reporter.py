@@ -46,7 +46,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/dashboard_report
 
 
 SCHEMA_VERSION = 1
-REPORT_SCHEMA_VERSION = 12
+REPORT_SCHEMA_VERSION = 13
 OUTBOX_RELATIVE = Path(".tool-shed/dashboard/outbox.sqlite3")
 MAX_RESPONSE_BYTES = 65_536
 MAX_REQUEST_BYTES = 262_144
@@ -463,19 +463,21 @@ def _executive_dashboard_projection(workspace: Path) -> dict[str, Any]:
 
     intent = view["executive_intent"]
     directives = []
-    for item in view["executive_directives"][:8]:
+    for item in view["executive_directives"][:project_projection.EXECUTIVE_DIRECTIVE_LIMIT]:
         directive_text = str(item.get("directive_text") or item["title"])
         directives.append({
             "visible_id": item["visible_id"],
             "title": item["title"],
             "directive_text": directive_text,
             "directive_stage": item["directive_stage"],
+            "planning_position": item["planning_position"],
+            "planning_readiness": item["planning_readiness"],
             "subordinate_handoff": list(item["subordinate_handoff"][:16]),
             "command": f"ts: directive {directive_text}",
         })
     recent = [artifact(item) for item in view["recent_changes"][:5]]
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "authority": {
             "authority": view["authority"]["authority"],
             "state": view["authority"]["state"],
@@ -501,6 +503,10 @@ def _executive_dashboard_projection(workspace: Path) -> dict[str, Any]:
         "release_horizon": view["release_horizon"],
         "state": view["state"],
         "directives": directives,
+        "directive_count": view["executive_directive_count"],
+        "active_directive_count": view["active_executive_directive_count"],
+        "completed_directive_count": view["completed_executive_directive_count"],
+        "directives_truncated": view["executive_directives_truncated"],
         "focus_coverage": {
             "catalog_state": view["focus_coverage"]["catalog_state"],
             "areas": list(view["focus_coverage"]["areas"][:20]),

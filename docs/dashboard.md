@@ -25,6 +25,9 @@ release horizon, directives, attention, recommendations, recent and realized out
 `ts: directive <directive>` clipboard text. Each instance retains its own newest projection; the
 hosted service never merges instances or becomes lifecycle authority. Older reports render a clear
 CEO-view unavailable state.
+Schema v13 keeps schema-v12 ingestion compatible while expanding the CEO directive projection to
+50 active-first entries. It adds canonical planning position/readiness plus total, active,
+completed, and explicit truncation fields so batching cannot silently hide queued active work.
 It rejects paths, prompts, arbitrary source text, uncontrolled commands, raw output, exception messages,
 credentials, secrets, scheduler definitions, diagnostic logs, and uncontrolled event summaries.
 Command-shaped fields are restricted to the exact local routes `ts: resolve loop <finding-id>` and

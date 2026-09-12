@@ -483,10 +483,16 @@ ts: 100k add Make release evidence obvious and trustworthy
 
 `ts: directive <directive>` is the concise alias. Tool Shed preserves the directive exactly as an
 Idea Brief with role `project-executive-directive-v1`, opens its governed outcome under Hybrid
-authority, and hands it directly to the Plan Cycle. The Plan, Roadmap, Milestone, Campaign,
-Evidence, and Outcome cycles are subordinates: they choose and execute the internal mechanics while
-the CEO supplies outcome, constraints, priority, and any delivery boundary. Covered work continues
-under the autonomy envelope; absent delivery language, source-changing work stops at Work1.
+authority, appends it to canonical Idea planning order, checkpoints the durable intake, and stops.
+Issue more new commands to build a batch before implementation. Reissue the exact active directive
+to delegate or resume it. If another subordinate campaign is working, Tool Shed preserves the new
+or selected directive in planning order and does not preempt the working cycle. Use the existing
+`ts: order bs move` route for an explicit priority change; it still does not interrupt active work.
+
+The Plan, Roadmap, Milestone, Campaign, Evidence, and Outcome cycles are subordinates: they choose
+and execute the internal mechanics while the CEO supplies outcome, constraints, priority, and any
+delivery boundary. Covered work continues under the autonomy envelope; absent delivery language,
+source-changing work stops at Work1.
 
 The 100k cockpit projects each directive's canonical state and current subordinate handoff. This
 does not make 100k another queue or lifecycle owner. Bare `ts: 100k` and generated

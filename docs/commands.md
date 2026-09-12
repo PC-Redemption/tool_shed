@@ -91,8 +91,8 @@ protection. Every interrupt explains impact, blast radius, rollback, and recomme
 | `ts: develop roadmap` | Read project evidence and clarify an opt-in Program Roadmap without mutation. |
 | `ts: overview` | Combine maps, approved roadmaps, gates, focus areas, campaign state, and drift. Read-only. |
 | `ts: 100k` | Review the owner North Star, completion horizon, context, priorities, landscape, decisions, changes, outcomes, next-cycle candidates, non-goals, and review triggers. Read-only. |
-| `ts: 100k add <directive>` | Preserve the CEO's exact directive using existing Idea/outcome authority, then hand it to the Plan Cycle for automatic PRM materialization and authorized execution. |
-| `ts: directive <directive>` | Exact concise alias for `ts: 100k add <directive>`. |
+| `ts: 100k add <directive>` | Capture previously unseen CEO text durably in existing Idea/outcome authority and planning order; reissue an exact active directive to delegate or resume it without preempting working subordinate execution. |
+| `ts: directive <directive>` | Exact concise alias for `ts: 100k add <directive>`; repeated new commands form a durable intake batch. |
 | `ts: 100k setup` | When executive intent is missing or incomplete, discover bounded orientation and canonical artifact evidence, then present an exact seven-section proposal for owner acceptance. Discovery and proposal are read-only. |
 | `ts: 100k ledger` | Inspect the exhaustive deterministic Idea/Map/PRM/Campaign accounting ledger behind the concise 100k view. Read-only. |
 
@@ -116,8 +116,10 @@ bare `ts: brainstorm` only lists active briefs.
 An executive directive is a specialized CEO-facing Idea Brief entry route, not a second artifact
 or lifecycle. `ts: 100k add <directive>` creates it with role
 `project-executive-directive-v1`, preserves the directive text, opens its normal governed outcome
-when Hybrid authority is active, and immediately delegates to PRM. The CEO is not required to
-choose brainstorming or downstream artifact mechanics.
+when Hybrid authority is active, appends it through canonical Idea planning order, checkpoints,
+and stops. Reissuing an exact active directive delegates or resumes PRM only when it does not
+preempt a different working subordinate campaign. The CEO is not required to choose brainstorming
+or downstream artifact mechanics.
 
 Ordinary brainstorming never runs semantic readiness review. Use
 `ts: bs review <idea-id-or-path>` when you want a manual review. The only other trigger is

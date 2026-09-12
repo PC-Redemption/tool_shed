@@ -884,7 +884,7 @@ class DashboardReporterTests(unittest.TestCase):
         self.assertEqual(payload["app_server"]["attempts"], 3)
         self.assertEqual(payload["app_server"]["performance"]["default_window"], "7d")
         self.assertIsNone(payload["work_efficiency"]["remedial_tokens_actual"])
-        self.assertEqual(payload["schema_version"], 12)
+        self.assertEqual(payload["schema_version"], 13)
         self.assertEqual(payload["executive"], executive)
         self.assertEqual(
             payload["loop_findings"],

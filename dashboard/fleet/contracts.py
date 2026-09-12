@@ -219,6 +219,10 @@ EXECUTIVE_FIELDS = {
     "release_horizon", "state", "directives", "focus_coverage", "attention",
     "recommendations", "recent_changes", "realized_outcomes",
 }
+EXECUTIVE_FIELDS_V2 = EXECUTIVE_FIELDS | {
+    "directive_count", "active_directive_count", "completed_directive_count",
+    "directives_truncated",
+}
 EXECUTIVE_AUTHORITY_FIELDS = {"authority", "state"}
 EXECUTIVE_INTENT_FIELDS = {
     "state", "identity", "revision", "north_star", "completion_horizon",
@@ -228,6 +232,9 @@ EXECUTIVE_RELEASE_FIELDS = {"available", "base_tag", "active_cohorts", "finding_
 EXECUTIVE_COHORT_FIELDS = {"cycle_id", "lifecycle_state", "candidate_count"}
 EXECUTIVE_DIRECTIVE_FIELDS = {
     "visible_id", "title", "directive_text", "directive_stage", "subordinate_handoff", "command",
+}
+EXECUTIVE_DIRECTIVE_FIELDS_V2 = EXECUTIVE_DIRECTIVE_FIELDS | {
+    "planning_position", "planning_readiness",
 }
 EXECUTIVE_FOCUS_FIELDS = {"catalog_state", "areas"}
 EXECUTIVE_FOCUS_AREA_FIELDS = {"focus_area_id", "name", "active_campaigns"}
@@ -926,10 +933,15 @@ def _executive_artifacts(value: Any, label: str, *, count: int) -> list[dict[str
     return result
 
 
-def _executive(value: Any) -> dict[str, Any]:
-    item = _object(value, "executive", EXECUTIVE_FIELDS)
-    if item.get("schema_version") != 1:
-        raise ContractError("executive.schema_version must be 1")
+def _executive(value: Any, *, report_schema_version: int) -> dict[str, Any]:
+    expected_schema = 2 if report_schema_version >= 13 else 1
+    item = _object(
+        value,
+        "executive",
+        EXECUTIVE_FIELDS_V2 if expected_schema == 2 else EXECUTIVE_FIELDS,
+    )
+    if item.get("schema_version") != expected_schema:
+        raise ContractError(f"executive.schema_version must be {expected_schema}")
     authority = _object(item.get("authority"), "executive.authority", EXECUTIVE_AUTHORITY_FIELDS)
     intent = _object(item.get("intent"), "executive.intent", EXECUTIVE_INTENT_FIELDS)
     release = _object(
@@ -952,17 +964,24 @@ def _executive(value: Any) -> dict[str, Any]:
             ),
         })
     directive_values = item.get("directives")
-    if not isinstance(directive_values, list) or len(directive_values) > 8:
-        raise ContractError("executive.directives must be a list of at most 8 items")
+    directive_limit = 50 if expected_schema == 2 else 8
+    if not isinstance(directive_values, list) or len(directive_values) > directive_limit:
+        raise ContractError(
+            f"executive.directives must be a list of at most {directive_limit} items"
+        )
     directives = []
     for index, raw in enumerate(directive_values, start=1):
         prefix = f"executive.directives item {index}"
-        directive = _object(raw, prefix, EXECUTIVE_DIRECTIVE_FIELDS)
+        directive = _object(
+            raw,
+            prefix,
+            EXECUTIVE_DIRECTIVE_FIELDS_V2 if expected_schema == 2 else EXECUTIVE_DIRECTIVE_FIELDS,
+        )
         text = _required_string(directive.get("directive_text"), f"{prefix}.directive_text", 65_535)
         command = _required_string(directive.get("command"), f"{prefix}.command", 65_550)
         if command != f"ts: directive {text}":
             raise ContractError(f"{prefix}.command must exactly target its directive text")
-        directives.append({
+        parsed_directive = {
             "visible_id": _required_string(directive.get("visible_id"), f"{prefix}.visible_id", 64),
             "title": _required_string(directive.get("title"), f"{prefix}.title", 160),
             "directive_text": text,
@@ -973,7 +992,20 @@ def _executive(value: Any) -> dict[str, Any]:
                 directive.get("subordinate_handoff"), f"{prefix}.subordinate_handoff", count=16, length=96
             ),
             "command": command,
-        })
+        }
+        if expected_schema == 2:
+            readiness = _required_string(
+                directive.get("planning_readiness"), f"{prefix}.planning_readiness", 32
+            )
+            if readiness not in PLANNING_READINESS_STATES:
+                raise ContractError(f"{prefix}.planning_readiness is unsupported")
+            parsed_directive.update({
+                "planning_position": _optional_counter(
+                    directive.get("planning_position"), f"{prefix}.planning_position"
+                ),
+                "planning_readiness": readiness,
+            })
+        directives.append(parsed_directive)
     focus = _object(item.get("focus_coverage"), "executive.focus_coverage", EXECUTIVE_FOCUS_FIELDS)
     area_values = focus.get("areas")
     if not isinstance(area_values, list) or len(area_values) > 20:
@@ -1004,8 +1036,8 @@ def _executive(value: Any) -> dict[str, Any]:
     state_digest = _required_string(item.get("state_digest"), "executive.state_digest", 64)
     if any(char not in "0123456789abcdef" for char in source_digest + state_digest):
         raise ContractError("executive digests must be lowercase SHA-256 values")
-    return {
-        "schema_version": 1,
+    result = {
+        "schema_version": expected_schema,
         "authority": {
             "authority": _required_string(authority.get("authority"), "executive.authority.authority", 32),
             "state": _required_string(authority.get("state"), "executive.authority.state", 32),
@@ -1038,7 +1070,7 @@ def _executive(value: Any) -> dict[str, Any]:
                 release.get("finding_count"), "executive.release_horizon.finding_count", 10_000
             ),
         },
-        "state": _state(item.get("state"), schema_version=12),
+        "state": _state(item.get("state"), schema_version=report_schema_version),
         "directives": directives,
         "focus_coverage": {
             "catalog_state": _required_string(
@@ -1051,13 +1083,39 @@ def _executive(value: Any) -> dict[str, Any]:
         "recent_changes": _executive_artifacts(item.get("recent_changes"), "executive.recent_changes", count=5),
         "realized_outcomes": _executive_artifacts(item.get("realized_outcomes"), "executive.realized_outcomes", count=5),
     }
+    if expected_schema == 2:
+        directive_count = _bounded_counter(
+            item.get("directive_count"), "executive.directive_count", 500
+        )
+        active_count = _bounded_counter(
+            item.get("active_directive_count"), "executive.active_directive_count", 500
+        )
+        completed_count = _bounded_counter(
+            item.get("completed_directive_count"), "executive.completed_directive_count", 500
+        )
+        if active_count + completed_count != directive_count:
+            raise ContractError(
+                "executive active and completed directive counts must equal directive_count"
+            )
+        truncated = _boolean(item.get("directives_truncated"), "executive.directives_truncated")
+        if directive_count > len(directives) and not truncated:
+            raise ContractError(
+                "executive.directives_truncated must be true when directives are omitted"
+            )
+        result.update({
+            "directive_count": directive_count,
+            "active_directive_count": active_count,
+            "completed_directive_count": completed_count,
+            "directives_truncated": truncated,
+        })
+    return result
 
 
 def validate_report(payload: Any) -> dict[str, Any]:
     root = _object(payload, "report", ROOT_FIELDS)
     schema_version = root.get("schema_version")
-    if schema_version not in {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}:
-        raise ContractError("report.schema_version must be between 1 and 12")
+    if schema_version not in {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}:
+        raise ContractError("report.schema_version must be between 1 and 13")
     if schema_version == 1 and ({"work_inventory", "lifecycle_events"} & set(root)):
         raise ContractError("report schema 1 does not support lifecycle projection fields")
     if schema_version < 4 and "instance_health" in root:
@@ -1069,7 +1127,7 @@ def validate_report(payload: Any) -> dict[str, Any]:
     if schema_version < 12 and "executive" in root:
         raise ContractError("report schemas before 12 do not support executive projection")
     if schema_version >= 12 and "executive" not in root:
-        raise ContractError("report schema 12 requires executive projection")
+        raise ContractError("report schemas 12 and later require executive projection")
     project = _object(root.get("project"), "project", PROJECT_FIELDS)
     instance = _object(root.get("instance"), "instance", INSTANCE_FIELDS)
     app_server = _object(
@@ -1174,5 +1232,7 @@ def validate_report(payload: Any) -> dict[str, Any]:
             root.get("instance_health"), schema_version=schema_version
         ) if schema_version >= 4 else None,
         "loop_findings": _loop_findings(root.get("loop_findings")) if schema_version >= 8 else None,
-        "executive": _executive(root.get("executive")) if schema_version >= 12 else None,
+        "executive": _executive(
+            root.get("executive"), report_schema_version=schema_version
+        ) if schema_version >= 12 else None,
     }

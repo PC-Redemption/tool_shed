@@ -27,16 +27,19 @@ import update_work_index
 
 
 SCHEMA_VERSION = 2
-EXECUTIVE_SCHEMA_VERSION = 3
+EXECUTIVE_SCHEMA_VERSION = 4
 EXECUTIVE_RELATIVE = Path("work/100k.md")
-EXECUTIVE_MARKER = "<!-- GENERATED: TOOL-SHED-PROJECT-EXECUTIVE-VIEW-V3; DO NOT EDIT -->"
+EXECUTIVE_MARKER = "<!-- GENERATED: TOOL-SHED-PROJECT-EXECUTIVE-VIEW-V4; DO NOT EDIT -->"
 LEGACY_EXECUTIVE_MARKERS = (
+    "<!-- GENERATED: TOOL-SHED-PROJECT-EXECUTIVE-VIEW-V3; DO NOT EDIT -->",
     "<!-- GENERATED: TOOL-SHED-PROJECT-EXECUTIVE-VIEW-V2; DO NOT EDIT -->",
     "<!-- GENERATED: TOOL-SHED-PROJECT-EXECUTIVE-VIEW-V1; DO NOT EDIT -->",
 )
 EXECUTIVE_INTENT_RELATIVE = Path("work/project-executive-intent.md")
 EXECUTIVE_INTENT_ROLE = "project-executive-intent-v1"
 EXECUTIVE_DIRECTIVE_ROLE = "project-executive-directive-v1"
+EXECUTIVE_DIRECTIVE_LIMIT = 50
+EXECUTIVE_RECENT_COMPLETED_LIMIT = 8
 EXECUTIVE_INTENT_SECTIONS = (
     ("north_star", "North Star"),
     ("completion_horizon", "Current Completion Horizon"),
@@ -670,29 +673,50 @@ def executive(workspace: Path) -> dict[str, Any]:
             seen.add(item["artifact_id"])
             deduplicated.append(item)
 
-    executive_directives = []
-    for item in sorted(
+    all_executive_directives = [
+        item for item in artifacts
+        if item.get("metadata_role") == EXECUTIVE_DIRECTIVE_ROLE
+    ]
+    active_executive_directives = sorted(
         (
-            item for item in artifacts
-            if item.get("metadata_role") == EXECUTIVE_DIRECTIVE_ROLE
+            item for item in all_executive_directives
+            if item["document_lifecycle"] not in {"completed", "terminal", "abandoned", "superseded"}
         ),
+        key=lambda item: (
+            item["planning_position"] if item["planning_position"] is not None else 10**9,
+            item["updated_at"],
+            item["visible_id"],
+        ),
+    )
+    completed_executive_directives = sorted(
+        (item for item in all_executive_directives if item not in active_executive_directives),
         key=lambda item: (item["updated_at"], item["visible_id"]),
         reverse=True,
-    )[:8]:
+    )
+    selected_executive_directives = active_executive_directives[:EXECUTIVE_DIRECTIVE_LIMIT]
+    completed_slots = min(
+        EXECUTIVE_RECENT_COMPLETED_LIMIT,
+        EXECUTIVE_DIRECTIVE_LIMIT - len(selected_executive_directives),
+    )
+    selected_executive_directives.extend(completed_executive_directives[:completed_slots])
+    directives_truncated = len(selected_executive_directives) < len(all_executive_directives)
+
+    executive_directives = []
+    for item in selected_executive_directives:
         if item["document_lifecycle"] in {"completed", "terminal"}:
             stage = "completed"
+        elif item["document_lifecycle"] in {"blocked", "parked", "deferred"}:
+            stage = item["document_lifecycle"]
         elif item["outcome_disposition"] not in {"unknown", "open"}:
             stage = item["outcome_disposition"]
         elif item["produces_ids"]:
-            stage = "delegated"
-        elif item["outcome_lifecycle"] == "working":
-            stage = "plan-cycle"
+            stage = "working" if item["planning_readiness"] == "working" else "delegated"
         else:
-            stage = "issued"
+            stage = "queued"
         executive_directives.append({
             **item,
             "directive_stage": stage,
-            "subordinate_handoff": item["produces_ids"] or ["Plan Cycle"],
+            "subordinate_handoff": item["produces_ids"] or ["Plan Cycle (queued)"],
             "directive_text": item.get("metadata_directive_text") or item["title"],
         })
 
@@ -701,6 +725,15 @@ def executive(workspace: Path) -> dict[str, Any]:
         attention.append({
             "code": "INVENTORY_TRUNCATED",
             "summary": "The strategic ledger exceeded its safety bound and is not complete.",
+        })
+    if directives_truncated:
+        attention.append({
+            "code": "EXECUTIVE_DIRECTIVES_TRUNCATED",
+            "summary": (
+                f"The CEO directive view is showing {len(executive_directives)} of "
+                f"{len(all_executive_directives)} directives; all active directives are shown "
+                f"unless the {EXECUTIVE_DIRECTIVE_LIMIT}-item safety bound is exceeded."
+            ),
         })
     if focus["unassigned_campaigns"]:
         attention.append({
@@ -738,6 +771,12 @@ def executive(workspace: Path) -> dict[str, Any]:
         "attention": attention,
         "recommendations": [item["artifact_id"] for item in deduplicated[:8]],
         "executive_directives": [item["artifact_id"] for item in executive_directives],
+        "executive_directive_counts": {
+            "total": len(all_executive_directives),
+            "active": len(active_executive_directives),
+            "completed": len(completed_executive_directives),
+            "truncated": directives_truncated,
+        },
         "recent": [item["artifact_id"] for item in recent],
     }
     return {
@@ -763,6 +802,10 @@ def executive(workspace: Path) -> dict[str, Any]:
         "attention": attention,
         "recommendations": deduplicated[:8],
         "executive_directives": executive_directives,
+        "executive_directive_count": len(all_executive_directives),
+        "active_executive_directive_count": len(active_executive_directives),
+        "completed_executive_directive_count": len(completed_executive_directives),
+        "executive_directives_truncated": directives_truncated,
         "recent_changes": recent,
         "loop_findings": projection["loop_findings"],
         "writes_performed": False,
@@ -1102,8 +1145,8 @@ def render_executive(view: dict[str, Any]) -> str:
     directives = list(view.get("executive_directives", []))
     if directives:
         lines.extend([
-            "| Directive | State | Subordinate handoff |",
-            "| --- | --- | --- |",
+            "| Order | Directive | State | Subordinate handoff |",
+            "| ---: | --- | --- | --- |",
         ])
         for item in directives:
             handoff = ", ".join(
@@ -1111,13 +1154,19 @@ def render_executive(view: dict[str, Any]) -> str:
                 for value in item["subordinate_handoff"]
             )
             lines.append(
-                f"| `{item['visible_id']}` — {_cell(item['title'])} | "
+                f"| {_cell(item['planning_position'])} | "
+                f"`{item['visible_id']}` — {_cell(item['title'])} | "
                 f"{_cell(item['directive_stage'])} | {handoff} |"
+            )
+        if view.get("executive_directives_truncated"):
+            lines.append(
+                f"\n- Showing {len(directives)} of {view['executive_directive_count']} directives; "
+                "the bounded projection reports truncation explicitly."
             )
     else:
         lines.append(
             "- No executive directive is currently recorded. Issue one with "
-            "`ts: 100k add <directive>`; Tool Shed will hand it to the Plan Cycle."
+            "`ts: 100k add <directive>`; Tool Shed will capture it durably in planning order."
         )
 
     lines.extend([

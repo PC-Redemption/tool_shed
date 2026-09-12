@@ -285,8 +285,10 @@ strategy. Use `scripts/project_projection.py` to render or check it. See the
 
 The explicit CEO command surface is `ts: 100k add <directive>` (or concise alias
 `ts: directive <directive>`). It preserves the directive through the existing Idea/outcome model
-and hands it to the Plan Cycle; subordinate Roadmap, Milestone, Campaign, Evidence, and Outcome
-cycles materialize, execute, and report it within the stated delivery and autonomy boundaries.
+and appends it to canonical planning order without starting implementation. Reissuing the exact
+active directive delegates or resumes the Plan Cycle without preempting a different working
+campaign; subordinate Roadmap, Milestone, Campaign, Evidence, and Outcome cycles materialize,
+execute, and report it within the stated delivery and autonomy boundaries.
 Bare `ts: 100k` remains a read-only review.
 
 Hybrid schema 4 adds persisted, deduplicated outcome-loop findings; schema 5 expands current-state
@@ -303,6 +305,8 @@ Dashboard report schema 12 adds the bounded canonical 100k projection. The proje
 with a CEO tab containing the same owner-facing sections as `work/100k.md`, and each executive
 directive has an exact `ts: directive <directive text>` copy control for pasting into Codex. The
 hosted dashboard remains read-only and older reporter schemas retain a clear compatibility state.
+Schema 13 expands that projection to an active-first 50-directive bound with planning position,
+readiness, inventory counts, and explicit truncation while retaining schema-12 compatibility.
 
 Before a long campaign, run:
 

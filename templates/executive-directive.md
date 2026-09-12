@@ -4,7 +4,7 @@ Status: ready-for-prm
 Type: idea-brief
 Role: project-executive-directive-v1
 Updated: {{ date }}
-Next Action: delegate to the Plan Cycle through `ts: prm idea <idea-id-or-path>`
+Next Action: reissue this exact directive to delegate or resume it through the Plan Cycle
 Readiness Review: performed by the receiving Plan Cycle; ask the CEO only about material ambiguity
 Produces:
 
@@ -23,6 +23,10 @@ Make the directive true through the smallest coherent set of subordinate cycles.
 - Interrupt only for a genuine material decision or authority boundary.
 
 ## Delegation Contract
+
+Initial issuance is durable intake only. Tool Shed appends this Idea through canonical planning
+order, checkpoints it, and stops so other directives may be captured first. Reissuing the exact
+active directive delegates or resumes it when doing so will not preempt another working campaign.
 
 The Plan Cycle interprets this directive, the Roadmap Cycle organizes it when needed, the Milestone
 Cycle materializes bounded campaigns, Campaign Cycles execute, and Evidence/Outcome Cycles report

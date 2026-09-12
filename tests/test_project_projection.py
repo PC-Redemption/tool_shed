@@ -29,7 +29,7 @@ class ProjectProjectionTests(unittest.TestCase):
             "updated_at": "2026-09-11T00:00:00Z",
         }
         return {
-            "schema_version": 3, "kind": "tool-shed-project-executive-view",
+            "schema_version": 4, "kind": "tool-shed-project-executive-view",
             "authority": {"authority": "sqlite", "state": "hybrid"},
             "source_revision": 4, "source_digest": "source", "state_digest": "state",
             "latest_source_update": "2026-09-11T00:00:00Z",
@@ -59,6 +59,10 @@ class ProjectProjectionTests(unittest.TestCase):
             },
             "release_horizon": {"available": True, "base_tag": "v1.0.0", "active_cohorts": []},
             "attention": [], "recommendations": [artifact], "executive_directives": [],
+            "executive_directive_count": 0,
+            "active_executive_directive_count": 0,
+            "completed_executive_directive_count": 0,
+            "executive_directives_truncated": False,
             "recent_changes": [artifact],
             "loop_findings": {"total_active_count": 0, "findings": []},
             "writes_performed": False,
@@ -166,6 +170,56 @@ class ProjectProjectionTests(unittest.TestCase):
         self.assertIn("`MAP-0038`", rendered)
         self.assertIn("subordinate cycles continue", rendered)
         self.assertNotIn("operator must explicitly choose", rendered)
+
+    def test_executive_directives_are_active_first_in_planning_order_beyond_eight(self) -> None:
+        def directive(index: int, *, active: bool) -> dict[str, object]:
+            return {
+                "artifact_id": f"directive-{index}",
+                "visible_id": f"IDEA-{index:04d}",
+                "artifact_type": "idea-brief",
+                "title": f"Directive {index}",
+                "metadata_role": project_projection.EXECUTIVE_DIRECTIVE_ROLE,
+                "metadata_directive_text": f"Directive {index}",
+                "document_lifecycle": "active" if active else "completed",
+                "outcome_lifecycle": "working" if active else "terminal",
+                "outcome_disposition": "open" if active else "satisfied",
+                "reconciliation_state": "open" if active else "reconciled",
+                "parent_ids": [],
+                "produces_ids": ["MAP-0001"] if index == 1 else [],
+                "planning_position": (10 - index) if active else None,
+                "planning_order_source": "derived" if active else "not-applicable",
+                "planning_readiness": "working" if index == 1 else ("ready" if active else "terminal"),
+                "closure_status": {"effective_closed": not active, "local_closure": "open"},
+                "updated_at": f"2026-09-{index:02d}T00:00:00Z",
+            }
+
+        artifacts = [directive(index, active=True) for index in range(1, 10)]
+        artifacts.extend(directive(index, active=False) for index in range(11, 20))
+        projection = {
+            "authority": {"authority": "file", "state": "qualified-shadow"},
+            "state": self.executive_fixture()["state"],
+            "work_inventory": {"total_count": len(artifacts), "truncated": False, "artifacts": artifacts},
+            "loop_findings": {"total_active_count": 0, "findings": []},
+        }
+        with mock.patch.object(project_projection, "build", return_value=projection), mock.patch.object(
+            project_projection, "_executive_intent", return_value=self.executive_fixture()["executive_intent"]
+        ), mock.patch.object(
+            project_projection, "_focus_coverage", return_value=self.executive_fixture()["focus_coverage"]
+        ), mock.patch.object(
+            project_projection, "_release_horizon", return_value=self.executive_fixture()["release_horizon"]
+        ):
+            view = project_projection.executive(Path("/fixture"))
+
+        visible = [item["visible_id"] for item in view["executive_directives"]]
+        self.assertEqual([f"IDEA-{index:04d}" for index in range(9, 0, -1)], visible[:9])
+        self.assertEqual(9, view["active_executive_directive_count"])
+        self.assertEqual(18, view["executive_directive_count"])
+        self.assertEqual(17, len(visible))
+        self.assertTrue(view["executive_directives_truncated"])
+        self.assertEqual("queued", view["executive_directives"][0]["directive_stage"])
+        working = next(item for item in view["executive_directives"] if item["visible_id"] == "IDEA-0001")
+        self.assertEqual("working", working["directive_stage"])
+        self.assertIn("EXECUTIVE_DIRECTIVES_TRUNCATED", {item["code"] for item in view["attention"]})
 
     def test_file_inventory_marks_executive_directive_role(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

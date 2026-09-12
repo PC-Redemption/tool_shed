@@ -3708,9 +3708,21 @@ Active workpackage: `work/wp/active/wp-demo.md`.
             self.assertIn("Status: ready-for-prm", text)
             self.assertIn("Role: project-executive-directive-v1", text)
             self.assertIn(f"## CEO Directive\n\n{directive}", text)
+            self.assertIn("Initial issuance is durable intake only", text)
+            self.assertIn("will not preempt another working campaign", text)
             payload = json.loads((workspace / "work/index.json").read_text(encoding="utf-8"))
             entry = next(item for item in payload["artifacts"] if item["path"] == artifact.relative_to(workspace).as_posix())
             self.assertEqual("idea-brief", entry["type"])
+
+    def test_ceo_directive_route_separates_intake_from_non_preemptive_resume(self) -> None:
+        route = (
+            ROOT / "skills" / "tool-shed" / "references" / "campaign-routes.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("durable intake batch without starting implementation", route)
+        self.assertIn("An exact active match is a delegation/resume request", route)
+        self.assertIn("do not preempt it", route)
+        self.assertIn("canonical Idea planning order", route)
+        self.assertIn("one-working-campaign invariant", route)
 
     def test_new_artifact_creates_deep_research_spike_and_indexes_it(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

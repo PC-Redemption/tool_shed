@@ -400,7 +400,7 @@ class DashboardApplicationTests(TestCase):
 
     def executive_report_payload(self) -> dict[str, object]:
         payload = self.complete_release_projection_payload()
-        payload["schema_version"] = 12
+        payload["schema_version"] = 13
         observed = str(payload["observed_at"])
         artifact = {
             "visible_id": "CAMP-0185",
@@ -413,7 +413,7 @@ class DashboardApplicationTests(TestCase):
         }
         directive_text = "Make the hosted CEO view actionable"
         payload["executive"] = {
-            "schema_version": 1,
+            "schema_version": 2,
             "authority": {"authority": "sqlite", "state": "hybrid"},
             "source_revision": 1710,
             "source_digest": "a" * 64,
@@ -445,9 +445,15 @@ class DashboardApplicationTests(TestCase):
                 "title": directive_text,
                 "directive_text": directive_text,
                 "directive_stage": "delegated",
+                "planning_position": 1,
+                "planning_readiness": "working",
                 "subordinate_handoff": ["MAP-0039"],
                 "command": f"ts: directive {directive_text}",
             }],
+            "directive_count": 1,
+            "active_directive_count": 1,
+            "completed_directive_count": 0,
+            "directives_truncated": False,
             "focus_coverage": {
                 "catalog_state": "approved",
                 "areas": [{
@@ -501,16 +507,32 @@ class DashboardApplicationTests(TestCase):
         with self.assertRaisesRegex(ContractError, "unsupported fields"):
             validate_report(payload)
 
-    def test_schema_twelve_ingests_and_renders_canonical_ceo_projection(self) -> None:
+    def test_schema_thirteen_ingests_and_renders_canonical_ceo_projection(self) -> None:
         payload = self.executive_report_payload()
         validated = validate_report(payload)
         command = "ts: directive Make the hosted CEO view actionable"
         self.assertEqual(validated["executive"]["directives"][0]["command"], command)
+        self.assertEqual(validated["executive"]["directives"][0]["planning_position"], 1)
+        self.assertEqual(validated["executive"]["active_directive_count"], 1)
 
         unsafe = self.executive_report_payload()
         unsafe["executive"]["directives"][0]["command"] = "ts: directive something else"  # type: ignore[index]
         with self.assertRaisesRegex(ContractError, "exactly target"):
             validate_report(unsafe)
+
+        schema_twelve = self.executive_report_payload()
+        schema_twelve["schema_version"] = 12
+        schema_twelve_executive = schema_twelve["executive"]
+        schema_twelve_executive["schema_version"] = 1  # type: ignore[index]
+        for field in (
+            "directive_count", "active_directive_count", "completed_directive_count",
+            "directives_truncated",
+        ):
+            schema_twelve_executive.pop(field)  # type: ignore[union-attr]
+        for directive in schema_twelve_executive["directives"]:  # type: ignore[index]
+            directive.pop("planning_position")
+            directive.pop("planning_readiness")
+        self.assertEqual(1, validate_report(schema_twelve)["executive"]["schema_version"])
 
         legacy = self.complete_release_projection_payload()
         legacy["executive"] = payload["executive"]
@@ -518,7 +540,7 @@ class DashboardApplicationTests(TestCase):
             validate_report(legacy)
         missing = self.complete_release_projection_payload()
         missing["schema_version"] = 12
-        with self.assertRaisesRegex(ContractError, "requires executive projection"):
+        with self.assertRaisesRegex(ContractError, "require.*executive projection"):
             validate_report(missing)
 
         token = self.enroll_and_issue()
@@ -537,6 +559,7 @@ class DashboardApplicationTests(TestCase):
         page = self.client.get(reverse("fleet:project-tab", args=(instance.project_id, "ceo")))
         self.assertContains(page, "100k Project Executive View")
         self.assertContains(page, "Executive Directives")
+        self.assertContains(page, "Planning order: 1")
         self.assertContains(page, "Copy directive command")
         self.assertContains(page, f'data-copy-command="{command}"')
         content = page.content.decode()

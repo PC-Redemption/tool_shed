@@ -42,8 +42,15 @@ guarded route for the selected source.
 `ts: 100k add <directive>` is the explicit write route beside the read-only cockpit;
 `ts: directive <directive>` is its concise alias. It preserves the CEO's wording in an existing
 Idea Brief marked `Role: project-executive-directive-v1`, opens the normal governed outcome under
-Hybrid authority, and delegates immediately to the Plan Cycle. The route then continues through
-Roadmap, Milestone, Campaign, Evidence, and Outcome cycles as the active authority envelope allows.
+Hybrid authority, appends it through canonical Idea planning order, checkpoints the intake, and
+stops. This lets the CEO issue several directives before implementation. Reissuing the exact active
+directive is the explicit delegation/resume action; it then continues through Roadmap, Milestone,
+Campaign, Evidence, and Outcome cycles as the active authority envelope allows.
+
+A new directive issued while a subordinate campaign is working is captured without interrupting
+that campaign. An exact-match resume request also waits when a different campaign is working.
+Canonical planning order selects what is eligible next, and `ts: order bs move` is the existing
+explicit CEO priority control. Priority changes never preempt a working campaign.
 
 The CEO supplies the desired outcome, constraints, priority, and delivery boundary. The subordinate
 cycles select internal artifact mechanics. A source-changing directive without delivery language
@@ -54,12 +61,14 @@ recovery, and other authority expansions are never inferred.
 outcome, reconciliation, and closure authority. Directives do not create another backlog, queue,
 table, or lifecycle engine. Bare 100k review and deterministic rendering remain non-mutating.
 
-Connected schema-12 reporters also send a bounded structured projection of these same sections to
+Connected schema-13 reporters send an active-first bounded structured projection of these same sections to
 the hosted project page. The **CEO** tab appears before Overview and shows the newest single-instance
 projection without parsing `work/100k.md` or merging independent reporters. Each directive copies
 its exact `ts: directive <directive text>` command for the operator to paste into Codex; the browser
-cannot execute it. Schema-11 and older reports remain valid and receive an explicit unavailable
-state until an updated local reporter delivers the CEO projection.
+cannot execute it. The projection shows canonical planning position, distinguishes queued,
+working, and completed state, retains up to 50 directives with all active directives first, and
+reports any truncation explicitly. Schema-12 reports remain valid with their original eight-item
+directive contract; schema-11 and older reports receive an explicit unavailable state.
 
 ```bash
 python3 scripts/project_projection.py --workspace . 100k

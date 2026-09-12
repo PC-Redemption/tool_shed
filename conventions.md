@@ -148,8 +148,12 @@ automatically when that envelope covers them. Preserve the brief as provenance.
 
 `ts: 100k add <directive>` and `ts: directive <directive>` create the executive-directive variant
 with `Type: idea-brief`, `Role: project-executive-directive-v1`, and `Status: ready-for-prm`.
-It preserves the CEO's exact directive and is immediately handed to the Plan Cycle. It remains an
-Idea Brief governed by the existing PRM and outcome machinery, not a second backlog or lifecycle.
+For previously unseen text, the route preserves the CEO's exact directive, opens its governed
+outcome, appends it through existing Idea planning order, checkpoints the intake, and stops. An
+exact active match is the explicit delegation/resume signal for the Plan Cycle. A different
+working subordinate cycle is never preempted; the directive stays queued until existing order or
+an explicit `ts: order bs move` makes it eligible. It remains an Idea Brief governed by existing
+planning, PRM, campaign, and outcome machinery, not a second backlog, queue, or lifecycle.
 
 ## Owner Campaign Lifecycle
 

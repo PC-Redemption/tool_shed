@@ -61,12 +61,13 @@
     <ul>{% for item in ceo.intent.priorities %}<li>{{ item }}</li>{% empty %}<li>No owner-authored priority order is currently recorded.</li>{% endfor %}</ul>
   </section>
   <section class="dashboard-panel ceo-card ceo-wide">
-    <div class="compact-panel-heading"><div><h2>Executive Directives</h2><p class="dashboard-note">Copy a directive command, then paste it into Codex to delegate or resume the work.</p></div></div>
+    <div class="compact-panel-heading"><div><h2>Executive Directives</h2><p class="dashboard-note">{{ ceo.active_directive_count|default:0 }} active · {{ ceo.completed_directive_count|default:0 }} completed. Copy a directive command, then paste it into Codex to delegate or resume the work.</p></div></div>
+    {% if ceo.directives_truncated %}<p class="dashboard-note"><strong>Bounded view:</strong> showing {{ ceo.directives|length }} of {{ ceo.directive_count }} directives; active directives are listed first.</p>{% endif %}
     <div class="ceo-directives">
       {% for directive in ceo.directives %}
       <article class="ceo-directive">
         <div class="ceo-directive-heading"><div><strong><code>{{ directive.visible_id }}</code> · {{ directive.directive_stage }}</strong><p>{{ directive.directive_text }}</p></div><span class="state-badge state-{{ directive.directive_stage }}">{{ directive.directive_stage }}</span></div>
-        <p class="dashboard-note">Subordinate handoff: {% for item in directive.subordinate_handoff %}{% if not forloop.first %}, {% endif %}<code>{{ item }}</code>{% endfor %}</p>
+        <p class="dashboard-note">Planning order: {{ directive.planning_position|default:"—" }} · readiness: {{ directive.planning_readiness|default:"legacy" }} · subordinate handoff: {% for item in directive.subordinate_handoff %}{% if not forloop.first %}, {% endif %}<code>{{ item }}</code>{% endfor %}</p>
         {% include "fleet/includes/local_command.html" with command=directive.command label="Copy directive command" aria_label="Copy Tool Shed command for this executive directive" %}
       </article>
       {% empty %}<p class="dashboard-empty">No executive directive is currently recorded. Issue one with <code>ts: 100k add &lt;directive&gt;</code>.</p>{% endfor %}
@@ -106,7 +107,7 @@
 </div>
 <p class="overview-authority-note">Accounting is {% if ceo.complete_accounting %}complete{% else %}incomplete{% endif %} across {{ ceo.total_count }} canonical strategic artifacts. Authority: <code>{{ ceo.authority.authority }}</code> ({{ ceo.authority.state }}); source revision <code>{{ ceo.source_revision|default:"—" }}</code>; source digest <code>{{ ceo.source_digest }}</code>; view digest <code>{{ ceo.state_digest }}</code>. Source instance {{ ceo.source_instance.external_id }} · report schema {{ ceo.source_instance.report_schema_version }}.</p>
 {% else %}
-<section class="dashboard-panel ceo-empty"><span class="eyebrow">100k Project Executive View</span><h2>CEO view not reported yet</h2><p>This project’s newest reporter has not sent the schema-12 executive projection. Update and run the local reporter; older reports remain fully compatible.</p></section>
+<section class="dashboard-panel ceo-empty"><span class="eyebrow">100k Project Executive View</span><h2>CEO view not reported yet</h2><p>This project’s newest reporter has not sent an executive projection. Update and run the local reporter; older reports remain fully compatible.</p></section>
 {% endif %}
 {% elif tab == 'overview' %}
 {% if attention_items %}
