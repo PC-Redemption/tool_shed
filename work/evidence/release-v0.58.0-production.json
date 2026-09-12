@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-production-release-evidence",
+  "release": {
+    "version": "0.58.0",
+    "tag": "v0.58.0",
+    "content_commit": "135bf976b67e444f82e54718f20ddff88f593882",
+    "provenance_commit": "1d6428113f115877ded40b7a7f619ef30e1ddce0",
+    "published_at": "2026-09-12T18:11:32Z",
+    "url": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.58.0"
+  },
+  "qualification": {
+    "canonical_release_validation": "677 of 677 tests passed locally",
+    "validate_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34710041547",
+    "validate_jobs": "33 of 33 passed for the exact frozen content commit; no jobs failed or skipped",
+    "publish_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34710432106",
+    "canonical_version_relation": "canonical manifest matched; version 0.58.0; relation current; integrity verified",
+    "result": "passed"
+  },
+  "web_production": {
+    "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com",
+    "image": "tool-shed-dashboard:v0.58.0",
+    "image_sha256": "1904bff54a129f4bec941e8f51fb2ad7432fa14e358764fba3b466a0eaa70521",
+    "database_backup": "/home/jon/docker/ts.rookaro.com/backups/dashboard-daily-20260912T181155Z.dump.age",
+    "rollback_bundle": "/home/jon/docker/ts.rookaro.com.rollback-v0.57.0-20260912T1812Z",
+    "public_routes": "8 representative documentation, guide, reference, help, and dashboard health routes returned HTTP 200",
+    "production_readiness": "healthy",
+    "released_reference": "the public reference contains the ts: 100k add directive-intake command",
+    "result": "passed"
+  },
+  "linux_production": {
+    "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed",
+    "installed_version": "0.58.0",
+    "content_commit": "135bf976b67e444f82e54718f20ddff88f593882",
+    "provenance_commit": "1d6428113f115877ded40b7a7f619ef30e1ddce0",
+    "backup": "/home/jon/dev/ts_linux_test_bed/tool_shed.backup-20260912T181332Z.tar",
+    "transaction_id": "9e91f991fb83ebcc694e14a0",
+    "updater_validation": "attested-focused-smoke cache stored under Python 3.13.5",
+    "hybrid_state": "CLEAN at schema 6 revision 31",
+    "canonical_version_relation": "current with verified integrity and matching canonical manifest",
+    "work_preserved": true,
+    "result": "passed"
+  },
+  "windows_production": {
+    "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed",
+    "installed_version": "0.58.0",
+    "content_commit": "135bf976b67e444f82e54718f20ddff88f593882",
+    "provenance_commit": "1d6428113f115877ded40b7a7f619ef30e1ddce0",
+    "backup": "E:\\dev\\ts_windows_test_bed\\tool_shed.backup-20260912T181531Z.tar",
+    "transaction_id": "3f62d82c3c6f6aab956497e7",
+    "updater_validation": "attested-focused-smoke cache hit under Python 3.14.6",
+    "hybrid_state": "CLEAN at schema 6 revision 27",
+    "canonical_version_relation": "current with verified integrity and matching canonical manifest",
+    "installed_codex_skill": "current and recursively identical to the released snapshot skill",
+    "work_preserved": true,
+    "result": "passed"
+  },
+  "backup_retention": {
+    "policy": "retain the two newest verified updater-owned archives on each disposable test bed",
+    "linux_pruned": "/home/jon/dev/ts_linux_test_bed/tool_shed.backup-20260912T133140Z.tar",
+    "windows_pruned": "E:\\dev\\ts_windows_test_bed\\tool_shed.backup-20260912T133305Z.tar"
+  },
+  "installed_codex_skill": {
+    "source": "/home/jon/docker/tool_shed/skills/tool-shed",
+    "target": "/home/jon/.codex/skills/tool-shed",
+    "backup": "/home/jon/.codex/skills/tool-shed.backup-20260912T1822Z",
+    "validation": "canonical, staged, and installed skills passed quick_validate; recursive exact diff is empty",
+    "changed": true,
+    "restart_required": true,
+    "result": "passed"
+  },
+  "final_dashboard_convergence": {
+    "report_sequence": 16071,
+    "report_schema_version": 13,
+    "source_revision": 1756,
+    "source_digest": "712f36e617e9c4d40f3ec6f2811d09e95e13b362277c00f17cbe90fee5373f85",
+    "state_digest": "76fb37a7bf0f09b789a08eda2d3886dd6dbba367e08f5271628ec6c7fa2d1f72",
+    "intent_identity": "DEC-0006",
+    "intent_revision": 7,
+    "directive_count": 3,
+    "active_directive_count": 0,
+    "completed_directive_count": 3,
+    "directives_truncated": false,
+    "active_release_cohorts": 0,
+    "open_outcomes": 0,
+    "pending_events": 0,
+    "result": "passed"
+  },
+  "release_learnings": [
+    {
+      "classification": "project-binding-selection",
+      "symptom": "the first publication-record write used the narrower release-cohort identity binding",
+      "mitigation": "the project guard refused before mutation; the write was retried with the required hybrid-state binding and unchanged state token"
+    },
+    {
+      "classification": "release-extension-materialization",
+      "symptom": "the released extension still lacked subordinate Work5 execution lineage after publication recording",
+      "mitigation": "materialized production verification as a terminal direct child, propagated its result, reconciled the extension, and retained issue 68 for an automatic lifecycle fix"
+    },
+    {
+      "classification": "rebuild-command-selection",
+      "symptom": "the first parity attempt routed a document-store checkpoint to the Hybrid wrapper",
+      "mitigation": "the wrapper refused without changing state; the matching document-store rebuild reproduced the exact domain digest"
+    }
+  ],
+  "after_action_issue_review": {
+    "reviewed_open_issues": 18,
+    "completed_behavior_issue_closures": [],
+    "updated_issues": [
+      "https://github.com/PC-Redemption/tool_shed/issues/57#issuecomment-5647819039",
+      "https://github.com/PC-Redemption/tool_shed/issues/47#issuecomment-5647819101",
+      "https://github.com/PC-Redemption/tool_shed/issues/68#issuecomment-5647819181"
+    ],
+    "created_issues": [],
+    "result": "passed"
+  },
+  "production_lanes_result": "passed",
+  "verified_at": "2026-09-12T18:26:03Z",
+  "result": "passed"
+}
