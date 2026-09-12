@@ -1,0 +1,49 @@
+# Campaign: Restore Strategic-Cockpit Semantics to 100k
+
+Status: completed
+Type: campaign
+Updated: 2026-09-12
+Next Action: complete governed outcome propagation and checkpoint the closure state
+Campaign ID: restore-strategic-cockpit-semantics-to-100k
+Campaign Number: 183
+Outcome: The main 100k view is a concise owner strategic cockpit backed by canonical executive intent, with the exhaustive ledger removed from the main document and retained as explicit deterministic drill-down.
+Primary Focus Areas: artifact-workflows
+Supporting Focus Areas: campaign-lifecycle, provider-portability, workspace-safety
+Depends On: none
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work1
+Completion Gate: A narrow managed executive-intent contract is implemented without duplicate lifecycle authority; `work/100k.md` presents North Star, current horizon, landscape, priorities, decisions, material changes, outcomes, residual gaps, next-cycle choices, and review triggers; the Complete Strategic Ledger section is absent from the main view but complete accounting remains available through an explicit deterministic drill-down; missing-intent and all-terminal states remain strategically truthful; focused tests, repository validation, strict Doctor, and checkpoint/rebuild parity pass; and only the corrective candidate is locally committed.
+Completion Evidence: Commit a457a839a3996151b16dd60aba71e2ada47d9468 implements the V2 strategic cockpit and explicit ledger drill-down; 9 focused projection tests and the full 665-test suite passed; the full validator passed; strict Doctor reported HEALTHY with no findings; and checkpoint/rebuild domain digest ac9c3c54d363811278c2674e9a8dbbb920448f28ec91eb1b0be6ea8bd11e5cd4 matched exactly.
+Completion Date: 2026-09-12
+Disposition: completed
+Roadmap: restore-strategic-cockpit-semantics-to-100k
+Roadmap Revision: 1
+Roadmap Document: PRM-0049
+Milestone: M1-RESTORE-100K-COCKPIT
+Unlocks Gates: G1-EXECUTIVE-INTENT-AUTHORITY, G2-STRATEGIC-COCKPIT-EXPERIENCE, G3-PARITY-RECOVERY-AND-OWNER-ACCEPTANCE
+
+## Request
+
+Extend the existing managed document and project-projection mechanisms with the smallest canonical
+executive-intent role. Join that owner-authored intent with operational truth in the standard 100k
+view. Redesign the main Markdown as a quickly scannable strategic cockpit and remove the exhaustive
+Complete Strategic Ledger section from it. Preserve complete identity accounting through an
+explicit, bounded, deterministic ledger drill-down generated from the same projection.
+
+Keep bare `ts: 100k` read-only. Make missing intent, an expired review horizon, and all-terminal
+operational state visible as executive decisions instead of presenting a misleading all-clear.
+Update the shipped skill and documentation so explicit subsequent owner choices route through
+existing Ideas, maps, PRMs, campaigns, decisions, outcomes, and planning order.
+
+Stop after focused implementation, full local validation, strict health, checkpoint/rebuild proof,
+and a scoped Work1 commit. Do not deploy, push, release, publish, synchronize clients, mutate
+DisplayTest, or add hosted write-back.
+
+## Completion Check
+
+Verify the intent authority boundary and singleton behavior, main-view owner usefulness, absence of
+the Complete Strategic Ledger section, complete ledger drill-down parity, deterministic refresh and
+check behavior, missing/stale/all-terminal semantics, file/SQLite portability, no read mutation,
+documentation alignment, strict Doctor, and checkpoint/rebuild parity.

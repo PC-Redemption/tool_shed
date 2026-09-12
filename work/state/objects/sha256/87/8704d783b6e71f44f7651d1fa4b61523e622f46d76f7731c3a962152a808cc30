@@ -1,0 +1,86 @@
+# Program Roadmap: Restore Strategic-Cockpit Semantics to 100k
+
+Status: completed
+Type: program-roadmap
+Updated: 2026-09-12
+Next Action: execute M1-RESTORE-100K-COCKPIT through Work1
+Roadmap ID: restore-strategic-cockpit-semantics-to-100k
+Roadmap Revision: 1
+Source Idea: IDEA-0029
+Source Project Map: MAP-0037
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 3
+Reviewed Body SHA256: 5edacfd9a26b2eb9b96062109638361b83a085015e07666b4a895e7b8d58debf
+
+## Program Outcome
+
+Tool Shed's standard 100k experience is a concise strategic cockpit backed by one canonical
+executive-intent source and the existing operational projection. The main view omits the exhaustive
+ledger while retaining explicit deterministic ledger access and complete-accounting checks.
+
+## M1-RESTORE-100K-COCKPIT — Deliver the corrective local candidate
+
+Status: active
+Required Endpoint: Work1
+Depends on: Tool Shed v0.55.0 / IDEA-0028
+
+Outcome: Define and implement the smallest managed executive-intent contract; join it with the
+shared projection; redesign `work/100k.md` around owner orientation and decisions; remove its
+Complete Strategic Ledger section; preserve complete accounting through explicit drill-down;
+update the Tool Shed route and docs; prove deterministic SQLite/file behavior and the owner
+acceptance scenarios; and checkpoint the locally verified candidate without deployment.
+
+Gates:
+
+- `G1-EXECUTIVE-INTENT-AUTHORITY`
+- `G2-STRATEGIC-COCKPIT-EXPERIENCE`
+- `G3-PARITY-RECOVERY-AND-OWNER-ACCEPTANCE`
+
+Candidate campaign: `restore-strategic-cockpit-semantics-to-100k`.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G1-EXECUTIVE-INTENT-AUTHORITY | M1 managed intent contract and authority tests |
+| G2-STRATEGIC-COCKPIT-EXPERIENCE | M1 concise renderer, ledger drill-down, and route behavior |
+| G3-PARITY-RECOVERY-AND-OWNER-ACCEPTANCE | M1 deterministic, portability, recovery, and owner scenarios |
+
+Transfer count: 3 reviewed gates; 3 mapped gates; 0 dropped.
+
+## Decision Record
+
+- Reuse managed documents and revisions for one singleton executive-intent role; add no table.
+- Keep generated `work/100k.md` and bare `ts: 100k` read-only.
+- Remove the exhaustive ledger from the main Markdown; retain a deterministic explicit drill-down.
+- Keep operational lifecycle and execution truth in existing artifacts and outcome state.
+- Treat explicit owner follow-up choices as normal guarded routes, not implicit 100k mutations.
+- Keep DisplayTest import, deployment, release, and hosted write-back outside this milestone.
+
+## Recovery Contract
+
+- Existing 100k atomic refresh, generated marker, exact-byte stale detection, and Doctor behavior
+  remain intact.
+- Missing or malformed executive intent produces a controlled decision-needed view and never
+  fabricates project strategy.
+- Multiple active intent documents, invalid authority, incomplete accounting, or projection
+  truncation fails closed with a bounded diagnostic.
+- The ledger drill-down and main view are generated from the same projection and cannot disagree on
+  accounting identity or count.
+
+## Verification Strategy
+
+- Focused unit tests for intent discovery, singleton enforcement, main-view sections, ledger
+  omission, explicit ledger output, deterministic bytes, stale detection, and no read mutation.
+- SQLite-authority, file-authority, missing-intent, all-terminal, populated, and stale-intent
+  fixtures.
+- Month-away acceptance scenario: the first page answers purpose, horizon, changes, priorities,
+  decisions, and credible next cycles without reading the ledger.
+- Existing project-projection, Doctor, documentation, manifest, and repository validation.
+
+## Authority Boundaries
+
+This roadmap authorizes faithful planning, source/test/documentation changes, local validation,
+managed outcome updates, and a scoped local Work1 commit. It does not authorize deployment,
+publication, release, production promotion, client synchronization, DisplayTest mutation,
+credentials, destructive recovery, or autonomous strategy selection.

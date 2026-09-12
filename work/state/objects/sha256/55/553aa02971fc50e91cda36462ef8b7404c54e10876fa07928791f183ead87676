@@ -1,0 +1,48 @@
+# Tool Shed Project Executive Intent
+
+Status: active
+Type: decision
+Role: project-executive-intent-v1
+Updated: 2026-09-12
+
+## North Star
+
+Provide a provider-portable collaboration toolkit that helps a human and AI assistant choose the
+right structure, preserve intent, execute safely, and close outcomes without cluttering project
+code or creating unnecessary infrastructure.
+
+## Current Completion Horizon
+
+The strategic-cockpit correction is locally verified, committed, and checkpointed as the v0.56.0
+Work1 candidate. Stop here without deployment, release, or installed-client synchronization until
+the owner explicitly chooses the next horizon.
+
+## Strategic Context
+
+Tool Shed v0.55.0 delivered deterministic and complete 100k accounting but presented it primarily
+as an audit report. The local v0.56.0 candidate now restores the returning-owner cockpit while
+preserving authority, portability, recovery, and no-skip guarantees. Installed clients and released
+surfaces remain unchanged because this horizon stopped at Work1.
+
+## Current Priorities
+
+- Review the revised `work/100k.md` against the month-away owner-orientation outcome.
+- Decide whether to field-test, release, and synchronize the v0.56.0 candidate or hold it locally.
+- Preserve one-field/one-authority boundaries, deterministic refresh/check behavior, and file/SQLite portability.
+
+## Deliberate Non-Goals
+
+- Do not deploy, publish, release, or synchronize installed clients in the current horizon.
+- Do not import or mutate the DisplayTest 100,000-Foot View without direct source access and a separate no-loss review.
+- Do not let a read-only 100k review autonomously choose priorities or start work.
+- Do not introduce a second project-world builder, database, lifecycle engine, or 100k-specific backlog.
+
+## Decisions Needed
+
+- Decide whether the verified Work1 candidate should advance to field testing and delivery.
+
+## Review Triggers
+
+- Review when the owner accepts or rejects the revised cockpit.
+- Review when a material outcome, priority, non-goal, or completion horizon changes.
+- Review when 100k accounting, authority, recovery, or owner-orientation evidence diverges.
