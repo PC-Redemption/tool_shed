@@ -1,0 +1,60 @@
+# Program Roadmap: CEO Directive Delegation Through 100k
+
+Status: active
+Type: program-roadmap
+Updated: 2026-09-12
+Next Action: execute M1-DELEGATE-CEO-DIRECTIVES through Work1
+Roadmap ID: 100k-ceo-directive-delegation
+Roadmap Revision: 1
+Source Idea: IDEA-0030
+Source Project Map: MAP-0038
+
+## Program Outcome
+
+The CEO can issue a directive through 100k without selecting subordinate mechanics. Tool Shed
+preserves it using existing Idea and outcome authority, delegates planning and materialization to
+the established cycles, executes within the directive's endpoint and autonomy envelope, and reports
+progress back through the deterministic executive cockpit.
+
+## M1-DELEGATE-CEO-DIRECTIVES — Deliver the local candidate
+
+Status: active
+Required Endpoint: Work1
+Depends on: Tool Shed v0.56.0
+
+Outcome: Add the portable CEO directive artifact role and `ts: 100k add` route; hand accepted
+directives directly to PRM; surface their canonical state in the 100k cockpit; correct current
+executive framing after v0.56.0; update documentation and tests; and checkpoint a verified local
+candidate without deployment.
+
+Gates:
+
+- `G1-DIRECTIVE-AUTHORITY` — exact CEO wording is durably captured through existing Idea/document authority.
+- `G2-SUBORDINATE-DELEGATION` — Plan → Roadmap → Milestone → Campaign → Evidence/Outcome is automatic when covered.
+- `G3-EXECUTIVE-VISIBILITY` — 100k shows directive state and handoff without owning execution lifecycle.
+- `G4-PORTABLE-RECOVERY` — SQLite/file behavior, deterministic rendering, validation, and rebuild parity pass.
+
+Candidate campaign: `delegate-ceo-directives-through-100k`.
+
+## Decision Record
+
+- Reuse Idea Briefs with role `project-executive-directive-v1` as directive records.
+- Keep the existing project-executive-intent singleton for enduring framing only.
+- Keep bare 100k read-only and add a distinct explicit write route.
+- Default source-changing directives without delivery language to Work1; explicit natural-language
+  delivery requests and numbered endpoints remain authoritative.
+- Add no new database table, queue, or tracker.
+
+## Verification Strategy
+
+- Focused projection tests for directive discovery, deterministic display, and read-only behavior.
+- Artifact-creation tests for portable directive metadata and exact CEO text.
+- Contract tests or validation for the routed delegation instructions.
+- Existing project-projection, document-store, Doctor, manifest, and repository validation.
+- Checkpoint/rebuild domain-digest parity.
+
+## Authority Boundaries
+
+This roadmap authorizes planning, managed document/outcome changes, source/test/documentation edits,
+focused and full local validation, and a scoped Work1 commit. It does not authorize deployment,
+push, release, production promotion, client synchronization, credentials, or destructive recovery.

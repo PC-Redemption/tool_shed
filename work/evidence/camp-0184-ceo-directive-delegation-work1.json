@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "campaign": "CAMP-0184",
+  "directive": "Make 100k accept CEO directives and delegate their materialization and execution through subordinate cycles",
+  "requested_endpoint": "Work1",
+  "candidate_version": "0.57.0",
+  "released_baseline": "v0.56.0",
+  "product_commit": "d591672075fd0ac87c955c89d1708937c9061dfe",
+  "results": {
+    "directive_authority": "The exact CEO text is stored as IDEA-0030 with role project-executive-directive-v1 and an open governed outcome.",
+    "subordinate_delegation": "IDEA-0030 produces MAP-0038, which produces PRM-0050 and CAMP-0184 through the existing Plan, Roadmap, Milestone, Campaign, Evidence, and Outcome substrate.",
+    "executive_visibility": "The deterministic 100k projection reports directive state and subordinate handoff while bare 100k remains read-only.",
+    "lifecycle_duplication": "No directive table, queue, backlog, or lifecycle engine was added.",
+    "full_validation": "673 of 673 unit tests passed; provider adapters, database-owned views, stale paths, work state, roadmaps, bootstrap closures, and markdown sanity passed.",
+    "manifest": "SHED_VERSION.json verifies 301 tracked Tool Shed files as unpublished v0.57.0.",
+    "checkpoint_digest": "1173b3b29cd6600ec70dc21fbb31510bd553b3095e4c1419bc61f9faca51d502",
+    "checkpoint_revision": 1693,
+    "domain_digest": "f3cab1db1f811b1ea495920c08f694ca7a8e02a43b83a12bf64549c32964a325",
+    "rebuild_domain_digest": "f3cab1db1f811b1ea495920c08f694ca7a8e02a43b83a12bf64549c32964a325",
+    "checkpoint_rebuild_parity": true,
+    "strict_doctor_after_closure": null
+  },
+  "external_changes": {
+    "push": false,
+    "release": false,
+    "deployment": false,
+    "client_sync": false
+  }
+}

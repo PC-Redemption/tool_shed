@@ -1,0 +1,80 @@
+# Project Map: CEO Directive Delegation Through 100k
+
+Status: completed
+Type: project-map
+Updated: 2026-09-12
+Next Action: propagate the completed roadmap to IDEA-0030
+Source Idea: IDEA-0030
+Source Directive: Make 100k accept CEO directives and delegate their materialization and execution through subordinate cycles
+
+## Purpose
+
+Make the project owner operate as CEO: state the desired outcome once in the 100k context, then let
+Tool Shed select and run the subordinate Plan, Roadmap, Milestone, Campaign, Evidence, and Outcome
+cycles. The CEO should not need to choose internal artifact mechanics.
+
+## Desired Outcome
+
+`ts: 100k add <directive>` durably preserves the CEO's directive, establishes its governed outcome,
+and hands it to the Plan Cycle. Covered subordinate cycles continue through materialization and the
+directive's authorized execution endpoint, interrupting only for genuine decisions or authority
+boundaries. The read-only 100k view shows directive state and handoff without becoming another queue.
+
+## Visual Map
+
+```mermaid
+flowchart TD
+  CEO[CEO / project owner] -->|issues directive| D[Durable executive directive]
+  D --> P[Plan Cycle]
+  P --> R[Roadmap Cycle]
+  R --> M[Milestone Cycle]
+  M --> C[Campaign Cycle]
+  C --> E[Evidence and Outcome Cycles]
+  E --> V[100k executive cockpit]
+  V --> CEO
+```
+
+## Settled Direction
+
+- Keep bare `ts: 100k` and generated `work/100k.md` read-only.
+- Add `ts: 100k add <directive>` as the CEO command surface, with `ts: directive <directive>` as a concise alias.
+- Persist a directive as an existing Idea Brief marked with role `project-executive-directive-v1`;
+  do not add a directive table, backlog, queue, or lifecycle engine.
+- Preserve the CEO's directive text and use the existing outcome, relationship, PRM, campaign, and
+  evidence machinery as execution authority.
+- Treat a directive as ready for Plan Cycle intake, not as a requirement that the CEO choose
+  brainstorm, project-map, roadmap, or campaign mechanics.
+- Continue automatically under the project-bound autonomy envelope. An explicit requested endpoint
+  governs delivery; absent delivery language, source-changing directives stop at a verified Work1 candidate.
+- Project directive state into 100k from canonical Idea/outcome/relationship state.
+- Keep semantic truth visible: deterministic source freshness must not be described as proof that
+  executive framing still matches released or runtime reality.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Directive authority | Portable directive template and managed Idea metadata using existing document primitives | document authority |
+| Delegation route | Skill and operator contract hand the directive to PRM and preserve endpoint boundaries | directive authority |
+| Executive visibility | 100k shows directive state and next subordinate handoff | shared project projection |
+| Proof and current truth | Focused tests, docs, manifest integrity, and corrected current executive intent | prior workstreams |
+
+## Program Shape
+
+One bounded Work1 milestone implements the route, projection, tests, and documentation; corrects
+the current executive intent after the v0.56.0 release; checkpoints the governed result; and stops
+without deployment, push, release, or installed-client synchronization.
+
+## Constraints And Non-Goals
+
+- No second backlog, queue, database table, or lifecycle engine.
+- No mutation from bare `ts: 100k` or from rendering the projection.
+- No autonomous expansion or reinterpretation of the CEO's desired outcome.
+- No production publication, remote deployment, or client synchronization in this milestone.
+- No requirement that the CEO know artifact names or copy internal state tokens.
+
+## Completion Boundary
+
+The map is complete when the directive route, existing-substrate persistence, subordinate PRM
+handoff, 100k visibility, current executive framing, portable tests, strict health, and checkpoint
+rebuild parity pass in one locally committed Work1 candidate.

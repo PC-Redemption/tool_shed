@@ -1,0 +1,47 @@
+# Campaign: Delegate CEO Directives Through 100k
+
+Status: completed
+Type: campaign
+Updated: 2026-09-12
+Next Action: propagate the verified Work1 outcome to PRM-0050
+Campaign ID: delegate-ceo-directives-through-100k
+Campaign Number: 184
+Outcome: A CEO can issue one directive through 100k and Tool Shed durably delegates it through subordinate cycles without requiring artifact-level instructions.
+Primary Focus Areas: artifact-workflows
+Supporting Focus Areas: campaign-lifecycle, provider-portability, workspace-safety
+Depends On: none
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work1
+Completion Gate: `ts: 100k add <directive>` and `ts: directive <directive>` preserve the exact CEO directive as an existing Idea Brief role, establish the normal governed handoff, and continue through PRM under the authority envelope; bare 100k stays read-only; the cockpit shows directive state and next subordinate cycle from canonical truth; no second lifecycle or queue is introduced; current executive intent reflects the shipped v0.56.0 state; focused tests, full validation, strict Doctor, checkpoint/rebuild parity, and a scoped local commit pass.
+Completion Evidence: work/evidence/camp-0184-ceo-directive-delegation-work1.json; product commit d591672075fd0ac87c955c89d1708937c9061dfe
+Completion Date: 2026-09-12
+Disposition: satisfied
+Roadmap: 100k-ceo-directive-delegation
+Roadmap Revision: 1
+Roadmap Document: PRM-0050
+Milestone: M1-DELEGATE-CEO-DIRECTIVES
+Unlocks Gates: G1-DIRECTIVE-AUTHORITY, G2-SUBORDINATE-DELEGATION, G3-EXECUTIVE-VISIBILITY, G4-PORTABLE-RECOVERY
+
+## Request
+
+Implement the CEO command-and-delegation loop identified after v0.56.0. Preserve the operator's
+directive verbatim, route its internal representation without requiring the CEO to select artifact
+mechanics, and immediately hand it to the Plan Cycle. Let the existing PRM and nested cycles
+materialize and execute it within the directive's explicit endpoint and the active autonomy envelope.
+
+Keep bare 100k and `work/100k.md` read-only. Project directive state into the cockpit from existing
+Idea, relationship, outcome, reconciliation, and closure truth. Use the existing document and
+outcome substrate, not a new queue, backlog, tracker, or lifecycle system.
+
+Correct the current executive-intent framing so it no longer describes v0.56.0 as an unreleased
+Work1 candidate. Update the portable skill, templates, commands, operator and executive-view docs,
+and focused tests.
+
+## Completion Check
+
+Verify exact directive capture, role metadata in SQLite and file authority, automatic PRM handoff
+instructions, endpoint/authority boundaries, directive projection and rendering, deterministic
+bytes, no bare-read mutation, no duplicate lifecycle authority, documentation alignment, strict
+Doctor, and checkpoint/rebuild parity. Stop after a scoped Work1 commit.

@@ -1,0 +1,48 @@
+# Tool Shed Project Executive Intent
+
+Status: active
+Type: decision
+Role: project-executive-intent-v1
+Updated: 2026-09-12
+
+## North Star
+
+Provide a provider-portable collaboration toolkit that helps a human and AI assistant choose the
+right structure, preserve intent, execute safely, and close outcomes without cluttering project
+code or creating unnecessary infrastructure.
+
+## Current Completion Horizon
+
+Tool Shed v0.56.0 is released and verified across the web, Windows, and Linux production lanes.
+The current horizon is a locally verified Work1 candidate that lets the CEO issue directives
+through 100k and delegates their materialization and execution to subordinate cycles.
+
+## Strategic Context
+
+Tool Shed v0.56.0 restored the returning-owner cockpit, but the post-release review exposed a
+command-model gap: the CEO still had to choose internal artifact mechanics. The settled correction
+preserves the read-only cockpit while adding an explicit directive surface that hands work to the
+existing Plan, Roadmap, Milestone, Campaign, Evidence, and Outcome cycles.
+
+## Current Priorities
+
+- Deliver `ts: 100k add <directive>` as the CEO command surface and automatically hand directives to the Plan Cycle.
+- Show directive state and subordinate handoff in the read-only 100k cockpit from canonical lifecycle truth.
+- Preserve one-field/one-authority boundaries, deterministic behavior, file/SQLite portability, and a Work1 stopping point.
+
+## Deliberate Non-Goals
+
+- Do not deploy, publish, release, or synchronize installed clients for the current Work1 horizon.
+- Do not import or mutate the DisplayTest 100,000-Foot View without direct source access and a separate no-loss review.
+- Do not make bare 100k review mutating or infer a directive from passive reading.
+- Do not introduce a second project-world builder, database, lifecycle engine, queue, or 100k-specific backlog.
+
+## Decisions Needed
+
+- No executive decision is currently required; subordinate cycles should continue the accepted directive through Work1.
+
+## Review Triggers
+
+- Review after the CEO directive route completes its Work1 evidence gate.
+- Review when a material outcome, priority, non-goal, or completion horizon changes.
+- Review when 100k accounting, authority, recovery, or owner-orientation evidence diverges.
