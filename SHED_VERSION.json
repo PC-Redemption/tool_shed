@@ -306,10 +306,32 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
   "notes": "Restore 100k as an owner strategic cockpit, retain the complete ledger as drill-down, and add guided owner-reviewed executive-intent setup for existing projects.",
-  "release_commit": null,
-  "release_qualification": null,
+  "release_commit": "1b8cae39bfae75a48831a2cc9aedd6c6be304b5b",
+  "release_qualification": {
+    "attested_at": "2026-09-12T13:28:18Z",
+    "client_smoke": {
+      "path": "scripts/validate_snapshot_client.py",
+      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
+    },
+    "full_validator": {
+      "path": "scripts/validate_tool_shed.py",
+      "sha256": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb"
+    },
+    "required_ci": [
+      {
+        "path": ".github/workflows/validate.yml",
+        "sha256": "4c40e29ea3ff7bf98f5f3e2a6e2dfb0493b382466375f1f34c6b3624ccd49578"
+      },
+      {
+        "path": ".github/workflows/release.yml",
+        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
+      }
+    ],
+    "schema_version": 1,
+    "subject_commit": "1b8cae39bfae75a48831a2cc9aedd6c6be304b5b"
+  },
   "release_tag": "v0.56.0",
-  "released_at": null,
+  "released_at": "2026-09-12T13:28:18Z",
   "shed_version": "0.56.0",
   "updated_at": "2026-09-12",
   "updater_mutation_paths": [
