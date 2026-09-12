@@ -19,10 +19,16 @@ separately; older schemas remain explicitly legacy/unverified and are never rewr
 Schema v11 adds only the bounded terminal-reconciliation reason for a work artifact, allowing the
 dashboard to distinguish administrative closure from successful outcome completion without
 receiving run, operation, or assignment details.
-It rejects paths, prompts, source text, uncontrolled commands, raw output, exception messages,
+Schema v12 adds one bounded executive projection derived from the same canonical builder as
+`work/100k.md`. It includes the executive-intent sections, strategic counts, focus coverage,
+release horizon, directives, attention, recommendations, recent and realized outcomes, and exact
+`ts: directive <directive>` clipboard text. Each instance retains its own newest projection; the
+hosted service never merges instances or becomes lifecycle authority. Older reports render a clear
+CEO-view unavailable state.
+It rejects paths, prompts, arbitrary source text, uncontrolled commands, raw output, exception messages,
 credentials, secrets, scheduler definitions, diagnostic logs, and uncontrolled event summaries.
-The one command-shaped schema-v8 field is restricted to the exact local route
-`ts: resolve loop <finding-id>` and is rendered only as a clipboard action. Requests are capped at
+Command-shaped fields are restricted to the exact local routes `ts: resolve loop <finding-id>` and
+`ts: directive <directive text>` and are rendered only as clipboard actions. Requests are capped at
 256 KiB; event, failure,
 inventory, pending-delivery, and release-candidate lists or counts are bounded.
 
@@ -115,6 +121,15 @@ For release acceptance, also observe an unforced 15-minute scheduler interval:
 ```
 
 ## Operator presentation
+
+The first project tab is **CEO**. It presents the same owner-facing sections as the canonical local
+`work/100k.md` view from the newest reporting instance: executive review, North Star, completion
+horizon, strategic context, priorities, directives and subordinate handoffs, landscape and focus
+coverage, decisions and attention, recommended cycles, changes, realized outcomes, non-goals,
+review triggers, and source/accounting evidence. Every directive includes an accessible copy button
+for its exact `ts: directive <directive text>` command. Copying never executes the directive or
+writes hosted or local state; the operator pastes it into Codex, where normal Tool Shed routing and
+authority checks apply.
 
 The Overview release card and Work/Awaiting Work5 view consume the same per-instance group list.
 Document-free work appears as **Direct Work2 outcomes** without fabricating planning artifacts.

@@ -16,6 +16,7 @@
   </dl>
 </section>
 <nav class="dashboard-tabs" aria-label="Project sections">
+  <a href="{% url 'fleet:project-tab' project.id 'ceo' %}" {% if tab == 'ceo' %}aria-current="page"{% endif %}>CEO</a>
   <a href="{% url 'fleet:project' project.id %}" {% if tab == 'overview' %}aria-current="page"{% endif %}>Overview</a>
   <a href="{% url 'fleet:project-tab' project.id 'work' %}" {% if tab == 'work' %}aria-current="page"{% endif %}>Work</a>
   <a href="{% url 'fleet:project-tab' project.id 'history' %}" {% if tab == 'history' %}aria-current="page"{% endif %}>History</a>
@@ -23,7 +24,91 @@
   <a href="{% url 'fleet:project-tab' project.id 'health' %}" {% if tab == 'health' %}aria-current="page"{% endif %}>Health</a>
 </nav>
 
-{% if tab == 'overview' %}
+{% if tab == 'ceo' %}
+{% if ceo %}
+<section class="dashboard-panel ceo-hero">
+  <div>
+    <span class="eyebrow">100k Project Executive View</span>
+    <h2>Executive Review</h2>
+    <p>Executive intent supplies direction; subordinate cycles and their evidence retain execution truth.</p>
+  </div>
+  <dl class="ceo-review-metrics">
+    <div><dt>Intent</dt><dd>{{ ceo.intent.state }}</dd></div>
+    <div><dt>Accounting</dt><dd>{% if ceo.complete_accounting %}Complete{% else %}Incomplete{% endif %}</dd></div>
+    <div><dt>Artifacts</dt><dd>{{ ceo.total_count }}</dd></div>
+    <div><dt>Latest update</dt><dd>{{ ceo.latest_source_update|default:"—" }}</dd></div>
+  </dl>
+</section>
+
+<div class="ceo-grid">
+  <section class="dashboard-panel ceo-card ceo-wide">
+    <h2>North Star</h2>
+    <p>{{ ceo.intent.north_star|default:"Not established."|linebreaksbr }}</p>
+  </section>
+  <section class="dashboard-panel ceo-card">
+    <h2>Current Completion Horizon</h2>
+    <p>{{ ceo.intent.completion_horizon|default:"Not established."|linebreaksbr }}</p>
+    {% if ceo.release_horizon.available %}<p class="dashboard-note">Current release base: <code>{{ ceo.release_horizon.base_tag|default:"—" }}</code></p>
+      {% for cohort in ceo.release_horizon.active_cohorts %}<p class="dashboard-note">Cohort <code>{{ cohort.cycle_id }}</code> is {{ cohort.lifecycle_state }} with {{ cohort.candidate_count }} candidate{{ cohort.candidate_count|pluralize }}.</p>{% empty %}<p class="dashboard-note">No Work2 candidate is currently awaiting Work5.</p>{% endfor %}
+    {% else %}<p class="dashboard-note">Release-cohort state is unavailable.</p>{% endif %}
+  </section>
+  <section class="dashboard-panel ceo-card">
+    <h2>Strategic Context</h2>
+    <p>{{ ceo.intent.strategic_context|default:"No owner-authored strategic context is currently recorded."|linebreaksbr }}</p>
+  </section>
+  <section class="dashboard-panel ceo-card">
+    <h2>Current Priorities</h2>
+    <ul>{% for item in ceo.intent.priorities %}<li>{{ item }}</li>{% empty %}<li>No owner-authored priority order is currently recorded.</li>{% endfor %}</ul>
+  </section>
+  <section class="dashboard-panel ceo-card ceo-wide">
+    <div class="compact-panel-heading"><div><h2>Executive Directives</h2><p class="dashboard-note">Copy a directive command, then paste it into Codex to delegate or resume the work.</p></div></div>
+    <div class="ceo-directives">
+      {% for directive in ceo.directives %}
+      <article class="ceo-directive">
+        <div class="ceo-directive-heading"><div><strong><code>{{ directive.visible_id }}</code> · {{ directive.directive_stage }}</strong><p>{{ directive.directive_text }}</p></div><span class="state-badge state-{{ directive.directive_stage }}">{{ directive.directive_stage }}</span></div>
+        <p class="dashboard-note">Subordinate handoff: {% for item in directive.subordinate_handoff %}{% if not forloop.first %}, {% endif %}<code>{{ item }}</code>{% endfor %}</p>
+        {% include "fleet/includes/local_command.html" with command=directive.command label="Copy directive command" aria_label="Copy Tool Shed command for this executive directive" %}
+      </article>
+      {% empty %}<p class="dashboard-empty">No executive directive is currently recorded. Issue one with <code>ts: 100k add &lt;directive&gt;</code>.</p>{% endfor %}
+    </div>
+  </section>
+  <section class="dashboard-panel ceo-card ceo-wide">
+    <h2>Project Landscape</h2>
+    <dl class="ceo-landscape">
+      <div><dt>Working</dt><dd>{{ ceo.state.working_count }}</dd></div><div><dt>Ready</dt><dd>{{ ceo.state.ready_count }}</dd></div><div><dt>Blocked</dt><dd>{{ ceo.state.blocked_count }}</dd></div><div><dt>Active ideas</dt><dd>{{ ceo.state.active_idea_count }}</dd></div><div><dt>Open outcomes</dt><dd>{{ ceo.state.open_outcome_count }}</dd></div><div><dt>Unreconciled</dt><dd>{{ ceo.state.unreconciled_outcome_count }}</dd></div><div><dt>Closure debt</dt><dd>{{ ceo.state.closure_debt_count }}</dd></div><div><dt>Loop findings</dt><dd>{{ ceo.state.active_loop_finding_count }}</dd></div>
+    </dl>
+    {% if ceo.focus_coverage.catalog_state == 'approved' %}<div class="table-scroll"><table><thead><tr><th>Enduring focus area</th><th>Active campaigns</th></tr></thead><tbody>{% for area in ceo.focus_coverage.areas %}<tr><td><code>{{ area.focus_area_id }}</code> — {{ area.name }}</td><td>{% for campaign in area.active_campaigns %}{% if not forloop.first %}, {% endif %}<code>{{ campaign }}</code>{% empty %}—{% endfor %}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p class="dashboard-empty">No approved focus-area catalog is available.</p>{% endif %}
+  </section>
+  <section class="dashboard-panel ceo-card">
+    <h2>Decisions And Attention</h2>
+    <ul>{% for item in ceo.intent.decisions_needed %}<li>{{ item }}</li>{% endfor %}{% for item in ceo.attention %}<li><strong>{{ item.code }}:</strong> {{ item.summary }}</li>{% endfor %}{% if not ceo.intent.decisions_needed and not ceo.attention %}<li>No decision or attention signal.</li>{% endif %}</ul>
+  </section>
+  <section class="dashboard-panel ceo-card">
+    <h2>Recommended Next Cycles</h2>
+    <ul>{% for item in ceo.recommendations %}<li><code>{{ item.visible_id }}</code> — {{ item.title }} <span class="dashboard-note">({{ item.document_lifecycle }}; {{ item.planning_readiness }})</span></li>{% empty %}<li>No working or ready strategic cycle is currently projected.</li>{% endfor %}</ul>
+  </section>
+  <section class="dashboard-panel ceo-card">
+    <h2>What Changed</h2>
+    <ul>{% for item in ceo.recent_changes %}<li><code>{{ item.updated_at }}</code> <code>{{ item.visible_id }}</code> — {{ item.title }} ({{ item.document_lifecycle }})</li>{% empty %}<li>No material artifact changes are projected.</li>{% endfor %}</ul>
+  </section>
+  <section class="dashboard-panel ceo-card">
+    <h2>Realized Outcomes</h2>
+    <ul>{% for item in ceo.realized_outcomes %}<li><code>{{ item.visible_id }}</code> — {{ item.title }}</li>{% empty %}<li>No recently realized strategic outcome is projected.</li>{% endfor %}</ul>
+  </section>
+  <section class="dashboard-panel ceo-card">
+    <h2>Deliberate Non-Goals</h2>
+    <ul>{% for item in ceo.intent.non_goals %}<li>{{ item }}</li>{% empty %}<li>No deliberate non-goals are currently recorded.</li>{% endfor %}</ul>
+  </section>
+  <section class="dashboard-panel ceo-card">
+    <h2>Review Triggers</h2>
+    <ul>{% for item in ceo.intent.review_triggers %}<li>{{ item }}</li>{% empty %}<li>No owner-authored review triggers are currently recorded.</li>{% endfor %}</ul>
+  </section>
+</div>
+<p class="overview-authority-note">Accounting is {% if ceo.complete_accounting %}complete{% else %}incomplete{% endif %} across {{ ceo.total_count }} canonical strategic artifacts. Authority: <code>{{ ceo.authority.authority }}</code> ({{ ceo.authority.state }}); source revision <code>{{ ceo.source_revision|default:"—" }}</code>; source digest <code>{{ ceo.source_digest }}</code>; view digest <code>{{ ceo.state_digest }}</code>. Source instance {{ ceo.source_instance.external_id }} · report schema {{ ceo.source_instance.report_schema_version }}.</p>
+{% else %}
+<section class="dashboard-panel ceo-empty"><span class="eyebrow">100k Project Executive View</span><h2>CEO view not reported yet</h2><p>This project’s newest reporter has not sent the schema-12 executive projection. Update and run the local reporter; older reports remain fully compatible.</p></section>
+{% endif %}
+{% elif tab == 'overview' %}
 {% if attention_items %}
 <section class="dashboard-panel attention-panel">
   <div class="panel-heading"><div><h2>Needs attention</h2><p class="dashboard-note">Active conditions cannot be acknowledged away from the hosted dashboard.</p></div><span>{{ attention_items|length }} active</span></div>

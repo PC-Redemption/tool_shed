@@ -54,6 +54,13 @@ recovery, and other authority expansions are never inferred.
 outcome, reconciliation, and closure authority. Directives do not create another backlog, queue,
 table, or lifecycle engine. Bare 100k review and deterministic rendering remain non-mutating.
 
+Connected schema-12 reporters also send a bounded structured projection of these same sections to
+the hosted project page. The **CEO** tab appears before Overview and shows the newest single-instance
+projection without parsing `work/100k.md` or merging independent reporters. Each directive copies
+its exact `ts: directive <directive text>` command for the operator to paste into Codex; the browser
+cannot execute it. Schema-11 and older reports remain valid and receive an explicit unavailable
+state until an updated local reporter delivers the CEO projection.
+
 ```bash
 python3 scripts/project_projection.py --workspace . 100k
 python3 scripts/project_projection.py --workspace . 100k setup

@@ -25,6 +25,7 @@ ROOT_FIELDS = {
     "lifecycle_events",
     "instance_health",
     "loop_findings",
+    "executive",
 }
 PROJECT_FIELDS = {"id", "name"}
 INSTANCE_FIELDS = {"id", "platform", "client_version", "counter_epoch", "quiescent"}
@@ -211,6 +212,29 @@ RELEASE_CHAIN_FIELDS_V10 = RELEASE_CHAIN_FIELDS | {
     "group_kind",
     "registration_count",
     "owning_chain_count",
+}
+EXECUTIVE_FIELDS = {
+    "schema_version", "authority", "source_revision", "source_digest", "state_digest",
+    "latest_source_update", "complete_accounting", "total_count", "intent",
+    "release_horizon", "state", "directives", "focus_coverage", "attention",
+    "recommendations", "recent_changes", "realized_outcomes",
+}
+EXECUTIVE_AUTHORITY_FIELDS = {"authority", "state"}
+EXECUTIVE_INTENT_FIELDS = {
+    "state", "identity", "revision", "north_star", "completion_horizon",
+    "strategic_context", "priorities", "non_goals", "decisions_needed", "review_triggers",
+}
+EXECUTIVE_RELEASE_FIELDS = {"available", "base_tag", "active_cohorts", "finding_count"}
+EXECUTIVE_COHORT_FIELDS = {"cycle_id", "lifecycle_state", "candidate_count"}
+EXECUTIVE_DIRECTIVE_FIELDS = {
+    "visible_id", "title", "directive_text", "directive_stage", "subordinate_handoff", "command",
+}
+EXECUTIVE_FOCUS_FIELDS = {"catalog_state", "areas"}
+EXECUTIVE_FOCUS_AREA_FIELDS = {"focus_area_id", "name", "active_campaigns"}
+EXECUTIVE_ATTENTION_FIELDS = {"code", "summary"}
+EXECUTIVE_ARTIFACT_FIELDS = {
+    "visible_id", "title", "artifact_type", "document_lifecycle", "planning_readiness",
+    "planning_position", "updated_at",
 }
 EVENT_KINDS = {"state-change", "outcome-change", "campaign-change", "client-change"}
 ATTENTION_STATES = {"healthy", "working", "attention", "blocked", "stale", "unknown"}
@@ -857,11 +881,183 @@ def _instance_health(value: Any, *, schema_version: int) -> dict[str, Any]:
     }
 
 
+def _bounded_string_list(
+    value: Any, label: str, *, count: int = 20, length: int = 4_000
+) -> list[str]:
+    if not isinstance(value, list) or len(value) > count:
+        raise ContractError(f"{label} must be a list of at most {count} items")
+    return [
+        _required_string(item, f"{label} item {index}", length)
+        for index, item in enumerate(value, start=1)
+    ]
+
+
+def _executive_artifacts(value: Any, label: str, *, count: int) -> list[dict[str, Any]]:
+    if not isinstance(value, list) or len(value) > count:
+        raise ContractError(f"{label} must be a list of at most {count} items")
+    result = []
+    for index, raw in enumerate(value, start=1):
+        prefix = f"{label} item {index}"
+        item = _object(raw, prefix, EXECUTIVE_ARTIFACT_FIELDS)
+        artifact_type = _required_string(item.get("artifact_type"), f"{prefix}.artifact_type", 32)
+        lifecycle = _required_string(
+            item.get("document_lifecycle"), f"{prefix}.document_lifecycle", 32
+        )
+        readiness = _required_string(
+            item.get("planning_readiness"), f"{prefix}.planning_readiness", 32
+        )
+        if artifact_type not in ARTIFACT_TYPES:
+            raise ContractError(f"{prefix}.artifact_type is unsupported")
+        if lifecycle not in DOCUMENT_LIFECYCLES:
+            raise ContractError(f"{prefix}.document_lifecycle is unsupported")
+        if readiness not in PLANNING_READINESS_STATES:
+            raise ContractError(f"{prefix}.planning_readiness is unsupported")
+        result.append({
+            "visible_id": _required_string(item.get("visible_id"), f"{prefix}.visible_id", 64),
+            "title": _required_string(item.get("title"), f"{prefix}.title", 160),
+            "artifact_type": artifact_type,
+            "document_lifecycle": lifecycle,
+            "planning_readiness": readiness,
+            "planning_position": _optional_counter(
+                item.get("planning_position"), f"{prefix}.planning_position"
+            ),
+            "updated_at": _timestamp(item.get("updated_at"), f"{prefix}.updated_at"),
+        })
+    return result
+
+
+def _executive(value: Any) -> dict[str, Any]:
+    item = _object(value, "executive", EXECUTIVE_FIELDS)
+    if item.get("schema_version") != 1:
+        raise ContractError("executive.schema_version must be 1")
+    authority = _object(item.get("authority"), "executive.authority", EXECUTIVE_AUTHORITY_FIELDS)
+    intent = _object(item.get("intent"), "executive.intent", EXECUTIVE_INTENT_FIELDS)
+    release = _object(
+        item.get("release_horizon"), "executive.release_horizon", EXECUTIVE_RELEASE_FIELDS
+    )
+    cohort_values = release.get("active_cohorts")
+    if not isinstance(cohort_values, list) or len(cohort_values) > 20:
+        raise ContractError("executive.release_horizon.active_cohorts must be a list of at most 20 items")
+    cohorts = []
+    for index, raw in enumerate(cohort_values, start=1):
+        prefix = f"executive.release_horizon.active_cohorts item {index}"
+        cohort = _object(raw, prefix, EXECUTIVE_COHORT_FIELDS)
+        cohorts.append({
+            "cycle_id": _required_string(cohort.get("cycle_id"), f"{prefix}.cycle_id", 96),
+            "lifecycle_state": _required_string(
+                cohort.get("lifecycle_state"), f"{prefix}.lifecycle_state", 32
+            ),
+            "candidate_count": _bounded_counter(
+                cohort.get("candidate_count"), f"{prefix}.candidate_count", 10_000
+            ),
+        })
+    directive_values = item.get("directives")
+    if not isinstance(directive_values, list) or len(directive_values) > 8:
+        raise ContractError("executive.directives must be a list of at most 8 items")
+    directives = []
+    for index, raw in enumerate(directive_values, start=1):
+        prefix = f"executive.directives item {index}"
+        directive = _object(raw, prefix, EXECUTIVE_DIRECTIVE_FIELDS)
+        text = _required_string(directive.get("directive_text"), f"{prefix}.directive_text", 65_535)
+        command = _required_string(directive.get("command"), f"{prefix}.command", 65_550)
+        if command != f"ts: directive {text}":
+            raise ContractError(f"{prefix}.command must exactly target its directive text")
+        directives.append({
+            "visible_id": _required_string(directive.get("visible_id"), f"{prefix}.visible_id", 64),
+            "title": _required_string(directive.get("title"), f"{prefix}.title", 160),
+            "directive_text": text,
+            "directive_stage": _required_string(
+                directive.get("directive_stage"), f"{prefix}.directive_stage", 32
+            ),
+            "subordinate_handoff": _bounded_string_list(
+                directive.get("subordinate_handoff"), f"{prefix}.subordinate_handoff", count=16, length=96
+            ),
+            "command": command,
+        })
+    focus = _object(item.get("focus_coverage"), "executive.focus_coverage", EXECUTIVE_FOCUS_FIELDS)
+    area_values = focus.get("areas")
+    if not isinstance(area_values, list) or len(area_values) > 20:
+        raise ContractError("executive.focus_coverage.areas must be a list of at most 20 items")
+    areas = []
+    for index, raw in enumerate(area_values, start=1):
+        prefix = f"executive.focus_coverage.areas item {index}"
+        area = _object(raw, prefix, EXECUTIVE_FOCUS_AREA_FIELDS)
+        areas.append({
+            "focus_area_id": _required_string(area.get("focus_area_id"), f"{prefix}.focus_area_id", 96),
+            "name": _required_string(area.get("name"), f"{prefix}.name", 160),
+            "active_campaigns": _bounded_string_list(
+                area.get("active_campaigns"), f"{prefix}.active_campaigns", count=50, length=64
+            ),
+        })
+    attention_values = item.get("attention")
+    if not isinstance(attention_values, list) or len(attention_values) > 20:
+        raise ContractError("executive.attention must be a list of at most 20 items")
+    attention = []
+    for index, raw in enumerate(attention_values, start=1):
+        prefix = f"executive.attention item {index}"
+        signal = _object(raw, prefix, EXECUTIVE_ATTENTION_FIELDS)
+        attention.append({
+            "code": _required_string(signal.get("code"), f"{prefix}.code", 96),
+            "summary": _required_string(signal.get("summary"), f"{prefix}.summary", 4_000),
+        })
+    source_digest = _required_string(item.get("source_digest"), "executive.source_digest", 64)
+    state_digest = _required_string(item.get("state_digest"), "executive.state_digest", 64)
+    if any(char not in "0123456789abcdef" for char in source_digest + state_digest):
+        raise ContractError("executive digests must be lowercase SHA-256 values")
+    return {
+        "schema_version": 1,
+        "authority": {
+            "authority": _required_string(authority.get("authority"), "executive.authority.authority", 32),
+            "state": _required_string(authority.get("state"), "executive.authority.state", 32),
+        },
+        "source_revision": _optional_counter(item.get("source_revision"), "executive.source_revision"),
+        "source_digest": source_digest,
+        "state_digest": state_digest,
+        "latest_source_update": _timestamp(
+            item.get("latest_source_update"), "executive.latest_source_update", optional=True
+        ),
+        "complete_accounting": _boolean(item.get("complete_accounting"), "executive.complete_accounting"),
+        "total_count": _bounded_counter(item.get("total_count"), "executive.total_count", 500),
+        "intent": {
+            "state": _required_string(intent.get("state"), "executive.intent.state", 32),
+            "identity": _optional_string(intent.get("identity"), "executive.intent.identity", 64),
+            "revision": _optional_counter(intent.get("revision"), "executive.intent.revision"),
+            "north_star": _optional_string(intent.get("north_star"), "executive.intent.north_star", 16_000),
+            "completion_horizon": _optional_string(intent.get("completion_horizon"), "executive.intent.completion_horizon", 16_000),
+            "strategic_context": _optional_string(intent.get("strategic_context"), "executive.intent.strategic_context", 16_000),
+            "priorities": _bounded_string_list(intent.get("priorities"), "executive.intent.priorities"),
+            "non_goals": _bounded_string_list(intent.get("non_goals"), "executive.intent.non_goals"),
+            "decisions_needed": _bounded_string_list(intent.get("decisions_needed"), "executive.intent.decisions_needed"),
+            "review_triggers": _bounded_string_list(intent.get("review_triggers"), "executive.intent.review_triggers"),
+        },
+        "release_horizon": {
+            "available": _boolean(release.get("available"), "executive.release_horizon.available"),
+            "base_tag": _optional_string(release.get("base_tag"), "executive.release_horizon.base_tag", 96),
+            "active_cohorts": cohorts,
+            "finding_count": _bounded_counter(
+                release.get("finding_count"), "executive.release_horizon.finding_count", 10_000
+            ),
+        },
+        "state": _state(item.get("state"), schema_version=12),
+        "directives": directives,
+        "focus_coverage": {
+            "catalog_state": _required_string(
+                focus.get("catalog_state"), "executive.focus_coverage.catalog_state", 32
+            ),
+            "areas": areas,
+        },
+        "attention": attention,
+        "recommendations": _executive_artifacts(item.get("recommendations"), "executive.recommendations", count=8),
+        "recent_changes": _executive_artifacts(item.get("recent_changes"), "executive.recent_changes", count=5),
+        "realized_outcomes": _executive_artifacts(item.get("realized_outcomes"), "executive.realized_outcomes", count=5),
+    }
+
+
 def validate_report(payload: Any) -> dict[str, Any]:
     root = _object(payload, "report", ROOT_FIELDS)
     schema_version = root.get("schema_version")
-    if schema_version not in {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}:
-        raise ContractError("report.schema_version must be between 1 and 11")
+    if schema_version not in {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}:
+        raise ContractError("report.schema_version must be between 1 and 12")
     if schema_version == 1 and ({"work_inventory", "lifecycle_events"} & set(root)):
         raise ContractError("report schema 1 does not support lifecycle projection fields")
     if schema_version < 4 and "instance_health" in root:
@@ -870,6 +1066,10 @@ def validate_report(payload: Any) -> dict[str, Any]:
         raise ContractError("report schemas before 8 do not support loop findings")
     if schema_version >= 8 and "loop_findings" not in root:
         raise ContractError("report schema 8 requires loop findings")
+    if schema_version < 12 and "executive" in root:
+        raise ContractError("report schemas before 12 do not support executive projection")
+    if schema_version >= 12 and "executive" not in root:
+        raise ContractError("report schema 12 requires executive projection")
     project = _object(root.get("project"), "project", PROJECT_FIELDS)
     instance = _object(root.get("instance"), "instance", INSTANCE_FIELDS)
     app_server = _object(
@@ -974,4 +1174,5 @@ def validate_report(payload: Any) -> dict[str, Any]:
             root.get("instance_health"), schema_version=schema_version
         ) if schema_version >= 4 else None,
         "loop_findings": _loop_findings(root.get("loop_findings")) if schema_version >= 8 else None,
+        "executive": _executive(root.get("executive")) if schema_version >= 12 else None,
     }

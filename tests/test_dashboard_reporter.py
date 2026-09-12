@@ -839,10 +839,16 @@ class DashboardReporterTests(unittest.TestCase):
                 "findings": [],
             },
         }
+        executive = {
+            "schema_version": 1,
+            "directives": [{"command": "ts: directive Improve the cockpit"}],
+        }
 
         with mock.patch.object(
             dashboard_reporter, "_project_projection", return_value=projection
         ) as projected, mock.patch.object(
+            dashboard_reporter, "_executive_dashboard_projection", return_value=executive
+        ) as executive_projected, mock.patch.object(
             dashboard_reporter,
             "load_project_identity",
             return_value={
@@ -868,8 +874,9 @@ class DashboardReporterTests(unittest.TestCase):
         ):
             payload = dashboard_reporter.report_payload(self.workspace, sequence=4, reason="managed-update")
         projected.assert_called_once_with(self.workspace)
+        executive_projected.assert_called_once_with(self.workspace)
         serialized = json.dumps(payload)
-        for prohibited in ("prompt", "source_path", "command", "credential", "raw_diagnostic"):
+        for prohibited in ("prompt", "source_path", "credential", "raw_diagnostic"):
             self.assertNotIn(prohibited, serialized)
         self.assertEqual(payload["state"]["open_outcome_count"], 1)
         self.assertEqual(payload["state"]["unreconciled_outcome_count"], 0)
@@ -877,7 +884,8 @@ class DashboardReporterTests(unittest.TestCase):
         self.assertEqual(payload["app_server"]["attempts"], 3)
         self.assertEqual(payload["app_server"]["performance"]["default_window"], "7d")
         self.assertIsNone(payload["work_efficiency"]["remedial_tokens_actual"])
-        self.assertEqual(payload["schema_version"], 11)
+        self.assertEqual(payload["schema_version"], 12)
+        self.assertEqual(payload["executive"], executive)
         self.assertEqual(
             payload["loop_findings"],
             {"total_active_count": 0, "total_resolved_count": 0, "truncated": False, "findings": []},

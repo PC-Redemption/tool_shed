@@ -878,7 +878,7 @@ def _project_overview_context(
 
 @dashboard_auth_required
 def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
-    if tab not in {"overview", "work", "history", "outcomes", "health"}:
+    if tab not in {"ceo", "overview", "work", "history", "outcomes", "health"}:
         return JsonResponse({"status": "not-found"}, status=404)
     project = get_object_or_404(
         Project.objects.filter(qualification_run__isnull=True).prefetch_related("instances"),
@@ -1134,6 +1134,20 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
                 }
             )
     health_rows, health_summary = _instance_health_context(instances)
+    executive_sources = [
+        instance for instance in instances
+        if isinstance(instance.executive_state, dict) and instance.executive_state
+    ]
+    executive_source = max(
+        executive_sources,
+        key=lambda instance: (instance.last_seen or instance.created_at, str(instance.external_id)),
+        default=None,
+    )
+    ceo = (
+        {**executive_source.executive_state, "source_instance": executive_source}
+        if tab == "ceo" and executive_source
+        else None
+    )
     overview = _project_overview_context(project, instances, health_summary) if tab == "overview" else None
     if tab == "work" and snapshot_by_instance:
         instances = [instance for instance in instances if instance.id in snapshot_by_instance]
@@ -1192,6 +1206,7 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
             "health_rows": health_rows,
             "health_summary": health_summary,
             "overview": overview,
+            "ceo": ceo,
             "selected_type": artifact_type,
             "selected_status": status,
             "selected_scope": selected_scope,

@@ -181,6 +181,7 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
                     "visible_id": visible_id, "artifact_type": artifact_type,
                     "title": " ".join(item.title.split())[:160] or visible_id,
                     "metadata_role": item.fields.get("Role"),
+                    "metadata_directive_text": item.fields.get("Directive Text"),
                     "document_lifecycle": document_lifecycle,
                     "outcome_lifecycle": "unknown", "outcome_disposition": "unknown",
                     "reconciliation_state": "unknown", "terminal_reason": None,
@@ -341,6 +342,7 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
                 "artifact_id": artifact_id,
                 "visible_id": str(row["visible_id"]), "artifact_type": artifact_type, "title": title,
                 "metadata_role": metadata.get("role"),
+                "metadata_directive_text": metadata.get("directive_text"),
                 "document_lifecycle": str(row["lifecycle_state"]),
                 "outcome_lifecycle": str(row["outcome_lifecycle"]), "outcome_disposition": str(row["outcome_disposition"]),
                 "reconciliation_state": str(row["reconciliation_state"]),
@@ -691,6 +693,7 @@ def executive(workspace: Path) -> dict[str, Any]:
             **item,
             "directive_stage": stage,
             "subordinate_handoff": item["produces_ids"] or ["Plan Cycle"],
+            "directive_text": item.get("metadata_directive_text") or item["title"],
         })
 
     attention: list[dict[str, str]] = []

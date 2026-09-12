@@ -398,6 +398,71 @@ class DashboardApplicationTests(TestCase):
         )
         return payload
 
+    def executive_report_payload(self) -> dict[str, object]:
+        payload = self.complete_release_projection_payload()
+        payload["schema_version"] = 12
+        observed = str(payload["observed_at"])
+        artifact = {
+            "visible_id": "CAMP-0185",
+            "title": "Hosted CEO Dashboard View",
+            "artifact_type": "campaign",
+            "document_lifecycle": "working",
+            "planning_readiness": "working",
+            "planning_position": 1,
+            "updated_at": observed,
+        }
+        directive_text = "Make the hosted CEO view actionable"
+        payload["executive"] = {
+            "schema_version": 1,
+            "authority": {"authority": "sqlite", "state": "hybrid"},
+            "source_revision": 1710,
+            "source_digest": "a" * 64,
+            "state_digest": "b" * 64,
+            "latest_source_update": observed,
+            "complete_accounting": True,
+            "total_count": 303,
+            "intent": {
+                "state": "current",
+                "identity": "DEC-0006",
+                "revision": 6,
+                "north_star": "Let the CEO direct outcomes while subordinate cycles execute.",
+                "completion_horizon": "Deliver a verified local CEO dashboard candidate.",
+                "strategic_context": "The hosted view mirrors canonical 100k truth.",
+                "priorities": ["Put CEO before Overview."],
+                "non_goals": ["Do not deploy this Work1 candidate."],
+                "decisions_needed": [],
+                "review_triggers": ["Review when the CEO issues another directive."],
+            },
+            "release_horizon": {
+                "available": True,
+                "base_tag": "v0.56.0",
+                "active_cohorts": [],
+                "finding_count": 0,
+            },
+            "state": dict(payload["state"]),
+            "directives": [{
+                "visible_id": "IDEA-0031",
+                "title": directive_text,
+                "directive_text": directive_text,
+                "directive_stage": "delegated",
+                "subordinate_handoff": ["MAP-0039"],
+                "command": f"ts: directive {directive_text}",
+            }],
+            "focus_coverage": {
+                "catalog_state": "approved",
+                "areas": [{
+                    "focus_area_id": "artifact-workflows",
+                    "name": "Artifact Workflows",
+                    "active_campaigns": ["CAMP-0185"],
+                }],
+            },
+            "attention": [],
+            "recommendations": [artifact],
+            "recent_changes": [artifact],
+            "realized_outcomes": [],
+        }
+        return payload
+
     def enroll_and_issue(self) -> str:
         created = self.client.post(
             reverse("fleet:enrollment-request"),
@@ -435,6 +500,66 @@ class DashboardApplicationTests(TestCase):
         payload["app_server"]["raw_error"] = "secret diagnostic"  # type: ignore[index]
         with self.assertRaisesRegex(ContractError, "unsupported fields"):
             validate_report(payload)
+
+    def test_schema_twelve_ingests_and_renders_canonical_ceo_projection(self) -> None:
+        payload = self.executive_report_payload()
+        validated = validate_report(payload)
+        command = "ts: directive Make the hosted CEO view actionable"
+        self.assertEqual(validated["executive"]["directives"][0]["command"], command)
+
+        unsafe = self.executive_report_payload()
+        unsafe["executive"]["directives"][0]["command"] = "ts: directive something else"  # type: ignore[index]
+        with self.assertRaisesRegex(ContractError, "exactly target"):
+            validate_report(unsafe)
+
+        legacy = self.complete_release_projection_payload()
+        legacy["executive"] = payload["executive"]
+        with self.assertRaisesRegex(ContractError, "before 12"):
+            validate_report(legacy)
+        missing = self.complete_release_projection_payload()
+        missing["schema_version"] = 12
+        with self.assertRaisesRegex(ContractError, "requires executive projection"):
+            validate_report(missing)
+
+        token = self.enroll_and_issue()
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        instance = Instance.objects.get()
+        self.assertEqual(instance.executive_state["intent"]["identity"], "DEC-0006")
+
+        viewer = get_user_model().objects.create_user("ceo-viewer", password="fixture")
+        self.client.force_login(viewer)
+        page = self.client.get(reverse("fleet:project-tab", args=(instance.project_id, "ceo")))
+        self.assertContains(page, "100k Project Executive View")
+        self.assertContains(page, "Executive Directives")
+        self.assertContains(page, "Copy directive command")
+        self.assertContains(page, f'data-copy-command="{command}"')
+        content = page.content.decode()
+        self.assertLess(content.index(">CEO</a>"), content.index(">Overview</a>"))
+
+    def test_ceo_tab_has_a_clear_legacy_empty_state(self) -> None:
+        project = Project.objects.create(
+            external_id=self.project_id,
+            name="Legacy project",
+            last_seen=timezone.now(),
+        )
+        Instance.objects.create(
+            project=project,
+            external_id=self.instance_id,
+            platform="linux-x86_64",
+            client_version="0.56.0",
+            report_schema_version=11,
+        )
+        viewer = get_user_model().objects.create_user("legacy-ceo-viewer", password="fixture")
+        self.client.force_login(viewer)
+        page = self.client.get(reverse("fleet:project-tab", args=(project.id, "ceo")))
+        self.assertContains(page, "CEO view not reported yet")
+        self.assertContains(page, "older reports remain fully compatible")
 
     def test_schema_six_app_server_performance_is_strict_ingested_and_rendered(self) -> None:
         payload = self.performance_report_payload()

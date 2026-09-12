@@ -299,6 +299,11 @@ closure-debt counts. Schema 11 adds the bounded terminal-reconciliation reason t
 projection. Applicable hosted pages copy controlled local Tool Shed commands for use in chat. See
 [`docs/loop-findings.md`](docs/loop-findings.md).
 
+Dashboard report schema 12 adds the bounded canonical 100k projection. The project page now starts
+with a CEO tab containing the same owner-facing sections as `work/100k.md`, and each executive
+directive has an exact `ts: directive <directive text>` copy control for pasting into Codex. The
+hosted dashboard remains read-only and older reporter schemas retain a clear compatibility state.
+
 Before a long campaign, run:
 
 ```bash

@@ -314,6 +314,32 @@
 .overview-activity-list span { color: var(--dashboard-muted); font-size: .74rem; }
 .overview-activity-list article > a { font-size: .74rem; }
 
+.ceo-hero { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(24rem, 1fr); align-items: center; gap: 1rem; border-color: rgba(99, 215, 198, .42); background: linear-gradient(135deg, rgba(20, 49, 74, .94), rgba(15, 23, 42, .82)); }
+.ceo-hero h2 { margin: .25rem 0; font-size: 1.55rem; }
+.ceo-hero p { margin: .25rem 0 0; color: var(--dashboard-muted); }
+.ceo-review-metrics, .ceo-landscape { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .45rem; margin: 0; }
+.ceo-review-metrics div, .ceo-landscape div { min-width: 0; padding: .55rem .65rem; border: 1px solid var(--dashboard-border); border-radius: .5rem; background: rgba(7, 17, 31, .48); }
+.ceo-review-metrics dt, .ceo-landscape dt { color: var(--dashboard-muted); font-size: .7rem; }
+.ceo-review-metrics dd, .ceo-landscape dd { margin: .18rem 0 0; overflow-wrap: anywhere; font-weight: 650; }
+.ceo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+.ceo-grid .dashboard-panel { margin: 0; }
+.ceo-card { min-width: 0; }
+.ceo-card h2 { margin: 0 0 .55rem; font-size: 1.12rem; }
+.ceo-card p { line-height: 1.55; }
+.ceo-card ul { display: grid; gap: .4rem; margin: 0; padding-left: 1.2rem; color: #dce7f7; }
+.ceo-card li { line-height: 1.45; }
+.ceo-wide { grid-column: 1 / -1; }
+.ceo-directives { display: grid; gap: .65rem; }
+.ceo-directive { padding: .8rem; border: 1px solid var(--dashboard-border); border-radius: .6rem; background: rgba(7, 17, 31, .46); }
+.ceo-directive-heading { display: flex; justify-content: space-between; align-items: start; gap: 1rem; }
+.ceo-directive-heading p { margin: .35rem 0 0; }
+.ceo-directive .local-command { align-items: stretch; }
+.ceo-directive .local-command code { flex: 1 1 30rem; padding: .5rem .6rem; border-radius: .4rem; background: #07111f; }
+.ceo-landscape { margin-bottom: .8rem; }
+.ceo-landscape dd { color: #f3c45e; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+.ceo-empty { max-width: 48rem; padding: 2rem; }
+.ceo-empty h2 { margin: .35rem 0; }
+
 .dashboard-body :is(a, button, input, select):focus-visible { outline: 2px solid var(--dashboard-accent); outline-offset: 2px; }
 
 @media (max-width: 760px) {
@@ -341,6 +367,10 @@
   .attention-item dl { justify-content: start; text-align: left; }
   .health-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .project-overview-grid { grid-template-columns: 1fr; }
+  .ceo-hero, .ceo-grid { grid-template-columns: 1fr; }
+  .ceo-review-metrics, .ceo-landscape { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ceo-wide { grid-column: auto; }
+  .ceo-directive-heading { flex-direction: column; }
   .overview-wide { grid-column: auto; }
   .overview-chain { grid-template-columns: 1fr; }
   .overview-chain-meta { align-items: start; }

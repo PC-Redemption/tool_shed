@@ -738,6 +738,11 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
         if report["schema_version"] >= 4
         else None
     )
+    executive_state = (
+        _json_safe(report["executive"])
+        if report["schema_version"] >= 12
+        else None
+    )
     material_activity = (
         locked.last_sequence == 0
         or project.name != report["project"]["name"]
@@ -751,6 +756,7 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
             and _health_material_signature(health_state)
             != _health_material_signature(locked.health_state)
         )
+        or (executive_state is not None and executive_state != locked.executive_state)
     )
     project.name = report["project"]["name"]
     project.attention_state = report["state"]["attention_state"]
@@ -807,6 +813,9 @@ def ingest_report(instance: Instance, report: dict[str, Any]) -> dict[str, Any]:
     if health_state is not None:
         locked.health_state = health_state
         instance_fields.append("health_state")
+    if executive_state is not None:
+        locked.executive_state = executive_state
+        instance_fields.append("executive_state")
     locked.save(update_fields=instance_fields)
     IngestReceipt.objects.create(
         instance=locked,

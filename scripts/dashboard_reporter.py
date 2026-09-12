@@ -46,7 +46,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/dashboard_report
 
 
 SCHEMA_VERSION = 1
-REPORT_SCHEMA_VERSION = 11
+REPORT_SCHEMA_VERSION = 12
 OUTBOX_RELATIVE = Path(".tool-shed/dashboard/outbox.sqlite3")
 MAX_RESPONSE_BYTES = 65_536
 MAX_REQUEST_BYTES = 262_144
@@ -423,9 +423,95 @@ def _windows_pid_is_running(pid: int) -> bool:
 def _project_projection(workspace: Path) -> dict[str, Any]:
     """Compatibility boundary for the shared complete-project projection."""
     try:
-        return project_projection.build(workspace)
+        projection = project_projection.build(workspace)
     except project_projection.ProjectProjectionError as error:
         raise DashboardReporterError(str(error)) from error
+    inventory = projection["work_inventory"]
+    return {
+        **projection,
+        "work_inventory": {
+            **inventory,
+            "artifacts": [
+                {
+                    key: value
+                    for key, value in item.items()
+                    if key not in {"metadata_role", "metadata_directive_text"}
+                }
+                for item in inventory["artifacts"]
+            ],
+        },
+    }
+
+
+def _executive_dashboard_projection(workspace: Path) -> dict[str, Any]:
+    """Select the bounded hosted CEO contract from the canonical 100k projection."""
+    try:
+        view = project_projection.executive(workspace)
+    except project_projection.ProjectProjectionError as error:
+        raise DashboardReporterError(str(error)) from error
+
+    def artifact(item: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "visible_id": item["visible_id"],
+            "title": item["title"],
+            "artifact_type": item["artifact_type"],
+            "document_lifecycle": item["document_lifecycle"],
+            "planning_readiness": item["planning_readiness"],
+            "planning_position": item["planning_position"],
+            "updated_at": item["updated_at"],
+        }
+
+    intent = view["executive_intent"]
+    directives = []
+    for item in view["executive_directives"][:8]:
+        directive_text = str(item.get("directive_text") or item["title"])
+        directives.append({
+            "visible_id": item["visible_id"],
+            "title": item["title"],
+            "directive_text": directive_text,
+            "directive_stage": item["directive_stage"],
+            "subordinate_handoff": list(item["subordinate_handoff"][:16]),
+            "command": f"ts: directive {directive_text}",
+        })
+    recent = [artifact(item) for item in view["recent_changes"][:5]]
+    return {
+        "schema_version": 1,
+        "authority": {
+            "authority": view["authority"]["authority"],
+            "state": view["authority"]["state"],
+        },
+        "source_revision": view["source_revision"],
+        "source_digest": view["source_digest"],
+        "state_digest": view["state_digest"],
+        "latest_source_update": view["latest_source_update"],
+        "complete_accounting": view["complete_accounting"],
+        "total_count": view["inventory"]["total_count"],
+        "intent": {
+            "state": intent["state"],
+            "identity": intent.get("identity"),
+            "revision": intent.get("revision"),
+            "north_star": intent.get("north_star"),
+            "completion_horizon": intent.get("completion_horizon"),
+            "strategic_context": intent.get("strategic_context"),
+            "priorities": list(intent.get("priorities", [])[:20]),
+            "non_goals": list(intent.get("non_goals", [])[:20]),
+            "decisions_needed": list(intent.get("decisions_needed", [])[:20]),
+            "review_triggers": list(intent.get("review_triggers", [])[:20]),
+        },
+        "release_horizon": view["release_horizon"],
+        "state": view["state"],
+        "directives": directives,
+        "focus_coverage": {
+            "catalog_state": view["focus_coverage"]["catalog_state"],
+            "areas": list(view["focus_coverage"]["areas"][:20]),
+        },
+        "attention": list(view["attention"][:20]),
+        "recommendations": [artifact(item) for item in view["recommendations"][:8]],
+        "recent_changes": recent,
+        "realized_outcomes": [
+            item for item in recent if item["document_lifecycle"] in {"completed", "terminal"}
+        ][:5],
+    }
 
 
 def _lifecycle_events(
@@ -713,6 +799,7 @@ def report_payload(
         },
         "work_inventory": inventory,
         "loop_findings": projection["loop_findings"],
+        "executive": _executive_dashboard_projection(workspace),
         "lifecycle_events": lifecycle_events or [],
         "instance_health": _instance_health(
             workspace,
