@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-target-evidence",
+  "endpoint": "work2",
+  "target": "web at tsrookarocom-dev on sup.local, Windows at PC-Redemption/ts_windows_test_bed on GOGETTER, and Linux at PC-Redemption/ts_linux_test_bed on sup.local",
+  "checked_at": "2026-09-12T17:41:22Z",
+  "campaign": "CAMP-0186",
+  "origin_cycle": "1ccece10-f884-4c7e-81a9-fb6fa90b761f",
+  "candidate_commit": "9b767dc37be70648af6ce7d7053c278bd2b11269",
+  "candidate_version": "0.58.0",
+  "checks": [
+    {
+      "id": "candidate-package",
+      "status": "passed",
+      "reference": "exact candidate commit 9b767dc37be70648af6ce7d7053c278bd2b11269 produced 375 tracked non-project files in tool-shed-v0.58.0-9b767dc37be7.tar.gz at sha256:0916f6c1a81a7bf6acb03c5a8334db9fcb00637d68a02123a5e2658e70bf0428; strict snapshot verification passed with no embedded work or Git metadata"
+    },
+    {
+      "id": "web-development",
+      "status": "passed",
+      "reference": "tsrookarocom-dev runs healthy isolated image tool-shed-dashboard:dev-9b767dc37be7 from the exact candidate; dashboard development readiness passed, /ref/ returned HTTP 200 with the durable CEO intake command, and the schema-13 canonical CEO projection plus legacy empty state passed 2/2 Django checks inside the candidate image"
+    },
+    {
+      "id": "linux-development",
+      "status": "passed",
+      "reference": "sup:/home/jon/dev/ts_linux_test_bed installed the exact portable archive under Python 3.13.5; strict v0.58.0 snapshot integrity, current 100k projection, CLEAN Hybrid schema 6 revision 31, and 6/6 portable directive/report checks passed; rollback snapshot tool_shed.development-v058-9b767dc retained"
+    },
+    {
+      "id": "windows-development",
+      "status": "passed",
+      "reference": "GOGETTER:E:\\dev\\ts_windows_test_bed installed the same archive digest under Python 3.14.6; strict v0.58.0 snapshot integrity, current 100k projection, CLEAN Hybrid schema 6 revision 27, and 6/6 portable directive/report checks passed; rollback snapshot tool_shed.development-v058-9b767dc retained"
+    },
+    {
+      "id": "changed-behavior",
+      "status": "passed",
+      "reference": "qualification covered exact CEO text preservation, capture-only versus exact-match resume routing, non-preemptive subordinate handoff, active-first planning order beyond eight directives, directive role discovery, bounded report schema 13, canonical CEO tab rendering, and schema-12 legacy empty behavior"
+    },
+    {
+      "id": "production-boundary",
+      "status": "passed",
+      "reference": "production health remained HTTP 200 before and after development deployment; production compose identity and target were unchanged; no GitHub push, tag, release, production report, production deployment, or canonical installed-client synchronization occurred"
+    }
+  ]
+}
