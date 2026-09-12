@@ -1,0 +1,94 @@
+{
+  "candidate_commit": "d2ab641dea8ed17dcb3dae5b38cf4257e69687a9",
+  "created_at": "2026-09-12T00:22:56Z",
+  "kind": "tool-shed-project-release-lanes",
+  "lanes": {
+    "linux": {
+      "development": {
+        "actor": "codex",
+        "artifact": "tool-shed-idea0027-d2ab641.tar.gz#sha256=0a05fc18dc3ece8e8a15af8bc953e9573d7c5f14d73658aeb3473f8df654c582",
+        "authorization_ref": null,
+        "evidence": [
+          "work/evidence/camp-0181-project-projection-reduction-work2.json"
+        ],
+        "reason": null,
+        "recorded_at": "2026-09-12T00:23:24Z",
+        "source_commit": "d2ab641dea8ed17dcb3dae5b38cf4257e69687a9",
+        "status": "verified",
+        "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed"
+      },
+      "production": {
+        "actor": null,
+        "artifact": null,
+        "authorization_ref": null,
+        "evidence": [],
+        "reason": null,
+        "recorded_at": null,
+        "source_commit": null,
+        "status": "open",
+        "target": "github-release:tool-shed-linux-install-client"
+      }
+    },
+    "web": {
+      "development": {
+        "actor": "codex",
+        "artifact": "tool-shed-dashboard:dev-d2ab641dea8e",
+        "authorization_ref": null,
+        "evidence": [
+          "work/evidence/camp-0181-project-projection-reduction-work2.json"
+        ],
+        "reason": null,
+        "recorded_at": "2026-09-12T00:23:10Z",
+        "source_commit": "d2ab641dea8ed17dcb3dae5b38cf4257e69687a9",
+        "status": "verified",
+        "target": "tsrookarocom-dev@sup.local:/home/jon/docker/ts.rookaro.com-dev"
+      },
+      "production": {
+        "actor": null,
+        "artifact": null,
+        "authorization_ref": null,
+        "evidence": [],
+        "reason": null,
+        "recorded_at": null,
+        "source_commit": null,
+        "status": "open",
+        "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com"
+      }
+    },
+    "windows": {
+      "development": {
+        "actor": "codex",
+        "artifact": "tool-shed-idea0027-d2ab641.tar.gz#sha256=0a05fc18dc3ece8e8a15af8bc953e9573d7c5f14d73658aeb3473f8df654c582",
+        "authorization_ref": null,
+        "evidence": [
+          "work/evidence/camp-0181-project-projection-reduction-work2.json"
+        ],
+        "reason": null,
+        "recorded_at": "2026-09-12T00:23:16Z",
+        "source_commit": "d2ab641dea8ed17dcb3dae5b38cf4257e69687a9",
+        "status": "verified",
+        "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed"
+      },
+      "production": {
+        "actor": null,
+        "artifact": null,
+        "authorization_ref": null,
+        "evidence": [],
+        "reason": null,
+        "recorded_at": null,
+        "source_commit": null,
+        "status": "open",
+        "target": "github-release:tool-shed-windows-install-client"
+      }
+    }
+  },
+  "release_id": "prm0047-v0.54.0",
+  "required_lanes": [
+    "web",
+    "windows",
+    "linux"
+  ],
+  "revision": 5,
+  "schema_version": 1,
+  "updated_at": "2026-09-12T00:23:24Z"
+}
