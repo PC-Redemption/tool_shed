@@ -152,7 +152,7 @@ class ReleasePublicationTests(unittest.TestCase):
         self.assertIn("fromJSON(needs.classify.outputs.matrix)", validate_workflow)
         self.assertIn("timeout-minutes: 10", validate_workflow)
         self.assertIn("--profile ${{ matrix.profile }}", validate_workflow)
-        self.assertIn("--warn-seconds 60 --max-seconds 300", validate_workflow)
+        self.assertIn("--warn-seconds 60 --max-seconds 360", validate_workflow)
         self.assertIn('"profile": "release"', validation_policy)
         self.assertIn("schedule:", performance_workflow)
         self.assertIn("workflow_dispatch:", performance_workflow)

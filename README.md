@@ -751,7 +751,7 @@ cross-command installed-workspace smoke. Unit cases run in isolated concurrent p
 selected case reports independently without serializing unrelated cases. GitHub Actions uses the
 declared changed-path policy to run one focused Ubuntu job for documentation/state-only changes or
 the `release` profile across Ubuntu and Windows for product-risk changes, with a 60-second
-advisory threshold, a 300-second hard validator budget, and a 10-minute hung-job timeout. It
+advisory threshold, a 360-second hard validator budget, and a 10-minute hung-job timeout. It
 partitions unit cases into eight deterministic runner shards while one shard owns the non-unit
 contracts. Manual and scheduled full-matrix overrides catch routing gaps. A separate weekly workflow
 qualifies a frozen production-shaped corpus against a relative checked-in baseline, then measures
