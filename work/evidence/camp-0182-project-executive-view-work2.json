@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-target-evidence",
+  "endpoint": "work2",
+  "target": "web at tsrookarocom-dev on sup.local, Windows at PC-Redemption/ts_windows_test_bed on GOGETTER, and Linux at PC-Redemption/ts_linux_test_bed on sup.local",
+  "checked_at": "2026-09-12T01:45:19Z",
+  "campaign": "CAMP-0182",
+  "origin_cycle": "8fa3f034-c538-4716-bdd4-b4366bfba3cd",
+  "candidate_commit": "be9cc67610a5463a7f3681f64b83325ff145f0ed",
+  "candidate_version": "0.54.0",
+  "checks": [
+    {
+      "id": "local-release-profile-and-doctor",
+      "status": "passed",
+      "reference": "exact candidate be9cc676 passed 660/660 release-profile tests in 50.033s; source Hybrid 100k accounted for 294/294 strategic artifacts; strict Doctor HEALTHY with zero findings"
+    },
+    {
+      "id": "executive-contract-behavior",
+      "status": "passed",
+      "reference": "deterministic render, exact stale detection, protected overwrite refusal, complete accounting, focus/decision/attention signals, release horizon, file/SQLite behavior, install/update integration, and Work2 checkpoint refresh passed"
+    },
+    {
+      "id": "web-development",
+      "status": "passed",
+      "reference": "tsrookarocom-dev image dev-be9cc67610a5 from exact commit; health and docs HTTP 200; /ref/ renders ts: 100k; dashboard development readiness healthy; production health remained HTTP 200 and production was unchanged"
+    },
+    {
+      "id": "linux-development",
+      "status": "passed",
+      "reference": "sup:/home/jon/dev/ts_linux_test_bed exact be9cc676 manifest-defined snapshot sha256:2c4990ae486a0734aad05421ca12888335513661f27ce8ce7ef5d196e33972c6; strict snapshot integrity verified; file-authority 100k complete/current; 26/26 focused integration tests plus final orchestration regression passed"
+    },
+    {
+      "id": "windows-development",
+      "status": "passed",
+      "reference": "GOGETTER:E:\\dev\\ts_windows_test_bed exact be9cc676 manifest-defined snapshot sha256:2c4990ae486a0734aad05421ca12888335513661f27ce8ce7ef5d196e33972c6; Python 3.14.6; strict snapshot integrity verified; file-authority 100k complete/current; 29/29 focused integration tests plus final orchestration regression passed"
+    },
+    {
+      "id": "snapshot-packaging-recovery",
+      "status": "passed",
+      "reference": "initial full-tree archive was rejected because embedded root work is forbidden; no project data was lost; both targets were replaced with the exact manifest-defined archive and reverified with zero missing, modified, or forbidden paths; prior snapshots remain rollback-capable"
+    }
+  ]
+}
