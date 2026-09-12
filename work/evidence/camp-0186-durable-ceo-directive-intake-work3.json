@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-target-evidence",
+  "endpoint": "work3",
+  "target": "web at tsrookarocom-dev on sup.local, Windows at PC-Redemption/ts_windows_test_bed on GOGETTER, and Linux at PC-Redemption/ts_linux_test_bed on sup.local",
+  "checked_at": "2026-09-12T18:00:43Z",
+  "campaign": "CAMP-0186",
+  "candidate_commit": "40a2fc2e52b56f3d04f223cb0ddd968638edee30",
+  "candidate_version": "0.58.0",
+  "checks": [
+    {
+      "id": "release-qualification",
+      "status": "passed",
+      "reference": "dependency-complete release profile passed 677 of 677 tests in 50.110 seconds with final bootstrap gates, provider conformance, generated-view verification, stale-path review, roadmap validation, and temporary-workspace smoke"
+    },
+    {
+      "id": "candidate-package",
+      "status": "passed",
+      "reference": "exact commit 40a2fc2e52b56f3d04f223cb0ddd968638edee30 produced 375 tracked non-project files in tool-shed-v0.58.0-40a2fc2e52b5.tar.gz at sha256:5ee958f4c7e12afc6d1e2651d488f08d23e5337a61338e3bd6f9e7c79d1597e8; strict snapshot verification passed with no embedded work or Git metadata"
+    },
+    {
+      "id": "web-development",
+      "status": "passed",
+      "reference": "tsrookarocom-dev runs healthy isolated image tool-shed-dashboard:dev-40a2fc2e52b5 at sha256:d6bca1c77d97aaae32e0e7d7d0b405583b6113e9f525daf06d3b5681e21a49b7; dashboard readiness, /ref/ durable intake help, and 2/2 schema-13 CEO projection checks passed while production remained healthy"
+    },
+    {
+      "id": "linux-development",
+      "status": "passed",
+      "reference": "sup:/home/jon/dev/ts_linux_test_bed staged and strictly verified the exact candidate archive, proved its active v0.58.0 snapshot recursively identical, and passed 6/6 portable directive, ordering, role, and bounded-report checks with bytecode disabled"
+    },
+    {
+      "id": "windows-development",
+      "status": "passed",
+      "reference": "GOGETTER:E:\\dev\\ts_windows_test_bed staged and strictly verified the same candidate archive digest, proved its active v0.58.0 snapshot recursively identical, and passed 6/6 portable directive, ordering, role, and bounded-report checks with bytecode disabled"
+    }
+  ]
+}
