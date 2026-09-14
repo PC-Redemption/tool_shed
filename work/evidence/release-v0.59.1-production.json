@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-release-production-evidence",
+  "release_id": "prm0053-v0.59.1",
+  "checked_at": "2026-09-14T19:14:46Z",
+  "release": {
+    "version": "0.59.1",
+    "tag": "v0.59.1",
+    "content_commit": "ea3c425382299ba3507338c48a43571533f9153c",
+    "provenance_commit": "0b09a840fff9fec31c0a356bbde7c4b64dfb2e70",
+    "published_at": "2026-09-14T19:06:18Z",
+    "github_release": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.59.1",
+    "qualification_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34884031037",
+    "qualification_result": "33/33 jobs passed for the exact content commit",
+    "publication_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/34884831286"
+  },
+  "superseded_attempt": {
+    "version": "0.59.0",
+    "content_commit": "2bf9fd37ed299b321dd04d7e1ccd873d31f737aa",
+    "provenance_commit": "7b7a07862cf68b4b30e2dc873c90b3ce10a5f971",
+    "release": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.59.0",
+    "failure": "Linux production-client transaction 4aa2035b70d25f33ba303377 and concise retry 9e9c7281ff084f72db699909 failed closed with TSU-501 and restored their verified backups because regenerated work/100k.md was incorrectly included in the owner-content fingerprint.",
+    "disposition": "Corrected and republished as v0.59.1; v0.59.0 remains an immutable historical release and is not the production baseline."
+  },
+  "production_lanes": {
+    "web": {
+      "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com",
+      "artifact": "tool-shed-dashboard:v0.59.1@sha256:c93834673c13628a4fadf2a1d532b7b4b57f3e4b2e4e7b260cb1b3df5741d561",
+      "database_backup": "/home/jon/docker/ts.rookaro.com/backups/dashboard-daily-20260914T190645Z.dump.age",
+      "rollback_root": "/home/jon/docker/ts.rookaro.com.rollback-v0.58.0-20260914T1844Z",
+      "checks": [
+        "production readiness healthy",
+        "local health endpoint returned healthy",
+        "public HTTPS health endpoint returned ok",
+        "dashboard, PostgreSQL, and Nginx containers healthy"
+      ],
+      "result": "verified"
+    },
+    "linux": {
+      "target": "github-release:tool-shed-linux-install-client",
+      "workspace": "sup.local:/home/jon/dev/ts_linux_test_bed",
+      "transaction_id": "7e05a69319e9f601303980c7",
+      "transaction_report": "/home/jon/.codex/tool-shed/snapshot-upgrade-transactions/7e05a69319e9f601303980c7.json",
+      "rollback_backup": "/home/jon/dev/ts_linux_test_bed/tool_shed.backup-20260914T190720Z.tar",
+      "release_validation": "official attestation plus focused smoke under CPython 3.13.5",
+      "checks": [
+        "installed v0.59.1 with content commit ea3c425382299ba3507338c48a43571533f9153c",
+        "generated 100k projection converged without owner-content loss",
+        "owner work preserved",
+        "Hybrid schema 6 revision 31 CLEAN"
+      ],
+      "result": "verified"
+    },
+    "windows": {
+      "target": "github-release:tool-shed-windows-install-client",
+      "workspace": "GOGETTER:E:\\dev\\ts_windows_test_bed",
+      "transaction_id": "ebaed36120d4a38479d6eaea",
+      "transaction_report": "C:\\Users\\jon\\.codex\\tool-shed\\snapshot-upgrade-transactions\\ebaed36120d4a38479d6eaea.json",
+      "rollback_backup": "E:\\dev\\ts_windows_test_bed\\tool_shed.backup-20260914T190814Z.tar",
+      "release_validation": "official attestation plus focused smoke under CPython 3.14.6",
+      "checks": [
+        "installed v0.59.1 with content commit ea3c425382299ba3507338c48a43571533f9153c",
+        "generated 100k projection converged without owner-content loss",
+        "owner work preserved",
+        "Hybrid schema 6 revision 27 CLEAN",
+        "user-level Codex skill synchronized to current"
+      ],
+      "result": "verified"
+    }
+  },
+  "after_action": {
+    "reviewed": true,
+    "issues": [
+      {
+        "number": 47,
+        "disposition": "updated and retained open",
+        "reason": "The provenance-only commit again launched a redundant complete 33-job validation matrix.",
+        "comment": "https://github.com/PC-Redemption/tool_shed/issues/47#issuecomment-5669300019"
+      },
+      {
+        "number": 57,
+        "disposition": "updated and retained open",
+        "reason": "v0.59.1 delivered the human-facing directive-cockpit slice, but the broader Idea semantic-fidelity criteria remain.",
+        "comment": "https://github.com/PC-Redemption/tool_shed/issues/57#issuecomment-5669300212"
+      },
+      {
+        "number": 61,
+        "disposition": "updated and retained open",
+        "reason": "The successful official Windows update still printed stale UNQUALIFIED VERSION compatibility wording.",
+        "comment": "https://github.com/PC-Redemption/tool_shed/issues/61#issuecomment-5669300451"
+      },
+      {
+        "number": 68,
+        "disposition": "updated and retained open",
+        "reason": "The cohort finalized safely, but no subordinate outcome-parent Work5 execution lineage was materialized.",
+        "comment": "https://github.com/PC-Redemption/tool_shed/issues/68#issuecomment-5669300729"
+      }
+    ]
+  },
+  "closeout": {
+    "release_cohort_id": "f197c534-f6d8-4a1a-8a9b-86e835d08e41",
+    "release_cohort_state": "terminal/reconciled/satisfied",
+    "current_release_base": "v0.59.1",
+    "active_release_cohorts": 0,
+    "hybrid_revision": 1789,
+    "hybrid_domain_digest": "c268b76161c9bea20aa4a1dd7c790a8fbad465bf87f75c47ae55a707d634700d",
+    "checkpoint_digest": "ac38228f271de5cff2248054f5c28554920a7fdd262bc21360af13124fccecac",
+    "rebuild": "CLEAN with exact domain-digest parity",
+    "executive_view": "work/100k.md current at source revision 1789",
+    "dashboard_report": "sequence 16517 delivered with zero pending events",
+    "maintainer_codex_skill": {
+      "state": "current and byte-identical to the canonical published skill",
+      "backup": "/home/jon/.codex/skills/tool-shed.backup-20260914T191351Z",
+      "fresh_session_required": true
+    }
+  },
+  "result": "passed"
+}
