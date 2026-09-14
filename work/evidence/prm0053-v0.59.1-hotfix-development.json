@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-hotfix-development-evidence",
+  "release_id": "prm0053-v0.59.1",
+  "checked_at": "2026-09-14T18:56:52Z",
+  "candidate_commit": "dff33a5af5b4a0615b7012140324b53198444ba8",
+  "candidate_version": "0.59.1",
+  "portable_archive": "/tmp/tool-shed-v0.59.1-dff33a5.tar.gz",
+  "portable_archive_sha256": "c77ad44962103bb45332057a2e168b0ca8d69c6dd69c4add6069108dcbb208fb",
+  "trigger": {
+    "release": "v0.59.0",
+    "failed_transaction": "4aa2035b70d25f33ba303377",
+    "retry_transaction": "9e9c7281ff084f72db699909",
+    "issue_code": "TSU-501",
+    "failure": "The stable updater regenerated work/100k.md but its owner-content guard still classified the prior generated projection as immutable owner-authored content; both attempts rolled back successfully."
+  },
+  "fix": "Exclude the generated work/100k.md projection from owner-content fingerprints while retaining it in the verified backup and mutation surface; preserve all genuine operator-authored files exactly.",
+  "validation": {
+    "release_profile": "passed 678/678 tests",
+    "regression": "An existing valid V4 generated 100k projection is replaced during upgrade while work/operator-data.txt and work/tool-shed.yaml remain byte-for-byte unchanged."
+  },
+  "lanes": {
+    "web": {
+      "target": "tsrookarocom-dev@sup.local:/home/jon/docker/ts.rookaro.com-dev",
+      "artifact": "tool-shed-dashboard:dev-dff33a5af5b4@sha256:0ebb6d48d9d129d3c7c8ad1c6c33f7fa96b75a9464b23ac858240f8f5a891090",
+      "result": "development and dashboard health returned HTTP 200; production health remained HTTP 200"
+    },
+    "linux": {
+      "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed",
+      "artifact": "snapshot-sha256:c77ad44962103bb45332057a2e168b0ca8d69c6dd69c4add6069108dcbb208fb",
+      "result": "strict v0.59.1 snapshot integrity, current 100k projection, and CLEAN Hybrid schema 6 revision 31"
+    },
+    "windows": {
+      "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed",
+      "artifact": "snapshot-sha256:c77ad44962103bb45332057a2e168b0ca8d69c6dd69c4add6069108dcbb208fb",
+      "result": "strict v0.59.1 snapshot integrity, current 100k projection, and CLEAN Hybrid schema 6 revision 27"
+    }
+  },
+  "result": "passed"
+}
