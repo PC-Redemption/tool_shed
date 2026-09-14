@@ -12,7 +12,7 @@
     "adapters/codex-app-server-config.json": "52e8e0aff51108c93e18c334fafd46ee979d45f392380da86329bbc0521d52c0",
     "adapters/codex-app-server-qualifications.json": "1b621d969c7391870be8feeaaba64fd2cc2c45d29b2beaa78a9a07105d656f9d",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "21e66274015bd54ebd2e6245c48774f871caac3fdfcadd3ffe9cb42bc31e4074",
+    "adapters/codex-skill-releases.json": "e5a690ea225896743e4b52134984f20a1f0b13b80c3329ef2999c5ee12b2bf76",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "5e9668c866c67471ea58e36c596ce5a9964f92f0774a4ec997f775368f02bfcf",
     "dashboard/Dockerfile": "8e9ff084f409aa81ab92b9dcbe8d9bab2416225551c837681653cab7b66786ad",
@@ -237,7 +237,7 @@
     "scripts/update-tool-shed.ps1": "271d8970201341f66595b902de0c1e03ace41203ef113b81eed5464b2a75591d",
     "scripts/update-tool-shed.sh": "51740376eca2cbe2eba8590333f55bfa7cf7bd6b720b27176a127a0e44223fdb",
     "scripts/update_shed_manifest.py": "acb207b6f099298966a83257cfa01f70ed4b86f72e0b4bfb03c0262e61e59a30",
-    "scripts/update_snapshot.py": "2a98c609bd0d2ea4b7d69c330649e004acda4745a2f2b487ad2347e6a3bbaf55",
+    "scripts/update_snapshot.py": "3f762b24e317990adeaec1e9328223da2ba1c2cc2195334a1658936ce8d148a8",
     "scripts/update_work_index.py": "2300672835f3b66ef21f52b9c052542310551b126651fa1aaba491ef729082f9",
     "scripts/validate_snapshot_client.py": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f",
     "scripts/validate_tool_shed.py": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb",
@@ -307,34 +307,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Human-facing 100k directive cockpit with conversational lifecycle guidance and evidence-backed executive progress.",
-  "release_commit": "2bf9fd37ed299b321dd04d7e1ccd873d31f737aa",
-  "release_qualification": {
-    "attested_at": "2026-09-14T18:42:31Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "4c40e29ea3ff7bf98f5f3e2a6e2dfb0493b382466375f1f34c6b3624ccd49578"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "2bf9fd37ed299b321dd04d7e1ccd873d31f737aa"
-  },
-  "release_tag": "v0.59.0",
-  "released_at": "2026-09-14T18:42:31Z",
-  "shed_version": "0.59.0",
+  "notes": "Preserve generated 100k projection upgrades while retaining owner-authored work exactly.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.59.1",
+  "released_at": null,
+  "shed_version": "0.59.1",
   "updated_at": "2026-09-14",
   "updater_mutation_paths": [
     {

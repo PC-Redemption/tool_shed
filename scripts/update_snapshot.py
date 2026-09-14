@@ -1376,6 +1376,7 @@ def owner_content_fingerprint(
     excluded = {
         "index.md",
         "index.json",
+        "100k.md",
         "00-campaigns/active-queue.md",
         "00-campaigns/completed-queue.md",
     }

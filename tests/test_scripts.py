@@ -5053,6 +5053,12 @@ work_levels:
                 minimum_updater_protocol=3,
             )
             workspace = self.create_update_workspace(root, version="0.13.0")
+            prior_100k = workspace / "work" / "100k.md"
+            prior_100k.write_text(
+                "<!-- GENERATED: TOOL-SHED-PROJECT-EXECUTIVE-VIEW-V4; DO NOT EDIT -->\n"
+                "# Stale generated executive projection\n",
+                encoding="utf-8",
+            )
             legacy = workspace / "work" / "q&a"
             legacy.mkdir(parents=True)
             (legacy / "ask.txt").write_text("Preserve and migrate this request.\n", encoding="utf-8")
@@ -5075,6 +5081,12 @@ work_levels:
                 str(release),
                 "--json",
                 cwd=workspace,
+                check=False,
+            )
+            self.assertEqual(
+                result.returncode,
+                0,
+                f"updater stdout:\n{result.stdout}\nupdater stderr:\n{result.stderr}",
             )
             payload = json.loads(result.stdout)
 
@@ -5089,6 +5101,11 @@ work_levels:
             )
             self.assertEqual(
                 (workspace / "work" / "tool-shed.yaml").read_bytes(), customization
+            )
+            self.assertNotEqual(
+                prior_100k.read_text(encoding="utf-8"),
+                "<!-- GENERATED: TOOL-SHED-PROJECT-EXECUTIVE-VIEW-V4; DO NOT EDIT -->\n"
+                "# Stale generated executive projection\n",
             )
             self.assertFalse(legacy.exists())
             self.assertEqual(
