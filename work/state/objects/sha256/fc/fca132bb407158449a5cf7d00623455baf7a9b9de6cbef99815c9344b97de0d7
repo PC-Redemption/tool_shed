@@ -1,0 +1,87 @@
+# Project Map: Human-Facing 100k Directive Cockpit
+
+Status: completed
+Type: project-map
+Updated: 2026-09-14
+Next Action: none for this project map; await an explicit Work5 request for release promotion
+Source Idea: IDEA-0033
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 3
+Reviewed Body SHA256: 841ddad7fe05ebbbeb0b1974b908cdd5ee338f8d90b5c762bb67c5e13db8a732
+
+## Purpose
+
+Finish 100k as the CEO's human control surface. The operator converses with Codex; Codex manages
+durable directives and subordinate lifecycle machinery; the generated Markdown lets the operator
+return later and immediately understand progress, blockers, needs, and the recommended next move.
+
+## Desired Outcome
+
+The primary executive unit is a directive card, not a flat list of Ideas, PRMs, or campaigns. Each
+card contains a plain-language current position, evidence-backed checkbox milestones, latest result,
+blocker and operator need, next step, and completion condition. The opening summary identifies the
+one recommended next action and reason while preserving the operator's decision authority.
+
+Codex supports conversational add, clarify/revise, reorder, park/withdraw, delegate/resume, and
+completion-correction behavior through the existing guarded document, planning-order, lifecycle,
+relationship, and outcome mechanisms. `work/100k.md` remains a deterministic read-only projection.
+
+## Workstreams
+
+| Workstream | Outcome | Depends On |
+| --- | --- | --- |
+| Directive interaction | Explicit Codex-facing lifecycle for adding, revising, ordering, parking, withdrawing, delegating, resuming, and correcting directives | existing directive Idea and planning-order substrate |
+| Directive progress contract | Portable directive status and evidence-backed checkbox milestones that subordinate results can update | existing managed document and outcome relationships |
+| Human executive projection | First-screen current position, recommended next action, operator needs, directive cards, and internal-ID drill-down | directive progress contract |
+| Adoption and proof | Owner-reviewed existing-strategy setup, regression fixtures, hosted parity, and DisplayTest-centered Work2 dogfood | prior workstreams |
+
+## Settled Direction
+
+- Keep Codex as the operator interface and scripts as guarded state/projection machinery.
+- Keep `work/100k.md` generated and read-only; do not add a second queue, database table, or
+  lifecycle engine.
+- Extend the existing executive-directive document contract with a concise human status capsule and
+  checkbox milestones rather than attempting to infer human meaning from raw artifact counts.
+- Derive checked state only from recorded evidence or reconciled subordinate outcomes; unchecked
+  items make the remaining path visible.
+- Group subordinate Ideas, maps, PRMs, campaigns, and outcomes beneath their owning directive and
+  expose their IDs only for drill-down.
+- Recommend one next move with its reason, blocker, required operator action, and safe alternative;
+  never start it from a read-only view.
+- Use owner-reviewed setup/migration to adopt existing strategy and lineage without continuous
+  Markdown synchronization or duplicate authority.
+- Preserve the completed 100k initiatives as history and record this work as a residual correction.
+
+## Readiness Gate Transfer
+
+1. `G1-DIRECTIVE-INTERACTION` — explicit and durable conversational directive lifecycle.
+2. `G2-HUMAN-EXECUTIVE-ROLLUP` — human first screen and evidence-backed checkbox progress.
+3. `G3-DISPLAYTEST-WORK2-DOGFOOD` — regression, hosted parity, and configured Work2 qualification.
+
+## Program Shape
+
+Use one bounded milestone and one campaign. Implement the smallest coherent contract across the
+directive template, route guidance, projection, dashboard payload/template, documentation, and
+focused tests. Commit the candidate, deploy it to the configured Linux and Windows development test
+beds, verify the changed behavior with DisplayTest-centered fixtures or read-only evidence, register
+the Work2 candidate and open owner chain, and stop before production release.
+
+## Constraints And Non-Goals
+
+- No production release, push, publication, or live DisplayTest mutation.
+- No automatic execution from reading 100k.
+- No continuous arbitrary strategy-Markdown authority.
+- No fabricated checkbox completion from lifecycle labels alone.
+- No replacement of existing Ideas, roadmaps, campaigns, outcomes, or planning order.
+
+## Completion Boundary
+
+Complete when the three transferred gates pass in one committed Work2 candidate, the changed
+behavior is verified on both configured development lanes, and the candidate plus open IDEA-0033
+ownership chain is registered without claiming production release.
+
+## Result
+
+The completion boundary passed through `PRM-0053` and `CAMP-0187` at Work2. The exact candidate is
+registered and checkpointed for a later explicit Work5 decision, with production untouched.
+Evidence: `work/evidence/camp-0187-human-100k-work2.json`.

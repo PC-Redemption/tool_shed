@@ -1,0 +1,60 @@
+# Campaign: Human-Facing 100k Directive Cockpit
+
+Status: working
+Type: campaign
+Updated: 2026-09-14
+Next Action: await an explicit Work5 request before push, tag, release, or production deployment
+Campaign ID: human-facing-100k-directive-cockpit
+Outcome: The CEO interacts through Codex while generated 100k presents directive-level checkbox progress, blockers, operator needs, completion conditions, and one justified next action in human language.
+Primary Focus Areas: artifact-workflows
+Supporting Focus Areas: campaign-lifecycle, provider-portability, qualification-release
+Depends On: none
+Decision: none
+Detour For: none
+Return To: none
+Requested Endpoint: work2
+Completion Gate: Codex-facing add/revise/reorder/park/withdraw/delegate/resume/block/complete/reopen semantics are documented and supported through existing guarded authority; executive directives carry a portable human status capsule with evidence-backed checkbox milestones; the first 100k screen explains current position, recommended next action and reason, operator needs, blockers, and completion conditions while subordinate IDs remain drill-down; local and hosted projections agree; DisplayTest-shaped regression and both configured Work2 development-lane checks pass; the scoped candidate is committed and registered without production release.
+Roadmap: human-facing-100k-directive-cockpit
+Roadmap Revision: 1
+Roadmap Document: PRM-0053
+Milestone: M1-HUMAN-100K-COCKPIT
+Unlocks Gates: G1-DIRECTIVE-INTERACTION, G2-HUMAN-EXECUTIVE-ROLLUP, G3-DISPLAYTEST-WORK2-DOGFOOD
+
+## Request
+
+Extend the existing executive-directive contract with a concise operator status capsule and
+evidence-backed checkbox milestones. Make Codex's portable route support conversational directive
+maintenance without exposing subordinate artifact mechanics to the operator. Roll directive and
+subordinate outcome state into one human card and place the current position, recommended next
+move, reason, operator need, blockers, and completion boundary before raw project accounting.
+
+Preserve `work/100k.md` as a deterministic read-only projection, preserve existing planning order
+and outcome authority, and retain compatibility for existing directives. Update local Markdown,
+structured dashboard reporting and template rendering, shipped skills and operator documentation,
+and focused regression fixtures. Use the DisplayTest failure as the primary human acceptance case.
+
+After local validation, create the scoped candidate commit, deploy to the configured disposable
+Linux and Windows Work2 targets, run changed-behavior checks there, register the candidate and open
+owner chain, checkpoint the result, and stop before push or production release.
+
+## Completion Check
+
+- [x] Conversational directive lifecycle is explicit and uses existing guarded state.
+- [x] Directive cards show evidence-backed checked and unchecked milestones.
+- [x] The first screen answers where we are, what to do next, why, what is blocked, what the
+      operator must provide, and what counts as done.
+- [x] Existing non-extended directives degrade clearly without disappearing or fabricating progress.
+- [x] Internal artifacts are grouped beneath directives and remain optional drill-down.
+- [x] DisplayTest-shaped local/hosted regression tests and repository validation pass.
+- [x] Linux and Windows disposable Work2 deployment and changed-behavior checks pass.
+- [x] Candidate and open IDEA-0033 ownership chain are registered; production remains untouched.
+
+## Result
+
+Work2 passed for candidate `478c5759401d6cbbff6a3e9bdcac7cabae89b2eb` (version `0.59.0`).
+Local validation, independent verification, the development web lane, and both configured
+disposable platform lanes passed. The release cohort owns the complete IDEA-0033 chain and is
+checkpointed at `89aa9308933939f8e5c05e7d3d71b546c1286ce0`, awaiting an explicit Work5 request.
+No source push, tag, published release, production deployment, or installed-user-skill
+synchronization was performed. Durable evidence is recorded in
+`work/evidence/camp-0187-human-100k-work2.json`.

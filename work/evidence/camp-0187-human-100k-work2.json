@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-work2-completion-evidence",
+  "campaign": "CAMP-0187",
+  "origin_cycle": "c21a2466-3a28-430b-ac5c-bd6d627debd5",
+  "checked_at": "2026-09-14T17:57:01Z",
+  "candidate_commit": "478c5759401d6cbbff6a3e9bdcac7cabae89b2eb",
+  "candidate_version": "0.59.0",
+  "portable_archive_sha256": "86bc14fcca3c71ac55c88b43e90138ec081aa42ff3d17e8cb20f546839d451d9",
+  "result": "passed",
+  "checks": [
+    "Local release-profile validation passed 678/678 tests in 53.655 seconds.",
+    "Configured App Server verification accepted the interaction, rollup, compatibility, documentation, and regression gates.",
+    "The DisplayTest-shaped regression proved the human-facing next action, reason, operator need, blockers, completion boundary, and evidence-backed progress.",
+    "The development web lane ran the exact candidate image and passed documentation, dashboard-health, and deployed-template checks.",
+    "The disposable Linux lane installed the exact archive and passed manifest, version, focused-test, and human-100k smoke checks.",
+    "The disposable Windows lane installed the same archive digest and passed manifest, version, focused-test, and human-100k smoke checks.",
+    "The candidate and complete IDEA-0033 ownership chain were registered and checkpointed in the active release cohort."
+  ],
+  "boundaries": {
+    "source_push": false,
+    "tag_created": false,
+    "release_published": false,
+    "production_deployed": false,
+    "installed_user_skill_synchronized": false
+  },
+  "release_cohort": {
+    "stage": "awaiting-work5",
+    "candidate_checkpoint_commit": "89aa9308933939f8e5c05e7d3d71b546c1286ce0",
+    "production_status": "untouched"
+  }
+}

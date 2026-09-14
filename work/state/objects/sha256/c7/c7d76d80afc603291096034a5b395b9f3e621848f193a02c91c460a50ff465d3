@@ -1,0 +1,100 @@
+# Program Roadmap: Human-Facing 100k Directive Cockpit
+
+Status: accepted
+Type: program-roadmap
+Updated: 2026-09-14
+Next Action: none for this roadmap; await an explicit Work5 request for release promotion
+Roadmap ID: human-facing-100k-directive-cockpit
+Roadmap Revision: 1
+Source Idea: IDEA-0033
+Source Project Map: MAP-0041
+Readiness Result: READY-WITH-PRM-GATES
+Reviewed Idea Revision: 3
+Reviewed Body SHA256: 841ddad7fe05ebbbeb0b1974b908cdd5ee338f8d90b5c762bb67c5e13db8a732
+
+## Program Outcome
+
+Tool Shed's CEO surface lets an operator converse with Codex to maintain an ordered batch of
+directives, while `work/100k.md` presents those directives as a human-readable progress cockpit with
+evidence-backed checkboxes, blockers, operator needs, completion conditions, and one justified next
+recommendation.
+
+## M1-HUMAN-100K-COCKPIT — Deliver and dogfood the Work2 candidate
+
+Status: completed
+Required Endpoint: Work2
+Depends on: Tool Shed v0.58.0 and completed 100k projection/directive substrate
+
+Outcome: Extend the existing directive contract and Codex routes for conversational maintenance;
+roll subordinate lifecycle and evidence into human directive cards; redesign the first screen around
+current position, recommended next action, operator needs, checkbox progress, blockers, and outcomes;
+retain internal IDs as drill-down; update local and hosted projections, docs, and tests; commit and
+deploy the candidate to both configured development lanes; verify DisplayTest-centered behavior;
+register the candidate and open owning chain; and stop before production release.
+
+Gates:
+
+- `G1-DIRECTIVE-INTERACTION`
+- `G2-HUMAN-EXECUTIVE-ROLLUP`
+- `G3-DISPLAYTEST-WORK2-DOGFOOD`
+
+Candidate campaign: `human-facing-100k-directive-cockpit`.
+
+## Readiness Gate Transfer Manifest
+
+| Reviewed gate ID | Roadmap destination |
+| --- | --- |
+| G1-DIRECTIVE-INTERACTION | M1 directive document and Codex route contract |
+| G2-HUMAN-EXECUTIVE-ROLLUP | M1 directive status capsule, checkbox renderer, and recommendation behavior |
+| G3-DISPLAYTEST-WORK2-DOGFOOD | M1 regression suite and Linux/Windows development-lane verification |
+
+Transfer count: 3 reviewed gates; 3 mapped gates; 0 dropped.
+
+## Decision Record
+
+- Codex remains the human interaction layer; deterministic scripts remain the guarded mutation and
+  projection layer.
+- Reuse executive-directive Ideas, planning order, relationships, outcomes, and reconciliation.
+- Store human directive progress in the directive contract rather than inferring it from unrelated
+  artifact counts.
+- Render evidence-backed milestone checkboxes and explain partial local completion plus external
+  gates truthfully.
+- Preserve a concise main cockpit and retain exhaustive accounting as drill-down.
+- Preserve operator choice: recommend one next action but never start it from the read-only view.
+
+## Recovery Contract
+
+- Existing generated marker, atomic refresh, exact-byte freshness check, SQLite/file authority, and
+  checkpoint/rebuild behavior remain intact.
+- Missing or malformed human status data degrades to an explicit needs-attention card; it never
+  fabricates completion or silently drops a directive.
+- Existing directives without the extended capsule remain readable through a compatibility
+  projection and can be enriched conversationally.
+- Failed development deployment does not alter production or close the owning outcome.
+
+## Verification Strategy
+
+- Focused tests for directive parsing, lifecycle commands, ordering, checkbox evidence, status
+  rollup, recommendation selection, compatibility fallback, deterministic rendering, and hosted
+  payload/template parity.
+- DisplayTest-shaped fixtures proving that completed foundations are checked, physical gates remain
+  unchecked, and the recommended next action is visible without interpreting internal IDs.
+- Existing project-projection, directive, dashboard, documentation, manifest, and full repository
+  validation.
+- Work2 deployment and changed-behavior checks on the configured Linux and Windows disposable test
+  beds, followed by release-cohort registration without production promotion.
+
+## Authority Boundaries
+
+This roadmap authorizes faithful planning, local source/test/documentation changes, managed
+artifacts and outcomes, a scoped local commit, deployment to the configured disposable Linux and
+Windows development targets, changed-behavior verification, and Work2 release-cohort registration.
+It does not authorize production release, push, publication, live DisplayTest mutation, credentials,
+destructive recovery, or continuous synchronization of arbitrary strategy files.
+
+## Result
+
+M1 completed at Work2 through `CAMP-0187`. Candidate `478c5759401d6cbbff6a3e9bdcac7cabae89b2eb`
+passed local, development-web, Linux, and Windows qualification. The registered release cohort is
+checkpointed and awaiting an explicit Work5 request; production remains untouched. Evidence:
+`work/evidence/camp-0187-human-100k-work2.json`.
