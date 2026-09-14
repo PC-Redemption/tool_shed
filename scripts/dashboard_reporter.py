@@ -46,7 +46,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/dashboard_report
 
 
 SCHEMA_VERSION = 1
-REPORT_SCHEMA_VERSION = 13
+REPORT_SCHEMA_VERSION = 14
 OUTBOX_RELATIVE = Path(".tool-shed/dashboard/outbox.sqlite3")
 MAX_RESPONSE_BYTES = 65_536
 MAX_REQUEST_BYTES = 262_144
@@ -435,7 +435,7 @@ def _project_projection(workspace: Path) -> dict[str, Any]:
                 {
                     key: value
                     for key, value in item.items()
-                    if key not in {"metadata_role", "metadata_directive_text"}
+                    if key not in {"metadata_role", "metadata_directive_text", "directive_status"}
                 }
                 for item in inventory["artifacts"]
             ],
@@ -473,11 +473,12 @@ def _executive_dashboard_projection(workspace: Path) -> dict[str, Any]:
             "planning_position": item["planning_position"],
             "planning_readiness": item["planning_readiness"],
             "subordinate_handoff": list(item["subordinate_handoff"][:16]),
+            "status": item["status"],
             "command": f"ts: directive {directive_text}",
         })
     recent = [artifact(item) for item in view["recent_changes"][:5]]
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "authority": {
             "authority": view["authority"]["authority"],
             "state": view["authority"]["state"],
@@ -507,6 +508,7 @@ def _executive_dashboard_projection(workspace: Path) -> dict[str, Any]:
         "active_directive_count": view["active_executive_directive_count"],
         "completed_directive_count": view["completed_executive_directive_count"],
         "directives_truncated": view["executive_directives_truncated"],
+        "recommended_action": view["recommended_action"],
         "focus_coverage": {
             "catalog_state": view["focus_coverage"]["catalog_state"],
             "areas": list(view["focus_coverage"]["areas"][:20]),

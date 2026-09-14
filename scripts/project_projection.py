@@ -27,10 +27,11 @@ import update_work_index
 
 
 SCHEMA_VERSION = 2
-EXECUTIVE_SCHEMA_VERSION = 4
+EXECUTIVE_SCHEMA_VERSION = 5
 EXECUTIVE_RELATIVE = Path("work/100k.md")
-EXECUTIVE_MARKER = "<!-- GENERATED: TOOL-SHED-PROJECT-EXECUTIVE-VIEW-V4; DO NOT EDIT -->"
+EXECUTIVE_MARKER = "<!-- GENERATED: TOOL-SHED-PROJECT-EXECUTIVE-VIEW-V5; DO NOT EDIT -->"
 LEGACY_EXECUTIVE_MARKERS = (
+    "<!-- GENERATED: TOOL-SHED-PROJECT-EXECUTIVE-VIEW-V4; DO NOT EDIT -->",
     "<!-- GENERATED: TOOL-SHED-PROJECT-EXECUTIVE-VIEW-V3; DO NOT EDIT -->",
     "<!-- GENERATED: TOOL-SHED-PROJECT-EXECUTIVE-VIEW-V2; DO NOT EDIT -->",
     "<!-- GENERATED: TOOL-SHED-PROJECT-EXECUTIVE-VIEW-V1; DO NOT EDIT -->",
@@ -65,6 +66,41 @@ def _unknown_closure(reason: str, evaluated_at: str) -> dict[str, Any]:
         "counts": {"open": 0, "unknown": 1, "invalid": 0},
         "blockers": [], "subject_revision": 0, "graph_revision": 0,
         "evaluator_version": "not-available", "evaluated_at": evaluated_at,
+    }
+
+
+def _directive_status(body: str) -> dict[str, Any]:
+    """Parse the bounded, operator-facing status capsule from a directive body."""
+    sections = _markdown_sections(body)
+    headers = _markdown_headers(body)
+    progress = []
+    for raw in sections.get("Progress", "").splitlines():
+        match = re.match(r"^- \[([ xX])\]\s+(.+?)\s*$", raw)
+        if match:
+            progress.append({"checked": match.group(1).casefold() == "x", "label": match.group(2)[:500]})
+
+    def scalar(name: str) -> str | None:
+        value = sections.get(name, "").strip()
+        return value[:4000] or None
+
+    def items(name: str) -> list[str]:
+        values = _section_items(sections.get(name, ""))
+        return [value[:1000] for value in values if value.casefold() not in {"none", "n/a", "—"}][:20]
+
+    current_position = scalar("Current Position")
+    next_action = scalar("Recommended Next Action") or headers.get("Next Action") or None
+    why_next = scalar("Why This Next")
+    completion_condition = scalar("Completion Condition")
+    required = (current_position, next_action, why_next, completion_condition)
+    return {
+        "state": "current" if all(required) and progress else "missing",
+        "current_position": current_position,
+        "progress": progress[:30],
+        "next_action": next_action[:4000] if next_action else None,
+        "why_next": why_next,
+        "blockers": items("Blockers"),
+        "operator_needs": items("Operator Needs"),
+        "completion_condition": completion_condition,
     }
 
 
@@ -178,6 +214,11 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
                 updated_at = "1970-01-01T00:00:00Z"
             parent = item.fields.get("Parent") or item.fields.get("Project Map") or item.fields.get("Source Project Map")
             produces = [value.strip() for value in item.fields.get("Produces", "").split(",") if value.strip()]
+            is_directive = item.fields.get("Role") == EXECUTIVE_DIRECTIVE_ROLE
+            directive_status = (
+                _directive_status((workspace / item.path).read_text(encoding="utf-8"))
+                if is_directive else None
+            )
             artifacts.append(
                 {
                     "artifact_id": authority_resolver.file_artifact_id(workspace, relative),
@@ -185,6 +226,7 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
                     "title": " ".join(item.title.split())[:160] or visible_id,
                     "metadata_role": item.fields.get("Role"),
                     "metadata_directive_text": item.fields.get("Directive Text"),
+                    "directive_status": directive_status,
                     "document_lifecycle": document_lifecycle,
                     "outcome_lifecycle": "unknown", "outcome_disposition": "unknown",
                     "reconciliation_state": "unknown", "terminal_reason": None,
@@ -339,6 +381,10 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
         metadata = json.loads(str(row["metadata_json"]))
         planning = planning_items.get(artifact_id)
         campaign_readiness = loop_findings._body_status(str(row["body_markdown"])) if artifact_type == "campaign" else None
+        directive_status = (
+            _directive_status(str(row["body_markdown"]))
+            if metadata.get("role") == EXECUTIVE_DIRECTIVE_ROLE else None
+        )
         title = " ".join(str(row["title"]).split())[:160] or str(row["visible_id"])
         artifacts.append(
             {
@@ -346,6 +392,7 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
                 "visible_id": str(row["visible_id"]), "artifact_type": artifact_type, "title": title,
                 "metadata_role": metadata.get("role"),
                 "metadata_directive_text": metadata.get("directive_text"),
+                "directive_status": directive_status,
                 "document_lifecycle": str(row["lifecycle_state"]),
                 "outcome_lifecycle": str(row["outcome_lifecycle"]), "outcome_disposition": str(row["outcome_disposition"]),
                 "reconciliation_state": str(row["reconciliation_state"]),
@@ -713,12 +760,49 @@ def executive(workspace: Path) -> dict[str, Any]:
             stage = "working" if item["planning_readiness"] == "working" else "delegated"
         else:
             stage = "queued"
+        status = item.get("directive_status") or _directive_status("")
+        if stage == "completed" and status["state"] == "missing":
+            status = {
+                "state": "derived-completed",
+                "current_position": "The canonical directive lifecycle is completed.",
+                "progress": [{"checked": True, "label": "Directive outcome completed in canonical lifecycle."}],
+                "next_action": "No action is required unless you ask Codex to reopen or revise this directive.",
+                "why_next": "Completed directives remain visible as history without competing with active work.",
+                "blockers": [],
+                "operator_needs": [],
+                "completion_condition": "Satisfied by the directive's completed canonical lifecycle.",
+            }
         executive_directives.append({
             **item,
             "directive_stage": stage,
             "subordinate_handoff": item["produces_ids"] or ["Plan Cycle (queued)"],
             "directive_text": item.get("metadata_directive_text") or item["title"],
+            "status": status,
         })
+
+    recommended_action = None
+    for item in executive_directives:
+        if item["directive_stage"] in {"completed", "abandoned", "superseded", "parked", "deferred"}:
+            continue
+        status = item["status"]
+        action = status.get("next_action")
+        reason = status.get("why_next") or status.get("current_position")
+        if status["state"] != "current":
+            action = f"Ask Codex to update the human status capsule for {item['visible_id']}."
+            reason = "This directive predates the human-facing status contract, so its next step is not yet trustworthy."
+        if item["directive_stage"] == "blocked" and status.get("operator_needs"):
+            action = status["operator_needs"][0]
+            reason = status.get("why_next") or "Operator input is required before Codex can continue."
+        recommended_action = {
+            "visible_id": item["visible_id"],
+            "directive_text": item["directive_text"],
+            "directive_stage": item["directive_stage"],
+            "action": action,
+            "reason": reason,
+            "operator_needs": list(status.get("operator_needs", [])),
+            "blockers": list(status.get("blockers", [])),
+        }
+        break
 
     attention: list[dict[str, str]] = []
     if inventory["truncated"]:
@@ -770,7 +854,11 @@ def executive(workspace: Path) -> dict[str, Any]:
         "release_horizon": release,
         "attention": attention,
         "recommendations": [item["artifact_id"] for item in deduplicated[:8]],
-        "executive_directives": [item["artifact_id"] for item in executive_directives],
+        "executive_directives": [
+            {"artifact_id": item["artifact_id"], "stage": item["directive_stage"], "status": item["status"]}
+            for item in executive_directives
+        ],
+        "recommended_action": recommended_action,
         "executive_directive_counts": {
             "total": len(all_executive_directives),
             "active": len(active_executive_directives),
@@ -802,6 +890,7 @@ def executive(workspace: Path) -> dict[str, Any]:
         "attention": attention,
         "recommendations": deduplicated[:8],
         "executive_directives": executive_directives,
+        "recommended_action": recommended_action,
         "executive_directive_count": len(all_executive_directives),
         "active_executive_directive_count": len(active_executive_directives),
         "completed_executive_directive_count": len(completed_executive_directives),
@@ -1081,8 +1170,31 @@ def render_executive(view: dict[str, Any]) -> str:
         EXECUTIVE_MARKER,
         "# 100k Project Executive View",
         "",
-        "> This file is a deterministic, read-only strategic cockpit. Do not edit it. Change",
-        "> executive intent or the named Tool Shed source artifact, then refresh this view.",
+        "> This is your readable directive cockpit. Tell Codex what to add, change, park, resume,",
+        "> reorder, withdraw, or complete; Codex and Tool Shed maintain this read-only file.",
+        "",
+        "## Do This Next",
+        "",
+    ]
+    recommended = view.get("recommended_action")
+    if recommended:
+        lines.extend([
+            f"**{recommended['action']}**",
+            "",
+            f"- Directive: `{recommended['visible_id']}` — {recommended['directive_text']}",
+            f"- Why now: {recommended['reason']}",
+            "- Needed from you: " + (
+                "; ".join(recommended["operator_needs"])
+                if recommended["operator_needs"] else "Nothing right now; Codex can continue on request."
+            ),
+        ])
+        if recommended["blockers"]:
+            lines.append("- Blocked by: " + "; ".join(recommended["blockers"]))
+    elif view.get("executive_directives"):
+        lines.append("No active directive needs action. Discuss a new directive with Codex when the next need appears.")
+    else:
+        lines.append("Tell Codex the first outcome you want, or say `ts: 100k add <directive>`.")
+    lines.extend([
         "",
         "## Executive Review",
         "",
@@ -1098,7 +1210,7 @@ def render_executive(view: dict[str, Any]) -> str:
         "",
         "## North Star",
         "",
-    ]
+    ])
     if intent.get("north_star"):
         lines.append(str(intent["north_star"]))
     else:
@@ -1141,23 +1253,54 @@ def render_executive(view: dict[str, Any]) -> str:
     if not priorities:
         lines.append("- No owner-authored strategic priority order is currently recorded.")
 
-    lines.extend(["", "## Executive Directives", ""])
+    lines.extend(["", "## Directive Board", ""])
     directives = list(view.get("executive_directives", []))
     if directives:
-        lines.extend([
-            "| Order | Directive | State | Subordinate handoff |",
-            "| ---: | --- | --- | --- |",
-        ])
         for item in directives:
+            status = item.get("status") or _directive_status("")
             handoff = ", ".join(
                 f"`{value}`" if re.fullmatch(r"[A-Z]+-\d+", value) else value
                 for value in item["subordinate_handoff"]
             )
-            lines.append(
-                f"| {_cell(item['planning_position'])} | "
-                f"`{item['visible_id']}` — {_cell(item['title'])} | "
-                f"{_cell(item['directive_stage'])} | {handoff} |"
-            )
+            directive_checkbox = "x" if item["directive_stage"] == "completed" else " "
+            lines.extend([
+                f"### [{directive_checkbox}] {item.get('directive_text') or item['title']}",
+                "",
+                f"**{item['directive_stage'].replace('-', ' ').title()}** · "
+                f"planning order {_cell(item['planning_position'])}",
+                "",
+            ])
+            if status["state"] != "missing":
+                lines.extend(["**Current position:** " + status["current_position"], "", "Progress:"])
+                lines.extend(
+                    f"- [{'x' if step['checked'] else ' '}] {step['label']}"
+                    for step in status["progress"]
+                )
+                lines.extend([
+                    "",
+                    "**Next:** " + status["next_action"],
+                    "**Why:** " + status["why_next"],
+                    "**Blockers:** " + ("; ".join(status["blockers"]) if status["blockers"] else "None."),
+                    "**Needed from you:** " + (
+                        "; ".join(status["operator_needs"])
+                        if status["operator_needs"] else "Nothing right now."
+                    ),
+                    "**Complete when:** " + status["completion_condition"],
+                ])
+            else:
+                lines.append(
+                    "**Status needs human-readable setup.** Ask Codex to record current position, "
+                    "evidence-backed progress, the next action, blockers, operator needs, and completion condition."
+                )
+            lines.extend([
+                "",
+                "<details><summary>Technical drill-down</summary>",
+                "",
+                f"ID: `{item['visible_id']}` · readiness: `{item['planning_readiness']}` · handoff: {handoff}",
+                "",
+                "</details>",
+                "",
+            ])
         if view.get("executive_directives_truncated"):
             lines.append(
                 f"\n- Showing {len(directives)} of {view['executive_directive_count']} directives; "
@@ -1214,7 +1357,7 @@ def render_executive(view: dict[str, Any]) -> str:
     else:
         lines.append("- No decision or attention signal.")
 
-    lines.extend(["", "## Recommended Next Cycles", ""])
+    lines.extend(["", "## Operational Drill-Down", ""])
     if view["recommendations"]:
         for item in view["recommendations"]:
             position = (
@@ -1225,16 +1368,8 @@ def render_executive(view: dict[str, Any]) -> str:
                 f"- `{item['visible_id']}` — {item['title']} ({item['document_lifecycle']}; "
                 f"{item['planning_readiness']}; {position})"
             )
-        if any(
-            item["document_lifecycle"] not in {"completed", "terminal"}
-            for item in directives
-        ):
-            lines.append(
-                "- The active CEO directive owns the outcome; subordinate cycles continue under "
-                "its authority envelope."
-            )
-        else:
-            lines.append("- The operator must explicitly choose or change the next cycle.")
+        if recommended:
+            lines.append("- These are implementation records; the directive above remains the operator-facing outcome.")
     else:
         lines.append("- No working or ready strategic cycle is currently projected.")
 

@@ -272,9 +272,10 @@ finalize until each recorded chain reconciles through its originating Idea. See
 [`docs/release-cohort-closed-loop.md`](docs/release-cohort-closed-loop.md).
 
 The standard `work/100k.md` Project Executive View joins one narrowly authoritative owner intent
-record with that canonical project world. Its concise strategic cockpit shows the North Star,
-completion horizon, context, priorities, landscape, decisions, changes, realized outcomes,
-next-cycle candidates, non-goals, and review triggers. It remains a deterministic read-only
+record with that canonical project world. Its first screen tells the returning operator what to do
+next, why, whether Codex needs anything, and which blockers apply. Its directive board shows
+evidence-backed checkbox progress, current position, completion conditions, and subordinate
+drill-down before the broader strategy and accounting. It remains a deterministic read-only
 projection, not another queue or lifecycle. Use `ts: 100k` to read it, `ts: 100k ledger` for the
 exhaustive deterministic accounting drill-down, and `ts: 100k setup` for a read-only evidence
 packet when executive intent is missing or incomplete. Setup proposes; only explicit owner
@@ -289,6 +290,9 @@ and appends it to canonical planning order without starting implementation. Reis
 active directive delegates or resumes the Plan Cycle without preempting a different working
 campaign; subordinate Roadmap, Milestone, Campaign, Evidence, and Outcome cycles materialize,
 execute, and report it within the stated delivery and autonomy boundaries.
+The operator may also ask Codex conversationally to revise, reorder, park, withdraw, resume,
+complete, or reopen a named directive. Codex applies the guarded canonical document, lifecycle,
+planning-order, evidence, and outcome operations; the operator never has to administer `100k.md`.
 Bare `ts: 100k` remains a read-only review.
 
 Hybrid schema 4 adds persisted, deduplicated outcome-loop findings; schema 5 expands current-state
@@ -307,6 +311,8 @@ directive has an exact `ts: directive <directive text>` copy control for pasting
 hosted dashboard remains read-only and older reporter schemas retain a clear compatibility state.
 Schema 13 expands that projection to an active-first 50-directive bound with planning position,
 readiness, inventory counts, and explicit truncation while retaining schema-12 compatibility.
+Schema 14 adds the directive status capsule and one human-facing recommended action while retaining
+schema-13 compatibility.
 
 Before a long campaign, run:
 

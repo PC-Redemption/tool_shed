@@ -83,12 +83,12 @@ permission to skip the check. See `docs/work-orchestration.md`.
 ## 100k Project Executive View
 
 Treat `ts: 100k` as the standard read-only owner strategic review of the whole local project. Run
-`scripts/project_projection.py --workspace . 100k` and present its concise cockpit: North Star,
-current completion horizon, strategic context, owner priorities, project landscape, decisions and
-attention, recommended next cycles, material changes, realized outcomes, deliberate non-goals, and
-review triggers. The projection recommends candidates but never selects, starts, prioritizes, or
-completes work. A subsequent explicit owner choice routes through the existing Idea, map, PRM,
-campaign, decision, outcome, or planning-order operation and its normal authority boundary.
+`scripts/project_projection.py --workspace . 100k` and lead with its one recommended operator
+action, reason, operator needs, blockers, and evidence-backed directive checkbox progress. Strategy,
+changes, outcomes, and accounting follow as context and drill-down. The projection never selects,
+starts, prioritizes, or completes work. A subsequent operator direction routes through the existing
+Idea, map, PRM, campaign, decision, outcome, or planning-order operation and its normal authority
+boundary.
 
 Treat `ts: 100k add <directive>` as the explicit CEO intake-and-delegation route and
 `ts: directive <directive>` as its exact concise alias. Bare `ts: 100k` remains read-only. For the
@@ -121,6 +121,30 @@ write route:
 6. Refresh 100k after each authoritative lifecycle checkpoint. Interrupt only for material
    ambiguity, conflicting directives, or a genuine authority boundary—not to expose internal
    artifact selection to the CEO.
+
+The operator-facing interface is conversational, not document administration. When the operator
+asks to revise, reorder, park, withdraw, resume, complete, or reopen a named directive:
+
+1. Resolve exactly one active or historical executive directive by visible ID or unambiguous text;
+   ask one concise question only when resolution is materially ambiguous.
+2. Read its current revision before mutation. Use guarded managed-document edits to revise wording,
+   desired outcome, constraints, delivery boundary, or its status capsule. Keep metadata
+   `directive_text`, title, and the `CEO Directive` section aligned when the directive itself changes.
+3. Use canonical planning-order mutation for reorder; `parked` for a reversible pause;
+   `abandoned` for withdrawal; and the supported active lifecycle plus normal eligibility checks for
+   resume or reopen. Never preempt a different working campaign.
+4. Treat completion as an evidence/outcome operation, not a checkbox edit. Complete and reconcile
+   the subordinate chain, propagate the result upward, then update the directive status capsule and
+   lifecycle. Reopening similarly reopens canonical work before changing the displayed status.
+5. Refresh `work/100k.md`, checkpoint when required by the active authority, and report what changed,
+   current position, next action, blockers, and any operator need.
+
+Every newly created directive must use the template's `Current Position`, `Progress`, `Recommended
+Next Action`, `Why This Next`, `Blockers`, `Operator Needs`, and `Completion Condition` sections.
+Check a progress item only when canonical lifecycle state or linked evidence supports it. The
+renderer may derive a completed marker from a canonical completed lifecycle for legacy directives,
+but it must not fabricate active progress. IDs and subordinate handoff are drill-down, not the main
+instruction to the operator.
 
 Executive directives reuse the existing Idea, relationship, outcome, reconciliation, closure, and
 PRM substrate. Intake order is the canonical Idea planning order and execution remains subject to

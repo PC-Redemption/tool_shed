@@ -90,9 +90,10 @@ protection. Every interrupt explains impact, blast radius, rollback, and recomme
 | `ts: build focus areas` | Inspect existing workspace sources and produce a project-specific focus-area catalog and active-campaign assignments. Faithful reversible results may apply under planning autonomy; material responsibility choices require a decision. |
 | `ts: develop roadmap` | Read project evidence and clarify an opt-in Program Roadmap without mutation. |
 | `ts: overview` | Combine maps, approved roadmaps, gates, focus areas, campaign state, and drift. Read-only. |
-| `ts: 100k` | Review the owner North Star, completion horizon, context, priorities, landscape, decisions, changes, outcomes, next-cycle candidates, non-goals, and review triggers. Read-only. |
+| `ts: 100k` | Review the recommended next action, reason, operator needs, blockers, directive checkbox progress, completion conditions, strategy, and accounting. Read-only. |
 | `ts: 100k add <directive>` | Capture previously unseen CEO text durably in existing Idea/outcome authority and planning order; reissue an exact active directive to delegate or resume it without preempting working subordinate execution. |
 | `ts: directive <directive>` | Exact concise alias for `ts: 100k add <directive>`; repeated new commands form a durable intake batch. |
+| `ts: revise/park/withdraw/resume/reopen/complete directive <id-or-text> ...` | Conversational directive controls. Codex resolves the canonical directive and applies guarded document, lifecycle, planning-order, evidence, and outcome operations; completion is never accepted without evidence and reconciliation. |
 | `ts: 100k setup` | When executive intent is missing or incomplete, discover bounded orientation and canonical artifact evidence, then present an exact seven-section proposal for owner acceptance. Discovery and proposal are read-only. |
 | `ts: 100k ledger` | Inspect the exhaustive deterministic Idea/Map/PRM/Campaign accounting ledger behind the concise 100k view. Read-only. |
 

@@ -5,9 +5,10 @@ authoritative Project Executive Intent with the canonical operational project pr
 owner returning after time away can understand why the project exists, what done-for-now means,
 what changed, what matters, and which next cycles are credible.
 
-The main view shows the North Star, current completion horizon, strategic context, owner priorities,
-project landscape, decisions and attention, recommended next cycles, material changes, realized
-outcomes, deliberate non-goals, review triggers, and compact accounting integrity. It does not
+The main view leads with one recommended operator action and its reason, then a directive board
+showing current position, evidence-backed checkbox milestones, next action, blockers, operator
+needs, and completion condition. Strategy, project landscape, changes, outcomes, and compact
+accounting follow as context and drill-down. It does not
 contain the exhaustive Complete Strategic Ledger. That ledger remains available as an explicit
 deterministic drill-down from the exact same projection.
 
@@ -61,14 +62,33 @@ recovery, and other authority expansions are never inferred.
 outcome, reconciliation, and closure authority. Directives do not create another backlog, queue,
 table, or lifecycle engine. Bare 100k review and deterministic rendering remain non-mutating.
 
-Connected schema-13 reporters send an active-first bounded structured projection of these same sections to
+The directive document also owns a human status capsule with the exact headings `Current Position`,
+`Progress`, `Recommended Next Action`, `Why This Next`, `Blockers`, `Operator Needs`, and
+`Completion Condition`. Codex updates that capsule at lifecycle checkpoints. A progress checkbox
+may be checked only when canonical lifecycle state or linked evidence supports it; the renderer
+parses and displays the capsule but never infers milestones. Legacy completed directives derive a
+single completion marker from their canonical completed lifecycle. Other legacy directives say
+that status setup is required rather than fabricating progress.
+
+The operator uses conversation as the normal control surface: ask Codex to add, revise, reorder,
+park, withdraw, resume, complete, or reopen a directive. Codex resolves the named canonical
+directive, uses revision-guarded document and lifecycle operations, preserves history, refreshes
+100k, and reports the result. Revision may update the directive wording, desired outcome,
+constraints, delivery boundary, or status capsule. Parking preserves the directive but removes it
+from actionable selection; withdrawal uses the abandoned lifecycle; resume/reactivation returns it
+to active planning order; completion and reopening still require normal evidence and outcome
+reconciliation rules. `ts: order bs move` remains the explicit priority mutation beneath the
+conversational interface.
+
+Connected schema-14 reporters send an active-first bounded structured projection of these same sections to
 the hosted project page. The **CEO** tab appears before Overview and shows the newest single-instance
 projection without parsing `work/100k.md` or merging independent reporters. Each directive copies
 its exact `ts: directive <directive text>` command for the operator to paste into Codex; the browser
 cannot execute it. The projection shows canonical planning position, distinguishes queued,
 working, and completed state, retains up to 50 directives with all active directives first, and
 reports any truncation explicitly. Schema-12 reports remain valid with their original eight-item
-directive contract; schema-11 and older reports receive an explicit unavailable state.
+directive contract; schema-13 reports retain their lifecycle-only directive view; schema-11 and
+older reports receive an explicit unavailable state.
 
 ```bash
 python3 scripts/project_projection.py --workspace . 100k
@@ -117,8 +137,9 @@ mutation beyond replacing its own marked generated output.
 
 ## Owner Acceptance
 
-The primary experience test is whether an owner returning after a month can read the main view and
-answer, without opening the ledger: why the project exists, what its current horizon is, what
-changed, what remains important, which decisions need attention, and what credible next cycles
-exist. Machine accounting, deterministic bytes, stale detection, file/SQLite parity, and recovery
-remain required but do not substitute for that owner outcome.
+The primary experience test is whether an owner returning after a month can read the first screen
+and answer, without opening the ledger: what should I do next, why, what is done, what remains,
+what is blocked, what does Codex need from me, and what will count as complete. They must also be
+able to tell Codex conversationally to change the directive set. Machine accounting,
+deterministic bytes, stale detection, file/SQLite parity, and recovery remain required but do not
+substitute for that owner outcome.

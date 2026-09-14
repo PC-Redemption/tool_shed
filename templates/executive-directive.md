@@ -16,6 +16,39 @@ Produces:
 
 Make the directive true through the smallest coherent set of subordinate cycles.
 
+## Current Position
+
+The directive is captured in the durable intake queue and has not yet been delegated.
+
+## Progress
+
+- [x] Directive captured exactly in canonical project state.
+- [ ] Codex has delegated the directive into a bounded plan and execution chain.
+- [ ] The requested outcome has evidence and is reconciled.
+
+Only check a milestone when canonical lifecycle state or linked evidence supports it. Codex updates
+this section as work moves; the generated `work/100k.md` never guesses progress.
+
+## Recommended Next Action
+
+Ask Codex to delegate or resume this directive when you want it worked.
+
+## Why This Next
+
+The directive is safely batched, so delegation is the next action that advances its outcome.
+
+## Blockers
+
+- None.
+
+## Operator Needs
+
+- None.
+
+## Completion Condition
+
+The directive's outcome is evidence-backed, reconciled, and reported back to the operator.
+
 ## Authority And Delivery Boundary
 
 - Preserve any endpoint, target, timing, non-goal, or authority language stated in the directive.

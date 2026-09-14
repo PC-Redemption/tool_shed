@@ -29,7 +29,7 @@ class ProjectProjectionTests(unittest.TestCase):
             "updated_at": "2026-09-11T00:00:00Z",
         }
         return {
-            "schema_version": 4, "kind": "tool-shed-project-executive-view",
+            "schema_version": 5, "kind": "tool-shed-project-executive-view",
             "authority": {"authority": "sqlite", "state": "hybrid"},
             "source_revision": 4, "source_digest": "source", "state_digest": "state",
             "latest_source_update": "2026-09-11T00:00:00Z",
@@ -130,7 +130,8 @@ class ProjectProjectionTests(unittest.TestCase):
         self.assertTrue(first.startswith(project_projection.EXECUTIVE_MARKER))
         self.assertIn("## Executive Review", first)
         self.assertIn("## North Star", first)
-        self.assertIn("## Executive Directives", first)
+        self.assertIn("## Do This Next", first)
+        self.assertIn("## Directive Board", first)
         self.assertIn("`ts: 100k add <directive>`", first)
         self.assertIn("## Decisions And Attention", first)
         self.assertIn("## Accounting And Drill-Down", first)
@@ -165,11 +166,63 @@ class ProjectProjectionTests(unittest.TestCase):
         }
         view["executive_directives"] = [directive]
         rendered = project_projection.render_executive(view)
-        self.assertIn("`IDEA-0030` — Make releases boring", rendered)
-        self.assertIn("delegated", rendered)
+        self.assertIn("### [ ] Make releases boring", rendered)
+        self.assertIn("ID: `IDEA-0030`", rendered)
+        self.assertIn("Delegated", rendered)
         self.assertIn("`MAP-0038`", rendered)
-        self.assertIn("subordinate cycles continue", rendered)
-        self.assertNotIn("operator must explicitly choose", rendered)
+        self.assertIn("Status needs human-readable setup", rendered)
+
+    def test_displaytest_shaped_directive_tells_the_returning_operator_what_to_do(self) -> None:
+        body = (
+            "# Executive Directive: Finish DisplayTest physical qualification\n\n"
+            "Next Action: stale header value\n\n"
+            "## Current Position\n\nFirmware and local tests pass; the physical display is not yet observed.\n\n"
+            "## Progress\n\n"
+            "- [x] Firmware builds and automated tests pass (CAMP-0187 evidence).\n"
+            "- [ ] Flash the target and observe the 100 kHz display path.\n\n"
+            "## Recommended Next Action\n\nFlash the DisplayTest target and record the observed display result.\n\n"
+            "## Why This Next\n\nPhysical observation is the only remaining completion evidence.\n\n"
+            "## Blockers\n\n- Target hardware is not connected.\n\n"
+            "## Operator Needs\n\n- Connect the DisplayTest board when convenient.\n\n"
+            "## Completion Condition\n\nThe display result is recorded and reconciled.\n"
+        )
+        status = project_projection._directive_status(body)
+        self.assertEqual("current", status["state"])
+        self.assertEqual(2, len(status["progress"]))
+        self.assertTrue(status["progress"][0]["checked"])
+        self.assertFalse(status["progress"][1]["checked"])
+        self.assertEqual(
+            "Flash the DisplayTest target and record the observed display result.",
+            status["next_action"],
+        )
+        self.assertEqual(["Connect the DisplayTest board when convenient."], status["operator_needs"])
+
+        view = self.executive_fixture()
+        directive = {
+            **view["inventory"]["artifacts"][0],
+            "visible_id": "IDEA-0099",
+            "title": "Finish DisplayTest physical qualification",
+            "directive_text": "Finish DisplayTest physical qualification",
+            "directive_stage": "blocked",
+            "planning_position": 1,
+            "subordinate_handoff": ["CAMP-0199"],
+            "status": status,
+        }
+        view["executive_directives"] = [directive]
+        view["recommended_action"] = {
+            "visible_id": "IDEA-0099",
+            "directive_text": directive["directive_text"],
+            "directive_stage": "blocked",
+            "action": "Connect the DisplayTest board when convenient.",
+            "reason": status["why_next"],
+            "operator_needs": status["operator_needs"],
+            "blockers": status["blockers"],
+        }
+        rendered = project_projection.render_executive(view)
+        self.assertLess(rendered.index("## Do This Next"), rendered.index("## Executive Review"))
+        self.assertIn("- [x] Firmware builds and automated tests pass", rendered)
+        self.assertIn("- [ ] Flash the target", rendered)
+        self.assertIn("**Needed from you:** Connect the DisplayTest board", rendered)
 
     def test_executive_directives_are_active_first_in_planning_order_beyond_eight(self) -> None:
         def directive(index: int, *, active: bool) -> dict[str, object]:

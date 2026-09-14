@@ -1,0 +1,158 @@
+# Idea Brief: Make 100k a Human-Facing Directive Cockpit
+
+Status: ready-for-prm
+Type: idea-brief
+Updated: 2026-09-14
+Next Action: carry the accepted synthesis and readiness gates through the Work2 PRM lifecycle
+Readiness Review: run explicitly with `ts: bs review <idea-id-or-path>`; ordinary brainstorming does not review
+Produces:
+
+## Current Synthesis
+
+### Idea
+
+Finish `100k` as the human-facing CEO control surface it was intended to be. The operator should
+discuss needs and direction with Codex; Codex should preserve those directions as durable
+directives, batch them in operator-controlled order, and manage the subordinate Tool Shed
+mechanics. Scripts should deterministically regenerate `work/100k.md` as a directly readable
+project cockpit.
+
+The cockpit should interpret lifecycle state for the human. It should say what has been achieved,
+what is happening, what is queued, what is blocked and why, what needs the operator, and what Codex
+recommends doing next. Internal Idea, map, PRM, campaign, outcome, and revision identifiers should
+support drill-down rather than make the operator reconstruct the project.
+
+Checkboxes are a preferred presentation mechanism, not a defect. They are a compact, familiar way
+to show progress when each box represents a meaningful directive milestone, acceptance gate, or
+remaining action. Checked boxes should mean evidenced completion; unchecked boxes should make the
+remaining path visible.
+
+### Why It Matters
+
+Dogfooding against `E:\dev\high_point\7520708_DispTest_FW` showed that the shipped 100k machinery
+can account for artifacts yet still fail its primary human job. The generated `work/100k.md` says
+executive intent is missing, presents duplicate lifecycle records, and tells the operator to choose
+a next cycle. The human-maintained `docs/strategy/100000-foot-view.md` makes the same project
+understandable because it explains results, remaining physical gates, dependencies, boundaries,
+and exact next actions, with checkboxes providing visible progress.
+
+Prior 100k work (`IDEA-0028`, `IDEA-0029`, `IDEA-0030`, and `IDEA-0032`) delivered important
+projection, executive-intent, delegation, and batching substrate. Their completed status should
+remain historical, but the observed operator experience demonstrates a residual product gap. A CEO
+surface that requires the CEO to interpret the internal tracker has not completed the intended
+outcome.
+
+### Desired Outcome
+
+The complete operator loop becomes natural and durable:
+
+1. The operator discusses a need with Codex without being forced into artifact terminology.
+2. On request, Codex adds one directive to an ordered batch without starting it.
+3. The operator can later clarify, revise, reorder, park, withdraw, delegate, or resume a directive
+   conversationally.
+4. Codex selects and manages the smallest sufficient subordinate lifecycle when execution is
+   requested; the operator does not administer Ideas, maps, PRMs, or campaigns.
+5. Results and residual gaps roll back up to the directive automatically.
+6. `work/100k.md` opens with a plain-language current position, one recommended next move and its
+   reason, anything needed from the operator, and explicit safe alternatives when the recommendation
+   is blocked.
+7. Each directive shows meaningful checkbox progress, current status, latest result, blocker,
+   operator need, next step, completion condition, and optional drill-down references.
+8. A person reading the generated file directly can stay oriented without running a command or
+   understanding Tool Shed's internal data model.
+
+## Constraints And Non-Goals
+
+- Keep `work/100k.md` a generated, read-only projection. Codex changes authoritative executive
+  intent, directives, planning order, and lifecycle state through guarded scripts; neither Codex nor
+  the operator hand-edits the projection.
+- Reuse the existing executive-intent document, Idea planning order, relationships, outcome loops,
+  reconciliation, and project projection. Do not create a second CEO backlog or lifecycle engine.
+- Preserve the operator's authority to choose when a queued directive starts. A recommendation is
+  decision support, not automatic prioritization or execution.
+- Keep the main view concise and human-first. Raw counts, exhaustive accounting, revisions, digests,
+  and complete artifact tables belong in drill-down views.
+- Do not infer progress merely from artifact existence or lifecycle labels. Checkbox completion and
+  directive status must follow evidence and reconciled outcomes.
+- Do not continuously parse arbitrary strategy documents as a competing authority. Existing
+  human-authored strategy may seed an owner-reviewed setup or migration, after which one accepted
+  executive-intent/directive model owns the evolving framing.
+- Preserve completed 100k artifacts as history. Treat this as an evidence-driven residual correction,
+  not a rewrite of earlier completion verdicts.
+
+## Possibilities And Tradeoffs
+
+| Possibility | Benefits | Costs / Risks | Evidence / Status |
+| --- | --- | --- | --- |
+| Directive-centered executive rollup with checkbox milestones | Matches the conversational CEO model; makes progress and next action immediately visible | Requires trustworthy rollup and migration rules | Preferred |
+| Improve wording while retaining the flat artifact list | Small rendering change | Still forces the operator to deduplicate and interpret lifecycle machinery | Insufficient |
+| Continuously mirror an existing strategy Markdown file | Quickly reproduces one project's useful prose | Creates dual authority and cannot generalize safely | Use only as owner-reviewed setup evidence |
+| Keep the useful synthesis only in Codex conversation | Natural interaction | Loses durable, directly readable orientation between sessions | Rejected |
+| Make `work/100k.md` manually editable | Familiar authoring | Breaks deterministic projection and creates mixed authority | Rejected |
+
+## Open Questions
+
+- What concise conversational commands or language should cover directive clarification, revision,
+  reordering, parking, withdrawal, delegation, reopening, and completion correction?
+- How should an existing project adopt human strategy and map existing lifecycle chains to
+  directives without duplicating work or inventing historical intent?
+- Which directive milestones qualify for checkboxes, and what evidence changes a box from unchecked
+  to checked?
+- How should partial local completion plus an external or physical qualification gate be expressed
+  without calling the whole directive either simply active or simply blocked?
+- What deterministic recommendation rule identifies the best next move while preserving the
+  operator's final choice and recognizing remote-safe alternatives?
+- How many active, queued, blocked, and recently completed directives fit in the main view before
+  older detail moves behind drill-down?
+
+## Decisions
+
+- Codex is the operator interface; scripts and canonical state are implementation machinery.
+- The generated Markdown must remain useful when read directly without Codex present.
+- Directives are the primary executive unit. Subordinate artifacts appear only as supporting
+  lineage and drill-down.
+- Durable batch intake and non-preemptive operator-controlled execution remain part of the intended
+  model.
+- Checkboxes are a solid human-readable progress device and should be retained at the directive
+  milestone/gate level.
+- The opening view must answer: where are we, what should happen next, why, what is blocking it,
+  what is needed from the operator, and what counts as done.
+- The DisplayTest comparison is acceptance evidence that the current implementation does not yet
+  satisfy the intended operator experience.
+
+## Don't Forget
+
+- [ ] Define representative operator conversations for add, revise, reorder, park, withdraw,
+  delegate, block, complete, and reopen behavior.
+- [ ] Define the directive rollup contract, including local completion, external proof, blockers,
+  operator needs, next action, and completion condition.
+- [ ] Define evidence-backed checkbox milestone semantics and deterministic ordering.
+- [ ] Design the first-screen human cockpit before exposing counts or internal artifact IDs.
+- [ ] Define owner-reviewed migration from existing strategy and lifecycle state without dual
+  authority or duplicate directives.
+- [ ] Dogfood the result against the DisplayTest workspace and require a returning operator to
+  identify the recommended next action in under one minute.
+- [ ] Cover direct Markdown reading, `ts: 100k`, and the hosted CEO view with the same projection.
+- [ ] Add regression cases proving that completed foundations do not reappear as generic active
+  next-cycle candidates.
+
+## Exploration Log
+
+### 2026-09-14
+
+- Idea Brief created.
+- The operator clarified the intended CEO model: discuss and add directives through Codex, batch
+  them for later execution at the operator's pleasure, modify and add directives as needs emerge,
+  and receive useful feedback about completion, next steps, and blockers.
+- Established that Codex—not `work/100k.md` and not raw scripts—is the interaction layer. Scripts
+  manage canonical state and regenerate the readable file so the operator can stay on track.
+- Recorded that checkboxes are a strong progress presentation and should represent meaningful,
+  evidence-backed directive milestones rather than be removed in pursuit of a shorter view.
+- Used the DisplayTest strategy/100k comparison as concrete dogfood evidence that the current flat
+  accounting projection does not yet deliver the intended human experience.
+- The operator invoked `ts: prm work2`, selecting this active discussion as the durable PRM source
+  and authorizing execution through the configured non-production Work2 endpoint.
+
+Keep the synthesis current and append only useful dated exploration notes. Use `Status: ready-for-prm`
+when the owner chooses to promote it, `promoted` after approved project-map direction captures it,
+or `parked` when it is intentionally set aside. A promoted brief names its output in `Produces:`.

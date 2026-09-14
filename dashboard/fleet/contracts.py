@@ -223,6 +223,7 @@ EXECUTIVE_FIELDS_V2 = EXECUTIVE_FIELDS | {
     "directive_count", "active_directive_count", "completed_directive_count",
     "directives_truncated",
 }
+EXECUTIVE_FIELDS_V3 = EXECUTIVE_FIELDS_V2 | {"recommended_action"}
 EXECUTIVE_AUTHORITY_FIELDS = {"authority", "state"}
 EXECUTIVE_INTENT_FIELDS = {
     "state", "identity", "revision", "north_star", "completion_horizon",
@@ -235,6 +236,16 @@ EXECUTIVE_DIRECTIVE_FIELDS = {
 }
 EXECUTIVE_DIRECTIVE_FIELDS_V2 = EXECUTIVE_DIRECTIVE_FIELDS | {
     "planning_position", "planning_readiness",
+}
+EXECUTIVE_DIRECTIVE_FIELDS_V3 = EXECUTIVE_DIRECTIVE_FIELDS_V2 | {"status"}
+EXECUTIVE_DIRECTIVE_STATUS_FIELDS = {
+    "state", "current_position", "progress", "next_action", "why_next",
+    "blockers", "operator_needs", "completion_condition",
+}
+EXECUTIVE_PROGRESS_FIELDS = {"checked", "label"}
+EXECUTIVE_RECOMMENDED_ACTION_FIELDS = {
+    "visible_id", "directive_text", "directive_stage", "action", "reason",
+    "blockers", "operator_needs",
 }
 EXECUTIVE_FOCUS_FIELDS = {"catalog_state", "areas"}
 EXECUTIVE_FOCUS_AREA_FIELDS = {"focus_area_id", "name", "active_campaigns"}
@@ -934,11 +945,11 @@ def _executive_artifacts(value: Any, label: str, *, count: int) -> list[dict[str
 
 
 def _executive(value: Any, *, report_schema_version: int) -> dict[str, Any]:
-    expected_schema = 2 if report_schema_version >= 13 else 1
+    expected_schema = 3 if report_schema_version >= 14 else 2 if report_schema_version >= 13 else 1
     item = _object(
         value,
         "executive",
-        EXECUTIVE_FIELDS_V2 if expected_schema == 2 else EXECUTIVE_FIELDS,
+        EXECUTIVE_FIELDS_V3 if expected_schema == 3 else EXECUTIVE_FIELDS_V2 if expected_schema == 2 else EXECUTIVE_FIELDS,
     )
     if item.get("schema_version") != expected_schema:
         raise ContractError(f"executive.schema_version must be {expected_schema}")
@@ -964,7 +975,7 @@ def _executive(value: Any, *, report_schema_version: int) -> dict[str, Any]:
             ),
         })
     directive_values = item.get("directives")
-    directive_limit = 50 if expected_schema == 2 else 8
+    directive_limit = 50 if expected_schema >= 2 else 8
     if not isinstance(directive_values, list) or len(directive_values) > directive_limit:
         raise ContractError(
             f"executive.directives must be a list of at most {directive_limit} items"
@@ -975,7 +986,7 @@ def _executive(value: Any, *, report_schema_version: int) -> dict[str, Any]:
         directive = _object(
             raw,
             prefix,
-            EXECUTIVE_DIRECTIVE_FIELDS_V2 if expected_schema == 2 else EXECUTIVE_DIRECTIVE_FIELDS,
+            EXECUTIVE_DIRECTIVE_FIELDS_V3 if expected_schema == 3 else EXECUTIVE_DIRECTIVE_FIELDS_V2 if expected_schema == 2 else EXECUTIVE_DIRECTIVE_FIELDS,
         )
         text = _required_string(directive.get("directive_text"), f"{prefix}.directive_text", 65_535)
         command = _required_string(directive.get("command"), f"{prefix}.command", 65_550)
@@ -993,7 +1004,7 @@ def _executive(value: Any, *, report_schema_version: int) -> dict[str, Any]:
             ),
             "command": command,
         }
-        if expected_schema == 2:
+        if expected_schema >= 2:
             readiness = _required_string(
                 directive.get("planning_readiness"), f"{prefix}.planning_readiness", 32
             )
@@ -1005,6 +1016,29 @@ def _executive(value: Any, *, report_schema_version: int) -> dict[str, Any]:
                 ),
                 "planning_readiness": readiness,
             })
+        if expected_schema == 3:
+            status = _object(directive.get("status"), f"{prefix}.status", EXECUTIVE_DIRECTIVE_STATUS_FIELDS)
+            progress_values = status.get("progress")
+            if not isinstance(progress_values, list) or len(progress_values) > 30:
+                raise ContractError(f"{prefix}.status.progress must be a list of at most 30 items")
+            progress = []
+            for progress_index, raw_progress in enumerate(progress_values, start=1):
+                progress_prefix = f"{prefix}.status.progress item {progress_index}"
+                step = _object(raw_progress, progress_prefix, EXECUTIVE_PROGRESS_FIELDS)
+                progress.append({
+                    "checked": _boolean(step.get("checked"), f"{progress_prefix}.checked"),
+                    "label": _required_string(step.get("label"), f"{progress_prefix}.label", 500),
+                })
+            parsed_directive["status"] = {
+                "state": _required_string(status.get("state"), f"{prefix}.status.state", 32),
+                "current_position": _optional_string(status.get("current_position"), f"{prefix}.status.current_position", 4_000),
+                "progress": progress,
+                "next_action": _optional_string(status.get("next_action"), f"{prefix}.status.next_action", 4_000),
+                "why_next": _optional_string(status.get("why_next"), f"{prefix}.status.why_next", 4_000),
+                "blockers": _bounded_string_list(status.get("blockers"), f"{prefix}.status.blockers", count=20, length=1_000),
+                "operator_needs": _bounded_string_list(status.get("operator_needs"), f"{prefix}.status.operator_needs", count=20, length=1_000),
+                "completion_condition": _optional_string(status.get("completion_condition"), f"{prefix}.status.completion_condition", 4_000),
+            }
         directives.append(parsed_directive)
     focus = _object(item.get("focus_coverage"), "executive.focus_coverage", EXECUTIVE_FOCUS_FIELDS)
     area_values = focus.get("areas")
@@ -1083,7 +1117,7 @@ def _executive(value: Any, *, report_schema_version: int) -> dict[str, Any]:
         "recent_changes": _executive_artifacts(item.get("recent_changes"), "executive.recent_changes", count=5),
         "realized_outcomes": _executive_artifacts(item.get("realized_outcomes"), "executive.realized_outcomes", count=5),
     }
-    if expected_schema == 2:
+    if expected_schema >= 2:
         directive_count = _bounded_counter(
             item.get("directive_count"), "executive.directive_count", 500
         )
@@ -1108,14 +1142,29 @@ def _executive(value: Any, *, report_schema_version: int) -> dict[str, Any]:
             "completed_directive_count": completed_count,
             "directives_truncated": truncated,
         })
+    if expected_schema == 3:
+        raw_action = item.get("recommended_action")
+        if raw_action is None:
+            result["recommended_action"] = None
+        else:
+            action = _object(raw_action, "executive.recommended_action", EXECUTIVE_RECOMMENDED_ACTION_FIELDS)
+            result["recommended_action"] = {
+                "visible_id": _required_string(action.get("visible_id"), "executive.recommended_action.visible_id", 64),
+                "directive_text": _required_string(action.get("directive_text"), "executive.recommended_action.directive_text", 65_535),
+                "directive_stage": _required_string(action.get("directive_stage"), "executive.recommended_action.directive_stage", 32),
+                "action": _required_string(action.get("action"), "executive.recommended_action.action", 4_000),
+                "reason": _required_string(action.get("reason"), "executive.recommended_action.reason", 4_000),
+                "blockers": _bounded_string_list(action.get("blockers"), "executive.recommended_action.blockers", count=20, length=1_000),
+                "operator_needs": _bounded_string_list(action.get("operator_needs"), "executive.recommended_action.operator_needs", count=20, length=1_000),
+            }
     return result
 
 
 def validate_report(payload: Any) -> dict[str, Any]:
     root = _object(payload, "report", ROOT_FIELDS)
     schema_version = root.get("schema_version")
-    if schema_version not in {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}:
-        raise ContractError("report.schema_version must be between 1 and 13")
+    if schema_version not in {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}:
+        raise ContractError("report.schema_version must be between 1 and 14")
     if schema_version == 1 and ({"work_inventory", "lifecycle_events"} & set(root)):
         raise ContractError("report schema 1 does not support lifecycle projection fields")
     if schema_version < 4 and "instance_health" in root:

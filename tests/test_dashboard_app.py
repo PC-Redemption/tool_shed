@@ -400,7 +400,7 @@ class DashboardApplicationTests(TestCase):
 
     def executive_report_payload(self) -> dict[str, object]:
         payload = self.complete_release_projection_payload()
-        payload["schema_version"] = 13
+        payload["schema_version"] = 14
         observed = str(payload["observed_at"])
         artifact = {
             "visible_id": "CAMP-0185",
@@ -413,7 +413,7 @@ class DashboardApplicationTests(TestCase):
         }
         directive_text = "Make the hosted CEO view actionable"
         payload["executive"] = {
-            "schema_version": 2,
+            "schema_version": 3,
             "authority": {"authority": "sqlite", "state": "hybrid"},
             "source_revision": 1710,
             "source_digest": "a" * 64,
@@ -448,12 +448,34 @@ class DashboardApplicationTests(TestCase):
                 "planning_position": 1,
                 "planning_readiness": "working",
                 "subordinate_handoff": ["MAP-0039"],
+                "status": {
+                    "state": "current",
+                    "current_position": "The implementation is ready for physical qualification.",
+                    "progress": [
+                        {"checked": True, "label": "Local verification passed."},
+                        {"checked": False, "label": "Physical observation recorded."},
+                    ],
+                    "next_action": "Connect the target and record the display result.",
+                    "why_next": "Physical evidence is the only remaining completion condition.",
+                    "blockers": ["Target hardware is not connected."],
+                    "operator_needs": ["Connect the target when convenient."],
+                    "completion_condition": "The physical result is recorded and reconciled.",
+                },
                 "command": f"ts: directive {directive_text}",
             }],
             "directive_count": 1,
             "active_directive_count": 1,
             "completed_directive_count": 0,
             "directives_truncated": False,
+            "recommended_action": {
+                "visible_id": "IDEA-0031",
+                "directive_text": directive_text,
+                "directive_stage": "delegated",
+                "action": "Connect the target and record the display result.",
+                "reason": "Physical evidence is the only remaining completion condition.",
+                "blockers": ["Target hardware is not connected."],
+                "operator_needs": ["Connect the target when convenient."],
+            },
             "focus_coverage": {
                 "catalog_state": "approved",
                 "areas": [{
@@ -507,23 +529,37 @@ class DashboardApplicationTests(TestCase):
         with self.assertRaisesRegex(ContractError, "unsupported fields"):
             validate_report(payload)
 
-    def test_schema_thirteen_ingests_and_renders_canonical_ceo_projection(self) -> None:
+    def test_schema_fourteen_ingests_and_renders_human_ceo_projection(self) -> None:
         payload = self.executive_report_payload()
         validated = validate_report(payload)
         command = "ts: directive Make the hosted CEO view actionable"
         self.assertEqual(validated["executive"]["directives"][0]["command"], command)
         self.assertEqual(validated["executive"]["directives"][0]["planning_position"], 1)
         self.assertEqual(validated["executive"]["active_directive_count"], 1)
+        self.assertEqual(
+            validated["executive"]["recommended_action"]["action"],
+            "Connect the target and record the display result.",
+        )
 
         unsafe = self.executive_report_payload()
         unsafe["executive"]["directives"][0]["command"] = "ts: directive something else"  # type: ignore[index]
         with self.assertRaisesRegex(ContractError, "exactly target"):
             validate_report(unsafe)
 
+        schema_thirteen = self.executive_report_payload()
+        schema_thirteen["schema_version"] = 13
+        schema_thirteen_executive = schema_thirteen["executive"]
+        schema_thirteen_executive["schema_version"] = 2  # type: ignore[index]
+        schema_thirteen_executive.pop("recommended_action")  # type: ignore[union-attr]
+        for directive in schema_thirteen_executive["directives"]:  # type: ignore[index]
+            directive.pop("status")
+        self.assertEqual(2, validate_report(schema_thirteen)["executive"]["schema_version"])
+
         schema_twelve = self.executive_report_payload()
         schema_twelve["schema_version"] = 12
         schema_twelve_executive = schema_twelve["executive"]
         schema_twelve_executive["schema_version"] = 1  # type: ignore[index]
+        schema_twelve_executive.pop("recommended_action")  # type: ignore[union-attr]
         for field in (
             "directive_count", "active_directive_count", "completed_directive_count",
             "directives_truncated",
@@ -532,6 +568,7 @@ class DashboardApplicationTests(TestCase):
         for directive in schema_twelve_executive["directives"]:  # type: ignore[index]
             directive.pop("planning_position")
             directive.pop("planning_readiness")
+            directive.pop("status")
         self.assertEqual(1, validate_report(schema_twelve)["executive"]["schema_version"])
 
         legacy = self.complete_release_projection_payload()
@@ -558,7 +595,10 @@ class DashboardApplicationTests(TestCase):
         self.client.force_login(viewer)
         page = self.client.get(reverse("fleet:project-tab", args=(instance.project_id, "ceo")))
         self.assertContains(page, "100k Project Executive View")
-        self.assertContains(page, "Executive Directives")
+        self.assertContains(page, "Do this next")
+        self.assertContains(page, "Directive Board")
+        self.assertContains(page, "Connect the target and record the display result.")
+        self.assertContains(page, "Local verification passed.")
         self.assertContains(page, "Planning order: 1")
         self.assertContains(page, "Copy directive command")
         self.assertContains(page, f'data-copy-command="{command}"')

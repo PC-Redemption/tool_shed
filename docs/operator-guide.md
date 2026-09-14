@@ -498,6 +498,20 @@ The 100k cockpit projects each directive's canonical state and current subordina
 does not make 100k another queue or lifecycle owner. Bare `ts: 100k` and generated
 `work/100k.md` remain read-only.
 
+You do not edit that file. Speak to Codex in ordinary language, for example: “add this directive,”
+“move IDEA-0034 ahead of IDEA-0033,” “park the display directive,” “revise its delivery boundary,”
+or “resume it.” Codex translates the request into revision-guarded canonical edits, lifecycle
+changes, and planning-order operations, refreshes the view, and tells you what changed. Withdrawn
+directives are retained as abandoned history. Completion and reopening pass through the normal
+evidence, outcome, and reconciliation gates.
+
+Each current directive contains a human status capsule. `Current Position` says where the outcome
+stands. `Progress` uses checkboxes, but Codex checks them only from canonical lifecycle or linked
+evidence. `Recommended Next Action` and `Why This Next` identify one move. `Blockers` and `Operator
+Needs` distinguish execution trouble from a decision or action you must supply. `Completion
+Condition` keeps “done” visible. `work/100k.md` and the hosted CEO tab render this same capsule;
+neither invents or owns it.
+
 Under SQLite authority, Project Executive Intent is one active managed `decision` document with
 metadata role `project-executive-intent-v1` and preferred path
 `work/project-executive-intent.md`. Under file authority, that exact file declares

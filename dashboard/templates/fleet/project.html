@@ -40,6 +40,18 @@
   </dl>
 </section>
 
+<section class="dashboard-panel ceo-card ceo-wide ceo-next-action">
+  <span class="eyebrow">Do this next</span>
+  {% if ceo.recommended_action %}
+  <h2>{{ ceo.recommended_action.action }}</h2>
+  <p><strong><code>{{ ceo.recommended_action.visible_id }}</code></strong> — {{ ceo.recommended_action.directive_text }}</p>
+  <p><strong>Why now:</strong> {{ ceo.recommended_action.reason }}</p>
+  <p><strong>Needed from you:</strong> {% for item in ceo.recommended_action.operator_needs %}{% if not forloop.first %}; {% endif %}{{ item }}{% empty %}Nothing right now; Codex can continue on request.{% endfor %}</p>
+  {% if ceo.recommended_action.blockers %}<p><strong>Blocked by:</strong> {% for item in ceo.recommended_action.blockers %}{% if not forloop.first %}; {% endif %}{{ item }}{% endfor %}</p>{% endif %}
+  {% elif ceo.directives %}<h2>No active directive needs action.</h2><p>Discuss a new directive with Codex when the next need appears.</p>
+  {% else %}<h2>Tell Codex the first outcome you want.</h2><p>You can also say <code>ts: 100k add &lt;directive&gt;</code>.</p>{% endif %}
+</section>
+
 <div class="ceo-grid">
   <section class="dashboard-panel ceo-card ceo-wide">
     <h2>North Star</h2>
@@ -61,12 +73,21 @@
     <ul>{% for item in ceo.intent.priorities %}<li>{{ item }}</li>{% empty %}<li>No owner-authored priority order is currently recorded.</li>{% endfor %}</ul>
   </section>
   <section class="dashboard-panel ceo-card ceo-wide">
-    <div class="compact-panel-heading"><div><h2>Executive Directives</h2><p class="dashboard-note">{{ ceo.active_directive_count|default:0 }} active · {{ ceo.completed_directive_count|default:0 }} completed. Copy a directive command, then paste it into Codex to delegate or resume the work.</p></div></div>
+    <div class="compact-panel-heading"><div><h2>Directive Board</h2><p class="dashboard-note">{{ ceo.active_directive_count|default:0 }} active · {{ ceo.completed_directive_count|default:0 }} completed. Tell Codex to add, revise, reorder, park, withdraw, resume, or complete a directive.</p></div></div>
     {% if ceo.directives_truncated %}<p class="dashboard-note"><strong>Bounded view:</strong> showing {{ ceo.directives|length }} of {{ ceo.directive_count }} directives; active directives are listed first.</p>{% endif %}
     <div class="ceo-directives">
       {% for directive in ceo.directives %}
       <article class="ceo-directive">
         <div class="ceo-directive-heading"><div><strong><code>{{ directive.visible_id }}</code> · {{ directive.directive_stage }}</strong><p>{{ directive.directive_text }}</p></div><span class="state-badge state-{{ directive.directive_stage }}">{{ directive.directive_stage }}</span></div>
+        {% if directive.status.state != 'missing' %}
+        <p><strong>Current position:</strong> {{ directive.status.current_position }}</p>
+        <ul class="ceo-progress">{% for step in directive.status.progress %}<li><input type="checkbox" disabled {% if step.checked %}checked{% endif %}> {{ step.label }}</li>{% endfor %}</ul>
+        <p><strong>Next:</strong> {{ directive.status.next_action }}</p>
+        <p><strong>Why:</strong> {{ directive.status.why_next }}</p>
+        <p><strong>Blockers:</strong> {% for item in directive.status.blockers %}{% if not forloop.first %}; {% endif %}{{ item }}{% empty %}None.{% endfor %}</p>
+        <p><strong>Needed from you:</strong> {% for item in directive.status.operator_needs %}{% if not forloop.first %}; {% endif %}{{ item }}{% empty %}Nothing right now.{% endfor %}</p>
+        <p><strong>Complete when:</strong> {{ directive.status.completion_condition }}</p>
+        {% else %}<p><strong>Status needs human-readable setup.</strong> Ask Codex to record current position, evidence-backed progress, next action, blockers, operator needs, and completion condition.</p>{% endif %}
         <p class="dashboard-note">Planning order: {{ directive.planning_position|default:"—" }} · readiness: {{ directive.planning_readiness|default:"legacy" }} · subordinate handoff: {% for item in directive.subordinate_handoff %}{% if not forloop.first %}, {% endif %}<code>{{ item }}</code>{% endfor %}</p>
         {% include "fleet/includes/local_command.html" with command=directive.command label="Copy directive command" aria_label="Copy Tool Shed command for this executive directive" %}
       </article>
@@ -85,7 +106,7 @@
     <ul>{% for item in ceo.intent.decisions_needed %}<li>{{ item }}</li>{% endfor %}{% for item in ceo.attention %}<li><strong>{{ item.code }}:</strong> {{ item.summary }}</li>{% endfor %}{% if not ceo.intent.decisions_needed and not ceo.attention %}<li>No decision or attention signal.</li>{% endif %}</ul>
   </section>
   <section class="dashboard-panel ceo-card">
-    <h2>Recommended Next Cycles</h2>
+    <h2>Operational Drill-Down</h2>
     <ul>{% for item in ceo.recommendations %}<li><code>{{ item.visible_id }}</code> — {{ item.title }} <span class="dashboard-note">({{ item.document_lifecycle }}; {{ item.planning_readiness }})</span></li>{% empty %}<li>No working or ready strategic cycle is currently projected.</li>{% endfor %}</ul>
   </section>
   <section class="dashboard-panel ceo-card">
