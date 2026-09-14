@@ -220,7 +220,7 @@
     "scripts/profile_workspace_performance.py": "51421cce2dbf2f657f7bd193879664008e7a1718a32a9c6aeae26e7102c8e68e",
     "scripts/program_roadmap.py": "efd1f6380c14f296262b9e1d7c45c7baaf1e75c8b9830194db681d4c189483b2",
     "scripts/project_identity.py": "287b94c2e1019c28825a50888f3651a4eea602e26885d8195c76b32f17c477e6",
-    "scripts/project_projection.py": "ad43885f118b1f9240340a0513e342871bdce1e34eb5a70970141cd9f238f057",
+    "scripts/project_projection.py": "fc97477f7e12f27cb0b4dc78f4f62127a875abde1a3cc17f5769a4ada09dd2a8",
     "scripts/provider_adapters.py": "674a0b54fd573fe48882fe3e04ffc5b36602877abf1a2c7e2bdf8bfab043b807",
     "scripts/qualify_windows_dashboard.ps1": "56ebc5147a3ede711449db7cbab63c1af46a38739834064a05ac478feae62c47",
     "scripts/read_ask_inbox.py": "b949cff0e33431744195790aa035aaa2d80dfba4589cf0403c46b68bdb4b0cea",

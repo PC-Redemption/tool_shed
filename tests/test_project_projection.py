@@ -197,6 +197,13 @@ class ProjectProjectionTests(unittest.TestCase):
         )
         self.assertEqual(["Connect the DisplayTest board when convenient."], status["operator_needs"])
 
+        no_needs = project_projection._directive_status(
+            body.replace("- Target hardware is not connected.", "- None.")
+            .replace("- Connect the DisplayTest board when convenient.", "- None.")
+        )
+        self.assertEqual([], no_needs["blockers"])
+        self.assertEqual([], no_needs["operator_needs"])
+
         view = self.executive_fixture()
         directive = {
             **view["inventory"]["artifacts"][0],

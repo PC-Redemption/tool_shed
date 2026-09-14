@@ -85,7 +85,10 @@ def _directive_status(body: str) -> dict[str, Any]:
 
     def items(name: str) -> list[str]:
         values = _section_items(sections.get(name, ""))
-        return [value[:1000] for value in values if value.casefold() not in {"none", "n/a", "—"}][:20]
+        return [
+            value[:1000] for value in values
+            if value.casefold().rstrip(".!").strip() not in {"none", "n/a", "—"}
+        ][:20]
 
     current_position = scalar("Current Position")
     next_action = scalar("Recommended Next Action") or headers.get("Next Action") or None
