@@ -307,11 +307,33 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Human-facing 100k directive cockpit with actionable status and progress",
-  "release_commit": null,
-  "release_qualification": null,
+  "notes": "Human-facing 100k directive cockpit with conversational lifecycle guidance and evidence-backed executive progress.",
+  "release_commit": "2bf9fd37ed299b321dd04d7e1ccd873d31f737aa",
+  "release_qualification": {
+    "attested_at": "2026-09-14T18:42:31Z",
+    "client_smoke": {
+      "path": "scripts/validate_snapshot_client.py",
+      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
+    },
+    "full_validator": {
+      "path": "scripts/validate_tool_shed.py",
+      "sha256": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb"
+    },
+    "required_ci": [
+      {
+        "path": ".github/workflows/validate.yml",
+        "sha256": "4c40e29ea3ff7bf98f5f3e2a6e2dfb0493b382466375f1f34c6b3624ccd49578"
+      },
+      {
+        "path": ".github/workflows/release.yml",
+        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
+      }
+    ],
+    "schema_version": 1,
+    "subject_commit": "2bf9fd37ed299b321dd04d7e1ccd873d31f737aa"
+  },
   "release_tag": "v0.59.0",
-  "released_at": null,
+  "released_at": "2026-09-14T18:42:31Z",
   "shed_version": "0.59.0",
   "updated_at": "2026-09-14",
   "updater_mutation_paths": [
