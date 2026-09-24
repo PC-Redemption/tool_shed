@@ -4427,7 +4427,7 @@ work_levels:
                 "work/evidence/generated",
             )
 
-    def test_protocol4_update_without_database_creates_release_shadow_state(self) -> None:
+    def test_protocol4_update_without_database_converges_when_runtime_is_ready(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             release = self.create_test_release(
@@ -4460,11 +4460,15 @@ work_levels:
             self.assertEqual(payload["state"], "installed")
             self.assertEqual(payload["hybrid_state_preflight"]["database"], "absent")
             hybrid = payload["post_install"]["hybrid_state"]
-            self.assertEqual(hybrid["database"], "present")
-            self.assertTrue(hybrid["converged_from_absent"])
-            self.assertEqual(hybrid["audit"]["schema_version"], 6)
-            self.assertEqual(hybrid["audit"]["storage_mode"], "shadow")
-            self.assertTrue((workspace / ".tool-shed" / "state.sqlite3").is_file())
+            if payload["post_install"]["release_convergence"]["runtime_capability"]["mutation_ready"]:
+                self.assertEqual(hybrid["database"], "present", payload)
+                self.assertTrue(hybrid["converged_from_absent"])
+                self.assertEqual(hybrid["audit"]["schema_version"], 6)
+                self.assertEqual(hybrid["audit"]["storage_mode"], "shadow")
+                self.assertTrue((workspace / ".tool-shed" / "state.sqlite3").is_file())
+            else:
+                self.assertEqual(hybrid["database"], "absent", payload)
+                self.assertFalse((workspace / ".tool-shed" / "state.sqlite3").exists())
 
     def test_protocol4_new_shadow_state_is_removed_on_post_install_rollback(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
