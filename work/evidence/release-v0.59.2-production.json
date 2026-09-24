@@ -12,7 +12,9 @@
     "github_release": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.59.2",
     "qualification_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/36063411857",
     "qualification_result": "33/33 jobs passed for the exact content commit",
-    "publication_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/36064078564"
+    "publication_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/36064078564",
+    "provenance_validation_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/36064078845",
+    "provenance_validation_result": "32/33 jobs passed; Windows current-Python shard 0 completed all checks but exceeded the 360-second whole-profile budget at 377.913 seconds; exact content run and publication workflow succeeded"
   },
   "production_lanes": {
     "web": {
@@ -124,6 +126,10 @@
       {
         "number": 62,
         "reason": "This release did not implement deterministic injected-regression behavior for the lifecycle timing canary."
+      },
+      {
+        "number": 47,
+        "reason": "The provenance-only commit launched a redundant full matrix; its Windows shard 0 exceeded the 360-second wall-clock budget despite passing all functional checks."
       }
     ]
   }
