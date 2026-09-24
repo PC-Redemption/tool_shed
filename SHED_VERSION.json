@@ -5,14 +5,14 @@
     ".dockerignore": "afbfdabe0dc5ece742f4eb677e9b5287f3e39e0fbaf90aa945a88f69913dc5a6",
     ".gitattributes": "d60f352d0db1404c70afb4bb8b2ca3fd1c610572aa40720e8a0b7baa7885418c",
     ".github/workflows/release.yml": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa",
-    ".github/workflows/validate.yml": "4c40e29ea3ff7bf98f5f3e2a6e2dfb0493b382466375f1f34c6b3624ccd49578",
+    ".github/workflows/validate.yml": "b61d138e6d1dac5138970d9de06251c31ff907cbe7a06932b2df2235df4a5d48",
     ".github/workflows/validation-performance.yml": "f350071b0a1058e3af187ea49ddf8020f255a4e1a203f8a6a483703d19b4df52",
     "README.md": "8b07dee42d4c77de14b5a118dfb6e80dff3a2f93f0b10c4e46b295b8529488c8",
     "adapters/codex-app-server-benchmarks.json": "20ef4ef6d7e3964e01791ea2623e16091a5c5bd85ddae84179952ba31872dbe3",
     "adapters/codex-app-server-config.json": "52e8e0aff51108c93e18c334fafd46ee979d45f392380da86329bbc0521d52c0",
     "adapters/codex-app-server-qualifications.json": "1b621d969c7391870be8feeaaba64fd2cc2c45d29b2beaa78a9a07105d656f9d",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "67d1c38ec6d34dadf99cce700fc5f43a4026178fe8d62fa5d9727d67d3ed9b22",
+    "adapters/codex-skill-releases.json": "b56fa4f04477b664758b7623c1f70ced17406d7ee27907a36793af58d708f44b",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "5e9668c866c67471ea58e36c596ce5a9964f92f0774a4ec997f775368f02bfcf",
     "dashboard/Dockerfile": "8e9ff084f409aa81ab92b9dcbe8d9bab2416225551c837681653cab7b66786ad",
@@ -81,7 +81,7 @@
     "docs/codex-app-server-requalification-2026-09-07.md": "08348b1e95581719538296edb75a4c91d6eb9e3d1eb2f755998d77e68b643596",
     "docs/codex-app-server-write-qualification-2026-08-20.md": "db297ad88feb73f46a46178ae92304445afc2fb2447c2543d3bec84609af3923",
     "docs/codex-app-server-write-qualification-alpha-2026-08-25.md": "95d22eeb2b8d80fc884962fe30e93c5b2af4c63063970fb6ab30b55f292d40c8",
-    "docs/commands.md": "03c59c5a2d5f414da3f4d4e8b90b943b6d2a7fefe226dfeae1c9a5e19f222cf5",
+    "docs/commands.md": "f1c38d2756fb1a82164a1dd372321b15ad6ff3c25e470f16795d94af271c99f3",
     "docs/completion-watcher-hosted-api-contract.md": "5b3fcd7ce43581648f7fdf129d87bc0e2e946d4f43fce2a7e467514d210eb190",
     "docs/completion-watcher-hosted-datastore.md": "10b617334beddf578b38989cd250f330846107ac4fc39fdd8b10a38c7a1bbfa4",
     "docs/completion-watcher-hosted-notification-worker.md": "032cf9c8c9f57c1e5c9f3b730c39065ee7ee9b076792607767bc77f44716ff10",
@@ -108,7 +108,7 @@
     "docs/recursive-closure-lineage.md": "25447b8414875046aee004456e62792ef8e6db410b1b437cb176ff045d3e3c6d",
     "docs/release-cohort-closed-loop.md": "758cbbff6a33aecabf609648a9cd4bff047a923ad358c1a9ee26c723fde843f5",
     "docs/release-convergence.md": "38dcbf9691bb37558bd66f2af4496e7feb4e304dc1c1cb0f3ebd4bdc567077c9",
-    "docs/releasing.md": "a3b57de04bbed7e3ebad89e7ac1745f3f470db69edd8142271ff954aa8bfcdc7",
+    "docs/releasing.md": "3a83d74c249183c61d304599be885583e0d698fa00177f4ac067b80e468300ff",
     "docs/terminal-campaign-reconciliation.md": "663919b7e74a2a4dc12f98b6d1a2c128e80e0220017dbefe3318a2c05f63ba38",
     "docs/tool-shed-consolidation-contract.md": "b87498b4eaa9f2806aa105c2861ffa4aac3b107111f051c10ae5326ac16bdf05",
     "docs/universal-closed-loop-outcome-reconciliation.md": "52378ff394590625eccf856d6e1e413289e1b632f2ac8042f8753288bb25d467",
@@ -312,34 +312,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Evidence-bound App Server dispatch role correction, color branding, and platform-specific benchmark limits",
-  "release_commit": "e819cb8f4ba65ec8d4c1be1e479bfbb46f3c4e2d",
-  "release_qualification": {
-    "attested_at": "2026-09-24T21:51:21Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "d54472b3ca97412d5659d05bf5d4f89cf490af8e9cc70df520578472001977eb"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "4c40e29ea3ff7bf98f5f3e2a6e2dfb0493b382466375f1f34c6b3624ccd49578"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "e819cb8f4ba65ec8d4c1be1e479bfbb46f3c4e2d"
-  },
-  "release_tag": "v0.59.2",
-  "released_at": "2026-09-24T21:51:21Z",
-  "shed_version": "0.59.2",
+  "notes": "Raise release validation hard budget to 900 seconds and CI job timeout to 20 minutes",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.59.3",
+  "released_at": null,
+  "shed_version": "0.59.3",
   "updated_at": "2026-09-24",
   "updater_mutation_paths": [
     {
