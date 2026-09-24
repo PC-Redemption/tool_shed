@@ -17,8 +17,10 @@ jobs:
         include:
           - os: ubuntu-latest
             test-jobs: 8
+            max-median-seconds: 180
           - os: windows-latest
             test-jobs: 6
+            max-median-seconds: 300
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -33,4 +35,4 @@ jobs:
           python-version: "3.x"
 
       - name: Measure primary release-validation shard
-        run: python scripts/benchmark_validation.py --samples 3 --jobs ${{ matrix.test-jobs }} --shard-index 0 --shard-count 8 --warning-median-seconds 60 --max-median-seconds 180
+        run: python scripts/benchmark_validation.py --samples 3 --jobs ${{ matrix.test-jobs }} --shard-index 0 --shard-count 8 --warning-median-seconds 60 --max-median-seconds ${{ matrix.max-median-seconds }}

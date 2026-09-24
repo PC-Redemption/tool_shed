@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Dashboard{% endblock %} · Tool Shed</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-color-32x32.png">
   <link rel="stylesheet" href="/assets/site.css">
   <link rel="stylesheet" href="{% static 'fleet/dashboard.css' %}?v={{ dashboard_asset_revision }}">
   <script src="{% static 'fleet/dashboard.js' %}?v={{ dashboard_asset_revision }}" defer></script>
@@ -11,7 +12,7 @@
 <body class="dashboard-body" data-dashboard-environment="{{ dashboard_environment }}" data-dashboard-stream-url="{% url 'fleet:events' %}" data-dashboard-revision="{{ dashboard_revision }}">
   {% if dashboard_is_development %}<div class="dashboard-environment-banner" role="status">Development environment · synthetic data only · not production</div>{% endif %}
   <header class="dashboard-header">
-    <a class="dashboard-brand" href="/dashboard/">Tool Shed <span>Dashboard</span></a>
+    <a class="dashboard-brand" href="/dashboard/"><img src="/assets/favicon-color-32x32.png" width="32" height="32" alt=""><span class="dashboard-brand-label">Tool Shed <small>Dashboard</small></span></a>
     <form class="dashboard-search" action="/dashboard/" method="get" role="search">
       <label class="sr-only" for="project-search">Search projects and reported work</label>
       <input id="project-search" name="q" type="search" maxlength="80" placeholder="Search projects and work" value="{{ request.GET.q }}">
