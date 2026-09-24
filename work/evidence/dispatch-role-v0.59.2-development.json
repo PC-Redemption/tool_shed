@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-dispatch-role-development-evidence",
+  "release_id": "dispatch-role-v0.59.2",
+  "candidate_commit": "a97cf24322648c1c6d8fc4a0ed9828948d794078",
+  "candidate_version": "0.59.2",
+  "snapshot_archive": "/tmp/tool-shed-v0.59.2-a97cf24.tar.gz",
+  "snapshot_sha256": "13c64f29918f9d80f2b6dd25b5e1442e8461015534c232ddb554079958326b78",
+  "validation": {
+    "linux_release_profile": "passed 682/682 tests and all repository checks under CPython 3.13.5 and SQLite 3.46.1",
+    "windows_release_profile": "passed 682/682 tests and all repository checks under CPython 3.14.6 and SQLite 3.50.4",
+    "snapshot_integrity": "strict local verification passed on both disposable test beds"
+  },
+  "lanes": {
+    "web": {
+      "target": "tsrookarocom-dev@sup.local:/home/jon/docker/ts.rookaro.com-dev",
+      "artifact": "tool-shed-dashboard:dev-a97cf2432264@sha256:c45ffaab2fc44288dab56b20c49a6302c459e52792986cae2274dee77fc1c6c1",
+      "result": "development docs, dashboard, and containers healthy; color favicon and header logo served; production health remained healthy"
+    },
+    "linux": {
+      "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed",
+      "artifact": "snapshot-sha256:13c64f29918f9d80f2b6dd25b5e1442e8461015534c232ddb554079958326b78",
+      "result": "candidate snapshot staged and strict integrity verified; full source release suite passed"
+    },
+    "windows": {
+      "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed",
+      "artifact": "snapshot-sha256:13c64f29918f9d80f2b6dd25b5e1442e8461015534c232ddb554079958326b78",
+      "result": "candidate snapshot staged and strict integrity verified; exact candidate source release suite passed"
+    }
+  },
+  "result": "passed"
+}
