@@ -305,8 +305,18 @@ class DocumentationSiteTests(unittest.TestCase):
             public, _ = SITE_BUILDER.build(Path(temporary) / "bundle")
             page = (public / "ref" / "index.html").read_text(encoding="utf-8")
             revision = SITE_BUILDER.asset_revision()
+            self.assertIn(f'/assets/favicon-color-32x32.png?v={revision}', page)
             self.assertIn(f'/assets/site.css?v={revision}', page)
             self.assertIn(f'/assets/site.js?v={revision}', page)
+
+    def test_site_uses_color_favicon_as_its_header_logo(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            public, _ = SITE_BUILDER.build(Path(temporary) / "bundle")
+            page = (public / "index.html").read_text(encoding="utf-8")
+
+            self.assertIn('rel="icon" type="image/png" sizes="32x32"', page)
+            self.assertIn('class="brand-logo"', page)
+            self.assertNotIn('class="rook"', page)
 
     def test_overview_preserves_core_process_and_partnership_messages(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

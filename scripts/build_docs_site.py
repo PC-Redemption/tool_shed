@@ -283,6 +283,7 @@ def shell(*, title: str, description: str, body: str, section: str) -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#07131d">
   <meta name="description" content="{html.escape(description, quote=True)}">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-color-32x32.png?v={revision}">
   <link rel="stylesheet" href="/assets/site.css?v={revision}">
   <script src="/assets/site.js?v={revision}" defer></script>
   <title>{html.escape(page_title)}</title>
@@ -290,7 +291,7 @@ def shell(*, title: str, description: str, body: str, section: str) -> str:
 <body>
   <a class="skip-link" href="#content">Skip to content</a>
   <header class="site-header">
-    <a class="brand" href="/" aria-label="Tool Shed home"><span class="rook" aria-hidden="true">♜</span><span><b>ROOKARO</b><small>Tool Shed</small></span></a>
+    <a class="brand" href="/" aria-label="Tool Shed home"><img class="brand-logo" src="/assets/favicon-color-32x32.png?v={revision}" width="32" height="32" alt=""><span><b>ROOKARO</b><small>Tool Shed</small></span></a>
     <nav aria-label="Primary">{navigation(section)}</nav>
   </header>
   <main id="content">{body}</main>

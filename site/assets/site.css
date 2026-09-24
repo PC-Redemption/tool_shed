@@ -49,7 +49,7 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
 }
 .brand { display: inline-flex; align-items: center; gap: .65rem; color: var(--ink); text-decoration: none; }
 .brand:hover { color: var(--ink); }
-.brand .rook { display: grid; width: 2rem; aspect-ratio: 1; place-items: center; border-radius: .55rem; color: var(--night); background: linear-gradient(135deg, var(--aqua), var(--blue)); font-size: 1.2rem; }
+.brand-logo { display: block; width: 2rem; height: 2rem; object-fit: contain; }
 .brand b, .brand small { display: block; }
 .brand b { color: var(--muted); font-size: .66rem; letter-spacing: .18em; }
 .brand small { margin-top: .1rem; font-size: .98rem; font-weight: 800; }
