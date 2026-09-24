@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "kind": "tool-shed-release-production-evidence",
+  "release_id": "dispatch-role-v0.59.2",
+  "checked_at": "2026-09-24T21:56:04Z",
+  "release": {
+    "version": "0.59.2",
+    "tag": "v0.59.2",
+    "content_commit": "e819cb8f4ba65ec8d4c1be1e479bfbb46f3c4e2d",
+    "provenance_commit": "25194693373d8320393beea8e9569385277e6888",
+    "published_at": "2026-09-24T21:51:50Z",
+    "github_release": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.59.2",
+    "qualification_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/36063411857",
+    "qualification_result": "33/33 jobs passed for the exact content commit",
+    "publication_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/36064078564"
+  },
+  "production_lanes": {
+    "web": {
+      "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com",
+      "artifact": "tool-shed-dashboard:v0.59.2@sha256:56b317d7afff5ad3d43cb3b54dc47c80788b4cb827053afacffb8e110113c857",
+      "database_backup": "/home/jon/docker/ts.rookaro.com/backups/dashboard-daily-20260924T215209Z.dump.age",
+      "rollback_root": "/home/jon/docker/ts.rookaro.com/release-backups/v0.59.1-before-v0.59.2-20260924T215220Z",
+      "checks": [
+        "validated encrypted PostgreSQL backup",
+        "local health healthy",
+        "public HTTPS health ok",
+        "dashboard health HTTP 200",
+        "docs, dashboard, PostgreSQL containers healthy",
+        "color favicon, symbol, and guide HTTP 200"
+      ],
+      "result": "verified"
+    },
+    "linux": {
+      "target": "github-release:tool-shed-linux-install-client",
+      "workspace": "sup.local:/home/jon/dev/ts_linux_test_bed",
+      "transaction_id": "af5941b3f7a74bc0068fd037",
+      "transaction_report": "/home/jon/.codex/tool-shed/snapshot-upgrade-transactions/af5941b3f7a74bc0068fd037.json",
+      "rollback_backup": "/home/jon/dev/ts_linux_test_bed/tool_shed.backup-20260924T215313Z.tar",
+      "release_validation": {
+        "cache": "stored",
+        "identity": {
+          "architecture": "x86_64",
+          "platform": "linux",
+          "python": "CPython-3.13.5",
+          "release_commit": "e819cb8f4ba65ec8d4c1be1e479bfbb46f3c4e2d",
+          "validator_sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
+        },
+        "mode": "attested-focused-smoke",
+        "selection_reason": "official-attestation"
+      },
+      "checks": [
+        "installed v0.59.2 with exact release content commit",
+        "published manifest current",
+        "owner work preserved and converged",
+        "Hybrid schema 6 CLEAN"
+      ],
+      "result": "verified"
+    },
+    "windows": {
+      "target": "github-release:tool-shed-windows-install-client",
+      "workspace": "GOGETTER:E:\\dev\\ts_windows_test_bed",
+      "transaction_id": "51b5c5984d46bcde21c3f6a2",
+      "transaction_report": "C:\\Users\\jon\\.codex\\tool-shed\\snapshot-upgrade-transactions\\51b5c5984d46bcde21c3f6a2.json",
+      "rollback_backup": "E:\\dev\\ts_windows_test_bed\\tool_shed.backup-20260924T215514Z.tar",
+      "release_validation": {
+        "cache": "hit",
+        "identity": {
+          "architecture": "amd64",
+          "platform": "windows",
+          "python": "CPython-3.14.6",
+          "release_commit": "e819cb8f4ba65ec8d4c1be1e479bfbb46f3c4e2d",
+          "validator_sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
+        },
+        "mode": "attested-focused-smoke",
+        "selection_reason": "official-attestation"
+      },
+      "checks": [
+        "installed v0.59.2 with exact release content commit",
+        "published manifest current",
+        "owner work preserved and converged",
+        "Hybrid schema 6 CLEAN",
+        "user-level Codex skill current"
+      ],
+      "result": "verified"
+    }
+  },
+  "windows_recovery": {
+    "failed_transaction": "7d27667cce846b604e9aadbc",
+    "cause": "temporary qualification source clone inside disposable test bed contained stale generated work-index references",
+    "action": "updater restored verified v0.59.1; moved qualification source clone outside exact test-bed root; stale-path check passed; retry installed v0.59.2"
+  },
+  "maintainer_codex_skill": {
+    "state": "current and byte-identical to published canonical skill",
+    "backup": "/home/jon/.codex/skills/tool-shed.backup-20260924T215410Z",
+    "validation": "quick_validate.py passed for source, staged copy, and installed copy; exact diff empty",
+    "fresh_session_required": true
+  },
+  "result": "passed",
+  "closeout": {
+    "release_cohort_id": "f4c30f62-433e-4312-a75d-a294e73456b1",
+    "release_cohort_state": "terminal/reconciled/satisfied",
+    "current_release_base": "v0.59.2",
+    "active_release_cohorts": 0,
+    "hybrid_revision": 1796,
+    "hybrid_domain_digest": "1e936d7eaaeada05aa688bc8fb98364679bd341e2dfd0489868a90100905a381",
+    "checkpoint_digest": "46c8d8f43295b5505604401cd2b6563bc7993c09e0428839a355de1ac8e5a5da",
+    "rebuild": "CLEAN with exact domain-digest parity",
+    "executive_view": "work/100k.md current at source revision 1796",
+    "app_server_dispatch_debt": 0
+  }
+}
