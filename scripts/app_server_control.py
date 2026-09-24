@@ -1083,6 +1083,18 @@ def parse_args() -> argparse.Namespace:
         required=True,
     )
     resolve.add_argument("--json", action="store_true")
+    repair_plan = subparsers.add_parser(
+        "role-repair-plan", help="Inspect an exact unknown-role dispatch correction."
+    )
+    repair_plan.add_argument("correlation_id")
+    repair_plan.add_argument("--json", action="store_true")
+    reconcile_role = subparsers.add_parser(
+        "reconcile-role", help="Append one evidence-bound unknown-role correction."
+    )
+    reconcile_role.add_argument("correlation_id")
+    reconcile_role.add_argument("--expected-chain-sha256", required=True)
+    reconcile_role.add_argument("--evidence-file", type=Path, required=True)
+    reconcile_role.add_argument("--json", action="store_true")
     return parser.parse_args()
 
 
@@ -1171,6 +1183,18 @@ def main() -> int:
                 args.correlation_id,
                 disposition=args.disposition,
                 path=args.events,
+            )
+            print(json.dumps(result, indent=2, sort_keys=True))
+            return 0
+        if args.operation == "role-repair-plan":
+            result = AppServerEventStore(args.events).role_repair_plan(args.correlation_id)
+            print(json.dumps(result, indent=2, sort_keys=True))
+            return 0
+        if args.operation == "reconcile-role":
+            result = AppServerEventStore(args.events).reconcile_unknown_role(
+                args.correlation_id,
+                expected_chain_sha256=args.expected_chain_sha256,
+                evidence_file=args.evidence_file,
             )
             print(json.dumps(result, indent=2, sort_keys=True))
             return 0

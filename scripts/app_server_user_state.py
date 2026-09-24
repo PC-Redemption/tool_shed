@@ -23,6 +23,12 @@ LEGACY_PREFERENCE_SCHEMA_VERSION = 1
 OPERATOR_RUNTIME_TRUST = "operator-runtime"
 EVENT_SCHEMA_VERSION = 3
 DISPATCH_LEASE_SECONDS = 300
+DISPATCH_COMMAND_ROLES = {
+    "plan": "planning",
+    "verify": "verification",
+    "camp-run": "camp_execution",
+    "next": "camp_execution",
+}
 OWNER_PROFILE_SCHEMA_VERSION = 1
 LOCK_TIMEOUT_SECONDS = 10.0
 STALE_LOCK_SECONDS = 30.0
@@ -418,6 +424,11 @@ class AppServerEventStore:
         role: str | None = None,
         correlation_id: str | None = None,
     ) -> dict[str, Any]:
+        if outcome == "selected" and event_type == "opportunity":
+            if DISPATCH_COMMAND_ROLES.get(command) != role:
+                raise AppServerUserStateError(
+                    "eligible dispatch command and role disagree before selection"
+                )
         epoch = float(self.now())
         event = {
             "schema_version": EVENT_SCHEMA_VERSION,
@@ -456,6 +467,7 @@ class AppServerEventStore:
         }
         included = legacy = malformed = malformed_current = 0
         included_events: list[dict[str, Any]] = []
+        older_events: list[dict[str, Any]] = []
         try:
             lines = self.path.read_text(encoding="utf-8").splitlines()
         except FileNotFoundError:
@@ -481,6 +493,7 @@ class AppServerEventStore:
                 malformed_current += 1
                 continue
             if recorded < cutoff:
+                older_events.append(event)
                 continue
             included += 1
             included_events.append(event)
@@ -532,8 +545,16 @@ class AppServerEventStore:
             group["count"] += 1
             group["first_seen"] = min(group["first_seen"], recorded_at)
             group["last_seen"] = max(group["last_seen"], recorded_at)
+        repair_correlations = {
+            str(event.get("correlation_id")) for event in included_events
+            if event.get("event_type") == "audit_correction"
+        }
+        carried_events = [
+            event for event in older_events
+            if str(event.get("correlation_id")) in repair_correlations
+        ]
         dispatch = self._dispatch_report(
-            included_events,
+            carried_events + included_events,
             now_epoch=float(self.now()),
             malformed_current=malformed_current,
         )
@@ -542,6 +563,7 @@ class AppServerEventStore:
             "kind": "tool-shed-app-server-opportunity-report",
             "window_hours": hours,
             "included_runtime_events": included,
+            "carried_repair_chain_events": len(carried_events),
             "excluded_legacy_events": legacy,
             "excluded_malformed_events": malformed,
             "opportunities": types["opportunity"],
@@ -570,6 +592,11 @@ class AppServerEventStore:
         }
 
     @staticmethod
+    def _chain_digest(chain: list[dict[str, Any]]) -> str:
+        encoded = json.dumps(chain, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        return hashlib.sha256(encoded).hexdigest()
+
+    @staticmethod
     def _dispatch_report(
         events: list[dict[str, Any]],
         *,
@@ -577,6 +604,7 @@ class AppServerEventStore:
         malformed_current: int,
     ) -> dict[str, Any]:
         terminal_outcomes = AppServerDispatchLifecycle.TERMINAL_OUTCOMES
+        positions = {id(event): index for index, event in enumerate(events)}
         lifecycle_events = [
             event
             for event in events
@@ -590,17 +618,24 @@ class AppServerEventStore:
         for event in lifecycle_events:
             correlation = str(event.get("correlation_id", "unknown"))
             grouped.setdefault(correlation, []).append(event)
+        corrections: dict[str, list[dict[str, Any]]] = {}
+        for event in events:
+            if event.get("event_type") == "audit_correction":
+                correlation = str(event.get("correlation_id", "unknown"))
+                corrections.setdefault(correlation, []).append(event)
+                grouped.setdefault(correlation, [])
 
         findings: list[dict[str, Any]] = []
         completed = pending = expired = 0
-        command_roles = {
-            "plan": "planning",
-            "verify": "verification",
-            "camp-run": "camp_execution",
-            "next": "camp_execution",
-        }
         for correlation, chain in sorted(grouped.items()):
             codes: set[str] = set()
+            if not chain:
+                findings.append({
+                    "correlation_id": correlation, "status": "invalid",
+                    "codes": ["orphan_correction"], "command": "unknown",
+                    "role": "unknown", "age_seconds": 0,
+                })
+                continue
             selections = [event for event in chain if event.get("outcome") == "selected"]
             attempts = [event for event in chain if event.get("outcome") == "attempted"]
             terminals = [
@@ -626,7 +661,7 @@ class AppServerEventStore:
             anchor = selections[0] if selections else chain[0]
             command = str(anchor.get("command", "unknown"))
             role = str(anchor.get("role", "unknown"))
-            if command_roles.get(command) != role:
+            if DISPATCH_COMMAND_ROLES.get(command) != role:
                 codes.add("role_command_mismatch")
             identity_fields = (
                 "command",
@@ -675,6 +710,42 @@ class AppServerEventStore:
                 )
                 if not valid_terminal:
                     codes.add("terminal_contract_invalid")
+
+            repairs = corrections.get(correlation, [])
+            if repairs:
+                repair = repairs[0]
+                valid_repair = (
+                    len(repairs) == 1
+                    and codes == {"role_command_mismatch"}
+                    and role == "unknown"
+                    and len(selections) == len(attempts) == len(terminals) == 1
+                    and terminals[0].get("outcome") == "reconciliation_required"
+                    and terminals[0].get("mutation_state") in {"possible", "unknown"}
+                    and repair.get("outcome") == "role_reconciled"
+                    and repair.get("category") == "dispatch_role_reconciled"
+                    and repair.get("command") == command
+                    and repair.get("role") == DISPATCH_COMMAND_ROLES.get(command)
+                    and repair.get("backend") == "control"
+                    and repair.get("mutation_state") == "none"
+                    and repair.get("source") == "control"
+                    and repair.get("strict_request") == anchor.get("strict_request")
+                    and repair.get("preference_mode") == anchor.get("preference_mode")
+                    and repair.get("chain_sha256") == AppServerEventStore._chain_digest(chain)
+                    and positions[id(repair)] > positions[id(chain[-1])]
+                    and isinstance(repair.get("evidence_sha256"), str)
+                    and re.fullmatch(r"[0-9a-f]{64}", repair["evidence_sha256"]) is not None
+                )
+                try:
+                    valid_repair = valid_repair and (
+                        datetime.fromisoformat(str(repair["recorded_at"]).replace("Z", "+00:00"))
+                        >= datetime.fromisoformat(str(terminals[0]["recorded_at"]).replace("Z", "+00:00"))
+                    )
+                except (KeyError, TypeError, ValueError):
+                    valid_repair = False
+                if valid_repair:
+                    codes.remove("role_command_mismatch")
+                else:
+                    codes.add("correction_contract_invalid")
 
             try:
                 anchor_epoch = datetime.fromisoformat(
@@ -742,6 +813,35 @@ class AppServerEventStore:
             "truncated": len(debt) > 50,
         }
 
+    def role_repair_plan(self, correlation_id: str) -> dict[str, Any]:
+        events = self.correlation_events(correlation_id)
+        chain = [event for event in events if event.get("outcome") in {"selected", "attempted"}
+                 or event.get("event_type") == "terminal"]
+        audit = self._dispatch_report(events, now_epoch=float(self.now()), malformed_current=0)
+        finding = next((item for item in audit["findings"]
+                        if item["correlation_id"] == correlation_id), None)
+        anchor = chain[0] if chain else {}
+        command = str(anchor.get("command", "unknown"))
+        terminal = chain[-1] if chain else {}
+        eligible = (
+            len(chain) == 3
+            and [event.get("outcome") for event in chain]
+            == ["selected", "attempted", "reconciliation_required"]
+            and anchor.get("role") == "unknown"
+            and terminal.get("mutation_state") in {"possible", "unknown"}
+            and finding is not None
+            and finding["codes"] == ["role_command_mismatch"]
+        )
+        return {
+            "correlation_id": correlation_id,
+            "eligible": eligible,
+            "command": command,
+            "recorded_role": anchor.get("role", "unknown"),
+            "expected_role": DISPATCH_COMMAND_ROLES.get(command),
+            "chain_sha256": self._chain_digest(chain) if chain else None,
+            "codes": finding["codes"] if finding else [],
+        }
+
     def correlation_events(self, correlation_id: str) -> list[dict[str, Any]]:
         token = self._token(correlation_id, "unknown")
         if token == "unknown":
@@ -767,6 +867,91 @@ class AppServerEventStore:
             ):
                 events.append(event)
         return events
+
+    def reconcile_unknown_role(
+        self,
+        correlation_id: str,
+        *,
+        expected_chain_sha256: str,
+        evidence_file: Path,
+    ) -> dict[str, Any]:
+        """Append one evidence-bound correction; preserve the original lifecycle."""
+
+        if not re.fullmatch(r"[0-9a-f]{64}", expected_chain_sha256):
+            raise AppServerUserStateError("expected dispatch chain digest is invalid")
+        try:
+            evidence = evidence_file.expanduser().resolve(strict=True)
+            if not evidence.is_file() or not 0 < evidence.stat().st_size <= 1_048_576:
+                raise AppServerUserStateError("repair evidence must be a nonempty file of at most 1 MiB")
+            evidence_sha256 = hashlib.sha256(evidence.read_bytes()).hexdigest()
+        except OSError as error:
+            raise AppServerUserStateError("repair evidence is unavailable") from error
+
+        with _exclusive_lock(self.path, "App Server event log"):
+            events = self.correlation_events(correlation_id)
+            chain = [
+                event for event in events
+                if event.get("outcome") in {"selected", "attempted"}
+                or event.get("event_type") == "terminal"
+            ]
+            if not chain or self._chain_digest(chain) != expected_chain_sha256:
+                raise AppServerUserStateError("dispatch chain changed since the repair plan")
+            corrections = [event for event in events if event.get("event_type") == "audit_correction"]
+            if corrections:
+                audit = self._dispatch_report(events, now_epoch=float(self.now()), malformed_current=0)
+                if (
+                    len(corrections) == 1
+                    and audit["debt_count"] == 0
+                    and corrections[0].get("chain_sha256") == expected_chain_sha256
+                    and corrections[0].get("evidence_sha256") == evidence_sha256
+                ):
+                    return {
+                        "correlation_id": correlation_id,
+                        "chain_sha256": expected_chain_sha256,
+                        "evidence_sha256": evidence_sha256,
+                        "idempotent": True,
+                        "writes_performed": False,
+                    }
+                raise AppServerUserStateError("dispatch already has a conflicting or invalid correction")
+
+            plan = self.role_repair_plan(correlation_id)
+            if not plan["eligible"]:
+                raise AppServerUserStateError("dispatch is not eligible for unknown-role correction")
+            anchor = chain[0]
+            event = {
+                "schema_version": EVENT_SCHEMA_VERSION,
+                "recorded_at": datetime.fromtimestamp(float(self.now()), tz=UTC).isoformat(),
+                "command": anchor["command"],
+                "outcome": "role_reconciled",
+                "category": "dispatch_role_reconciled",
+                "mutation_state": "none",
+                "backend": "control",
+                "preference_mode": anchor["preference_mode"],
+                "strict_request": anchor["strict_request"],
+                "source": "control",
+                "event_type": "audit_correction",
+                "role": plan["expected_role"],
+                "correlation_id": correlation_id,
+                "chain_sha256": expected_chain_sha256,
+                "evidence_sha256": evidence_sha256,
+            }
+            line = json.dumps(event, sort_keys=True, separators=(",", ":")) + "\n"
+            descriptor = os.open(self.path, os.O_CREAT | os.O_APPEND | os.O_WRONLY, 0o600)
+            with os.fdopen(descriptor, "a", encoding="utf-8", newline="\n") as stream:
+                stream.write(line)
+                stream.flush()
+                os.fsync(stream.fileno())
+            try:
+                os.chmod(self.path, 0o600)
+            except OSError:
+                pass
+        return {
+            "correlation_id": correlation_id,
+            "chain_sha256": expected_chain_sha256,
+            "evidence_sha256": evidence_sha256,
+            "idempotent": False,
+            "writes_performed": True,
+        }
 
 
 class AppServerDispatchLifecycle:

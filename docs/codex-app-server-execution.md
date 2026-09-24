@@ -156,6 +156,26 @@ attempt occurred. When an attempt occurred and absence of mutation is not proven
 `--disposition mutation-uncertain`; it records reconciliation-required and never replays the
 worker. Repeating the same recovery is idempotent.
 
+If an otherwise valid, mutation-uncertain CAMP lifecycle has the historical
+role `unknown`, use the guarded role-reconciliation route after the GUI has
+reconciled the mutation journal and Git state. Inspect the exact chain first:
+
+```bash
+python3 scripts/app_server_control.py role-repair-plan <correlation> --json
+python3 scripts/app_server_control.py reconcile-role <correlation> \
+  --expected-chain-sha256 <plan-chain-sha256> \
+  --evidence-file <verified-reconciliation-evidence> --json
+```
+
+The write appends one content-free correction with the original chain and
+evidence hashes. It does not alter or replay the original selection, attempt,
+or terminal record. The auditor accepts only the exact corrected role for a
+three-event `reconciliation_required` lifecycle whose sole prior finding is
+`role_command_mismatch`; duplicate, conflicting, missing-evidence, stale-chain,
+or tampered corrections remain dispatch debt. A completed or otherwise invalid
+lifecycle cannot use this route. New eligible selections refuse a mismatched
+command/role before writing an event.
+
 The selected campaign's executable contract is explicit and reviewable:
 
 ````markdown

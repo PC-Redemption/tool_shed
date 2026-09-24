@@ -381,6 +381,126 @@ class AppServerUserStateTests(unittest.TestCase):
         records = AppServerEventStore(events).correlation_events("pre-mutation-loss")
         self.assertEqual(["selected", "gui_fallback"], [item["outcome"] for item in records])
 
+    def test_unknown_role_repair_preserves_chain_and_requires_exact_evidence(self) -> None:
+        events = self.root / "codex" / "tool-shed" / "app-server-events.jsonl"
+        lifecycle = AppServerDispatchLifecycle(
+            command="camp-run", role="camp_execution", preference_mode="ON",
+            strict_request=False, source="passive", path=events,
+            correlation_id="role-mismatch",
+        )
+        lifecycle.selected("eligible")
+        lifecycle.attempted()
+        lifecycle.terminal(
+            "reconciliation_required", category="process_loss_mutation_uncertain",
+            mutation_state="possible", backend="gui",
+        )
+        # Simulate the historical metadata fault in a disposable fixture only.
+        lines = [json.loads(line) for line in events.read_text(encoding="utf-8").splitlines()]
+        for line in lines:
+            line["role"] = "unknown"
+        original = "".join(json.dumps(line, sort_keys=True, separators=(",", ":")) + "\n"
+                           for line in lines)
+        events.write_text(original, encoding="utf-8")
+        store = AppServerEventStore(events)
+        self.assertEqual(1, store.report(hours=1)["dispatch_debt"])
+        plan = store.role_repair_plan("role-mismatch")
+        self.assertTrue(plan["eligible"])
+        self.assertEqual("camp_execution", plan["expected_role"])
+
+        evidence = self.root / "verified-reconciliation.md"
+        evidence.write_text("GUI repair and exact worktree verification\n", encoding="utf-8")
+        with self.assertRaisesRegex(AppServerUserStateError, "chain changed"):
+            store.reconcile_unknown_role(
+                "role-mismatch", expected_chain_sha256="0" * 64,
+                evidence_file=evidence,
+            )
+        result = store.reconcile_unknown_role(
+            "role-mismatch", expected_chain_sha256=plan["chain_sha256"],
+            evidence_file=evidence,
+        )
+        self.assertTrue(result["writes_performed"])
+        self.assertEqual(0, store.report(hours=1)["dispatch_debt"])
+        self.assertTrue(events.read_text(encoding="utf-8").startswith(original))
+        again = store.reconcile_unknown_role(
+            "role-mismatch", expected_chain_sha256=plan["chain_sha256"],
+            evidence_file=evidence,
+        )
+        self.assertTrue(again["idempotent"])
+        self.assertFalse(again["writes_performed"])
+        evidence.write_text("different evidence\n", encoding="utf-8")
+        with self.assertRaisesRegex(AppServerUserStateError, "conflicting"):
+            store.reconcile_unknown_role(
+                "role-mismatch", expected_chain_sha256=plan["chain_sha256"],
+                evidence_file=evidence,
+            )
+
+        corrected = events.read_text(encoding="utf-8")
+        corrected_lines = corrected.splitlines(keepends=True)
+        events.write_text(
+            corrected_lines[-1] + "".join(corrected_lines[:-1]), encoding="utf-8"
+        )
+        self.assertIn(
+            "correction_contract_invalid",
+            store.report(hours=1)["dispatch_lifecycles"]["findings"][0]["codes"],
+        )
+        events.write_text(corrected, encoding="utf-8")
+        correction_line = corrected.splitlines()[-1]
+        with events.open("a", encoding="utf-8") as stream:
+            stream.write(correction_line + "\n")
+        duplicate_report = store.report(hours=1)
+        self.assertEqual(1, duplicate_report["dispatch_debt"])
+        self.assertIn(
+            "correction_contract_invalid",
+            duplicate_report["dispatch_lifecycles"]["findings"][0]["codes"],
+        )
+        events.write_text(corrected, encoding="utf-8")
+
+        tampered = [json.loads(line) for line in events.read_text(encoding="utf-8").splitlines()]
+        tampered[0]["category"] = "altered"
+        events.write_text("".join(json.dumps(line) + "\n" for line in tampered), encoding="utf-8")
+        self.assertEqual(1, store.report(hours=1)["dispatch_debt"])
+        self.assertIn("correction_contract_invalid", store.report(hours=1)["dispatch_lifecycles"]["findings"][0]["codes"])
+
+    def test_selection_refuses_role_mismatch_before_writing(self) -> None:
+        events = self.root / "codex" / "tool-shed" / "app-server-events.jsonl"
+        with self.assertRaisesRegex(AppServerUserStateError, "before selection"):
+            AppServerDispatchLifecycle(
+                command="camp-run", role="unknown", preference_mode="ON",
+                strict_request=False, source="passive", path=events,
+            ).selected("eligible")
+        self.assertFalse(events.exists())
+
+    def test_role_repair_carries_original_chain_into_short_report_window(self) -> None:
+        events = self.root / "codex" / "tool-shed" / "app-server-events.jsonl"
+        lifecycle = AppServerDispatchLifecycle(
+            command="camp-run", role="camp_execution", preference_mode="ON",
+            strict_request=False, source="passive", path=events,
+            correlation_id="older-chain",
+        )
+        lifecycle.selected("eligible")
+        lifecycle.attempted()
+        lifecycle.terminal(
+            "reconciliation_required", category="process_loss_mutation_uncertain",
+            mutation_state="possible", backend="gui",
+        )
+        original = [json.loads(line) for line in events.read_text(encoding="utf-8").splitlines()]
+        for event in original:
+            event["role"] = "unknown"
+            event["recorded_at"] = "1970-01-01T00:00:00+00:00"
+        events.write_text("".join(json.dumps(event) + "\n" for event in original), encoding="utf-8")
+        store = AppServerEventStore(events, now=lambda: 7200.0)
+        plan = store.role_repair_plan("older-chain")
+        self.assertTrue(plan["eligible"])
+        evidence = self.root / "reconciled.md"
+        evidence.write_text("verified\n", encoding="utf-8")
+        store.reconcile_unknown_role(
+            "older-chain", expected_chain_sha256=plan["chain_sha256"],
+            evidence_file=evidence,
+        )
+        report = store.report(hours=1)
+        self.assertEqual(3, report["carried_repair_chain_events"])
+        self.assertEqual(0, report["dispatch_debt"])
+
     def test_report_groups_failures_without_exposing_raw_categories(self) -> None:
         events = self.root / "codex" / "tool-shed" / "app-server-events.jsonl"
         store = AppServerEventStore(events, now=lambda: 100.0)

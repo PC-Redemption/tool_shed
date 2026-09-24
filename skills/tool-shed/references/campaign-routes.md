@@ -794,6 +794,15 @@ attempt whose mutation state is not proven absent with `--disposition mutation-u
 records reconciliation-required and never replays the worker. Recovery is single-write and
 idempotent. Do not use pre-mutation disposition after an attempt.
 
+For the narrow historical case where an otherwise valid three-event
+`reconciliation_required` dispatch has `role: unknown` and only
+`role_command_mismatch` debt, first reconcile the GUI mutation journal and Git
+state. Then use `app_server_control.py role-repair-plan <correlation> --json`
+and `reconcile-role <correlation> --expected-chain-sha256 <digest>
+--evidence-file <verified-evidence> --json`. The command appends one
+evidence-bound correction; it never edits original events or replays the
+worker. Duplicate, stale, conflicting or unsupported shapes remain debt.
+
 Current-schema pending, expired, duplicated, malformed, or contradictory dispatch lifecycles are
 dispatch debt. Strict Doctor and campaign/document completion, Work5 lane verification, and
 release-cohort freeze/publication/finalization fail closed while debt exists. Pre-contract event
