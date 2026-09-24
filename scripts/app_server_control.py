@@ -1130,7 +1130,7 @@ def main() -> int:
                 "strict_request": selection.strict_request,
                 "source": "operator" if selection.strict_request else "passive",
                 "event_type": "opportunity",
-                "role": selection.role,
+                "role": COMMAND_ROUTES[args.command][0],
                 "correlation_id": correlation_id,
             }
             accountable = selection.allowed and selection.execution == "App Server"
