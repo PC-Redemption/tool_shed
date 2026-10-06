@@ -314,10 +314,32 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
   "notes": "Release IDEA-0034 bug fixes and validation distribution improvements",
-  "release_commit": null,
-  "release_qualification": null,
+  "release_commit": "d786b63cf40d9bf6788168cae4c4684934236ae8",
+  "release_qualification": {
+    "attested_at": "2026-10-06T21:23:46Z",
+    "client_smoke": {
+      "path": "scripts/validate_snapshot_client.py",
+      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
+    },
+    "full_validator": {
+      "path": "scripts/validate_tool_shed.py",
+      "sha256": "ade73da46cff93e8d0629830251cb46a8816a2ee939b2613ca6f42e86c5e4557"
+    },
+    "required_ci": [
+      {
+        "path": ".github/workflows/validate.yml",
+        "sha256": "b61d138e6d1dac5138970d9de06251c31ff907cbe7a06932b2df2235df4a5d48"
+      },
+      {
+        "path": ".github/workflows/release.yml",
+        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
+      }
+    ],
+    "schema_version": 1,
+    "subject_commit": "d786b63cf40d9bf6788168cae4c4684934236ae8"
+  },
   "release_tag": "v0.59.3",
-  "released_at": null,
+  "released_at": "2026-10-06T21:23:46Z",
   "shed_version": "0.59.3",
   "updated_at": "2026-10-06",
   "updater_mutation_paths": [
