@@ -1,0 +1,132 @@
+# Executive Directive: Fix the 15 remaining open Tool Shed GitHub bugs with bare minimum qualifications and testing
+
+Status: working
+Type: idea-brief
+Role: project-executive-directive-v1
+Updated: 2026-10-06
+Next Action: after a separately authorized dashboard release/deployment supports schema 15, observe the connected Windows reporter and close #69
+Readiness Review: performed by the receiving Plan Cycle; ask the CEO only about material ambiguity
+Produces:
+
+## CEO Directive
+
+Fix the 15 remaining open Tool Shed GitHub bugs with bare minimum qualifications and testing
+
+## Desired Outcome
+
+Resolve the 15 GitHub bugs that were open after issue #50 closed on 2026-10-06. Keep this
+directive scoped to those issue numbers. Make the reported behavior work in the local Tool Shed
+code, update each GitHub issue with the result, and close it when the fix has direct evidence.
+Keep issues open with a precise remaining gap when a patch has not yet resolved the behavior.
+
+## Scope And Order
+
+1. Stop live reporter failures: #69 and #53 together, then #65.
+2. Make reporting dependable: #51, then #56.
+3. Clear bounded defects: #44, #46, #49, and #61.
+4. Fix larger correctness gaps: #57, #60, #68, then #52.
+5. Tune CI after the product defects: #62, then #67.
+
+Issue identities: [#69](https://github.com/PC-Redemption/tool_shed/issues/69),
+[#53](https://github.com/PC-Redemption/tool_shed/issues/53),
+[#65](https://github.com/PC-Redemption/tool_shed/issues/65),
+[#51](https://github.com/PC-Redemption/tool_shed/issues/51),
+[#56](https://github.com/PC-Redemption/tool_shed/issues/56),
+[#44](https://github.com/PC-Redemption/tool_shed/issues/44),
+[#46](https://github.com/PC-Redemption/tool_shed/issues/46),
+[#49](https://github.com/PC-Redemption/tool_shed/issues/49),
+[#61](https://github.com/PC-Redemption/tool_shed/issues/61),
+[#57](https://github.com/PC-Redemption/tool_shed/issues/57),
+[#60](https://github.com/PC-Redemption/tool_shed/issues/60),
+[#68](https://github.com/PC-Redemption/tool_shed/issues/68),
+[#52](https://github.com/PC-Redemption/tool_shed/issues/52),
+[#62](https://github.com/PC-Redemption/tool_shed/issues/62), and
+[#67](https://github.com/PC-Redemption/tool_shed/issues/67).
+
+## Qualification And Cost Boundary
+
+- Use the smallest code change that fixes the reported behavior. Reuse existing mechanisms and
+  batch shared fixes, especially #69 with #53.
+- Run a quick targeted check for the changed behavior. Add a focused regression test only when a
+  short check cannot credibly catch a likely recurrence or state-loss failure.
+- Do not make full-suite testing, a release matrix, extended soak, or broad cross-platform
+  qualification the default. Expand checks only for an observed failure, concrete data-integrity
+  risk, or a separately authorized delivery gate.
+- Observe longer-lived behavior during normal local use. Do not hold a local fix idle solely to
+  accumulate passive observation time.
+- Keep tool and model work bounded. Avoid duplicate investigation and extra planning artifacts
+  unless a specific issue cannot be handled directly.
+
+## Current Position
+
+All 15 fixes are on `main` in `cf2b0e0`. The 17-job Linux/Windows validation run passed, and 14 issues are closed. #69 remains open because the deployed dashboard accepts schemas only through 14, so its required schema-15 hosted freshness observation needs a future release/deployment.
+
+## Progress
+
+- [x] Directive captured in canonical project state with the owner's wording preserved below.
+- [x] Codex executed the directive as one bounded local Work1 candidate.
+- [x] Focused local evidence passes and all 15 GitHub issues reflect the result.
+- [x] The candidate is pushed and the available CI and Windows observations are recorded.
+- [x] Fourteen issues are closed with direct evidence.
+- [ ] #69 has a fresh schema-15 hosted check-in after a separately authorized release/deployment.
+- [ ] The requested outcome is reconciled.
+
+Only check a milestone when canonical lifecycle state or linked evidence supports it. Codex updates
+this section as work moves; the generated `work/100k.md` never guesses progress.
+
+## Recommended Next Action
+
+After a separately authorized dashboard release/deployment supports schema 15, run one connected Windows pass, confirm one worker and zero sustained backlog, close #69, and reconcile this directive.
+
+## Why This Next
+
+Code, CI, Django, Windows scheduler, and issue updates are complete. Only #69 requires the deployed dashboard and client to share schema 15 before its hosted freshness check can succeed.
+
+## Blockers
+
+- The deployed dashboard currently rejects reporter schema 15 because it accepts schemas only through 14.
+- Resolving that deployment mismatch requires a future release/deployment, which was not requested here.
+
+## Operator Needs
+
+- No action is needed now. A future release/deployment request can complete #69.
+
+## Completion Condition
+
+All 15 named bugs have fixes in the local code, each has a concise relevant check or direct
+observation, GitHub issue status reflects the result, and the subordinate outcome is reconciled.
+
+## Authority And Delivery Boundary
+
+- Preserve any endpoint, target, timing, non-goal, or authority language stated in the directive.
+- This request captures the directive only. Later source-changing work defaults to a locally
+  verified Work1 candidate; it does not itself authorize a push, release, or deployment.
+- Interrupt only for a genuine material decision or authority boundary.
+- The later owner instruction to work IDEA-0034 end to end authorized pushing and GitHub issue updates; it did not authorize a release or deployment.
+
+## Delegation Contract
+
+Initial issuance is durable intake only. Tool Shed appends this Idea through canonical planning
+order, checkpoints it, and stops so other directives may be captured first. Reissuing the exact
+active directive delegates or resumes it when doing so will not preempt another working campaign.
+
+The Plan Cycle interprets this directive, the Roadmap Cycle organizes it when needed, the Milestone
+Cycle materializes bounded campaigns, Campaign Cycles execute, and Evidence/Outcome Cycles report
+the result back to 100k. The CEO is not required to select those internal mechanics.
+
+## Exploration Log
+
+### 2026-10-06
+
+- Owner request, verbatim: "create ts ceo directive, for these with bare minuim qualifications and testing."
+- The 15 issue numbers and working order come from the immediately preceding GitHub bug review
+  and owner discussion. Issue #50 was already closed and is outside this directive.
+
+### Implementation result
+
+- Local candidate: `cf2b0e0`.
+- Focused repository validation: 8/8 tests, 1.215 seconds.
+- Focused affected suites: 134 tests plus the final 63-test reporter/release/validation subset passed.
+- GitHub: `cf2b0e0` and state commit `33d6345` were pushed to `main`; validation run 37496140346 passed all 17 jobs.
+- Issues #44, #46, #49, #51, #52, #53, #56, #57, #60, #61, #62, #65, #67, and #68 closed with direct evidence.
+- #69 remains open: connected Windows qualification reached the host, which rejected schema 15 because the deployed dashboard supports only schemas 1-14. The test bed was restored to schema 14 and delivered sequence 1202 with zero pending events.
