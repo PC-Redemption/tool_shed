@@ -1,0 +1,60 @@
+{
+  "checked_at": "2026-10-06T22:32:37Z",
+  "github_issue": {
+    "number": 70,
+    "state": "closed",
+    "url": "https://github.com/PC-Redemption/tool_shed/issues/70"
+  },
+  "kind": "tool-shed-release-production-evidence",
+  "closeout": {
+    "checkpoint_digest": "02e3dc74a671ab80aee7bf659f79418ee320d0b40a2e83fabe1f4b3c4fb10b25",
+    "hybrid_revision": 1816,
+    "idea_id": "IDEA-0034",
+    "idea_state": "completed/terminal/reconciled/satisfied"
+  },
+  "linux_released_upgrade": {
+    "after_bytes": 3334144,
+    "before_bytes": 111775744,
+    "from_version": "0.59.2",
+    "integrity": "ok",
+    "pending_after": 1,
+    "pending_before": 1,
+    "reclaimed_bytes": 108441600,
+    "sequence_after": 8410,
+    "sequence_before": 8410,
+    "status": "reclaimed",
+    "to_version": "0.59.4",
+    "transaction_id": "5dbf43e47083ad4e1e6e9e96",
+    "transaction_report": "/home/jon/.codex/tool-shed/snapshot-upgrade-transactions/5dbf43e47083ad4e1e6e9e96.json",
+    "workspace": "sup.local:/home/jon/dev/ts_linux_test_bed"
+  },
+  "maintainer_codex_skill": {
+    "state": "current and byte-identical to released source",
+    "validation": "quick_validate.py passed for source, staged copy, and installed copy; exact diff empty"
+  },
+  "release": {
+    "content_commit": "fef20ec7a8324f6ed7467ef45e4b80d0203fd9a6",
+    "github_release": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.59.4",
+    "provenance_commit": "046ad430e33c45f5d9f959200bdb6f2ae1748b9a",
+    "publication_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/37540616103",
+    "published_at": "2026-10-06T22:26:55Z",
+    "qualification_result": "all 16 Linux and Windows matrix jobs passed for the exact content commit",
+    "qualification_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/37539610758",
+    "tag": "v0.59.4",
+    "version": "0.59.4"
+  },
+  "release_id": "idea-0034-v0.59.4",
+  "result": "passed",
+  "schema_version": 1,
+  "windows_candidate_observation": {
+    "after_bytes": 2510848,
+    "before_bytes": 14557184,
+    "content_commit": "fef20ec7a8324f6ed7467ef45e4b80d0203fd9a6",
+    "integrity": "ok",
+    "next_delivered_sequence": 1229,
+    "preserved_sequence": 1228,
+    "reclaimed_bytes": 12046336,
+    "scheduled_task_result": 0,
+    "workspace": "GOGETTER:E:\\dev\\ts_windows_test_bed"
+  }
+}
