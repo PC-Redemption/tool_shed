@@ -1,0 +1,158 @@
+# Executive Directive: Fix the original 15 Tool Shed GitHub bugs and reclaim oversized dashboard outboxes
+
+Status: active
+Type: idea-brief
+Role: project-executive-directive-v1
+Updated: 2026-10-06
+Next Action: deliver local candidate 87824af through the authorized publication path
+Readiness Review: performed by the receiving Plan Cycle; ask the CEO only about material ambiguity
+Produces:
+
+## CEO Directive
+
+Fix the original 15 Tool Shed GitHub bugs and reclaim oversized dashboard outboxes
+
+## Desired Outcome
+
+Preserve the completed fixes for the original 15 GitHub bugs and resolve issue #70. Tool Shed
+upgrades must safely reclaim disk space from oversized delivered dashboard outboxes while preserving
+all pending reports, sequence continuity, crash recovery, and fresh reporting. Keep qualifications
+minimal and focused on the storage migration and upgrade path.
+
+## Scope And Order
+
+1. Stop live reporter failures: #69 and #53 together, then #65.
+2. Make reporting dependable: #51, then #56.
+3. Clear bounded defects: #44, #46, #49, and #61.
+4. Fix larger correctness gaps: #57, #60, #68, then #52.
+5. Tune CI after the product defects: #62, then #67.
+6. Reclaim oversized reporter storage safely: #70.
+
+Issue identities: [#69](https://github.com/PC-Redemption/tool_shed/issues/69),
+[#53](https://github.com/PC-Redemption/tool_shed/issues/53),
+[#65](https://github.com/PC-Redemption/tool_shed/issues/65),
+[#51](https://github.com/PC-Redemption/tool_shed/issues/51),
+[#56](https://github.com/PC-Redemption/tool_shed/issues/56),
+[#44](https://github.com/PC-Redemption/tool_shed/issues/44),
+[#46](https://github.com/PC-Redemption/tool_shed/issues/46),
+[#49](https://github.com/PC-Redemption/tool_shed/issues/49),
+[#61](https://github.com/PC-Redemption/tool_shed/issues/61),
+[#57](https://github.com/PC-Redemption/tool_shed/issues/57),
+[#60](https://github.com/PC-Redemption/tool_shed/issues/60),
+[#68](https://github.com/PC-Redemption/tool_shed/issues/68),
+[#52](https://github.com/PC-Redemption/tool_shed/issues/52),
+[#62](https://github.com/PC-Redemption/tool_shed/issues/62),
+[#67](https://github.com/PC-Redemption/tool_shed/issues/67), and
+[#70](https://github.com/PC-Redemption/tool_shed/issues/70).
+
+## Qualification And Cost Boundary
+
+- Use the smallest code change that fixes the reported behavior. Reuse existing mechanisms and
+  batch shared fixes, especially #69 with #53.
+- Run a quick targeted check for the changed behavior. Add a focused regression test only when a
+  short check cannot credibly catch a likely recurrence or state-loss failure.
+- Do not make full-suite testing, a release matrix, extended soak, or broad cross-platform
+  qualification the default. Expand checks only for an observed failure, concrete data-integrity
+  risk, or a separately authorized delivery gate.
+- Observe longer-lived behavior during normal local use. Do not hold a local fix idle solely to
+  accumulate passive observation time.
+- Keep tool and model work bounded. Avoid duplicate investigation and extra planning artifacts
+  unless a specific issue cannot be handled directly.
+
+## Current Position
+
+All original 15 fixes remain released in Tool Shed v0.59.3. Local candidate `87824af` resolves #70 with guarded upgrade and explicit reclamation paths. It has focused Linux and Windows evidence but is not yet published in a Tool Shed release.
+
+## Progress
+
+- [x] Directive captured in canonical project state with the owner's wording preserved below.
+- [x] Codex executed the directive as one bounded local Work1 candidate.
+- [x] Focused local evidence passes and all 15 GitHub issues reflect the result.
+- [x] The candidate is pushed and the available CI and Windows observations are recorded.
+- [x] All 15 issues are closed with direct evidence.
+- [x] #69 has a fresh schema-15 hosted check-in after the v0.59.3 deployment.
+- [x] The original 15-issue outcome was reconciled in v0.59.3.
+- [x] #70 has a safe explicit outbox reclamation operation.
+- [x] The upgrade path attempts legacy outbox reclamation and reports any safe deferral.
+- [x] Pending reports, sequence continuity, integrity, and fresh delivery are verified.
+- [ ] The reopened outcome is reconciled.
+
+Only check a milestone when canonical lifecycle state or linked evidence supports it. Codex updates
+this section as work moves; the generated `work/100k.md` never guesses progress.
+
+## Recommended Next Action
+
+Deliver candidate `87824af` through push, CI, and the next Tool Shed release; then verify a released upgrade and reconcile #70.
+
+## Why This Next
+
+The implementation and focused platform checks pass. Publication is the remaining step before existing v0.59.2 and v0.59.3 installations can receive upgrade-integrated reclamation.
+
+## Blockers
+
+- None.
+
+## Operator Needs
+
+- No action is needed.
+
+## Completion Condition
+
+The original 15 fixes remain intact, and #70 has a safe upgrade-integrated reclamation path that
+returns disk space from a legacy oversized outbox without losing pending reports or sequence state.
+Focused integrity, interruption/defer, upgrade, and connected reporting checks pass, GitHub issue
+status reflects the result, and the reopened outcome is reconciled.
+
+## Authority And Delivery Boundary
+
+- Preserve any endpoint, target, timing, non-goal, or authority language stated in the directive.
+- This request captures the directive only. Later source-changing work defaults to a locally
+  verified Work1 candidate; it does not itself authorize a push, release, or deployment.
+- Interrupt only for a genuine material decision or authority boundary.
+- The owner subsequently instructed Codex to continue after the release boundary was explained, authorizing the v0.59.3 release and deployment used to complete #69.
+- The owner reopened IDEA-0034 and authorized local implementation of #70. Push, release, and deployment remain separate delivery boundaries.
+
+## Delegation Contract
+
+Initial issuance is durable intake only. Tool Shed appends this Idea through canonical planning
+order, checkpoints it, and stops so other directives may be captured first. Reissuing the exact
+active directive delegates or resumes it when doing so will not preempt another working campaign.
+
+The Plan Cycle interprets this directive, the Roadmap Cycle organizes it when needed, the Milestone
+Cycle materializes bounded campaigns, Campaign Cycles execute, and Evidence/Outcome Cycles report
+the result back to 100k. The CEO is not required to select those internal mechanics.
+
+## Exploration Log
+
+### 2026-10-06
+
+- Owner request, verbatim: "create ts ceo directive, for these with bare minuim qualifications and testing."
+- The 15 issue numbers and working order come from the immediately preceding GitHub bug review
+  and owner discussion. Issue #50 was already closed and is outside this directive.
+
+### Implementation result
+
+- Local candidate: `cf2b0e0`.
+- Focused repository validation: 8/8 tests, 1.215 seconds.
+- Focused affected suites: 134 tests plus the final 63-test reporter/release/validation subset passed.
+- GitHub: `cf2b0e0` and state commit `33d6345` were pushed to `main`; validation run 37496140346 passed all 17 jobs.
+- Issues #44, #46, #49, #51, #52, #53, #56, #57, #60, #61, #62, #65, #67, and #68 closed with direct evidence.
+- Tool Shed v0.59.3 was published from content commit `d786b63cf40d9bf6788168cae4c4684934236ae8` after the exact 17-job release matrix passed.
+- Production web, Linux, and Windows lanes passed. The Windows scheduled pass peaked at one reporter process, returned 0, left zero pending events, and delivered accepted schema-15 sequence 1225.
+- Issue #69 closed with the connected observation; all 15 named issues are now closed.
+- Durable release evidence: `work/evidence/release-v0.59.3-production.json`.
+
+### Reopened for issue #70
+
+- Owner request: "re-open the related idea and add this to it and work it".
+- v0.59.3 prunes delivered rows after successful reporting but does not physically compact the SQLite file.
+- Reopened outcome cycle: `3c6a72f6-eb5a-4a08-b17e-027c5936e8af`.
+
+### Issue #70 Work1 result
+
+- Candidate commit: `87824af` (`Reclaim oversized dashboard outboxes safely`).
+- The explicit `reclaim-outbox` route retains every pending report, caps delivered history at 256, checkpoints WAL, checks free disk, runs transactional `VACUUM`, and verifies integrity, pending digest, and monotonic sequence afterward.
+- Snapshot update invokes the released reclamation command after installation and on a current-version retry. Worker, lock, disk, command, and timeout failures are reported as deferred without failing the successful snapshot installation.
+- Focused tests: 50 reporter and updater tests passed; the packaged operator-help check passed. Tests cover large delivered history, an old pending report, live-worker deferral, active and stale maintenance markers, sequence continuation, and updater deferral.
+- Linux connected field check: 9,767,493,632 bytes to 78,876,672 bytes, reclaiming 9,688,616,960 bytes; integrity `ok`, zero pending, sequence 38,930 preserved. The next report delivered as sequence 38,931 and the timer was restored active.
+- Windows qualification on `GOGETTER` at `E:\dev\ts_windows_test_bed`: 14,557,184 bytes to 2,510,848 bytes, reclaiming 12,046,336 bytes; integrity `ok`, zero pending, sequence 1,228 preserved. The real scheduled task returned 0 and delivered sequence 1,229. The released v0.59.3 reporter was restored and the task remains enabled.
