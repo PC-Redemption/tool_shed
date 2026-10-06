@@ -49,12 +49,19 @@ class ValidationProfileTests(unittest.TestCase):
         self.assertIn("validate_bootstrap_closures", full)
         self.assertIn("validate_bootstrap_closures", release)
         self.assertEqual(set(release) - set(full), {"smoke_temp_workspace"})
-        self.assertEqual(
+        release_shards = [
             validator.profile_step_names(
-                "release", canonical=True, primary_shard=False
-            ),
-            ("run_unit_tests",),
-        )
+                "release", canonical=True, shard_index=index, shard_count=4
+            )
+            for index in range(4)
+        ]
+        self.assertTrue(all("run_unit_tests" in steps for steps in release_shards))
+        distributed = [
+            step for steps in release_shards for step in steps if step != "run_unit_tests"
+        ]
+        self.assertEqual(sorted(distributed), sorted(set(release) - {"run_unit_tests"}))
+        self.assertEqual(len(distributed), len(set(distributed)))
+        self.assertLess(len(release_shards[0]), len(release))
         self.assertEqual(validator.parse_args([]).profile, "full")
         budgeted = validator.parse_args(
             [

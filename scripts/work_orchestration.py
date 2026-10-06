@@ -687,6 +687,11 @@ def prepare(
         )
         phases.append(result)
         profile = plan["material"]["validation"]["profile"]
+        if not isinstance(profile, str) or not profile.strip():
+            raise WorkOrchestrationError("validation plan does not contain a profile")
+        validator = Path(__file__).resolve().with_name("validate_tool_shed.py")
+        if not validator.is_file():
+            raise WorkOrchestrationError(f"installed validator is missing: {validator}")
         result, _ = _run_phase(
             workspace,
             run_id=run_id,
@@ -697,7 +702,7 @@ def prepare(
                 "paths": plan["material"]["changed_paths"],
             },
             action=lambda: _subprocess_payload(
-                [sys.executable, str(workspace / "scripts/validate_tool_shed.py"), "--profile", profile],
+                [sys.executable, str(validator), "--profile", profile],
                 workspace,
             ),
             resume=resume,

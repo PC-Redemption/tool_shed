@@ -1432,7 +1432,9 @@ def report_cycle(workspace: Path, cycle_id: str, *, as_of: int | None = None) ->
         ).fetchall()]
         evidence = [dict(row) for row in connection.execute(
             "SELECT e.*, v.status, v.command_or_test_id, v.source_revision FROM evidence_reference e "
-            "LEFT JOIN verification_result v ON v.evidence_id = e.id AND v.source_revision <= ? "
+            "LEFT JOIN verification_result v ON v.id = (SELECT latest.id FROM verification_result latest "
+            "WHERE latest.evidence_id = e.id AND latest.source_revision <= ? "
+            "ORDER BY latest.source_revision DESC, latest.id DESC LIMIT 1) "
             "WHERE e.cycle_id = ? AND EXISTS (SELECT 1 FROM structural_change s "
             "WHERE s.table_name = 'evidence_reference' AND s.row_id = e.id "
             "AND s.operation = 'insert' AND s.revision <= ?) ORDER BY e.id", (boundary, cycle_id, boundary),

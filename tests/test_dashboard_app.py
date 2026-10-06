@@ -958,6 +958,49 @@ class DashboardApplicationTests(TestCase):
         self.assertEqual(snapshot.planning_order_source, "owner")
         self.assertEqual(snapshot.planning_readiness, "working")
 
+    def test_schema_fifteen_ingests_and_renders_idea_semantics(self) -> None:
+        token = self.enroll_and_issue()
+        payload = self.executive_report_payload()
+        payload["schema_version"] = 15
+        artifact = payload["work_inventory"]["artifacts"][0]
+        artifact.update(
+            {
+                "discovery_status": "exploring",
+                "next_action": "Resolve the open dashboard contract decision.",
+                "semantic_review_state": "ABSENT",
+                "promotion_allowed": False,
+            }
+        )
+        validated = validate_report(payload)
+        projected = validated["work_inventory"]["artifacts"][0]
+        self.assertEqual(projected["semantic_review_state"], "ABSENT")
+        self.assertFalse(projected["promotion_allowed"])
+        response = self.client.post(
+            reverse("fleet:report-ingest"),
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        snapshot = WorkArtifactSnapshot.objects.get()
+        self.assertEqual(snapshot.discovery_status, "exploring")
+        self.assertEqual(snapshot.next_action, "Resolve the open dashboard contract decision.")
+        self.assertEqual(snapshot.semantic_review_state, "ABSENT")
+        self.assertFalse(snapshot.promotion_allowed)
+
+        user = get_user_model().objects.create_user("idea-viewer", password="fixture")
+        self.client.force_login(user)
+        work = self.client.get(
+            reverse("fleet:project-tab", args=(snapshot.project_id, "work")),
+            {"scope": "all"},
+        )
+        self.assertContains(work, "Discovery: exploring")
+        self.assertContains(work, "semantic review: ABSENT")
+        self.assertContains(work, "promotion: blocked")
+        self.assertContains(work, "Resolve the open dashboard contract decision.")
+        self.assertContains(work, "local revision 1710")
+        self.assertContains(work, "digest")
+
     def test_schema_seven_ingests_and_renders_recursive_closure_status(self) -> None:
         token = self.enroll_and_issue()
         payload = self.closure_report_payload()
@@ -1920,7 +1963,7 @@ class DashboardApplicationTests(TestCase):
         self.assertContains(response, "PRM-0100")
         self.assertContains(response, "CAMP-0100")
         self.assertNotContains(response, "IDEA-OLD")
-        self.assertContains(response, "4 open loops")
+        self.assertContains(response, "4 governed outcome cycles")
         self.assertContains(response, "additional reported loop")
         self.assertContains(response, "Owner")
         self.assertContains(response, "Snapshot from")

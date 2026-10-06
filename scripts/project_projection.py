@@ -21,6 +21,7 @@ from typing import Any, Sequence
 import authority_resolver
 import campaign_queue
 import hybrid_state
+import idea_readiness
 import loop_findings
 import planning_order
 import update_work_index
@@ -243,6 +244,10 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
                         "working" if status_value == "working" else
                         "waiting" if status_value in {"deferred", "parked"} else "ready"
                     ),
+                    "discovery_status": status_value if artifact_type == "idea-brief" else None,
+                    "next_action": item.fields.get("Next Action") if artifact_type == "idea-brief" else None,
+                    "semantic_review_state": "FILE-AUTHORITY" if artifact_type == "idea-brief" else None,
+                    "promotion_allowed": False if artifact_type == "idea-brief" else None,
                     "closure_status": _unknown_closure("HYBRID_OUTCOME_UNAVAILABLE", updated_at), "updated_at": updated_at,
                 }
             )
@@ -261,6 +266,7 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
         rows = connection.execute(
             """
             SELECT d.id, d.visible_id, d.namespace, d.title, d.lifecycle_state, d.updated_at,
+                   d.current_revision, d.body_sha256,
                    d.metadata_json, dr.body_markdown,
                    COALESCE((SELECT c.lifecycle_state FROM cycle c WHERE c.origin_artifact_id=d.id
                        ORDER BY c.opened_at DESC,c.id DESC LIMIT 1), 'unknown') AS outcome_lifecycle,
@@ -294,6 +300,18 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
                               for item in planning_order.projection_for_connection(connection, artifact_type)["items"]}
         except planning_order.PlanningOrderError as error:
             raise ProjectProjectionError(f"local planning order is invalid: {error}") from error
+        readiness_events: dict[str, dict[str, Any]] = {}
+        if connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='event'"
+        ).fetchone():
+            for event in connection.execute(
+                "SELECT entity_id, payload_json FROM event WHERE kind=? AND entity_type=? "
+                "ORDER BY revision DESC, id DESC",
+                (idea_readiness.EVENT_KIND, idea_readiness.EVENT_ENTITY_TYPE),
+            ):
+                readiness_events.setdefault(
+                    str(event["entity_id"]), json.loads(str(event["payload_json"]))
+                )
         artifact_ids = [str(row["id"]) for row in rows]
         visible_by_id = {str(row["id"]): str(row["visible_id"]) for row in rows}
         parent_ids: dict[str, list[str]] = {value: [] for value in artifact_ids}
@@ -388,6 +406,29 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
             _directive_status(str(row["body_markdown"]))
             if metadata.get("role") == EXECUTIVE_DIRECTIVE_ROLE else None
         )
+        headers = _markdown_headers(str(row["body_markdown"]))
+        discovery_status = headers.get("Status") if artifact_type == "idea-brief" else None
+        next_action = headers.get("Next Action") if artifact_type == "idea-brief" else None
+        semantic_review_state = None
+        promotion_allowed = None
+        if artifact_type == "idea-brief":
+            semantic_review_state = "ABSENT"
+            promotion_allowed = False
+            review = readiness_events.get(artifact_id)
+            if review:
+                binding = review.get("idea") or {}
+                if (
+                    review.get("review_contract_version") != idea_readiness.CONTRACT_VERSION
+                    or binding.get("artifact_id") != artifact_id
+                    or binding.get("document_revision") != int(row["current_revision"])
+                    or binding.get("body_sha256") != str(row["body_sha256"])
+                ):
+                    semantic_review_state = "STALE"
+                elif review.get("verdict") == "NOT-READY":
+                    semantic_review_state = "CURRENT-NOT-READY"
+                else:
+                    semantic_review_state = "CURRENT-READY"
+                    promotion_allowed = review.get("verdict") in idea_readiness.READY_VERDICTS
         title = " ".join(str(row["title"]).split())[:160] or str(row["visible_id"])
         artifacts.append(
             {
@@ -411,6 +452,10 @@ def _inventory(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
                     or artifact_type in planning_order.SUPPORTED_TYPES
                     else campaign_readiness if campaign_readiness in planning_order.READINESS_RANK else "not-applicable"
                 ),
+                "discovery_status": discovery_status,
+                "next_action": next_action,
+                "semantic_review_state": semantic_review_state,
+                "promotion_allowed": promotion_allowed,
                 "closure_status": closure_by_artifact.get(
                     artifact_id, _unknown_closure("CLOSURE_NOT_AVAILABLE", str(row["updated_at"]))
                 ),
@@ -649,38 +694,48 @@ def _focus_coverage(
     }
 
 
-def _release_horizon(workspace: Path, authority: dict[str, Any]) -> dict[str, Any]:
+def _release_horizon(
+    workspace: Path,
+    authority: dict[str, Any],
+    *,
+    release_status: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     if authority["authority"] != "sqlite":
         return {"available": False, "base_tag": None, "active_cohorts": []}
     # Lazy import prevents the dashboard projection from acquiring release-cohort coupling.
     import release_cohort
 
-    status = release_cohort.status(workspace)
+    status = release_status if release_status is not None else release_cohort.status(workspace)
     return {
         "available": True,
-        "base_tag": status["current_base_tag"],
+        "base_tag": status.get("current_base_tag"),
         "active_cohorts": [
             {
                 "cycle_id": item["cycle_id"],
                 "lifecycle_state": item["lifecycle_state"],
                 "candidate_count": len(item["candidates"]),
             }
-            for item in status["active"]
+            for item in status.get("active", [])
         ],
-        "finding_count": status["finding_count"],
+        "finding_count": int(status.get("finding_count", 0)),
     }
 
 
-def executive(workspace: Path) -> dict[str, Any]:
+def executive(
+    workspace: Path,
+    *,
+    projection: dict[str, Any] | None = None,
+    release_status: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Build the deterministic operator-facing 100k contract from canonical projections."""
     workspace = workspace.resolve()
-    projection = build(workspace)
+    projection = projection if projection is not None else build(workspace)
     inventory = projection["work_inventory"]
     artifacts = inventory["artifacts"]
     authority = projection["authority"]
     intent = _executive_intent(workspace, authority)
     focus = _focus_coverage(workspace, authority, artifacts)
-    release = _release_horizon(workspace, authority)
+    release = _release_horizon(workspace, authority, release_status=release_status)
     if authority["authority"] == "sqlite":
         audit = hybrid_state.audit(workspace)
         source_revision = audit["current_revision"]

@@ -31,6 +31,7 @@ from typing import Any, Sequence
 
 import app_server_user_state
 import app_server_control
+import authority_resolver
 import codex_execution
 import document_store
 import hybrid_state
@@ -46,7 +47,7 @@ except ModuleNotFoundError:  # Direct execution: python scripts/dashboard_report
 
 
 SCHEMA_VERSION = 1
-REPORT_SCHEMA_VERSION = 14
+REPORT_SCHEMA_VERSION = 15
 OUTBOX_RELATIVE = Path(".tool-shed/dashboard/outbox.sqlite3")
 MAX_RESPONSE_BYTES = 65_536
 MAX_REQUEST_BYTES = 262_144
@@ -57,6 +58,8 @@ HEARTBEAT_SECONDS = 60
 IDLE_EXIT_SECONDS = 7_200
 IDLE_POLL_SECONDS = 60
 SAFETY_DRAIN_LIMIT = 64
+SAFETY_DRAIN_PACE_SECONDS = 0.05
+DELIVERED_RETENTION = 256
 SQLITE_CONTENTION_RETRY_SECONDS = 120
 SQLITE_CONTENTION_RETRY_MAX_SLEEP = 1.0
 
@@ -65,11 +68,27 @@ class DashboardReporterError(RuntimeError):
     pass
 
 
+class WorkerOwnershipLost(DashboardReporterError):
+    pass
+
+
 class DashboardHTTPError(DashboardReporterError):
     def __init__(self, status_code: int, detail: str):
         self.status_code = status_code
         self.detail = detail
         super().__init__(f"dashboard request failed with HTTP {status_code}: {detail}")
+
+
+def _require_reporting_authority(workspace: Path) -> dict[str, Any]:
+    authority = authority_resolver.resolve(workspace)
+    if authority.get("authority") != "sqlite":
+        next_action = authority.get("next_action") or (
+            "Complete guarded Hybrid schema-2 conversion before dashboard reporting"
+        )
+        raise DashboardReporterError(
+            f"dashboard reporting requires Hybrid schema-2 SQLite authority; {next_action}"
+        )
+    return authority
 
 
 def now() -> datetime:
@@ -242,6 +261,7 @@ def _request(url: str, *, payload: dict[str, Any], headers: dict[str, str] | Non
 
 def connect(workspace: Path, *, server: str, project_binding: str) -> dict[str, Any]:
     require_project_binding(workspace, project_binding, operation="dashboard-connect")
+    _require_reporting_authority(workspace)
     identity = load_project_identity(workspace)
     current = load_connection(workspace, required=False)
     instance_id = (current or {}).get("instance_id") or str(uuid.uuid4())
@@ -289,6 +309,7 @@ def connect(workspace: Path, *, server: str, project_binding: str) -> dict[str, 
 
 def connect_poll(workspace: Path, *, project_binding: str) -> dict[str, Any]:
     require_project_binding(workspace, project_binding, operation="dashboard-connect")
+    _require_reporting_authority(workspace)
     state = load_connection(workspace)
     if state["status"] == "connected":
         return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-connect", "status": "connected", "writes_performed": False}
@@ -329,6 +350,10 @@ def _outbox(workspace: Path) -> sqlite3.Connection:
         "attempts INTEGER NOT NULL DEFAULT 0, next_attempt REAL NOT NULL, created_at TEXT NOT NULL, delivered_at TEXT) WITHOUT ROWID"
     )
     connection.execute(
+        "CREATE INDEX IF NOT EXISTS outbox_pending_sequence_idx "
+        "ON outbox(sequence) WHERE delivered_at IS NULL"
+    )
+    connection.execute(
         "CREATE TABLE IF NOT EXISTS worker_lease (id INTEGER PRIMARY KEY CHECK(id=1), owner TEXT NOT NULL, expires_at REAL NOT NULL)"
     )
     connection.execute(
@@ -360,6 +385,44 @@ def _next_sequence(connection: sqlite3.Connection) -> int:
     value = int(_meta(connection, "sequence", "0") or 0) + 1
     _set_meta(connection, "sequence", str(value))
     return value
+
+
+def _compact_delivered_outbox(connection: sqlite3.Connection) -> int:
+    """Keep bounded delivery history while preserving every pending report."""
+    removed = connection.execute(
+        "DELETE FROM outbox WHERE delivered_at IS NOT NULL AND sequence NOT IN "
+        "(SELECT sequence FROM outbox WHERE delivered_at IS NOT NULL "
+        "ORDER BY sequence DESC LIMIT ?)",
+        (DELIVERED_RETENTION,),
+    )
+    return removed.rowcount
+
+
+def _retire_supersedable_pending(
+    connection: sqlite3.Connection, newest_sequence: int
+) -> int:
+    """Drop older pure snapshots while retaining every event-bearing pending report."""
+    removable: list[str] = []
+    for row in connection.execute(
+        "SELECT id,payload_json FROM outbox WHERE delivered_at IS NULL AND sequence < ? "
+        "ORDER BY sequence",
+        (newest_sequence,),
+    ):
+        try:
+            payload = json.loads(str(row["payload_json"]))
+        except json.JSONDecodeError:
+            continue
+        if payload.get("material_events") or payload.get("lifecycle_events"):
+            continue
+        removable.append(str(row["id"]))
+    removed = 0
+    for start in range(0, len(removable), 500):
+        batch = removable[start : start + 500]
+        placeholders = ",".join("?" for _ in batch)
+        removed += connection.execute(
+            f"DELETE FROM outbox WHERE id IN ({placeholders})", batch
+        ).rowcount
+    return removed
 
 
 def _is_sqlite_contention(error: sqlite3.DatabaseError) -> bool:
@@ -429,6 +492,7 @@ def _project_projection(workspace: Path) -> dict[str, Any]:
     inventory = projection["work_inventory"]
     return {
         **projection,
+        "_executive_source": projection,
         "work_inventory": {
             **inventory,
             "artifacts": [
@@ -443,10 +507,17 @@ def _project_projection(workspace: Path) -> dict[str, Any]:
     }
 
 
-def _executive_dashboard_projection(workspace: Path) -> dict[str, Any]:
+def _executive_dashboard_projection(
+    workspace: Path,
+    *,
+    projection: dict[str, Any] | None = None,
+    release_status: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Select the bounded hosted CEO contract from the canonical 100k projection."""
     try:
-        view = project_projection.executive(workspace)
+        view = project_projection.executive(
+            workspace, projection=projection, release_status=release_status
+        )
     except project_projection.ProjectProjectionError as error:
         raise DashboardReporterError(str(error)) from error
 
@@ -573,7 +644,11 @@ def _release_chain_projection(
 
 
 def _release_posture(
-    workspace: Path, *, inventory: dict[str, Any], observed_at: str
+    workspace: Path,
+    *,
+    inventory: dict[str, Any],
+    observed_at: str,
+    release_status: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     installed = local_shed_version(workspace)
     stable_version = None
@@ -596,7 +671,7 @@ def _release_posture(
         "release_chains_truncated": False,
     }
     try:
-        status = release_cohort.status(workspace)
+        status = release_status if release_status is not None else release_cohort.status(workspace)
         stable_version = status.get("current_base_tag")
         if isinstance(stable_version, str) and stable_version.startswith("v"):
             stable_source = "local-git-tag"
@@ -670,6 +745,7 @@ def _instance_health(
     loop_projection: dict[str, Any],
     quiescent: bool,
     observed_at: str,
+    release_status: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     pending_count = 0
     last_delivery_at = None
@@ -707,7 +783,10 @@ def _instance_health(
         "last_delivery_at": last_delivery_at,
         "semantic_digest": semantic_digest,
         "release": _release_posture(
-            workspace, inventory=inventory, observed_at=observed_at
+            workspace,
+            inventory=inventory,
+            observed_at=observed_at,
+            release_status=release_status,
         ),
     }
 
@@ -767,6 +846,15 @@ def report_payload(
     projection = projection or _project_projection(workspace)
     dashboard_state = projection["state"]
     inventory = projection["work_inventory"]
+    try:
+        release_status = release_cohort.status(workspace)
+    except (
+        OSError,
+        ProjectIdentityError,
+        release_cohort.ReleaseCohortError,
+        hybrid_state.HybridStateError,
+    ):
+        release_status = {}
     return {
         "schema_version": REPORT_SCHEMA_VERSION,
         "idempotency_key": str(uuid.uuid4()),
@@ -807,7 +895,11 @@ def report_payload(
         },
         "work_inventory": inventory,
         "loop_findings": projection["loop_findings"],
-        "executive": _executive_dashboard_projection(workspace),
+        "executive": _executive_dashboard_projection(
+            workspace,
+            projection=projection.get("_executive_source", projection),
+            release_status=release_status,
+        ),
         "lifecycle_events": lifecycle_events or [],
         "instance_health": _instance_health(
             workspace,
@@ -816,11 +908,15 @@ def report_payload(
             loop_projection=projection["loop_findings"],
             quiescent=quiescent,
             observed_at=observed,
+            release_status=release_status,
         ),
     }
 
 
-def _enqueue_connected(workspace: Path, *, reason: str, quiescent: bool = False) -> dict[str, Any]:
+def _enqueue_connected(
+    workspace: Path, *, reason: str, quiescent: bool = False, worker_owner: str | None = None
+) -> dict[str, Any]:
+    _require_reporting_authority(workspace)
     state = load_connection(workspace)
     if state["status"] != "connected":
         raise DashboardReporterError("dashboard connection is awaiting approval")
@@ -838,6 +934,13 @@ def _enqueue_connected(workspace: Path, *, reason: str, quiescent: bool = False)
     )
     with contextlib.closing(_outbox(workspace)) as connection:
         connection.execute("BEGIN IMMEDIATE")
+        if worker_owner is not None:
+            claim = connection.execute(
+                "SELECT owner FROM worker_process WHERE id=1"
+            ).fetchone()
+            if claim is None or str(claim["owner"]) != worker_owner:
+                connection.rollback()
+                raise WorkerOwnershipLost("dashboard worker lost process ownership")
         sequence = _next_sequence(connection)
         previous_raw = _meta(connection, "work_inventory_v2")
         try:
@@ -859,16 +962,22 @@ def _enqueue_connected(workspace: Path, *, reason: str, quiescent: bool = False)
             "INSERT INTO outbox VALUES (?, ?, ?, 0, ?, ?, NULL)",
             (event_id, sequence, json.dumps(payload, sort_keys=True, separators=(",", ":")), time.time(), stamp()),
         )
+        superseded_pending = _retire_supersedable_pending(connection, sequence)
         _set_meta(connection, "last_activity", str(time.time()))
         _set_meta(connection, "work_inventory_v2", json.dumps(inventory, sort_keys=True, separators=(",", ":")))
         connection.commit()
-    return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-enqueue", "event_id": event_id, "sequence": sequence, "reason": reason, "writes_performed": True}
+    return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-enqueue", "event_id": event_id, "sequence": sequence, "reason": reason, "superseded_pending_count": superseded_pending, "writes_performed": True}
 
 
-def enqueue(workspace: Path, *, project_binding: str, reason: str, quiescent: bool = False) -> dict[str, Any]:
+def enqueue(
+    workspace: Path, *, project_binding: str, reason: str, quiescent: bool = False,
+    worker_owner: str | None = None,
+) -> dict[str, Any]:
     require_project_binding(workspace, project_binding, operation="dashboard-report")
     with subprocess_launch.windowless_subprocesses():
-        return _enqueue_connected(workspace, reason=reason, quiescent=quiescent)
+        return _enqueue_connected(
+            workspace, reason=reason, quiescent=quiescent, worker_owner=worker_owner
+        )
 
 
 def enqueue_if_connected(workspace: Path, *, reason: str) -> dict[str, Any] | None:
@@ -945,11 +1054,7 @@ def _claim_worker_launch(workspace: Path) -> str | None:
                 row = connection.execute(
                     "SELECT owner, expires_at, pid FROM worker_process WHERE id=1"
                 ).fetchone()
-                if (
-                    row
-                    and float(row["expires_at"]) > current
-                    and (row["pid"] is None or _pid_is_running(int(row["pid"])))
-                ):
+                if _worker_process_is_live(row, current):
                     connection.rollback()
                     return None
                 connection.execute(
@@ -988,11 +1093,7 @@ def _adopt_worker_process(workspace: Path, launch_claim: str | None) -> str | No
                     ):
                         connection.rollback()
                         return None
-                elif (
-                    row
-                    and float(row["expires_at"]) > current
-                    and (row["pid"] is None or _pid_is_running(int(row["pid"])))
-                ):
+                elif _worker_process_is_live(row, current):
                     connection.rollback()
                     return None
                 connection.execute(
@@ -1023,6 +1124,23 @@ def _release_worker_process(workspace: Path, owner: str) -> None:
             _sqlite_contention_sleep(contention_attempt)
 
 
+def _worker_process_is_live(row: sqlite3.Row | None, current: float) -> bool:
+    if row is None:
+        return False
+    if row["pid"] is not None:
+        return _pid_is_running(int(row["pid"]))
+    return float(row["expires_at"]) > current
+
+
+def _renew_worker_process(workspace: Path, owner: str) -> bool:
+    with contextlib.closing(_outbox(workspace)) as connection:
+        renewed = connection.execute(
+            "UPDATE worker_process SET expires_at=? WHERE id=1 AND owner=?",
+            (time.time() + PROCESS_LOCK_SECONDS, owner),
+        )
+        return renewed.rowcount == 1
+
+
 def _release_worker_lease(connection: sqlite3.Connection, owner: str) -> None:
     contention_attempt = 0
     while True:
@@ -1037,6 +1155,7 @@ def _release_worker_lease(connection: sqlite3.Connection, owner: str) -> None:
 
 
 def worker_once(workspace: Path) -> dict[str, Any]:
+    _require_reporting_authority(workspace)
     state = load_connection(workspace)
     if state["status"] != "connected" or not state.get("reporter_token"):
         raise DashboardReporterError("dashboard connection is not active")
@@ -1066,6 +1185,7 @@ def worker_once(workspace: Path) -> dict[str, Any]:
                         "UPDATE outbox SET delivered_at=? WHERE delivered_at IS NULL AND sequence <= ?",
                         (stamp(), row["sequence"]),
                     )
+                    _compact_delivered_outbox(connection)
                     return {
                         "schema_version": SCHEMA_VERSION,
                         "kind": "tool-shed-dashboard-worker",
@@ -1091,6 +1211,7 @@ def worker_once(workspace: Path) -> dict[str, Any]:
                 (stamp(), row["sequence"]),
             )
             _set_meta(connection, "last_delivery", str(time.time()))
+            _compact_delivered_outbox(connection)
             return {
                 "schema_version": SCHEMA_VERSION,
                 "kind": "tool-shed-dashboard-worker",
@@ -1131,6 +1252,7 @@ def worker(
     launch_claim: str | None = None,
 ) -> dict[str, Any]:
     require_project_binding(workspace, project_binding, operation="dashboard-report")
+    _require_reporting_authority(workspace)
     owner = _adopt_worker_process(workspace, launch_claim)
     if owner is None:
         status = "launch-claim-invalid" if launch_claim is not None else "singleton-active"
@@ -1148,23 +1270,25 @@ def worker(
             try:
                 with contextlib.closing(_outbox(workspace)) as connection:
                     current = time.time()
-                    connection.execute(
-                        "UPDATE worker_process SET expires_at=? WHERE id=1 AND owner=?",
-                        (current + PROCESS_LOCK_SECONDS, owner),
-                    )
                     last_activity = float(_meta(connection, "last_activity", str(current)) or current)
                     last_heartbeat = float(_meta(connection, "last_heartbeat", "0") or 0)
                     pending = int(connection.execute("SELECT COUNT(*) FROM outbox WHERE delivered_at IS NULL").fetchone()[0])
+                if not _renew_worker_process(workspace, owner):
+                    return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-worker", "status": "ownership-lost", "cycles": cycles, "writes_performed": False}
                 if current - last_heartbeat >= HEARTBEAT_SECONDS:
-                    enqueue(workspace, project_binding=project_binding, reason="heartbeat")
+                    enqueue(workspace, project_binding=project_binding, reason="heartbeat", worker_owner=owner)
                     with contextlib.closing(_outbox(workspace)) as connection:
                         _set_meta(connection, "last_heartbeat", str(current))
                     last_heartbeat = current
+                if not _renew_worker_process(workspace, owner):
+                    return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-worker", "status": "ownership-lost", "cycles": cycles, "writes_performed": False}
                 try:
                     worker_once(workspace)
                 except DashboardReporterError:
                     pass
                 contention_attempt = 0
+            except WorkerOwnershipLost:
+                return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-worker", "status": "ownership-lost", "cycles": cycles, "writes_performed": False}
             except sqlite3.DatabaseError as error:
                 if not _is_sqlite_contention(error):
                     raise
@@ -1174,7 +1298,14 @@ def worker(
                 _sqlite_contention_sleep(contention_attempt)
                 continue
             if current - last_activity >= IDLE_EXIT_SECONDS and pending == 0:
-                enqueue(workspace, project_binding=project_binding, reason="quiescent", quiescent=True)
+                if not _renew_worker_process(workspace, owner):
+                    return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-worker", "status": "ownership-lost", "cycles": cycles, "writes_performed": False}
+                try:
+                    enqueue(workspace, project_binding=project_binding, reason="quiescent", quiescent=True, worker_owner=owner)
+                except WorkerOwnershipLost:
+                    return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-worker", "status": "ownership-lost", "cycles": cycles, "writes_performed": False}
+                if not _renew_worker_process(workspace, owner):
+                    return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-worker", "status": "ownership-lost", "cycles": cycles, "writes_performed": False}
                 worker_once(workspace)
                 return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-worker", "status": "quiescent", "cycles": cycles, "writes_performed": True}
             if max_cycles is not None and cycles >= max_cycles:
@@ -1234,6 +1365,8 @@ def scheduler_plan(workspace: Path) -> dict[str, Any]:
         "kind": "tool-shed-dashboard-scheduler-plan",
         "platform": system,
         "cadence_minutes": 15,
+        "missed_run_recovery": system == "windows",
+        "wake_to_run": False,
         "command": command,
         "mutation_authorized": False,
         "writes_performed": False,
@@ -1242,6 +1375,7 @@ def scheduler_plan(workspace: Path) -> dict[str, Any]:
 
 def scheduler_install(workspace: Path, *, project_binding: str) -> dict[str, Any]:
     require_project_binding(workspace, project_binding, operation="dashboard-report")
+    _require_reporting_authority(workspace)
     identity = load_project_identity(workspace)
     system = platform.system().lower()
     executable_path = Path(
@@ -1294,8 +1428,10 @@ def scheduler_install(workspace: Path, *, project_binding: str) -> dict[str, Any
             (
                 f"$action = New-ScheduledTaskAction -Execute {powershell_literal(executable)} -Argument {powershell_literal(arguments)}",
                 "$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(15) -RepetitionInterval (New-TimeSpan -Minutes 15)",
-                "$settings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -StartWhenAvailable",
+                "$settings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -StartWhenAvailable -WakeToRun:$false",
                 f"Register-ScheduledTask -TaskName {powershell_literal(task)} -Action $action -Trigger $trigger -Settings $settings -Force | Out-Null",
+                f"$registered = Get-ScheduledTask -TaskName {powershell_literal(task)}",
+                "if (-not $registered.Settings.StartWhenAvailable -or $registered.Settings.WakeToRun) { throw 'Tool Shed dashboard task recovery settings did not converge' }",
             )
         )
         subprocess_launch.run(
@@ -1306,7 +1442,7 @@ def scheduler_install(workspace: Path, *, project_binding: str) -> dict[str, Any
         installed = [task]
     else:
         raise DashboardReporterError(f"dashboard scheduling is unsupported on {system}")
-    return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-scheduler", "status": "installed", "platform": system, "targets": installed, "writes_performed": True}
+    return {"schema_version": SCHEMA_VERSION, "kind": "tool-shed-dashboard-scheduler", "status": "installed", "platform": system, "targets": installed, "missed_run_recovery": system == "windows", "wake_to_run": False, "writes_performed": True}
 
 
 def scheduler_remove(workspace: Path, *, project_binding: str) -> dict[str, Any]:
@@ -1343,6 +1479,7 @@ def scheduler_remove(workspace: Path, *, project_binding: str) -> dict[str, Any]
 
 def safety_pass(workspace: Path, *, project_binding: str) -> dict[str, Any]:
     require_project_binding(workspace, project_binding, operation="dashboard-report")
+    _require_reporting_authority(workspace)
     audit = document_store.audit(workspace)
     queued: dict[str, Any] | None = None
     with contextlib.closing(_outbox(workspace)) as connection:
@@ -1376,9 +1513,11 @@ def safety_pass(workspace: Path, *, project_binding: str) -> dict[str, Any]:
         final_status = str(delivered["status"])
         if final_status == "delivered":
             delivered_count += 1
+            time.sleep(SAFETY_DRAIN_PACE_SECONDS)
             continue
         if final_status == "superseded":
             superseded_count += 1
+            time.sleep(SAFETY_DRAIN_PACE_SECONDS)
             continue
         break
     with contextlib.closing(_outbox(workspace)) as connection:

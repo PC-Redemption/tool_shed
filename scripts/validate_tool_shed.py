@@ -608,10 +608,9 @@ def profile_step_names(
     profile: str,
     *,
     canonical: bool,
-    primary_shard: bool = True,
+    shard_index: int = 0,
+    shard_count: int = 1,
 ) -> tuple[str, ...]:
-    if not primary_shard:
-        return ("run_unit_tests",)
     names = ["compile_python", "check_shed_manifest", "run_unit_tests"]
     if profile in {"full", "release"}:
         names.append("check_provider_adapters")
@@ -628,7 +627,17 @@ def profile_step_names(
         if profile == "release":
             names.append("smoke_temp_workspace")
         names.append("sanity_check_markdown")
-    return tuple(names)
+    if shard_count == 1:
+        return tuple(names)
+    distributed: list[str] = []
+    non_unit_index = 0
+    for name in names:
+        if name == "run_unit_tests":
+            distributed.append(name)
+        elif non_unit_index % shard_count == shard_index:
+            distributed.append(name)
+        non_unit_index += name != "run_unit_tests"
+    return tuple(distributed)
 
 
 def enforce_time_budget(profile: str, elapsed: float, maximum: float | None) -> None:
@@ -684,7 +693,8 @@ def main(argv: list[str] | None = None) -> int:
         for name in profile_step_names(
             args.profile,
             canonical=canonical,
-            primary_shard=args.shard_index == 0,
+            shard_index=args.shard_index,
+            shard_count=args.shard_count,
         ):
             phase_started = time.monotonic()
             if name == "run_unit_tests":

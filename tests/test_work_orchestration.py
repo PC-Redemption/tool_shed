@@ -357,7 +357,7 @@ class WorkOrchestrationTests(unittest.TestCase):
             work_orchestration,
             "_subprocess_payload",
             return_value={"returncode": 0, "stdout_bytes": 90000, "stderr_bytes": 0, "output_digest": "a" * 64},
-        ):
+        ) as validator:
             result = work_orchestration.prepare(
                 self.workspace,
                 endpoint="work1",
@@ -369,6 +369,11 @@ class WorkOrchestrationTests(unittest.TestCase):
             )
         rendered = json.dumps(result)
         self.assertEqual(result["status"], "passed")
+        command = validator.call_args.args[0]
+        self.assertEqual(
+            Path(command[1]), Path(work_orchestration.__file__).resolve().with_name("validate_tool_shed.py")
+        )
+        self.assertEqual(command[-2:], ["--profile", "focused"])
         self.assertNotIn("90000 bytes of validator output", rendered)
         self.assertLess(len(rendered), 4000)
 

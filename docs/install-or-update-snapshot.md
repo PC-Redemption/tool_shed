@@ -78,10 +78,12 @@ database-aware preflight and post-install validation.
 The Hybrid SQLite state contract assigns protocol 4 to database-aware releases. Before
 snapshot mutation it locks the workspace, audits CLEAN state, checkpoints WAL, creates a verified
 SQLite backup, and proves disposable recovery rebuilds. A schema-1 database must reproduce its
-tracked `state-v1` checkpoint exactly. A schema-2 database must retain and successfully rebuild the
-schema-1 recovery checkpoint, then reproduce its current full domain digest from the tracked
-`state-v2` checkpoint and content objects. A missing, invalid, or mismatched checkpoint fails before
-snapshot replacement. After installation the updater allows only the selected release's guarded,
+tracked `state-v1` checkpoint exactly. Schema 2 and later use the tracked `state-v2` checkpoint and
+content objects as their complete recovery contract; they do not require or derive a historical
+`state-v1` checkpoint. This avoids manufacturing an earlier-schema artifact from later state while
+still proving a disposable rebuild with the exact current project identity and domain digest. A
+missing, invalid, foreign, incomplete, or mismatched checkpoint fails before snapshot replacement.
+After installation the updater allows only the selected release's guarded,
 monotonic capability convergence, then validates the resulting database and verified preflight
 backup. A workspace without a database receives schema-current shadow state; file authority is
 preserved until the separately reported document-authority decision is explicitly approved.

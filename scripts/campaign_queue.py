@@ -583,8 +583,9 @@ def render_completed_queue(campaigns: dict[str, Campaign]) -> str:
         lines.append("No completed campaigns.")
     for item in completed:
         evidence = item.fields.get("Completion Evidence", "none")
+        number = f"({item.campaign_number}) " if item.campaign_number else ""
         lines.append(
-            f"- {item.fields.get('Completion Date', 'unknown')} — [{item.title}]"
+            f"- {item.fields.get('Completion Date', 'unknown')} — {number}[{item.title}]"
             f"(completed/{item.path.name}) — {item.outcome} — evidence: {evidence}"
         )
     return "\n".join(lines).rstrip() + "\n"

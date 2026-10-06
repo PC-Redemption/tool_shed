@@ -29,6 +29,20 @@ class LifecycleScaleQualificationTests(unittest.TestCase):
         with self.assertRaises(scale.ScaleError):
             scale.guarded_mutation_ceiling("unknown-platform")
 
+    def test_injected_guarded_mutation_regression_fails_deterministically(self) -> None:
+        for platform_name in ("linux-x86_64", "windows-amd64"):
+            with self.subTest(platform=platform_name):
+                ceiling = scale.guarded_mutation_ceiling(platform_name)
+                healthy = scale.evaluate_guarded_mutation_timings(
+                    [ceiling * 0.50, ceiling * 0.75, ceiling * 0.90], platform_name
+                )
+                regressed = scale.evaluate_guarded_mutation_timings(
+                    [ceiling * 0.50, ceiling * 0.75, ceiling + 1], platform_name
+                )
+                self.assertTrue(healthy["passed"])
+                self.assertFalse(regressed["passed"])
+                self.assertEqual(regressed["p95"], ceiling + 1)
+
     def test_small_accumulation_is_exact_clean_and_resumable(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             workspace = Path(directory) / "fixture"

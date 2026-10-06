@@ -544,6 +544,60 @@ class ReleaseCohortTests(unittest.TestCase):
                 ).fetchone()[0],
                 1,
             )
+            self.assertEqual(
+                connection.execute(
+                    "SELECT COUNT(*) FROM relationship WHERE relation_type='outcome-parent'"
+                ).fetchone()[0],
+                1,
+            )
+        self.assertIsNotNone(extension["execution_cycle_id"])
+        self.assertEqual(
+            registered["status"]["active"][0]["candidates"][0]["release_execution_cycle_id"],
+            extension["execution_cycle_id"],
+        )
+
+        frozen = release_cohort.freeze(
+            self.workspace,
+            expected=release_cohort.status(self.workspace)["state_token"],
+            project_binding=self.binding,
+            content_commitish="HEAD",
+        )
+        subprocess.run(
+            ["git", "tag", "v1.0.1", frozen["result"]["content_commit"]],
+            cwd=self.workspace,
+            check=True,
+        )
+        published = release_cohort.record_release(
+            self.workspace,
+            expected=release_cohort.status(self.workspace)["state_token"],
+            project_binding=self.binding,
+            tag="v1.0.1",
+            evidence="https://example.invalid/releases/v1.0.1",
+        )
+        candidate = published["status"]["active"][0]["candidates"][0]
+        self.assertTrue(candidate["origin_ready_to_finalize"])
+        with contextlib.closing(
+            hybrid_state.connect(hybrid_state.database_path(self.workspace), writable=False)
+        ) as connection:
+            child = release_cohort._latest_outcome(
+                connection, extension["execution_cycle_id"]
+            )
+            self.assertEqual(child["lifecycle_state"], "terminal")
+            self.assertEqual(child["state"], "reconciled")
+            self.assertEqual(child["disposition"], "satisfied")
+            self.assertEqual(
+                connection.execute(
+                    "SELECT COUNT(*) FROM relationship WHERE relation_type='outcome-result-propagated'"
+                ).fetchone()[0],
+                1,
+            )
+        finalized = release_cohort.finalize(
+            self.workspace,
+            expected=published["status"]["state_token"],
+            project_binding=self.binding,
+            authorization="fixture release authorization",
+        )
+        self.assertEqual(finalized["status"]["active"], [])
 
     def test_sequential_milestone_releases_share_one_open_parent(self) -> None:
         ids: dict[str, str] = {}

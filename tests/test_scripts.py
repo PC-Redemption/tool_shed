@@ -2458,6 +2458,32 @@ Next Action: keep going
             )
             self.assertTrue(validation["valid"])
 
+    def test_completed_queue_keeps_the_stable_campaign_number(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            run_script("scripts/campaign_queue.py", "--workspace", str(workspace), "init")
+
+            def token() -> str:
+                return str(json.loads(run_script(
+                    "scripts/campaign_queue.py", "--workspace", str(workspace),
+                    "status", "--json",
+                ).stdout)["state_token"])
+
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace),
+                "add", "finished", "Finished", "--outcome", "deliver it",
+                "--completion-gate", "focused check passes", "--expect", token(),
+            )
+            run_script(
+                "scripts/campaign_queue.py", "--workspace", str(workspace),
+                "complete", "finished", "--evidence", "focused check passed",
+                "--gate-passed", "--expect", token(),
+            )
+            rendered = (
+                workspace / "work/00-campaigns/completed-queue.md"
+            ).read_text(encoding="utf-8")
+        self.assertIn("— (001) [Finished](completed/001-finished.md)", rendered)
+
     def test_campaign_numbers_preserve_id_prefixes_and_backfill_legacy_campaigns(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)
@@ -3578,6 +3604,22 @@ Active workpackage: `work/wp/active/wp-demo.md`.
             self.assertIn("map-demo.md:8", result.stdout)
             self.assertIn("work/wp/completed/wp-demo.md", result.stdout)
 
+    def test_check_stale_paths_ignores_inline_glob_examples(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            source = workspace / "work/maps/map-demo.md"
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "# Project Map: Demo\n\nStatus: active\nType: project-map\n\n"
+                "Use `work/**/*.md`, `work/*.md`, or `work/tickets/?.md`.\n",
+                encoding="utf-8",
+            )
+            result = run_script(
+                "scripts/check_stale_paths.py", "--workspace", str(workspace), check=False
+            )
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("No stale work paths found.", result.stdout)
+
     def test_check_stale_paths_uses_git_visible_markdown_set(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)
@@ -4202,22 +4244,30 @@ Produces:
             self.assertFalse((codex_home / "skills" / "tool-shed").exists())
 
     def test_install_readiness_reporting_distinguishes_missing_and_discovered_codex(self) -> None:
-        from scripts.codex_cli_resolver import CodexCliResolution, CodexReadiness, CodexSource
-
         with mock.patch.object(sys, "path", [str(ROOT / "scripts"), *sys.path]):
             from scripts import install_into_workspace
 
-        missing = CodexCliResolution(None, None, None, CodexReadiness.NOT_FOUND)
-        bundled = CodexCliResolution(
-            CodexSource.VSCODE_EXTENSION,
-            Path("C:/Users/me/.vscode/extensions/openai.chatgpt-1.2.0/bin/windows-x86_64/codex.exe"),
-            "0.144.6",
-            CodexReadiness.AVAILABLE_UNQUALIFIED,
-        )
-        with mock.patch.object(install_into_workspace, "CodexCliResolver") as resolver:
-            resolver.return_value.resolve.return_value = missing
+        missing = {
+            "codex_cli": "NOT FOUND", "codex_discovery": "not found",
+            "codex_executable": None, "installed_codex": None,
+            "codex_readiness": "not_found", "qualification_state": "unsafe-blocked",
+            "write_qualification_state": "write-not-qualified", "enabled_roles": {},
+            "codex_inventory": [],
+        }
+        executable = "C:/Users/me/.vscode/extensions/openai.chatgpt-1.2.0/bin/windows-x86_64/codex.exe"
+        bundled = {
+            "codex_cli": "AVAILABLE", "codex_discovery": "OpenAI VS Code extension",
+            "codex_executable": executable, "installed_codex": "0.144.6",
+            "codex_readiness": "available_unqualified", "qualification_state": "unsafe-blocked",
+            "write_qualification_state": "write-not-qualified", "enabled_roles": {},
+            "codex_inventory": [{"source": "openai_vscode_extension", "executable": executable}],
+        }
+        with mock.patch.object(
+            install_into_workspace.codex_app_server_compatibility, "status_report"
+        ) as status_report:
+            status_report.return_value = missing
             missing_report = install_into_workspace.codex_cli_readiness_report()
-            resolver.return_value.resolve.return_value = bundled
+            status_report.return_value = bundled
             bundled_report = install_into_workspace.codex_cli_readiness_report()
 
         self.assertEqual(missing_report["codex_cli"], "NOT FOUND")
@@ -5829,6 +5879,62 @@ old Tool Shed guidance
         self.assertEqual(report["discovery"], "OpenAI VS Code extension")
         self.assertEqual(report["readiness"], "available_unqualified")
         self.assertEqual(report["compatibility"], "UNQUALIFIED VERSION")
+
+    def test_snapshot_upgrade_refreshes_readiness_from_installed_registry(self) -> None:
+        with mock.patch.object(sys, "path", [str(ROOT / "scripts"), *sys.path]):
+            from scripts import update_snapshot
+
+        executable = "C:/Users/me/.vscode/extensions/openai.chatgpt/bin/codex.exe"
+        installed_status = {
+            "codex_cli": "AVAILABLE",
+            "codex_discovery": "OpenAI VS Code extension",
+            "codex_executable": executable,
+            "installed_codex": "0.153.0",
+            "codex_readiness": "available_qualified",
+            "qualification_state": "exact-qualified",
+            "write_qualification_state": "exact-qualified",
+            "enabled_roles": {"planning": {}, "verification": {}, "camp_execution": {}},
+            "codex_inventory": [
+                {"source": "openai_vscode_extension", "executable": executable}
+            ],
+        }
+        completed = subprocess.CompletedProcess(
+            [], 0, stdout=json.dumps(installed_status), stderr=""
+        )
+        with mock.patch.object(update_snapshot, "run", return_value=completed) as run:
+            report = update_snapshot.installed_codex_cli_readiness_report(
+                Path("C:/workspace/tool_shed"), timeout=30
+            )
+        self.assertEqual(report["compatibility"], "QUALIFIED VERSION")
+        self.assertEqual(report["qualification_state"], "exact-qualified")
+        self.assertEqual(report["write_qualification_state"], "exact-qualified")
+        self.assertEqual(report["readiness"], "available_qualified")
+        self.assertEqual(set(report["enabled_roles"]), {"planning", "verification", "camp_execution"})
+        self.assertIn("codex_app_server_compatibility.py", run.call_args.args[0][2])
+
+    def test_snapshot_upgrade_reports_incompatible_retained_local_patch(self) -> None:
+        with mock.patch.object(sys, "path", [str(ROOT / "scripts"), *sys.path]):
+            from scripts import update_snapshot
+
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            manifest = workspace / ".tool-shed/patches/local-dashboard/v1/patch.json"
+            manifest.parent.mkdir(parents=True)
+            manifest.write_text(
+                json.dumps(
+                    {
+                        "patch_id": "local-dashboard",
+                        "supported_shed_versions": ["0.42.4"],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            report = update_snapshot.local_patch_compatibility_report(
+                workspace, installed_version="0.59.3"
+            )
+        self.assertEqual(report["incompatible_count"], 1)
+        self.assertEqual(report["patches"][0]["state"], "incompatible")
+        self.assertIn("Update or remove", report["patches"][0]["next_action"])
 
     def test_native_launcher_runtime_fallback_installs_and_updates_workspaces(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

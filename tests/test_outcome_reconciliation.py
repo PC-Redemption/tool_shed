@@ -341,6 +341,44 @@ class OutcomeReconciliationTests(unittest.TestCase):
         self.assertIsNone(before["cycle"])
         self.assertEqual(before["later_overlays"][0]["origin_revision"], applied["revision"])
 
+    def test_report_deduplicates_shared_evidence_and_selects_latest_verification(self) -> None:
+        self.apply_slice()
+        manifest = outcome_loop.prepare(self.workspace, self.generic_source())
+        applied = outcome_loop.apply_manifest(
+            self.workspace,
+            manifest,
+            expected_token=manifest["manifest_token"],
+            project_binding=self.binding,
+        )
+        evidence_id = manifest["evidence"][0]["id"]
+        with contextlib.closing(
+            hybrid_state.connect(hybrid_state.database_path(self.workspace))
+        ) as connection:
+            existing = connection.execute(
+                "SELECT * FROM verification_result WHERE evidence_id=?",
+                (evidence_id,),
+            ).fetchone()
+            duplicate_id = "ffffffff-ffff-4fff-bfff-ffffffffffff"
+            connection.execute(
+                "INSERT INTO verification_result VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    duplicate_id,
+                    evidence_id,
+                    existing["requirement_id"],
+                    "passed",
+                    "newest-shared-check",
+                    applied["revision"],
+                    existing["verified_at"],
+                    existing["details_json"],
+                ),
+            )
+        report = outcome_loop.report_cycle(
+            self.workspace, manifest["cycle"]["id"], as_of=applied["revision"]
+        )
+        self.assertEqual(len(report["evidence"]), 1)
+        self.assertEqual(report["evidence"][0]["id"], evidence_id)
+        self.assertEqual(report["evidence"][0]["command_or_test_id"], "newest-shared-check")
+
     def test_generic_apply_refuses_stale_token_and_state(self) -> None:
         self.apply_slice()
         manifest = outcome_loop.prepare(self.workspace, self.generic_source())

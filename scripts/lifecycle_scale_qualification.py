@@ -59,6 +59,16 @@ def guarded_mutation_ceiling(platform_name: str) -> int:
         raise ScaleError(f"no guarded-mutation ceiling is defined for platform: {platform_name}") from error
 
 
+def evaluate_guarded_mutation_timings(
+    timings_ms: list[float], platform_name: str
+) -> dict[str, Any]:
+    if not timings_ms:
+        raise ScaleError("guarded-mutation timing evaluation requires at least one sample")
+    p95 = _nearest_rank(timings_ms, 0.95)
+    ceiling = guarded_mutation_ceiling(platform_name)
+    return {"p95": p95, "ceiling": ceiling, "passed": p95 <= ceiling}
+
+
 def _write(path: Path, value: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(path.name + ".tmp")
@@ -265,8 +275,9 @@ def run(
     audit = document_store.audit(workspace)
     size = database.stat().st_size
     wal = database.with_name(database.name + "-wal")
-    mutation_p95 = _nearest_rank(mutation_ms, 0.95)
-    mutation_ceiling = guarded_mutation_ceiling(platform_name)
+    mutation_evaluation = evaluate_guarded_mutation_timings(mutation_ms, platform_name)
+    mutation_p95 = mutation_evaluation["p95"]
+    mutation_ceiling = mutation_evaluation["ceiling"]
     result: dict[str, Any] = {
         "schema_version": 1,
         "kind": "tool-shed-lifecycle-scale-qualification",
@@ -303,7 +314,7 @@ def run(
             "lifecycle_p95": _nearest_rank(state["elapsed_ms"], 0.95),
             "guarded_mutation_p95": mutation_p95,
             "guarded_mutation_ceiling": mutation_ceiling,
-            "guarded_mutation_passed": mutation_p95 <= mutation_ceiling,
+            "guarded_mutation_passed": mutation_evaluation["passed"],
             "truth_vector": oracle_ms,
             "truth_vector_ceiling": 1000,
             "truth_vector_passed": oracle_ms <= 1000,

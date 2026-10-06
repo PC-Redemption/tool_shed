@@ -34,5 +34,5 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Measure primary release-validation shard
+      - name: Measure fixed eight-shard validation reference
         run: python scripts/benchmark_validation.py --samples 3 --jobs ${{ matrix.test-jobs }} --shard-index 0 --shard-count 8 --warning-median-seconds 60 --max-median-seconds ${{ matrix.max-median-seconds }}

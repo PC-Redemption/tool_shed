@@ -145,6 +145,9 @@ WORK_ARTIFACT_FIELDS = {
 }
 WORK_ARTIFACT_FIELDS_V7 = WORK_ARTIFACT_FIELDS | {"closure_status"}
 WORK_ARTIFACT_FIELDS_V11 = WORK_ARTIFACT_FIELDS_V7 | {"terminal_reason"}
+WORK_ARTIFACT_FIELDS_V15 = WORK_ARTIFACT_FIELDS_V11 | {
+    "discovery_status", "next_action", "semantic_review_state", "promotion_allowed",
+}
 CLOSURE_STATUS_FIELDS = {
     "local_closure", "evidence_health", "graph_health", "effective_closed", "reason_codes",
     "counts", "blockers", "subject_revision", "graph_revision", "evaluator_version", "evaluated_at",
@@ -538,7 +541,8 @@ def _work_inventory(value: Any, *, schema_version: int) -> dict[str, Any]:
         item = _object(
             raw,
             label,
-            WORK_ARTIFACT_FIELDS_V11 if schema_version >= 11
+            WORK_ARTIFACT_FIELDS_V15 if schema_version >= 15
+            else WORK_ARTIFACT_FIELDS_V11 if schema_version >= 11
             else WORK_ARTIFACT_FIELDS_V7 if schema_version >= 7
             else WORK_ARTIFACT_FIELDS,
         )
@@ -588,6 +592,20 @@ def _work_inventory(value: Any, *, schema_version: int) -> dict[str, Any]:
                 "planning_position": planning_position,
                 "planning_order_source": planning_source,
                 "planning_readiness": planning_readiness,
+                "discovery_status": _optional_string(
+                    item.get("discovery_status"), f"{label}.discovery_status", 64
+                ) if schema_version >= 15 else None,
+                "next_action": _optional_string(
+                    item.get("next_action"), f"{label}.next_action", 1000
+                ) if schema_version >= 15 else None,
+                "semantic_review_state": _optional_string(
+                    item.get("semantic_review_state"), f"{label}.semantic_review_state", 64
+                ) if schema_version >= 15 else None,
+                "promotion_allowed": (
+                    _boolean(item.get("promotion_allowed"), f"{label}.promotion_allowed")
+                    if schema_version >= 15 and item.get("artifact_type") == "idea-brief"
+                    else None
+                ),
                 "closure_status": _closure_status(
                     item.get("closure_status"), f"{label}.closure_status"
                 ) if schema_version >= 7 else {},
@@ -1163,8 +1181,8 @@ def _executive(value: Any, *, report_schema_version: int) -> dict[str, Any]:
 def validate_report(payload: Any) -> dict[str, Any]:
     root = _object(payload, "report", ROOT_FIELDS)
     schema_version = root.get("schema_version")
-    if schema_version not in {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}:
-        raise ContractError("report.schema_version must be between 1 and 14")
+    if schema_version not in {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}:
+        raise ContractError("report.schema_version must be between 1 and 15")
     if schema_version == 1 and ({"work_inventory", "lifecycle_events"} & set(root)):
         raise ContractError("report schema 1 does not support lifecycle projection fields")
     if schema_version < 4 and "instance_health" in root:

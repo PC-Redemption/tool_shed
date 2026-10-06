@@ -131,6 +131,8 @@ def scan_file(path: Path, root: Path) -> list[Finding]:
 
 
 def check_reference(source: Path, line_number: int, reference: str, root: Path) -> list[Finding]:
+    if any(character in strip_anchor(reference) for character in "*?["):
+        return []
     reference_path = root / strip_anchor(reference)
     if reference_path.exists():
         return []

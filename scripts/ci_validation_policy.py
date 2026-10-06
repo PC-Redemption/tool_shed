@@ -16,6 +16,7 @@ from pathlib import Path
 
 FULL_PREFIXES = (
     ".github/workflows/",
+    "dashboard/",
     "schemas/",
     "scripts/",
     "skills/",
@@ -28,12 +29,14 @@ FULL_FILES = {
     "install.sh",
     "install.ps1",
     "pyproject.toml",
+    "requirements-dashboard.txt",
 }
 PERFORMANCE_PATHS = {
     "scripts/benchmark_validation.py",
     "scripts/validate_tool_shed.py",
     ".github/workflows/validation-performance.yml",
 }
+FULL_SHARD_COUNT = 4
 
 
 def job_matrix(*, full: bool) -> dict[str, list[dict[str, object]]]:
@@ -56,13 +59,13 @@ def job_matrix(*, full: bool) -> dict[str, list[dict[str, object]]]:
                 "os": operating_system,
                 "python_version": python_version,
                 "shard": shard,
-                "shard_count": 8,
+                "shard_count": FULL_SHARD_COUNT,
                 "test_jobs": 6 if operating_system == "windows-latest" else 8,
                 "profile": "release",
             }
             for operating_system in ("ubuntu-latest", "windows-latest")
             for python_version in ("3.11", "3.x")
-            for shard in range(8)
+            for shard in range(FULL_SHARD_COUNT)
         ]
     }
 
@@ -84,7 +87,7 @@ def classify(paths: list[str], *, force_full: bool = False) -> dict[str, object]
         "kind": "tool-shed-ci-validation-policy",
         "profile": "release" if full else "focused",
         "full_matrix": full,
-        "shard_count": 8 if full else 1,
+        "shard_count": FULL_SHARD_COUNT if full else 1,
         "performance": performance,
         "reason": (
             "explicit full-validation override"

@@ -777,14 +777,13 @@ cross-command installed-workspace smoke. Unit cases run in isolated concurrent p
 selected case reports independently without serializing unrelated cases. GitHub Actions uses the
 declared changed-path policy to run one focused Ubuntu job for documentation/state-only changes or
 the `release` profile across Ubuntu and Windows for product-risk changes, with a 60-second
-advisory threshold, a 360-second hard validator budget, and a 10-minute hung-job timeout. It
-partitions unit cases into eight deterministic runner shards while one shard owns the non-unit
-contracts. Manual and scheduled full-matrix overrides catch routing gaps. A separate weekly workflow
+advisory threshold, a 900-second hard validator budget, and a 20-minute hung-job timeout. It
+partitions unit cases into four deterministic runner shards and distributes the non-unit contracts
+once across those shards. Manual and scheduled full-matrix overrides catch routing gaps. A separate weekly workflow
 qualifies a frozen production-shaped corpus against a relative checked-in baseline, then measures
-three advisory live primary-shard samples per operating system and fails only at the 180-second
-runaway ceiling. Tagged
-publication does not repeat those cases: it requires a successful push run for the exact content
-commit before creating the GitHub Release.
+three advisory live samples of a fixed eight-shard reference per operating system and fails only
+at the 180-second runaway ceiling. Tagged publication does not repeat those cases: it requires a
+successful push run for the exact content commit before creating the GitHub Release.
 
 The public human/AI process guide and generated command reference are maintained under `site/` and
 published at [ts.rookaro.com](https://ts.rookaro.com). See the

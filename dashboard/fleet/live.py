@@ -126,6 +126,10 @@ def dashboard_revision() -> str:
                 "planning_position",
                 "planning_order_source",
                 "planning_readiness",
+                "discovery_status",
+                "next_action",
+                "semantic_review_state",
+                "promotion_allowed",
                 "source_updated_at",
             )
         ),

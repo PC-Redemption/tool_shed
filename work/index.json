@@ -661,7 +661,7 @@
     }
   ],
   "description": "Generated from tool_shed artifact headers. Use as navigation, not canonical truth.",
-  "generated_at": "2026-09-12",
+  "generated_at": "2026-10-06",
   "outcome_reconciliation": {
     "current_state_query": "python3 scripts/outcome_reconciliation.py --workspace . audit",
     "dimensions": [

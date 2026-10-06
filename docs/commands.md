@@ -218,15 +218,20 @@ Independent unit cases run in isolated concurrent processes and all failures are
 test-ID order. The default CLI profile is `full`; CI and release qualification pass
 `--profile release --warn-seconds 60 --max-seconds 900` explicitly, with a 20-minute job timeout
 for hangs. CI partitions unit cases into deterministic shards; each case runs once per OS/Python
-combination, and only shard zero runs the non-unit release contracts. The changed-path policy in
+combination, and distributes each non-unit release contract to exactly one shard. The changed-path policy in
 `scripts/ci_validation_policy.py` selects one focused Ubuntu job for documentation and database-state
-collateral, and the full 32-job matrix for product, schema, test, template, or workflow changes.
+collateral, and the full 16-job matrix for product, dashboard, dependency, schema, test, template,
+or workflow changes.
 An empty/unknown path set fails safe to full validation. Manual `workflow_dispatch` and the weekly
 scheduled run provide explicit and automatic full-matrix overrides. A separate weekly Validation
 Performance workflow first blocks on a small frozen production-shaped corpus using a checked-in
-candidate/reference ratio and relative tolerance, then runs three live primary-shard samples per
-operating system. Live timing warns above 60 seconds and has a generous 180-second median runaway
-ceiling; functional failures always fail immediately.
+candidate/reference ratio and relative tolerance, then runs three live samples of a fixed
+eight-shard reference per operating system. Live timing warns above 60 seconds and has a generous
+180-second median runaway ceiling; functional failures always fail immediately.
+The lifecycle scale canary keeps platform-local product ceilings (1000 ms on Linux and 5000 ms on
+Windows) and includes a deterministic injected-over-ceiling check. Treat a one-off live timing
+failure that passes unchanged on rerun as runner variance; repeated canary failure or failure of
+the injected check is a product-gate failure.
 
 Large authority or migration initiatives that predate their target runtime use an independent
 bootstrap closure manifest under `work/evidence/`. The guarded interface is:

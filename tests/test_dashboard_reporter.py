@@ -27,8 +27,15 @@ class DashboardReporterTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory()
         self.workspace = Path(self.temporary.name)
         (self.workspace / ".tool-shed/dashboard").mkdir(parents=True)
+        self.authority = mock.patch.object(
+            dashboard_reporter.authority_resolver,
+            "resolve",
+            return_value={"authority": "sqlite", "hybrid_schema": 6},
+        )
+        self.authority.start()
 
     def tearDown(self) -> None:
+        self.authority.stop()
         self.temporary.cleanup()
 
     def connected(self) -> dict[str, object]:
@@ -211,6 +218,72 @@ class DashboardReporterTests(unittest.TestCase):
         with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
             self.assertEqual(connection.execute("SELECT COUNT(*) FROM outbox WHERE delivered_at IS NULL").fetchone()[0], 0)
 
+    def test_delivery_history_is_bounded_without_removing_pending_events(self) -> None:
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            for sequence in range(1, dashboard_reporter.DELIVERED_RETENTION + 22):
+                connection.execute(
+                    "INSERT INTO outbox VALUES (?, ?, ?, 0, 0, ?, ?)",
+                    (
+                        str(uuid.uuid4()),
+                        sequence,
+                        json.dumps({"sequence": sequence}),
+                        dashboard_reporter.stamp(),
+                        dashboard_reporter.stamp(),
+                    ),
+                )
+            pending_sequence = dashboard_reporter.DELIVERED_RETENTION + 22
+            connection.execute(
+                "INSERT INTO outbox VALUES (?, ?, ?, 0, 0, ?, NULL)",
+                (
+                    str(uuid.uuid4()),
+                    pending_sequence,
+                    json.dumps({"sequence": pending_sequence}),
+                    dashboard_reporter.stamp(),
+                ),
+            )
+            removed = dashboard_reporter._compact_delivered_outbox(connection)
+            delivered = connection.execute(
+                "SELECT COUNT(*) FROM outbox WHERE delivered_at IS NOT NULL"
+            ).fetchone()[0]
+            pending = connection.execute(
+                "SELECT COUNT(*) FROM outbox WHERE delivered_at IS NULL"
+            ).fetchone()[0]
+        self.assertEqual(removed, 21)
+        self.assertEqual(delivered, dashboard_reporter.DELIVERED_RETENTION)
+        self.assertEqual(pending, 1)
+
+    def test_new_snapshot_retires_only_eventless_pending_snapshots(self) -> None:
+        payloads = [
+            {"sequence": 1, "material_events": [], "lifecycle_events": []},
+            {"sequence": 2, "material_events": [{"kind": "state-change"}], "lifecycle_events": []},
+            {"sequence": 3, "material_events": [], "lifecycle_events": [{"transition": "created"}]},
+            {"sequence": 4, "material_events": [], "lifecycle_events": []},
+        ]
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            for payload in payloads:
+                connection.execute(
+                    "INSERT INTO outbox VALUES (?, ?, ?, 0, 0, ?, NULL)",
+                    (
+                        str(uuid.uuid4()), payload["sequence"], json.dumps(payload),
+                        dashboard_reporter.stamp(),
+                    ),
+                )
+            removed = dashboard_reporter._retire_supersedable_pending(connection, 4)
+            remaining = [
+                row[0] for row in connection.execute(
+                    "SELECT sequence FROM outbox ORDER BY sequence"
+                )
+            ]
+            plan = " ".join(
+                str(row[3]) for row in connection.execute(
+                    "EXPLAIN QUERY PLAN SELECT * FROM outbox WHERE delivered_at IS NULL "
+                    "AND next_attempt <= 0 ORDER BY sequence LIMIT 1"
+                )
+            )
+        self.assertEqual(removed, 1)
+        self.assertEqual(remaining, [2, 3, 4])
+        self.assertIn("outbox_pending_sequence_idx", plan)
+
     def test_continuous_worker_refuses_a_second_live_process(self) -> None:
         with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
             connection.execute(
@@ -220,6 +293,39 @@ class DashboardReporterTests(unittest.TestCase):
         with mock.patch.object(dashboard_reporter, "require_project_binding"):
             result = dashboard_reporter.worker(self.workspace, project_binding="fixture", max_cycles=1)
         self.assertEqual(result["status"], "singleton-active")
+
+    def test_expired_claim_still_protects_a_live_worker(self) -> None:
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            connection.execute(
+                "INSERT INTO worker_process (id, owner, expires_at, pid) VALUES (1, 'existing', ?, ?)",
+                (time.time() - 60, os.getpid()),
+            )
+        self.assertIsNone(dashboard_reporter._claim_worker_launch(self.workspace))
+        with mock.patch.object(dashboard_reporter, "require_project_binding"):
+            result = dashboard_reporter.worker(self.workspace, project_binding="fixture", max_cycles=1)
+        self.assertEqual(result["status"], "singleton-active")
+
+    def test_worker_report_build_cannot_enqueue_after_ownership_loss(self) -> None:
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            connection.execute(
+                "INSERT INTO worker_process (id, owner, expires_at, pid) VALUES (1, 'old', ?, ?)",
+                (time.time() + 120, os.getpid()),
+            )
+
+        def build_and_lose_owner(workspace, **_kwargs):
+            with contextlib.closing(dashboard_reporter._outbox(workspace)) as connection:
+                connection.execute("UPDATE worker_process SET owner='new' WHERE id=1")
+            return {"observed_at": dashboard_reporter.stamp(), "sequence": 0}
+
+        with mock.patch.object(dashboard_reporter, "load_connection", return_value=self.connected()), mock.patch.object(
+            dashboard_reporter, "_project_projection", return_value={"work_inventory": {"artifacts": []}}
+        ), mock.patch.object(dashboard_reporter, "report_payload", side_effect=build_and_lose_owner):
+            with self.assertRaises(dashboard_reporter.WorkerOwnershipLost):
+                dashboard_reporter._enqueue_connected(
+                    self.workspace, reason="heartbeat", worker_owner="old"
+                )
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            self.assertEqual(connection.execute("SELECT COUNT(*) FROM outbox").fetchone()[0], 0)
 
     def test_idle_worker_waits_until_the_next_meaningful_deadline(self) -> None:
         self.assertEqual(
@@ -263,6 +369,7 @@ class DashboardReporterTests(unittest.TestCase):
             project_binding="fixture",
             reason="quiescent",
             quiescent=True,
+            worker_owner=mock.ANY,
         )
         self.assertEqual(worker_once.call_count, 2)
 
@@ -649,7 +756,36 @@ class DashboardReporterTests(unittest.TestCase):
         command = run.call_args.args[0]
         self.assertEqual(command[:4], ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command"])
         self.assertIn(str(windowless.resolve()), command[-1])
+        self.assertIn("-StartWhenAvailable", command[-1])
+        self.assertIn("-WakeToRun:$false", command[-1])
+        self.assertIn("Get-ScheduledTask", command[-1])
+        self.assertIn("did not converge", command[-1])
+        self.assertTrue(result["missed_run_recovery"])
+        self.assertFalse(result["wake_to_run"])
         self.assertTrue(run.call_args.kwargs["windowless"])
+
+    def test_reporting_preflight_rejects_file_authority_without_creating_state(self) -> None:
+        state_database = self.workspace / ".tool-shed/state.sqlite3"
+        with mock.patch.object(
+            dashboard_reporter.authority_resolver,
+            "resolve",
+            return_value={
+                "authority": "file",
+                "next_action": "Complete guarded Hybrid initialization and cutover",
+            },
+        ), mock.patch.object(dashboard_reporter, "require_project_binding"), mock.patch.object(
+            dashboard_reporter, "_request"
+        ) as request:
+            with self.assertRaisesRegex(
+                dashboard_reporter.DashboardReporterError, "Hybrid schema-2"
+            ):
+                dashboard_reporter.connect(
+                    self.workspace,
+                    server="https://dashboard.invalid",
+                    project_binding="fixture",
+                )
+        request.assert_not_called()
+        self.assertFalse(state_database.exists())
 
     def test_linux_scheduler_install_writes_project_scoped_private_units(self) -> None:
         config = self.workspace / "config"
@@ -707,7 +843,7 @@ class DashboardReporterTests(unittest.TestCase):
             dashboard_reporter, "load_connection", return_value=self.connected()
         ), mock.patch.object(
             dashboard_reporter, "_request", return_value={"status": "accepted"}
-        ) as request:
+        ) as request, mock.patch.object(dashboard_reporter.time, "sleep") as sleep:
             result = dashboard_reporter.safety_pass(
                 self.workspace, project_binding="fixture"
             )
@@ -716,6 +852,8 @@ class DashboardReporterTests(unittest.TestCase):
         self.assertEqual(result["pending_events"], 0)
         self.assertTrue(result["writes_performed"])
         self.assertEqual(request.call_count, 2)
+        self.assertEqual(sleep.call_count, 2)
+        sleep.assert_called_with(dashboard_reporter.SAFETY_DRAIN_PACE_SECONDS)
 
     def test_safety_pass_delivers_heartbeat_when_digest_and_outbox_are_current(self) -> None:
         with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
@@ -874,7 +1012,9 @@ class DashboardReporterTests(unittest.TestCase):
         ):
             payload = dashboard_reporter.report_payload(self.workspace, sequence=4, reason="managed-update")
         projected.assert_called_once_with(self.workspace)
-        executive_projected.assert_called_once_with(self.workspace)
+        executive_projected.assert_called_once_with(
+            self.workspace, projection=projection, release_status={}
+        )
         serialized = json.dumps(payload)
         for prohibited in ("prompt", "source_path", "credential", "raw_diagnostic"):
             self.assertNotIn(prohibited, serialized)
@@ -884,7 +1024,7 @@ class DashboardReporterTests(unittest.TestCase):
         self.assertEqual(payload["app_server"]["attempts"], 3)
         self.assertEqual(payload["app_server"]["performance"]["default_window"], "7d")
         self.assertIsNone(payload["work_efficiency"]["remedial_tokens_actual"])
-        self.assertEqual(payload["schema_version"], 14)
+        self.assertEqual(payload["schema_version"], 15)
         self.assertEqual(payload["executive"], executive)
         self.assertEqual(
             payload["loop_findings"],

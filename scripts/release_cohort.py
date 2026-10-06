@@ -447,6 +447,16 @@ def _candidate_rows(connection: sqlite3.Connection, cohort_id: str) -> list[dict
             )
             and (not closure_available or bool(closure and closure["effective_closed"]))
         )
+        extension = connection.execute(
+            "SELECT 1 FROM relationship WHERE from_artifact_id=? "
+            "AND relation_type='release-extension-of' AND retired_revision IS NULL",
+            (item["origin_artifact_id"],),
+        ).fetchone()
+        item["is_release_extension"] = bool(extension)
+        item["release_execution_cycle_id"] = (
+            _release_execution_child(connection, str(item["origin_cycle_id"]))
+            if extension else None
+        )
         results.append(item)
     return results
 
@@ -791,6 +801,23 @@ def _open_release_extension(connection: sqlite3.Connection, original_cycle: str)
     return str(rows[0]["id"]) if rows else None
 
 
+def _release_execution_child(
+    connection: sqlite3.Connection, extension_cycle: str
+) -> str | None:
+    extension = _latest_outcome(connection, extension_cycle)
+    rows = connection.execute(
+        "SELECT c.id FROM relationship r JOIN cycle c ON c.origin_artifact_id=r.from_artifact_id "
+        "WHERE r.to_artifact_id=? AND r.relation_type='outcome-parent' "
+        "AND r.retired_revision IS NULL AND c.kind='direct-work' ORDER BY c.opened_at,c.id",
+        (extension["origin_artifact_id"],),
+    ).fetchall()
+    if len(rows) > 1:
+        raise ReleaseCohortError(
+            f"release extension has multiple subordinate Work5 cycles: {extension_cycle}"
+        )
+    return str(rows[0]["id"]) if rows else None
+
+
 def _insert_open_cycle(
     connection: sqlite3.Connection,
     revision: int,
@@ -983,6 +1010,24 @@ def register(
                         summary=f"Release extension for terminal pre-cohort outcome {cycle_id}.",
                         path_prefix="outcome-capsules",
                     )
+                    execution_cycle, execution_artifact = _insert_open_cycle(
+                        connection,
+                        revision,
+                        kind="direct-work",
+                        accepted_outcome=(
+                            "Publish the release and verify every required production client lane "
+                            "for the retained Work2 outcome."
+                        ),
+                        summary=f"Work5 execution for release extension {extension}.",
+                        path_prefix="outcome-capsules",
+                    )
+                    connection.execute(
+                        "INSERT INTO relationship VALUES (?, ?, 'outcome-parent', ?, ?, ?, NULL)",
+                        (
+                            hybrid_state.random_uuid(), execution_artifact,
+                            extension_artifact, "release-cohort-v1", revision,
+                        ),
+                    )
                     connection.execute(
                         "INSERT INTO relationship VALUES (?, ?, 'release-extension-of', ?, ?, ?, NULL)",
                         (
@@ -998,7 +1043,11 @@ def register(
                         ),
                     )
                     release_extensions.append(
-                        {"original_cycle_id": cycle_id, "extension_cycle_id": extension}
+                        {
+                            "original_cycle_id": cycle_id,
+                            "extension_cycle_id": extension,
+                            "execution_cycle_id": execution_cycle,
+                        }
                     )
                 chain = _open_chain(connection, extension)
             for member in chain:
@@ -1218,8 +1267,19 @@ def record_release(
             raise ReleaseCohortError("release cohort revision changed before publication recording")
         project_id = load_project_identity(workspace)["project_id"]
         unique_origins: dict[str, str] = {}
+        release_executions: dict[str, str] = {}
         for candidate in cohort["candidates"]:
             unique_origins[candidate["origin_cycle_id"]] = candidate["origin_artifact_id"]
+            if candidate.get("is_release_extension"):
+                execution_cycle = _release_execution_child(
+                    connection, candidate["origin_cycle_id"]
+                )
+                if execution_cycle is None:
+                    raise ReleaseCohortError(
+                        "release extension lacks its subordinate Work5 execution cycle; "
+                        "register the candidate again before record-release"
+                    )
+                release_executions[candidate["origin_cycle_id"]] = execution_cycle
         evidence_ids: dict[str, str] = {}
         for cycle_id in sorted(unique_origins):
             evidence_id = hybrid_state.stable_uuid(
@@ -1230,6 +1290,21 @@ def record_release(
                 (evidence_id, cycle_id, evidence.strip(), tag, hybrid_state.now()),
             )
             evidence_ids[cycle_id] = evidence_id
+            execution_cycle = release_executions.get(cycle_id)
+            if execution_cycle:
+                connection.execute(
+                    "INSERT INTO evidence_reference VALUES (?, ?, 'production-release', ?, NULL, ?, ?)",
+                    (
+                        hybrid_state.stable_uuid(
+                            project_id,
+                            f"release-publication:{cohort['cycle_id']}:{execution_cycle}:{tag}",
+                        ),
+                        execution_cycle,
+                        evidence.strip(),
+                        tag,
+                        hybrid_state.now(),
+                    ),
+                )
         for candidate in cohort["candidates"]:
             connection.execute(
                 "UPDATE requirement SET disposition = 'released-pending-reconciliation' WHERE id = ?",
@@ -1252,6 +1327,65 @@ def record_release(
                         },
                         sort_keys=True,
                     ),
+                ),
+            )
+        for extension_cycle, execution_cycle in sorted(release_executions.items()):
+            stamp = hybrid_state.now()
+            child = _latest_outcome(connection, execution_cycle)
+            extension = _latest_outcome(connection, extension_cycle)
+            child_verdict = hybrid_state.random_uuid()
+            connection.execute(
+                "UPDATE cycle SET lifecycle_state='terminal', closed_at=? WHERE id=?",
+                (stamp, execution_cycle),
+            )
+            connection.execute(
+                "UPDATE artifact SET lifecycle_state='terminal', updated_at=? WHERE id=?",
+                (stamp, child["origin_artifact_id"]),
+            )
+            connection.execute(
+                "INSERT INTO outcome_verdict VALUES (?, ?, 'work5-execution', 'satisfied', ?, ?, ?, ?)",
+                (
+                    child_verdict, execution_cycle,
+                    f"Release {tag} was published and production evidence was recorded.",
+                    evidence.strip(), revision, stamp,
+                ),
+            )
+            connection.execute(
+                "INSERT INTO reconciliation VALUES (?, ?, ?, ?, ?, 'reconciled', ?, '[]')",
+                (
+                    hybrid_state.random_uuid(), execution_cycle, revision,
+                    f"release:{tag}", child_verdict, stamp,
+                ),
+            )
+            connection.execute(
+                "INSERT INTO relationship VALUES (?, ?, 'outcome-result-propagated', ?, ?, ?, NULL)",
+                (
+                    hybrid_state.random_uuid(), child["origin_artifact_id"],
+                    extension["origin_artifact_id"], "release-cohort-v1", revision,
+                ),
+            )
+            extension_verdict = hybrid_state.random_uuid()
+            connection.execute(
+                "UPDATE cycle SET lifecycle_state='terminal', closed_at=? WHERE id=?",
+                (stamp, extension_cycle),
+            )
+            connection.execute(
+                "UPDATE artifact SET lifecycle_state='terminal', updated_at=? WHERE id=?",
+                (stamp, extension["origin_artifact_id"]),
+            )
+            connection.execute(
+                "INSERT INTO outcome_verdict VALUES (?, ?, 'release-extension', 'satisfied', ?, ?, ?, ?)",
+                (
+                    extension_verdict, extension_cycle,
+                    f"Subordinate Work5 execution completed for {tag}.",
+                    evidence.strip(), revision, stamp,
+                ),
+            )
+            connection.execute(
+                "INSERT INTO reconciliation VALUES (?, ?, ?, ?, ?, 'reconciled', ?, '[]')",
+                (
+                    hybrid_state.random_uuid(), extension_cycle, revision,
+                    f"release:{tag}", extension_verdict, stamp,
                 ),
             )
         connection.execute(

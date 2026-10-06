@@ -1564,6 +1564,15 @@ def post_install_checks(
     results["release_convergence"] = release_convergence_report(
         workspace, target, timeout=validation_timeout
     )
+    try:
+        installed_version = str(
+            json.loads((target / "SHED_VERSION.json").read_text(encoding="utf-8"))["shed_version"]
+        )
+    except (OSError, KeyError, json.JSONDecodeError) as error:
+        raise UpdateError("installed snapshot version manifest is unreadable") from error
+    results["local_patches"] = local_patch_compatibility_report(
+        workspace, installed_version=installed_version
+    )
     campaign_before = campaign_convergence_report(workspace, target, include_plan=True)
     campaign_result: dict[str, object] = {"before": campaign_before, "applied": False}
     allowed_campaign_mutations = {
@@ -2086,6 +2095,101 @@ def codex_cli_readiness_report() -> dict[str, Any]:
     return report
 
 
+def local_patch_compatibility_report(
+    workspace: Path, *, installed_version: str
+) -> dict[str, Any]:
+    """Report retained local patches against a small explicit manifest contract."""
+    root = workspace / ".tool-shed/patches"
+    patches: list[dict[str, Any]] = []
+    if root.is_dir():
+        manifests = sorted({*root.glob("*/patch.json"), *root.glob("*/*/patch.json")})
+        for manifest in manifests:
+            try:
+                payload = json.loads(manifest.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                patches.append(
+                    {
+                        "path": manifest.relative_to(workspace).as_posix(),
+                        "state": "invalid-manifest",
+                        "next_action": "Repair or remove this local patch before applying it.",
+                    }
+                )
+                continue
+            supported = payload.get("supported_shed_versions", [])
+            if not isinstance(supported, list) or not all(
+                isinstance(value, str) for value in supported
+            ):
+                state = "invalid-manifest"
+            elif installed_version in supported:
+                state = "compatible"
+            else:
+                state = "incompatible"
+            patches.append(
+                {
+                    "path": manifest.relative_to(workspace).as_posix(),
+                    "patch_id": payload.get("patch_id") or manifest.parent.name,
+                    "supported_shed_versions": supported if isinstance(supported, list) else [],
+                    "state": state,
+                    "next_action": (
+                        None
+                        if state == "compatible"
+                        else "Update or remove this retained local patch before applying it."
+                    ),
+                }
+            )
+    return {
+        "installed_version": installed_version,
+        "patches": patches,
+        "incompatible_count": sum(item["state"] != "compatible" for item in patches),
+        "writes_performed": False,
+    }
+
+
+def installed_codex_cli_readiness_report(
+    target: Path, *, timeout: float
+) -> dict[str, Any]:
+    """Read readiness through the newly installed registry and implementation."""
+    result = run(
+        [
+            sys.executable,
+            "-B",
+            str(target / "scripts/codex_app_server_compatibility.py"),
+            "status",
+            "--json",
+        ],
+        cwd=target,
+        timeout=timeout,
+        timeout_option="--validation-timeout",
+    )
+    status = json.loads(result.stdout)
+    inventory = status.get("codex_inventory", [])
+    executable = status.get("codex_executable")
+    selected = next(
+        (item for item in inventory if item.get("executable") == executable), {}
+    )
+    readiness = str(status["codex_readiness"])
+    compatibility = (
+        "QUALIFIED VERSION"
+        if status["qualification_state"] in {"exact-qualified", "dirty-qualified"}
+        else {
+            "available_unqualified": "UNQUALIFIED VERSION",
+            "app_server_unavailable": "APP SERVER UNAVAILABLE",
+            "invalid_executable": "INVALID EXECUTABLE",
+            "not_found": "NOT INSTALLED OR NOT FOUND",
+        }.get(readiness, "UNQUALIFIED VERSION")
+    )
+    return {
+        **status,
+        "source": selected.get("source"),
+        "executable": executable,
+        "version": status.get("installed_codex"),
+        "readiness": readiness,
+        "codex_cli": status["codex_cli"],
+        "discovery": status["codex_discovery"],
+        "compatibility": compatibility,
+    }
+
+
 def print_codex_cli_readiness(report: dict[str, Any]) -> None:
     print(f"Codex CLI: {report['codex_cli']}")
     print(f"Discovery: {report['discovery']}")
@@ -2498,6 +2602,10 @@ def main() -> int:
                     args.validation_timeout,
                     hybrid_runtime_before,
                 )
+                if "codex" in providers:
+                    payload["codex_cli_readiness"] = installed_codex_cli_readiness_report(
+                        target, timeout=args.validation_timeout
+                    )
                 if backup_scope is None:
                     raise UpdateError("post-install verification has no declared backup scope")
                 scope_after = backup_fingerprint(workspace, backup_scope)

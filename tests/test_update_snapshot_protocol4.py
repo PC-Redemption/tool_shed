@@ -79,7 +79,6 @@ class Protocol4UpdaterTests(unittest.TestCase):
             database.write_bytes(b"live")
             checkpoints = workspace / "work/state/checkpoints"
             checkpoints.mkdir(parents=True)
-            (checkpoints / "state-v1.json").write_text("{}\n", encoding="utf-8")
             (checkpoints / "state-v2.json").write_text("{}\n", encoding="utf-8")
             audit = {
                 "classification": "CLEAN",
@@ -117,6 +116,7 @@ class Protocol4UpdaterTests(unittest.TestCase):
             self.assertEqual(result["shadow_rebuild"], current)
             self.assertIsNone(result["recovery_rebuilds"]["state_v1"])
             self.assertEqual(result["recovery_rebuilds"]["state_v2"], current)
+            self.assertFalse((checkpoints / "state-v1.json").exists())
 
     def test_schema2_preflight_requires_document_checkpoint(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

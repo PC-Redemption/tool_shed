@@ -15,9 +15,11 @@ class CiValidationPolicyTests(unittest.TestCase):
         self.assertEqual(result["shard_count"], 1)
         self.assertEqual(len(result["matrix"]["include"]), 1)
 
-    def test_product_schema_test_and_workflow_changes_require_full_matrix(self) -> None:
+    def test_product_dashboard_dependency_schema_test_and_workflow_changes_require_full_matrix(self) -> None:
         for path in (
             "scripts/outcome_reconciliation.py",
+            "dashboard/fleet/live.py",
+            "requirements-dashboard.txt",
             "schemas/outcome-reconciliation/v1/fixture.json",
             "tests/test_outcome_reconciliation.py",
             ".github/workflows/validate.yml",
@@ -26,8 +28,8 @@ class CiValidationPolicyTests(unittest.TestCase):
                 result = ci_validation_policy.classify([path])
                 self.assertEqual(result["profile"], "release")
                 self.assertTrue(result["full_matrix"])
-                self.assertEqual(result["shard_count"], 8)
-                self.assertEqual(len(result["matrix"]["include"]), 32)
+                self.assertEqual(result["shard_count"], 4)
+                self.assertEqual(len(result["matrix"]["include"]), 16)
 
     def test_empty_input_and_override_fail_safe_to_full(self) -> None:
         self.assertTrue(ci_validation_policy.classify([])["full_matrix"])

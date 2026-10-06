@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from codex_cli_resolver import CodexCliResolver, CodexReadiness
+import codex_app_server_compatibility
 from codex_skill_sync import inspect_codex_skill, load_release_skill_digests
 from provider_adapters import provider_config, provider_ids
 from project_identity import (
@@ -578,26 +579,33 @@ def report_codex_skill_state() -> None:
 
 def codex_cli_readiness_report() -> dict[str, Any]:
     """Return the shared resolver vocabulary used for install-time reporting."""
-
-    resolution = CodexCliResolver().resolve()
-    report = resolution.as_dict()
-    report["codex_cli"] = (
-        "INVALID" if resolution.readiness is CodexReadiness.INVALID_EXECUTABLE
-        else ("AVAILABLE" if resolution.found else "NOT FOUND")
+    status = codex_app_server_compatibility.status_report()
+    inventory = status.get("codex_inventory", [])
+    executable = status.get("codex_executable")
+    selected = next(
+        (item for item in inventory if item.get("executable") == executable), {}
     )
-    report["discovery"] = (
-        "OpenAI VS Code extension"
-        if resolution.source and resolution.source.value == "openai_vscode_extension"
-        else (resolution.source.value.replace("_", " ").title() if resolution.source else "not found")
+    readiness = str(status["codex_readiness"])
+    compatibility = (
+        "QUALIFIED VERSION"
+        if status["qualification_state"] in {"exact-qualified", "dirty-qualified"}
+        else {
+            "available_unqualified": "UNQUALIFIED VERSION",
+            "app_server_unavailable": "APP SERVER UNAVAILABLE",
+            "invalid_executable": "INVALID EXECUTABLE",
+            "not_found": "NOT INSTALLED OR NOT FOUND",
+        }.get(readiness, "UNQUALIFIED VERSION")
     )
-    report["compatibility"] = {
-        CodexReadiness.AVAILABLE_QUALIFIED: "QUALIFIED VERSION",
-        CodexReadiness.AVAILABLE_UNQUALIFIED: "UNQUALIFIED VERSION",
-        CodexReadiness.APP_SERVER_UNAVAILABLE: "APP SERVER UNAVAILABLE",
-        CodexReadiness.INVALID_EXECUTABLE: "INVALID EXECUTABLE",
-        CodexReadiness.NOT_FOUND: "NOT INSTALLED OR NOT FOUND",
-    }[resolution.readiness]
-    return report
+    return {
+        **status,
+        "source": selected.get("source"),
+        "executable": executable,
+        "version": status.get("installed_codex"),
+        "readiness": readiness,
+        "codex_cli": status["codex_cli"],
+        "discovery": status["codex_discovery"],
+        "compatibility": compatibility,
+    }
 
 
 def report_codex_cli_readiness() -> dict[str, Any]:

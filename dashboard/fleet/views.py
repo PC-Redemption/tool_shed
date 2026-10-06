@@ -1151,10 +1151,17 @@ def project_detail(request: HttpRequest, project_id, tab: str = "overview"):
     overview = _project_overview_context(project, instances, health_summary) if tab == "overview" else None
     if tab == "work" and snapshot_by_instance:
         instances = [instance for instance in instances if instance.id in snapshot_by_instance]
-    instance_groups = [
-        {"instance": instance, "artifacts": snapshot_by_instance.get(instance.id, [])}
-        for instance in instances
-    ]
+    instance_groups = []
+    for instance in instances:
+        source = instance.executive_state if isinstance(instance.executive_state, dict) else {}
+        instance_groups.append(
+            {
+                "instance": instance,
+                "artifacts": snapshot_by_instance.get(instance.id, []),
+                "source_revision": source.get("source_revision"),
+                "source_digest": source.get("source_digest"),
+            }
+        )
     inventory_digests = {
         instance.work_inventory_digest
         for instance in instances
