@@ -252,6 +252,94 @@ class DashboardReporterTests(unittest.TestCase):
         self.assertEqual(delivered, dashboard_reporter.DELIVERED_RETENTION)
         self.assertEqual(pending, 1)
 
+    def test_reclaim_outbox_shrinks_file_and_preserves_pending_sequence(self) -> None:
+        pending_payload = json.dumps({"sequence": 701, "material_events": [{"id": "pending"}]})
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            for sequence in range(1, 701):
+                connection.execute(
+                    "INSERT INTO outbox VALUES (?, ?, ?, 0, 0, ?, ?)",
+                    (
+                        str(uuid.uuid4()),
+                        sequence,
+                        json.dumps({"sequence": sequence, "padding": "x" * 16_384}),
+                        dashboard_reporter.stamp(),
+                        dashboard_reporter.stamp(),
+                    ),
+                )
+            connection.execute(
+                "INSERT INTO outbox VALUES (?, 701, ?, 2, 123, ?, NULL)",
+                (str(uuid.uuid4()), pending_payload, dashboard_reporter.stamp()),
+            )
+            dashboard_reporter._set_meta(connection, "sequence", "701")
+            connection.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+        before_bytes = dashboard_reporter.outbox_path(self.workspace).stat().st_size
+
+        with mock.patch.object(dashboard_reporter, "require_project_binding"):
+            result = dashboard_reporter.reclaim_outbox(
+                self.workspace,
+                project_binding="fixture",
+                minimum_reclaim_bytes=0,
+            )
+
+        self.assertEqual(result["status"], "reclaimed")
+        self.assertGreater(result["reclaimed_bytes"], 0)
+        self.assertLess(dashboard_reporter.outbox_path(self.workspace).stat().st_size, before_bytes)
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            self.assertEqual(connection.execute("PRAGMA quick_check").fetchone()[0], "ok")
+            self.assertEqual(
+                connection.execute(
+                    "SELECT COUNT(*) FROM outbox WHERE delivered_at IS NOT NULL"
+                ).fetchone()[0],
+                dashboard_reporter.DELIVERED_RETENTION,
+            )
+            pending = connection.execute(
+                "SELECT sequence,payload_json,attempts,next_attempt FROM outbox "
+                "WHERE delivered_at IS NULL"
+            ).fetchone()
+            self.assertEqual(tuple(pending), (701, pending_payload, 2, 123.0))
+            self.assertEqual(dashboard_reporter._next_sequence(connection), 702)
+
+    def test_reclaim_outbox_defers_while_worker_process_is_live(self) -> None:
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            connection.execute(
+                "INSERT INTO worker_process (id, owner, expires_at, pid) VALUES (1, 'live', ?, ?)",
+                (time.time() + 120, os.getpid()),
+            )
+        with mock.patch.object(dashboard_reporter, "require_project_binding"):
+            result = dashboard_reporter.reclaim_outbox(
+                self.workspace,
+                project_binding="fixture",
+                minimum_reclaim_bytes=0,
+            )
+        self.assertEqual(result["status"], "deferred")
+        self.assertEqual(result["reason"], "worker-active")
+        self.assertFalse(dashboard_reporter.outbox_maintenance_path(self.workspace).exists())
+
+    def test_interrupted_reclaim_marker_from_dead_process_recovers(self) -> None:
+        with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+            dashboard_reporter._set_meta(connection, "sequence", "9")
+        marker = dashboard_reporter.outbox_maintenance_path(self.workspace)
+        marker.write_text(
+            json.dumps({"schema_version": 1, "pid": 999_999_999}),
+            encoding="utf-8",
+        )
+        with mock.patch.object(dashboard_reporter, "_pid_is_running", return_value=False):
+            with contextlib.closing(dashboard_reporter._outbox(self.workspace)) as connection:
+                self.assertEqual(dashboard_reporter._meta(connection, "sequence"), "9")
+        self.assertFalse(marker.exists())
+
+    def test_active_reclaim_marker_blocks_reporter_open(self) -> None:
+        marker = dashboard_reporter.outbox_maintenance_path(self.workspace)
+        marker.write_text(
+            json.dumps({"schema_version": 1, "pid": os.getpid()}),
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(
+            dashboard_reporter.DashboardReporterError, "maintenance is active"
+        ):
+            dashboard_reporter._outbox(self.workspace)
+        marker.unlink()
+
     def test_new_snapshot_retires_only_eventless_pending_snapshots(self) -> None:
         payloads = [
             {"sequence": 1, "material_events": [], "lifecycle_events": []},

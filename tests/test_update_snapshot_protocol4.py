@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -14,6 +15,52 @@ import update_snapshot  # noqa: E402
 
 
 class Protocol4UpdaterTests(unittest.TestCase):
+    def test_upgrade_outbox_reclaim_uses_released_reporter_and_binding(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            snapshot = workspace / "tool_shed"
+            reporter = snapshot / "scripts/dashboard_reporter.py"
+            reporter.parent.mkdir(parents=True)
+            reporter.write_text("# fixture\n", encoding="utf-8")
+            outbox = workspace / ".tool-shed/dashboard/outbox.sqlite3"
+            outbox.parent.mkdir(parents=True)
+            outbox.write_bytes(b"fixture")
+            completed = subprocess.CompletedProcess(
+                args=[],
+                returncode=0,
+                stdout='{"status":"reclaimed","reclaimed_bytes":123}',
+                stderr="",
+            )
+            with mock.patch.object(
+                update_snapshot, "binding_token", return_value="binding"
+            ), mock.patch.object(update_snapshot, "run", return_value=completed) as run:
+                result = update_snapshot.reclaim_dashboard_outbox(
+                    workspace, snapshot, timeout=60
+                )
+        self.assertEqual(result["status"], "reclaimed")
+        command = run.call_args.args[0]
+        self.assertIn("reclaim-outbox", command)
+        self.assertEqual(command[-1], "binding")
+
+    def test_upgrade_outbox_reclaim_defers_without_failing_install(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            snapshot = workspace / "tool_shed"
+            reporter = snapshot / "scripts/dashboard_reporter.py"
+            reporter.parent.mkdir(parents=True)
+            reporter.write_text("# fixture\n", encoding="utf-8")
+            outbox = workspace / ".tool-shed/dashboard/outbox.sqlite3"
+            outbox.parent.mkdir(parents=True)
+            outbox.write_bytes(b"fixture")
+            with mock.patch.object(
+                update_snapshot, "binding_token", side_effect=ValueError("fixture failure")
+            ):
+                result = update_snapshot.reclaim_dashboard_outbox(
+                    workspace, snapshot, timeout=60
+                )
+        self.assertEqual(result["status"], "deferred")
+        self.assertEqual(result["reason"], "reclaim-command-error")
+
     def test_protocol3_refuses_protocol4_release_before_mutation(self) -> None:
         with self.assertRaisesRegex(
             update_snapshot.UpdateError,

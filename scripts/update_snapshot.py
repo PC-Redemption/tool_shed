@@ -1720,6 +1720,77 @@ def post_install_checks(
     return results
 
 
+def reclaim_dashboard_outbox(
+    workspace: Path,
+    snapshot: Path,
+    *,
+    timeout: float,
+) -> dict[str, Any]:
+    """Run released outbox maintenance without making snapshot installation depend on it."""
+
+    database = workspace / ".tool-shed" / "dashboard" / "outbox.sqlite3"
+    if not database.is_file():
+        return {
+            "schema_version": 1,
+            "kind": "tool-shed-dashboard-outbox-reclaim",
+            "status": "not-needed",
+            "reason": "outbox-absent",
+            "writes_performed": False,
+        }
+    reporter = snapshot / "scripts" / "dashboard_reporter.py"
+    if not reporter.is_file():
+        return {
+            "schema_version": 1,
+            "kind": "tool-shed-dashboard-outbox-reclaim",
+            "status": "deferred",
+            "reason": "reporter-command-absent",
+            "writes_performed": False,
+        }
+    try:
+        project_binding = binding_token(workspace, operation="dashboard-report")
+        result = run(
+            [
+                sys.executable,
+                "-B",
+                str(reporter),
+                "--workspace",
+                str(workspace),
+                "--json",
+                "reclaim-outbox",
+                "--project-binding",
+                project_binding,
+            ],
+            cwd=workspace,
+            check=False,
+            timeout=timeout,
+            timeout_option="--validation-timeout",
+        )
+        if result.returncode:
+            detail = (result.stderr.strip() or result.stdout.strip())[-1000:]
+            return {
+                "schema_version": 1,
+                "kind": "tool-shed-dashboard-outbox-reclaim",
+                "status": "deferred",
+                "reason": "reclaim-command-failed",
+                "exit_code": result.returncode,
+                "detail": detail,
+                "writes_performed": False,
+            }
+        payload = json.loads(result.stdout)
+        if not isinstance(payload, dict):
+            raise ValueError("reclaim command returned a non-object result")
+        return payload
+    except (OSError, ProjectIdentityError, UpdateError, ValueError, json.JSONDecodeError) as error:
+        return {
+            "schema_version": 1,
+            "kind": "tool-shed-dashboard-outbox-reclaim",
+            "status": "deferred",
+            "reason": "reclaim-command-error",
+            "detail": str(error),
+            "writes_performed": False,
+        }
+
+
 def load_staged_providers(staged: Path) -> dict[str, dict[str, Any]]:
     path = staged / "adapters" / "providers.json"
     if not path.is_file():
@@ -2461,6 +2532,12 @@ def main() -> int:
                 payload["work_changed"] = False
                 payload["work_converged"] = None
                 payload["git_status_changed"] = False
+                emit_progress("dashboard outbox maintenance")
+                payload["dashboard_outbox_reclamation"] = reclaim_dashboard_outbox(
+                    workspace,
+                    target,
+                    timeout=args.validation_timeout,
+                )
                 payload["state"] = "current"
                 payload["stage"] = "complete"
                 recorder.phase("complete")
@@ -2706,6 +2783,12 @@ def main() -> int:
                 raise
             if retired is not None and retired.exists():
                 shutil.rmtree(retired)
+        emit_progress("dashboard outbox maintenance")
+        payload["dashboard_outbox_reclamation"] = reclaim_dashboard_outbox(
+            workspace,
+            target,
+            timeout=args.validation_timeout,
+        )
         payload["installed_version"] = selected_version
         payload["canonical_manifest_match"] = True
         work_after = fingerprint_tree(workspace / "work")

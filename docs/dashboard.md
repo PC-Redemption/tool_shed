@@ -99,6 +99,25 @@ scheduled task on Windows. Inspect without credentials using `status`. Revoke wi
 Network or service failures leave the outbox queued and never fail the originating local write.
 Remove the safety scheduler with `scheduler-remove` when disconnecting the project permanently.
 
+The outbox keeps every pending report and at most the newest 256 delivered reports. `status`
+reports file size, reclaimable pages, retained payload bytes, delivered and pending counts, the
+last delivery, and the sequence counter without exposing payloads. Snapshot update attempts a
+physical reclaim when at least 16 MiB can be returned. Reclaim is outside the publication
+transaction: an active reporter, SQLite contention, insufficient temporary disk space, or a
+timeout leaves the successful update installed and reports reclamation as deferred. Retry a
+current-version update later, or run the same controlled operation explicitly:
+
+```bash
+python3 scripts/dashboard_reporter.py --workspace . reclaim-outbox \
+  --project-binding <dashboard-report-binding>
+```
+
+The operation creates a short-lived maintenance marker, prunes only delivered rows, checkpoints
+WAL, verifies SQLite before and after a transactional `VACUUM`, and confirms the pending-row digest
+and monotonic sequence are unchanged. It refuses to run while a recorded reporter process is live
+and checks free disk space before rewriting the file. It never runs from an ordinary report or
+safety pass.
+
 On Windows, the scheduler and persistent worker prefer `pythonw.exe`, and every console child in
 the background reporting call graph receives `CREATE_NO_WINDOW`. The launch claim is recorded
 atomically before the worker is created, so a managed-write burst creates one persistent process;

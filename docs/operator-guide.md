@@ -721,6 +721,9 @@ ts: dashboard scheduler install
 ```
 
 Use `ts: dashboard status` to inspect connection and outbox state without revealing the credential.
+Use `ts: dashboard reclaim outbox` to retry a safely deferred upgrade cleanup or explicitly return
+disk space from a legacy oversized outbox. The command preserves pending reports and sequence state
+and reports an active worker, SQLite contention, or insufficient free disk as a deferral.
 Managed writes wake one singleton background worker. Transient SQLite contention is retried by the
 same worker, and an event replaces an unexpired claim when its recorded process has exited. The
 project-scoped 15-minute safety pass remains a fallback for missed events. Hosted failure never

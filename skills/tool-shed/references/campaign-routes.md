@@ -724,6 +724,7 @@ authoritative, and the service cannot start, stop, approve, or mutate local work
 | `ts: dashboard scheduler plan` | Show the platform-specific 15-minute safety-pass plan without installing it. |
 | `ts: dashboard scheduler install` | With explicit mutation authority and the `dashboard-report` binding, install the project-scoped Linux, macOS, or Windows user scheduler. |
 | `ts: dashboard scheduler remove` | With the `dashboard-report` binding, disable and remove only this project's safety scheduler. |
+| `ts: dashboard reclaim outbox` | With the `dashboard-report` binding, run guarded delivered-history pruning and physical SQLite reclamation; report reclaimed bytes or the exact deferral reason. |
 
 Invoke the workspace-local reporter directly:
 

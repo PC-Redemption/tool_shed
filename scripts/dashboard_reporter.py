@@ -18,6 +18,7 @@ import os
 import platform
 import random
 import re
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -60,6 +61,8 @@ IDLE_POLL_SECONDS = 60
 SAFETY_DRAIN_LIMIT = 64
 SAFETY_DRAIN_PACE_SECONDS = 0.05
 DELIVERED_RETENTION = 256
+OUTBOX_RECLAIM_MIN_BYTES = 16 * 1024 * 1024
+OUTBOX_RECLAIM_DISK_MARGIN_BYTES = 16 * 1024 * 1024
 SQLITE_CONTENTION_RETRY_SECONDS = 120
 SQLITE_CONTENTION_RETRY_MAX_SLEEP = 1.0
 
@@ -338,7 +341,59 @@ def outbox_path(workspace: Path) -> Path:
     return workspace / OUTBOX_RELATIVE
 
 
-def _outbox(workspace: Path) -> sqlite3.Connection:
+def outbox_maintenance_path(workspace: Path) -> Path:
+    return outbox_path(workspace).with_suffix(".maintenance.json")
+
+
+def _outbox_maintenance_active(workspace: Path) -> bool:
+    path = outbox_maintenance_path(workspace)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        pid = int(payload.get("pid", 0))
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+        try:
+            age = time.time() - path.stat().st_mtime
+        except OSError:
+            return False
+        if age <= PROCESS_LOCK_SECONDS:
+            return True
+        pid = 0
+    if pid > 0 and _pid_is_running(pid):
+        return True
+    try:
+        path.unlink()
+    except FileNotFoundError:
+        pass
+    except OSError:
+        return True
+    return False
+
+
+def _acquire_outbox_maintenance(workspace: Path) -> Path | None:
+    path = outbox_maintenance_path(workspace)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps(
+        {"schema_version": 1, "pid": os.getpid(), "started_at": stamp()},
+        sort_keys=True,
+    ).encode("utf-8")
+    for _ in range(2):
+        try:
+            descriptor = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        except FileExistsError:
+            if _outbox_maintenance_active(workspace):
+                return None
+            continue
+        try:
+            os.write(descriptor, payload)
+        finally:
+            os.close(descriptor)
+        return path
+    return None
+
+
+def _outbox(workspace: Path, *, allow_maintenance: bool = False) -> sqlite3.Connection:
+    if not allow_maintenance and _outbox_maintenance_active(workspace):
+        raise DashboardReporterError("dashboard outbox maintenance is active")
     path = outbox_path(workspace)
     path.parent.mkdir(parents=True, exist_ok=True)
     connection = sqlite3.connect(path, isolation_level=None)
@@ -396,6 +451,176 @@ def _compact_delivered_outbox(connection: sqlite3.Connection) -> int:
         (DELIVERED_RETENTION,),
     )
     return removed.rowcount
+
+
+def _pending_outbox_digest(connection: sqlite3.Connection) -> str:
+    digest = hashlib.sha256()
+    for row in connection.execute(
+        "SELECT id,sequence,payload_json,attempts,next_attempt,created_at "
+        "FROM outbox WHERE delivered_at IS NULL ORDER BY sequence"
+    ):
+        encoded = json.dumps(list(row), separators=(",", ":"), ensure_ascii=False).encode(
+            "utf-8"
+        )
+        digest.update(len(encoded).to_bytes(8, "big"))
+        digest.update(encoded)
+    return digest.hexdigest()
+
+
+def _outbox_diagnostics(connection: sqlite3.Connection, path: Path) -> dict[str, Any]:
+    page_size = int(connection.execute("PRAGMA page_size").fetchone()[0])
+    page_count = int(connection.execute("PRAGMA page_count").fetchone()[0])
+    freelist_count = int(connection.execute("PRAGMA freelist_count").fetchone()[0])
+    return {
+        "file_bytes": path.stat().st_size if path.is_file() else 0,
+        "wal_bytes": path.with_name(path.name + "-wal").stat().st_size
+        if path.with_name(path.name + "-wal").is_file()
+        else 0,
+        "page_size": page_size,
+        "page_count": page_count,
+        "freelist_pages": freelist_count,
+        "reclaimable_bytes": page_size * freelist_count,
+        "pending_events": int(
+            connection.execute(
+                "SELECT COUNT(*) FROM outbox WHERE delivered_at IS NULL"
+            ).fetchone()[0]
+        ),
+        "delivered_events": int(
+            connection.execute(
+                "SELECT COUNT(*) FROM outbox WHERE delivered_at IS NOT NULL"
+            ).fetchone()[0]
+        ),
+        "retained_payload_bytes": int(
+            connection.execute(
+                "SELECT COALESCE(SUM(length(payload_json)), 0) FROM outbox"
+            ).fetchone()[0]
+        ),
+        "last_delivered_at": connection.execute(
+            "SELECT MAX(delivered_at) FROM outbox WHERE delivered_at IS NOT NULL"
+        ).fetchone()[0],
+        "last_sequence": int(_meta(connection, "sequence", "0") or 0),
+    }
+
+
+def reclaim_outbox(
+    workspace: Path,
+    *,
+    project_binding: str,
+    minimum_reclaim_bytes: int = OUTBOX_RECLAIM_MIN_BYTES,
+) -> dict[str, Any]:
+    """Prune delivered history and physically reclaim meaningful free space."""
+
+    require_project_binding(workspace, project_binding, operation="dashboard-report")
+    path = outbox_path(workspace)
+    base = {
+        "schema_version": SCHEMA_VERSION,
+        "kind": "tool-shed-dashboard-outbox-reclaim",
+        "minimum_reclaim_bytes": minimum_reclaim_bytes,
+    }
+    if not path.is_file():
+        return {**base, "status": "not-needed", "reason": "outbox-absent", "writes_performed": False}
+    marker = _acquire_outbox_maintenance(workspace)
+    if marker is None:
+        return {**base, "status": "deferred", "reason": "maintenance-active", "writes_performed": False}
+    pruned = 0
+    try:
+        try:
+            with contextlib.closing(
+                _outbox(workspace, allow_maintenance=True)
+            ) as connection:
+                connection.execute("PRAGMA busy_timeout=5000")
+                worker = connection.execute(
+                    "SELECT owner,expires_at,pid FROM worker_process WHERE id=1"
+                ).fetchone()
+                if _worker_process_is_live(worker, time.time()):
+                    return {
+                        **base,
+                        "status": "deferred",
+                        "reason": "worker-active",
+                        "worker_pid": None if worker is None else worker["pid"],
+                        "writes_performed": False,
+                    }
+                connection.execute("BEGIN IMMEDIATE")
+                before_integrity = str(connection.execute("PRAGMA quick_check").fetchone()[0])
+                if before_integrity != "ok":
+                    connection.rollback()
+                    raise DashboardReporterError(
+                        f"dashboard outbox quick_check failed before reclaim: {before_integrity}"
+                    )
+                pruned = _compact_delivered_outbox(connection)
+                connection.commit()
+                connection.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+                before = _outbox_diagnostics(connection, path)
+                pending_digest = _pending_outbox_digest(connection)
+                sequence = before["last_sequence"]
+                if int(before["reclaimable_bytes"]) < minimum_reclaim_bytes:
+                    return {
+                        **base,
+                        "status": "not-needed",
+                        "reason": "reclaimable-space-below-threshold",
+                        "pruned_delivered_events": pruned,
+                        "before": before,
+                        "after": before,
+                        "writes_performed": bool(pruned),
+                    }
+                free_bytes = shutil.disk_usage(path.parent).free
+                required_free = int(before["file_bytes"]) * 2 + OUTBOX_RECLAIM_DISK_MARGIN_BYTES
+                if free_bytes < required_free:
+                    return {
+                        **base,
+                        "status": "deferred",
+                        "reason": "insufficient-free-disk",
+                        "free_bytes": free_bytes,
+                        "required_free_bytes": required_free,
+                        "pruned_delivered_events": pruned,
+                        "before": before,
+                        "writes_performed": bool(pruned),
+                    }
+                connection.execute("VACUUM")
+                connection.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+                after_integrity = str(connection.execute("PRAGMA quick_check").fetchone()[0])
+                after = _outbox_diagnostics(connection, path)
+                if after_integrity != "ok":
+                    raise DashboardReporterError(
+                        f"dashboard outbox quick_check failed after reclaim: {after_integrity}"
+                    )
+                if _pending_outbox_digest(connection) != pending_digest:
+                    raise DashboardReporterError("dashboard outbox reclaim changed pending reports")
+                if after["last_sequence"] != sequence:
+                    raise DashboardReporterError("dashboard outbox reclaim changed sequence state")
+                if int(after["delivered_events"]) > DELIVERED_RETENTION:
+                    raise DashboardReporterError("dashboard outbox reclaim exceeded delivered retention")
+                return {
+                    **base,
+                    "status": "reclaimed",
+                    "pruned_delivered_events": pruned,
+                    "reclaimed_bytes": max(
+                        0, int(before["file_bytes"]) - int(after["file_bytes"])
+                    ),
+                    "before": before,
+                    "after": after,
+                    "integrity": after_integrity,
+                    "pending_preserved": True,
+                    "sequence_preserved": True,
+                    "writes_performed": True,
+                }
+        except sqlite3.OperationalError as error:
+            lowered = str(error).lower()
+            if "locked" not in lowered and "busy" not in lowered:
+                raise
+            return {
+                **base,
+                "status": "deferred",
+                "reason": "sqlite-busy",
+                "detail": str(error),
+                "pruned_delivered_events": pruned,
+                "writes_performed": bool(pruned),
+            }
+    finally:
+        try:
+            marker.unlink()
+        except FileNotFoundError:
+            pass
 
 
 def _retire_supersedable_pending(
@@ -1547,10 +1772,12 @@ def safety_pass(workspace: Path, *, project_binding: str) -> dict[str, Any]:
 def status(workspace: Path) -> dict[str, Any]:
     state = load_connection(workspace, required=False)
     pending = 0
+    outbox: dict[str, Any] | None = None
     path = outbox_path(workspace)
     if path.is_file():
         with contextlib.closing(_outbox(workspace)) as connection:
-            pending = int(connection.execute("SELECT COUNT(*) FROM outbox WHERE delivered_at IS NULL").fetchone()[0])
+            outbox = _outbox_diagnostics(connection, path)
+            pending = int(outbox["pending_events"])
     return {
         "schema_version": SCHEMA_VERSION,
         "kind": "tool-shed-dashboard-reporter-status",
@@ -1558,6 +1785,7 @@ def status(workspace: Path) -> dict[str, Any]:
         "server": None if state is None else state.get("server"),
         "instance_id": None if state is None else state.get("instance_id"),
         "pending_events": pending,
+        "outbox": outbox,
         "credential_present": bool(state and state.get("reporter_token")),
         "writes_performed": False,
     }
@@ -1591,6 +1819,13 @@ def build_parser() -> argparse.ArgumentParser:
     remove_parser.add_argument("--project-binding", required=True)
     safety_parser = commands.add_parser("safety-pass")
     safety_parser.add_argument("--project-binding", required=True)
+    reclaim_parser = commands.add_parser("reclaim-outbox")
+    reclaim_parser.add_argument("--project-binding", required=True)
+    reclaim_parser.add_argument(
+        "--minimum-reclaim-bytes",
+        type=int,
+        default=OUTBOX_RECLAIM_MIN_BYTES,
+    )
     return parser
 
 
@@ -1630,6 +1865,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                 result = scheduler_install(workspace, project_binding=args.project_binding)
             elif args.command == "scheduler-remove":
                 result = scheduler_remove(workspace, project_binding=args.project_binding)
+            elif args.command == "reclaim-outbox":
+                if args.minimum_reclaim_bytes < 0:
+                    raise ValueError("minimum reclaim bytes must be non-negative")
+                result = reclaim_outbox(
+                    workspace,
+                    project_binding=args.project_binding,
+                    minimum_reclaim_bytes=args.minimum_reclaim_bytes,
+                )
             else:
                 result = safety_pass(workspace, project_binding=args.project_binding)
         if sys.stdout is not None:
