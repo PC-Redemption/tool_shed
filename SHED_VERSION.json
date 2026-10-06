@@ -313,7 +313,7 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Complete IDEA-0034 bug fixes with focused qualification and distributed validation workload",
+  "notes": "Release IDEA-0034 bug fixes and validation distribution improvements",
   "release_commit": null,
   "release_qualification": null,
   "release_tag": "v0.59.3",
