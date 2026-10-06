@@ -1,0 +1,113 @@
+{
+  "checked_at": "2026-10-06T21:31:59Z",
+  "closeout": {
+    "active_release_cohorts": 0,
+    "checkpoint_digest": "08107e5e8289c966801935299772bcc5679e8fd5fde93bd58a151dc5dde4f079",
+    "current_release_base": "v0.59.3",
+    "executive_view": "work/100k.md current at source revision 1810",
+    "github_issues": "15 of 15 closed",
+    "hybrid_domain_digest": "23c3616b12df5ac23768ded4da0da087040172e3a9f0c081573031198959cf13",
+    "hybrid_revision": 1810,
+    "idea_id": "IDEA-0034",
+    "idea_state": "completed/terminal/reconciled/satisfied",
+    "rebuild": "CLEAN with exact domain-digest parity",
+    "release_cohort_id": "98f490ee-62c7-475c-b3b9-efba3c39a813",
+    "release_cohort_state": "terminal/reconciled/satisfied"
+  },
+  "connected_development_observation": {
+    "accepted_sequence": 1225,
+    "artifact": "tool-shed-dashboard:dev-d786b63cf40d",
+    "endpoint": "http://192.168.7.5:8443",
+    "received_at": "2026-10-06T21:30:48.818110+00:00",
+    "report_schema_version": 15,
+    "result": "verified",
+    "scheduler": {
+      "last_task_result": 0,
+      "peak_reporter_processes": 1,
+      "pending_events": 0,
+      "start_when_available": true,
+      "wake_to_run": false
+    },
+    "source_commit": "d786b63cf40d9bf6788168cae4c4684934236ae8",
+    "target": "tsrookarocom-dev@sup.local:/home/jon/docker/ts.rookaro.com-dev"
+  },
+  "kind": "tool-shed-release-production-evidence",
+  "maintainer_codex_skill": {
+    "fresh_session_required": false,
+    "state": "current and byte-identical to published canonical skill",
+    "tree_sha256": "bf0e7edaef5728edde36a3e14703550582c60964b7ead8bd98f35c74ab2733bb",
+    "validation": "quick_validate.py passed for source and installed copy; exact diff empty"
+  },
+  "production_lanes": {
+    "linux": {
+      "checks": [
+        "installed v0.59.3",
+        "published manifest current",
+        "owner work preserved and converged"
+      ],
+      "release_validation": {
+        "cache": "stored",
+        "mode": "attested-focused-smoke",
+        "release_commit": "d786b63cf40d9bf6788168cae4c4684934236ae8",
+        "selection_reason": "official-attestation"
+      },
+      "result": "verified",
+      "rollback_backup": "/home/jon/dev/ts_linux_test_bed/tool_shed.backup-20261006T212531Z.tar",
+      "target": "github-release:tool-shed-linux-install-client",
+      "transaction_id": "d0c00af82356be81685939e4",
+      "transaction_report": "/home/jon/.codex/tool-shed/snapshot-upgrade-transactions/d0c00af82356be81685939e4.json",
+      "workspace": "sup.local:/home/jon/dev/ts_linux_test_bed"
+    },
+    "web": {
+      "artifact": "tool-shed-dashboard:v0.59.3@sha256:31e5ab25de048e423bfc68b12596588104a4277f4649c6f22a6f8c3790611f77",
+      "checks": [
+        "validated encrypted PostgreSQL backup",
+        "Django production readiness healthy",
+        "local health healthy",
+        "public HTTPS dashboard/docs routes HTTP 200",
+        "docs, dashboard, and PostgreSQL containers healthy"
+      ],
+      "database_backup": "/home/jon/docker/ts.rookaro.com/backups/dashboard-daily-20261006T211523Z.dump.age",
+      "result": "verified",
+      "rollback_root": "/home/jon/docker/ts.rookaro.com/release-backups/v0.59.2-before-v0.59.3-20261006T212453Z",
+      "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com"
+    },
+    "windows": {
+      "checks": [
+        "installed v0.59.3",
+        "published manifest current",
+        "owner work preserved and converged",
+        "scheduled task returned 0",
+        "peak reporter process count 1",
+        "pending event count 0",
+        "schema-15 sequence 1225 accepted at 2026-10-06T21:30:48.818110+00:00"
+      ],
+      "release_validation": {
+        "cache": "stored",
+        "mode": "attested-focused-smoke",
+        "release_commit": "d786b63cf40d9bf6788168cae4c4684934236ae8",
+        "selection_reason": "official-attestation"
+      },
+      "result": "verified",
+      "rollback_backup": "E:\\dev\\ts_windows_test_bed\\tool_shed.backup-20261006T212654Z.tar",
+      "target": "github-release:tool-shed-windows-install-client",
+      "transaction_id": "18c722b1fbc954758127f47d",
+      "transaction_report": "C:\\Users\\jon\\.codex\\tool-shed\\snapshot-upgrade-transactions\\18c722b1fbc954758127f47d.json",
+      "workspace": "GOGETTER:E:\\dev\\ts_windows_test_bed"
+    }
+  },
+  "release": {
+    "content_commit": "d786b63cf40d9bf6788168cae4c4684934236ae8",
+    "github_release": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.59.3",
+    "provenance_commit": "5d499decbf5d4bd43399b3aa60d04426d1037bc4",
+    "publication_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/37533590078",
+    "published_at": "2026-10-06T21:24:12Z",
+    "qualification_result": "17/17 jobs passed for the exact content commit; one transient Windows cache-test access denial passed on failed-job retry in the same push run",
+    "qualification_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/37531897828",
+    "tag": "v0.59.3",
+    "version": "0.59.3"
+  },
+  "release_id": "idea-0034-v0.59.3",
+  "result": "passed",
+  "schema_version": 1
+}
