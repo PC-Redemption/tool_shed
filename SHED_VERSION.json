@@ -12,7 +12,7 @@
     "adapters/codex-app-server-config.json": "52e8e0aff51108c93e18c334fafd46ee979d45f392380da86329bbc0521d52c0",
     "adapters/codex-app-server-qualifications.json": "1b621d969c7391870be8feeaaba64fd2cc2c45d29b2beaa78a9a07105d656f9d",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "b56fa4f04477b664758b7623c1f70ced17406d7ee27907a36793af58d708f44b",
+    "adapters/codex-skill-releases.json": "782e1e0996ebdfe7b3fc2393aa69bcf180b8881c1668af65dfb39d54866c7164",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "5e9668c866c67471ea58e36c596ce5a9964f92f0774a4ec997f775368f02bfcf",
     "dashboard/Dockerfile": "8e9ff084f409aa81ab92b9dcbe8d9bab2416225551c837681653cab7b66786ad",
@@ -82,14 +82,14 @@
     "docs/codex-app-server-requalification-2026-09-07.md": "08348b1e95581719538296edb75a4c91d6eb9e3d1eb2f755998d77e68b643596",
     "docs/codex-app-server-write-qualification-2026-08-20.md": "db297ad88feb73f46a46178ae92304445afc2fb2447c2543d3bec84609af3923",
     "docs/codex-app-server-write-qualification-alpha-2026-08-25.md": "95d22eeb2b8d80fc884962fe30e93c5b2af4c63063970fb6ab30b55f292d40c8",
-    "docs/commands.md": "556c87518a7bb27b5ffa46b6221947db1f8d444952f716b4086e04cc03545f41",
+    "docs/commands.md": "fa2ac4443b87bf8ab7cf232327d0c0c8120e689df384acffdb1b1563c1745402",
     "docs/completion-watcher-hosted-api-contract.md": "5b3fcd7ce43581648f7fdf129d87bc0e2e946d4f43fce2a7e467514d210eb190",
     "docs/completion-watcher-hosted-datastore.md": "10b617334beddf578b38989cd250f330846107ac4fc39fdd8b10a38c7a1bbfa4",
     "docs/completion-watcher-hosted-notification-worker.md": "032cf9c8c9f57c1e5c9f3b730c39065ee7ee9b076792607767bc77f44716ff10",
     "docs/completion-watcher-hosted-recovery-rollout.md": "62d85676540ccbc318dbd908df10ef0b405957e07989a844553b71c0aef448e1",
     "docs/completion-watcher-hosted-status-surface.md": "e8ca0e6e81cdda1a4af7a3e5d7331fa7d64cd1d5d832cf06caba34c104097f60",
     "docs/completion-watcher-protocol.md": "2fb0057ead6f1524a22a17833b448f419312588858553b0ad68ddf0c873e10bb",
-    "docs/dashboard.md": "76a50e5979e5eb32aedd95d07d1528abb686560e1d35b6a9033fe028c4d688f8",
+    "docs/dashboard.md": "02de99599206c3b4740a69ae4c9ca8628992d712b2a26bbc0c953ccadf236811",
     "docs/database-owned-work-collateral-conversion.md": "ee131fe6e232369c752a1be35e6a0e3c1438e2ee14aef47b50677f1fa5bbd98a",
     "docs/database-owned-work-collateral-v1-contract.md": "b7f04d49d1a6ba4b6a7db8130122f5b4e6b23d329d68ed14823ad09c73b3e6ab",
     "docs/database-owned-work-collateral.md": "3492e324ebdfdfb0f8f92acb5b46d1bd93378e523a8608f733a59a1dca3cfd9d",
@@ -102,7 +102,7 @@
     "docs/install-or-update-snapshot.md": "fe97c983043f4de5c1694a82979a50fac738290308698785521826b93505b5bb",
     "docs/lifecycle-qualification-harness.md": "0a1db385fc7f76c7c9cc8cecf69a8058eb7a64886b5bf3177881de2e2411e8f5",
     "docs/loop-findings.md": "3dfa4b258056f6b341c580dcdd71ad51aebfca28515d65298df590b52422ffd5",
-    "docs/operator-guide.md": "2f97e261237663e36c2c53cc091baa2952cb4d080a4361f8079b3c8d92c0b052",
+    "docs/operator-guide.md": "f317deb05a84a2bb19bac1dcedae8903adc4fb8099a61983f490ae104a739fbb",
     "docs/outcome-reconciliation.md": "2891cb71bac4a38ede62a18bd9c0d72cda7c9fc6806f6f63dd02f55774366195",
     "docs/project-executive-view.md": "04f5f958da20483ca9137b0267c53c3f3d5d7a3c5bc971f1f1b7c1e013d1c5a7",
     "docs/provider-adapters.md": "edf50dc13fd15cb6415904981ca3dea56fd73aad32a473429ef34d1b56cea25b",
@@ -189,7 +189,7 @@
     "scripts/completion_watcher.py": "d94ba056b5628a477028c8568e284da95bd78466d3839b5e126a89163d16d7a3",
     "scripts/context_retrieval.py": "1bf2fe6ccdb7e09cf185ae9e24d4b2580d38dc29453027e57a69587cfaf09e65",
     "scripts/dashboard_browser_probe.js": "a7181e0635f4dcbe89fe097ded3e8dd7c191f3cae3ead1406c1a0172b8da318f",
-    "scripts/dashboard_reporter.py": "62561c517fac185d6f134b833f18d7b01f349e0e6c5d29f9a3183f9cfd16600d",
+    "scripts/dashboard_reporter.py": "9000a189af27f406177360652d21eb4f81cb83fac23b1dc38b214ca281b1fe70",
     "scripts/development_site.py": "9e33d7d57f3f42a8995b656ffa69fe9bc98f743b697faff6190668276c20542a",
     "scripts/doctor.py": "eaa5a864128dfbb0216bc517a30ec1814d1a01a1e9fbe0592c4ff5733d502c59",
     "scripts/document_contract.py": "2b540582141065b7e7c84294142a15ddf01f255a58f844e08abaf9634b30d411",
@@ -200,7 +200,7 @@
     "scripts/hybrid_state.py": "d6b91c3f8825fb6e51985dbc57aad43e38a9058b082a56460e00c2239cc554bc",
     "scripts/hybrid_state_schema.py": "cec17e40de30a77d38a91ed1d2fcffa06a573bf13e91361b3ca18135c525d508",
     "scripts/idea_readiness.py": "d453b29c9f123a2cbd77ef7474a8f947c5d3c8eca3dac03d20b4f89ba0cd6387",
-    "scripts/install_into_workspace.py": "3bf8da204888d66516ef03f85712bea76d5208aae6b8b6a747c1b18de813da1a",
+    "scripts/install_into_workspace.py": "66741b93200cadb5f5ae399790bdcbf3f3ad06048a55c714b653bc1a63bbfd8d",
     "scripts/inventory_tool_shed_fleet.py": "495e262d42ba47fcf0cd944f684442ecf6668debf287375c41a36af520e56c6e",
     "scripts/lifecycle_hosted_qualification.py": "b9ed25a1057e8e9402eaf0a05d70b51462858b0ca497cfbee69b976782452b72",
     "scripts/lifecycle_qualification.py": "e676c21b139d4876dc0ec4e7a27f7a25564b6e5b01509ae353ed6780487ed6d6",
@@ -238,7 +238,7 @@
     "scripts/update-tool-shed.ps1": "271d8970201341f66595b902de0c1e03ace41203ef113b81eed5464b2a75591d",
     "scripts/update-tool-shed.sh": "51740376eca2cbe2eba8590333f55bfa7cf7bd6b720b27176a127a0e44223fdb",
     "scripts/update_shed_manifest.py": "acb207b6f099298966a83257cfa01f70ed4b86f72e0b4bfb03c0262e61e59a30",
-    "scripts/update_snapshot.py": "cdf9b75dfd88e78922fa664d3670ffa884e41b8647d602fca98699ebe2716028",
+    "scripts/update_snapshot.py": "e661fcb9d02ed9ab2f267a711d292eb6b70c3aac28ea7468bcf1ca15d01c71b8",
     "scripts/update_work_index.py": "2300672835f3b66ef21f52b9c052542310551b126651fa1aaba491ef729082f9",
     "scripts/validate_snapshot_client.py": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f",
     "scripts/validate_tool_shed.py": "ade73da46cff93e8d0629830251cb46a8816a2ee939b2613ca6f42e86c5e4557",
@@ -287,7 +287,7 @@
     "skills/tool-shed/SKILL.md": "c34df16d691436a36b22ed2cceff21408ccc09c141fc6a3e9f688ae118040151",
     "skills/tool-shed/agents/openai.yaml": "5b39ceb5df84a19a82f6c406bc80c5e8c88ea236211c6c618d80c37dc7301a23",
     "skills/tool-shed/references/artifact-workflows.md": "cd8d0da82a92d6f4c0ecb093ce9135903cfb99a5c33843b78f806e19bf7aadd9",
-    "skills/tool-shed/references/campaign-routes.md": "72bb6f49486edaef2607f52a40e9f38849330ace24d0599b11f7c57fd024dd99",
+    "skills/tool-shed/references/campaign-routes.md": "c9110c94d6270281689502f883e83bfcc3628a6eaf525ee34ef0321c38ecba6b",
     "skills/tool-shed/references/maintenance-routes.md": "8ef30b8d35438dc6c1eba539a7f2be0a3d981490a734ac02064e490956998616",
     "templates/active-campaign-queue.md": "c3035949566b873937924207bca052254d3d3a531437bc4d6b4326c13711c836",
     "templates/adr.md": "45e0c25ff6e6ef20fc071ea1dedef03f93a058afae9b40c934026a9f9772a268",
@@ -313,34 +313,12 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Release IDEA-0034 bug fixes and validation distribution improvements",
-  "release_commit": "d786b63cf40d9bf6788168cae4c4684934236ae8",
-  "release_qualification": {
-    "attested_at": "2026-10-06T21:23:46Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "ade73da46cff93e8d0629830251cb46a8816a2ee939b2613ca6f42e86c5e4557"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "b61d138e6d1dac5138970d9de06251c31ff907cbe7a06932b2df2235df4a5d48"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "d786b63cf40d9bf6788168cae4c4684934236ae8"
-  },
-  "release_tag": "v0.59.3",
-  "released_at": "2026-10-06T21:23:46Z",
-  "shed_version": "0.59.3",
+  "notes": "Reclaim oversized dashboard outboxes safely during snapshot updates.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.59.4",
+  "released_at": null,
+  "shed_version": "0.59.4",
   "updated_at": "2026-10-06",
   "updater_mutation_paths": [
     {
