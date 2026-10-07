@@ -1,0 +1,106 @@
+{
+  "checked_at": "2026-10-07T14:26:30Z",
+  "kind": "tool-shed-release-production-evidence",
+  "closeout": {
+    "active_release_cohorts": 0,
+    "github_issue_review": {
+      "closed": [],
+      "open": [42, 47, 58],
+      "result": "no open issue was fully addressed by this reviewer and retirement-planner release"
+    },
+    "hybrid_state": {
+      "classification": "CLEAN",
+      "domain_digest": "1a32de89592abfd30b1f7255d595d8d58663c5c617da2294f4134b3501b39b60",
+      "revision": 1816,
+      "unmanaged_write_detected": false
+    }
+  },
+  "maintainer_codex_skill": {
+    "state": "current and byte-identical to released source",
+    "validation": "quick_validate.py passed for the canonical source; exact diff against the installed skill was empty"
+  },
+  "release": {
+    "content_commit": "6120117631db893dabd1d237591b100aaab64788",
+    "github_release": "https://github.com/PC-Redemption/tool_shed/releases/tag/v0.59.5",
+    "provenance_commit": "8661b1d197af67f51a22152e4b2073fe80f7a85b",
+    "publication_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/37636365112",
+    "published_at": "2026-10-07T14:24:17Z",
+    "qualification_result": "all 16 Linux and Windows matrix jobs passed for the exact content commit",
+    "qualification_run": "https://github.com/PC-Redemption/tool_shed/actions/runs/37635385860",
+    "tag": "v0.59.5",
+    "version": "0.59.5"
+  },
+  "release_id": "retained-source-retirement-v0.59.5",
+  "result": "passed",
+  "schema_version": 1,
+  "boundaries": {
+    "bactron_modified": false,
+    "windows_temporary_clone_used": false
+  },
+  "production_lanes": {
+    "linux": {
+      "artifact": "github-release:v0.59.5:tool-shed-linux-install-client",
+      "backup": "/home/jon/dev/ts_linux_test_bed/tool_shed.backup-20261007T142512Z.tar",
+      "from_version": "0.59.4",
+      "release_validation": {
+        "cache": "stored",
+        "mode": "attested-focused-smoke",
+        "release_commit": "6120117631db893dabd1d237591b100aaab64788"
+      },
+      "result": "verified",
+      "retirement_plan": {
+        "applicable": false,
+        "candidate_count": 0,
+        "valid": true,
+        "writes_performed": false
+      },
+      "to_version": "0.59.5",
+      "transaction_id": "ae950502b8a161f431251919",
+      "transaction_report": "/home/jon/.codex/tool-shed/snapshot-upgrade-transactions/ae950502b8a161f431251919.json",
+      "work_review": {
+        "errors": 0,
+        "findings": 0
+      },
+      "workspace": "sup.local:/home/jon/dev/ts_linux_test_bed"
+    },
+    "web": {
+      "artifact": "tool-shed-dashboard:v0.59.5@sha256:cfbd0adc1dee1ad18a34ad9165565a551d948e5985298b2d0b6caa087b9f3a5c",
+      "checks": [
+        "validated encrypted PostgreSQL backup",
+        "Django production readiness healthy",
+        "local docs health HTTP 200",
+        "public HTTPS docs and dashboard health HTTP 200",
+        "docs, dashboard, and PostgreSQL containers healthy"
+      ],
+      "database_backup": "/home/jon/docker/ts.rookaro.com/backups/dashboard-daily-20261007T142446Z.dump.age",
+      "result": "verified",
+      "rollback_root": "/home/jon/docker/ts.rookaro.com/release-backups/v0.59.3-before-v0.59.5-20261007T142447Z",
+      "target": "tsrookarocom@sup.local:/home/jon/docker/ts.rookaro.com"
+    },
+    "windows": {
+      "artifact": "github-release:v0.59.5:tool-shed-windows-install-client",
+      "backup": "E:\\dev\\ts_windows_test_bed\\tool_shed.backup-20261007T142552Z.tar",
+      "from_version": "0.59.3",
+      "release_validation": {
+        "cache": "stored",
+        "mode": "attested-focused-smoke",
+        "release_commit": "6120117631db893dabd1d237591b100aaab64788"
+      },
+      "result": "verified",
+      "retirement_plan": {
+        "applicable": false,
+        "candidate_count": 0,
+        "valid": true,
+        "writes_performed": false
+      },
+      "to_version": "0.59.5",
+      "transaction_id": "69e07a7ff4db02a4eb39f743",
+      "transaction_report": "C:\\Users\\jon\\.codex\\tool-shed\\snapshot-upgrade-transactions\\69e07a7ff4db02a4eb39f743.json",
+      "work_review": {
+        "errors": 0,
+        "findings": 0
+      },
+      "workspace": "GOGETTER:E:\\dev\\ts_windows_test_bed"
+    }
+  }
+}
