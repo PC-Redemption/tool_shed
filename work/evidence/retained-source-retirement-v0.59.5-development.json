@@ -1,0 +1,33 @@
+{
+  "candidate_commit": "061ad47ca57f44ac023c443b794f161c5a612ed3",
+  "candidate_version": "0.59.5",
+  "checked_at": "2026-10-07T14:15:43Z",
+  "kind": "tool-shed-retained-source-retirement-development-evidence",
+  "lanes": {
+    "linux": {
+      "artifact": "snapshot-sha256:6296a9817bd86a1b167115f8b8cede2cd0d696998e771233ec836e0cfcb29732",
+      "result": "exact disconnected candidate staged; manifest integrity verified; work-state review clean; retirement plan read-only and valid",
+      "target": "PC-Redemption/ts_linux_test_bed@sup.local:/home/jon/dev/ts_linux_test_bed"
+    },
+    "web": {
+      "artifact": "tool-shed-dashboard:dev-061ad47ca57f@sha256:cfbd0adc1dee1ad18a34ad9165565a551d948e5985298b2d0b6caa087b9f3a5c",
+      "result": "exact candidate staged and deployed; development docs and dashboard healthy; production health remained healthy",
+      "target": "tsrookarocom-dev@sup.local:/home/jon/docker/ts.rookaro.com-dev"
+    },
+    "windows": {
+      "artifact": "snapshot-sha256:6296a9817bd86a1b167115f8b8cede2cd0d696998e771233ec836e0cfcb29732",
+      "result": "exact disconnected candidate staged without a clone; manifest integrity verified; work-state review clean; retirement plan read-only and valid",
+      "target": "PC-Redemption/ts_windows_test_bed@GOGETTER:E:\\dev\\ts_windows_test_bed"
+    }
+  },
+  "release_id": "retained-source-retirement-v0.59.5",
+  "result": "passed",
+  "schema_version": 1,
+  "snapshot_archive": "/tmp/tool-shed-v0.59.5-061ad47.tar.gz",
+  "snapshot_sha256": "6296a9817bd86a1b167115f8b8cede2cd0d696998e771233ec836e0cfcb29732",
+  "validation": {
+    "canonical_release_profile": "706 of 706 tests passed with all repository release checks in 59.606 seconds",
+    "focused_review": "10 retained-source reviewer and retirement tests plus 3 legacy work-state tests passed",
+    "manifest": "SHED_VERSION.json matches 308 tracked files on canonical, Linux, and Windows candidates"
+  }
+}
