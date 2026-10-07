@@ -1045,6 +1045,16 @@ RETIREMENT_HISTORICAL_REFERENCE_PATHS = {
 }
 
 
+def _retirement_historical_reference(path: str) -> bool:
+    return (
+        path.startswith("work/state/")
+        or path.startswith("work/evidence/bootstrap-closure-")
+        or (path.startswith("work/evidence/") and path.endswith(".json"))
+        or path.startswith("docs/archive/")
+        or path in RETIREMENT_HISTORICAL_REFERENCE_PATHS
+    )
+
+
 def _retirement_manifest_token(manifest: dict[str, Any]) -> str:
     payload = copy.deepcopy(manifest)
     payload.pop("manifest_token", None)
@@ -1086,10 +1096,12 @@ def retirement_plan(workspace: Path, *, database: Path | None = None) -> dict[st
             )
         rows = connection.execute(
             "SELECT dc.source_path, dc.source_sha256, dc.artifact_id, dc.visible_id, "
-            "dc.status, dc.byte_parity, dc.render_parity, pa.id AS alias_id, "
+            "dc.status, dc.byte_parity, dc.render_parity, "
+            "d.body_sha256 AS current_body_sha256, pa.id AS alias_id, "
             "pa.retired_revision FROM document_conversion dc LEFT JOIN document_path_alias pa "
             "ON pa.document_id=dc.artifact_id AND pa.path=dc.source_path "
-            "AND pa.alias_kind='retained-source' WHERE dc.classification='generated' "
+            "AND pa.alias_kind='retained-source' "
+            "JOIN document d ON d.id=dc.artifact_id WHERE dc.classification='generated' "
             "ORDER BY dc.source_path"
         ).fetchall()
 
@@ -1100,10 +1112,14 @@ def retirement_plan(workspace: Path, *, database: Path | None = None) -> dict[st
         relative = str(row["source_path"])
         source = require_path_within(workspace, workspace / relative)
         observed_sha256 = hybrid_state.file_sha256(source) if source.is_file() else None
+        try:
+            observed_body_sha256 = sha256_text(source.read_text(encoding="utf-8")) if source.is_file() else None
+        except UnicodeDecodeError:
+            observed_body_sha256 = None
         state = "active" if row["alias_id"] and row["retired_revision"] is None else "retired"
         if not source.is_file():
             findings.append({"code": "SOURCE_MISSING", "path": relative})
-        elif observed_sha256 != row["source_sha256"]:
+        elif observed_sha256 != row["source_sha256"] and observed_body_sha256 != row["current_body_sha256"]:
             findings.append({"code": "SOURCE_HASH_DRIFT", "path": relative})
         if row["status"] != "verified" or not row["byte_parity"] or not row["render_parity"]:
             findings.append({"code": "CONVERSION_NOT_VERIFIED", "path": relative})
@@ -1111,7 +1127,8 @@ def retirement_plan(workspace: Path, *, database: Path | None = None) -> dict[st
             findings.append({"code": "RETAINED_ALIAS_MISSING", "path": relative})
         candidates.append({
             "path": relative,
-            "source_sha256": str(row["source_sha256"]),
+            "source_sha256": observed_sha256,
+            "conversion_source_sha256": str(row["source_sha256"]),
             "observed_sha256": observed_sha256,
             "artifact_id": str(row["artifact_id"]),
             "visible_id": str(row["visible_id"]),
@@ -1137,9 +1154,7 @@ def retirement_plan(workspace: Path, *, database: Path | None = None) -> dict[st
             for target_path, occurrences in sorted(matches.items()):
                 if relative in candidate_paths:
                     disposition = "co-retired-source"
-                elif relative.startswith("work/state/") or relative.startswith(
-                    "work/evidence/bootstrap-closure-"
-                ) or relative in RETIREMENT_HISTORICAL_REFERENCE_PATHS:
+                elif _retirement_historical_reference(relative):
                     disposition = "historical-recovery-reference"
                 elif relative in RETIREMENT_REFERENCE_PROJECTIONS:
                     disposition = "disposable-projection"
@@ -1225,7 +1240,7 @@ def retire_source_aliases(
                 "SELECT 1 FROM document_conversion WHERE artifact_id=? AND source_path=? "
                 "AND source_sha256=? AND classification='generated' AND status='verified' "
                 "AND byte_parity=1 AND render_parity=1",
-                (candidate["artifact_id"], candidate["path"], candidate["source_sha256"]),
+                (candidate["artifact_id"], candidate["path"], candidate["conversion_source_sha256"]),
             ).fetchone()
             if conversion is None:
                 raise DocumentStoreError(f"retirement conversion drift: {candidate['path']}")

@@ -87,7 +87,7 @@ class RetainedSourceRetirementTests(unittest.TestCase):
 
         (self.workspace / "README.md").write_text("Current planning uses the managed document store.\n")
         ready = document_store.retirement_plan(self.workspace, database=self.database)
-        self.assertTrue(ready["applicable"])
+        self.assertTrue(ready["applicable"], ready)
         manifest = self.workspace / ".tool-shed/retirement.json"
         manifest.write_text(json.dumps(ready), encoding="utf-8")
         result = document_store.retire_source_aliases(
@@ -130,6 +130,58 @@ class RetainedSourceRetirementTests(unittest.TestCase):
         self.assertEqual(result["findings"], [{
             "code": "SOURCE_HASH_DRIFT", "path": "work/maps/map-one.md",
         }])
+
+    def test_reconciled_source_drift_can_retire_with_original_lineage(self) -> None:
+        source = self.workspace / "work/maps/map-one.md"
+        source.write_text("# Map One\n\nRetained update reconciled in SQLite.\n", encoding="utf-8")
+        (self.workspace / "README.md").write_text("Current planning uses the managed store.\n")
+        before = document_store.retirement_plan(self.workspace, database=self.database)
+        self.assertEqual(before["findings"], [{
+            "code": "SOURCE_HASH_DRIFT", "path": "work/maps/map-one.md",
+        }])
+        edit = self.workspace / ".tool-shed/map-edit.md"
+        edit.write_text(
+            document_store.render_edit(document_store.show(
+                self.workspace, "work/maps/map-one.md", database=self.database,
+            )).split("\n---\n", 1)[0] + "\n---\n" + source.read_text(encoding="utf-8"),
+            encoding="utf-8",
+        )
+        document_store.apply_edit(
+            self.workspace, project_binding=self.binding, edit=edit,
+            actor="fixture", reason="reconcile retained update", database=self.database,
+        )
+        ready = document_store.retirement_plan(self.workspace, database=self.database)
+        self.assertTrue(ready["applicable"], ready)
+        candidate = ready["candidates"][0]
+        self.assertEqual(candidate["source_sha256"], candidate["observed_sha256"])
+        self.assertNotEqual(candidate["source_sha256"], candidate["conversion_source_sha256"])
+        manifest = self.workspace / ".tool-shed/retirement.json"
+        manifest.write_text(json.dumps(ready), encoding="utf-8")
+        result = document_store.retire_source_aliases(
+            self.workspace, project_binding=self.binding, manifest_path=manifest,
+            expected_token=ready["manifest_token"], actor="fixture", reason="retire reconciled source",
+            database=self.database,
+        )
+        self.assertEqual(result["result"]["retired_alias_count"], 1)
+
+    def test_plan_preserves_archival_references_but_requires_live_rewrites(self) -> None:
+        for relative in (
+            "docs/archive/old-notes.md",
+            "work/evidence/decision-record.json",
+        ):
+            path = self.workspace / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("Historical: work/maps/map-one.md\n", encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=self.workspace, check=True)
+        subprocess.run(["git", "commit", "--quiet", "-m", "archive fixtures"], cwd=self.workspace, check=True)
+        blocked = document_store.retirement_plan(self.workspace, database=self.database)
+        self.assertEqual(blocked["reference_counts"]["historical-recovery-reference"], 2)
+        self.assertEqual(blocked["reference_counts"]["rewrite-required"], 1)
+        self.assertFalse(blocked["applicable"])
+
+        (self.workspace / "README.md").write_text("Current planning uses the managed store.\n")
+        ready = document_store.retirement_plan(self.workspace, database=self.database)
+        self.assertTrue(ready["applicable"])
 
     def test_reviewer_uses_sqlite_authority_for_converted_source(self) -> None:
         source = self.workspace / "work/maps/map-one.md"
