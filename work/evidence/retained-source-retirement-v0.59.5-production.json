@@ -35,7 +35,7 @@
   "schema_version": 1,
   "boundaries": {
     "bactron_modified": false,
-    "windows_temporary_clone_used": false
+    "preexisting_windows_temporary_clone_used": false
   },
   "production_lanes": {
     "linux": {
