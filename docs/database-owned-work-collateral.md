@@ -83,6 +83,10 @@ The exact authority, conversion, rollback, compatibility, and retirement rules a
 
 ## Retained-source retirement planning
 
+Under Hybrid SQLite authority, work-state review uses current database state for converted
+generated documents. It does not treat their retained Markdown headers as live planning state;
+unconverted work files remain subject to the normal file review.
+
 Retirement begins with a read-only exact plan:
 
 ```bash

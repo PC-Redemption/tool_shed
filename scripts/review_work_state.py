@@ -5,6 +5,7 @@ import sys as _runtime_sys
 _runtime_sys.dont_write_bytecode = True
 
 import argparse
+import contextlib
 import json
 import re
 from dataclasses import asdict, dataclass
@@ -13,6 +14,8 @@ from pathlib import Path
 
 from repository_policy import POLICY_FILE, format_bytes, inspect_snapshot_ignore, inspect_work_ignore
 from update_work_index import Artifact, discover_artifacts
+import authority_resolver
+import hybrid_state
 import outcome_loop
 
 
@@ -168,6 +171,19 @@ def gitignore_findings(workspace: Path) -> list[Finding]:
 def review(workspace: Path, *, stale_days: int, today: date) -> list[Finding]:
     work_dir = workspace / "work"
     artifacts = discover_artifacts(work_dir) if work_dir.exists() else []
+    if authority_resolver.resolve(workspace)["authority"] == "sqlite":
+        database = hybrid_state.database_path(workspace)
+        with contextlib.closing(hybrid_state.connect(database, writable=False)) as connection:
+            retained_sources = {
+                row[0] for row in connection.execute(
+                    "SELECT source_path FROM document_conversion "
+                    "WHERE classification='generated' AND status='verified'"
+                )
+            }
+        artifacts = [
+            artifact for artifact in artifacts
+            if artifact.path.as_posix() not in retained_sources
+        ]
     artifacts_by_path = {artifact.path.as_posix(): artifact for artifact in artifacts}
     findings = gitignore_findings(workspace)
     references = {

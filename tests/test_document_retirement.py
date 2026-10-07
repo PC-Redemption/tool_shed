@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+from datetime import date
 import hashlib
 import json
 import sqlite3
@@ -19,6 +20,7 @@ import document_store  # noqa: E402
 import hybrid_state  # noqa: E402
 import check_work_tree  # noqa: E402
 import campaign_queue  # noqa: E402
+import review_work_state  # noqa: E402
 from work_tree import WORK_DIRS  # noqa: E402
 
 
@@ -128,6 +130,33 @@ class RetainedSourceRetirementTests(unittest.TestCase):
         self.assertEqual(result["findings"], [{
             "code": "SOURCE_HASH_DRIFT", "path": "work/maps/map-one.md",
         }])
+
+    def test_reviewer_uses_sqlite_authority_for_converted_source(self) -> None:
+        source = self.workspace / "work/maps/map-one.md"
+        source.write_text(
+            "# Map One\n\nStatus: active\nType: project-map\n"
+            "Updated: 2026-01-01\nNext Action: continue\n",
+            encoding="utf-8",
+        )
+        file_findings = review_work_state.review(
+            self.workspace, stale_days=30, today=date(2026, 10, 7),
+        )
+        self.assertIn("STALE_ACTIVE", {item.code for item in file_findings})
+
+        with contextlib.closing(sqlite3.connect(self.database)) as connection:
+            connection.execute("UPDATE state_meta SET storage_mode='hybrid' WHERE id=1")
+            connection.commit()
+        independent = self.workspace / "work/maps/map-independent.md"
+        independent.write_text(
+            "# Independent Map\n\nStatus: active\nType: project-map\n"
+            "Updated: 2026-01-01\nNext Action: continue\n",
+            encoding="utf-8",
+        )
+        hybrid_findings = review_work_state.review(
+            self.workspace, stale_days=30, today=date(2026, 10, 7),
+        )
+        stale_paths = {item.path for item in hybrid_findings if item.code == "STALE_ACTIVE"}
+        self.assertEqual(stale_paths, {"work/maps/map-independent.md"})
 
     def test_work_tree_ignores_retired_file_queue_under_database_authority(self) -> None:
         with contextlib.closing(sqlite3.connect(self.database)) as connection:
