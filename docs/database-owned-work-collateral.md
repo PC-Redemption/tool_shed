@@ -98,7 +98,8 @@ conversion, source hash, active retained-source alias, and inbound path-referenc
 `rewrite-required` references make the manifest non-applicable. Known co-retired sources,
 disposable projections, and immutable recovery/history surfaces are reported separately.
 References in `docs/archive/` and JSON evidence under `work/evidence/` remain historical
-recovery references; current guides and policy files still require a live-link rewrite.
+recovery references. Active release-lane control manifests under `work/evidence/release-lanes/`,
+current guides, and policy files still require a live-link rewrite.
 When a retained source changed after conversion, retirement remains blocked until its
 current text has been recorded as a managed document revision. The manifest preserves
 the original conversion hash and binds the observed file hash for final preflight.

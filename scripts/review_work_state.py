@@ -68,7 +68,7 @@ def planning_references(artifact: Artifact, workspace: Path) -> set[str]:
 def add_header_findings(
     artifact: Artifact,
     *,
-    artifacts_by_path: dict[str, Artifact],
+    known_paths: set[str],
     stale_days: int,
     today: date,
 ) -> list[Finding]:
@@ -105,7 +105,7 @@ def add_header_findings(
                         Finding("INVALID_PARENT", "error", path, "Parent or Project Map does not contain a work/*.md path")
                     )
                 for candidate in parent_paths:
-                    if candidate not in artifacts_by_path:
+                    if candidate not in known_paths:
                         findings.append(
                             Finding("BROKEN_PARENT", "error", path, f"parent artifact does not exist: {candidate}")
                         )
@@ -129,7 +129,7 @@ def add_header_findings(
                     Finding("MISSING_SPIKE_OUTPUT", "error", path, "planned spike needs Produces: work/...md")
                 )
             for candidate in produces:
-                if candidate not in artifacts_by_path:
+                if candidate not in known_paths:
                     findings.append(
                         Finding("BROKEN_SPIKE_OUTPUT", "error", path, f"produced artifact does not exist: {candidate}")
                     )
@@ -171,21 +171,37 @@ def gitignore_findings(workspace: Path) -> list[Finding]:
 def review(workspace: Path, *, stale_days: int, today: date) -> list[Finding]:
     work_dir = workspace / "work"
     artifacts = discover_artifacts(work_dir) if work_dir.exists() else []
-    if authority_resolver.resolve(workspace)["authority"] == "sqlite":
+    resolution = authority_resolver.resolve(workspace)
+    findings = gitignore_findings(workspace)
+    converted_sources: dict[str, str] = {}
+    active_aliases: set[str] = set()
+    if resolution["authority"] == "unavailable":
+        findings.append(Finding(
+            "AUTHORITY_UNAVAILABLE",
+            "error",
+            ".tool-shed/state.sqlite3",
+            f"{resolution['reason']}; {resolution['next_action']}",
+        ))
+    elif resolution["authority"] == "sqlite":
         database = hybrid_state.database_path(workspace)
         with contextlib.closing(hybrid_state.connect(database, writable=False)) as connection:
-            retained_sources = {
-                row[0] for row in connection.execute(
-                    "SELECT source_path FROM document_conversion "
-                    "WHERE classification='generated' AND status='verified'"
-                )
-            }
+            for row in connection.execute(
+                "SELECT dc.source_path, d.lifecycle_state, pa.retired_revision "
+                "FROM document_conversion dc JOIN document d ON d.id=dc.artifact_id "
+                "LEFT JOIN document_path_alias pa ON pa.document_id=dc.artifact_id "
+                "AND pa.path=dc.source_path AND pa.alias_kind='retained-source' "
+                "WHERE dc.classification='generated' AND dc.status='verified'"
+            ):
+                path = str(row[0])
+                converted_sources[path] = str(row[1])
+                if row[2] is None:
+                    active_aliases.add(path)
         artifacts = [
             artifact for artifact in artifacts
-            if artifact.path.as_posix() not in retained_sources
+            if artifact.path.as_posix() not in converted_sources
         ]
     artifacts_by_path = {artifact.path.as_posix(): artifact for artifact in artifacts}
-    findings = gitignore_findings(workspace)
+    known_paths = set(artifacts_by_path) | active_aliases
     references = {
         artifact.path.as_posix(): planning_references(artifact, workspace) for artifact in artifacts
     }
@@ -193,7 +209,7 @@ def review(workspace: Path, *, stale_days: int, today: date) -> list[Finding]:
         findings.extend(
             add_header_findings(
                 artifact,
-                artifacts_by_path=artifacts_by_path,
+                known_paths=known_paths,
                 stale_days=stale_days,
                 today=today,
             )
@@ -209,7 +225,8 @@ def review(workspace: Path, *, stale_days: int, today: date) -> list[Finding]:
             continue
         for target in sorted(targets):
             linked = artifacts_by_path.get(target)
-            if linked and normalized(linked.status()) in FINISHED_STATUSES:
+            linked_status = normalized(linked.status()) if linked else normalized(converted_sources.get(target))
+            if linked_status in FINISHED_STATUSES:
                 findings.append(
                     Finding("PLAN_DRIFT", "warning", source, f"active artifact references finished artifact: {target}")
                 )

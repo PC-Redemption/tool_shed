@@ -1049,7 +1049,11 @@ def _retirement_historical_reference(path: str) -> bool:
     return (
         path.startswith("work/state/")
         or path.startswith("work/evidence/bootstrap-closure-")
-        or (path.startswith("work/evidence/") and path.endswith(".json"))
+        or (
+            path.startswith("work/evidence/")
+            and not path.startswith("work/evidence/release-lanes/")
+            and path.endswith(".json")
+        )
         or path.startswith("docs/archive/")
         or path in RETIREMENT_HISTORICAL_REFERENCE_PATHS
     )

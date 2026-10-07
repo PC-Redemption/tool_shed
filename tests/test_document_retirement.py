@@ -11,6 +11,7 @@ import tempfile
 import unittest
 import uuid
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -183,6 +184,23 @@ class RetainedSourceRetirementTests(unittest.TestCase):
         ready = document_store.retirement_plan(self.workspace, database=self.database)
         self.assertTrue(ready["applicable"])
 
+    def test_plan_requires_release_lane_reference_rewrite(self) -> None:
+        historical = self.workspace / "work/evidence/decision-record.json"
+        historical.parent.mkdir(parents=True, exist_ok=True)
+        historical.write_text("Historical: work/maps/map-one.md\n", encoding="utf-8")
+        release_lane = self.workspace / "work/evidence/release-lanes/current.json"
+        release_lane.parent.mkdir(parents=True, exist_ok=True)
+        release_lane.write_text("Current: work/maps/map-one.md\n", encoding="utf-8")
+        (self.workspace / "README.md").write_text("Current planning uses the managed store.\n")
+        subprocess.run(["git", "add", "."], cwd=self.workspace, check=True)
+        subprocess.run(["git", "commit", "--quiet", "-m", "reference fixtures"], cwd=self.workspace, check=True)
+
+        result = document_store.retirement_plan(self.workspace, database=self.database)
+
+        self.assertEqual(result["reference_counts"]["historical-recovery-reference"], 1)
+        self.assertEqual(result["reference_counts"]["rewrite-required"], 1)
+        self.assertFalse(result["applicable"])
+
     def test_reviewer_uses_sqlite_authority_for_converted_source(self) -> None:
         source = self.workspace / "work/maps/map-one.md"
         source.write_text(
@@ -209,6 +227,44 @@ class RetainedSourceRetirementTests(unittest.TestCase):
         )
         stale_paths = {item.path for item in hybrid_findings if item.code == "STALE_ACTIVE"}
         self.assertEqual(stale_paths, {"work/maps/map-independent.md"})
+
+    def test_reviewer_resolves_active_retained_alias_with_managed_lifecycle(self) -> None:
+        with contextlib.closing(sqlite3.connect(self.database)) as connection:
+            connection.execute("UPDATE state_meta SET storage_mode='hybrid' WHERE id=1")
+            connection.execute(
+                "UPDATE document SET lifecycle_state='completed' WHERE visible_id='MAP-0001'"
+            )
+            connection.commit()
+        child = self.workspace / "work/tickets/child.md"
+        child.parent.mkdir(parents=True, exist_ok=True)
+        child.write_text(
+            "# Child\n\nStatus: active\nType: ticket\nUpdated: 2026-10-07\n"
+            "Next Action: continue\nParent: work/maps/map-one.md\n",
+            encoding="utf-8",
+        )
+
+        findings = review_work_state.review(
+            self.workspace, stale_days=30, today=date(2026, 10, 7),
+        )
+
+        codes = {item.code for item in findings}
+        self.assertNotIn("BROKEN_PARENT", codes)
+        self.assertIn("PLAN_DRIFT", codes)
+
+    def test_reviewer_reports_unavailable_authority(self) -> None:
+        resolution = {
+            "authority": "unavailable",
+            "reason": "Hybrid authority cannot be resolved: DatabaseError",
+            "next_action": "Run Tool Shed Doctor",
+        }
+        with mock.patch.object(review_work_state.authority_resolver, "resolve", return_value=resolution):
+            findings = review_work_state.review(
+                self.workspace, stale_days=30, today=date(2026, 10, 7),
+            )
+
+        unavailable = [item for item in findings if item.code == "AUTHORITY_UNAVAILABLE"]
+        self.assertEqual(len(unavailable), 1)
+        self.assertEqual(unavailable[0].severity, "error")
 
     def test_work_tree_ignores_retired_file_queue_under_database_authority(self) -> None:
         with contextlib.closing(sqlite3.connect(self.database)) as connection:
