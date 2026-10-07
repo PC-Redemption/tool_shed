@@ -12,7 +12,7 @@
     "adapters/codex-app-server-config.json": "52e8e0aff51108c93e18c334fafd46ee979d45f392380da86329bbc0521d52c0",
     "adapters/codex-app-server-qualifications.json": "1b621d969c7391870be8feeaaba64fd2cc2c45d29b2beaa78a9a07105d656f9d",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "782e1e0996ebdfe7b3fc2393aa69bcf180b8881c1668af65dfb39d54866c7164",
+    "adapters/codex-skill-releases.json": "e617e1a0cd1ad18d863f71c8ec4b7ee6425b19bca8f754690456d5379fbc21e9",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "5e9668c866c67471ea58e36c596ce5a9964f92f0774a4ec997f775368f02bfcf",
     "dashboard/Dockerfile": "8e9ff084f409aa81ab92b9dcbe8d9bab2416225551c837681653cab7b66786ad",
@@ -92,7 +92,7 @@
     "docs/dashboard.md": "02de99599206c3b4740a69ae4c9ca8628992d712b2a26bbc0c953ccadf236811",
     "docs/database-owned-work-collateral-conversion.md": "ee131fe6e232369c752a1be35e6a0e3c1438e2ee14aef47b50677f1fa5bbd98a",
     "docs/database-owned-work-collateral-v1-contract.md": "b7f04d49d1a6ba4b6a7db8130122f5b4e6b23d329d68ed14823ad09c73b3e6ab",
-    "docs/database-owned-work-collateral.md": "3492e324ebdfdfb0f8f92acb5b46d1bd93378e523a8608f733a59a1dca3cfd9d",
+    "docs/database-owned-work-collateral.md": "c1ad31e8a75355624814b2a39444c96b81911561b807332eef0e2b22c7b09f23",
     "docs/development-site.md": "245ac5edb63619895ac665fe14136ff978c271037bc41265a592341472c11ff4",
     "docs/documentation-site.md": "ebd852f8bf479360adb7181864603daf1d7b95504a37d05402b5fccdf30a2ef1",
     "docs/fleet-snapshot-updates.md": "4016143af0bd7eec601ebc3782fc7ca9e036eee96517b6397b34e0809f5b7cb3",
@@ -194,7 +194,7 @@
     "scripts/doctor.py": "eaa5a864128dfbb0216bc517a30ec1814d1a01a1e9fbe0592c4ff5733d502c59",
     "scripts/document_contract.py": "2b540582141065b7e7c84294142a15ddf01f255a58f844e08abaf9634b30d411",
     "scripts/document_conversion.py": "08c9cdf117fbaf1e9cadee47606e567dc0c0756d0c3f4358840b2e516689ecda",
-    "scripts/document_store.py": "7c9b1d30a081e331b96de382ba262783e825a6952974c3684e0f1f78bd8366bc",
+    "scripts/document_store.py": "8b64419ea896ec8d7e1a6b507470aff6aed628990738ecff7cceeb97e0d2fa6d",
     "scripts/document_store_schema.py": "fd40962d15288e5e4d72f124d896f615b54a52db0840f1b1566564a7217842fd",
     "scripts/freeze_hpt2_fixture.py": "abc1e766fb6538a7ebd6354d85cff0a51da4ecf8ac21d53866fe5a10fdca51a7",
     "scripts/hybrid_state.py": "d6b91c3f8825fb6e51985dbc57aad43e38a9058b082a56460e00c2239cc554bc",
@@ -231,7 +231,7 @@
     "scripts/release_convergence.py": "10d84aa21455d052d646b14f2ba65d57709348274c3be0018be99b4d868a397d",
     "scripts/release_projection.py": "bac127bbb3892f8c291028670c4e5801b33341fff4cb7ebb032eac47492f352f",
     "scripts/repository_policy.py": "7037bc56621a961f63266d93f37f3533c5d281359afeef87da872570f28f6c44",
-    "scripts/review_work_state.py": "a99d6dad719d40f627ae2e6e02e2dbf36fc79b32a40202e1743cf87a37549a95",
+    "scripts/review_work_state.py": "007b52b7919258b911a32b268ac4e1fc01c664c099600bfba29f9ecbdc79a412",
     "scripts/snapshot_upgrade_report.py": "87e5de0dbbf867820cff3f84381a66ccad7baa5f3ff599a7a3f09ee90315707e",
     "scripts/snapshot_upgrade_state.py": "06da95258fd6ba2b16c0fe8b5a102ebcb6e142f809e4847433406a6bd2c4f92a",
     "scripts/subprocess_launch.py": "dde60935134de6661827ed2b020ecf26b2649bebf00af0124ad77a7f74854d98",
@@ -313,35 +313,13 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Reclaim oversized dashboard outboxes safely during snapshot updates.",
-  "release_commit": "fef20ec7a8324f6ed7467ef45e4b80d0203fd9a6",
-  "release_qualification": {
-    "attested_at": "2026-10-06T22:26:24Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "ade73da46cff93e8d0629830251cb46a8816a2ee939b2613ca6f42e86c5e4557"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "b61d138e6d1dac5138970d9de06251c31ff907cbe7a06932b2df2235df4a5d48"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "fef20ec7a8324f6ed7467ef45e4b80d0203fd9a6"
-  },
-  "release_tag": "v0.59.4",
-  "released_at": "2026-10-06T22:26:24Z",
-  "shed_version": "0.59.4",
-  "updated_at": "2026-10-06",
+  "notes": "Correct retained-source review and retirement planning.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.59.5",
+  "released_at": null,
+  "shed_version": "0.59.5",
+  "updated_at": "2026-10-07",
   "updater_mutation_paths": [
     {
       "mode": "tree",
