@@ -314,10 +314,32 @@
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
   "notes": "Pin CI to the qualified Python 3.11-3.14 range.",
-  "release_commit": null,
-  "release_qualification": null,
+  "release_commit": "f47e53c6c241cc361f84544463962575405bbd45",
+  "release_qualification": {
+    "attested_at": "2026-11-18T19:35:17Z",
+    "client_smoke": {
+      "path": "scripts/validate_snapshot_client.py",
+      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
+    },
+    "full_validator": {
+      "path": "scripts/validate_tool_shed.py",
+      "sha256": "ade73da46cff93e8d0629830251cb46a8816a2ee939b2613ca6f42e86c5e4557"
+    },
+    "required_ci": [
+      {
+        "path": ".github/workflows/validate.yml",
+        "sha256": "b61d138e6d1dac5138970d9de06251c31ff907cbe7a06932b2df2235df4a5d48"
+      },
+      {
+        "path": ".github/workflows/release.yml",
+        "sha256": "31b638f720a7737e882c493fc370649368e222c3965e01340e798e2024feef1a"
+      }
+    ],
+    "schema_version": 1,
+    "subject_commit": "f47e53c6c241cc361f84544463962575405bbd45"
+  },
   "release_tag": "v0.59.6",
-  "released_at": null,
+  "released_at": "2026-11-18T19:35:17Z",
   "shed_version": "0.59.6",
   "updated_at": "2026-11-18",
   "updater_mutation_paths": [
