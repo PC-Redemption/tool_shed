@@ -45,7 +45,7 @@ def job_matrix(*, full: bool) -> dict[str, list[dict[str, object]]]:
             "include": [
                 {
                     "os": "ubuntu-latest",
-                    "python_version": "3.x",
+                    "python_version": "3.14",
                     "shard": 0,
                     "shard_count": 1,
                     "test_jobs": 8,
@@ -64,7 +64,7 @@ def job_matrix(*, full: bool) -> dict[str, list[dict[str, object]]]:
                 "profile": "release",
             }
             for operating_system in ("ubuntu-latest", "windows-latest")
-            for python_version in ("3.11", "3.x")
+            for python_version in ("3.11", "3.14")
             for shard in range(FULL_SHARD_COUNT)
         ]
     }

@@ -323,7 +323,7 @@ open Ideas merely because a release occurred; only registered cohort ownership i
 1. Push the frozen content commit on its branch.
 2. Require a successful `push` run of `.github/workflows/validate.yml` whose `head_sha` exactly
    matches that content commit. The workflow must run the release profile on Ubuntu and Windows
-   with Python 3.11 and the current Python 3.x, recording a 60-second advisory threshold and
+   with Python 3.11 and Python 3.14, recording a 60-second advisory threshold and
    enforcing the 300-second hard profile budget plus the 10-minute hung-job timeout.
 3. Only after that exact run succeeds, create and push the provenance-only manifest commit and
    stable tag. The publication workflow must independently verify the same successful content-SHA

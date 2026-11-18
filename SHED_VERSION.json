@@ -4,15 +4,15 @@
   "content_hashes": {
     ".dockerignore": "afbfdabe0dc5ece742f4eb677e9b5287f3e39e0fbaf90aa945a88f69913dc5a6",
     ".gitattributes": "d60f352d0db1404c70afb4bb8b2ca3fd1c610572aa40720e8a0b7baa7885418c",
-    ".github/workflows/release.yml": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa",
+    ".github/workflows/release.yml": "31b638f720a7737e882c493fc370649368e222c3965e01340e798e2024feef1a",
     ".github/workflows/validate.yml": "b61d138e6d1dac5138970d9de06251c31ff907cbe7a06932b2df2235df4a5d48",
-    ".github/workflows/validation-performance.yml": "bda4e561db1c239e77aeaf01c6f8cc94322932d6ee262eee076fdcc494dfa0de",
-    "README.md": "0d677104c980e01b971185f66e326af9bb82bbe1f9248ec7e360a773d495c6b7",
+    ".github/workflows/validation-performance.yml": "02290cc07c22169c80511081d3f9e119fd826da4106cd3b216a8adb3c70fa9a4",
+    "README.md": "a2a938ccda778ec610a78066f27fd103c60eaeb0dd18b4ae749e3c2476cda403",
     "adapters/codex-app-server-benchmarks.json": "20ef4ef6d7e3964e01791ea2623e16091a5c5bd85ddae84179952ba31872dbe3",
     "adapters/codex-app-server-config.json": "52e8e0aff51108c93e18c334fafd46ee979d45f392380da86329bbc0521d52c0",
     "adapters/codex-app-server-qualifications.json": "1b621d969c7391870be8feeaaba64fd2cc2c45d29b2beaa78a9a07105d656f9d",
     "adapters/codex-model-policy.json": "89be9de8deddb489ad73ca20fb013008b5e9a2d6e1517ecbaa6283eb268d6b03",
-    "adapters/codex-skill-releases.json": "e617e1a0cd1ad18d863f71c8ec4b7ee6425b19bca8f754690456d5379fbc21e9",
+    "adapters/codex-skill-releases.json": "bc012b116d429d0d8ac7289a34a44cd9f09640c45e354c3c2576e7bb749d7e08",
     "adapters/providers.json": "3d278ee643e2e34231346e8518445c7351ed22b1906b3c7a364e4ec1a48649d9",
     "conventions.md": "5e9668c866c67471ea58e36c596ce5a9964f92f0774a4ec997f775368f02bfcf",
     "dashboard/Dockerfile": "8e9ff084f409aa81ab92b9dcbe8d9bab2416225551c837681653cab7b66786ad",
@@ -82,7 +82,7 @@
     "docs/codex-app-server-requalification-2026-09-07.md": "08348b1e95581719538296edb75a4c91d6eb9e3d1eb2f755998d77e68b643596",
     "docs/codex-app-server-write-qualification-2026-08-20.md": "db297ad88feb73f46a46178ae92304445afc2fb2447c2543d3bec84609af3923",
     "docs/codex-app-server-write-qualification-alpha-2026-08-25.md": "95d22eeb2b8d80fc884962fe30e93c5b2af4c63063970fb6ab30b55f292d40c8",
-    "docs/commands.md": "fa2ac4443b87bf8ab7cf232327d0c0c8120e689df384acffdb1b1563c1745402",
+    "docs/commands.md": "9f13e9567c70154e1fcc7a67579515fc0c350a222ea94ab2523e7f8e2f4b532a",
     "docs/completion-watcher-hosted-api-contract.md": "5b3fcd7ce43581648f7fdf129d87bc0e2e946d4f43fce2a7e467514d210eb190",
     "docs/completion-watcher-hosted-datastore.md": "10b617334beddf578b38989cd250f330846107ac4fc39fdd8b10a38c7a1bbfa4",
     "docs/completion-watcher-hosted-notification-worker.md": "032cf9c8c9f57c1e5c9f3b730c39065ee7ee9b076792607767bc77f44716ff10",
@@ -109,7 +109,7 @@
     "docs/recursive-closure-lineage.md": "25447b8414875046aee004456e62792ef8e6db410b1b437cb176ff045d3e3c6d",
     "docs/release-cohort-closed-loop.md": "758cbbff6a33aecabf609648a9cd4bff047a923ad358c1a9ee26c723fde843f5",
     "docs/release-convergence.md": "38dcbf9691bb37558bd66f2af4496e7feb4e304dc1c1cb0f3ebd4bdc567077c9",
-    "docs/releasing.md": "3a83d74c249183c61d304599be885583e0d698fa00177f4ac067b80e468300ff",
+    "docs/releasing.md": "e2eb76ab6855eacb640da468f7ac717395470b47dc42c0f35c3e5fc4081e5f40",
     "docs/terminal-campaign-reconciliation.md": "663919b7e74a2a4dc12f98b6d1a2c128e80e0220017dbefe3318a2c05f63ba38",
     "docs/tool-shed-consolidation-contract.md": "b87498b4eaa9f2806aa105c2861ffa4aac3b107111f051c10ae5326ac16bdf05",
     "docs/universal-closed-loop-outcome-reconciliation.md": "52378ff394590625eccf856d6e1e413289e1b632f2ac8042f8753288bb25d467",
@@ -172,7 +172,7 @@
     "scripts/check_shed_version.py": "dc4b75b2f9bb7fb6e3f376fef0ed8cc1fbb537077ca16d1cc961effb171a8743",
     "scripts/check_stale_paths.py": "8e996e32ceb8bdb65c09bb5be1801cedfc290fe5f0f3390cbb885789e5bb4c6f",
     "scripts/check_work_tree.py": "efc7e954bf096f2945c7629252098124dd06fb18283892b8f6d55a845fee42c4",
-    "scripts/ci_validation_policy.py": "5fa42b23fd3b1a256e1259c46b554d0ff1c4addecd6f9d9a002b79abfd47a6cc",
+    "scripts/ci_validation_policy.py": "a1dce6dd3842bbe3cd595fca9b1cb131588f5b9aaa75bd8f724da57814c12d63",
     "scripts/closure_lineage.py": "04125611f96cb0ddb846c5263d6670d576b2b6260b905a512d162a1dc46dc20d",
     "scripts/closure_lineage_benchmark.py": "564f5751d51deddff26e2392334a6aaa0a70d94b35e335f402ef5c88ff2e4569",
     "scripts/closure_lineage_schema.py": "3c7814cba682f0e74ab435192ac1eae45d19be8dc35693dc4b36d6167d37236e",
@@ -287,7 +287,7 @@
     "skills/tool-shed/SKILL.md": "c34df16d691436a36b22ed2cceff21408ccc09c141fc6a3e9f688ae118040151",
     "skills/tool-shed/agents/openai.yaml": "5b39ceb5df84a19a82f6c406bc80c5e8c88ea236211c6c618d80c37dc7301a23",
     "skills/tool-shed/references/artifact-workflows.md": "cd8d0da82a92d6f4c0ecb093ce9135903cfb99a5c33843b78f806e19bf7aadd9",
-    "skills/tool-shed/references/campaign-routes.md": "c9110c94d6270281689502f883e83bfcc3628a6eaf525ee34ef0321c38ecba6b",
+    "skills/tool-shed/references/campaign-routes.md": "fa6067433eee25e79946260d33f593a113d850a47a923a151fd5fd0bb7b39920",
     "skills/tool-shed/references/maintenance-routes.md": "8ef30b8d35438dc6c1eba539a7f2be0a3d981490a734ac02064e490956998616",
     "templates/active-campaign-queue.md": "c3035949566b873937924207bca052254d3d3a531437bc4d6b4326c13711c836",
     "templates/adr.md": "45e0c25ff6e6ef20fc071ea1dedef03f93a058afae9b40c934026a9f9772a268",
@@ -313,35 +313,13 @@
   },
   "manifest_schema_version": 2,
   "minimum_updater_protocol": 4,
-  "notes": "Correct retained-source review and retirement planning.",
-  "release_commit": "6120117631db893dabd1d237591b100aaab64788",
-  "release_qualification": {
-    "attested_at": "2026-10-07T14:23:56Z",
-    "client_smoke": {
-      "path": "scripts/validate_snapshot_client.py",
-      "sha256": "f5e82816dbed754ad9bb275dd8639231a51c183e53db12941ff02d8458a3c87f"
-    },
-    "full_validator": {
-      "path": "scripts/validate_tool_shed.py",
-      "sha256": "ade73da46cff93e8d0629830251cb46a8816a2ee939b2613ca6f42e86c5e4557"
-    },
-    "required_ci": [
-      {
-        "path": ".github/workflows/validate.yml",
-        "sha256": "b61d138e6d1dac5138970d9de06251c31ff907cbe7a06932b2df2235df4a5d48"
-      },
-      {
-        "path": ".github/workflows/release.yml",
-        "sha256": "0e145aca60f28ca17aaaf5f8c5100ab4ad890f9926f86d75c22028505a36b6fa"
-      }
-    ],
-    "schema_version": 1,
-    "subject_commit": "6120117631db893dabd1d237591b100aaab64788"
-  },
-  "release_tag": "v0.59.5",
-  "released_at": "2026-10-07T14:23:56Z",
-  "shed_version": "0.59.5",
-  "updated_at": "2026-10-07",
+  "notes": "Pin CI to the qualified Python 3.11-3.14 range.",
+  "release_commit": null,
+  "release_qualification": null,
+  "release_tag": "v0.59.6",
+  "released_at": null,
+  "shed_version": "0.59.6",
+  "updated_at": "2026-11-18",
   "updater_mutation_paths": [
     {
       "mode": "tree",

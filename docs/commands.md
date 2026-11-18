@@ -176,7 +176,7 @@ Readable aliases:
 highest stable semantic-version tag through one frozen content commit. Tool Shed pushes that
 content commit first and waits for the exact-SHA `Validate` push run: the release profile must pass
 its functional checks within the 900-second hard validator budget on Ubuntu and Windows with Python
-3.11 and current 3.x. Runs exceeding 60 seconds emit advisory performance evidence without becoming
+3.11 and 3.14. Runs exceeding 60 seconds emit advisory performance evidence without becoming
 false functional failures. Only then may it create
 and push the provenance-only commit and stable tag. Publication verifies the same CI evidence and
 fails closed for a different SHA, pull-request-only run, incomplete matrix, or unsuccessful run.

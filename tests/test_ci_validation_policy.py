@@ -14,6 +14,7 @@ class CiValidationPolicyTests(unittest.TestCase):
         self.assertFalse(result["full_matrix"])
         self.assertEqual(result["shard_count"], 1)
         self.assertEqual(len(result["matrix"]["include"]), 1)
+        self.assertEqual(result["matrix"]["include"][0]["python_version"], "3.14")
 
     def test_product_dashboard_dependency_schema_test_and_workflow_changes_require_full_matrix(self) -> None:
         for path in (
@@ -30,6 +31,10 @@ class CiValidationPolicyTests(unittest.TestCase):
                 self.assertTrue(result["full_matrix"])
                 self.assertEqual(result["shard_count"], 4)
                 self.assertEqual(len(result["matrix"]["include"]), 16)
+                self.assertEqual(
+                    {job["python_version"] for job in result["matrix"]["include"]},
+                    {"3.11", "3.14"},
+                )
 
     def test_empty_input_and_override_fail_safe_to_full(self) -> None:
         self.assertTrue(ci_validation_policy.classify([])["full_matrix"])

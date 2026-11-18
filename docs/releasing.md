@@ -61,7 +61,7 @@ Overrides, unattested releases, and any changed identity run full local validati
    ```
 
 7. Push the frozen content commit on its branch. Wait for the `Validate` push workflow whose
-   `head_sha` exactly equals `CONTENT_COMMIT_SHA`; its complete Ubuntu/Windows and Python 3.11/3.x
+   `head_sha` exactly equals `CONTENT_COMMIT_SHA`; its complete Ubuntu/Windows and Python 3.11/3.14
    matrix must succeed. A pull-request run or a successful run for another SHA is insufficient.
    Stop before provenance or tagging if that exact run is absent, incomplete, skipped, or failed.
 8. Populate provenance without changing the selected version:

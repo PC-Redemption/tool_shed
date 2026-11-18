@@ -71,6 +71,12 @@ Omitting `--provider` preserves the historical Codex default. See
 [provider adapters](docs/provider-adapters.md) for native paths, capability levels, and conformance
 gates.
 
+## Python Support
+
+Tool Shed requires Python 3.11 or newer and currently qualifies Python 3.11 through 3.14. CI pins
+the newest qualified interpreter explicitly so a new Python feature release is adopted only after
+the complete dependency stack and cross-platform validation matrix pass.
+
 ## Recommended Project Layout
 
 When installed into a project workspace:
